@@ -29,8 +29,8 @@ import org.apache.sis.storage.netcdf.AttributeNames;
  * (domain) and output (range) of the function that convert grid indices to geodetic coordinates.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.3
+ * @since   0.3
  * @module
  */
 final class GridGeometryInfo extends GridGeometry {

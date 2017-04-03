@@ -29,8 +29,8 @@ import static org.junit.Assert.*;
  * Tests the {@link StandardDateFormat} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.6
  * @version 0.8
+ * @since   0.6
  * @module
  */
 public final strictfp class StandardDateFormatTest extends TestCase {

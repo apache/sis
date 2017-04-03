@@ -42,8 +42,8 @@ import static org.apache.sis.test.Assert.*;
  * because IOGP allows implementations to modify non-essential properties.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.4
  * @version 0.8
+ * @since   0.4
  * @module
  *
  * @todo Move this class to GeoAPI.

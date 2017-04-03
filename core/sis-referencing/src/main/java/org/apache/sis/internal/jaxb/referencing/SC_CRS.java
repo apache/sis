@@ -29,8 +29,8 @@ import org.apache.sis.internal.jaxb.gco.PropertyType;
  * package documentation for more information about JAXB and interface.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.6
  * @version 0.7
+ * @since   0.6
  * @module
  */
 public final class SC_CRS extends PropertyType<SC_CRS, CoordinateReferenceSystem> {

@@ -114,15 +114,16 @@ import static org.apache.sis.util.Utilities.deepEquals;
  * Consequently, the above-cited methods provide single points that subclasses can override
  * for modifying the behavior of all getter and setter methods.
  *
- * @param  <T>  the type of the value stored in this parameter.
- *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.4
  * @version 0.8
- * @module
+ *
+ * @param  <T>  the type of the value stored in this parameter.
  *
  * @see DefaultParameterDescriptor
  * @see DefaultParameterValueGroup
+ *
+ * @since 0.4
+ * @module
  */
 @XmlType(name = "ParameterValueType", propOrder = {
     "xmlValue",
@@ -516,22 +517,22 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
      * Same as {@link #isFile(Object)}, but accepts also a {@link String} if the type specified
      * in the parameter descriptor is one of the types documented in {@link #valueFile()}.
      */
-    private boolean isOrNeedFile(final Object value) {
-        if (value instanceof String) {
+    private boolean isOrNeedFile(final Object newValue) {
+        if (newValue instanceof String) {
             final Class<?> type = descriptor.getValueClass();
             return (type == URI.class) || (type == URL.class)
                    || Path.class.isAssignableFrom(type)
                    || File.class.isAssignableFrom(type);
         }
-        return isFile(value);
+        return isFile(newValue);
     }
 
     /**
      * Returns the exception to throw when an incompatible method is invoked for the value type.
      */
-    private IllegalStateException missingOrIncompatibleValue(final Object value) {
+    private IllegalStateException missingOrIncompatibleValue(final Object newValue) {
         final String name = Verifier.getDisplayName(descriptor);
-        if (value != null) {
+        if (newValue != null) {
             return new InvalidParameterTypeException(getClassTypeError(), name);
         }
         return new IllegalStateException(Resources.format(Resources.Keys.MissingValueForParameter_1, name));
@@ -555,22 +556,22 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
      * This implementation does not clone the given value. In particular, references to {@code int[]}
      * and {@code double[]} arrays are stored <cite>as-is</cite>.</p>
      *
-     * @param  value  the parameter value, or {@code null} to restore the default.
+     * @param  newValue  the parameter value, or {@code null} to restore the default.
      * @throws InvalidParameterValueException if the type of {@code value} is inappropriate for this parameter,
      *         or if the value is illegal for some other reason (for example the value is numeric and out of range).
      *
      * @see #getValue()
      */
     @Override
-    public void setValue(Object value) throws InvalidParameterValueException {
+    public void setValue(Object newValue) throws InvalidParameterValueException {
         /*
          * Try to convert the value only for a limited amount of types. In particular we want to allow conversions
          * between java.io.File and java.nio.file.Path for easier transition between JDK6 and JDK7. We do not want
          * to allow too many conversions for reducing the risk of unexpected behavior.  If we fail to convert, try
          * to set the value anyway since the user may have redefined the setValue(Object, Unit) method.
          */
-        if (isOrNeedFile(value)) try {
-            value = ObjectConverters.convert(value, descriptor.getValueClass());
+        if (isOrNeedFile(newValue)) try {
+            newValue = ObjectConverters.convert(newValue, descriptor.getValueClass());
         } catch (UnconvertibleObjectException e) {
             // Level.FINE (not WARNING) because this log duplicates the exception
             // that 'setValue(Object, Unit)' may throw (with a better message).
@@ -581,7 +582,7 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
          * Use 'unit' instead than 'getUnit()' despite class Javadoc claims because units are not expected
          * to be involved in this method. We just want the current unit setting to be unchanged.
          */
-        setValue(value, unit);
+        setValue(newValue, unit);
     }
 
     /**
@@ -589,16 +590,16 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
      *
      * <p>The default implementation delegates to {@link #setValue(Object, Unit)}.</p>
      *
-     * @param  value  the parameter value.
+     * @param  newValue  the parameter value.
      * @throws InvalidParameterValueException if the boolean type is inappropriate for this parameter.
      *
      * @see #booleanValue()
      */
     @Override
-    public void setValue(final boolean value) throws InvalidParameterValueException {
+    public void setValue(final boolean newValue) throws InvalidParameterValueException {
         // Use 'unit' instead than 'getUnit()' despite class Javadoc claims because units are not expected
         // to be involved in this method. We just want the current unit setting to be unchanged.
-        setValue(value, unit);
+        setValue(newValue, unit);
     }
 
     /**
@@ -607,20 +608,20 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
      * <p>The default implementation wraps the given integer in an object of the type specified by the
      * {@linkplain #getDescriptor() descriptor}, then delegates to {@link #setValue(Object, Unit)}.</p>
      *
-     * @param  value  the parameter value.
+     * @param  newValue  the parameter value.
      * @throws InvalidParameterValueException if the integer type is inappropriate for this parameter,
      *         or if the value is illegal for some other reason (for example a value out of range).
      *
      * @see #intValue()
      */
     @Override
-    public void setValue(final int value) throws InvalidParameterValueException {
-        Number n = value;
+    public void setValue(final int newValue) throws InvalidParameterValueException {
+        Number n = newValue;
         final Class<T> valueClass = descriptor.getValueClass();
         if (Number.class.isAssignableFrom(valueClass)) {
             @SuppressWarnings("unchecked")
-            final Number c = Numbers.cast(value, (Class<? extends Number>) valueClass);
-            if (c.intValue() == value) {
+            final Number c = Numbers.cast(newValue, (Class<? extends Number>) valueClass);
+            if (c.intValue() == newValue) {
                 n = c;
             }
         }
@@ -649,7 +650,7 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
      * <p>The default implementation wraps the given number in an object of the type specified by the
      * {@linkplain #getDescriptor() descriptor}, then delegates to {@link #setValue(Object, Unit)}.</p>
      *
-     * @param  value  the parameter value.
+     * @param  newValue  the parameter value.
      * @throws InvalidParameterValueException if the floating point type is inappropriate for this parameter,
      *         or if the value is illegal for some other reason (for example a value out of range).
      *
@@ -657,13 +658,13 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
      * @see #doubleValue()
      */
     @Override
-    public void setValue(final double value) throws InvalidParameterValueException {
+    public void setValue(final double newValue) throws InvalidParameterValueException {
         try {
             // Use 'unit' instead than 'getUnit()' despite class Javadoc claims because units are not expected
             // to be involved in this method. We just want the current unit setting to be unchanged.
-            setValue(wrap(value, descriptor.getValueClass()), unit);
+            setValue(wrap(newValue, descriptor.getValueClass()), unit);
         } catch (IllegalArgumentException e) {
-            throw new InvalidParameterValueException(e.getLocalizedMessage(), Verifier.getDisplayName(descriptor), value);
+            throw new InvalidParameterValueException(e.getLocalizedMessage(), Verifier.getDisplayName(descriptor), newValue);
         }
     }
 
@@ -673,8 +674,8 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
      * <p>The default implementation wraps the given number in an object of the type specified by the
      * {@linkplain #getDescriptor() descriptor}, then delegates to {@link #setValue(Object, Unit)}.</p>
      *
-     * @param  value  the parameter value.
-     * @param  unit   the unit for the specified value.
+     * @param  newValue  the parameter value.
+     * @param  unit      the unit for the specified value.
      * @throws InvalidParameterValueException if the floating point type is inappropriate for this parameter,
      *         or if the value is illegal for some other reason (for example a value out of range).
      *
@@ -682,14 +683,14 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
      * @see #doubleValue(Unit)
      */
     @Override
-    public void setValue(final double value, final Unit<?> unit) throws InvalidParameterValueException {
+    public void setValue(final double newValue, final Unit<?> unit) throws InvalidParameterValueException {
         try {
-            setValue(wrap(value, descriptor.getValueClass()), unit);
+            setValue(wrap(newValue, descriptor.getValueClass()), unit);
         } catch (InvalidParameterValueException e) {
             throw e;        // Need to be thrown explicitely because it is a subclass of IllegalArgumentException.
         } catch (IllegalArgumentException e) {
             throw (InvalidParameterValueException) new InvalidParameterValueException(
-                    e.getLocalizedMessage(), Verifier.getDisplayName(descriptor), value).initCause(e);
+                    e.getLocalizedMessage(), Verifier.getDisplayName(descriptor), newValue).initCause(e);
         }
     }
 
@@ -698,14 +699,14 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
      *
      * <p>The default implementation delegates to {@link #setValue(Object, Unit)}.</p>
      *
-     * @param  values  the parameter values.
-     * @param  unit    the unit for the specified value.
+     * @param  newValues  the parameter values.
+     * @param  unit       the unit for the specified value.
      * @throws InvalidParameterValueException if the floating point array type is inappropriate for this parameter,
      *         or if the value is illegal for some other reason (for example a value out of range).
      */
     @Override
-    public void setValue(final double[] values, final Unit<?> unit) throws InvalidParameterValueException {
-        setValue((Object) values, unit);
+    public void setValue(final double[] newValues, final Unit<?> unit) throws InvalidParameterValueException {
+        setValue((Object) newValues, unit);
     }
 
     /**
@@ -721,19 +722,19 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
      * subclasses can override if they want to perform more processing on the value before its storage,
      * or to be notified about value changes.
      *
-     * @param  value  the parameter value, or {@code null} to restore the default.
-     * @param  unit   the unit associated to the new parameter value, or {@code null}.
+     * @param  newValue  the parameter value, or {@code null} to restore the default.
+     * @param  unit      the unit associated to the new parameter value, or {@code null}.
      * @throws InvalidParameterValueException if the type of {@code value} is inappropriate for this parameter,
      *         or if the value is illegal for some other reason (for example the value is numeric and out of range).
      *
      * @see #validate(Object)
      */
     @SuppressWarnings("unchecked")
-    protected void setValue(final Object value, final Unit<?> unit) throws InvalidParameterValueException {
-        final T convertedValue = Verifier.ensureValidValue(descriptor, value, unit);
-        if (value != null) {
+    protected void setValue(final Object newValue, final Unit<?> unit) throws InvalidParameterValueException {
+        final T convertedValue = Verifier.ensureValidValue(descriptor, newValue, unit);
+        if (newValue != null) {
             validate(convertedValue);
-            this.value = (T) value;                 // Type has been verified by Verifier.ensureValidValue(…).
+            this.value = (T) newValue;              // Type has been verified by Verifier.ensureValidValue(…).
         } else {
             this.value = descriptor.getDefaultValue();
         }
@@ -756,10 +757,10 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
      * {@linkplain DefaultParameterDescriptor#getValidValues() valid values} are performed
      * before this method is invoked. The default implementation of this method does nothing.
      *
-     * @param  value  the value converted to the unit of measurement specified by the descriptor.
+     * @param  newValue  the value converted to the unit of measurement specified by the descriptor.
      * @throws InvalidParameterValueException if the given value is invalid for implementation-specific reasons.
      */
-    protected void validate(final T value) throws InvalidParameterValueException {
+    protected void validate(final T newValue) throws InvalidParameterValueException {
     }
 
     /**
@@ -871,9 +872,9 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
      * @param  parameter  the parameter to make unmodifiable, or {@code null}.
      * @return a unmodifiable implementation of the given parameter, or {@code null} if the given parameter was null.
      *
-     * @since 0.6
-     *
      * @see DefaultParameterValueGroup#unmodifiable(ParameterValueGroup)
+     *
+     * @since 0.6
      */
     public static <T> DefaultParameterValue<T> unmodifiable(final ParameterValue<T> parameter) {
         return UnmodifiableParameterValue.create(parameter);

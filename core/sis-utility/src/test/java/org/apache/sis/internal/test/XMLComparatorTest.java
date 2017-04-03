@@ -27,8 +27,8 @@ import static org.junit.Assert.*;
  * Tests the {@link XMLComparator} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.4
+ * @since   0.3
  * @module
  */
 public final strictfp class XMLComparatorTest extends TestCase {

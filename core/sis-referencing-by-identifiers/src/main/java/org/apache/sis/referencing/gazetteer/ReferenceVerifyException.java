@@ -30,8 +30,8 @@ package org.apache.sis.referencing.gazetteer;
  * For example it may help to detect if a typo occurred when a user entered a coordinate manually.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.8
  * @version 0.8
+ * @since   0.8
  * @module
  */
 public class ReferenceVerifyException extends GazetteerException {

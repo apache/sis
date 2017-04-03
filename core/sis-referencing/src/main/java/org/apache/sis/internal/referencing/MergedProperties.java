@@ -27,8 +27,8 @@ import org.apache.sis.internal.util.AbstractMap;
  * other SIS factories internal usage only.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.6
  * @version 0.6
+ * @since   0.6
  * @module
  */
 public class MergedProperties extends AbstractMap<String,Object> {

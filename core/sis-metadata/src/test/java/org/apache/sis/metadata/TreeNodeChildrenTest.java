@@ -48,8 +48,8 @@ import static org.apache.sis.test.TestUtilities.createRandomNumberGenerator;
  * class is not to test {@link TreeNode}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.8
+ * @since   0.3
  * @module
  */
 @DependsOn(PropertyAccessorTest.class)

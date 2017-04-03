@@ -24,8 +24,8 @@ import org.opengis.referencing.operation.Matrix;
  * for extended precision, but we want to hide that implementation details from public API.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.5
  * @version 0.8
+ * @since   0.5
  * @module
  */
 public interface ExtendedPrecisionMatrix extends Matrix {

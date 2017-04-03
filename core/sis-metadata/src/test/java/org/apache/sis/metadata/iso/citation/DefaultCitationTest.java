@@ -49,8 +49,8 @@ import static org.apache.sis.test.MetadataAssert.*;
  * Tests {@link DefaultCitation}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.7
+ * @since   0.3
  * @module
  */
 public final strictfp class DefaultCitationTest extends XMLTestCase {

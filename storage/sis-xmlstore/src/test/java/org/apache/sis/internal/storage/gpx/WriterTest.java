@@ -50,8 +50,8 @@ import org.opengis.feature.Feature;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.8
  * @version 0.8
+ * @since   0.8
  * @module
  */
 @DependsOn({MetadataTest.class, ReaderTest.class})
@@ -231,7 +231,7 @@ public final strictfp class WriterTest extends TestCase {
      * @param expected  name of a test file containing the expected XML result.
      */
     private void testFeatures(final Version version, final Type type, final String expected) throws Exception {
-        try (final Store store = create()) {
+        try (Store store = create()) {
             store.version = version;
             testFeatures(store, type);
         }
@@ -365,7 +365,7 @@ public final strictfp class WriterTest extends TestCase {
     @Test
     @DependsOnMethod("testRoutes110")
     public void testInputReplacement() throws Exception {
-        try (final Store store = new Store(provider, new StorageConnector(
+        try (Store store = new Store(provider, new StorageConnector(
                 TestUtilities.createTemporaryFile(ReaderTest.class, "1.1/metadata.xml"))))
         {
             /*

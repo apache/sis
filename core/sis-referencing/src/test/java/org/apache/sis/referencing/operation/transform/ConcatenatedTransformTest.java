@@ -31,8 +31,8 @@ import static org.opengis.test.Assert.*;
  * Tests the {@link ConcatenatedTransform} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.5
  * @version 0.7
+ * @since   0.5
  * @module
  */
 @DependsOn(ProjectiveTransformTest.class)

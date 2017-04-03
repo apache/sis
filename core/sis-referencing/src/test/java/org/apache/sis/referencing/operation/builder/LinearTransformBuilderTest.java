@@ -36,8 +36,8 @@ import static org.junit.Assert.*;
  * Tests {@link LinearTransformBuilder}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.5
  * @version 0.8
+ * @since   0.5
  * @module
  */
 public final strictfp class LinearTransformBuilderTest extends TestCase {

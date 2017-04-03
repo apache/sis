@@ -28,8 +28,8 @@ import org.apache.sis.metadata.iso.citation.DefaultResponsibleParty;
  * package documentation for more information about JAXB and interface.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.5
  * @version 0.5
+ * @since   0.5
  * @module
  */
 public final class CI_Responsibility extends PropertyType<CI_Responsibility, Responsibility> {

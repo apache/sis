@@ -68,11 +68,12 @@ import java.lang.annotation.RetentionPolicy;
  * classes.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.3
- * @module
  *
  * @see NumberRange#NumberRange(Class, ValueRange)
+ *
+ * @since 0.3
+ * @module
  */
 @Documented
 @Target({ElementType.FIELD, ElementType.METHOD})

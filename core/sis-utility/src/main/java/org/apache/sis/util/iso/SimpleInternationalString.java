@@ -40,8 +40,8 @@ import org.apache.sis.util.ArgumentChecks;
  * encouraged to make sure that subclasses remain immutable for more predictable behavior.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.3
  * @version 0.3
+ * @since   0.3
  * @module
  */
 public class SimpleInternationalString extends AbstractInternationalString implements Serializable {

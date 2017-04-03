@@ -31,8 +31,8 @@ import static org.junit.Assert.*;
  * of that buffer is used for the tests, while the original full buffer is used for comparison purpose.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.5
+ * @since   0.3
  * @module
  */
 public final strictfp class ChannelDataInputTest extends ChannelDataTestCase {

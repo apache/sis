@@ -121,11 +121,12 @@ import org.apache.sis.internal.jdk8.JDK8;
  * do not need to be thread-safe. See constructor Javadoc for more information.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.7
  * @version 0.7
- * @module
  *
  * @see org.apache.sis.referencing.CRS#getAuthorityFactory(String)
+ *
+ * @since 0.7
+ * @module
  */
 public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements CRSAuthorityFactory,
         CSAuthorityFactory, DatumAuthorityFactory, CoordinateOperationAuthorityFactory

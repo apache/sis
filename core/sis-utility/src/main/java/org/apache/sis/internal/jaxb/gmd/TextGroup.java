@@ -68,12 +68,13 @@ import org.apache.sis.util.Debug;
  *
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.3
- * @module
  *
  * @see LocalisedCharacterString
  * @see <a href="http://jira.geotoolkit.org/browse/GEOTK-152">GEOTK-152</a>
+ *
+ * @since 0.3
+ * @module
  */
 final class TextGroup {
     /**

@@ -29,8 +29,8 @@ import static org.junit.Assert.*;
  * Tests {@link ScriptRunner}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.8
  * @version 0.8
+ * @since   0.8
  * @module
  */
 public final strictfp class ScriptRunnerTest extends TestCase {
@@ -43,7 +43,7 @@ public final strictfp class ScriptRunnerTest extends TestCase {
     @Test
     public void testOnDerby() throws Exception {
         final DataSource ds = TestDatabase.create("temporary");
-        try (final Connection c = ds.getConnection()) {
+        try (Connection c = ds.getConnection()) {
             final ScriptRunner sr = new ScriptRunner(c, 3);
             testSupportedFlags(sr);
             testRegularExpressions(sr);

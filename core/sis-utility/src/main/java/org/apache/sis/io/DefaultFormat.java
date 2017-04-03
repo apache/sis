@@ -38,8 +38,8 @@ import org.apache.sis.internal.util.LocalizedParseException;
  * for arbitrary {@code Format} classes.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.8
+ * @since   0.3
  * @module
  */
 @SuppressWarnings("CloneableClassWithoutClone")   // Because this class does not contain field that need to be cloned.

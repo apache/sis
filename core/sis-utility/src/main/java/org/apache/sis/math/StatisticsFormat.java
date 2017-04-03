@@ -61,11 +61,12 @@ import static java.lang.Math.*;
  * </ul>
  *
  * @author  Martin Desruisseaux (MPO, IRD, Geomatys)
- * @since   0.3
  * @version 0.8
- * @module
  *
  * @see Statistics#toString()
+ *
+ * @since 0.3
+ * @module
  */
 public class StatisticsFormat extends TabularFormat<Statistics> {
     /**

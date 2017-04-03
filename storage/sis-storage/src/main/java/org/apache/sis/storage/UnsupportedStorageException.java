@@ -29,8 +29,8 @@ import org.apache.sis.internal.storage.io.IOUtilities;
  * for verifying the input) but the data store can not handle the given input or output object.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.4
  * @version 0.8
+ * @since   0.4
  * @module
  */
 public class UnsupportedStorageException extends DataStoreException {

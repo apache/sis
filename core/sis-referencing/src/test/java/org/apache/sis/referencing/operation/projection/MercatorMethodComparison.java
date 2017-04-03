@@ -53,8 +53,8 @@ import static java.lang.Math.*;     // Not StrictMath in this particular case.
  * win in about 50% of cases. But as we increase the eccentricity, the iterative method wins more often.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.6
  * @version 0.6
+ * @since   0.6
  * @module
  */
 public final class MercatorMethodComparison {   // No 'strictfp' keyword here since we want to compare with Mercator class.

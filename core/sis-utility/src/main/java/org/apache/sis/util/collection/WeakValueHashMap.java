@@ -73,17 +73,18 @@ import static org.apache.sis.util.collection.WeakEntry.*;
  * of the caller. But if a sequence of two or more method calls need to appear atomic from other threads perspective,
  * then the caller can synchronize on {@code this}.
  *
- * @param  <K>  the class of key elements.
- * @param  <V>  the class of value elements.
- *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.3
  * @version 0.7
- * @module
+ *
+ * @param <K>  the class of key elements.
+ * @param <V>  the class of value elements.
  *
  * @see java.util.WeakHashMap
  * @see WeakHashSet
  * @see Cache
+ *
+ * @since 0.3
+ * @module
  */
 public class WeakValueHashMap<K,V> extends AbstractMap<K,V> {
     /**
@@ -510,8 +511,8 @@ public class WeakValueHashMap<K,V> extends AbstractMap<K,V> {
      * The set of entries.
      *
      * @author  Martin Desruisseaux (Geomatys)
-     * @since   0.3
      * @version 0.3
+     * @since   0.3
      * @module
      */
     private final class EntrySet extends AbstractSet<Map.Entry<K,V>> {

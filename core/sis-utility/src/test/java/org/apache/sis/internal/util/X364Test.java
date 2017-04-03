@@ -29,8 +29,8 @@ import static org.apache.sis.internal.util.X364.*;
  * Tests the {@link X364} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.3
+ * @since   0.3
  * @module
  */
 @DependsOn(org.apache.sis.util.CharSequencesTest.class)

@@ -38,8 +38,8 @@ import org.opengis.feature.IdentifiedType;
  * Identification and description information inherited by property types and feature types.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.5
  * @version 0.8
+ * @since   0.5
  * @module
  */
 public class AbstractIdentifiedType implements IdentifiedType, Deprecable, Serializable {

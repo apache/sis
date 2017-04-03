@@ -25,11 +25,12 @@ import org.apache.sis.util.CharSequences;
  * XML representation of a sequence of integer values.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.6
  * @version 0.6
- * @module
  *
  * @see org.apache.sis.internal.jaxb.gml.MeasureList
+ *
+ * @since 0.6
+ * @module
  */
 final class IntegerList {
     /**

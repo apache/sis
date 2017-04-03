@@ -42,8 +42,8 @@ import static org.apache.sis.test.Assert.*;
  * Tests the XML marshalling of generic names.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.5
+ * @since   0.3
  * @module
  */
 @DependsOn(DefaultNameFactoryTest.class)

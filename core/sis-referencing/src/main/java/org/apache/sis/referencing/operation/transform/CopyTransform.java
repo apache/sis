@@ -36,8 +36,8 @@ import org.apache.sis.referencing.operation.matrix.Matrices;
  * an {@link java.awt.geom.AffineTransform} for every 2D affine conversions.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.5
  * @version 0.7
+ * @since   0.5
  * @module
  */
 final class CopyTransform extends AbstractLinearTransform {

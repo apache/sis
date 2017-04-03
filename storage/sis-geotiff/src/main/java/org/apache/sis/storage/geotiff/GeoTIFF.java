@@ -34,8 +34,8 @@ import org.apache.sis.internal.geotiff.Resources;
  * @author  Alexis Manin (Geomatys)
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.8
  * @version 0.8
+ * @since   0.8
  * @module
  */
 abstract class GeoTIFF implements Closeable {

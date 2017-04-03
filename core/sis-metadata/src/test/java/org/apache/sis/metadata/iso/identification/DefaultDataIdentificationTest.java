@@ -43,8 +43,8 @@ import static org.apache.sis.test.MetadataAssert.*;
  * Tests {@link DefaultDataIdentification}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.5
+ * @since   0.3
  * @module
  */
 @DependsOn({

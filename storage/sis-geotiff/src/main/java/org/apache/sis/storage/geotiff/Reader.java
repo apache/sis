@@ -52,8 +52,8 @@ import org.apache.sis.internal.jdk8.JDK8;
  * @author  Alexis Manin (Geomatys)
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.8
  * @version 0.8
+ * @since   0.8
  * @module
  */
 final class Reader extends GeoTIFF {

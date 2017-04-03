@@ -98,8 +98,8 @@ package org.apache.sis.util;
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.3
+ * @since   0.3
  * @module
  */
 public interface LenientComparable {

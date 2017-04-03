@@ -52,13 +52,14 @@ import org.apache.sis.math.MathFunctions;
  * </ol>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.8
  * @version 0.8
- * @module
  *
  * @see InterpolatedTransform
  * @see LinearTransform
  * @see DatumShiftGrid
+ *
+ * @since 0.8
+ * @module
  */
 public class LocalizationGridBuilder extends TransformBuilder {
     /**

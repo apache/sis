@@ -27,8 +27,8 @@ import org.apache.sis.internal.jaxb.metadata.replace.ReferenceSystemMetadata;
  * package documentation for more information about JAXB and interface.
  *
  * @author  Guilhem Legal (Geomatys)
- * @since   0.3
  * @version 0.4
+ * @since   0.3
  * @module
  */
 public final class RS_ReferenceSystem extends PropertyType<RS_ReferenceSystem, ReferenceSystem> {

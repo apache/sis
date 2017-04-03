@@ -32,8 +32,8 @@ import static org.apache.sis.internal.jdk8.JDK8.nextDown;
  * Tests the {@link NormalizedProjection} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.6
  * @version 0.6
+ * @since   0.6
  * @module
  */
 @DependsOn({

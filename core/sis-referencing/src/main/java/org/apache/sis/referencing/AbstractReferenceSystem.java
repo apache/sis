@@ -63,8 +63,8 @@ import static org.apache.sis.util.collection.Containers.property;
  * synchronization.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.4
  * @version 0.7
+ * @since   0.4
  * @module
  */
 @XmlTransient

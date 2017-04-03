@@ -37,8 +37,8 @@ import org.apache.sis.util.collection.BackingStoreException;
  *
  * @author  Touraïvane (IRD)
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.8
  * @version 0.8
+ * @since   0.8
  * @module
  */
 final class Dispatcher implements InvocationHandler {

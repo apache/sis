@@ -31,8 +31,8 @@ import static org.apache.sis.test.ReferencingAssert.*;
  * This class inherits the test methods defined in {@link TransformTestCase}.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.8
  * @version 0.8
+ * @since   0.8
  * @module
  */
 @DependsOn(CurveExtremumTest.class)

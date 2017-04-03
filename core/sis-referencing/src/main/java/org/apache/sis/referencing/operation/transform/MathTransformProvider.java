@@ -76,13 +76,14 @@ import org.opengis.referencing.operation.MathTransformFactory;
  * }
  *
  * @author  Martin Desruisseaux (Geomatys, IRD)
- * @since   0.6
  * @version 0.6
- * @module
  *
  * @see org.apache.sis.referencing.operation.DefaultOperationMethod
  * @see DefaultMathTransformFactory
  * @see AbstractMathTransform
+ *
+ * @since 0.6
+ * @module
  */
 public interface MathTransformProvider {
     /**

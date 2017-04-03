@@ -31,8 +31,8 @@ import org.apache.sis.internal.util.Citations;
  * collection).
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.5
+ * @since   0.3
  * @module
  */
 final class IdentifierMapEntry extends AbstractMap.SimpleEntry<Citation,String> implements Identifier {

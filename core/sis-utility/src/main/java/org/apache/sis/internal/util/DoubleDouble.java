@@ -59,11 +59,12 @@ import org.apache.sis.internal.jdk8.JDK8;
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.4
  * @version 0.8
- * @module
  *
  * @see <a href="http://en.wikipedia.org/wiki/Double-double_%28arithmetic%29#Double-double_arithmetic">Wikipedia: Double-double arithmetic</a>
+ *
+ * @since 0.4
+ * @module
  */
 public final class DoubleDouble extends Number {
     /**

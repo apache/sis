@@ -71,8 +71,8 @@ import org.apache.sis.internal.jdk8.BiConsumer;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Touraïvane (IRD)
  * @author  Cédric Briançon (Geomatys)
- * @since   0.3
  * @version 0.8
+ * @since   0.3
  * @module
  */
 @SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
@@ -248,7 +248,7 @@ public class DefaultFormat extends ISOMetadata implements Format {
     @XmlElement(name = "specification")
     public InternationalString getSpecification() {
         final Citation citation = getFormatSpecificationCitation();
-        return (citation != null) ? citation.getTitle(): null;
+        return (citation != null) ? citation.getTitle() : null;
     }
 
     /**
@@ -324,7 +324,7 @@ public class DefaultFormat extends ISOMetadata implements Format {
     @XmlElement(name = "version", required = true)
     public InternationalString getVersion() {
         final Citation citation = getFormatSpecificationCitation();
-        return (citation != null) ? citation.getEdition(): null;
+        return (citation != null) ? citation.getEdition() : null;
     }
 
     /**

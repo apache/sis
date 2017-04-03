@@ -43,8 +43,8 @@ import org.opengis.feature.Property;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Marc le Bihan
- * @since   0.5
  * @version 0.8
+ * @since   0.5
  * @module
  */
 public abstract strictfp class FeatureTestCase extends TestCase {

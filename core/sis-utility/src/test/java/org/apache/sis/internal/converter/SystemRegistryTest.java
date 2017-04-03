@@ -39,8 +39,8 @@ import static org.apache.sis.internal.converter.SystemRegistry.INSTANCE;
  * Conversion tests are the purpose of other test classes in this package.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.5
+ * @since   0.3
  * @module
  */
 @DependsOn(ConverterRegistryTest.class)

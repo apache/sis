@@ -33,8 +33,8 @@ import org.apache.sis.util.resources.ResourceInternationalString;
  * in the Apache SIS project, see {@link org.apache.sis.util.resources} package.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.8
  * @version 0.8
+ * @since   0.8
  * @module
  */
 public final class Resources extends IndexedResourceBundle {

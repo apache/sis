@@ -61,12 +61,13 @@ import org.apache.sis.util.resources.Errors;
  *   <li>{@link #addValue(Object)} (non-standard, optional method)</li>
  * </ul>
  *
- * @param <K> the type of keys maintained by the map.
- * @param <V> the type of mapped values.
- *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.5
  * @version 0.8
+ *
+ * @param <K>  the type of keys maintained by the map.
+ * @param <V>  the type of mapped values.
+ *
+ * @since 0.5
  * @module
  */
 public abstract class AbstractMap<K,V> implements Map<K,V> {
@@ -85,7 +86,7 @@ public abstract class AbstractMap<K,V> implements Map<K,V> {
      *
      * @see AbstractMap#entryIterator()
      */
-    protected static abstract class EntryIterator<K,V> {
+    protected abstract static class EntryIterator<K,V> {
         /**
          * Moves the iterator to the next position, and returns {@code true} if there is at least one remaining element.
          *
@@ -536,7 +537,7 @@ public abstract class AbstractMap<K,V> implements Map<K,V> {
      * Base class of iterators overs keys, values or entries.
      * Those iterators wrap an {@link EntryIterator} instance.
      */
-    private static abstract class Iter<K,V> {
+    private abstract static class Iter<K,V> {
         /** The wrapped entry iterator. */
         private final EntryIterator<K,V> iterator;
 

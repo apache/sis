@@ -106,11 +106,12 @@ import static org.apache.sis.util.Utilities.equalsIgnoreMetadata;
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.7
  * @version 0.8
- * @module
  *
  * @see DefaultCoordinateOperationFactory#createOperation(CoordinateReferenceSystem, CoordinateReferenceSystem, CoordinateOperationContext)
+ *
+ * @since 0.7
+ * @module
  */
 public class CoordinateOperationFinder extends CoordinateOperationRegistry {
     /**

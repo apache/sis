@@ -54,8 +54,8 @@ import org.apache.sis.xml.XML;
  * The output format is controlled by {@link OutputFormat} enumeration.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.8
  * @version 0.8
+ * @since   0.8
  * @module
  */
 abstract class FormattedOutputCommand extends CommandRunner {
@@ -259,7 +259,7 @@ abstract class FormattedOutputCommand extends CommandRunner {
                 connector.setOption(OptionKey.TIMEZONE, timezone);
                 connector.setOption(OptionKey.LOCALE,   locale);
                 connector.setOption(OptionKey.ENCODING, encoding);
-                try (final DataStore store = provider.open(connector)) {
+                try (DataStore store = provider.open(connector)) {
                     /*
                      * HACK: API used in this block is currently available only for GPX format,
                      * but we will generalize to more formats in a future Apache SIS version.

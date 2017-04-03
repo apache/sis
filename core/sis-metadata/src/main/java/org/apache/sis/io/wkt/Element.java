@@ -56,8 +56,8 @@ import org.apache.sis.internal.jdk8.JDK8;
  *
  * @author  Rémi Ève (IRD)
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.6
  * @version 0.6
+ * @since   0.6
  * @module
  */
 final class Element implements Serializable {

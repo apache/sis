@@ -55,14 +55,15 @@ import org.apache.sis.math.FunctionProperty;
  * If the storage map is known to be immutable, then sub-classes may consider to cache some values,
  * especially the result of the {@link #size()} method.
  *
- * @param  <SK>  the type of keys in the storage map.
- * @param  <SV>  the type of values in the storage map.
- * @param  <K>   the type of keys in this map.
- * @param  <V>   the type of values in this map.
- *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.3
  * @version 0.3
+ *
+ * @param <SK>  the type of keys in the storage map.
+ * @param <SV>  the type of values in the storage map.
+ * @param <K>   the type of keys in this map.
+ * @param <V>   the type of values in this map.
+ *
+ * @since 0.3
  * @module
  */
 class DerivedMap<SK,SV,K,V> extends AbstractMap<K,V> implements

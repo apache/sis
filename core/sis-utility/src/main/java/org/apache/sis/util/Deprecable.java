@@ -41,8 +41,8 @@ import org.opengis.util.InternationalString;
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.3
+ * @since   0.3
  * @module
  */
 public interface Deprecable {

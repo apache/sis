@@ -29,8 +29,8 @@ import org.opengis.referencing.operation.NoninvertibleTransformException;
  * operation is not invertible.</div>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.4
  * @version 0.4
+ * @since   0.4
  * @module
  */
 public class NoninvertibleMatrixException extends NoninvertibleTransformException {

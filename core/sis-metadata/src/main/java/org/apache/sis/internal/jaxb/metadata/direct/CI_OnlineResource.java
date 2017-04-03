@@ -25,8 +25,8 @@ import org.apache.sis.metadata.iso.citation.DefaultOnlineResource;
  * package documentation for more information about JAXB and interface.
  *
  * @author  Guilhem Legal (Geomatys)
- * @since   0.3
  * @version 0.3
+ * @since   0.3
  * @module
  */
 public final class CI_OnlineResource extends MetadataAdapter<OnlineResource, DefaultOnlineResource> {

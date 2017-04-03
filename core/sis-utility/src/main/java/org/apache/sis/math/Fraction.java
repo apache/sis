@@ -27,8 +27,8 @@ import org.apache.sis.internal.jdk8.JDK8;
  * All {@code Fraction} instances are immutable and thus inherently thread-safe.
  *
  * @author  Martin Desruisseaux (MPO, Geomatys)
- * @since   0.8
  * @version 0.8
+ * @since   0.8
  * @module
  */
 public final class Fraction extends Number implements Comparable<Fraction>, Serializable {

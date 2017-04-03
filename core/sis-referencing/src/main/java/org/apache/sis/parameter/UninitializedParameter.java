@@ -29,8 +29,8 @@ import org.apache.sis.referencing.IdentifiedObjects;
  * actual parameter when first needed.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.4
  * @version 0.4
+ * @since   0.4
  * @module
  */
 @SuppressWarnings("CloneInNonCloneableClass")

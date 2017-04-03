@@ -37,8 +37,8 @@ import org.apache.sis.util.UnconvertibleObjectException;
  * if the converter given to the constructor is also immutable.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.3
+ * @since   0.3
  * @module
  */
 final class CharSequenceConverter<T> extends SystemConverter<CharSequence,T> {

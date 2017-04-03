@@ -30,8 +30,8 @@ import org.opengis.referencing.operation.Transformation;
  * variants are specific to Apache SIS and can be fetched only by a call to {@link #redimension(int, int)}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.7
  * @version 0.7
+ * @since   0.7
  * @module
  */
 @XmlTransient

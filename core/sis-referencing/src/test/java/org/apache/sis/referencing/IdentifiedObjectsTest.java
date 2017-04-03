@@ -39,8 +39,8 @@ import static org.apache.sis.referencing.IdentifiedObjects.*;
  * {@link org.apache.sis.test.suite.ReferencingTestSuite}. Those tests will be executed by {@link CRSTest} instead.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.4
  * @version 0.7
+ * @since   0.4
  * @module
  */
 public final strictfp class IdentifiedObjectsTest extends TestCase {

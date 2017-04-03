@@ -46,8 +46,8 @@ import static org.apache.sis.util.collection.Containers.hashMapCapacity;
  * }
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.3
  * @version 0.4
+ * @since   0.3
  * @module
  */
 public final class Locales extends Static {

@@ -59,8 +59,8 @@ import org.opengis.util.Factory;
  * Tests {@link GeodeticObjectParser}.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.6
  * @version 0.8
+ * @since   0.6
  * @module
  */
 @DependsOn({

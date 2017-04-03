@@ -52,13 +52,14 @@ import org.opengis.referencing.datum.ParametricDatum;
  * in the javadoc, this condition holds if all components were created using only SIS factories and static constants.
  *
  * @author  Johann Sorel (Geomatys)
- * @since   0.7
  * @version 0.7
- * @module
  *
  * @see org.apache.sis.referencing.datum.DefaultParametricDatum
  * @see org.apache.sis.referencing.cs.DefaultParametricCS
  * @see org.apache.sis.referencing.factory.GeodeticAuthorityFactory#createParametricCRS(String)
+ *
+ * @since 0.7
+ * @module
  */
 @XmlType(name = "ParametricCRSType", propOrder = {
     "coordinateSystem",

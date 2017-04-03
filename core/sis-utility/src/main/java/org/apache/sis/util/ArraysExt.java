@@ -67,11 +67,12 @@ import java.lang.reflect.Array;
  * objects.
  *
  * @author Martin Desruisseaux (IRD, Geomatys)
- * @since   0.3
  * @version 0.4
- * @module
  *
  * @see Arrays
+ *
+ * @since 0.3
+ * @module
  */
 @SuppressWarnings("ReturnOfCollectionOrArrayField")     // Array constants in this class are immutable empty arrays.
 public final class ArraysExt extends Static {

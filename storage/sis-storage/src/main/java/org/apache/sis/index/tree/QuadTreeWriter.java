@@ -27,7 +27,9 @@ import java.io.IOException;
  * Class to save the quad tree index from file.
  *
  */
-public class QuadTreeWriter {
+public final class QuadTreeWriter {
+  private QuadTreeWriter() {
+  }
 
   /**
    * Writes the entire quad tree index to file with each node in saved in a

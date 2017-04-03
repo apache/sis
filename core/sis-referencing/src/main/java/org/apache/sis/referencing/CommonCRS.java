@@ -127,11 +127,12 @@ import org.apache.sis.internal.jdk8.JDK8;
  * </table></blockquote>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.4
  * @version 0.8
- * @module
  *
  * @see org.apache.sis.referencing.factory.CommonAuthorityFactory
+ *
+ * @since 0.4
+ * @module
  */
 @SuppressWarnings("DoubleCheckedLocking")
 public enum CommonCRS {
@@ -1195,13 +1196,14 @@ public enum CommonCRS {
      * The {@link #MEAN_SEA_LEVEL} value can be used instead as an approximation of geoidal heights.</div>
      *
      * @author  Martin Desruisseaux (Geomatys)
-     * @since   0.4
      * @version 0.7
-     * @module
      *
      * @see org.apache.sis.referencing.factory.CommonAuthorityFactory
+     *
+     * @since 0.4
+     * @module
      */
-    public static enum Vertical {
+    public enum Vertical {
         /**
          * Height measured by atmospheric pressure in hectopascals (hPa).
          * Hectopascals are the units of measurement used by the worldwide meteorological community.
@@ -1498,11 +1500,11 @@ public enum CommonCRS {
      * </table></blockquote>
      *
      * @author  Martin Desruisseaux (Geomatys)
-     * @since   0.4
      * @version 0.4
+     * @since   0.4
      * @module
      */
-    public static enum Temporal {
+    public enum Temporal {
         /**
          * Time measured as days since January 1st, 4713 BC at 12:00 UTC.
          */

@@ -124,8 +124,8 @@ import org.opengis.geometry.Geometry;
  * </ul>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.3
  * @version 0.8
+ * @since   0.3
  * @module
  */
 public final class CRS extends Static {
@@ -951,9 +951,9 @@ public final class CRS extends Static {
      *         or can not be decomposed for dimensions in the [{@code lower} … {@code upper}] range.
      * @throws IndexOutOfBoundsException if the given index are out of bounds.
      *
-     * @since 0.5
-     *
      * @see org.apache.sis.geometry.GeneralEnvelope#subEnvelope(int, int)
+     *
+     * @since 0.5
      */
     public static CoordinateReferenceSystem getComponentAt(CoordinateReferenceSystem crs, int lower, int upper) {
         int dimension = ReferencingUtilities.getDimension(crs);
@@ -989,9 +989,9 @@ check:  while (lower != 0 || upper != dimension) {
      * @param  crs  the coordinate reference system from which to get the prime meridian.
      * @return the Greenwich longitude (in degrees) of the prime meridian of the given CRS.
      *
-     * @since 0.5
-     *
      * @see org.apache.sis.referencing.datum.DefaultPrimeMeridian#getGreenwichLongitude(Unit)
+     *
+     * @since 0.5
      */
     public static double getGreenwichLongitude(final GeodeticCRS crs) {
         ArgumentChecks.ensureNonNull("crs", crs);

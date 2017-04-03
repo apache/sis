@@ -69,12 +69,13 @@ import static org.apache.sis.internal.util.DoubleDouble.verbatim;
  * @author  Rueben Schulz (UBC)
  * @author  Simon Reynard (Geomatys)
  * @author  Rémi Maréchal (Geomatys)
- * @since   0.6
  * @version 0.6
- * @module
  *
  * @see TransverseMercator
  * @see ObliqueMercator
+ *
+ * @since 0.6
+ * @module
  */
 public class Mercator extends ConformalProjection {
     /**
@@ -450,8 +451,8 @@ public class Mercator extends ConformalProjection {
      *
      * @author  Martin Desruisseaux (MPO, IRD, Geomatys)
      * @author  Rueben Schulz (UBC)
-     * @since   0.6
      * @version 0.6
+     * @since   0.6
      * @module
      */
     static final class Spherical extends Mercator {

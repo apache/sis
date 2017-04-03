@@ -28,8 +28,8 @@ import com.sun.tools.doclets.formats.html.ConfigurationImpl;
  * Base class of inline taglets.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.3
+ * @since   0.3
  * @module
  */
 abstract class InlineTaglet implements Taglet {

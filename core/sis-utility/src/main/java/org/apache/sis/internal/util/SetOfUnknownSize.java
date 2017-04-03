@@ -28,11 +28,12 @@ import org.apache.sis.util.ArraysExt;
  * An alternative to {@code AbstractSet} for implementations having a costly {@link #size()} method.
  * This class overrides some methods in a way that avoid or reduce calls to {@link #size()}.
  *
- * @param  <E>  the type of elements in the set.
- *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.7
  * @version 0.8
+ *
+ * @param <E>  the type of elements in the set.
+ *
+ * @since 0.7
  * @module
  */
 public abstract class SetOfUnknownSize<E> extends AbstractSet<E> {

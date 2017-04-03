@@ -31,8 +31,8 @@ import org.apache.sis.referencing.operation.projection.NormalizedProjection;
  * Base class of providers for all Mercator projections, and for Mercator-like projections.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.6
  * @version 0.6
+ * @since   0.6
  * @module
  */
 @XmlTransient

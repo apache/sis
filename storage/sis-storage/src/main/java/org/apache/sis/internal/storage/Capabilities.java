@@ -27,8 +27,8 @@ import java.lang.annotation.RetentionPolicy;
  * <p>This is not a committed API since the way to represent data store capabilities is likely to change.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.8
  * @version 0.8
+ * @since   0.8
  * @module
  */
 @Retention(RetentionPolicy.RUNTIME)

@@ -31,8 +31,8 @@ import org.junit.Test;
  * Tests {@link CartesianToPolar}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.7
  * @version 0.7
+ * @since   0.7
  * @module
  */
 @DependsOn(PolarToCartesianTest.class)

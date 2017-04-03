@@ -32,8 +32,8 @@ import static org.junit.Assert.*;
  * Tests the {@link UnmodifiableParameterValue} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.6
  * @version 0.6
+ * @since   0.6
  * @module
  */
 @DependsOn(DefaultParameterValueTest.class)

@@ -25,8 +25,8 @@ import org.apache.sis.internal.jaxb.TypeRegistration;
  * This class is declared in the {@code META-INF/services/org.apache.sis.internal.jaxb.TypeRegistration} file.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.4
  * @version 0.8
+ * @since   0.4
  * @module
  */
 public final class ProfileTypes extends TypeRegistration {

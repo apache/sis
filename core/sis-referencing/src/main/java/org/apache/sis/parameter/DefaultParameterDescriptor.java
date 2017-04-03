@@ -63,16 +63,17 @@ import static org.apache.sis.util.ArgumentChecks.ensureCanCast;
  *   <li>The {@linkplain #getUnit() unit of measurement}.</li>
  * </ul>
  *
- * @param <T> The type of elements to be returned by {@link DefaultParameterValue#getValue()}.
- *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Johann Sorel (Geomatys)
- * @since   0.4
  * @version 0.8
- * @module
+ *
+ * @param <T>  the type of elements to be returned by {@link DefaultParameterValue#getValue()}.
  *
  * @see DefaultParameterValue
  * @see DefaultParameterDescriptorGroup
+ *
+ * @since 0.4
+ * @module
  */
 @XmlType(name = "OperationParameterType")
 @XmlRootElement(name = "OperationParameter")

@@ -35,8 +35,8 @@ import static org.junit.Assert.*;
  * Tests the {@link Transliterator} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.6
  * @version 0.6
+ * @since   0.6
  * @module
  */
 public final strictfp class TransliteratorTest extends TestCase {

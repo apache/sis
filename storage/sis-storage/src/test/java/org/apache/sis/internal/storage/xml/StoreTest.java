@@ -36,8 +36,8 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
  * Tests {@link Store}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.4
  * @version 0.7
+ * @since   0.4
  * @module
  */
 @DependsOn(org.apache.sis.storage.StorageConnectorTest.class)

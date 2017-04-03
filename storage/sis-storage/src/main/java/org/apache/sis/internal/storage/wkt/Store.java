@@ -45,8 +45,8 @@ import org.apache.sis.referencing.CRS;
  * This {@code DataStore} implementation is basically a facade for the {@link CRS#fromWKT(String)} method.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.7
  * @version 0.8
+ * @since   0.7
  * @module
  */
 final class Store extends DataStore {

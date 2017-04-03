@@ -59,8 +59,8 @@ import static org.apache.sis.util.ArgumentChecks.ensureBetween;
  *
  * @author  Rémi Maréchal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.5
  * @version 0.5
+ * @since   0.5
  * @module
  */
 public class ChannelDataOutput extends ChannelData implements Flushable {

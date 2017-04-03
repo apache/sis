@@ -30,8 +30,8 @@ import static org.junit.Assert.*;
  * Tests the {@link PositionalAccuracyConstant} class.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.5
  * @version 0.5
+ * @since   0.5
  * @module
  */
 public final strictfp class PositionalAccuracyConstantTest extends TestCase {

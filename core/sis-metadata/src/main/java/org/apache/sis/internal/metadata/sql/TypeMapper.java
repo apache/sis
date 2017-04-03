@@ -24,8 +24,8 @@ import java.sql.Types;
  * Maps a few basic Java types to JDBC types.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.8
  * @version 0.8
+ * @since   0.8
  * @module
  */
 public final class TypeMapper {
@@ -40,7 +40,7 @@ public final class TypeMapper {
         new TypeMapper(Boolean.class, Types.BOOLEAN,   "BOOLEAN"),
         new TypeMapper(Date   .class, Types.TIMESTAMP, "TIMESTAMP"),
         new TypeMapper(Double .class, Types.DOUBLE,    "DOUBLE PRECISION"),
-        new TypeMapper(Float  .class, Types.REAL  ,    "REAL"),
+        new TypeMapper(Float  .class, Types.REAL,      "REAL"),
         new TypeMapper(Long   .class, Types.BIGINT,    "BIGINT"),
         new TypeMapper(Integer.class, Types.INTEGER,   "INTEGER"),
         new TypeMapper(Short  .class, Types.SMALLINT,  "SMALLINT"),

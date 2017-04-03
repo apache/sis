@@ -32,12 +32,13 @@ import org.apache.sis.util.resources.Errors;
  * console outputs. However those attributes can also occasionally be used for HTML rendering.</p>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.3
  * @version 0.7
- * @module
  *
  * @see <a href="http://en.wikipedia.org/wiki/ANSI_escape_code">Wikipedia: ANSI escape codes</a>
  * @see org.apache.sis.io.wkt.Colors
+ *
+ * @since 0.3
+ * @module
  */
 public enum X364 {
     /** Reset all attributes to their default value. */ RESET               ((byte)  0, null),

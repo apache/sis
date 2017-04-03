@@ -28,8 +28,8 @@ import java.io.ObjectStreamException;
  * This class is immutable and thus inherently thread-safe.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.3
  * @version 0.3
+ * @since   0.3
  * @module
  */
 final class GlobalNameSpace extends DefaultNameSpace {

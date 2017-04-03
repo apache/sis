@@ -36,12 +36,13 @@ import static org.apache.sis.internal.jaxb.XmlUtilities.getDatatypeFactory;
  * The milliseconds are omitted if not different than zero.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.4
  * @version 0.4
- * @module
  *
  * @see DateAdapter
  * @see org.apache.sis.internal.jaxb.gco.GO_DateTime
+ *
+ * @since 0.4
+ * @module
  */
 public final class UniversalTimeAdapter extends XmlAdapter<XMLGregorianCalendar, Date> {
     /**

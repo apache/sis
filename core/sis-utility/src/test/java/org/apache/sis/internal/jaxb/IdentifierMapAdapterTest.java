@@ -32,8 +32,8 @@ import static org.apache.sis.xml.IdentifierSpace.*;
  * Tests {@link IdentifierMapAdapter}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.7
+ * @since   0.3
  * @module
  */
 public strictfp class IdentifierMapAdapterTest extends TestCase {

@@ -47,8 +47,8 @@ import org.apache.sis.util.Debug;
  * have the risk to return to user an already closed {@code AuthorityCodes} instance).</p>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.7
  * @version 0.8
+ * @since   0.7
  * @module
  */
 final class AuthorityCodes extends AbstractMap<String,String> implements Serializable {

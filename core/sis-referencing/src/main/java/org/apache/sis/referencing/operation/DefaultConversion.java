@@ -78,11 +78,12 @@ import org.apache.sis.util.Utilities;
  * by many objects and passed between threads without synchronization.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.6
  * @version 0.7
- * @module
  *
  * @see DefaultTransformation
+ *
+ * @since 0.6
+ * @module
  */
 @XmlType(name = "ConversionType")
 @XmlRootElement(name = "Conversion")

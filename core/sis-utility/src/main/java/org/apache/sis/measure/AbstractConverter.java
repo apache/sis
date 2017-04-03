@@ -24,8 +24,8 @@ import javax.measure.UnitConverter;
  * Base class of unit converters.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.8
  * @version 0.8
+ * @since   0.8
  * @module
  */
 abstract class AbstractConverter implements UnitConverter, Serializable {

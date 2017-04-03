@@ -19,8 +19,8 @@
  * Provides information and some controls about SIS configuration.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.7
+ * @since   0.3
  * @module
  */
 package org.apache.sis.setup;

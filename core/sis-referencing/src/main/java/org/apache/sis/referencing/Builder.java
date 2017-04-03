@@ -171,11 +171,12 @@ import org.apache.sis.internal.jdk8.JDK8;
  * }
  * </div>
  *
- * @param <B> The builder subclass.
- *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.4
  * @version 0.8
+ *
+ * @param <B>  the builder subclass.
+ *
+ * @since 0.4
  * @module
  */
 public abstract class Builder<B extends Builder<B>> {

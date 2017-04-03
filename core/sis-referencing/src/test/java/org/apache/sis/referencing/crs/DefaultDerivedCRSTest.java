@@ -44,8 +44,8 @@ import static org.apache.sis.test.ReferencingAssert.*;
  * Tests the {@link DefaultDerivedCRS} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.6
  * @version 0.8
+ * @since   0.6
  * @module
  */
 @DependsOn({

@@ -32,11 +32,12 @@ import org.opengis.util.TypeName;
  * Such simple type are suitable for use in ISO 19103 {@link org.opengis.util.RecordType}
  * in addition to ISO 19109 {@link org.opengis.feature.FeatureType}.
  *
- * @param  <V>  the type of attribute value.
- *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.5
  * @version 0.5
+ *
+ * @param <V>  the type of attribute value.
+ *
+ * @since 0.5
  * @module
  */
 public final class SimpleAttributeType<V> implements AttributeType<V>, Type, Serializable {

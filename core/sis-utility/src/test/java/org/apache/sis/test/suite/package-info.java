@@ -21,8 +21,8 @@
  * where {@code Foo} is the module name.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.4
+ * @since   0.3
  * @module
  */
 package org.apache.sis.test.suite;

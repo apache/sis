@@ -111,12 +111,13 @@ import static org.apache.sis.math.MathFunctions.isSameSign;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Johann Sorel (Geomatys)
- * @since   0.3
  * @version 0.5
- * @module
  *
  * @see Envelope2D
  * @see org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox
+ *
+ * @since 0.3
+ * @module
  */
 public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Serializable {
     /**

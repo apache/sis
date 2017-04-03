@@ -27,8 +27,8 @@ import static org.junit.Assert.*;
  * Tests the {@link LoggerAdapter} class.
  *
  * @author  Martin Desruisseaux (IRD)
- * @since   0.3
  * @version 0.3
+ * @since   0.3
  * @module
  */
 public final strictfp class LoggerAdapterTest extends TestCase {
