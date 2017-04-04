@@ -144,7 +144,7 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
     private final Iterable<? extends AuthorityFactory>[] providers;
 
     /**
-     * The factories obtained from the {@link #iterators}.
+     * The factories obtained from {@link #getAuthorityFactory(Class, String, String)} and similar methods.
      */
     private final ConcurrentMap<AuthorityFactoryIdentifier, AuthorityFactory> factories;
 

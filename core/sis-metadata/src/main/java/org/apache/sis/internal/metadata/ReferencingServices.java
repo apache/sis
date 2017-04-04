@@ -132,7 +132,7 @@ public class ReferencingServices extends OptionalDependency {
 
     /**
      * The separator character between an identifier and its namespace in the argument given to
-     * {@link #getOperationMethod(String)}. For example this is the separator in {@code "EPSG:9807"}.
+     * {@link #getOperationMethod(Iterable, String)}. For example this is the separator in {@code "EPSG:9807"}.
      *
      * This is defined as a constant for now, but we may make it configurable in a future version.
      */

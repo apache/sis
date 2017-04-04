@@ -539,7 +539,7 @@ search: for (int j=0; j<numPoints; j++) {
     /**
      * More straightforward version of {@link #getControlPoint(int[])} for the case where this
      * {@code LinearTransformBuilder} is known to have been built for grid source coordinates.
-     * This method is for {@link LocalizationGridBuilder#create()} internal usage.
+     * This method is for {@link LocalizationGridBuilder#create(MathTransformFactory)} internal usage.
      */
     final void getControlPoint2D(final int[] source, final double[] target) {
         assert gridSize != null;

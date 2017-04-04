@@ -26,7 +26,7 @@ package org.apache.sis.storage.geotiff;
  *
  * <blockquote>OGC 12-100: GML Application Schema - Coverages - GeoTIFF Coverage Encoding Profile</blockquote>
  *
- * The main exception is {@link #CCITT}, which has different name in CSW query and response.
+ * The main exception is {@code CCITT}, which has different name in CSW query and response.
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)

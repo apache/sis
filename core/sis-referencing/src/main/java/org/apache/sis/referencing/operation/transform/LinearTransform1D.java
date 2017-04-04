@@ -44,7 +44,7 @@ import static java.lang.Double.doubleToRawLongBits;
  * <blockquote><var>y</var>  =  <var>x</var> × {@linkplain #scale} + {@linkplain #offset}</blockquote>
  *
  * This class is the same as a 2×2 affine transform. However, this specialized {@code LinearTransform1D} class
- * is faster. This kind of transform is extensively used by {@link org.apache.sis.coverage.grid.GridCoverage2D}.
+ * is faster. This kind of transform is extensively used by {@code org.apache.sis.coverage.grid.GridCoverage2D}.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 0.7

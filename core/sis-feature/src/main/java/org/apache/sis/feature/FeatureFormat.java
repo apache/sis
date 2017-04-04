@@ -482,7 +482,7 @@ header: for (int i=0; ; i++) {
 
     /**
      * Formats the given object using a shared instance of {@code ParameterFormat}.
-     * This is used for {@link DefaultParameterDescriptorGroup#toString()} implementation.
+     * This is used for {@link DefaultFeatureType#toString()} implementation.
      */
     static String sharedFormat(final Object object) {
         FeatureFormat f = INSTANCE.getAndSet(null);

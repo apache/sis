@@ -148,7 +148,7 @@ public class EllipsoidToCentricTransform extends AbstractMathTransform implement
      * reduced to about 200 km for an eccentricity of 0.16. It may be possible to find a formula for
      * the limit of <var>h</var> as a function of ℯ and φ, but this has not been explored yet.</p>
      *
-     * @see org.apache.sis.referencing.operation.projection.ConformalProjection#ECCENTRICITY_THRESHOLD
+     * @see org.apache.sis.referencing.operation.projection.LambertConicConformal#ECCENTRICITY_THRESHOLD
      */
     private static final double ECCENTRICITY_THRESHOLD = 0.16;
 

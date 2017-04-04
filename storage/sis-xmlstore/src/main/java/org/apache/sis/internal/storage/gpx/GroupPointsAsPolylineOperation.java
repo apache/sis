@@ -77,11 +77,11 @@ final class GroupPointsAsPolylineOperation extends GroupAsPolylineOperation {
      * @param isFirst   whether {@code geometry} is the first object added to the given polyline.
      */
     @Override
-    void addGeometry(Polyline geom, final Object propVal, final boolean first) {
-        if (first) {
-            geom.startPath(((Point) propVal));
+    void addGeometry(final Polyline addTo, final Object geometry, final boolean isFirst) {
+        if (isFirst) {
+            addTo.startPath(((Point) geometry));
         } else {
-            geom.lineTo(((Point) propVal));
+            addTo.lineTo(((Point) geometry));
         }
     }
 }

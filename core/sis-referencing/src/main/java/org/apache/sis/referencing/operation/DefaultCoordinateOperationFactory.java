@@ -411,8 +411,8 @@ public class DefaultCoordinateOperationFactory extends AbstractFactory implement
 
     /**
      * Returns {@code true} if the given CRS are using equivalent (ignoring metadata) datum.
-     * If the CRS are {@link CompoundCRS}, then this method verifies that all datum in the
-     * target CRS exists in the source CRS, but not necessarily in the same order.
+     * If the CRS are {@link org.opengis.referencing.crs.CompoundCRS}, then this method verifies that
+     * all datum in the target CRS exists in the source CRS, but not necessarily in the same order.
      * The target CRS may have less datum than the source CRS.
      *
      * @param  sourceCRS  the target CRS.

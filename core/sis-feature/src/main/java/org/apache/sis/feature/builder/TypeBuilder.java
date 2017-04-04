@@ -439,8 +439,8 @@ public abstract class TypeBuilder implements Localized {
      * Same as {@link org.apache.sis.util.ArgumentChecks#ensureNonNull(String, Object)},
      * but uses the current locale in case of error.
      *
-     * @param  name    the name of the argument to be checked. Used only if an exception is thrown.
-     * @param  object  the user argument to check against null value.
+     * @param  name   the name of the argument to be checked. Used only if an exception is thrown.
+     * @param  value  the user argument to check against null value.
      * @throws NullArgumentException if {@code object} is null.
      */
     final void ensureNonNull(final String name, final Object value) {

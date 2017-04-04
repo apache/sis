@@ -116,7 +116,7 @@ class DerivedSet<S,E> extends SetOfUnknownSize<E> implements CheckedContainer<E>
 
     /**
      * Returns an iterator over the elements contained in this set.
-     * The iterator will invokes the {@link #baseToDerived(Object)} method for each element.
+     * The iterator will invoke the {@link ObjectConverter#apply(Object)} method for each element.
      *
      * @return an iterator over the elements contained in this set.
      */
