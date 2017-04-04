@@ -45,7 +45,7 @@ public final strictfp class DerivedMapTest extends TestCase implements ObjectCon
     /**
      * The value to replace by {@code null}.
      */
-    protected static final int EXCLUDED = 17; // non-private for javadoc purpose.
+    protected static final int EXCLUDED = 17;                       // non-private for javadoc purpose.
 
     /**
      * Fills test values in the given maps.
@@ -124,7 +124,7 @@ public final strictfp class DerivedMapTest extends TestCase implements ObjectCon
      */
     @Override
     public Integer apply(final Integer value) {
-        if (value.intValue() == EXCLUDED) {
+        if (value == EXCLUDED) {
             return null;
         }
         return value * 100;
