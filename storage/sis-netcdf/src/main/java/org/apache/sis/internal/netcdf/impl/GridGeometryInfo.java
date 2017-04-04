@@ -90,7 +90,7 @@ final class GridGeometryInfo extends GridGeometry {
 
     /**
      * Returns all axes of the NetCDF coordinate system, together with the grid dimension to which the axis
-     * is associated. See {@link org.apache.sis.internal.netcdf.ucar.GridGeometryWrapper#getAxes()} for more
+     * is associated. See {@code org.apache.sis.internal.netcdf.ucar.GridGeometryWrapper.getAxes()} for more
      * information on the algorithm applied here, and relationship with the UCAR library.
      */
     @Override

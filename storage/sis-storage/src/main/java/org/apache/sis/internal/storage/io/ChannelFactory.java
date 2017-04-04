@@ -51,13 +51,13 @@ import org.apache.sis.internal.storage.Resources;
  * Opens a readable channel for a given input object (URL, input stream, <i>etc</i>).
  * The {@link #prepare prepare(…)} method analyzes the given input {@link Object} and tries to return a factory instance
  * capable to open at least one {@link ReadableByteChannel} for that input. For some kinds of input like {@link Path} or
- * {@link URL}, the {@link #reader()} method can be invoked an arbitrary amount of times for creating as many channels
+ * {@link URL}, the {@link #reader(String)} method can be invoked an arbitrary amount of times for creating as many channels
  * as needed. But for other kinds of input like {@link InputStream}, only one channel can be returned. In such case,
- * only the first {@link #reader()} method invocation will succeed and all subsequent ones will throw an exception.
+ * only the first {@link #reader(String)} method invocation will succeed and all subsequent ones will throw an exception.
  *
  * <div class="section">Multi-threading</div>
  * This class is not thread-safe, except for the static {@link #prepare prepare(…)} method.
- * Callers are responsible for synchronizing their call to any member methods ({@link #reader()}, <i>etc</i>).
+ * Callers are responsible for synchronizing their call to any member methods ({@link #reader(String)}, <i>etc</i>).
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Johann Sorel (Geomatys)
@@ -67,7 +67,7 @@ import org.apache.sis.internal.storage.Resources;
  */
 public abstract class ChannelFactory {
     /**
-     * Options to be rejected by {@link #create(Object, String, OpenOption[])} for safety reasons.
+     * Options to be rejected by {@link #prepare(Object, String, boolean, OpenOption...)} for safety reasons.
      */
     private static final Set<StandardOpenOption> ILLEGAL_OPTIONS = EnumSet.of(
             StandardOpenOption.APPEND, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.DELETE_ON_CLOSE);
@@ -247,7 +247,7 @@ public abstract class ChannelFactory {
      * Returns {@code true} if this factory is capable to create another reader. This method returns {@code false}
      * if this factory is capable to create only one channel and {@link #reader(String)} has already been invoked.
      *
-     * @return whether {@link #reader()} can be invoked.
+     * @return whether {@link #reader(String)} can be invoked.
      */
     public boolean canOpen() {
         return true;

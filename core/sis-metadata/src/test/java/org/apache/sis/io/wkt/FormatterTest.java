@@ -16,7 +16,6 @@
  */
 package org.apache.sis.io.wkt;
 
-import org.opengis.util.CodeList;
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.metadata.extent.GeographicBoundingBox;
 import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
@@ -53,7 +52,7 @@ public final strictfp class FormatterTest extends TestCase {
     }
 
     /**
-     * Tests (indirectly) {@link Formatter#quote(String)}.
+     * Tests (indirectly) {@link Formatter#quote(String, ElementKind)}.
      */
     @Test
     public void testQuote() {
@@ -111,7 +110,7 @@ public final strictfp class FormatterTest extends TestCase {
     }
 
     /**
-     * Tests (indirectly) {@link Formatter#append(CodeList)}.
+     * Tests (indirectly) {@link Formatter#append(ControlledVocabulary)}.
      */
     @Test
     public void testAppendCodeList() {

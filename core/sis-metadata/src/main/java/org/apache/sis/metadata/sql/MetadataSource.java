@@ -882,8 +882,8 @@ public class MetadataSource implements AutoCloseable {
 
     /**
      * Converts the specified non-metadata value into an object of the expected type.
-     * The expected value is an instance of a class outside the metadata package, for
-     * example {@link String}, {@link InternationalString}, {@link URI}, <i>etc.</i>
+     * The expected value is an instance of a class outside the metadata package, for example
+     * {@link String}, {@link org.opengis.util.InternationalString}, {@link java.net.URI}, <i>etc.</i>
      *
      * @throws UnconvertibleObjectException if the value can not be converter.
      */

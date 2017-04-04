@@ -117,8 +117,7 @@ final class NilObjectHandler implements InvocationHandler {
      *           type is returned.</li></ul></li>
      *   <li>If the invoked method is a setter method, throw a {@link UnsupportedOperationException}
      *       since the proxy instance is assumed unmodifiable.</li>
-     *   <li>If the invoked method is one of the {@link Object} method, delegate to the
-     *       {@link #reference}.</li>
+     *   <li>If the invoked method is one of the {@link Object} method, delegate to the {@link #attribute}.</li>
      * </ul>
      */
     @Override

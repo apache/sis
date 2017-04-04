@@ -110,7 +110,7 @@ import java.util.Objects;
  * <div class="section">When Bursa-Wolf parameters are used</div>
  * {@code BursaWolfParameters} are used in three contexts:
  * <ol>
- *   <li>Created as a step while creating a {@linkplain org.apache.sis.referencing.operation.DefaultCoordinateOperation
+ *   <li>Created as a step while creating a {@linkplain org.apache.sis.referencing.operation.AbstractCoordinateOperation
  *       coordinate operation} from the EPSG database.</li>
  *   <li>Associated to a {@link DefaultGeodeticDatum} with the WGS 84 {@linkplain #getTargetDatum() target datum} for
  *       providing the parameter values to display in the {@code TOWGS84[…]} element of <cite>Well Known Text</cite>

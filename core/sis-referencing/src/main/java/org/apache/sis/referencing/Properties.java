@@ -52,9 +52,8 @@ final class Properties extends AbstractMap<String,Object> implements Serializabl
     private static final long serialVersionUID = 6391635771714311314L;
 
     /**
-     * The keys to search for. The index of each element in this array must matches the index searched
-     * by {@link #getAt(IdentifiedObject, int)}. In other words, this array performs the reverse mapping
-     * of {@link #INDICES}.
+     * The keys to search for. The index of each element in this array must matches the index searched by
+     * {@link #getAt(int)}. In other words, this array performs the reverse mapping of {@link #INDICES}.
      */
     private static final String[] KEYS = {
         /*[0]*/ IdentifiedObject        .NAME_KEY,
@@ -76,7 +75,7 @@ final class Properties extends AbstractMap<String,Object> implements Serializabl
     };
 
     /**
-     * The mapping from key names to the index expected by the {@link #getAt(IdentifiedObject, int)} method.
+     * The mapping from key names to the index expected by the {@link #getAt(int)} method.
      * This map shall not be modified after construction (for multi-thread safety without synchronization).
      */
     private static final Map<String,Integer> INDICES = new HashMap<>(16);

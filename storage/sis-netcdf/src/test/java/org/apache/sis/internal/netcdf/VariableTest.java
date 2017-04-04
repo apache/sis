@@ -27,7 +27,7 @@ import static org.opengis.test.Assert.*;
 
 /**
  * Tests the {@link Variable} implementation. The default implementation tests
- * {@link org.apache.sis.internal.netcdf.ucar.VariableWrapper} since the UCAR
+ * {@code org.apache.sis.internal.netcdf.ucar.VariableWrapper} since the UCAR
  * library is our reference implementation. However subclasses can override the
  * {@link #createDecoder(String)} method in order to test a different implementation.
  *

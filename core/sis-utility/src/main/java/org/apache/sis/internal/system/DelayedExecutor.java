@@ -30,7 +30,7 @@ import org.apache.sis.util.logging.Logging;
  *
  * <p>The methods for use in this class are:</p>
  * <ul>
- *   <li>{@link #schedule(Runnable, long)}</li>
+ *   <li>{@link #schedule(DelayedRunnable)}</li>
  * </ul>
  *
  * <div class="section">Comparison with {@code java.util.concurrent}</div>

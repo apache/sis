@@ -43,7 +43,7 @@ public final strictfp class DerivedSetTest extends TestCase implements ObjectCon
     /**
      * The value to replace by {@code null}.
      */
-    protected static final int EXCLUDED = 19; // non-private for javadoc purpose.
+    protected static final int EXCLUDED = 19;                   // non-private for javadoc purpose.
 
     /**
      * Tests {@link DerivedSet} without excluded value.
@@ -102,7 +102,7 @@ public final strictfp class DerivedSetTest extends TestCase implements ObjectCon
      */
     @Override
     public Integer apply(final Integer value) {
-        if (value.intValue() == EXCLUDED) {
+        if (value == EXCLUDED) {
             return null;
         }
         return value * 10;

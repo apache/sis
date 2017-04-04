@@ -46,7 +46,7 @@ interface DataTransfer {
     /**
      * Returns the data as a {@code char[]}, {@code short[]}, {@code int[]}, {@code long[]},
      * {@code float[]} or {@code double[]} array. This is either the array given in argument
-     * to the subclass constructor, or the array created by {@link #createArray(int)}.
+     * to the subclass constructor, or the array created by {@link #createDataArray(int)}.
      */
     Object dataArray();
 

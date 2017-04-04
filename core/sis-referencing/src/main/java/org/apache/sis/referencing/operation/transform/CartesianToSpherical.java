@@ -46,7 +46,7 @@ final class CartesianToSpherical extends CoordinateSystemTransform implements Se
 
     /**
      * The singleton instance computing output coordinates are in radians.
-     * For the instance computing output coordinates in degrees, use {@link #completeTransform()} instead.
+     * For the instance computing output coordinates in degrees, use {@link #create} instead.
      */
     static final CartesianToSpherical INSTANCE = new CartesianToSpherical();
 

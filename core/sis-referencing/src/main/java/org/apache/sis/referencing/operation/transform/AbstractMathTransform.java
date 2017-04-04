@@ -157,7 +157,8 @@ public abstract class AbstractMathTransform extends FormattableObject
      * <div class="note"><b>Relationship with ISO 19111:</b>
      * This method is similar to {@link OperationMethod#getParameters()}, except that typical
      * {@link MathTransform} implementations return parameters in standard units (usually
-     * {@linkplain Units#METRE metres} or {@linkplain Units#DEGREE decimal degrees}).
+     * {@linkplain org.apache.sis.measure.Units#METRE metres} or
+     * {@linkplain org.apache.sis.measure.Units#DEGREE decimal degrees}).
      * </div>
      *
      * @return the parameter descriptors for this math transform, or {@code null} if unspecified.

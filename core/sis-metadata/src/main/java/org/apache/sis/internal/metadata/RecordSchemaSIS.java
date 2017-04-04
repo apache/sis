@@ -57,7 +57,7 @@ final class RecordSchemaSIS extends DefaultRecordSchema implements Serializable 
 
     /**
      * The object to serialize instead of {@link DefaultRecordSchema}.
-     * This proxy is itself replaced by {@link SerializableRecordSchema#INSTANCE} on deserialization.
+     * This proxy is itself replaced by {@link RecordSchemaSIS#INSTANCE} on deserialization.
      */
     private static final class Proxy implements Serializable {
         private static final long serialVersionUID = -4381124182735566127L;

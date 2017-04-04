@@ -17,7 +17,6 @@
 package org.apache.sis.math;
 
 import java.util.Random;
-import org.opengis.geometry.DirectPosition;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
@@ -43,7 +42,7 @@ public final strictfp class PlaneTest extends TestCase {
     private double pearson;
 
     /**
-     * Invokes {@link Plane#fit(DirectPosition[])} with the given arrays,
+     * Invokes {@link Plane#fit(Iterable)} with the given arrays,
      * and compares the fitted values against the original values.
      *
      * This method also verifies that the Pearson coefficient is close to 1.
@@ -78,7 +77,7 @@ public final strictfp class PlaneTest extends TestCase {
     }
 
     /**
-     * Tests {@link Plane#fit(DirectPosition[])} with 3 points.
+     * Tests {@link Plane#fit(Iterable)} with 3 points.
      * The solution is expected to be exact.
      */
     @Test

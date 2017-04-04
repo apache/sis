@@ -42,7 +42,7 @@ import org.opengis.test.referencing.AffineTransformTest;
 
 /**
  * Tests the {@link ProjectiveTransform} class by inheriting the tests defined in GeoAPI conformance module.
- * We use the {@link AffineTransform2D} class as a reference, so we need to avoid NaN values.
+ * We use the {@link java.awt.geom.AffineTransform} class as a reference, so we need to avoid NaN values.
  * Note that {@link CopyTransformTest} will use {@code ProjectiveTransform} as a reference,
  * this time with NaN values.
  *

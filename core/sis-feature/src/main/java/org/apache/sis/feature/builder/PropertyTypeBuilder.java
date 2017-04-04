@@ -56,7 +56,7 @@ public abstract class PropertyTypeBuilder extends TypeBuilder {
 
     /**
      * The minimum number of property values.
-     * The default value is 1, unless otherwise specified by {@link #setDefaultCardinality(int, int)}.
+     * The default value is 1, unless otherwise specified by {@link #setMinimumOccurs(int)}.
      *
      * @see #getMinimumOccurs()
      */
@@ -64,7 +64,7 @@ public abstract class PropertyTypeBuilder extends TypeBuilder {
 
     /**
      * The maximum number of property values.
-     * The default value is 1, unless otherwise specified by {@link #setDefaultCardinality(int, int)}.
+     * The default value is 1, unless otherwise specified by {@link #setMaximumOccurs(int)}.
      *
      * @see #getMaximumOccurs()
      */

@@ -140,7 +140,7 @@ public class DefaultFeatureType extends AbstractIdentifiedType implements Featur
      * any unresolved name (i.e. a {@link DefaultAssociationRole#valueType} specified only be the
      * feature type name instead than its actual instance). A value of {@code true} means that all
      * names have been resolved. However a value of {@code false} only means that we are not sure,
-     * and that {@link #resolve(FeatureType)} should check again.
+     * and that {@link #resolve(FeatureType, Map)} should check again.
      *
      * <div class="note"><b>Note:</b>
      * Strictly speaking, this field should be declared {@code volatile} since the names could
