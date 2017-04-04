@@ -65,7 +65,7 @@ abstract class PathConverter<S,T> extends SystemConverter<S,T> {
     /**
      * Converts the given path to the target type of this converter.
      * This method verifies that the given path is non-null,
-     * then delegates to {@link #doConvert(S)}.
+     * then delegates to {@link #doConvert(Object)}.
      *
      * @param  source  the path to convert, or {@code null}.
      * @return the converted value, or {@code null} if the given path was null.

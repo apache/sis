@@ -148,7 +148,7 @@ public final strictfp class DefaultCompoundCRSTest extends XMLTestCase {
     }
 
     /**
-     * Tests {@link DefaultCompoundCRS#isStandardCompliant()}.
+     * Tests {@link DefaultCompoundCRS#isStandardCompliant(List)}.
      *
      * @since 0.6
      */

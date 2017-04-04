@@ -120,8 +120,8 @@ public final class Features extends Static {
 
     /**
      * Returns the name of the type of values that the given property can take.
-     * The type of value can be a {@link Class}, a {@link FeatureType} or another {@code PropertyType}
-     * depending on given argument:
+     * The type of value can be a {@link Class}, a {@link org.opengis.feature.FeatureType}
+     * or another {@code PropertyType} depending on given argument:
      *
      * <ul>
      *   <li>If {@code property} is an {@link AttributeType}, then this method gets the

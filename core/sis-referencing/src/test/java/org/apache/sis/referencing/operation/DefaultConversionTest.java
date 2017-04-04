@@ -166,7 +166,7 @@ public final strictfp class DefaultConversionTest extends TestCase {
 
     /**
      * Asserts that at least some of the properties of the given {@code op} instance have the expected values
-     * for an instance created by {@link #createLongitudeRotation(GeographicCRS, GeographicCRS)}.
+     * for an instance created by {@link #createLongitudeRotation(GeographicCRS, GeographicCRS, TemporalCRS)}.
      */
     @SuppressWarnings("SuspiciousToArrayCall")
     private static void verifyProperties(final DefaultConversion op, final boolean swapSourceAxes) {

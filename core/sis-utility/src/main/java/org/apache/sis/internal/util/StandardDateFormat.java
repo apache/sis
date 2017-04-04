@@ -102,7 +102,6 @@ public final class StandardDateFormat extends SimpleDateFormat {
 
     /**
      * Converts the given temporal object into a date.
-     * The given temporal object is typically the value parsed by {@link #FORMAT}.
      *
      * @param  temporal  the temporal object to convert, or {@code null}.
      * @return the legacy date for the given temporal object, or {@code null} if the argument was null.

@@ -119,11 +119,12 @@ class CoordinateOperationRegistry {
     static final Identifier AXIS_CHANGES = createIdentifier(Vocabulary.Keys.AxisChanges);
 
     /**
-     * The identifier for a transformation which is a datum shift without {@link BursaWolfParameters}.
+     * The identifier for a transformation which is a datum shift without
+     * {@link org.apache.sis.referencing.datum.BursaWolfParameters}.
      * Only the changes in ellipsoid axis-length are taken in account.
      * Such ellipsoid shifts are approximative and may have 1 kilometre error.
      *
-     * @see org.apache.sis.internal.referencing.PositionalAccuracyConstan#DATUM_SHIFT_OMITTED
+     * @see org.apache.sis.internal.referencing.PositionalAccuracyConstant#DATUM_SHIFT_OMITTED
      */
     static final Identifier ELLIPSOID_CHANGE = createIdentifier(Vocabulary.Keys.EllipsoidChange);
 

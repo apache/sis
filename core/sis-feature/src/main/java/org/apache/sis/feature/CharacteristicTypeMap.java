@@ -42,7 +42,7 @@ import org.apache.sis.internal.jdk8.JDK8;
  * But instead of that, we store attributes in an array and the array indices in a {@code HashMap}. This level of
  * indirection is useless if we consider only the {@link DefaultAttributeType#characteristics()} method, since a
  * standard {@code HashMap<String,AttributeType>} would work as well or better. However this level of indirection
- * become useful for {@link CharacteristicMap} (the map returned by {@link DefaultAttribute#characteristics()}),
+ * become useful for {@link CharacteristicMap} (the map returned by {@link AbstractAttribute#characteristics()}),
  * since it allows a more efficient storage. We do this effort because some applications may create a very large
  * amount of attribute instances.
  *

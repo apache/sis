@@ -79,7 +79,7 @@ public class DefaultAssociationRole extends FieldType implements FeatureAssociat
      * This field is initially null, then computed when first needed.
      * This information is used only by {@link AbstractAssociation#toString()} implementation.
      *
-     * @see #getTitleProperty()
+     * @see #getTitleProperty(FeatureAssociationRole)
      */
     private transient volatile String titleProperty;
 
@@ -315,9 +315,8 @@ public class DefaultAssociationRole extends FieldType implements FeatureAssociat
      * later. We rather put a warning in {@link #DefaultAssociationRole(Map, GenericName, int, int)}
      * javadoc.</p>
      *
-     * @param  feature  the feature in which to search.
-     * @param  name     the name of the feature to search.
-     * @param  done     the feature types collected by {@link #search(FeatureType, GenericName, List)}.
+     * @param  deferred  the feature types collected by {@link #search(FeatureType, GenericName, List)}.
+     * @param  name      the name of the feature to search.
      * @return the feature of the given name, or {@code null} if none.
      */
     private static FeatureType deepSearch(final List<FeatureType> deferred, final GenericName name) {

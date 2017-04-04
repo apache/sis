@@ -51,9 +51,9 @@
  *
  * <div class="section">Non-spatial coordinates</div>
  * {@code MathTransform} usually performs conversions or transformations from points given in a
- * {@linkplain org.apache.sis.referencing.operation.DefaultCoordinateOperation#getSourceCRS()
+ * {@linkplain org.apache.sis.referencing.operation.AbstractCoordinateOperation#getSourceCRS()
  * source coordinate reference system} to coordinate values for the same points in the
- * {@linkplain org.apache.sis.referencing.operation.DefaultCoordinateOperation#getTargetCRS()
+ * {@linkplain org.apache.sis.referencing.operation.AbstractCoordinateOperation#getTargetCRS()
  * target coordinate reference system}. However the conversions are not necessarily between CRS;
  * a {@code MathTransform} can also be used for converting the sample values in a raster for example.
  * Such kind of transforms are named {@linkplain org.apache.sis.referencing.operation.transform.TransferFunction

@@ -61,7 +61,7 @@ public class GeohashReferenceSystem extends ReferencingByIdentifiers {
     private static final long serialVersionUID = 9162259764027168776L;
 
     /**
-     * The encoding format used by {@link GeoHashCoder}.
+     * The encoding format used by {@link GeohashReferenceSystem.Coder}.
      */
     public enum Format {
         /**
@@ -129,7 +129,7 @@ public class GeohashReferenceSystem extends ReferencingByIdentifiers {
     final Format format;
 
     /**
-     * The {@link #crs} with (<var>longitude</var>, <var>latitude</var>) axis order in degrees.
+     * The user-supplied CRS with (<var>longitude</var>, <var>latitude</var>) axis order in degrees.
      */
     final DefaultGeographicCRS normalizedCRS;
 
@@ -366,8 +366,6 @@ public class GeohashReferenceSystem extends ReferencingByIdentifiers {
     private final class Decoder extends SimpleLocation {
         /**
          * Decodes the given geohash.
-         *
-         * @param owner  the {@code Coder} which is creating this {@code Decoder}.
          */
         Decoder(final CharSequence geohash, final double[] coordinates) throws TransformException {
             super(rootType(), geohash);

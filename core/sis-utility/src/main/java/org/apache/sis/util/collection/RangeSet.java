@@ -1003,9 +1003,8 @@ public class RangeSet<E extends Comparable<? super E>> extends AbstractSet<Range
         private Range<E> subRange;
 
         /**
-         * Index of {@link #minValue} and {@link #maxValue} in the array of the enclosing
-         * {@code RangeSet}. Those indices need to be recomputed every time the enclosing
-         * {@code RangeSet} has been modified.
+         * Index of {@link #subRange} minimum and maximum values in the array of the enclosing {@code RangeSet}.
+         * Those indices need to be recomputed every time the enclosing {@code RangeSet} has been modified.
          *
          * @see #updateBounds()
          */

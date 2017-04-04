@@ -61,7 +61,7 @@ final class MapProjectionDescriptor extends DefaultParameterDescriptorGroup {
     private static final long serialVersionUID = -9142116135803309453L;
 
     /**
-     * {@code true} if the {@link #STANDARD_PARALLEL} parameter can be added.
+     * {@code true} if the {@value Constants#STANDARD_PARALLEL} parameter can be added.
      */
     final boolean hasStandardParallels;
 

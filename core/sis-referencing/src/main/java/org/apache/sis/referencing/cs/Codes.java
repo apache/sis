@@ -29,7 +29,8 @@ import static org.apache.sis.internal.util.Constants.EPSG_PROJECTED_CS;
 
 
 /**
- * Map units of measurement and axis directions to {@link CoordinateSystem} objects defined in the EPSG database.
+ * Map units of measurement and axis directions to {@link org.opengis.referencing.cs.CoordinateSystem}
+ * objects defined in the EPSG database.
  * Current version uses hard-coded mapping.
  *
  * @author  Rémi Marechal (Geomatys)
@@ -106,7 +107,7 @@ final class Codes {
 
     /**
      * Returns the hash code value for this {@code Codes} instance.
-     * Note that {@link #lookup(AxisDirection[], Unit)} needs that the hash code excludes the EPSG code.
+     * Note that {@link #lookup(Unit, AxisDirection[])} needs that the hash code excludes the EPSG code.
      */
     @Override
     public int hashCode() {
@@ -115,7 +116,7 @@ final class Codes {
 
     /**
      * Compares this {@code Codes} instance with the given object for equality.
-     * Note that {@link #lookup(AxisDirection[], Unit)} needs that the comparison excludes the EPSG code.
+     * Note that {@link #lookup(Unit, AxisDirection[])} needs that the comparison excludes the EPSG code.
      */
     @Override
     public boolean equals(final Object obj) {

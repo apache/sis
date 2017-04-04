@@ -108,7 +108,7 @@ public final strictfp class DefaultProjectedCRSTest extends XMLTestCase {
     /**
      * Creates the "NTF (Paris) / Lambert zone II" CRS. The prime meridian is always in grads,
      * but the axes can be in degrees or in grads depending if the {@code baseCRS} argument is
-     * {@link HardCodedCRS.NTF_NORMALIZED_AXES} or {@link HardCodedCRS.NTF} respectively.
+     * {@link HardCodedCRS#NTF_NORMALIZED_AXES} or {@link HardCodedCRS#NTF} respectively.
      *
      * @see HardCodedCRS#NTF
      */

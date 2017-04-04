@@ -52,7 +52,7 @@ public final class GO_LocalName extends NameAdapter<GO_LocalName, LocalName> {
     }
 
     /**
-     * Does the link between an {@link AbstractName} and the adapter associated.
+     * Does the link between an {@link org.apache.sis.util.iso.AbstractName} and the adapter associated.
      * JAXB calls automatically this method at marshalling-time.
      *
      * @param  value  the implementing class for this metadata value.

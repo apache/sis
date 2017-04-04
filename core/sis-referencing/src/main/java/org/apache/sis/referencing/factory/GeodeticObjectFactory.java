@@ -108,7 +108,7 @@ import org.apache.sis.xml.XML;
  *   </tr>
  *   <tr>
  *     <td>{@value org.opengis.metadata.Identifier#AUTHORITY_KEY}</td>
- *     <td>{@link String} or {@link Citation}</td>
+ *     <td>{@link String} or {@link org.opengis.metadata.citation.Citation}</td>
  *     <td>{@link NamedIdentifier#getAuthority()} on the {@linkplain AbstractIdentifiedObject#getName() name}</td>
  *   </tr>
  *   <tr>

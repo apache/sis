@@ -146,7 +146,7 @@ final class FormattedCharacterIterator extends SimpleCharacterIterator implement
     /**
      * The value to be returned by {@code getRunStart(…)} and {@code getRunLimit(…)}
      * when the index value is {@code validity}. Those values are updated when needed
-     * by the {@link #update(Set)} method.
+     * by the {@link #update(Attribute, Collection)} method.
      */
     private transient int start, limit, validity;
 

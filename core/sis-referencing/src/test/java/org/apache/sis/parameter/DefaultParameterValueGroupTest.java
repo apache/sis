@@ -415,7 +415,7 @@ public final strictfp class DefaultParameterValueGroupTest extends TestCase {
     }
 
     /**
-     * Tests {@link #equals(Object, ComparisonMode)}.
+     * Tests {@link DefaultParameterValueGroup#equals(Object, ComparisonMode)}.
      *
      * @since 0.7
      */

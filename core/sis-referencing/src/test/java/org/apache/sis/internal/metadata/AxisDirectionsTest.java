@@ -192,10 +192,9 @@ public final strictfp class AxisDirectionsTest extends TestCase {
 
     /**
      * Asserts that
-     * {@link AxisDirections#isSpatialOrUserDefined(AxisDirection, boolean)},
-     * {@link AxisDirections#isCartesianOrCustom(AxisDirection)} and
-     * {@link AxisDirections#isGrid(AxisDirection)}
-     * returns the expected value for all the given axis directions.
+     * {@link AxisDirections#isGrid(AxisDirection)} and
+     * {@link AxisDirections#isSpatialOrUserDefined(AxisDirection, boolean)}
+     * return the expected value for all the given axis directions.
      */
     private static void verifyProperties(final boolean isSpatial, final boolean isGrid, final boolean isDisplay,
             final AxisDirection... directions)

@@ -52,11 +52,12 @@ import org.apache.sis.util.resources.Vocabulary;
  * See {@code newChild()} javadoc for an example.</p>
  *
  * <div class="note"><b>API note:</b>
- * This class is not serializable because the values of the {@link #indexInData} and {@link #indexInList} fields
- * may not be stable. The former may be invalid if the node is serialized and deserialized by two different versions
- * of Apache SIS having properties in different order. The second may be invalid if the collection is not guaranteed
- * to preserve order on serialization (e.g. {@code CodeListSet} with user-supplied elements, in which case the elements
- * order depends on the instantiation order).</div>
+ * This class is not serializable because the values of the {@link Element#indexInData}
+ * and {@link CollectionElement#indexInList} fields may not be stable.
+ * The former may be invalid if the node is serialized and deserialized by two different versions of Apache SIS
+ * having properties in different order. The second may be invalid if the collection is not guaranteed to preserve
+ * order on serialization (e.g. {@code CodeListSet} with user-supplied elements, in which case the elements order
+ * depends on the instantiation order).</div>
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
@@ -167,7 +168,6 @@ class TreeNode implements Node {
     /**
      * Creates a new child for an element of the given metadata.
      * This constructor is for the {@link Element} subclass only.
-     * Callers must invoke {@link #init()} after construction.
      *
      * @param  parent    the parent of this node.
      * @param  metadata  the metadata object for which this node will be a value.
@@ -308,7 +308,6 @@ class TreeNode implements Node {
 
         /**
          * Creates a new child for a property of the given metadata at the given index.
-         * Callers must invoke {@link #init()} after construction.
          *
          * @param  parent       the parent of this node.
          * @param  metadata     the metadata object for which this node will be a value.
@@ -407,7 +406,6 @@ class TreeNode implements Node {
 
         /**
          * Creates a new node for the given collection element.
-         * Callers must invoke {@link #init()} after construction.
          *
          * @param  parent       the parent of this node.
          * @param  metadata     the metadata object for which this node will be a value.
@@ -739,8 +737,8 @@ class TreeNode implements Node {
 
     /**
      * Returns the value of this node in the given column, or {@code null} if none. This method verifies
-     * the {@code column} argument, then delegates to {@link #getName()}, {@link #getElementType()} or
-     * {@link #getUserObject()}.
+     * the {@code column} argument, then delegates to {@link #getName()}, {@link #getUserObject()} or
+     * other properties.
      */
     @Override
     public final <V> V getValue(final TableColumn<V> column) {

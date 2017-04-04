@@ -41,7 +41,7 @@ import org.apache.sis.internal.system.Loggers;
  * <div class="section"><b>Closing</b>:
  * While this class implements {@link java.lang.AutoCloseable}, it should not be used in a try-finally block.
  * This is because {@code CachedStatement} is typically closed by a different thread than the one that created
- * the {@code CachedStatement} instance. This object is closed by a background thread of {@link Tables}.</div>
+ * the {@code CachedStatement} instance. This object is closed by a background thread of {@link MetadataSource}.</div>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 0.8

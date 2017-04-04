@@ -92,7 +92,7 @@ public final strictfp class ConformalProjectionTest extends TransformTestCase {
 
     /**
      * Implementation of {@link #testExpOfNorthing()}.
-     * The {@link #projection} field must have been set before this method is called.
+     * The {@link #transform} field must have been set before this method is called.
      */
     private void doTestExpOfNorthing() {
         assertEquals("f(NaN) = NaN",       NaN, expOfNorthing(NaN),               tolerance);
@@ -158,7 +158,7 @@ public final strictfp class ConformalProjectionTest extends TransformTestCase {
     }
 
     /**
-     * Tests the {@link NormalizedProjection#expOfNorthing(double, double)} function.
+     * Tests the {@link ConformalProjection#expOfNorthing(double, double)} function.
      *
      * {@preformat text
      *   Forward:  y = -log(t(φ))
@@ -176,7 +176,7 @@ public final strictfp class ConformalProjectionTest extends TransformTestCase {
     }
 
     /**
-     * Tests the {@link NormalizedProjection#dy_dφ(double, double)} method.
+     * Tests the {@link ConformalProjection#dy_dφ(double, double)} method.
      *
      * @throws TransformException if an error occurred while projecting a point.
      */
@@ -190,7 +190,6 @@ public final strictfp class ConformalProjectionTest extends TransformTestCase {
 
     /**
      * Implementation of {@link #test_dy_dφ()}.
-     * The {@link #projection} field must have been set before this method is called.
      */
     private void doTest_dy_dφ(final NoOp projection) throws TransformException {
         transform = new AbstractMathTransform1D() {
@@ -231,7 +230,7 @@ public final strictfp class ConformalProjectionTest extends TransformTestCase {
 
     /**
      * Tests the {@link ConformalProjection#φ(double)} function. We expect it to be
-     * the converse of the {@link NormalizedProjection#expOfNorthing(double, double)} function.
+     * the converse of the {@link ConformalProjection#expOfNorthing(double, double)} function.
      * In theory only the [-90° … +90°] range needs to be tested. However the function is still
      * consistent in the [-90° … +270°] range so we test that range for tracking this fact.
      *
@@ -250,7 +249,7 @@ public final strictfp class ConformalProjectionTest extends TransformTestCase {
 
     /**
      * Implementation of {@link #test_φ()}.
-     * The {@link #projection} field must have been set before this method is called.
+     * The {@link #transform} field must have been set before this method is called.
      */
     private void doTest_φ() throws ProjectionException {
         assertEquals("φ(NaN) = NaN",    NaN,   φ(NaN),               tolerance);

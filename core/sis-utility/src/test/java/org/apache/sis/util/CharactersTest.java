@@ -73,7 +73,7 @@ public final strictfp class CharactersTest extends TestCase {
     }
 
     /**
-     * Tests the {@link Characters#isHexadecimal()} method.
+     * Tests the {@link Characters#isHexadecimal(int)} method.
      *
      * @since 0.5
      */

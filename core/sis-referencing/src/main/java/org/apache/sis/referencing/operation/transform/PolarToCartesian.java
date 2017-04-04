@@ -66,7 +66,7 @@ final class PolarToCartesian extends CoordinateSystemTransform implements Serial
 
     /**
      * The singleton instance expecting input coordinates in radians.
-     * For the instance expecting input coordinates in degrees, use {@link #completeTransform()} instead.
+     * For the instance expecting input coordinates in degrees, use {@link #create} instead.
      */
     static final PolarToCartesian INSTANCE = new PolarToCartesian();
 

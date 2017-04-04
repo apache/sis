@@ -42,8 +42,9 @@ public class MetadataServices extends OptionalDependency {
     private static volatile MetadataServices instance;
 
     /**
-     * For subclass only. This constructor registers this instance as a {@link SystemListener}
-     * in order to force a new {@code MetadataServices} lookup if the classpath changes.
+     * For subclass only. This constructor registers this instance as a
+     * {@link org.apache.sis.internal.system.SystemListener} in order to
+     * force a new {@code MetadataServices} lookup if the classpath changes.
      */
     protected MetadataServices() {
         super(Modules.UTILITIES, "sis-metadata");
@@ -129,7 +130,7 @@ public class MetadataServices extends OptionalDependency {
      * @param  locale  language to use if possible.
      * @return the information, or {@code null} if none.
      *
-     * @see org.apache.sis.internal.metadata.ReferencingServices#getInformation(String)
+     * @see org.apache.sis.internal.metadata.ReferencingServices#getInformation(String, Locale)
      */
     public String getInformation(String key, Locale locale) {
         return null;

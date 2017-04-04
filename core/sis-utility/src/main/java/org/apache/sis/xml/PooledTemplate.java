@@ -39,10 +39,10 @@ final class PooledTemplate extends Pooled {
     /**
      * Creates a new template.
      *
-     * @param properties  the properties to be given to JAXB (un)marshallers, or {@code null} if none.
-     * @param internal    {@code true} if the JAXB implementation is the one bundled in JDK 6, or
-     *                    {@code false} if this is the external implementation provided as a JAR file
-     *                    in the endorsed directory.
+     * @param properties      the properties to be given to JAXB (un)marshallers, or {@code null} if none.
+     * @param implementation  {@link Implementation#INTERNAL} if the JAXB implementation is the one bundled in JDK 6, or
+     *                        {@link Implementation#ENDORSED} if this is the external implementation provided as a JAR
+     *                        file in the endorsed directory.
      */
     PooledTemplate(final Map<String,?> properties, final Implementation implementation) throws PropertyException {
         super(implementation == Implementation.INTERNAL);

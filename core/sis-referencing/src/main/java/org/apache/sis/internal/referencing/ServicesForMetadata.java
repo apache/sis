@@ -221,7 +221,7 @@ public final class ServicesForMetadata extends ReferencingServices {
      * @param  envelope     the source envelope.
      * @param  target       the target temporal extent.
      * @param  crs          the envelope CRS (mandatory, can not be {@code null}).
-     * @param  verticalCRS  the temporal component of the given CRS (mandatory).
+     * @param  temporalCRS  the temporal component of the given CRS (mandatory).
      * @throws UnsupportedOperationException if no implementation of {@code TemporalFactory} has been found
      *         on the classpath.
      */

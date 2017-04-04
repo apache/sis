@@ -99,17 +99,17 @@ public abstract class AbstractOperation extends AbstractIdentifiedType implement
      *   </tr>
      *   <tr>
      *     <td>{@value org.apache.sis.feature.AbstractIdentifiedType#DEFINITION_KEY}</td>
-     *     <td>{@link InternationalString} or {@link String}</td>
+     *     <td>{@link org.opengis.util.InternationalString} or {@link String}</td>
      *     <td>{@link #getDefinition()}</td>
      *   </tr>
      *   <tr>
      *     <td>{@value org.apache.sis.feature.AbstractIdentifiedType#DESIGNATION_KEY}</td>
-     *     <td>{@link InternationalString} or {@link String}</td>
+     *     <td>{@link org.opengis.util.InternationalString} or {@link String}</td>
      *     <td>{@link #getDesignation()}</td>
      *   </tr>
      *   <tr>
      *     <td>{@value org.apache.sis.feature.AbstractIdentifiedType#DESCRIPTION_KEY}</td>
-     *     <td>{@link InternationalString} or {@link String}</td>
+     *     <td>{@link org.opengis.util.InternationalString} or {@link String}</td>
      *     <td>{@link #getDescription()}</td>
      *   </tr>
      *   <tr>
@@ -176,14 +176,14 @@ public abstract class AbstractOperation extends AbstractIdentifiedType implement
      *   <li>If {@code getResult()} returns an instance of {@link AttributeType},
      *       then this method shall return an instance of {@link Attribute}
      *       and the {@code Attribute.getType() == getResult()} relation should hold.</li>
-     *   <li>If {@code getResult()} returns an instance of {@link FeatureAssociationRole},
+     *   <li>If {@code getResult()} returns an instance of {@link org.opengis.feature.FeatureAssociationRole},
      *       then this method shall return an instance of {@link FeatureAssociation}
      *       and the {@code FeatureAssociation.getRole() == getResult()} relation should hold.</li>
      * </ul>
      *
      * <div class="note"><b>Analogy:</b>
-     * if we compare {@code Operation} to {@link Method} in the Java language, then this method is equivalent
-     * to {@link Method#apply(Object, Object...)}. The {@code Feature} argument is equivalent to {@code this}
+     * if we compare {@code Operation} to {@link java.lang.reflect.Method} in the Java language, then this method is equivalent
+     * to {@link java.lang.reflect.Method#invoke(Object, Object...)}. The {@code Feature} argument is equivalent to {@code this}
      * in the Java language, and may be {@code null} if the operation does not need a feature instance
      * (like static methods in the Java language).</div>
      *
