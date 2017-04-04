@@ -414,7 +414,7 @@ public abstract class DatumShiftGridFile<C extends Quantity<C>, T extends Quanti
          *
          * @param  dim    the dimension for which to get an average value.
          * @param  gridX  the grid index along the <var>x</var> axis, from 0 inclusive to {@link #nx} exclusive.
-         * @param  gridY  the grid index along the <var>y</var> axis, from 0 inclusive to {@link #ny} exclusive.
+         * @param  gridY  the grid index along the <var>y</var> axis, from 0 inclusive to {@code  ny} exclusive.
          * @return the offset at the given dimension in the grid cell at the given index.
          */
         @Override

@@ -27,6 +27,7 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import org.apache.sis.internal.jaxb.Context;
 import org.apache.sis.internal.jaxb.gmd.Country;
 import org.apache.sis.internal.jaxb.gmd.LanguageCode;
+import org.apache.sis.internal.jaxb.gmd.PT_FreeText;
 
 
 /**
@@ -94,9 +95,9 @@ public final class PT_Locale extends XmlAdapter<PT_Locale, Locale> {
          *
          * <blockquote>Indeed, an XML file can only support data expressed in a single character set, which is generally
          * declared in the XML file header. Having all the localized strings stored in a single XML file would limit the
-         * use of a single character set such as UTF-8. In order to avoid this, the {@link LocalisedCharacterString}
+         * use of a single character set such as UTF-8. In order to avoid this, the {@code LocalisedCharacterString}
          * class is implemented specifically to allow a by-reference containment of the {@link PT_FreeText#textGroup}
-         * property, and the {@link PT_LocaleContainer} is the recommended root element to be instantiated in a
+         * property, and the {@code PT_LocaleContainer} is the recommended root element to be instantiated in a
          * dedicated XML file. The localized string related to a given locale can be stored in a corresponding locale
          * container (i.e. XML file) and referenced from the {@link PT_FreeText#textGroup} property instances.
          * </blockquote>

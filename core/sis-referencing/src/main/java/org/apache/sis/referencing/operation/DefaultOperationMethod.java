@@ -303,8 +303,8 @@ public class DefaultOperationMethod extends AbstractIdentifiedObject implements 
 
     /**
      * Returns the properties to be given to an identified object derived from the specified one.
-     * This method returns the same properties than the supplied argument (as of
-     * <code>{@linkplain IdentifiedObjects#getProperties(IdentifiedObject) getProperties}(info)</code>),
+     * This method returns the same properties than the supplied argument
+     * (as of <code>{@linkplain IdentifiedObjects#getProperties getProperties}(info)</code>),
      * except for the following:
      *
      * <ul>

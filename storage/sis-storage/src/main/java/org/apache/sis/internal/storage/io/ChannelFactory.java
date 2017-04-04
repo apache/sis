@@ -67,7 +67,7 @@ import org.apache.sis.internal.storage.Resources;
  */
 public abstract class ChannelFactory {
     /**
-     * Options to be rejected by {@link #create(Object, String, OpenOption[])} for safety reasons.
+     * Options to be rejected by {@link #prepare(Object, String, boolean, OpenOption...)} for safety reasons.
      */
     private static final Set<StandardOpenOption> ILLEGAL_OPTIONS = EnumSet.of(
             StandardOpenOption.APPEND, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.DELETE_ON_CLOSE);

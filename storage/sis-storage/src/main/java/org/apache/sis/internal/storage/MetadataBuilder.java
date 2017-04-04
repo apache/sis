@@ -215,7 +215,8 @@ public class MetadataBuilder {
      * For using the same instance of {@code Double} when the value is the same.
      * We use this map because the same values appear many time in a Landsat file.
      *
-     * @see #parseDouble(String)
+     * @see #shared(Integer)
+     * @see #shared(Double)
      */
     private final Map<Number,Number> sharedNumbers = new HashMap<>();
 

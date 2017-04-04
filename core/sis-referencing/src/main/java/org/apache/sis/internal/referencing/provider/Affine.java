@@ -137,9 +137,9 @@ public final class Affine extends AbstractProvider {
 
     /**
      * Creates a provider for affine transform with the specified dimensions.
-     * This is created when first needed by {@link #getProvider(int, int)}.
+     * This is created when first needed by {@link #getProvider(int, int, boolean)}.
      *
-     * @see #getProvider(int, int)
+     * @see #getProvider(int, int, boolean)
      */
     private Affine(final int sourceDimensions, final int targetDimensions) {
         super(IDENTIFICATION_OGC, sourceDimensions, targetDimensions, new Descriptor(IDENTIFICATION_OGC,

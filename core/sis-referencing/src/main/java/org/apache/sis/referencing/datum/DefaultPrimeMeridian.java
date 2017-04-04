@@ -309,7 +309,7 @@ public class DefaultPrimeMeridian extends AbstractIdentifiedObject implements Pr
 
     /**
      * Returns {@code true} if the given formatter is in the process of formatting the prime meridian of a base CRS
-     * of an {@link AbstractDerivedCRS}. In such case, base CRS coordinate system axes shall not be formatted, which
+     * of an {@code AbstractDerivedCRS}. In such case, base CRS coordinate system axes shall not be formatted, which
      * has the consequence of bringing the {@code UNIT[…]} element right below the {@code PRIMEM[…]} one. Example:
      *
      * {@preformat wkt

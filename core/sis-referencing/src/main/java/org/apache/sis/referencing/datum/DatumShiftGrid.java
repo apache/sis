@@ -142,7 +142,7 @@ public abstract class DatumShiftGrid<C extends Quantity<C>, T extends Quantity<T
 
     /**
      * The unit of measurements of input values, before conversion to grid indices by {@link #coordinateToGrid}.
-     * The coordinate unit is typically {@link javax.measure.Units#DEGREE}.
+     * The coordinate unit is typically {@link org.apache.sis.measure.Units#DEGREE}.
      *
      * @see #getCoordinateUnit()
      */

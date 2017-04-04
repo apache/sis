@@ -89,7 +89,7 @@ final class FallbackConverter<S,T> extends SystemConverter<S,T> {
      * @param  primary      a first converter.
      * @param  fallback     a second converter.
      *
-     * @see #create(ObjectConverter, ObjectConverter)
+     * @see #merge(ObjectConverter, ObjectConverter)
      */
     private FallbackConverter(final Class<S> sourceClass, final Class<T> targetClass,
                               final ObjectConverter<S, ? extends T> primary,

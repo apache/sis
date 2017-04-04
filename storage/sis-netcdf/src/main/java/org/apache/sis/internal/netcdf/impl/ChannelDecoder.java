@@ -165,7 +165,7 @@ public final class ChannelDecoder extends Decoder {
      * @todo Fixed to ISO-LATIN-1 for now, needs to be determined in a better way.
      *
      * @see #NAME_ENCODING
-     * @see #readString(String)
+     * @see #readValues(DataType, int)
      */
     private final String encoding = "ISO-8859-1";
 
@@ -295,7 +295,7 @@ public final class ChannelDecoder extends Decoder {
     }
 
     /**
-     * Returns the localized error resource bundle for the locale given by {@link #getLocale()}.
+     * Returns the localized error resource bundle for the locale given by {@link WarningListeners#getLocale()}.
      *
      * @return the localized error resource bundle.
      */
@@ -304,7 +304,7 @@ public final class ChannelDecoder extends Decoder {
     }
 
     /**
-     * Returns the NetCDF-specific resource bundle for the locale given by {@link #getLocale()}.
+     * Returns the NetCDF-specific resource bundle for the locale given by {@link WarningListeners#getLocale()}.
      *
      * @return the localized error resource bundle.
      */
@@ -359,8 +359,6 @@ public final class ChannelDecoder extends Decoder {
     /**
      * Reads a string from the channel in the {@value #NAME_ENCODING}. This is suitable for the dimension,
      * variable and attribute names in the header. Note that attribute value may have a different encoding.
-     *
-     * @param  length  number of bytes to read. The number of bytes actually read may be greater.
      */
     private String readName() throws IOException, DataStoreException {
         final int length = input.readInt();
@@ -455,7 +453,7 @@ public final class ChannelDecoder extends Decoder {
      *
      * <ul>
      *   <li>The dimension name     (use {@link #readName()})</li>
-     *   <li>The dimension length   (use {@link #readInt()})</li>
+     *   <li>The dimension length   (use {@link ChannelDataInput#readInt()})</li>
      * </ul>
      *
      * @param  nelems  the number of dimensions to read.
@@ -484,9 +482,9 @@ public final class ChannelDecoder extends Decoder {
      *
      * <ul>
      *   <li>The attribute name                             (use {@link #readName()})</li>
-     *   <li>The attribute type (BYTE, SHORT, …)            (use {@link #readInt()})</li>
-     *   <li>The number of values of the above type         (use {@link #readInt()})</li>
-     *   <li>The actual values as a variable length list    (use {@link #readValues(String,int,int)})</li>
+     *   <li>The attribute type (BYTE, SHORT, …)            (use {@link ChannelDataInput#readInt()})</li>
+     *   <li>The number of values of the above type         (use {@link ChannelDataInput#readInt()})</li>
+     *   <li>The actual values as a variable length list    (use {@link #readValues(DataType,int)})</li>
      * </ul>
      *
      * If the value is a {@code String}, then leading and trailing spaces and control characters
@@ -513,13 +511,13 @@ public final class ChannelDecoder extends Decoder {
      *
      * <ul>
      *   <li>The variable name          (use {@link #readName()})</li>
-     *   <li>The number of dimensions   (use {@link #readInt()})</li>
-     *   <li>Index of all dimensions    (use {@link #readInt()} <var>n</var> time)</li>
-     *   <li>The {@link #ATTRIBUTE} tag (use {@link #readInt()} - actually combined as a long with next item)</li>
-     *   <li>Number of attributes       (use {@link #readInt()} - actually combined as a long with above item)</li>
+     *   <li>The number of dimensions   (use {@link ChannelDataInput#readInt()})</li>
+     *   <li>Index of all dimensions    (use {@link ChannelDataInput#readInt()} <var>n</var> time)</li>
+     *   <li>The {@link #ATTRIBUTE} tag (use {@link ChannelDataInput#readInt()} - actually combined as a long with next item)</li>
+     *   <li>Number of attributes       (use {@link ChannelDataInput#readInt()} - actually combined as a long with above item)</li>
      *   <li>The attribute values       (use {@link #readAttributes(int)})</li>
-     *   <li>The data type (BYTE, …)    (use {@link #readInt()})</li>
-     *   <li>The variable size          (use {@link #readInt()})</li>
+     *   <li>The data type (BYTE, …)    (use {@link ChannelDataInput#readInt()})</li>
+     *   <li>The variable size          (use {@link ChannelDataInput#readInt()})</li>
      *   <li>Offset where data begins   (use {@link #readOffset()})</li>
      * </ul>
      *
@@ -645,8 +643,8 @@ public final class ChannelDecoder extends Decoder {
 
     /**
      * Returns the NetCDF attribute of the given name, or {@code null} if none.
-     * The {@code name} argument is typically (but is not restricted too) one of
-     * the constants defined in the {@link AttributeNames} class.
+     * The {@code name} argument is typically (but is not restricted to) one of the constants
+     * defined in the {@link org.apache.sis.storage.netcdf.AttributeNames} class.
      *
      * @param  name  the name of the attribute to search, or {@code null}.
      * @return the attribute value, or {@code null} if none.
