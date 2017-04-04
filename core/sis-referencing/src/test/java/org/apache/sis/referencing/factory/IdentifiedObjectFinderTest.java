@@ -107,7 +107,7 @@ public final strictfp class IdentifiedObjectFinderTest extends TestCase {
     }
 
     /**
-     * An authority factory to be used by {@link IdentifiedObjectFinderTest#testFindOnCachedInstance()}.
+     * An authority factory to be used by {@link IdentifiedObjectFinderTest#testFindOnCachingInstance()}.
      */
     private static final strictfp class Cached extends ConcurrentAuthorityFactory<GeodeticAuthorityFactory>
             implements CRSAuthorityFactory

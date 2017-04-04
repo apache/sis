@@ -60,7 +60,7 @@ public strictfp class TensorParametersTest extends TestCase {
     /**
      * The expected parameter names according the WKT 1 convention for the matrix elements.
      *
-     * @see MatrixParametersTest#NAMES
+     * @see MatrixParametersTest#ALPHANUM_NAMES
      */
     static final String[][] ELEMENT_NAMES = {
         {"elt_0_0", "elt_0_1", "elt_0_2", "elt_0_3"},
@@ -88,7 +88,7 @@ public strictfp class TensorParametersTest extends TestCase {
 
     /**
      * The expected parameter identifiers for all matrix elements, or {@code null} for no identifier.
-     * Example: {@link MatrixParametersAlphaNum#IDENTIFIERS}.
+     * Example: {@link MatrixParametersAlphaNumTest#IDENTIFIERS}.
      */
     private final short[][] identifiers;
 
@@ -137,7 +137,7 @@ public strictfp class TensorParametersTest extends TestCase {
     /**
      * Asserts that the given descriptor has the given name.
      *
-     * @param  names         the expected parameter name.
+     * @param  name          the expected parameter name.
      * @param  defaultValue  the expected parameter default value.
      * @param  actual        the actual parameter to verify.
      */

@@ -766,7 +766,7 @@ public final strictfp class MilitaryGridReferenceSystemTest extends TestCase {
     }
 
     /**
-     * Implementation of {@link #testIteratorUTM()}.
+     * Implementation of {@code testIteratorXXX()} methods.
      */
     private static void testIterator(final Envelope areaOfInterest, final List<String> expected) throws TransformException {
         final MilitaryGridReferenceSystem.Coder coder = coder();

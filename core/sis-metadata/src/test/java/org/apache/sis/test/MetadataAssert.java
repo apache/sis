@@ -39,7 +39,7 @@ import org.opengis.metadata.citation.Responsibility;
  */
 public strictfp class MetadataAssert extends Assert {
     /**
-     * The formatter to be used by {@link #assertWktEquals(Object, String)}.
+     * The formatter to be used by {@link #assertWktEquals(String, Object)}.
      * This formatter uses the {@code “…”} quotation marks instead of {@code "…"}
      * for easier readability of {@link String} constants in Java code.
      */

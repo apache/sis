@@ -83,9 +83,9 @@ public abstract strictfp class TestCase {
     protected static final double STRICT = 0;
 
     /**
-     * The seed for the random number generator created by {@link TestUtilities#createRandomNumberGenerator(String)},
-     * or 0 if none. This information is used for printing the seed in case of test failure, in order to allow the
-     * developer to reproduce the failure.
+     * The seed for the random number generator created by {@link TestUtilities#createRandomNumberGenerator()},
+     * or 0 if none. This information is used for printing the seed in case of test failure, in order to allow
+     * the developer to reproduce the failure.
      */
     static long randomSeed;
 
@@ -181,7 +181,7 @@ public abstract strictfp class TestCase {
 
     /**
      * Invoked by {@link TestRunner} in order to clear the buffer before a new test begin.
-     * This is necessary when the previous test succeeded and the {@link #verbose} flag is
+     * This is necessary when the previous test succeeded and the {@link #VERBOSE} flag is
      * {@code false}, since the {@link #flushOutput()} method has not been invoked in such
      * case.
      */
@@ -197,8 +197,6 @@ public abstract strictfp class TestCase {
      * The stream content will be flushed to the {@linkplain System#console() console}
      * if available, or to the {@linkplain System#out standard output stream} otherwise.
      * This method clears the stream buffer.
-     *
-     * @param success {@code true} if this method is invoked on build success,
      */
     @SuppressWarnings("UseOfSystemOutOrSystemErr")
     static void flushOutput() {

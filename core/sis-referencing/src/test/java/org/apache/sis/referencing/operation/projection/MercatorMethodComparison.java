@@ -300,7 +300,7 @@ public final class MercatorMethodComparison {   // No 'strictfp' keyword here si
     /**
      * Compares the performance of the 3 methods.
      *
-     * @throws ProjectionException if an error occurred in {@link #φ(double)}.
+     * @throws ProjectionException if an error occurred in {@link ConformalProjection#φ(double)}.
      */
     private void benchmark() throws ProjectionException {
         final Random random = new Random();
