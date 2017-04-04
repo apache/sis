@@ -53,7 +53,7 @@ final class CartesianToPolar extends CoordinateSystemTransform implements Serial
 
     /**
      * The singleton instance computing output coordinates are in radians.
-     * For the instance computing output coordinates in degrees, use {@link #completeTransform()} instead.
+     * For the instance computing output coordinates in degrees, use {@link #create} instead.
      */
     static final CartesianToPolar INSTANCE = new CartesianToPolar();
 

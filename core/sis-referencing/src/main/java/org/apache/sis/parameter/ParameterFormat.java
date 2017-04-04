@@ -443,9 +443,9 @@ public class ParameterFormat extends TabularFormat<Object> {
     /**
      * Implementation of public {@code format(…)} methods for all content levels except {@code NAME_SUMMARY}.
      *
-     * @param  name        the group name, usually {@code descriptor.getName().getCode()}.
-     * @param  descriptor  the parameter descriptor, usually {@code values.getDescriptor()}.
-     * @param  values      the parameter values, or {@code null} if none.
+     * @param  name    the group name, usually {@code descriptor.getName().getCode()}.
+     * @param  group   the parameter descriptor, usually {@code values.getDescriptor()}.
+     * @param  values  the parameter values, or {@code null} if none.
      * @throws IOException if an error occurred while writing to the given appendable.
      */
     private void format(final String name, final ParameterDescriptorGroup group,

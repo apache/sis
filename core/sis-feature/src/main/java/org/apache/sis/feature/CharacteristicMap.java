@@ -59,8 +59,8 @@ final class CharacteristicMap extends AbstractMap<String,Attribute<?>> implement
     /**
      * Creates an initially empty map of attribute characteristics.
      *
-     * @param  source           the attribute which is characterized by {@code characterizedBy}.
-     * @param  characterizedBy  description of the characteristics of {@code source}.
+     * @param  source  the attribute which is characterized by {@code characterizedBy}.
+     * @param  types   description of the characteristics of {@code source}.
      */
     CharacteristicMap(final Attribute<?> source, final CharacteristicTypeMap types) {
         this.source = source;

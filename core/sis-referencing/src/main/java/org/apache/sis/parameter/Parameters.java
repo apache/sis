@@ -529,7 +529,7 @@ public abstract class Parameters implements ParameterValueGroup, Cloneable {
     /**
      * Returns the default value of the given descriptor, or throws an exception if the
      * descriptor does not define a default value. This check should be kept consistent
-     * with the {@link DefaultParameterValue#incompatibleValue(Object)} check.
+     * with the {@link DefaultParameterValue#missingOrIncompatibleValue(Object)} check.
      */
     private static <T> T defaultValue(final ParameterDescriptor<T> parameter) throws IllegalStateException {
         final T value = parameter.getDefaultValue();

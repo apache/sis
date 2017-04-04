@@ -49,8 +49,8 @@ public final strictfp class FeatureNamingTest extends TestCase {
     }
 
     /**
-     * Tests {@link FeatureNaming#add(GenericName, Object)} followed by {@link FeatureNaming#get(String)}
-     * in a simple case where there is no ambiguity.
+     * Tests {@link FeatureNaming#add(DataStore, GenericName, Object)} followed by
+     * {@link FeatureNaming#get(DataStore, String)} in a simple case where there is no ambiguity.
      *
      * @throws IllegalNameException if an unexpected error occurred while adding or getting an element.
      */

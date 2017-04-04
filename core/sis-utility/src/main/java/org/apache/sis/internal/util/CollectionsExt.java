@@ -725,7 +725,7 @@ public final class CollectionsExt extends Static {
     /**
      * Returns the elements of the given collection as an array. This method can be used when the {@code valueClass}
      * argument is not known at compile-time. If the {@code valueClass} is known at compile-time, then callers should
-     * use {@link Collection#toArray(T[])} instead.
+     * use {@link Collection#toArray(Object[])} instead.
      *
      * @param  <T>         the compile-time value of {@code valueClass}.
      * @param  collection  the collection from which to get the elements.

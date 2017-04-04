@@ -40,7 +40,8 @@ import org.apache.sis.referencing.factory.IdentifiedObjectSet;
  */
 final class CoordinateOperationSet extends IdentifiedObjectSet<CoordinateOperation> {
     /**
-     * The codes of {@link ProjectedCRS} objects for the specified {@link Conversion} codes.
+     * The codes of {@link org.opengis.referencing.crs.ProjectedCRS} objects for
+     * the specified {@link org.opengis.referencing.operation.Conversion} codes.
      */
     private final Map<String,Integer> projections;
 

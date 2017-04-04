@@ -126,7 +126,7 @@ public final class SystemRegistry extends ConverterRegistry {
     }
 
     /**
-     * Create dynamically the converters for a few special cases.
+     * Creates dynamically the converters for a few special cases.
      * This method is invoked only the first time that a new pair of source and target classes is
      * requested. Then, the value returned by this method will be cached for future invocations.
      *

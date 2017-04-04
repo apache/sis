@@ -34,7 +34,7 @@ import static org.apache.sis.util.Characters.Filter.LETTERS_AND_DIGITS;
 
 /**
  * Does the unobvious mapping between {@link Identifier} properties and {@link GenericName} ones.
- * This class also implements the {@link #isHeuristicMatchForName(Identifier, Collection, CharSequence)}
+ * This class also implements the {@link #isHeuristicMatchForName(Identifier, Collection, CharSequence, Simplifier)}
  * method since that method involves a mix of names and identifiers.
  *
  * <p><b>Limitation:</b>
@@ -251,7 +251,7 @@ public final class NameToIdentifier implements Identifier {
     }
 
     /**
-     * A function for simplifying an {@link IdentifiedObject} name before comparison with
+     * A function for simplifying an {@link org.opengis.referencing.IdentifiedObject} name before comparison with
      * {@link NameToIdentifier#isHeuristicMatchForName(Identifier, Collection, CharSequence, Simplifier)}.
      *
      * @since 0.7

@@ -77,7 +77,7 @@ abstract class AbstractLocationType implements LocationType, LenientComparable {
     }
 
     /**
-     * Implementation of {@link #verifyCycle()} to be invoked recursively for each children.
+     * Implementation of {@link #checkForCycles()} to be invoked recursively for each children.
      *
      * @throws IllegalArgumentException if an infinite recursivity is detected.
      */

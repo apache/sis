@@ -45,7 +45,7 @@ final class IdentityTransform extends AbstractLinearTransform {
      * Identity transforms for dimensions ranging from to 0 to 7.
      * Elements in this array will be created only when first requested.
      *
-     * @see #identity(int)
+     * @see #create(int)
      */
     private static final LinearTransform[] IDENTITIES = new LinearTransform[8];
 

@@ -113,10 +113,10 @@ public class ScriptRunner implements AutoCloseable {
     private final Map<String,String> replacements = new HashMap<>();
 
     /**
-     * A sentinel value for the {@linkplain #replace replacements} map meaning that {@code ScriptRunner}
+     * A sentinel value for the {@linkplain #replacements} map meaning that {@code ScriptRunner}
      * needs to look also at the word after the word associated to {@code MORE_WORDS}.
      *
-     * @see #replace(String, String)
+     * @see #addReplacement(String, String)
      */
     protected static final String MORE_WORDS = "…";
 
@@ -677,7 +677,7 @@ parseLine:  while (pos < length) {
      * This method performs the following choices:
      *
      * <ul>
-     *   <li>If {@link #isSupported(StringBuilder)} returns {@code false}, then this method does nothing.</li>
+     *   <li>If {@link #isSupported(CharSequence)} returns {@code false}, then this method does nothing.</li>
      *   <li>If the {@code maxRowsPerInsert} argument given at construction time was zero,
      *       then this method skips {@code "INSERT INTO"} statements but executes all other.</li>
      *   <li>Otherwise this method executes the given statement with the following modification:

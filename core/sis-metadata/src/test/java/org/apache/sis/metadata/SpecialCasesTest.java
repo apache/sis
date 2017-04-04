@@ -69,14 +69,15 @@ public final strictfp class SpecialCasesTest extends TestCase {
     }
 
     /**
-     * Invokes {@link SpecialCases#type(int)} and ensure that the result is equals to the expected value.
+     * Invokes {@link SpecialCases#type(int, TypeValuePolicy)}
+     * and ensures that the result is equals to the expected value.
      */
     private void assertTypeEquals(final String name, final Class<?> expected) {
         assertEquals(name, expected, accessor.type(accessor.indexOf(name, true), TypeValuePolicy.ELEMENT_TYPE));
     }
 
     /**
-     * Invokes {@link SpecialCases#get(int, Object)} and ensure that the result is equals to the expected value.
+     * Invokes {@link SpecialCases#get(int, Object)} and ensures that the result is equals to the expected value.
      */
     private void assertPropertyEquals(final String name, final Object expected) {
         assertEquals(name, expected, accessor.get(accessor.indexOf(name, true), box));

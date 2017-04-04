@@ -100,7 +100,7 @@ public abstract class StaxStreamWriter extends StaxStreamIO implements Consumer<
      * The marshaller reserved to this writer usage,
      * created only when first needed and kept until this writer is closed.
      *
-     * @see #marshal(Object)
+     * @see #marshal(String, String, Class, Object)
      */
     private Marshaller marshaller;
 

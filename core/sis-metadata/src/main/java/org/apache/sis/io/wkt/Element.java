@@ -86,8 +86,7 @@ final class Element implements Serializable {
     final int offset;
 
     /**
-     * Index of the keyword in the array given to the {@link #pullElement(String...)}
-     * or {@link #pullOptionalElement(String...)} method.
+     * Index of the keyword in the array given to the {@link #pullElement(int, String...)} method.
      *
      * @see #getKeywordIndex()
      */

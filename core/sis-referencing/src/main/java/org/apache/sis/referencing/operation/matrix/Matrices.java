@@ -628,7 +628,7 @@ public final class Matrices extends Static {
      * @return a matrix for the same transform than the given matrix,
      *         augmented with leading and trailing pass-through coordinates.
      *
-     * @see org.apache.sis.referencing.operation.DefaultMathTransformFactory#createPassThroughTransform(int, MathTransform, int)
+     * @see org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory#createPassThroughTransform(int, MathTransform, int)
      */
     public static MatrixSIS createPassThrough(final int firstAffectedOrdinate,
             final Matrix subMatrix, final int numTrailingOrdinates)

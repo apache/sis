@@ -419,7 +419,6 @@ class MathTransformParser extends AbstractParser {
      *     CONCAT_MT[<math transform> {,<math transform>}*]
      * }
      *
-     * @param  mode    {@link #FIRST}, {@link #OPTIONAL} or {@link #MANDATORY}.
      * @param  parent  the parent element.
      * @return the {@code "CONCAT_MT"} element as an {@link MathTransform} object.
      * @throws ParseException if the {@code "CONCAT_MT"} element can not be parsed.

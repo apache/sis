@@ -396,18 +396,18 @@ class GeneralMatrix extends MatrixSIS implements ExtendedPrecisionMatrix {
     }
 
     /**
-     * Sets all matrix elements like {@link #setElements(double)}, but from an array of {@code Number} instead
+     * Sets all matrix elements like {@link #setElements(double[])}, but from an array of {@code Number} instead
      * of {@code double}. The main purpose of this method is to fetch the {@link DoubleDouble#error} terms when
      * such instances are found.
      *
      * <p><b>Restrictions:</b></p>
      * <ul>
-     *   <li>This matrix must use extended-precision elements, as by {@link #createExtendedPrecision(int, int)}.</li>
+     *   <li>This matrix must use extended-precision elements as by {@link #createExtendedPrecision(int, int, boolean)}.</li>
      *   <li>If this method returns {@code false}, then error terms are <strong>not</strong> initialized - they
      *       may have any values.</li>
      * </ul>
      *
-     * @param  elements  the new matrix elements in a row-major array.
+     * @param  newValues  the new matrix elements in a row-major array.
      * @return {@code true} if at leat one {@link DoubleDouble} instance has been found, in which case all
      *         errors terms have been initialized, or {@code false} otherwise, in which case no error term
      *         has been initialized (this is a <cite>all or nothing</cite> operation).

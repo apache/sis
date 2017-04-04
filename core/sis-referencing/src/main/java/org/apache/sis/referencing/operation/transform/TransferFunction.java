@@ -47,7 +47,7 @@ import org.apache.sis.util.Debug;
  * This {@code TransferFunction} class handles only the continuous part of transfer functions.
  * This class does <strong>not</strong> handle missing values other than {@code NaN}.
  * For a more complete class with support for non-NaN missing values,
- * see {@link org.apache.sis.coverage.grid.GridSampleDimension}.
+ * see {@code GridSampleDimension}.
  *
  * <div class="section">Serialization</div>
  * Serialized instances of this class are not guaranteed to be compatible with future SIS versions.

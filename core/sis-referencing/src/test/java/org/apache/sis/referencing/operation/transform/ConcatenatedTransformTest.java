@@ -110,8 +110,8 @@ public final strictfp class ConcatenatedTransformTest extends MathTransformTestC
 
     /**
      * Tests the concatenation of a 3D affine transform with a pass-through transform.
-     * The {@link ConcatenatedTransform#create(MathTransform, MathTransform)} method
-     * should optimize this case.
+     * The {@link ConcatenatedTransform#create(MathTransform, MathTransform, MathTransformFactory)}
+     * method should optimize this case.
      *
      * @throws FactoryException if an error occurred while creating the math transform to test.
      */

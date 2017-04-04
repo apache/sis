@@ -65,7 +65,7 @@ final class SphericalToCartesian extends CoordinateSystemTransform implements Se
 
     /**
      * The singleton instance expecting input coordinates in radians.
-     * For the instance expecting input coordinates in degrees, use {@link #completeTransform()} instead.
+     * For the instance expecting input coordinates in degrees, use {@link #create} instead.
      */
     static final SphericalToCartesian INSTANCE = new SphericalToCartesian();
 

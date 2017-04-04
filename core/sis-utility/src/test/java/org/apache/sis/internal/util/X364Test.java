@@ -48,7 +48,7 @@ public final strictfp class X364Test extends TestCase {
     }
 
     /**
-     * Tests the {@link X364#plain(String)} method.
+     * Tests the {@link X364#plain(CharSequence, int, int)} method.
      */
     @Test
     public void testPlain() {

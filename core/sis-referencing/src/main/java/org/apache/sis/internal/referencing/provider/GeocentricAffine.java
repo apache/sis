@@ -99,21 +99,21 @@ public abstract class GeocentricAffine extends GeodeticOperation {
     /**
      * The operation parameter descriptor for the <cite>X-axis rotation</cite>
      * ({@linkplain BursaWolfParameters#rX rX}) parameter value.
-     * Units are {@linkplain Units#SECOND_ANGLE arc-seconds}.
+     * Units are {@linkplain Units#ARC_SECOND arc-seconds}.
      */
     static final ParameterDescriptor<Double> RX;
 
     /**
      * The operation parameter descriptor for the <cite>Y-axis rotation</cite>
      * ({@linkplain BursaWolfParameters#rY rY}) parameter value.
-     * Units are {@linkplain Units#SECOND_ANGLE arc-seconds}.
+     * Units are {@linkplain Units#ARC_SECOND arc-seconds}.
      */
     static final ParameterDescriptor<Double> RY;
 
     /**
      * The operation parameter descriptor for the <cite>Z-axis rotation</cite>
      * ({@linkplain BursaWolfParameters#rZ rZ}) parameter value.
-     * Units are {@linkplain Units#SECOND_ANGLE arc-seconds}.
+     * Units are {@linkplain Units#ARC_SECOND arc-seconds}.
      */
     static final ParameterDescriptor<Double> RZ;
 

@@ -111,7 +111,7 @@ final class LandsatReader {
      * Names of Landsat bands.
      *
      * @see #bands
-     * @see #band(int)
+     * @see #band(String, int)
      */
     private static final String[] BAND_NAMES = {
         "Coastal Aerosol",                      //   433 nm
@@ -131,7 +131,7 @@ final class LandsatReader {
      * Peak response wavelength for the Landsat bands, in nanometres.
      *
      * @see #bands
-     * @see #band(int)
+     * @see #band(String, int)
      */
     private static final short[] WAVELENGTHS = {
         433, 482, 562, 655, 865, 1610, 2200, 590, 1375, 10800, 12000
@@ -185,7 +185,7 @@ final class LandsatReader {
     private static final int NUM_GROUPS = 3;
 
     /**
-     * Index of panchromatic, reflective or thermal groups in the {@link #gridSize} array.
+     * Index of panchromatic, reflective or thermal groups in the {@link #gridSizes} array.
      * The image size is each group is given by {@value #DIM} integers: the width and the height.
      */
     static final int PANCHROMATIC = 0*DIM,
@@ -270,7 +270,7 @@ final class LandsatReader {
      *
      * @see #BAND_NAMES
      * @see #WAVELENGTHS
-     * @see #band(int)
+     * @see #band(String, int)
      */
     private final DefaultBand[] bands;
 

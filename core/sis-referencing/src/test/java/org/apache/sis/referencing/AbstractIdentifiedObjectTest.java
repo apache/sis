@@ -55,7 +55,7 @@ public final strictfp class AbstractIdentifiedObjectTest extends TestCase {
      * Creates a map of properties to be given to the {@link AbstractIdentifiedObject} constructor.
      * The values in the map are consistent with the values expected by the {@link #validate} method.
      *
-     * @param  identifier  the value for the {@code "identifiers"} property.
+     * @param  identifiers  the value for the {@code "identifiers"} property.
      */
     private static Map<String,Object> properties(final Set<Identifier> identifiers) {
         final Map<String,Object> properties = new HashMap<>(8);
@@ -70,7 +70,7 @@ public final strictfp class AbstractIdentifiedObjectTest extends TestCase {
     }
 
     /**
-     * Validates the given object created by {@link #testCreateFromMap()}.
+     * Validates the given object created by the test methods.
      *
      * @param  object       the object to validate.
      * @param  identifiers  the expected value of {@link AbstractIdentifiedObject#getIdentifiers()}.
@@ -97,7 +97,7 @@ public final strictfp class AbstractIdentifiedObjectTest extends TestCase {
 
     /**
      * Tests the {@link AbstractIdentifiedObject#AbstractIdentifiedObject(Map)} constructor without name.
-     * This is invalid and should thrown an exception.
+     * This is invalid and should throw an exception.
      */
     @Test
     @SuppressWarnings("ResultOfObjectAllocationIgnored")

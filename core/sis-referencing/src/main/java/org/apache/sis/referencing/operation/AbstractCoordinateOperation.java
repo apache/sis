@@ -277,7 +277,7 @@ public class AbstractCoordinateOperation extends AbstractIdentifiedObject implem
      *   </tr>
      *   <tr>
      *     <td>{@value org.opengis.referencing.IdentifiedObject#ALIAS_KEY}</td>
-     *     <td>{@link GenericName} or {@link CharSequence} (optionally as array)</td>
+     *     <td>{@link org.opengis.util.GenericName} or {@link CharSequence} (optionally as array)</td>
      *     <td>{@link #getAlias()}</td>
      *   </tr>
      *   <tr>

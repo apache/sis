@@ -103,9 +103,9 @@ public interface ObjectConverter<S,T> extends Function<S,T> {
      *       a sequence of decreasing <var>T</var> values.</li>
      * </ul>
      *
-     * Note that if the {@link #apply(Object)} method returns {@code null} for any non-convertible
-     * source value, then this properties set can not contain the {@link FunctionProperty#INJECTIVE}
-     * value. See class javadoc for more discussion.
+     * Note that if the {@link #apply(Object)} method returns {@code null} for unconvertible source values,
+     * then this properties set can not contain {@link FunctionProperty#INJECTIVE} because more than one
+     * source value could be converted to the same {@code null} target value.
      *
      * @return the manners in which source values are mapped to target values.
      *         May be an empty set, but never null.
@@ -128,9 +128,22 @@ public interface ObjectConverter<S,T> extends Function<S,T> {
 
     /**
      * Converts the given object from the source type <var>S</var> to the target type <var>T</var>.
-     * If the given object can not be converted, then this method may either returns {@code null} or
-     * throws an exception, at implementation choice. Note that this choice may affect the set of
-     * function {@linkplain #properties() properties} - see the class Javadoc for more discussion.
+     * If the given object can not be converted, then this method may either returns {@code null} or throws an exception,
+     * at implementation choice (except for {@linkplain FunctionProperty#INJECTIVE injective} functions, which must throw
+     * an exception - see the class Javadoc for more discussion about function {@linkplain #properties() properties}).
+     *
+     * <div class="note"><b>Example:</b>
+     * in Apache SIS implementation, converters from {@link String} to {@link Number} distinguish two kinds of
+     * unconvertible objects:
+     *
+     * <ul>
+     *   <li>Null or empty source string result in a {@code null} value to be returned.</li>
+     *   <li>All other kind of unparsable strings results in an exception to be thrown.</li>
+     * </ul>
+     *
+     * In other words, the {@code ""} value is unconvertible but nevertheless considered as part of the converter
+     * domain, and is mapped to <cite>"no number"</cite>. All other unparsable strings are considered outside the
+     * converter domain.</div>
      *
      * @param  object  the object to convert, or {@code null}.
      * @return the converted object, or {@code null}.

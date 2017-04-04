@@ -391,7 +391,7 @@ public abstract strictfp class MatrixTestCase extends TestCase {
     }
 
     /**
-     * Tests {@link MatrixSIS#convertBefore(int, Number, Number)} using {@link AffineTranform}
+     * Tests {@link MatrixSIS#convertBefore(int, Number, Number)} using {@link AffineTransform}
      * as a reference implementation. This test can be run only with matrices of size 3×3.
      * Consequently it is sub-classes responsibility to add a {@code testConvertBefore()} method
      * which invoke this method.
@@ -461,7 +461,7 @@ public abstract strictfp class MatrixTestCase extends TestCase {
     }
 
     /**
-     * Tests {@link MatrixSIS#convertAfter(int, Number, Number)} using {@link AffineTranform}
+     * Tests {@link MatrixSIS#convertAfter(int, Number, Number)} using {@link AffineTransform}
      * as a reference implementation. This test can be run only with matrices of size 3×3.
      * Consequently it is sub-classes responsibility to add a {@code testConvertAfter()} method
      * which invoke this method.
@@ -497,9 +497,10 @@ public abstract strictfp class MatrixTestCase extends TestCase {
     }
 
     /**
-     * Tests {@link MatrixSIS#multiply(double[])} using {@link AffineTranform} as a reference implementation.
-     * This test can be run only with matrices of size 3×3. Consequently it is sub-classes responsibility to
-     * add a {@code testMultiplyVector()} method which invoke this method.
+     * Tests {@link MatrixSIS#multiply(double[])} using {@link AffineTransform}
+     * as a reference implementation. This test can be run only with matrices of size 3×3.
+     * Consequently it is sub-classes responsibility to add a {@code testMultiplyVector()}
+     * method which invoke this method.
      *
      * @param  matrix  the matrix of size 3×3 to test.
      *
@@ -532,7 +533,7 @@ public abstract strictfp class MatrixTestCase extends TestCase {
     }
 
     /**
-     * Tests {@link MatrixSIS#multiply(Matrix)}.
+     * Tests {@link MatrixSIS#multiply(org.opengis.referencing.operation.Matrix)}.
      */
     @Test
     @DependsOnMethod("testGetElements")
@@ -567,7 +568,7 @@ public abstract strictfp class MatrixTestCase extends TestCase {
     }
 
     /**
-     * Tests {@link MatrixSIS#solve(Matrix)}.
+     * Tests {@link MatrixSIS#solve(org.opengis.referencing.operation.Matrix)}.
      *
      * @throws NoninvertibleMatrixException if the matrix can not be inverted.
      */

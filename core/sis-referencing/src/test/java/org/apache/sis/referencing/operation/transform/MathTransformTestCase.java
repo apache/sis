@@ -413,8 +413,6 @@ public abstract strictfp class MathTransformTestCase extends TransformTestCase {
     /**
      * Prints the current {@linkplain #transform transform} as normal and internal WKT.
      * This method is for debugging purpose only.
-     *
-     * @see #verifyWKT(String)
      */
     @Debug
     protected final void printInternalWKT() {

@@ -69,7 +69,7 @@ public final strictfp class ScriptRunnerTest extends TestCase {
 
     /**
      * Verifies the regular expressions used by the script runner.
-     * This method tests the values returned by {@link ScriptRunner#isSupported(StringBuilder)}
+     * This method tests the values returned by {@link ScriptRunner#isSupported(CharSequence)}
      *
      * @param  sr  the script runner to use for testing regular expressions.
      */

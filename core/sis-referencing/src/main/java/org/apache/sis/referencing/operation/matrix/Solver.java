@@ -24,9 +24,9 @@ import org.apache.sis.util.ArraysExt;
 
 /**
  * Computes the value of <var>U</var> which solves {@code X} × <var>U</var> = {@code Y}.
- * The {@link #solve(Matrix, Matrix, int)} method in this class is adapted from the {@code LUDecomposition}
- * class of the <a href="http://math.nist.gov/javanumerics/jama">JAMA matrix package</a>. JAMA is provided in
- * the public domain.
+ * The {@link #solve(double[], Matrix, double[], int, int)} method in this class is adapted from the
+ * {@code LUDecomposition} class of the <a href="http://math.nist.gov/javanumerics/jama">JAMA matrix package</a>.
+ * JAMA is provided in the public domain.
  *
  * <p>This class implements the {@link Matrix} interface as an implementation convenience.
  * This implementation details can be ignored.</p>
@@ -40,7 +40,7 @@ import org.apache.sis.util.ArraysExt;
 @SuppressWarnings("CloneInNonCloneableClass")
 final class Solver implements Matrix {                          // Not Cloneable, despite the clone() method.
     /**
-     * The size of the (i, j, s) tuples used internally by {@link #solve(Matrix, Matrix, double[], int, int)}
+     * The size of the (i, j, s) tuples used internally by {@link #solve(Matrix, Matrix, double[], int, int, boolean)}
      * for storing information about the NaN values.
      */
     private static final int TUPLE_SIZE = 3;

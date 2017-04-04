@@ -43,7 +43,7 @@ public final strictfp class StandardDateFormatTest extends TestCase {
     }
 
     /**
-     * Tests {@link StandardDateFormat#dateToISO(String, int, boolean)} method.
+     * Tests {@link StandardDateFormat#dateToISO(CharSequence, int, boolean)} method.
      */
     @Test
     public void testDateToISO() {

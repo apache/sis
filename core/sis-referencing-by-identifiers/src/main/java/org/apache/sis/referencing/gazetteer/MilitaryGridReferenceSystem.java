@@ -1437,10 +1437,10 @@ public class MilitaryGridReferenceSystem extends ReferencingByIdentifiers {
         }
 
         /**
-         * Returns the band letter for the given latitude. It is caller responsibility to ensure that the
-         * given latitude is between {@value #UTM_SOUTH_BOUNDS} and {@value #UTM_NORTH_BOUNDS} inclusive.
-         * The returned letter will be one of {@code "CDEFGHJKLMNPQRSTUVWX"} (note that I and O letters
-         * are excluded). All bands are 8° height except the X band which is 12° height.
+         * Returns the band letter for the given latitude. It is caller responsibility to ensure that the given latitude
+         * is between {@value TransverseMercator.Zoner#SOUTH_BOUNDS} and {@value TransverseMercator.Zoner#NORTH_BOUNDS}
+         * inclusive. The returned letter will be one of {@code "CDEFGHJKLMNPQRSTUVWX"} (note that I and O letters are
+         * excluded). All bands are 8° height except the X band which is 12° height.
          *
          * @param  φ  the latitude in degrees for which to get the band letter.
          * @return the band letter for the given latitude.
