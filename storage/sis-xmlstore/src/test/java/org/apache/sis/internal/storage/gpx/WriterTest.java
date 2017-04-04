@@ -129,7 +129,7 @@ public final strictfp class WriterTest extends TestCase {
     /**
      * Implementations of {@link #testMetadata100()} and {@link #testMetadata110()}.
      *
-     * @param version   either {@link Store#V1_0} or {@link Store#V1_1}.
+     * @param version   either {@link StoreProvider#V1_0} or {@link StoreProvider#V1_1}.
      * @param expected  name of a test file containing the expected XML result.
      */
     private void testMetadata(final Version version, final String expected) throws Exception {
@@ -225,7 +225,7 @@ public final strictfp class WriterTest extends TestCase {
     /**
      * Implementation of way points, routes and tracks test methods.
      *
-     * @param version   either {@link Store#V1_0} or {@link Store#V1_1}.
+     * @param version   either {@link StoreProvider#V1_0} or {@link StoreProvider#V1_1}.
      * @param type      the kind of feature to test: way point, route or track.
      * @param expected  name of a test file containing the expected XML result.
      */

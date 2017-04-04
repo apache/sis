@@ -87,7 +87,7 @@ public final strictfp class MolodenskyTransformTest extends MathTransformTestCas
     /**
      * Compares the Molodensky (non-abridged) transform with a geocentric translation.
      * Molodensky is an approximation of geocentric translation, so we test here how good this approximation is.
-     * If {@link TestCase#verbose} is {@code true}, then this method will print error statistics.
+     * If {@link TestCase#VERBOSE} is {@code true}, then this method will print error statistics.
      *
      * @throws FactoryException if an error occurred while creating a transform step.
      * @throws TransformException if a transformation failed.

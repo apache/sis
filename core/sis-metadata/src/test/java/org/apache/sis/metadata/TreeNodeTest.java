@@ -356,7 +356,7 @@ public final strictfp class TreeNodeTest extends TestCase {
 
     /**
      * Compares the result of the given getter method invoked on the given node, then invoked
-     * on all children of that given. In the particular case of the {@link #NAME} method,
+     * on all children of that given. In the particular case of the {@link TableColumn#NAME},
      * international strings are replaced by unlocalized strings before comparisons.
      *
      * @param  node     the node for which to test the children.

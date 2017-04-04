@@ -19,6 +19,7 @@ package org.apache.sis.internal.jaxb.gco;
 import java.util.UUID;
 import org.apache.sis.util.iso.SimpleInternationalString;
 import org.apache.sis.xml.XLink;
+import org.apache.sis.xml.MarshalContext;
 import org.apache.sis.xml.IdentifierSpace;
 import org.apache.sis.xml.ReferenceResolverMock;
 import org.apache.sis.test.DependsOnMethod;
@@ -171,7 +172,7 @@ public final strictfp class PropertyTypeTest extends XMLTestCase {
      *
      *   <li>If {@code useReferenceResolverMock} is {@code true}, then the metadata object shall be replaced
      *       by the XLink because the {@link ReferenceResolverMock#canSubstituteByReference(MarshalContext,
-     *       Class, Object, Xlink)} method returns {@code true}.</li>
+     *       Class, Object, XLink)} method returns {@code true}.</li>
      * </ul>
      */
     private void testWithXLink(final boolean useReferenceResolverMock) {

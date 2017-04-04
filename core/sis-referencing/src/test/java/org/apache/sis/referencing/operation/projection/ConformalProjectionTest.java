@@ -89,7 +89,7 @@ public final strictfp class ConformalProjectionTest extends TransformTestCase {
 
     /**
      * Implementation of {@link #testExpOfNorthing()}.
-     * The {@link #projection} field must have been set before this method is called.
+     * The {@link #transform} field must have been set before this method is called.
      */
     private void doTestExpOfNorthing() {
         assertEquals("f(NaN) = NaN",       NaN, expOfNorthing(NaN),               tolerance);
@@ -187,7 +187,6 @@ public final strictfp class ConformalProjectionTest extends TransformTestCase {
 
     /**
      * Implementation of {@link #test_dy_dφ()}.
-     * The {@link #projection} field must have been set before this method is called.
      */
     private void doTest_dy_dφ(final NoOp projection) throws TransformException {
         transform = new AbstractMathTransform1D() {
@@ -247,7 +246,7 @@ public final strictfp class ConformalProjectionTest extends TransformTestCase {
 
     /**
      * Implementation of {@link #test_φ()}.
-     * The {@link #projection} field must have been set before this method is called.
+     * The {@link #transform} field must have been set before this method is called.
      */
     private void doTest_φ() throws ProjectionException {
         assertEquals("φ(NaN) = NaN",    NaN,   φ(NaN),               tolerance);
