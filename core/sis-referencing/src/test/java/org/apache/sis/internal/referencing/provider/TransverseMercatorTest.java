@@ -37,7 +37,7 @@ import static org.junit.Assert.*;
  */
 public final strictfp class TransverseMercatorTest extends TestCase {
     /**
-     * Tests {@link TransverseMercator.Zoner#zone(double)},
+     * Tests {@link TransverseMercator.Zoner#zone(double, double)},
      * including the special cases for Norway and Svalbard.
      */
     @Test

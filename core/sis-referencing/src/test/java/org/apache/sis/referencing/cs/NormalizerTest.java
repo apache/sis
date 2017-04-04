@@ -45,7 +45,7 @@ import static org.apache.sis.test.ReferencingAssert.*;
 })
 public final strictfp class NormalizerTest extends TestCase {
     /**
-     * Tests {@link Normalizer#sort(CoordinateSystemAxis[])}.
+     * Tests {@link Normalizer#sort(CoordinateSystemAxis[], int)}.
      */
     @Test
     public void testSort() {

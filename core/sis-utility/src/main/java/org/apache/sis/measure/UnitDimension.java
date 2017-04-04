@@ -232,8 +232,8 @@ final class UnitDimension implements Dimension, Serializable {
      * Returns the product or the quotient of this dimension with the specified one.
      *
      * @param  other   the dimension by which to multiply or divide this dimension.
-     * @param  mapping the operation to apply between the powers of {@code this} and {@code other} dimensions.
-     * @return the product of this dimension by the given dimension raised to the given power.
+     * @param  divide  {@code false} for a multiplication, {@code true} for a division.
+     * @return the product or division of this dimension by the given dimension.
      */
     private UnitDimension combine(final Dimension other, final boolean divide) {
         final Map<UnitDimension,Fraction> product = new LinkedHashMap<>(components);

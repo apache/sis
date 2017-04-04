@@ -387,9 +387,7 @@ public class ObliqueStereographic extends NormalizedProjection {
         private static final long serialVersionUID = -1454098847621943639L;
 
         /**
-         * Constructs a new map projection from the supplied parameters.
-         *
-         * @param  parameters  the parameters of the projection to be created.
+         * Creates a new projection initialized to the same parameters than the given one.
          */
         protected Spherical(ObliqueStereographic other) {
             super(other);

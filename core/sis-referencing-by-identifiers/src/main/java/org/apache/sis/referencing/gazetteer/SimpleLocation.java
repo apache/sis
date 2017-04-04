@@ -299,8 +299,8 @@ class SimpleLocation extends AbstractLocation implements DirectPosition, Envelop
 
     /**
      * A {@code SimpleLocation} for non-geographic CRS.
-     * Subclasses should invoke {@link #computeGeographicBoundingBox(MathTransform, DirectPosition2D)}
-     * after the {@link #minX}, {@link #minY}, {@link #maxX} and {@link #maxY} fields have been set.
+     * Subclasses should invoke {@link #computeGeographicBoundingBox(MathTransform)} after the
+     * {@link #minX}, {@link #minY}, {@link #maxX} and {@link #maxY} fields have been set.
      *
      * @author  Martin Desruisseaux (Geomatys)
      * @version 0.8

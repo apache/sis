@@ -34,8 +34,8 @@ import static org.apache.sis.internal.util.Constants.OGC;
 
 
 /**
- * Tests the {@link TypeNames} class. Tests are performed through the {@link DefaultNameFactory#toTypeName(Class)}
- * method on the {@link DefaultFactories#SIS_NAMES} instance.
+ * Tests the {@link TypeNames} class.
+ * Tests are performed through the {@link DefaultNameFactory#toTypeName(Class)} method.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.5

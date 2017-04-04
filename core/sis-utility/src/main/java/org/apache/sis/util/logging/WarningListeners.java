@@ -74,7 +74,7 @@ public class WarningListeners<S> implements Localized {
     private WarningListener<? super S>[] listeners;
 
     /**
-     * Creates a new instance without source. This constructor is for {@link EmptyWarningListeners}
+     * Creates a new instance without source. This constructor is for {@code EmptyWarningListeners}
      * usage only, because it requires some method to be overloaded.
      */
     WarningListeners() {

@@ -1207,7 +1207,7 @@ class PropertyAccessor {
      * Returns a potentially deep copy of the given metadata object.
      *
      * @param  metadata   the metadata object to copy.
-     * @param  copies     a map of metadata objects already copied.
+     * @param  copier     contains a map of metadata objects already copied.
      * @return a copy of the given metadata object, or {@code metadata} itself if there is
      *         no known implementation class or that implementation has no setter method.
      * @throws Exception if an error occurred while creating the copy. This include any

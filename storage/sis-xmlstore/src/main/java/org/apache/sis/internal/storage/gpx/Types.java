@@ -78,8 +78,6 @@ final class Types extends Static {
 
     /**
      * The list of feature types to be given to GPC metadata objects.
-     *
-     * @see Metadata#features
      */
     final Collection<ContentInformation> metadata;
 

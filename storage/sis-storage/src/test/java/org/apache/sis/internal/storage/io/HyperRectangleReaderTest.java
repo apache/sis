@@ -65,7 +65,7 @@ public final strictfp class HyperRectangleReaderTest extends TestCase {
     private final int[] subsampling = new int[size.length];
 
     /**
-     * The reader to test for an hyper-cube of {@code short} values, created by {@link #initialize(Random)}.
+     * The reader to test for an hyper-cube of {@code short} values, created by {@link #initialize(Random, boolean)}.
      * Sample values are index values encoded in base 10. For example the value at index (4,1,2,3) will be 4123.
      */
     private HyperRectangleReader reader;

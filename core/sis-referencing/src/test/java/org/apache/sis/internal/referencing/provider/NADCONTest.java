@@ -130,7 +130,7 @@ public final strictfp class NADCONTest extends TestCase {
     }
 
     /**
-     * Implementation of {@link #testLoader()} and {@link #testNADCON(Path)}.
+     * Implementation of {@link #testLoader()} and {@link #testNADCON(Path, Path)}.
      *
      * @param  xmin  westmost longitude.
      * @param  xmax  eastmost longitude.

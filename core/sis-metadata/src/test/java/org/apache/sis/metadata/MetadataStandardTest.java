@@ -155,7 +155,7 @@ public final strictfp class MetadataStandardTest extends TestCase {
     }
 
     /**
-     * Tests {@link MetadataStandard#getAccessor(Class, boolean)}.
+     * Tests {@link MetadataStandard#getAccessor(CacheKey, boolean)}.
      */
     @Test
     @DependsOnMethod("testGetInterface")

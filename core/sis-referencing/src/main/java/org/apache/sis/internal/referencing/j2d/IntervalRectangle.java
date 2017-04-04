@@ -505,7 +505,7 @@ public class IntervalRectangle extends Rectangle2D {
     /**
      * Returns the {@code String} representation of this {@code Rectangle2D}. The ordinate order is
      * (<var>x</var><sub>min</sub>, <var>y</var><sub>min</sub>, <var>x</var><sub>max</sub>, <var>y</var><sub>max</sub>),
-     * which is consistent with the {@link #RectangleExt(double, double, double, double)} constructor
+     * which is consistent with the {@link #IntervalRectangle(double, double, double, double)} constructor
      * and with the {@code BBOX} <cite>Well Known Text</cite> (WKT) syntax.
      *
      * @return a {@code String} representing this {@code Rectangle2D}.

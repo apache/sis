@@ -227,7 +227,7 @@ public final strictfp class ElementTest extends TestCase {
     }
 
     /**
-     * Tests {@link Element#pullElement(String)}. This implies testing {@code Element} nesting.
+     * Tests {@link Element#pullElement(int, String...)}. This implies testing {@code Element} nesting.
      *
      * @throws ParseException if an error occurred during the parsing.
      */
@@ -245,7 +245,7 @@ public final strictfp class ElementTest extends TestCase {
     }
 
     /**
-     * Tests {@link Element#close()}.
+     * Tests {@link Element#close(Map)}.
      *
      * @throws ParseException if an error occurred during the parsing.
      */

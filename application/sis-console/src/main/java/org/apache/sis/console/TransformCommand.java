@@ -262,8 +262,6 @@ final class TransformCommand extends FormattedOutputCommand {
 
     /**
      * Prints the character for commented lines.
-     *
-     * @param  after  the color to apply after the comment character, if colors are enabled.
      */
     private void printCommentLinePrefix() {
         if (colors) {

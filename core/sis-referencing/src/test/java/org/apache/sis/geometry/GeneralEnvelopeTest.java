@@ -156,15 +156,13 @@ public strictfp class GeneralEnvelopeTest extends TestCase {
 
     /**
      * Asserts that the union of the two following envelopes is equals to the given rectangle.
-     * First, this method tests using the {@link Envelope2D} implementation. Then, it tests
-     * using the {@link GeneralEnvelope} implementation.
+     * First, this method tests using the {@link Envelope2D} implementation.
+     * Then, it tests using the {@link GeneralEnvelope} implementation.
      *
-     * @param inf {@code true} if the range after union is infinite. The handling of such case
-     *        is different for {@link GeneralEnvelope} than for {@link Envelope2D} because we
-     *        can not store infinite values in a reliable way in a {@link Rectangle2D} object,
-     *        so we use NaN instead.
-     * @param exactlyOneAntiMeridianSpan {@code true} if one envelope spans the anti-meridian
-     *        and the other does not.
+     * @param inf {@code true} if the range after union is infinite. The handling of such case is different for
+     *        {@link GeneralEnvelope} than for {@link Envelope2D} because we can not store infinite values in a
+     *        reliable way in a {@link java.awt.geom.Rectangle2D} object, so we use NaN instead.
+     * @param exactlyOneAntiMeridianSpan {@code true} if one envelope spans the anti-meridian and the other does not.
      */
     private static void assertUnionEquals(final GeneralEnvelope e1, final GeneralEnvelope e2,
             final double xmin, final double ymin, final double xmax, final double ymax,

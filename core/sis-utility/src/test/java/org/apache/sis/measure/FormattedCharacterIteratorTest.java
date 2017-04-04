@@ -51,7 +51,7 @@ public final strictfp class FormattedCharacterIteratorTest extends TestCase {
     static final String LATITUDE_STRING = "45°30′15.0″N";
 
     /**
-     * The numerical value corresponding to {@link #ANGLE_STRING}.
+     * The numerical value corresponding to {@link #LATITUDE_STRING}.
      * This information is used by {@link AngleFormatTest}.
      */
     static final double LATITUDE_VALUE = 45.50416666666667;

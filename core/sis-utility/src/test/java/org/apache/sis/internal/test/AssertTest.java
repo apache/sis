@@ -32,7 +32,7 @@ import static org.apache.sis.test.Assert.*;
  */
 public final strictfp class AssertTest extends TestCase {
     /**
-     * Tests the {@link Assert#assertMultilinesEquals(String, String)} method.
+     * Tests the {@link org.apache.sis.test.Assert#assertMultilinesEquals(CharSequence, CharSequence)} method.
      */
     @Test
     public void testAssertEqualsMultilines() {
@@ -55,7 +55,7 @@ public final strictfp class AssertTest extends TestCase {
     }
 
     /**
-     * Tests the {@link Assert#assertSerializedEquals(Object)} method.
+     * Tests the {@link org.apache.sis.test.Assert#assertSerializedEquals(Object)} method.
      */
     @Test
     public void testAssertSerializedEquals() {

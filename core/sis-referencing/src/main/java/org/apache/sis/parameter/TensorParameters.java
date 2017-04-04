@@ -283,7 +283,7 @@ public class TensorParameters<E> implements Serializable {
 
     /**
      * The cached descriptors for each elements in a tensor. Descriptors do not depend on tensor element values.
-     * Consequently, the same descriptors can be reused for all {@link MatrixParameterValues} instances.
+     * Consequently, the same descriptors can be reused for all {@link TensorValues} instances.
      */
     private final transient ParameterDescriptor<E>[] parameters;
 

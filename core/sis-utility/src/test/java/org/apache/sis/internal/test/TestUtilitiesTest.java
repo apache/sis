@@ -33,7 +33,7 @@ import static org.junit.Assert.*;
  */
 public final strictfp class TestUtilitiesTest extends TestCase {
     /**
-     * Tests {@link TestUtilities#toTreeStructure(String)}.
+     * Tests {@link org.apache.sis.test.TestUtilities#toTreeStructure(CharSequence)}.
      */
     @Test
     public void testToTreeStructure() {

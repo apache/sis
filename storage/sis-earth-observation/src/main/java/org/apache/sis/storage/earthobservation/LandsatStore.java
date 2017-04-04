@@ -32,7 +32,7 @@ import org.apache.sis.util.Debug;
 
 
 /**
- * Parses Landsat metadata as {@linkplain DefaultMetadata ISO-19115 Metadata} object.
+ * Parses Landsat metadata as {@linkplain org.apache.sis.metadata.iso.DefaultMetadata ISO-19115 Metadata} object.
  * Landsat data are distributed as a collection of TIFF files, together with a single
  * text file like below:
  *

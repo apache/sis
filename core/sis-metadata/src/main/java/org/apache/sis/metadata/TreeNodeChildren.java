@@ -21,6 +21,7 @@ import java.util.Collections;
 import java.util.AbstractCollection;
 import java.util.NoSuchElementException;
 import java.util.ConcurrentModificationException;
+import org.apache.sis.util.collection.BackingStoreException;
 import org.apache.sis.util.collection.TableColumn;
 import org.apache.sis.util.collection.TreeTable;
 import org.apache.sis.util.resources.Errors;
@@ -59,7 +60,7 @@ final class TreeNodeChildren extends AbstractCollection<TreeTable.Node> {
      *   <li>{@link ValueExistencePolicy}: {@code parent.table.valuePolicy}</li>
      * </ul>
      *
-     * @see #childAt(int)
+     * @see #childAt(int, int)
      */
     private final TreeNode parent;
 
@@ -89,7 +90,7 @@ final class TreeNodeChildren extends AbstractCollection<TreeTable.Node> {
 
     /**
      * The children to be returned by this collection. All elements in this collection are
-     * initially {@code null}, then created by {@link #childAt(int)} when first needed.
+     * initially {@code null}, then created by {@link #childAt(int, int)} when first needed.
      *
      * <p>Not all elements in this array will be returned by the iterator.
      * The value needs to be verified for the {@link ValueExistencePolicy}.</p>
@@ -184,7 +185,7 @@ final class TreeNodeChildren extends AbstractCollection<TreeTable.Node> {
      * It is caller responsibility to do such verification before this method call.</p>
      *
      * @param  index     the index in the accessor (<em>not</em> the index in this collection).
-     * @param  subIndex  if the property at {@link #index} is a collection, the index in that
+     * @param  subIndex  if the property at {@code index} is a collection, the index in that
      *         collection (<em>not</em> the index in <em>this</em> collection). Otherwise -1.
      * @return the node to be returned by public API.
      */
@@ -503,7 +504,7 @@ final class TreeNodeChildren extends AbstractCollection<TreeTable.Node> {
     }
 
     /**
-     * Implementation of {@link #add(TreeTable.Node)}, also invoked by {@link TreeNode.NewChild}.
+     * Implementation of {@link #add(TreeTable.Node)}, also invoked by {@code TreeNode.NewChild}.
      * This method will attempt to convert the given {@code value} to the expected type.
      *
      * @param  index  the index in the accessor (<em>not</em> the index in this collection).

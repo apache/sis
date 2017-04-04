@@ -45,7 +45,7 @@ final class SpecialCases extends PropertyAccessor {
      *
      * @param  standard        the standard which define the {@code type} interface.
      * @param  type            the interface implemented by the metadata, which must be
-     *                         the value returned by {@link #getStandardType(Class, String)}.
+     *                         the value returned by {@link MetadataStandard#findInterface(CacheKey)}.
      * @param  implementation  the class of metadata implementations, or {@code type} if none.
      * @param  standardImpl    the implementation specified by the {@link MetadataStandard}, or {@code null} if none.
      *                         This is the same than {@code implementation} unless a custom implementation is used.
@@ -70,8 +70,8 @@ final class SpecialCases extends PropertyAccessor {
     }
 
     /**
-     * Delegates to {@link PropertyAccessor#type(int)}, then substitutes the type for the properties
-     * handled in a special way.
+     * Delegates to {@link PropertyAccessor#type(int, TypeValuePolicy)},
+     * then substitutes the type for the properties handled in a special way.
      */
     @Override
     Class<?> type(final int index, final TypeValuePolicy policy) {
