@@ -260,7 +260,7 @@ final class EnvelopeOperation extends AbstractOperation {
         private static final long serialVersionUID = 926172863066901618L;
 
         /**
-         * The feature specified to the {@link StringJoinOperation#apply(Feature, ParameterValueGroup)} method.
+         * The feature specified to the {@code StringJoinOperation.apply(Feature, ParameterValueGroup)} method.
          */
         private final AbstractFeature feature;
 

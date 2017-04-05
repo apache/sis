@@ -119,13 +119,13 @@ public class ReferencingByIdentifiers extends AbstractReferenceSystem {
      *     <th>Returned by</th>
      *   </tr>
      *   <tr>
-     *     <td>{@value org.opengis.referencing.gazetteer.ReferenceSystemUsingIdentifiers#THEME_KEY}</td>
+     *     <td>"theme"</td>
      *     <td>{@link String} or {@link InternationalString}</td>
      *     <td>{@link #getTheme()}</td>
      *   </tr>
      *   <tr>
-     *     <td>{@value org.opengis.referencing.gazetteer.ReferenceSystemUsingIdentifiers#OVERALL_OWNER_KEY}</td>
-     *     <td>{@link Party}</td>
+     *     <td>"overallOwner"</td>
+     *     <td>{@code Party}</td>
      *     <td>{@link #getOverallOwner()}</td>
      *   </tr>
      *   <tr>
@@ -163,8 +163,8 @@ public class ReferencingByIdentifiers extends AbstractReferenceSystem {
      *   </tr>
      * </table>
      *
-     * This constructor copies the given {@link LocationType} instances as per
-     * {@link ModifiableLocationType#snapshot(ReferenceSystemUsingIdentifiers, LocationType...)}.
+     * This constructor copies the given {@code LocationType} instances as per
+     * {@code ModifiableLocationType.snapshot(ReferenceSystemUsingIdentifiers, LocationType...)}.
      * Changes in the given location types after construction will not affect this {@code ReferencingByIdentifiers}.
      *
      * <div class="warning"><b>Upcoming API change — generalization</b><br>

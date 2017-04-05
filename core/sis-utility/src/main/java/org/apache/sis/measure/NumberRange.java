@@ -59,8 +59,8 @@ import org.apache.sis.util.collection.WeakHashSet;
  * <a href="http://en.wikipedia.org/wiki/Interval_%28mathematics%29">mathematical definition of interval</a>.
  * It is closely related, while not identical, to the ISO 19123 (<cite>Coverage geometry and functions</cite>)
  * definition of "ranges". At the difference of the parent {@link Range} class, which can be used only with
- * {@linkplain org.opengis.coverage.DiscreteCoverage discrete coverages}, the {@code NumberRange} class can
- * also be used with {@linkplain org.opengis.coverage.ContinuousCoverage continuous coverages}.
+ * discrete coverages, the {@code NumberRange} class can
+ * also be used with continuous coverages.
  *
  * <div class="section">Immutability and thread safety</div>
  * This class and the {@link MeasurementRange} subclasses are immutable, and thus inherently thread-safe.

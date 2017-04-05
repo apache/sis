@@ -131,8 +131,6 @@ public class DefaultCoupledResource extends ISOMetadata {
      * given object are not recursively copied.
      *
      * @param  object  the metadata to copy values from, or {@code null} if none.
-     *
-     * @see #castOrCopy(CoupledResource)
      */
     public DefaultCoupledResource(final DefaultCoupledResource object) {
         super(object);

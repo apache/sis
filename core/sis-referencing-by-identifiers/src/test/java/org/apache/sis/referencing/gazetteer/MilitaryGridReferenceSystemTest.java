@@ -102,8 +102,8 @@ public final strictfp class MilitaryGridReferenceSystemTest extends TestCase {
     }
 
     /**
-     * Verifies that {@link Zoner#isNorway(double)} and {@link Zoner#isSvalbard(double)}
-     * are consistent with the latitude bands.
+     * Verifies that {@link TransverseMercator.Zoner#isNorway(double)} and
+     * {@link TransverseMercator.Zoner#isSvalbard(double)} are consistent with the latitude bands.
      */
     @Test
     @DependsOnMethod("testLatitudeBand")
@@ -761,7 +761,7 @@ public final strictfp class MilitaryGridReferenceSystemTest extends TestCase {
     }
 
     /**
-     * Implementation of {@link #testIteratorUTM()}.
+     * Implementation of {@code testIteratorXXX()} methods.
      */
     private static void testIterator(final Envelope areaOfInterest, final List<String> expected) throws TransformException {
         final MilitaryGridReferenceSystem.Coder coder = coder();

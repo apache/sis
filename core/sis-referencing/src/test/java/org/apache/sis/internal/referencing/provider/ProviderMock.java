@@ -27,7 +27,7 @@ import org.apache.sis.referencing.operation.transform.AbstractMathTransform;
 /**
  * Base class of mock provider for coordinate operations not yet implemented in Apache SIS.
  * This is used for operations needed for executing some Well Known Text (WKT) parsing tests
- * in the {@link org.apache.sis.io.wkt.WKTParserTest} class, without doing any real coordinate
+ * in the {@code org.apache.sis.io.wkt.WKTParserTest} class, without doing any real coordinate
  * operations with the parsed objects.
  *
  * <p>Subclasses may be promoted to a real operation if we implement their formulas in a future Apache SIS version.</p>

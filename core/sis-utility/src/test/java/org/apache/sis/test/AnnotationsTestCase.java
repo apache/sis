@@ -50,8 +50,8 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
  *       {@link #getExpectedXmlTypeForElement expected value}.</li>
  *   <li>The name declared in the {@code XmlRootElement} (classes) or {@link XmlElement} (methods)
  *       annotations matches the identifier declared in the {@link UML} annotation of the GeoAPI interfaces.
- *       The UML - XML name mapping can be changed by overriding {@link #getExpectedXmlElementName(UML)} and
- *       {@link #getExpectedXmlRootElementName(UML)}.</li>
+ *       The UML - XML name mapping can be changed by overriding {@link #getExpectedXmlElementName(Class, UML)} and
+ *       {@link #getExpectedXmlElementName(Class, UML)}.</li>
  *   <li>The {@code XmlElement.required()} boolean is consistent with the UML {@linkplain Obligation obligation}.</li>
  *   <li>The namespace declared in the {@code XmlRootElement} or {@code XmlElement} annotations
  *       is not redundant with the {@link XmlSchema} annotation in the package.</li>

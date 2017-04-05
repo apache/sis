@@ -52,7 +52,7 @@ class AttributeView<V> extends AbstractAttribute<V> {
 
     /**
      * The string representation of the property name. This is the value to be given in calls to
-     * {@link Feature#getPropertyValue(String)} and {@link Feature#setPropertyValue(String, Object)}.
+     * {@code Feature.getPropertyValue(String)} and {@code Feature.setPropertyValue(String, Object)}.
      */
     final String name;
 
@@ -144,7 +144,7 @@ class AttributeView<V> extends AbstractAttribute<V> {
 
         /**
          * Sets the value of this attribute. This method assumes that the
-         * {@link Feature#setPropertyValue(String, Object)} implementation
+         * {@code Feature.setPropertyValue(String, Object)} implementation
          * will verify the argument type.
          */
         @Override

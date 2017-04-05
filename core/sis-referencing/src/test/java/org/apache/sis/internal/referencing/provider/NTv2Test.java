@@ -46,10 +46,6 @@ import static org.apache.sis.test.Assert.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
- *
- * @see GeocentricTranslationTest#testFranceGeocentricInterpolationPoint()
- * @see org.apache.sis.referencing.operation.transform.MolodenskyTransformTest#testFranceGeocentricInterpolationPoint()
- *
  * @since 0.7
  * @module
  */

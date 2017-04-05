@@ -137,8 +137,6 @@ public final class Metadata extends SimpleMetadata {
 
     /**
      * URLs associated with the location described in the file, or {@code null} if none.
-     *
-     * @see #getOnlineResources()
      */
     @XmlElement(name = Tags.LINK)
     public List<Link> links;

@@ -403,7 +403,8 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
 
     /**
      * Returns the value associated to {@link IdentifiedObject#IDENTIFIERS_KEY} as an {@code Identifier} object.
-     * This method shall accept all value types that {@link #parseMetadataAndClose(Element, Object)} may store.
+     * This method shall accept all value types that {@link #parseMetadataAndClose(Element, String, IdentifiedObject)}
+     * may store.
      *
      * @param  identifier  the {@link #properties} value, or {@code null}.
      * @return the identifier, or {@code null} if the given value was null.
@@ -590,8 +591,8 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
     }
 
     /**
-     * Parses the datum {@code ANCHOR[]} element and invoke {@link #parseMetadataAndClose(Element, Object)}.
-     * If an anchor has been found, its value is stored in the returned map.
+     * Parses the datum {@code ANCHOR[]} element and pass the values to the {@link #parseMetadataAndClose(Element,
+     * String, IdentifiedObject)} method. If an anchor has been found, its value is stored in the returned map.
      */
     private Map<String,Object> parseAnchorAndClose(final Element element, final String name) throws ParseException {
         final Element anchor = element.pullElement(OPTIONAL, WKTKeywords.Anchor);
@@ -1497,7 +1498,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
      *
      * @param  mode    {@link #FIRST}, {@link #OPTIONAL} or {@link #MANDATORY}.
      * @param  parent  the parent element.
-     * @return the {@code "ParametricDatum"} element as a {@link ParametricDatum} object.
+     * @return the {@code "ParametricDatum"} element as a {@code ParametricDatum} object.
      * @throws ParseException if the {@code "ParametricDatum"} element can not be parsed.
      */
     private Datum parseParametricDatum(final int mode, final Element parent) throws ParseException {

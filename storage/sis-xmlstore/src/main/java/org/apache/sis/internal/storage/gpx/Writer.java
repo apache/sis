@@ -76,7 +76,7 @@ final class Writer extends StaxStreamWriter {
 
     /**
      * Writes the XML declaration followed by GPX metadata.
-     * This method shall be invoked exactly once before {@link #write(Feature)}.
+     * This method shall be invoked exactly once before {@code write(Feature)}.
      *
      * @throws Exception if an error occurred while writing to the XML file.
      */

@@ -16,7 +16,6 @@
  */
 package org.apache.sis.internal.util;
 
-import org.opengis.referencing.ReferenceIdentifier;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
@@ -190,7 +189,7 @@ public final strictfp class DefinitionURITest extends TestCase {
     }
 
     /**
-     * Tests {@link DefinitionURI#format(String, ReferenceIdentifier)}.
+     * Tests {@link DefinitionURI#format(String, String, String, String)}.
      */
     @Test
     public void testToURN() {

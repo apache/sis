@@ -65,7 +65,7 @@ import org.apache.sis.metadata.iso.citation.AbstractParty;
 
 
 /**
- * Formats {@link Location} instances in a tabular format.
+ * Formats {@code Location} instances in a tabular format.
  * This format assumes a monospaced font and an encoding supporting drawing box characters (e.g. UTF-8).
  *
  * <div class="note"><b>Example:</b>
@@ -433,7 +433,7 @@ public class LocationFormat extends TabularFormat<AbstractLocation> {
 
     /**
      * Creates the format to use for formatting a latitude, longitude or projected coordinate.
-     * This method is invoked by {@link #format(Location, Appendable)} when first needed.
+     * This method is invoked by {@code format(Location, Appendable)} when first needed.
      *
      * @param  valueType  {@code Angle.class}. {@code Number.class} or {@code Unit.class}.
      * @return a new {@link AngleFormat}, {@link NumberFormat} or {@link UnitFormat} instance

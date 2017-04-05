@@ -90,7 +90,7 @@ final class SingletonAssociation extends AbstractAssociation {
      * Sets the associated feature.
      *
      * @param  value  the new value, or {@code null}.
-     * @throws InvalidPropertyValueException if the given feature is not valid for this association.
+     * @throws IllegalArgumentException if the given feature is not valid for this association.
      */
     @Override
     public void setValue(final AbstractFeature value) throws IllegalArgumentException {

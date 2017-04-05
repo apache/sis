@@ -267,7 +267,7 @@ public final class MercatorMethodComparison {   // No 'strictfp' keyword here si
      *
      * @param  min  the first eccentricity value to test.
      * @param  max  the maximal eccentricity value to test.
-     * @throws ProjectionException if an error occurred in {@link #φ(double)}.
+     * @throws ProjectionException if an error occurred in {@link ConformalProjection#φ(double)}.
      */
     public static void printErrorForExcentricities(final double min, final double max) throws ProjectionException {
         final TableAppender table = new TableAppender(out);
@@ -300,7 +300,7 @@ public final class MercatorMethodComparison {   // No 'strictfp' keyword here si
     /**
      * Compares the performance of the 3 methods.
      *
-     * @throws ProjectionException if an error occurred in {@link #φ(double)}.
+     * @throws ProjectionException if an error occurred in {@link ConformalProjection#φ(double)}.
      */
     private void benchmark() throws ProjectionException {
         final Random random = new Random();
@@ -335,7 +335,7 @@ public final class MercatorMethodComparison {   // No 'strictfp' keyword here si
      * The result is printed to the standard output stream.
      *
      * @param  args  ignored.
-     * @throws ProjectionException if an error occurred in {@link #φ(double)}.
+     * @throws ProjectionException if an error occurred in {@link ConformalProjection#φ(double)}.
      * @throws InterruptedException if the thread has been interrupted between two benchmarks.
      */
     public static void main(String[] args) throws ProjectionException, InterruptedException {

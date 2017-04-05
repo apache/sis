@@ -75,7 +75,7 @@ public class DefaultParametricCRS extends AbstractCRS implements ParametricCRS {
      * The datum.
      *
      * <p><b>Consider this field as final!</b>
-     * This field is modified only at unmarshalling time by {@link #setDatum(ParametricDatum)}</p>
+     * This field is modified only at unmarshalling time by {@code setDatum(ParametricDatum)}</p>
      *
      * @see #getDatum()
      */
@@ -84,8 +84,8 @@ public class DefaultParametricCRS extends AbstractCRS implements ParametricCRS {
     /**
      * Creates a coordinate reference system from the given properties, datum and coordinate system.
      * The properties given in argument follow the same rules than for the
-     * {@linkplain AbstractReferenceSystem#AbstractReferenceSystem(Map) super-class constructor}.
-     * The following table is a reminder of main (not all) properties:
+     * {@linkplain org.apache.sis.referencing.AbstractReferenceSystem#AbstractReferenceSystem(Map)
+     * super-class constructor}. The following table is a reminder of main (not all) properties:
      *
      * <table class="sis">
      *   <caption>Recognized properties (non exhaustive list)</caption>

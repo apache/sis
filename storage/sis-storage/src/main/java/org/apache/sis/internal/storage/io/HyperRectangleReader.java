@@ -44,7 +44,7 @@ public final class HyperRectangleReader {
     private final DataTransfer reader;
 
     /**
-     * The {@link #input} position of the first sample (ignoring sub-area and sub-sampling).
+     * The {@code input} position of the first sample (ignoring sub-area and sub-sampling).
      */
     private final long origin;
 

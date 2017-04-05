@@ -129,11 +129,13 @@ public final strictfp class GeodeticObjectParserTest extends TestCase {
      * Asserts that the name and (optionally) the EPSG identifier of the given object are equal to the given strings.
      * As a special case if the given EPSG code is 0, then this method verifies that the given object has no identifier.
      *
-     * <p>This method is similar to {@link #assertEpsgNameAndIdentifierEqual(String, int, IdentifiedObject)} except
-     * that the given name is not necessarily in the EPSG namespace and the EPSG code is allowed to be absent.</p>
+     * <p>This method is similar to {@code assertEpsgNameAndIdentifierEqual(name, epsg, object)} except that
+     * the given name is not necessarily in the EPSG namespace and the EPSG code is allowed to be absent.</p>
      *
      * @param name  the expected name.
      * @param epsg  the expected EPSG identifier, or {@code 0} if the object shall have no identifier.
+     *
+     * @see org.apache.sis.test.ReferencingAssert#assertEpsgNameAndIdentifierEqual(String, int, IdentifiedObject)
      */
     static void assertNameAndIdentifierEqual(final String name, final int epsg, final IdentifiedObject object) {
         final String message = object.getClass().getSimpleName();
@@ -493,7 +495,7 @@ public final strictfp class GeodeticObjectParserTest extends TestCase {
     }
 
     /**
-     * Implementation of {@link #testGeographicCRS()} and {@link #testWithAxisSwapping()}.
+     * Implementation of {@link #testGeographicCRS()} and related test methods.
      * This test expects no {@code AUTHORITY} element on any component.
      *
      * @param  swap  1 if axes are expected to be swapped, or 0 otherwise.

@@ -118,7 +118,7 @@ public final strictfp class IndexedResourceBundleTest extends TestCase {
     }
 
     /**
-     * Tests the {@link IndexedResourceBundle#getString(int)} method on different locales.
+     * Tests the {@link IndexedResourceBundle#getString(short)} method on different locales.
      */
     @Test
     @DependsOnMethod("testGetResources")
@@ -146,7 +146,7 @@ public final strictfp class IndexedResourceBundleTest extends TestCase {
     }
 
     /**
-     * Tests the {@link IndexedResourceBundle#getString(int, Object)} method on different locales.
+     * Tests the {@link IndexedResourceBundle#getString(short, Object)} method on different locales.
      */
     @Test
     @DependsOnMethod("testGetString")
@@ -159,7 +159,7 @@ public final strictfp class IndexedResourceBundleTest extends TestCase {
     }
 
     /**
-     * Tests the {@link IndexedResourceBundle#getString(int, Object)} method with a {@code CodeList} argument.
+     * Tests the {@link IndexedResourceBundle#getString(short, Object)} method with a {@code CodeList} argument.
      * The intend is to test the code list localization.
      */
     @Test
@@ -192,7 +192,7 @@ public final strictfp class IndexedResourceBundleTest extends TestCase {
     }
 
     /**
-     * Tests the {@link IndexedResourceBundle#getLogRecord(Level, int, Object)} method.
+     * Tests the {@link IndexedResourceBundle#getLogRecord(Level, short, Object)} method.
      */
     @Test
     @DependsOnMethod("testGetResources")

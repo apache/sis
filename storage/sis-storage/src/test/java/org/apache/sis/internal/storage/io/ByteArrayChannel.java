@@ -62,9 +62,9 @@ final strictfp class ByteArrayChannel implements SeekableByteChannel {
     /**
      * Creates a channel which will store all written data in the given array.
      *
-     * @param data            bytes array where to write the data. The length of this array is the capacity.
-     * @param isContentValid  {@code true} if the channel should be initialized with all the {@code data} elements,
-     *                        or {@code false} if the channel should be considered initially empty.
+     * @param data         bytes array where to write the data. The length of this array is the capacity.
+     * @param isDataValid  {@code true} if the channel should be initialized with all the {@code data} elements,
+     *                     or {@code false} if the channel should be considered initially empty.
      */
     ByteArrayChannel(final byte[] data, final boolean isDataValid) {
         this.data = data;

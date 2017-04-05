@@ -21,8 +21,8 @@ import org.apache.sis.util.Workaround;
 
 /**
  * Thread-local booleans that need to be shared across different packages. Each thread has its own set of booleans.
- * The {@link #clear(int)} method <strong>must</strong> be invoked after the {@link #queryAndSet(int)} method in a
- * {@code try ... finally} block.
+ * The {@link #clear(byte)} method <strong>must</strong> be invoked after the {@link #queryAndSet(byte)} method in
+ * a {@code try ... finally} block.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.7
@@ -31,9 +31,8 @@ import org.apache.sis.util.Workaround;
  */
 public final class Semaphores {
     /**
-     * A lock for avoiding never-ending recursivity in the {@code equals} method of
-     * {@link org.apache.sis.referencing.crs.AbstractDerivedCRS} and
-     * {@link org.apache.sis.referencing.operation.AbstractCoordinateOperation}.
+     * A lock for avoiding never-ending recursivity in the {@code equals} method of {@code AbstractDerivedCRS}
+     * and {@link org.apache.sis.referencing.operation.AbstractCoordinateOperation}.
      * It is set to {@code true} when a comparison is in progress. This lock is necessary because
      * {@code AbstractDerivedCRS} objects contain a {@code conversionFromBase} field, which contains a
      * {@code DefaultConversion.targetCRS} field referencing back the {@code AbstractDerivedCRS} object.

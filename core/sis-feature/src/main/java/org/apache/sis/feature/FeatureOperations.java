@@ -93,7 +93,7 @@ import org.apache.sis.util.resources.Errors;
  *   </tr>
  *   <tr>
  *     <td>{@value org.apache.sis.referencing.AbstractIdentifiedObject#LOCALE_KEY}</td>
- *     <td>{@link Locale}</td>
+ *     <td>{@link java.util.Locale}</td>
  *     <td>(none)</td>
  *   </tr>
  * </table>

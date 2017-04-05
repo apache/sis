@@ -67,7 +67,7 @@ public final class Store extends StaxDataStore {
     private Reader reader;
 
     /**
-     * The {@link org.opengis.feature.FeatureType} for routes, tracks, way points, <i>etc</i>.
+     * The {@code FeatureType} for routes, tracks, way points, <i>etc</i>.
      * Currently always {@link Types#DEFAULT}, but we use a field for keeping {@code Reader}
      * and {@code Writer} ready to handle profiles or extensions.
      */

@@ -32,7 +32,7 @@ import static org.junit.Assert.*;
  */
 public final strictfp class CompressionTest extends TestCase {
     /**
-     * Tests {@link Compression#valueOf(int)}.
+     * Tests {@link Compression#valueOf(long)}.
      */
     @Test
     public void testValueOf() {

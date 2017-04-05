@@ -37,7 +37,7 @@ import static org.apache.sis.internal.referencing.WKTUtilities.*;
 @DependsOn(ReferencingUtilitiesTest.class)
 public final strictfp class WKTUtilitiesTest extends TestCase {
     /**
-     * Tests {@link ReferencingUtilities#toType(Class, Class)}.
+     * Tests {@link WKTUtilities#toType(Class, Class)}.
      *
      * @see ReferencingUtilitiesTest#testToPropertyName()
      */

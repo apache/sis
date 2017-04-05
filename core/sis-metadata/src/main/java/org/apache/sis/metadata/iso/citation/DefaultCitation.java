@@ -396,7 +396,7 @@ public class DefaultCitation extends ISOMetadata implements Citation {
      * that is responsible for the resource.
      *
      * <div class="warning"><b>Upcoming API change — generalization</b><br>
-     * As of ISO 19115:2014, {@code ResponsibleParty} is replaced by the {@link Responsibility} parent interface.
+     * As of ISO 19115:2014, {@code ResponsibleParty} is replaced by the {@code Responsibility} parent interface.
      * This change may be applied in GeoAPI 4.0.
      * </div>
      *
@@ -413,7 +413,7 @@ public class DefaultCitation extends ISOMetadata implements Citation {
      * that is responsible for the resource.
      *
      * <div class="warning"><b>Upcoming API change — generalization</b><br>
-     * As of ISO 19115:2014, {@code ResponsibleParty} is replaced by the {@link Responsibility} parent interface.
+     * As of ISO 19115:2014, {@code ResponsibleParty} is replaced by the {@code Responsibility} parent interface.
      * This change may be applied in GeoAPI 4.0.
      * </div>
      *

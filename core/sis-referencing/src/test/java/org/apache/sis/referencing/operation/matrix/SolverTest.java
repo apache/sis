@@ -120,7 +120,8 @@ public final strictfp class SolverTest extends TestCase {
     }
 
     /**
-     * Tests {@link Solver#inverse(MatrixSIS, boolean)} with a square matrix that contains a {@link Double#NaN} value.
+     * Tests {@link Solver#inverse(org.opengis.referencing.operation.Matrix, boolean)}
+     * with a square matrix that contains a {@link Double#NaN} value.
      *
      * @throws NoninvertibleMatrixException if an unexpected error occurred while inverting the matrix.
      */

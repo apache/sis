@@ -500,7 +500,7 @@ public final class AttributeTypeBuilder<V> extends PropertyTypeBuilder {
      *
      * @see #getCharacteristic(String)
      * @see #addCharacteristic(Class)
-     * @see #addCharacteristic(AttributeType)
+     * @see #addCharacteristic(DefaultAttributeType)
      * @see #setValidValues(Object...)
      * @see #setCRS(CoordinateReferenceSystem)
      */

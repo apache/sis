@@ -23,14 +23,10 @@ import org.apache.sis.util.LocalizedException;
 /**
  * Thrown when a feature fails at least one conformance test.
  *
- * <div class="note"><b>Note:</b>
- * this exception extends {@link InvalidPropertyValueException} because an Apache SIS feature
- * can be invalid only if a property is invalid.</div>
- *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
  *
- * @see Features#validate(Feature)
+ * @see Features#validate(AbstractFeature)
  *
  * @since 0.7
  * @module

@@ -107,7 +107,7 @@ public final strictfp class NamedIdentifierTest extends TestCase {
     }
 
     /**
-     * Tests the {@link NamedIdentifier#NamedIdentifier(Citation, InternationalString)} constructor.
+     * Tests the {@link NamedIdentifier#NamedIdentifier(Citation, CharSequence)} constructor.
      */
     @Test
     @DependsOnMethod("testCreateFromCode")

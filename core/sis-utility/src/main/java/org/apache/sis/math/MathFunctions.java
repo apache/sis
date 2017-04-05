@@ -168,7 +168,7 @@ public final class MathFunctions extends Static {
      * returns directly the {@linkplain Math#abs(double) absolute value} of that element
      * without computing {@code sqrt(v²)}, in order to avoid rounding error. This special case
      * has been implemented because this method is often invoked for computing the length of
-     * {@linkplain org.opengis.coverage.grid.RectifiedGrid#getOffsetVectors() offset vectors},
+     * offset vectors,
      * typically aligned with the axes of a {@linkplain org.opengis.referencing.cs.CartesianCS
      * Cartesian coordinate system}.
      *

@@ -44,7 +44,7 @@ abstract class MetadataScopeAdapter<L> extends LegacyPropertyAdapter<L,DefaultMe
 
     /**
      * Invoked (indirectly) by JAXB when adding a new scope code or scope name. This implementation searches
-     * for an existing {@link MetadataScope} instance with a free slot for the new value before to create a
+     * for an existing {@code MetadataScope} instance with a free slot for the new value before to create a
      * new {@link DefaultMetadataScope} instance.
      */
     @Override

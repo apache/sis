@@ -317,7 +317,7 @@ public final class Matrices extends Static {
      * </ul>
      *
      * This method ignores the {@linkplain Envelope#getCoordinateReferenceSystem() envelope CRS}, which may be null.
-     * Actually this method is used more often for {@linkplain org.opengis.coverage.grid.GridEnvelope grid envelopes}
+     * Actually this method is used more often for grid envelopes
      * (which have no CRS) than geodetic envelopes.
      *
      * <div class="section">Spanning the anti-meridian of a Geographic CRS</div>
@@ -451,7 +451,7 @@ public final class Matrices extends Static {
      * </ul>
      *
      * This method ignores the {@linkplain Envelope#getCoordinateReferenceSystem() envelope CRS}, which may be null.
-     * Actually this method is used more often for {@linkplain org.opengis.coverage.grid.GridEnvelope grid envelopes}
+     * Actually this method is used more often for grid envelopes
      * (which have no CRS) than geodetic envelopes.
      *
      * <div class="section">Spanning the anti-meridian of a Geographic CRS</div>
@@ -628,7 +628,7 @@ public final class Matrices extends Static {
      * @return a matrix for the same transform than the given matrix,
      *         augmented with leading and trailing pass-through coordinates.
      *
-     * @see org.apache.sis.referencing.operation.DefaultMathTransformFactory#createPassThroughTransform(int, MathTransform, int)
+     * @see org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory#createPassThroughTransform(int, MathTransform, int)
      */
     public static MatrixSIS createPassThrough(final int firstAffectedOrdinate,
             final Matrix subMatrix, final int numTrailingOrdinates)

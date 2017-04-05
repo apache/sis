@@ -694,7 +694,7 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
          * or {@link InvalidParameterValueException} to be thrown.</p>
          *
          * @param  writable  {@code true} if this method should also check that the parameters group is not an
-         *                   instance of {@link UnmodifiableParameterValueGroup}. Current implementation assumes
+         *                   instance of {@code UnmodifiableParameterValueGroup}. Current implementation assumes
          *                   that modifiable parameters are instances of {@link DefaultParameterValueGroup}.
          * @throws IllegalArgumentException if the copy can not be performed because a parameter has
          *         a unrecognized name or an illegal value.

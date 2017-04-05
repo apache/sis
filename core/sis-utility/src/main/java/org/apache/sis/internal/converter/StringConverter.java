@@ -84,7 +84,6 @@ abstract class StringConverter<T> extends SystemConverter<String, T> {
      * Creates a new converter for the given target class.
      *
      * @param  targetClass  the {@linkplain #getTargetClass() target class}.
-     * @param  inverse      the inverse converter from the target to the source class.
      */
     @SuppressWarnings("OverridableMethodCallDuringObjectConstruction")
     StringConverter(final Class<T> targetClass) {

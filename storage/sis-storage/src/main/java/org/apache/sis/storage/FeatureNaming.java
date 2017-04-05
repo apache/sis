@@ -34,8 +34,8 @@ import org.apache.sis.internal.jdk8.JDK8;
 
 /**
  * Helper class for mapping {@link GenericName} instances and their shortened names to features.
- * The features are typically represented by instances of {@link org.opengis.feature.FeatureType}
- * or {@link org.opengis.coverage.Coverage} (sometime seen as a kind of features), but this class
+ * The features are typically represented by instances of {@code FeatureType}
+ * or {@code Coverage} (sometime seen as a kind of features), but this class
  * actually puts no restriction on the kind of object associated to {@code GenericName}s;
  * {@link DataStore} implementations are free to choose their internal object.
  * Those objects can be stored and fetched using the {@code String} representation of their name

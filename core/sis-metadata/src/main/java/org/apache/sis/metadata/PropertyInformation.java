@@ -273,7 +273,8 @@ final class PropertyInformation<E> extends SimpleIdentifier
 
     /**
      * Returns valid values that can be assigned to the extended element, or {@code null} if none.
-     * In the particular case of SIS implementation, this method may return a subclass of {@link NumberRange}.
+     * In the particular case of SIS implementation, this method may return a subclass of
+     * {@link org.apache.sis.measure.NumberRange}.
      */
     @Override
     @SuppressWarnings({"unchecked","rawtypes"})

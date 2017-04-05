@@ -542,7 +542,7 @@ search: for (int j=0; j<numPoints; j++) {
     /**
      * More straightforward version of {@link #getControlPoint(int[])} for the case where this
      * {@code LinearTransformBuilder} is known to have been built for grid source coordinates.
-     * This method is for {@link LocalizationGridBuilder#create()} internal usage.
+     * This method is for {@link LocalizationGridBuilder#create(MathTransformFactory)} internal usage.
      */
     final void getControlPoint2D(final int[] source, final double[] target) {
         assert gridSize != null;
@@ -558,7 +558,7 @@ search: for (int j=0; j<numPoints; j++) {
      * than the number of {@linkplain #setTargetPoints target points} when the {@link #create()} method will be invoked.
      * In current Apache SIS implementation, the source points must be one or two-dimensional.
      *
-     * <p>If this builder has been created with the {@link #LinearTransformBuilder(int, int)} constructor,
+     * <p>If this builder has been created with the {@link #LinearTransformBuilder(int...)} constructor,
      * then all given points must be two-dimensional and all ordinate values must be integers in the
      * [0 … <var>width</var>-1] or [0 … <var>height</var>-1] range for the first and second dimension
      * respectively. This constraint does not apply if this builder has been created with the

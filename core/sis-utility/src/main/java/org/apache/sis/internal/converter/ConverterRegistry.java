@@ -49,7 +49,7 @@ import org.apache.sis.util.resources.Errors;
  * from multiple threads.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.3
+ * @version 0.8
  * @since   0.3
  * @module
  */
@@ -473,8 +473,37 @@ public class ConverterRegistry {
                 }
             }
             /*
+             * If the source type is a class (not an interface), verify if a converter has been
+             * explicitely registered for that interface. We do not perform this check if the given
+             * sourceClass is already an interface because this case was handled by previous block.
+             * If we find more than one converter for different interface, select the most specific.
+             */
+            if (!sourceClass.isInterface()) {
+                for (final Class<? super S> source : Classes.getAllInterfaces(sourceClass)) {
+                    final ObjectConverter<? super S, ? extends T> c = get(new ClassPair<>(source, targetClass));
+                    if (c != null) {
+                        if (converter != null) {
+                            final Class<? super S> previous = converter.getSourceClass();
+                            if (source.isAssignableFrom(previous)) {
+                                continue;               // Previous type was more specific – keep it.
+                            } else if (!previous.isAssignableFrom(source)) {
+                                converter = null;
+                                break;                  // No relationship between the two types – abort.
+                            }
+                            // This type is more specific – take it instead than the previous type.
+                        }
+                        converter = c;
+                    }
+                }
+                if (converter != null) {
+                    put(key, converter);
+                    return converter;
+                }
+            }
+            /*
              * No converter found. Gives a chance to subclasses to provide dynamically-generated
-             * converter.
+             * converter. The SystemRegistry subclass provides special cases, including from any
+             * object to String.
              */
             converter = createConverter(sourceClass, targetClass);
             if (converter != null) {

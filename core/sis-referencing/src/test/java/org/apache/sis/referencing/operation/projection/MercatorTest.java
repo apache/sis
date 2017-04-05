@@ -181,8 +181,6 @@ public final strictfp class MercatorTest extends MapProjectionTestCase {
      *
      * @throws FactoryException if an error occurred while creating the map projection.
      * @throws TransformException if an error occurred while projecting a coordinate.
-     *
-     * @see org.opengis.test.referencing.ParameterizedTransformTest#testMercator1SP()
      */
     @Test
     @DependsOnMethod({"testSpecialLatitudes", "testDerivative"})
@@ -196,8 +194,6 @@ public final strictfp class MercatorTest extends MapProjectionTestCase {
      *
      * @throws FactoryException if an error occurred while creating the map projection.
      * @throws TransformException if an error occurred while projecting a coordinate.
-     *
-     * @see org.opengis.test.referencing.ParameterizedTransformTest#testMercator2SP()
      */
     @Test
     @DependsOnMethod("testMercator1SP")
@@ -211,8 +207,6 @@ public final strictfp class MercatorTest extends MapProjectionTestCase {
      *
      * @throws FactoryException if an error occurred while creating the map projection.
      * @throws TransformException if an error occurred while projecting a coordinate.
-     *
-     * @see org.opengis.test.referencing.ParameterizedTransformTest#testMercatorVariantC()
      */
     @Test
     @DependsOnMethod("testMercator2SP")
@@ -226,8 +220,6 @@ public final strictfp class MercatorTest extends MapProjectionTestCase {
      *
      * @throws FactoryException if an error occurred while creating the map projection.
      * @throws TransformException if an error occurred while projecting a coordinate.
-     *
-     * @see org.opengis.test.referencing.ParameterizedTransformTest#testMercatorSpherical()
      */
     @Test
     @DependsOnMethod("testMercator1SP")
@@ -241,8 +233,6 @@ public final strictfp class MercatorTest extends MapProjectionTestCase {
      *
      * @throws FactoryException if an error occurred while creating the map projection.
      * @throws TransformException if an error occurred while projecting a coordinate.
-     *
-     * @see org.opengis.test.referencing.ParameterizedTransformTest#testPseudoMercator()
      */
     @Test
     @DependsOnMethod("testMercatorSpherical")
@@ -256,8 +246,6 @@ public final strictfp class MercatorTest extends MapProjectionTestCase {
      *
      * @throws FactoryException if an error occurred while creating the map projection.
      * @throws TransformException if an error occurred while projecting a coordinate.
-     *
-     * @see org.opengis.test.referencing.ParameterizedTransformTest#testMiller()
      */
     @Test
     @DependsOnMethod("testMercator1SP")

@@ -117,8 +117,6 @@ final class StringJoinOperation extends AbstractOperation {
      * Creates a new operation for string concatenations using the given prefix, suffix and delimeter.
      * It is caller's responsibility to ensure that {@code delimiter} and {@code singleAttributes} are not null.
      * This private constructor does not verify that condition on the assumption that the public API did.
-     *
-     * @see FeatureOperations#compound(Map, String, String, String, PropertyType...)
      */
     @SuppressWarnings({"rawtypes", "unchecked"})                                        // Generic array creation.
     StringJoinOperation(final Map<String,?> identification, final String delimiter,
@@ -237,7 +235,7 @@ final class StringJoinOperation extends AbstractOperation {
         private static final long serialVersionUID = -8435975199763452547L;
 
         /**
-         * The feature specified to the {@link StringJoinOperation#apply(Feature, ParameterValueGroup)} method.
+         * The feature specified to the {@code StringJoinOperation.apply(Feature, ParameterValueGroup)} method.
          */
         private final AbstractFeature feature;
 
@@ -304,7 +302,7 @@ final class StringJoinOperation extends AbstractOperation {
          * parsed, then this method does not store any property value ("all or nothing" behavior).
          *
          * @param  value  the concatenated string.
-         * @throws InvalidPropertyValueException if one of the attribute values can not be parsed to the expected type.
+         * @throws IllegalArgumentException if one of the attribute values can not be parsed to the expected type.
          */
         @Override
         public void setValue(final String value) throws IllegalArgumentException {

@@ -234,7 +234,6 @@ public final class EPSGDataFormatter extends ScriptRunner {
      *
      * @param  inputFile    the input file where to read the SQL statements to compact.
      * @param  outputFile   the output file where to write the compacted SQL statements.
-     * @param  encoding     the character encoding for both input and output files.
      * @throws IOException  if an I/O operation failed.
      * @throws SQLException should never happen.
      */

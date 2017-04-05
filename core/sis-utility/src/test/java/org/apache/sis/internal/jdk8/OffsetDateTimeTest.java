@@ -27,7 +27,7 @@ import static org.junit.Assert.*;
  */
 public final strictfp class OffsetDateTimeTest extends TestCase {
     /**
-     * Tests {@link OffsetDateTime#parse(String)}.
+     * Tests {@link OffsetDateTime#parse(CharSequence)}.
      */
     @Test
     public void testParse() {

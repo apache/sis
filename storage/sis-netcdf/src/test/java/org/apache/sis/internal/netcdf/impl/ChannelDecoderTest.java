@@ -59,10 +59,8 @@ public final strictfp class ChannelDecoderTest extends DecoderTest {
      * The {@code name} parameter can be one of the following values:
      *
      * <ul>
-     *   <li>{@link #THREDDS} for a NcML file.</li>
      *   <li>{@link #NCEP}    for a NetCDF binary file.</li>
      *   <li>{@link #CIP}     for a NetCDF binary file.</li>
-     *   <li>{@link #LANDSAT} for a NetCDF binary file.</li>
      * </ul>
      *
      * @param  name  the file name as one of the above-cited constants.

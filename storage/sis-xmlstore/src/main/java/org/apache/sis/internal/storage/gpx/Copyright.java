@@ -71,11 +71,7 @@ public final class Copyright implements LegalConstraints, ResponsibleParty, Cita
     /**
      * The copyright holder.
      * This field is mandatory in principle, but {@code Copyright} implementation is robust to null value.
-     * This field is mapped to the {@linkplain #getName() responsible party name} in ISO 19115 metadata.
-     *
-     * @see #getResponsibleParties()
-     * @see #getParties()
-     * @see #getName()
+     * This field is mapped to the {@code getName() responsible party name} in ISO 19115 metadata.
      */
     @XmlAttribute(name = Attributes.AUTHOR, required = true)
     public String author;
@@ -91,9 +87,7 @@ public final class Copyright implements LegalConstraints, ResponsibleParty, Cita
 
     /**
      * Link to an external file containing the license text, or {@code null} if none.
-     * This field is mapped to the {@linkplain #getOnlineResources() online resources} in ISO 19115 metadata.
-     *
-     * @see #getOnlineResources()
+     * This field is mapped to the {@code getOnlineResources() online resources} in ISO 19115 metadata.
      */
     @XmlElement(name = Tags.LICENSE)
     public URI license;
@@ -160,8 +154,6 @@ resp:   for (final DefaultResponsibility r : ((DefaultConstraints) c).getRespons
      * ISO 19115 metadata property determined by the {@link #license} field.
      *
      * @return restrictions or limitations or warnings on using the data.
-     *
-     * @see #getReferences()
      */
     @Override
     public Collection<Restriction> getUseConstraints() {
@@ -200,7 +192,7 @@ resp:   for (final DefaultResponsibility r : ((DefaultConstraints) c).getRespons
 
     /**
      * ISO 19115 metadata property fixed to {@link Role#OWNER}.
-     * This is part of the properties returned by {@link #getResponsibleParties()}.
+     * This is part of the properties returned by {@code getResponsibleParties()}.
      *
      * @return function performed by the responsible party.
      */
@@ -232,7 +224,7 @@ resp:   for (final DefaultResponsibility r : ((DefaultConstraints) c).getRespons
 
     /**
      * ISO 19115 metadata property determined by the {@link #author} field.
-     * This is part of the properties returned by {@link #getParties()}.
+     * This is part of the properties returned by {@code getParties()}.
      *
      * @return name of the party, or {@code null} if none.
      */
@@ -243,7 +235,7 @@ resp:   for (final DefaultResponsibility r : ((DefaultConstraints) c).getRespons
 
     /**
      * ISO 19115 metadata property not specified by GPX.
-     * This is part of the properties returned by {@link #getParties()}.
+     * This is part of the properties returned by {@code getParties()}.
      *
      * @return contact information for the party.
      */
@@ -260,7 +252,7 @@ resp:   for (final DefaultResponsibility r : ((DefaultConstraints) c).getRespons
 
     /**
      * ISO 19115 metadata property not specified by GPX.
-     * This is part of the properties returned by {@link #getReferences()}.
+     * This is part of the properties returned by {@code getReferences()}.
      * It would be the license title if that information was provided.
      *
      * @return the license name.
@@ -272,7 +264,7 @@ resp:   for (final DefaultResponsibility r : ((DefaultConstraints) c).getRespons
 
     /**
      * ISO 19115 metadata property not specified by GPX.
-     * This is part of the properties returned by {@link #getReferences()}.
+     * This is part of the properties returned by {@code getReferences()}.
      *
      * @return other names for the resource.
      */
@@ -283,7 +275,7 @@ resp:   for (final DefaultResponsibility r : ((DefaultConstraints) c).getRespons
 
     /**
      * ISO 19115 metadata property determined by the {@link #year} field.
-     * This is part of the properties returned by {@link #getReferences()}.
+     * This is part of the properties returned by {@code getReferences()}.
      * Invoking this method is one of the steps in the path from the {@code LegalConstraints} root
      * to the {@link #getDate()} method.
      *
@@ -312,7 +304,7 @@ resp:   for (final DefaultResponsibility r : ((DefaultConstraints) c).getRespons
     }
 
     /**
-     * ISO 19115 metadata property fixed to {@link DateType#IN_FORCE}.
+     * ISO 19115 metadata property fixed to {@code DateType.IN_FORCE}.
      * This is part of the properties returned by {@link #getDates()}.
      *
      * @return event used for reference date.
@@ -324,7 +316,7 @@ resp:   for (final DefaultResponsibility r : ((DefaultConstraints) c).getRespons
 
     /**
      * ISO 19115 metadata property not specified by GPX.
-     * This is part of the properties returned by {@link #getReferences()}.
+     * This is part of the properties returned by {@code getReferences()}.
      *
      * @return the license version, or {@code null} if none.
      */
@@ -335,7 +327,7 @@ resp:   for (final DefaultResponsibility r : ((DefaultConstraints) c).getRespons
 
     /**
      * ISO 19115 metadata property not specified by GPX.
-     * This is part of the properties returned by {@link #getReferences()}.
+     * This is part of the properties returned by {@code getReferences()}.
      *
      * @return the license edition date, or {@code null} if none.
      */
@@ -346,7 +338,7 @@ resp:   for (final DefaultResponsibility r : ((DefaultConstraints) c).getRespons
 
     /**
      * ISO 19115 metadata property not specified by GPX.
-     * This is part of the properties returned by {@link #getReferences()}.
+     * This is part of the properties returned by {@code getReferences()}.
      *
      * @return the identifiers of the license.
      */
@@ -357,12 +349,10 @@ resp:   for (final DefaultResponsibility r : ((DefaultConstraints) c).getRespons
 
     /**
      * ISO 19115 metadata property not specified by GPX.
-     * This is part of the properties returned by {@link #getReferences()}.
+     * This is part of the properties returned by {@code getReferences()}.
      * It would be the license author if that information was provided.
      *
      * @return the information for individuals or organisations that are responsible for the license.
-     *
-     * @see #getResponsibleParties()
      */
     @Override
     public Collection<ResponsibleParty> getCitedResponsibleParties() {
@@ -371,7 +361,7 @@ resp:   for (final DefaultResponsibility r : ((DefaultConstraints) c).getRespons
 
     /**
      * ISO 19115 metadata property fixed to {@link PresentationForm#DOCUMENT_DIGITAL}.
-     * This is part of the properties returned by {@link #getReferences()}.
+     * This is part of the properties returned by {@code getReferences()}.
      *
      * @return the presentation mode of the license.
      */
@@ -382,7 +372,7 @@ resp:   for (final DefaultResponsibility r : ((DefaultConstraints) c).getRespons
 
     /**
      * ISO 19115 metadata property not specified by GPX.
-     * This is part of the properties returned by {@link #getReferences()}.
+     * This is part of the properties returned by {@code getReferences()}.
      *
      * @return the series or aggregate dataset of which the dataset is a part.
      */
@@ -393,7 +383,7 @@ resp:   for (final DefaultResponsibility r : ((DefaultConstraints) c).getRespons
 
     /**
      * ISO 19115 metadata property not specified by GPX.
-     * This is part of the properties returned by {@link #getReferences()}.
+     * This is part of the properties returned by {@code getReferences()}.
      *
      * @return other details.
      */
@@ -404,7 +394,7 @@ resp:   for (final DefaultResponsibility r : ((DefaultConstraints) c).getRespons
 
     /**
      * ISO 19115 metadata property not specified by GPX.
-     * This is part of the properties returned by {@link #getReferences()}.
+     * This is part of the properties returned by {@code getReferences()}.
      *
      * @return the common title.
      */
@@ -416,7 +406,7 @@ resp:   for (final DefaultResponsibility r : ((DefaultConstraints) c).getRespons
 
     /**
      * ISO 19115 metadata property not specified by GPX.
-     * This is part of the properties returned by {@link #getReferences()}.
+     * This is part of the properties returned by {@code getReferences()}.
      *
      * @return the International Standard Book Number.
      */
@@ -427,7 +417,7 @@ resp:   for (final DefaultResponsibility r : ((DefaultConstraints) c).getRespons
 
     /**
      * ISO 19115 metadata property not specified by GPX.
-     * This is part of the properties returned by {@link #getReferences()}.
+     * This is part of the properties returned by {@code getReferences()}.
      *
      * @return the International Standard Serial Number.
      */

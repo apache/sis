@@ -31,8 +31,6 @@ import org.apache.sis.util.CorruptedObjectException;
 import org.apache.sis.internal.util.CheckedArrayList;
 import org.apache.sis.internal.feature.Resources;
 
-// Branch-dependent imports
-
 
 /**
  * An instance of a {@linkplain DefaultFeatureType feature type} containing values for a real-world phenomena.
@@ -329,10 +327,10 @@ public abstract class AbstractFeature implements Serializable {
      * <table class="sis">
      *   <caption>Class of returned value</caption>
      *   <tr><th>Property type</th>                  <th>max. occurs</th> <th>Method invoked</th>                         <th>Return type</th></tr>
-     *   <tr><td>{@link AttributeType}</td>          <td>0 or 1</td>      <td>{@link Attribute#getValue()}</td>           <td>{@link Object}</td></tr>
-     *   <tr><td>{@code AttributeType}</td>          <td>2 or more</td>   <td>{@link Attribute#getValues()}</td>          <td>{@code Collection<?>}</td></tr>
-     *   <tr><td>{@link FeatureAssociationRole}</td> <td>0 or 1</td>      <td>{@link FeatureAssociation#getValue()}</td>  <td>{@link Feature}</td></tr>
-     *   <tr><td>{@code FeatureAssociationRole}</td> <td>2 or more</td>   <td>{@link FeatureAssociation#getValues()}</td> <td>{@code Collection<Feature>}</td></tr>
+     *   <tr><td>{@code AttributeType}</td>          <td>0 or 1</td>      <td>{@code Attribute.getValue()}</td>           <td>{@link Object}</td></tr>
+     *   <tr><td>{@code AttributeType}</td>          <td>2 or more</td>   <td>{@code Attribute.getValues()}</td>          <td>{@code Collection<?>}</td></tr>
+     *   <tr><td>{@code FeatureAssociationRole}</td> <td>0 or 1</td>      <td>{@code FeatureAssociation.getValue()}</td>  <td>{@code Feature}</td></tr>
+     *   <tr><td>{@code FeatureAssociationRole}</td> <td>2 or more</td>   <td>{@code FeatureAssociation.getValues()}</td> <td>{@code Collection<Feature>}</td></tr>
      * </table>
      *
      * <div class="note"><b>Note:</b> “max. occurs” is the {@linkplain DefaultAttributeType#getMaximumOccurs() maximum
@@ -614,7 +612,7 @@ public abstract class AbstractFeature implements Serializable {
 
     /**
      * Returns the exception for a property type which is neither an attribute or an association.
-     * This method is invoked after a {@link PropertyType} has been found for the user-supplied name,
+     * This method is invoked after a {@code PropertyType} has been found for the user-supplied name,
      * but that property can not be stored in or extracted from a {@link Property} instance.
      */
     static IllegalArgumentException unsupportedPropertyType(final GenericName name) {

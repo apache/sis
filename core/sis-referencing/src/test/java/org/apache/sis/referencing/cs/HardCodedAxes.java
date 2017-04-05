@@ -428,7 +428,7 @@ public final strictfp class HardCodedAxes {
             AxisDirection.FUTURE, Units.DAY, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, null);
 
     /**
-     * Axis for column indices in a {@linkplain org.opengis.coverage.grid.GridCoverage grid coverage}.
+     * Axis for column indices in a grid coverage.
      * Increasing values go toward {@linkplain AxisDirection#COLUMN_POSITIVE positive column number}.
      * The abbreviation is lower case <cite>"i"</cite>.
      */
@@ -436,7 +436,7 @@ public final strictfp class HardCodedAxes {
             AxisDirection.COLUMN_POSITIVE, Units.UNITY, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, null);
 
     /**
-     * Axis for row indices in a {@linkplain org.opengis.coverage.grid.GridCoverage grid coverage}.
+     * Axis for row indices in a grid coverage.
      * Increasing values go toward {@linkplain AxisDirection#ROW_POSITIVE positive row number}.
      * The abbreviation is lower case <cite>"j"</cite>.
      */

@@ -55,7 +55,7 @@ public final strictfp class AbstractSingleOperationTest extends TestCase {
     }
 
     /**
-     * Tests {@link AbstractSingleOperation#checkDimensions(OperationMethod, MathTransform, Map)}
+     * Tests {@link AbstractSingleOperation#checkDimensions(OperationMethod, int, MathTransform, Map)}
      * without interpolation dimension.
      */
     @Test

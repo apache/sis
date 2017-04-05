@@ -132,7 +132,7 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
      * <ul>
      *   <li>If the value is an instance of {@link Integer}, then this is the number
      *       of identifiers derived from the identifier associated to the key.</li>
-     *   <li>Otherwise the key is itself an {@link Indentifier} derived from another
+     *   <li>Otherwise the key is itself an {@link Identifier} derived from another
      *       identifier, and the value is that identifier.</li>
      * </ul>
      *

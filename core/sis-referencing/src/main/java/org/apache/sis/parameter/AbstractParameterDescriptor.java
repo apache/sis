@@ -66,7 +66,7 @@ import static org.apache.sis.internal.jaxb.referencing.CC_GeneralOperationParame
  *     <td class="sep">Also known as “definition”.</td>
  *   </tr>
  *   <tr>
- *     <td>{@link #getDirection()}</td>
+ *     <td>{@code getDirection()}</td>
  *     <td class="sep"></td>
  *     <td class="sep"></td>
  *     <td class="sep">{@code direction}</td>

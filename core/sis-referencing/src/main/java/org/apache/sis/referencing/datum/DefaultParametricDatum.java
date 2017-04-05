@@ -33,7 +33,7 @@ import org.apache.sis.io.wkt.Formatter;
  *
  * <ol>
  *   <li>Create a {@code ParametricDatum} from an identifier in a database by invoking
- *       {@link org.opengis.referencing.datum.DatumAuthorityFactory#createParametricDatum(String)}.</li>
+ *       {@code DatumAuthorityFactory.createParametricDatum(String)}.</li>
  *   <li>Create a {@code ParametricDatum} by invoking the {@code DatumFactory.createParametricDatum(…)} method,
  *       (implemented for example by {@link org.apache.sis.referencing.factory.GeodeticObjectFactory}).</li>
  *   <li>Create a {@code DefaultParametricDatum} by invoking the
@@ -77,27 +77,27 @@ public class DefaultParametricDatum extends AbstractDatum {
      *   </tr>
      *   <tr>
      *     <td>{@value org.opengis.referencing.IdentifiedObject#NAME_KEY}</td>
-     *     <td>{@link Identifier} or {@link String}</td>
+     *     <td>{@link org.opengis.metadata.Identifier} or {@link String}</td>
      *     <td>{@link #getName()}</td>
      *   </tr>
      *   <tr>
      *     <td>{@value org.opengis.referencing.IdentifiedObject#ALIAS_KEY}</td>
-     *     <td>{@link GenericName} or {@link CharSequence} (optionally as array)</td>
+     *     <td>{@link org.opengis.util.GenericName} or {@link CharSequence} (optionally as array)</td>
      *     <td>{@link #getAlias()}</td>
      *   </tr>
      *   <tr>
      *     <td>{@value org.opengis.referencing.IdentifiedObject#IDENTIFIERS_KEY}</td>
-     *     <td>{@link Identifier} (optionally as array)</td>
+     *     <td>{@link org.opengis.metadata.Identifier} (optionally as array)</td>
      *     <td>{@link #getIdentifiers()}</td>
      *   </tr>
      *   <tr>
      *     <td>{@value org.opengis.referencing.IdentifiedObject#REMARKS_KEY}</td>
-     *     <td>{@link InternationalString} or {@link String}</td>
+     *     <td>{@link org.opengis.util.InternationalString} or {@link String}</td>
      *     <td>{@link #getRemarks()}</td>
      *   </tr>
      *   <tr>
      *     <td>{@value org.opengis.referencing.datum.Datum#ANCHOR_POINT_KEY}</td>
-     *     <td>{@link InternationalString} or {@link String}</td>
+     *     <td>{@link org.opengis.util.InternationalString} or {@link String}</td>
      *     <td>{@link #getAnchorPoint()}</td>
      *   </tr>
      *   <tr>
@@ -112,7 +112,7 @@ public class DefaultParametricDatum extends AbstractDatum {
      *   </tr>
      *   <tr>
      *     <td>{@value org.opengis.referencing.datum.Datum#SCOPE_KEY}</td>
-     *     <td>{@link InternationalString} or {@link String}</td>
+     *     <td>{@link org.opengis.util.InternationalString} or {@link String}</td>
      *     <td>{@link #getScope()}</td>
      *   </tr>
      * </table>

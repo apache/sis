@@ -35,7 +35,7 @@ import static org.junit.Assert.*;
 @DependsOn(SingletonAttributeTest.class)
 public final strictfp class FeaturesTest extends TestCase {
     /**
-     * Tests {@link Features#cast(AttributeType, Class)}.
+     * Tests {@code Features.cast(AttributeType, Class)}.
      */
     @Test
     public void testCastAttributeType() {
@@ -53,7 +53,7 @@ public final strictfp class FeaturesTest extends TestCase {
     }
 
     /**
-     * Tests {@link Features#cast(Attribute, Class)}.
+     * Tests {@code Features.cast(Attribute, Class)}.
      */
     @Test
     public void testCastAttributeInstance() {
@@ -71,7 +71,7 @@ public final strictfp class FeaturesTest extends TestCase {
     }
 
     /**
-     * Tests {@link Features#validate(Feature)}.
+     * Tests {@code Features.validate(Feature)}.
      */
     @Test
     public void testValidate() {

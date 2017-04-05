@@ -87,7 +87,7 @@ public final class TemporalUtilities extends Static {
 
     /**
      * Creates a period for the given begin and end dates. The given arguments can be null if the
-     * {@link TemporalFactory#createPosition(Date)} method accepts null dates, which stand for
+     * {@link TemporalFactory#createInstant(Date)} method accepts null dates, which stand for
      * undetermined position.
      *
      * @param  begin  the begin date, inclusive.

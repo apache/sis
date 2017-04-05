@@ -30,8 +30,8 @@ import org.apache.sis.util.ComparisonMode;
  * needs of the {@link ExponentialTransform1D#concatenateLog(LogarithmicTransform1D, boolean)}.
  * Future version may expand on that.
  *
- * <p>Before to make this class public (if we do), we need to revisit the class name, define
- * parameters and improve the {@link #concatenate(MathTransform, boolean)} method.</p>
+ * <p>Before to make this class public (if we do), we need to revisit the class name, define parameters
+ * and improve the {@link #concatenate(MathTransform, boolean, MathTransformFactory)} method.</p>
  *
  * <div class="section">Serialization</div>
  * Serialized instances of this class are not guaranteed to be compatible with future SIS versions.

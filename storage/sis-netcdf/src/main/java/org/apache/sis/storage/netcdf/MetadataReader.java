@@ -92,15 +92,15 @@ import static org.apache.sis.internal.util.CollectionsExt.first;
  * </ol>
  *
  * The {@code "CFMetadata"} group has precedence over the global attributes because the
- * {@linkplain #LONGITUDE longitude} and {@linkplain #LATITUDE latitude} resolutions are
- * often more accurate in that group.
+ * {@linkplain AttributeNames#LONGITUDE longitude} and {@linkplain AttributeNames#LATITUDE latitude}
+ * resolutions are often more accurate in that group.
  *
  * <div class="section">Known limitations</div>
  * <ul>
  *   <li>{@code "degrees_west"} and {@code "degrees_south"} units not correctly handled.</li>
  *   <li>Units of measurement not yet declared in the {@link Band} elements.</li>
- *   <li>{@link #FLAG_VALUES} and {@link #FLAG_MASKS} not yet included in the
- *       {@link RangeElementDescription} elements.</li>
+ *   <li>{@link AttributeNames#FLAG_VALUES} and {@link AttributeNames#FLAG_MASKS}
+ *       not yet included in the {@link RangeElementDescription} elements.</li>
  *   <li>Services (WMS, WCS, OPeNDAP, THREDDS) <i>etc.</i>) and transfer options not yet declared.</li>
  * </ul>
  *
@@ -125,7 +125,7 @@ final class MetadataReader {
 
     /**
      * The string to use as a keyword separator. This separator is used for parsing the
-     * {@value org.apache.sis.metadata.netcdf.AttributeNames#KEYWORDS} attribute value.
+     * {@value org.apache.sis.storage.netcdf.AttributeNames#KEYWORDS} attribute value.
      * This is a regular expression.
      */
     private static final String KEYWORD_SEPARATOR = ",";
@@ -133,8 +133,7 @@ final class MetadataReader {
     /**
      * The vertical coordinate reference system to be given to the object created by {@link #createExtent()}.
      *
-     * @todo Should be set to {@link org.apache.sis.referencing.crs.DefaultVerticalCRS#GEOIDAL_HEIGHT}
-     *       after we ported the {@code sis-referencing} module.
+     * @todo Should be set to {@code CommonCRS.MEAN_SEA_LEVEL}.
      */
     private static final VerticalCRS VERTICAL_CRS = null;
 
@@ -200,7 +199,8 @@ final class MetadataReader {
     }
 
     /**
-     * Returns the localized error resource bundle for the locale given by {@link #getLocale()}.
+     * Returns the localized error resource bundle for the locale given by
+     * {@link org.apache.sis.util.logging.WarningListeners#getLocale()}.
      *
      * @return the localized error resource bundle.
      */
@@ -886,7 +886,7 @@ final class MetadataReader {
      * Creates a {@code <gmd:rangeElementDescription>} elements from the given information.
      *
      * <p><b>Note:</b> ISO 19115 range elements are approximatively equivalent to
-     * {@link org.apache.sis.coverage.Category} in the {@code sis-coverage} module.</p>
+     * {@code org.apache.sis.coverage.Category} in the {@code sis-coverage} module.</p>
      *
      * @param  variable  the NetCDF variable.
      * @param  name      one of the elements in the {@link AttributeNames#FLAG_NAMES} attribute, or {@code null}.
@@ -915,8 +915,8 @@ final class MetadataReader {
      * The default implementation builds the identifier from the following attributes:
      *
      * <ul>
-     *   <li>{@value #NAMING_AUTHORITY} used as the {@linkplain Identifier#getAuthority() authority}.</li>
-     *   <li>{@value #IDENTIFIER}, or {@link ucar.nc2.NetcdfFile#getId()} if no identifier attribute was found.</li>
+     *   <li>{@value AttributeNames#NAMING_AUTHORITY} used as the {@linkplain Identifier#getAuthority() authority}.</li>
+     *   <li>{@value AttributeNames#IDENTIFIER}, or {@link ucar.nc2.NetcdfFile#getId()} if no identifier attribute was found.</li>
      * </ul>
      *
      * @return the globally unique identifier, or {@code null} if none.

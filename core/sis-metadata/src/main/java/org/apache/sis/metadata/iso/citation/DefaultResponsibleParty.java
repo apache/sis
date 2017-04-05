@@ -217,9 +217,9 @@ public class DefaultResponsibleParty extends DefaultResponsibility implements Re
      * Only one of {@code individualName}, {@link #getOrganisationName() organisationName}
      * and {@link #getPositionName() positionName} shall be provided.
      *
-     * <p>This implementation returns the name of the first {@link Individual} found in the collection of
+     * <p>This implementation returns the name of the first {@code Individual} found in the collection of
      * {@linkplain #getParties() parties}. If no individual is found in the parties, then this method fallbacks
-     * on the first {@linkplain Organisation#getIndividual() organisation member}.</p>
+     * on the first organisation member.</p>
      *
      * @return name, surname, given name and title of the responsible person, or {@code null}.
      *
@@ -238,7 +238,7 @@ public class DefaultResponsibleParty extends DefaultResponsibility implements Re
      * Only one of {@code individualName}, {@link #getOrganisationName() organisationName}
      * and {@link #getPositionName() positionName} shall be provided.
      *
-     * <p>This implementation sets the name of the first {@link Individual} found in the collection of
+     * <p>This implementation sets the name of the first {@code Individual} found in the collection of
      * {@linkplain #getParties() parties}, or create a new individual if no existing instance was found.</p>
      *
      * @param  newValue  the new individual name, or {@code null} if none.
@@ -257,7 +257,7 @@ public class DefaultResponsibleParty extends DefaultResponsibility implements Re
      * {@link #getIndividualName() individualName}, {@code organisationName}
      * and {@link #getPositionName() positionName} shall be provided.
      *
-     * <p>This implementation returns the name of the first {@link Organisation}
+     * <p>This implementation returns the name of the first {@code Organisation}
      * found in the collection of {@linkplain #getParties() parties}.</p>
      *
      * @return name of the responsible organization, or {@code null}.
@@ -276,7 +276,7 @@ public class DefaultResponsibleParty extends DefaultResponsibility implements Re
      * {@link #getIndividualName() individualName}, {@code organisationName}
      * and {@link #getPositionName() positionName} shall be provided.
      *
-     * <p>This implementation sets the name of the first {@link Organisation} found in the collection of
+     * <p>This implementation sets the name of the first {@code Organisation} found in the collection of
      * {@linkplain #getParties() parties}, or create a new organization if no existing instance was found.</p>
      *
      * @param  newValue  the new organization name, or {@code null} if none.
@@ -295,9 +295,9 @@ public class DefaultResponsibleParty extends DefaultResponsibility implements Re
      * {@link #getIndividualName() individualName}, {@link #getOrganisationName() organisationName}
      * and {@code positionName} shall be provided.
      *
-     * <p>This implementation returns the position of the first {@link Individual} found in the collection of
+     * <p>This implementation returns the position of the first {@code Individual} found in the collection of
      * {@linkplain #getParties() parties}. If no individual is found in the parties, then this method fallbacks
-     * on the first {@linkplain Organisation#getIndividual() organisation member}.</p>
+     * on the first organisation member.</p>
      *
      * @return role or position of the responsible person, or {@code null}
      *
@@ -315,7 +315,7 @@ public class DefaultResponsibleParty extends DefaultResponsibility implements Re
      * {@link #getIndividualName() individualName}, {@link #getOrganisationName() organisationName}
      * and {@code positionName} shall be provided.
      *
-     * <p>This implementation sets the position name of the first {@link Individual} found in the collection of
+     * <p>This implementation sets the position name of the first {@code Individual} found in the collection of
      * {@linkplain #getParties() parties}, or create a new individual if no existing instance was found.</p>
      *
      * @param  newValue  the new position name, or {@code null} if none.

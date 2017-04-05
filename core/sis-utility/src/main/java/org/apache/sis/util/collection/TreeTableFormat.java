@@ -111,7 +111,7 @@ public class TreeTableFormat extends TabularFormat<TreeTable> {
     private static final long serialVersionUID = 147992015470098561L;
 
     /**
-     * Shared {@code TreeTableFormat} instance for {@link TreeTable#toString()} implementation.
+     * Shared {@code TreeTableFormat} instance for {@link DefaultTreeTable#toString()} implementation.
      * Usage of this instance shall be done in a synchronized block.
      */
     static final TreeTableFormat INSTANCE = new TreeTableFormat(null, null);
@@ -162,7 +162,7 @@ public class TreeTableFormat extends TabularFormat<TreeTable> {
     private transient String treeBlank, treeLine, treeCross, treeEnd;
 
     /**
-     * The set to be given to {@link Writer#parentObjects},
+     * The set to be given to {@link Writer} constructor,
      * created when first needed and reused for subsequent formating.
      */
     private transient Set<TreeTable.Node> recursivityGuard;
@@ -303,8 +303,8 @@ public class TreeTableFormat extends TabularFormat<TreeTable> {
      * The returned array may contain {@code null} elements, which means that the values
      * in that column can be stored as {@code String}s.
      *
-     * @param  mandatoy  {@code true} if an exception shall be thrown for unrecognized types, or
-     *                   {@code false} for storing a {@code null} value in the array instead.
+     * @param  mandatory  {@code true} if an exception shall be thrown for unrecognized types, or
+     *                    {@code false} for storing a {@code null} value in the array instead.
      * @throws IllegalStateException if {@code mandatory} is {@code true} and a column
      *         contains values of an unsupported type.
      */
@@ -504,7 +504,7 @@ public class TreeTableFormat extends TabularFormat<TreeTable> {
      * <p>This work is done in a separated method instead than inlined in the
      * {@code parse(…)} method because of the {@code <V>} parametric value.</p>
      *
-     * @param  V        the type of values in the given column.
+     * @param  <V>      the type of values in the given column.
      * @param  node     the node in which to set the value.
      * @param  column   the column in which to set the value.
      * @param  format   the format to use for parsing the value, or {@code null}.
@@ -624,7 +624,7 @@ public class TreeTableFormat extends TabularFormat<TreeTable> {
          * Creates a new instance which will write to the given appendable.
          *
          * @param  out               where to format the tree.
-         * @param  column            the columns of the tree table to format.
+         * @param  columns           the columns of the tree table to format.
          * @param  recursivityGuard  an initially empty set.
          */
         Writer(final Appendable out, final TableColumn<?>[] columns, final Set<TreeTable.Node> recursivityGuard) {

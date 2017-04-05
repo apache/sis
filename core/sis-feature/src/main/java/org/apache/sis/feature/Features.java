@@ -109,17 +109,17 @@ public final class Features extends Static {
 
     /**
      * Returns the name of the type of values that the given property can take.
-     * The type of value can be a {@link Class}, a {@link FeatureType} or another {@code PropertyType}
-     * depending on given argument:
+     * The type of value can be a {@link Class}, a {@code FeatureType}
+     * or another {@code PropertyType} depending on given argument:
      *
      * <ul>
-     *   <li>If {@code property} is an {@link AttributeType}, then this method gets the
+     *   <li>If {@code property} is an {@code AttributeType}, then this method gets the
      *       {@linkplain DefaultAttributeType#getValueClass() value class} and
      *       {@linkplain DefaultNameFactory#toTypeName(Class) maps that class to a name}.</li>
-     *   <li>If {@code property} is a {@link FeatureAssociationRole}, then this method gets
+     *   <li>If {@code property} is a {@code FeatureAssociationRole}, then this method gets
      *       the name of the {@linkplain DefaultAssociationRole#getValueType() value type}.
      *       This methods can work even if the associated {@code FeatureType} is not yet resolved.</li>
-     *   <li>If {@code property} is an {@link Operation}, then this method returns the name of the
+     *   <li>If {@code property} is an {@code Operation}, then this method returns the name of the
      *       {@linkplain AbstractOperation#getResult() result type}.</li>
      * </ul>
      *

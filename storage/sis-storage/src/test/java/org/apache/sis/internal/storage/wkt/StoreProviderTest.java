@@ -55,7 +55,7 @@ public final strictfp class StoreProviderTest extends TestCase {
     }
 
     /**
-     * Tests {@link StoreProvider#probeContent(StorageConnector)} method from a {@link Reader} object.
+     * Tests {@link StoreProvider#probeContent(StorageConnector)} method from a {@link java.io.Reader} object.
      *
      * @throws DataStoreException if en error occurred while reading the WKT.
      */

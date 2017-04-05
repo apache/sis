@@ -77,7 +77,7 @@ final class Initializer {
 
     /**
      * The square of eccentricity: ℯ² = (a²-b²)/a² where
-     * <var>ℯ</var> is the {@linkplain #eccentricity eccentricity},
+     * <var>ℯ</var> is the <cite>eccentricity</cite>,
      * <var>a</var> is the <cite>semi-major</cite> axis length and
      * <var>b</var> is the <cite>semi-minor</cite> axis length.
      *

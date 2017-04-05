@@ -107,7 +107,8 @@ public class DataStoreException extends Exception implements LocalizedException 
      * @param format    short name or abbreviation of the data format (e.g. "CSV", "GML", "WKT", <i>etc</i>).
      * @param filename  name of the file or data store where the error occurred.
      * @param store     the input or output object from which to get the current position, or {@code null} if none.
-     *                  This can be a {@link LineNumberReader} or {@link XMLStreamReader} for example.
+     *                  This can be a {@link java.io.LineNumberReader} or {@link javax.xml.stream.XMLStreamReader}
+     *                  for example.
      *
      * @since 0.8
      */

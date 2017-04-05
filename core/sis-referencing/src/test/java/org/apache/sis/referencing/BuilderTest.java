@@ -186,7 +186,7 @@ public final strictfp class BuilderTest extends TestCase {
     }
 
     /**
-     * Convenience method creating a namespace for {@link #testScopedName()} purpose.
+     * Convenience method creating a namespace for {@link #testAddNameWithScope()} purpose.
      */
     private static NameSpace scope(final NameFactory factory, final String codespace) {
         return factory.createNameSpace(factory.createLocalName(null, codespace), null);

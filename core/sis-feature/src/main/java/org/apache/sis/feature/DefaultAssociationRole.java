@@ -71,8 +71,6 @@ public class DefaultAssociationRole extends FieldType {
      * The name of the property to use as a title for the associated feature, or an empty string if none.
      * This field is initially null, then computed when first needed.
      * This information is used only by {@link AbstractAssociation#toString()} implementation.
-     *
-     * @see #getTitleProperty()
      */
     private transient volatile String titleProperty;
 
@@ -298,7 +296,7 @@ public class DefaultAssociationRole extends FieldType {
     }
 
     /**
-     * Potentially invoked after {@link #search(FeatureType, GenericName, List)} for searching
+     * Potentially invoked after {@code search(FeatureType, GenericName, List)} for searching
      * in associations of associations.
      *
      * <p>Current implementation does not check that there is no duplicated names. Even if we did so,
@@ -306,9 +304,8 @@ public class DefaultAssociationRole extends FieldType {
      * later. We rather put a warning in {@link #DefaultAssociationRole(Map, GenericName, int, int)}
      * javadoc.</p>
      *
-     * @param  feature  the feature in which to search.
-     * @param  name     the name of the feature to search.
-     * @param  done     the feature types collected by {@link #search(FeatureType, GenericName, List)}.
+     * @param  deferred  the feature types collected by {@code search(FeatureType, GenericName, List)}.
+     * @param  name      the name of the feature to search.
      * @return the feature of the given name, or {@code null} if none.
      */
     private static DefaultFeatureType deepSearch(final List<DefaultFeatureType> deferred, final GenericName name) {
@@ -331,7 +328,7 @@ public class DefaultAssociationRole extends FieldType {
      * Returns the type of feature values.
      *
      * <p>This method can not be invoked if {@link #isResolved()} returns {@code false}.
-     * However it is still possible to {@linkplain Features#getValueTypeName(PropertyType)
+     * However it is still possible to {@linkplain Features#getValueTypeName
      * get the associated feature type name}.</p>
      *
      * <div class="warning"><b>Warning:</b> In a future SIS version, the return type may be changed
@@ -343,7 +340,6 @@ public class DefaultAssociationRole extends FieldType {
      *         and not yet resolved.
      *
      * @see #isResolved()
-     * @see Features#getValueTypeName(PropertyType)
      */
     public final DefaultFeatureType getValueType() {
         /*
@@ -390,7 +386,7 @@ public class DefaultAssociationRole extends FieldType {
     }
 
     /**
-     * Implementation of {@link #getTitleProperty(FeatureAssociationRole)} for first search,
+     * Implementation of {@code getTitleProperty(FeatureAssociationRole)} for first search,
      * or for non-SIS {@code FeatureAssociationRole} implementations.
      */
     private static String searchTitleProperty(final DefaultAssociationRole role) {
@@ -434,7 +430,7 @@ public class DefaultAssociationRole extends FieldType {
      *
      * @return a new association instance.
      *
-     * @see AbstractAssociation#create(FeatureAssociationRole)
+     * @see AbstractAssociation#create(DefaultAssociationRole)
      */
     public AbstractAssociation newInstance() {
         return AbstractAssociation.create(this);

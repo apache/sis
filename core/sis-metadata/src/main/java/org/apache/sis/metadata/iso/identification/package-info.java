@@ -47,8 +47,8 @@
  * {@code  ├─} {@linkplain org.opengis.metadata.identification.AssociationType Association type}<br>
  * {@code  ├─} {@linkplain org.opengis.metadata.identification.InitiativeType  Initiative type}<br>
  * {@code  ├─} {@linkplain org.opengis.metadata.identification.TopicCategory   Topic category}<br>
- * {@code  ├─} {@linkplain org.opengis.metadata.identification.CouplingType    Coupling type}<br>
- * {@code  └─} {@linkplain org.opengis.metadata.identification.DistributedComputingPlatform Distributed computing platform}<br>
+ * {@code  ├─} Coupling type}<br>
+ * {@code  └─} Distributed computing platform}<br>
  * </td><td class="sep" style="width: 50%; white-space: nowrap">
  *                 {@linkplain org.apache.sis.metadata.iso.identification.AbstractIdentification        Identification} «abstract»<br>
  * {@code  ├─}     {@linkplain org.apache.sis.metadata.iso.identification.DefaultResolution             Resolution}<br>
@@ -63,12 +63,12 @@
  * {@code      └─} {@linkplain org.opengis.metadata.identification.InitiativeType                       Initiative type} «code list»<br>
  *                 {@linkplain org.apache.sis.metadata.iso.identification.DefaultDataIdentification     Data identification}<br>
  *                 {@linkplain org.apache.sis.metadata.iso.identification.DefaultServiceIdentification  Service identification}<br>
- * {@code  ├─}     {@linkplain org.opengis.metadata.identification.CouplingType                         Coupling type} «code list»<br>
+ * {@code  ├─}     Coupling type} «code list»<br>
  * {@code  ├─}     {@linkplain org.apache.sis.metadata.iso.identification.DefaultCoupledResource        Coupled resource}<br>
  * {@code  ├─}     {@linkplain org.apache.sis.metadata.iso.identification.DefaultOperationMetadata      Operation metadata}<br>
- * {@code  │   ├─} {@linkplain org.opengis.metadata.identification.DistributedComputingPlatform         Distributed computing platform} «code list»<br>
+ * {@code  │   ├─} Distributed computing platform} «code list»<br>
  * {@code  │   └─} {@linkplain org.apache.sis.parameter.DefaultParameterDescriptor                      Parameter descriptor}<br>
- * {@code  │       └─} {@linkplain org.opengis.parameter.ParameterDirection                             Parameter direction} «enum»<br>
+ * {@code  │       └─} Parameter direction} «enum»<br>
  * {@code  └─}     {@linkplain org.apache.sis.metadata.iso.identification.DefaultOperationChainMetadata Operation chain metadata}<br>
  * </td></tr></table>
  *

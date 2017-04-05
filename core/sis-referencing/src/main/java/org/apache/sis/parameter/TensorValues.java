@@ -373,7 +373,7 @@ final class TensorValues<E> extends AbstractParameterDescriptor
 
     /**
      * Creates a matrix from this group of parameters.
-     * This operation is allowed only for tensors of {@linkplain #rank() rank} 2.
+     * This operation is allowed only for tensors of {@linkplain TensorParameters#rank() rank} 2.
      *
      * @return a matrix created from this group of parameters.
      */

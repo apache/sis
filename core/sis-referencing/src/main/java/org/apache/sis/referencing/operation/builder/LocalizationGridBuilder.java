@@ -40,7 +40,7 @@ import org.apache.sis.math.MathFunctions;
  * Output coordinates are the values stored in the grid of localization at the specified index.
  * After a {@code LocalizationGridBuilder} instance has been fully populated (i.e. real world coordinates have been
  * specified for all grid cells), a transformation from grid coordinates to "real world" coordinates can be obtained
- * with the {@link #create()} method. If this transform is close enough to an affine transform,
+ * with the {@link #create(MathTransformFactory)} method. If this transform is close enough to an affine transform,
  * then an instance of {@link LinearTransform} is returned.
  * Otherwise, a transform backed by the localization grid is returned.
  *
@@ -134,7 +134,8 @@ public class LocalizationGridBuilder extends TransformBuilder {
      * <ul>
      *   <li>(<var>x₀</var>, <var>y₀</var>) is the coordinate of the center of the cell at grid index (0,0).</li>
      *   <li><var>Δx</var> and <var>Δy</var> are the distances between two cells on the <var>x</var> and <var>y</var>
-     *       axes respectively, in the unit of measurement given by {@link #getCoordinateUnit()}.</li>
+     *       axes respectively, in the same unit of measurement than the one documented in the
+     *       {@link #setDesiredPrecision(double)} method.</li>
      * </ul>
      *
      * The {@code coordinateToGrid} transform for the above formulas can be represented by the following matrix:

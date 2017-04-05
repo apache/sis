@@ -218,7 +218,8 @@ public class MetadataBuilder {
      * For using the same instance of {@code Double} when the value is the same.
      * We use this map because the same values appear many time in a Landsat file.
      *
-     * @see #parseDouble(String)
+     * @see #shared(Integer)
+     * @see #shared(Double)
      */
     private final Map<Number,Number> sharedNumbers = new HashMap<>();
 
@@ -751,7 +752,7 @@ public class MetadataBuilder {
      * @param  occurrences  number of instances of the given feature type, or {@code null} if unknown.
      * @return the name of the added feature, or {@code null} if none.
      *
-     * @see FeatureCatalogBuilder#define(FeatureType)
+     * @see FeatureCatalogBuilder#define(DefaultFeatureType)
      */
     public final GenericName add(final DefaultFeatureType type, final Integer occurrences) {
         if (type != null) {
@@ -1386,9 +1387,8 @@ parse:      for (int i = 0; i < length;) {
      * Sets the area of the dataset obscured by clouds, expressed as a percentage of the spatial extent.
      * This method does nothing if the given value is {@link Double#NaN}.
      *
-     * <p>This method is available only if {@link #commitCoverageDescription(boolean)}
-     * has been invoked with the {@code electromagnetic} parameter set to {@code true}.
-     * Storage location is:</p>
+     * <p>This method is available only if {@link #newCoverage(boolean)} has been invoked
+     * with the {@code electromagnetic} parameter set to {@code true}. Storage location is:</p>
      *
      * <pre>metadata/contentInfo/cloudCoverPercentage</pre>
      *
@@ -1406,9 +1406,8 @@ parse:      for (int i = 0; i < length;) {
      * For images from a scanning device, refer to the centre pixel of the image.
      * This method does nothing if the given value is {@link Double#NaN}.
      *
-     * <p>This method is available only if {@link #commitCoverageDescription(boolean)}
-     * has been invoked with the {@code electromagnetic} parameter set to {@code true}.
-     * Storage location is:</p>
+     * <p>This method is available only if {@link #newCoverage(boolean)} has been invoked
+     * with the {@code electromagnetic} parameter set to {@code true}. Storage location is:</p>
      *
      * <pre>metadata/contentInfo/illuminationAzimuthAngle</pre>
      *
@@ -1427,9 +1426,8 @@ parse:      for (int i = 0; i < length;) {
      * For images from a canning device, refer to the centre pixel of the image.
      * This method does nothing if the given value is {@link Double#NaN}.
      *
-     * <p>This method is available only if {@link #commitCoverageDescription(boolean)}
-     * has been invoked with the {@code electromagnetic} parameter set to {@code true}.
-     * Storage location is:</p>
+     * <p>This method is available only if {@link #newCoverage(boolean)} has been invoked
+     * with the {@code electromagnetic} parameter set to {@code true}. Storage location is:</p>
      *
      * <pre>metadata/contentInfo/illuminationElevationAngle</pre>
      *

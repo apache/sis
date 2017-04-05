@@ -382,9 +382,9 @@ public class IdentifierMapAdapter extends AbstractMap<Citation,String> implement
     }
 
     /**
-     * The iterator over the (<var>citation</var>, <var>code</var>) entries. This iterator is created by
-     * the {@link IdentifierMapAdapter.Entries} collection. It extends {@link HashMap} as an opportunist
-     * implementation strategy, but users does not need to know this detail.
+     * The iterator over the (<var>citation</var>, <var>code</var>) entries. This iterator is created by the
+     * {@link #entrySet()} collection. It extends {@link HashMap} as an opportunist implementation strategy,
+     * but users do not need to know this detail.
      *
      * <p>This iterator supports the {@link #remove()} operation if the underlying collection supports it.</p>
      *

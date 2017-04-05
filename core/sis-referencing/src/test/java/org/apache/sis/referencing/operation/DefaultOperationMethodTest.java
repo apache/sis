@@ -84,7 +84,8 @@ public final strictfp class DefaultOperationMethodTest extends TestCase {
     }
 
     /**
-     * Tests the {@link DefaultOperationMethod#DefaultOperationMethod(Map)} constructor.
+     * Tests the {@link DefaultOperationMethod#DefaultOperationMethod(Map, Integer, Integer, ParameterDescriptorGroup)}
+     * constructor.
      */
     @Test
     public void testConstruction() {
@@ -116,7 +117,7 @@ public final strictfp class DefaultOperationMethodTest extends TestCase {
     }
 
     /**
-     * Tests {@link DefaultOperationMethod#redimension(OperationMethod, Integer, Integer)}.
+     * Tests {@link DefaultOperationMethod#redimension(OperationMethod, int, int)}.
      */
     @Test
     @DependsOnMethod({"testConstruction", "testEquals"})

@@ -30,10 +30,10 @@ import org.apache.sis.feature.AbstractIdentifiedType;
  *
  * <ul>
  *   <li>{@link FeatureTypeBuilder#addAttribute(Class)}</li>
- *   <li>{@link FeatureTypeBuilder#addAttribute(AttributeType)} for using an existing attribute as a template</li>
- *   <li>{@link FeatureTypeBuilder#addAssociation(FeatureType)}</li>
+ *   <li>{@link FeatureTypeBuilder#addAttribute(DefaultAttributeType)} for using an existing attribute as a template</li>
+ *   <li>{@link FeatureTypeBuilder#addAssociation(DefaultFeatureType)}</li>
  *   <li>{@link FeatureTypeBuilder#addAssociation(GenericName)}</li>
- *   <li>{@link FeatureTypeBuilder#addAssociation(FeatureAssociationRole)} for using an existing association as a template</li>
+ *   <li>{@link FeatureTypeBuilder#addAssociation(DefaultAssociationRole)} for using an existing association as a template</li>
  * </ul>
  *
  * @author  Johann Sorel (Geomatys)
@@ -53,7 +53,7 @@ public abstract class PropertyTypeBuilder extends TypeBuilder {
 
     /**
      * The minimum number of property values.
-     * The default value is 1, unless otherwise specified by {@link #setDefaultCardinality(int, int)}.
+     * The default value is 1, unless otherwise specified by {@link #setMinimumOccurs(int)}.
      *
      * @see #getMinimumOccurs()
      */
@@ -61,7 +61,7 @@ public abstract class PropertyTypeBuilder extends TypeBuilder {
 
     /**
      * The maximum number of property values.
-     * The default value is 1, unless otherwise specified by {@link #setDefaultCardinality(int, int)}.
+     * The default value is 1, unless otherwise specified by {@link #setMaximumOccurs(int)}.
      *
      * @see #getMaximumOccurs()
      */

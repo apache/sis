@@ -102,9 +102,9 @@ public final class AttributeConvention extends Static {
      * <p>The {@linkplain org.apache.sis.feature.DefaultAttributeType#getValueClass() value class} can be
      * the {@link com.esri.core.geometry.Geometry} class from ESRI's API, or the {@code Geometry} class from
      * <cite>Java Topology Suite</cite> (JTS) library, or any other class defined in future SIS versions.
-     * See {@link #isGeometryAttribute(IdentifiedType)} for testing whether the value is a supported type.</p>
+     * See {@code isGeometryAttribute(IdentifiedType)} for testing whether the value is a supported type.</p>
      *
-     * @see #isGeometryAttribute(IdentifiedType)
+     * @see #isGeometryAttribute(AbstractIdentifiedType)
      */
     public static final LocalName GEOMETRY_PROPERTY;
 
@@ -136,7 +136,7 @@ public final class AttributeConvention extends Static {
      * <p>The {@linkplain org.apache.sis.feature.DefaultAttributeType#getValueClass() value class} should be
      * {@link org.opengis.referencing.crs.CoordinateReferenceSystem}.</p>
      *
-     * @see #getCRSCharacteristic(Property)
+     * @see #getCRSCharacteristic(Object)
      */
     public static final LocalName CRS_CHARACTERISTIC;
 
@@ -150,7 +150,7 @@ public final class AttributeConvention extends Static {
      * <p>The {@linkplain org.apache.sis.feature.DefaultAttributeType#getValueClass() value class} should be
      * {@link Integer}.</p>
      *
-     * @see #getMaximalLengthCharacteristic(Property)
+     * @see #getMaximalLengthCharacteristic(Object)
      */
     public static final LocalName MAXIMAL_LENGTH_CHARACTERISTIC;
 
@@ -208,7 +208,7 @@ public final class AttributeConvention extends Static {
     }
 
     /**
-     * Returns {@code true} if the given type is an {@link AttributeType} or an {@link Operation} computing
+     * Returns {@code true} if the given type is an {@code AttributeType} or an {@code Operation} computing
      * an attribute, and the attribute value is one of the geometry types recognized by SIS.
      * The types currently recognized by SIS are:
      *

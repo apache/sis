@@ -95,8 +95,8 @@ public final strictfp class GeneralMatrixTest extends MatrixTestCase {
     }
 
     /**
-     * Tests {@link MatrixSIS#convertBefore(int, Number, Number)} using {@link AffineTranform}
-     * as a reference implementation.
+     * Tests {@link MatrixSIS#convertBefore(int, Number, Number)}
+     * using {@link java.awt.geom.AffineTransform} as a reference implementation.
      *
      * @since 0.6
      */
@@ -107,8 +107,8 @@ public final strictfp class GeneralMatrixTest extends MatrixTestCase {
     }
 
     /**
-     * Tests {@link MatrixSIS#convertAfter(int, Number, Number)} using {@link AffineTranform}
-     * as a reference implementation.
+     * Tests {@link MatrixSIS#convertAfter(int, Number, Number)}
+     * using {@link java.awt.geom.AffineTransform} as a reference implementation.
      *
      * @since 0.6
      */
@@ -119,7 +119,8 @@ public final strictfp class GeneralMatrixTest extends MatrixTestCase {
     }
 
     /**
-     * Tests {@link MatrixSIS#multiply(double[])} using {@link AffineTranform} as a reference implementation.
+     * Tests {@link MatrixSIS#multiply(double[])}
+     * using {@link java.awt.geom.AffineTransform} as a reference implementation.
      *
      * @since 0.8
      */

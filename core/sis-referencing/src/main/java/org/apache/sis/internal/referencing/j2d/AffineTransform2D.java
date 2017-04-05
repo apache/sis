@@ -49,10 +49,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureDimensionMatches;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 0.7
- *
- * @see ProjectiveTransform
- *
- * @since 0.5
+ * @since   0.5
  * @module
  */
 public class AffineTransform2D extends ImmutableAffineTransform
@@ -322,10 +319,10 @@ public class AffineTransform2D extends ImmutableAffineTransform
 
     /**
      * Compares this affine transform with the given object for equality. This method behaves as documented
-     * in the {@link LinearTransform#equals(Object, ComparisonMode) LinearTransform} interface, except for
-     * the following case: if the given mode is {@link ComparisonMode#STRICT}, then this method delegates
-     * to {@link #equals(Object)}. The later method has different rules than the ones documented in the
-     * {@code LinearTransform} interface, because of the {@code AffineTransform} inheritance.
+     * in the {@link LenientComparable#equals(Object, ComparisonMode) LenientComparable.equals(…)} method,
+     * except for the following case: if the given mode is {@link ComparisonMode#STRICT}, then this method
+     * delegates to {@link #equals(Object)}. The later method has different rules than the ones documented
+     * in the {@code LenientComparable} interface, because of the {@code AffineTransform} inheritance.
      *
      * @param  object  the object to compare to {@code this}.
      * @param  mode    the strictness level of the comparison.
@@ -378,7 +375,7 @@ public class AffineTransform2D extends ImmutableAffineTransform
      * <p>This special case exists in order to allow developers to attach additional information to their own subclass
      * of {@code AffineTransform2D}, and still distinguish their specialized subclass from ordinary affine transforms
      * in a pool of {@code MathTransform} instances. The main application is the
-     * {@linkplain org.apache.sis.referencing.operation.projection.Equirectangular} map projection,
+     * {@linkplain org.apache.sis.internal.referencing.provider.Equirectangular Equirectangular} map projection,
      * which can be simplified to an affine transform but still needs to remember the projection parameters.</p>
      *
      * @param  object  the object to compare with this affine transform for equality.

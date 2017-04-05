@@ -33,8 +33,8 @@ import org.junit.Test;
  * instead than the real geocentric translation is verified by the following tests:
  *
  * <ul>
- *   <li>{@link GeocentricTranslationTest#testFranceGeocentricInterpolationPoint()}</li>
- *   <li>{@link MolodenskyTransformTest#testFranceGeocentricInterpolationPoint()}</li>
+ *   <li>{@code GeocentricTranslationTest.testFranceGeocentricInterpolationPoint()}</li>
+ *   <li>{@code MolodenskyTransformTest.testFranceGeocentricInterpolationPoint()}</li>
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)

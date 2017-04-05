@@ -66,7 +66,7 @@ public class DefaultPassThroughOperation extends AbstractCoordinateOperation imp
      * The operation to apply on the subset of a coordinate tuple.
      *
      * <p><b>Consider this field as final!</b>
-     * This field is modified only at unmarshalling time by {@link #setOperation(CoordinateOperation)}</p>
+     * This field is modified only at unmarshalling time by {@code setOperation(CoordinateOperation)}</p>
      *
      * @see #getOperation()
      */
@@ -195,7 +195,7 @@ public class DefaultPassThroughOperation extends AbstractCoordinateOperation imp
      * <div class="warning"><b>Upcoming API change</b><br>
      * This method is conformant to ISO 19111:2003. But the ISO 19111:2007 revision changed the type from
      * {@code SingleOperation} to {@link CoordinateOperation}. This change may be applied in GeoAPI 4.0.
-     * This is necessary for supporting usage of {@code PassThroughOperation} with {@link ConcatenatedOperation}.
+     * This is necessary for supporting usage of {@code PassThroughOperation} with {@code ConcatenatedOperation}.
      * </div>
      *
      * @return the operation to apply on the subset of a coordinate tuple.

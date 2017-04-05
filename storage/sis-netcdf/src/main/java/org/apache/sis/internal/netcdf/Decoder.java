@@ -168,7 +168,7 @@ public abstract class Decoder implements Closeable {
      * {@link ucar.nc2.NetcdfFile#getId()} method for that purpose, which we will use when
      * possible in case that {@code getId()} method is defined in an other way.
      *
-     * <p>This method is used by {@link org.apache.sis.storage.netcdf.MetadataReader} in last resort
+     * <p>This method is used by {@link org.apache.sis.storage.netcdf.NetcdfStore#getMetadata()} in last resort
      * when no value were found for the attributes defined by the CF standard or by THREDDS.</p>
      *
      * @return the global dataset identifier, or {@code null} if none.
@@ -182,7 +182,7 @@ public abstract class Decoder implements Closeable {
      * {@link ucar.nc2.NetcdfFile#getTitle()} method for that purpose, which we will use when
      * possible in case that {@code getTitle()} method is defined in an other way.
      *
-     * <p>This method is used by {@link org.apache.sis.storage.netcdf.MetadataReader} in last resort
+     * <p>This method is used by {@link org.apache.sis.storage.netcdf.NetcdfStore#getMetadata()} in last resort
      * when no value were found for the attributes defined by the CF standard or by THREDDS.</p>
      *
      * @return the dataset title, or {@code null} if none.

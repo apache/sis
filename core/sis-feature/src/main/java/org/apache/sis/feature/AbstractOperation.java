@@ -46,8 +46,8 @@ import org.apache.sis.internal.jdk8.UncheckedIOException;
  * <div class="note"><b>Example:</b> a mutator operation may raise the height of a dam. This changes
  * may affect other properties like the watercourse and the reservoir associated with the dam.</div>
  *
- * The value is computed, or the operation is executed, by {@link #apply(Feature, ParameterValueGroup)}.
- * If the value is modifiable, new value can be set by call to {@link Attribute#setValue(Object)}.
+ * The value is computed, or the operation is executed, by {@code apply(Feature, ParameterValueGroup)}.
+ * If the value is modifiable, new value can be set by call to {@code Attribute.setValue(Object)}.
  *
  * <div class="warning"><b>Warning:</b> this class is experimental and may change after we gained more
  * experience on this aspect of ISO 19109.</div>
@@ -91,17 +91,17 @@ public abstract class AbstractOperation extends AbstractIdentifiedType {
      *   </tr>
      *   <tr>
      *     <td>{@value org.apache.sis.feature.AbstractIdentifiedType#DEFINITION_KEY}</td>
-     *     <td>{@link InternationalString} or {@link String}</td>
+     *     <td>{@link org.opengis.util.InternationalString} or {@link String}</td>
      *     <td>{@link #getDefinition()}</td>
      *   </tr>
      *   <tr>
      *     <td>{@value org.apache.sis.feature.AbstractIdentifiedType#DESIGNATION_KEY}</td>
-     *     <td>{@link InternationalString} or {@link String}</td>
+     *     <td>{@link org.opengis.util.InternationalString} or {@link String}</td>
      *     <td>{@link #getDesignation()}</td>
      *   </tr>
      *   <tr>
      *     <td>{@value org.apache.sis.feature.AbstractIdentifiedType#DESCRIPTION_KEY}</td>
-     *     <td>{@link InternationalString} or {@link String}</td>
+     *     <td>{@link org.opengis.util.InternationalString} or {@link String}</td>
      *     <td>{@link #getDescription()}</td>
      *   </tr>
      *   <tr>
@@ -166,17 +166,17 @@ public abstract class AbstractOperation extends AbstractIdentifiedType {
      * <ul>
      *   <li>If {@code getResult()} returns {@code null},
      *       then this method should return {@code null}.</li>
-     *   <li>If {@code getResult()} returns an instance of {@link AttributeType},
-     *       then this method shall return an instance of {@link Attribute}
+     *   <li>If {@code getResult()} returns an instance of {@code AttributeType},
+     *       then this method shall return an instance of {@code Attribute}
      *       and the {@code Attribute.getType() == getResult()} relation should hold.</li>
-     *   <li>If {@code getResult()} returns an instance of {@link FeatureAssociationRole},
-     *       then this method shall return an instance of {@link FeatureAssociation}
+     *   <li>If {@code getResult()} returns an instance of {@code FeatureAssociationRole},
+     *       then this method shall return an instance of {@code FeatureAssociation}
      *       and the {@code FeatureAssociation.getRole() == getResult()} relation should hold.</li>
      * </ul>
      *
      * <div class="note"><b>Analogy:</b>
-     * if we compare {@code Operation} to {@link Method} in the Java language, then this method is equivalent
-     * to {@link Method#apply(Object, Object...)}. The {@code Feature} argument is equivalent to {@code this}
+     * if we compare {@code Operation} to {@link java.lang.reflect.Method} in the Java language, then this method is equivalent
+     * to {@link java.lang.reflect.Method#invoke(Object, Object...)}. The {@code Feature} argument is equivalent to {@code this}
      * in the Java language, and may be {@code null} if the operation does not need a feature instance
      * (like static methods in the Java language).</div>
      *

@@ -46,7 +46,7 @@ import org.apache.sis.internal.jdk8.JDK8;
 
 
 /**
- * A Swing panel drawing {@link Location} instances.
+ * A Swing panel drawing {@code Location} instances.
  * This is used for debugging purpose only.
  *
  * @author  Martin Desruisseaux (Geomatys)

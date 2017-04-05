@@ -46,8 +46,8 @@ import org.opengis.metadata.citation.ResponsibleParty;
  * Those properties can be read or modified directly. All methods defined in this class are bridges to
  * the ISO 19115 metadata model and can be ignored if the user only wants to manipulate the GPX model.
  *
- * <p>Note that {@link Party} is an abstract type in ISO 19115 model. We are supposed to implement a subtype
- * ({@link org.opengis.metadata.citation.Individual} or {@link org.opengis.metadata.citation.Organisation}).
+ * <p>Note that {@code Party} is an abstract type in ISO 19115 model. We are supposed to implement a subtype
+ * ({@code Individual} or {@code Organisation}).
  * However the GPX metadata does not specifies whether the "person" is actually an individual or an organization.
  * In this situation of doubt, we do not select a subtype for avoiding to provide a wrong information.</p>
  *
@@ -60,8 +60,6 @@ import org.opengis.metadata.citation.ResponsibleParty;
 public final class Person implements ResponsibleParty, Contact, Address {
     /**
      * Name of person or organization.
-     *
-     * @see #getName()
      */
     @XmlElement(name = Tags.NAME)
     public String name;
@@ -82,8 +80,6 @@ public final class Person implements ResponsibleParty, Contact, Address {
 
     /**
      * Link to Web site or other external information about person.
-     *
-     * @see #getOnlineResources()
      */
     @XmlElement(name = Tags.LINK)
     public Link link;
@@ -178,12 +174,9 @@ public final class Person implements ResponsibleParty, Contact, Address {
     /**
      * ISO 19115 metadata property determined by the {@link #email} and {@link #link} fields.
      * Invoking this method is one of the steps in the path from the {@code Responsibility} root
-     * to the {@link #getElectronicMailAddresses()} and {@link #getOnlineResources()} methods.
+     * to the {@link #getElectronicMailAddresses()} and {@link #getOnlineResource()} methods.
      *
      * @return contact information for the party.
-     *
-     * @see #getAddresses()
-     * @see #getOnlineResources()
      */
     @Override
     public Contact getContactInfo() {

@@ -98,7 +98,7 @@ public final class ReferencingUtilities extends Static {
      * @param  cs  the coordinate system for which to get the unit, or {@code null}.
      * @return the unit for all axis in the given coordinate system, or {@code null}.
      *
-     * @see org.apache.sis.internal.metadata.AxisDirections#getAngularUnit(CoordinateSystem)
+     * @see org.apache.sis.internal.metadata.AxisDirections#getAngularUnit(CoordinateSystem, Unit)
      */
     public static Unit<?> getUnit(final CoordinateSystem cs) {
         Unit<?> unit = null;

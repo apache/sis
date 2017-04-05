@@ -131,7 +131,7 @@ public class AbstractCS extends AbstractIdentifiedObject implements CoordinateSy
      *   </tr>
      *   <tr>
      *     <td>{@value org.opengis.referencing.IdentifiedObject#NAME_KEY}</td>
-     *     <td>{@link ReferenceIdentifier} or {@link String}</td>
+     *     <td>{@link org.opengis.referencing.ReferenceIdentifier} or {@link String}</td>
      *     <td>{@link #getName()}</td>
      *   </tr>
      *   <tr>
@@ -141,7 +141,7 @@ public class AbstractCS extends AbstractIdentifiedObject implements CoordinateSy
      *   </tr>
      *   <tr>
      *     <td>{@value org.opengis.referencing.IdentifiedObject#IDENTIFIERS_KEY}</td>
-     *     <td>{@link ReferenceIdentifier} (optionally as array)</td>
+     *     <td>{@link org.opengis.referencing.ReferenceIdentifier} (optionally as array)</td>
      *     <td>{@link #getIdentifiers()}</td>
      *   </tr>
      *   <tr>
@@ -270,7 +270,8 @@ public class AbstractCS extends AbstractIdentifiedObject implements CoordinateSy
      * or an {@code INVALID_*} error code otherwise. This method is invoked at construction time for checking
      * argument validity. The default implementation returns {@code VALID} in all cases. Subclasses override
      * this method in order to put more restrictions on allowed axis directions and check for compatibility
-     * with {@linkplain Units#METRE metre} or {@linkplain Units#DEGREE degree} units.
+     * with {@linkplain org.apache.sis.measure.Units#METRE metre} or
+     * {@linkplain org.apache.sis.measure.Units#DEGREE degree} units.
      *
      * <p><b>Note for implementors:</b> since this method is invoked at construction time, it shall not depend
      * on this object's state. This method is not in public API for that reason.</p>

@@ -55,8 +55,8 @@ import org.opengis.util.InternationalString;
  * <p>Unless specified otherwise, all methods in this class returns {@code null} or an empty collection by default.
  * The exceptions to this rules are the following methods:</p>
  * <ul>
- *   <li>{@link #getMetadataScopes()} returns {@code this}</li>
- *   <li>{@link #getResourceScope()} returns {@link ScopeCode#DATASET}</li>
+ *   <li>{@code  getMetadataScopes()} returns {@code this}</li>
+ *   <li>{@code  getResourceScope()} returns {@link ScopeCode#DATASET}</li>
  *   <li>{@link #getIdentificationInfo()} returns {@code this}</li>
  *   <li>{@link #getCitation()} returns {@code this}</li>
  *   <li>{@link #getSpatialRepresentationTypes()} returns {@link SpatialRepresentationType#VECTOR}</li>
@@ -189,7 +189,7 @@ public class SimpleMetadata implements Metadata, DataIdentification, Citation {
     }
 
     /**
-     * As of ISO 19115:2014, replaced by {@link #getMetadataStandards()}
+     * As of ISO 19115:2014, replaced by {@code getMetadataStandards()}
      * followed by {@link Citation#getEdition()}.
      */
     @Override
@@ -239,7 +239,6 @@ public class SimpleMetadata implements Metadata, DataIdentification, Citation {
      * @see #getPointOfContacts()
      * @see #getSpatialRepresentationTypes()
      * @see #getSpatialResolutions()
-     * @see #getTemporalResolutions()
      * @see #getTopicCategories()
      * @see #getExtents()
      * @see #getResourceFormats()
@@ -470,7 +469,7 @@ public class SimpleMetadata implements Metadata, DataIdentification, Citation {
     }
 
     /**
-     * @deprecated As of ISO 19115:2014, replaced by {@link #getAssociatedResources()}.
+     * @deprecated As of ISO 19115:2014, replaced by {@code getAssociatedResources()}.
      */
     @Override
     @Deprecated

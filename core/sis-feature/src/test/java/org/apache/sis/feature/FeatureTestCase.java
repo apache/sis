@@ -72,7 +72,7 @@ public abstract strictfp class FeatureTestCase extends TestCase {
 
     /**
      * Asserts that {@link AbstractFeature#getProperty(String)} returns the given instance.
-     * This assertion is verified after a call to {@link AbstractFeature#setProperty(Property)}
+     * This assertion is verified after a call to {@code AbstractFeature.setProperty(Property)}
      * and should be true for all Apache SIS concrete implementations. But it is not guaranteed
      * to be true for non-SIS implementations, for example built on top of {@code AbstractFeature}
      * without overriding {@code setProperty(Property)}.
@@ -296,7 +296,7 @@ public abstract strictfp class FeatureTestCase extends TestCase {
     }
 
     /**
-     * Tests the possibility to plugin custom attributes via {@link AbstractFeature#setProperty(Property)}.
+     * Tests the possibility to plugin custom attributes via {@code AbstractFeature.setProperty(Property)}.
      */
     @Test
     @DependsOnMethod({"testSimpleValues", "testSimpleProperties"})

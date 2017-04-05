@@ -215,7 +215,7 @@ public class EPSGDataAccess extends GeodeticAuthorityFactory implements CRSAutho
 
     /**
      * The last table in which object name were looked for.
-     * This is for internal use by {@link #toPrimaryKey} only.
+     * This is for internal use by {@link #toPrimaryKeys} only.
      */
     private String lastTableForName;
 
@@ -262,7 +262,7 @@ public class EPSGDataAccess extends GeodeticAuthorityFactory implements CRSAutho
      * Cache for axis names. This service is not provided by {@code ConcurrentAuthorityFactory}
      * since {@link AxisName} objects are particular to the EPSG database.
      *
-     * @see #getAxisName(int)
+     * @see #getAxisName(Integer)
      */
     private final Map<Integer,AxisName> axisNames = new HashMap<>();
 
@@ -270,7 +270,7 @@ public class EPSGDataAccess extends GeodeticAuthorityFactory implements CRSAutho
      * Cache for the number of dimensions of coordinate systems. This service is not provided by
      * {@code ConcurrentAuthorityFactory} since the number of dimension is used internally in this class.
      *
-     * @see #getDimensionForCS(int)
+     * @see #getDimensionForCS(Integer)
      */
     private final Map<Integer,Integer> csDimensions = new HashMap<>();
 
@@ -278,7 +278,7 @@ public class EPSGDataAccess extends GeodeticAuthorityFactory implements CRSAutho
      * Cache for whether conversions are projections. This service is not provided by {@code ConcurrentAuthorityFactory}
      * since the check for conversion type is used internally in this class.
      *
-     * @see #isProjection(int)
+     * @see #isProjection(Integer)
      */
     private final Map<Integer,Boolean> isProjection = new HashMap<>();
 
@@ -286,7 +286,7 @@ public class EPSGDataAccess extends GeodeticAuthorityFactory implements CRSAutho
      * Cache of naming systems other than EPSG. There is usually few of them (at most 15).
      * This is used for aliases.
      *
-     * @see #createProperties(String, String, String, String, boolean)
+     * @see #createProperties(String, String, Integer, CharSequence, boolean)
      */
     private final Map<String,NameSpace> namingSystems = new HashMap<>();
 
@@ -302,9 +302,9 @@ public class EPSGDataAccess extends GeodeticAuthorityFactory implements CRSAutho
      * compound CRS if there is cycles, or coordinate operations.
      *
      * <div class="note"><b>Example:</b>
-     * {@link #createDatum(String)} invokes {@link #createBursaWolfParameters(Integer)}, which creates a target datum.
-     * The target datum could have its own Bursa-Wolf parameters, with one of them pointing again to the source datum.
-     * </div>
+     * {@link #createDatum(String)} invokes {@link #createBursaWolfParameters(PrimeMeridian, Integer)}, which creates
+     * a target datum. The target datum could have its own Bursa-Wolf parameters, with one of them pointing again to
+     * the source datum.</div>
      *
      * Keys are EPSG codes and values are the type of object being constructed (but those values are not yet used).
      */
@@ -1056,7 +1056,7 @@ addURIs:    for (int i=0; ; i++) {
      * Returns the name and aliases for the {@link IdentifiedObject} to construct.
      *
      * @param  table       the table on which a query has been executed.
-     * @param  name        the name for the {@link IndentifiedObject} to construct.
+     * @param  name        the name for the {@link IdentifiedObject} to construct.
      * @param  code        the EPSG code of the object to construct.
      * @param  remarks     remarks as a {@link String} or {@link InternationalString}, or {@code null} if none.
      * @param  deprecated  {@code true} if the object to create is deprecated.
@@ -1155,7 +1155,7 @@ addURIs:    for (int i=0; ; i++) {
      * Returns the name, aliases and domain of validity for the {@link IdentifiedObject} to construct.
      *
      * @param  table       the table on which a query has been executed.
-     * @param  name        the name for the {@link IndentifiedObject} to construct.
+     * @param  name        the name for the {@link IdentifiedObject} to construct.
      * @param  code        the EPSG code of the object to construct.
      * @param  domainCode  the code for the domain of validity, or {@code null} if none.
      * @param  scope       the scope, or {@code null} if none.
@@ -2195,7 +2195,7 @@ addURIs:    for (int i=0; ; i++) {
      * @param  cs  the EPSG code for the coordinate system.
      * @return the number of dimensions, or {@code null} if not found.
      *
-     * @see #getDimensionsForMethod(int)
+     * @see #getDimensionsForMethod(Integer)
      */
     private Integer getDimensionForCS(final Integer cs) throws SQLException {
         Integer dimension = csDimensions.get(cs);
@@ -2591,9 +2591,9 @@ next:               while (r.next()) {
     /**
      * Sets the values of all parameters in the given group.
      *
-     * @param  method     the EPSG code for the operation method.
-     * @param  operation  the EPSG code for the operation (conversion or transformation).
-     * @param  value      the parameter values to fill.
+     * @param  method      the EPSG code for the operation method.
+     * @param  operation   the EPSG code for the operation (conversion or transformation).
+     * @param  parameters  the parameter values to fill.
      * @throws SQLException if a SQL statement failed.
      */
     private void fillParameterValues(final Integer method, final Integer operation, final ParameterValueGroup parameters)
@@ -3079,8 +3079,8 @@ next:               while (r.next()) {
 
         /**
          * Returns a set of authority codes that <strong>may</strong> identify the same object than the specified one.
-         * This implementation tries to get a smaller set than what {@link EPSGDataAccess#getAuthorityCodes()} would produce.
-         * Deprecated objects must be last in iteration order.
+         * This implementation tries to get a smaller set than what {@link EPSGDataAccess#getAuthorityCodes(Class)}
+         * would produce. Deprecated objects must be last in iteration order.
          */
         @Override
         protected Set<String> getCodeCandidates(final IdentifiedObject object) throws FactoryException {
@@ -3249,7 +3249,7 @@ next:               while (r.next()) {
      * @param  method  the EPSG code of the operation method for which to get the dimensions.
      * @return the dimensions in an array of length 2.
      *
-     * @see #getDimensionForCS(int)
+     * @see #getDimensionForCS(Integer)
      */
     private Integer[] getDimensionsForMethod(final Integer method) throws SQLException {
         final Integer[] dimensions = new Integer[2];

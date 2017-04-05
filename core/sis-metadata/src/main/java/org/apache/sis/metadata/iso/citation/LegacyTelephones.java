@@ -36,7 +36,7 @@ import org.apache.sis.internal.metadata.LegacyPropertyAdapter;
 final class LegacyTelephones extends LegacyPropertyAdapter<String,Telephone> {
     /**
      * The type of telephone number.
-     * Either {@link UnsupportedCodeList#VOICE} or {@link UnsupportedCodeList#FACSIMILE}.
+     * Either {@code UnsupportedCodeList.VOICE} or {@code UnsupportedCodeList.FACSIMILE}.
      */
     private final CodeList<?> type;
 

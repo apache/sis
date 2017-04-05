@@ -148,7 +148,7 @@ public class DefaultParameterDescriptor<T> extends AbstractParameterDescriptor i
      *     <td>{@link #getIdentifiers()}</td>
      *   </tr>
      *   <tr>
-     *     <td>{@value org.opengis.metadata.Identifier#DESCRIPTION_KEY}</td>
+     *     <td>"description"</td>
      *     <td>{@link org.opengis.util.InternationalString} or {@link String}</td>
      *     <td>{@link #getDescription()}</td>
      *   </tr>

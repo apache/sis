@@ -30,7 +30,6 @@ import org.opengis.geometry.MismatchedDimensionException;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.4
  *
- * @see org.opengis.geometry.MismatchedReferenceSystemException
  * @see org.apache.sis.referencing.operation.MismatchedDatumException
  *
  * @since 0.4

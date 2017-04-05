@@ -22,11 +22,9 @@ import org.opengis.metadata.citation.Citation;
 
 
 /**
- * An entry in the {@link IdentifierMap}. This class implements both the
- * {@link Map.Entry} interface (for inclusion in the set to be returned
- * by {@link IdentifierMapAdapter#entrySet()}) and the {@link Identifier}
- * interface (for inclusion in the {@link IdentifierMapAdapter#identifiers}
- * collection).
+ * An entry in {@link org.apache.sis.xml.IdentifierMap}. This class implements both the {@link AbstractMap.Entry}
+ * interface (for inclusion in the set to be returned by {@link IdentifierMapAdapter#entrySet()}) and the
+ * {@link Identifier} interface (for inclusion in the {@link IdentifierMapAdapter#identifiers} collection).
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.5

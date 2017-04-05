@@ -173,8 +173,6 @@ public class DefaultSampleDimension extends DefaultRangeDimension {
      * </div>
      *
      * @param  object  the metadata to copy values from, or {@code null} if none.
-     *
-     * @see #castOrCopy(SampleDimension)
      */
     public DefaultSampleDimension(final DefaultSampleDimension object) {
         super(object);

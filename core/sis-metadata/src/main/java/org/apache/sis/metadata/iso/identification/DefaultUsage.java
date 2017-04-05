@@ -244,7 +244,7 @@ public class DefaultUsage extends ISOMetadata implements Usage {
      * Returns identification of and means of communicating with person(s) and organization(s) using the resource(s).
      *
      * <div class="warning"><b>Upcoming API change — generalization</b><br>
-     * As of ISO 19115:2014, {@code ResponsibleParty} is replaced by the {@link Responsibility} parent interface.
+     * As of ISO 19115:2014, {@code ResponsibleParty} is replaced by the {@code Responsibility} parent interface.
      * This change may be applied in GeoAPI 4.0.
      * </div>
      *
@@ -260,7 +260,7 @@ public class DefaultUsage extends ISOMetadata implements Usage {
      * Sets identification of and means of communicating with person(s) and organization(s) using the resource(s).
      *
      * <div class="warning"><b>Upcoming API change — generalization</b><br>
-     * As of ISO 19115:2014, {@code ResponsibleParty} is replaced by the {@link Responsibility} parent interface.
+     * As of ISO 19115:2014, {@code ResponsibleParty} is replaced by the {@code Responsibility} parent interface.
      * This change may be applied in GeoAPI 4.0.
      * </div>
      *

@@ -108,8 +108,6 @@ public class DefaultOperationChainMetadata extends ISOMetadata {
      * given object are not recursively copied.
      *
      * @param  object  the metadata to copy values from, or {@code null} if none.
-     *
-     * @see #castOrCopy(OperationChainMetadata)
      */
     public DefaultOperationChainMetadata(final DefaultOperationChainMetadata object) {
         super(object);

@@ -69,7 +69,6 @@ final class CurveExtremum {
      * @param  x2   the <var>x</var> ordinate of the second point.
      * @param  y2   the <var>y</var> ordinate of the second point.
      * @param  dy2  the ∂<var>x</var>/∂<var>y</var> value at the second point.
-     * @return the two points located on the extremum of the fitted cubic curve.
      */
     void resolve(double x1, double y1, final double dy1,
                  double x2, double y2, final double dy2)

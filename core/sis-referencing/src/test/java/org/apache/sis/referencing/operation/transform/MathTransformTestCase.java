@@ -48,7 +48,6 @@ import static org.opengis.test.Assert.*;
  * <p>Various assertion methods:</p>
  * <ul>
  *   <li>{@link #assertCoordinateEquals assertCoordinateEquals(…)}  — from GeoAPI</li>
- *   <li>{@link #assertMatrixEquals     assertMatrixEquals(…)}      — from GeoAPI</li>
  *   <li>{@link #assertParameterEquals  assertParameterEquals(…)}   — from Apache SIS</li>
  *   <li>{@link #assertWktEquals        assertWktEquals(…)}         — from Apache SIS</li>
  * </ul>
@@ -345,8 +344,6 @@ public abstract strictfp class MathTransformTestCase extends TransformTestCase {
     /**
      * Prints the current {@linkplain #transform transform} as normal and internal WKT.
      * This method is for debugging purpose only.
-     *
-     * @see #verifyWKT(String)
      */
     @Debug
     protected final void printInternalWKT() {
