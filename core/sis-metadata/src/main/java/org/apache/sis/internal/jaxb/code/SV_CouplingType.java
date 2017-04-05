@@ -23,7 +23,7 @@ import org.apache.sis.xml.Namespaces;
 
 
 /**
- * JAXB adapter for {@link CouplingType}, in order to integrate the value in an element respecting
+ * JAXB adapter for {@code CouplingType}, in order to integrate the value in an element respecting
  * the ISO-19139 standard. See package documentation for more information about the handling
  * of {@code CodeList} in ISO-19139.
  *

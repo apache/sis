@@ -244,8 +244,8 @@ public class DefaultScopeDescription extends ISOMetadata implements ScopeDescrip
      * Sets the properties identified by the {@code code} argument, if non-null and non-empty.
      * This discards any other properties.
      *
-     * @param caller  the caller method, for logging purpose.
-     * @param code    the property which is going to be set.
+     * @param newValue  the value to set.
+     * @param code      the property which is going to be set.
      */
     private <E> void setProperty(final Set<? extends E> newValue, final Class<E> type, final byte code) {
         Set<E> c = null;

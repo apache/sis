@@ -50,7 +50,7 @@ public final strictfp class AbstractOperationTest extends TestCase {
     }
 
     /**
-     * Tests serialization of {@link DefaultOperation}.
+     * Tests serialization of {@link AbstractOperation}.
      */
     @Test
     public void testSerialization() {
@@ -58,7 +58,7 @@ public final strictfp class AbstractOperationTest extends TestCase {
     }
 
     /**
-     * Tests {@link DefaultOperation#toString()}.
+     * Tests {@link AbstractOperation#toString()}.
      */
     @Test
     public void testToString() {

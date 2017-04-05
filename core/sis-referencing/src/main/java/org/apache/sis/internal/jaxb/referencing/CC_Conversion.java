@@ -35,7 +35,7 @@ import org.apache.sis.referencing.operation.DefaultConversion;
  */
 public final class CC_Conversion extends PropertyType<CC_Conversion, Conversion> {
     /**
-     * Temporary storage for the {@code baseCRS} during {@link org.apache.sis.referencing.crs.AbstractDerivedCRS}
+     * Temporary storage for the {@code baseCRS} during {@code org.apache.sis.referencing.crs.AbstractDerivedCRS}
      * unmarshalling. A temporary location is needed because {@code AbstractDerivedCRS} does not have any explicit
      * field for {@code baseCRS}.
      *

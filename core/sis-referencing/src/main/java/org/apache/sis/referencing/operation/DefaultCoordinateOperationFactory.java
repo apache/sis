@@ -309,7 +309,7 @@ public class DefaultCoordinateOperationFactory extends AbstractFactory implement
      *   </tr>
      *   <tr>
      *     <td>{@value org.opengis.referencing.IdentifiedObject#ALIAS_KEY}</td>
-     *     <td>{@link GenericName} or {@link CharSequence} (optionally as array)</td>
+     *     <td>{@link org.opengis.util.GenericName} or {@link CharSequence} (optionally as array)</td>
      *     <td>{@link DefaultOperationMethod#getAlias()}</td>
      *   </tr>
      *   <tr>
@@ -319,7 +319,7 @@ public class DefaultCoordinateOperationFactory extends AbstractFactory implement
      *   </tr>
      *   <tr>
      *     <td>{@value org.opengis.referencing.operation.OperationMethod#FORMULA_KEY}</td>
-     *     <td>{@link Formula}, {@link Citation} or {@link CharSequence}</td>
+     *     <td>{@link Formula}, {@link org.opengis.metadata.citation.Citation} or {@link CharSequence}</td>
      *     <td>{@link DefaultOperationMethod#getFormula()}</td>
      *   </tr>
      * </table>
@@ -409,8 +409,8 @@ public class DefaultCoordinateOperationFactory extends AbstractFactory implement
 
     /**
      * Returns {@code true} if the given CRS are using equivalent (ignoring metadata) datum.
-     * If the CRS are {@link CompoundCRS}, then this method verifies that all datum in the
-     * target CRS exists in the source CRS, but not necessarily in the same order.
+     * If the CRS are {@link org.opengis.referencing.crs.CompoundCRS}, then this method verifies that
+     * all datum in the target CRS exists in the source CRS, but not necessarily in the same order.
      * The target CRS may have less datum than the source CRS.
      *
      * @param  sourceCRS  the target CRS.

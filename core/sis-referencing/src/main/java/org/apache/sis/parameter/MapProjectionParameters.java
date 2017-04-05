@@ -433,8 +433,8 @@ final class MapProjectionParameters extends DefaultParameterValueGroup {
 
         /**
          * All names known to Apache SIS for the standard parallels parameter, as an array of 1 or 2 elements.
-         * This is used in some NetCDF files instead of {@link #STANDARD_PARALLEL_1} and
-         * {@link #STANDARD_PARALLEL_2}. This is not a standard parameter.
+         * This is used in some NetCDF files instead of {@value Constants#STANDARD_PARALLEL_1} and
+         * {@value Constants#STANDARD_PARALLEL_2}. This is not a standard parameter.
          */
         static final ParameterDescriptor<double[]> DESCRIPTOR = new DefaultParameterDescriptor<>(
                 InverseFlattening.toMap(Constants.STANDARD_PARALLEL),

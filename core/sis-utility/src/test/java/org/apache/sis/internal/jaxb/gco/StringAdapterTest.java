@@ -47,7 +47,7 @@ public final strictfp class StringAdapterTest extends TestCase {
     }
 
     /**
-     * Tests {@link StringAdapter#toString(CharSequence)} for an {@link InternationalString}
+     * Tests {@link StringAdapter#toString(CharSequence)} for an {@link org.opengis.util.InternationalString}
      * having localizations in different languages.
      */
     @Test

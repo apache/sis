@@ -227,7 +227,7 @@ public final class TransverseMercator extends AbstractMercator {
          * Width of a zone, in degrees of longitude.
          * Positive if zone numbers are increasing eastward, or negative if increasing westwards.
          *
-         * @see #zone(double)
+         * @see #zone(double, double)
          * @see #centralMeridian(int)
          */
         public final double width;

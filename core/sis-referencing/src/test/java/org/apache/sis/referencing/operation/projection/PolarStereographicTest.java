@@ -48,9 +48,6 @@ import static java.lang.StrictMath.*;
 public final strictfp class PolarStereographicTest extends MapProjectionTestCase {
     /**
      * Creates a new instance of {@link PolarStereographic}.
-     *
-     * @param  ellipse           {@code false} for a sphere, or {@code true} for WGS84 ellipsoid.
-     * @param  latitudeOfOrigin  the latitude of origin, in decimal degrees.
      */
     private void createNormalizedProjection(final MapProjection method) {
         final Parameters parameters = parameters(method, false);
@@ -123,8 +120,6 @@ public final strictfp class PolarStereographicTest extends MapProjectionTestCase
      *
      * @throws FactoryException if an error occurred while creating the map projection.
      * @throws TransformException if an error occurred while projecting a coordinate.
-     *
-     * @see org.opengis.test.referencing.ParameterizedTransformTest#testPolarStereographicA()
      */
     @Test
     public void testPolarStereographicA() throws FactoryException, TransformException {
@@ -137,8 +132,6 @@ public final strictfp class PolarStereographicTest extends MapProjectionTestCase
      *
      * @throws FactoryException if an error occurred while creating the map projection.
      * @throws TransformException if an error occurred while projecting a coordinate.
-     *
-     * @see org.opengis.test.referencing.ParameterizedTransformTest#testPolarStereographicB()
      */
     @Test
     public void testPolarStereographicB() throws FactoryException, TransformException {
@@ -151,8 +144,6 @@ public final strictfp class PolarStereographicTest extends MapProjectionTestCase
      *
      * @throws FactoryException if an error occurred while creating the map projection.
      * @throws TransformException if an error occurred while projecting a coordinate.
-     *
-     * @see org.opengis.test.referencing.ParameterizedTransformTest#testPolarStereographicC()
      */
     @Test
     public void testPolarStereographicC() throws FactoryException, TransformException {

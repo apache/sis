@@ -44,7 +44,7 @@ public final strictfp class CodeTest extends TestCase {
      * Tests the {@link Code#Code(ReferenceIdentifier)} constructor with {@code "EPSG:4326"} identifier.
      * This test intentionally uses an identifier with the {@code IOGP} authority instead than
      * EPSG in order to make sure that the {@code codeSpace} attribute is set from
-     * {@link Identifier#getCodeSpace()}, not from {@link Identifier#getAuthority()}.
+     * {@code Identifier.getCodeSpace()}, not from {@code Identifier.getAuthority()}.
      */
     @Test
     public void testSimple() {

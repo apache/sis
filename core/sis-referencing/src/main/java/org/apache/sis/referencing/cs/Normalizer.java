@@ -142,7 +142,7 @@ final class Normalizer implements Comparable<Normalizer> {
     private final int unitOrder;
 
     /**
-     * For internal usage by {@link #sort(CoordinateSystemAxis[])} only.
+     * For internal usage by {@link #sort(CoordinateSystemAxis[], int)} only.
      */
     private Normalizer(final CoordinateSystemAxis axis, final int angularUnitOrder) {
         this.axis = axis;

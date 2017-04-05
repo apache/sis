@@ -45,7 +45,7 @@ public final strictfp class VerticalDatumTypesTest extends TestCase {
     }
 
     /**
-     * Tests the {@link VerticalDatumTypes#toLegacy(int)} method.
+     * Tests the {@link VerticalDatumTypes#toLegacy(VerticalDatumType)} method.
      */
     @Test
     public void testToLegacy() {

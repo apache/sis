@@ -72,7 +72,6 @@ import static org.apache.sis.internal.util.DoubleDouble.verbatim;
  * @version 0.6
  *
  * @see TransverseMercator
- * @see ObliqueMercator
  *
  * @since 0.6
  * @module

@@ -150,7 +150,7 @@ public final class Warnings implements Localized, Serializable {
      *
      * @param locale           the locale for reporting warning messages.
      * @param isParsing        {@code false} if formatting, or {@code true} if parsing.
-     * @param ignoredElements  the {@link Parser#ignoredElements} map, or an empty map (can not be null).
+     * @param ignoredElements  the {@link AbstractParser#ignoredElements} map, or an empty map (can not be null).
      */
     Warnings(final Locale locale, final boolean isParsing, final Map<String, List<String>> ignoredElements) {
         this.errorLocale     = locale;

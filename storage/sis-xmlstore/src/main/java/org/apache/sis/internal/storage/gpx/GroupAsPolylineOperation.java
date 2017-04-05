@@ -126,7 +126,7 @@ class GroupAsPolylineOperation extends AbstractOperation {
     /**
      * The attribute resulting from execution if the {@link GroupAsPolylineOperation}.
      * The value is computed when first requested, then cached for this {@code Result} instance only.
-     * Note that the cache is not used when {@link #apply(Feature, ParameterValueGroup)} is invoked,
+     * Note that the cache is not used when {@code apply(Feature, ParameterValueGroup)} is invoked,
      * causing a new value to be computed again. The intend is to behave as if the operation has been
      * executed at {@code apply(…)} invocation time, even if we deferred the actual execution.
      */

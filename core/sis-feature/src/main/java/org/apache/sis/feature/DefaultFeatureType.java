@@ -89,7 +89,7 @@ import org.apache.sis.internal.jdk8.JDK8;
  *
  * <div class="section">Immutability and thread safety</div>
  * Instances of this class are immutable if all properties ({@link GenericName} and {@link InternationalString}
- * instances) and all arguments ({@link AttributeType} instances) given to the constructor are also immutable.
+ * instances) and all arguments ({@code AttributeType} instances) given to the constructor are also immutable.
  * Such immutable instances can be shared by many objects and passed between threads without synchronization.
  *
  * @author  Johann Sorel (Geomatys)
@@ -137,7 +137,7 @@ public class DefaultFeatureType extends AbstractIdentifiedType implements Featur
      * any unresolved name (i.e. a {@link DefaultAssociationRole#valueType} specified only be the
      * feature type name instead than its actual instance). A value of {@code true} means that all
      * names have been resolved. However a value of {@code false} only means that we are not sure,
-     * and that {@link #resolve(FeatureType)} should check again.
+     * and that {@code resolve(FeatureType, Map)} should check again.
      *
      * <div class="note"><b>Note:</b>
      * Strictly speaking, this field should be declared {@code volatile} since the names could
@@ -346,7 +346,7 @@ public class DefaultFeatureType extends AbstractIdentifiedType implements Featur
      *
      * @param  properties  same content as {@link #properties} (may be the reference to the same list), but
      *         optionally in a temporarily modifiable list if we want to allow removal of duplicated values.
-     *         See {@link #scanPropertiesFrom(FeatureType, Collection)} javadoc for more explanation.
+     *         See {@code scanPropertiesFrom(FeatureType, Collection)} javadoc for more explanation.
      * @throws IllegalArgumentException if two properties have the same name.
      */
     private void computeTransientFields(final List<AbstractIdentifiedType> properties) {
@@ -454,7 +454,7 @@ public class DefaultFeatureType extends AbstractIdentifiedType implements Featur
      * <ul>
      *   <li>Avoid a call to the user-overrideable {@link #getProperties(boolean)} method
      *       while this {@code DefaultFeatureType} instance is still under constructor.</li>
-     *   <li>Allow the {@link #DefaultFeatureType(Map, boolean, FeatureType[], PropertyType[])} constructor
+     *   <li>Allow the {@code DefaultFeatureType(Map, boolean, FeatureType[], PropertyType[])} constructor
      *       to pass a temporary modifiable list that allow element removal.</li>
      * </ul>
      *
@@ -539,7 +539,7 @@ public class DefaultFeatureType extends AbstractIdentifiedType implements Featur
     }
 
     /**
-     * Implementation of {@link #resolve(FeatureType, Map)}, also to be invoked from the constructor.
+     * Implementation of {@code resolve(FeatureType, Map)}, also to be invoked from the constructor.
      *
      * <p>{@code this} shall be the instance in process of being created, not other instance
      * (i.e. recursive method invocations are performed on the same {@code this} instance).</p>

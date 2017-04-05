@@ -124,7 +124,7 @@ public class FeatureFormat extends TabularFormat<Object> {
 
     /**
      * Returns the type of objects formatted by this class. This method has to return {@code Object.class}
-     * since it is the only common parent to {@link Feature} and {@link FeatureType}.
+     * since it is the only common parent to {@code Feature} and {@link FeatureType}.
      *
      * @return {@code Object.class}
      */
@@ -162,8 +162,8 @@ public class FeatureFormat extends TabularFormat<Object> {
      * The object may be an instance of any of the following types:
      *
      * <ul>
-     *   <li>{@link Feature}</li>
-     *   <li>{@link FeatureType}</li>
+     *   <li>{@code Feature}</li>
+     *   <li>{@code FeatureType}</li>
      * </ul>
      *
      * @throws IOException if an error occurred while writing to the given appendable.
@@ -462,7 +462,7 @@ header: for (int i=0; ; i++) {
 
     /**
      * Formats the given object using a shared instance of {@code ParameterFormat}.
-     * This is used for {@link DefaultParameterDescriptorGroup#toString()} implementation.
+     * This is used for {@link DefaultFeatureType#toString()} implementation.
      */
     static String sharedFormat(final Object object) {
         FeatureFormat f = INSTANCE.getAndSet(null);

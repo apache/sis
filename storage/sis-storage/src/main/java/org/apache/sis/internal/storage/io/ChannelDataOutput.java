@@ -227,7 +227,7 @@ public class ChannelDataOutput extends ChannelData implements Flushable {
      * Writes the 16 low-order bits of value to the stream.
      * The 16 high-order bits of {@code v} are ignored.
      * This method ensures that there is space for at least 2 bytes in the buffer,
-     * (writing previous bytes into the channel if necessary), then delegates to {@link ByteBuffer#put(short)}.
+     * (writing previous bytes into the channel if necessary), then delegates to {@link ByteBuffer#putShort(short)}.
      *
      * @param  value  short integer to be written.
      * @throws IOException if some I/O exception occurs during writing.
@@ -240,7 +240,7 @@ public class ChannelDataOutput extends ChannelData implements Flushable {
     /**
      * Writes char value (16 bits) into the steam.
      * This method ensures that there is space for at least 2 bytes in the buffer,
-     * (writing previous bytes into the channel if necessary), then delegates to {@link ByteBuffer#put(char)}.
+     * (writing previous bytes into the channel if necessary), then delegates to {@link ByteBuffer#putChar(char)}.
      *
      * @param  value  character to be written.
      * @throws IOException if some I/O exception occurs during writing.
@@ -253,7 +253,7 @@ public class ChannelDataOutput extends ChannelData implements Flushable {
     /**
      * Writes integer value (32 bits) into the steam.
      * This method ensures that there is space for at least 4 bytes in the buffer,
-     * (writing previous bytes into the channel if necessary), then delegates to {@link ByteBuffer#put(int)}.
+     * (writing previous bytes into the channel if necessary), then delegates to {@link ByteBuffer#putInt(int)}.
      *
      * @param  value  integer to be written.
      * @throws IOException if some I/O exception occurs during writing.
@@ -266,7 +266,7 @@ public class ChannelDataOutput extends ChannelData implements Flushable {
     /**
      * Writes long value (64 bits) into the steam.
      * This method ensures that there is space for at least 4 bytes in the buffer,
-     * (writing previous bytes into the channel if necessary), then delegates to {@link ByteBuffer#put(long)}.
+     * (writing previous bytes into the channel if necessary), then delegates to {@link ByteBuffer#putLong(long)}.
      *
      * @param  value  long integer to be written.
      * @throws IOException if some I/O exception occurs during writing.
@@ -279,7 +279,7 @@ public class ChannelDataOutput extends ChannelData implements Flushable {
     /**
      * Writes float value (32 bits) into the steam.
      * This method ensures that there is space for at least 4 bytes in the buffer,
-     * (writing previous bytes into the channel if necessary), then delegates to {@link ByteBuffer#put(float)}.
+     * (writing previous bytes into the channel if necessary), then delegates to {@link ByteBuffer#putFloat(float)}.
      *
      * @param  value floating point value to be written.
      * @throws IOException if some I/O exception occurs during writing.
@@ -292,7 +292,7 @@ public class ChannelDataOutput extends ChannelData implements Flushable {
     /**
      * Writes double value (64 bits) into the steam.
      * This method ensures that there is space for at least 8 bytes in the buffer,
-     * (writing previous bytes into the channel if necessary), then delegates to {@link ByteBuffer#put(double)}.
+     * (writing previous bytes into the channel if necessary), then delegates to {@link ByteBuffer#putDouble(double)}.
      *
      * @param  value  double precision floating point value to be written.
      * @throws IOException if some I/O exception occurs during writing.

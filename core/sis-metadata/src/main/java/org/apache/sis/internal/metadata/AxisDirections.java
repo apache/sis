@@ -601,8 +601,8 @@ public final class AxisDirections extends Static {
     /**
      * Returns {@code true} if the given name starts or ends with the given keyword, ignoring case.
      *
-     * @param start {@code false} if the given keyword is expected at the beggining of the name,
-     *        or {@code end} if expected at the end.
+     * @param end  {@code false} if the given keyword is expected at the beginning of the name,
+     *             or {@code true} if expected at the end.
      */
     private static boolean contains(final String name, final String keyword, final boolean end) {
         final int length = keyword.length();

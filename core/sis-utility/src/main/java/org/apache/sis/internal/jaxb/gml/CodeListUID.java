@@ -23,8 +23,7 @@ import org.apache.sis.util.iso.Types;
 
 
 /**
- * JAXB adapter for {@link GMLCodeList}, in order to integrate the value in an element
- * complying with OGC/ISO standard.
+ * An element of the XML documented created for GML {@link CodeList}.
  *
  * @author  Guilhem Legal (Geomatys)
  * @version 0.7

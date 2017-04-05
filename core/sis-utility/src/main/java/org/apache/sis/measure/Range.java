@@ -56,21 +56,20 @@ import org.apache.sis.util.Numbers;
  *
  * <div class="section">Relationship with ISO 19123 definition of range</div>
  * The ISO 19123 standard (<cite>Coverage geometry and functions</cite>) defines the range as the set
- * (either finite or {@linkplain org.opengis.geometry.TransfiniteSet transfinite}) of feature attribute
- * values associated by a function (the {@linkplain org.opengis.coverage.Coverage coverage}) with the
+ * (either finite or transfinite) of feature attribute
+ * values associated by a function (the coverage) with the
  * elements of the coverage domain. In other words, if we see a coverage as a function, then a range
  * is the set of possible return values.
  *
  * <p>The characteristics of the spatial domain are defined by the ISO 19123 standard whereas the
  * characteristics of the attribute range are not part of that standard. In Apache SIS, those
- * characteristics are described by the {@link org.apache.sis.coverage.SampleDimension} class,
+ * characteristics are described by the {@code SampleDimension} class,
  * which may contain one or many {@code Range} instances. Consequently this {@code Range} class
  * is closely related, but not identical, to the ISO 19123 definition or range.</p>
  *
  * <p>Ranges are not necessarily numeric. Numeric and non-numeric ranges can be associated to
- * {@linkplain org.opengis.coverage.DiscreteCoverage discrete coverages}, while typically only
- * numeric ranges can be associated to {@linkplain org.opengis.coverage.ContinuousCoverage
- * continuous coverages}.</p>
+ * discrete coverages, while typically only
+ * numeric ranges can be associated to continuous coverages.</p>
  *
  * <div class="section">Immutability and thread safety</div>
  * This class and the {@link NumberRange} / {@link MeasurementRange} subclasses are immutable,

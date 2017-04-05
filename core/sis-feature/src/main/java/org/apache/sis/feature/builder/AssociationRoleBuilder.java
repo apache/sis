@@ -27,15 +27,15 @@ import org.apache.sis.feature.DefaultFeatureType;
 /**
  * Describes one association from the {@code FeatureType} to be built by an {@code FeatureTypeBuilder} to another
  * {@code FeatureType}. A different instance of {@code AssociationRoleBuilder} exists for each feature association
- * to describe. Those instances are created preferably by {@link FeatureTypeBuilder#addAssociation(FeatureType)},
- * or in case of cyclic reference by {@link FeatureTypeBuilder#addAssociation(GenericName)}.
+ * to describe. Those instances are created preferably by {@code FeatureTypeBuilder.addAssociation(FeatureType)},
+ * or in case of cyclic reference by {@code FeatureTypeBuilder.addAssociation(GenericName)}.
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
  *
  * @see org.apache.sis.feature.DefaultAssociationRole
- * @see FeatureTypeBuilder#addAssociation(FeatureType)
+ * @see FeatureTypeBuilder#addAssociation(DefaultFeatureType)
  * @see FeatureTypeBuilder#addAssociation(GenericName)
  *
  * @since 0.8

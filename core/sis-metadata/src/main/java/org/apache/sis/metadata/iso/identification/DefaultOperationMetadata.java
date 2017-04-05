@@ -128,8 +128,6 @@ public class DefaultOperationMetadata extends ISOMetadata {
      * given object are not recursively copied.
      *
      * @param  object  the metadata to copy values from, or {@code null} if none.
-     *
-     * @see #castOrCopy(OperationMetadata)
      */
     @SuppressWarnings("unchecked")
     public DefaultOperationMetadata(final DefaultOperationMetadata object) {

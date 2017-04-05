@@ -23,7 +23,7 @@ import org.apache.sis.internal.geoapi.evolution.UnsupportedCodeListAdapter;
 
 
 /**
- * JAXB adapter for {@link DistributedComputingPlatform}, in order to integrate the value in an element
+ * JAXB adapter for {@code DistributedComputingPlatform}, in order to integrate the value in an element
  * respecting the ISO-19139 standard. See package documentation for more information about the handling
  * of {@code CodeList} in ISO-19139.
  *

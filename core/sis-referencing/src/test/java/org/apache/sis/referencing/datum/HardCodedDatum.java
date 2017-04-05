@@ -79,8 +79,7 @@ public final strictfp class HardCodedDatum {
     /**
      * WGS 1972 datum (EPSG:6322). Prime meridian is Greenwich.
      * This datum is used, together with {@linkplain #WGS84}, in
-     * {@linkplain org.apache.sis.referencing.operation.transform.EarthGravitationalModel
-     * Earth Gravitational Model}.
+     * {@code org.apache.sis.referencing.operation.transform.EarthGravitationalModel}.
      */
     public static final DefaultGeodeticDatum WGS72 = new DefaultGeodeticDatum(
             properties("World Geodetic System 1972", "6322", WGS84.getScope()),

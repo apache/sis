@@ -108,7 +108,6 @@ final class AuthorityFactoryIdentifier {
      * <div class="note"><b>Example:</b>
      * In the {@code "urn:ogc:def:crs:EPSG:8.2:4326"} URN, this is {@code "EPSG"}.</div>
      *
-     * @see #getAuthority()
      * @see org.apache.sis.internal.util.DefinitionURI
      * @see org.apache.sis.internal.metadata.NameMeaning
      */

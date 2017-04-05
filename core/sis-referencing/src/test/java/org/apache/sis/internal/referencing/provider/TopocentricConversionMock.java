@@ -26,7 +26,7 @@ import org.apache.sis.measure.Units;
  * The provider for <cite>"Geographic/topocentric conversions"</cite> conversion (EPSG:9837).
  *
  * This conversion is not yet implemented in Apache SIS, but we need to at least accept the parameters
- * for a Well Known Text (WKT) parsing test in the {@link org.apache.sis.io.wkt.WKTParserTest} class.
+ * for a Well Known Text (WKT) parsing test in the {@code org.apache.sis.io.wkt.WKTParserTest} class.
  *
  * <p>This class may be promoted to a real operation if we implement the formulas in a future Apache SIS version.</p>
  *

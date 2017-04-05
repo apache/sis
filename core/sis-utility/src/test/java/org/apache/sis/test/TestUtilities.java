@@ -101,7 +101,7 @@ public final strictfp class TestUtilities extends Static {
 
     /**
      * Prints and clear the current content of {@link TestCase#out}, regardless of whether
-     * {@link TestCase#verbose} is {@code true} or {@code false}. This method should rarely
+     * {@link TestCase#VERBOSE} is {@code true} or {@code false}. This method should rarely
      * be needed.
      *
      * @since 0.4

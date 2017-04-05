@@ -33,7 +33,7 @@ import org.apache.sis.metadata.iso.citation.AbstractParty;
 
 
 /**
- * Unmodifiable description of a location created as a snapshot of another {@link LocationType} instance
+ * Unmodifiable description of a location created as a snapshot of another {@code LocationType} instance
  * at {@link ReferencingByIdentifiers} construction time. This instance will be set a different reference
  * system than the original location type.
  *
@@ -228,7 +228,7 @@ final class FinalLocationType extends AbstractLocationType implements Serializab
      *
      * @return property used as the defining characteristic of the location type.
      *
-     * @see ReferenceSystemUsingIdentifiers#getTheme()
+     * @see ReferencingByIdentifiers#getTheme()
      */
     @Override
     public InternationalString getTheme() {

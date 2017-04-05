@@ -50,7 +50,7 @@ public final strictfp class AttributeConventionTest extends TestCase {
     }
 
     /**
-     * Tests {@link AttributeConvention#isGeometryAttribute(IdentifiedType)} method.
+     * Tests {@code AttributeConvention.isGeometryAttribute(IdentifiedType)} method.
      */
     @Test
     public void testIsGeometryAttribute() {
@@ -64,8 +64,8 @@ public final strictfp class AttributeConventionTest extends TestCase {
     }
 
     /**
-     * Tests {@link AttributeConvention#characterizedByCRS(IdentifiedType)} and
-     * {@link AttributeConvention#getCRSCharacteristic(Property)} methods.
+     * Tests {@code AttributeConvention.characterizedByCRS(IdentifiedType)} and
+     * {@code AttributeConvention.getCRSCharacteristic(Property)} methods.
      */
     @Test
     public void testGetCrsCharacteristic() {
@@ -87,8 +87,8 @@ public final strictfp class AttributeConventionTest extends TestCase {
     }
 
     /**
-     * Tests {@link AttributeConvention#characterizedByMaximalLength(IdentifiedType)} and
-     * {@link AttributeConvention#getMaximalLengthCharacteristic(Property)} methods.
+     * Tests {@code AttributeConvention.characterizedByMaximalLength(IdentifiedType)} and
+     * {@code AttributeConvention.getMaximalLengthCharacteristic(Property)} methods.
      */
     @Test
     public void testGetMaximalLengthCharacteristic() {

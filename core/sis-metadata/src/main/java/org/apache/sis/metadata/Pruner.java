@@ -110,9 +110,9 @@ final class Pruner {
     }
 
     /**
-     * {@link #isEmpty(boolean)} implementation, potentially invoked recursively for inspecting
-     * child metadata and optionally removing empty ones. The map given in argument is a safety
-     * guard against infinite recursivity.
+     * {@link #isEmpty(AbstractMetadata, Class, boolean, boolean)} implementation, potentially
+     * invoked recursively for inspecting child metadata and optionally removing empty ones.
+     * The map given in argument is a safety guard against infinite recursivity.
      *
      * @param  accessor    the accessor that provided the metadata {@code properties}.
      * @param  properties  the metadata properties.

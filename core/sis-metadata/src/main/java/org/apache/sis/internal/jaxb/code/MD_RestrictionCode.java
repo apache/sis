@@ -53,7 +53,7 @@ public final class MD_RestrictionCode extends CodeListAdapter<MD_RestrictionCode
      * <p>The spelling of "license" was changed to "licence" in latest standard, but XML
      * marshalling shall use the previous spelling until XML schema are updated.</p>
      *
-     * @param  value  the value version of {@link CodeList}, to be marshalled.
+     * @param  value  the value version of {@link org.opengis.util.CodeList}, to be marshalled.
      * @return the wrapper for the code list value.
      */
     @Override

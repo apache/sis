@@ -26,7 +26,7 @@ import org.opengis.util.TypeName;
 /**
  * A simple attribute type containing only a name and a class of values.
  * Such simple type are suitable for use in ISO 19103 {@link org.opengis.util.RecordType}
- * in addition to ISO 19109 {@link org.opengis.feature.FeatureType}.
+ * in addition to ISO 19109 {@code FeatureType}.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.5

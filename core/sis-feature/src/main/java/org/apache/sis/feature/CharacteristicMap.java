@@ -53,8 +53,8 @@ final class CharacteristicMap extends AbstractMap<String,AbstractAttribute<?>> i
     /**
      * Creates an initially empty map of attribute characteristics.
      *
-     * @param  source           the attribute which is characterized by {@code characterizedBy}.
-     * @param  characterizedBy  description of the characteristics of {@code source}.
+     * @param  source  the attribute which is characterized by {@code characterizedBy}.
+     * @param  types   description of the characteristics of {@code source}.
      */
     CharacteristicMap(final AbstractAttribute<?> source, final CharacteristicTypeMap types) {
         this.source = source;
@@ -311,7 +311,7 @@ final class CharacteristicMap extends AbstractMap<String,AbstractAttribute<?>> i
     /**
      * An entry returned by the {@link CharacteristicMap#entrySet()} iterator.
      * The key and value are never null, even in case of concurrent modification.
-     * This entry supports the {@link #setValue(Attribute)} operation.
+     * This entry supports the {@code setValue(Attribute)} operation.
      */
     private final class Entry extends AbstractMapEntry<String, AbstractAttribute<?>> {
         /** Index of the attribute characteristics represented by this entry. */

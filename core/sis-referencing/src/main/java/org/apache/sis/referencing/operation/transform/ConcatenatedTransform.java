@@ -49,9 +49,9 @@ import org.apache.sis.util.resources.Errors;
 
 /**
  * Base class for concatenated transforms. Instances can be created by calls to the
- * {@link #create(MathTransform, MathTransform)} method. When possible, the above-cited
- * method concatenates {@linkplain ProjectiveTransform projective transforms} before to
- * fallback on the creation of new {@code ConcatenatedTransform} instances.
+ * {@link #create(MathTransform, MathTransform, MathTransformFactory)} method.
+ * When possible, the above-cited method concatenates {@linkplain ProjectiveTransform projective transforms}
+ * before to fallback on the creation of new {@code ConcatenatedTransform} instances.
  *
  * <p>Concatenated transforms are serializable if all their step transforms are serializable.</p>
  *
@@ -95,7 +95,7 @@ class ConcatenatedTransform extends AbstractMathTransform implements Serializabl
 
     /**
      * Constructs a concatenated transform. This constructor is for subclasses only.
-     * To create a concatenated transform, use the {@link #create(MathTransform, MathTransform)}
+     * To create a concatenated transform, use the {@link #create(MathTransform, MathTransform, MathTransformFactory)}
      * factory method instead.
      *
      * @param  transform1  the first math transform.
@@ -115,7 +115,7 @@ class ConcatenatedTransform extends AbstractMathTransform implements Serializabl
 
     /**
      * Tests if one math transform is the inverse of the other, or approximatively the inverse.
-     * Used for {@link #createOptimized(MathTransform, MathTransform)} implementation.
+     * Used for {@link #createOptimized(MathTransform, MathTransform, MathTransformFactory)} implementation.
      */
     private static boolean areInverse(final MathTransform tr1, MathTransform tr2) {
         try {

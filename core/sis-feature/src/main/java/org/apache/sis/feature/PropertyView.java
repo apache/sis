@@ -75,7 +75,7 @@ final class PropertyView {
      * Returns the singleton value. This default implementation assumes that the property is multi-valued
      * (single-valued properties shall override this method), but we nevertheless provide a fallback for
      * non-{@code Iterable} values as a safety against implementations that are not strictly compliant
-     * to our {@link Feature#getPropertyValue(String)} method contract. Then this method verifies that
+     * to our {@code Feature.getPropertyValue(String)} method contract. Then this method verifies that
      * the value is a collection containing zero or one element and returns that element or {@code null}.
      */
     static Object getValue(final AbstractFeature feature, final String name) {
@@ -96,7 +96,7 @@ final class PropertyView {
     /**
      * Sets the values of the given attribute. This default implementation assumes that the property
      * is multi-valued (single-valued properties shall override this method) and that the
-     * {@link Feature#setPropertyValue(String, Object)} implementation will verify the argument type.
+     * {@code Feature.setPropertyValue(String, Object)} implementation will verify the argument type.
      */
     static void setValue(final AbstractFeature feature, final String name, final Object value) {
         feature.setPropertyValue(name, singletonOrEmpty(value));
@@ -136,7 +136,7 @@ final class PropertyView {
 
     /**
      * Sets the values of the given attribute. This method assumes that the
-     * {@link Feature#setPropertyValue(String, Object)} implementation will
+     * {@code Feature.setPropertyValue(String, Object)} implementation will
      * verify the argument type.
      */
     static void setValues(final AbstractFeature feature, final String name, final Collection<?> values) {

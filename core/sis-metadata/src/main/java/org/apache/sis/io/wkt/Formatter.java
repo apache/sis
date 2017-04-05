@@ -156,7 +156,7 @@ public class Formatter implements Localized {
      * If non-null, the terminal must be ANSI X3.64 compatible.
      * The default value is {@code null}.
      *
-     * @see #configure(Convention, Citation, Colors, boolean, byte)
+     * @see #configure(Convention, Citation, Colors, byte, byte, byte)
      */
     private Colors colors;
 
@@ -164,14 +164,14 @@ public class Formatter implements Localized {
      * The preferred convention for objects or parameter names.
      * This field should never be {@code null}.
      *
-     * @see #configure(Convention, Citation, Colors, boolean, byte)
+     * @see #configure(Convention, Citation, Colors, byte, byte, byte)
      */
     private Convention convention;
 
     /**
      * The preferred authority for objects or parameter names.
      *
-     * @see #configure(Convention, Citation, Colors, boolean, byte)
+     * @see #configure(Convention, Citation, Colors, byte, byte, byte)
      */
     private Citation authority;
 
@@ -257,7 +257,7 @@ public class Formatter implements Localized {
     /**
      * {@code 1} if keywords shall be converted to upper cases, or {@code -1} for lower cases.
      *
-     * @see #configure(Convention, Citation, Colors, boolean, byte)
+     * @see #configure(Convention, Citation, Colors, byte, byte, byte)
      */
     private byte toUpperCase;
 
@@ -276,7 +276,7 @@ public class Formatter implements Localized {
      * The amount of spaces to use in indentation, or {@value org.apache.sis.io.wkt.WKTFormat#SINGLE_LINE}
      * if indentation is disabled.
      *
-     * @see #configure(Convention, Citation, Colors, boolean, byte)
+     * @see #configure(Convention, Citation, Colors, byte, byte, byte)
      */
     private byte indentation;
 
@@ -299,7 +299,7 @@ public class Formatter implements Localized {
      * {@code ID} (previously known as {@code AUTHORITY}) and {@code REMARKS}, and have a special treatment: they
      * are written by {@link #append(FormattableObject)} after the {@code formatTo(Formatter)} method returned.
      *
-     * @see #appendComplement(IdentifiedObject, FormattableObject)
+     * @see #appendComplement(IdentifiedObject, FormattableObject, FormattableObject)
      */
     private boolean isComplement;
 
@@ -307,7 +307,7 @@ public class Formatter implements Localized {
      * {@code true} if the last formatted element was invalid WKT and shall be highlighted with syntactic coloration.
      * This field has no effect if {@link #colors} is null. This field is reset to {@code false} after the invalid
      * part has been processed by {@link #append(FormattableObject)}, in order to highlight only the first erroneous
-     * element without clearing the {@link #invalidElement} value.
+     * element without clearing the {@link #warnings} value.
      */
     private boolean highlightError;
 

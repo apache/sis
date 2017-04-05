@@ -170,7 +170,7 @@ public class NamedIdentifier extends ImmutableIdentifier implements GenericName 
      *     <td>{@link #getCode()}</td>
      *   </tr>
      *   <tr>
-     *     <td>{@value org.opengis.metadata.Identifier#CODESPACE_KEY}</td>
+     *     <td>"codespace"</td>
      *     <td>{@link String}</td>
      *     <td>{@link #getCodeSpace()}</td>
      *   </tr>
@@ -180,12 +180,12 @@ public class NamedIdentifier extends ImmutableIdentifier implements GenericName 
      *     <td>{@link #getAuthority()}</td>
      *   </tr>
      *   <tr>
-     *     <td>{@value org.opengis.metadata.Identifier#VERSION_KEY}</td>
+     *     <td>"version"</td>
      *     <td>{@link String}</td>
      *     <td>{@link #getVersion()}</td>
      *   </tr>
      *   <tr>
-     *     <td>{@value org.opengis.metadata.Identifier#DESCRIPTION_KEY}</td>
+     *     <td>"description"</td>
      *     <td>{@link String} or {@link InternationalString}</td>
      *     <td>{@link #getDescription()}</td>
      *   </tr>

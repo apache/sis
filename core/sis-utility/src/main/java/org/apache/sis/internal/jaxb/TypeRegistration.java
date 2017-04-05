@@ -170,7 +170,7 @@ public abstract class TypeRegistration {
     }
 
     /**
-     * Returns the shared {@code JAXBContext} for the set of {@link #load()}.
+     * Returns the shared {@code JAXBContext} for the set of classes returned by {@link #load(boolean)}.
      * Note that the {@code JAXBContext} class is thread safe, but the {@code Marshaller},
      * {@code Unmarshaller}, and {@code Validator} classes are not thread safe.
      *

@@ -136,7 +136,7 @@ public abstract class CodeListAdapter<ValueType extends CodeListAdapter<ValueTyp
      *
      * @return {@code true} if this code list is actually an enum.
      *
-     * @todo Remove this method after we refactored enum wrappers as {@link EnumAdapter} subclasses
+     * @todo Remove this method after we refactored enum wrappers as {@code EnumAdapter} subclasses
      *       instead of {@code CodeListAdapter}. This requires the resolution of GEO-199 first.
      *
      * @see <a href="http://jira.codehaus.org/browse/GEO-199">GEO-199</a>

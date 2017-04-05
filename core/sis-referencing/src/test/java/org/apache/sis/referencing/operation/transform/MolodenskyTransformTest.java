@@ -39,7 +39,7 @@ import static org.apache.sis.test.Assert.*;
 
 
 /**
- * Tests {@link MolodenskyTransform}. The {@link #compareWithGeocentricTranslation()}
+ * Tests {@link MolodenskyTransform}. The {@code compareWithGeocentricTranslation()}
  * method uses {@link EllipsoidToCentricTransform} as a reference implementation.
  * The errors compared to geocentric translations should not be greater than
  * approximatively 1 centimetre.

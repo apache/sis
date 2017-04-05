@@ -89,10 +89,8 @@ public abstract strictfp class TestCase extends IOTestCase {
      * The {@code name} parameter can be one of the following values:
      *
      * <ul>
-     *   <li>{@link #THREDDS} for a NcML file.</li>
      *   <li>{@link #NCEP}    for a NetCDF binary file.</li>
      *   <li>{@link #CIP}     for a NetCDF binary file.</li>
-     *   <li>{@link #LANDSAT} for a NetCDF binary file.</li>
      * </ul>
      *
      * The default implementation first delegates to {@link #open(String)}, then wraps the result

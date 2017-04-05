@@ -22,7 +22,7 @@ import java.util.Locale;
 /**
  * Thrown when a data store failed to construct the coordinate reference system (CRS)
  * or other positioning information. This exception is typically (but not necessarily)
- * caused by {@link org.opengis.referencing.FactoryException} or
+ * caused by {@link org.opengis.util.FactoryException} or
  * {@link org.opengis.referencing.operation.TransformException}.
  *
  * @author  Martin Desruisseaux (Geomatys)

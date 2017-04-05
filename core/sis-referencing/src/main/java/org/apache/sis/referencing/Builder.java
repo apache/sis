@@ -97,7 +97,7 @@ import org.opengis.referencing.ReferenceIdentifier;
  *       The result is a {@linkplain org.apache.sis.util.iso.DefaultScopedName scoped name} or identifier,
  *       in which the code space information is shown by the {@code toString()} method.</li>
  *
- *   <li>The {@link #addIdentifier(Identifier)}, {@link #addName(Identifier)} and {@link #addName(GenericName)}
+ *   <li>The {@code addIdentifier(Identifier)}, {@code addName(Identifier)} and {@link #addName(GenericName)}
  *       methods take the given object <cite>as-is</cite>. Any authority, code space, version or description
  *       information given to the {@code Builder} are ignored.</li>
  * </ul>
@@ -210,7 +210,7 @@ public abstract class Builder<B extends Builder<B>> {
 
     /**
      * The codespace as a {@code NameSpace} object, or {@code null} if not yet created.
-     * This object is built from the {@value org.opengis.metadata.Identifier#CODESPACE_KEY} value when first needed.
+     * This object is built from the "codespace" value when first needed.
      */
     private transient NameSpace namespace;
 

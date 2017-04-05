@@ -185,7 +185,7 @@ final class OperationMethodSet extends SetOfUnknownSize<OperationMethod> {
     /**
      * Returns the operation method at the given index. In case of index out of bounds, this method throws a
      * {@link NoSuchElementException} instead than an {@link IndexOutOfBoundsException} because this method
-     * is designed for being invoked by {@link Iter#next()}.
+     * is designed for being invoked by {@link Iterator#next()}.
      */
     final synchronized OperationMethod next(final int index) {
         if (index >= cachedMethods.size()) {

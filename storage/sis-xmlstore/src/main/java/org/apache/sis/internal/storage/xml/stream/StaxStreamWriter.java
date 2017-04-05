@@ -100,7 +100,7 @@ public abstract class StaxStreamWriter extends StaxStreamIO implements Consumer<
      * The marshaller reserved to this writer usage,
      * created only when first needed and kept until this writer is closed.
      *
-     * @see #marshal(Object)
+     * @see #marshal(String, String, Class, Object)
      */
     private Marshaller marshaller;
 
@@ -173,7 +173,7 @@ public abstract class StaxStreamWriter extends StaxStreamIO implements Consumer<
     public abstract void write(AbstractFeature feature) throws Exception;
 
     /**
-     * Delegates to {@link #write(Feature)}, wrapping {@code Exception} into unchecked {@code BackingStoreException}.
+     * Delegates to {@code write(Feature)}, wrapping {@code Exception} into unchecked {@code BackingStoreException}.
      *
      * @param  feature  the feature to write.
      * @throws BackingStoreException if an error occurred while writing to the XML file.

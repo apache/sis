@@ -71,7 +71,7 @@ public class LandsatReaderTest extends TestCase {
     }
 
     /**
-     * Tests {@link LandsatReader#read()}.
+     * Tests {@link LandsatReader#read(BufferedReader)}.
      *
      * <p><b>NOTE FOR MAINTAINER:</b> if the result of this test changes, consider updating
      * <a href="./doc-files/LandsatMetadata.html">./doc-files/LandsatMetadata.html</a> accordingly.</p>

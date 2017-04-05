@@ -170,8 +170,6 @@ public final class MathTransforms extends Static {
      * @param  values    the output values (<var>y</var>) in the function range, or {@code null}.
      * @return the <i>y=f(x)</i> function.
      *
-     * @see org.opengis.coverage.InterpolationMethod
-     *
      * @since 0.7
      */
     public static MathTransform1D interpolate(final double[] preimage, final double[] values) {

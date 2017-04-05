@@ -108,7 +108,7 @@ import org.apache.sis.xml.XML;
  *   </tr>
  *   <tr>
  *     <td>{@value org.opengis.metadata.Identifier#AUTHORITY_KEY}</td>
- *     <td>{@link String} or {@link Citation}</td>
+ *     <td>{@link String} or {@link org.opengis.metadata.citation.Citation}</td>
  *     <td>{@link NamedIdentifier#getAuthority()} on the {@linkplain AbstractIdentifiedObject#getName() name}</td>
  *   </tr>
  *   <tr>
@@ -117,17 +117,17 @@ import org.apache.sis.xml.XML;
  *     <td>{@link NamedIdentifier#getCode()} on the {@linkplain AbstractIdentifiedObject#getName() name}</td>
  *   </tr>
  *   <tr>
- *     <td>{@value org.opengis.metadata.Identifier#CODESPACE_KEY}</td>
+ *     <td>"codespace"</td>
  *     <td>{@link String}</td>
  *     <td>{@link NamedIdentifier#getCodeSpace()} on the {@linkplain AbstractIdentifiedObject#getName() name}</td>
  *   </tr>
  *   <tr>
- *     <td>{@value org.opengis.metadata.Identifier#VERSION_KEY}</td>
+ *     <td>"version"</td>
  *     <td>{@link String}</td>
  *     <td>{@link NamedIdentifier#getVersion()} on the {@linkplain AbstractIdentifiedObject#getName() name}</td>
  *   </tr>
  *   <tr>
- *     <td>{@value org.opengis.metadata.Identifier#DESCRIPTION_KEY}</td>
+ *     <td>"description"</td>
  *     <td>{@link String}</td>
  *     <td>{@link NamedIdentifier#getDescription()} on the {@linkplain AbstractIdentifiedObject#getName() name}</td>
  *   </tr>

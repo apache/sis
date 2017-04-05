@@ -83,7 +83,7 @@ final class GridGeometryWrapper extends GridGeometry {
      * (domain) and output (range) of the function that convert grid indices to geodetic coordinates.</p>
      *
      * <p>The domain of all axes (or the {@linkplain CoordinateSystem#getDomain() coordinate system domain})
-     * is often the same than the {@linkplain #getDomain() domain of the variable}, but not necessarily.
+     * is often the same than the domain of the variable, but not necessarily.
      * In particular, the relationship is not straightforward when the coordinate system contains instances
      * of {@link CoordinateAxis2D}.</p>
      */

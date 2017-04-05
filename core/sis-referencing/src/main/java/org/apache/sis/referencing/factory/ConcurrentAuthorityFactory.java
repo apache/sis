@@ -160,8 +160,9 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
         final DAO factory;
 
         /**
-         * Incremented on every call to {@link ConcurrentAuthorityFactory#getDataAccess()} and decremented on every call
-         * to {@link ConcurrentAuthorityFactory#release()}. When this value reach zero, the factory is really released.
+         * Incremented on every call to {@link ConcurrentAuthorityFactory#getDataAccess()} and decremented on every
+         * call to {@link ConcurrentAuthorityFactory#release(String, Class, String)}. When this value reach zero,
+         * the factory is really released.
          */
         int depth;
 
@@ -2025,7 +2026,6 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
      * Exceptions will be collected and rethrown only after all factories have been closed.
      *
      * @param  factories  the factories to close.
-     * @param  count      number of valid elements in the {@code factories} array.
      * @throws Exception the exception thrown by the first factory that failed to close.
      */
     static <DAO extends GeodeticAuthorityFactory> void close(final List<DAO> factories) throws Exception {

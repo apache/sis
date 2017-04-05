@@ -179,7 +179,7 @@ final class CRSBuilder {
 
     /**
      * Minimal length that a key in a name must have before we compare them to the {@link #NAME_KEYS}.
-     * For example a value of 5 means that {@link #parseName(String)} will accept {@code "Ellip"},
+     * For example a value of 5 means that {@link #splitName(String)} will accept {@code "Ellip"},
      * {@code "Ellips"}, {@code "Ellipso"} and {@code "Ellipsoi"} as if they were {@code "Ellipsoid"}.
      * This length shall not be greater than the length of the shortest string in {@link #NAME_KEYS}.
      */
@@ -239,7 +239,7 @@ final class CRSBuilder {
     private DefaultCoordinateOperationFactory operationFactory;
 
     /**
-     * Name of the last object created. This is used by {@link #properties(String)} for reusing existing instance
+     * Name of the last object created. This is used by {@link #properties(Object)} for reusing existing instance
      * if possible. This is useful in GeoTIFF files since the same name is used for different geodetic components,
      * for example the datum and the ellipsoid.
      */
@@ -425,8 +425,7 @@ final class CRSBuilder {
      * A warning is reported before to throw the exception. There is no attempt to provide a good message
      * in the exception since is should be caught by {@link ImageFileDirectory}.
      *
-     * @param  key        the GeoTIFF key for which to get a value.
-     * @param  mandatory  whether a value is mandatory for the given key.
+     * @param  key  the GeoTIFF key for which to get a value.
      * @return a string representation of the value for the given key.
      * @throws NoSuchElementException if no value has been found.
      */
@@ -443,8 +442,7 @@ final class CRSBuilder {
      * A warning is reported before to throw the exception. There is no attempt to provide a good message in
      * the exception since is should be caught by {@link ImageFileDirectory}.
      *
-     * @param  key        the GeoTIFF key for which to get a value.
-     * @param  mandatory  whether a value is mandatory for the given key.
+     * @param  key  the GeoTIFF key for which to get a value.
      * @return the floating point value for the given key.
      * @throws NoSuchElementException if no value has been found.
      * @throws NumberFormatException if the value was stored as a string and can not be parsed.
@@ -1038,8 +1036,8 @@ final class CRSBuilder {
      *   <li>A code given by {@link GeoKeys#GeodeticDatum}.</li>
      *   <li>If above code is {@link GeoCodes#userDefined}, then:<ul>
      *     <li>a name given by {@link GeoKeys#GeogCitation},</li>
-     *     <li>all values required by {@link #createPrimeMeridian(Unit)} (optional),</li>
-     *     <li>all values required by {@link #createEllipsoid(Unit)}.</li>
+     *     <li>all values required by {@link #createPrimeMeridian(String[], Unit)} (optional),</li>
+     *     <li>all values required by {@link #createEllipsoid(String[], Unit)}.</li>
      *   </ul></li>
      * </ul>
      *
@@ -1051,8 +1049,8 @@ final class CRSBuilder {
      * @throws ClassCastException if an object defined by an EPSG code is not of the expected type.
      * @throws FactoryException if an error occurred during objects creation with the factories.
      *
-     * @see #createPrimeMeridian(Unit)
-     * @see #createEllipsoid(Unit)
+     * @see #createPrimeMeridian(String[], Unit)
+     * @see #createEllipsoid(String[], Unit)
      */
     private GeodeticDatum createGeodeticDatum(final String[] names, final Unit<Angle> angularUnit, final Unit<Length> linearUnit)
             throws FactoryException
@@ -1108,7 +1106,7 @@ final class CRSBuilder {
      * matches the given datum created from the EPSG geodetic dataset.
      * This method does not verify the EPSG code of the given datum.
      *
-     * @param  ellipsoid    the datum created from the EPSG geodetic dataset.
+     * @param  datum        the datum created from the EPSG geodetic dataset.
      * @param  angularUnit  unit of measurement declared in the GeoTIFF file.
      * @param  linearUnit   unit of measurement declared in the GeoTIFF file.
      */
@@ -1220,7 +1218,7 @@ final class CRSBuilder {
      * @throws ClassCastException if an object defined by an EPSG code is not of the expected type.
      * @throws FactoryException if an error occurred during objects creation with the factories.
      *
-     * @see #createGeodeticDatum(String, Unit, Unit)
+     * @see #createGeodeticDatum(String[], Unit, Unit)
      */
     private GeographicCRS createGeographicCRS(final boolean rightHanded, final Unit<Angle> angularUnit) throws FactoryException {
         final int epsg = getAsInteger(GeoKeys.GeographicType);
@@ -1288,7 +1286,7 @@ final class CRSBuilder {
      * @throws ClassCastException if an object defined by an EPSG code is not of the expected type.
      * @throws FactoryException if an error occurred during objects creation with the factories.
      *
-     * @see #createGeodeticDatum(String, Unit, Unit)
+     * @see #createGeodeticDatum(String[], Unit, Unit)
      */
     private GeocentricCRS createGeocentricCRS() throws FactoryException {
         final int epsg = getAsInteger(GeoKeys.GeographicType);
@@ -1374,8 +1372,8 @@ final class CRSBuilder {
      * @throws ClassCastException if an object defined by an EPSG code is not of the expected type.
      * @throws FactoryException if an error occurred during objects creation with the factories.
      *
-     * @see #createGeographicCRS(boolean)
-     * @see #createConversion(String)
+     * @see #createGeographicCRS(boolean, Unit)
+     * @see #createConversion(String, Unit, Unit)
      */
     private ProjectedCRS createProjectedCRS() throws FactoryException {
         final int epsg = getAsInteger(GeoKeys.ProjectedCSType);

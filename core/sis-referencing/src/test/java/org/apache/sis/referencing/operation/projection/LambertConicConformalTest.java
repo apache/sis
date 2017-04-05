@@ -26,7 +26,6 @@ import org.apache.sis.internal.referencing.provider.LambertConformal1SP;
 import org.apache.sis.internal.referencing.provider.LambertConformal2SP;
 import org.apache.sis.internal.referencing.provider.LambertConformalWest;
 import org.apache.sis.internal.referencing.provider.LambertConformalBelgium;
-import org.apache.sis.internal.referencing.provider.LambertConformalMichigan;
 import org.apache.sis.referencing.operation.transform.CoordinateDomain;
 import org.apache.sis.parameter.Parameters;
 import org.apache.sis.internal.util.DoubleDouble;
@@ -187,8 +186,6 @@ public final strictfp class LambertConicConformalTest extends MapProjectionTestC
      *
      * @throws FactoryException if an error occurred while creating the map projection.
      * @throws TransformException if an error occurred while projecting a coordinate.
-     *
-     * @see org.opengis.test.referencing.ParameterizedTransformTest#testLambertConicConformal1SP()
      */
     @Test
     @DependsOnMethod({"testSpecialLatitudes", "testDerivative"})
@@ -202,8 +199,6 @@ public final strictfp class LambertConicConformalTest extends MapProjectionTestC
      *
      * @throws FactoryException if an error occurred while creating the map projection.
      * @throws TransformException if an error occurred while projecting a coordinate.
-     *
-     * @see org.opengis.test.referencing.ParameterizedTransformTest#testLambertConicConformal1SP()
      */
     @Test
     @DependsOnMethod("testLambertConicConformal1SP")
@@ -217,8 +212,6 @@ public final strictfp class LambertConicConformalTest extends MapProjectionTestC
      *
      * @throws FactoryException if an error occurred while creating the map projection.
      * @throws TransformException if an error occurred while projecting a coordinate.
-     *
-     * @see org.opengis.test.referencing.ParameterizedTransformTest#testLambertConicConformal1SP()
      */
     @Test
     @DependsOnMethod({"testLambertConicConformal2SP", "verifyBelgeConstant"})
@@ -232,8 +225,6 @@ public final strictfp class LambertConicConformalTest extends MapProjectionTestC
      *
      * @throws FactoryException if an error occurred while creating the map projection.
      * @throws TransformException if an error occurred while projecting a coordinate.
-     *
-     * @see org.opengis.test.referencing.ParameterizedTransformTest#testLambertConicConformalMichigan()
      */
     @Test
     @DependsOnMethod("testLambertConicConformal2SP")

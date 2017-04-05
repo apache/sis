@@ -43,10 +43,6 @@ import org.apache.sis.internal.jdk8.JDK8;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.7
- *
- * @see GeocentricTranslationTest#testFranceGeocentricInterpolationPoint()
- * @see org.apache.sis.referencing.operation.transform.MolodenskyTransformTest#testFranceGeocentricInterpolationPoint()
- *
  * @since 0.7
  * @module
  */

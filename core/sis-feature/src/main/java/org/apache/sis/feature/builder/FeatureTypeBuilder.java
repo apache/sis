@@ -47,7 +47,7 @@ import org.apache.sis.feature.DefaultAttributeType;
 
 
 /**
- * Helper class for the creation of {@link FeatureType} instances.
+ * Helper class for the creation of {@code FeatureType} instances.
  * This builder can create the arguments to be given to the
  * {@linkplain DefaultFeatureType#DefaultFeatureType feature type constructor}
  * from simpler parameters given to this builder.
@@ -469,7 +469,6 @@ public class FeatureTypeBuilder extends TypeBuilder {
      * @return {@code this} for allowing method calls chaining.
      *
      * @see AttributeRole#IDENTIFIER_COMPONENT
-     * @see FeatureOperations#compound(Map, String, String, String, PropertyType...)
      */
     public FeatureTypeBuilder setIdentifierDelimiters(final String delimiter, final String prefix, final String suffix) {
         ensureNonEmpty("delimiter", delimiter);
@@ -493,10 +492,10 @@ public class FeatureTypeBuilder extends TypeBuilder {
      *
      * @see #getProperty(String)
      * @see #addAttribute(Class)
-     * @see #addAttribute(AttributeType)
-     * @see #addAssociation(FeatureType)
+     * @see #addAttribute(DefaultAttributeType)
+     * @see #addAssociation(DefaultFeatureType)
      * @see #addAssociation(GenericName)
-     * @see #addAssociation(FeatureAssociationRole)
+     * @see #addAssociation(DefaultAssociationRole)
      */
     public List<PropertyTypeBuilder> properties() {
         return new RemoveOnlyList<>(properties);
@@ -510,8 +509,6 @@ public class FeatureTypeBuilder extends TypeBuilder {
      * @param  name   name of the property to search.
      * @return property of the given name, or {@code null} if none.
      * @throws IllegalArgumentException if the given name is ambiguous.
-     *
-     * @see #addProperty(PropertyType)
      */
     public PropertyTypeBuilder getProperty(final String name) {
         return forName(properties, name);
@@ -528,7 +525,7 @@ public class FeatureTypeBuilder extends TypeBuilder {
      * }
      *
      * The value class can not be {@code Feature.class} since features shall be handled
-     * as {@linkplain #addAssociation(FeatureType) associations} instead than attributes.
+     * as {@linkplain #addAssociation(DefaultFeatureType) associations} instead than attributes.
      *
      * @param  <V>         the compile-time value of {@code valueClass} argument.
      * @param  valueClass  the class of attribute values (can not be {@code Feature.class}).
@@ -593,7 +590,7 @@ public class FeatureTypeBuilder extends TypeBuilder {
 
     /**
      * Creates a new {@code FeatureAssociationRole} builder for features of a type of the given name.
-     * This method can be invoked as an alternative to {@link #addAssociation(FeatureType)} when the
+     * This method can be invoked as an alternative to {@code addAssociation(FeatureType)} when the
      * {@code FeatureType} instance is not yet available because of cyclic dependency.
      *
      * @param  type  the name of the type of feature values.
@@ -634,9 +631,9 @@ public class FeatureTypeBuilder extends TypeBuilder {
      * Adds the given property in the feature type properties.
      * The given property shall be an instance of one of the following types:
      * <ul>
-     *   <li>{@link AttributeType}, in which case this method delegate to {@link #addAttribute(AttributeType)}.</li>
-     *   <li>{@link FeatureAssociationRole}, in which case this method delegate to {@link #addAssociation(FeatureAssociationRole)}.</li>
-     *   <li>{@link Operation}, in which case the given operation object will be added verbatim in the {@code FeatureType};
+     *   <li>{@code AttributeType}, in which case this method delegate to {@code addAttribute(AttributeType)}.</li>
+     *   <li>{@code FeatureAssociationRole}, in which case this method delegate to {@code addAssociation(FeatureAssociationRole)}.</li>
+     *   <li>{@code Operation}, in which case the given operation object will be added verbatim in the {@code FeatureType};
      *       this builder does not create new operations.</li>
      * </ul>
      *

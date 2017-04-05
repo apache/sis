@@ -125,7 +125,7 @@ public abstract class AbstractLocation {
      * by the {@linkplain ModifiableLocationType#getIdentifications() location type identifications}.
      *
      * <div class="note"><b>Examples:</b>
-     * if {@link LocationType#getIdentifications()} contain “name”, then geographic identifiers may be country
+     * if {@code LocationType.getIdentifications()} contain “name”, then geographic identifiers may be country
      * names like “Japan” or “France”, or places like “Eiffel Tower”. If location type identifications contain
      * “code”, then geographic identifiers may be “SW1P 3AD” postcode.
      * </div>

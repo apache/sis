@@ -125,8 +125,8 @@ public abstract class StaxDataStore extends FeatureStore {
      * instead than creating new streams for re-reading the data.  If we can not reset the stream but can
      * create a new one, then this field will become a reference to the new stream. This change should be
      * done only in last resort, when there is no way to reuse the existing stream.  This is because the
-     * streams created by {@link ChannelFactory#inputStream()} are not of the same kind than the streams
-     * created by {@link StorageConnector}.</p>
+     * streams created by {@link ChannelFactory#inputStream(String)} are not of the same kind than the
+     * streams created by {@link StorageConnector}.</p>
      *
      * @see #close()
      */

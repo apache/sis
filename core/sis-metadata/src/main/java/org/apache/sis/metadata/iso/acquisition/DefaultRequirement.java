@@ -209,7 +209,7 @@ public class DefaultRequirement extends ISOMetadata implements Requirement {
      * Returns the origin of requirement.
      *
      * <div class="warning"><b>Upcoming API change — generalization</b><br>
-     * As of ISO 19115:2014, {@code ResponsibleParty} is replaced by the {@link Responsibility} parent interface.
+     * As of ISO 19115:2014, {@code ResponsibleParty} is replaced by the {@code Responsibility} parent interface.
      * This change will be tentatively applied in GeoAPI 4.0.
      * </div>
      *
@@ -225,7 +225,7 @@ public class DefaultRequirement extends ISOMetadata implements Requirement {
      * Sets the origin of requirement.
      *
      * <div class="warning"><b>Upcoming API change — generalization</b><br>
-     * As of ISO 19115:2014, {@code ResponsibleParty} is replaced by the {@link Responsibility} parent interface.
+     * As of ISO 19115:2014, {@code ResponsibleParty} is replaced by the {@code Responsibility} parent interface.
      * This change will be tentatively applied in GeoAPI 4.0.
      * </div>
      *
@@ -239,7 +239,7 @@ public class DefaultRequirement extends ISOMetadata implements Requirement {
      * Returns the person(s), or body(ies), to receive results of requirement.
      *
      * <div class="warning"><b>Upcoming API change — generalization</b><br>
-     * As of ISO 19115:2014, {@code ResponsibleParty} is replaced by the {@link Responsibility} parent interface.
+     * As of ISO 19115:2014, {@code ResponsibleParty} is replaced by the {@code Responsibility} parent interface.
      * This change will be tentatively applied in GeoAPI 4.0.
      * </div>
      *
@@ -255,7 +255,7 @@ public class DefaultRequirement extends ISOMetadata implements Requirement {
      * Sets the Person(s), or body(ies), to receive results of requirement.
      *
      * <div class="warning"><b>Upcoming API change — generalization</b><br>
-     * As of ISO 19115:2014, {@code ResponsibleParty} is replaced by the {@link Responsibility} parent interface.
+     * As of ISO 19115:2014, {@code ResponsibleParty} is replaced by the {@code Responsibility} parent interface.
      * This change will be tentatively applied in GeoAPI 4.0.
      * </div>
      *

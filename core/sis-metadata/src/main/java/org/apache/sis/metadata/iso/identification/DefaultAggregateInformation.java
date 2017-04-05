@@ -93,8 +93,6 @@ public class DefaultAggregateInformation extends DefaultAssociatedResource imple
      * given object are not recursively copied.
      *
      * @param  object  the metadata to copy values from, or {@code null} if none.
-     *
-     * @see #castOrCopy(AssociatedResource)
      */
     public DefaultAggregateInformation(final AggregateInformation object) {
         super(object);
@@ -113,7 +111,7 @@ public class DefaultAggregateInformation extends DefaultAssociatedResource imple
      *   <li>Otherwise if the given object is already an instance of
      *       {@code DefaultAggregateInformation}, then it is returned unchanged.</li>
      *   <li>Otherwise a new {@code DefaultAggregateInformation} instance is created using the
-     *       {@linkplain #DefaultAggregateInformation(AssociatedResource) copy constructor}
+     *       copy constructor
      *       and returned. Note that this is a <cite>shallow</cite> copy operation, since the other
      *       metadata contained in the given object are not recursively copied.</li>
      * </ul>

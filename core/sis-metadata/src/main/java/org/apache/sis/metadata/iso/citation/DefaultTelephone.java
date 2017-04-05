@@ -306,7 +306,7 @@ public class DefaultTelephone extends ISOMetadata implements Telephone {
      * @return telephone numbers by which individuals can speak to the responsible organization or individual.
      *
      * @deprecated As of ISO 19115:2014, replaced by a {@linkplain #getNumber() number}
-     *             with {@link TelephoneType#VOICE}.
+     *             with {@code TelephoneType.VOICE}.
      */
     @Override
     @Deprecated
@@ -323,7 +323,7 @@ public class DefaultTelephone extends ISOMetadata implements Telephone {
      * @param  newValues  the new telephone numbers, or {@code null} if none.
      *
      * @deprecated As of ISO 19115:2014, replaced by a {@linkplain #setNumber(String) number}
-     *             with {@link TelephoneType#VOICE}.
+     *             code {@code TelephoneType.VOICE}.
      */
     @Deprecated
     public void setVoices(final Collection<? extends String> newValues) {
@@ -338,7 +338,7 @@ public class DefaultTelephone extends ISOMetadata implements Telephone {
      * @return telephone numbers of a facsimile machine for the responsible organization or individual.
      *
      * @deprecated As of ISO 19115:2014, replaced by a {@linkplain #getNumber() number}
-     *             with {@link TelephoneType#FACSIMILE}.
+     *             code {@code TelephoneType.FACSIMILE}.
      */
     @Override
     @Deprecated
@@ -355,7 +355,7 @@ public class DefaultTelephone extends ISOMetadata implements Telephone {
      * @param  newValues  the new telephone number, or {@code null} if none.
      *
      * @deprecated As of ISO 19115:2014, replaced by a {@linkplain #setNumber(String) number}
-     *             with {@link TelephoneType#FACSIMILE}.
+     *             with {@code TelephoneType.FACSIMILE}.
      */
     @Deprecated
     public void setFacsimiles(final Collection<? extends String> newValues) {
