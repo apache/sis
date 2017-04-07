@@ -1,6 +1,8 @@
 # Licensed to the Apache Software Foundation (ASF) under one or more contributor license agreements.
 # Heavier classes (e.g. having more dependencies) or classes less likely to be used, should be last.
 org.apache.sis.internal.referencing.provider.Affine
+org.apache.sis.internal.referencing.provider.AxisOrderReversal
+org.apache.sis.internal.referencing.provider.AxisOrderReversal3D
 org.apache.sis.internal.referencing.provider.Geographic3Dto2D
 org.apache.sis.internal.referencing.provider.Geographic2Dto3D
 org.apache.sis.internal.referencing.provider.GeographicOffsets

@@ -53,6 +53,8 @@ public final strictfp class ProvidersTest extends TestCase {
     private static Class<?>[] methods() {
         return new Class<?>[] {
             Affine.class,
+            AxisOrderReversal.class,
+            AxisOrderReversal3D.class,
             GeographicOffsets.class,
             GeographicOffsets2D.class,
             VerticalOffset.class,
