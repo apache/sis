@@ -96,6 +96,13 @@ public class GeographicOffsets extends GeodeticOperation {
     }
 
     /**
+     * Returns the parameter descriptor for the vertical axis.
+     */
+    ParameterDescriptor<Double> vertical() {
+        return TZ;
+    }
+
+    /**
      * Creates a transform from the specified group of parameter values.
      * The parameter values are unconditionally converted to degrees and metres.
      *
@@ -112,7 +119,7 @@ public class GeographicOffsets extends GeodeticOperation {
         final Matrix4 t = new Matrix4();
         t.m03 = pv.doubleValue(TX);
         t.m13 = pv.doubleValue(TY);
-        t.m23 = pv.doubleValue(TZ);
+        t.m23 = pv.doubleValue(vertical());
         return MathTransforms.linear(t);
     }
 }
