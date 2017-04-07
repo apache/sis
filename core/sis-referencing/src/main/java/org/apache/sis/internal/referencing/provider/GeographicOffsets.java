@@ -87,7 +87,7 @@ public class GeographicOffsets extends GeodeticOperation {
     }
 
     /**
-     * For subclasses constructor only.
+     * For default constructors in this class and subclasses.
      */
     GeographicOffsets(int sourceDimensions, int targetDimensions,
             ParameterDescriptorGroup parameters, GeodeticOperation[] redimensioned)

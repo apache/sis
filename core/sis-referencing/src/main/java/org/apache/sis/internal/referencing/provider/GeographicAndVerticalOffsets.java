@@ -30,6 +30,13 @@ import org.apache.sis.measure.Units;
  * to geoidal height, as can been seen from the difference in parameter name.
  * For a "Geographic3D offsets" with ellipsoidal heights, see the parent class.
  *
+ * <p>Examples of coordinate transformations using this method:</p>
+ * <ul>
+ *   <li>EPSG:1335  from 2D to 2D geographic CRS.</li>
+ *   <li>EPSG:1336  from 3D to 2D geographic CRS.</li>
+ *   <li>EPSG:15596 from 3D to 3D geographic CRS.</li>
+ * </ul>
+ *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
  * @since   0.8
@@ -63,7 +70,18 @@ public final class GeographicAndVerticalOffsets extends GeographicOffsets {
      * Constructs a provider with default parameters.
      */
     public GeographicAndVerticalOffsets() {
-        super(3, 3, PARAMETERS, null);
+        this(3, 3, new GeographicAndVerticalOffsets[4]);
+        redimensioned[0] = new GeographicAndVerticalOffsets(2, 2, redimensioned);
+        redimensioned[1] = new GeographicAndVerticalOffsets(2, 3, redimensioned);
+        redimensioned[2] = new GeographicAndVerticalOffsets(3, 2, redimensioned);
+        redimensioned[3] = this;
+    }
+
+    /**
+     * For default constructor only.
+     */
+    private GeographicAndVerticalOffsets(int sourceDimensions, int targetDimensions, GeodeticOperation[] redimensioned) {
+        super(sourceDimensions, targetDimensions, PARAMETERS, redimensioned);
     }
 
     /**
