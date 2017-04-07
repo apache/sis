@@ -117,6 +117,7 @@ public final strictfp class ProvidersTest extends TestCase {
             LongitudeRotation.class,
             GeographicOffsets.class,
             GeographicOffsets2D.class,
+            GeographicAndVerticalOffsets.class,
             CoordinateFrameRotation2D.class,
             CoordinateFrameRotation3D.class,
             PositionVector7Param2D.class,
