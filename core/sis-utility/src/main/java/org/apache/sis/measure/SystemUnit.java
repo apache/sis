@@ -26,11 +26,13 @@ import javax.measure.Dimension;
 import javax.measure.UnitConverter;
 import javax.measure.UnconvertibleException;
 import javax.measure.IncommensurableException;
+import javax.measure.spi.QuantityFactory;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ObjectConverters;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.internal.converter.SurjectiveConverter;
+import org.apache.sis.math.DecimalFunctions;
 import org.apache.sis.math.Fraction;
 
 
@@ -48,7 +50,7 @@ import org.apache.sis.math.Fraction;
  * @since 0.8
  * @module
  */
-final class SystemUnit<Q extends Quantity<Q>> extends AbstractUnit<Q> {
+final class SystemUnit<Q extends Quantity<Q>> extends AbstractUnit<Q> implements QuantityFactory<Q> {
     /**
      * For cross-version compatibility.
      */
@@ -63,6 +65,13 @@ final class SystemUnit<Q extends Quantity<Q>> extends AbstractUnit<Q> {
      * The dimension of this unit of measurement. Can not be null.
      */
     final UnitDimension dimension;
+
+    /**
+     * The factory to use for creating quantities, or {@code null} if none.
+     * This field does not need to be serialized because {@link AbstractUnit#readResolve()}
+     * replaces deserialized instances by corresponding {@link Units} hard-coded instances.
+     */
+    final transient ScalarFactory<Q> factory;
 
     /**
      * Units for the same quantity but with scale factors that are not the SI one.
@@ -81,11 +90,15 @@ final class SystemUnit<Q extends Quantity<Q>> extends AbstractUnit<Q> {
      * @param  symbol     the unit symbol, or {@code null} if this unit has no specific symbol.
      * @param  scope      {@link UnitRegistry#SI}, {@link UnitRegistry#ACCEPTED}, other constants or 0 if unknown.
      * @param  epsg       the EPSG code, or 0 if this unit has no EPSG code.
+     * @param  factory    the factory to use for creating quantities, or {@code null} if none.
      */
-    SystemUnit(final Class<Q> quantity, final UnitDimension dimension, final String symbol, final byte scope, final short epsg) {
+    SystemUnit(final Class<Q> quantity, final UnitDimension dimension, final String symbol,
+            final byte scope, final short epsg, final ScalarFactory<Q> factory)
+    {
         super(symbol, scope, epsg);
         this.quantity  = quantity;
         this.dimension = dimension;
+        this.factory   = factory;
     }
 
     /**
@@ -98,7 +111,7 @@ final class SystemUnit<Q extends Quantity<Q>> extends AbstractUnit<Q> {
         }
         SystemUnit<?> result = Units.get(dim);
         if (result == null) {
-            result = new SystemUnit<>(null, dim, null, (byte) 0, (short) 0);
+            result = new SystemUnit<>(null, dim, null, (byte) 0, (short) 0, null);
         }
         return result;
     }
@@ -240,7 +253,7 @@ final class SystemUnit<Q extends Quantity<Q>> extends AbstractUnit<Q> {
          */
         SystemUnit<T> unit = Units.get(type);
         if (unit == null) {
-            unit = new SystemUnit<>(type, dimension, null, (byte) 0, (short) 0);       // Intentionally no symbol.
+            unit = new SystemUnit<>(type, dimension, null, (byte) 0, (short) 0, null);  // Intentionally no symbol.
         }
         if (!dimension.equals(unit.dimension)) {
             throw new ClassCastException(Errors.format(Errors.Keys.IncompatibleUnitDimension_5, new Object[] {
@@ -357,7 +370,7 @@ final class SystemUnit<Q extends Quantity<Q>> extends AbstractUnit<Q> {
         if (symbol.equals(getSymbol())) {
             return this;
         }
-        final SystemUnit<Q> alt = new SystemUnit<>(quantity, dimension, symbol, (byte) 0, (short) 0);
+        final SystemUnit<Q> alt = new SystemUnit<>(quantity, dimension, symbol, (byte) 0, (short) 0, factory);
         if (quantity != null) {
             /*
              * Use the cache only if this unit has a non-null quantity type. Do not use the cache even
@@ -507,5 +520,23 @@ final class SystemUnit<Q extends Quantity<Q>> extends AbstractUnit<Q> {
     @Override
     public int hashCode() {
         return super.hashCode() + 37 * dimension.hashCode();
+    }
+
+    /**
+     * Creates a quantity for the given value and unit of measurement.
+     */
+    @Override
+    public Quantity<Q> create(final Number value, final Unit<Q> unit) {
+        final double v;
+        if (value instanceof Float) {
+            v = DecimalFunctions.floatToDouble(value.floatValue());
+        } else {
+            v = value.doubleValue();
+        }
+        if (factory != null) {
+            return factory.create(v, unit);
+        } else {
+            return ScalarFallback.factory(v, unit, quantity);
+        }
     }
 }
