@@ -221,7 +221,6 @@ public class UnitServices extends ServiceProvider implements SystemOfUnitsServic
 
     /**
      * Return a factory for the given {@code Quantity} type, or {@code null} if none.
-     * Current implementation returns {@code null}.
      *
      * @param  <Q>   compile-time value of the {@code type} argument.
      * @param  type  type of the desired the quantity.
@@ -229,6 +228,6 @@ public class UnitServices extends ServiceProvider implements SystemOfUnitsServic
      */
     @Override
     public <Q extends Quantity<Q>> QuantityFactory<Q> getQuantityFactory(final Class<Q> type) {
-        return null;
+        return Units.get(type);
     }
 }
