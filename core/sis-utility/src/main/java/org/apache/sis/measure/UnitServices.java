@@ -20,6 +20,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Locale;
 import java.util.Set;
+import javax.measure.Unit;
 import javax.measure.Quantity;
 import javax.measure.format.UnitFormat;
 import javax.measure.spi.QuantityFactory;
@@ -220,14 +221,31 @@ public class UnitServices extends ServiceProvider implements SystemOfUnitsServic
     }
 
     /**
-     * Return a factory for the given {@code Quantity} type, or {@code null} if none.
+     * Return a factory for the given {@code Quantity} type. In the particular case of Apache SIS implementation,
+     * {@link Units#quantity(double, Unit)} provides a more direct way to instantiate quantities.
      *
      * @param  <Q>   compile-time value of the {@code type} argument.
      * @param  type  type of the desired the quantity.
      * @return the service to obtain {@link Quantity} instances, or {@code null} if none.
+     *
+     * @see Units#quantity(double, Unit)
      */
     @Override
     public <Q extends Quantity<Q>> QuantityFactory<Q> getQuantityFactory(final Class<Q> type) {
-        return Units.get(type);
+        QuantityFactory<Q> factory = Units.get(type);
+        if (factory == null) {
+            factory = new QuantityFactory<Q>() {
+                @Override
+                public Quantity<Q> create(final Number value, final Unit<Q> unit) {
+                    return ScalarFallback.factory(AbstractConverter.doubleValue(value), unit, type);
+                }
+
+                @Override
+                public Unit<Q> getSystemUnit() {
+                    return null;
+                }
+            };
+        }
+        return factory;
     }
 }

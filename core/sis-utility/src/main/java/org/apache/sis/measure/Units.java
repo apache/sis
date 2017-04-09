@@ -28,6 +28,7 @@ import org.opengis.referencing.cs.AxisDirection;    // For javadoc
 
 import org.apache.sis.util.Static;
 import org.apache.sis.util.Workaround;
+import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.internal.util.Constants;
 
@@ -1721,5 +1722,32 @@ public final class Units extends Static {
             }
         }
         return null;
+    }
+
+    /**
+     * Creates a quantity for the given value and units of measurement.
+     *
+     * @param  <Q>    the quantity type (e.g. {@link Length}, {@link Angle}, {@link Time}, <i>etc.</i>).
+     * @param  value  the quantity magnitude.
+     * @param  unit   the unit of measurement associated to the given value.
+     * @return a quantity of the given type for the given value and unit of measurement.
+     *
+     * @since 0.8
+     *
+     * @see UnitServices#getQuantityFactory(Class)
+     */
+    public static <Q extends Quantity<Q>> Q quantity(final double value, final Unit<Q> unit) {
+        ArgumentChecks.ensureNonNull("unit", unit);
+        final Unit<Q> system = unit.getSystemUnit();
+        if (system instanceof SystemUnit<?>) {
+            final ScalarFactory<Q> factory = ((SystemUnit<Q>) system).factory;
+            if (factory != null) {
+                return factory.create(value, unit);
+            } else {
+                return ScalarFallback.factory(value, unit, ((SystemUnit<Q>) system).quantity);
+            }
+        } else {
+            throw new IllegalArgumentException(Errors.format(Errors.Keys.UnsupportedImplementation_1, unit.getClass()));
+        }
     }
 }

@@ -21,7 +21,6 @@ import javax.measure.Unit;
 import javax.measure.Quantity;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.StringBuilders;
-import org.apache.sis.util.resources.Errors;
 
 
 /**
@@ -63,28 +62,11 @@ abstract class Scalar<Q extends Quantity<Q>> extends Number implements Quantity<
     }
 
     /**
-     * Creates a quantity of for the given value.
-     */
-    static <Q extends Quantity<Q>> Quantity<Q> factory(final double value, final Unit<Q> unit) {
-        final Unit<Q> system = unit.getSystemUnit();
-        if (system instanceof SystemUnit<?>) {
-            final ScalarFactory<Q> factory = ((SystemUnit<Q>) system).factory;
-            if (factory != null) {
-                return factory.create(value, unit);
-            } else {
-                return ScalarFallback.factory(value, unit, ((SystemUnit<Q>) system).quantity);
-            }
-        } else {
-            throw new IllegalArgumentException(Errors.format(Errors.Keys.UnsupportedImplementation_1, unit.getClass()));
-        }
-    }
-
-    /**
      * Creates a new quantity of same type than this quantity but with a different value and/or unit.
-     * This method performs the same work than {@link #factory(double, Unit)}, but without the need
+     * This method performs the same work than {@link Units#quantity(double, Unit)}, but without the need
      * to check for the Apache SIS specific {@link SystemUnit} implementation.
      *
-     * @see #factory(double, Unit)
+     * @see Units#quantity(double, Unit)
      */
     abstract Quantity<Q> create(double newValue, Unit<Q> newUnit);
 
@@ -95,7 +77,7 @@ abstract class Scalar<Q extends Quantity<Q>> extends Number implements Quantity<
      */
     private Quantity<?> of(final double newValue, final Unit<?> newUnit) {
         if (unit != newUnit || Double.doubleToRawLongBits(value) != Double.doubleToRawLongBits(newValue)) {
-            return factory(newValue, newUnit);
+            return Units.quantity(newValue, newUnit);
         }
         return this;
     }
