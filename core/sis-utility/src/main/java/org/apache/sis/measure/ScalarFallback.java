@@ -64,7 +64,7 @@ final class ScalarFallback<Q extends Quantity<Q>> extends Scalar<Q> implements I
      * Creates a new {@link ScalarFallback} instance implementing the given quantity type.
      */
     @SuppressWarnings("unchecked")
-    static <Q extends Quantity<Q>> Quantity<Q> factory(final double value, final Unit<Q> unit, final Class<Q> type) {
+    static <Q extends Quantity<Q>> Q factory(final double value, final Unit<Q> unit, final Class<Q> type) {
         final Class<?> pc = Proxy.getProxyClass(Scalar.class.getClassLoader(), new Class<?>[] {type});
         final Constructor<? extends Q> constructor;
         try {

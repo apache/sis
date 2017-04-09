@@ -39,5 +39,5 @@ interface ScalarFactory<Q extends Quantity<Q>> {
      * @param  unit   the unit of measurement associated to the given value.
      * @return a quantity with the given value and unit of measurement.
      */
-    Quantity<Q> create(double value, Unit<Q> unit);
+    Q create(double value, Unit<Q> unit);
 }

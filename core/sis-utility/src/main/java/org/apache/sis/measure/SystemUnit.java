@@ -32,7 +32,6 @@ import org.apache.sis.util.ObjectConverters;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.internal.converter.SurjectiveConverter;
-import org.apache.sis.math.DecimalFunctions;
 import org.apache.sis.math.Fraction;
 
 
@@ -527,12 +526,7 @@ final class SystemUnit<Q extends Quantity<Q>> extends AbstractUnit<Q> implements
      */
     @Override
     public Quantity<Q> create(final Number value, final Unit<Q> unit) {
-        final double v;
-        if (value instanceof Float) {
-            v = DecimalFunctions.floatToDouble(value.floatValue());
-        } else {
-            v = value.doubleValue();
-        }
+        final double v = AbstractConverter.doubleValue(value);
         if (factory != null) {
             return factory.create(v, unit);
         } else {
