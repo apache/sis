@@ -1,0 +1,206 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+  Licensed to the Apache Software Foundation (ASF) under one
+  or more contributor license agreements.  See the NOTICE file
+  distributed with this work for additional information
+  regarding copyright ownership.  The ASF licenses this file
+  to you under the Apache License, Version 2.0 (the
+  "License"); you may not use this file except in compliance
+  with the License.  You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing,
+  software distributed under the License is distributed on an
+  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+  KIND, either express or implied.  See the License for the
+  specific language governing permissions and limitations
+  under the License.
+-->
+
+<project xmlns              = "http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi          = "http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation = "http://maven.apache.org/POM/4.0.0
+                               http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <prerequisites>
+    <maven>3.2.2</maven>
+  </prerequisites>
+
+  <parent>
+    <groupId>org.apache</groupId>
+    <artifactId>apache</artifactId>
+    <version>18</version>
+  </parent>
+
+
+
+  <!-- ==============================================================
+         Project description. The <organization> and <licenses>
+         elements are inherited from the parent Apache pom.xml.
+       ============================================================== -->
+  <groupId>org.apache.sis</groupId>
+  <artifactId>sis-uom</artifactId>
+  <version>0.8-SNAPSHOT</version>
+  <packaging>bundle</packaging>
+
+  <name>Apache SIS Unit of Measurements</name>
+  <url>http://sis.apache.org</url>
+  <description>
+  <!-- Left alignment because this description will be copied in META-INF/MANIFEST.MF
+       The leading space after the first line is necessary for proper formatting. -->
+Subset of Apache SIS library containing only the JSR-363 implementation.
+ This artifact provides a subset of the org.apache.sis.measure package
+ with only the Units, UnitFormat and UnitServices classes provided.
+ This artifact shall NOT be on the classpath if the full Apache SIS library
+ is also on the classpath, since Apache SIS provides all org.apache.sis.unit
+ functionalities and more.
+  </description>
+  <inceptionYear>2017</inceptionYear>
+
+
+
+  <!-- ==============================================================
+         Source code repository, issue managements and mailing lists.
+       ============================================================== -->
+  <scm>
+    <connection>
+      scm:svn:http://svn.apache.org/repos/asf/sis/trunk
+    </connection>
+    <developerConnection>
+      scm:svn:https://svn.apache.org/repos/asf/sis/trunk
+    </developerConnection>
+    <url>http://svn.apache.org/viewvc/sis/trunk</url>
+  </scm>
+
+  <issueManagement>
+    <system>JIRA</system>
+    <url>https://issues.apache.org/jira/browse/SIS</url>
+  </issueManagement>
+
+  <mailingLists>
+    <mailingList>
+      <name>Development mailing list</name>
+      <subscribe>dev-subscribe@sis.apache.org</subscribe>
+      <unsubscribe>dev-unsubscribe@sis.apache.org</unsubscribe>
+      <post>dev@sis.apache.org</post>
+      <archive>http://mail-archives.apache.org/mod_mbox/sis-dev/</archive>
+    </mailingList>
+    <mailingList>
+      <name>Commit mailing list</name>
+      <subscribe>commits-subscribe@sis.apache.org</subscribe>
+      <unsubscribe>commits-unsubscribe@sis.apache.org</unsubscribe>
+      <post>commits@sis.apache.org</post>
+      <archive>http://mail-archives.apache.org/mod_mbox/sis-commits/</archive>
+    </mailingList>
+    <mailingList>
+      <name>User mailing list</name>
+      <subscribe>user-subscribe@sis.apache.org</subscribe>
+      <unsubscribe>user-unsubscribe@sis.apache.org</unsubscribe>
+      <post>user@sis.apache.org</post>
+      <archive>http://mail-archives.apache.org/mod_mbox/sis-user/</archive>
+    </mailingList>
+  </mailingLists>
+
+  <developers>
+    <developer>
+      <name>Martin Desruisseaux</name>
+      <id>desruisseaux</id>
+      <email>desruisseaux@apache.org</email>
+      <organization>Geomatys</organization>
+      <organizationUrl>http://www.geomatys.com</organizationUrl>
+      <timezone>+1</timezone>
+    </developer>
+  </developers>
+
+
+
+  <!-- ==============================================================
+         Dependency management.
+       ============================================================== -->
+  <dependencies>
+    <dependency>
+      <groupId>org.apache.sis.core</groupId>
+      <artifactId>sis-utility</artifactId>
+      <version>0.8-jdk8-SNAPSHOT</version>
+    </dependency>
+    <dependency>
+      <groupId>tec.units</groupId>
+      <artifactId>unit-tck</artifactId>
+      <version>1.0</version>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+
+
+
+  <!-- ==============================================================
+         Build configuration.
+         See http://maven.apache.org/plugins/ for a plugins list.
+       ============================================================== -->
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+      <maven.compile.source>1.8</maven.compile.source>
+      <maven.compile.target>1.8</maven.compile.target>
+  </properties>
+
+  <build>
+    <plugins>
+
+      <!-- Compile -->
+      <plugin>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>3.6.1</version>
+        <configuration>
+          <source>${maven.compile.source}</source>
+          <target>${maven.compile.target}</target>
+          <encoding>${project.build.sourceEncoding}</encoding>
+          <useIncrementalCompilation>false</useIncrementalCompilation> <!-- https://jira.codehaus.org/browse/MCOMPILER-209 -->
+          <compilerArgs>
+            <arg>-Xlint:all</arg>
+            <arg>-Xdoclint:syntax,html,missing/protected,accessibility/protected</arg>
+          </compilerArgs>
+        </configuration>
+      </plugin>
+
+
+      <!-- JAR packaging -->
+      <plugin>
+        <artifactId>maven-jar-plugin</artifactId>
+        <version>3.0.2</version>
+        <configuration>
+          <archive>
+            <addMavenDescriptor>false</addMavenDescriptor>
+            <index>true</index>
+            <manifest>
+              <addClasspath>true</addClasspath>
+              <classpathLayoutType>simple</classpathLayoutType>
+              <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+            </manifest>
+            <manifestEntries>
+              <Built-On>${maven.build.timestamp}</Built-On>
+              <Specification-Title>JSR-363</Specification-Title>
+              <Specification-Version>1.0</Specification-Version>
+              <Specification-Vendor>Java Community Process</Specification-Vendor>
+            </manifestEntries>
+          </archive>
+        </configuration>
+      </plugin>
+
+      <!-- Package as OSGi bundle -->
+      <plugin>
+        <groupId>org.apache.felix</groupId>
+        <artifactId>maven-bundle-plugin</artifactId>
+        <version>3.3.0</version>
+        <extensions>true</extensions>
+        <configuration>
+          <excludeDependencies>true</excludeDependencies>
+          <instructions>
+            <Bundle-DocURL>${project.url}</Bundle-DocURL>
+          </instructions>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+</project>
