@@ -329,7 +329,7 @@ final class CopyTransform extends AbstractLinearTransform {
      * Creates the inverse transform of this object.
      */
     @Override
-    @SuppressWarnings("DoubleCheckedLocking")  // Okay since 'inverse' is volatile.
+    @SuppressWarnings("DoubleCheckedLocking")                                   // Okay since 'inverse' is volatile.
     public LinearTransform inverse() throws NoninvertibleTransformException {
         LinearTransform inv = inverse;
         if (inv == null) {
@@ -379,8 +379,8 @@ final class CopyTransform extends AbstractLinearTransform {
                     }
                     /*
                      * At this point, we know that we can create the inverse transform.
-                     * If this transform is the identity transform (we should never happen,
-                     * but we are paranoiac), then the old and new arrays would be equal.
+                     * If this transform is the identity transform or an anti-diagonal matrix except last row
+                     * (e.g. matrix used for swapping axis order), then the old and new arrays would be equal.
                      */
                     CopyTransform copyInverse = this;
                     if (!Arrays.equals(reverse, indices)) {
