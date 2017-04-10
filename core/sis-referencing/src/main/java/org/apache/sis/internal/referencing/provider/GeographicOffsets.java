@@ -87,12 +87,19 @@ public class GeographicOffsets extends GeodeticOperation {
     }
 
     /**
-     * For subclasses constructor only.
+     * For default constructors in this class and subclasses.
      */
     GeographicOffsets(int sourceDimensions, int targetDimensions,
             ParameterDescriptorGroup parameters, GeodeticOperation[] redimensioned)
     {
         super(sourceDimensions, targetDimensions, parameters, redimensioned);
+    }
+
+    /**
+     * Returns the parameter descriptor for the vertical axis.
+     */
+    ParameterDescriptor<Double> vertical() {
+        return TZ;
     }
 
     /**
@@ -112,7 +119,7 @@ public class GeographicOffsets extends GeodeticOperation {
         final Matrix4 t = new Matrix4();
         t.m03 = pv.doubleValue(TX);
         t.m13 = pv.doubleValue(TY);
-        t.m23 = pv.doubleValue(TZ);
+        t.m23 = pv.doubleValue(vertical());
         return MathTransforms.linear(t);
     }
 }

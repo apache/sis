@@ -27,7 +27,6 @@ import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.StringBuilders;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.LenientComparable;
-import org.apache.sis.math.DecimalFunctions;
 import org.apache.sis.math.MathFunctions;
 import org.apache.sis.math.Fraction;
 import org.apache.sis.internal.util.Numerics;
@@ -333,14 +332,7 @@ final class LinearConverter extends AbstractConverter implements LenientComparab
                 }
                 value = ((BigDecimal) value).multiply(scale10).add(offset10);
             } else {
-                final double x;
-                if (value instanceof Float) {
-                    // Because unit conversion factors are usually defined in base 10.
-                    x = DecimalFunctions.floatToDouble((Float) value);
-                } else {
-                    x = value.doubleValue();
-                }
-                value = convert(x);
+                value = convert(doubleValue(value));
             }
         }
         return value;

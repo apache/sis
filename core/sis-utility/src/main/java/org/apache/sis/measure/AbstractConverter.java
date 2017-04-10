@@ -18,6 +18,7 @@ package org.apache.sis.measure;
 
 import java.io.Serializable;
 import javax.measure.UnitConverter;
+import org.apache.sis.math.DecimalFunctions;
 
 
 /**
@@ -66,5 +67,13 @@ abstract class AbstractConverter implements UnitConverter, Serializable {
             }
         }
         return Double.NaN;
+    }
+
+    /**
+     * Returns the value of the given number, with special handling for {@link Float} value on the assumption
+     * that the original value was written in base 10. This is usually the case for unit conversion factors.
+     */
+    static double doubleValue(final Number n) {
+        return (n instanceof Float) ? DecimalFunctions.floatToDouble(n.floatValue()) : n.doubleValue();
     }
 }
