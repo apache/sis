@@ -39,6 +39,12 @@ import org.apache.sis.internal.jaxb.gmd.CodeListUID;
  */
 public final class MD_CharacterSetCode extends XmlAdapter<MD_CharacterSetCode, Charset> {
     /**
+     * Empty constructor for JAXB only.
+     */
+    public MD_CharacterSetCode() {
+    }
+
+    /**
      * The value of the {@link org.opengis.util.CodeList}.
      */
     private CodeListUID identifier;
