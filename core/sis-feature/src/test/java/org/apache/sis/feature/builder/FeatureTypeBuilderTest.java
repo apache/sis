@@ -245,7 +245,7 @@ public final strictfp class FeatureTypeBuilderTest extends TestCase {
 
         final FeatureType type = builder.build();
         builder = new FeatureTypeBuilder(type);
-        assertEquals("name",       "City", builder.getName().toString());
+        assertEquals("name", "City", builder.getName().toString());
         assertEquals("superTypes", 0, builder.getSuperTypes().length);
 
         final Iterator<PropertyTypeBuilder> it = builder.properties().iterator();

@@ -196,7 +196,7 @@ public class FeatureTypeBuilder extends TypeBuilder {
                 } else if (property instanceof FeatureAssociationRole) {
                     builder = new AssociationRoleBuilder(this, (FeatureAssociationRole) property);
                 } else {
-                    builder = null;     // Do not create OperationWrapper now - see below.
+                    builder = null;                             // Do not create OperationWrapper now - see below.
                 }
                 /*
                  * If the property name is one of our (Apache SIS specific) conventional names, try to reconstitute
