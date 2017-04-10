@@ -46,6 +46,8 @@
  * In relation to units of measurement, this package also defines:
  *
  * <ul>
+ *   <li>{@linkplain org.apache.sis.measure.Quantities}
+ *       as a {@code double} value value associated to a {@code Unit} instance.</li>
  *   <li>{@link org.apache.sis.measure.Angle} and its subclasses
  *      ({@link org.apache.sis.measure.Longitude},
  *       {@link org.apache.sis.measure.Latitude},
@@ -54,9 +56,10 @@
  *      ({@link org.apache.sis.measure.NumberRange},
  *       {@link org.apache.sis.measure.MeasurementRange}) or annotation
  *      ({@link org.apache.sis.measure.ValueRange})</li>
- *   <li>Formatters
+ *   <li>Parsers and formatters
  *      ({@link org.apache.sis.measure.AngleFormat},
- *       {@link org.apache.sis.measure.RangeFormat})</li>
+ *       {@link org.apache.sis.measure.RangeFormat},
+ *       {@link org.apache.sis.measure.UnitFormat})</li>
  * </ul>
  *
  * @author  Martin Desruisseaux (MPO, IRD, Geomatys)

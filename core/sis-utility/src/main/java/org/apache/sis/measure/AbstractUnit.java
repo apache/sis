@@ -93,13 +93,25 @@ abstract class AbstractUnit<Q extends Quantity<Q>> implements Unit<Q>, LenientCo
      *
      * <p>This information may be approximative since we can not always guess correctly whether the result of
      * an operation is part of SI or not. Values given to the field may be adjusted in any future version.</p>
+     *
+     * <p>This information is not serialized because {@link #readResolve()} will replace the deserialized instance
+     * by a hard-coded instance with appropriate value, if possible.</p>
+     *
+     * @see #equals(short, short)
      */
-    final byte scope;
+    final transient byte scope;
 
     /**
      * The EPSG code, or 0 if this unit has no EPSG code.
+     *
+     * <p>This information is not serialized because {@link #readResolve()} will replace the deserialized instance
+     * by a hard-coded instance with appropriate value, if possible. Note that EPSG codes are not included in the
+     * {@code sis-uom} module (a module containing a subset of {@code sis-utility} module), so we need to ignore
+     * this field at serialization time if we want compatible serialization forms.</p>
+     *
+     * @see #equals(short, short)
      */
-    final short epsg;
+    final transient short epsg;
 
     /**
      * Creates a new unit having the given symbol and EPSG code.
@@ -294,7 +306,18 @@ abstract class AbstractUnit<Q extends Quantity<Q>> implements Unit<Q>, LenientCo
             return true;
         }
         final AbstractUnit<?> that = (AbstractUnit<?>) other;
-        return epsg == that.epsg && scope == that.scope && Objects.equals(symbol, that.symbol);
+        return equals(epsg, that.epsg) && equals(scope, that.scope) && Objects.equals(symbol, that.symbol);
+    }
+
+    /**
+     * Compares the given values only if both of them are non-zero. If at least one value is zero (meaning "unknown"),
+     * assume that values are equal. We do that because deserialized {@code AbstractUnit} instances have {@link #epsg}
+     * and {@link #scope} fields initialized to 0, and we need to ignore those values when comparing the deserialized
+     * instances with instances hard-coded in {@link Units} class. We should not have inconsistencies because there is
+     * no public way to set those fields; they can only be defined in the {@code Units} hard-coded constants.
+     */
+    private static boolean equals(final short a, final short b) {
+        return (a == 0) || (b == 0) || (a == b);
     }
 
     /**
@@ -302,7 +325,8 @@ abstract class AbstractUnit<Q extends Quantity<Q>> implements Unit<Q>, LenientCo
      */
     @Override
     public int hashCode() {
-        return epsg + 31 * Objects.hashCode(symbol);
+        // Do not use EPSG code or scope because they are not serialized.
+        return 31 * Objects.hashCode(symbol);
     }
 
     /**
