@@ -222,13 +222,13 @@ public class UnitServices extends ServiceProvider implements SystemOfUnitsServic
 
     /**
      * Return a factory for the given {@code Quantity} type. In the particular case of Apache SIS implementation,
-     * {@link Units#quantity(double, Unit)} provides a more direct way to instantiate quantities.
+     * {@link Quantities#create(double, Unit)} provides a more direct way to instantiate quantities.
      *
      * @param  <Q>   compile-time value of the {@code type} argument.
      * @param  type  type of the desired the quantity.
      * @return the service to obtain {@link Quantity} instances, or {@code null} if none.
      *
-     * @see Units#quantity(double, Unit)
+     * @see Quantities#create(double, Unit)
      */
     @Override
     public <Q extends Quantity<Q>> QuantityFactory<Q> getQuantityFactory(final Class<Q> type) {
