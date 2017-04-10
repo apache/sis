@@ -111,6 +111,7 @@ import org.junit.BeforeClass;
     org.apache.sis.measure.UnitFormatTest.class,
     org.apache.sis.measure.UnitsTest.class,
     org.apache.sis.measure.ScalarTest.class,
+    org.apache.sis.measure.QuantitiesTest.class,
     org.apache.sis.measure.UnitServicesTest.class,
     org.apache.sis.measure.RangeTest.class,
     org.apache.sis.measure.DateRangeTest.class,
