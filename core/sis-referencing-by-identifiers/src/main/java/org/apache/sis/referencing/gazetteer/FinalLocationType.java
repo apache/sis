@@ -230,7 +230,7 @@ final class FinalLocationType extends AbstractLocationType implements Serializab
      *
      * @return property used as the defining characteristic of the location type.
      *
-     * @see ReferenceSystemUsingIdentifiers#getTheme()
+     * @see ReferencingByIdentifiers#getTheme()
      */
     @Override
     public InternationalString getTheme() {

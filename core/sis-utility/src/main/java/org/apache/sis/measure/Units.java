@@ -1061,14 +1061,14 @@ public final class Units extends Static {
         /*
          * Base, derived or alternate units that we need to reuse more than once in this static initializer.
          */
-        final SystemUnit<Length>        m   = add(Length.class,        length,        "m",   UnitRegistry.SI, Constants.EPSG_METRE);
-        final SystemUnit<Area>          m2  = add(Area.class,          area,          "m²",  UnitRegistry.SI, (short) 0);
-        final SystemUnit<Time>          s   = add(Time.class,          time,          "s",   UnitRegistry.SI, (short) 1040);
-        final SystemUnit<Temperature>   K   = add(Temperature.class,   temperature,   "K",   UnitRegistry.SI, (short) 0);
-        final SystemUnit<Speed>         mps = add(Speed.class,         speed,         "m∕s", UnitRegistry.SI, (short) 1026);
-        final SystemUnit<Pressure>      Pa  = add(Pressure.class,      pressure,      "Pa",  UnitRegistry.SI, (short) 0);
-        final SystemUnit<Angle>         rad = add(Angle.class,         dimensionless, "rad", UnitRegistry.SI, (short) 9101);
-        final SystemUnit<Dimensionless> one = add(Dimensionless.class, dimensionless, "",    UnitRegistry.SI, (short) 9201);
+        final SystemUnit<Length>        m   = add(Length.class,        Scalar.Length::new,        length,        "m",   UnitRegistry.SI, Constants.EPSG_METRE);
+        final SystemUnit<Area>          m2  = add(Area.class,          Scalar.Area::new,          area,          "m²",  UnitRegistry.SI, (short) 0);
+        final SystemUnit<Time>          s   = add(Time.class,          Scalar.Time::new,          time,          "s",   UnitRegistry.SI, (short) 1040);
+        final SystemUnit<Temperature>   K   = add(Temperature.class,   Scalar.Temperature::new,   temperature,   "K",   UnitRegistry.SI, (short) 0);
+        final SystemUnit<Speed>         mps = add(Speed.class,         Scalar.Speed::new,         speed,         "m∕s", UnitRegistry.SI, (short) 1026);
+        final SystemUnit<Pressure>      Pa  = add(Pressure.class,      Scalar.Pressure::new,      pressure,      "Pa",  UnitRegistry.SI, (short) 0);
+        final SystemUnit<Angle>         rad = add(Angle.class,         Scalar.Angle::new,         dimensionless, "rad", UnitRegistry.SI, (short) 9101);
+        final SystemUnit<Dimensionless> one = add(Dimensionless.class, Scalar.Dimensionless::new, dimensionless, "",    UnitRegistry.SI, (short) 9201);
         /*
          * All SI prefix to be used below, with additional converters to be used more than once.
          */
@@ -1144,39 +1144,39 @@ public final class Units extends Static {
         /*
          * Electricity and magnetism.
          */
-        AMPERE  = add(ElectricCurrent.class,     current,                      "A",  UnitRegistry.SI, (short) 0);
-        COULOMB = add(ElectricCharge.class,      charge,                       "C",  UnitRegistry.SI, (short) 0);
-        VOLT    = add(ElectricPotential.class,   potential,                    "V",  UnitRegistry.SI, (short) 0);
-        FARAD   = add(ElectricCapacitance.class, charge.divide(potential),     "F",  UnitRegistry.SI, (short) 0);
-        SIEMENS = add(ElectricConductance.class, current.divide(potential),    "S",  UnitRegistry.SI, (short) 0);
-        OHM     = add(ElectricResistance.class,  potential.divide(current),    "Ω",  UnitRegistry.SI, (short) 0);
-        WEBER   = add(MagneticFlux.class,        magneticFlux,                 "Wb", UnitRegistry.SI, (short) 0);
-        TESLA   = add(MagneticFluxDensity.class, magneticFlux.divide(area),    "T",  UnitRegistry.SI, (short) 0);
-        HENRY   = add(ElectricInductance.class,  magneticFlux.divide(current), "H",  UnitRegistry.SI, (short) 0);
+        AMPERE  = add(ElectricCurrent.class,     null, current,                      "A",  UnitRegistry.SI, (short) 0);
+        COULOMB = add(ElectricCharge.class,      null, charge,                       "C",  UnitRegistry.SI, (short) 0);
+        VOLT    = add(ElectricPotential.class,   null, potential,                    "V",  UnitRegistry.SI, (short) 0);
+        FARAD   = add(ElectricCapacitance.class, null, charge.divide(potential),     "F",  UnitRegistry.SI, (short) 0);
+        SIEMENS = add(ElectricConductance.class, null, current.divide(potential),    "S",  UnitRegistry.SI, (short) 0);
+        OHM     = add(ElectricResistance.class,  null, potential.divide(current),    "Ω",  UnitRegistry.SI, (short) 0);
+        WEBER   = add(MagneticFlux.class,        null, magneticFlux,                 "Wb", UnitRegistry.SI, (short) 0);
+        TESLA   = add(MagneticFluxDensity.class, null, magneticFlux.divide(area),    "T",  UnitRegistry.SI, (short) 0);
+        HENRY   = add(ElectricInductance.class,  null, magneticFlux.divide(current), "H",  UnitRegistry.SI, (short) 0);
         /*
          * Other units.
          */
         SQUARE_METRE = m2;
-        HECTARE      = add(m2,  ten4,                                      "ha",  UnitRegistry.ACCEPTED, (short) 0);
-        CUBIC_METRE  = add(Volume.class,            length.pow(3),         "m³",  UnitRegistry.SI,       (short) 0);
-        HERTZ        = add(Frequency.class,         time.pow(-1),          "Hz",  UnitRegistry.SI,       (short) 0);
-        KILOGRAM     = add(Mass.class,              mass,                  "kg",  UnitRegistry.SI,       (short) 0);
-        NEWTON       = add(Force.class,             force,                 "N",   UnitRegistry.SI,       (short) 0);
-        JOULE        = add(Energy.class,            energy,                "J",   UnitRegistry.SI,       (short) 0);
-        WATT         = add(Power.class,             power,                 "W",   UnitRegistry.SI,       (short) 0);
-        LUX          = add(Illuminance.class,       luminous.divide(area), "lx",  UnitRegistry.SI,       (short) 0);
-        LUMEN        = add(LuminousFlux.class,      luminous,              "lm",  UnitRegistry.SI,       (short) 0);
-        CANDELA      = add(LuminousIntensity.class, luminous,              "cd",  UnitRegistry.SI,       (short) 0);    // Must be after Lumen.
-        MOLE         = add(AmountOfSubstance.class, amount,                "mol", UnitRegistry.SI,       (short) 0);
-        STERADIAN    = add(SolidAngle.class,        dimensionless,         "sr",  UnitRegistry.SI,       (short) 0);
+        HECTARE      = add(m2,  ten4,                                                             "ha",  UnitRegistry.ACCEPTED, (short) 0);
+        CUBIC_METRE  = add(Volume.class,            Scalar.Volume::new,    length.pow(3),         "m³",  UnitRegistry.SI,       (short) 0);
+        HERTZ        = add(Frequency.class,         Scalar.Frequency::new, time.pow(-1),          "Hz",  UnitRegistry.SI,       (short) 0);
+        KILOGRAM     = add(Mass.class,              Scalar.Mass::new,      mass,                  "kg",  UnitRegistry.SI,       (short) 0);
+        NEWTON       = add(Force.class,             Scalar.Force::new,     force,                 "N",   UnitRegistry.SI,       (short) 0);
+        JOULE        = add(Energy.class,            Scalar.Energy::new,    energy,                "J",   UnitRegistry.SI,       (short) 0);
+        WATT         = add(Power.class,             Scalar.Power::new,     power,                 "W",   UnitRegistry.SI,       (short) 0);
+        LUX          = add(Illuminance.class,       null,                  luminous.divide(area), "lx",  UnitRegistry.SI,       (short) 0);
+        LUMEN        = add(LuminousFlux.class,      null,                  luminous,              "lm",  UnitRegistry.SI,       (short) 0);
+        CANDELA      = add(LuminousIntensity.class, null,                  luminous,              "cd",  UnitRegistry.SI,       (short) 0);    // Must be after Lumen.
+        MOLE         = add(AmountOfSubstance.class, null,                  amount,                "mol", UnitRegistry.SI,       (short) 0);
+        STERADIAN    = add(SolidAngle.class,        null,                  dimensionless,         "sr",  UnitRegistry.SI,       (short) 0);
         /*
          * All Unit<Dimensionless>.
          */
-        PERCENT = add(one, centi,                         "%",     UnitRegistry.OTHER, (short) 0);
-        PPM     = add(one, micro,                         "ppm",   UnitRegistry.OTHER, (short) 9202);
-        PSU     = add(Dimensionless.class, dimensionless, "psu",   UnitRegistry.OTHER, (short) 0);
-        SIGMA   = add(Dimensionless.class, dimensionless, "sigma", UnitRegistry.OTHER, (short) 0);
-        PIXEL   = add(Dimensionless.class, dimensionless, "px",    UnitRegistry.OTHER, (short) 0);
+        PERCENT = add(one, centi,                                                    "%",     UnitRegistry.OTHER, (short) 0);
+        PPM     = add(one, micro,                                                    "ppm",   UnitRegistry.OTHER, (short) 9202);
+        PSU     = add(Dimensionless.class, Scalar.Dimensionless::new, dimensionless, "psu",   UnitRegistry.OTHER, (short) 0);
+        SIGMA   = add(Dimensionless.class, Scalar.Dimensionless::new, dimensionless, "sigma", UnitRegistry.OTHER, (short) 0);
+        PIXEL   = add(Dimensionless.class, Scalar.Dimensionless::new, dimensionless, "px",    UnitRegistry.OTHER, (short) 0);
         UNITY   = UnitRegistry.init(one);  // Must be last in order to take precedence over all other units associated to UnitDimension.NONE.
 
         UnitRegistry.alias(UNITY,       Short.valueOf((short) 9203));
@@ -1198,8 +1198,10 @@ public final class Units extends Static {
      * Invoked by {@code Units} static class initializer for registering SI base and derived units.
      * This method shall be invoked in a single thread by the {@code Units} class initializer only.
      */
-    private static <Q extends Quantity<Q>> SystemUnit<Q> add(Class<Q> quantity, UnitDimension dimension, String symbol, byte scope, short epsg) {
-        return UnitRegistry.init(new SystemUnit<>(quantity, dimension, symbol, scope, epsg));
+    private static <Q extends Quantity<Q>> SystemUnit<Q> add(Class<Q> quantity, ScalarFactory<Q> factory,
+            UnitDimension dimension, String symbol, byte scope, short epsg)
+    {
+        return UnitRegistry.init(new SystemUnit<>(quantity, dimension, symbol, scope, epsg, factory));
     }
 
     /**

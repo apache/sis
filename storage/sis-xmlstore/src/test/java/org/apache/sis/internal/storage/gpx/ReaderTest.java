@@ -23,6 +23,7 @@ import com.esri.core.geometry.Point;
 import com.esri.core.geometry.Polyline;
 import org.opengis.geometry.Envelope;
 import org.opengis.metadata.content.FeatureCatalogueDescription;
+import org.apache.sis.setup.OptionKey;
 import org.apache.sis.storage.gps.Fix;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.DataStoreException;
@@ -565,7 +566,9 @@ public final strictfp class ReaderTest extends TestCase {
      * Using the URL makes easier for the data store to read the same data more than once.
      */
     private static Store createFromURL() throws DataStoreException {
-        return new Store(provider, new StorageConnector(ReaderTest.class.getResource("1.1/route.xml")));
+        final StorageConnector connector = new StorageConnector(ReaderTest.class.getResource("1.1/route.xml"));
+        connector.setOption(OptionKey.URL_ENCODING, "UTF-8");
+        return new Store(provider, connector);
     }
 
     /**
