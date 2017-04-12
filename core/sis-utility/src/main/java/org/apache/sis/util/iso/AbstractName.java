@@ -271,7 +271,7 @@ public abstract class AbstractName implements GenericName, Serializable {
      * Returns the separator to write before the given name. If the scope of the given name
      * is a {@link DefaultNameSpace} instance, then this method returns its head separator.
      * We really want {@link DefaultNameSpace#headSeparator}, not {@link DefaultNameSpace#separator}.
-     * See {@link DefaultNameSpace#child(CharSequence)} for details.
+     * See {@link DefaultNameSpace#child(CharSequence, String)} for details.
      *
      * @param  name  the name after which to write a separator.
      * @return the separator to write after the given name.

@@ -409,8 +409,8 @@ parse:  while (reader.hasNext()) {
                     (lat == null) ? Attributes.LATITUDE : Attributes.LONGITUDE, tagName));
         }
         final Feature feature = ((Store) owner).types.wayPoint.newInstance();
-        feature.setPropertyValue("@identifier", index);
-        feature.setPropertyValue("@geometry", new Point(parseDouble(lon), parseDouble(lat)));
+        feature.setPropertyValue("sis:identifier", index);
+        feature.setPropertyValue("sis:geometry", new Point(parseDouble(lon), parseDouble(lat)));
         List<Link> links = null;
         while (true) {
             /*
@@ -474,7 +474,7 @@ parse:  while (reader.hasNext()) {
     private Feature parseRoute(final int index) throws Exception {
         assert reader.isStartElement() && Tags.ROUTES.equals(reader.getLocalName());
         final Feature feature = ((Store) owner).types.route.newInstance();
-        feature.setPropertyValue("@identifier", index);
+        feature.setPropertyValue("sis:identifier", index);
         List<Feature> wayPoints = null;
         List<Link> links = null;
         while (true) {
@@ -530,7 +530,7 @@ parse:  while (reader.hasNext()) {
     private Feature parseTrackSegment(final int index) throws Exception {
         assert reader.isStartElement() && Tags.TRACK_SEGMENTS.equals(reader.getLocalName());
         final Feature feature = ((Store) owner).types.trackSegment.newInstance();
-        feature.setPropertyValue("@identifier", index);
+        feature.setPropertyValue("sis:identifier", index);
         List<Feature> wayPoints = null;
         while (true) {
             /*
@@ -573,7 +573,7 @@ parse:  while (reader.hasNext()) {
     private Feature parseTrack(final int index) throws Exception {
         assert reader.isStartElement() && Tags.TRACKS.equals(reader.getLocalName());
         final Feature feature = ((Store) owner).types.track.newInstance();
-        feature.setPropertyValue("@identifier", index);
+        feature.setPropertyValue("sis:identifier", index);
         List<Feature> segments = null;
         List<Link> links = null;
         while (true) {
