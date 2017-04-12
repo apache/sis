@@ -20,6 +20,7 @@ import java.util.Collections;
 import org.opengis.util.TypeName;
 import org.opengis.util.LocalName;
 import org.opengis.util.MemberName;
+import org.opengis.util.ScopedName;
 import org.opengis.util.GenericName;
 import org.opengis.util.NameSpace;
 import org.opengis.util.NameFactory;
@@ -124,6 +125,24 @@ public final class Names extends Static {
         ensureNonNull("localPart", scopedName);
         final NameFactory factory = DefaultFactories.forBuildin(NameFactory.class);
         return factory.parseGenericName(createNameSpace(factory, namespace, separator), scopedName);
+    }
+
+    /**
+     * Constructs a scoped name as the concatenation of the given generic name with a single character sequence.
+     * The scope of the new name will be the scope of the {@code path} argument.
+     * The tail is a local name created from the given character sequence.
+     *
+     * @param  scope      the first part to concatenate.
+     * @param  separator  the separator between the head and the tail,
+     *                    or {@code null} for inheriting the same separator than the given scope.
+     * @param  name       the second part to concatenate.
+     * @return a scoped name in the given namespace.
+     *
+     * @since 0.8
+     */
+    public static ScopedName createScopedName(final GenericName scope, final String separator, final CharSequence name) {
+        // Current version does not perform any caching, but this is something we could add in the future.
+        return new DefaultScopedName(scope, separator, name);
     }
 
     /**

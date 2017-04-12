@@ -251,7 +251,7 @@ public final strictfp class WriterTest extends TestCase {
          * Appear also in "route.xml" and "track.xml" files.
          */
         final Feature point1 = types.wayPoint.newInstance();
-        point1.setPropertyValue("@geometry",     new Point(15, 10));
+        point1.setPropertyValue("sis:geometry",  new Point(15, 10));
         point1.setPropertyValue("time",          Instant.parse("2010-01-10T00:00:00Z"));
         point1.setPropertyValue("name",          "first point");
         point1.setPropertyValue("cmt",           "first comment");
@@ -273,7 +273,7 @@ public final strictfp class WriterTest extends TestCase {
                                                                new Link(new URI("http://first-address2.org")),
                                                                new Link(new URI("http://first-address3.org"))));
         final Feature point3 = types.wayPoint.newInstance();
-        point3.setPropertyValue("@geometry",     new Point(35, 30));
+        point3.setPropertyValue("sis:geometry",  new Point(35, 30));
         point3.setPropertyValue("time",          Instant.parse("2010-01-30T00:00:00Z"));
         point3.setPropertyValue("name",          "third point");
         point3.setPropertyValue("cmt",           "third comment");
@@ -294,7 +294,7 @@ public final strictfp class WriterTest extends TestCase {
         point3.setPropertyValue("link",          Arrays.asList(new Link(new URI("http://third-address1.org")),
                                                                new Link(new URI("http://third-address2.org"))));
         final Feature point2 = types.wayPoint.newInstance();
-        point2.setPropertyValue("@geometry", new Point(25, 20));
+        point2.setPropertyValue("sis:geometry", new Point(25, 20));
         final List<Feature> wayPoints = Arrays.asList(point1, point2, point3);
         final List<Feature> features;
         switch (type) {
