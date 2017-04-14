@@ -335,12 +335,12 @@ public final strictfp class ReaderTest extends TestCase {
         verifyPoint((Feature) points.get(1), 1, v11);
         verifyPoint((Feature) points.get(2), 2, v11);
 
-        final Polyline p = (Polyline) f.getPropertyValue("@geometry");
+        final Polyline p = (Polyline) f.getPropertyValue("sis:geometry");
         assertEquals("pointCount", 3, p.getPointCount());
         assertEquals("point(0)", new Point(15, 10), p.getPoint(0));
         assertEquals("point(1)", new Point(25, 20), p.getPoint(1));
         assertEquals("point(2)", new Point(35, 30), p.getPoint(2));
-        assertEnvelopeEquals(15, 35, 10, 30, (Envelope) f.getPropertyValue("@envelope"));
+        assertEnvelopeEquals(15, 35, 10, 30, (Envelope) f.getPropertyValue("sis:envelope"));
     }
 
     /**
@@ -359,7 +359,7 @@ public final strictfp class ReaderTest extends TestCase {
 
         assertTrue( "links.isEmpty()", ((Collection<?>) f.getPropertyValue("link" )).isEmpty());
         assertTrue("points.isEmpty()", ((Collection<?>) f.getPropertyValue(dep)).isEmpty());
-        assertNull("@envelope",                         f.getPropertyValue("@envelope"));
+        assertNull("sis:envelope",                      f.getPropertyValue("sis:envelope"));
     }
 
     /**
@@ -439,12 +439,12 @@ public final strictfp class ReaderTest extends TestCase {
         verifyPoint((Feature) points.get(2), 2, v11);
         assertTrue(((Collection<?>) seg2.getPropertyValue("trkpt")).isEmpty());
 
-        final Polyline p = (Polyline) f.getPropertyValue("@geometry");
+        final Polyline p = (Polyline) f.getPropertyValue("sis:geometry");
         assertEquals("pointCount", 3, p.getPointCount());
         assertEquals("point(0)", new Point(15, 10), p.getPoint(0));
         assertEquals("point(1)", new Point(25, 20), p.getPoint(1));
         assertEquals("point(2)", new Point(35, 30), p.getPoint(2));
-        assertEnvelopeEquals(15, 35, 10, 30, (Envelope) f.getPropertyValue("@envelope"));
+        assertEnvelopeEquals(15, 35, 10, 30, (Envelope) f.getPropertyValue("sis:envelope"));
     }
 
     /**
@@ -455,12 +455,12 @@ public final strictfp class ReaderTest extends TestCase {
      * @param  v11    {@code true} for GPX 1.1, or {@code false} for GPX 1.0.
      */
     private static void verifyPoint(final Feature f, final int index, final boolean v11) {
-        assertEquals("@identifier", index + 1, f.getPropertyValue("@identifier"));
+        assertEquals("sis:identifier", index + 1, f.getPropertyValue("sis:identifier"));
         switch (index) {
             case 0: {
                 assertEquals(Instant.parse("2010-01-10T00:00:00Z"), f.getPropertyValue("time"));
-                assertEquals("x",               15.0,      ((Point) f.getPropertyValue("@geometry")).getX(), STRICT);
-                assertEquals("y",               10.0,      ((Point) f.getPropertyValue("@geometry")).getY(), STRICT);
+                assertEquals("x",               15.0,      ((Point) f.getPropertyValue("sis:geometry")).getX(), STRICT);
+                assertEquals("y",               10.0,      ((Point) f.getPropertyValue("sis:geometry")).getY(), STRICT);
                 assertEquals("ele",            140.0,               f.getPropertyValue("ele"));
                 assertEquals("magvar",          35.0,               f.getPropertyValue("magvar"));
                 assertEquals("geoidheight",    112.32,              f.getPropertyValue("geoidheight"));
@@ -484,12 +484,12 @@ public final strictfp class ReaderTest extends TestCase {
                     assertStringEquals("http://first-address2.org", links.get(1));
                     assertStringEquals("http://first-address3.org", links.get(2));
                 }
-                assertEnvelopeEquals(15, 15, 10, 10, (Envelope) f.getPropertyValue("@envelope"));
+                assertEnvelopeEquals(15, 15, 10, 10, (Envelope) f.getPropertyValue("sis:envelope"));
                 break;
             }
             case 1: {
-                assertEquals("x", 25, ((Point)f.getPropertyValue("@geometry")).getX(), STRICT);
-                assertEquals("y", 20, ((Point)f.getPropertyValue("@geometry")).getY(), STRICT);
+                assertEquals("x", 25, ((Point)f.getPropertyValue("sis:geometry")).getX(), STRICT);
+                assertEquals("y", 20, ((Point)f.getPropertyValue("sis:geometry")).getY(), STRICT);
                 assertNull("ele",             f.getPropertyValue("ele"));
                 assertNull("time",            f.getPropertyValue("time"));
                 assertNull("magvar",          f.getPropertyValue("magvar"));
@@ -508,13 +508,13 @@ public final strictfp class ReaderTest extends TestCase {
                 assertNull("ageofdgpsdata",   f.getPropertyValue("ageofdgpsdata"));
                 assertNull("dgpsid",          f.getPropertyValue("dgpsid"));
                 assertTrue("links.isEmpty()", ((List<?>) f.getPropertyValue("link")).isEmpty());
-                assertEnvelopeEquals(25, 25, 20, 20, (Envelope) f.getPropertyValue("@envelope"));
+                assertEnvelopeEquals(25, 25, 20, 20, (Envelope) f.getPropertyValue("sis:envelope"));
                 break;
             }
             case 2: {
                 assertEquals(Instant.parse("2010-01-30T00:00:00Z"),  f.getPropertyValue("time"));
-                assertEquals("x",               35.0,       ((Point) f.getPropertyValue("@geometry")).getX(), STRICT);
-                assertEquals("y",               30.0,       ((Point) f.getPropertyValue("@geometry")).getY(), STRICT);
+                assertEquals("x",               35.0,       ((Point) f.getPropertyValue("sis:geometry")).getX(), STRICT);
+                assertEquals("y",               30.0,       ((Point) f.getPropertyValue("sis:geometry")).getY(), STRICT);
                 assertEquals("ele",            150.0,                f.getPropertyValue("ele"));
                 assertEquals("magvar",          25.0,                f.getPropertyValue("magvar"));
                 assertEquals("geoidheight",    142.32,               f.getPropertyValue("geoidheight"));
@@ -537,7 +537,7 @@ public final strictfp class ReaderTest extends TestCase {
                 if (v11) {
                     assertStringEquals("http://third-address2.org", links.get(1));
                 }
-                assertEnvelopeEquals(35, 35, 30, 30, (Envelope) f.getPropertyValue("@envelope"));
+                assertEnvelopeEquals(35, 35, 30, 30, (Envelope) f.getPropertyValue("sis:envelope"));
                 break;
             }
             default: {

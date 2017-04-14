@@ -87,8 +87,8 @@ public final class AttributeTypeBuilder<V> extends PropertyTypeBuilder {
 
     /**
      * Whether this attribute will be used in a {@linkplain FeatureOperations#compound compound key} named
-     * {@code "@identifier"}. If only one attribute has this flag and {@link FeatureTypeBuilder#idPrefix} and
-     * {@code isSuffix} are null, then {@code "@identifier"} will be a {@linkplain FeatureOperations#link link}
+     * {@code "sis:identifier"}. If only one attribute has this flag and {@link FeatureTypeBuilder#idPrefix} and
+     * {@code isSuffix} are null, then {@code "sis:identifier"} will be a {@linkplain FeatureOperations#link link}
      * to {@code idAttributes[0]}.
      *
      * @see #addRole(AttributeRole)

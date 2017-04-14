@@ -59,7 +59,7 @@ public final strictfp class EnvelopeOperationTest extends TestCase {
      *   <li>{@code classes} as a {@link Polygon}</li>
      *   <li>{@code climbing wall} as a {@link Point}</li>
      *   <li>{@code gymnasium} as a {@link Polygon}</li>
-     *   <li>{@code @geometry} as a link to the default geometry</li>
+     *   <li>{@code sis:geometry} as a link to the default geometry</li>
      *   <li>{@code bounds} as the feature envelope attribute.</li>
      * </ul>
      *
