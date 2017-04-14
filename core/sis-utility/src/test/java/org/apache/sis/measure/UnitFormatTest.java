@@ -265,6 +265,7 @@ public final strictfp class UnitFormatTest extends TestCase {
         assertSame(Units.DEGREE,        f.parse("degree"));
         assertSame(Units.DEGREE,        f.parse("degrees"));
         assertSame(Units.DEGREE,        f.parse("decimal degrees"));
+        assertSame(Units.DEGREE,        f.parse("Degrees North"));
         assertSame(Units.DEGREE,        f.parse("degrees north"));
         assertSame(Units.DEGREE,        f.parse("degree north"));
         assertSame(Units.DEGREE,        f.parse("degrees_east"));

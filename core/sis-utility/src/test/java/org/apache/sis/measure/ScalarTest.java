@@ -82,7 +82,7 @@ public final strictfp class ScalarTest extends TestCase {
 
     /**
      * Tests {@link Scalar#multiply(Quantity)}, {@link Scalar#divide(Quantity)} and {@link Quantity#inverse()}.
-     * Those tests depend on proper working of {@link Units#quantity(double, Unit)}, which depends in turn on
+     * Those tests depend on proper working of {@link Quantities#create(double, Unit)}, which depends in turn on
      * proper declarations of {@link ScalarFactory} in {@link Units} initialization.
      */
     @Test

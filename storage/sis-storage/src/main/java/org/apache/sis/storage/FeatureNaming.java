@@ -100,11 +100,12 @@ import org.apache.sis.internal.storage.Resources;
 public class FeatureNaming<E> {
     /**
      * All aliases found for all names given to the {@link #add(DataStore, GenericName, Object)} method.
-     * Keys are aliases (never the explicitely given names) and values are names for which the key is an alias.
+     * Keys are aliases and values are the complete names for which the key is an alias.
      * Each {@code List<String>} instance contains exactly one name if there is no ambiguity.
      * If the list contains more than one name, this means that the alias is ambiguous.
      *
-     * <p>Note that this map always have less entries than {@link #values} map.</p>
+     * <p>For saving space in common cases, a missing entry in this map is interpreted as synonymous of
+     * {@code (name, Collections.singletonList(name))} entry.</p>
      */
     private final Map<String, List<String>> aliases;
 
@@ -185,27 +186,47 @@ public class FeatureNaming<E> {
         ArgumentChecks.ensureNonNull("name",  name);
         ArgumentChecks.ensureNonNull("value", value);
         final String key = name.toString();
-        if (values.putIfAbsent(key, value) != null) {
-            throw new IllegalNameException(locale(store), Resources.Keys.FeatureAlreadyPresent_2, name(store), key);
+        final E previous = values.put(key, value);
+        if (previous != null) {
+            final List<String> fullNames = aliases.get(key);            // Null is synonymous of singletonList(key).
+            if (fullNames == null || fullNames.contains(key)) {
+                /*
+                 * If we already had a value for the given name and if that value was associated to a user-specified
+                 * name (not to an alias of that name), then we have a name collision. Restore the previous value.
+                 */
+                if (values.put(key, previous) != value) {
+                    throw new ConcurrentModificationException(name(store).toString());              // Paranoiac check.
+                }
+                throw new IllegalNameException(locale(store), Resources.Keys.FeatureAlreadyPresent_2, name(store), key);
+            }
+            CollectionsExt.addToMultiValuesMap(aliases, key, key);
         }
+        /*
+         * At this point we associated the value to the given name. Now try to associate the same value to all aliases.
+         * In this process, we may discover that some slots are already filled by other values.
+         */
         while (name instanceof ScopedName) {
             name = ((ScopedName) name).tail();
             final String alias = name.toString();
-            if (CollectionsExt.addToMultiValuesMap(aliases, alias, key).size() > 1) {
+            final List<String> fullNames = CollectionsExt.addToMultiValuesMap(aliases, alias, key);
+            if (fullNames.size() > 1) {
                 /*
                  * If there is more than one GenericName for the same alias, we have an ambiguity.
-                 * Remove any value associated to that alias. The 'get' method in this class will
-                 * know that the value is missing because of ambiguous name.
+                 * Remove any value associated to that alias, unless the value was associated to
+                 * exactly the user-specified name (not an alias). The 'get' method in this class
+                 * will know when the value is missing because of ambiguous name.
                  */
-                values.remove(alias);
-            } else if (values.put(alias, value) != null) {
+                if (!fullNames.contains(alias)) {
+                    values.remove(alias);
+                }
+            } else if (values.putIfAbsent(alias, value) != null) {
                 /*
-                 * If no previous GenericName existed for that alias, then no value should exist for that alias.
-                 * If a previous value existed, then (assuming that we do not have a bug in our algorithm) this
-                 * object changed in a concurrent thread during this method execution.  We do not try to detect
-                 * all such errors, but this check is an easy one to perform opportunistically.
+                 * If a value already existed for that alias but the alias was not declared in the 'aliases' map,
+                 * this means that the list was implicitly Collections.singletonList(key). Since we now have an
+                 * additional value, we need to add explicitly the previously implicit value.
                  */
-                throw new ConcurrentModificationException(name(store).toString());
+                assert !fullNames.contains(alias) : alias;
+                CollectionsExt.addToMultiValuesMap(aliases, alias, alias);
             }
         }
     }
@@ -222,16 +243,28 @@ public class FeatureNaming<E> {
      *         representation, but for which {@link ScopedName#tail()} returns different values.
      */
     public boolean remove(final DataStore store, GenericName name) throws IllegalNameException {
-        ArgumentChecks.ensureNonNull("name",  name);
+        ArgumentChecks.ensureNonNull("name", name);
         final String key = name.toString();
         if (values.remove(key) == null) {
             return false;
+        }
+        List<String> remaining = CollectionsExt.removeFromMultiValuesMap(aliases, key, key);
+        if (remaining != null && remaining.size() == 1) {
+            /*
+             * If there is exactly one remaining element, that element is a non-ambiguous alias.
+             * So we can associate the value to that alias.
+             */
+            final String select = remaining.get(0);
+            assert !select.equals(key) : select;     // Should have been removed by removeFromMultiValuesMap(…).
+            if (values.put(key, values.get(select)) != null) {
+                throw new ConcurrentModificationException(name(store).toString());          // Paranoiac check.
+            }
         }
         boolean error = false;
         while (name instanceof ScopedName) {
             name = ((ScopedName) name).tail();
             final String alias = name.toString();
-            final List<String> remaining = CollectionsExt.removeFromMultiValuesMap(aliases, alias, key);
+            remaining = CollectionsExt.removeFromMultiValuesMap(aliases, alias, key);
             /*
              * The list of remaining GenericNames may be empty but should never be null unless the tail
              * is inconsistent with the one found by the 'add(…) method.  Otherwise if there is exactly

@@ -168,8 +168,8 @@ public final strictfp class FeatureTypeBuilderTest extends TestCase {
 
     /**
      * Tests {@link FeatureTypeBuilder#addAttribute(Class)} where one attribute is an identifier that already has
-     * the {@code "@identifier"} name. This is called "anonymous" because identifiers with an explicit name in the
-     * data file should use that name instead in the feature type.
+     * the {@code "sis:identifier"} name. This is called "anonymous" because identifiers with an explicit name in
+     * the data file should use that name instead in the feature type.
      */
     @Test
     @DependsOnMethod("testAddIdentifierAndGeometry")
@@ -191,8 +191,8 @@ public final strictfp class FeatureTypeBuilderTest extends TestCase {
 
     /**
      * Tests {@link FeatureTypeBuilder#addAttribute(Class)} where one attribute is a geometry that already has
-     * the {@code "@geometry"} name. This is called "anonymous" because geometries with an explicit name in the
-     * data file should use that name instead in the feature type.
+     * the {@code "sis:geometry"} name. This is called "anonymous" because geometries with an explicit name in
+     * the data file should use that name instead in the feature type.
      */
     @Test
     @DependsOnMethod("testAddIdentifierAndGeometry")
@@ -245,7 +245,7 @@ public final strictfp class FeatureTypeBuilderTest extends TestCase {
 
         final FeatureType type = builder.build();
         builder = new FeatureTypeBuilder(type);
-        assertEquals("name",       "City", builder.getName().toString());
+        assertEquals("name", "City", builder.getName().toString());
         assertEquals("superTypes", 0, builder.getSuperTypes().length);
 
         final Iterator<PropertyTypeBuilder> it = builder.properties().iterator();

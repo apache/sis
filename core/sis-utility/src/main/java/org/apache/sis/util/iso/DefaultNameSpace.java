@@ -51,7 +51,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  * remain safe to call from multiple threads and do not change any public {@code NameSpace} state.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 0.3
+ * @version 0.8
  *
  * @see DefaultScopedName
  * @see DefaultLocalName
@@ -345,10 +345,11 @@ public class DefaultNameSpace implements NameSpace, Serializable {
      * but it is {@code "."} for all children ({@code "opengeospatial"} and {@code "org"}).</p>
      *
      * @param  name  the name of the child namespace.
+     * @param  sep   the separator to use (typically {@link #separator}).
      * @return the child namespace. It may be an existing instance.
      */
-    final DefaultNameSpace child(final CharSequence name) {
-        return child(key(name), name, separator, separator);
+    final DefaultNameSpace child(final CharSequence name, final String sep) {
+        return child(key(name), name, sep, sep);
     }
 
     /**

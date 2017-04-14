@@ -113,13 +113,13 @@ public class FeatureTypeBuilder extends TypeBuilder {
 
     /**
      * An optional prefix or suffix to insert before or after the {@linkplain FeatureOperations#compound compound key}
-     * named {@code "@identifier"}.
+     * named {@code "sis:identifier"}.
      */
     private String idPrefix, idSuffix;
 
     /**
      * The separator to insert between each single component in a {@linkplain FeatureOperations#compound compound key}
-     * named {@code "@identifier"}. This is ignored if {@link #identifierCount} is zero.
+     * named {@code "sis:identifier"}. This is ignored if {@link #identifierCount} is zero.
      */
     private String idDelimiter;
 
@@ -196,7 +196,7 @@ public class FeatureTypeBuilder extends TypeBuilder {
                 } else if (property instanceof FeatureAssociationRole) {
                     builder = new AssociationRoleBuilder(this, (FeatureAssociationRole) property);
                 } else {
-                    builder = null;     // Do not create OperationWrapper now - see below.
+                    builder = null;                             // Do not create OperationWrapper now - see below.
                 }
                 /*
                  * If the property name is one of our (Apache SIS specific) conventional names, try to reconstitute
@@ -211,7 +211,7 @@ public class FeatureTypeBuilder extends TypeBuilder {
                 } else if (AttributeConvention.GEOMETRY_PROPERTY.equals(name)) {
                     role = AttributeRole.DEFAULT_GEOMETRY;
                 } else if (AttributeConvention.ENVELOPE_PROPERTY.equals(name)) {
-                    // If "@envelope" is an operation, skip it completely.
+                    // If "sis:envelope" is an operation, skip it completely.
                     // It will be recreated if a default geometry exists.
                     role = null;
                 } else {
@@ -685,9 +685,9 @@ public class FeatureTypeBuilder extends TypeBuilder {
     public FeatureType build() throws IllegalStateException {
         if (feature == null) {
             /*
-             * Creates an initial array of property types with up to 3 slots reserved for @identifier, @geometry
-             * and @envelope operations. At first we presume that there is always an identifier.  The identifier
-             * slot will be removed later if there is none.
+             * Creates an initial array of property types with up to 3 slots reserved for sis:identifier, sis:geometry
+             * and sis:envelope operations. At first we presume that there is always an identifier. The identifier slot
+             * will be removed later if there is none.
              */
             final int numSpecified = properties.size();     // Number of explicitely specified properties.
             int numSynthetic;                               // Number of synthetic properties that may be generated.
@@ -723,8 +723,8 @@ public class FeatureTypeBuilder extends TypeBuilder {
                     identifierTypes[identifierCursor++] = instance;
                 }
                 /*
-                 * If there is a default geometry, add a link named "@geometry" to that geometry.
-                 * It may happen that the property created by the user is already named "@geometry",
+                 * If there is a default geometry, add a link named "sis:geometry" to that geometry.
+                 * It may happen that the property created by the user is already named "sis:geometry",
                  * in which case we will avoid to duplicate the property.
                  */
                 if (builder == defaultGeometry && geometryIndex >= 0) {
@@ -742,7 +742,7 @@ public class FeatureTypeBuilder extends TypeBuilder {
             /*
              * Create the "envelope" operation only after we created all other properties.
              * Actually it is okay if the 'propertyTypes' array still contains null elements not needed for envelope calculation
-             * like "@identifier", since FeatureOperations.envelope(…) constructor ignores any property which is not for a value.
+             * like "sis:identifier", since FeatureOperations.envelope(…) constructor ignores any property which is not for a value.
              */
             if (envelopeIndex >= 0) try {
                 propertyTypes[envelopeIndex] = FeatureOperations.envelope(name(AttributeConvention.ENVELOPE_PROPERTY), null, propertyTypes);
@@ -752,7 +752,7 @@ public class FeatureTypeBuilder extends TypeBuilder {
             /*
              * If a synthetic identifier need to be created, create it now as the first property.
              * It may happen that the user provided a single identifier component already named
-             * "@identifier", in which case we avoid to duplicate the property.
+             * "sis:identifier", in which case we avoid to duplicate the property.
              */
             if (identifierTypes != null) {
                 if (identifierCursor != identifierTypes.length) {
