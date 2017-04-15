@@ -80,7 +80,7 @@ public final class Preformat extends InlineTaglet {
      * @return a string representation of the given tag.
      */
     @Override
-    public String toString(final DocTree tag) {
+    protected String toString(final DocTree tag) {
         String text = text(tag).replace("\r\n", "\n").replace('\r', '\n');
         String format = "<unspecified>";
         /*

@@ -21,8 +21,9 @@ import java.util.Set;
 import java.util.EnumSet;
 import java.util.List;
 import javax.tools.Diagnostic;
+import javax.lang.model.element.Element;
 import jdk.javadoc.doclet.Reporter;
-import jdk.javadoc.doclet.taglet.Taglet;
+import jdk.javadoc.doclet.Taglet;
 import com.sun.source.doctree.DocTree;
 import com.sun.source.doctree.TextTree;
 import com.sun.source.doctree.UnknownInlineTagTree;
@@ -91,18 +92,29 @@ public abstract class InlineTaglet implements Taglet {
 
     /**
      * Given a list of {@code DocTree}s representing this custom tag, returns its string representation.
+     * This method will be invoked once for each instance of the tag in parsed Javadoc.
      *
-     * @param  tags  the tags to format.
+     * @param  tags     the tags to format.
+     * @param  element  the element to which the enclosing comment belongs.
      * @return a string representation of the given tags.
      */
     @Override
-    public final String toString(final List<? extends DocTree> tags) {
+    public final String toString(final List<? extends DocTree> tags, final Element element) {
         final StringBuilder buffer = new StringBuilder(64);
         for (final DocTree tag : tags) {
             buffer.append(toString(tag));
         }
         return buffer.toString();
     }
+
+    /**
+     * Given a single {@code DocTree}s representing this custom tag, returns its string representation.
+     * This method will be invoked once for each instance of the tag in parsed Javadoc.
+     *
+     * @param  tag  the tag to format.
+     * @return a string representation of the given tag.
+     */
+    protected abstract String toString(DocTree tag);
 
     /**
      * Prints a warning message.

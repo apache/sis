@@ -20,9 +20,9 @@ import java.io.File;
 import java.util.List;
 import java.util.Set;
 import java.util.EnumSet;
-import java.util.Collections;
-import jdk.javadoc.doclet.taglet.Taglet;
+import jdk.javadoc.doclet.Taglet;
 import com.sun.source.doctree.DocTree;
+import javax.lang.model.element.Element;
 
 
 /**
@@ -78,25 +78,14 @@ public final class Module implements Taglet {
     }
 
     /**
-     * Given the <code>DocTree</code> representation of this custom tag, return its string representation.
-     * The default implementation invokes the list variant of this method.
-     *
-     * @param  tag  the tag to format.
-     * @return a string representation of the given tag.
-     */
-    @Override
-    public String toString(final DocTree tag) {
-        return toString(Collections.singletonList(tag));
-    }
-
-    /**
      * Given a list of {@code DocTree}s representing this custom tag, returns its string representation.
      *
-     * @param  tags  the tags to format.
+     * @param  tags     the tags to format.
+     * @param  element  the element to which the enclosing comment belongs.
      * @return a string representation of the given tags.
      */
     @Override
-    public String toString(final List<? extends DocTree> tags) {
+    public String toString(final List<? extends DocTree> tags, final Element element) {
         if (tags == null || tags.isEmpty()) {
             return "";
         }
