@@ -37,7 +37,7 @@ import javax.tools.Diagnostic;
 import jdk.javadoc.doclet.Reporter;
 import jdk.javadoc.doclet.Doclet.Option;
 import jdk.javadoc.doclet.DocletEnvironment;
-import jdk.javadoc.doclets.StandardDoclet;
+import jdk.javadoc.doclet.StandardDoclet;
 import org.apache.sis.internal.taglet.InlineTaglet;
 
 

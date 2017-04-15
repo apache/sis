@@ -72,7 +72,7 @@ public final class Include extends InlineTaglet {
      * @return a string representation of the given tag.
      */
     @Override
-    public String toString(final DocTree tag) {
+    protected String toString(final DocTree tag) {
         final String reference = text(tag);
         final int sep = reference.indexOf('#');
         if (sep < 0) {
