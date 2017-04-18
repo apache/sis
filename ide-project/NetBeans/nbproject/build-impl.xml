@@ -19,7 +19,7 @@ is divided into following sections:
   - cleanup
 
         -->
-<project xmlns:j2seproject1="http://www.netbeans.org/ns/j2se-project/1" xmlns:j2seproject3="http://www.netbeans.org/ns/j2se-project/3" xmlns:jaxrpc="http://www.netbeans.org/ns/j2se-project/jax-rpc" basedir=".." default="default" name="Apache_SIS_for_JDK9-impl">
+<project xmlns:if="ant:if" xmlns:j2seproject1="http://www.netbeans.org/ns/j2se-project/1" xmlns:j2seproject3="http://www.netbeans.org/ns/j2se-project/3" xmlns:jaxrpc="http://www.netbeans.org/ns/j2se-project/jax-rpc" xmlns:unless="ant:unless" basedir=".." default="default" name="Apache_SIS_for_JDK9-impl">
     <fail message="Please build using Ant 1.8.0 or higher.">
         <condition>
             <not>
@@ -114,6 +114,8 @@ is divided into following sections:
                 <length length="0" string="${javac.systemmodulepath}" when="greater"/>
             </and>
         </condition>
+        <property name="dist.jlink.dir" value="${dist.dir}/jlink"/>
+        <property name="dist.jlink.output" value="${dist.jlink.dir}/${application.title}"/>
         <property name="module.name" value=""/>
     </target>
     <target depends="-pre-init,-init-private,-init-user,-init-project,-init-macrodef-property,-init-modules-supported" name="-do-init">
@@ -402,6 +404,7 @@ is divided into following sections:
             <attribute default="${javac.modulepath}" name="modulepath"/>
             <attribute default="${javac.upgrademodulepath}" name="upgrademodulepath"/>
             <attribute default="${javac.processorpath}" name="processorpath"/>
+            <attribute default="${javac.processormodulepath}" name="processormodulepath"/>
             <attribute default="${build.generated.sources.dir}/ap-source-output" name="apgeneratedsrcdir"/>
             <attribute default="${includes}" name="includes"/>
             <attribute default="${excludes}" name="excludes"/>
@@ -413,6 +416,12 @@ is divided into following sections:
                 <property location="${build.dir}/empty" name="empty.dir"/>
                 <mkdir dir="${empty.dir}"/>
                 <mkdir dir="@{apgeneratedsrcdir}"/>
+                <condition property="processormodulepath.set">
+                    <and>
+                        <isset property="processormodulepath"/>
+                        <length length="0" string="@{toString:processormodulepath}" when="greater"/>
+                    </and>
+                </condition>
                 <javac debug="@{debug}" deprecation="${javac.deprecation}" destdir="@{destdir}" encoding="${source.encoding}" excludes="@{excludes}" executable="${platform.javac}" fork="yes" includeantruntime="false" includes="@{includes}" source="${javac.source}" sourcepath="@{sourcepath}" srcdir="@{srcdir}" target="${javac.target}" tempdir="${java.io.tmpdir}">
                     <src>
                         <dirset dir="@{gensrcdir}" erroronmissingdir="false">
@@ -431,8 +440,10 @@ is divided into following sections:
                     <compilerarg line="${javac.systemmodulepath.cmd.line.arg}"/>
                     <compilerarg line="${javac.profile.cmd.line.arg}"/>
                     <compilerarg line="${javac.compilerargs}"/>
-                    <compilerarg value="-processorpath"/>
-                    <compilerarg path="@{processorpath}:${empty.dir}"/>
+                    <compilerarg if:set="processormodulepath.set" value="--processor-module-path"/>
+                    <compilerarg if:set="processormodulepath.set" path="@{processormodulepath}"/>
+                    <compilerarg unless:set="processormodulepath.set" value="-processorpath"/>
+                    <compilerarg path="@{processorpath}:${empty.dir}" unless:set="processormodulepath.set"/>
                     <compilerarg line="${ap.processors.internal}"/>
                     <compilerarg line="${annotation.processing.processor.options}"/>
                     <compilerarg value="-s"/>
@@ -1223,6 +1234,7 @@ is divided into following sections:
             <param name="call.target" value="jar"/>
             <param name="transfer.built-jar.properties" value="${built-jar.properties}"/>
             <param name="transfer.not.archive.disabled" value="true"/>
+            <param name="transfer.do.jlink" value="false"/>
         </antcall>
     </target>
     <target depends="init,-check-automatic-build,-clean-after-automatic-build" name="-verify-automatic-build"/>
@@ -1407,7 +1419,63 @@ is divided into following sections:
         <!-- You can override this target in the ../build.xml file. -->
     </target>
     <target depends="init,compile,-pre-jar,-set-module-main-class,-do-jar-without-libraries,-do-jar-with-libraries,-post-jar" name="-do-jar"/>
-    <target depends="init,compile,-pre-jar,-do-jar,-post-jar" description="Build JAR." name="jar"/>
+    <target depends="init,compile,-pre-jar,-do-jar,-post-jar,deploy" description="Build JAR." name="jar"/>
+    <!--
+                =================
+                DEPLOY SECTION
+                =================
+            -->
+    <target name="-pre-deploy">
+        <!-- Empty placeholder for easier customization. -->
+        <!-- You can override this target in the ../build.xml file. -->
+    </target>
+    <target depends="init" name="-check-jlink">
+        <condition property="do.jlink.internal">
+            <and>
+                <istrue value="${do.jlink}"/>
+                <isset property="do.archive"/>
+                <isset property="named.module.internal"/>
+            </and>
+        </condition>
+    </target>
+    <target depends="init,-do-jar,-post-jar,-pre-deploy,-check-jlink" if="do.jlink.internal" name="-do-deploy">
+        <delete dir="${dist.jlink.dir}" failonerror="false" quiet="true"/>
+        <condition else="${module.name}" property="jlink.add.modules" value="${module.name},${jlink.additionalmodules}">
+            <and>
+                <isset property="jlink.additionalmodules"/>
+                <length length="0" string="${jlink.additionalmodules}" when="greater"/>
+            </and>
+        </condition>
+        <condition property="jlink.do.strip.internal">
+            <and>
+                <isset property="jlink.strip"/>
+                <istrue value="${jlink.strip}"/>
+            </and>
+        </condition>
+        <condition property="jlink.do.additionalparam.internal">
+            <and>
+                <isset property="jlink.additionalparam"/>
+                <length length="0" string="${jlink.additionalparam}" when="greater"/>
+            </and>
+        </condition>
+        <property name="platform.jlink" value="${platform.home}/bin/jlink"/>
+        <property name="jlink.systemmodules.internal" value="${platform.home}/jmods"/>
+        <exec executable="${platform.jlink}">
+            <arg value="--module-path"/>
+            <arg path="${jlink.systemmodules.internal}:${run.modulepath}:${dist.jar}"/>
+            <arg value="--add-modules"/>
+            <arg value="${jlink.add.modules}"/>
+            <arg if:set="jlink.do.strip.internal" value="--strip-debug"/>
+            <arg if:set="jlink.do.additionalparam.internal" line="${jlink.additionalparam}"/>
+            <arg value="--output"/>
+            <arg value="${dist.jlink.output}"/>
+        </exec>
+    </target>
+    <target name="-post-deploy">
+        <!-- Empty placeholder for easier customization. -->
+        <!-- You can override this target in the ../build.xml file. -->
+    </target>
+    <target depends="-do-jar,-post-jar,-pre-deploy,-do-deploy,-post-deploy" name="deploy"/>
     <!--
                 =================
                 EXECUTION SECTION
@@ -1588,6 +1656,12 @@ is divided into following sections:
         <condition else="" property="bug5101868workaround" value="*.java">
             <matches multiline="true" pattern="1\.[56](\..*)?" string="${platform.version.output}"/>
         </condition>
+        <condition else="" property="javadoc.html5.cmd.line.arg" value="-html5">
+            <and>
+                <isset property="javadoc.html5"/>
+                <available file="${platform.home}${file.separator}lib${file.separator}jrt-fs.jar"/>
+            </and>
+        </condition>
         <javadoc additionalparam="-J-Dfile.encoding=${file.encoding} ${javadoc.additionalparam}" author="${javadoc.author}" charset="UTF-8" destdir="${dist.javadoc.dir}" docencoding="UTF-8" encoding="${javadoc.encoding.used}" executable="${platform.javadoc}" failonerror="true" noindex="${javadoc.noindex}" nonavbar="${javadoc.nonavbar}" notree="${javadoc.notree}" private="${javadoc.private}" source="${javac.source}" splitindex="${javadoc.splitindex}" use="${javadoc.use}" useexternalfile="true" version="${javadoc.version}" windowtitle="${javadoc.windowtitle}">
             <classpath>
                 <path path="${javac.classpath}"/>
@@ -1642,6 +1716,7 @@ is divided into following sections:
                 <exclude name="*.java"/>
             </fileset>
             <arg line="${javadoc.endorsed.classpath.cmd.line.arg}"/>
+            <arg line="${javadoc.html5.cmd.line.arg}"/>
         </javadoc>
         <copy todir="${dist.javadoc.dir}">
             <fileset dir="${src.local-src.dir}" excludes="${excludes}" includes="${includes}">
@@ -1930,10 +2005,12 @@ is divided into following sections:
             <param name="call.target" value="clean"/>
             <param name="transfer.built-clean.properties" value="${built-clean.properties}"/>
             <param name="transfer.not.archive.disabled" value="true"/>
+            <param name="transfer.do.jlink" value="false"/>
         </antcall>
     </target>
     <target depends="init" name="-do-clean">
         <delete dir="${build.dir}"/>
+        <delete dir="${dist.jlink.output}"/>
         <delete dir="${dist.dir}" followsymlinks="false" includeemptydirs="true"/>
     </target>
     <target name="-post-clean">

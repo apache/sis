@@ -111,6 +111,7 @@ public final class Doclet extends StandardDoclet {
      *
      * @return all the supported options.
      */
+    @Override
     public Set<Option> getSupportedOptions() {
         final Set<Option> options = new LinkedHashSet<>();
         for (final Option op : super.getSupportedOptions()) {
@@ -149,6 +150,7 @@ public final class Doclet extends StandardDoclet {
      * @param  environment  the Javadoc environment.
      * @return {@code true} on success, or {@code false} on failure.
      */
+    @Override
     public boolean run(final DocletEnvironment environment) {
         final boolean success = super.run(environment);
         if (success && outputDirectory != null) try {

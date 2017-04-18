@@ -27,6 +27,7 @@ import jdk.javadoc.doclet.Taglet;
 import com.sun.source.doctree.DocTree;
 import com.sun.source.doctree.TextTree;
 import com.sun.source.doctree.UnknownInlineTagTree;
+import com.sun.source.tree.CompilationUnitTree;
 
 
 /**
@@ -87,7 +88,11 @@ public abstract class InlineTaglet implements Taglet {
      * Returns the file that contains the given tag.
      */
     static File file(final DocTree tag) {
-        throw new UnsupportedOperationException("We have not yet found how to get the file where a tag is contained."); // TODO
+        return new File(getCompilationUnitTree(tag).getSourceFile().getName());
+    }
+
+    private static CompilationUnitTree getCompilationUnitTree(final DocTree tree) {
+        throw new UnsupportedOperationException("We have not yet found how to get the compilation unit."); // TODO
     }
 
     /**
@@ -119,6 +124,7 @@ public abstract class InlineTaglet implements Taglet {
     /**
      * Prints a warning message.
      */
+    @SuppressWarnings("UseOfSystemOutOrSystemErr")
     static void printWarning(final DocTree tag, final String message) {
         final Reporter reporter = InlineTaglet.reporter;
         if (reporter != null) {
@@ -131,6 +137,7 @@ public abstract class InlineTaglet implements Taglet {
     /**
      * Prints an error message.
      */
+    @SuppressWarnings("UseOfSystemOutOrSystemErr")
     static void printError(final DocTree tag, final String message) {
         final Reporter reporter = InlineTaglet.reporter;
         if (reporter != null) {
