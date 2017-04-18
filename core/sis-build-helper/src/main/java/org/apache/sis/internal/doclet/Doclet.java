@@ -38,7 +38,6 @@ import jdk.javadoc.doclet.Reporter;
 import jdk.javadoc.doclet.Doclet.Option;
 import jdk.javadoc.doclet.DocletEnvironment;
 import jdk.javadoc.doclet.StandardDoclet;
-import org.apache.sis.internal.taglet.InlineTaglet;
 
 
 /**
@@ -89,6 +88,11 @@ public final class Doclet extends StandardDoclet {
     private String outputDirectory;
 
     /**
+     * Where to report warnings, or {@code null} if unknown.
+     */
+    Reporter reporter;
+
+    /**
      * Invoked by the Javadoc tools for instantiating the custom doclet.
      */
     public Doclet() {
@@ -103,7 +107,7 @@ public final class Doclet extends StandardDoclet {
     @Override
     public void init(final Locale locale, final Reporter reporter) {
         super.init(locale, reporter);
-        InlineTaglet.reporter = reporter;
+        this.reporter = reporter;
     }
 
     /**
@@ -151,6 +155,7 @@ public final class Doclet extends StandardDoclet {
      * @return {@code true} on success, or {@code false} on failure.
      */
     @Override
+    @SuppressWarnings("CallToPrintStackTrace")
     public boolean run(final DocletEnvironment environment) {
         final boolean success = super.run(environment);
         if (success && outputDirectory != null) try {
@@ -165,10 +170,14 @@ public final class Doclet extends StandardDoclet {
                 }
             }
         } catch (IOException e) {
-            final StringWriter buffer = new StringWriter();
-            final PrintWriter p = new PrintWriter(buffer);
-            e.printStackTrace(p);
-            InlineTaglet.reporter.print(Diagnostic.Kind.ERROR, buffer.toString());
+            if (reporter != null) {
+                final StringWriter buffer = new StringWriter();
+                final PrintWriter p = new PrintWriter(buffer);
+                e.printStackTrace(p);
+                reporter.print(Diagnostic.Kind.ERROR, buffer.toString());
+            } else {
+                e.printStackTrace();            // This fallback should not be needed, but we are paranoiac.
+            }
             return false;
         }
         return success;

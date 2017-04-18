@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.internal.taglet;
+package org.apache.sis.internal.doclet;
 
 import java.io.File;
 import java.util.Set;
@@ -28,6 +28,7 @@ import com.sun.source.doctree.DocTree;
 import com.sun.source.doctree.TextTree;
 import com.sun.source.doctree.UnknownInlineTagTree;
 import com.sun.source.tree.CompilationUnitTree;
+import jdk.javadoc.doclet.DocletEnvironment;
 
 
 /**
@@ -38,17 +39,27 @@ import com.sun.source.tree.CompilationUnitTree;
  * @since   0.3
  * @module
  */
-public abstract class InlineTaglet implements Taglet {
+abstract class InlineTaglet implements Taglet {
     /**
      * Where to report warnings, or {@code null} if unknown.
-     * This is initialized by {@link org.apache.sis.internal.doclet.Doclet#init Doclet.init(…)}.
      */
-    public static volatile Reporter reporter;
+    private Reporter reporter;
 
     /**
      * Constructs a default inline taglet.
      */
     InlineTaglet() {
+    }
+
+    /**
+     * Initializes this taglet with the given doclet environment and doclet.
+     *
+     * @param env     the environment in which the taglet is running.
+     * @param doclet  the doclet that instantiated this taglet.
+     */
+    @Override
+    public void init(final DocletEnvironment env, final jdk.javadoc.doclet.Doclet doclet) {
+        reporter = ((Doclet) doclet).reporter;
     }
 
     /**
@@ -125,8 +136,7 @@ public abstract class InlineTaglet implements Taglet {
      * Prints a warning message.
      */
     @SuppressWarnings("UseOfSystemOutOrSystemErr")
-    static void printWarning(final DocTree tag, final String message) {
-        final Reporter reporter = InlineTaglet.reporter;
+    final void printWarning(final DocTree tag, final String message) {
         if (reporter != null) {
             reporter.print(Diagnostic.Kind.WARNING, message);
         } else {
@@ -138,8 +148,7 @@ public abstract class InlineTaglet implements Taglet {
      * Prints an error message.
      */
     @SuppressWarnings("UseOfSystemOutOrSystemErr")
-    static void printError(final DocTree tag, final String message) {
-        final Reporter reporter = InlineTaglet.reporter;
+    final void printError(final DocTree tag, final String message) {
         if (reporter != null) {
             reporter.print(Diagnostic.Kind.ERROR, message);
         } else {
