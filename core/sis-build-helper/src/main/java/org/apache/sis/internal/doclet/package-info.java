@@ -17,7 +17,8 @@
 
 
 /**
- * Doclet performing post-processing after Javadoc generation.
+ * Javadoc taglets for processing custom tags in SIS source code comments,
+ * together with doclet performing post-processing after Javadoc generation.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
