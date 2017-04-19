@@ -116,7 +116,7 @@ final class Types extends Static {
          * This parent has a single property, "sis:identifier" of type Integer,
          * which is not part of GPX specification.
          *
-         * http://www.topografix.com/GPX/GPXEntity
+         * GPXEntity
          * ┌────────────────┬─────────┬─────────────┐
          * │ Name           │ Type    │ Cardinality │
          * ├────────────────┼─────────┼─────────────┤
@@ -124,11 +124,11 @@ final class Types extends Static {
          * └────────────────┴─────────┴─────────────┘
          */
         FeatureTypeBuilder builder = new FeatureTypeBuilder(null, factory, locale);
-        builder.setDefaultScope(Tags.NAMESPACE).setName("GPXEntity").setAbstract(true);
+        builder.setNameSpace(Tags.PREFIX).setName("GPXEntity").setAbstract(true);
         builder.addAttribute(Integer.class).setName(AttributeConvention.IDENTIFIER_PROPERTY);
         final FeatureType parent = builder.build();
         /*
-         * http://www.topografix.com/GPX/WayPoint ⇾ GPXEntity
+         * WayPoint ⇾ GPXEntity
          * ┌──────────────────┬────────────────┬────────────────────────┬─────────────┐
          * │ Name             │ Type           │ XML type               │ Cardinality │
          * ├──────────────────┼────────────────┼────────────────────────┼─────────────┤
@@ -156,7 +156,7 @@ final class Types extends Static {
          * └──────────────────┴────────────────┴────────────────────────┴─────────────┘
          */
         builder = new FeatureTypeBuilder(null, factory, locale).setSuperTypes(parent);
-        builder.setDefaultScope(Tags.NAMESPACE).setName("WayPoint");
+        builder.setNameSpace(Tags.PREFIX).setName("WayPoint");
         builder.addAttribute(Point.class).setName(geomName)
                 .setCRS(CommonCRS.WGS84.normalizedGeographic())
                 .addRole(AttributeRole.DEFAULT_GEOMETRY);
@@ -181,7 +181,7 @@ final class Types extends Static {
         builder.addAttribute(Integer       .class).setName(Tags.DGPS_ID);
         wayPoint = builder.build();
         /*
-         * http://www.topografix.com/GPX/Route ⇾ GPXEntity
+         * Route ⇾ GPXEntity
          * ┌────────────────┬────────────────┬────────────────────────┬─────────────┐
          * │ Name           │ Type           │ XML type               │ Cardinality │
          * ├────────────────┼────────────────┼────────────────────────┼─────────────┤
@@ -200,7 +200,7 @@ final class Types extends Static {
          */
         GroupAsPolylineOperation groupOp = new GroupPointsAsPolylineOperation(geomInfo, Tags.ROUTE_POINTS);
         builder = new FeatureTypeBuilder(null, factory, locale).setSuperTypes(parent);
-        builder.setDefaultScope(Tags.NAMESPACE).setName("Route");
+        builder.setNameSpace(Tags.PREFIX).setName("Route");
         builder.addProperty(groupOp);
         builder.addProperty(FeatureOperations.envelope(envpInfo, null, groupOp));
         builder.setDefaultCardinality(0, 1);
@@ -214,7 +214,7 @@ final class Types extends Static {
         builder.addAssociation(wayPoint).setName(Tags.ROUTE_POINTS).setMaximumOccurs(Integer.MAX_VALUE);
         route = builder.build();
         /*
-         * http://www.topografix.com/GPX/TrackSegment ⇾ GPXEntity
+         * TrackSegment ⇾ GPXEntity
          * ┌────────────────┬──────────┬─────────────┬─────────────┐
          * │ Name           │ Type     │ XML type    │ Cardinality │
          * ├────────────────┼──────────┼─────────────┼─────────────┤
@@ -226,14 +226,14 @@ final class Types extends Static {
          */
         groupOp = new GroupPointsAsPolylineOperation(geomInfo, Tags.TRACK_POINTS);
         builder = new FeatureTypeBuilder(null, factory, locale).setSuperTypes(parent);
-        builder.setDefaultScope(Tags.NAMESPACE).setName("TrackSegment");
+        builder.setNameSpace(Tags.PREFIX).setName("TrackSegment");
         builder.addProperty(groupOp);
         builder.addProperty(FeatureOperations.envelope(envpInfo, null, groupOp));
         builder.setDefaultCardinality(0, 1);
         builder.addAssociation(wayPoint).setName(Tags.TRACK_POINTS).setMaximumOccurs(Integer.MAX_VALUE);
         trackSegment = builder.build();
         /*
-         * http://www.topografix.com/GPX/Track ⇾ GPXEntity
+         * Track ⇾ GPXEntity
          * ┌────────────────┬────────────────┬────────────────────────┬─────────────┐
          * │ Name           │ Type           │ XML type               │ Cardinality │
          * ├────────────────┼────────────────┼────────────────────────┼─────────────┤
@@ -252,7 +252,7 @@ final class Types extends Static {
          */
         groupOp = new GroupAsPolylineOperation(geomInfo, Tags.TRACK_SEGMENTS);
         builder = new FeatureTypeBuilder(null, factory, locale).setSuperTypes(parent);
-        builder.setDefaultScope(Tags.NAMESPACE).setName("Track");
+        builder.setNameSpace(Tags.PREFIX).setName("Track");
         builder.addProperty(groupOp);
         builder.addProperty(FeatureOperations.envelope(envpInfo, null, groupOp));
         builder.setDefaultCardinality(0, 1);

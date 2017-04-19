@@ -25,6 +25,7 @@ import java.util.Map;
 import java.util.Locale;
 import java.util.Set;
 import java.util.Objects;
+import org.opengis.util.NameSpace;
 import org.opengis.util.GenericName;
 import org.opengis.util.NameFactory;
 import org.opengis.util.FactoryException;
@@ -90,12 +91,12 @@ public class FeatureTypeBuilder extends TypeBuilder {
     private boolean isAbstract;
 
     /**
-     * The default scope to use when {@link #name(String, String)} is invoked with a null scope.
+     * The namespace to use when a {@link #setName(CharSequence)} method is invoked.
      *
-     * @see #getDefaultScope()
-     * @see #setDefaultScope(String)
+     * @see #getNameSpace()
+     * @see #setNameSpace(CharSequence)
      */
-    private String defaultScope;
+    private NameSpace namespace;
 
     /**
      * The default minimum number of property values.
@@ -318,6 +319,42 @@ public class FeatureTypeBuilder extends TypeBuilder {
     }
 
     /**
+     * Returns the namespace of the names created by {@code setName(CharSequence...)} method calls.
+     * A {@code null} value means that the names are in the
+     * {@linkplain org.apache.sis.util.iso.DefaultNameSpace#isGlobal() global namespace}.
+     *
+     * @return the namespace to use when {@link #setName(CharSequence)} is invoked, or {@code null} if none.
+     */
+    public CharSequence getNameSpace() {
+        return (namespace != null) ? namespace.name().toString() : null;
+    }
+
+    /**
+     * Sets the namespace of the next names to be created by {@code setName(CharSequence...)} method calls.
+     * This method applies only to the next calls to {@link #setName(CharSequence)} or
+     * {@link #setName(CharSequence...)} methods; the result of all previous calls stay unmodified.
+     *
+     * <p>There is different conventions about the use of name spaces. ISO 19109 suggests that the namespace of all
+     * {@code AttributeType} names is the name of the enclosing {@code FeatureType}, but this is not mandatory.
+     * Users who want to apply this convention can invoke {@code setNameSpace(featureName)} after
+     * <code>{@linkplain #setName(CharSequence) FeatureTypeBuilder.setName}(featureName)</code> but before
+     * <code>{@linkplain AttributeTypeBuilder#setName(CharSequence) AttributeTypeBuilder.setName}(attributeName)</code>.</p>
+     *
+     * @param  ns  the new namespace, or {@code null} if none.
+     * @return {@code this} for allowing method calls chaining.
+     */
+    public FeatureTypeBuilder setNameSpace(final CharSequence ns) {
+        if (ns != null && ns.length() != 0) {
+            namespace = nameFactory.createNameSpace(nameFactory.createLocalName(null, ns), null);
+        } else {
+            namespace = null;
+        }
+        // No need to clear the cache because this change affects
+        // only the next names to be created, not the existing ones.
+        return this;
+    }
+
+    /**
      * Sets the {@code FeatureType} name as a generic name.
      * If another name was defined before this method call, that previous value will be discarded.
      *
@@ -334,83 +371,58 @@ public class FeatureTypeBuilder extends TypeBuilder {
     }
 
     /**
-     * Sets the {@code FeatureType} name as a simple string with the default scope.
-     * The default scope is the value specified by the last call to {@link #setDefaultScope(String)}.
-     * The name will be a {@linkplain org.apache.sis.util.iso.DefaultLocalName local name} if no default scope
-     * has been specified, or a {@linkplain org.apache.sis.util.iso.DefaultScopedName scoped name} otherwise.
+     * Sets the {@code FeatureType} name as a simple string.
+     * The namespace will be the value specified by the last call to {@link #setNameSpace(CharSequence)},
+     * but that namespace will not be visible in the {@linkplain org.apache.sis.util.iso.DefaultLocalName#toString()
+     * string representation} unless the {@linkplain org.apache.sis.util.iso.DefaultLocalName#toFullyQualifiedName()
+     * fully qualified name} is requested.
      *
-     * <p>This convenience method creates a {@link GenericName} instance,
-     * then delegates to {@link #setName(GenericName)}.</p>
+     * <p>This convenience method creates a {@link org.opengis.util.LocalName} instance from
+     * the given {@code CharSequence}, then delegates to {@link #setName(GenericName)}.</p>
      *
      * @return {@code this} for allowing method calls chaining.
      */
     @Override
-    public FeatureTypeBuilder setName(final String localPart) {
+    public FeatureTypeBuilder setName(final CharSequence localPart) {
         super.setName(localPart);
         return this;
     }
 
     /**
      * Sets the {@code FeatureType} name as a string in the given scope.
-     * The name will be a {@linkplain org.apache.sis.util.iso.DefaultLocalName local name} if the given scope is
-     * {@code null} or empty, or a {@linkplain org.apache.sis.util.iso.DefaultScopedName scoped name} otherwise.
-     * If a {@linkplain #setDefaultScope(String) default scope} has been specified, then the
-     * {@code scope} argument overrides it.
+     * The {@code components} array must contain at least one element.
+     * In addition to the path specified by the {@code components} array, the name may also contain
+     * a namespace specified by the last call to {@link #setNameSpace(CharSequence)}.
+     * But contrarily to the specified components, the namespace will not be visible in the name
+     * {@linkplain org.apache.sis.util.iso.DefaultScopedName#toString() string representation} unless the
+     * {@linkplain org.apache.sis.util.iso.DefaultScopedName#toFullyQualifiedName() fully qualified name} is requested.
      *
-     * <p>This convenience method creates a {@link GenericName} instance,
-     * then delegates to {@link #setName(GenericName)}.</p>
+     * <p>This convenience method creates a {@link org.opengis.util.LocalName} or {@link org.opengis.util.ScopedName}
+     * instance depending on whether the {@code names} array contains exactly 1 element or more than 1 element, then
+     * delegates to {@link #setName(GenericName)}.</p>
      *
      * @return {@code this} for allowing method calls chaining.
      */
     @Override
-    public FeatureTypeBuilder setName(final String scope, final String localPart) {
-        super.setName(scope, localPart);
+    public FeatureTypeBuilder setName(final CharSequence... components) {
+        super.setName(components);
         return this;
     }
 
     /**
-     * Invoked by {@link TypeBuilder} for creating new {@code LocalName} or {@code GenericName} instances.
+     * Creates a local name in the {@linkplain #setNameSpace feature namespace}.
      */
     @Override
-    final GenericName name(String scope, final String localPart) {
-        if (scope == null) {
-            scope = getDefaultScope();
-        }
-        if (scope == null || scope.isEmpty()) {
-            return nameFactory.createLocalName(null, localPart);
-        } else {
-            return nameFactory.createGenericName(null, scope, localPart);
-        }
+    final GenericName createLocalName(final CharSequence name) {
+        return nameFactory.createLocalName(namespace, name);
     }
 
     /**
-     * Returns the scope of the names created by {@code setName(String)} method calls.
-     *
-     * @return the scope to use by default when {@link #setName(String)} is invoked.
+     * Creates a generic name in the {@linkplain #setNameSpace feature namespace}.
      */
-    public String getDefaultScope() {
-        return defaultScope;
-    }
-
-    /**
-     * Sets the scope of the next names created by {@code setName(String)} method calls.
-     * This method applies only to the next calls to {@code setName(String)};
-     * the result of all previous calls stay unmodified.
-     *
-     * <p>There is different conventions about the use of name scopes. ISO 19109 suggests that the scope of all
-     * {@code AttributeType} names is the name of the enclosing {@code FeatureType}, but this is not mandatory.
-     * Users who want to apply this convention can invoke {@code setDefaultScope(featureName)} after
-     * <code>{@linkplain #setName(String) FeatureTypeBuilder.setName}(featureName)</code> but before
-     * <code>{@linkplain AttributeTypeBuilder#setName(String) AttributeTypeBuilder.setName}(attributeName)</code>.</p>
-     *
-     * @param  scope  the new default scope, or {@code null} if none.
-     * @return {@code this} for allowing method calls chaining.
-     */
-    public FeatureTypeBuilder setDefaultScope(final String scope) {
-        defaultScope = scope;
-        // No need to clear the cache because this change affects
-        // only the next names to be created, not the existing ones.
-        return this;
+    @Override
+    final GenericName createGenericName(final CharSequence... names) {
+        return nameFactory.createGenericName(namespace, names);
     }
 
     /**
