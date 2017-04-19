@@ -341,7 +341,7 @@ public abstract class AbstractName implements GenericName, Serializable {
 
     /**
      * An international string built from a snapshot of {@link GenericName}.
-     * This class is immutable is the list given to the constructor is immutable.
+     * This class is immutable if the list given to the constructor is immutable.
      *
      * @author  Martin Desruisseaux (IRD, Geomatys)
      * @version 0.3

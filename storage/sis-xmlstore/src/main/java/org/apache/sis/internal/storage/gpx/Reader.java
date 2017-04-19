@@ -108,7 +108,7 @@ final class Reader extends StaxStreamReader {
      * Returns {@code true} if the given namespace is a GPX namespace or is null.
      */
     private static boolean isGPX(final String ns) {
-        return (ns == null) || ns.startsWith(Tags.NAMESPACE + "/GPX/");
+        return (ns == null) || ns.startsWith(Tags.NAMESPACE);
     }
 
     /**
