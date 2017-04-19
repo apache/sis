@@ -19,11 +19,8 @@ package org.apache.sis.internal.feature;
 import org.opengis.util.LocalName;
 import org.opengis.util.ScopedName;
 import org.opengis.util.GenericName;
-import org.opengis.util.NameFactory;
-import org.opengis.util.NameSpace;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.apache.sis.internal.system.DefaultFactories;
-import org.apache.sis.internal.util.Constants;
+import org.apache.sis.util.iso.Names;
 import org.apache.sis.util.Static;
 
 // Branch-dependent imports
@@ -41,10 +38,10 @@ import org.opengis.feature.Property;
  * appropriate "real" property in the feature.
  *
  * <div class="note"><b>Example:</b>
- * one of the most frequently used synthetic property is {@code "@identifier"}, which contains a unique
+ * one of the most frequently used synthetic property is {@code "sis:identifier"}, which contains a unique
  * identifier (or primary key) for the feature. This property is usually (but not necessarily)
  * a {@linkplain org.apache.sis.feature.FeatureOperations#link link to an existing attribute}.
- * By using the {@code "@identifier"} alias, users do not need to know the name of the "real" attribute.
+ * By using the {@code "sis:identifier"} alias, users do not need to know the name of the "real" attribute.
  * </div>
  *
  * This class defines names for two kinds of usage:
@@ -66,15 +63,15 @@ import org.opengis.feature.Property;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.7
+ * @version 0.8
  * @since   0.7
  * @module
  */
 public final class AttributeConvention extends Static {
     /**
-     * Namespace of all names defined by SIS convention.
+     * Scope of all names defined by SIS convention.
      */
-    private static final GenericName NAMESPACE;
+    private static final LocalName SCOPE;
 
     /**
      * Conventional name for a property used as a unique identifier.
@@ -90,7 +87,7 @@ public final class AttributeConvention extends Static {
      * <p>The {@linkplain org.apache.sis.feature.DefaultAttributeType#getValueClass() value class} is usually
      * {@link String}, {@link Integer}, {@link java.util.UUID} or other types commonly used as identifiers.</p>
      */
-    public static final LocalName IDENTIFIER_PROPERTY;
+    public static final ScopedName IDENTIFIER_PROPERTY;
 
     /**
      * Conventional name for a property containing the geometric object to use by default.
@@ -107,7 +104,7 @@ public final class AttributeConvention extends Static {
      *
      * @see #isGeometryAttribute(IdentifiedType)
      */
-    public static final LocalName GEOMETRY_PROPERTY;
+    public static final ScopedName GEOMETRY_PROPERTY;
 
     /**
      * Conventional name for fetching the envelope encompassing all geometries in a feature. Most {@code FeatureType}s
@@ -120,7 +117,7 @@ public final class AttributeConvention extends Static {
      * <p>The {@linkplain org.apache.sis.feature.DefaultAttributeType#getValueClass() value class} should be
      * {@link org.opengis.geometry.Envelope}.</p>
      */
-    public static final LocalName ENVELOPE_PROPERTY;
+    public static final ScopedName ENVELOPE_PROPERTY;
 
     /**
      * Conventional name for fetching the Coordinate Reference System (CRS) of a geometry or a coverage.
@@ -139,7 +136,7 @@ public final class AttributeConvention extends Static {
      *
      * @see #getCRSCharacteristic(Property)
      */
-    public static final LocalName CRS_CHARACTERISTIC;
+    public static final ScopedName CRS_CHARACTERISTIC;
 
     /**
      * Conventional name for fetching the maximal length of string values.
@@ -153,7 +150,7 @@ public final class AttributeConvention extends Static {
      *
      * @see #getMaximalLengthCharacteristic(Property)
      */
-    public static final LocalName MAXIMAL_LENGTH_CHARACTERISTIC;
+    public static final ScopedName MAXIMAL_LENGTH_CHARACTERISTIC;
 
     /**
      * Conventional name for fetching the enumeration of valid values.
@@ -162,18 +159,15 @@ public final class AttributeConvention extends Static {
      * {@linkplain org.apache.sis.feature.DefaultAttributeType#characteristics() characteristic} associated
      * to the attribute on which the restriction applies.
      */
-    public static final LocalName VALID_VALUES_CHARACTERISTIC;
-
+    public static final GenericName VALID_VALUES_CHARACTERISTIC;
     static {
-        final NameFactory factory = DefaultFactories.forBuildin(NameFactory.class);
-        NAMESPACE                     = factory.createGenericName(null, "Apache", Constants.SIS);
-        final NameSpace ns            = factory.createNameSpace(NAMESPACE, null);
-        IDENTIFIER_PROPERTY           = factory.createLocalName(ns, "@identifier");
-        GEOMETRY_PROPERTY             = factory.createLocalName(ns, "@geometry");
-        ENVELOPE_PROPERTY             = factory.createLocalName(ns, "@envelope");
-        CRS_CHARACTERISTIC            = factory.createLocalName(ns, "@crs");
-        MAXIMAL_LENGTH_CHARACTERISTIC = factory.createLocalName(ns, "@maximalLength");
-        VALID_VALUES_CHARACTERISTIC   = factory.createLocalName(ns, "@validValues");
+        SCOPE                         = Names.createLocalName("Apache", null, "sis");
+        IDENTIFIER_PROPERTY           = Names.createScopedName(SCOPE, null, "identifier");
+        GEOMETRY_PROPERTY             = Names.createScopedName(SCOPE, null, "geometry");
+        ENVELOPE_PROPERTY             = Names.createScopedName(SCOPE, null, "envelope");
+        CRS_CHARACTERISTIC            = Names.createScopedName(SCOPE, null, "crs");
+        MAXIMAL_LENGTH_CHARACTERISTIC = Names.createScopedName(SCOPE, null, "maximalLength");
+        VALID_VALUES_CHARACTERISTIC   = Names.createScopedName(SCOPE, null, "validValues");
     }
 
     /**
@@ -195,17 +189,14 @@ public final class AttributeConvention extends Static {
      * @param  name  the name of the property or characteristic to test, or {@code null}.
      * @return {@code true} if the given name is non-null and in the SIS namespace.
      */
-    public static boolean contains(final GenericName name) {
-        if (name == null) {
-            return false;
+    public static boolean contains(GenericName name) {
+        while (name instanceof ScopedName) {
+            if (SCOPE.equals(((ScopedName) name).path())) {
+                return true;
+            }
+            name = ((ScopedName) name).tail();
         }
-        final GenericName scope;
-        if (name instanceof ScopedName) {
-            scope = ((ScopedName) name).path().toFullyQualifiedName();
-        } else {
-            scope = name.scope().name();
-        }
-        return NAMESPACE.equals(scope);
+        return false;
     }
 
     /**

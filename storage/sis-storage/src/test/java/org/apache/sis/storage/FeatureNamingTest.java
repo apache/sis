@@ -23,6 +23,7 @@ import org.apache.sis.util.iso.Names;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
+import org.opengis.util.LocalName;
 
 
 /**
@@ -122,6 +123,39 @@ public final strictfp class FeatureNamingTest extends TestCase {
             assertTrue(message, message.contains("other:A"));
             assertTrue(message, message.contains("testDataStore"));
         }
+    }
+
+    /**
+     * Tests two names having the same tip, but where only one of the two names have a namespace.
+     *
+     * @throws IllegalNameException if an unexpected error occurred while adding or getting an element.
+     */
+    @Test
+    @DependsOnMethod("testAmbiguity")
+    public void testQualifiedAndUnqualifiedName() throws IllegalNameException {
+        final DataStoreMock store = new DataStoreMock("testDataStore");
+        final LocalName local = Names.createLocalName(null, null, "A");
+        FeatureNaming<Integer> map = new FeatureNaming<>();
+        map.add(store, local,  3);
+        map.add(store, A,      2);
+        map.add(store, B,      5);
+        map.add(store, otherA, 7);
+        assertEquals("B",       Integer.valueOf(5), map.get(store, "B"));
+        assertEquals("A",       Integer.valueOf(3), map.get(store, "A"));
+        assertEquals("myNS:A",  Integer.valueOf(2), map.get(store, "myNS:A"));
+        assertEquals("other:A", Integer.valueOf(7), map.get(store, "other:A"));
+        /*
+         * Same tests, but with elements added in different order.
+         */
+        map = new FeatureNaming<>();
+        map.add(store, otherA, 7);
+        map.add(store, B,      5);
+        map.add(store, A,      2);
+        map.add(store, local,  3);
+        assertEquals("B",       Integer.valueOf(5), map.get(store, "B"));
+        assertEquals("A",       Integer.valueOf(3), map.get(store, "A"));
+        assertEquals("myNS:A",  Integer.valueOf(2), map.get(store, "myNS:A"));
+        assertEquals("other:A", Integer.valueOf(7), map.get(store, "other:A"));
     }
 
     /**
