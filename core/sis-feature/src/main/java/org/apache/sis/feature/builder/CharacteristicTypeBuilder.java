@@ -145,42 +145,66 @@ public final class CharacteristicTypeBuilder<V> extends TypeBuilder {
     }
 
     /**
-     * Sets the characteristic name as a simple string with the default scope.
-     * The default scope is the value specified by the last call to
-     * {@link FeatureTypeBuilder#setDefaultScope(String)}.
-     * The name will be a {@linkplain org.apache.sis.util.iso.DefaultLocalName local name} if no default scope
-     * has been specified, or a {@linkplain org.apache.sis.util.iso.DefaultScopedName scoped name} otherwise.
+     * Sets the characteristic name as a simple string (local name).
+     * The namespace will be the value specified by the last call to {@link FeatureTypeBuilder#setNameSpace(CharSequence)},
+     * but that namespace will not be visible in the {@linkplain org.apache.sis.util.iso.DefaultLocalName#toString()
+     * string representation} unless the {@linkplain org.apache.sis.util.iso.DefaultLocalName#toFullyQualifiedName()
+     * fully qualified name} is requested.
+     *
+     * <p>This convenience method creates a {@link org.opengis.util.LocalName} instance from
+     * the given {@code CharSequence}, then delegates to {@link #setName(GenericName)}.</p>
      *
      * @return {@code this} for allowing method calls chaining.
      */
     @Override
-    public CharacteristicTypeBuilder<V> setName(final String localPart) {
+    public CharacteristicTypeBuilder<V> setName(final CharSequence localPart) {
         super.setName(localPart);
         return this;
     }
 
     /**
      * Sets the characteristic name as a string in the given scope.
-     * The name will be a {@linkplain org.apache.sis.util.iso.DefaultLocalName local name} if the given scope is
-     * {@code null} or empty, or a {@linkplain org.apache.sis.util.iso.DefaultScopedName scoped name} otherwise.
-     * If a {@linkplain FeatureTypeBuilder#setDefaultScope(String) default scope} has been specified, then the
-     * {@code scope} argument overrides it.
+     * The {@code components} array must contain at least one element.
+     * The last component (the {@linkplain org.apache.sis.util.iso.DefaultScopedName#tip() tip}) will be sufficient
+     * in many cases for getting values from the {@linkplain org.apache.sis.feature.AbstractAttribute#characteristics()
+     * characteristics} map. The other elements before the last one are optional and can be used for resolving ambiguity.
+     * They will be visible as the name {@linkplain org.apache.sis.util.iso.DefaultScopedName#path() path}.
+     *
+     * <p>In addition to the path specified by the {@code components} array, the name may also contain
+     * a namespace specified by the last call to {@link FeatureTypeBuilder#setNameSpace(CharSequence)}.
+     * But contrarily to the specified components, the namespace will not be visible in the name
+     * {@linkplain org.apache.sis.util.iso.DefaultScopedName#toString() string representation} unless the
+     * {@linkplain org.apache.sis.util.iso.DefaultScopedName#toFullyQualifiedName() fully qualified name}
+     * is requested.</p>
+     *
+     * <p>This convenience method creates a {@link org.opengis.util.LocalName} or {@link org.opengis.util.ScopedName}
+     * instance depending on whether the {@code names} array contains exactly 1 element or more than 1 element, then
+     * delegates to {@link #setName(GenericName)}.</p>
      *
      * @return {@code this} for allowing method calls chaining.
      */
     @Override
-    public CharacteristicTypeBuilder<V> setName(final String scope, final String localPart) {
-        super.setName(scope, localPart);
+    public CharacteristicTypeBuilder<V> setName(final CharSequence... components) {
+        super.setName(components);
         return this;
     }
 
     /**
-     * Delegates the creation of a new name to the enclosing builder.
+     * Creates a local name in the {@linkplain FeatureTypeBuilder#setNameSpace feature namespace}.
      */
     @Override
-    final GenericName name(final String scope, final String localPart) {
+    final GenericName createLocalName(final CharSequence name) {
         ensureAlive(owner);
-        return owner.name(scope, localPart);
+        return owner.createLocalName(name);
+    }
+
+    /**
+     * Creates a generic name in the {@linkplain FeatureTypeBuilder#setNameSpace feature namespace}.
+     */
+    @Override
+    final GenericName createGenericName(final CharSequence... names) {
+        ensureAlive(owner);
+        return owner.createGenericName(names);
     }
 
     /**

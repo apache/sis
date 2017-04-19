@@ -113,7 +113,7 @@ public class DefaultLocalName extends AbstractName implements LocalName {
     protected DefaultLocalName(NameSpace scope, final CharSequence name) {
         ArgumentChecks.ensureNonNull("name", name);
         if (scope == GlobalNameSpace.GLOBAL) {
-            scope = null; // Handled specially by scope().
+            scope = null;                                       // Handled specially by scope().
         }
         this.scope = scope;
         if (name instanceof InternationalString) {
@@ -323,7 +323,7 @@ public class DefaultLocalName extends AbstractName implements LocalName {
      */
     private Object readResolve() throws ObjectStreamException {
         final DefaultNameSpace ns;
-        if (scope == null) { // Not a bug: readResolve() is intentionally private.
+        if (scope == null) {                    // Not a bug: readResolve() is intentionally private.
             ns = GlobalNameSpace.GLOBAL;
         } else if (scope instanceof DefaultNameSpace) {
             ns = (DefaultNameSpace) scope;

@@ -164,7 +164,7 @@ class GroupAsPolylineOperation extends AbstractOperation {
                 boolean isFirst = true;
                 geometry = new Polyline();
                 for (final Object child : (Collection<?>) feature.getPropertyValue(association)) {
-                    addGeometry(geometry, ((AbstractFeature) child).getPropertyValue("@geometry"), isFirst);
+                    addGeometry(geometry, ((AbstractFeature) child).getPropertyValue("sis:geometry"), isFirst);
                     isFirst = false;
                 }
             }
