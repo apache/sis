@@ -21,7 +21,7 @@ import java.util.Collections;
 import java.util.Locale;
 import java.util.Map;
 import com.esri.core.geometry.Point;
-import org.opengis.util.LocalName;
+import org.opengis.util.ScopedName;
 import org.opengis.util.NameFactory;
 import org.opengis.util.FactoryException;
 import org.opengis.metadata.citation.OnlineResource;
@@ -108,55 +108,55 @@ final class Types extends Static {
      * @throws FactoryException if an error occurred while creating an "envelope bounds" operation.
      */
     Types(final NameFactory factory, final Locale locale) throws FactoryException, IllegalNameException {
-        final LocalName     geomName = AttributeConvention.GEOMETRY_PROPERTY;
+        final ScopedName    geomName = AttributeConvention.GEOMETRY_PROPERTY;
         final Map<String,?> geomInfo = Collections.singletonMap(AbstractIdentifiedType.NAME_KEY, geomName);
         final Map<String,?> envpInfo = Collections.singletonMap(AbstractIdentifiedType.NAME_KEY, AttributeConvention.ENVELOPE_PROPERTY);
         /*
          * The parent of all FeatureTypes to be created in this constructor.
-         * This parent has a single property, "@identifier" of type Integer,
+         * This parent has a single property, "sis:identifier" of type Integer,
          * which is not part of GPX specification.
          *
-         * http://www.topografix.com/GPX/GPXEntity
-         * ┌─────────────┬─────────┬─────────────┐
-         * │ Name        │ Type    │ Cardinality │
-         * ├─────────────┼─────────┼─────────────┤
-         * │ @identifier │ Integer │   [1 … 1]   │      SIS-specific property
-         * └─────────────┴─────────┴─────────────┘
+         * GPXEntity
+         * ┌────────────────┬─────────┬─────────────┐
+         * │ Name           │ Type    │ Cardinality │
+         * ├────────────────┼─────────┼─────────────┤
+         * │ sis:identifier │ Integer │   [1 … 1]   │      SIS-specific property
+         * └────────────────┴─────────┴─────────────┘
          */
         FeatureTypeBuilder builder = new FeatureTypeBuilder(null, factory, locale);
-        builder.setDefaultScope(Tags.NAMESPACE).setName("GPXEntity").setAbstract(true);
+        builder.setNameSpace(Tags.PREFIX).setName("GPXEntity").setAbstract(true);
         builder.addAttribute(Integer.class).setName(AttributeConvention.IDENTIFIER_PROPERTY);
         final FeatureType parent = builder.build();
         /*
-         * http://www.topografix.com/GPX/WayPoint ⇾ GPXEntity
-         * ┌───────────────┬────────────────┬────────────────────────┬─────────────┐
-         * │ Name          │ Type           │ XML type               │ Cardinality │
-         * ├───────────────┼────────────────┼────────────────────────┼─────────────┤
-         * │ @identifier   │ Integer        │                        │   [1 … 1]   │
-         * │ @envelope     │ Envelope       │                        │   [1 … 1]   │
-         * │ @geometry     │ Point          │ (lat,lon) attributes   │   [1 … 1]   │
-         * │ ele           │ Double         │ xsd:decimal            │   [0 … 1]   │
-         * │ time          │ Temporal       │ xsd:dateTime           │   [0 … 1]   │
-         * │ magvar        │ Double         │ gpx:degreesType        │   [0 … 1]   │
-         * │ geoidheight   │ Double         │ xsd:decimal            │   [0 … 1]   │
-         * │ name          │ String         │ xsd:string             │   [0 … 1]   │
-         * │ cmt           │ String         │ xsd:string             │   [0 … 1]   │
-         * │ desc          │ String         │ xsd:string             │   [0 … 1]   │
-         * │ src           │ String         │ xsd:string             │   [0 … 1]   │
-         * │ link          │ OnlineResource │ gpx:linkType           │   [0 … ∞]   │
-         * │ sym           │ String         │ xsd:string             │   [0 … 1]   │
-         * │ type          │ String         │ xsd:string             │   [0 … 1]   │
-         * │ fix           │ Fix            │ gpx:fixType            │   [0 … 1]   │
-         * │ sat           │ Integer        │ xsd:nonNegativeInteger │   [0 … 1]   │
-         * │ hdop          │ Double         │ xsd:decimal            │   [0 … 1]   │
-         * │ vdop          │ Double         │ xsd:decimal            │   [0 … 1]   │
-         * │ pdop          │ Double         │ xsd:decimal            │   [0 … 1]   │
-         * │ ageofdgpsdata │ Double         │ xsd:decimal            │   [0 … 1]   │
-         * │ dgpsid        │ Integer        │ gpx:dgpsStationType    │   [0 … 1]   │
-         * └───────────────┴────────────────┴────────────────────────┴─────────────┘
+         * WayPoint ⇾ GPXEntity
+         * ┌──────────────────┬────────────────┬────────────────────────┬─────────────┐
+         * │ Name             │ Type           │ XML type               │ Cardinality │
+         * ├──────────────────┼────────────────┼────────────────────────┼─────────────┤
+         * │ sis:identifier   │ Integer        │                        │   [1 … 1]   │
+         * │ sis:envelope     │ Envelope       │                        │   [1 … 1]   │
+         * │ sis:geometry     │ Point          │ (lat,lon) attributes   │   [1 … 1]   │
+         * │ ele              │ Double         │ xsd:decimal            │   [0 … 1]   │
+         * │ time             │ Temporal       │ xsd:dateTime           │   [0 … 1]   │
+         * │ magvar           │ Double         │ gpx:degreesType        │   [0 … 1]   │
+         * │ geoidheight      │ Double         │ xsd:decimal            │   [0 … 1]   │
+         * │ name             │ String         │ xsd:string             │   [0 … 1]   │
+         * │ cmt              │ String         │ xsd:string             │   [0 … 1]   │
+         * │ desc             │ String         │ xsd:string             │   [0 … 1]   │
+         * │ src              │ String         │ xsd:string             │   [0 … 1]   │
+         * │ link             │ OnlineResource │ gpx:linkType           │   [0 … ∞]   │
+         * │ sym              │ String         │ xsd:string             │   [0 … 1]   │
+         * │ type             │ String         │ xsd:string             │   [0 … 1]   │
+         * │ fix              │ Fix            │ gpx:fixType            │   [0 … 1]   │
+         * │ sat              │ Integer        │ xsd:nonNegativeInteger │   [0 … 1]   │
+         * │ hdop             │ Double         │ xsd:decimal            │   [0 … 1]   │
+         * │ vdop             │ Double         │ xsd:decimal            │   [0 … 1]   │
+         * │ pdop             │ Double         │ xsd:decimal            │   [0 … 1]   │
+         * │ ageofdgpsdata    │ Double         │ xsd:decimal            │   [0 … 1]   │
+         * │ dgpsid           │ Integer        │ gpx:dgpsStationType    │   [0 … 1]   │
+         * └──────────────────┴────────────────┴────────────────────────┴─────────────┘
          */
         builder = new FeatureTypeBuilder(null, factory, locale).setSuperTypes(parent);
-        builder.setDefaultScope(Tags.NAMESPACE).setName("WayPoint");
+        builder.setNameSpace(Tags.PREFIX).setName("WayPoint");
         builder.addAttribute(Point.class).setName(geomName)
                 .setCRS(CommonCRS.WGS84.normalizedGeographic())
                 .addRole(AttributeRole.DEFAULT_GEOMETRY);
@@ -181,26 +181,26 @@ final class Types extends Static {
         builder.addAttribute(Integer       .class).setName(Tags.DGPS_ID);
         wayPoint = builder.build();
         /*
-         * http://www.topografix.com/GPX/Route ⇾ GPXEntity
-         * ┌─────────────┬────────────────┬────────────────────────┬─────────────┐
-         * │ Name        │ Type           │ XML type               │ Cardinality │
-         * ├─────────────┼────────────────┼────────────────────────┼─────────────┤
-         * │ @identifier │ Integer        │                        │   [1 … 1]   │
-         * │ @envelope   │ Envelope       │                        │   [1 … 1]   │
-         * │ @geometry   │ Polyline       │                        │   [1 … 1]   │
-         * │ name        │ String         │ xsd:string             │   [0 … 1]   │
-         * │ cmt         │ String         │ xsd:string             │   [0 … 1]   │
-         * │ desc        │ String         │ xsd:string             │   [0 … 1]   │
-         * │ src         │ String         │ xsd:string             │   [0 … 1]   │
-         * │ link        │ OnlineResource │ gpx:linkType           │   [0 … ∞]   │
-         * │ number      │ Integer        │ xsd:nonNegativeInteger │   [0 … 1]   │
-         * │ type        │ String         │ xsd:string             │   [0 … 1]   │
-         * │ rtept       │ WayPoint       │ gpx:wptType            │   [0 … ∞]   │
-         * └─────────────┴────────────────┴────────────────────────┴─────────────┘
+         * Route ⇾ GPXEntity
+         * ┌────────────────┬────────────────┬────────────────────────┬─────────────┐
+         * │ Name           │ Type           │ XML type               │ Cardinality │
+         * ├────────────────┼────────────────┼────────────────────────┼─────────────┤
+         * │ sis:identifier │ Integer        │                        │   [1 … 1]   │
+         * │ sis:envelope   │ Envelope       │                        │   [1 … 1]   │
+         * │ sis:geometry   │ Polyline       │                        │   [1 … 1]   │
+         * │ name           │ String         │ xsd:string             │   [0 … 1]   │
+         * │ cmt            │ String         │ xsd:string             │   [0 … 1]   │
+         * │ desc           │ String         │ xsd:string             │   [0 … 1]   │
+         * │ src            │ String         │ xsd:string             │   [0 … 1]   │
+         * │ link           │ OnlineResource │ gpx:linkType           │   [0 … ∞]   │
+         * │ number         │ Integer        │ xsd:nonNegativeInteger │   [0 … 1]   │
+         * │ type           │ String         │ xsd:string             │   [0 … 1]   │
+         * │ rtept          │ WayPoint       │ gpx:wptType            │   [0 … ∞]   │
+         * └────────────────┴────────────────┴────────────────────────┴─────────────┘
          */
         GroupAsPolylineOperation groupOp = new GroupPointsAsPolylineOperation(geomInfo, Tags.ROUTE_POINTS);
         builder = new FeatureTypeBuilder(null, factory, locale).setSuperTypes(parent);
-        builder.setDefaultScope(Tags.NAMESPACE).setName("Route");
+        builder.setNameSpace(Tags.PREFIX).setName("Route");
         builder.addProperty(groupOp);
         builder.addProperty(FeatureOperations.envelope(envpInfo, null, groupOp));
         builder.setDefaultCardinality(0, 1);
@@ -214,45 +214,45 @@ final class Types extends Static {
         builder.addAssociation(wayPoint).setName(Tags.ROUTE_POINTS).setMaximumOccurs(Integer.MAX_VALUE);
         route = builder.build();
         /*
-         * http://www.topografix.com/GPX/TrackSegment ⇾ GPXEntity
-         * ┌─────────────┬──────────┬─────────────┬─────────────┐
-         * │ Name        │ Type     │ XML type    │ Cardinality │
-         * ├─────────────┼──────────┼─────────────┼─────────────┤
-         * │ @identifier │ Integer  │             │   [1 … 1]   │
-         * │ @envelope   │ Envelope │             │   [1 … 1]   │
-         * │ @geometry   │ Polyline │             │   [1 … 1]   │
-         * │ trkpt       │ WayPoint │ gpx:wptType │   [0 … ∞]   │
-         * └─────────────┴──────────┴─────────────┴─────────────┘
+         * TrackSegment ⇾ GPXEntity
+         * ┌────────────────┬──────────┬─────────────┬─────────────┐
+         * │ Name           │ Type     │ XML type    │ Cardinality │
+         * ├────────────────┼──────────┼─────────────┼─────────────┤
+         * │ sis:identifier │ Integer  │             │   [1 … 1]   │
+         * │ sis:envelope   │ Envelope │             │   [1 … 1]   │
+         * │ sis:geometry   │ Polyline │             │   [1 … 1]   │
+         * │ trkpt          │ WayPoint │ gpx:wptType │   [0 … ∞]   │
+         * └────────────────┴──────────┴─────────────┴─────────────┘
          */
         groupOp = new GroupPointsAsPolylineOperation(geomInfo, Tags.TRACK_POINTS);
         builder = new FeatureTypeBuilder(null, factory, locale).setSuperTypes(parent);
-        builder.setDefaultScope(Tags.NAMESPACE).setName("TrackSegment");
+        builder.setNameSpace(Tags.PREFIX).setName("TrackSegment");
         builder.addProperty(groupOp);
         builder.addProperty(FeatureOperations.envelope(envpInfo, null, groupOp));
         builder.setDefaultCardinality(0, 1);
         builder.addAssociation(wayPoint).setName(Tags.TRACK_POINTS).setMaximumOccurs(Integer.MAX_VALUE);
         trackSegment = builder.build();
         /*
-         * http://www.topografix.com/GPX/Track ⇾ GPXEntity
-         * ┌─────────────┬────────────────┬────────────────────────┬─────────────┐
-         * │ Name        │ Type           │ XML type               │ Cardinality │
-         * ├─────────────┼────────────────┼────────────────────────┼─────────────┤
-         * │ @identifier │ Integer        │                        │   [1 … 1]   │
-         * │ @envelope   │ Envelope       │                        │   [1 … 1]   │
-         * │ @geometry   │ Polyline       │                        │   [1 … 1]   │
-         * │ name        │ String         │ xsd:string             │   [0 … 1]   │
-         * │ cmt         │ String         │ xsd:string             │   [0 … 1]   │
-         * │ desc        │ String         │ xsd:string             │   [0 … 1]   │
-         * │ src         │ String         │ xsd:string             │   [0 … 1]   │
-         * │ link        │ OnlineResource │ gpx:linkType           │   [0 … ∞]   │
-         * │ number      │ Integer        │ xsd:nonNegativeInteger │   [0 … 1]   │
-         * │ type        │ String         │ xsd:string             │   [0 … 1]   │
-         * │ trkseg      │ TrackSegment   │ gpx:trksegType         │   [0 … ∞]   │
-         * └─────────────┴────────────────┴────────────────────────┴─────────────┘
+         * Track ⇾ GPXEntity
+         * ┌────────────────┬────────────────┬────────────────────────┬─────────────┐
+         * │ Name           │ Type           │ XML type               │ Cardinality │
+         * ├────────────────┼────────────────┼────────────────────────┼─────────────┤
+         * │ sis:identifier │ Integer        │                        │   [1 … 1]   │
+         * │ sis:envelope   │ Envelope       │                        │   [1 … 1]   │
+         * │ sis:geometry   │ Polyline       │                        │   [1 … 1]   │
+         * │ name           │ String         │ xsd:string             │   [0 … 1]   │
+         * │ cmt            │ String         │ xsd:string             │   [0 … 1]   │
+         * │ desc           │ String         │ xsd:string             │   [0 … 1]   │
+         * │ src            │ String         │ xsd:string             │   [0 … 1]   │
+         * │ link           │ OnlineResource │ gpx:linkType           │   [0 … ∞]   │
+         * │ number         │ Integer        │ xsd:nonNegativeInteger │   [0 … 1]   │
+         * │ type           │ String         │ xsd:string             │   [0 … 1]   │
+         * │ trkseg         │ TrackSegment   │ gpx:trksegType         │   [0 … ∞]   │
+         * └────────────────┴────────────────┴────────────────────────┴─────────────┘
          */
         groupOp = new GroupAsPolylineOperation(geomInfo, Tags.TRACK_SEGMENTS);
         builder = new FeatureTypeBuilder(null, factory, locale).setSuperTypes(parent);
-        builder.setDefaultScope(Tags.NAMESPACE).setName("Track");
+        builder.setNameSpace(Tags.PREFIX).setName("Track");
         builder.addProperty(groupOp);
         builder.addProperty(FeatureOperations.envelope(envpInfo, null, groupOp));
         builder.setDefaultCardinality(0, 1);

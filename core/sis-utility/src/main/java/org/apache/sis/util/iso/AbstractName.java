@@ -271,7 +271,7 @@ public abstract class AbstractName implements GenericName, Serializable {
      * Returns the separator to write before the given name. If the scope of the given name
      * is a {@link DefaultNameSpace} instance, then this method returns its head separator.
      * We really want {@link DefaultNameSpace#headSeparator}, not {@link DefaultNameSpace#separator}.
-     * See {@link DefaultNameSpace#child(CharSequence)} for details.
+     * See {@link DefaultNameSpace#child(CharSequence, String)} for details.
      *
      * @param  name  the name after which to write a separator.
      * @return the separator to write after the given name.
@@ -341,7 +341,7 @@ public abstract class AbstractName implements GenericName, Serializable {
 
     /**
      * An international string built from a snapshot of {@link GenericName}.
-     * This class is immutable is the list given to the constructor is immutable.
+     * This class is immutable if the list given to the constructor is immutable.
      *
      * @author  Martin Desruisseaux (IRD, Geomatys)
      * @version 0.3

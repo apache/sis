@@ -53,9 +53,9 @@ public enum AttributeRole {
      *
      * <ul>
      *   <li>If no attribute has this role, then no attribute is marked as feature identifier.</li>
-     *   <li>If exactly one attribute has this role, then a synthetic attribute named {@code "@identifier"}
+     *   <li>If exactly one attribute has this role, then a synthetic attribute named {@code "sis:identifier"}
      *       will be created as a {@linkplain FeatureOperations#link link} to the flagged attribute.</li>
-     *   <li>If more than one attribute have this role, then a synthetic attribute named {@code "@identifier"}
+     *   <li>If more than one attribute have this role, then a synthetic attribute named {@code "sis:identifier"}
      *       will be created as a {@linkplain FeatureOperations#compound compound key} made of all flagged
      *       attributes. The separator character can be modified by a call to
      *       {@link FeatureTypeBuilder#setIdentifierDelimiters(String, String, String)}</li>
