@@ -59,7 +59,7 @@ import org.apache.sis.util.iso.DefaultNameSpace;
  *
  * <div class="section">NetCDF unit symbols</div>
  * The attributes in NetCDF files often merge the axis direction with the angular unit,
- * as in {@code "degrees_east"} or {@code "degrees_north"}.
+ * as in {@code "degrees_east"}, {@code "degrees_north"} or {@code "Degrees North"}.
  * This class ignores those suffixes and unconditionally returns {@link Units#DEGREE} for all axis directions.
  * In particular, the units for {@code "degrees_west"} and {@code "degrees_east"} do <strong>not</strong> have
  * opposite sign. It is caller responsibility to handle the direction of axes associated to NetCDF units.

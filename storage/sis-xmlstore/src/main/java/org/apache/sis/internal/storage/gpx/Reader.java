@@ -109,7 +109,7 @@ final class Reader extends StaxStreamReader {
      * Returns {@code true} if the given namespace is a GPX namespace or is null.
      */
     private static boolean isGPX(final String ns) {
-        return (ns == null) || ns.startsWith(Tags.NAMESPACE + "/GPX/");
+        return (ns == null) || ns.startsWith(Tags.NAMESPACE);
     }
 
     /**
@@ -414,8 +414,8 @@ parse:  while (reader.hasNext()) {
                     (lat == null) ? Attributes.LATITUDE : Attributes.LONGITUDE, tagName));
         }
         final AbstractFeature feature = ((Store) owner).types.wayPoint.newInstance();
-        feature.setPropertyValue("@identifier", index);
-        feature.setPropertyValue("@geometry", new Point(parseDouble(lon), parseDouble(lat)));
+        feature.setPropertyValue("sis:identifier", index);
+        feature.setPropertyValue("sis:geometry", new Point(parseDouble(lon), parseDouble(lat)));
         List<Link> links = null;
         while (true) {
             /*
@@ -479,7 +479,7 @@ parse:  while (reader.hasNext()) {
     private AbstractFeature parseRoute(final int index) throws Exception {
         assert reader.isStartElement() && Tags.ROUTES.equals(reader.getLocalName());
         final AbstractFeature feature = ((Store) owner).types.route.newInstance();
-        feature.setPropertyValue("@identifier", index);
+        feature.setPropertyValue("sis:identifier", index);
         List<AbstractFeature> wayPoints = null;
         List<Link> links = null;
         while (true) {
@@ -535,7 +535,7 @@ parse:  while (reader.hasNext()) {
     private AbstractFeature parseTrackSegment(final int index) throws Exception {
         assert reader.isStartElement() && Tags.TRACK_SEGMENTS.equals(reader.getLocalName());
         final AbstractFeature feature = ((Store) owner).types.trackSegment.newInstance();
-        feature.setPropertyValue("@identifier", index);
+        feature.setPropertyValue("sis:identifier", index);
         List<AbstractFeature> wayPoints = null;
         while (true) {
             /*
@@ -578,7 +578,7 @@ parse:  while (reader.hasNext()) {
     private AbstractFeature parseTrack(final int index) throws Exception {
         assert reader.isStartElement() && Tags.TRACKS.equals(reader.getLocalName());
         final AbstractFeature feature = ((Store) owner).types.track.newInstance();
-        feature.setPropertyValue("@identifier", index);
+        feature.setPropertyValue("sis:identifier", index);
         List<AbstractFeature> segments = null;
         List<Link> links = null;
         while (true) {

@@ -49,7 +49,7 @@ import org.apache.sis.internal.util.UnmodifiableArrayList;
  * state.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 0.3
+ * @version 0.8
  *
  * @see DefaultNameSpace
  * @see DefaultLocalName
@@ -133,7 +133,7 @@ public class DefaultScopedName extends AbstractName implements ScopedName {
         do {
             ArgumentChecks.ensureNonNullElement("names", i, name);
             locals[i++] = new DefaultLocalName(ns, name);
-            ns = ns.child(name);
+            ns = ns.child(name, ns.separator);
             name = it.next();
         } while (it.hasNext());
         /*
@@ -148,7 +148,7 @@ public class DefaultScopedName extends AbstractName implements ScopedName {
             tip.fullyQualified = fullyQualified = this;
         }
         locals[i++] = tip;
-        if (i != size) { // Paranoiac check.
+        if (i != size) {                                        // Paranoiac check.
             throw new ConcurrentModificationException(Errors.format(Errors.Keys.UnexpectedChange_1, "names"));
         }
         // Following line is safe because 'parsedNames' type is <? extends LocalName>.
@@ -162,15 +162,13 @@ public class DefaultScopedName extends AbstractName implements ScopedName {
      * @param path  the first part to concatenate.
      * @param tail  the second part to concatenate.
      */
-    @SuppressWarnings("SuspiciousToArrayCall")
     protected DefaultScopedName(final GenericName path, final GenericName tail) {
         ArgumentChecks.ensureNonNull("path", path);
         ArgumentChecks.ensureNonNull("tail", tail);
         final List<? extends LocalName> parsedPath = path.getParsedNames();
         final List<? extends LocalName> parsedTail = tail.getParsedNames();
         int index = parsedPath.size();
-        LocalName[] locals = new LocalName[index + parsedTail.size()];
-        locals = parsedPath.toArray(locals);
+        final LocalName[] locals = parsedPath.toArray(new LocalName[index + parsedTail.size()]);
         /*
          * We have copied the LocalNames from the path unconditionally.  Now we need to process the
          * LocalNames from the tail. If the tail scope follows the path scope, we can just copy the
@@ -193,7 +191,7 @@ public class DefaultScopedName extends AbstractName implements ScopedName {
             if (path instanceof LocalName) {
                 this.tail = tail;
             }
-            while (true) {
+            for (;;) {
                 locals[index++] = name;
                 if (!it.hasNext()) break;
                 name = it.next();
@@ -205,8 +203,8 @@ public class DefaultScopedName extends AbstractName implements ScopedName {
              */
             DefaultNameSpace scope = DefaultNameSpace.castOrCopy(lastScope);
             CharSequence label = name(lastName);
-            while (true) {
-                scope = scope.child(label);
+            for (;;) {
+                scope = scope.child(label, scope.separator);
                 label = name(name);
                 name  = new DefaultLocalName(scope, label);
                 locals[index++] = name;
@@ -222,6 +220,38 @@ public class DefaultScopedName extends AbstractName implements ScopedName {
         if (tail instanceof LocalName) {
             this.path = path;
         }
+    }
+
+    /**
+     * Constructs a scoped name as the concatenation of the given generic name with a single character sequence.
+     * The scope of the new name will be the scope of the {@code path} argument.
+     * The tail is a local name created from the given character sequence.
+     *
+     * @param path       the first part to concatenate.
+     * @param separator  the separator between the head and the tail,
+     *                   or {@code null} for inheriting the same separator than the given path.
+     * @param tail       the second part to concatenate.
+     *
+     * @see Names#createScopedName(GenericName, String, CharSequence)
+     *
+     * @since 0.8
+     */
+    protected DefaultScopedName(final GenericName path, final String separator, final CharSequence tail) {
+        /*
+         * Following is the same code than DefaultScopedName(GenericName, GenericName)
+         * after simplification we can do because we create the LocalName ourselves.
+         */
+        ArgumentChecks.ensureNonNull("path", path);
+        ArgumentChecks.ensureNonNull("tail", tail);
+        final List<? extends LocalName> parsedPath = path.getParsedNames();
+        final int index = parsedPath.size();
+        final LocalName[] locals = parsedPath.toArray(new LocalName[index + 1]);
+        final LocalName lastName = locals[index - 1];
+        DefaultNameSpace scope = DefaultNameSpace.castOrCopy(lastName.scope());
+        scope = scope.child(name(lastName), separator != null ? separator : scope.separator);
+        locals[index] = new DefaultLocalName(scope, tail);
+        parsedNames = UnmodifiableArrayList.wrap(locals);
+        this.path = path;
     }
 
     /**

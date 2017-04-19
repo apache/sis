@@ -183,12 +183,21 @@ public abstract class PropertyTypeBuilder extends TypeBuilder {
     }
 
     /**
-     * Delegates the creation of a new name to the enclosing builder.
+     * Creates a local name in the {@linkplain FeatureTypeBuilder#setNameSpace feature namespace}.
      */
     @Override
-    final GenericName name(final String scope, final String localPart) {
+    final GenericName createLocalName(final CharSequence name) {
         ensureAlive(owner);
-        return owner.name(scope, localPart);
+        return owner.createLocalName(name);
+    }
+
+    /**
+     * Creates a generic name in the {@linkplain FeatureTypeBuilder#setNameSpace feature namespace}.
+     */
+    @Override
+    final GenericName createGenericName(final CharSequence... names) {
+        ensureAlive(owner);
+        return owner.createGenericName(names);
     }
 
     /**

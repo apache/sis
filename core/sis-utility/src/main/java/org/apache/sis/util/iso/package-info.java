@@ -107,7 +107,7 @@
  * </table>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 0.7
+ * @version 0.8
  * @since   0.3
  * @module
  */
