@@ -53,8 +53,49 @@ import org.opengis.feature.Operation;
  * This builder can create the arguments to be given to the
  * {@linkplain DefaultFeatureType#DefaultFeatureType feature type constructor}
  * from simpler parameters given to this builder.
+ * The main methods provided in this class are:
  *
- * <p>{@code FeatureTypeBuilder} should be short lived.
+ * <ul>
+ *   <li>Various {@link #setName(CharSequence) setName(...)} methods for specifying the feature type name (mandatory).</li>
+ *   <li>Methods for optionally setting {@linkplain #setDesignation designation}, {@linkplain #setDefinition definition} or
+ *       {@linkplain #setDescription description} texts, or the {@linkplain #setDeprecated deprecation status}.</li>
+ *   <li>Methods for optionally specifying the feature type hierarchy: its {@linkplain #setSuperTypes super types}
+ *       and whether the feature type is {@linkplain #setAbstract abstract}.</li>
+ *   <li>Convenience methods for setting the {@linkplain #setNameSpace name space} and the
+ *       {@linkplain #setDefaultCardinality default cardinality} of properties to be added to the feature type.</li>
+ *   <li>Methods for {@linkplain #addAttribute(Class) adding an attribute}, {@linkplain #addAssociation(FeatureType)
+ *       an association} or {@linkplain #addProperty an operation}.</li>
+ *   <li>Method for listing the previously added {@linkplain #properties() properties}.</li>
+ *   <li>A {@link #build()} method for creating the {@code FeatureType} instance from all previous information.</li>
+ * </ul>
+ *
+ * The following example creates a city named "Utopia" by default:
+ *
+ * {@preformat java
+ *     FeatureTypeBuilder builder;
+ *
+ *     // Create a feature type for a city, which contains a name and a population.
+ *     builder = new FeatureTypeBuilder() .setName("City");
+ *     builder.addAttribute(String.class) .setName("name").setDefaultValue("Utopia");
+ *     builder.addAttribute(Integer.class).setName("population");
+ *     FeatureType city = builder.build();
+ * }
+ *
+ * A call to {@code System.out.println(city)} prints the following table:
+ *
+ * {@preformat text
+ *   City
+ *   ┌────────────┬─────────┬─────────────┬───────────────┐
+ *   │ Name       │ Type    │ Cardinality │ Default value │
+ *   ├────────────┼─────────┼─────────────┼───────────────┤
+ *   │ name       │ String  │ [1 … 1]     │ Utopia        │
+ *   │ population │ Integer │ [1 … 1]     │               │
+ *   └────────────┴─────────┴─────────────┴───────────────┘
+ * }
+ *
+ *
+ *
+ * <p>{@code FeatureTypeBuilder} instances should be short lived.
  * After the {@code FeatureType} has been created, the builder should be discarded.</p>
  *
  * @author  Johann Sorel (Geomatys)
@@ -333,12 +374,21 @@ public class FeatureTypeBuilder extends TypeBuilder {
      * Sets the namespace of the next names to be created by {@code setName(CharSequence...)} method calls.
      * This method applies only to the next calls to {@link #setName(CharSequence)} or
      * {@link #setName(CharSequence...)} methods; the result of all previous calls stay unmodified.
+     * Example:
      *
-     * <p>There is different conventions about the use of name spaces. ISO 19109 suggests that the namespace of all
+     * {@preformat java
+     *     FeatureTypeBuilder builder = new FeatureTypeBuilder().setNameSpace("MyNameSpace").setName("City");
+     *     FeatureType city = builder.build();
+     *
+     *     System.out.println(city.getName());                              // Prints "City"
+     *     System.out.println(city.getName().toFullyQualifiedName());       // Prints "MyNameSpace:City"
+     * }
+     *
+     * There is different conventions about the use of name spaces. ISO 19109 suggests that the namespace of all
      * {@code AttributeType} names is the name of the enclosing {@code FeatureType}, but this is not mandatory.
      * Users who want to apply this convention can invoke {@code setNameSpace(featureName)} after
      * <code>{@linkplain #setName(CharSequence) FeatureTypeBuilder.setName}(featureName)</code> but before
-     * <code>{@linkplain AttributeTypeBuilder#setName(CharSequence) AttributeTypeBuilder.setName}(attributeName)</code>.</p>
+     * <code>{@linkplain AttributeTypeBuilder#setName(CharSequence) AttributeTypeBuilder.setName}(attributeName)</code>.
      *
      * @param  ns  the new namespace, or {@code null} if none.
      * @return {@code this} for allowing method calls chaining.
