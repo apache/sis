@@ -70,6 +70,9 @@
       <fileset dir="${project.root}/core/sis-referencing/src/main/resources">
         <include name="**/*.sql"/>
       </fileset>
+      <fileset dir="${project.root}/storage/sis-xmlstore/src/main/resources">
+        <include name="**/*.properties"/>
+      </fileset>
       <fileset dir="${project.root}/application/sis-console/src/main/resources">
         <include name="**/*.properties"/>
       </fileset>
