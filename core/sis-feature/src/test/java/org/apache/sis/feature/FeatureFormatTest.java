@@ -18,6 +18,7 @@ package org.apache.sis.feature;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.Locale;
 import java.util.Map;
 import java.util.HashMap;
@@ -47,12 +48,23 @@ import org.opengis.feature.PropertyType;
 })
 public final strictfp class FeatureFormatTest extends TestCase {
     /**
+     * Creates the formatter instance to be used for the tests.
+     */
+    private static FeatureFormat create() {
+        final FeatureFormat format = new FeatureFormat(Locale.US, null);
+        format.setAllowedColumns(EnumSet.of(FeatureFormat.Column.NAME,            FeatureFormat.Column.TYPE,
+                                            FeatureFormat.Column.CARDINALITY,     FeatureFormat.Column.VALUE,
+                                            FeatureFormat.Column.CHARACTERISTICS, FeatureFormat.Column.REMARKS));
+        return format;
+    }
+
+    /**
      * Tests the formatting of a {@link DefaultFeatureType}.
      */
     @Test
     public void testFeatureType() {
         final DefaultFeatureType feature = DefaultFeatureTypeTest.worldMetropolis();
-        final FeatureFormat format = new FeatureFormat(Locale.US, null);
+        final FeatureFormat format = create();
         final String text = format.format(feature);
         assertMultilinesEquals("World metropolis ⇾ Metropolis, University city\n" +
                 "┌──────────────┬─────────────────────┬─────────────┬───────────────┬────────────────────────────┐\n" +
@@ -80,7 +92,7 @@ public final strictfp class FeatureFormatTest extends TestCase {
                 FeatureOperations.compound(name("anotherId"), ":", "<", ">", city, feature.getProperty("population")),
                 AbstractOperationTest.foundCity());
 
-        final FeatureFormat format = new FeatureFormat(Locale.US, null);
+        final FeatureFormat format = create();
         final String text = format.format(feature);
         assertMultilinesEquals("Identified city ⇾ City\n" +
                 "┌────────────┬─────────┬─────────────┬─────────────────────┐\n" +
@@ -114,7 +126,7 @@ public final strictfp class FeatureFormatTest extends TestCase {
         feature = new DefaultFeatureType(name("City for human"), false, new DefaultFeatureType[] {feature},
                 new DefaultAttributeType<>(properties, String.class, 0, 2, null));
 
-        final FeatureFormat format = new FeatureFormat(Locale.US, null);
+        final FeatureFormat format = create();
         final String text = format.format(feature);
         assertMultilinesEquals("City for human ⇾ City\n" +
                 "┌────────────┬─────────┬─────────────┬───────────────┬─────────────┐\n" +
@@ -141,7 +153,7 @@ public final strictfp class FeatureFormatTest extends TestCase {
         feature.setPropertyValue("population", 13185502);                               // In 2011.
         feature.setPropertyValue("universities", Arrays.asList("Waseda", "Keio"));
 
-        final FeatureFormat format = new FeatureFormat(Locale.US, null);
+        final FeatureFormat format = create();
         final String text = format.format(feature);
         assertMultilinesEquals("World metropolis\n" +
                 "┌──────────────┬─────────────────────┬─────────────┬──────────────┬─────────────────┐\n" +
@@ -174,7 +186,7 @@ public final strictfp class FeatureFormatTest extends TestCase {
         feature.setPropertyValue("population", 143174);                     // December 31th, 2011
         feature.setPropertyValue("twin town", twinTown);
 
-        final FeatureFormat format = new FeatureFormat(Locale.US, null);
+        final FeatureFormat format = create();
         final String text = format.format(feature);
         assertMultilinesEquals("Twin town\n" +
                 "┌────────────┬─────────┬─────────────┬───────────┐\n" +
