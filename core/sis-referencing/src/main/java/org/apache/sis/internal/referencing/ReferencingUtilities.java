@@ -406,6 +406,8 @@ public final class ReferencingUtilities extends Static {
      * This method assumes that the identifiers of all parameters defined by that authority are numeric.
      * Examples of authorities defining numeric parameters are EPSG and GeoTIFF.
      *
+     * <p>The map returned by this method is modifiable. Callers are free to add or remove entries.</p>
+     *
      * @param  parameters  the parameters for which to get a mapping from identifiers to names.
      * @param  authority   the authority defining the parameters.
      * @return mapping from parameter identifiers to parameter names defined by the given authority.

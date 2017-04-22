@@ -98,6 +98,12 @@ public final class Resources extends IndexedResourceBundle {
         public static final short IgnoredTag_1 = 7;
 
         /**
+         * Map projection parameter “{2}” will be ignored because its value ({3}) is inconsistent with
+         * the “{0} = {1}” parameter.
+         */
+        public static final short InconsistentMapProjParameter_4 = 24;
+
+        /**
          * TIFF image “{0}” shall be either tiled or organized into strips.
          */
         public static final short InconsistentTileStrip_1 = 8;
