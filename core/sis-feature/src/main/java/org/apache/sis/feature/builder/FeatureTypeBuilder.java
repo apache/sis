@@ -62,7 +62,7 @@ import org.apache.sis.feature.DefaultAttributeType;
  *       and whether the feature type is {@linkplain #setAbstract abstract}.</li>
  *   <li>Convenience methods for setting the {@linkplain #setNameSpace name space} and the
  *       {@linkplain #setDefaultCardinality default cardinality} of properties to be added to the feature type.</li>
- *   <li>Methods for {@linkplain #addAttribute(Class) adding an attribute}, {@linkplain #addAssociation(FeatureType)
+ *   <li>Methods for {@linkplain #addAttribute(Class) adding an attribute}, {@linkplain #addAssociation(DefaultFeatureType)
  *       an association} or {@linkplain #addProperty an operation}.</li>
  *   <li>Method for listing the previously added {@linkplain #properties() properties}.</li>
  *   <li>A {@link #build()} method for creating the {@code FeatureType} instance from all previous information.</li>
