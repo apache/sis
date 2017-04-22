@@ -24,7 +24,10 @@ import javax.measure.quantity.Angle;
 import org.opengis.annotation.UML;
 import org.opengis.annotation.Specification;
 import org.opengis.metadata.Identifier;
+import org.opengis.metadata.citation.Citation;
 import org.opengis.parameter.ParameterValueGroup;
+import org.opengis.parameter.ParameterDescriptorGroup;
+import org.opengis.parameter.GeneralParameterDescriptor;
 import org.opengis.referencing.cs.*;
 import org.opengis.referencing.crs.*;
 import org.opengis.referencing.IdentifiedObject;
@@ -36,6 +39,7 @@ import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.util.Static;
 import org.apache.sis.util.Utilities;
 import org.apache.sis.util.CharSequences;
+import org.apache.sis.util.resources.Errors;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.datum.DefaultPrimeMeridian;
@@ -395,5 +399,37 @@ public final class ReferencingUtilities extends Static {
         return DefaultFactories.forBuildin(CRSFactory.class).createProjectedCRS(properties, baseCRS,
                 factory.createDefiningConversion(properties,
                         factory.getOperationMethod(parameters.getDescriptor().getName().getCode()), parameters), cs);
+    }
+
+    /**
+     * Returns the mapping between parameter identifiers and parameter names as defined by the given authority.
+     * This method assumes that the identifiers of all parameters defined by that authority are numeric.
+     * Examples of authorities defining numeric parameters are EPSG and GeoTIFF.
+     *
+     * <p>The map returned by this method is modifiable. Callers are free to add or remove entries.</p>
+     *
+     * @param  parameters  the parameters for which to get a mapping from identifiers to names.
+     * @param  authority   the authority defining the parameters.
+     * @return mapping from parameter identifiers to parameter names defined by the given authority.
+     * @throws NumberFormatException if a parameter identifier of the given authority is not numeric.
+     * @throws IllegalArgumentException if the same identifier is used for two or more parameters.
+     *
+     * @since 0.8
+     */
+    public static Map<Integer,String> identifierToName(final ParameterDescriptorGroup parameters, final Citation authority) {
+        final Map<Integer,String> mapping = new HashMap<>();
+        for (final GeneralParameterDescriptor descriptor : parameters.descriptors()) {
+            final Identifier id = IdentifiedObjects.getIdentifier(descriptor, authority);
+            if (id != null) {
+                String name = IdentifiedObjects.getName(descriptor, authority);
+                if (name == null) {
+                    name = IdentifiedObjects.getName(descriptor, null);
+                }
+                if (mapping.put(Integer.valueOf(id.getCode()), name) != null) {
+                    throw new IllegalArgumentException(Errors.format(Errors.Keys.DuplicatedIdentifier_1, id));
+                }
+            }
+        }
+        return mapping;
     }
 }

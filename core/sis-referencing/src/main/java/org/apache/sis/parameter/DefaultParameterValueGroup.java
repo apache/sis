@@ -22,6 +22,7 @@ import java.util.LinkedList;
 import java.util.Map;
 import java.util.IdentityHashMap;
 import java.util.Iterator;
+import java.util.Objects;
 import java.io.Serializable;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
@@ -42,9 +43,6 @@ import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Utilities;
-
-// Branch-dependent imports
-import java.util.Objects;
 
 
 /**
@@ -103,7 +101,7 @@ import java.util.Objects;
  * <p>Calls to {@code values().clear()} restore this {@code DefaultParameterValueGroup} to its initial state.</p>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 0.7
+ * @version 0.8
  *
  * @see DefaultParameterDescriptorGroup
  * @see DefaultParameterValue
@@ -283,48 +281,41 @@ public class DefaultParameterValueGroup extends Parameters implements LenientCom
      */
     @Override
     ParameterValue<?> parameterIfExist(final String name) throws ParameterNotFoundException {
-        final ParameterValueList values = this.values; // Protect against accidental changes.
+        final ParameterValueList values = this.values;          // Protect against accidental changes.
         /*
-         * Quick search for an exact match. By invoking 'descriptor(i)' instead of 'get(i)',
-         * we avoid the creation of mandatory ParameterValue which was deferred. If we find
-         * a matching name, the ParameterValue will be lazily created (if not already done)
-         * by the call to 'get(i)'.
+         * Search for an exact match. By invoking 'descriptor(i)' instead of 'get(i)', we avoid the
+         * creation of mandatory ParameterValue which was deferred. If we find a matching name, the
+         * ParameterValue will be lazily created (if not already done) by the call to 'get(i)'.
          */
+        int index     = -1;
+        int ambiguity = -1;
         final int size = values.size();
         for (int i=0; i<size; i++) {
             final GeneralParameterDescriptor descriptor = values.descriptor(i);
             if (descriptor instanceof ParameterDescriptor<?>) {
-                if (name.equals(descriptor.getName().toString())) {
-                    return (ParameterValue<?>) values.get(i);
-                }
-            }
-        }
-        /*
-         * More costly search, including aliases, before to give up.
-         */
-        int fallback  = -1;
-        int ambiguity = -1;
-        for (int i=0; i<size; i++) {
-            final GeneralParameterDescriptor descriptor = values.descriptor(i);
-            if (descriptor instanceof ParameterDescriptor<?>) {
                 if (IdentifiedObjects.isHeuristicMatchForName(descriptor, name)) {
-                    if (fallback < 0) {
-                        fallback = i;
+                    if (index < 0) {
+                        index = i;
                     } else {
                         ambiguity = i;
                     }
                 }
             }
         }
-        if (fallback >= 0) {
-            if (ambiguity < 0) {
-                return (ParameterValue<?>) values.get(fallback);   // May lazily create a ParameterValue.
-            }
-            throw new ParameterNotFoundException(Errors.format(Errors.Keys.AmbiguousName_3,
-                    IdentifiedObjects.toString(values.descriptor(fallback) .getName()),
-                    IdentifiedObjects.toString(values.descriptor(ambiguity).getName()), name), name);
+        if (ambiguity < 0) {
+            return (index >= 0) ? (ParameterValue<?>) values.get(index) : null;     // May lazily create a ParameterValue.
         }
-        return null;
+        final GeneralParameterDescriptor d1 = values.descriptor(index);
+        final GeneralParameterDescriptor d2 = values.descriptor(ambiguity);
+        final String message;
+        if (d1 == d2) {
+            message = Errors.format(Errors.Keys.MultiOccurenceValueAtIndices_3, name, index, ambiguity);
+        } else {
+            message = Errors.format(Errors.Keys.AmbiguousName_3,
+                        IdentifiedObjects.toString(d1.getName()),
+                        IdentifiedObjects.toString(d2.getName()), name);
+        }
+        throw new ParameterNotFoundException(message, name);
     }
 
     /**

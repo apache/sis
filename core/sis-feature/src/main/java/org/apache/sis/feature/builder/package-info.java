@@ -25,9 +25,11 @@
  * named "Utopia" by default:</p>
  *
  * {@preformat java
+ *     FeatureTypeBuilder builder;
+ *
  *     // Create a feature type for a city, which contains a name and a population.
- *     FeatureTypeBuilder builder = new FeatureTypeBuilder().setName("City");
- *     builder.addAttribute(String.class).setName("name").setDefaultValue("Utopia");
+ *     builder = new FeatureTypeBuilder() .setName("City");
+ *     builder.addAttribute(String.class) .setName("name").setDefaultValue("Utopia");
  *     builder.addAttribute(Integer.class).setName("population");
  *     FeatureType city = builder.build();
  *

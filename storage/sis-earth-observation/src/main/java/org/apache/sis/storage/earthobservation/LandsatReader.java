@@ -511,8 +511,8 @@ final class LandsatReader {
              * Value is "GEOTIFF".
              */
             case "OUTPUT_FORMAT": {
-                if ("GeoTIFF".equalsIgnoreCase(value)) {
-                    value = "GeoTIFF";                      // Because 'metadata.setFormat(…)' is case-sensitive.
+                if (Constants.GEOTIFF.equalsIgnoreCase(value)) {
+                    value = Constants.GEOTIFF;              // Because 'metadata.setFormat(…)' is case-sensitive.
                 }
                 try {
                     metadata.setFormat(value);

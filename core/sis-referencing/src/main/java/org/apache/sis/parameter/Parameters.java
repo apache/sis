@@ -37,8 +37,6 @@ import org.apache.sis.util.ObjectConverters;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.Debug;
 
-import static org.apache.sis.referencing.IdentifiedObjects.isHeuristicMatchForName;
-
 // Branch-dependent imports
 import org.apache.sis.internal.jdk8.JDK8;
 
@@ -48,7 +46,7 @@ import org.apache.sis.internal.jdk8.JDK8;
  * See {@link DefaultParameterValueGroup} javadoc for a description of the standard way to get and set a particular
  * parameter in a group. The remaining of this javadoc is specific to Apache SIS.
  *
- * <div class="section">Convenience static methods</div>
+ * <div class="section">Convenience methods</div>
  * This class provides the following convenience static methods:
  * <ul>
  *   <li>{@link #cast(ParameterValue, Class) cast(…, Class)} for type safety with parameterized types.</li>
@@ -57,32 +55,8 @@ import org.apache.sis.internal.jdk8.JDK8;
  *   <li>{@link #copy(ParameterValueGroup, ParameterValueGroup)} for copying values into an existing instance.</li>
  * </ul>
  *
- *
- * <div class="section">Fetching parameter values despite different names, types or units</div>
- * The common way to get a parameter is to invoke the {@link #parameter(String)} method.
- * This {@code Parameters} class provides an alternative way, using a {@link ParameterDescriptor} argument
- * instead than a {@code String}. The methods in this class use the additional information provided by the
- * descriptor for choosing a {@code String} argument that the above-cited {@code parameter(String)} method
- * is more likely to know (by giving preference to a {@linkplain DefaultParameterDescriptor#getName() name}
- * or {@linkplain DefaultParameterDescriptor#getAlias() alias} defined by a common
- * {@linkplain org.apache.sis.metadata.iso.ImmutableIdentifier#getAuthority() authority}),
- * and for applying type and unit conversions.
- *
- * <div class="note"><b>Example:</b>
- * The same parameter may be known under different names. For example the
- * {@linkplain org.apache.sis.referencing.datum.DefaultEllipsoid#getSemiMajorAxis()
- * length of the semi-major axis of the ellipsoid} is commonly known as {@code "semi_major"}.
- * But that parameter can also be named {@code "semi_major_axis"}, {@code "earth_radius"} or simply {@code "a"}
- * in other libraries. When fetching parameter values, we do not always know in advance which of the above-cited
- * names is recognized by an arbitrary {@code ParameterValueGroup} implementation.
- *
- * <p>This uncertainty is mitigated with the Apache SIS implementation since
- * {@link DefaultParameterValueGroup#parameter(String)} compares the given {@code String} argument
- * against all parameter's {@linkplain DefaultParameterDescriptor#getAlias() aliases} in addition
- * to the {@linkplain DefaultParameterDescriptor#getName() name}.
- * However we do not have the guarantee that all implementations do that.</p></div>
- *
- * The method names in this class follow the names of methods provided by the {@link ParameterValue} interface.
+ * Most instance methods in this class follow the same naming pattern
+ * than the methods provided by the {@link ParameterValue} interface.
  * Those methods are themselves inspired by JDK methods:
  *
  * <table class="sis">
@@ -98,21 +72,38 @@ import org.apache.sis.internal.jdk8.JDK8;
  * </table>
  *
  *
- * <div class="section">Note for subclass implementors</div>
- * All methods in this class get their information from the {@link ParameterValueGroup} methods.
- * In addition, each method in this class is isolated from all others: overriding one method has
- * no impact on other methods.
+ * <div class="section">Fetching parameter values despite different names, types or units</div>
+ * The common way to get a parameter is to invoke the {@link #parameter(String)} method.
+ * This {@code Parameters} class provides alternative ways, using a {@link ParameterDescriptor} argument
+ * instead than a {@code String} argument. Those descriptors provide additional information like the various
+ * {@linkplain DefaultParameterDescriptor#getAlias() aliases} under which the same parameter may be known.
+ * By using this information, {@code Parameters} can choose the most appropriate parameter name or alias
+ * (by searching for a common {@linkplain org.apache.sis.metadata.iso.ImmutableIdentifier#getAuthority() authority})
+ * when it delegates its work to the {@code parameter(String)} method.
  *
- * <div class="note"><b>Note on this class name:</b>
- * Despite implementing the {@link ParameterValueGroup} interface, this class is not named
- * {@code AbstractParameterValueGroup} because it does not implement any method from the interface.
- * Extending this class or extending {@link Object} make almost no difference for implementors.
- * The intend of this {@code Parameters} class is rather to extend the API with methods
- * that are convenient for the way Apache SIS uses parameters.
- * In other words, this class is intended for users rather than implementors.</div>
+ * <div class="note"><b>Example:</b>
+ * The same parameter may be known under different names. For example the
+ * {@linkplain org.apache.sis.referencing.datum.DefaultEllipsoid#getSemiMajorAxis()
+ * length of the semi-major axis of the ellipsoid} is commonly known as {@code "semi_major"}.
+ * But that parameter can also be named {@code "semi_major_axis"}, {@code "earth_radius"} or simply {@code "a"}
+ * in other libraries. When fetching parameter values, we do not always know in advance which of the above-cited
+ * names is recognized by an arbitrary {@code ParameterValueGroup} instance.</div>
+ *
+ * {@code Parameters} uses also the descriptor information for applying type and unit conversions
+ * (i.e. returned values are converted to the units of measurement specified by the given parameter descriptor).
+ *
+ *
+ * <div class="section">Note for subclass implementors</div>
+ * This class does not implement any method from the {@link ParameterValueGroup} interface
+ * (this class is not named “{@code AbstractParameterValueGroup}” for that reason).
+ * Extending this class or extending {@link Object} make almost no difference for implementors;
+ * {@code Parameters} purpose is mostly to extend the API for users convenience.
+ * All methods in this class get their information from the {@link ParameterValueGroup} methods.
+ * In addition, unless otherwise specified, methods in this class is isolated from all others:
+ * overriding one method has no impact on other methods.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.7
+ * @version 0.8
  * @since   0.4
  * @module
  */
@@ -350,13 +341,14 @@ public abstract class Parameters implements ParameterValueGroup, Cloneable {
      * If no name or alias for this group's authority can be found, then the primary name will be returned.
      *
      * @param  source  the parameter for which the name is wanted.
-     * @return the name of the given parameter.
+     * @return the name of the given parameter. May be {@code null} if there is no name at all,
+     *         but such nameless descriptors are not legal.
      */
     private String getName(final GeneralParameterDescriptor source) {
         final ParameterDescriptorGroup descriptor = getDescriptor();
-        if (descriptor != null) {   // Paranoiac check (should never be null)
+        if (descriptor != null) {                                   // Paranoiac check (should never be null)
             final Identifier group = descriptor.getName();
-            if (group != null) {    // Paranoiac check (should never be null)
+            if (group != null) {                                    // Paranoiac check (should never be null)
                 final Citation authority = group.getAuthority();
                 final String name = IdentifiedObjects.getName(source, authority);
                 if (name != null || authority == null) {
@@ -375,30 +367,52 @@ public abstract class Parameters implements ParameterValueGroup, Cloneable {
      */
     @SuppressWarnings("null")
     ParameterValue<?> parameterIfExist(final String name) throws ParameterNotFoundException {
-        ParameterValue<?> fallback  = null;
+        int i1 = 0, i2 = 0;
+        ParameterValue<?> first     = null;
         ParameterValue<?> ambiguity = null;
-        for (final GeneralParameterValue value : values()) {
+        final List<GeneralParameterValue> values = values();
+        final int size = values.size();
+        for (int i=0; i<size; i++) {
+            final GeneralParameterValue value = values.get(i);
             if (value instanceof ParameterValue<?>) {
                 final ParameterValue<?> param = (ParameterValue<?>) value;
-                final ParameterDescriptor<?> descriptor = param.getDescriptor();
-                if (name.equals(descriptor.getName().toString())) {
-                    return param;
-                }
-                if (isHeuristicMatchForName(descriptor, name)) {
-                    if (fallback == null) {
-                        fallback = param;
+                if (IdentifiedObjects.isHeuristicMatchForName(param.getDescriptor(), name)) {
+                    if (first == null) {
+                        first = param;
+                        i1 = i;
                     } else {
                         ambiguity = param;
+                        i2 = i;
                     }
                 }
             }
         }
-        if (ambiguity != null) {
-            throw new ParameterNotFoundException(Errors.format(Errors.Keys.AmbiguousName_3,
-                    IdentifiedObjects.toString(fallback .getDescriptor().getName()),
-                    IdentifiedObjects.toString(ambiguity.getDescriptor().getName()), name), name);
+        /*
+         * If there is no ambiguity, we are done. In case of ambiguity we should throw an exception.
+         * However we will not throw the exception if this method is invoked from the getParameter(…)
+         * method of a Parameters instance wrapping a non-SIS implementation. The reason is that for
+         * foreigner implementations, the package-private getParameter(…) method will conservatively
+         * delegate to the public parameter(…) method, in case the implementor overrides it. But for
+         * Apache SIS implementations in this package, we rely on the exception being thrown.
+         *
+         * Note that all classes in this package except UnmodifiableParameterValueGroup override this
+         * method in a way that unconditionally throw the exception.  UnmodifiableParameterValueGroup
+         * is the class that needs the exception to be thrown.
+         */
+        if (ambiguity == null || !isKnownImplementation()) {
+            return first;
         }
-        return fallback;
+        final GeneralParameterDescriptor d1 = first    .getDescriptor();
+        final GeneralParameterDescriptor d2 = ambiguity.getDescriptor();
+        final String message;
+        if (d1 == d2) {
+            message = Errors.format(Errors.Keys.MultiOccurenceValueAtIndices_3, name, i1, i2);
+        } else {
+            message = Errors.format(Errors.Keys.AmbiguousName_3,
+                        IdentifiedObjects.toString(d1.getName()),
+                        IdentifiedObjects.toString(d2.getName()), name);
+        }
+        throw new ParameterNotFoundException(message, name);
     }
 
     /**
@@ -477,6 +491,8 @@ public abstract class Parameters implements ParameterValueGroup, Cloneable {
      *         default value} otherwise (which may be {@code null}).
      * @throws ParameterNotFoundException if the given {@code parameter} name or alias is not legal for this group.
      *
+     * @see #getMandatoryValue(ParameterDescriptor)
+     * @see #getOrCreate(ParameterDescriptor)
      * @see DefaultParameterValueGroup#parameter(String)
      * @see DefaultParameterValue#getValue()
      *
@@ -513,6 +529,9 @@ public abstract class Parameters implements ParameterValueGroup, Cloneable {
      *         default value} otherwise provided that it is not {@code null}.
      * @throws ParameterNotFoundException if the given {@code parameter} name or alias is not legal for this group.
      * @throws IllegalStateException if the value is not defined and there is no default value.
+     *
+     * @see #getValue(ParameterDescriptor)
+     * @see #getOrCreate(ParameterDescriptor)
      *
      * @since 0.7
      */
@@ -696,6 +715,8 @@ public abstract class Parameters implements ParameterValueGroup, Cloneable {
      * @return the requested parameter instance.
      * @throws ParameterNotFoundException if the given {@code parameter} name or alias is not legal for this group.
      *
+     * @see #getValue(ParameterDescriptor)
+     * @see #getMandatoryValue(ParameterDescriptor)
      * @see DefaultParameterValueGroup#parameter(String)
      *
      * @since 0.6
