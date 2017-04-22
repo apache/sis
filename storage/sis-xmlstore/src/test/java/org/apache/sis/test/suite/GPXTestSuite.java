@@ -25,6 +25,7 @@ import org.junit.BeforeClass;
  * All tests from the {@code sis-xmlstore} module, in approximative dependency order.
  */
 @Suite.SuiteClasses({
+    org.apache.sis.internal.storage.gpx.TypesTest.class,
     org.apache.sis.internal.storage.gpx.MetadataTest.class,
     org.apache.sis.internal.storage.gpx.ReaderTest.class,
     org.apache.sis.internal.storage.gpx.WriterTest.class

@@ -535,6 +535,12 @@ public final class Errors extends IndexedResourceBundle {
         public static final short MissingValueInColumn_1 = 90;
 
         /**
+         * Can not return a single value for “{0}” because there is at least two occurrences, at
+         * indices {1} and {2}.
+         */
+        public static final short MultiOccurenceValueAtIndices_3 = 173;
+
+        /**
          * Options “{0}” and “{1}” are mutually exclusive.
          */
         public static final short MutuallyExclusiveOptions_2 = 91;

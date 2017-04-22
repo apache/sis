@@ -70,7 +70,6 @@ import org.apache.sis.internal.util.Utilities;
 import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.math.Vector;
 import org.apache.sis.measure.Units;
-import org.apache.sis.util.iso.DefaultNameSpace;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.CommonCRS;
@@ -81,11 +80,16 @@ import org.apache.sis.referencing.crs.DefaultGeographicCRS;
 import org.apache.sis.referencing.factory.GeodeticAuthorityFactory;
 import org.apache.sis.referencing.factory.GeodeticObjectFactory;
 import org.apache.sis.io.TableAppender;
+import org.apache.sis.util.iso.DefaultNameSpace;
+import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.Characters;
 import org.apache.sis.util.Debug;
 
 import static org.apache.sis.util.Utilities.equalsIgnoreMetadata;
+
+// Branch-dependent imports
+import org.apache.sis.internal.jdk8.JDK8;
 
 
 /**
@@ -246,6 +250,13 @@ final class CRSBuilder {
     private Identifier lastName;
 
     /**
+     * {@code true} when an exception has been thrown but this {@code CRSBuilder} already reported a warning,
+     * so there is no need for the caller to report a warning again. {@code CRSBuilder} sometime reports warnings
+     * itself when it can provide a better warning message than what the caller can do.
+     */
+    boolean alreadyReported;
+
+    /**
      * Creates a new builder of coordinate reference systems.
      *
      * @param reader  where to report warnings if any.
@@ -393,6 +404,7 @@ final class CRSBuilder {
             return Integer.parseInt(value.toString());
         } catch (NumberFormatException e) {
             invalidValue(key, value);
+            alreadyReported = true;
             throw e;
         }
     }
@@ -416,6 +428,7 @@ final class CRSBuilder {
             return Double.parseDouble(value.toString());
         } catch (NumberFormatException e) {
             invalidValue(key, value);
+            alreadyReported = true;
             throw e;
         }
     }
@@ -434,6 +447,7 @@ final class CRSBuilder {
         if (value != null) {
             return value;
         }
+        alreadyReported = true;
         throw new NoSuchElementException(missingValue(key));
     }
 
@@ -452,6 +466,7 @@ final class CRSBuilder {
         if (!Double.isNaN(value)) {
             return value;
         }
+        alreadyReported = true;
         throw new NoSuchElementException(missingValue(key));
     }
 
@@ -976,6 +991,7 @@ final class CRSBuilder {
         final int epsg = getAsInteger(GeoKeys.Ellipsoid);
         switch (epsg) {
             case GeoCodes.undefined: {
+                alreadyReported = true;
                 throw new NoSuchElementException(missingValue(GeoKeys.GeodeticDatum));
             }
             case GeoCodes.userDefined: {
@@ -1058,6 +1074,7 @@ final class CRSBuilder {
         final int epsg = getAsInteger(GeoKeys.GeodeticDatum);
         switch (epsg) {
             case GeoCodes.undefined: {
+                alreadyReported = true;
                 throw new NoSuchElementException(missingValue(GeoKeys.GeodeticDatum));
             }
             case GeoCodes.userDefined: {
@@ -1179,7 +1196,7 @@ final class CRSBuilder {
     }
 
     /**
-     * Returns the name at the given index if non-null. If that name is null, search for a name is a sister element
+     * Returns the name at the given index if non-null. If that name is null, search for a name in a sister element
      * (e.g. the datum name or the geographic CRS name). If none is found, returns {@code null}.
      */
     private static String getOrDefault(final String[] names, int component) {
@@ -1224,6 +1241,7 @@ final class CRSBuilder {
         final int epsg = getAsInteger(GeoKeys.GeographicType);
         switch (epsg) {
             case GeoCodes.undefined: {
+                alreadyReported = true;
                 throw new NoSuchElementException(missingValue(GeoKeys.GeographicType));
             }
             case GeoCodes.userDefined: {
@@ -1292,6 +1310,7 @@ final class CRSBuilder {
         final int epsg = getAsInteger(GeoKeys.GeographicType);
         switch (epsg) {
             case GeoCodes.undefined: {
+                alreadyReported = true;
                 throw new NoSuchElementException(missingValue(GeoKeys.GeographicType));
             }
             case GeoCodes.userDefined: {
@@ -1353,6 +1372,51 @@ final class CRSBuilder {
     //////////////////////////////////////////////////////////////////////////////////////////////////
 
     /**
+     * Map projection parameters to be considered as aliases. This table is used for reading GeoTIFF files
+     * that are not really well-formed, but for which we can reasonably guess what was the producer intend
+     * and which parameters were confused. See {@link #aliases(Map)} for more explanation.
+     */
+    private static final short[][] PARAMETER_ALIASES = {
+        {GeoKeys.NatOriginLong, GeoKeys.FalseOriginLong,     GeoKeys.CenterLong},
+        {GeoKeys.NatOriginLat,  GeoKeys.FalseOriginLat,      GeoKeys.CenterLat},
+        {GeoKeys.FalseEasting,  GeoKeys.FalseOriginEasting,  GeoKeys.CenterEasting},
+        {GeoKeys.FalseNorthing, GeoKeys.FalseOriginNorthing, GeoKeys.CenterNorthing},
+        {GeoKeys.ScaleAtNatOrigin,                           GeoKeys.ScaleAtCenter}
+    };
+
+    /**
+     * Updates a mapping from GeoTIFF numerical identifiers to parameter names by adding parameter aliases.
+     * This method adds to the given map some GeoTIFF keys to be considered synonymous to an existing key.
+     * Those "synonymous" parameters are strictly speaking not for the map projection that we are parsing,
+     * but it is common to see GeoTIFF files with "wrong" projection parameter codes. For example:
+     *
+     * <ul>
+     *   <li>The {@code "CT_LambertConfConic_1SP"} projection uses a {@code "NatOriginLong"} parameter.</li>
+     *   <li>The {@code "CT_LambertConfConic_2SP"} projection uses a {@code "FalseOriginLong"} parameter.</li>
+     * </ul>
+     *
+     * but we sometime see {@code "NatOriginLong"} parameter used for the {@code "CT_LambertConfConic_2SP"} projection.
+     * Semantically those two parameters are for two different things but mathematically they are used in the same way.
+     * Those "synonymous" will be invisible to the user; the map projection that (s)he will get uses the names defined
+     * in the descriptor (not in the GeoTIFF file).
+     */
+    private static void aliases(final Map<Integer,String> mapping) {
+        for (final short[] codes : PARAMETER_ALIASES) {
+            for (int i=0; i<codes.length; i++) {
+                final String name = mapping.get(codes[i] & 0xFFFF);
+                if (name != null) {
+                    for (int j=0; j<codes.length; j++) {
+                        if (j != i) {
+                            JDK8.putIfAbsent(mapping, codes[j] & 0xFFFF, name);
+                        }
+                    }
+                    break;
+                }
+            }
+        }
+    }
+
+    /**
      * Creates a projected CRS from an EPSG code or from user-defined parameters.
      * Some GeoTIFF values used by this method are:
      *
@@ -1379,6 +1443,7 @@ final class CRSBuilder {
         final int epsg = getAsInteger(GeoKeys.ProjectedCSType);
         switch (epsg) {
             case GeoCodes.undefined: {
+                alreadyReported = true;
                 throw new NoSuchElementException(missingValue(GeoKeys.ProjectedCSType));
             }
             case GeoCodes.userDefined: {
@@ -1442,6 +1507,7 @@ final class CRSBuilder {
      * @param  linearUnit   the linear unit of easting and northing values.
      * @throws NoSuchElementException if a mandatory value is missing.
      * @throws NumberFormatException if a numeric value was stored as a string and can not be parsed.
+     * @throws ParameterNotFoundException if the GeoTIFF file defines an unexpected map projection parameter.
      * @throws ClassCastException if an object defined by an EPSG code is not of the expected type.
      * @throws FactoryException if an error occurred during objects creation with the factories.
      */
@@ -1451,18 +1517,22 @@ final class CRSBuilder {
         final int epsg = getAsInteger(GeoKeys.Projection);
         switch (epsg) {
             case GeoCodes.undefined: {
+                alreadyReported = true;
                 throw new NoSuchElementException(missingValue(GeoKeys.Projection));
             }
             case GeoCodes.userDefined: {
                 final Unit<Angle>         azimuthUnit = createUnit(GeoKeys.AzimuthUnits, (short) 0, Angle.class, Units.DEGREE);
                 final String              type        = getMandatoryString(GeoKeys.CoordTrans);
-                final OperationMethod     method      = operationFactory().getOperationMethod(type);
+                final OperationMethod     method      = operationFactory().getOperationMethod(Constants.GEOTIFF + ':' + type);
                 final ParameterValueGroup parameters  = method.getParameters().createValue();
+                final Map<Integer,String> toNames     = ReferencingUtilities.identifierToName(parameters.getDescriptor(), Citations.GEOTIFF);
+                final Map<Object,Number>  paramValues = new HashMap<>();    // Keys: [String|Short] instances for [known|unknown] parameters.
+                final Map<Short,Unit<?>>  deferred    = new HashMap<>();    // Only unknown parameters.
                 final Iterator<Map.Entry<Short,Object>> it = geoKeys.entrySet().iterator();
                 while (it.hasNext()) {
                     final Unit<?> unit;
                     final Map.Entry<Short,?> entry = it.next();
-                    final short key = entry.getKey();
+                    final Short key = entry.getKey();
                     switch (GeoKeys.unitOf(key)) {
                         case GeoKeys.RATIO:   unit = Units.UNITY; break;
                         case GeoKeys.LINEAR:  unit = linearUnit;  break;
@@ -1470,15 +1540,52 @@ final class CRSBuilder {
                         case GeoKeys.AZIMUTH: unit = azimuthUnit; break;
                         default: continue;
                     }
-                    final double value = ((Number) entry.getValue()).doubleValue();
+                    final Number value = (Number) entry.getValue();
                     it.remove();
-                    parameters.parameter("GeoTIFF:" + key).setValue(value, unit);
+                    final String paramName = toNames.get(key & 0xFFFF);
+                    if (paramName != null) {
+                        paramValues.put(paramName, value);
+                        parameters.parameter(paramName).setValue(value.doubleValue(), unit);
+                    } else {
+                        paramValues.put(key, value);
+                        deferred.put(key, unit);
+                    }
+                }
+                /*
+                 * At this point we finished to set all known map projection parameters. Sometime GeoTIFF files
+                 * set the same parameter many times using different names as a safety for GeoTIFF readers that
+                 * expect wrong parameters. If this is the case, verify that the parameter values are consistent.
+                 * It is also possible that we found new parameters (actually parameters using the wrong names).
+                 */
+                if (!deferred.isEmpty()) {
+                    aliases(toNames);
+                    for (final Map.Entry<Short,Unit<?>> entry : deferred.entrySet()) {
+                        final Short key = entry.getKey();
+                        String paramName = toNames.get(key & 0xFFFF);
+                        if (paramName == null) {
+                            paramName = GeoKeys.name(key);
+                            throw new ParameterNotFoundException(reader.errors().getString(
+                                    Errors.Keys.UnexpectedParameter_1, paramName), paramName);
+                        }
+                        final Number value  = paramValues.get(key);
+                        final Number actual = JDK8.putIfAbsent(paramValues, paramName, value);
+                        if (actual == null) {
+                            parameters.parameter(paramName).setValue(value.doubleValue(), entry.getValue());
+                        } else if (!actual.equals(value)) {
+                            warning(Resources.Keys.InconsistentMapProjParameter_4, paramName, actual, GeoKeys.name(key), value);
+                        }
+                    }
                 }
                 final Conversion c = operationFactory().createDefiningConversion(properties(name), method, parameters);
                 lastName = c.getName();
                 return c;
             }
             default: {
+                /*
+                 * Conversion defined by EPSG code. In principle we should just use the EPSG code.
+                 * But if the file also defines the components, verify that those components are
+                 * consistent with what we would expect for a conversion of the given EPSG code.
+                 */
                 final Conversion projection = (Conversion) epsgFactory().createCoordinateOperation(String.valueOf(epsg));
                 verify(projection, angularUnit, linearUnit);
                 return projection;
@@ -1551,6 +1658,7 @@ final class CRSBuilder {
         switch (epsg) {
             case GeoCodes.undefined:
             case GeoCodes.userDefined: {
+                alreadyReported = true;
                 throw new NoSuchElementException(missingValue(GeoKeys.VerticalDatum));
             }
             default: {

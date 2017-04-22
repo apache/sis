@@ -20,10 +20,13 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Locale;
 import java.util.Map;
+import java.util.HashMap;
 import com.esri.core.geometry.Point;
 import org.opengis.util.ScopedName;
+import org.opengis.util.GenericName;
 import org.opengis.util.NameFactory;
 import org.opengis.util.FactoryException;
+import org.opengis.util.InternationalString;
 import org.opengis.metadata.citation.OnlineResource;
 import org.opengis.metadata.content.ContentInformation;
 import org.apache.sis.storage.gps.Fix;
@@ -33,6 +36,7 @@ import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.feature.AbstractIdentifiedType;
 import org.apache.sis.feature.FeatureOperations;
 import org.apache.sis.feature.builder.FeatureTypeBuilder;
+import org.apache.sis.feature.builder.PropertyTypeBuilder;
 import org.apache.sis.feature.builder.AttributeRole;
 import org.apache.sis.internal.feature.AttributeConvention;
 import org.apache.sis.internal.storage.FeatureCatalogBuilder;
@@ -42,6 +46,7 @@ import org.apache.sis.util.Static;
 
 // Branch-dependent imports
 import org.apache.sis.internal.jdk8.Temporal;
+import org.apache.sis.util.iso.ResourceInternationalString;
 import org.opengis.feature.FeatureType;
 
 
@@ -108,6 +113,7 @@ final class Types extends Static {
      * @throws FactoryException if an error occurred while creating an "envelope bounds" operation.
      */
     Types(final NameFactory factory, final Locale locale) throws FactoryException, IllegalNameException {
+        final Map<String,InternationalString[]> resources = new HashMap<>();
         final ScopedName    geomName = AttributeConvention.GEOMETRY_PROPERTY;
         final Map<String,?> geomInfo = Collections.singletonMap(AbstractIdentifiedType.NAME_KEY, geomName);
         final Map<String,?> envpInfo = Collections.singletonMap(AbstractIdentifiedType.NAME_KEY, AttributeConvention.ENVELOPE_PROPERTY);
@@ -179,7 +185,7 @@ final class Types extends Static {
         builder.addAttribute(Double        .class).setName(Tags.PDOP);
         builder.addAttribute(Double        .class).setName(Tags.AGE_OF_GPS_DATA);
         builder.addAttribute(Integer       .class).setName(Tags.DGPS_ID);
-        wayPoint = builder.build();
+        wayPoint = create(builder, resources);
         /*
          * Route ⇾ GPXEntity
          * ┌────────────────┬────────────────┬────────────────────────┬─────────────┐
@@ -212,7 +218,7 @@ final class Types extends Static {
         builder.addAttribute(Integer.class).setName(Tags.NUMBER);
         builder.addProperty(wayPoint.getProperty(Tags.TYPE));
         builder.addAssociation(wayPoint).setName(Tags.ROUTE_POINTS).setMaximumOccurs(Integer.MAX_VALUE);
-        route = builder.build();
+        route = create(builder, resources);
         /*
          * TrackSegment ⇾ GPXEntity
          * ┌────────────────┬──────────┬─────────────┬─────────────┐
@@ -231,7 +237,7 @@ final class Types extends Static {
         builder.addProperty(FeatureOperations.envelope(envpInfo, null, groupOp));
         builder.setDefaultCardinality(0, 1);
         builder.addAssociation(wayPoint).setName(Tags.TRACK_POINTS).setMaximumOccurs(Integer.MAX_VALUE);
-        trackSegment = builder.build();
+        trackSegment = create(builder, resources);
         /*
          * Track ⇾ GPXEntity
          * ┌────────────────┬────────────────┬────────────────────────┬─────────────┐
@@ -264,7 +270,7 @@ final class Types extends Static {
         builder.addProperty(route.getProperty(Tags.NUMBER));
         builder.addProperty(route.getProperty(Tags.TYPE));
         builder.addAssociation(trackSegment).setName(Tags.TRACK_SEGMENTS).setMaximumOccurs(Integer.MAX_VALUE);
-        track = builder.build();
+        track = create(builder, resources);
 
         final FeatureCatalogBuilder fc = new FeatureCatalogBuilder(null);
         fc.define(route);
@@ -272,5 +278,33 @@ final class Types extends Static {
         fc.define(wayPoint);
         metadata = fc.build(true).getContentInfo();
         names = fc.features;
+    }
+
+    /**
+     * Adds internationalized designation and definition information for all properties in the given type.
+     * Then, returns the result of {@link FeatureTypeBuilder#build()}.
+     *
+     * @param  builder   the feature type builder for which to add designations and definitions.
+     * @param  previous  previously created international strings as array of length 2.
+     *                   The first element is the designation and the second element is the definition.
+     */
+    private static FeatureType create(final FeatureTypeBuilder builder, final Map<String,InternationalString[]> previous) {
+        for (final PropertyTypeBuilder p : builder.properties()) {
+            final GenericName name = p.getName();
+            if (!AttributeConvention.contains(name)) {
+                final String key = name.toString();
+                InternationalString[] resources = previous.get(key);
+                if (resources == null) {
+                    resources = new InternationalString[] {
+                        new ResourceInternationalString("org.apache.sis.internal.storage.gpx.Designations", key),
+                        new ResourceInternationalString("org.apache.sis.internal.storage.gpx.Definitions",  key)
+                    };
+                    previous.put(key, resources);
+                }
+                p.setDefinition (resources[1]);
+                p.setDesignation(resources[0]);
+            }
+        }
+        return builder.build();
     }
 }
