@@ -82,6 +82,7 @@ import org.apache.sis.referencing.crs.DefaultGeographicCRS;
 import org.apache.sis.referencing.factory.GeodeticAuthorityFactory;
 import org.apache.sis.referencing.factory.GeodeticObjectFactory;
 import org.apache.sis.io.TableAppender;
+import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.Characters;
 import org.apache.sis.util.Debug;
@@ -247,6 +248,13 @@ final class CRSBuilder {
     private Identifier lastName;
 
     /**
+     * {@code true} when an exception has been thrown but this {@code CRSBuilder} already reported a warning,
+     * so there is no need for the caller to report a warning again. {@code CRSBuilder} sometime reports warnings
+     * itself when it can provide a better warning message than what the caller can do.
+     */
+    boolean alreadyReported;
+
+    /**
      * Creates a new builder of coordinate reference systems.
      *
      * @param reader  where to report warnings if any.
@@ -391,6 +399,7 @@ final class CRSBuilder {
             return Integer.parseInt(value.toString());
         } catch (NumberFormatException e) {
             invalidValue(key, value);
+            alreadyReported = true;
             throw e;
         }
     }
@@ -414,6 +423,7 @@ final class CRSBuilder {
             return Double.parseDouble(value.toString());
         } catch (NumberFormatException e) {
             invalidValue(key, value);
+            alreadyReported = true;
             throw e;
         }
     }
@@ -432,6 +442,7 @@ final class CRSBuilder {
         if (value != null) {
             return value;
         }
+        alreadyReported = true;
         throw new NoSuchElementException(missingValue(key));
     }
 
@@ -450,6 +461,7 @@ final class CRSBuilder {
         if (!Double.isNaN(value)) {
             return value;
         }
+        alreadyReported = true;
         throw new NoSuchElementException(missingValue(key));
     }
 
@@ -971,6 +983,7 @@ final class CRSBuilder {
         final int epsg = getAsInteger(GeoKeys.Ellipsoid);
         switch (epsg) {
             case GeoCodes.undefined: {
+                alreadyReported = true;
                 throw new NoSuchElementException(missingValue(GeoKeys.GeodeticDatum));
             }
             case GeoCodes.userDefined: {
@@ -1053,6 +1066,7 @@ final class CRSBuilder {
         final int epsg = getAsInteger(GeoKeys.GeodeticDatum);
         switch (epsg) {
             case GeoCodes.undefined: {
+                alreadyReported = true;
                 throw new NoSuchElementException(missingValue(GeoKeys.GeodeticDatum));
             }
             case GeoCodes.userDefined: {
@@ -1219,6 +1233,7 @@ final class CRSBuilder {
         final int epsg = getAsInteger(GeoKeys.GeographicType);
         switch (epsg) {
             case GeoCodes.undefined: {
+                alreadyReported = true;
                 throw new NoSuchElementException(missingValue(GeoKeys.GeographicType));
             }
             case GeoCodes.userDefined: {
@@ -1287,6 +1302,7 @@ final class CRSBuilder {
         final int epsg = getAsInteger(GeoKeys.GeographicType);
         switch (epsg) {
             case GeoCodes.undefined: {
+                alreadyReported = true;
                 throw new NoSuchElementException(missingValue(GeoKeys.GeographicType));
             }
             case GeoCodes.userDefined: {
@@ -1374,6 +1390,7 @@ final class CRSBuilder {
         final int epsg = getAsInteger(GeoKeys.ProjectedCSType);
         switch (epsg) {
             case GeoCodes.undefined: {
+                alreadyReported = true;
                 throw new NoSuchElementException(missingValue(GeoKeys.ProjectedCSType));
             }
             case GeoCodes.userDefined: {
@@ -1437,6 +1454,7 @@ final class CRSBuilder {
      * @param  linearUnit   the linear unit of easting and northing values.
      * @throws NoSuchElementException if a mandatory value is missing.
      * @throws NumberFormatException if a numeric value was stored as a string and can not be parsed.
+     * @throws ParameterNotFoundException if the GeoTIFF file defines an unexpected map projection parameter.
      * @throws ClassCastException if an object defined by an EPSG code is not of the expected type.
      * @throws FactoryException if an error occurred during objects creation with the factories.
      */
@@ -1446,13 +1464,15 @@ final class CRSBuilder {
         final int epsg = getAsInteger(GeoKeys.Projection);
         switch (epsg) {
             case GeoCodes.undefined: {
+                alreadyReported = true;
                 throw new NoSuchElementException(missingValue(GeoKeys.Projection));
             }
             case GeoCodes.userDefined: {
                 final Unit<Angle>         azimuthUnit = createUnit(GeoKeys.AzimuthUnits, (short) 0, Angle.class, Units.DEGREE);
                 final String              type        = getMandatoryString(GeoKeys.CoordTrans);
-                final OperationMethod     method      = operationFactory().getOperationMethod(type);
+                final OperationMethod     method      = operationFactory().getOperationMethod(Constants.GEOTIFF + ':' + type);
                 final ParameterValueGroup parameters  = method.getParameters().createValue();
+                final Map<Integer,String> toNames     = ReferencingUtilities.identifierToName(parameters.getDescriptor(), Citations.GEOTIFF);
                 final Iterator<Map.Entry<Short,Object>> it = geoKeys.entrySet().iterator();
                 while (it.hasNext()) {
                     final Unit<?> unit;
@@ -1465,9 +1485,15 @@ final class CRSBuilder {
                         case GeoKeys.AZIMUTH: unit = azimuthUnit; break;
                         default: continue;
                     }
+                    String paramName = toNames.get(Short.toUnsignedInt(key));
+                    if (paramName == null) {
+                        paramName = GeoKeys.name(key);
+                        throw new ParameterNotFoundException(reader.errors().getString(
+                                Errors.Keys.UnexpectedParameter_1, paramName), paramName);
+                    }
                     final double value = ((Number) entry.getValue()).doubleValue();
                     it.remove();
-                    parameters.parameter("GeoTIFF:" + key).setValue(value, unit);
+                    parameters.parameter(paramName).setValue(value, unit);
                 }
                 final Conversion c = operationFactory().createDefiningConversion(properties(name), method, parameters);
                 lastName = c.getName();
@@ -1546,6 +1572,7 @@ final class CRSBuilder {
         switch (epsg) {
             case GeoCodes.undefined:
             case GeoCodes.userDefined: {
+                alreadyReported = true;
                 throw new NoSuchElementException(missingValue(GeoKeys.VerticalDatum));
             }
             default: {
