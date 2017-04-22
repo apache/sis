@@ -26,6 +26,7 @@ import org.apache.sis.storage.ProbeResult;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.internal.storage.Capabilities;
 import org.apache.sis.internal.storage.Capability;
+import org.apache.sis.internal.util.Constants;
 
 
 /**
@@ -69,7 +70,7 @@ public class GeoTiffStoreProvider extends DataStoreProvider {
      */
     @Override
     public String getShortName() {
-        return "GeoTIFF";
+        return Constants.GEOTIFF;
     }
 
     /**

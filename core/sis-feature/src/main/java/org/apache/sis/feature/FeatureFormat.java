@@ -18,6 +18,8 @@ package org.apache.sis.feature;
 
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Set;
+import java.util.EnumSet;
 import java.util.Iterator;
 import java.util.Locale;
 import java.util.TimeZone;
@@ -79,7 +81,7 @@ public class FeatureFormat extends TabularFormat<Object> {
     /**
      * For cross-version compatibility.
      */
-    private static final long serialVersionUID = 8866440357566645070L;
+    private static final long serialVersionUID = -5792086817264884947L;
 
     /**
      * An instance created when first needed and potentially shared.
@@ -90,6 +92,12 @@ public class FeatureFormat extends TabularFormat<Object> {
      * The locale for international strings.
      */
     private final Locale displayLocale;
+
+    /**
+     * The columns to include in the table formatted by this {@code FeatureFormat}.
+     * By default, all columns having at least one value are included.
+     */
+    private final EnumSet<Column> columns = EnumSet.allOf(Column.class);
 
     /**
      * Maximal length of attribute values, in number of characters.
@@ -150,6 +158,104 @@ public class FeatureFormat extends TabularFormat<Object> {
     }
 
     /**
+     * Returns all columns that may be shown in the tables to format.
+     * The columns included in the set may be shown, but not necessarily;
+     * some columns will still be omitted if they are completely empty.
+     * However columns <em>not</em> included in the set are guaranteed to be omitted.
+     *
+     * @return all columns that may be shown in the tables to format.
+     *
+     * @since 0.8
+     */
+    public Set<Column> getAllowedColumns() {
+        return columns.clone();
+    }
+
+    /**
+     * Sets all columns that may be shown in the tables to format.
+     * Note that the columns specified to this method are not guaranteed to be shown;
+     * some columns will still be omitted if they are completely empty.
+     *
+     * @param inclusion  all columns that may be shown in the tables to format.
+     *
+     * @since 0.8
+     */
+    public void setAllowedColumns(final Set<Column> inclusion) {
+        ArgumentChecks.ensureNonNull("inclusion", inclusion);
+        columns.clear();
+        columns.addAll(inclusion);
+    }
+
+    /**
+     * Identifies the columns to include in the table formatted by {@code FeatureFormat}.
+     * By default, all columns having at least one non-null value are shown. But a smaller
+     * set of columns can be specified to the {@link FeatureFormat#setAllowedColumns(Set)}
+     * method for formatting narrower tables.
+     *
+     * @see FeatureFormat#setAllowedColumns(Set)
+     *
+     * @since 0.8
+     */
+    public enum Column {
+        /**
+         * Natural language designator for the property.
+         * This is the character sequence returned by {@link AbstractIdentifiedType#getDesignation()}.
+         * This column is omitted if no property has a designation.
+         */
+        DESIGNATION(Vocabulary.Keys.Designation),
+
+        /**
+         * Name of the property.
+         * This is the character sequence returned by {@link AbstractIdentifiedType#getName()}.
+         */
+        NAME(Vocabulary.Keys.Name),
+
+        /**
+         * Type of property values. This is the type returned by {@link DefaultAttributeType#getValueClass()} or
+         * {@link FeatureAssociationRole#getValueType()}.
+         */
+        TYPE(Vocabulary.Keys.Type),
+
+        /**
+         * The minimum and maximum occurrences of attribute values. This is made from the numbers returned
+         * by {@link DefaultAttributeType#getMinimumOccurs()} and {@link DefaultAttributeType#getMaximumOccurs()}.
+         */
+        CARDINALITY(Vocabulary.Keys.Cardinality),
+
+        /**
+         * Property value (for properties) or default value (for property types).
+         * This is the value returned by {@link Attribute#getValue()}, {@link FeatureAssociation#getValue()}
+         * or {@link DefaultAttributeType#getDefaultValue()}.
+         */
+        VALUE(Vocabulary.Keys.Value),
+
+        /**
+         * Other attributes that describes the attribute.
+         * This is made from the map returned by {@link Attribute#characteristics()}.
+         * This column is omitted if no property has characteristics.
+         */
+        CHARACTERISTICS(Vocabulary.Keys.Characteristics),
+
+        /**
+         * Whether a property is deprecated, or other remarks.
+         * This column is omitted if no property has remarks.
+         */
+        REMARKS(Vocabulary.Keys.Remarks);
+
+        /**
+         * The {@link Vocabulary} key to use for formatting the header of this column.
+         */
+        final short resourceKey;
+
+        /**
+         * Creates a new column enumeration constant.
+         */
+        private Column(final short key) {
+            resourceKey = key;
+        }
+    }
+
+    /**
      * Invoked when the formatter needs to move to the next column.
      */
     private void nextColumn(final TableAppender table) {
@@ -188,18 +294,30 @@ public class FeatureFormat extends TabularFormat<Object> {
                     .getString(Errors.Keys.UnsupportedType_1, object.getClass()));
         }
         /*
-         * Check if at least one attribute has at least one characteritic. In many cases there is none.
-         * In none we will ommit the "characteristics" column, which is the last column.
+         * Computes the columns to show. We start with the set of columns specified by setAllowedColumns(Set),
+         * then we check if some of those columns are empty. For example in many cases there is no attribute
+         * with characteritic, in which case we will ommit the whole "characteristics" column. We perform such
+         * check only for optional information, not for mandatory information like property names.
          */
-        boolean hasCharacteristics = false;
-        boolean hasDeprecatedTypes = false;
-        for (final AbstractIdentifiedType propertyType : featureType.getProperties(true)) {
-            if (!hasCharacteristics && propertyType instanceof DefaultAttributeType<?>) {
-                hasCharacteristics = !((DefaultAttributeType<?>) propertyType).characteristics().isEmpty();
+        final EnumSet<Column> visibleColumns = columns.clone();
+        {
+            boolean hasDesignation     = false;
+            boolean hasCharacteristics = false;
+            boolean hasDeprecatedTypes = false;
+            for (final AbstractIdentifiedType propertyType : featureType.getProperties(true)) {
+                if (!hasDesignation) {
+                    hasDesignation = propertyType.getDesignation() != null;
+                }
+                if (!hasCharacteristics && propertyType instanceof DefaultAttributeType<?>) {
+                    hasCharacteristics = !((DefaultAttributeType<?>) propertyType).characteristics().isEmpty();
+                }
+                if (!hasDeprecatedTypes && propertyType instanceof Deprecable) {
+                    hasDeprecatedTypes = ((Deprecable) propertyType).isDeprecated();
+                }
             }
-            if (!hasDeprecatedTypes && propertyType instanceof Deprecable) {
-                hasDeprecatedTypes = ((Deprecable) propertyType).isDeprecated();
-            }
+            if (!hasDesignation)     visibleColumns.remove(Column.DESIGNATION);
+            if (!hasCharacteristics) visibleColumns.remove(Column.CHARACTERISTICS);
+            if (!hasDeprecatedTypes) visibleColumns.remove(Column.REMARKS);
         }
         /*
          * Format the feature type name. In the case of feature type, format also the names of super-type
@@ -209,37 +327,37 @@ public class FeatureFormat extends TabularFormat<Object> {
          */
         toAppendTo.append(toString(featureType.getName()));
         if (feature == null) {
-            String separator = " ⇾ ";   // UML symbol for inheritance.
+            String separator = " ⇾ ";                                       // UML symbol for inheritance.
             for (final FeatureType parent : featureType.getSuperTypes()) {
                 toAppendTo.append(separator).append(toString(parent.getName()));
                 separator = ", ";
             }
         }
         toAppendTo.append(getLineSeparator());
+        /*
+         * Create a table and format the header. Columns will be shown in Column enumeration order.
+         */
         final Vocabulary resources = Vocabulary.getResources(displayLocale);
         final TableAppender table = new TableAppender(toAppendTo, columnSeparator);
         table.setMultiLinesCells(true);
         table.nextLine('─');
-header: for (int i=0; ; i++) {
-            final short key;
-            switch (i) {
-                case 0:                     key = Vocabulary.Keys.Name; break;
-                case 1:  nextColumn(table); key = Vocabulary.Keys.Type; break;
-                case 2:  nextColumn(table); key = Vocabulary.Keys.Cardinality; break;
-                case 3:  nextColumn(table); key = (feature != null) ? Vocabulary.Keys.Value : Vocabulary.Keys.DefaultValue; break;
-                case 4:  if (!hasCharacteristics) continue;
-                         nextColumn(table); key = Vocabulary.Keys.Characteristics; break;
-                case 5:  if (!hasDeprecatedTypes) continue;
-                         nextColumn(table); key = Vocabulary.Keys.Remarks; break;
-                default: break header;
+        boolean isFirstColumn = true;
+        for (final Column column : visibleColumns) {
+            short key = column.resourceKey;
+            if (key == Vocabulary.Keys.Value && feature == null) {
+                key = Vocabulary.Keys.DefaultValue;
             }
+            if (!isFirstColumn) nextColumn(table);
             table.append(resources.getString(key));
+            isFirstColumn = false;
         }
         table.nextLine();
         table.nextLine('─');
         /*
-         * Done writing the header. Now write all property rows.
-         * Rows without value will be skipped only if optional.
+         * Done writing the header. Now write all property rows.  For each row, the first part in the loop
+         * extracts all information needed without formatting anything yet. If we detect in that part that
+         * a row has no value, it will be skipped if and only if that row is optional (minimum occurrence
+         * of zero).
          */
         final StringBuffer  buffer  = new StringBuffer();
         final FieldPosition dummyFP = new FieldPosition(-1);
@@ -271,14 +389,6 @@ header: for (int i=0; ; i++) {
                 value = CharSequences.trimWhitespaces(buffer).toString();
                 buffer.setLength(0);
             }
-            /*
-             * Column 0 - Name.
-             */
-            table.append(toString(propertyType.getName()));
-            nextColumn(table);
-            /*
-             * Column 1 and 2 - Type and cardinality.
-             */
             final String   valueType;                       // The value to write in the type column.
             final Class<?> valueClass;                      // AttributeType.getValueClass() if applicable.
             final int minimumOccurs, maximumOccurs;         // Negative values mean no cardinality.
@@ -307,82 +417,98 @@ header: for (int i=0; ; i++) {
                 minimumOccurs = -1;
                 maximumOccurs = -1;
             }
-            table.append(valueType);
-            nextColumn(table);
-            if (maximumOccurs >= 0) {
-                final Format format = getFormat(Integer.class);
-                table.append('[').append(format.format(minimumOccurs, buffer, dummyFP)).append(" … ");
-                buffer.setLength(0);
-                if (maximumOccurs != Integer.MAX_VALUE) {
-                    table.append(format.format(maximumOccurs, buffer, dummyFP));
-                } else {
-                    table.append('∞');
-                }
-                buffer.setLength(0);
-                table.append(']');
-            }
-            nextColumn(table);
             /*
-             * Column 3 - Value or default value.
+             * At this point we determined that the row should not be skipped
+             * and we got all information to format.
              */
-            if (value != null) {
-                final Format format = getFormat(valueClass);                            // Null if valueClass is null.
-                final Iterator<?> it = CollectionsExt.toCollection(value).iterator();
-                String separator = "";
-                int length = 0;
-                while (it.hasNext()) {
-                    value = it.next();
-                    if (value != null) {
-                        if (format != null && valueClass.isInstance(value)) {
-                            value = format.format(value, buffer, dummyFP);
-                        } else if (value instanceof AbstractFeature && propertyType instanceof DefaultAssociationRole) {
-                            final String p = DefaultAssociationRole.getTitleProperty((DefaultAssociationRole) propertyType);
-                            if (p != null) {
-                                value = ((AbstractFeature) value).getPropertyValue(p);
-                                if (value == null) continue;
+            isFirstColumn = true;
+            for (final Column column : visibleColumns) {
+                if (!isFirstColumn) nextColumn(table);
+                isFirstColumn = false;
+                switch (column) {
+                    case DESIGNATION: {
+                        final InternationalString d = propertyType.getDesignation();
+                        if (d != null) table.append(d.toString(displayLocale));
+                        break;
+                    }
+                    case NAME: {
+                        table.append(toString(propertyType.getName()));
+                        break;
+                    }
+                    case TYPE: {
+                        table.append(valueType);
+                        break;
+                    }
+                    case CARDINALITY: {
+                        if (maximumOccurs >= 0) {
+                            final Format format = getFormat(Integer.class);
+                            table.append('[').append(format.format(minimumOccurs, buffer, dummyFP)).append(" … ");
+                            buffer.setLength(0);
+                            if (maximumOccurs != Integer.MAX_VALUE) {
+                                table.append(format.format(maximumOccurs, buffer, dummyFP));
+                            } else {
+                                table.append('∞');
+                            }
+                            buffer.setLength(0);
+                            table.append(']');
+                        }
+                        break;
+                    }
+                    case VALUE: {
+                        final Format format = getFormat(valueClass);                        // Null if valueClass is null.
+                        final Iterator<?> it = CollectionsExt.toCollection(value).iterator();
+                        String separator = "";
+                        int length = 0;
+                        while (it.hasNext()) {
+                            value = it.next();
+                            if (value != null) {
+                                if (format != null && valueClass.isInstance(value)) {       // Null safe of getFormat(valueClass) contract.
+                                    value = format.format(value, buffer, dummyFP);
+                                } else if (value instanceof AbstractFeature && propertyType instanceof DefaultAssociationRole) {
+                                    final String p = DefaultAssociationRole.getTitleProperty((DefaultAssociationRole) propertyType);
+                                    if (p != null) {
+                                        value = ((AbstractFeature) value).getPropertyValue(p);
+                                        if (value == null) continue;
+                                    }
+                                }
+                                length = formatValue(value, table.append(separator), length);
+                                buffer.setLength(0);
+                                separator = ", ";
+                                if (length < 0) break;      // Value is too long, abandon remaining iterations.
                             }
                         }
-                        length = formatValue(value, table.append(separator), length);
-                        buffer.setLength(0);
-                        separator = ", ";
-                        if (length < 0) break;      // Value is too long, abandon remaining iterations.
+                        break;
                     }
-                }
-            }
-            /*
-             * Column 4 - Characteristics.
-             */
-            if (hasCharacteristics) {
-                nextColumn(table);
-                if (propertyType instanceof DefaultAttributeType<?>) {
-                    String separator = "";
-                    for (final DefaultAttributeType<?> attribute : ((DefaultAttributeType<?>) propertyType).characteristics().values()) {
-                        table.append(separator).append(toString(attribute.getName()));
-                        Object c = attribute.getDefaultValue();
-                        if (feature != null) {
-                            final Object p = feature.getProperty(propertyType.getName().toString());
-                            if (p instanceof AbstractAttribute<?>) {      // Should always be true, but we are paranoiac.
-                                c = ((AbstractAttribute<?>) p).characteristics().get(attribute.getName().toString());
+                    case CHARACTERISTICS: {
+                        if (propertyType instanceof DefaultAttributeType<?>) {
+                            String separator = "";
+                            for (final DefaultAttributeType<?> attribute : ((DefaultAttributeType<?>) propertyType).characteristics().values()) {
+                                table.append(separator).append(toString(attribute.getName()));
+                                Object c = attribute.getDefaultValue();
+                                if (feature != null) {
+                                    final Object p = feature.getProperty(propertyType.getName().toString());
+                                    if (p instanceof AbstractAttribute<?>) {    // Should always be true, but we are paranoiac.
+                                        c = ((AbstractAttribute<?>) p).characteristics().get(attribute.getName().toString());
+                                    }
+                                }
+                                if (c != null) {
+                                    formatValue(c, table.append(" = "), 0);
+                                }
+                                separator = ", ";
                             }
                         }
-                        if (c != null) {
-                            formatValue(c, table.append(" = "), 0);
-                        }
-                        separator = ", ";
+                        break;
                     }
-                }
-            }
-            /*
-             * Column 5 - Deprecation
-             */
-            if (hasDeprecatedTypes) {
-                nextColumn(table);
-                if (org.apache.sis.feature.Field.isDeprecated(propertyType)) {
-                    table.append(resources.getString(Vocabulary.Keys.Deprecated));
-                    final InternationalString r = ((Deprecable) propertyType).getRemarks();
-                    if (r != null) {
-                        remarks.add(r.toString(displayLocale));
-                        appendSuperscript(remarks.size(), table);
+                    case REMARKS: {
+                        if (org.apache.sis.feature.Field.isDeprecated(propertyType)) {
+                            table.append(resources.getString(Vocabulary.Keys.Deprecated));
+                            final InternationalString r = ((Deprecable) propertyType).getRemarks();
+                            if (r != null) {
+                                remarks.add(r.toString(displayLocale));
+                                appendSuperscript(remarks.size(), table);
+                            }
+                        }
+                        break;
                     }
                 }
             }

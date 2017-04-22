@@ -47,6 +47,11 @@ public final class Constants extends Static {
     /**
      * The {@value} code space.
      */
+    public static final String GEOTIFF = "GeoTIFF";
+
+    /**
+     * The {@value} code space.
+     */
     public static final String EPSG = "EPSG";
 
     /**
