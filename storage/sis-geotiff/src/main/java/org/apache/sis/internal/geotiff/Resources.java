@@ -155,6 +155,11 @@ public final class Resources extends IndexedResourceBundle {
         public static final short UnexpectedTileCount_3 = 18;
 
         /**
+         * TIFF file “{0}” uses an unknown coordinate reference system.
+         */
+        public static final short UnknownCRS_1 = 22;
+
+        /**
          * Coordinate system kind {0} is unsupported.
          */
         public static final short UnsupportedCoordinateSystemKind_1 = 19;
@@ -168,6 +173,11 @@ public final class Resources extends IndexedResourceBundle {
          * Unsupported storage location for the “{0}” GeoTIFF value.
          */
         public static final short UnsupportedGeoKeyStorage_1 = 21;
+
+        /**
+         * TIFF file “{0}” uses an unsupported map projection.
+         */
+        public static final short UnsupportedProjectionMethod_1 = 23;
     }
 
     /**

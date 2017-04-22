@@ -28,6 +28,9 @@ import javax.measure.Unit;
 import javax.measure.quantity.Length;
 import org.opengis.metadata.citation.DateType;
 import org.opengis.util.FactoryException;
+import org.opengis.util.NoSuchIdentifierException;
+import org.opengis.parameter.ParameterNotFoundException;
+import org.opengis.referencing.NoSuchAuthorityCodeException;
 import org.apache.sis.internal.geotiff.Resources;
 import org.apache.sis.internal.storage.io.ChannelDataInput;
 import org.apache.sis.storage.DataStoreException;
@@ -1034,10 +1037,16 @@ final class ImageFileDirectory {
             try {
                 metadata.add(helper.build(geoKeyDirectory, numericGeoParameters, asciiGeoParameters));
                 helper.complete(metadata);
-            } catch (ClassCastException e) {
-                reader.owner.warning(null, e);
-            } catch (NumberFormatException | NoSuchElementException e) {
-                // Ignore - a warning with a better message has already been emitted.
+            } catch (NoSuchIdentifierException | ParameterNotFoundException e) {
+                short key = Resources.Keys.UnsupportedProjectionMethod_1;
+                if (e instanceof NoSuchAuthorityCodeException) {
+                    key = Resources.Keys.UnknownCRS_1;
+                }
+                reader.owner.warning(reader.resources().getString(key, reader.owner.getDisplayName()), e);
+            } catch (IllegalArgumentException | NoSuchElementException | ClassCastException e) {
+                if (!helper.alreadyReported) {
+                    reader.owner.warning(null, e);
+                }
             }
             geoKeyDirectory      = null;            // Not needed anymore, so let GC do its work.
             numericGeoParameters = null;
