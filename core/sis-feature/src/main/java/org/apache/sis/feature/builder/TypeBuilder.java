@@ -48,6 +48,10 @@ import org.apache.sis.util.Debug;
  *   <li>the description — information beyond that required for concise definition of the element.</li>
  * </ul>
  *
+ * The name is mandatory and can be specified as either {@link org.opengis.util.LocalName},
+ * {@link org.opengis.util.ScopedName}, {@link String} or {@link InternationalString} instance.
+ * All other properties are optional.
+ *
  * <div class="section">Default namespace</div>
  * In many cases, the names of all {@code AttributeType}s and {@code AssociationRole}s to create
  * within a {@code FeatureType} share the same namespace.
@@ -57,6 +61,15 @@ import org.apache.sis.util.Debug;
  * Note that namespaces will not be visible in the name {@linkplain org.apache.sis.util.iso.DefaultLocalName#toString()
  * string representation} unless the {@linkplain org.apache.sis.util.iso.DefaultLocalName#toFullyQualifiedName() fully
  * qualified name} is requested.
+ * Example:
+ *
+ * {@preformat java
+ *     FeatureTypeBuilder builder = new FeatureTypeBuilder().setNameSpace("MyNameSpace").setName("City");
+ *     FeatureType city = builder.build();
+ *
+ *     System.out.println(city.getName());                              // Prints "City"
+ *     System.out.println(city.getName().toFullyQualifiedName());       // Prints "MyNameSpace:City"
+ * }
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)

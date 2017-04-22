@@ -154,7 +154,7 @@ public final strictfp class ParametersTest extends TestCase {
         final ParameterValueGroup source = descriptor.createValue();
         final ParameterValueGroup sourceSubgroup = source.addGroup(subgroupName);
         final ParameterValue<?> o1 = sourceSubgroup.parameter("Optional 4");
-        final ParameterValue<?> o2 = o1.getDescriptor().createValue(); // See ParameterFormatTest.testMultiOccurrence()
+        final ParameterValue<?> o2 = o1.getDescriptor().createValue();      // See ParameterFormatTest.testMultiOccurrence()
         sourceSubgroup.parameter("Mandatory 2").setValue(20);
         sourceSubgroup.values().add(o2);
         o1.setValue(40);
@@ -166,8 +166,8 @@ public final strictfp class ParametersTest extends TestCase {
          */
         final ParameterValueGroup target = descriptor.createValue();
         final ParameterValueGroup targetSubgroup = target.addGroup(subgroupName);
-        targetSubgroup.parameter("Mandatory 1").setValue(-10);  // We expect this value to be overwritten.
-        targetSubgroup.parameter("Optional 3") .setValue( 30);  // We expect this value to be preserved.
+        targetSubgroup.parameter("Mandatory 1").setValue(-10);      // We expect this value to be overwritten.
+        targetSubgroup.parameter("Optional 3") .setValue( 30);      // We expect this value to be preserved.
         target.parameter("A parent parameter") .setValue("A value to be overwritten");
         /*
          * The actual test.
@@ -176,12 +176,11 @@ public final strictfp class ParametersTest extends TestCase {
         assertSame(sourceSubgroup, TestUtilities.getSingleton(source.groups(subgroupName)));
         assertSame(targetSubgroup, TestUtilities.getSingleton(target.groups(subgroupName)));
         assertEquals("A value from the source", target.parameter("A parent parameter").getValue());
-        assertEquals("Mandatory 1", 10, targetSubgroup.parameter("Mandatory 1").intValue());
-        assertEquals("Mandatory 2", 20, targetSubgroup.parameter("Mandatory 2").intValue());
-        assertEquals("Optional 3",  30, targetSubgroup.parameter("Optional 3") .intValue());
-        assertEquals("Optional 4",  40, targetSubgroup.parameter("Optional 4") .intValue());
-        assertEquals("Optional 4 (second occurrence)", 50,
-                ((ParameterValue<?>) targetSubgroup.values().get(4)).intValue());
+        assertEquals("Mandatory 1",    10, targetSubgroup.parameter("Mandatory 1").intValue());
+        assertEquals("Mandatory 2",    20, targetSubgroup.parameter("Mandatory 2").intValue());
+        assertEquals("Optional 3",     30, targetSubgroup.parameter("Optional 3") .intValue());
+        assertEquals("Optional 4",     40, ((ParameterValue<?>) targetSubgroup.values().get(3)).intValue());
+        assertEquals("Optional 4 bis", 50, ((ParameterValue<?>) targetSubgroup.values().get(4)).intValue());
     }
 
     /**

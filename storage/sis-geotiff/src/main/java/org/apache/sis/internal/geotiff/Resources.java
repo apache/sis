@@ -98,6 +98,12 @@ public final class Resources extends IndexedResourceBundle {
         public static final short IgnoredTag_1 = 7;
 
         /**
+         * Map projection parameter “{2}” will be ignored because its value ({3}) is inconsistent with
+         * the “{0} = {1}” parameter.
+         */
+        public static final short InconsistentMapProjParameter_4 = 24;
+
+        /**
          * TIFF image “{0}” shall be either tiled or organized into strips.
          */
         public static final short InconsistentTileStrip_1 = 8;
@@ -155,6 +161,11 @@ public final class Resources extends IndexedResourceBundle {
         public static final short UnexpectedTileCount_3 = 18;
 
         /**
+         * TIFF file “{0}” uses an unknown coordinate reference system.
+         */
+        public static final short UnknownCRS_1 = 22;
+
+        /**
          * Coordinate system kind {0} is unsupported.
          */
         public static final short UnsupportedCoordinateSystemKind_1 = 19;
@@ -168,6 +179,11 @@ public final class Resources extends IndexedResourceBundle {
          * Unsupported storage location for the “{0}” GeoTIFF value.
          */
         public static final short UnsupportedGeoKeyStorage_1 = 21;
+
+        /**
+         * TIFF file “{0}” uses an unsupported map projection.
+         */
+        public static final short UnsupportedProjectionMethod_1 = 23;
     }
 
     /**

@@ -42,7 +42,7 @@ import static org.apache.sis.util.Characters.Filter.LETTERS_AND_DIGITS;
  * Current version does not yet work with URN or HTTP syntax.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.7
+ * @version 0.8
  * @since   0.4
  * @module
  */
@@ -198,6 +198,32 @@ public final class NameToIdentifier implements ReferenceIdentifier {
     }
 
     /**
+     * Returns {@code true} if the given identifier to search matches one of the object identifiers.
+     *
+     * @param  identifiers  the identifiers to compare against {@code toSearch}.
+     * @param  toSearch     the identifier to check for equality.
+     * @return {@code true} if the identifier to search is found in the given set of identifiers.
+     *
+     * @since 0.8
+     */
+    public static boolean isHeuristicMatchForIdentifier(final Iterable<? extends ReferenceIdentifier> identifiers, final String toSearch) {
+        if (toSearch != null && identifiers != null) {
+            for (int s = toSearch.indexOf(DefaultNameSpace.DEFAULT_SEPARATOR); s >= 0;
+                     s = toSearch.indexOf(DefaultNameSpace.DEFAULT_SEPARATOR, s))
+            {
+                final String codespace = toSearch.substring(0, s).trim();
+                final String code = toSearch.substring(++s).trim();
+                for (final ReferenceIdentifier id : identifiers) {
+                    if (codespace.equalsIgnoreCase(id.getCodeSpace()) && code.equalsIgnoreCase(id.getCode())) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
+    /**
      * Returns {@code true} if the given {@linkplain org.apache.sis.referencing.AbstractIdentifiedObject#getName()
      * primary name} or one of the given aliases matches the given name. The comparison ignores case, some Latin
      * diacritical signs and any characters that are not letters or digits.
@@ -213,28 +239,30 @@ public final class NameToIdentifier implements ReferenceIdentifier {
     public static boolean isHeuristicMatchForName(final Identifier name, final Collection<GenericName> aliases,
             CharSequence toSearch, final Simplifier simplifier)
     {
-        toSearch = simplifier.apply(toSearch);
-        if (name != null) {                                                                 // Paranoiac check.
-            final CharSequence code = simplifier.apply(name.getCode());
-            if (code != null) {                                                             // Paranoiac check.
-                if (CharSequences.equalsFiltered(toSearch, code, LETTERS_AND_DIGITS, true)) {
-                    return true;
-                }
+        if (toSearch != null) {
+            CharSequence code = (name != null) ? name.getCode() : null;
+            if (toSearch.equals(code)) {
+                return true;                                                    // Optimization for a common case.
             }
-        }
-        if (aliases != null) {
-            for (final GenericName alias : aliases) {
-                if (alias != null) {                                                        // Paranoiac check.
-                    final CharSequence tip = simplifier.apply(alias.tip().toString());
-                    if (CharSequences.equalsFiltered(toSearch, tip, LETTERS_AND_DIGITS, true)) {
-                        return true;
+            toSearch = simplifier.apply(toSearch);
+            code     = simplifier.apply(code);
+            if (CharSequences.equalsFiltered(toSearch, code, LETTERS_AND_DIGITS, true)) {
+                return true;
+            }
+            if (aliases != null) {
+                for (final GenericName alias : aliases) {
+                    if (alias != null) {                                                        // Paranoiac check.
+                        final CharSequence tip = simplifier.apply(alias.tip().toString());
+                        if (CharSequences.equalsFiltered(toSearch, tip, LETTERS_AND_DIGITS, true)) {
+                            return true;
+                        }
+                        /*
+                         * Note: a previous version compared also the scoped names. We removed that part,
+                         * because experience has shown that this method is used only for the "code" part
+                         * of an object name. If we really want to compare scoped name, it would probably
+                         * be better to take a GenericName argument instead than String.
+                         */
                     }
-                    /*
-                     * Note: a previous version compared also the scoped names. We removed that part,
-                     * because experience has shown that this method is used only for the "code" part
-                     * of an object name. If we really want to compare scoped name, it would probably
-                     * be better to take a GenericName argument instead than String.
-                     */
                 }
             }
         }

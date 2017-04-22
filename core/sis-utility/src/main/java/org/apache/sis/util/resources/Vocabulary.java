@@ -242,6 +242,11 @@ public final class Vocabulary extends IndexedResourceBundle {
         public static final short Description = 31;
 
         /**
+         * Designation
+         */
+        public static final short Designation = 142;
+
+        /**
          * Destination
          */
         public static final short Destination = 32;

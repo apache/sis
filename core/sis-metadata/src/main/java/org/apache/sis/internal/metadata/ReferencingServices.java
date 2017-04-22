@@ -58,13 +58,11 @@ import org.apache.sis.internal.system.OptionalDependency;
 import org.apache.sis.internal.system.Modules;
 import org.apache.sis.io.wkt.FormattableObject;
 import org.apache.sis.util.ArraysExt;
-import org.apache.sis.util.iso.DefaultNameSpace;
 import org.apache.sis.util.Deprecable;
 
 // Branch-specific imports
 import org.opengis.referencing.datum.Datum;
 import org.opengis.referencing.datum.DatumFactory;
-import org.opengis.referencing.ReferenceIdentifier;
 import org.opengis.util.NoSuchIdentifierException;
 
 
@@ -134,14 +132,6 @@ public class ReferencingServices extends OptionalDependency {
      * The key for specifying a {@link CSFactory} instance to use for geodetic object constructions.
      */
     public static final String CS_FACTORY = "csFactory";
-
-    /**
-     * The separator character between an identifier and its namespace in the argument given to
-     * {@link #getOperationMethod(Iterable, String)}. For example this is the separator in {@code "EPSG:9807"}.
-     *
-     * This is defined as a constant for now, but we may make it configurable in a future version.
-     */
-    private static final char IDENTIFIER_SEPARATOR = DefaultNameSpace.DEFAULT_SEPARATOR;
 
     /**
      * The services, fetched when first needed.
@@ -704,33 +694,6 @@ public class ReferencingServices extends OptionalDependency {
     }
 
     /**
-     * Returns {@code true} if the name or an identifier of the given method matches the given {@code identifier}.
-     *
-     * @param  method      the method to test for a match.
-     * @param  identifier  the name or identifier of the operation method to search.
-     * @return {@code true} if the given method is a match for the given identifier.
-     *
-     * @since 0.6
-     */
-    private boolean matches(final OperationMethod method, final String identifier) {
-        if (isHeuristicMatchForName(method, identifier)) {
-            return true;
-        }
-        for (int s = identifier.indexOf(IDENTIFIER_SEPARATOR); s >= 0;
-                 s = identifier.indexOf(IDENTIFIER_SEPARATOR, s))
-        {
-            final String codespace = identifier.substring(0, s).trim();
-            final String code = identifier.substring(++s).trim();
-            for (final ReferenceIdentifier id : method.getIdentifiers()) {
-                if (codespace.equalsIgnoreCase(id.getCodeSpace()) && code.equalsIgnoreCase(id.getCode())) {
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-
-    /**
      * Returns the operation method for the specified name or identifier. The given argument shall be either a
      * method name (e.g. <cite>"Transverse Mercator"</cite>) or one of its identifiers (e.g. {@code "EPSG:9807"}).
      *
@@ -746,7 +709,9 @@ public class ReferencingServices extends OptionalDependency {
     public final OperationMethod getOperationMethod(final Iterable<? extends OperationMethod> methods, final String identifier) {
         OperationMethod fallback = null;
         for (final OperationMethod method : methods) {
-            if (matches(method, identifier)) {
+            if (isHeuristicMatchForName(method, identifier) ||
+                    NameToIdentifier.isHeuristicMatchForIdentifier(method.getIdentifiers(), identifier))
+            {
                 /*
                  * Stop the iteration at the first non-deprecated method.
                  * If we find only deprecated methods, take the first one.
