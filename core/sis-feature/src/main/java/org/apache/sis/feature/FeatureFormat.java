@@ -212,7 +212,7 @@ public class FeatureFormat extends TabularFormat<Object> {
 
         /**
          * Type of property values. This is the type returned by {@link DefaultAttributeType#getValueClass()} or
-         * {@link FeatureAssociationRole#getValueType()}.
+         * {@link DefaultAssociationRole#getValueType()}.
          */
         TYPE(Vocabulary.Keys.Type),
 
@@ -224,14 +224,14 @@ public class FeatureFormat extends TabularFormat<Object> {
 
         /**
          * Property value (for properties) or default value (for property types).
-         * This is the value returned by {@link Attribute#getValue()}, {@link FeatureAssociation#getValue()}
+         * This is the value returned by {@link AbstractAttribute#getValue()}, {@link AbstractAssociation#getValue()}
          * or {@link DefaultAttributeType#getDefaultValue()}.
          */
         VALUE(Vocabulary.Keys.Value),
 
         /**
          * Other attributes that describes the attribute.
-         * This is made from the map returned by {@link Attribute#characteristics()}.
+         * This is made from the map returned by {@link AbstractAttribute#characteristics()}.
          * This column is omitted if no property has characteristics.
          */
         CHARACTERISTICS(Vocabulary.Keys.Characteristics),
