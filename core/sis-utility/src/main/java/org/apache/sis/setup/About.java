@@ -43,6 +43,7 @@ import java.security.AccessController;
 import java.security.PrivilegedAction;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.CharSequences;
+import org.apache.sis.util.Exceptions;
 import org.apache.sis.util.Version;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.logging.LoggerFactory;
@@ -331,7 +332,7 @@ fill:   for (int i=0; ; i++) {
                     } catch (ClassNotFoundException e) {
                         recoverableException(Modules.STORAGE, e);       // sis-storage module not in the classpath.
                     } catch (ReflectiveOperationException e) {
-                        value = e.toString();
+                        value = Exceptions.unwrap(e).toString();
                     }
                     nameKey = Vocabulary.Keys.DataFormats;
                     break;

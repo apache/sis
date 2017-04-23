@@ -34,6 +34,7 @@ import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
+import static org.junit.Assume.*;
 import static org.opengis.test.Assert.*;
 
 
@@ -41,7 +42,7 @@ import static org.opengis.test.Assert.*;
  * Tests {@link StorageConnector}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.7
+ * @version 0.8
  * @since   0.3
  * @module
  */
@@ -179,7 +180,11 @@ public final strictfp class StorageConnectorTest extends TestCase {
         /*
          * Request again the InputStream and read the same amount of bytes than above. The intend of this test
          * is to verify that StorageConnector has reseted the InputStream position before to return it.
+         * Note that this test requires InputStream implementations supporting mark/reset operations
+         * (which is the case when the resource is an ordinary file, not an entry inside a JAR file),
+         * otherwise the call to connection.getStorageAs(…) throws a DataStoreException.
          */
+        assumeTrue("Can not use a JAR file entry for this test.", in.markSupported());
         assertSame(in, connection.getStorageAs(InputStream.class));
         final byte[] actual = new byte[sample.length];
         assertEquals("Should read all requested bytes.", actual.length, in.read(actual));
