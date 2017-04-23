@@ -34,6 +34,7 @@ import java.util.logging.LogRecord;
 import java.lang.reflect.Array;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
+import java.io.IOException;
 import javax.sql.DataSource;
 import java.sql.DatabaseMetaData;
 import java.sql.Connection;
@@ -66,6 +67,7 @@ import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ObjectConverter;
 import org.apache.sis.util.ObjectConverters;
 import org.apache.sis.util.UnconvertibleObjectException;
+import org.apache.sis.util.Exceptions;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.iso.Types;
 
@@ -390,16 +392,12 @@ public class MetadataSource implements AutoCloseable {
             }
             final Installer installer = new Installer(connection);
             installer.run();
-        } catch (Exception e) {
+        } catch (IOException | SQLException e) {
             /*
              * Derby sometime wraps SQLException into another SQLException.  For making the stack strace a
              * little bit simpler, keep only the root cause provided that the exception type is compatible.
              */
-            final String message = e.getLocalizedMessage();
-            for (Throwable cause; e.getClass().isInstance(cause = e.getCause());) {
-                e = (Exception) cause;
-            }
-            throw new MetadataStoreException(message, e);
+            throw new MetadataStoreException(e.getLocalizedMessage(), Exceptions.unwrap(e));
         }
     }
 
@@ -785,7 +783,7 @@ public class MetadataSource implements AutoCloseable {
      * @param  toSearch  contains the identifier and preferred index of the record to search.
      * @return the value of the requested attribute.
      * @throws SQLException if the SQL query failed.
-     * @throws MetadataStoreException if a value can not be converted to the expected type.
+     * @throws MetadataStoreException if a value was not found or can not be converted to the expected type.
      */
     final Object getValue(final Class<?> type, final Method method, final Dispatcher toSearch)
             throws SQLException, MetadataStoreException

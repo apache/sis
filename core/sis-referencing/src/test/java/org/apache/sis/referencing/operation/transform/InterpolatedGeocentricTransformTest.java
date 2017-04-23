@@ -34,14 +34,13 @@ import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.DependsOnMethod;
 import org.junit.Test;
 
-import static org.opengis.test.Assert.*;
 
 
 /**
  * Tests {@link InterpolatedGeocentricTransform}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.7
+ * @version 0.8
  * @since   0.7
  * @module
  */
@@ -64,8 +63,7 @@ public strictfp class InterpolatedGeocentricTransformTest extends MathTransformT
      * Creates the transform using the given provider.
      */
     final void createGeodeticTransformation(final FranceGeocentricInterpolation provider) throws FactoryException {
-        final URL file = FranceGeocentricInterpolationTest.class.getResource(FranceGeocentricInterpolationTest.TEST_FILE);
-        assertNotNull("Test file \"" + FranceGeocentricInterpolationTest.TEST_FILE + "\" not found.", file);
+        final URL file = FranceGeocentricInterpolationTest.getResourceAsConvertibleURL(FranceGeocentricInterpolationTest.TEST_FILE);
         final Ellipsoid source = HardCodedDatum.NTF.getEllipsoid();     // Clarke 1880 (IGN)
         final Ellipsoid target = CommonCRS.ETRS89.ellipsoid();          // GRS 1980 ellipsoid
         final ParameterValueGroup values = provider.getParameters().createValue();

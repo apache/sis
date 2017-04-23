@@ -29,6 +29,7 @@ import java.nio.DoubleBuffer;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.SeekableByteChannel;
 import org.apache.sis.internal.storage.Resources;
+import org.apache.sis.io.InvalidSeekException;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.Debug;
 
@@ -879,7 +880,7 @@ public class ChannelDataInput extends ChannelData {
             /*
              * Requested position is before the current buffer limits and we can not seek.
              */
-            throw new IOException(Resources.format(Resources.Keys.StreamIsForwardOnly_1, filename));
+            throw new InvalidSeekException(Resources.format(Resources.Keys.StreamIsForwardOnly_1, filename));
         }
         clearBitOffset();
     }

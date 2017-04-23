@@ -16,7 +16,6 @@
  */
 package org.apache.sis.internal.referencing.provider;
 
-import java.net.URL;
 import java.net.URISyntaxException;
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -29,7 +28,6 @@ import org.opengis.geometry.Envelope;
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.test.DependsOnMethod;
-import org.apache.sis.test.TestCase;
 import org.apache.sis.test.TestStep;
 import org.junit.Test;
 
@@ -48,7 +46,7 @@ import static org.opengis.test.Assert.*;
  * @since 0.7
  * @module
  */
-public final strictfp class FranceGeocentricInterpolationTest extends TestCase {
+public final strictfp class FranceGeocentricInterpolationTest extends DatumShiftTestCase {
     /**
      * Name of the file containing a small extract of the "{@code GR3DF97A.txt}" file.
      * The amount of data in this test file is less than 0.14% of the original file.
@@ -140,9 +138,7 @@ public final strictfp class FranceGeocentricInterpolationTest extends TestCase {
     private static DatumShiftGridFile<Angle,Length> testGridAsFloats()
             throws URISyntaxException, IOException, FactoryException, TransformException
     {
-        final URL url = FranceGeocentricInterpolationTest.class.getResource(TEST_FILE);
-        assertNotNull("Test file \"" + TEST_FILE + "\" not found.", url);
-        final Path file = Paths.get(url.toURI());
+        final Path file = getResource(TEST_FILE);
         final DatumShiftGridFile.Float<Angle,Length> grid;
         try (BufferedReader in = Files.newBufferedReader(file)) {
             grid = FranceGeocentricInterpolation.load(in, file);
@@ -233,17 +229,15 @@ public final strictfp class FranceGeocentricInterpolationTest extends TestCase {
     @Test
     @DependsOnMethod("testGrid")
     public void testGetOrLoad() throws URISyntaxException, FactoryException, TransformException {
-        final URL file = FranceGeocentricInterpolationTest.class.getResource(TEST_FILE);
-        assertNotNull("Test file \"" + TEST_FILE + "\" not found.", file);
         final DatumShiftGridFile<Angle,Length> grid = FranceGeocentricInterpolation.getOrLoad(
-                Paths.get(file.toURI()), new double[] {
+                getResource(TEST_FILE), new double[] {
                         FranceGeocentricInterpolation.TX,
                         FranceGeocentricInterpolation.TY,
                         FranceGeocentricInterpolation.TZ},
                         FranceGeocentricInterpolation.PRECISION);
         verifyGrid(grid);
         assertSame("Expected a cached value.", grid, FranceGeocentricInterpolation.getOrLoad(
-                Paths.get(file.toURI()), new double[] {
+                getResource(TEST_FILE), new double[] {
                         FranceGeocentricInterpolation.TX,
                         FranceGeocentricInterpolation.TY,
                         FranceGeocentricInterpolation.TZ},
