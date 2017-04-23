@@ -41,7 +41,6 @@ import java.sql.Statement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.SQLNonTransientException;
-import java.io.IOException;
 import java.sql.PreparedStatement;
 import org.opengis.annotation.UML;
 import org.opengis.util.CodeList;
@@ -391,8 +390,16 @@ public class MetadataSource implements AutoCloseable {
             }
             final Installer installer = new Installer(connection);
             installer.run();
-        } catch (IOException | SQLException e) {
-            throw new MetadataStoreException(e);
+        } catch (Exception e) {
+            /*
+             * Derby sometime wraps SQLException into another SQLException.  For making the stack strace a
+             * little bit simpler, keep only the root cause provided that the exception type is compatible.
+             */
+            final String message = e.getLocalizedMessage();
+            for (Throwable cause; e.getClass().isInstance(cause = e.getCause());) {
+                e = (Exception) cause;
+            }
+            throw new MetadataStoreException(message, e);
         }
     }
 

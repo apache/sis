@@ -459,7 +459,15 @@ public class EPSGFactory extends ConcurrentAuthorityFactory<EPSGDataAccess> impl
             } catch (SQLException e2) {
                 e.addSuppressed(e2);
             }
-            exception = new UnavailableFactoryException(message(e), e);
+            /*
+             * Derby sometime wraps SQLException into another SQLException.  For making the stack strace a
+             * little bit simpler, keep only the root cause provided that the exception type is compatible.
+             */
+            final String message = message(e);
+            for (Throwable cause; e.getClass().isInstance(cause = e.getCause());) {
+                e = (Exception) cause;
+            }
+            exception = new UnavailableFactoryException(message, e);
         }
         exception.setUnavailableFactory(this);
         throw exception;
