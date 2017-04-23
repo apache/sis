@@ -34,7 +34,6 @@ import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.junit.Test;
 
-import static org.junit.Assert.assertNotNull;
 
 
 /**
@@ -57,8 +56,7 @@ public final strictfp class InterpolatedTransformTest extends MathTransformTestC
      * @throws FactoryException if an error occurred while loading the grid.
      */
     private void createRGF93() throws FactoryException {
-        final URL file = NTv2Test.class.getResource(NTv2Test.TEST_FILE);
-        assertNotNull("Test file \"" + NTv2Test.TEST_FILE + "\" not found.", file);
+        final URL file = NTv2Test.getResourceAsConvertibleURL(NTv2Test.TEST_FILE);
         final NTv2 provider = new NTv2();
         final ParameterValueGroup values = provider.getParameters().createValue();
         values.parameter("Latitude and longitude difference file").setValue(file);    // Automatic conversion from URL to Path.
@@ -73,10 +71,8 @@ public final strictfp class InterpolatedTransformTest extends MathTransformTestC
      * @throws FactoryException if an error occurred while loading the grid.
      */
     private void createNADCON() throws FactoryException {
-        final URL latitudeShifts  = NADCONTest.class.getResource(NADCONTest.TEST_FILE + ".laa");
-        final URL longitudeShifts = NADCONTest.class.getResource(NADCONTest.TEST_FILE + ".loa");
-        assertNotNull("Test file \"" + NADCONTest.TEST_FILE + ".laa\" not found.", latitudeShifts);
-        assertNotNull("Test file \"" + NADCONTest.TEST_FILE + ".loa\" not found.", longitudeShifts);
+        final URL latitudeShifts  = NADCONTest.getResourceAsConvertibleURL(NADCONTest.TEST_FILE + ".laa");
+        final URL longitudeShifts = NADCONTest.getResourceAsConvertibleURL(NADCONTest.TEST_FILE + ".loa");
         final NADCON provider = new NADCON();
         final ParameterValueGroup values = provider.getParameters().createValue();
         values.parameter("Latitude difference file").setValue(latitudeShifts);

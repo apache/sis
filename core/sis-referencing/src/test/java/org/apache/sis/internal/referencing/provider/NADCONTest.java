@@ -19,10 +19,8 @@ package org.apache.sis.internal.referencing.provider;
 import java.util.Locale;
 import java.io.BufferedWriter;
 import java.io.IOException;
-import java.net.URL;
 import java.net.URISyntaxException;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import javax.measure.quantity.Angle;
 import org.opengis.geometry.Envelope;
 import org.opengis.util.FactoryException;
@@ -31,7 +29,6 @@ import org.apache.sis.referencing.operation.matrix.Matrix3;
 import org.apache.sis.geometry.Envelope2D;
 import org.apache.sis.geometry.Envelopes;
 import org.apache.sis.measure.Units;
-import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
 import static org.apache.sis.test.Assert.*;
@@ -49,7 +46,7 @@ import org.apache.sis.internal.jdk8.JDK8;
  * @since   0.7
  * @module
  */
-public final strictfp class NADCONTest extends TestCase {
+public final strictfp class NADCONTest extends DatumShiftTestCase {
     /**
      * Returns the sample point for a step in the transformation from NAD27 to NAD83.
      * The sample point is the coordinate of Meades Ranch station, which was the point
@@ -104,12 +101,8 @@ public final strictfp class NADCONTest extends TestCase {
      */
     @Test
     public void testLoader() throws URISyntaxException, IOException, FactoryException, TransformException {
-        final URL latitudeShifts  = NADCONTest.class.getResource(TEST_FILE + ".laa");
-        final URL longitudeShifts = NADCONTest.class.getResource(TEST_FILE + ".loa");
-        assertNotNull("Test file \"" + TEST_FILE + ".laa\" not found.", latitudeShifts);
-        assertNotNull("Test file \"" + TEST_FILE + ".loa\" not found.", longitudeShifts);
-        testNADCON(Paths.get(latitudeShifts.toURI()),
-                   Paths.get(longitudeShifts.toURI()),
+        testNADCON(getResource(TEST_FILE + ".laa"),     // Latitude shifts
+                   getResource(TEST_FILE + ".loa"),     // Longitude shifts
                    -99.75, -98.0, 37.5, 39.75);
     }
 

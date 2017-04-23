@@ -119,7 +119,7 @@ final class CachedStatement implements AutoCloseable {
             if (!r.next()) {
                 final String table = r.getMetaData().getTableName(1);
                 r.close();
-                throw new SQLException(Errors.format(Errors.Keys.RecordNotFound_2, table, id));
+                throw new MetadataStoreException(Errors.format(Errors.Keys.RecordNotFound_2, table, id));
             }
             results = r;
             identifier = id;
