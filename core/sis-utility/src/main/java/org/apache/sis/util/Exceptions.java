@@ -20,8 +20,13 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.Locale;
 import java.sql.SQLException;
+import java.lang.reflect.InvocationTargetException;
 import org.opengis.util.InternationalString;
 import org.apache.sis.util.resources.Vocabulary;
+import org.apache.sis.util.collection.BackingStoreException;
+
+// Branch-dependent imports
+import org.apache.sis.internal.jdk8.UncheckedIOException;
 
 
 /**
@@ -196,5 +201,42 @@ public final class Exceptions extends Static {
             }
         }
         return false;
+    }
+
+    /**
+     * If the given exception is a wrapper for another exception, returns the unwrapped exception.
+     * Otherwise returns the given argument unchanged. An exception is considered a wrapper if:
+     *
+     * <ul>
+     *   <li>It is an instance of {@link InvocationTargetException} (could be wrapping anything).</li>
+     *   <li>It is an instance of {@link BackingStoreException} (typically wrapping a checked exception).</li>
+     *   <li>It is an instance of {@link UncheckedIOException} (wrapping a {@link java.io.IOException}).</li>
+     *   <li>It is a parent type of the cause. For example some JDBC drivers wrap {@link SQLException}
+     *       in other {@code SQLException} without additional information.</li>
+     * </ul>
+     *
+     * This method uses only the exception class as criterion;
+     * it does not verify if the exception messages are the same.
+     *
+     * @param  exception  the exception to unwrap (may be {@code null}.
+     * @return the unwrapped exception (may be the given argument itself).
+     *
+     * @since 0.8
+     */
+    public static Exception unwrap(Exception exception) {
+        if (exception != null) {
+            while (exception instanceof InvocationTargetException ||
+                   exception instanceof BackingStoreException ||
+                   exception instanceof UncheckedIOException)
+            {
+                final Throwable cause = exception.getCause();
+                if (!(cause instanceof Exception)) break;
+                exception = (Exception) cause;
+            }
+            for (Throwable cause; exception.getClass().isInstance(cause = exception.getCause());) {
+                exception = (Exception) cause;      // Should never fail because of isInstance(…) check.
+            }
+        }
+        return exception;
     }
 }

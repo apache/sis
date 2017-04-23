@@ -16,13 +16,11 @@
  */
 package org.apache.sis.internal.referencing.provider;
 
-import java.net.URL;
 import java.net.URISyntaxException;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.nio.file.Files;
 import java.nio.file.StandardOpenOption;
 import java.nio.channels.WritableByteChannel;
@@ -35,7 +33,6 @@ import org.apache.sis.referencing.operation.matrix.Matrix3;
 import org.apache.sis.geometry.Envelope2D;
 import org.apache.sis.geometry.Envelopes;
 import org.apache.sis.measure.Units;
-import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
 import static org.apache.sis.test.Assert.*;
@@ -49,7 +46,7 @@ import static org.apache.sis.test.Assert.*;
  * @since 0.7
  * @module
  */
-public final strictfp class NTv2Test extends TestCase {
+public final strictfp class NTv2Test extends DatumShiftTestCase {
     /**
      * Name of the file containing a small extract of the "{@code NTF_R93.gsb}" file.
      * The amount of data in this test file is less than 0.14% of the original file.
@@ -72,9 +69,7 @@ public final strictfp class NTv2Test extends TestCase {
      */
     @Test
     public void testLoader() throws URISyntaxException, IOException, FactoryException, TransformException {
-        final URL url = NTv2Test.class.getResource(TEST_FILE);
-        assertNotNull("Test file \"" + TEST_FILE + "\" not found.", url);
-        testRGF93(Paths.get(url.toURI()),
+        testRGF93(getResource(TEST_FILE),
                  36000 - 360 * (72 + 5),    // Subgrid of RGF93 beginning at gridX = 72
                  36000 - 360 * (72),        // Subgrid uses 6 cells along longitude axis
                 147600 + 360 * (74),        // Subgrid of RGF93 beginning at gridY = 74
