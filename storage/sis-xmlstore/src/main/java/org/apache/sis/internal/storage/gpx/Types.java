@@ -41,12 +41,12 @@ import org.apache.sis.feature.builder.AttributeRole;
 import org.apache.sis.internal.feature.AttributeConvention;
 import org.apache.sis.internal.storage.FeatureCatalogBuilder;
 import org.apache.sis.internal.system.DefaultFactories;
+import org.apache.sis.util.iso.ResourceInternationalString;
 import org.apache.sis.util.iso.DefaultNameFactory;
 import org.apache.sis.util.Static;
 
 // Branch-dependent imports
 import org.apache.sis.internal.jdk8.Temporal;
-import org.apache.sis.util.iso.ResourceInternationalString;
 import org.opengis.feature.FeatureType;
 
 
