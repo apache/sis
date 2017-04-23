@@ -20,7 +20,9 @@ import java.util.Locale;
 import java.util.Collection;
 import org.apache.sis.storage.DataStores;
 import org.apache.sis.storage.DataStoreProvider;
+import org.apache.sis.util.Exceptions;
 import org.apache.sis.util.resources.Vocabulary;
+import org.apache.sis.util.collection.BackingStoreException;
 
 // Branch-dependent imports
 import org.opengis.util.InternationalString;
@@ -97,10 +99,16 @@ public enum Capability {
              * Get a title for the format, followed by the short name between parenthesis
              * if it does not repeat the main title.
              */
-            String title = title(provider.getFormat().getFormatSpecificationCitation()).toString(locale);
-            final String abbreviation = provider.getShortName();
-            if (abbreviation != null && !abbreviation.equals(title)) {
-                title = resources.getString(Vocabulary.Keys.Parenthesis_2, title, abbreviation);
+            String title, complement;
+            try {
+                title = title(provider.getFormat().getFormatSpecificationCitation()).toString(locale);
+                complement = provider.getShortName();
+            } catch (BackingStoreException e) {
+                title = provider.getShortName();
+                complement = Exceptions.getLocalizedMessage(Exceptions.unwrap(e), locale);
+            }
+            if (complement != null && !complement.equals(title)) {
+                title = resources.getString(Vocabulary.Keys.Parenthesis_2, title, complement);
             }
             list[i++] = capabilities;
             list[i++] = title;
