@@ -365,6 +365,7 @@ public final strictfp class UnitFormatTest extends TestCase {
         ConventionalUnitTest.verify(Units.HERTZ,       f.parse("MHz"),  "MHz",  1E+6);
         ConventionalUnitTest.verify(Units.PASCAL,      f.parse("daPa"), "daPa", 1E+1);
         ConventionalUnitTest.verify(Units.CUBIC_METRE, f.parse("mL"),   "mL",   1E-6);
+        ConventionalUnitTest.verify(Units.CUBIC_METRE, f.parse("ml"),   "mL",   1E-6);
         ConventionalUnitTest.verify(Units.KILOGRAM,    f.parse("kg"),   "kg",   1E+0);
         ConventionalUnitTest.verify(Units.KILOGRAM,    f.parse("g"),    "g",    1E-3);
         ConventionalUnitTest.verify(Units.KILOGRAM,    f.parse("mg"),   "mg",   1E-6);
