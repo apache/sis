@@ -18,10 +18,10 @@ package org.apache.sis.referencing.operation;
 
 import java.util.Map;
 import java.util.HashMap;
-import java.util.Set;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.Objects;
 import java.util.logging.Level;
@@ -59,11 +59,13 @@ import org.apache.sis.referencing.factory.InvalidGeodeticParameterException;
 import org.apache.sis.referencing.factory.NoSuchAuthorityFactoryException;
 import org.apache.sis.metadata.iso.extent.Extents;
 import org.apache.sis.internal.referencing.CoordinateOperations;
+import org.apache.sis.internal.referencing.DeferredCoordinateOperation;
 import org.apache.sis.internal.referencing.PositionalAccuracyConstant;
 import org.apache.sis.internal.referencing.ReferencingUtilities;
 import org.apache.sis.internal.referencing.provider.Affine;
 import org.apache.sis.internal.referencing.Resources;
 import org.apache.sis.internal.metadata.ReferencingServices;
+import org.apache.sis.internal.system.Semaphores;
 import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.internal.util.Citations;
 import org.apache.sis.util.ArgumentChecks;
@@ -386,20 +388,25 @@ class CoordinateOperationRegistry {
             return null;
         }
         final boolean inverse;
-        Set<CoordinateOperation> operations;
+        Collection<CoordinateOperation> operations;
+        Semaphores.queryAndSet(Semaphores.METADATA_ONLY);           // See comment for the same call inside the loop.
         try {
-            operations = registry.createFromCoordinateReferenceSystemCodes(sourceID, targetID);
-            inverse = Containers.isNullOrEmpty(operations);
-            if (inverse) {
-                /*
-                 * No operation from 'source' to 'target' available. But maybe there is an inverse operation.
-                 * This is typically the case when the user wants to convert from a projected to a geographic CRS.
-                 * The EPSG database usually contains transformation paths for geographic to projected CRS only.
-                 */
-                operations = registry.createFromCoordinateReferenceSystemCodes(targetID, sourceID);
-                if (Containers.isNullOrEmpty(operations)) {
-                    return null;
+            try {
+                operations = registry.createFromCoordinateReferenceSystemCodes(sourceID, targetID);
+                inverse = Containers.isNullOrEmpty(operations);
+                if (inverse) {
+                    /*
+                     * No operation from 'source' to 'target' available. But maybe there is an inverse operation.
+                     * This is typically the case when the user wants to convert from a projected to a geographic CRS.
+                     * The EPSG database usually contains transformation paths for geographic to projected CRS only.
+                     */
+                    operations = registry.createFromCoordinateReferenceSystemCodes(targetID, sourceID);
+                    if (Containers.isNullOrEmpty(operations)) {
+                        return null;
+                    }
                 }
+            } finally {
+                Semaphores.clear(Semaphores.METADATA_ONLY);
             }
         } catch (NoSuchAuthorityCodeException | MissingFactoryResourceException exception) {
             /*
@@ -411,72 +418,56 @@ class CoordinateOperationRegistry {
             return null;
         }
         /*
-         * We will loop over all coordinate operations and select the one having the largest intersection
-         * with the area of interest. Note that if the user did not specified an area of interest himself,
-         * then we need to get one from the CRS. This is necessary for preventing the transformation from
-         * NAD27 to NAD83 in Idaho to select the transform for Alaska (since the later has a larger area).
+         * This outer loop is executed exactly once in most case. It may be executed more than once if an
+         * ignoreable error occurred while creating the CoordinateOperation, in which case we will fallback
+         * on the next best choice until we succeed.
          */
-        double largestArea = 0;
-        double finestAccuracy = Double.POSITIVE_INFINITY;
-        CoordinateOperation bestChoice = null;
-        boolean stopAtFirstDeprecated = false;
-        for (final Iterator<CoordinateOperation> it=operations.iterator(); it.hasNext();) {
-            CoordinateOperation candidate;
-            try {
-                candidate = it.next();
-            } catch (BackingStoreException exception) {
-                FactoryException cause = exception.unwrapOrRethrow(FactoryException.class);
-                if (cause instanceof MissingFactoryResourceException) {
-                    log(cause);
-                    continue;
-                }
-                throw cause;
-            }
-            if (candidate != null) {
+        CoordinateOperation bestChoice;
+        while (true) {
+            /*
+             * We will loop over all coordinate operations and select the one having the largest intersection
+             * with the area of interest. Note that if the user did not specified an area of interest himself,
+             * then we need to get one from the CRS. This is necessary for preventing the transformation from
+             * NAD27 to NAD83 in Idaho to select the transform for Alaska (since the later has a larger area).
+             */
+            bestChoice = null;
+            double largestArea = 0;
+            double finestAccuracy = Double.POSITIVE_INFINITY;
+            boolean stopAtFirstDeprecated = false;
+            for (final Iterator<CoordinateOperation> it=operations.iterator();;) {
+                CoordinateOperation candidate;
                 /*
-                 * If we found at least one non-deprecated operation, we will stop the search at
-                 * the first deprecated one (assuming that deprecated operations are sorted last).
+                 * Some pair of CRS have a lot of coordinate operations backed by datum shift grids.
+                 * We do not want to load all of them until we found the right coordinate operation.
+                 * The non-public Semaphores.METADATA_ONLY mechanism instructs EPSGDataAccess to
+                 * instantiate DeferredCoordinateOperation instead of full coordinate operations.
                  */
-                final boolean isDeprecated = (candidate instanceof Deprecable) && ((Deprecable) candidate).isDeprecated();
-                if (isDeprecated && stopAtFirstDeprecated) {
-                    break;
+                Semaphores.queryAndSet(Semaphores.METADATA_ONLY);
+                try {
+                    try {
+                        if (!it.hasNext()) break;
+                        candidate = it.next();
+                    } finally {
+                        Semaphores.clear(Semaphores.METADATA_ONLY);
+                    }
+                } catch (BackingStoreException exception) {
+                    throw exception.unwrapOrRethrow(FactoryException.class);
                 }
-                final double area = Extents.area(Extents.intersection(
-                        Extents.getGeographicBoundingBox(areaOfInterest),
-                        Extents.getGeographicBoundingBox(candidate.getDomainOfValidity())));
-                if (bestChoice == null || area >= largestArea) {
-                    final double accuracy = CRS.getLinearAccuracy(candidate);
-                    if (bestChoice == null || area != largestArea || accuracy < finestAccuracy) {
-                        /*
-                         * Inverse the operation only after we verified the metadata (domain of validity,
-                         * accuracy, etc.) since the creation of inverse operation is not guaranteed to
-                         * preserve all metadata.
-                         */
-                        if (inverse) try {
-                            candidate = inverse(candidate);
-                        } catch (NoninvertibleTransformException exception) {
-                            // It may be a normal failure - the operation is not required to be invertible.
-                            Logging.recoverableException(Logging.getLogger(Loggers.COORDINATE_OPERATION),
-                                    CoordinateOperationRegistry.class, "createOperation", exception);
-                            continue;
-                        } catch (MissingFactoryResourceException e) {
-                            log(e);
-                            continue;
-                        }
-                        /*
-                         * It is possible that the CRS given to this method were not quite right.  For example the user
-                         * may have created his CRS from a WKT using a different axis order than the order specified by
-                         * the authority and still (wrongly) call those CRS "EPSG:xxxx".  So we check if the source and
-                         * target CRS for the operation we just created are equivalent to the CRS specified by the user.
-                         *
-                         * NOTE: FactoryException may be thrown if we failed to create a transform from the user-provided
-                         * CRS to the authority-provided CRS. That transform should have been only an identity transform,
-                         * or a simple affine transform if the user specified wrong CRS as explained in above paragraph.
-                         * If we failed here, we are likely to fail for all other transforms. So we are better to let
-                         * the FactoryException propagate.
-                         */
-                        candidate = complete(candidate, sourceCRS, targetCRS);
-                        if (filter == null || filter.test(candidate)) {
+                if (candidate != null) {
+                    /*
+                     * If we found at least one non-deprecated operation, we will stop the search at
+                     * the first deprecated one (assuming that deprecated operations are sorted last).
+                     */
+                    final boolean isDeprecated = (candidate instanceof Deprecable) && ((Deprecable) candidate).isDeprecated();
+                    if (isDeprecated && stopAtFirstDeprecated) {
+                        break;
+                    }
+                    final double area = Extents.area(Extents.intersection(
+                            Extents.getGeographicBoundingBox(areaOfInterest),
+                            Extents.getGeographicBoundingBox(candidate.getDomainOfValidity())));
+                    if (bestChoice == null || area >= largestArea) {
+                        final double accuracy = CRS.getLinearAccuracy(candidate);
+                        if (bestChoice == null || area != largestArea || accuracy < finestAccuracy) {
                             bestChoice = candidate;
                             if (!Double.isNaN(area)) {
                                 largestArea = area;
@@ -487,6 +478,59 @@ class CoordinateOperationRegistry {
                     }
                 }
             }
+            /*
+             * At this point we filtered a CoordinateOperation by looking only at its metadata.
+             * Code following this point will need the full coordinate operation, including its
+             * MathTransform. So if we got a deferred operation, we need to resolve it now.
+             * Conversely, we should not use metadata below this point because the call to
+             * inverse(CoordinateOperation) is not guaranteed to preserve all metadata.
+             */
+            if (bestChoice == null) break;
+            final CoordinateOperation deferred = bestChoice;
+            try {
+                if (bestChoice instanceof DeferredCoordinateOperation) {
+                    bestChoice = ((DeferredCoordinateOperation) bestChoice).create();
+                }
+                if (inverse) {
+                    bestChoice = inverse(bestChoice);
+                }
+            } catch (NoninvertibleTransformException | MissingFactoryResourceException e) {
+                /*
+                 * If we failed to get the real CoordinateOperation instance, remove it from the collection
+                 * and try again in order to get the next best choice. The Apache SIS implementation allows
+                 * to remove directly from the Set<CoordinateOperation>, but that removal may fail with non-SIS
+                 * implementations, in which case we copy the CoordinateOperation in a temporary list before
+                 * removal. We do not perform that copy unconditionally in order to avoid lazy initialization
+                 * of unneeded CoordinateOperations like the deprecated ones.
+                 */
+                boolean removed;
+                try {
+                    removed = operations.remove(deferred);
+                } catch (UnsupportedOperationException ignored) {
+                    operations = new ArrayList<>(operations);
+                    removed = operations.remove(deferred);
+                }
+                if (removed) {
+                    log(e);
+                    continue;                                   // Try again with the next best case.
+                }
+                // Should never happen, but if happen anyway we should fail for avoiding never-ending loop.
+                throw (e instanceof FactoryException) ? (FactoryException) e : new FactoryException(e);
+            }
+            /*
+             * It is possible that the CRS given to this method were not quite right.  For example the user
+             * may have created his CRS from a WKT using a different axis order than the order specified by
+             * the authority and still (wrongly) call those CRS "EPSG:xxxx".  So we check if the source and
+             * target CRS for the operation we just created are equivalent to the CRS specified by the user.
+             *
+             * NOTE: FactoryException may be thrown if we fail to create a transform from the user-provided
+             * CRS to the authority-provided CRS. That transform should have been only an identity transform,
+             * or a simple affine transform if the user specified wrong CRS as explained in above paragraph.
+             * If we fail here, we are likely to fail for all other transforms. So we are better to let the
+             * FactoryException propagate.
+             */
+            bestChoice = complete(bestChoice, sourceCRS, targetCRS);
+            if (filter == null || filter.test(bestChoice)) break;
         }
         return bestChoice;
     }
@@ -1080,9 +1124,18 @@ class CoordinateOperationRegistry {
      *
      * @param exception  the exception which occurred.
      */
-    private static void log(final FactoryException exception) {
+    private static void log(final Exception exception) {
         final LogRecord record = new LogRecord(Level.WARNING, exception.getLocalizedMessage());
         record.setLoggerName(Loggers.COORDINATE_OPERATION);
+        /*
+         * We usually do not log the stack trace since this method should be invoked only for exceptions
+         * like NoSuchAuthorityCodeException or MissingFactoryResourceException, for which the message
+         * is descriptive enough. But we make a special case for NoninvertibleTransformException since
+         * its cause may have deeper root.
+         */
+        if (exception instanceof NoninvertibleTransformException) {
+            record.setThrown(exception);
+        }
         Logging.log(CoordinateOperationFinder.class, "createOperation", record);
     }
 }

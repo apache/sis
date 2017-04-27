@@ -62,9 +62,11 @@ final class ConventionalUnit<Q extends Quantity<Q>> extends AbstractUnit<Q> {
 
     /**
      * The base, derived or alternate units to which this {@code ConventionalUnit} is related.
-     * This is called "preferred unit" in GML.
+     * This is called "preferred unit" in GML. This is usually an instance of {@link SystemUnit},
+     * but may also be another {@link ConventionalUnit} in some rare cases where this conventional
+     * unit can be prefixed like a SI units (e.g. litre: L, cl, mL, µL).
      */
-    final SystemUnit<Q> target;
+    private final AbstractUnit<Q> target;
 
     /**
      * The conversion from this unit to the {@linkplain #target} unit.
@@ -80,7 +82,7 @@ final class ConventionalUnit<Q extends Quantity<Q>> extends AbstractUnit<Q> {
      * @param  scope     {@link UnitRegistry#SI}, {@link UnitRegistry#ACCEPTED}, other constants or 0 if unknown.
      * @param  epsg      the EPSG code, or 0 if this unit has no EPSG code.
      */
-    ConventionalUnit(final SystemUnit<Q> target, final UnitConverter toTarget, final String symbol, final byte scope, final short epsg) {
+    ConventionalUnit(final AbstractUnit<Q> target, final UnitConverter toTarget, final String symbol, final byte scope, final short epsg) {
         super(symbol, scope, epsg);
         this.target   = target;
         this.toTarget = toTarget;
@@ -88,9 +90,12 @@ final class ConventionalUnit<Q extends Quantity<Q>> extends AbstractUnit<Q> {
 
     /**
      * Creates a new unit with default name and symbol for the given converter.
+     *
+     * @param  target    the base or derived units to which the new unit will be related.
+     * @param  toTarget  the conversion from the new unit to the {@code target} unit.
      */
     @SuppressWarnings("unchecked")
-    static <Q extends Quantity<Q>> AbstractUnit<Q> create(final SystemUnit<Q> target, final UnitConverter toTarget) {
+    static <Q extends Quantity<Q>> AbstractUnit<Q> create(final AbstractUnit<Q> target, final UnitConverter toTarget) {
         if (toTarget.isIdentity()) {
             return target;
         }
@@ -115,7 +120,7 @@ final class ConventionalUnit<Q extends Quantity<Q>> extends AbstractUnit<Q> {
          * unit instances.
          */
         String symbol = null;
-        if (target.scope == UnitRegistry.SI) {
+        if (target.isPrefixable()) {
             final String ts = target.getSymbol();
             if (ts != null && !ts.isEmpty() && toTarget.isLinear()) {
                 final int power = power(ts);
@@ -251,7 +256,7 @@ final class ConventionalUnit<Q extends Quantity<Q>> extends AbstractUnit<Q> {
      */
     @Override
     public Dimension getDimension() {
-        return target.dimension;
+        return target.getDimension();
     }
 
     /**
@@ -259,7 +264,7 @@ final class ConventionalUnit<Q extends Quantity<Q>> extends AbstractUnit<Q> {
      */
     @Override
     public SystemUnit<Q> getSystemUnit() {
-        return target;
+        return target.getSystemUnit();
     }
 
     /**
@@ -317,11 +322,12 @@ final class ConventionalUnit<Q extends Quantity<Q>> extends AbstractUnit<Q> {
         UnitConverter c = toTarget;
         if (target != that) {                           // Optimization for a common case.
             final Unit<Q> step = that.getSystemUnit();
-            if (target != step && !target.equalsIgnoreMetadata(step)) {
+            if (target != step && !target.isCompatible(step)) {
                 // Should never occur unless parameterized type has been compromised.
                 throw new UnconvertibleException(incompatible(that));
             }
-            c = step.getConverterTo(that).concatenate(c);
+            c = target.getConverterTo(step).concatenate(c);         // Usually leave 'c' unchanged.
+            c =   step.getConverterTo(that).concatenate(c);
         }
         return c;
     }
@@ -349,7 +355,8 @@ final class ConventionalUnit<Q extends Quantity<Q>> extends AbstractUnit<Q> {
             if (target != step && !target.isCompatible(step)) {
                 throw new IncommensurableException(incompatible(that));
             }
-            c = step.getConverterToAny(that).concatenate(c);
+            c = target.getConverterToAny(step).concatenate(c);      // Usually leave 'c' unchanged.
+            c =   step.getConverterToAny(that).concatenate(c);
         }
         return c;
     }
@@ -435,9 +442,14 @@ final class ConventionalUnit<Q extends Quantity<Q>> extends AbstractUnit<Q> {
      * @return the unit after the specified transformation.
      */
     @Override
-    public Unit<Q> transform(final UnitConverter operation) {
+    public Unit<Q> transform(UnitConverter operation) {
         ArgumentChecks.ensureNonNull("operation", operation);
-        return create(target, toTarget.concatenate(operation));
+        AbstractUnit<Q> base = this;
+        if (!isPrefixable()) {
+            base = target;
+            operation = toTarget.concatenate(operation);
+        }
+        return create(base, operation);
     }
 
     /**
