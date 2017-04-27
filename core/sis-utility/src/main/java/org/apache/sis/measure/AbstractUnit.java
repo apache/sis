@@ -127,6 +127,13 @@ abstract class AbstractUnit<Q extends Quantity<Q>> implements Unit<Q>, LenientCo
     }
 
     /**
+     * Returns {@code true} if the use of SI prefixes is allowed for this unit.
+     */
+    final boolean isPrefixable() {
+        return (scope & UnitRegistry.PREFIXABLE) != 0;
+    }
+
+    /**
      * Returns the symbol (if any) of this unit. A unit may have no symbol, in which case
      * the {@link #toString()} method is responsible for creating a string representation.
      *
@@ -171,6 +178,15 @@ abstract class AbstractUnit<Q extends Quantity<Q>> implements Unit<Q>, LenientCo
      */
     @Override
     public abstract SystemUnit<Q> getSystemUnit();
+
+    /**
+     * Returns the base units and their exponent whose product is the system unit,
+     * or {@code null} if the system unit is a base unit (not a product of existing units).
+     *
+     * @return the base units and their exponent making up the system unit.
+     */
+    @Override
+    public abstract Map<SystemUnit<?>, Integer> getBaseUnits();
 
     /**
      * Returns the base units used by Apache SIS implementations.
@@ -280,6 +296,14 @@ abstract class AbstractUnit<Q extends Quantity<Q>> implements Unit<Q>, LenientCo
     @Override
     public final Unit<?> inverse() {
         return pow(-1);
+    }
+
+    /**
+     * Returns units for the same quantity but with scale factors that are not the SI one, or {@code null} if none.
+     * This method returns a direct reference to the internal field; caller shall not modify.
+     */
+    ConventionalUnit<Q>[] related() {
+        return null;
     }
 
     /**

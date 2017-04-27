@@ -48,25 +48,32 @@ final class UnitRegistry implements SystemOfUnits, Serializable {
     private static final long serialVersionUID = -84557361079506390L;
 
     /**
+     * A bitmask specifying that the unit symbol can be combined with a SI prefix.
+     * This is usually combined only with {@link #SI}, not {@link #ACCEPTED} except
+     * the litre unit (cL, mL, etc).
+     */
+    static final byte PREFIXABLE = 1;
+
+    /**
      * Identifies units defined by the SI system.
      * All {@link SystemUnit} instances with this code can have a SI prefix.
      */
-    static final byte SI = 1;
+    static final byte SI = 2;
 
     /**
      * Identifies units defined outside the SI system but accepted for use with SI.
      */
-    static final byte ACCEPTED = 2;
+    static final byte ACCEPTED = 4;
 
     /**
      * Identifies units defined for use in British imperial system.
      */
-    static final byte IMPERIAL = 4;
+    static final byte IMPERIAL = 8;
 
     /**
      * Identifies units defined in another system than the above.
      */
-    static final byte OTHER = 8;
+    static final byte OTHER = 16;
 
     /**
      * All {@link UnitDimension}, {@link SystemUnit} or {@link ConventionalUnit} that are hard-coded in Apache SIS.

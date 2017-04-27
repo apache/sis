@@ -95,7 +95,7 @@ import org.apache.sis.internal.jdk8.JDK8;
  * Subclasses should select the interfaces that they choose to implement.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 0.7
+ * @version 0.8
  *
  * @param <DAO>  the type of factory used as Data Access Object (DAO).
  *
@@ -643,6 +643,8 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
      *
      * @param  factory  the Data Access Object which is about to be closed.
      * @return {@code true} if the given Data Access Object can be closed.
+     *
+     * @see #close()
      */
     protected boolean canClose(DAO factory) {
         return true;
@@ -1635,9 +1637,9 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
      * creation is delegated to the {@linkplain #getDataAccess() Data Access Object}.
      * The result is then stored in the cache and returned.
      *
-     * @param  <T>   The type of the object to be returned.
-     * @param  proxy The proxy to use for creating the object.
-     * @param  code  The code of the object to create.
+     * @param  <T>    the type of the object to be returned.
+     * @param  proxy  the proxy to use for creating the object.
+     * @param  code   the code of the object to create.
      * @return the object extracted from the cache or created.
      * @throws FactoryException if an error occurred while creating the object.
      */
@@ -1658,7 +1660,9 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
                     } finally {
                         release(null, type, code);
                     }
-                    value = result;                                     // For the finally block below.
+                    if (isCacheable(code, result)) {
+                        value = result;                                 // For the finally block below.
+                    }
                     return result;
                 }
             } finally {
@@ -1938,11 +1942,36 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
     }
 
     /**
+     * Returns whether the given object can be cached. This method is invoked after the
+     * {@linkplain #newDataAccess() Data Access Object} created a new object not previously in the cache.
+     * If this {@code isCacheable(…)} method returns {@code true}, then the newly created object will be cached so
+     * that next calls to the same {@code createFoo(String)} method with the same code may return the same object.
+     * If this method returns {@code false}, then the newly created object will not be cached and next call to
+     * the {@code createFoo(String)} method with the same code will return a new object.
+     *
+     * <p>The default implementation always returns {@code true}.
+     * Subclasses can override this method for filtering the objects to store in the cache.</p>
+     *
+     * @param  code    the authority code specified by the caller for creating an object.
+     * @param  object  the object created for the given authority code.
+     * @return whether the given object should be cached.
+     *
+     * @see #printCacheContent(PrintWriter)
+     *
+     * @since 0.8
+     */
+    protected boolean isCacheable(String code, Object object) {
+        return true;
+    }
+
+    /**
      * Prints the cache content to the given writer.
      * Keys are sorted by numerical order if possible, or alphabetical order otherwise.
      * This method is used for debugging purpose only.
      *
      * @param  out  the output printer, or {@code null} for the {@linkplain System#out standard output stream}.
+     *
+     * @see #isCacheable(String, Object)
      */
     @Debug
     public void printCacheContent(final PrintWriter out) {
@@ -2060,6 +2089,8 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
      * depending which event happen first.</p>
      *
      * @throws FactoryException if an error occurred while closing the Data Access Objects.
+     *
+     * @see #canClose(GeodeticAuthorityFactory)
      */
     @Override
     public void close() throws FactoryException {
@@ -2084,6 +2115,8 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
      * The string returned by this method may change in any future SIS version.
      *
      * @return a string representation for debugging purpose.
+     *
+     * @see #printCacheContent(PrintWriter)
      */
     @Debug
     @Override

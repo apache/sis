@@ -71,6 +71,7 @@ import org.apache.sis.internal.metadata.ReferencingServices;
 import org.apache.sis.internal.metadata.TransformationAccuracy;
 import org.apache.sis.internal.metadata.WKTKeywords;
 import org.apache.sis.internal.metadata.sql.SQLUtilities;
+import org.apache.sis.internal.referencing.DeferredCoordinateOperation;
 import org.apache.sis.internal.referencing.DeprecatedCode;
 import org.apache.sis.internal.referencing.EPSGParameterDomain;
 import org.apache.sis.internal.referencing.ReferencingUtilities;
@@ -2825,12 +2826,10 @@ next:               while (r.next()) {
                      * (it was checked by getInteger(code, result, …) above in this method) but optional
                      * for concatenated operations. Fetching parameter values is part of this block.
                      */
-                    OperationMethod method;
-                    ParameterValueGroup parameters;
-                    if (methodCode == null) {
-                        method      = null;
-                        parameters  = null;
-                    } else {
+                    final boolean       isDeferred = Semaphores.query(Semaphores.METADATA_ONLY);
+                    ParameterValueGroup parameters = null;
+                    OperationMethod     method     = null;
+                    if (methodCode != null && !isDeferred) {
                         method = owner.createOperationMethod(methodCode.toString());
                         if (isDimensionKnown) {
                             method = DefaultOperationMethod.redimension(method, sourceDimensions, targetDimensions);
@@ -2861,7 +2860,9 @@ next:               while (r.next()) {
                      */
                     final CoordinateOperation operation;
                     final CoordinateOperationFactory copFactory = owner.copFactory;
-                    if (isConversion && (sourceCRS == null || targetCRS == null)) {
+                    if (isDeferred) {
+                        operation = new DeferredCoordinateOperation(opProperties, sourceCRS, targetCRS, owner);
+                    } else if (isConversion && (sourceCRS == null || targetCRS == null)) {
                         operation = copFactory.createDefiningConversion(opProperties, method, parameters);
                     } else if (isConcatenated) {
                         /*
@@ -3034,7 +3035,9 @@ next:               while (r.next()) {
          * Before to return the set, tests the creation of 1 object in order to report early (i.e. now)
          * any problems with SQL statements. Remaining operations will be created only when first needed.
          */
-        set.resolve(1);
+        if (!Semaphores.query(Semaphores.METADATA_ONLY)) {
+            set.resolve(1);
+        }
         return set;
     }
 
