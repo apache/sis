@@ -74,6 +74,7 @@ public final strictfp class UnitFormatTest extends TestCase {
         verify(declared, "SQUARE_METRE",        "L²",           "m²",    "square metre",            Units.SQUARE_METRE);
         verify(declared, "HECTARE",             "L²",           "ha",    "hectare",                 Units.HECTARE);
         verify(declared, "CUBIC_METRE",         "L³",           "m³",    "cubic metre",             Units.CUBIC_METRE);
+        verify(declared, "LITRE",               "L³",           "L",     "litre",                   Units.LITRE);
         verify(declared, "STERADIAN",           "",             "sr",    "steradian",               Units.STERADIAN);
         verify(declared, "MICRORADIAN",         "",             "µrad",  "microradian",             Units.MICRORADIAN);
         verify(declared, "RADIAN",              "",             "rad",   "radian",                  Units.RADIAN);
@@ -115,6 +116,7 @@ public final strictfp class UnitFormatTest extends TestCase {
         verify(declared, "LUMEN",               "J",            "lm",    "lumen",                   Units.LUMEN);
         verify(declared, "LUX",                 "J∕L²",         "lx",    "lux",                     Units.LUX);
         verify(declared, "KILOGRAM",            "M",            "kg",    "kilogram",                Units.KILOGRAM);
+        verify(declared, "GRAM",                "M",            "g",     "gram",                    Units.GRAM);
         verify(declared, "MOLE",                "N",            "mol",   "mole",                    Units.MOLE);
         verify(declared, "UNITY",               "",             "",       null,                     Units.UNITY);
         verify(declared, "PERCENT",             "",             "%",     "percentage",              Units.PERCENT);
@@ -209,9 +211,13 @@ public final strictfp class UnitFormatTest extends TestCase {
         f.setStyle(UnitFormat.Style.UCUM);
         assertEquals("m",   f.format(Units.METRE));
         assertEquals("km",  f.format(Units.KILOMETRE));
+        assertEquals("g",   f.format(Units.GRAM));
+        assertEquals("kg",  f.format(Units.KILOGRAM));
         assertEquals("s",   f.format(Units.SECOND));
         assertEquals("min", f.format(Units.MINUTE));
         assertEquals("m2",  f.format(Units.SQUARE_METRE));
+        assertEquals("m3",  f.format(Units.CUBIC_METRE));
+        assertEquals("L",   f.format(Units.LITRE));
         assertEquals("Cel", f.format(Units.CELSIUS));
         assertEquals("K",   f.format(Units.KELVIN));
     }
@@ -225,9 +231,13 @@ public final strictfp class UnitFormatTest extends TestCase {
         f.setStyle(UnitFormat.Style.NAME);
         assertEquals("metre",        f.format(Units.METRE));
         assertEquals("kilometre",    f.format(Units.KILOMETRE));
+        assertEquals("gram",         f.format(Units.GRAM));
+        assertEquals("kilogram",     f.format(Units.KILOGRAM));
         assertEquals("second",       f.format(Units.SECOND));
         assertEquals("minute",       f.format(Units.MINUTE));
         assertEquals("square metre", f.format(Units.SQUARE_METRE));
+        assertEquals("cubic metre",  f.format(Units.CUBIC_METRE));
+        assertEquals("litre",        f.format(Units.LITRE));
         assertEquals("Celsius",      f.format(Units.CELSIUS));          // Really upper-case "C" - this is a SI exception.
 
         f.setLocale(Locale.US);
@@ -235,6 +245,8 @@ public final strictfp class UnitFormatTest extends TestCase {
         assertEquals("kilometer",    f.format(Units.KILOMETRE));
         assertEquals("second",       f.format(Units.SECOND));
         assertEquals("square meter", f.format(Units.SQUARE_METRE));
+        assertEquals("cubic meter",  f.format(Units.CUBIC_METRE));
+        assertEquals("liter",        f.format(Units.LITRE));
         assertEquals("Celsius",      f.format(Units.CELSIUS));
 
         f.setLocale(Locale.FRANCE);
@@ -242,6 +254,8 @@ public final strictfp class UnitFormatTest extends TestCase {
         assertEquals("kilomètre",    f.format(Units.KILOMETRE));
         assertEquals("seconde",      f.format(Units.SECOND));
         assertEquals("mètre carré",  f.format(Units.SQUARE_METRE));
+        assertEquals("mètre cube",   f.format(Units.CUBIC_METRE));
+        assertEquals("litre",        f.format(Units.LITRE));
         assertEquals("Celsius",      f.format(Units.CELSIUS));
     }
 
@@ -262,6 +276,13 @@ public final strictfp class UnitFormatTest extends TestCase {
         assertSame(Units.KILOMETRE,     f.parse("kilometers"));
         assertSame(Units.SQUARE_METRE,  f.parse("square metre"));
         assertSame(Units.SQUARE_METRE,  f.parse("square_meters"));
+        assertSame(Units.CUBIC_METRE,   f.parse("cubic_metres"));
+        assertSame(Units.LITRE,         f.parse("litre"));
+        assertSame(Units.LITRE,         f.parse("liters"));
+        assertSame(Units.GRAM,          f.parse("gram"));
+        assertSame(Units.GRAM,          f.parse("grams"));
+        assertSame(Units.KILOGRAM,      f.parse("kilogram"));
+        assertSame(Units.KILOGRAM,      f.parse("kilograms"));
         assertSame(Units.DEGREE,        f.parse("degree"));
         assertSame(Units.DEGREE,        f.parse("degrees"));
         assertSame(Units.DEGREE,        f.parse("decimal degrees"));
@@ -326,6 +347,9 @@ public final strictfp class UnitFormatTest extends TestCase {
         assertSame(Units.METRE,         f.parse("m01"));
         assertSame(Units.SQUARE_METRE,  f.parse("m2"));
         assertSame(Units.CUBIC_METRE,   f.parse("m3"));
+        assertSame(Units.LITRE,         f.parse("L"));
+        assertSame(Units.LITRE,         f.parse("l"));
+        assertSame(Units.LITRE,         f.parse("ℓ"));
         assertSame(Units.HERTZ,         f.parse("s-1"));
     }
 
@@ -337,9 +361,13 @@ public final strictfp class UnitFormatTest extends TestCase {
     @DependsOnMethod("testParseSymbol")
     public void testParsePrefix() {
         final UnitFormat f = new UnitFormat(Locale.UK);
-        ConventionalUnitTest.verify(Units.JOULE,  f.parse("kJ"),   "kJ",  1E+3);
-        ConventionalUnitTest.verify(Units.HERTZ,  f.parse("MHz"),  "MHz", 1E+6);
-        ConventionalUnitTest.verify(Units.PASCAL, f.parse("daPa"), "daPa",  10);
+        ConventionalUnitTest.verify(Units.JOULE,       f.parse("kJ"),   "kJ",   1E+3);
+        ConventionalUnitTest.verify(Units.HERTZ,       f.parse("MHz"),  "MHz",  1E+6);
+        ConventionalUnitTest.verify(Units.PASCAL,      f.parse("daPa"), "daPa", 1E+1);
+        ConventionalUnitTest.verify(Units.CUBIC_METRE, f.parse("mL"),   "mL",   1E-6);
+        ConventionalUnitTest.verify(Units.KILOGRAM,    f.parse("kg"),   "kg",   1E+0);
+        ConventionalUnitTest.verify(Units.KILOGRAM,    f.parse("g"),    "g",    1E-3);
+        ConventionalUnitTest.verify(Units.KILOGRAM,    f.parse("mg"),   "mg",   1E-6);
         /*
          * Verify that prefix are not accepted for conventional units. It would either be illegal prefix duplication
          * (for example we should not accept "kkm" as if it was "k" + "km") or confusing (for example "a" stands for
