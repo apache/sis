@@ -1246,7 +1246,7 @@ search:     while ((i = CharSequences.skipTrailingWhitespaces(symbols, start, i)
                 s = 2;
             }
             unit = Units.get(uom.substring(s));
-            if (unit instanceof SystemUnit<?> && ((SystemUnit<?>) unit).scope == UnitRegistry.SI) {
+            if (unit instanceof AbstractUnit<?> && ((AbstractUnit<?>) unit).isPrefixable()) {
                 final LinearConverter c = LinearConverter.forPrefix(prefix);
                 if (c != null) {
                     String symbol = unit.getSymbol();
@@ -1255,7 +1255,7 @@ search:     while ((i = CharSequences.skipTrailingWhitespaces(symbols, start, i)
                     } else {
                         symbol = prefix + symbol;
                     }
-                    return new ConventionalUnit<>((SystemUnit<?>) unit, c, symbol.intern(), (byte) 0, (short) 0);
+                    return new ConventionalUnit<>((AbstractUnit<?>) unit, c, symbol.intern(), (byte) 0, (short) 0);
                 }
             }
             unit = null;

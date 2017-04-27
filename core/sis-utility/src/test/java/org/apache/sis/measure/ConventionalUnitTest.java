@@ -17,8 +17,10 @@
 package org.apache.sis.measure;
 
 import java.lang.reflect.Field;
+import javax.measure.IncommensurableException;
 import javax.measure.Unit;
 import javax.measure.UnitConverter;
+import javax.measure.quantity.Volume;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestCase;
@@ -30,7 +32,7 @@ import static org.apache.sis.test.Assert.*;
 /**
  * Tests the {@link ConventionalUnit} class. This class tests also the {@link SystemUnit#multiply(double)} and
  * {@link SystemUnit#divide(double)} methods since they are used for creating {@code ConventionalUnit} instances,
- * but those methods just delegate to {@link ConventionalUnit#create(SystemUnit, UnitConverter)}.
+ * but those methods just delegate to {@link ConventionalUnit#create(AbstractUnit, UnitConverter)}.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
@@ -70,7 +72,9 @@ public final strictfp class ConventionalUnitTest extends TestCase {
         verify(Units.PASCAL,            Units.PASCAL,                "Pa",     1);
         verify(Units.PASCAL,            Units.HECTOPASCAL,          "hPa",   100);
         verify(Units.METRES_PER_SECOND, Units.KILOMETRES_PER_HOUR, "km∕h",  0.06);
+        verify(Units.CUBIC_METRE,       Units.LITRE,                  "L",  1E-3);
         verify(Units.KILOGRAM,          Units.KILOGRAM,              "kg",     1);
+        verify(Units.KILOGRAM,          Units.GRAM,                   "g",  1E-3);
         verify(Units.UNITY,             Units.UNITY,                   "",     1);
         verify(Units.UNITY,             Units.PERCENT,                "%",  1E-2);
         verify(Units.UNITY,             Units.PPM,                  "ppm",  1E-6);
@@ -237,6 +241,68 @@ public final strictfp class ConventionalUnitTest extends TestCase {
         assertEquals("50°F",  10, c.convert(50),          STRICT);
         assertEquals("5°F",  -15, c.convert(5),           STRICT);
         assertEquals("0°C",   32, c.inverse().convert(0), STRICT);
+    }
+
+    /**
+     * Verifies that the given units derived from litres ({@code u1}) is equivalent to the given units derived
+     * from cubic metres ({@code u2}). The conversion between those two units is expected to be identity.
+     */
+    private static void assertEquivalent(final String s1, final Unit<Volume> u1,
+                                         final String s2, final Unit<Volume> u2)
+            throws IncommensurableException
+    {
+        assertEquals("unit1.symbol", s1, u1.getSymbol());
+        assertEquals("unit2.symbol", s2, u2.getSymbol());
+        assertTrue("getConverterTo(…).isIdentity", u1.getConverterTo(u2).isIdentity());
+        assertTrue("getConverterTo(…).isIdentity", u2.getConverterTo(u1).isIdentity());
+        assertTrue("getConverterTo(…).isIdentity", u1.getConverterToAny(u2).isIdentity());
+        assertTrue("getConverterTo(…).isIdentity", u2.getConverterToAny(u1).isIdentity());
+    }
+
+    /**
+     * Tests the equivalence between litres and cubic metres.
+     * The litre unit is handled as a special case, since it is not a SI unit but can have SI prefix.
+     *
+     * @throws IncommensurableException if {@link Unit#getConverterToAny(Unit)} failed.
+     */
+    @Test
+    @DependsOnMethod("verifyPrefixes")
+    public void testVolumeEquivalences() throws IncommensurableException {
+        assertEquivalent(  "L", Units.LITRE.divide  (1E+00),  "dm³", Units.CUBIC_METRE.divide  (1E+03));
+        assertEquivalent( "mL", Units.LITRE.divide  (1E+03),  "cm³", Units.CUBIC_METRE.divide  (1E+06));
+        assertEquivalent( "µL", Units.LITRE.divide  (1E+06),  "mm³", Units.CUBIC_METRE.divide  (1E+09));
+        assertEquivalent( "fL", Units.LITRE.divide  (1E+15),  "µm³", Units.CUBIC_METRE.divide  (1E+18));
+        assertEquivalent( "yL", Units.LITRE.divide  (1E+24),  "nm³", Units.CUBIC_METRE.divide  (1E+27));
+        assertEquivalent( "kL", Units.LITRE.multiply(1E+03),   "m³", Units.CUBIC_METRE.divide  (1E+00));
+        assertEquivalent( "ML", Units.LITRE.multiply(1E+06), "dam³", Units.CUBIC_METRE.multiply(1E+03));
+        assertEquivalent( "GL", Units.LITRE.multiply(1E+09),  "hm³", Units.CUBIC_METRE.multiply(1E+06));
+        assertEquivalent( "TL", Units.LITRE.multiply(1E+12),  "km³", Units.CUBIC_METRE.multiply(1E+09));
+        assertEquivalent( "ZL", Units.LITRE.multiply(1E+21),  "Mm³", Units.CUBIC_METRE.multiply(1E+18));
+        assertEquals    ( "dL", Units.LITRE.divide  (1E+01).getSymbol());
+        assertEquals    ( "cL", Units.LITRE.divide  (1E+02).getSymbol());
+        assertEquals    ( "nL", Units.LITRE.divide  (1E+09).getSymbol());
+        assertEquals    ( "pL", Units.LITRE.divide  (1E+12).getSymbol());
+        assertEquals    ( "aL", Units.LITRE.divide  (1E+18).getSymbol());
+        assertEquals    ( "zL", Units.LITRE.divide  (1E+21).getSymbol());
+        assertEquals    ("daL", Units.LITRE.multiply(1E+01).getSymbol());
+        assertEquals    ( "hL", Units.LITRE.multiply(1E+02).getSymbol());
+        assertEquals    ( "PL", Units.LITRE.multiply(1E+15).getSymbol());
+        assertEquals    ( "EL", Units.LITRE.multiply(1E+18).getSymbol());
+        assertEquals    ( "YL", Units.LITRE.multiply(1E+24).getSymbol());
+    }
+
+    /**
+     * Tests conversion between litres and cubic metres.
+     */
+    @Test
+    @DependsOnMethod("testVolumeEquivalences")
+    public void testVolumeConversions() {
+        final Unit<Volume>  l  = Units.LITRE;
+        final Unit<Volume> cl  = Units.LITRE.divide(100);
+        final Unit<Volume> ml  = Units.LITRE.divide(1000);
+        final Unit<Volume> cm3 = Units.CUBIC_METRE.divide(1E+06);
+        assertEquals("4 L to ml", 4000,  l.getConverterTo(ml) .convert(4), STRICT);
+        assertEquals("4 cL to cm³", 40, cl.getConverterTo(cm3).convert(4), STRICT);
     }
 
     /**
