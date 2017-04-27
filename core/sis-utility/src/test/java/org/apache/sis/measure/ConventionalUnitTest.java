@@ -190,6 +190,9 @@ public final strictfp class ConventionalUnitTest extends TestCase {
         assertSame(Units.GRAD,        Units.RADIAN.multiply(Math.PI/200));
         assertSame(Units.ARC_SECOND,  Units.RADIAN.multiply(Math.PI / (180*60*60)));
         assertSame(Units.MICRORADIAN, Units.RADIAN.divide(1E6));
+
+        assertSame(Units.GRAM, Units.KILOGRAM.divide(1E+3));
+        verify(Units.KILOGRAM, Units.KILOGRAM.divide(1E+6), "mg", 1E-6);
     }
 
     /**
