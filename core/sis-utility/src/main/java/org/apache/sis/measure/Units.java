@@ -1163,24 +1163,13 @@ public final class Units extends Static {
          * All Unit<Temperature>.
          */
         K.related(1);
-        KELVIN     = K;
-        CELSIUS    = add(K, LinearConverter.offset(  27315, 100), "°C", SI,    (short) 0);
-        FAHRENHEIT = add(K, new LinearConverter(100, 45967, 180), "°F", OTHER, (short) 0);
+        KELVIN       = K;
+        CELSIUS      = add(K, LinearConverter.offset(  27315, 100), "°C", SI,    (short) 0);
+        FAHRENHEIT   = add(K, new LinearConverter(100, 45967, 180), "°F", OTHER, (short) 0);
         /*
-         * Electricity and magnetism.
-         */
-        AMPERE  = add(ElectricCurrent.class,     null, current,                      "A",  (byte) (SI | PREFIXABLE), (short) 0);
-        COULOMB = add(ElectricCharge.class,      null, charge,                       "C",  (byte) (SI | PREFIXABLE), (short) 0);
-        VOLT    = add(ElectricPotential.class,   null, potential,                    "V",  (byte) (SI | PREFIXABLE), (short) 0);
-        FARAD   = add(ElectricCapacitance.class, null, charge.divide(potential),     "F",  (byte) (SI | PREFIXABLE), (short) 0);
-        SIEMENS = add(ElectricConductance.class, null, current.divide(potential),    "S",  (byte) (SI | PREFIXABLE), (short) 0);
-        OHM     = add(ElectricResistance.class,  null, potential.divide(current),    "Ω",  (byte) (SI | PREFIXABLE), (short) 0);
-        WEBER   = add(MagneticFlux.class,        null, magneticFlux,                 "Wb", (byte) (SI | PREFIXABLE), (short) 0);
-        TESLA   = add(MagneticFluxDensity.class, null, magneticFlux.divide(area),    "T",  (byte) (SI | PREFIXABLE), (short) 0);
-        HENRY   = add(ElectricInductance.class,  null, magneticFlux.divide(current), "H",  (byte) (SI | PREFIXABLE), (short) 0);
-        /*
-         * Other units.
-         * Note: JDK8 branch uses method references instead than inner classes.
+         * Unit<Volume> and Unit<Mass>. Those units need to be handled in a special way because:
+         * 1) The base unit of mass is "kg", not "g". This is handled by a hard-coded case in SystemUnit.
+         * 2) The liter unit is not a SI units, but despite that is commonly used with SI prefixes.
          */
         SQUARE_METRE = m2;
         CUBIC_METRE  = m3;
@@ -1188,15 +1177,28 @@ public final class Units extends Static {
         HECTARE      = add(m2, ten4,  "ha",        ACCEPTED,               (short) 0);
         LITRE        = add(m3, milli, "L", (byte) (ACCEPTED | PREFIXABLE), (short) 0);
         GRAM         = add(kg, milli, "g", (byte) (ACCEPTED | PREFIXABLE), (short) 0);
-        HERTZ        = add(Frequency.class, new ScalarFactory<Frequency>() {@Override public Frequency create(double value, Unit<Frequency> unit) {return new Scalar.Frequency(value, unit);}}, time.pow(-1), "Hz", (byte) (SI | PREFIXABLE), (short) 0);
-        NEWTON       = add(Force.class,     new ScalarFactory<Force>    () {@Override public Force     create(double value, Unit<Force>     unit) {return new Scalar.Force    (value, unit);}}, force,        "N",  (byte) (SI | PREFIXABLE), (short) 0);
-        JOULE        = add(Energy.class,    new ScalarFactory<Energy>   () {@Override public Energy    create(double value, Unit<Energy>    unit) {return new Scalar.Energy   (value, unit);}}, energy,       "J",  (byte) (SI | PREFIXABLE), (short) 0);
-        WATT         = add(Power.class,     new ScalarFactory<Power>    () {@Override public Power     create(double value, Unit<Power>     unit) {return new Scalar.Power    (value, unit);}}, power,        "W",  (byte) (SI | PREFIXABLE), (short) 0);
-        LUX          = add(Illuminance.class,       null, luminous.divide(area), "lx",  (byte) (SI | PREFIXABLE), (short) 0);
-        LUMEN        = add(LuminousFlux.class,      null, luminous,              "lm",  (byte) (SI | PREFIXABLE), (short) 0);
-        CANDELA      = add(LuminousIntensity.class, null, luminous,              "cd",  (byte) (SI | PREFIXABLE), (short) 0);    // Must be after Lumen.
-        MOLE         = add(AmountOfSubstance.class, null, amount,                "mol", (byte) (SI | PREFIXABLE), (short) 0);
-        STERADIAN    = add(SolidAngle.class,        null, dimensionless,         "sr",  (byte) (SI | PREFIXABLE), (short) 0);
+        /*
+         * Force, energy, electricity, magnetism and other units.
+         * Note: JDK8 branch uses method references instead than inner classes.
+         */
+        HERTZ      = add(Frequency.class, new ScalarFactory<Frequency>() {@Override public Frequency create(double value, Unit<Frequency> unit) {return new Scalar.Frequency(value, unit);}}, time.pow(-1), "Hz", (byte) (SI | PREFIXABLE), (short) 0);
+        NEWTON     = add(Force.class,     new ScalarFactory<Force>    () {@Override public Force     create(double value, Unit<Force>     unit) {return new Scalar.Force    (value, unit);}}, force,        "N",  (byte) (SI | PREFIXABLE), (short) 0);
+        JOULE      = add(Energy.class,    new ScalarFactory<Energy>   () {@Override public Energy    create(double value, Unit<Energy>    unit) {return new Scalar.Energy   (value, unit);}}, energy,       "J",  (byte) (SI | PREFIXABLE), (short) 0);
+        WATT       = add(Power.class,     new ScalarFactory<Power>    () {@Override public Power     create(double value, Unit<Power>     unit) {return new Scalar.Power    (value, unit);}}, power,        "W",  (byte) (SI | PREFIXABLE), (short) 0);
+        AMPERE     = add(ElectricCurrent.class,     null,                  current,                      "A",   (byte) (SI | PREFIXABLE), (short) 0);
+        COULOMB    = add(ElectricCharge.class,      null,                  charge,                       "C",   (byte) (SI | PREFIXABLE), (short) 0);
+        VOLT       = add(ElectricPotential.class,   null,                  potential,                    "V",   (byte) (SI | PREFIXABLE), (short) 0);
+        FARAD      = add(ElectricCapacitance.class, null,                  charge.divide(potential),     "F",   (byte) (SI | PREFIXABLE), (short) 0);
+        SIEMENS    = add(ElectricConductance.class, null,                  current.divide(potential),    "S",   (byte) (SI | PREFIXABLE), (short) 0);
+        OHM        = add(ElectricResistance.class,  null,                  potential.divide(current),    "Ω",   (byte) (SI | PREFIXABLE), (short) 0);
+        WEBER      = add(MagneticFlux.class,        null,                  magneticFlux,                 "Wb",  (byte) (SI | PREFIXABLE), (short) 0);
+        TESLA      = add(MagneticFluxDensity.class, null,                  magneticFlux.divide(area),    "T",   (byte) (SI | PREFIXABLE), (short) 0);
+        HENRY      = add(ElectricInductance.class,  null,                  magneticFlux.divide(current), "H",   (byte) (SI | PREFIXABLE), (short) 0);
+        LUX        = add(Illuminance.class,         null,                  luminous.divide(area),        "lx",  (byte) (SI | PREFIXABLE), (short) 0);
+        LUMEN      = add(LuminousFlux.class,        null,                  luminous,                     "lm",  (byte) (SI | PREFIXABLE), (short) 0);
+        CANDELA    = add(LuminousIntensity.class,   null,                  luminous,                     "cd",  (byte) (SI | PREFIXABLE), (short) 0);    // Must be after Lumen.
+        MOLE       = add(AmountOfSubstance.class,   null,                  amount,                       "mol", (byte) (SI | PREFIXABLE), (short) 0);
+        STERADIAN  = add(SolidAngle.class,          null,                  dimensionless,                "sr",  (byte) (SI | PREFIXABLE), (short) 0);
         /*
          * All Unit<Dimensionless>.
          * Note: JDK8 branch uses method references instead than inner classes.
@@ -1218,6 +1220,8 @@ public final class Units extends Static {
         UnitRegistry.alias(FAHRENHEIT,  "℉");
         UnitRegistry.alias(GRAD,      "gon");
         UnitRegistry.alias(HECTARE,   "hm²");
+        UnitRegistry.alias(LITRE,       "l");
+        UnitRegistry.alias(LITRE,       "ℓ");
         UnitRegistry.alias(UNITY,       "1");
 
         initialized = true;
