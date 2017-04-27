@@ -486,9 +486,10 @@ final class SystemUnit<Q extends Quantity<Q>> extends AbstractUnit<Q> implements
     }
 
     /**
-     * Returns units for the same quantity but with scale factors that are not the SI one.
+     * Returns units for the same quantity but with scale factors that are not the SI one, or {@code null} if none.
      * This method returns a direct reference to the internal field; caller shall not modify.
      */
+    @Override
     @SuppressWarnings("ReturnOfCollectionOrArrayField")
     final ConventionalUnit<Q>[] related() {
         return related;
