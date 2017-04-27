@@ -468,9 +468,15 @@ final class SystemUnit<Q extends Quantity<Q>> extends AbstractUnit<Q> implements
      * @return the unit after the specified transformation.
      */
     @Override
-    public Unit<Q> transform(final UnitConverter operation) {
+    @SuppressWarnings("unchecked")
+    public Unit<Q> transform(UnitConverter operation) {
         ArgumentChecks.ensureNonNull("operation", operation);
-        return ConventionalUnit.create(this, operation);
+        AbstractUnit<Q> base = this;
+        if (this == Units.KILOGRAM) {
+            base = (AbstractUnit<Q>) Units.GRAM;
+            operation = operation.concatenate(LinearConverter.forPrefix('k'));
+        }
+        return ConventionalUnit.create(base, operation);
     }
 
     /**
