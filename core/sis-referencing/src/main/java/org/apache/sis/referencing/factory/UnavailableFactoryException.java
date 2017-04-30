@@ -20,7 +20,7 @@ import org.opengis.referencing.AuthorityFactory;
 
 
 /**
- * Thrown when a factory can not be created because a resource is missing.
+ * Thrown when a whole factory can not be created because a resource is missing.
  * The most common case is when the {@link org.apache.sis.referencing.factory.sql.EPSGFactory}
  * has no connection to an EPSG database.
  *

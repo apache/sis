@@ -55,8 +55,10 @@ import org.apache.sis.internal.metadata.AxisDirections;
 import org.apache.sis.internal.referencing.PositionalAccuracyConstant;
 import org.apache.sis.internal.referencing.CoordinateOperations;
 import org.apache.sis.internal.referencing.ReferencingUtilities;
+import org.apache.sis.internal.referencing.DefinitionVerifier;
 import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.internal.system.Modules;
+import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.referencing.cs.DefaultVerticalCS;
 import org.apache.sis.referencing.cs.DefaultEllipsoidalCS;
 import org.apache.sis.referencing.crs.DefaultGeographicCRS;
@@ -232,7 +234,11 @@ public final class CRS extends Static {
      * }
      * </div>
      *
-     * <div class="section">Usage and performance considerations</div>
+     * If the parsing produced warnings, they will be reported in a logger named {@code "org.apache.sis.io.wkt"}.
+     * In particular, this method verifies if the definition provided by the WKT matches the definition provided
+     * by the authority ({@code "EPSG:5641"} in above example) and reports discrepancies.
+     *
+     * <div class="note"><b>Usage and performance considerations</b>
      * This convenience method delegates to
      * {@link org.apache.sis.referencing.factory.GeodeticObjectFactory#createFromWKT(String)}
      * using a default factory instance. This is okay for occasional use, but has the following limitations:
@@ -244,7 +250,7 @@ public final class CRS extends Static {
      * </ul>
      *
      * Applications which need to parse a large amount of WKT strings should consider to use
-     * the {@link org.apache.sis.io.wkt.WKTFormat} class instead than this method.
+     * the {@link org.apache.sis.io.wkt.WKTFormat} class instead than this method.</div>
      *
      * @param  text  coordinate system encoded in Well-Known Text format (version 1 or 2).
      * @return the parsed Coordinate Reference System.
@@ -258,7 +264,9 @@ public final class CRS extends Static {
      */
     public static CoordinateReferenceSystem fromWKT(final String text) throws FactoryException {
         ArgumentChecks.ensureNonNull("text", text);
-        return DefaultFactories.forBuildin(CRSFactory.class).createFromWKT(text);
+        final CoordinateReferenceSystem crs = DefaultFactories.forBuildin(CRSFactory.class).createFromWKT(text);
+        DefinitionVerifier.withAuthority(crs, Loggers.WKT, CRS.class, "fromWKT");
+        return crs;
     }
 
     /**
@@ -277,7 +285,9 @@ public final class CRS extends Static {
      */
     public static CoordinateReferenceSystem fromXML(final String xml) throws FactoryException {
         ArgumentChecks.ensureNonNull("text", xml);
-        return DefaultFactories.forBuildin(CRSFactory.class).createFromXML(xml);
+        final CoordinateReferenceSystem crs = DefaultFactories.forBuildin(CRSFactory.class).createFromXML(xml);
+        DefinitionVerifier.withAuthority(crs, Loggers.XML, CRS.class, "fromXML");
+        return crs;
     }
 
     /**

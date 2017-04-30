@@ -120,19 +120,39 @@ public class WarningListeners<S> implements Localized {
     }
 
     /**
-     * Returns the logger where to send the warnings. The default implementation returns a logger for
-     * the package name of the {@code source} object. Subclasses should override this method if they
-     * can provide a fixed logger instance (typically a static final constant).
+     * Returns the logger where to send the warnings when no other destination is specified.
+     * This logger is used when:
      *
-     * @return  the logger where to send the warnings when there is no registered listeners.
+     * <ul>
+     *   <li>no listener has been {@linkplain #addWarningListener registered}, and</li>
+     *   <li>the {@code LogRecord} does not {@linkplain LogRecord#getLoggerName() specify a logger}.</li>
+     * </ul>
+     *
+     * The default implementation derives a logger for the package name of the {@code source} object.
+     * Subclasses should override this method if they can provide a more determinist logger instance,
+     * typically from a static final constant.
+     *
+     * @return the logger where to send the warnings when there is no other destination.
      */
     public Logger getLogger() {
         return Logging.getLogger(source.getClass());
     }
 
     /**
-     * Reports a warning represented by the given log record. The default implementation notifies the listeners
-     * if any, or logs the message to the logger returned by {@link #getLogger()} otherwise.
+     * Reports a warning represented by the given log record.
+     * The default implementation performs the following choice:
+     *
+     * <ul>
+     *   <li>If at least one listener has been {@linkplain #addWarningListener registered}, then those listeners
+     *       will be notified by a call to {@link WarningListener#warningOccured(Object, LogRecord)}.</li>
+     *   <li>Otherwise:
+     *     <ul>
+     *       <li>If the value returned by {@link LogRecord#getLoggerName()} is non-null,
+     *           then the warning will be logged to that named logger.</li>
+     *       <li>Otherwise the warning will be logged to the logger given by {@link #getLogger()}.</li>
+     *     </ul>
+     *   </li>
+     * </ul>
      *
      * @param record  the warning as a log record.
      */
@@ -146,8 +166,14 @@ public class WarningListeners<S> implements Localized {
                 listener.warningOccured(source, record);
             }
         } else {
-            final Logger logger = getLogger();
-            record.setLoggerName(logger.getName());
+            final String name = record.getLoggerName();
+            final Logger logger;
+            if (name != null) {
+                logger = Logging.getLogger(name);
+            } else {
+                logger = getLogger();
+                record.setLoggerName(logger.getName());
+            }
             if (record instanceof QuietLogRecord) {
                 ((QuietLogRecord) record).clearThrown();
             }
