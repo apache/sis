@@ -197,8 +197,8 @@ abstract class AbstractParser implements Parser {
     }
 
     /**
-     * Creates the object from a string. This method is for implementation of {@code createFromWKT(String)}
-     * method is SIS factories only.
+     * Creates the object from a string and log the warnings if any.
+     * This method is for implementation of {@code createFromWKT(String)} method is SIS factories only.
      *
      * @param  text  coordinate system encoded in Well-Known Text format (version 1 or 2).
      * @return the result of parsing the given text.

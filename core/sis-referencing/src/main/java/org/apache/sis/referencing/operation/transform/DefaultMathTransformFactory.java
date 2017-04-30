@@ -1313,6 +1313,9 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
      * Creates a math transform object from a
      * <a href="http://www.geoapi.org/snapshot/javadoc/org/opengis/referencing/doc-files/WKT.html"><cite>Well
      * Known Text</cite> (WKT)</a>.
+     * If the given text contains non-fatal anomalies (unknown or unsupported WKT elements,
+     * inconsistent unit definitions, <i>etc.</i>), warnings may be reported in a
+     * {@linkplain java.util.logging.Logger logger} named {@code "org.apache.sis.io.wkt"}.
      *
      * @param  text  math transform encoded in Well-Known Text format.
      * @return the math transform (never {@code null}).
