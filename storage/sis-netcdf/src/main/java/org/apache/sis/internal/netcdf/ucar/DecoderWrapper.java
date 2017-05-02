@@ -43,6 +43,7 @@ import org.apache.sis.internal.netcdf.Decoder;
 import org.apache.sis.internal.netcdf.Variable;
 import org.apache.sis.internal.netcdf.GridGeometry;
 import org.apache.sis.internal.netcdf.DiscreteSampling;
+import org.apache.sis.storage.DataStore;
 
 
 /**
@@ -100,7 +101,7 @@ public final class DecoderWrapper extends Decoder implements CancelTask {
      * @param listeners  where to send the warnings.
      * @param file       the NetCDF file from which to read data.
      */
-    public DecoderWrapper(final WarningListeners<?> listeners, final NetcdfFile file) {
+    public DecoderWrapper(final WarningListeners<DataStore> listeners, final NetcdfFile file) {
         super(listeners);
         this.file = file;
     }
@@ -113,7 +114,7 @@ public final class DecoderWrapper extends Decoder implements CancelTask {
      * @throws IOException if an error occurred while opening the NetCDF file.
      */
     @SuppressWarnings("ThisEscapedInObjectConstruction")
-    public DecoderWrapper(final WarningListeners<?> listeners, final String filename) throws IOException {
+    public DecoderWrapper(final WarningListeners<DataStore> listeners, final String filename) throws IOException {
         super(listeners);
         file = NetcdfDataset.openDataset(filename, false, this);
     }

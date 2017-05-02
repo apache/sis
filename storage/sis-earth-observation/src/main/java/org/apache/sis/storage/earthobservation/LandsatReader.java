@@ -50,6 +50,7 @@ import org.apache.sis.metadata.iso.content.DefaultCoverageDescription;
 import org.apache.sis.metadata.sql.MetadataStoreException;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.CommonCRS;
+import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreReferencingException;
 import org.apache.sis.util.Characters;
@@ -220,7 +221,7 @@ final class LandsatReader {
     /**
      * Where to send the warnings.
      */
-    private final WarningListeners<?> listeners;
+    private final WarningListeners<DataStore> listeners;
 
     /**
      * Group in process of being parsed, or {@code null} if none.
@@ -297,7 +298,7 @@ final class LandsatReader {
      * @param  filename   an identifier of the file being read, or {@code null} if unknown.
      * @param  listeners  where to sent warnings that may occur during the parsing process.
      */
-    LandsatReader(final String filename, final WarningListeners<?> listeners) {
+    LandsatReader(final String filename, final WarningListeners<DataStore> listeners) {
         this.filename  = filename;
         this.listeners = listeners;
         this.metadata  = new MetadataBuilder();

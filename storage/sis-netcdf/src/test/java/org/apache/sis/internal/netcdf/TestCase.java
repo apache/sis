@@ -22,6 +22,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.io.IOException;
 import java.lang.reflect.UndeclaredThrowableException;
+import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.util.logging.EmptyWarningListeners;
 import org.apache.sis.internal.netcdf.ucar.DecoderWrapper;
@@ -47,7 +48,7 @@ public abstract strictfp class TestCase extends IOTestCase {
     /**
      * A dummy list of listeners which can be given to the {@link Decoder} constructor.
      */
-    public static EmptyWarningListeners<Decoder> LISTENERS = new EmptyWarningListeners<>(null, Modules.NETCDF);
+    public static EmptyWarningListeners<DataStore> LISTENERS = new EmptyWarningListeners<>(null, Modules.NETCDF);
 
     /**
      * The {@code searchPath} argument value to be given to the {@link Decoder#setSearchPath(String[])}

@@ -321,14 +321,14 @@ public final class Resources extends IndexedResourceBundle {
         public static final short NoSuchOperationMethod_1 = 50;
 
         /**
-         * The coordinate system axes in the given “{0}” definition do not conform to the expected axes
-         * according “{1}” authoritative definition.
+         * The coordinate system axes in the given “{0}” description do not conform to the expected
+         * axes according “{1}” authoritative description.
          */
         public static final short NonConformAxes_2 = 72;
 
         /**
-         * The given “{0}” definition does not conform to the “{1}” authoritative definition.
-         * Differences are found in {2,choice,0#conversion method|1#conversion definition|2#coordinate
+         * The given “{0}” description does not conform to the “{1}” authoritative description.
+         * Differences are found in {2,choice,0#conversion method|1#conversion description|2#coordinate
          * system|3#datum|4#CRS}.
          */
         public static final short NonConformCRS_3 = 73;
