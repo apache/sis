@@ -44,7 +44,7 @@ import static org.apache.sis.test.Assert.*;
  * Tests the {@link TreeTableFormat} applied to the formatting of metadata tree.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.5
+ * @version 0.8
  * @since   0.3
  * @module
  */
@@ -76,6 +76,8 @@ public final strictfp class TreeTableFormatTest extends TestCase {
 
     /**
      * Tests the formatting of a {@link DefaultCitation} object.
+     *
+     * @see <a href="https://issues.apache.org/jira/browse/SIS-298">SIS-298</a>
      */
     @Test
     public void testCitation() {
@@ -92,11 +94,11 @@ public final strictfp class TreeTableFormatTest extends TestCase {
             "  │   ├─Code…………………………………………………………………… 9782505004509\n" +
             "  │   └─Code space…………………………………………………… ISBN\n"+
             "  ├─Cited responsible party (1 of 2)\n" +
-            "  │   ├─Party\n" +
+            "  │   ├─Individual\n" +
             "  │   │   └─Name………………………………………………………… Testsuya Toyoda\n" +
             "  │   └─Role…………………………………………………………………… Author\n" +
             "  ├─Cited responsible party (2 of 2)\n" +
-            "  │   ├─Party\n" +
+            "  │   ├─Organisation\n" +
             "  │   │   └─Name………………………………………………………… Kōdansha\n" +
             "  │   ├─Role…………………………………………………………………… Editor\n" +
             "  │   └─Extent\n" +

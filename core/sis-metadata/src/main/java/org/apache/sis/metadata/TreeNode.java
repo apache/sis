@@ -344,10 +344,63 @@ class TreeNode implements Node {
          * {@link KeyNamePolicy#UML_IDENTIFIER} instead than {@link KeyNamePolicy#JAVABEANS_PROPERTY}
          * in order to get the singular form instead of the plural one, because we will create one
          * node for each element in a collection.
+         *
+         * <p>If the property name is equals, ignoring case, to the simple type name, then this method
+         * returns the subtype name. For example instead of:</p>
+         *
+         * {@preformat text
+         *   Citation
+         *    └─Cited responsible party
+         *       └─Party
+         *          └─Name ……………………………… Jon Smith
+         * }
+         *
+         * we format:
+         *
+         * {@preformat
+         *   Citation
+         *    └─Cited responsible party
+         *       └─Individual
+         *          └─Name ……………………………… Jon Smith
+         * }
+         *
+         * @see <a href="https://issues.apache.org/jira/browse/SIS-298">SIS-298</a>
          */
         @Override
         CharSequence getName() {
-            return CharSequences.camelCaseToSentence(getIdentifier()).toString();
+            String identifier = getIdentifier();
+            if (identifier.equalsIgnoreCase(Classes.getShortName(baseType))) {
+                final Object value = getUserObject();
+                if (value != null) {
+                    Class<?> type = standardSubType(Classes.getLeafInterfaces(value.getClass(), baseType));
+                    if (type != null && type != Void.TYPE) {
+                        identifier = Classes.getShortName(type);
+                    }
+                }
+            }
+            return CharSequences.camelCaseToSentence(identifier).toString();
+        }
+
+        /**
+         * Returns the element of the given array which is both assignable to {@link #baseType} and a member
+         * of the standard represented by {@link TreeTableView#standard}. If no such type is found, returns
+         * {@code null}. If more than one type is found, returns the {@link Void#TYPE} sentinel value.
+         */
+        private Class<?> standardSubType(final Class<?>[] subtypes) {
+            Class<?> type = null;
+            for (Class<?> c : subtypes) {
+                if (baseType.isAssignableFrom(c)) {
+                    if (!table.standard.isMetadata(c)) {
+                        c = standardSubType(c.getInterfaces());
+                    }
+                    if (type == null) {
+                        type = c;
+                    } else if (type != c) {
+                        return Void.TYPE;
+                    }
+                }
+            }
+            return type;
         }
 
         /**

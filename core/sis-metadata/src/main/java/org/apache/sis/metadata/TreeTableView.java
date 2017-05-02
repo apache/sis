@@ -104,7 +104,7 @@ final class TreeTableView implements TreeTable, Serializable {
     {
         this.standard    = standard;
         this.valuePolicy = valuePolicy;
-        this.root = new TreeNode(this, metadata, baseType);
+        this.root        = new TreeNode(this, metadata, baseType);
     }
 
     /**
@@ -113,7 +113,7 @@ final class TreeTableView implements TreeTable, Serializable {
     @Override
     @SuppressWarnings("ReturnOfCollectionOrArrayField")
     public List<TableColumn<?>> getColumns() {
-        return COLUMNS;     // Unmodifiable
+        return COLUMNS;                                 // Unmodifiable
     }
 
     /**
