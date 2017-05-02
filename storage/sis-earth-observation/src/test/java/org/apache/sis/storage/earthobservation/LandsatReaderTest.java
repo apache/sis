@@ -301,7 +301,7 @@ public class LandsatReaderTest extends TestCase {
                 + "  │   │   ├─Code space………………………………………………………………… ISO\n"
                 + "  │   │   └─Version………………………………………………………………………… 2014(E)\n"
                 + "  │   ├─Cited responsible party\n"
-                + "  │   │   ├─Party\n"
+                + "  │   │   ├─Organisation\n"
                 + "  │   │   │   └─Name……………………………………………………………………… International Organization for Standardization\n"
                 + "  │   │   └─Role………………………………………………………………………………… Principal investigator\n"
                 + "  │   └─Presentation form………………………………………………………… Document digital\n"
@@ -313,7 +313,7 @@ public class LandsatReaderTest extends TestCase {
                 + "      │   ├─Code space………………………………………………………………… ISO\n"
                 + "      │   └─Version………………………………………………………………………… 2009(E)\n"
                 + "      ├─Cited responsible party\n"
-                + "      │   ├─Party\n"
+                + "      │   ├─Organisation\n"
                 + "      │   │   └─Name……………………………………………………………………… International Organization for Standardization\n"
                 + "      │   └─Role………………………………………………………………………………… Principal investigator\n"
                 + "      └─Presentation form………………………………………………………… Document digital\n", text);

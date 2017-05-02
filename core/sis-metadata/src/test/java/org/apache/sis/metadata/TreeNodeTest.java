@@ -65,11 +65,11 @@ public final strictfp class TreeNodeTest extends TestCase {
      *     ├─Alternate title (2 of 2)………………………………………… Second alternate title
      *     ├─Edition……………………………………………………………………………………… Some edition
      *     ├─Cited responsible party (1 of 2)
-     *     │   └─Party (Organisation)
+     *     │   └─Organisation
      *     │      ├─Name…………………………………………………………………………… Some organisation
      *     │      └─Role…………………………………………………………………………… Distributor
      *     ├─Cited responsible party (2 of 2)
-     *     │   └─Party (Individual)
+     *     │   └─Individual
      *     │      ├─Name…………………………………………………………………………… Some person of contact
      *     │      ├─Contact info
      *     │      │   └─Address
@@ -167,6 +167,8 @@ public final strictfp class TreeNodeTest extends TestCase {
 
     /**
      * Tests {@link TreeNode#getName()} on a metadata with a deeper hierarchy.
+     *
+     * @see <a href="https://issues.apache.org/jira/browse/SIS-298">SIS-298</a>
      */
     @Test
     @DependsOnMethod("testGetNameForMultiOccurrences")
@@ -179,11 +181,11 @@ public final strictfp class TreeNodeTest extends TestCase {
               "Alternate title (2 of 2)",
               "Edition",
               "Cited responsible party (1 of 2)",
-                "Party",
+                "Organisation",                         // A Party subtype
                   "Name",
                 "Role",
               "Cited responsible party (2 of 2)",
-                "Party",
+                "Individual",                           // A Party subtype
                   "Name",
                   "Contact info",
                     "Address",

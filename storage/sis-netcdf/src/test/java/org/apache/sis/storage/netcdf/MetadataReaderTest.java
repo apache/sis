@@ -87,7 +87,7 @@ public final strictfp class MetadataReaderTest extends IOTestCase {
         assertMultilinesEquals(
             "Metadata\n" +
             "  ├─Contact\n" +
-            "  │   ├─Party\n" +
+            "  │   ├─Individual\n" +                         // TODO: actually we can not distinguish individual from organization.
             "  │   │   └─Name………………………………………………………………………………… NOAA/NWS/NCEP\n" +
             "  │   └─Role…………………………………………………………………………………………… Point of contact\n" +
             "  ├─Spatial representation info\n" +
@@ -114,12 +114,12 @@ public final strictfp class MetadataReaderTest extends IOTestCase {
             "  │   │   │   │   └─Title………………………………………………………… edu.ucar.unidata\n" +
             "  │   │   │   └─Code……………………………………………………………………… NCEP/SST/Global_5x2p5deg/SST_Global_5x2p5deg_20050922_0000.nc\n" +
             "  │   │   └─Cited responsible party\n" +
-            "  │   │       ├─Party\n" +
+            "  │   │       ├─Individual\n" +                 // TODO: actually we can not distinguish individual from organization.
             "  │   │       │   └─Name…………………………………………………………… NOAA/NWS/NCEP\n" +
             "  │   │       └─Role……………………………………………………………………… Originator\n" +
             "  │   ├─Abstract………………………………………………………………………………… NCEP SST Global 5.0 x 2.5 degree model data\n" +
             "  │   ├─Point of contact\n" +
-            "  │   │   ├─Party\n" +
+            "  │   │   ├─Individual\n" +
             "  │   │   │   └─Name……………………………………………………………………… NOAA/NWS/NCEP\n" +
             "  │   │   └─Role………………………………………………………………………………… Point of contact\n" +
             "  │   ├─Descriptive keywords\n" +
@@ -164,7 +164,7 @@ public final strictfp class MetadataReaderTest extends IOTestCase {
             "  │   │   ├─Code space………………………………………………………………… ISO\n" +
             "  │   │   └─Version………………………………………………………………………… 2014(E)\n" +
             "  │   ├─Cited responsible party\n" +
-            "  │   │   ├─Party\n" +
+            "  │   │   ├─Organisation\n" +
             "  │   │   │   └─Name……………………………………………………………………… International Organization for Standardization\n" +
             "  │   │   └─Role………………………………………………………………………………… Principal investigator\n" +
             "  │   └─Presentation form………………………………………………………… Document digital\n" +
@@ -176,7 +176,7 @@ public final strictfp class MetadataReaderTest extends IOTestCase {
             "      │   ├─Code space………………………………………………………………… ISO\n" +
             "      │   └─Version………………………………………………………………………… 2009(E)\n" +
             "      ├─Cited responsible party\n" +
-            "      │   ├─Party\n" +
+            "      │   ├─Organisation\n" +
             "      │   │   └─Name……………………………………………………………………… International Organization for Standardization\n" +
             "      │   └─Role………………………………………………………………………………… Principal investigator\n" +
             "      └─Presentation form………………………………………………………… Document digital\n", text);
