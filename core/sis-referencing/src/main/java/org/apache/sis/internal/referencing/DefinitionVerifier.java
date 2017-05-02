@@ -41,21 +41,21 @@ import org.apache.sis.util.Utilities;
 
 
 /**
- * Verifies the conformance of a given CRS with an authoritative definition.
+ * Verifies the conformance of a given CRS with an authoritative description.
  * For example if a Well Known Text (WKT) contains an EPSG code, this class verifies that
  * the CRS created from the WKT is equivalent to the CRS identified by the authority code.
  * {@code DefinitionVerifier} contains two informations:
  *
  * <ul>
  *   <li>The recommended CRS to use. May be the given CRS or a CRS created from the authority factory.</li>
- *   <li>Warnings if the given CRS does not match the authoritative definition.</li>
+ *   <li>Warnings if the given CRS does not match the authoritative description.</li>
  * </ul>
  *
  * <b>Note:</b> ISO 19162 said about the {@code Identifier} keyword:  <cite>"In the event of conflict in values given
  * in the CRS WKT string and given by an authority through an object’s name or an identifier, reading software should
  * throw an exception or give users a warning message. The WKT values should be assumed to prevail."</cite>
  * In practice when such conflicts happen, we often see that the given WKT string contains mistakes and the
- * provider intended to use the authoritative definition. We nevertheless comply with ISO 19162 requirement,
+ * provider intended to use the authoritative description. We nevertheless comply with ISO 19162 requirement,
  * but provide a "recommended CRS" field for what we think is the intended CRS.
  *
  * @author  Martin Desruisseaux (Geomatys)
@@ -65,7 +65,7 @@ import org.apache.sis.util.Utilities;
  */
 public final class DefinitionVerifier {
     /**
-     * List of CRS variants to try if the given CRS does not match the expected definition.
+     * List of CRS variants to try if the given CRS does not match the expected description.
      * For performance reason, this list should be ordered with most probable variant first
      * and less probable variant last.
      */
@@ -104,10 +104,10 @@ public final class DefinitionVerifier {
     }
 
     /**
-     * Compares the given CRS definition with the authoritative definition.
+     * Compares the given CRS description with the authoritative description.
      * If the comparison produces a warning, a message will be recorded to the given logger.
      *
-     * @param  crs     the CRS to compare with the authoritative definition.
+     * @param  crs     the CRS to compare with the authoritative description.
      * @param  logger  the logger where to report warnings, if any.
      * @param  classe  the class to declare as the source of the warning.
      * @param  method  the method to declare as the source of the warning.
@@ -127,11 +127,11 @@ public final class DefinitionVerifier {
     }
 
     /**
-     * Compares the given CRS definition with the authoritative definition.
-     * The authoritative definition is inferred from the identifier, if any.
+     * Compares the given CRS description with the authoritative description.
+     * The authoritative description is inferred from the identifier, if any.
      *
-     * @param  crs      the CRS to compare with the authoritative definition.
-     * @param  factory  the factory to use for fetching authoritative definition, or {@code null} for the default.
+     * @param  crs      the CRS to compare with the authoritative description.
+     * @param  factory  the factory to use for fetching authoritative description, or {@code null} for the default.
      * @param  lookup   whether this method is allowed to use {@link IdentifiedObjectFinder}.
      * @return verification result, or {@code null} if the given CRS should be used as-is.
      * @throws FactoryException if an error occurred while querying the authority factory.
@@ -144,7 +144,7 @@ public final class DefinitionVerifier {
         final String identifier = IdentifiedObjects.toString(IdentifiedObjects.getIdentifier(crs, authority));
         if (identifier != null) try {
             /*
-             * An authority code was explicitly given in the CRS definition. Create a CRS for that code
+             * An authority code was explicitly given in the CRS description. Create a CRS for that code
              * (do not try to guess it). If the given code is unknown, we will report a warning and use
              * the given CRS as-is.
              */
@@ -159,7 +159,7 @@ public final class DefinitionVerifier {
             return verifier;
         } else if (lookup) {
             /*
-             * No authority code was given in the CRS definition. Try to guess the code with IdentifiedObjectFinder,
+             * No authority code was given in the CRS description. Try to guess the code with IdentifiedObjectFinder,
              * ignoring axis order. If we can not guess a code or if we guess wrongly, use the given CRS silently
              * (without reporting any warning) since there is apparently nothing wrong in the given CRS.
              */
@@ -170,7 +170,6 @@ public final class DefinitionVerifier {
                 finder = IdentifiedObjects.newFinder(Citations.getIdentifier(authority, false));
             }
             finder.setIgnoringAxes(true);
-            finder.setSearchDomain(IdentifiedObjectFinder.Domain.DECLARATION);
             final IdentifiedObject ref = finder.findSingleton(crs);
             if (ref instanceof CoordinateReferenceSystem) {
                 authoritative = (CoordinateReferenceSystem) ref;
@@ -181,8 +180,8 @@ public final class DefinitionVerifier {
             return null;
         }
         /*
-         * At this point we found an authoritative definition (typically from EPSG database) for the given CRS.
-         * Verify if the given CRS is equal to the authoritative definition, or a variant of it. The similarity
+         * At this point we found an authoritative description (typically from EPSG database) for the given CRS.
+         * Verify if the given CRS is equal to the authoritative description, or a variant of it. The similarity
          * variable tells us if we have equality (0), mismatch (-), or equality when using a variant (+).
          */
         int similarity = 0;
@@ -192,9 +191,9 @@ public final class DefinitionVerifier {
             if (similarity < VARIANTS.length) {
                 variant = ca.forConvention(VARIANTS[similarity++]);
             } else if (identifier == null) {
-                return null;        // Mismatched CRS, but our "authoritative" definition was only a guess. Ignore.
+                return null;        // Mismatched CRS, but our "authoritative" description was only a guess. Ignore.
             } else {
-                similarity = -1;    // Mismatched CRS and our authoritative definition was not a guess. Need warning.
+                similarity = -1;    // Mismatched CRS and our authoritative description was not a guess. Need warning.
                 break;
             }
         }
@@ -203,19 +202,21 @@ public final class DefinitionVerifier {
             /*
              * Warning message (from Resources.properties):
              *
-             *     The coordinate system axes in the given “{0}” definition do not conform to the expected axes
-             *     according “{1}” authoritative definition.
+             *     The coordinate system axes in the given “{0}” description do not conform to the expected axes
+             *     according “{1}” authoritative description.
              */
             verifier = new DefinitionVerifier(variant);
-            verifier.resourceKey = Resources.Keys.NonConformAxes_2;
-            verifier.arguments   = new String[2];
+            if (identifier != null) {
+                verifier.resourceKey = Resources.Keys.NonConformAxes_2;
+                verifier.arguments   = new String[2];
+            }
         } else {
             verifier = new DefinitionVerifier(authoritative);
             if (similarity != 0) {
                 /*
                  * Warning message (from Resources.properties):
                  *
-                 *     The given “{0}” definition does not conform to the “{1}” authoritative definition.
+                 *     The given “{0}” description does not conform to the “{1}” authoritative description.
                  *     Differences are found in {2,choice,0#method|1#conversion|2#coordinate system|3#datum|4#CRS}.
                  */
                 verifier.resourceKey  = Resources.Keys.NonConformCRS_3;
@@ -232,7 +233,7 @@ public final class DefinitionVerifier {
     }
 
     /**
-     * Indicates in which part of CRS definition a difference has been found. Numerical values must match the number
+     * Indicates in which part of CRS description a difference has been found. Numerical values must match the number
      * in the {@code {choice}} instruction in the message associated to {@link Resources.Keys#NonConformCRS_3}.
      */
     private static final int METHOD=0, CONVERSION=1, CS=2, DATUM=3, OTHER=4;

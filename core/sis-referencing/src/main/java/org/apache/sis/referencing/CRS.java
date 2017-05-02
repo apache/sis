@@ -20,6 +20,7 @@ import java.util.Map;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.logging.LogRecord;
 import org.opengis.util.FactoryException;
 import org.opengis.geometry.Envelope;
 import org.opengis.referencing.NoSuchAuthorityCodeException;
@@ -72,6 +73,7 @@ import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
 import org.apache.sis.metadata.iso.extent.Extents;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.logging.Logging;
+import org.apache.sis.util.logging.WarningListener;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Utilities;
 import org.apache.sis.util.Static;
@@ -235,10 +237,14 @@ public final class CRS extends Static {
      * </div>
      *
      * If the parsing produced warnings, they will be reported in a logger named {@code "org.apache.sis.io.wkt"}.
-     * In particular, this method verifies if the definition provided by the WKT matches the definition provided
+     * In particular, this method verifies if the description provided by the WKT matches the description provided
      * by the authority ({@code "EPSG:5641"} in above example) and reports discrepancies.
+     * Note that this comparison between parsed CRS and authoritative CRS is specific to this convenience method;
+     * other APIs documented in <cite>see also</cite> section do not perform this comparison automatically.
+     * Should the WKT description and the authoritative description be in conflict, the WKT description prevails
+     * as mandated by ISO 19162 standard (see {@link #fromAuthority fromAuthority(…)} if a different behavior is needed).
      *
-     * <div class="note"><b>Usage and performance considerations</b>
+     * <div class="section">Usage and performance considerations</div>
      * This convenience method delegates to
      * {@link org.apache.sis.referencing.factory.GeodeticObjectFactory#createFromWKT(String)}
      * using a default factory instance. This is okay for occasional use, but has the following limitations:
@@ -250,13 +256,14 @@ public final class CRS extends Static {
      * </ul>
      *
      * Applications which need to parse a large amount of WKT strings should consider to use
-     * the {@link org.apache.sis.io.wkt.WKTFormat} class instead than this method.</div>
+     * the {@link org.apache.sis.io.wkt.WKTFormat} class instead than this method.
      *
      * @param  text  coordinate system encoded in Well-Known Text format (version 1 or 2).
      * @return the parsed Coordinate Reference System.
      * @throws FactoryException if the given WKT can not be parsed.
      *
-     * @see org.apache.sis.io.wkt
+     * @see org.apache.sis.io.wkt.WKTFormat
+     * @see org.apache.sis.referencing.factory.GeodeticObjectFactory#createFromWKT(String)
      * @see org.apache.sis.geometry.Envelopes#fromWKT(CharSequence)
      * @see <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html">WKT 2 specification</a>
      *
@@ -275,10 +282,19 @@ public final class CRS extends Static {
      * For reading XML documents from readers or input streams,
      * see static methods in the {@link org.apache.sis.xml.XML} class.
      *
+     * <p>If the unmarshalling produced warnings, they will be reported in a logger named {@code "org.apache.sis.xml"}.
+     * In particular, this method verifies if the description provided by the XML matches the description provided by
+     * the authority code given in {@code <gml:identifier>} element, and reports discrepancies.
+     * Note that this comparison between unmarshalled CRS and authoritative CRS is specific to this convenience method;
+     * other APIs documented in <cite>see also</cite> section do not perform this comparison automatically.
+     * Should the XML description and the authoritative description be in conflict, the XML description prevails
+     * (see {@link #fromAuthority fromAuthority(…)} if a different behavior is needed).</p>
+     *
      * @param  xml  coordinate reference system encoded in XML format.
      * @return the unmarshalled Coordinate Reference System.
      * @throws FactoryException if the object creation failed.
      *
+     * @see org.apache.sis.referencing.factory.GeodeticObjectFactory#createFromXML(String)
      * @see org.apache.sis.xml.XML#unmarshal(String)
      *
      * @since 0.7
@@ -287,6 +303,94 @@ public final class CRS extends Static {
         ArgumentChecks.ensureNonNull("text", xml);
         final CoordinateReferenceSystem crs = DefaultFactories.forBuildin(CRSFactory.class).createFromXML(xml);
         DefinitionVerifier.withAuthority(crs, Loggers.XML, CRS.class, "fromXML");
+        return crs;
+    }
+
+    /**
+     * Replaces the given coordinate reference system by an authoritative description, if one can be found.
+     * This method can be invoked after constructing a CRS in a context where the EPSG (or other authority)
+     * code is suspected more reliable than the rest of the description. A common case is a <cite>Well Known
+     * Text</cite> (WKT) string declaring wrong projection method or parameter values for the EPSG code that
+     * it pretends to describe. For example:
+     *
+     * <blockquote>
+     *   {@code PROJCS["WGS 84 / Pseudo-Mercator",}<br>
+     *   {@code   }(…base CRS omitted for brevity…)<br>
+     *   {@code   PROJECTION["Mercator (variant A)"],} — <em><b>wrong:</b> shall be "Popular Visualisation Pseudo Mercator"</em><br>
+     *   {@code   }(…parameters and axes omitted for brevity…)<br>
+     *   {@code   AUTHORITY["EPSG", "3857"]]}
+     * </blockquote>
+     *
+     * In such cases, Apache SIS behavior in {@link #fromWKT(String)}, {@link #fromXML(String)} and other methods is
+     * conform to the <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html">ISO 19162 specification</a>:
+     *
+     * <blockquote><cite>"Should any attributes or values given in the cited identifier be in conflict with attributes
+     * or values given explicitly in the WKT description, the WKT values shall prevail."</cite></blockquote>
+     *
+     * In situations where the opposite behavior is desired (i.e. to make the authority identifier prevails),
+     * this method can be invoked. This method performs the following actions:
+     *
+     * <ul>
+     *   <li>If the given CRS has an {@linkplain AbstractIdentifiedObject#getIdentifiers() identifier} and if the authority factory can
+     *     {@linkplain org.apache.sis.referencing.factory.GeodeticAuthorityFactory#createCoordinateReferenceSystem(String) create a CRS}
+     *     for that identifier, then:
+     *     <ul>
+     *       <li>If the CRS defined by the authority is {@linkplain Utilities#equalsIgnoreMetadata equal, ignoring metadata},
+     *         to the given CRS, then this method returns silently the <em>authoritative</em> CRS.</li>
+     *       <li>Otherwise if the CRS defined by the authority is equal, ignoring axis order and units, to the given CRS,
+     *         then this method returns a <em>new</em> CRS derived from the authoritative one but with same
+     *         {@linkplain org.apache.sis.referencing.cs.AxesConvention axes convention} than the given CRS.
+     *         A warning is emitted.</li>
+     *       <li>Otherwise this method discards the given CRS and returns the <em>authoritative</em> CRS.
+     *         A warning is emitted with a message indicating where a difference has been found.</li>
+     *     </ul>
+     *   </li>
+     *   <li>Otherwise if the given CRS does not have identifier, then this method
+     *       {@linkplain org.apache.sis.referencing.factory.IdentifiedObjectFinder searches for an equivalent CRS}
+     *       defined by the authority factory. If such CRS is found, then:
+     *     <ul>
+     *       <li>If the CRS defined by the authority is {@linkplain Utilities#equalsIgnoreMetadata equal, ignoring metadata},
+     *         to the given CRS, then this method returns silently the <em>authoritative</em> CRS.</li>
+     *       <li>Otherwise if the CRS defined by the authority is equal, ignoring axis order and units, to the given CRS,
+     *         then this method returns silently a <em>new</em> CRS derived from the authoritative one but with same
+     *         {@linkplain org.apache.sis.referencing.cs.AxesConvention axes convention} than the given CRS.</li>
+     *     </ul>
+     *   </li>
+     *   <li>Otherwise this method silently returns the given CRS as-is.</li>
+     * </ul>
+     *
+     * <b>Note:</b> the warnings emitted by this method are redundant with the warnings emitted by
+     * {@link #fromWKT(String)} and {@link #fromXML(String)}, so the {@code warnings} argument should be {@code null}
+     * when {@code fromAuthority(…)} is invoked for the CRS parsed by one of above-mentioned methods.
+     * A non-null {@code warnings} argument is more useful for CRS parsed by {@link org.apache.sis.io.wkt.WKTFormat}
+     * or {@link org.apache.sis.xml.XML#unmarshal(String)} for instance.
+     *
+     * @param  crs       the CRS to replace by an authoritative CRS, or {@code null}.
+     * @param  factory   the factory where to search for authoritative definitions, or {@code null} for the default.
+     * @param  listener  where to send warnings, or {@code null} for ignoring warnings.
+     * @return the suggested CRS to use (may be the {@code crs} argument itself), or {@code null} if the given CRS was null.
+     * @throws FactoryException if an error occurred while querying the authority factory.
+     *
+     * @since 0.8
+     */
+    public static CoordinateReferenceSystem fromAuthority(CoordinateReferenceSystem crs,
+            final CRSAuthorityFactory factory, final WarningListener<?> listener) throws FactoryException
+    {
+        if (crs != null) {
+            final DefinitionVerifier verification = DefinitionVerifier.withAuthority(crs, factory, true);
+            if (verification != null) {
+                crs = verification.authoritative;
+                if (listener != null) {
+                    final LogRecord record = verification.warning(false);
+                    if (record != null) {
+                        record.setLoggerName(Modules.REFERENCING);
+                        record.setSourceClassName(CRS.class.getName());
+                        record.setSourceMethodName("fromAuthority");
+                        listener.warningOccured(null, record);
+                    }
+                }
+            }
+        }
         return crs;
     }
 

@@ -23,6 +23,7 @@ import java.io.IOException;
 import javax.measure.Unit;
 import javax.measure.format.ParserException;
 import org.apache.sis.measure.Units;
+import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.util.logging.WarningListeners;
 
@@ -42,7 +43,7 @@ public abstract class Decoder implements Closeable {
     /**
      * Where to send the warnings.
      */
-    public final WarningListeners<?> listeners;
+    public final WarningListeners<DataStore> listeners;
 
     /**
      * Sets to {@code true} for canceling a reading process.
@@ -55,7 +56,7 @@ public abstract class Decoder implements Closeable {
      *
      * @param  listeners  where to send the warnings.
      */
-    protected Decoder(final WarningListeners<?> listeners) {
+    protected Decoder(final WarningListeners<DataStore> listeners) {
         Objects.requireNonNull(listeners);
         this.listeners = listeners;
     }

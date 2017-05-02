@@ -41,12 +41,10 @@ import org.apache.sis.internal.referencing.DefinitionVerifier;
 import org.apache.sis.metadata.iso.DefaultMetadata;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.CharSequences;
-import org.apache.sis.referencing.CRS;
 
 
 /**
  * A data store which creates data objects from a WKT definition.
- * This {@code DataStore} implementation is basically a facade for the {@link CRS#fromWKT(String)} method.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
