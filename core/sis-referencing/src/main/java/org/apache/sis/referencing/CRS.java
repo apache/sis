@@ -407,7 +407,7 @@ public final class CRS extends Static {
      * they need to be {@linkplain Envelopes#transform(Envelope, CoordinateReferenceSystem) transformed} in the same CRS.
      * However if one CRS is a Transverse Mercator projection while the other CRS is a world-wide geographic CRS, then
      * attempts to use the Transverse Mercator projection as the common CRS is likely to fail since the geographic envelope
-     * may span an area far outside the projection domain of validity. This {@code suggestTargetCRS(…)} method can used
+     * may span an area far outside the projection domain of validity. This {@code suggestCommonTarget(…)} method can used
      * for choosing a common CRS which is less likely to fail.</div>
      *
      * @param  regionOfInterest  the geographic area for which the coordinate operations will be applied,
@@ -419,8 +419,8 @@ public final class CRS extends Static {
      *
      * @since 0.8
      */
-    public static CoordinateReferenceSystem suggestTargetCRS(GeographicBoundingBox regionOfInterest,
-                                                             CoordinateReferenceSystem... sourceCRS)
+    public static CoordinateReferenceSystem suggestCommonTarget(GeographicBoundingBox regionOfInterest,
+                                                                CoordinateReferenceSystem... sourceCRS)
     {
         CoordinateReferenceSystem bestCRS = null;
         /*
