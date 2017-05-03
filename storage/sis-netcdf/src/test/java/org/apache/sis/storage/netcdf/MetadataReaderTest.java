@@ -104,15 +104,11 @@ public final strictfp class MetadataReaderTest extends IOTestCase {
             "  │   ├─Cell geometry…………………………………………………………………… Area\n" +
             "  │   └─Transformation parameter availability…… false\n" +
             "  ├─Identification info\n" +
-            "  │   ├─Citation\n" +
-            "  │   │   ├─Title……………………………………………………………………………… Sea Surface Temperature Analysis Model\n" +
-            "  │   │   ├─Date\n" +
-            "  │   │   │   ├─Date……………………………………………………………………… 2005-09-22 00:00:00\n" +
+            "  │   ├─Citation………………………………………………………………………………… Sea Surface Temperature Analysis Model\n" +
+            "  │   │   ├─Date………………………………………………………………………………… 2005-09-22 00:00:00\n" +
             "  │   │   │   └─Date type………………………………………………………… Creation\n" +
-            "  │   │   ├─Identifier\n" +
-            "  │   │   │   ├─Authority\n" +
-            "  │   │   │   │   └─Title………………………………………………………… edu.ucar.unidata\n" +
-            "  │   │   │   └─Code……………………………………………………………………… NCEP/SST/Global_5x2p5deg/SST_Global_5x2p5deg_20050922_0000.nc\n" +
+            "  │   │   ├─Identifier………………………………………………………………… NCEP/SST/Global_5x2p5deg/SST_Global_5x2p5deg_20050922_0000.nc\n" +
+            "  │   │   │   └─Authority………………………………………………………… edu.ucar.unidata\n" +
             "  │   │   └─Cited responsible party\n" +
             "  │   │       ├─Individual\n" +                 // TODO: actually we can not distinguish individual from organization.
             "  │   │       │   └─Name…………………………………………………………… NOAA/NWS/NCEP\n" +
@@ -125,8 +121,7 @@ public final strictfp class MetadataReaderTest extends IOTestCase {
             "  │   ├─Descriptive keywords\n" +
             "  │   │   ├─Keyword………………………………………………………………………… EARTH SCIENCE > Oceans > Ocean Temperature > Sea Surface Temperature\n" +
             "  │   │   ├─Type………………………………………………………………………………… Theme\n" +
-            "  │   │   └─Thesaurus name\n" +
-            "  │   │       └─Title…………………………………………………………………… GCMD Science Keywords\n" +
+            "  │   │   └─Thesaurus name……………………………………………………… GCMD Science Keywords\n" +
             "  │   ├─Resource constraints\n" +
             "  │   │   └─Use limitation……………………………………………………… Freely available\n" +
             "  │   ├─Spatial representation type……………………………… Grid\n" +
@@ -152,15 +147,12 @@ public final strictfp class MetadataReaderTest extends IOTestCase {
             "              2005-09-26T21:50:00 - edavis - add attributes for dataset discovery\n" +
             "  ├─Metadata scope\n" +
             "  │   └─Resource scope………………………………………………………………… Dataset\n" +
-            "  ├─Metadata identifier\n" +
-            "  │   ├─Authority\n" +
-            "  │   │   └─Title……………………………………………………………………………… edu.ucar.unidata\n" +
-            "  │   └─Code…………………………………………………………………………………………… NCEP/SST/Global_5x2p5deg/SST_Global_5x2p5deg_20050922_0000.nc\n" +
+            "  ├─Metadata identifier……………………………………………………………… NCEP/SST/Global_5x2p5deg/SST_Global_5x2p5deg_20050922_0000.nc\n" +
+            "  │   └─Authority……………………………………………………………………………… edu.ucar.unidata\n" +
             "  ├─Metadata standard (1 of 2)\n" +
             "  │   ├─Title………………………………………………………………………………………… Geographic Information — Metadata Part 1: Fundamentals\n" +
             "  │   ├─Edition…………………………………………………………………………………… ISO 19115-1:2014(E)\n" +
-            "  │   ├─Identifier\n" +
-            "  │   │   ├─Code………………………………………………………………………………… 19115-1\n" +
+            "  │   ├─Identifier…………………………………………………………………………… 19115-1\n" +
             "  │   │   ├─Code space………………………………………………………………… ISO\n" +
             "  │   │   └─Version………………………………………………………………………… 2014(E)\n" +
             "  │   ├─Cited responsible party\n" +
@@ -171,8 +163,7 @@ public final strictfp class MetadataReaderTest extends IOTestCase {
             "  └─Metadata standard (2 of 2)\n" +
             "      ├─Title………………………………………………………………………………………… Geographic Information — Metadata Part 2: Extensions for imagery and gridded data\n" +
             "      ├─Edition…………………………………………………………………………………… ISO 19115-2:2009(E)\n" +
-            "      ├─Identifier\n" +
-            "      │   ├─Code………………………………………………………………………………… 19115-2\n" +
+            "      ├─Identifier…………………………………………………………………………… 19115-2\n" +
             "      │   ├─Code space………………………………………………………………… ISO\n" +
             "      │   └─Version………………………………………………………………………… 2009(E)\n" +
             "      ├─Cited responsible party\n" +

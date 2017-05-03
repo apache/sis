@@ -82,8 +82,8 @@ public final strictfp class TreeTableViewTest extends TestCase {
     @Test
     public void testToString() {
         final TreeTableView metadata = create(ValueExistencePolicy.NON_EMPTY);
-        assertMultilinesEquals(EXPECTED, formatNameAndValue(metadata)); // Locale-independent
-        assertArrayEquals(toTreeStructure(EXPECTED), toTreeStructure(metadata.toString())); // Locale-dependent.
+        assertMultilinesEquals(EXPECTED, formatNameAndValue(metadata));                         // Locale-independent
+        assertArrayEquals(toTreeStructure(EXPECTED), toTreeStructure(metadata.toString()));     // Locale-dependent.
     }
 
     /**

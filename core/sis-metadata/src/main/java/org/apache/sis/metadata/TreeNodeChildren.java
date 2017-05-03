@@ -98,6 +98,30 @@ final class TreeNodeChildren extends AbstractCollection<TreeTable.Node> {
     private final TreeNode[] children;
 
     /**
+     * Index of the property to write in the parent node instead than as a child.
+     * If a property has the same name than the parent property that contains it,
+     * we write its value in that parent property. For example instead of:
+     *
+     * {@preformat text
+     *   Citation
+     *    └─Date
+     *       ├─Date………………… 2012/01/01
+     *       └─Date type…… Creation
+     * }
+     *
+     * We simplify as:
+     *
+     * {@preformat text
+     *   Citation
+     *    └─Date………………………… 2012/01/01
+     *       └─Date type…… Creation
+     * }
+     *
+     * @see <a href="https://issues.apache.org/jira/browse/SIS-298">SIS-298</a>
+     */
+    final int titleProperty;
+
+    /**
      * Modification count, incremented when the content of this collection is modified. This check
      * is done on a <cite>best effort basis</cite> only, since we can't not track the changes which
      * are done independently in the {@linkplain #metadata} object.
@@ -116,6 +140,51 @@ final class TreeNodeChildren extends AbstractCollection<TreeTable.Node> {
         this.metadata = metadata;
         this.accessor = accessor;
         this.children = new TreeNode[accessor.count()];
+        /*
+         * Search for something that looks like the main property, to be associated with the parent node
+         * instead than provided as a child. The intend is to have more compact and easy to read trees.
+         * That property shall be a singleton for a simple value (not another metadata object).
+         */
+        if (parent.getParent() != null) {
+            final TitleProperty an = accessor.implementation.getAnnotation(TitleProperty.class);
+            if (an != null) {
+                final int index = accessor.indexOf(an.name(), false);
+                final Class<?> type = accessor.type(index, TypeValuePolicy.ELEMENT_TYPE);
+                if (type != null && !parent.isMetadata(type) && type == accessor.type(index, TypeValuePolicy.PROPERTY_TYPE)) {
+                    titleProperty = index;
+                    return;
+                }
+            }
+        }
+        titleProperty = -1;
+    }
+
+    /**
+     * If a simple value should be associated to the parent node, returns the type of that value.
+     * Otherwise returns {@code null}.
+     */
+    final Class<?> getParentType() {
+        return (titleProperty >= 0) ? accessor.type(titleProperty, TypeValuePolicy.ELEMENT_TYPE) : null;
+    }
+
+    /**
+     * If a simple value should be associated to the parent node, returns that value.
+     * Otherwise returns {@code null}.
+     */
+    final Object getParentTitle() {
+        return (titleProperty >= 0) ? valueAt(titleProperty) : null;
+    }
+
+    /**
+     * Sets the value associated to the parent node, if possible.
+     * This returned boolean tells whether the value has been written.
+     */
+    final boolean setParentTitle(final Object value) {
+        if (titleProperty < 0) {
+            return false;
+        }
+        accessor.set(titleProperty, metadata, value, PropertyAccessor.RETURN_NULL);
+        return true;
     }
 
     /**
@@ -229,7 +298,9 @@ final class TreeNodeChildren extends AbstractCollection<TreeTable.Node> {
      */
     @Override
     public int size() {
-        return accessor.count(metadata, parent.table.valuePolicy, PropertyAccessor.COUNT_DEEP);
+        int count = accessor.count(metadata, parent.table.valuePolicy, PropertyAccessor.COUNT_DEEP);
+        if (titleProperty >= 0 && !isSkipped(valueAt(titleProperty))) count--;
+        return count;
     }
 
     /**
@@ -310,11 +381,9 @@ final class TreeNodeChildren extends AbstractCollection<TreeTable.Node> {
         private Object nextValue;
 
         /**
-         * If the call to {@link #next()} found a collection, the iterator over the elements
-         * in that collection. Otherwise {@code null}.
-         *
-         * <p>A non-null value (even if that sub-iterator has no next elements)
-         * means that {@link #nextValue} is an element of that sub-iteration.</p>
+         * If the call to {@link #next()} found a collection, the iterator over the elements in that collection.
+         * Otherwise {@code null}. A non-null value (even if that sub-iterator has no next elements) means that
+         * {@link #nextValue} is an element of that sub-iteration.
          */
         private Iterator<?> subIterator;
 
@@ -385,38 +454,40 @@ final class TreeNodeChildren extends AbstractCollection<TreeTable.Node> {
              */
             final int count = childCount();
             while (nextInAccessor < count) {
-                nextValue = valueAt(nextInAccessor);
-                if (!isSkipped(nextValue)) {
-                    if (isCollection(nextInAccessor)) {
-                        /*
-                         * If the property is a collection, unconditionally get the first element
-                         * even if absent (null) in order to comply with the ValueExistencePolicy.
-                         * if we were expected to ignore empty collections, 'isSkipped(nextValue)'
-                         * would have returned 'true'.
-                         */
-                        if (nextValue != null) {
-                            subIterator = ((Iterable<?>) nextValue).iterator();
-                        } else {
-                            subIterator = Collections.emptyIterator();
+                if (nextInAccessor != titleProperty) {
+                    nextValue = valueAt(nextInAccessor);
+                    if (!isSkipped(nextValue)) {
+                        if (isCollection(nextInAccessor)) {
                             /*
-                             * Null collections are illegal (it shall be empty collections instead),
-                             * but we try to keep the iterator robut to ill-formed metadata, because
-                             * we want AbstractMetadata.toString() to work so we can spot problems.
+                             * If the property is a collection, unconditionally get the first element
+                             * even if absent (null) in order to comply with the ValueExistencePolicy.
+                             * if we were expected to ignore empty collections, 'isSkipped(nextValue)'
+                             * would have returned 'true'.
                              */
+                            if (nextValue != null) {
+                                subIterator = ((Iterable<?>) nextValue).iterator();
+                            } else {
+                                subIterator = Collections.emptyIterator();
+                                /*
+                                 * Null collections are illegal (it shall be empty collections instead),
+                                 * but we try to keep the iterator robut to ill-formed metadata, because
+                                 * we want AbstractMetadata.toString() to work so we can spot problems.
+                                 */
+                            }
+                            subIndex = 0;
+                            if (subIterator.hasNext()) {
+                                nextValue = subIterator.next();
+                            } else {
+                                nextValue = null;
+                                /*
+                                 * Do not set 'childIterator' to null, since the above 'nextValue'
+                                 * is considered as part of the child iteration.
+                                 */
+                            }
                         }
-                        subIndex = 0;
-                        if (subIterator.hasNext()) {
-                            nextValue = subIterator.next();
-                        } else {
-                            nextValue = null;
-                            /*
-                             * Do not set 'childIterator' to null, since the above 'nextValue'
-                             * is considered as part of the child iteration.
-                             */
-                        }
+                        isNextVerified = true;
+                        return true;
                     }
-                    isNextVerified = true;
-                    return true;
                 }
                 nextInAccessor++;
             }

@@ -101,8 +101,7 @@ public final strictfp class TreeTableFormatTest extends TestCase {
             "  │   ├─Organisation\n" +
             "  │   │   └─Name………………………………………………………… Kōdansha\n" +
             "  │   ├─Role…………………………………………………………………… Editor\n" +
-            "  │   └─Extent\n" +
-            "  │       ├─Description……………………………………… World\n" +
+            "  │   └─Extent……………………………………………………………… World\n" +
             "  │       └─Geographic element\n" +
             "  │           ├─West bound longitude…… 180°W\n" +
             "  │           ├─East bound longitude…… 180°E\n" +
@@ -130,8 +129,7 @@ public final strictfp class TreeTableFormatTest extends TestCase {
         final String text = format.format(processing.asTreeTable());
         assertMultilinesEquals(
             "Processing\n" +
-            "  ├─Documentation (1 of 3)\n" +
-            "  │   ├─Title……………………………………………… Some specification\n" +
+            "  ├─Documentation (1 of 3)…………… Some specification\n" +
             "  │   └─Presentation form……………… Document hardcopy\n" +
             "  ├─Documentation (2 of 3)\n" +
             "  │   └─Presentation form……………… Image hardcopy\n" +
