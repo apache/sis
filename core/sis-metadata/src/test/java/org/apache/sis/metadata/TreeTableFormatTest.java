@@ -87,19 +87,15 @@ public final strictfp class TreeTableFormatTest extends TestCase {
             "Citation\n" +
             "  ├─Title…………………………………………………………………………… Undercurrent\n" +
             "  ├─Alternate title………………………………………………… Andākarento\n" +
-            "  ├─Identifier\n" +
-            "  │   ├─Authority\n" +
-            "  │   │   ├─Title……………………………………………………… International Standard Book Number\n" +
+            "  ├─Identifier……………………………………………………………… 9782505004509\n" +
+            "  │   ├─Authority……………………………………………………… International Standard Book Number\n" +
             "  │   │   └─Alternate title…………………………… ISBN\n" +
-            "  │   ├─Code…………………………………………………………………… 9782505004509\n" +
             "  │   └─Code space…………………………………………………… ISBN\n"+
             "  ├─Cited responsible party (1 of 2)\n" +
-            "  │   ├─Individual\n" +
-            "  │   │   └─Name………………………………………………………… Testsuya Toyoda\n" +
+            "  │   ├─Individual…………………………………………………… Testsuya Toyoda\n" +
             "  │   └─Role…………………………………………………………………… Author\n" +
             "  ├─Cited responsible party (2 of 2)\n" +
-            "  │   ├─Organisation\n" +
-            "  │   │   └─Name………………………………………………………… Kōdansha\n" +
+            "  │   ├─Organisation……………………………………………… Kōdansha\n" +
             "  │   ├─Role…………………………………………………………………… Editor\n" +
             "  │   └─Extent……………………………………………………………… World\n" +
             "  │       └─Geographic element\n" +

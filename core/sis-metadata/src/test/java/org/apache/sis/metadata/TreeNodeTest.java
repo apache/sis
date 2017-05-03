@@ -20,7 +20,6 @@ import java.util.Locale;
 import org.opengis.metadata.citation.Address;
 import org.opengis.metadata.citation.Contact;
 import org.opengis.metadata.citation.Citation;
-import org.opengis.metadata.citation.Party;
 import org.opengis.metadata.citation.Responsibility;
 import org.opengis.metadata.citation.PresentationForm;
 import org.opengis.metadata.citation.Role;
@@ -183,11 +182,11 @@ public final strictfp class TreeNodeTest extends TestCase {
               "Edition",
               "Cited responsible party (1 of 2)",
                 "Organisation",                         // A Party subtype
-                  "Name",
+        //        "Name",                               // Value reported in "Organisation" node.
                 "Role",
               "Cited responsible party (2 of 2)",
                 "Individual",                           // A Party subtype
-                  "Name",
+        //        "Name",                               // Value reported in "Individual" node.
                   "Contact info",
                     "Address",
                       "Electronic mail address",
@@ -215,11 +214,11 @@ public final strictfp class TreeNodeTest extends TestCase {
               "edition",
               "citedResponsibleParty",
                 "party",
-                  "name",
+        //        "name",                                   — value reported in "party" node.
                 "role",
               "citedResponsibleParty",
                 "party",
-                  "name",
+        //        "name",                                   — value reported in "party" node.
                   "contactInfo",
                     "address",
                       "electronicMailAddress",
@@ -246,11 +245,11 @@ public final strictfp class TreeNodeTest extends TestCase {
               null,         // edition
               ZERO,         // citedResponsibleParty
                 ZERO,       // party (organisation)
-                  null,     // name
+        //        null,     // name                         — value reported in "party" node.
                 null,       // role
               ONE,          // citedResponsibleParty
                 ZERO,       // party (individual)
-                  null,     // name
+        //        null,     // name                         — value reported in "party" node.
                   ZERO,     // contactInfo
                     ZERO,   // address
                       ZERO, // electronicMailAddress
@@ -274,12 +273,12 @@ public final strictfp class TreeNodeTest extends TestCase {
               InternationalString.class,
               InternationalString.class,
               Responsibility.class,
-                Party.class,
-                  InternationalString.class,
+        //      Party.class,                            // Value with be the one of "name" node instead.
+                  InternationalString.class,            // Name
                 Role.class,
               Responsibility.class,
-                Party.class,
-                  InternationalString.class,
+        //      Party.class,                            // Value with be the one of "name" node instead.
+                  InternationalString.class,            // Name
                   Contact.class,
                     Address.class,
                       String.class,
@@ -297,20 +296,18 @@ public final strictfp class TreeNodeTest extends TestCase {
     public void testGetValue() {
         final DefaultCitation citation = metadataWithHierarchy();
         assertColumnContentEquals(create(citation, Citation.class, ValueExistencePolicy.NON_EMPTY), TableColumn.VALUE,
-            null, // Citation
+            null,                               // Citation
               "Some title",
               "First alternate title",
               "Second alternate title",
               "Some edition",
-              null, // ResponsibleParty
-                null, // Party (organisation)
-                  "Some organisation",
+              null,                             // ResponsibleParty
+                "Some organisation",            // Party (organisation)
                 Role.DISTRIBUTOR,
-              null, // ResponsibleParty
-                null, // Party (individual)
-                  "Some person of contact",
-                  null, // Contact
-                    null, // Address
+              null,                             // ResponsibleParty
+                "Some person of contact",       // Party (individual)
+                  null,                         // Contact
+                    null,                       // Address
                       "Some email",
                 Role.POINT_OF_CONTACT,
               PresentationForm.MAP_DIGITAL,

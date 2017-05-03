@@ -236,8 +236,8 @@ public final strictfp class AllMetadataTest extends MetadataTestCase {
     protected String getExpectedXmlElementName(final Class<?> enclosing, final UML uml) {
         String name = super.getExpectedXmlElementName(enclosing, uml);
         switch (name) {
-            case "MD_Scope": {      // ISO 19115:2014
-                name = "DQ_Scope";  // ISO 19115:2003
+            case "MD_Scope": {                  // ISO 19115:2014
+                name = "DQ_Scope";              // ISO 19115:2003
                 break;
             }
             case "distributedComputingPlatform": {
