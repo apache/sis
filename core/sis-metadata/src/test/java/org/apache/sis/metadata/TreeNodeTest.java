@@ -124,9 +124,10 @@ public final strictfp class TreeNodeTest extends TestCase {
         assertFalse ("isLeaf()",                         node.isLeaf());
 
         final TreeNodeChildren children = (TreeNodeChildren) node.getChildren();
-        assertSame ("children.metadata", citation, children.metadata);
-        assertFalse("children.isEmpty()", node.getChildren().isEmpty());
-        assertSame ("children.parent", node, children.iterator().next().getParent());
+        assertEquals("children.titleProperty", -1, children.titleProperty);
+        assertSame  ("children.metadata", citation, children.metadata);
+        assertFalse ("children.isEmpty()", node.getChildren().isEmpty());
+        assertSame  ("children.parent", node, children.iterator().next().getParent());
     }
 
     /**

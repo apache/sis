@@ -178,9 +178,17 @@ class TreeNode implements Node {
         this.parent   = parent;
         this.metadata = metadata;
         this.baseType = baseType;
-        if (!table.standard.isMetadata(baseType)) {
+        if (!isMetadata(baseType)) {
             children = LEAF;
         }
+    }
+
+    /**
+     * Returns {@code true} if nodes for values of the given type can be expanded with more children.
+     * A return value of {@code false} means that values of the given type are leaves.
+     */
+    final boolean isMetadata(final Class<?> type) {
+        return table.standard.isMetadata(type);
     }
 
     /**
@@ -390,7 +398,7 @@ class TreeNode implements Node {
             Class<?> type = null;
             for (Class<?> c : subtypes) {
                 if (baseType.isAssignableFrom(c)) {
-                    if (!table.standard.isMetadata(c)) {
+                    if (!isMetadata(c)) {
                         c = standardSubType(c.getInterfaces());
                     }
                     if (type == null) {
@@ -645,19 +653,14 @@ class TreeNode implements Node {
             cachedValue = null;             // Use the cached value only once after iteration.
             /*
              * If there is a value, check if the cached collection is still applicable.
+             * We verify that the collection is a wrapper for the same metadata object.
+             * If we need to create a new collection, we know that the property accessor
+             * exists otherwise the call to 'isLeaf()' above would have returned 'true'.
              */
-            if (children instanceof TreeNodeChildren) {
-                final TreeNodeChildren candidate = (TreeNodeChildren) children;
-                if (candidate.metadata == value) {
-                    return candidate;
-                }
+            if (children == null || ((TreeNodeChildren) children).metadata != value) {
+                children = new TreeNodeChildren(this, value,
+                        table.standard.getAccessor(new CacheKey(value.getClass(), baseType), true));
             }
-            /*
-             * At this point, we need to create a new collection. The property accessor shall
-             * exist, otherwise the call to 'isLeaf()' above would have returned 'true'.
-             */
-            children = new TreeNodeChildren(this, value,
-                    table.standard.getAccessor(new CacheKey(value.getClass(), baseType), true));
         }
         return children;
     }
@@ -765,8 +768,10 @@ class TreeNode implements Node {
                         throw new IllegalArgumentException(Errors.format(Errors.Keys.ElementAlreadyPresent_1, value));
                     }
                     delegate = siblings.childAt(indexInData, indexInList);
-                    // Do not set 'delegate.cachedValue = value', since 'value' may
-                    // have been converted by the setter method to an other value.
+                    /*
+                     * Do not set 'delegate.cachedValue = value', since 'value' may
+                     * have been converted by the setter method to another value.
+                     */
                     return;
                 }
             }
@@ -795,30 +800,35 @@ class TreeNode implements Node {
      */
     @Override
     public final <V> V getValue(final TableColumn<V> column) {
+        Object value;
         ArgumentChecks.ensureNonNull("column", column);
-        Object value = null;
-
-        // Check the columns in what we think may be the most frequently
-        // asked columns first, and less frequently asked columns last.
-        if (column == TableColumn.VALUE) {
-            if (isLeaf()) {
-                value = cachedValue;
-                cachedValue = null;                 // Use the cached value only once after iteration.
-                if (value == null) {
-                    value = getUserObject();
-                }
-            }
+        if (column == TableColumn.IDENTIFIER) {
+            value = getIdentifier();
+        } else if (column == TableColumn.INDEX) {
+            value = getIndex();
         } else if (column == TableColumn.NAME) {
             if (name == null) {
                 name = getName();
             }
             value = name;
-        } else if (column == TableColumn.IDENTIFIER) {
-            value = getIdentifier();
-        } else if (column == TableColumn.INDEX) {
-            value = getIndex();
         } else if (column == TableColumn.TYPE) {
-            value = baseType;
+            final Collection<Node> children = getChildren();
+            if (children == LEAF || (value = ((TreeNodeChildren) children).getParentType()) == null) {
+                value = baseType;
+            }
+        } else if (column == TableColumn.VALUE) {
+            final Collection<Node> children = getChildren();
+            if (children == LEAF) {
+                value = cachedValue;
+                cachedValue = null;                 // Use the cached value only once after iteration.
+                if (value == null) {
+                    value = getUserObject();
+                }
+            } else {
+                value = ((TreeNodeChildren) children).getParentTitle();
+            }
+        } else {
+            return null;
         }
         return column.getElementType().cast(value);
     }
@@ -836,9 +846,12 @@ class TreeNode implements Node {
     public final <V> void setValue(final TableColumn<V> column, final V value) throws UnsupportedOperationException {
         ArgumentChecks.ensureNonNull("column", column);
         if (column == TableColumn.VALUE) {
-            ArgumentChecks.ensureNonNull("value", value);
+            ArgumentChecks.ensureNonNull("value", value);                       // See javadoc.
             cachedValue = null;
-            setUserObject(value);
+            final Collection<Node> children = getChildren();
+            if (children == LEAF || !(((TreeNodeChildren) children).setParentTitle(value))) {
+                setUserObject(value);
+            }
         } else if (TreeTableView.COLUMNS.contains(column)) {
             throw new UnsupportedOperationException(unmodifiableCellValue(column));
         } else {
