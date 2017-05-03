@@ -146,7 +146,13 @@ final class TreeNodeChildren extends AbstractCollection<TreeTable.Node> {
          * That property shall be a singleton for a simple value (not another metadata object).
          */
         if (parent.getParent() != null) {
-            final TitleProperty an = accessor.implementation.getAnnotation(TitleProperty.class);
+            TitleProperty an = accessor.implementation.getAnnotation(TitleProperty.class);
+            if (an == null) {
+                Class<?> implementation = parent.table.standard.getImplementation(accessor.type);
+                if (implementation != null) {
+                    an = implementation.getAnnotation(TitleProperty.class);
+                }
+            }
             if (an != null) {
                 final int index = accessor.indexOf(an.name(), false);
                 final Class<?> type = accessor.type(index, TypeValuePolicy.ELEMENT_TYPE);

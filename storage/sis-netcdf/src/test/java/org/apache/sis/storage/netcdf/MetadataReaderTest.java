@@ -87,19 +87,15 @@ public final strictfp class MetadataReaderTest extends IOTestCase {
         assertMultilinesEquals(
             "Metadata\n" +
             "  ├─Contact\n" +
-            "  │   ├─Individual\n" +                         // TODO: actually we can not distinguish individual from organization.
-            "  │   │   └─Name………………………………………………………………………………… NOAA/NWS/NCEP\n" +
+            "  │   ├─Individual…………………………………………………………………………… NOAA/NWS/NCEP\n" +     // TODO: actually we can not distinguish individual from organization.
             "  │   └─Role…………………………………………………………………………………………… Point of contact\n" +
             "  ├─Spatial representation info\n" +
             "  │   ├─Number of dimensions………………………………………………… 3\n" +
-            "  │   ├─Axis dimension properties (1 of 3)\n" +
-            "  │   │   ├─Dimension name……………………………………………………… Column\n" +
+            "  │   ├─Axis dimension properties (1 of 3)…………… Column\n" +
             "  │   │   └─Dimension size……………………………………………………… 73\n" +
-            "  │   ├─Axis dimension properties (2 of 3)\n" +
-            "  │   │   ├─Dimension name……………………………………………………… Row\n" +
+            "  │   ├─Axis dimension properties (2 of 3)…………… Row\n" +
             "  │   │   └─Dimension size……………………………………………………… 73\n" +
-            "  │   ├─Axis dimension properties (3 of 3)\n" +
-            "  │   │   ├─Dimension name……………………………………………………… Time\n" +
+            "  │   ├─Axis dimension properties (3 of 3)…………… Time\n" +
             "  │   │   └─Dimension size……………………………………………………… 1\n" +
             "  │   ├─Cell geometry…………………………………………………………………… Area\n" +
             "  │   └─Transformation parameter availability…… false\n" +
@@ -110,13 +106,11 @@ public final strictfp class MetadataReaderTest extends IOTestCase {
             "  │   │   ├─Identifier………………………………………………………………… NCEP/SST/Global_5x2p5deg/SST_Global_5x2p5deg_20050922_0000.nc\n" +
             "  │   │   │   └─Authority………………………………………………………… edu.ucar.unidata\n" +
             "  │   │   └─Cited responsible party\n" +
-            "  │   │       ├─Individual\n" +                 // TODO: actually we can not distinguish individual from organization.
-            "  │   │       │   └─Name…………………………………………………………… NOAA/NWS/NCEP\n" +
+            "  │   │       ├─Individual……………………………………………………… NOAA/NWS/NCEP\n" +  // TODO: actually we can not distinguish individual from organization.
             "  │   │       └─Role……………………………………………………………………… Originator\n" +
             "  │   ├─Abstract………………………………………………………………………………… NCEP SST Global 5.0 x 2.5 degree model data\n" +
             "  │   ├─Point of contact\n" +
-            "  │   │   ├─Individual\n" +
-            "  │   │   │   └─Name……………………………………………………………………… NOAA/NWS/NCEP\n" +
+            "  │   │   ├─Individual………………………………………………………………… NOAA/NWS/NCEP\n" +
             "  │   │   └─Role………………………………………………………………………………… Point of contact\n" +
             "  │   ├─Descriptive keywords\n" +
             "  │   │   ├─Keyword………………………………………………………………………… EARTH SCIENCE > Oceans > Ocean Temperature > Sea Surface Temperature\n" +
@@ -137,8 +131,7 @@ public final strictfp class MetadataReaderTest extends IOTestCase {
             "  │           └─Maximum value……………………………………………… 0.0\n" +
             "  ├─Content info\n" +
             "  │   └─Attribute group\n" +
-            "  │       └─Attribute\n" +
-            "  │           ├─Sequence identifier……………………………… SST\n" +
+            "  │       └─Attribute…………………………………………………………………… SST\n" +
             "  │           ├─Units…………………………………………………………………… K\n" +
             "  │           └─Description…………………………………………………… Sea temperature\n" +
             "  ├─Data quality info\n" +
@@ -149,26 +142,22 @@ public final strictfp class MetadataReaderTest extends IOTestCase {
             "  │   └─Resource scope………………………………………………………………… Dataset\n" +
             "  ├─Metadata identifier……………………………………………………………… NCEP/SST/Global_5x2p5deg/SST_Global_5x2p5deg_20050922_0000.nc\n" +
             "  │   └─Authority……………………………………………………………………………… edu.ucar.unidata\n" +
-            "  ├─Metadata standard (1 of 2)\n" +
-            "  │   ├─Title………………………………………………………………………………………… Geographic Information — Metadata Part 1: Fundamentals\n" +
+            "  ├─Metadata standard (1 of 2)…………………………………………… Geographic Information — Metadata Part 1: Fundamentals\n" +
             "  │   ├─Edition…………………………………………………………………………………… ISO 19115-1:2014(E)\n" +
             "  │   ├─Identifier…………………………………………………………………………… 19115-1\n" +
             "  │   │   ├─Code space………………………………………………………………… ISO\n" +
             "  │   │   └─Version………………………………………………………………………… 2014(E)\n" +
             "  │   ├─Cited responsible party\n" +
-            "  │   │   ├─Organisation\n" +
-            "  │   │   │   └─Name……………………………………………………………………… International Organization for Standardization\n" +
+            "  │   │   ├─Organisation…………………………………………………………… International Organization for Standardization\n" +
             "  │   │   └─Role………………………………………………………………………………… Principal investigator\n" +
             "  │   └─Presentation form………………………………………………………… Document digital\n" +
-            "  └─Metadata standard (2 of 2)\n" +
-            "      ├─Title………………………………………………………………………………………… Geographic Information — Metadata Part 2: Extensions for imagery and gridded data\n" +
+            "  └─Metadata standard (2 of 2)…………………………………………… Geographic Information — Metadata Part 2: Extensions for imagery and gridded data\n" +
             "      ├─Edition…………………………………………………………………………………… ISO 19115-2:2009(E)\n" +
             "      ├─Identifier…………………………………………………………………………… 19115-2\n" +
             "      │   ├─Code space………………………………………………………………… ISO\n" +
             "      │   └─Version………………………………………………………………………… 2009(E)\n" +
             "      ├─Cited responsible party\n" +
-            "      │   ├─Organisation\n" +
-            "      │   │   └─Name……………………………………………………………………… International Organization for Standardization\n" +
+            "      │   ├─Organisation…………………………………………………………… International Organization for Standardization\n" +
             "      │   └─Role………………………………………………………………………………… Principal investigator\n" +
             "      └─Presentation form………………………………………………………… Document digital\n", text);
     }
