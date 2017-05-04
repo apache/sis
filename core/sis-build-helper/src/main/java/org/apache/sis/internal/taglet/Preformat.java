@@ -148,7 +148,7 @@ all:    while (tk.hasMoreTokens()) {
         /*
          * Nows inserts each line.
          */
-        final StringBuilder buffer = new StringBuilder("<blockquote><pre>");
+        final StringBuilder buffer = new StringBuilder("<pre class=\"code-sample\">");
         tk = new StringTokenizer(text, "\r\n", true);
         while (tk.hasMoreTokens()) {
             String line = tk.nextToken();
@@ -166,7 +166,7 @@ all:    while (tk.hasMoreTokens()) {
             }
             buffer.append(line);
         }
-        return buffer.append("</pre></blockquote>").toString();
+        return buffer.append("</pre>").toString();
     }
 
     /**

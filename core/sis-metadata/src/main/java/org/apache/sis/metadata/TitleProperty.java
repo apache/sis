@@ -26,9 +26,10 @@ import java.lang.annotation.Documented;
 
 /**
  * Identifies the name of a property to use for summarizing in one line the content of a metadata object.
- * For example in a {@linkplain org.apache.sis.metadata.iso.citation.DefaultCitation citation}, it is the
- * {@code "title"} property. This information is used in {@linkplain MetadataStandard#asTreeTable metadata
- * tree views} for producing briefer trees, especially when there is redundant node names.
+ * For example in a {@linkplain org.apache.sis.metadata.iso.citation.DefaultCitation citation} instance,
+ * the {@code "title"} property is often the only information that a user needs for a first look.
+ * This annotation is used in {@linkplain MetadataStandard#asTreeTable metadata tree views} for producing briefer trees,
+ * especially when there is redundant node names.
  *
  * <div class="note"><b>Example:</b>
  * the {@code Citation} type contains a {@linkplain org.apache.sis.metadata.iso.citation.DefaultCitation#getDates() date}
@@ -37,16 +38,18 @@ import java.lang.annotation.Documented;
  *
  * {@preformat text
  *   Citation
+ *    ├─Title……………………… My document
  *    └─Date
  *       ├─Date………………… 2012/01/01
  *       └─Date type…… Creation
  * }
  *
- * The <code>&#64;TitleProperty(name="date")</code> annotation on the {@code DefaultCitationDate} implementation class
- * instructs Apache SIS that the tree table view should be as below:
+ * With <code>&#64;TitleProperty(name="title")</code> on {@code DefaultCitation} implementation class and
+ * <code>&#64;TitleProperty(name="date")</code> on {@code DefaultCitationDate} class,
+ * Apache SIS can produce a more compact tree table view should be as below:
  *
  * {@preformat text
- *   Citation
+ *   Citation……………………… My document
  *    └─Date………………………… 2012/01/01
  *       └─Date type…… Creation
  * }
