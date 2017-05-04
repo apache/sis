@@ -140,13 +140,13 @@ public enum ValueExistencePolicy {
      * the {@link org.apache.sis.metadata.iso.citation.DefaultCitation} and
      * {@link org.apache.sis.metadata.iso.citation.DefaultCitationDate} classes are annotated with
      * <code>&#64;TitleProperty(name="title")</code> and <code>&#64;TitleProperty(name="date")</code>
-     * respectively. The following table compares the trees produces by two policies:
+     * respectively. The following table compares the trees produced by two policies:
      *
      * <table class="sis">
      *   <caption>Comparison of "non-empty" and "compact" policy on the same metadata</caption>
      *   <tr>
      *     <th>{@code NON_EMPTY}</th>
-     *     <th>{@code COMPACT}</th>
+     *     <th class="sep">{@code COMPACT}</th>
      *   </tr><tr><td>
      *     {@preformat text
      *       Citation
@@ -155,7 +155,7 @@ public enum ValueExistencePolicy {
      *           ├─Date………………… 2012/01/01
      *           └─Date type…… Creation
      *     }
-     *   </td><td>
+     *   </td><td class="sep">
      *     {@preformat text
      *       Citation……………………… My document
      *        └─Date………………………… 2012/01/01
