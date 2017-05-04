@@ -794,13 +794,26 @@ class TreeNode implements Node {
     }
 
     /**
+     * Returns the children if the value policy is {@link ValueExistencePolicy#COMPACT}, or {@code null} otherwise.
+     */
+    private TreeNodeChildren getCompactChildren() {
+        if (table.valuePolicy == ValueExistencePolicy.COMPACT) {
+            final Collection<Node> children = getChildren();
+            if (children instanceof TreeNodeChildren) {
+                return (TreeNodeChildren) children;
+            }
+        }
+        return null;
+    }
+
+    /**
      * Returns the value of this node in the given column, or {@code null} if none. This method verifies
      * the {@code column} argument, then delegates to {@link #getName()}, {@link #getUserObject()} or
      * other properties.
      */
     @Override
     public final <V> V getValue(final TableColumn<V> column) {
-        Object value;
+        Object value = null;
         ArgumentChecks.ensureNonNull("column", column);
         if (column == TableColumn.IDENTIFIER) {
             value = getIdentifier();
@@ -812,23 +825,23 @@ class TreeNode implements Node {
             }
             value = name;
         } else if (column == TableColumn.TYPE) {
-            final Collection<Node> children = getChildren();
-            if (children == LEAF || (value = ((TreeNodeChildren) children).getParentType()) == null) {
+            final TreeNodeChildren children = getCompactChildren();
+            if (children == null || (value = children.getParentType()) == null) {
                 value = baseType;
             }
         } else if (column == TableColumn.VALUE) {
-            final Collection<Node> children = getChildren();
-            if (children == LEAF) {
+            if (isLeaf()) {
                 value = cachedValue;
                 cachedValue = null;                 // Use the cached value only once after iteration.
                 if (value == null) {
                     value = getUserObject();
                 }
             } else {
-                value = ((TreeNodeChildren) children).getParentTitle();
+                final TreeNodeChildren children = getCompactChildren();
+                if (children != null) {
+                    value = children.getParentTitle();
+                }
             }
-        } else {
-            return null;
         }
         return column.getElementType().cast(value);
     }
@@ -848,8 +861,8 @@ class TreeNode implements Node {
         if (column == TableColumn.VALUE) {
             ArgumentChecks.ensureNonNull("value", value);                       // See javadoc.
             cachedValue = null;
-            final Collection<Node> children = getChildren();
-            if (children == LEAF || !(((TreeNodeChildren) children).setParentTitle(value))) {
+            final TreeNodeChildren children = getCompactChildren();
+            if (children == null || !(children.setParentTitle(value))) {
                 setUserObject(value);
             }
         } else if (TreeTableView.COLUMNS.contains(column)) {
