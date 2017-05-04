@@ -234,7 +234,7 @@ public final strictfp class TreeNodeChildrenTest extends TestCase {
          *
          * We need to perform the tests on the "Date" node, not on the "DefaultCitation" node.
          */
-        final TreeTable.Node node = TestUtilities.getSingleton(create(citation, ValueExistencePolicy.NON_EMPTY));
+        final TreeTable.Node node = TestUtilities.getSingleton(create(citation, ValueExistencePolicy.COMPACT));
         assertEquals("value", 1325376000000L, ((Date) node.getValue(TableColumn.VALUE)).getTime());
         final TreeNodeChildren children = (TreeNodeChildren) node.getChildren();
         final String[] expected = {

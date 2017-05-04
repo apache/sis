@@ -84,8 +84,7 @@ public final strictfp class TreeTableFormatTest extends TestCase {
         final DefaultCitation citation = DefaultCitationTest.create();
         final String text = format.format(citation.asTreeTable());
         assertMultilinesEquals(
-            "Citation\n" +
-            "  ├─Title…………………………………………………………………………… Undercurrent\n" +
+            "Citation……………………………………………………………………………… Undercurrent\n" +
             "  ├─Alternate title………………………………………………… Andākarento\n" +
             "  ├─Identifier……………………………………………………………… 9782505004509\n" +
             "  │   ├─Authority……………………………………………………… International Standard Book Number\n" +
