@@ -54,8 +54,7 @@ public final strictfp class TreeTableViewTest extends TestCase {
      * with {@link ValueExistencePolicy#NON_EMPTY}.
      */
     private static final String EXPECTED =
-            "Citation\n" +
-            "  ├─Title……………………………………………………………………………………………… Some title\n" +
+            "Citation………………………………………………………………………………………………… Some title\n" +
             "  ├─Alternate title (1 of 2)…………………………………………… First alternate title\n" +
             "  ├─Alternate title (2 of 2)…………………………………………… Second alternate title\n" +
             "  ├─Edition………………………………………………………………………………………… Some edition\n" +
@@ -79,7 +78,7 @@ public final strictfp class TreeTableViewTest extends TestCase {
      */
     @Test
     public void testToString() {
-        final TreeTableView metadata = create(ValueExistencePolicy.NON_EMPTY);
+        final TreeTableView metadata = create(ValueExistencePolicy.COMPACT);
         assertMultilinesEquals(EXPECTED, formatNameAndValue(metadata));                         // Locale-independent
         assertArrayEquals(toTreeStructure(EXPECTED), toTreeStructure(metadata.toString()));     // Locale-dependent.
     }
@@ -92,7 +91,7 @@ public final strictfp class TreeTableViewTest extends TestCase {
     @Test
     @DependsOnMethod("testToString")
     public void testSerialization() throws Exception {
-        final Object original = create(ValueExistencePolicy.NON_EMPTY);
+        final Object original = create(ValueExistencePolicy.COMPACT);
         final Object deserialized;
         final ByteArrayOutputStream buffer = new ByteArrayOutputStream();
         try (ObjectOutputStream out = new ObjectOutputStream(buffer)) {

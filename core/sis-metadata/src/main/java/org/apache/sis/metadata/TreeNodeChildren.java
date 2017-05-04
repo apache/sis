@@ -145,7 +145,7 @@ final class TreeNodeChildren extends AbstractCollection<TreeTable.Node> {
          * instead than provided as a child. The intend is to have more compact and easy to read trees.
          * That property shall be a singleton for a simple value (not another metadata object).
          */
-        if (parent.getParent() != null) {
+        if (parent.table.valuePolicy == ValueExistencePolicy.COMPACT) {
             TitleProperty an = accessor.implementation.getAnnotation(TitleProperty.class);
             if (an == null) {
                 Class<?> implementation = parent.table.standard.getImplementation(accessor.type);

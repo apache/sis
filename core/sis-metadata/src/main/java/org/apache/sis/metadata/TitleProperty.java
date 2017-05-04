@@ -60,6 +60,8 @@ import java.lang.annotation.Documented;
  * @version 0.8
  * @since   0.8
  * @module
+ *
+ * @see ValueExistencePolicy#COMPACT
  */
 @Documented
 @Inherited
