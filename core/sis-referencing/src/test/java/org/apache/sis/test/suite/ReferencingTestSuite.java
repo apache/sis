@@ -246,6 +246,7 @@ import org.junit.BeforeClass;
 
     org.apache.sis.distance.LatLonPointRadiusTest.class,        // Pending refactoring in a geometry package.
 
+    org.apache.sis.test.integration.CoordinateOperationTest.class,
     org.apache.sis.test.integration.DatumShiftTest.class,
     org.apache.sis.test.integration.MetadataTest.class,
     org.apache.sis.test.integration.ConsistencyTest.class

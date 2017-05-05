@@ -275,6 +275,11 @@ public final class Resources extends IndexedResourceBundle {
         public static final short MissingInterpolationOrdinates = 41;
 
         /**
+         * Missing parameter values for “{0}” coordinate operation.
+         */
+        public static final short MissingParameterValues_1 = 74;
+
+        /**
          * No spatial or temporal dimension found in “{0}”
          */
         public static final short MissingSpatioTemporalDimension_1 = 42;

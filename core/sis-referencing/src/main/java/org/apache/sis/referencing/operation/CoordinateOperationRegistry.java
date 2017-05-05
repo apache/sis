@@ -407,13 +407,13 @@ class CoordinateOperationRegistry {
             } finally {
                 Semaphores.clear(Semaphores.METADATA_ONLY);
             }
-        } catch (NoSuchAuthorityCodeException | MissingFactoryResourceException exception) {
+        } catch (NoSuchAuthorityCodeException | MissingFactoryResourceException e) {
             /*
              * sourceCode or targetCode is unknown to the underlying authority factory.
              * Ignores the exception and fallback on the generic algorithm provided by
              * CoordinateOperationFinder.
              */
-            log(exception);
+            log(null, e);
             return null;
         }
         /*
@@ -490,6 +490,14 @@ class CoordinateOperationRegistry {
                 if (bestChoice instanceof DeferredCoordinateOperation) {
                     bestChoice = ((DeferredCoordinateOperation) bestChoice).create();
                 }
+                if (bestChoice instanceof SingleOperation && bestChoice.getMathTransform() == null) {
+                    bestChoice = fromDefiningConversion((SingleOperation) bestChoice,
+                                                        inverse ? targetCRS : sourceCRS,
+                                                        inverse ? sourceCRS : targetCRS);
+                    if (bestChoice == null) {
+                        return null;
+                    }
+                }
                 if (inverse) {
                     bestChoice = inverse(bestChoice);
                 }
@@ -510,7 +518,7 @@ class CoordinateOperationRegistry {
                     removed = operations.remove(deferred);
                 }
                 if (removed) {
-                    log(e);
+                    log(null, e);
                     continue;                                   // Try again with the next best case.
                 }
                 // Should never happen, but if happen anyway we should fail for avoiding never-ending loop.
@@ -654,6 +662,12 @@ class CoordinateOperationRegistry {
                                                   final MathTransformFactory      mtFactory)
             throws IllegalArgumentException, IncommensurableException, FactoryException
     {
+        /*
+         * Assertion: source and target CRS must be equals, ignoring change in axis order or units.
+         * The first line is for disabling this check if the number of dimensions are not the same
+         * (e.g. as in the "geographic 3D to geographic 2D" conversion) because ALLOW_VARIANT mode
+         * still requires a matching number of dimensions.
+         */
         assert ReferencingUtilities.getDimension(sourceCRS) != ReferencingUtilities.getDimension(targetCRS)
                 || Utilities.deepEquals(sourceCRS, targetCRS, ComparisonMode.ALLOW_VARIANT);
         final Matrix m = CoordinateSystems.swapAndScaleAxes(sourceCRS.getCoordinateSystem(), targetCRS.getCoordinateSystem());
@@ -796,6 +810,42 @@ class CoordinateOperationRegistry {
     }
 
     /**
+     * Creates a complete coordinate operation from a defining conversion. Defining conversions usually have
+     * null source and target CRS, but this method nevertheless checks that, in order to reuse the operation
+     * CRS if it happens to have some.
+     *
+     * @param  operation  the operation specified by the authority.
+     * @param  sourceCRS  the source CRS specified by the user.
+     * @param  targetCRS  the target CRS specified by the user
+     * @return a new operation from the given source CRS to target CRS.
+     * @throws FactoryException if an error occurred while creating the new operation.
+     */
+    private CoordinateOperation fromDefiningConversion(final SingleOperation     operation,
+                                                       CoordinateReferenceSystem sourceCRS,
+                                                       CoordinateReferenceSystem targetCRS)
+            throws FactoryException
+    {
+        final ParameterValueGroup parameters = operation.getParameterValues();
+        if (parameters != null) {
+            CoordinateReferenceSystem crs;
+            if (Utilities.equalsApproximatively(sourceCRS, crs = operation.getSourceCRS())) sourceCRS = crs;
+            if (Utilities.equalsApproximatively(targetCRS, crs = operation.getTargetCRS())) targetCRS = crs;
+            final MathTransformFactory mtFactory = factorySIS.getMathTransformFactory();
+            if (mtFactory instanceof DefaultMathTransformFactory) {
+                MathTransform mt = ((DefaultMathTransformFactory) mtFactory).createParameterizedTransform(
+                        parameters, ReferencingUtilities.createTransformContext(sourceCRS, targetCRS, null));
+                return factorySIS.createSingleOperation(IdentifiedObjects.getProperties(operation),
+                        sourceCRS, targetCRS, null, operation.getMethod(), mt);
+            }
+        } else {
+            // Should never happen because parameters are mandatory, but let be safe.
+            log(Resources.forLocale(null).getLogRecord(Level.WARNING, Resources.Keys.MissingParameterValues_1,
+                    IdentifiedObjects.getIdentifierOrName(operation)), null);
+        }
+        return null;
+    }
+
+    /**
      * Returns a new coordinate operation with the ellipsoidal height added either in the source coordinates,
      * in the target coordinates or both. If there is an ellipsoidal transform, then this method updates the
      * transforms in order to use the ellipsoidal height (it has an impact on the transformed values).
@@ -905,7 +955,7 @@ class CoordinateOperationRegistry {
                                     ((SingleOperation) op).getParameterValues(),
                                     ReferencingUtilities.createTransformContext(sourceCRS, targetCRS, null));
                         } catch (InvalidGeodeticParameterException e) {
-                            log(e);
+                            log(null, e);
                             break;
                         }
                         operations.set(recreate(op, sourceCRS, targetCRS, mt, mtFactory.getLastMethodUsed()));
@@ -1121,10 +1171,13 @@ class CoordinateOperationRegistry {
      * come from {@link CoordinateOperationFinder} since this is the public API which
      * use this {@code CoordinateOperationRegistry} class.
      *
-     * @param exception  the exception which occurred.
+     * @param record     the record to log, or {@code null} for creating from the exception.
+     * @param exception  the exception which occurred, or {@code null} if a {@code record} is specified instead.
      */
-    private static void log(final Exception exception) {
-        final LogRecord record = new LogRecord(Level.WARNING, exception.getLocalizedMessage());
+    private static void log(LogRecord record, final Exception exception) {
+        if (record == null) {
+            record = new LogRecord(Level.WARNING, exception.getLocalizedMessage());
+        }
         record.setLoggerName(Loggers.COORDINATE_OPERATION);
         /*
          * We usually do not log the stack trace since this method should be invoked only for exceptions
