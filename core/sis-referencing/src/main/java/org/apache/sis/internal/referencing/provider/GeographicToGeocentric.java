@@ -22,10 +22,13 @@ import org.opengis.util.FactoryException;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.parameter.ParameterValue;
+import org.opengis.referencing.cs.CartesianCS;
+import org.opengis.referencing.cs.EllipsoidalCS;
 import org.opengis.referencing.operation.Conversion;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
 import org.apache.sis.referencing.operation.transform.EllipsoidToCentricTransform;
+import org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.internal.util.Constants;
 
@@ -35,7 +38,7 @@ import org.apache.sis.internal.util.Constants;
  * This provider creates transforms from geographic to geocentric coordinate reference systems.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 0.7
+ * @version 0.8
  *
  * @see GeocentricToGeographic
  *
@@ -82,6 +85,28 @@ public final class GeographicToGeocentric extends AbstractProvider {
     @Override
     public Class<Conversion> getOperationType() {
         return Conversion.class;
+    }
+
+    /**
+     * If the user asked for the <cite>"Geographic/geocentric conversions"</cite> operation but the parameter types
+     * suggest that (s)he intended to convert in the opposite direction, return the name of operation method to use.
+     * We need this check because EPSG defines a single operation method for both {@code "Ellipsoid_To_Geocentric"}
+     * and {@code "Geocentric_To_Ellipsoid"} methods.
+     *
+     * <p><b>Note:</b>  we do not define similar method in {@link GeocentricToGeographic} class because the only
+     * way to obtain that operation method is to ask explicitely for {@code "Geocentric_To_Ellipsoid"} operation.
+     * The ambiguity that we try to resolve here exists only if the user asked for the EPSG:9602 operation, which
+     * is defined only in this class.</p>
+     *
+     * @return {@code "Geocentric_To_Ellipsoid"} if the user apparently wanted to get the inverse of this
+     *         {@code "Ellipsoid_To_Geocentric"} operation, or {@code null} if none.
+     */
+    @Override
+    public String resolveAmbiguity(final DefaultMathTransformFactory.Context context) {
+        if (context.getSourceCS() instanceof CartesianCS && context.getTargetCS() instanceof EllipsoidalCS) {
+            return GeocentricToGeographic.NAME;
+        }
+        return super.resolveAmbiguity(context);
     }
 
     /**
