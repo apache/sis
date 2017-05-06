@@ -413,7 +413,7 @@ public class MetadataSource implements AutoCloseable {
      * @return the connection to the database.
      * @throws SQLException if an error occurred while fetching the connection.
      */
-    private Connection connection() throws SQLException {
+    final Connection connection() throws SQLException {
         assert Thread.holdsLock(this);
         Connection c = connection;
         if (c == null) {
@@ -741,7 +741,7 @@ public class MetadataSource implements AutoCloseable {
 
     /**
      * Returns an implementation of the specified metadata interface filled with the data referenced
-     * by the specified identifier. Alternatively, this method can also returns a {@link CodeList} element.
+     * by the specified identifier. Alternatively, this method can also return a {@link CodeList} element.
      *
      * @param  <T>         the parameterized type of the {@code type} argument.
      * @param  type        the interface to implement (e.g. {@link org.opengis.metadata.citation.Citation}),
