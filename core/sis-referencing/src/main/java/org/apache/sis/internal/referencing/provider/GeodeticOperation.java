@@ -19,6 +19,7 @@ package org.apache.sis.internal.referencing.provider;
 import javax.xml.bind.annotation.XmlTransient;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.referencing.operation.OperationMethod;
+import org.opengis.referencing.operation.SingleOperation;
 import org.opengis.referencing.operation.Transformation;
 
 
@@ -86,6 +87,8 @@ abstract class GeodeticOperation extends AbstractProvider {
      * Returns the three-dimensional variant of this operation method, or {@code null} if none.
      * This method needs to be overridden only if the three-dimensional variant is an instance
      * of a different class than this instance.
+     *
+     * <p>This method is not needed on the JDK9 branch.</p>
      */
     Class<? extends GeodeticOperation> variant3D() {
         return null;
@@ -112,12 +115,12 @@ abstract class GeodeticOperation extends AbstractProvider {
     }
 
     /**
-     * Returns the interface implemented by all coordinate operations that extends this class.
+     * Returns the interface implemented by most coordinate operations that extends this class.
      *
-     * @return fixed to {@link Transformation}.
+     * @return default to {@link Transformation}.
      */
     @Override
-    public final Class<Transformation> getOperationType() {
+    public Class<? extends SingleOperation> getOperationType() {
         return Transformation.class;
     }
 

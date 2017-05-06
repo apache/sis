@@ -45,6 +45,7 @@ import org.apache.sis.internal.netcdf.Resources;
 import org.apache.sis.internal.storage.io.ChannelDataInput;
 import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.internal.util.StandardDateFormat;
+import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.util.iso.DefaultNameSpace;
@@ -223,7 +224,7 @@ public final class ChannelDecoder extends Decoder {
      * @throws IOException if an error occurred while reading the channel.
      * @throws DataStoreException if the content of the given channel is not a NetCDF file.
      */
-    public ChannelDecoder(final WarningListeners<?> listeners, final ChannelDataInput input)
+    public ChannelDecoder(final WarningListeners<DataStore> listeners, final ChannelDataInput input)
             throws IOException, DataStoreException
     {
         super(listeners);

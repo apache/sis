@@ -24,6 +24,7 @@ import org.opengis.metadata.identification.OperationChainMetadata;
 import org.opengis.metadata.identification.OperationMetadata;
 import org.opengis.util.InternationalString;
 import org.apache.sis.metadata.iso.ISOMetadata;
+import org.apache.sis.metadata.TitleProperty;
 import org.apache.sis.util.iso.Types;
 import org.apache.sis.xml.Namespaces;
 
@@ -47,6 +48,7 @@ import org.apache.sis.xml.Namespaces;
  * @module
  */
 @SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
+@TitleProperty(name = "name")
 @XmlType(name = "SV_OperationChainMetadata_Type", namespace = Namespaces.SRV, propOrder = {
     "name",
     "description",

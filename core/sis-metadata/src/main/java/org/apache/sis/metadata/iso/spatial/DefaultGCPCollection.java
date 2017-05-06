@@ -24,6 +24,7 @@ import org.opengis.metadata.spatial.GCP;
 import org.opengis.metadata.spatial.GCPCollection;
 import org.opengis.referencing.ReferenceSystem;
 import org.opengis.util.InternationalString;
+import org.apache.sis.metadata.TitleProperty;
 import org.apache.sis.xml.Namespaces;
 
 
@@ -46,6 +47,7 @@ import org.apache.sis.xml.Namespaces;
  * @module
  */
 @SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
+@TitleProperty(name = "collectionName")
 @XmlType(name = "MI_GCPCollection_Type", propOrder = {
     "collectionIdentification",
     "collectionName",

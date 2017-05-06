@@ -27,6 +27,7 @@ import org.opengis.metadata.citation.Individual;
 import org.opengis.metadata.citation.Organisation;
 import org.opengis.metadata.citation.Party;
 import org.apache.sis.metadata.iso.ISOMetadata;
+import org.apache.sis.metadata.TitleProperty;
 import org.apache.sis.util.iso.Types;
 
 
@@ -49,6 +50,7 @@ import org.apache.sis.util.iso.Types;
  * @module
  */
 @SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
+@TitleProperty(name = "name")
 @XmlType(name = "AbstractCI_Party_Type", propOrder = {
     "name",
     "contactInfo"

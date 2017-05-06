@@ -22,6 +22,7 @@ import javax.xml.bind.annotation.XmlType;
 import org.opengis.util.GenericName;
 import org.opengis.metadata.content.FeatureTypeInfo;
 import org.apache.sis.measure.ValueRange;
+import org.apache.sis.metadata.TitleProperty;
 import org.apache.sis.metadata.iso.ISOMetadata;
 
 import static org.apache.sis.internal.metadata.MetadataUtilities.ensurePositive;
@@ -50,6 +51,7 @@ import static org.apache.sis.internal.metadata.MetadataUtilities.ensurePositive;
  * @module
  */
 @SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
+@TitleProperty(name = "featureTypeName")
 @XmlType(name = "MD_FeatureTypeInfo", propOrder = {
     "featureTypeName",
     "featureInstanceCount"

@@ -26,6 +26,7 @@ import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.citation.Responsibility;
 import org.opengis.metadata.identification.Usage;
 import org.apache.sis.metadata.iso.ISOMetadata;
+import org.apache.sis.metadata.TitleProperty;
 import org.apache.sis.util.iso.Types;
 
 import static org.apache.sis.internal.metadata.MetadataUtilities.toDate;
@@ -53,6 +54,7 @@ import static org.apache.sis.internal.metadata.MetadataUtilities.toMilliseconds;
  * @module
  */
 @SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
+@TitleProperty(name = "specificUsage")
 @XmlType(name = "MD_Usage_Type", propOrder = {
     "specificUsage",
     "usageDate",

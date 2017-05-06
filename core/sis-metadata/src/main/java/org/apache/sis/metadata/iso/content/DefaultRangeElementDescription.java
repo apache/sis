@@ -24,6 +24,7 @@ import org.opengis.util.Record;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.content.RangeElementDescription;
 import org.apache.sis.metadata.iso.ISOMetadata;
+import org.apache.sis.metadata.TitleProperty;
 import org.apache.sis.xml.Namespaces;
 
 
@@ -46,6 +47,7 @@ import org.apache.sis.xml.Namespaces;
  * @module
  */
 @SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
+@TitleProperty(name = "name")
 @XmlType(name = "MI_RangeElementDescription_Type", propOrder = {
     "name",
     "definition"/*,

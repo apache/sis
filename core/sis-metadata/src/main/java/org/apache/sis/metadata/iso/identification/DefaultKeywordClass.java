@@ -24,6 +24,7 @@ import org.opengis.util.InternationalString;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.identification.KeywordClass;
 import org.apache.sis.metadata.iso.ISOMetadata;
+import org.apache.sis.metadata.TitleProperty;
 import org.apache.sis.util.iso.Types;
 
 
@@ -46,6 +47,7 @@ import org.apache.sis.util.iso.Types;
  * @module
  */
 @SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
+@TitleProperty(name = "className")
 @XmlType(name = "MD_KeywordClass_Type", propOrder = {
     "className",
     "conceptIdentifier",

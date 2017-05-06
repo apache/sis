@@ -851,7 +851,8 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
          * <p>The given method and parameters are stored in the {@link #provider} and {@link #parameters}
          * fields respectively. The actual stored values may differ from the values given to this method.</p>
          *
-         * @param  method  description of the transform to be created, or {@code null} if unknown.
+         * @param  factory  the enclosing factory.
+         * @param  method   description of the transform to be created, or {@code null} if unknown.
          * @return the exception if the operation failed, or {@code null} if none. This exception is not thrown now
          *         because the caller may succeed in creating the transform anyway, or otherwise may produce a more
          *         informative exception.
@@ -861,9 +862,23 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
          * @see #getCompletedParameters()
          */
         @SuppressWarnings("null")
-        final RuntimeException completeParameters(OperationMethod method, final ParameterValueGroup userParams)
-                throws IllegalArgumentException
+        final RuntimeException completeParameters(final DefaultMathTransformFactory factory, OperationMethod method,
+                final ParameterValueGroup userParams) throws FactoryException, IllegalArgumentException
         {
+            /*
+             * The "Geographic/geocentric conversions" conversion (EPSG:9602) can be either:
+             *
+             *    - "Ellipsoid_To_Geocentric"
+             *    - "Geocentric_To_Ellipsoid"
+             *
+             * EPSG defines both by a single operation, but Apache SIS needs to distinguish them.
+             */
+            if (method instanceof AbstractProvider) {
+                final String alt = ((AbstractProvider) method).resolveAmbiguity(this);
+                if (alt != null) {
+                    method = factory.getOperationMethod(alt);
+                }
+            }
             provider   = method;
             parameters = userParams;
             /*
@@ -899,8 +914,8 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
                 if (targetEllipsoid != null) n |= 2;
             }
             /*
-             * Set the ellipsoid axis-length parameter values. Those parameters may appear in the source
-             * ellipsoid, in the target ellipsoid or in both ellipsoids.
+             * Set the ellipsoid axis-length parameter values. Those parameters may appear in the source ellipsoid,
+             * in the target ellipsoid or in both ellipsoids.
              */
             switch (n) {
                 case 0: return null;
@@ -1023,7 +1038,7 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
                  * since the standard place where to provide this information is in the ellipsoid object.
                  */
                 if (context != null) {
-                    failure = context.completeParameters(method, parameters);
+                    failure    = context.completeParameters(this, method, parameters);
                     parameters = context.parameters;
                     method     = context.provider;
                 }
@@ -1051,8 +1066,10 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
             lastMethod.set(method);     // May be null in case of failure, which is intended.
             if (context != null) {
                 context.provider = null;
-                // For now we conservatively reset the provider information to null. But if we choose to make
-                // that information public in a future SIS version, then we would remove this code.
+                /*
+                 * For now we conservatively reset the provider information to null. But if we choose to
+                 * make that information public in a future SIS version, then we would remove this code.
+                 */
             }
         }
         return transform;
@@ -1316,6 +1333,9 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
      * Creates a math transform object from a
      * <a href="http://www.geoapi.org/snapshot/javadoc/org/opengis/referencing/doc-files/WKT.html"><cite>Well
      * Known Text</cite> (WKT)</a>.
+     * If the given text contains non-fatal anomalies (unknown or unsupported WKT elements,
+     * inconsistent unit definitions, <i>etc.</i>), warnings may be reported in a
+     * {@linkplain java.util.logging.Logger logger} named {@code "org.apache.sis.io.wkt"}.
      *
      * @param  text  math transform encoded in Well-Known Text format.
      * @return the math transform (never {@code null}).
