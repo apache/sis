@@ -650,11 +650,21 @@ next:   for (int i=components.size(); --i >= 0;) {
         if (operations != null && operations.length == 1) {
             return operations[0];
         }
-        final CoordinateOperation op;
+        final ConcatenatedOperation op;
         try {
             op = new DefaultConcatenatedOperation(properties, operations, getMathTransformFactory());
         } catch (IllegalArgumentException exception) {
             throw new InvalidGeodeticParameterException(exception.getLocalizedMessage(), exception);
+        }
+        /*
+         * Verifies again the number of single operations.  We may have a singleton if some operations
+         * were omitted because their associated math transform were identity. This happen for example
+         * if a "Geographic 3D to 2D conversion" as been redimensioned to a "3D to 3D" operation.
+         */
+        final List<? extends CoordinateOperation> co = op.getOperations();
+        if (co.size() == 1) {
+            assert op.getMathTransform().equals(co.get(0).getMathTransform()) : op;
+            return co.get(0);
         }
         return pool.unique(op);
     }
