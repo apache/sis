@@ -104,19 +104,22 @@ final class DefaultConcatenatedOperation extends AbstractCoordinateOperation imp
      * @param  mtFactory   the math transform factory to use for math transforms concatenation.
      * @throws FactoryException if the factory can not concatenate the math transforms.
      */
-    @SuppressWarnings("PublicConstructorInNonPublicClass")
     public DefaultConcatenatedOperation(final Map<String,?> properties, CoordinateOperation[] operations,
             final MathTransformFactory mtFactory) throws FactoryException
     {
         super(properties);
         ArgumentChecks.ensureNonNull("operations", operations);
-        final List<CoordinateOperation> flattened = new ArrayList<>(operations.length);
-        initialize(properties, operations, flattened, mtFactory,
-                (coordinateOperationAccuracy == null), (domainOfValidity == null));
-        if (flattened.size() < 2) {
+        if (operations.length < 2) {
             throw new IllegalArgumentException(Errors.getResources(properties).getString(
                     Errors.Keys.TooFewOccurrences_2, 2, CoordinateOperation.class));
         }
+        final List<CoordinateOperation> flattened = new ArrayList<>(operations.length);
+        initialize(properties, operations, flattened, mtFactory,
+                (coordinateOperationAccuracy == null), (domainOfValidity == null));
+        /*
+         * At this point we should have flattened.size() >= 2, except if some operations
+         * were omitted because their associated math transform were identity operation.
+         */
         operations      = flattened.toArray(new CoordinateOperation[flattened.size()]);
         this.operations = UnmodifiableArrayList.wrap(operations);
         this.sourceCRS  = operations[0].getSourceCRS();
@@ -190,7 +193,7 @@ final class DefaultConcatenatedOperation extends AbstractCoordinateOperation imp
                     }
                 }
             }
-            previous = op.getTargetCRS();   // For next iteration cycle.
+            previous = op.getTargetCRS();                                       // For next iteration cycle.
             /*
              * Now that we have verified the CRS dimensions, we should be able to concatenate the transforms.
              * If an operation is a nested ConcatenatedOperation (not allowed by ISO 19111, but we try to be
@@ -205,7 +208,7 @@ final class DefaultConcatenatedOperation extends AbstractCoordinateOperation imp
                 @SuppressWarnings("SuspiciousToArrayCall")
                 final CoordinateOperation[] asArray = children.toArray(new CoordinateOperation[children.size()]);
                 initialize(properties, asArray, flattened, (step == null) ? mtFactory : null, setAccuracy, setDomain);
-            } else {
+            } else if (!step.isIdentity()) {
                 flattened.add(op);
             }
             if (mtFactory != null) {
