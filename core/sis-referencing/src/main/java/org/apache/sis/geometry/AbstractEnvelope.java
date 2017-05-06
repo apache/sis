@@ -728,6 +728,9 @@ public abstract class AbstractEnvelope implements Envelope, Emptiable {
 
     /**
      * Returns {@code true} if this envelope completely encloses the specified envelope.
+     * The default implementation delegates to:
+     *
+     * <blockquote><pre>{@linkplain #contains(Envelope, boolean) contains}(envelope, <b>true</b>)</pre></blockquote>
      *
      * <div class="section">Pre-conditions</div>
      * This method assumes that the specified envelope uses the same CRS than this envelope.
@@ -761,10 +764,6 @@ public abstract class AbstractEnvelope implements Envelope, Emptiable {
      *
      * <p>This method is subject to the same pre-conditions than {@link #contains(Envelope)},
      * and handles envelopes spanning the anti-meridian in the same way.</p>
-     *
-     * <div class="warning"><b>Warning:</b> This method may change or be removed in a future SIS version.
-     * For API stability, use the {@link #contains(Envelope)} method instead.
-     * See <a href="http://issues.apache.org/jira/browse/SIS-172">SIS-172</a> for more information.</div>
      *
      * @param  envelope        the envelope to test for inclusion.
      * @param  edgesInclusive  {@code true} if this envelope edges are inclusive.
@@ -846,6 +845,11 @@ public abstract class AbstractEnvelope implements Envelope, Emptiable {
 
     /**
      * Returns {@code true} if this envelope intersects the specified envelope.
+     * This method returns {@code true} if two envelope <em>interiors</em> have at least one point in common
+     * (in other words, their intersection is non-{@linkplain #isEmpty() empty}).
+     * The default implementation delegates to:
+     *
+     * <blockquote><pre>{@linkplain #intersects(Envelope, boolean) intersects}(envelope, <b>false</b>)</pre></blockquote>
      *
      * <div class="section">Pre-conditions</div>
      * This method assumes that the specified envelope uses the same CRS than this envelope.
@@ -865,31 +869,36 @@ public abstract class AbstractEnvelope implements Envelope, Emptiable {
      * @since 0.4
      */
     public boolean intersects(final Envelope envelope) throws MismatchedDimensionException {
-        return intersects(envelope, true);
+        return intersects(envelope, false);
     }
 
     /**
-     * Returns {@code true} if this envelope intersects the specified envelope.
-     * If one or more edges from the specified envelope coincide with an edge from this envelope,
-     * then this method returns {@code true} only if {@code edgesInclusive} is {@code true}.
+     * Returns {@code true} if this envelope intersects or (optionally) touches the specified envelope.
+     * The {@code touch} argument controls the value to return if only the envelope boundaries
+     * (not the interiors) have a point in common:
      *
-     * <p>This method is subject to the same pre-conditions than {@link #intersects(Envelope)},
-     * and handles envelopes spanning the anti-meridian in the same way.</p>
+     * <ul>
+     *   <li>If {@code false}, this method returns {@code true} if the intersection between the two envelopes
+     *       is non-{@linkplain #isEmpty() empty} (i.e. the envelope <em>interiors</em> have points in common).
+     *       This is the usual definition of {@code intersects} operation.</li>
+     *   <li>If {@code true}, this method returns {@code true} if the two envelopes intersect each other
+     *       <em>or</em> touch each other.</li>
+     * </ul>
      *
-     * <div class="warning"><b>Warning:</b> This method may change or be removed in a future SIS version.
-     * For API stability, use the {@link #intersects(Envelope)} method instead.
-     * See <a href="http://issues.apache.org/jira/browse/SIS-172">SIS-172</a> for more information.</div>
+     * This method is subject to the same pre-conditions than {@link #intersects(Envelope)},
+     * and handles envelopes spanning the anti-meridian in the same way.
      *
-     * @param  envelope        the envelope to test for intersection.
-     * @param  edgesInclusive  {@code true} if this envelope edges are inclusive.
-     * @return {@code true} if this envelope intersects the specified one.
-     * @throws MismatchedDimensionException if the specified envelope doesn't have the expected dimension.
+     * @param  envelope  the envelope to test for intersection.
+     * @param  touch     the value to return if the two envelopes touch each other.
+     * @return {@code true} if this envelope intersects the specified envelope, or
+     *         {@code touch} if this envelope touches the specified envelope, or {@code false} otherwise.
+     * @throws MismatchedDimensionException if the specified envelope does not have the expected dimension.
      * @throws AssertionError if assertions are enabled and the envelopes have mismatched CRS.
      *
      * @see #contains(Envelope, boolean)
      * @see #equals(Envelope, double, boolean)
      */
-    public boolean intersects(final Envelope envelope, final boolean edgesInclusive) throws MismatchedDimensionException {
+    public boolean intersects(final Envelope envelope, final boolean touch) throws MismatchedDimensionException {
         ensureNonNull("envelope", envelope);
         final int dimension = getDimension();
         ensureDimensionMatches("envelope", dimension, envelope);
@@ -903,7 +912,7 @@ public abstract class AbstractEnvelope implements Envelope, Emptiable {
             final double lower1 = lowerCorner.getOrdinate(i);
             final double upper1 = upperCorner.getOrdinate(i);
             final boolean lowerCondition, upperCondition;
-            if (edgesInclusive) {
+            if (touch) {
                 lowerCondition = (lower1 <= upper0);
                 upperCondition = (upper1 >= lower0);
             } else {
@@ -935,7 +944,7 @@ public abstract class AbstractEnvelope implements Envelope, Emptiable {
             }
             // The check for ArrayEnvelope.class is for avoiding never-ending callbacks.
             assert envelope.getClass() == ArrayEnvelope.class || hasNaN(envelope) ||
-                    !contains(new ArrayEnvelope(envelope), edgesInclusive) : envelope;
+                    !contains(new ArrayEnvelope(envelope), touch) : envelope;
             return false;
         }
         return true;

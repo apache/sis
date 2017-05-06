@@ -27,6 +27,7 @@ import org.opengis.metadata.distribution.Distribution;
 import org.opengis.metadata.distribution.Distributor;
 import org.opengis.metadata.distribution.Format;
 import org.apache.sis.metadata.iso.ISOMetadata;
+import org.apache.sis.metadata.TitleProperty;
 
 import static org.opengis.annotation.Obligation.OPTIONAL;
 import static org.opengis.annotation.Specification.ISO_19115;
@@ -52,6 +53,7 @@ import static org.opengis.annotation.Specification.ISO_19115;
  * @module
  */
 @SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
+@TitleProperty(name = "description")
 @XmlType(name = "MD_Distribution_Type", propOrder = {
     "distributionFormats",
     "distributors",

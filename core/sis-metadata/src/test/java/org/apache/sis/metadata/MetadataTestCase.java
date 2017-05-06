@@ -45,7 +45,7 @@ import static org.opengis.test.Assert.*;
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.5
+ * @version 0.8
  * @since   0.3
  * @module
  */
@@ -313,5 +313,38 @@ public abstract strictfp class MetadataTestCase extends AnnotationsTestCase {
                method.equals("getScaleDenominator")) || // Deprecated method replaced by 'getSourceSpatialResolution()'.
               (implementation == org.apache.sis.metadata.iso.citation.DefaultResponsibleParty.class &&
                method.equals("getParties"));
+    }
+
+    /**
+     * Verifies the {@link TitleProperty} annotations. This method verifies that the property exist,
+     * is a singleton, and is not another metadata object. The property should also be mandatory,
+     * but this method does not verify that restriction since there is some exceptions.
+     *
+     * @since 0.8
+     */
+    @Test
+    public void testTitlePropertyAnnotation() {
+        for (final Class<?> type : types) {
+            final Class<?> impl = standard.getImplementation(type);
+            if (impl != null) {
+                final TitleProperty an = impl.getAnnotation(TitleProperty.class);
+                if (an != null) {
+                    final String name = an.name();
+                    final String message = impl.getSimpleName() + '.' + name;
+                    final PropertyAccessor accessor = new PropertyAccessor(standard.getCitation(), type, impl, impl);
+
+                    // Property shall exist.
+                    final int index = accessor.indexOf(name, false);
+                    assertTrue(message, index >= 0);
+
+                    // Property can not be a metadata.
+                    final Class<?> elementType = accessor.type(index, TypeValuePolicy.ELEMENT_TYPE);
+                    assertFalse(message, standard.isMetadata(elementType));
+
+                    // Property shall be a singleton.
+                    assertSame(message, elementType, accessor.type(index, TypeValuePolicy.PROPERTY_TYPE));
+                }
+            }
+        }
     }
 }

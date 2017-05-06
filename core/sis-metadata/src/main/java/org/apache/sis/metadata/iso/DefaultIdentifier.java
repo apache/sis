@@ -24,6 +24,7 @@ import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.referencing.ReferenceIdentifier;
 import org.opengis.util.InternationalString;
+import org.apache.sis.metadata.TitleProperty;
 import org.apache.sis.internal.util.Citations;
 
 import static org.opengis.annotation.Obligation.OPTIONAL;
@@ -90,6 +91,7 @@ import static org.opengis.annotation.Specification.ISO_19115;
  * @module
  */
 @SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
+@TitleProperty(name = "code")
 @XmlType(name = "MD_Identifier_Type", propOrder = {
     "authority",
     "code"

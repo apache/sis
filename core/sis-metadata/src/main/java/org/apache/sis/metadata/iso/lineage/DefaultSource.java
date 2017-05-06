@@ -34,6 +34,7 @@ import org.opengis.metadata.identification.Resolution;
 import org.opengis.metadata.identification.RepresentativeFraction;
 import org.opengis.metadata.quality.Scope;
 import org.opengis.referencing.ReferenceSystem;
+import org.apache.sis.metadata.TitleProperty;
 import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.metadata.iso.maintenance.DefaultScope;
 import org.apache.sis.metadata.iso.identification.DefaultResolution;
@@ -70,6 +71,7 @@ import static org.opengis.annotation.Specification.ISO_19115;
  * @module
  */
 @SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
+@TitleProperty(name = "description")
 @XmlType(name = "LI_Source_Type", propOrder = {
     "description",
     "scaleDenominator",

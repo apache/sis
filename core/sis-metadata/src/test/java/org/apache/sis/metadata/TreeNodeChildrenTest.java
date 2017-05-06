@@ -16,24 +16,27 @@
  */
 package org.apache.sis.metadata;
 
+import java.util.Date;
 import java.util.Random;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ArrayList;
-import org.opengis.metadata.Metadata;
+import org.opengis.metadata.citation.Citation;
+import org.opengis.metadata.citation.DateType;
 import org.opengis.metadata.citation.PresentationForm;
 import org.apache.sis.metadata.iso.citation.DefaultCitation;
+import org.apache.sis.metadata.iso.citation.DefaultCitationDate;
 import org.apache.sis.util.iso.SimpleInternationalString;
 import org.apache.sis.util.collection.DefaultTreeTable;
 import org.apache.sis.util.collection.TableColumn;
 import org.apache.sis.util.collection.TreeTable;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
+import org.apache.sis.test.TestUtilities;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
-import static org.apache.sis.test.TestUtilities.createRandomNumberGenerator;
 
 
 /**
@@ -113,14 +116,42 @@ public final strictfp class TreeNodeChildrenTest extends TestCase {
     }
 
     /**
+     * Creates a metadata object with a property than can be simplified.
+     * Strictly speaking, the metadata is:
+     *
+     * {@preformat text
+     *   DefaultCitation
+     *     └─Date
+     *        ├─Date………………… 2012-01-01
+     *        └─Date type…… Creation
+     * }
+     *
+     * However the tree view should simplify as:
+     *
+     * {@preformat text
+     *   DefaultCitation
+     *     └─Date………………………… 2012-01-01
+     *        └─Date type…… Creation
+     * }
+     *
+     * @see <a href="https://issues.apache.org/jira/browse/SIS-298">SIS-298</a>
+     */
+    static DefaultCitation metadataSimplifiable() {
+        final DefaultCitation citation = new DefaultCitation();
+        final DefaultCitationDate date = new DefaultCitationDate(TestUtilities.date("2012-01-01 00:00:00"), DateType.CREATION);
+        assertTrue(citation.getDates().add(date));
+        return citation;
+    }
+
+    /**
      * Creates a collection to be tested for the given metadata object and value policy.
      */
-    private static TreeNodeChildren create(final AbstractMetadata metadata, final ValueExistencePolicy valuePolicy) {
+    private static TreeNodeChildren create(final DefaultCitation citation, final ValueExistencePolicy valuePolicy) {
         final MetadataStandard standard = MetadataStandard.ISO_19115;
-        final TreeTableView    table    = new TreeTableView(standard, metadata, Metadata.class, valuePolicy);
+        final TreeTableView    table    = new TreeTableView(standard, citation, Citation.class, valuePolicy);
         final TreeNode         node     = (TreeNode) table.getRoot();
-        final PropertyAccessor accessor = standard.getAccessor(new CacheKey(metadata.getClass()), true);
-        return new TreeNodeChildren(node, metadata, accessor);
+        final PropertyAccessor accessor = standard.getAccessor(new CacheKey(citation.getClass()), true);
+        return new TreeNodeChildren(node, citation, accessor);
     }
 
     /**
@@ -135,6 +166,7 @@ public final strictfp class TreeNodeChildrenTest extends TestCase {
             "Some edition",
             "Some other details"
         };
+        assertEquals("titleProperty", -1, children.titleProperty);
         assertFalse ("isEmpty()", children.isEmpty());
         assertEquals("size()", expected.length, children.size());
         assertAllNextEqual(expected, children.iterator());
@@ -156,6 +188,7 @@ public final strictfp class TreeNodeChildrenTest extends TestCase {
             "PresentationForm[MAP_DIGITAL]",
             "Some other details"
         };
+        assertEquals("titleProperty", -1, children.titleProperty);
         assertFalse ("isEmpty()", children.isEmpty());
         assertEquals("size()", expected.length, children.size());
         assertAllNextEqual(expected, children.iterator());
@@ -179,6 +212,35 @@ public final strictfp class TreeNodeChildrenTest extends TestCase {
             "PresentationForm[MAP_HARDCOPY]",
             "Some other details"
         };
+        assertEquals("titleProperty", -1, children.titleProperty);
+        assertFalse ("isEmpty()", children.isEmpty());
+        assertEquals("size()", expected.length, children.size());
+        assertAllNextEqual(expected, children.iterator());
+    }
+
+    /**
+     * Tests a metadata than can be simplified by displaying a child property value directly as the parent value.
+     */
+    @Test
+    @DependsOnMethod("testReadOnlyWithoutCollections")
+    public void testSimplifiable() {
+        final DefaultCitation  citation = metadataSimplifiable();
+        /*
+         *   DefaultCitation
+         *     └─Date
+         *        ├─Date………………… 2012-01-01
+         *        └─Date type…… Creation
+         *
+         * We need to perform the tests on the "Date" node, not on the "DefaultCitation" node.
+         */
+        final TreeTable.Node node = TestUtilities.getSingleton(create(citation, ValueExistencePolicy.COMPACT));
+        assertEquals("value", 1325376000000L, ((Date) node.getValue(TableColumn.VALUE)).getTime());
+        final TreeNodeChildren children = (TreeNodeChildren) node.getChildren();
+        final String[] expected = {
+            // The "Date" node should be omitted because merged with the parent "Date" node.
+            "DateType[CREATION]"
+        };
+        assertEquals("titleProperty", 0, children.titleProperty);
         assertFalse ("isEmpty()", children.isEmpty());
         assertEquals("size()", expected.length, children.size());
         assertAllNextEqual(expected, children.iterator());
@@ -192,6 +254,8 @@ public final strictfp class TreeNodeChildrenTest extends TestCase {
     public void testAdd() {
         final DefaultCitation  citation = metadataWithMultiOccurrences();
         final TreeNodeChildren children = create(citation, ValueExistencePolicy.NON_EMPTY);
+        assertEquals("titleProperty", -1, children.titleProperty);
+
         final DefaultTreeTable.Node toAdd = new DefaultTreeTable.Node(new DefaultTreeTable(
                 TableColumn.IDENTIFIER,
                 TableColumn.VALUE));
@@ -241,7 +305,8 @@ public final strictfp class TreeNodeChildrenTest extends TestCase {
     public void testRemoveWithoutCollections() {
         final DefaultCitation  citation = metadataWithoutCollections();
         final TreeNodeChildren children = create(citation, ValueExistencePolicy.NON_EMPTY);
-        testRemove(createRandomNumberGenerator(), children);
+        assertEquals("titleProperty", -1, children.titleProperty);
+        testRemove(TestUtilities.createRandomNumberGenerator(), children);
     }
 
     /**
@@ -256,7 +321,8 @@ public final strictfp class TreeNodeChildrenTest extends TestCase {
     public void testRemoveWithSingletonInCollections() {
         final DefaultCitation  citation = metadataWithSingletonInCollections();
         final TreeNodeChildren children = create(citation, ValueExistencePolicy.NON_EMPTY);
-        testRemove(createRandomNumberGenerator(), children);
+        assertEquals("titleProperty", -1, children.titleProperty);
+        testRemove(TestUtilities.createRandomNumberGenerator(), children);
     }
 
     /**
@@ -271,7 +337,8 @@ public final strictfp class TreeNodeChildrenTest extends TestCase {
     public void testRemoveWithMultiOccurrences() {
         final DefaultCitation  citation = metadataWithSingletonInCollections();
         final TreeNodeChildren children = create(citation, ValueExistencePolicy.NON_EMPTY);
-        testRemove(createRandomNumberGenerator(), children);
+        assertEquals("titleProperty", -1, children.titleProperty);
+        testRemove(TestUtilities.createRandomNumberGenerator(), children);
     }
 
     /**
@@ -281,9 +348,10 @@ public final strictfp class TreeNodeChildrenTest extends TestCase {
     public void testClear() {
         final DefaultCitation  citation = metadataWithSingletonInCollections();
         final TreeNodeChildren children = create(citation, ValueExistencePolicy.NON_EMPTY);
-        assertFalse(children.isEmpty());
+        assertEquals("titleProperty", -1, children.titleProperty);
+        assertFalse("isEmpty()", children.isEmpty());
         children.clear();
-        assertTrue(children.isEmpty());
+        assertTrue("isEmpty()", children.isEmpty());
         assertNull(citation.getTitle());
         assertTrue(citation.getAlternateTitles().isEmpty());
     }
@@ -315,6 +383,7 @@ public final strictfp class TreeNodeChildrenTest extends TestCase {
             null, // onlineResources (collection)
             null  // graphics (collection)
         };
+        assertEquals("titleProperty", -1, children.titleProperty);
         assertFalse ("isEmpty()", children.isEmpty());
         assertEquals("size()", expected.length, children.size());
         assertAllNextEqual(expected, children.iterator());

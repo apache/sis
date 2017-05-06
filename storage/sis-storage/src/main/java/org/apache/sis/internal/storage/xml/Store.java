@@ -26,7 +26,9 @@ import java.io.IOException;
 import javax.xml.bind.JAXBException;
 import javax.xml.transform.stream.StreamSource;
 import org.opengis.metadata.Metadata;
+import org.opengis.util.FactoryException;
 import org.opengis.referencing.ReferenceSystem;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.xml.XML;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.StorageConnector;
@@ -34,6 +36,8 @@ import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.metadata.iso.DefaultMetadata;
 import org.apache.sis.util.logging.WarningListener;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.internal.system.Loggers;
+import org.apache.sis.internal.referencing.DefinitionVerifier;
 
 import static java.util.Collections.singleton;
 
@@ -124,6 +128,7 @@ final class Store extends DataStore {
 
                 /** Reports the occurrence of a non-fatal error during XML unmarshalling. */
                 @Override public void warningOccured(final Object source, final LogRecord warning) {
+                    warning.setLoggerName(Loggers.XML);
                     listeners.warning(warning);
                 }
             });
@@ -149,6 +154,26 @@ final class Store extends DataStore {
             }
         } catch (JAXBException | IOException e) {
             throw new DataStoreException(Errors.format(Errors.Keys.CanNotRead_1, getDisplayName()), e);
+        }
+        if (object instanceof CoordinateReferenceSystem) try {
+            final DefinitionVerifier v = DefinitionVerifier.withAuthority((CoordinateReferenceSystem) object, null, false);
+            if (v != null) {
+                log(v.warning(false));
+            }
+        } catch (FactoryException e) {
+            listeners.warning(null, e);
+        }
+    }
+
+    /**
+     * Reports a warning, if non-null.
+     */
+    private void log(final LogRecord record) {
+        if (record != null) {
+            record.setSourceClassName(Store.class.getName());
+            record.setSourceMethodName("getMetadata");          // Public facade for the parse() method.
+            record.setLoggerName(Loggers.XML);
+            listeners.warning(record);
         }
     }
 

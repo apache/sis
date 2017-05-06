@@ -26,6 +26,7 @@ import org.opengis.metadata.Obligation;
 import org.opengis.metadata.citation.ResponsibleParty;
 import org.opengis.metadata.ExtendedElementInformation;
 import org.opengis.util.InternationalString;
+import org.apache.sis.metadata.TitleProperty;
 import org.apache.sis.measure.ValueRange;
 import org.apache.sis.util.iso.Types;
 import org.apache.sis.internal.metadata.LegacyPropertyAdapter;
@@ -58,6 +59,7 @@ import static org.opengis.annotation.Specification.ISO_19115;
  * @module
  */
 @SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
+@TitleProperty(name = "name")
 @XmlType(name = "MD_ExtendedElementInformation_Type", propOrder = {
     "name",
     "shortName",

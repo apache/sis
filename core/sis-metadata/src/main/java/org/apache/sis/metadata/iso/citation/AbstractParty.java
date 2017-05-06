@@ -24,6 +24,7 @@ import javax.xml.bind.annotation.XmlSeeAlso;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.citation.Contact;
 import org.apache.sis.metadata.iso.ISOMetadata;
+import org.apache.sis.metadata.TitleProperty;
 import org.apache.sis.util.iso.Types;
 
 // Branch-specific imports
@@ -60,6 +61,7 @@ import static org.opengis.annotation.Specification.ISO_19115;
  * @module
  */
 @SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
+@TitleProperty(name = "name")
 @XmlType(name = "AbstractCI_Party_Type", propOrder = {
     "name",
     "contactInfo"

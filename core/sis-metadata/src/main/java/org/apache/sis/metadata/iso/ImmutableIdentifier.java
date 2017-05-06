@@ -29,6 +29,7 @@ import org.opengis.referencing.ReferenceIdentifier;
 import org.opengis.util.InternationalString;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.iso.Types;
+import org.apache.sis.metadata.TitleProperty;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.internal.metadata.NameMeaning;
 import org.apache.sis.internal.metadata.WKTKeywords;
@@ -127,6 +128,7 @@ import static org.apache.sis.util.collection.Containers.property;
  * @since 0.3
  * @module
  */
+@TitleProperty(name = "code")
 @XmlType(name = "RS_Identifier_Type", propOrder = {
     "authority",
     "code",

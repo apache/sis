@@ -868,7 +868,7 @@ public class MetadataStandard implements Serializable {
      * adds a title to a citation:
      *
      * {@preformat java
-     *     TreeTable.Node node = ...; // The node for a DefaultCitation.
+     *     TreeTable.Node node = ...;                               // The node for a DefaultCitation.
      *     TreeTable.Node child = node.newChild();
      *     child.setValue(TableColumn.IDENTIFIER, "title");
      *     child.setValue(TableColumn.VALUE, "Le petit prince");

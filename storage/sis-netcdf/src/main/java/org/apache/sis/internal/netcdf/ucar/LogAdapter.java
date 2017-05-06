@@ -16,6 +16,7 @@
  */
 package org.apache.sis.internal.netcdf.ucar;
 
+import org.apache.sis.storage.DataStore;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.logging.WarningListeners;
 
@@ -40,12 +41,12 @@ final class LogAdapter implements Appendable {
     /**
      * Where to sends the warning messages.
      */
-    private final WarningListeners<?> listeners;
+    private final WarningListeners<DataStore> listeners;
 
     /**
      * Creates a new adapter which will send lines to the given listeners.
      */
-    LogAdapter(final WarningListeners<?> listeners) {
+    LogAdapter(final WarningListeners<DataStore> listeners) {
         this.listeners = listeners;
     }
 
