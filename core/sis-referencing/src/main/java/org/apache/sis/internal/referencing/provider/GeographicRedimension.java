@@ -19,78 +19,60 @@ package org.apache.sis.internal.referencing.provider;
 import javax.xml.bind.annotation.XmlTransient;
 import org.opengis.util.FactoryException;
 import org.opengis.parameter.ParameterValueGroup;
-import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
+import org.opengis.referencing.operation.Conversion;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
 import org.apache.sis.referencing.operation.matrix.Matrices;
-import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.internal.util.Constants;
-import org.apache.sis.parameter.ParameterBuilder;
-import org.apache.sis.parameter.Parameters;
 
 
 /**
- * The provider for <cite>"Geographic 2D to 3D conversion"</cite>.
- * The default operation sets the ellipsoidal height to zero.
- *
- * <p>This operation is a SIS extension; the EPSG dataset defines only the 3D to 2D case.
- * Consequently, WKT formatting will not represent "2D to 3D" transform. Instead, WKT will
- * format the inverse ({@code "INVERSE_MT"}) of 3D to 2D transform.</p>
+ * Base class of operations working on the number of dimensions of a geographic CRS.
+ * The default implementation does nothing; this is used as a placeholder for the result of a call
+ * to {@link Geographic3Dto2D#redimension(int, int)} when the given number of dimensions are equal.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
- *
- * @see Geographic3Dto2D
- *
- * @since 0.7
+ * @since   0.8
  * @module
  */
 @XmlTransient
-public final class Geographic2Dto3D extends GeographicRedimension {
+class GeographicRedimension extends GeodeticOperation {
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = -1198461394243672064L;
+    private static final long serialVersionUID = -3021902514274756742L;
 
     /**
-     * The ellipsoidal height to set.
+     * Constructs a math transform provider from a set of parameters.
+     * This is for sub-class constructors only.
      */
-    public static final ParameterDescriptor<Double> HEIGHT;
-
-    /**
-     * The group of all parameters expected by this coordinate operation.
-     */
-    public static final ParameterDescriptorGroup PARAMETERS;
-    static {
-        final ParameterBuilder builder = builder().setCodeSpace(Citations.SIS, Constants.SIS);
-        HEIGHT = createShift(builder.addName("height"));
-        PARAMETERS = builder.addName("Geographic2D to 3D conversion").createGroup(HEIGHT);
+    GeographicRedimension(final int sourceDimensions,
+                          final int targetDimensions,
+                          final ParameterDescriptorGroup parameters,
+                          final GeodeticOperation[] redimensioned)
+    {
+        super(sourceDimensions, targetDimensions, parameters, redimensioned);
     }
 
     /**
-     * Constructs a provider with default parameters.
+     * Creates an identity operation of the given number of dimensions.
      */
-    public Geographic2Dto3D() {
-        this(null);
+    GeographicRedimension(final int dimension, final GeodeticOperation[] redimensioned) {
+        super(dimension, dimension, builder().setCodeSpace(Citations.SIS, Constants.SIS)
+                .addName("Identity " + dimension + 'D').createGroup(), redimensioned);
     }
 
     /**
-     * Constructs a provider that can be resized.
-     */
-    Geographic2Dto3D(GeodeticOperation[] redimensioned) {
-        super(2, 3, PARAMETERS, redimensioned);
-    }
-
-    /**
-     * Returns the tree-dimensional variant of this class.
-     * Used for having a unique instance of this provider.
-     * This hack is not needed on the JDK9 branch.
+     * Returns the interface implemented by all coordinate operations that extends this class.
+     *
+     * @return default to {@link Conversion}.
      */
     @Override
-    Class<Geographic3Dto2D> variant3D() {
-        return Geographic3Dto2D.class;
+    public final Class<Conversion> getOperationType() {
+        return Conversion.class;
     }
 
     /**
@@ -105,10 +87,6 @@ public final class Geographic2Dto3D extends GeographicRedimension {
     public MathTransform createMathTransform(MathTransformFactory factory, ParameterValueGroup values)
             throws FactoryException
     {
-        final Parameters pv = Parameters.castOrWrap(values);
-        final MatrixSIS m = Matrices.createDiagonal(4, 3);
-        m.setElement(2, 2, pv.doubleValue(HEIGHT));
-        m.setElement(3, 2, 1);
-        return factory.createAffineTransform(m);
+        return factory.createAffineTransform(Matrices.createDiagonal(getTargetDimensions() + 1, getSourceDimensions() + 1));
     }
 }

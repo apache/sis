@@ -137,27 +137,22 @@ public final strictfp class DefaultDataIdentificationTest extends TestCase {
     public void testToString() {
         assertMultilinesEquals(
                 "Data identification\n" +
-                "  ├─Citation\n" +
-                "  │   ├─Title……………………………………………………… Sea Surface Temperature Analysis Model\n" +
-                "  │   ├─Date\n" +
-                "  │   │   ├─Date……………………………………………… 2005-09-22 00:00:00\n" +
+                "  ├─Citation………………………………………………………… Sea Surface Temperature Analysis Model\n" +
+                "  │   ├─Date………………………………………………………… 2005-09-22 00:00:00\n" +
                 "  │   │   └─Date type………………………………… Creation\n" +
-                "  │   └─Identifier\n" +
-                "  │       └─Code……………………………………………… SST_Global.nc\n" +
+                "  │   └─Identifier………………………………………… SST_Global.nc\n" +
                 "  ├─Abstract………………………………………………………… NCEP SST Global 5.0 x 2.5 degree model data\n" +
                 "  ├─Descriptive keywords\n" +
                 "  │   ├─Keyword………………………………………………… EARTH SCIENCE > Oceans > Ocean Temperature > Sea Surface Temperature\n" +
                 "  │   ├─Type………………………………………………………… Theme\n" +
-                "  │   └─Thesaurus name\n" +
-                "  │       └─Title…………………………………………… GCMD Science Keywords\n" +
+                "  │   └─Thesaurus name……………………………… GCMD Science Keywords\n" +
                 "  ├─Resource constraints\n" +
                 "  │   └─Use limitation……………………………… Freely available\n" +
                 "  ├─Spatial representation type……… Grid\n" +
                 "  ├─Language (1 of 2)………………………………… en_US\n" +
                 "  ├─Language (2 of 2)………………………………… en\n" +
                 "  ├─Character set…………………………………………… US-ASCII\n" +
-                "  └─Extent\n" +
-                "      ├─Description……………………………………… World\n" +
+                "  └─Extent……………………………………………………………… World\n" +
                 "      └─Geographic element\n" +
                 "          ├─West bound longitude…… 180°W\n" +
                 "          ├─East bound longitude…… 180°E\n" +

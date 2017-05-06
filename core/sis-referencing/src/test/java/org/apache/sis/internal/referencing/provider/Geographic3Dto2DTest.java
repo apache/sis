@@ -34,7 +34,7 @@ import static org.apache.sis.test.Assert.*;
  * Tests the {@link Geographic3Dto2D} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.7
+ * @version 0.8
  * @since   0.7
  * @module
  */
@@ -66,6 +66,18 @@ public final strictfp class Geographic3Dto2DTest extends TestCase {
                 0, 1, 0,
                 0, 0, 0,
                 0, 0, 1}), ((LinearTransform) mt.inverse()).getMatrix(), STRICT);
+    }
+
+    /**
+     * Tests {@link Geographic3Dto2D#redimension(int, int)}.
+     */
+    @Test
+    public void testRedimension() {
+        final Geographic3Dto2D provider = new Geographic3Dto2D();
+        assertSame  ("3 → 2", provider,                    provider.redimension(3, 2));
+        assertEquals("2 → 3", Geographic2Dto3D.class,      provider.redimension(2, 3).getClass());
+        assertEquals("3 → 3", GeographicRedimension.class, provider.redimension(3, 3).getClass());
+        assertEquals("2 → 2", GeographicRedimension.class, provider.redimension(2, 2).getClass());
     }
 
     /**

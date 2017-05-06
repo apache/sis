@@ -1602,6 +1602,13 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
      * }
      * </div>
      *
+     * If the given text contains non-fatal anomalies
+     * (unknown or unsupported WKT elements, inconsistent unit definitions, unparsable axis abbreviations, <i>etc.</i>),
+     * warnings may be reported in a {@linkplain java.util.logging.Logger logger} named {@code "org.apache.sis.io.wkt"}.
+     * However this parser does not verify if the overall parsed object matches the EPSG (or other authority) definition,
+     * since this geodetic object factory is not an {@linkplain GeodeticAuthorityFactory authority factory}.
+     * For such verification, see the {@link org.apache.sis.referencing.CRS#fromWKT(String)} convenience method.
+     *
      * <div class="section">Usage and performance considerations</div>
      * The default implementation uses a shared instance of {@link org.apache.sis.io.wkt.WKTFormat}
      * with the addition of thread-safety. This is okay for occasional use,

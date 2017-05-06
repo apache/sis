@@ -44,7 +44,7 @@ import static org.apache.sis.test.Assert.*;
  * Tests the {@link TreeTableFormat} applied to the formatting of metadata tree.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.5
+ * @version 0.8
  * @since   0.3
  * @module
  */
@@ -76,30 +76,26 @@ public final strictfp class TreeTableFormatTest extends TestCase {
 
     /**
      * Tests the formatting of a {@link DefaultCitation} object.
+     *
+     * @see <a href="https://issues.apache.org/jira/browse/SIS-298">SIS-298</a>
      */
     @Test
     public void testCitation() {
         final DefaultCitation citation = DefaultCitationTest.create();
         final String text = format.format(citation.asTreeTable());
         assertMultilinesEquals(
-            "Citation\n" +
-            "  ├─Title…………………………………………………………………………… Undercurrent\n" +
+            "Citation……………………………………………………………………………… Undercurrent\n" +
             "  ├─Alternate title………………………………………………… Andākarento\n" +
-            "  ├─Identifier\n" +
-            "  │   ├─Authority\n" +
-            "  │   │   ├─Title……………………………………………………… International Standard Book Number\n" +
-            "  │   │   └─Alternate title…………………………… ISBN\n" +
-            "  │   └─Code…………………………………………………………………… 9782505004509\n" +
+            "  ├─Identifier……………………………………………………………… 9782505004509\n" +
+            "  │   └─Authority……………………………………………………… International Standard Book Number\n" +
+            "  │       └─Alternate title…………………………… ISBN\n" +
             "  ├─Cited responsible party (1 of 2)\n" +
             "  │   ├─Role…………………………………………………………………… Author\n" +
-            "  │   └─Party\n" +
-            "  │       └─Name………………………………………………………… Testsuya Toyoda\n" +
+            "  │   └─Party………………………………………………………………… Testsuya Toyoda\n" +
             "  ├─Cited responsible party (2 of 2)\n" +
             "  │   ├─Role…………………………………………………………………… EDITOR\n" +
-            "  │   ├─Party\n" +
-            "  │   │   └─Name………………………………………………………… Kōdansha\n" +
-            "  │   └─Extent\n" +
-            "  │       ├─Description……………………………………… World\n" +
+            "  │   ├─Party………………………………………………………………… Kōdansha\n" +
+            "  │   └─Extent……………………………………………………………… World\n" +
             "  │       └─Geographic element\n" +
             "  │           ├─West bound longitude…… 180°W\n" +
             "  │           ├─East bound longitude…… 180°E\n" +
@@ -127,8 +123,7 @@ public final strictfp class TreeTableFormatTest extends TestCase {
         final String text = format.format(processing.asTreeTable());
         assertMultilinesEquals(
             "Processing\n" +
-            "  ├─Documentation (1 of 3)\n" +
-            "  │   ├─Title……………………………………………… Some specification\n" +
+            "  ├─Documentation (1 of 3)…………… Some specification\n" +
             "  │   └─Presentation form……………… Document hardcopy\n" +
             "  ├─Documentation (2 of 3)\n" +
             "  │   └─Presentation form……………… Image hardcopy\n" +

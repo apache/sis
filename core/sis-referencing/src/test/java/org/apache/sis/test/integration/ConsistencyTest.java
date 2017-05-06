@@ -35,6 +35,7 @@ import org.apache.sis.io.wkt.UnformattableObjectException;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.Utilities;
+import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
@@ -57,13 +58,17 @@ import static org.junit.Assert.*;
  * @since   0.7
  * @module
  */
+@DependsOn({
+    org.apache.sis.referencing.CRSTest.class,
+    org.apache.sis.io.wkt.WKTFormatTest.class
+})
 public final strictfp class ConsistencyTest extends TestCase {
     /**
      * Codes to exclude for now.
      */
     private static final Set<String> EXCLUDES = new HashSet<>(Arrays.asList(
-            "CRS:1",            // Computer display
-            "EPSG:5819"         // EPSG topocentric example A
+        "CRS:1",            // Computer display
+        "EPSG:5819"         // EPSG topocentric example A
     ));
 
     /**
