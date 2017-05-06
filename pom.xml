@@ -709,6 +709,10 @@ Apache SIS is a free software, Java language library for developing geospatial a
                   <module name="FileTabCharacter"/>                 <!-- No tab characters in the file. -->
                   <module name="NewlineAtEndOfFile"/>               <!-- Newline at the end of each file. -->
                   <module name="TreeWalker">
+                    <module name="RegexpSinglelineJava">
+                      <property name="format" value="\s+$"/>
+                      <property name="message" value="Trailing spaces not allowed."/>
+                    </module>
                     <module name="NoLineWrap"/>                     <!-- Imports and package statements are not line-wrapped. -->
                     <module name="RedundantImport"/>                <!-- No redundant import statements. -->
                     <module name="GenericWhitespace"/>              <!-- Whitespace around the Generic tokens follow typical convention. -->

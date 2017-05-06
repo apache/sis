@@ -31,6 +31,7 @@ import org.opengis.metadata.lineage.Processing;
 import org.opengis.metadata.lineage.ProcessStep;
 import org.opengis.metadata.lineage.ProcessStepReport;
 import org.apache.sis.metadata.iso.ISOMetadata;
+import org.apache.sis.metadata.TitleProperty;
 import org.apache.sis.util.iso.Types;
 import org.apache.sis.xml.Namespaces;
 
@@ -60,6 +61,7 @@ import static org.apache.sis.internal.metadata.MetadataUtilities.toMilliseconds;
  * @module
  */
 @SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
+@TitleProperty(name = "description")
 @XmlType(name = "LI_ProcessStep_Type", propOrder = {
     "description",
     "rationale",

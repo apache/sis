@@ -335,7 +335,8 @@ public abstract class StaxDataStore extends FeatureStore {
         @Override
         public void report(String message, String errorType, Object info, Location location) {
             final LogRecord record = new LogRecord(Level.WARNING, message);
-            record.setSourceClassName(getClass().getCanonicalName());
+            record.setSourceClassName(StaxDataStore.this.getClass().getCanonicalName());
+            // record.setLoggerName(…) will be invoked by 'listeners' with inferred name.
             listeners.warning(record);
         }
 
@@ -347,6 +348,7 @@ public abstract class StaxDataStore extends FeatureStore {
          */
         @Override
         public void warningOccured(final Object source, final LogRecord warning) {
+            warning.setLoggerName(null);        // For allowing 'listeners' to select a logger name.
             listeners.warning(warning);
         }
 

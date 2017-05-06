@@ -34,6 +34,7 @@ import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.parameter.ParameterBuilder;
 import org.apache.sis.referencing.operation.DefaultOperationMethod;
 import org.apache.sis.referencing.operation.transform.MathTransformProvider;
+import org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Workaround;
@@ -43,7 +44,7 @@ import org.apache.sis.util.Workaround;
  * Base class for all providers defined in this package.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.7
+ * @version 0.8
  * @since   0.6
  * @module
  */
@@ -182,6 +183,28 @@ public abstract class AbstractProvider extends DefaultOperationMethod implements
      */
     static ParameterDescriptor<Double> createShift(final ParameterBuilder builder) {
         return builder.create(0.0, Units.METRE);
+    }
+
+    /**
+     * If an operation method is ambiguous according Apache SIS, returns the name of the method that SIS should use.
+     * Otherwise returns {@code null}. The ambiguities that need to be resolved are:
+     *
+     * <ul>
+     *   <li>Method <cite>"Geographic/geocentric conversions"</cite> (EPSG:9602) can be either:
+     *     <ul>
+     *       <li>{@code "Ellipsoid_To_Geocentric"} (implemented by {@link GeographicToGeocentric}</li>
+     *       <li>{@code "Geocentric_To_Ellipsoid"} (implemented by {@link GeocentricToGeographic}</li>
+     *     </ul>
+     *   </li>
+     * </ul>
+     *
+     * @param  context   the potentially ambiguous context.
+     * @return name of the provider to use, or {@code null} if there is nothing to change.
+     *
+     * @since 0.8
+     */
+    public String resolveAmbiguity(final DefaultMathTransformFactory.Context context) {
+        return null;
     }
 
     /**

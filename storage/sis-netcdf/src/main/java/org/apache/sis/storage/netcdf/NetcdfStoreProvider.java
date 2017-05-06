@@ -237,7 +237,7 @@ public class NetcdfStoreProvider extends DataStoreProvider {
      * @throws IOException if an error occurred while opening the NetCDF file.
      * @throws DataStoreException if a logical error (other than I/O) occurred.
      */
-    static Decoder decoder(final WarningListeners<?> listeners, final StorageConnector storage)
+    static Decoder decoder(final WarningListeners<DataStore> listeners, final StorageConnector storage)
             throws IOException, DataStoreException
     {
         Decoder decoder;
@@ -276,7 +276,7 @@ public class NetcdfStoreProvider extends DataStoreProvider {
      * @throws IOException if an error occurred while opening the NetCDF file.
      * @throws DataStoreException if a logical error (other than I/O) occurred.
      */
-    private static Decoder createByReflection(final WarningListeners<?> listeners, final Object input, final boolean isUCAR)
+    private static Decoder createByReflection(final WarningListeners<DataStore> listeners, final Object input, final boolean isUCAR)
             throws IOException, DataStoreException
     {
         ensureInitialized(true);

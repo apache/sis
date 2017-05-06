@@ -26,23 +26,25 @@ import java.io.IOException;
 import java.text.ParsePosition;
 import java.text.ParseException;
 import org.opengis.metadata.Metadata;
+import org.opengis.util.FactoryException;
 import org.opengis.referencing.ReferenceSystem;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.internal.storage.Resources;
+import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.io.wkt.WKTFormat;
 import org.apache.sis.io.wkt.Warnings;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreContentException;
+import org.apache.sis.internal.referencing.DefinitionVerifier;
 import org.apache.sis.metadata.iso.DefaultMetadata;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.CharSequences;
-import org.apache.sis.referencing.CRS;
 
 
 /**
  * A data store which creates data objects from a WKT definition.
- * This {@code DataStore} implementation is basically a facade for the {@link CRS#fromWKT(String)} method.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
@@ -118,17 +120,35 @@ final class Store extends DataStore {
             } finally {
                 in.close();
             }
+            /*
+             * At this point we copied all the file content into a String. This string usually contain exactly
+             * one WKT definitions, but this DataStore nevertheless allows an arbitrary number of consecutive
+             * definitions.
+             */
             final ParsePosition pos = new ParsePosition(0);
             final WKTFormat parser = new WKTFormat(null, null);
             do {
-                objects.add(parser.parse(wkt, pos));
+                final Object obj = parser.parse(wkt, pos);
+                objects.add(obj);
                 pos.setIndex(CharSequences.skipLeadingWhitespaces(wkt, pos.getIndex(), wkt.length()));
                 final Warnings warnings = parser.getWarnings();
                 if (warnings != null) {
-                    final LogRecord record = new LogRecord(Level.WARNING, warnings.toString());
-                    record.setSourceClassName(Store.class.getName());
-                    record.setSourceMethodName("getMetadata");          // Public facade for this method.
-                    listeners.warning(record);
+                    log(new LogRecord(Level.WARNING, warnings.toString()));
+                }
+                /*
+                 * The WKT has been parsed. Below is a verification of whether the parsed WKT is conform with
+                 * the authority definition (if an authority code has been specified). This verification is not
+                 * really necessary since we will use the WKT definition anyway even if we find discrepancies.
+                 * But non-conform WKT definitions happen so often in practice that we are better to check.
+                 */
+                if (obj instanceof CoordinateReferenceSystem) try {
+                    final DefinitionVerifier v = DefinitionVerifier.withAuthority((CoordinateReferenceSystem) obj, null, false);
+                    if (v != null) {
+                        final LogRecord warning = v.warning(false);
+                        if (warning != null) log(warning);
+                    }
+                } catch (FactoryException e) {
+                    listeners.warning(null, e);
                 }
             } while (pos.getIndex() < wkt.length());
         } catch (ParseException e) {
@@ -136,6 +156,16 @@ final class Store extends DataStore {
         } catch (IOException e) {
             throw new DataStoreException(getLocale(), "WKT", getDisplayName(), in).initCause(e);
         }
+    }
+
+    /**
+     * Reports a warning.
+     */
+    private void log(final LogRecord record) {
+        record.setSourceClassName(Store.class.getName());
+        record.setSourceMethodName("getMetadata");          // Public facade for the parse() method.
+        record.setLoggerName(Loggers.WKT);
+        listeners.warning(record);
     }
 
     /**

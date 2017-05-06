@@ -24,7 +24,7 @@ import org.apache.sis.util.resources.Errors;
 
 /**
  * A unmodifiable empty list of listeners. Calls to {@link #addWarningListener(WarningListener) addWarningListener(…)}
- * will throw {@link UnsupportedOperationException}. Since this listener list is empty, it doesn't need a source.
+ * will throw {@link UnsupportedOperationException}. Since this listener list is empty, it does not need a source.
  *
  * <p>This class is used in some modules like {@code sis-netcdf}, when a JUnit test is testing some low-level
  * component where the real {@link WarningListeners} instance is not yet available.</p>

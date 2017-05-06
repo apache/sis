@@ -258,7 +258,7 @@ public abstract class AbstractMetadata implements LenientComparable, Emptiable {
      * adds a title to a citation:
      *
      * {@preformat java
-     *     TreeTable.Node node = ...; // The node for a DefaultCitation.
+     *     TreeTable.Node node = ...;                               // The node for a DefaultCitation.
      *     TreeTable.Node child = node.newChild();
      *     child.setValue(TableColumn.IDENTIFIER, "title");
      *     child.setValue(TableColumn.VALUE, "Le petit prince");
@@ -272,7 +272,7 @@ public abstract class AbstractMetadata implements LenientComparable, Emptiable {
      * The default implementation is equivalent to the following method call:
      *
      * {@preformat java
-     *   return getStandard().asTreeTable(this, null, ValueExistencePolicy.NON_EMPTY);
+     *   return getStandard().asTreeTable(this, null, ValueExistencePolicy.COMPACT);
      * }
      *
      * @return a tree table representation of the specified metadata.
@@ -280,7 +280,7 @@ public abstract class AbstractMetadata implements LenientComparable, Emptiable {
      * @see MetadataStandard#asTreeTable(Object, Class, ValueExistencePolicy)
      */
     public TreeTable asTreeTable() {
-        return getStandard().asTreeTable(this, null, ValueExistencePolicy.NON_EMPTY);
+        return getStandard().asTreeTable(this, null, ValueExistencePolicy.COMPACT);
     }
 
     /**

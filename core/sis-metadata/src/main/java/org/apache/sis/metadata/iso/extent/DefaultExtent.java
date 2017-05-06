@@ -30,6 +30,7 @@ import org.opengis.referencing.operation.TransformException;
 import org.opengis.util.InternationalString;
 import org.apache.sis.util.iso.Types;
 import org.apache.sis.metadata.iso.ISOMetadata;
+import org.apache.sis.metadata.TitleProperty;
 import org.apache.sis.internal.metadata.ReferencingServices;
 
 
@@ -70,6 +71,7 @@ import org.apache.sis.internal.metadata.ReferencingServices;
  * @module
  */
 @SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
+@TitleProperty(name = "description")
 @XmlType(name = "EX_Extent_Type", propOrder = {
     "description",
     "geographicElements",
