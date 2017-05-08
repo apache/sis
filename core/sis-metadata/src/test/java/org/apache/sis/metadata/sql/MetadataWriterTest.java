@@ -67,7 +67,7 @@ public final strictfp class MetadataWriterTest extends TestCase {
         try {
             write();
             search();
-//          read();
+            read();
             source.close();
         } finally {
             TestDatabase.drop(ds);
