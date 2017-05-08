@@ -57,6 +57,7 @@ import org.apache.sis.internal.metadata.sql.SQLBuilder;
 import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
+import org.apache.sis.util.collection.Containers;
 import org.apache.sis.util.collection.CodeListSet;
 import org.apache.sis.util.collection.WeakValueHashMap;
 import org.apache.sis.util.logging.WarningListeners;
@@ -85,6 +86,19 @@ import org.apache.sis.util.iso.Types;
  *
  * where {@code id} is the primary key value for the desired record in the {@code MD_Format} table.
  *
+ * <div class="section">Properties</div>
+ * The constructor expects three Java arguments (the {@linkplain MetadataStandard metadata standard},
+ * the {@linkplain DataSource data source} and the database schema) completed by an arbitrary amount
+ * of optional arguments given as a map of properties.
+ * The following keys are recognized by {@code MetadataSource} and all other entries are ignored:
+ *
+ * <table class="sis">
+ *   <caption>Optional properties at construction time</caption>
+ *   <tr><th>Key</th>                     <th>Value type</th>          <th>Description</th></tr>
+ *   <tr><td>{@code "classloader"}</td>   <td>{@link ClassLoader}</td> <td>The class loader to use for creating {@link Proxy} instances.</td></tr>
+ *   <tr><td>{@code "maxStatements"}</td> <td>{@link Integer}</td>     <td>Maximal number of {@link PreparedStatement}s that can be kept simultaneously open.</td></tr>
+ * </table>
+ *
  * <div class="section">Concurrency</div>
  * {@code MetadataSource} is thread-safe but is not concurrent. If concurrency is desired,
  * multiple instances of {@code MetadataSource} can be created for the same {@link DataSource}.
@@ -101,13 +115,13 @@ public class MetadataSource implements AutoCloseable {
      * The catalog, set to {@code null} for now. This is defined as a constant in order to make easier
      * to spot the places where catalog would be used, if we want to use it in a future version.
      */
-    private static final String CATALOG = null;
+    static final String CATALOG = null;
 
     /**
      * The column name used for the identifiers. We do not quote this identifier;
      * we will let the database uses its own lower-case / upper-case convention.
      */
-    private static final String ID_COLUMN = "ID";
+    static final String ID_COLUMN = "ID";
 
     /**
      * The timeout before to close a prepared statement, in nanoseconds. This is set to 2 seconds,
@@ -293,7 +307,7 @@ public class MetadataSource implements AutoCloseable {
             synchronized (MetadataSource.class) {
                 ms = instance;
                 if (ms == null) {
-                    ms = new MetadataSource(MetadataStandard.ISO_19115, dataSource, "metadata", null, null);
+                    ms = new MetadataSource(MetadataStandard.ISO_19115, dataSource, "metadata", null);
                     ms.install();
                     instance = ms;
                 }
@@ -308,18 +322,18 @@ public class MetadataSource implements AutoCloseable {
      * the database source are mandatory information.
      * All other information are optional and can be {@code null}.
      *
-     * @param  standard       the metadata standard to implement.
-     * @param  dataSource     the source for getting a connection to the database.
-     * @param  schema         the database schema were metadata tables are stored, or {@code null} if none.
-     * @param  classloader    the class loader to use for creating {@link Proxy} instances, or {@code null} for the default.
-     * @param  maxStatements  maximal number of {@link PreparedStatement}s that can be kept simultaneously open,
-     *                        or {@code null} for a default value.
+     * @param  standard    the metadata standard to implement.
+     * @param  dataSource  the source for getting a connection to the database.
+     * @param  schema      the database schema were metadata tables are stored, or {@code null} if none.
+     * @param  properties  additional options, or {@code null} if none. See class javadoc for a description.
      */
     public MetadataSource(final MetadataStandard standard, final DataSource dataSource,
-            final String schema, ClassLoader classloader, Integer maxStatements)
+            final String schema, final Map<String,?> properties)
     {
         ArgumentChecks.ensureNonNull("standard",   standard);
         ArgumentChecks.ensureNonNull("dataSource", dataSource);
+        ClassLoader classloader   = Containers.property(properties, "classloader",   ClassLoader.class);
+        Integer     maxStatements = Containers.property(properties, "maxStatements", Integer.class);
         if (classloader == null) {
             classloader = getClass().getClassLoader();
         }
@@ -425,9 +439,16 @@ public class MetadataSource implements AutoCloseable {
     }
 
     /**
+     * Returns the database schema where metadata are stored, or {@code null} if none.
+     */
+    final String schema() {
+        return schema;
+    }
+
+    /**
      * Returns a helper class for building SQL statements.
      */
-    private SQLBuilder helper() throws SQLException {
+    final SQLBuilder helper() throws SQLException {
         assert Thread.holdsLock(this);
         if (helper == null) {
             helper = new SQLBuilder(connection().getMetaData(), quoteSchema);
@@ -503,7 +524,7 @@ public class MetadataSource implements AutoCloseable {
      * Returns the table name for the specified class.
      * This is usually the ISO 19115 name.
      */
-    private static String getTableName(final Class<?> type) {
+    static String getTableName(Class<?> type) {
         final UML annotation = type.getAnnotation(UML.class);
         if (annotation == null) {
             return type.getSimpleName();
@@ -531,7 +552,7 @@ public class MetadataSource implements AutoCloseable {
      * @param  metadata  the metadata to test.
      * @return the identifier (primary key), or {@code null} if the given metadata is not a proxy.
      */
-    private String proxy(final Object metadata) {
+    final String proxy(final Object metadata) {
         return (metadata instanceof MetadataProxy) ? ((MetadataProxy) metadata).identifier(this) : null;
     }
 
@@ -545,7 +566,7 @@ public class MetadataSource implements AutoCloseable {
      * @throws ClassCastException if the metadata object does not implement a metadata interface
      *         of the expected package.
      */
-    private Map<String,Object> asMap(final Object metadata) throws ClassCastException {
+    final Map<String,Object> asValueMap(final Object metadata) throws ClassCastException {
         return standard.asValueMap(metadata, null, KeyNamePolicy.UML_IDENTIFIER, ValueExistencePolicy.ALL);
     }
 
@@ -557,7 +578,7 @@ public class MetadataSource implements AutoCloseable {
      * @return the given value, or its first element if the value is a collection,
      *         or {@code null} if the given value is null or an empty collection.
      */
-    private static Object extractFromCollection(Object value) {
+    static Object extractFromCollection(Object value) {
         while (value instanceof Iterable<?>) {
             final Iterator<?> it = ((Iterable<?>) value).iterator();
             if (!it.hasNext()) {
@@ -593,7 +614,7 @@ public class MetadataSource implements AutoCloseable {
                 final Map<String,Object> asMap;
                 try {
                     table = getTableName(standard.getInterface(metadata.getClass()));
-                    asMap = asMap(metadata);
+                    asMap = asValueMap(metadata);
                 } catch (ClassCastException e) {
                     throw new MetadataStoreException(Errors.format(
                             Errors.Keys.IllegalArgumentClass_2, "metadata", metadata.getClass()));
@@ -602,7 +623,7 @@ public class MetadataSource implements AutoCloseable {
                     try (Statement stmt = connection().createStatement()) {
                         identifier = search(table, null, asMap, stmt, helper());
                     } catch (SQLException e) {
-                        throw new MetadataStoreException(e);
+                        throw new MetadataStoreException(e.getLocalizedMessage(), Exceptions.unwrap(e));
                     }
                 }
             }
@@ -622,7 +643,7 @@ public class MetadataSource implements AutoCloseable {
      * @return the identifier of the given metadata, or {@code null} if none.
      * @throws SQLException if an error occurred while searching in the database.
      */
-    private String search(final String table, Set<String> columns, final Map<String,Object> metadata,
+    final String search(final String table, Set<String> columns, final Map<String,Object> metadata,
             final Statement stmt, final SQLBuilder helper) throws SQLException
     {
         assert Thread.holdsLock(this);
@@ -659,7 +680,7 @@ public class MetadataSource implements AutoCloseable {
                         final Class<?> type = value.getClass();
                         if (standard.isMetadata(type)) {
                             dependency = search(getTableName(standard.getInterface(type)),
-                                    null, asMap(value), stmt, new SQLBuilder(helper));
+                                    null, asValueMap(value), stmt, new SQLBuilder(helper));
                             if (dependency == null) {
                                 return null;                    // Dependency not found.
                             }
@@ -692,7 +713,7 @@ public class MetadataSource implements AutoCloseable {
                     if (identifier == null) {
                         identifier = candidate;
                     } else if (!identifier.equals(candidate)) {
-                        warning("search", resources().getLogRecord(
+                        warning(MetadataSource.class, "search", Errors.getResources((Locale) null).getLogRecord(
                                 Level.WARNING, Errors.Keys.DuplicatedElement_1, candidate));
                         break;
                     }
@@ -714,7 +735,7 @@ public class MetadataSource implements AutoCloseable {
      * @return the set of columns, or an empty set if the table has not yet been created.
      * @throws SQLException if an error occurred while querying the database.
      */
-    private Set<String> getExistingColumns(final String table) throws SQLException {
+    final Set<String> getExistingColumns(final String table) throws SQLException {
         assert Thread.holdsLock(this);
         Set<String> columns = tableColumns.get(table);
         if (columns == null) {
@@ -964,20 +985,14 @@ public class MetadataSource implements AutoCloseable {
     }
 
     /**
-     * Returns the resources for warnings and error messages.
-     */
-    private static Errors resources() {
-        return Errors.getResources((Locale) null);
-    }
-
-    /**
      * Reports a warning.
      *
+     * @param source  the source class, either {@code MetadataSource} or {@code MetadataWriter}.
      * @param method  the method to report as the warning emitter.
      * @param record  the warning to report.
      */
-    private void warning(final String method, final LogRecord record) {
-        record.setSourceClassName(MetadataSource.class.getCanonicalName());
+    final void warning(final Class<? extends MetadataSource> source, final String method, final LogRecord record) {
+        record.setSourceClassName(source.getCanonicalName());
         record.setSourceMethodName(method);
         record.setLoggerName(Loggers.SQL);
         listeners.warning(record);
@@ -1112,7 +1127,7 @@ public class MetadataSource implements AutoCloseable {
              */
             final LogRecord record = new LogRecord(Level.WARNING, e.toString());
             record.setThrown(e);
-            warning("closeExpired", record);
+            warning(MetadataSource.class, "closeExpired", record);
         }
     }
 
@@ -1137,7 +1152,7 @@ public class MetadataSource implements AutoCloseable {
             }
             helper = null;
         } catch (SQLException e) {
-            throw new MetadataStoreException(e);
+            throw new MetadataStoreException(e.getLocalizedMessage(), Exceptions.unwrap(e));
         }
     }
 }

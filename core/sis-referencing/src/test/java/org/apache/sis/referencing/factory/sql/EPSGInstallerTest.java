@@ -27,6 +27,7 @@ import java.sql.Connection;
 import java.sql.Statement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import org.postgresql.ds.PGSimpleDataSource;
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.crs.GeographicCRS;
 import org.opengis.referencing.crs.ProjectedCRS;
@@ -129,13 +130,13 @@ public final strictfp class EPSGInstallerTest extends TestCase {
     @Test
     public void testCreationOnDerby() throws Exception {
         final InstallationScriptProvider scripts = getScripts();            // Needs to be invoked first.
-        final DataSource ds = TestDatabase.create("test");
+        final DataSource ds = TestDatabase.create("EPSGInstaller");
         try {
             createAndTest(ds, scripts);
         } finally {
             TestDatabase.drop(ds);
         }
-        loggings.assertNextLogContains("EPSG", "jdbc:derby:memory:test");
+        loggings.assertNextLogContains("EPSG", "jdbc:derby:memory:EPSGInstaller");
         loggings.assertNoUnexpectedLog();
     }
 
@@ -149,7 +150,7 @@ public final strictfp class EPSGInstallerTest extends TestCase {
     public void testCreationOnHSQLDB() throws Exception {
         final InstallationScriptProvider scripts = getScripts();            // Needs to be invoked first.
         final DataSource ds = (DataSource) Class.forName("org.hsqldb.jdbc.JDBCDataSource").newInstance();
-        ds.getClass().getMethod("setURL", String.class).invoke(ds, "jdbc:hsqldb:mem:test");
+        ds.getClass().getMethod("setURL", String.class).invoke(ds, "jdbc:hsqldb:mem:EPSGInstaller");
         try {
             createAndTest(ds, scripts);
         } finally {
@@ -157,7 +158,7 @@ public final strictfp class EPSGInstallerTest extends TestCase {
                 s.execute("SHUTDOWN");
             }
         }
-        loggings.assertNextLogContains("EPSG", "jdbc:hsqldb:mem:test");
+        loggings.assertNextLogContains("EPSG", "jdbc:hsqldb:mem:EPSGInstaller");
         loggings.assertNoUnexpectedLog();
     }
 
@@ -176,10 +177,9 @@ public final strictfp class EPSGInstallerTest extends TestCase {
     @Ignore("This test need to be run manually on a machine having a local PostgreSQL database.")
     public void testCreationOnPostgreSQL() throws Exception {
         final InstallationScriptProvider scripts = getScripts();            // Needs to be invoked first.
-        final DataSource ds = (DataSource) Class.forName("org.postgresql.ds.PGSimpleDataSource").newInstance();
-        final Class<?> dsc = ds.getClass();
-        dsc.getMethod("setServerName",   String.class).invoke(ds, "localhost");
-        dsc.getMethod("setDatabaseName", String.class).invoke(ds, "SpatialMetadataTest");
+        final PGSimpleDataSource ds = new PGSimpleDataSource();
+        ds.setServerName("localhost");
+        ds.setDatabaseName("SpatialMetadataTest");
         createAndTest(ds, scripts);
         loggings.assertNextLogContains("EPSG", "jdbc:postgresql://localhost/SpatialMetadataTest");
         loggings.assertNoUnexpectedLog();
