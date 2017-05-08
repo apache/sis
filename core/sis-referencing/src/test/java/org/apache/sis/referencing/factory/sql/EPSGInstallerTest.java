@@ -27,6 +27,7 @@ import java.sql.Connection;
 import java.sql.Statement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import org.hsqldb.jdbc.JDBCDataSource;
 import org.postgresql.ds.PGSimpleDataSource;
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.crs.GeographicCRS;
@@ -149,8 +150,8 @@ public final strictfp class EPSGInstallerTest extends TestCase {
     @Test
     public void testCreationOnHSQLDB() throws Exception {
         final InstallationScriptProvider scripts = getScripts();            // Needs to be invoked first.
-        final DataSource ds = (DataSource) Class.forName("org.hsqldb.jdbc.JDBCDataSource").newInstance();
-        ds.getClass().getMethod("setURL", String.class).invoke(ds, "jdbc:hsqldb:mem:EPSGInstaller");
+        final JDBCDataSource ds = new JDBCDataSource();
+        ds.setURL("jdbc:hsqldb:mem:EPSGInstaller");
         try {
             createAndTest(ds, scripts);
         } finally {
