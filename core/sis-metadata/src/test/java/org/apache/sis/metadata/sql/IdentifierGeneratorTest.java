@@ -59,9 +59,9 @@ public final strictfp class IdentifierGeneratorTest extends TestCase {
      */
     @Test
     public void testSequence() throws Exception {
-        final DataSource ds = TestDatabase.create("identifiers");
+        final DataSource ds = TestDatabase.create("IdentifierGenerator");
         try {
-            final MetadataSource source = new MetadataSource(MetadataStandard.ISO_19115, ds, null, null, 2);
+            final MetadataSource source = new MetadataSource(MetadataStandard.ISO_19115, ds, null, null);
             synchronized (source) {
                 stmt = source.connection().createStatement();
                 stmt.executeUpdate("CREATE TABLE \"" + TABLE + "\" (ID VARCHAR(6) NOT NULL PRIMARY KEY)");

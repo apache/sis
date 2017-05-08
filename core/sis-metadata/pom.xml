@@ -146,6 +146,11 @@ Implementations of metadata derived from ISO 19115. This module provides both an
       <type>test-jar</type>
       <scope>test</scope>
     </dependency>
+    <dependency>
+      <groupId>org.postgresql</groupId>
+      <artifactId>postgresql</artifactId>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
 
 </project>

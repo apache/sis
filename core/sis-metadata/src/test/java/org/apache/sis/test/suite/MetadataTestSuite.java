@@ -107,7 +107,8 @@ import org.junit.BeforeClass;
     org.apache.sis.internal.metadata.sql.TypeMapperTest.class,
     org.apache.sis.internal.metadata.sql.ScriptRunnerTest.class,
     org.apache.sis.metadata.sql.IdentifierGeneratorTest.class,
-    org.apache.sis.metadata.sql.MetadataSourceTest.class
+    org.apache.sis.metadata.sql.MetadataSourceTest.class,
+    org.apache.sis.metadata.sql.MetadataWriterTest.class
 })
 public final strictfp class MetadataTestSuite extends TestSuite {
     /**
