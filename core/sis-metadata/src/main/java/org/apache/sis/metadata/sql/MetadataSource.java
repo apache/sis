@@ -124,6 +124,16 @@ public class MetadataSource implements AutoCloseable {
     static final String ID_COLUMN = "ID";
 
     /**
+     * Delimiter characters for the table name in identifier. Table names are prefixed to identifiers only if
+     * the type represented by the table is a subtype. For example since {@code CI_Organisation} is a subtype
+     * of {@code CI_Party}, identifiers for organizations need to be prefixed by {@code {CI_Organisation}} in
+     * order allow {@code MetadataSource} to know in which table to search for such party.
+     *
+     * @see MetadataWriter#isReservedChar(int)
+     */
+    static final char TYPE_OPEN = '{', TYPE_CLOSE = '}';
+
+    /**
      * The timeout before to close a prepared statement, in nanoseconds. This is set to 2 seconds,
      * which is a bit short but should be okay if the {@link DataSource} creates pooled connections.
      * In case there is no connection pool, then the mechanism defined in this package will hopefully
@@ -524,7 +534,7 @@ public class MetadataSource implements AutoCloseable {
      * Returns the table name for the specified class.
      * This is usually the ISO 19115 name.
      */
-    static String getTableName(Class<?> type) {
+    static String getTableName(final Class<?> type) {
         final UML annotation = type.getAnnotation(UML.class);
         if (annotation == null) {
             return type.getSimpleName();
@@ -772,7 +782,7 @@ public class MetadataSource implements AutoCloseable {
      * @return an implementation of the required interface, or the code list element.
      * @throws MetadataStoreException if a SQL query failed.
      */
-    public <T> T lookup(final Class<T> type, String identifier) throws MetadataStoreException {
+    public <T> T lookup(final Class<T> type, final String identifier) throws MetadataStoreException {
         ArgumentChecks.ensureNonNull("type", type);
         ArgumentChecks.ensureNonNull("identifier", identifier);
         /*
@@ -806,9 +816,22 @@ public class MetadataSource implements AutoCloseable {
      * @throws SQLException if the SQL query failed.
      * @throws MetadataStoreException if a value was not found or can not be converted to the expected type.
      */
-    final Object getValue(final Class<?> type, final Method method, final Dispatcher toSearch)
+    final Object getValue(Class<?> type, final Method method, final Dispatcher toSearch)
             throws SQLException, MetadataStoreException
     {
+        /*
+         * If the identifier is prefixed with a table name as in "{CI_Organisation}identifier",
+         * the name between bracket is a subtype of the given 'type' argument.
+         */
+        if (toSearch.identifier.charAt(0) == TYPE_OPEN) {
+            final int i = toSearch.identifier.indexOf(TYPE_CLOSE);
+            if (i >= 0) {
+                final Class<?> subType = Types.forStandardName(toSearch.identifier.substring(1, i));
+                if (subType != null && type.isAssignableFrom(subType)) {
+                    type = subType;
+                }
+            }
+        }
         final Class<?> returnType     = method.getReturnType();
         final boolean  wantCollection = Collection.class.isAssignableFrom(returnType);
         final Class<?> elementType    = wantCollection ? Classes.boundOfParameterizedProperty(method) : returnType;

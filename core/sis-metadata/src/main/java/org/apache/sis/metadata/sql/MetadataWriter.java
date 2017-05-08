@@ -218,6 +218,7 @@ public class MetadataWriter extends MetadataSource {
      * @param  metadata  the metadata object to add.
      * @param  done      the metadata objects already added, mapped to their primary keys.
      * @param  parent    the primary key of the parent, or {@code null} if there is no parent.
+     *                   This identifier shall not contain {@linkplain #isReservedChar(int) reserved characters}.
      * @return the identifier (primary key) of the metadata just added.
      * @throws SQLException if an exception occurred while reading or writing the database.
      * @throws ClassCastException if the metadata object does not implement a metadata interface
@@ -267,7 +268,10 @@ public class MetadataWriter extends MetadataSource {
          * created first. The later will work only for database supporting table inheritance, like PostgreSQL.
          * For other kind of database engine, we can not store metadata having parent interfaces.
          */
-        createTable(stmt, interfaceType, table, columns);
+        Boolean isChildTable = createTable(stmt, interfaceType, table, columns);
+        if (isChildTable == null) {
+            isChildTable = isChildTable(interfaceType);
+        }
         /*
          * Add missing columns if there is any. If columns are added, we will keep trace of foreigner keys in
          * this process but will not create the constraints now because the foreigner tables may not exist yet.
@@ -319,7 +323,7 @@ public class MetadataWriter extends MetadataSource {
          * etc.) is associated only to Responsibility. So it make sense to use the Responsibility ID for
          * the contact info.
          */
-        identifier = suggestIdentifier(metadata, asValueMap);
+        identifier = nonEmpty(removeReservedChars(suggestIdentifier(metadata, asValueMap), null));
         if (identifier == null) {
             identifier = parent;
             if (identifier == null) {
@@ -337,6 +341,17 @@ public class MetadataWriter extends MetadataSource {
             }
         }
         /*
+         * If the record to add is located in a child table, we need to prepend the child table name
+         * in the identifier in order to allow MetadataSource to locate the right table to query.
+         */
+        final int minimalIdentifierLength;
+        if (isChildTable) {
+            identifier = TYPE_OPEN + table + TYPE_CLOSE + identifier;
+            minimalIdentifierLength = table.length() + 2;
+        } else {
+            minimalIdentifierLength = 0;
+        }
+        /*
          * Check for key collision. We will add a suffix if there is one. Note that the final identifier must be
          * found before we put its value in the map, otherwise cyclic references (if any) will use the wrong value.
          *
@@ -347,6 +362,7 @@ public class MetadataWriter extends MetadataSource {
         try (IdentifierGenerator idCheck = new IdentifierGenerator(this, schema(), table, ID_COLUMN, helper)) {
             for (int i=0; i<MINIMAL_LIMIT-1; i++) {
                 final int maxLength = maximumIdentifierLength - i;
+                if (maxLength < minimalIdentifierLength) break;
                 if (identifier.length() > maxLength) {
                     identifier = identifier.substring(0, maxLength);
                 }
@@ -505,22 +521,43 @@ public class MetadataWriter extends MetadataSource {
     }
 
     /**
+     * Returns {@code true} if the given metadata type is a subtype of another metadata.
+     * If true, then we will need to prefix the identifier by the metadata subtype.
+     *
+     * @return whether the given metadata is a subtype of another metadata. This method never return {@code null}, but
+     *         the result is nevertheless given as a {@code Boolean} wrapper for consistency with {@code createTable(…)}.
+     */
+    private Boolean isChildTable(final Class<?> type) {
+        for (final Class<?> candidate : type.getInterfaces()) {
+            if (standard.isMetadata(candidate)) {
+                return Boolean.TRUE;
+            }
+        }
+        return Boolean.FALSE;
+    }
+
+    /**
      * Creates a table for the given type, if the table does not already exists.
      * This method may call itself recursively for creating parent tables, if they do not exist neither.
+     * This method opportunistically computes the same return value than {@link #isChildTable(Class)}.
      *
      * @param  stmt     the statement to use for creating tables.
      * @param  type     the interface class.
      * @param  table    the name of the table (should be consistent with the type).
      * @param  columns  the existing columns, as an empty set if the table does not exist yet.
+     * @return the value that {@code isChildTable(type)} would return, or {@code null} if undetermined.
      * @throws SQLException if an error occurred while creating the table.
      */
-    private void createTable(final Statement stmt, final Class<?> type, final String table, final Set<String> columns)
+    private Boolean createTable(final Statement stmt, final Class<?> type, final String table, final Set<String> columns)
             throws SQLException
     {
+        Boolean isChildTable = null;
         if (columns.isEmpty()) {
+            isChildTable = Boolean.FALSE;
             StringBuilder inherits = null;
             for (final Class<?> candidate : type.getInterfaces()) {
                 if (standard.isMetadata(candidate)) {
+                    isChildTable = Boolean.TRUE;
                     final SQLBuilder helper = helper();
                     if (helper.dialect.isTableInheritanceSupported) {
                         final String parent = getTableName(candidate);
@@ -553,6 +590,7 @@ public class MetadataWriter extends MetadataSource {
             stmt.executeUpdate(sql);
             columns.add(ID_COLUMN);
         }
+        return isChildTable;
     }
 
     /**
@@ -649,17 +687,57 @@ public class MetadataWriter extends MetadataSource {
 
     /**
      * Returns an abbreviation of the given identifier, if one is found.
+     * The returned identifier is guaranteed to not contain {@linkplain #isReservedChar(int) reserved characters}.
      */
     private static String abbreviation(final String identifier) {
         final StringBuilder buffer = new StringBuilder();
         final StringTokenizer tokens = new StringTokenizer(identifier);
         while (tokens.hasMoreTokens()) {
-            buffer.appendCodePoint(tokens.nextToken().codePointAt(0));
+            final int c = tokens.nextToken().codePointAt(0);
+            if (!isReservedChar(c)) {
+                buffer.appendCodePoint(c);
+            }
         }
+        /*
+         * If there is not enough characters in the abbreviation, take the given
+         * identifier as-is except for the reserved characters which are removed.
+         */
         if (buffer.length() >= 3) {
             return buffer.toString();
         }
+        buffer.setLength(0);
+        return removeReservedChars(identifier, buffer.append(identifier));
+    }
+
+    /**
+     * Removes the reserved characters in the given identifier.
+     * If the given buffer is non-null, then it shall contain a copy of {@code identifier}.
+     */
+    private static String removeReservedChars(final String identifier, StringBuilder buffer) {
+        if (identifier != null) {
+            boolean modified = false;
+            for (int i=identifier.length(); --i >= 0;) {
+                final char c = identifier.charAt(i);
+                if (isReservedChar(c)) {
+                    if (buffer == null) {
+                        buffer = new StringBuilder(identifier);
+                    }
+                    buffer.deleteCharAt(i);
+                    modified = true;
+                }
+            }
+            if (modified) {
+                return buffer.toString();
+            }
+        }
         return identifier;
+    }
+
+    /**
+     * Returns {@code true} if the given code point is a reserved character.
+     */
+    private static boolean isReservedChar(final int c) {
+        return (c == TYPE_OPEN) || (c == TYPE_CLOSE);
     }
 
     /**
