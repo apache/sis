@@ -142,7 +142,7 @@ public final class Assembler {
     private final ResourceBundle resources;
 
     /**
-     * Helper class for applying colors on content of {@code <pre>} and {@code <code>} elements.
+     * Helper class for applying colors on content of {@code <code>} and {@code <samp>} elements.
      */
     private final CodeColorizer colorizer;
 
@@ -223,7 +223,7 @@ public final class Assembler {
                 CharSequence  text    = node.getTextContent();
                 for (int i=0; i<text.length(); i++) {
                     switch (text.charAt(i)) {
-                        case '\r': break;  // Delete all occurrences of '\r'.
+                        case '\r': break;                       // Delete all occurrences of '\r'.
                         case '\n': newLine = true;  continue;
                         default  : newLine = false; continue;
                         case ' ' : if (newLine) break; else continue;
@@ -351,12 +351,19 @@ public final class Assembler {
                         processAbbreviation((Element) node);
                         break;
                     }
-                    case "pre": {
-                        colorizer.highlight(node, ((Element) node).getAttribute("class"));
+                    case "samp": {
+                        final String cl = ((Element) node).getAttribute("class");
+                        if (cl != null) {
+                            colorizer.highlight(node, cl);
+                        }
                         break;
                     }
                     case "code": {
                         if (!((Element) node).hasAttribute("class")) {
+                            if ("pre".equals(node.getParentNode().getNodeName())) {
+                                colorizer.highlight(node, ((Element) node).getAttribute("class"));
+                                break;
+                            }
                             final String style = colorizer.styleForSingleIdentifier(node.getTextContent());
                             if (style != null) {
                                 ((Element) node).setAttribute("class", style);
