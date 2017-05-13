@@ -167,6 +167,8 @@ public class DefaultDistribution extends ISOMetadata implements Distribution {
      * Provides a description of the format of the data to be distributed.
      *
      * @return description of the format of the data to be distributed.
+     *
+     * @see org.apache.sis.metadata.iso.identification.AbstractIdentification#getResourceFormats()
      */
     @Override
     @XmlElement(name = "distributionFormat")
@@ -178,6 +180,8 @@ public class DefaultDistribution extends ISOMetadata implements Distribution {
      * Sets a description of the format of the data to be distributed.
      *
      * @param  newValues  the new distribution formats.
+     *
+     * @see org.apache.sis.metadata.iso.identification.AbstractIdentification#setResourceFormats(Collection)
      */
     public void setDistributionFormats(final Collection<? extends Format> newValues) {
         distributionFormats = writeCollection(newValues, distributionFormats, Format.class);

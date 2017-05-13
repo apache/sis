@@ -218,7 +218,7 @@ abstract class FormattedOutputCommand extends CommandRunner {
             case TEXT: {
                 final TreeTable tree = MetadataStandard.ISO_19115.asTreeTable(object,
                         (object instanceof Metadata) ? Metadata.class : null,
-                        ValueExistencePolicy.NON_EMPTY);
+                        ValueExistencePolicy.COMPACT);
                 final TreeTableFormat tf = new TreeTableFormat(locale, timezone);
                 tf.setColumns(TableColumn.NAME, TableColumn.VALUE);
                 tf.format(tree, out);

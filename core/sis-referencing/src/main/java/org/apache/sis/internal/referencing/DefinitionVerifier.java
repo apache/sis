@@ -23,6 +23,8 @@ import org.opengis.util.FactoryException;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.NoSuchAuthorityCodeException;
+import org.opengis.referencing.datum.Datum;
+import org.opengis.referencing.datum.GeodeticDatum;
 import org.opengis.referencing.crs.CRSAuthorityFactory;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.crs.GeneralDerivedCRS;
@@ -236,30 +238,38 @@ public final class DefinitionVerifier {
      * Indicates in which part of CRS description a difference has been found. Numerical values must match the number
      * in the {@code {choice}} instruction in the message associated to {@link Resources.Keys#NonConformCRS_3}.
      */
-    private static final int METHOD=0, CONVERSION=1, CS=2, DATUM=3, OTHER=4;
+    private static final int METHOD=0, CONVERSION=1, CS=2, DATUM=3, PRIME_MERIDIAN=4, OTHER=5;
 
     /**
      * Returns a code indicating in which part the two given CRS differ. The given iterators usually iterate over
      * exactly one element, but may iterate over more elements if the CRS were instance of {@code CompoundCRS}.
-     * The returned value is one of {@link #METHOD}, {@link #CONVERSION}, {@link #CS}, {@link #DATUM} or
-     * {@link #OTHER} constants.
+     * The returned value is one of {@link #METHOD}, {@link #CONVERSION}, {@link #CS}, {@link #DATUM},
+     * {@link #PRIME_MERIDIAN} or {@link #OTHER} constants.
      */
-    private static int diffCode(final Iterator<SingleCRS> authoritative, final Iterator<SingleCRS> crs) {
-        while (authoritative.hasNext() && crs.hasNext()) {
-            final SingleCRS ai = authoritative.next();
-            final SingleCRS ci = crs.next();
-            if (!Utilities.equalsApproximatively(ai, ci)) {
-                if (ai instanceof GeneralDerivedCRS && ci instanceof GeneralDerivedCRS) {
-                    final Conversion ac = ((GeneralDerivedCRS) ai).getConversionFromBase();
-                    final Conversion gc = ((GeneralDerivedCRS) ci).getConversionFromBase();
-                    if (!Utilities.equalsApproximatively(ac, gc)) {
-                        return Utilities.equalsApproximatively(ac.getMethod(), gc.getMethod()) ? CONVERSION : METHOD;
+    private static int diffCode(final Iterator<SingleCRS> authoritative, final Iterator<SingleCRS> given) {
+        while (authoritative.hasNext() && given.hasNext()) {
+            final SingleCRS crsA = authoritative.next();
+            final SingleCRS crsG = given.next();
+            if (!Utilities.equalsApproximatively(crsA, crsG)) {
+                if (crsA instanceof GeneralDerivedCRS && crsG instanceof GeneralDerivedCRS) {
+                    final Conversion cnvA = ((GeneralDerivedCRS) crsA).getConversionFromBase();
+                    final Conversion cnvG = ((GeneralDerivedCRS) crsG).getConversionFromBase();
+                    if (!Utilities.equalsApproximatively(cnvA, cnvG)) {
+                        return Utilities.equalsApproximatively(cnvA.getMethod(), cnvG.getMethod()) ? CONVERSION : METHOD;
                     }
                 }
-                if (!Utilities.equalsApproximatively(ai.getCoordinateSystem(), ci.getCoordinateSystem())) {
+                if (!Utilities.equalsApproximatively(crsA.getCoordinateSystem(), crsG.getCoordinateSystem())) {
                     return CS;
                 }
-                if (!Utilities.equalsApproximatively(ai.getDatum(), ci.getDatum())) {
+                final Datum datumA = crsA.getDatum();
+                final Datum datumG = crsG.getDatum();
+                if (!Utilities.equalsApproximatively(datumA, datumG)) {
+                    if ((datumA instanceof GeodeticDatum) && (datumG instanceof GeodeticDatum) &&
+                        !Utilities.equalsApproximatively(((GeodeticDatum) datumA).getPrimeMeridian(),
+                                                         ((GeodeticDatum) datumG).getPrimeMeridian()))
+                    {
+                        return PRIME_MERIDIAN;
+                    }
                     return DATUM;
                 }
                 break;

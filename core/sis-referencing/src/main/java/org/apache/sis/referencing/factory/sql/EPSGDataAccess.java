@@ -1619,11 +1619,29 @@ addURIs:    for (int i=0; ; i++) {
                 if (anchor != null) {
                     properties.put(Datum.ANCHOR_POINT_KEY, anchor);
                 }
-                if (epoch != null && !epoch.isEmpty()) try {
-                    final int year = Integer.parseInt(epoch);
-                    final Calendar calendar = getCalendar();
-                    calendar.set(year, 0, 1);
-                    properties.put(Datum.REALIZATION_EPOCH_KEY, calendar.getTime());
+                if (epoch != null) try {
+                    /*
+                     * Parse the date manually because it is declared as a VARCHAR instead than DATE in original
+                     * SQL scripts. Apache SIS installer replaces VARCHAR by DATE, but we have no guarantee that
+                     * we are reading an EPSG database created by our installer. Furthermore an older version of
+                     * EPSG installer was using SMALLINT instead than DATE, because scripts before EPSG 9.0 were
+                     * reporting only the epoch year.
+                     */
+                    final CharSequence[] fields = CharSequences.split(epoch, '-');
+                    int year = 0, month = 0, day = 1;
+                    for (int i = Math.min(fields.length, 3); --i >= 0;) {
+                        final int f = Integer.parseInt(fields[i].toString());
+                        switch (i) {
+                            case 0: year  = f;   break;
+                            case 1: month = f-1; break;
+                            case 2: day   = f;   break;
+                        }
+                    }
+                    if (year != 0) {
+                        final Calendar calendar = getCalendar();
+                        calendar.set(year, month, day);
+                        properties.put(Datum.REALIZATION_EPOCH_KEY, calendar.getTime());
+                    }
                 } catch (NumberFormatException exception) {
                     unexpectedException("createDatum", exception);          // Not a fatal error.
                 }
