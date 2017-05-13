@@ -234,7 +234,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
     private Collection<PortrayalCatalogueReference> portrayalCatalogueInfo;
 
     /**
-     * Provides restrictions on the access and use of data.
+     * Provides restrictions on the access and use of metadata.
      */
     private Collection<Constraints> metadataConstraints;
 
@@ -1369,9 +1369,11 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
     }
 
     /**
-     * Returns restrictions on the access and use of data.
+     * Returns restrictions on the access and use of metadata.
      *
-     * @return restrictions on the access and use of data.
+     * @return restrictions on the access and use of metadata.
+     *
+     * @see org.apache.sis.metadata.iso.identification.AbstractIdentification#getResourceConstraints()
      */
     @Override
     @XmlElement(name = "metadataConstraints")
@@ -1380,9 +1382,11 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
     }
 
     /**
-     * Sets restrictions on the access and use of data.
+     * Sets restrictions on the access and use of metadata.
      *
      * @param  newValues  the new metadata constraints.
+     *
+     * @see org.apache.sis.metadata.iso.identification.AbstractIdentification#setResourceConstraints(Collection)
      */
     public void setMetadataConstraints(final Collection<? extends Constraints> newValues) {
         metadataConstraints = writeCollection(newValues, metadataConstraints, Constraints.class);
@@ -1432,6 +1436,8 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      * Returns information about the frequency of metadata updates, and the scope of those updates.
      *
      * @return the frequency of metadata updates and their scope, or {@code null}.
+     *
+     * @see org.apache.sis.metadata.iso.identification.AbstractIdentification#getResourceMaintenances()
      */
     @Override
     @XmlElement(name = "metadataMaintenance")
@@ -1443,6 +1449,8 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      * Sets information about the frequency of metadata updates, and the scope of those updates.
      *
      * @param  newValue  the new metadata maintenance.
+     *
+     * @see org.apache.sis.metadata.iso.identification.AbstractIdentification#setResourceMaintenances(Collection)
      */
     public void setMetadataMaintenance(final MaintenanceInformation newValue) {
         checkWritePermission();

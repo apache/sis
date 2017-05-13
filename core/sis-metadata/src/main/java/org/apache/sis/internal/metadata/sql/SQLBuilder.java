@@ -34,7 +34,7 @@ public class SQLBuilder {
     /**
      * The database dialect. This is used for a few database-dependent syntax.
      */
-    private final Dialect dialect;
+    public final Dialect dialect;
 
     /**
      * The characters used for quoting identifiers, or an empty string if none.

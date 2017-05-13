@@ -78,7 +78,7 @@ public final class CodeColorizer {
     private enum Specifier {
         OGC("OGC"), GEOAPI("GeoAPI"), SIS("SIS"), XML_PREFIX(null);
 
-        /** The value to put in the {@code class} attribute of {@code <code>} or elements, or {@code null} if none. */
+        /** The value to put in the {@code class} attribute of {@code <code>} or other elements, or {@code null} if none. */
         final String style;
 
         /** Creates a new enum to be rendered with the given style. */
@@ -245,7 +245,7 @@ public final class CodeColorizer {
      * Applies emphasing on the words found in all text node of the given node.
      *
      * @param  parent  the root element where to put Java keywords in bold characters.
-     *                 This is typically a {@code <pre>} or {@code <code>} element.
+     *                 This is typically a {@code <samp>} or {@code <code>} element.
      * @param  type    {@code "xml"} if the element to process is XML rather than Java code.
      * @throws BookException if an element can not be processed.
      */
@@ -309,7 +309,7 @@ public final class CodeColorizer {
                                 syntaticElement.setAttribute("class", "comment");
                             } else {
                                 lower += Character.charCount(c);
-                                continue;  // "Ordinary" character: scan next characters.
+                                continue;                       // "Ordinary" character: scan next characters.
                             }
                             /*
                              * Found the begining of a comment block or a string. Search where that block ends

@@ -82,6 +82,13 @@ public final class Assembler {
     private static final int MINIMAL_LENGTH_BEFORE_BREAK = 3;
 
     /**
+     * Relative path to be replaced by {@code "../"} path. We perform this substitution because the source files
+     * defined in the {@code book/<language>/<chapter>} directories reference directly the images in their final
+     * {@code content/book/images} directory.
+     */
+    private static final String PATH_TO_REPLACE = "../../../content/book/";
+
+    /**
      * The directory of all input files to process.
      */
     private final File inputDirectory;
@@ -135,14 +142,14 @@ public final class Assembler {
     private final ResourceBundle resources;
 
     /**
-     * Helper class for applying colors on content of {@code <pre>} and {@code <code>} elements.
+     * Helper class for applying colors on content of {@code <code>} and {@code <samp>} elements.
      */
     private final CodeColorizer colorizer;
 
     /**
      * Creates a new assembler for the given input and output files.
      *
-     * @param  input   the input file (e.g. {@code "site/book/en/body.html"}).
+     * @param  input   the input file (e.g. {@code "site/book/en/index.html"}).
      * @param  locale  the locale for the message to generates in HTML code.
      * @throws ParserConfigurationException if this constructor can not build the XML document.
      * @throws IOException if an error occurred while reading the file.
@@ -158,7 +165,7 @@ public final class Assembler {
         factory.setNamespaceAware(true);
         inputDirectory = input.getParentFile();
         builder        = factory.newDocumentBuilder();
-        document       = load(input.getName());
+        document       = load(input);
         colorizer      = new CodeColorizer(document);
         tableOfContent = document.createElement("ul");
         tableOfContent.setAttribute("class", "toc");
@@ -187,10 +194,10 @@ public final class Assembler {
     }
 
     /**
-     * Loads the XML document from the given file in the same directory than the input file given to the constructor.
+     * Loads the XML document from the given file with indentation removed.
      */
-    private Document load(final String filename) throws IOException, SAXException {
-        final Document include = builder.parse(new File(inputDirectory, filename));
+    private Document load(final File input) throws IOException, SAXException {
+        final Document include = builder.parse(input);
         builder.reset();
         removeIndentation(include.getDocumentElement());
         return include;
@@ -244,13 +251,13 @@ public final class Assembler {
      * This method is doing the work of {@code <xi:include>} element. We do this work ourself instead than relying on
      * {@link DocumentBuilder} build-in support mostly because we have been unable to get the {@code xpointer} to work.
      *
-     * @param filename  the source XML file in the same directory than the input file given to the constructor.
-     * @param toReplace the target XML node to be replaced by the content of the given file.
+     * @param  input      the source XML file.
+     * @param  toReplace  the target XML node to be replaced by the content of the given file.
      */
-    private Node[] replaceByBody(final String filename, final Node toReplace) throws IOException, SAXException, BookException {
-        final NodeList nodes = load(filename).getElementsByTagName("body");
+    private Node[] replaceByBody(final File input, final Node toReplace) throws IOException, SAXException, BookException {
+        final NodeList nodes = load(input).getElementsByTagName("body");
         if (nodes.getLength() != 1) {
-            throw new BookException(filename + ": expected exactly one <body> element.");
+            throw new BookException(input.getName() + ": expected exactly one <body> element.");
         }
         final Node parent = toReplace.getParentNode();
         parent.removeChild(toReplace);
@@ -265,6 +272,22 @@ public final class Assembler {
             childNodes[i] = child;
         }
         return childNodes;
+    }
+
+    /**
+     * Adjusts the relative path in {@code <a href="../../../content">} or
+     * {@code <img src="../../../content">} attribute value.
+     */
+    private void adjustURL(final Element element) {
+        String attribute;
+        String href = element.getAttribute(attribute = "href");
+        if (href == null || !href.startsWith(PATH_TO_REPLACE)) {
+            href = element.getAttribute(attribute = "src");
+            if (href == null || !href.startsWith(PATH_TO_REPLACE)) {
+                return;
+            }
+        }
+        element.setAttribute(attribute, "../" + href.substring(PATH_TO_REPLACE.length()));
     }
 
     /**
@@ -289,16 +312,19 @@ public final class Assembler {
      * Performs on the given node the processing documented in the class javadoc.
      * This method invokes itself recursively.
      *
-     * @param  index  {@code true} for including the {@code <h1>}, <i>etc.</i> texts in the Table Of Content (TOC).
-     *         This is set to {@code false} when parsing the content of {@code <aside>} or {@code <article>} elements.
+     * @param directory  the directory of the file being processed. Used for resolving relative links.
+     * @param index      {@code true} for including the {@code <h1>}, <i>etc.</i> texts in the Table Of Content (TOC).
+     *        This is set to {@code false} when parsing the content of {@code <aside>} or {@code <article>} elements.
      */
-    private void process(final Node node, boolean index) throws IOException, SAXException, BookException {
+    private void process(File directory, final Node node, boolean index) throws IOException, SAXException, BookException {
         Node[] childNodes = toArray(node.getChildNodes());
         switch (node.getNodeType()) {
             case Node.COMMENT_NODE: {
                 final String text = node.getNodeValue().trim();
                 if ("TOC".equals(text)) {
                     node.getParentNode().replaceChild(tableOfContent, node);
+                } else {
+                    node.getParentNode().removeChild(node);
                 }
                 return;
             }
@@ -306,7 +332,9 @@ public final class Assembler {
                 final String name = node.getNodeName();
                 switch (name) {
                     case "xi:include": {
-                        childNodes = replaceByBody(((Element) node).getAttribute("href"), node);
+                        final File input = new File(directory, ((Element) node).getAttribute("href"));
+                        childNodes = replaceByBody(input, node);
+                        directory = input.getParentFile();
                         break;
                     }
                     case "aside":
@@ -314,16 +342,28 @@ public final class Assembler {
                         index = false;
                         break;
                     }
+                    case "a":
+                    case "img": {
+                        adjustURL((Element) node);
+                        break;
+                    }
                     case "abbr": {
                         processAbbreviation((Element) node);
                         break;
                     }
-                    case "pre": {
-                        colorizer.highlight(node, ((Element) node).getAttribute("class"));
+                    case "samp": {
+                        final String cl = ((Element) node).getAttribute("class");
+                        if (cl != null) {
+                            colorizer.highlight(node, cl);
+                        }
                         break;
                     }
                     case "code": {
                         if (!((Element) node).hasAttribute("class")) {
+                            if ("pre".equals(node.getParentNode().getNodeName())) {
+                                colorizer.highlight(node, ((Element) node).getAttribute("class"));
+                                break;
+                            }
                             final String style = colorizer.styleForSingleIdentifier(node.getTextContent());
                             if (style != null) {
                                 ((Element) node).setAttribute("class", style);
@@ -370,7 +410,7 @@ public final class Assembler {
             }
         }
         for (final Node child : childNodes) {
-            process(child, index);
+            process(directory, child, index);
         }
     }
 
@@ -378,8 +418,8 @@ public final class Assembler {
      * Prepend the current section numbers to the given node.
      * The given node shall be a {@code <h1>}, {@code <h2>}, <i>etc.</i> element.
      *
-     * @param  level  1 if {@code head} is {@code <h1>}, 2 if {@code head} is {@code <h2>}, <i>etc.</i>
-     * @param  head   the {@code <h1>}, {@code <h2>}, {@code <h3>}, {@code <h4>}, <i>etc.</i> element.
+     * @param level 1 if {@code head} is {@code <h1>}, 2 if {@code head} is {@code <h2>}, <i>etc.</i>
+     * @param head  the {@code <h1>}, {@code <h2>}, {@code <h3>}, {@code <h4>}, <i>etc.</i> element.
      */
     private void prependSectionNumber(final int level, final Node head) {
         final Element number = document.createElement("span");
@@ -540,7 +580,7 @@ public final class Assembler {
      * @throws TransformerException if an error occurred while formatting the output XML.
      */
     public void run(final File output) throws IOException, SAXException, BookException, TransformerException {
-        process(document.getDocumentElement(), true);
+        process(inputDirectory, document.getDocumentElement(), true);
         tableOfContent.appendChild(document.createTextNode(LINE_SEPARATOR));
         final Transformer transformer = TransformerFactory.newInstance().newTransformer();
         transformer.setOutputProperty(OutputKeys.METHOD, "xml");
@@ -552,7 +592,7 @@ public final class Assembler {
     }
 
     /**
-     * Generates the {@code "content/book/en|fr/developer-guide.html"} file from {@code "book/en|fr/body.html"}.
+     * Generates the {@code "content/book/en|fr/developer-guide.html"} file from {@code "book/en|fr/index.html"}.
      * The only argument expected by this method is the language: {@code "en"} or {@code "fr"}.
      * The current directory shall be the parent directory of {@code "book"} and {@code "content"}.
      *
@@ -580,7 +620,7 @@ public final class Assembler {
             return;
         }
         lang = locale.getLanguage();
-        File input = new File("book/" + lang + "/body.html");
+        File input = new File("book/" + lang + "/index.html");
         if (!input.isFile()) {
             System.err.println("Can not read " + input + ". Is the current directory the root of SIS site source code?");
             System.exit(1);

@@ -282,7 +282,7 @@ public class SimpleMetadata implements Metadata, DataIdentification, Citation {
     }
 
     /**
-     * Restrictions on the access and use of data.
+     * Restrictions on the access and use of metadata.
      */
     @Override
     public Collection<Constraints> getMetadataConstraints() {

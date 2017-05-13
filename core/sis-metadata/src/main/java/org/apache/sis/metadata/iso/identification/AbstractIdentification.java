@@ -624,6 +624,8 @@ public class AbstractIdentification extends ISOMetadata implements Identificatio
      * Provides a description of the format of the resource(s).
      *
      * @return description of the format.
+     *
+     * @see org.apache.sis.metadata.iso.distribution.DefaultDistribution#getDistributionFormats()
      */
     @Override
     @XmlElement(name = "resourceFormat")
@@ -635,6 +637,8 @@ public class AbstractIdentification extends ISOMetadata implements Identificatio
      * Sets a description of the format of the resource(s).
      *
      * @param  newValues  the new resource format.
+     *
+     * @see org.apache.sis.metadata.iso.distribution.DefaultDistribution#setDistributionFormats(Collection)
      */
     public void setResourceFormats(final Collection<? extends Format> newValues) {
         resourceFormats = writeCollection(newValues, resourceFormats, Format.class);

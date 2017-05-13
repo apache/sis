@@ -26,38 +26,38 @@ import org.apache.sis.util.CharSequences;
  * that can not (to our knowledge) be inferred from the {@link DatabaseMetaData}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.7
+ * @version 0.8
  * @since   0.7
  * @module
  */
-enum Dialect {
+public enum Dialect {
     /**
      * The database is presumed to use ANSI SQL syntax.
      */
-    ANSI(null),
+    ANSI(null, false),
 
     /**
      * The database uses Derby syntax. This is ANSI, with some constraints that PostgreSQL does not have
      * (for example column with {@code UNIQUE} constraint must explicitly be specified as {@code NOT NULL}).
      */
-    DERBY("derby"),
+    DERBY("derby", false),
 
     /**
      * The database uses HSQL syntax. This is ANSI, but does not allow {@code INSERT} statements inserting many lines.
      * It also have a {@code SHUTDOWN} command which is specific to HSQLDB.
      */
-    HSQL("hsqldb"),
+    HSQL("hsqldb", false),
 
     /**
      * The database uses PostgreSQL syntax. This is ANSI, but provided an a separated
      * enumeration value because it allows a few additional commands like {@code VACUUM}.
      */
-    POSTGRESQL("postgresql"),
+    POSTGRESQL("postgresql", true),
 
     /**
      * The database uses Oracle syntax. This is ANSI, but without {@code "AS"} keyword.
      */
-    ORACLE("oracle");
+    ORACLE("oracle", false);
 
     /**
      * The protocol in JDBC URL, or {@code null} if unknown.
@@ -66,10 +66,24 @@ enum Dialect {
     private final String protocol;
 
     /**
+     * Whether this dialect support table inheritance.
+     */
+    public final boolean isTableInheritanceSupported;
+
+    /**
+     * {@code true} if child tables inherit the index of their parent tables.
+     * This feature is not yet supported in PostgreSQL.
+     *
+     * @see <a href="https://issues.apache.org/jira/browse/SIS-358">SIS-358</a>
+     */
+    public final boolean isIndexInheritanceSupported = false;
+
+    /**
      * Creates a new enumeration value for a SQL dialect for the given protocol.
      */
-    private Dialect(final String protocol) {
+    private Dialect(final String protocol, final boolean isTableInheritanceSupported) {
         this.protocol = protocol;
+        this.isTableInheritanceSupported = isTableInheritanceSupported;
     }
 
     /**
