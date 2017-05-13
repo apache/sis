@@ -16,8 +16,6 @@
  */
 package org.apache.sis.metadata.sql;
 
-import org.opengis.util.FactoryException;
-
 
 /**
  * Thrown when a metadata access failed.
@@ -29,7 +27,7 @@ import org.opengis.util.FactoryException;
  * @since   0.8
  * @module
  */
-public class MetadataStoreException extends FactoryException {
+public class MetadataStoreException extends Exception {
     /**
      * For cross-version compatibility.
      */

@@ -154,6 +154,11 @@ public final class Messages extends IndexedResourceBundle {
         public static final short DiscardedExclusiveProperty_2 = 19;
 
         /**
+         * Dropped the “{0}” foreigner key constraint.
+         */
+        public static final short DroppedForeignerKey_1 = 32;
+
+        /**
          * Ignored properties after the first occurrence of ‘{0}’.
          */
         public static final short IgnoredPropertiesAfterFirst_1 = 20;
