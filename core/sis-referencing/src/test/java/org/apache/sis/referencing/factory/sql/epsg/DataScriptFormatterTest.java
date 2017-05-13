@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.referencing.factory.sql;
+package org.apache.sis.referencing.factory.sql.epsg;
 
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
@@ -23,21 +23,21 @@ import static org.junit.Assert.*;
 
 
 /**
- * Tests {@link EPSGDataFormatter}.
+ * Tests {@link DataScriptFormatter}.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 0.7
+ * @version 0.8
  * @since   0.7
  * @module
  */
-public final strictfp class EPSGDataFormatterTest extends TestCase {
+public final strictfp class DataScriptFormatterTest extends TestCase {
     /**
-     * Tests the {@link EPSGDataFormatter#removeLF(StringBuilder)} method.
+     * Tests the {@link DataScriptFormatter#removeLF(StringBuilder)} method.
      */
     @Test
     public void testRemoveLF() {
         final StringBuilder buffer = new StringBuilder(" \nOne,\nTwo, \n Three Four\nFive \nSix \n");
-        EPSGDataFormatter.removeLF(buffer);
+        DataScriptFormatter.removeLF(buffer);
         assertEquals("One,Two,Three Four Five Six", buffer.toString());
     }
 }

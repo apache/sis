@@ -186,6 +186,11 @@ public final class Errors extends IndexedResourceBundle {
         public static final short DatabaseError_2 = 21;
 
         /**
+         * Failed to {0,choice,0#insert|1#update} record “{2}” in database table “{1}”.
+         */
+        public static final short DatabaseUpdateFailure_3 = 174;
+
+        /**
          * Thread “{0}” is dead.
          */
         public static final short DeadThread_1 = 22;

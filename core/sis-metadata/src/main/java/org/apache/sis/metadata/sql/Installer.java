@@ -25,7 +25,7 @@ import org.apache.sis.util.StringBuilders;
 
 
 /**
- * Execute the installation scripts for the "metadata" schema in the "SpatialMetadata" database.
+ * Executes the installation scripts for the "metadata" schema in the "SpatialMetadata" database.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8

@@ -45,7 +45,8 @@ import org.apache.sis.internal.jdk8.BiFunction;
 /**
  * Runs the SQL scripts for creating an EPSG database.
  *
- * See {@code EPSGDataFormatter} in the test directory for more information about how the scripts are formatted.
+ * See {@code org.apache.sis.referencing.factory.sql.epsg.DataScriptFormatter}
+ * in the test directory for more information about how the scripts are formatted.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
