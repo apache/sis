@@ -248,6 +248,8 @@ public abstract class AbstractFeature implements Feature, Serializable {
 
     /**
      * Executes the parameterless operation of the given name and returns its result.
+     *
+     * @see #getOperationValue(String)
      */
     final Property getOperationResult(final String name) {
         /*
@@ -257,41 +259,6 @@ public abstract class AbstractFeature implements Feature, Serializable {
          */
         assert DefaultFeatureType.OPERATION_INDEX.equals(((DefaultFeatureType) type).indices().get(name)) : name;
         return ((Operation) type.getProperty(name)).apply(this, null);
-    }
-
-    /**
-     * Executes the parameterless operation of the given name and returns the value of its result.
-     */
-    final Object getOperationValue(final String name) {
-        final Operation operation = (Operation) type.getProperty(name);
-        if (operation instanceof LinkOperation) {
-            return getPropertyValue(((LinkOperation) operation).referentName);
-        }
-        final Property result = operation.apply(this, null);
-        if (result instanceof Attribute<?>) {
-            return getAttributeValue((Attribute<?>) result);
-        } else if (result instanceof FeatureAssociation) {
-            return getAssociationValue((FeatureAssociation) result);
-        } else {
-            return null;
-        }
-    }
-
-    /**
-     * Executes the parameterless operation of the given name and sets the value of its result.
-     */
-    final void setOperationValue(final String name, final Object value) {
-        final Operation operation = (Operation) type.getProperty(name);
-        if (operation instanceof LinkOperation) {
-            setPropertyValue(((LinkOperation) operation).referentName, value);
-        } else {
-            final Property result = operation.apply(this, null);
-            if (result != null) {
-                setPropertyValue(result, value);
-            } else {
-                throw new IllegalStateException(Resources.format(Resources.Keys.CanNotSetPropertyValue_1, name));
-            }
-        }
     }
 
     /**
@@ -385,6 +352,73 @@ public abstract class AbstractFeature implements Feature, Serializable {
      */
     @Override
     public abstract void setPropertyValue(final String name, final Object value) throws IllegalArgumentException;
+
+    /**
+     * Executes the parameterless operation of the given name and returns the value of its result.
+     * This is a convenience method for sub-classes where some properties may be operations that
+     * {@linkplain AbstractOperation#getDependencies() depend} on other properties of this {@code Feature} instance
+     * (for example a {@linkplain FeatureOperations#link link} to another property value).
+     * Invoking this method is equivalent to performing the following steps:
+     *
+     * {@preformat java
+     *     Operation operation = (Operation) type.getProperty(name);
+     *     Property result = operation.apply(this, null);
+     *     if (result instanceof Attribute<?>) {
+     *         return ...;                                      // the attribute value.
+     *     } else if (result instanceof FeatureAssociation) {
+     *         return ...;                                      // the associated feature.
+     *     } else {
+     *         return null;
+     *     }
+     * }
+     *
+     * @param  name  the name of the operation to execute. The caller is responsible to ensure that the
+     *               property type for that name is an instance of {@link Operation}.
+     * @return the result value of the given operation, or {@code null} if none.
+     *
+     * @since 0.8
+     */
+    protected Object getOperationValue(final String name) {
+        final Operation operation = (Operation) type.getProperty(name);
+        if (operation instanceof LinkOperation) {
+            return getPropertyValue(((LinkOperation) operation).referentName);
+        }
+        final Property result = operation.apply(this, null);
+        if (result instanceof Attribute<?>) {
+            return getAttributeValue((Attribute<?>) result);
+        } else if (result instanceof FeatureAssociation) {
+            return getAssociationValue((FeatureAssociation) result);
+        } else {
+            return null;
+        }
+    }
+
+    /**
+     * Executes the parameterless operation of the given name and sets the value of its result.
+     * This method is the complement of {@link #getOperationValue(String)} for subclasses where
+     * some properties may be operations. Not all operations accept assignments,
+     * but the {@linkplain FeatureOperations#link link} operation for instance does.
+     *
+     * @param  name   the name of the operation to execute. The caller is responsible to ensure that the
+     *                property type for that name is an instance of {@link Operation}.
+     * @param  value  the value to assign to the result of the named operation.
+     * @throws IllegalStateException if the operation of the given name does not accept assignment.
+     *
+     * @since 0.8
+     */
+    protected void setOperationValue(final String name, final Object value) {
+        final Operation operation = (Operation) type.getProperty(name);
+        if (operation instanceof LinkOperation) {
+            setPropertyValue(((LinkOperation) operation).referentName, value);
+        } else {
+            final Property result = operation.apply(this, null);
+            if (result != null) {
+                setPropertyValue(result, value);
+            } else {
+                throw new IllegalStateException(Resources.format(Resources.Keys.CanNotSetPropertyValue_1, name));
+            }
+        }
+    }
 
     /**
      * Returns the value of the given attribute, as a singleton or as a collection depending
