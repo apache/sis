@@ -19,11 +19,9 @@ package org.apache.sis.metadata.sql;
 import javax.sql.DataSource;
 import org.postgresql.ds.PGSimpleDataSource;
 import org.opengis.metadata.citation.Citation;
-import org.opengis.metadata.citation.Responsibility;
 import org.opengis.metadata.citation.PresentationForm;
 import org.opengis.metadata.citation.OnLineFunction;
 import org.opengis.metadata.citation.OnlineResource;
-import org.opengis.metadata.citation.Party;
 import org.opengis.metadata.citation.Role;
 import org.apache.sis.internal.metadata.sql.TestDatabase;
 import org.apache.sis.metadata.iso.citation.HardCodedCitations;
@@ -35,6 +33,10 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
+
+// Branch-dependent imports
+import org.opengis.metadata.citation.Party;
+import org.opengis.metadata.citation.Responsibility;
 
 
 /**
