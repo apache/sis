@@ -363,7 +363,7 @@ public abstract class AbstractFeature implements Serializable {
      * }
      *
      * @param  name  the name of the operation to execute. The caller is responsible to ensure that the
-     *               property type for that name is an instance of {@link Operation}.
+     *               property type for that name is an instance of {@link AbstractOperation}.
      * @return the result value of the given operation, or {@code null} if none.
      *
      * @since 0.8
@@ -390,7 +390,7 @@ public abstract class AbstractFeature implements Serializable {
      * but the {@linkplain FeatureOperations#link link} operation for instance does.
      *
      * @param  name   the name of the operation to execute. The caller is responsible to ensure that the
-     *                property type for that name is an instance of {@link Operation}.
+     *                property type for that name is an instance of {@link AbstractOperation}.
      * @param  value  the value to assign to the result of the named operation.
      * @throws IllegalStateException if the operation of the given name does not accept assignment.
      *
