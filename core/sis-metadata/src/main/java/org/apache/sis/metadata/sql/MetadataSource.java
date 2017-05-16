@@ -578,6 +578,7 @@ public class MetadataSource implements AutoCloseable {
     private Map<String,String> asNameMap(final Class<?> type) throws ClassCastException {
         assert Thread.holdsLock(this);
         if (type != lastNameMapType) {
+            lastNameMapType = type;
             lastNameMap = standard.asNameMap(type, KeyNamePolicy.METHOD_NAME, KeyNamePolicy.UML_IDENTIFIER);
         }
         return lastNameMap;
