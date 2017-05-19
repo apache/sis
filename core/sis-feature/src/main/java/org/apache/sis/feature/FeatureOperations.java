@@ -27,8 +27,6 @@ import org.apache.sis.util.UnconvertibleObjectException;
 import org.apache.sis.util.collection.WeakHashSet;
 import org.apache.sis.util.resources.Errors;
 
-// Branch-dependent imports
-
 
 /**
  * A set of pre-defined operations expecting a {@code Feature} as input and producing an {@code Attribute} as output.
