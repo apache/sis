@@ -19,6 +19,10 @@ package org.apache.sis.internal.jaxb;
 import java.util.AbstractMap;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
+import org.apache.sis.internal.util.Citations;
+
+// Branch-dependent imports
+import org.opengis.referencing.ReferenceIdentifier;
 
 
 /**
@@ -31,7 +35,7 @@ import org.opengis.metadata.citation.Citation;
  * @since   0.3
  * @module
  */
-final class IdentifierMapEntry extends AbstractMap.SimpleEntry<Citation,String> implements Identifier {
+final class IdentifierMapEntry extends AbstractMap.SimpleEntry<Citation,String> implements ReferenceIdentifier {
     /**
      * For cross-version compatibility.
      */
@@ -58,6 +62,30 @@ final class IdentifierMapEntry extends AbstractMap.SimpleEntry<Citation,String> 
     @Override
     public String getCode() {
         return getValue();
+    }
+
+    /**
+     * Infers a code space from the authority.
+     *
+     * @return the code space, or {@code null} if none.
+     *
+     * @since 0.5
+     */
+    @Override
+    public String getCodeSpace() {
+        return Citations.getCodeSpace(getAuthority());
+    }
+
+    /**
+     * Returns {@code null} since this class does not hold version information.
+     *
+     * @return {@code null}.
+     *
+     * @since 0.5
+     */
+    @Override
+    public String getVersion() {
+        return null;
     }
 
     /**

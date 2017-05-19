@@ -22,7 +22,6 @@ import java.util.UUID;
 import java.util.Objects;
 import java.io.Serializable;
 import java.util.logging.Level;
-import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
 import org.apache.sis.xml.XLink;
 import org.apache.sis.xml.IdentifierMap;
@@ -31,6 +30,9 @@ import org.apache.sis.xml.ValueConverter;
 import org.apache.sis.util.Debug;
 import org.apache.sis.util.resources.Messages;
 import org.apache.sis.internal.util.Citations;
+
+// Branch-dependent imports
+import org.opengis.referencing.ReferenceIdentifier;
 
 
 /**
@@ -46,7 +48,7 @@ import org.apache.sis.internal.util.Citations;
  * @since 0.3
  * @module
  */
-public final class SpecializedIdentifier<T> implements Identifier, Cloneable, Serializable {
+public final class SpecializedIdentifier<T> implements ReferenceIdentifier, Cloneable, Serializable {
     /**
      * For cross-version compatibility.
      */
@@ -95,7 +97,7 @@ public final class SpecializedIdentifier<T> implements Identifier, Cloneable, Se
      *
      * @see IdentifierMapAdapter#put(Citation, String)
      */
-    static Identifier parse(final Citation authority, final String code) {
+    static ReferenceIdentifier parse(final Citation authority, final String code) {
         if (authority instanceof NonMarshalledAuthority) {
             final int ordinal = ((NonMarshalledAuthority) authority).ordinal;
             switch (ordinal) {
@@ -183,6 +185,30 @@ public final class SpecializedIdentifier<T> implements Identifier, Cloneable, Se
     public String getCode() {
         final T value = this.value;
         return (value != null) ? value.toString() : null;
+    }
+
+    /**
+     * Infers a code space from the authority.
+     *
+     * @return the code space, or {@code null} if none.
+     *
+     * @since 0.5
+     */
+    @Override
+    public String getCodeSpace() {
+        return Citations.getCodeSpace(authority);
+    }
+
+    /**
+     * Returns {@code null} since this class does not hold version information.
+     *
+     * @return {@code null}.
+     *
+     * @since 0.5
+     */
+    @Override
+    public String getVersion() {
+        return null;
     }
 
     /**
