@@ -95,6 +95,7 @@ import org.apache.sis.util.iso.Types;
  * <table class="sis">
  *   <caption>Optional properties at construction time</caption>
  *   <tr><th>Key</th>                     <th>Value type</th>          <th>Description</th></tr>
+ *   <tr><td>{@code "catalog"}</td>       <td>{@link String}</td>      <td>The database catalog where the metadata schema is stored.</td></tr>
  *   <tr><td>{@code "classloader"}</td>   <td>{@link ClassLoader}</td> <td>The class loader to use for creating {@link Proxy} instances.</td></tr>
  *   <tr><td>{@code "maxStatements"}</td> <td>{@link Integer}</td>     <td>Maximal number of {@link PreparedStatement}s that can be kept simultaneously open.</td></tr>
  * </table>
@@ -111,12 +112,6 @@ import org.apache.sis.util.iso.Types;
  * @module
  */
 public class MetadataSource implements AutoCloseable {
-    /**
-     * The catalog, set to {@code null} for now. This is defined as a constant in order to make easier
-     * to spot the places where catalog would be used, if we want to use it in a future version.
-     */
-    static final String CATALOG = null;
-
     /**
      * The column name used for the identifiers. We do not quote this identifier;
      * we will let the database uses its own lower-case / upper-case convention.
@@ -204,6 +199,11 @@ public class MetadataSource implements AutoCloseable {
      * @see #recycle(CachedStatement, int)
      */
     private final CachedStatement[] statements;
+
+    /**
+     * The catalog, or {@code null} if none.
+     */
+    final String catalog;
 
     /**
      * The database schema where metadata are stored, or {@code null} if none. In the metadata source
@@ -353,8 +353,12 @@ public class MetadataSource implements AutoCloseable {
     {
         ArgumentChecks.ensureNonNull("standard",   standard);
         ArgumentChecks.ensureNonNull("dataSource", dataSource);
-        ClassLoader classloader   = Containers.property(properties, "classloader",   ClassLoader.class);
-        Integer     maxStatements = Containers.property(properties, "maxStatements", Integer.class);
+        ClassLoader classloader;
+        Integer maxStatements;
+
+        catalog       = Containers.property(properties, "catalog",       String.class);;
+        classloader   = Containers.property(properties, "classloader",   ClassLoader.class);
+        maxStatements = Containers.property(properties, "maxStatements", Integer.class);
         if (classloader == null) {
             classloader = getClass().getClassLoader();
         }
@@ -390,6 +394,7 @@ public class MetadataSource implements AutoCloseable {
         ArgumentChecks.ensureNonNull("source", source);
         standard     = source.standard;
         dataSource   = source.dataSource;
+        catalog      = source.catalog;
         schema       = source.schema;
         quoteSchema  = source.quoteSchema;
         statements   = new CachedStatement[source.statements.length];
@@ -420,7 +425,7 @@ public class MetadataSource implements AutoCloseable {
                 schema = schema.toLowerCase(Locale.US);
             }
             quoteSchema = false;
-            try (ResultSet result = md.getTables(CATALOG, schema, "CI_Citation", null)) {
+            try (ResultSet result = md.getTables(catalog, schema, "CI_Citation", null)) {
                 if (result.next()) {
                     return;
                 }
@@ -775,7 +780,7 @@ public class MetadataSource implements AutoCloseable {
              * on the search path specified in the database environment variables.
              */
             final DatabaseMetaData md = connection().getMetaData();
-            try (ResultSet rs = md.getColumns(CATALOG, schema, table, null)) {
+            try (ResultSet rs = md.getColumns(catalog, schema, table, null)) {
                 while (rs.next()) {
                     if (!columns.add(rs.getString("COLUMN_NAME"))) {
                         // Paranoiac check, but should never happen.

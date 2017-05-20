@@ -71,6 +71,10 @@ import org.apache.sis.internal.metadata.sql.SQLBuilder;
  *     <th>Value type</th>
  *     <th>Description</th>
  *   </tr><tr>
+ *     <td>{@code "catalog"}</td>
+ *     <td>{@link String}</td>
+ *     <td>The database catalog where the metadata schema is stored.</td>
+ *   </tr><tr>
  *     <td>{@code "classloader"}</td>
  *     <td>{@link ClassLoader}</td>
  *     <td>The class loader to use for creating {@link java.lang.reflect.Proxy} instances.</td>
@@ -418,10 +422,10 @@ public class MetadataWriter extends MetadataSource {
                                  */
                                 if (referencedTables == null) {
                                     referencedTables = new HashMap<>();
-                                    try (ResultSet rs = stmt.getConnection().getMetaData().getImportedKeys(CATALOG, schema(), table)) {
+                                    try (ResultSet rs = stmt.getConnection().getMetaData().getImportedKeys(catalog, schema(), table)) {
                                         while (rs.next()) {
                                             if ((schema() == null || schema().equals(rs.getString("PKTABLE_SCHEM"))) &&
-                                                (CATALOG  == null || CATALOG.equals(rs.getString("PKTABLE_CAT"))))
+                                                (catalog  == null || catalog.equals(rs.getString("PKTABLE_CAT"))))
                                             {
                                                 referencedTables.put(rs.getString("FKCOLUMN_NAME"),
                                                             new FKey(rs.getString("PKTABLE_NAME"), null,
