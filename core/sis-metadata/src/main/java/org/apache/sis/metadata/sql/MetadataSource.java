@@ -923,15 +923,7 @@ public class MetadataSource implements AutoCloseable {
          */
         if (value == null) {
             if (wantCollection) {
-                if (Set.class.isAssignableFrom(returnType)) {
-                    if (SortedSet.class.isAssignableFrom(returnType)) {
-                        return Collections.emptySortedSet();
-                    } else {
-                        return Collections.EMPTY_SET;
-                    }
-                } else {
-                    return Collections.EMPTY_LIST;
-                }
+                return CollectionsExt.empty(returnType);
             }
         } else {
             if (isMetadata) {
