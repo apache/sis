@@ -286,8 +286,8 @@ public class MetadataWriter extends MetadataSource {
         for (final String column : asSingletons.keySet()) {
             if (!columns.contains(column)) {
                 if (colTypes == null) {
-                    colTypes  = standard.asTypeMap(implementationType, KeyNamePolicy.UML_IDENTIFIER, TypeValuePolicy.ELEMENT_TYPE);
-                    colTables = standard.asTypeMap(implementationType, KeyNamePolicy.UML_IDENTIFIER, TypeValuePolicy.DECLARING_INTERFACE);
+                    colTypes  = standard.asTypeMap(implementationType, NAME_POLICY, TypeValuePolicy.ELEMENT_TYPE);
+                    colTables = standard.asTypeMap(implementationType, NAME_POLICY, TypeValuePolicy.DECLARING_INTERFACE);
                 }
                 /*
                  * We have found a column to add. Check if the column actually needs to be added to the parent table

@@ -37,11 +37,7 @@ final class ObjectPair {
     /**
      * The set of objects currently in process of being compared.
      */
-    static final ThreadLocal<Set<ObjectPair>> CURRENT = new ThreadLocal<Set<ObjectPair>>() {
-        @Override protected Set<ObjectPair> initialValue() {
-            return new HashSet<>();
-        }
-    };
+    static final ThreadLocal<Set<ObjectPair>> CURRENT = ThreadLocal.withInitial(HashSet::new);
 
     /**
      * The pair of objects in process of being compared.

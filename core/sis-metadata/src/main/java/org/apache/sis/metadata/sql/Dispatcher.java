@@ -20,9 +20,14 @@ import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.sql.SQLException;
 import java.util.Collection;
+import java.util.Map;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.collection.BackingStoreException;
+import org.apache.sis.internal.util.CollectionsExt;
+import org.apache.sis.metadata.KeyNamePolicy;
+import org.apache.sis.metadata.ValueExistencePolicy;
+import org.apache.sis.internal.system.Semaphores;
 
 
 /**
@@ -34,6 +39,16 @@ import org.apache.sis.util.collection.BackingStoreException;
  * This method uses reflection in order to find the caller's method and class name. The class
  * name is translated into a table name, and the method name is translated into a column name.
  * Then the information is fetched in the underlying metadata database.
+ *
+ * <p>There is usually a one-to-one correspondence between invoked methods and the columns to be read, but not always.
+ * Some method invocations may actually trig a computation using the values of other columns. This happen for example
+ * when invoking a deprecated method which computes its value from non-deprecated methods. Such situations happen in
+ * the transition from ISO 19115:2003 to ISO 19115:2014 and may happen again in the future as standards are revised.
+ * The algorithms are encoded in implementation classes like the ones in {@link org.apache.sis.metadata.iso} packages,
+ * and access to those implementation classes is enabled by the {@link #cache} field (which, consequently, is more than
+ * only a cache).</p>
+ *
+ * <p>Instance of this class shall be thread-safe.</p>
  *
  * @author  Touraïvane (IRD)
  * @author  Martin Desruisseaux (IRD, Geomatys)
@@ -57,8 +72,35 @@ final class Dispatcher implements InvocationHandler {
     /**
      * Index in the {@code CachedStatement} cache array where to search first. This is only a hint for increasing
      * the chances to find quickly a {@code CachedStatement} instance for the right type and identifier.
+     *
+     * <div class="note"><b>Design note:</b>
+     * this field is declared in this {@code Dispatcher} class instead than {@link CachedStatement} because we need
+     * it before a {@code CachedStatement} instance can be found. Furthermore two {@code Dispatcher} instances may
+     * have different {@code preferredIndex} values even if their {@link CachedStatement#type} value is the same,
+     * since their {@link #identifier} values are different.</div>
      */
-    int preferredIndex;
+    byte preferredIndex;
+
+    /**
+     * The metadata instance where to store the property (column) values, or {@code null} if not yet created.
+     * For ISO 19115, this is an instance of one of the classes defined in {@link org.apache.sis.metadata.iso}
+     * package or sub-packages. The intend is not only to cache the property values, but also to leverage
+     * implementations that compute automatically some property values from other properties.
+     * The main usage is computing the value of a deprecated property from the values of non-deprecated ones,
+     * e.g. for transition from ISO 19115:2003 to ISO 19115:2014.
+     */
+    private transient volatile Object cache;
+
+    /**
+     * A bitmask of properties having null values. Cached for avoiding to query the database many times.
+     * Bit indices are given by {@link LookupInfo#asIndexMap(MetadataStandard)}. If a metadata contains
+     * more than 64 properties, no "null value" information will be stored for the extra properties.
+     * No damage will happen except more database accesses than needed.
+     *
+     * <p>We do not need to synchronize this field because it is only an optimization. It is okay if a bit
+     * is wrongly zero; the only consequence is that it will cause one more database access than needed.</p>
+     */
+    private transient long nullValues;
 
     /**
      * Creates a new metadata handler.
@@ -104,27 +146,84 @@ final class Dispatcher implements InvocationHandler {
                 return (args[0] == source) ? identifier : null;
             }
             default: {
-                if (n != 0) break;
-                if (!source.standard.isMetadata(type)) break;
-                /*
-                 * The invoked method is a method from the metadata interface.
-                 * Consequently, the information should exist in the database.
-                 */
-                try {
-                    return source.getValue(type, method, this);
-                } catch (SQLException | MetadataStoreException e) {
-                    Class<?> returnType = method.getReturnType();
-                    if (Collection.class.isAssignableFrom(returnType)) {
-                        final Class<?> elementType = Classes.boundOfParameterizedProperty(method);
-                        if (elementType != null) {
-                            returnType = elementType;
-                        }
-                    }
-                    throw new BackingStoreException(Errors.format(Errors.Keys.DatabaseError_2, returnType, identifier), e);
+                if (n != 0 || !source.standard.isMetadata(type)) {
+                    throw new BackingStoreException(Errors.format(Errors.Keys.UnsupportedOperation_1,
+                                Classes.getShortName(type) + '.' + name));
                 }
+                break;
             }
         }
-        throw new BackingStoreException(Errors.format(Errors.Keys.UnsupportedOperation_1, type + "." + name));
+        /*
+         * The invoked method is a method from the metadata interface.
+         * Consequently, the information should exist in the database.
+         * First, we will check the cache. If the value is not present, we will query the database and
+         * fetch the cache again (because the class that implement the cache may perform some computation).
+         */
+        Object value = null;
+        final LookupInfo info = source.getLookupInfo(type);
+        final long nullBit = 1L << info.asIndexMap(source.standard).get(method.getName());     // Okay even if overflow.
+        /*
+         * The NULL_COLLECTION semaphore prevents creation of new empty collections by getter methods
+         * (a consequence of lazy instantiation). The intend is to avoid creation of unnecessary objects
+         * for all unused properties. Users should not see behavioral difference.
+         */
+        if ((nullValues & nullBit) == 0) try {
+            final boolean allowNull = Semaphores.queryAndSet(Semaphores.NULL_COLLECTION);
+            try {
+                Object cache = this.cache;
+                if (cache != null) {
+                    synchronized (cache) {
+                        value = method.invoke(cache);
+                    }
+                }
+                if (value == null) {
+                    info.setMetadataType(type);     // Precaution in case method.invoke(cache) fetched other metadata.
+                    value = source.readColumn(info, method, this);
+                    if (value != null) {
+                        if (cache == null) {
+                            final Class<?> impl = source.standard.getImplementation(type);
+                            if (impl == null) {
+                                return value;
+                            }
+                            this.cache = cache = impl.newInstance();
+                            /*
+                             * We do not use AtomicReference because it is okay if the cache is instantiated twice.
+                             * It would cause us to query the database twice, but we should get the same information.
+                             */
+                        }
+                        final Map<String, Object> map = source.standard.asValueMap(cache, type,
+                                    KeyNamePolicy.METHOD_NAME, ValueExistencePolicy.ALL);
+                        synchronized (cache) {
+                            value = map.putIfAbsent(method.getName(), value);
+                            if (value == null) {
+                                value = method.invoke(cache);
+                            }
+                        }
+                    }
+                }
+            } finally {
+                if (!allowNull) {
+                    Semaphores.clear(Semaphores.NULL_COLLECTION);
+                }
+            }
+        } catch (ReflectiveOperationException | SQLException | MetadataStoreException e) {
+            Class<?> returnType = method.getReturnType();
+            if (Collection.class.isAssignableFrom(returnType)) {
+                final Class<?> elementType = Classes.boundOfParameterizedProperty(method);
+                if (elementType != null) {
+                    returnType = elementType;
+                }
+            }
+            throw new BackingStoreException(Errors.format(Errors.Keys.DatabaseError_2, returnType, identifier), e);
+        }
+        if (value == null) {
+            nullValues |= nullBit;
+            final Class<?> returnType = method.getReturnType();
+            if (Collection.class.isAssignableFrom(returnType)) {
+                value = CollectionsExt.empty(returnType);
+            }
+        }
+        return value;
     }
 
     /**
