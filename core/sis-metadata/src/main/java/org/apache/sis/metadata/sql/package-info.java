@@ -33,12 +33,12 @@
  *   <li>{@link org.opengis.util.InternationalString} are stored only for the default locale.</li>
  *   <li>Cyclic graph (<var>A</var> references <var>B</var> which reference <var>A</var>) are not supported,
  *       unless foreigner key constraints are manually disabled for the columns which contain the cyclic references.</li>
- *   <li>Metadata that are sub-interface of other metadata (for example
- *       {@link org.opengis.metadata.extent.GeographicDescription} which extends
- *       {@link org.opengis.metadata.extent.GeographicExtent}) can be stored only
- *       in databases supporting <cite>table inheritance</cite>, like
- *       <a href="http://www.postgresql.org">PostgreSQL</a>.</li>
  * </ul>
+ *
+ * If the database supports <cite>table inheritance</cite> (like <a href="http://www.postgresql.org">PostgreSQL</a>),
+ * then this package will leverage that feature for the storage of metadata that are sub-interface of other metadata
+ * (for example {@link org.opengis.metadata.extent.GeographicDescription} which extends
+ * {@link org.opengis.metadata.extent.GeographicExtent}).
  *
  * @author  Touraïvane (IRD)
  * @author  Martin Desruisseaux (IRD, Geomatys)

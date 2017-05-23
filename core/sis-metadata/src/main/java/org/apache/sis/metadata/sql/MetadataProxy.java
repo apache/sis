@@ -19,6 +19,8 @@ package org.apache.sis.metadata.sql;
 
 /**
  * Interface for metadata that are implemented by a proxy class.
+ * Instances of this interface are created by calls to {@code Proxy.newProxyInstance(…)}
+ * in {@link MetadataSource#lookup(Class, String)}.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
