@@ -389,7 +389,7 @@ class CoordinateOperationRegistry {
         }
         final boolean inverse;
         Collection<CoordinateOperation> operations;
-        Semaphores.queryAndSet(Semaphores.METADATA_ONLY);           // See comment for the same call inside the loop.
+        boolean mdOnly = Semaphores.queryAndSet(Semaphores.METADATA_ONLY);    // See comment for the same call inside the loop.
         try {
             try {
                 operations = registry.createFromCoordinateReferenceSystemCodes(sourceID, targetID);
@@ -406,7 +406,9 @@ class CoordinateOperationRegistry {
                     }
                 }
             } finally {
-                Semaphores.clear(Semaphores.METADATA_ONLY);
+                if (!mdOnly) {
+                    Semaphores.clear(Semaphores.METADATA_ONLY);
+                }
             }
         } catch (NoSuchAuthorityCodeException | MissingFactoryResourceException e) {
             /*
@@ -442,13 +444,15 @@ class CoordinateOperationRegistry {
                  * The non-public Semaphores.METADATA_ONLY mechanism instructs EPSGDataAccess to
                  * instantiate DeferredCoordinateOperation instead of full coordinate operations.
                  */
-                Semaphores.queryAndSet(Semaphores.METADATA_ONLY);
+                mdOnly = Semaphores.queryAndSet(Semaphores.METADATA_ONLY);
                 try {
                     try {
                         if (!it.hasNext()) break;
                         candidate = it.next();
                     } finally {
-                        Semaphores.clear(Semaphores.METADATA_ONLY);
+                        if (!mdOnly) {
+                            Semaphores.clear(Semaphores.METADATA_ONLY);
+                        }
                     }
                 } catch (BackingStoreException exception) {
                     throw exception.unwrapOrRethrow(FactoryException.class);

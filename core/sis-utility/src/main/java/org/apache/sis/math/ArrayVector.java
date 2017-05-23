@@ -156,7 +156,7 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
                 int i = 0;
                 double v;
                 do if (i >= length) {
-                    return new Floats(toFloatArray());
+                    return new Floats(floatValues());
                 } while (!(Math.abs((v = doubleValue(i++)) - (float) v) > tolerance));    // Use '!' for accepting NaN.
                 /*
                  * Same try than above loop, but now using base 10 representation.
@@ -164,22 +164,11 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
                  */
                 i = 0;
                 do if (i >= length) {
-                    return new Decimal(toFloatArray());
+                    return new Decimal(floatValues());
                 } while (!(Math.abs((v = doubleValue(i++)) - DecimalFunctions.floatToDouble((float) v)) > tolerance));
             }
         }
         return vec;
-    }
-
-    /**
-     * Returns a copy of current data as a floating point array.
-     */
-    float[] toFloatArray() {
-        final float[] copy = new float[size()];
-        for (int i=0; i<copy.length; i++) {
-            copy[i] = (float) doubleValue(i);
-        }
-        return copy;
     }
 
     /**
@@ -272,11 +261,6 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
             return old;
         }
 
-        /** Returns a copy of current data as a floating point array. */
-        @Override float[] toFloatArray() {
-            return Numerics.copyAsFloats(array);
-        }
-
         /** Finds the minimum and maximum values in the array or in a subset of the array. */
         @Override NumberRange<Double> range(final IntSupplier indices, int n) {
             double min = Double.POSITIVE_INFINITY;
@@ -287,6 +271,16 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
                 if (value > max) max = value;
             }
             return NumberRange.create(min, true, max, true);
+        }
+
+        /** Returns a copy of current data as a floating point array. */
+        @Override public double[] doubleValues() {
+            return array.clone();
+        }
+
+        /** Returns a copy of current data as a floating point array. */
+        @Override public float[] floatValues() {
+            return Numerics.copyAsFloats(array);
         }
     }
 
@@ -360,6 +354,11 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
          */
         NumberRange<?> createRange(final float min, final float max) {
             return NumberRange.create(min, true, max, true);
+        }
+
+        /** Returns a copy of current data as a floating point array. */
+        @Override public final float[] floatValues() {
+            return array.clone();
         }
     }
 

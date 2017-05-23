@@ -63,6 +63,28 @@ public final class CollectionsExt extends Static {
     }
 
     /**
+     * Returns an empty collection of the given type, or {@code null} if the given type is unknown to this method.
+     *
+     * @param  type  the desired collection type.
+     * @return an empty collection of the given type, or {@code null} if the type is unknown.
+     *
+     * @since 0.8
+     */
+    public static Collection<?> empty(final Class<?> type) {
+        if (type.isAssignableFrom(List.class)) {                    // Most common case first.
+            return Collections.EMPTY_LIST;
+        } else if (type.isAssignableFrom(Set.class)) {
+            return Collections.EMPTY_SET;
+        } if (type.isAssignableFrom(SortedSet.class)) {
+            return emptySortedSet();
+        } else if (type.isAssignableFrom(Queue.class)) {
+            return emptyQueue();
+        } else {
+            return null;
+        }
+    }
+
+    /**
      * Returns the first element of the given iterable, or {@code null} if none.
      * This method does not emit warning if more than one element is found.
      * Consequently, this method should be used only when multi-occurrence is not ambiguous.

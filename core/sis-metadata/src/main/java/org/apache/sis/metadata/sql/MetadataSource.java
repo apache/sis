@@ -65,12 +65,13 @@ import org.apache.sis.util.logging.WarningListener;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ArgumentChecks;
-import org.apache.sis.util.ObjectConverter;
-import org.apache.sis.util.ObjectConverters;
 import org.apache.sis.util.UnconvertibleObjectException;
 import org.apache.sis.util.Exceptions;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.iso.Types;
+
+// Branch-dependent imports
+import org.apache.sis.internal.jdk8.JDK8;
 
 
 /**
@@ -95,6 +96,7 @@ import org.apache.sis.util.iso.Types;
  * <table class="sis">
  *   <caption>Optional properties at construction time</caption>
  *   <tr><th>Key</th>                     <th>Value type</th>          <th>Description</th></tr>
+ *   <tr><td>{@code "catalog"}</td>       <td>{@link String}</td>      <td>The database catalog where the metadata schema is stored.</td></tr>
  *   <tr><td>{@code "classloader"}</td>   <td>{@link ClassLoader}</td> <td>The class loader to use for creating {@link Proxy} instances.</td></tr>
  *   <tr><td>{@code "maxStatements"}</td> <td>{@link Integer}</td>     <td>Maximal number of {@link PreparedStatement}s that can be kept simultaneously open.</td></tr>
  * </table>
@@ -112,10 +114,10 @@ import org.apache.sis.util.iso.Types;
  */
 public class MetadataSource implements AutoCloseable {
     /**
-     * The catalog, set to {@code null} for now. This is defined as a constant in order to make easier
-     * to spot the places where catalog would be used, if we want to use it in a future version.
+     * The policy for column names. We use UML identifiers (e.g. {@code "title"}) as defined by the metadata standard
+     * (typically ISO 19115).
      */
-    static final String CATALOG = null;
+    static final KeyNamePolicy NAME_POLICY = KeyNamePolicy.UML_IDENTIFIER;
 
     /**
      * The column name used for the identifiers. We do not quote this identifier;
@@ -206,6 +208,11 @@ public class MetadataSource implements AutoCloseable {
     private final CachedStatement[] statements;
 
     /**
+     * The catalog, or {@code null} if none.
+     */
+    final String catalog;
+
+    /**
      * The database schema where metadata are stored, or {@code null} if none. In the metadata source
      * {@linkplain #getProvided() provided by SIS}, this is {@code "metadata"} or {@code "METADATA"},
      * depending on the database convention regarding lower case / upper case identifiers.
@@ -258,28 +265,15 @@ public class MetadataSource implements AutoCloseable {
     private final WeakValueHashMap<CacheKey,Object> pool;
 
     /**
-     * The last converter used. This field exists only for performance purposes, on
-     * the assumption that the last used converter has good chances to be used again.
-     *
-     * @see #getValue(Class, Method, Dispatcher)
+     * Some information about last used objects. Cached on assumption that the same information
+     * will be used more than once before to move to another metadata object.
      */
-    private transient volatile ObjectConverter<?,?> lastConverter;
-
-    /**
-     * The last "method name to column name" map returned by {@link #asNameMap(Class)}.
-     * Cached on assumption that the same map will be used more than once before to move to another metadata object.
-     */
-    private transient Map<String,String> lastNameMap;
-
-    /**
-     * The {@code type} argument in the last call to {@link #asNameMap(Class)}.
-     */
-    private transient Class<?> lastNameMapType;
+    private final ThreadLocal<LookupInfo> lastUsed;
 
     /**
      * Where to report the warnings. This is not necessarily a logger, since users can register listeners.
      *
-     * @see #getValue(Class, Method, Dispatcher)
+     * @see #readColumn(LookupInfo, Method, Dispatcher)
      */
     private final WarningListeners<MetadataSource> listeners;
 
@@ -353,15 +347,19 @@ public class MetadataSource implements AutoCloseable {
     {
         ArgumentChecks.ensureNonNull("standard",   standard);
         ArgumentChecks.ensureNonNull("dataSource", dataSource);
-        ClassLoader classloader   = Containers.property(properties, "classloader",   ClassLoader.class);
-        Integer     maxStatements = Containers.property(properties, "maxStatements", Integer.class);
+        ClassLoader classloader;
+        Integer maxStatements;
+
+        catalog       = Containers.property(properties, "catalog",       String.class);
+        classloader   = Containers.property(properties, "classloader",   ClassLoader.class);
+        maxStatements = Containers.property(properties, "maxStatements", Integer.class);
         if (classloader == null) {
             classloader = getClass().getClassLoader();
         }
         if (maxStatements == null) {
             maxStatements = 10;               // Default value, may change in any future Apache SIS version.
         } else {
-            ArgumentChecks.ensureBetween("maxStatements", 2, 100, maxStatements);       // Arbitrary limits.
+            ArgumentChecks.ensureBetween("maxStatements", 2, 0xFF, maxStatements);   // Unsigned byte range.
         }
         this.standard     = standard;
         this.dataSource   = dataSource;
@@ -372,6 +370,11 @@ public class MetadataSource implements AutoCloseable {
         this.tableColumns = new HashMap<>();
         this.pool         = new WeakValueHashMap<>(CacheKey.class);
         this.listeners    = new WarningListeners<>(this);
+        this.lastUsed     = new ThreadLocal<LookupInfo>() {
+            @Override protected LookupInfo initialValue() {
+                return new LookupInfo();
+            }
+        };
     }
 
     /**
@@ -390,12 +393,14 @@ public class MetadataSource implements AutoCloseable {
         ArgumentChecks.ensureNonNull("source", source);
         standard     = source.standard;
         dataSource   = source.dataSource;
+        catalog      = source.catalog;
         schema       = source.schema;
         quoteSchema  = source.quoteSchema;
         statements   = new CachedStatement[source.statements.length];
         tableColumns = new HashMap<>();
         classloader  = source.classloader;
         pool         = source.pool;
+        lastUsed     = source.lastUsed;
         listeners    = new WarningListeners<>(this, source.listeners);
     }
 
@@ -420,7 +425,7 @@ public class MetadataSource implements AutoCloseable {
                 schema = schema.toLowerCase(Locale.US);
             }
             quoteSchema = false;
-            try (ResultSet result = md.getTables(CATALOG, schema, "CI_Citation", null)) {
+            try (ResultSet result = md.getTables(catalog, schema, "CI_Citation", null)) {
                 if (result.next()) {
                     return;
                 }
@@ -566,25 +571,6 @@ public class MetadataSource implements AutoCloseable {
     }
 
     /**
-     * Maps method names to the name of columns in the table for the given metadata. The values in the
-     * returned map must be the same than the keys in the map returned by {@link #asValueMap(Object)}.
-     *
-     * @param  type  the type of metadata object for which to get column names.
-     * @return a map from method names to column names.
-     * @throws ClassCastException if the metadata object type does not extend a metadata interface
-     *         of the expected package.
-     */
-    @SuppressWarnings("ReturnOfCollectionOrArrayField")
-    private Map<String,String> asNameMap(final Class<?> type) throws ClassCastException {
-        assert Thread.holdsLock(this);
-        if (type != lastNameMapType) {
-            lastNameMapType = type;
-            lastNameMap = standard.asNameMap(type, KeyNamePolicy.METHOD_NAME, KeyNamePolicy.UML_IDENTIFIER);
-        }
-        return lastNameMap;
-    }
-
-    /**
      * Returns a view of the given metadata as a map. This method returns always a map using UML identifier
      * and containing all entries including the null ones because the {@code MetadataSource} implementation
      * assumes so.
@@ -595,7 +581,7 @@ public class MetadataSource implements AutoCloseable {
      *         of the expected package.
      */
     final Map<String,Object> asValueMap(final Object metadata) throws ClassCastException {
-        return standard.asValueMap(metadata, null, KeyNamePolicy.UML_IDENTIFIER, ValueExistencePolicy.ALL);
+        return standard.asValueMap(metadata, null, NAME_POLICY, ValueExistencePolicy.ALL);
     }
 
     /**
@@ -775,7 +761,7 @@ public class MetadataSource implements AutoCloseable {
              * on the search path specified in the database environment variables.
              */
             final DatabaseMetaData md = connection().getMetaData();
-            try (ResultSet rs = md.getColumns(CATALOG, schema, table, null)) {
+            try (ResultSet rs = md.getColumns(catalog, schema, table, null)) {
                 while (rs.next()) {
                     if (!columns.add(rs.getString("COLUMN_NAME"))) {
                         // Paranoiac check, but should never happen.
@@ -825,22 +811,37 @@ public class MetadataSource implements AutoCloseable {
     }
 
     /**
+     * Gets the {@link LookupInfo} instance for call to the {@link #readColumn(LookupInfo, Method, Dispatcher)} method.
+     * The call to those two methods must be in the same thread, and no other metadata object shall be queried between
+     * the two calls (unless {@link LookupInfo#setMetadataType(Class)} is invoked again).
+     *
+     * @param  type  the interface class. This is mapped to the table name in the database.
+     */
+    final LookupInfo getLookupInfo(final Class<?> type) {
+        final LookupInfo info = lastUsed.get();
+        info.setMetadataType(type);
+        return info;
+    }
+
+    /**
      * Invoked by {@link MetadataProxy} for fetching an attribute value from a table.
      *
-     * @param  type      the interface class. This is mapped to the table name in the database.
+     * @param  info      the interface type (together with cached information).
+     *                   This is mapped to the table name in the database.
      * @param  method    the method invoked. This is mapped to the column name in the database.
      * @param  toSearch  contains the identifier and preferred index of the record to search.
      * @return the value of the requested attribute.
      * @throws SQLException if the SQL query failed.
      * @throws MetadataStoreException if a value was not found or can not be converted to the expected type.
      */
-    final Object getValue(Class<?> type, final Method method, final Dispatcher toSearch)
+    final Object readColumn(final LookupInfo info, final Method method, final Dispatcher toSearch)
             throws SQLException, MetadataStoreException
     {
         /*
          * If the identifier is prefixed with a table name as in "{CI_Organisation}identifier",
          * the name between bracket is a subtype of the given 'type' argument.
          */
+        Class<?> type = info.getMetadataType();
         if (toSearch.identifier.charAt(0) == TYPE_OPEN) {
             final int i = toSearch.identifier.indexOf(TYPE_CLOSE);
             if (i >= 0) {
@@ -855,11 +856,10 @@ public class MetadataSource implements AutoCloseable {
         final Class<?> elementType    = wantCollection ? Classes.boundOfParameterizedProperty(method) : returnType;
         final boolean  isMetadata     = standard.isMetadata(elementType);
         final String   tableName      = getTableName(type);
-        final String   columnName;
+        final String   columnName     = info.asNameMap(standard).get(method.getName());
         final boolean  isArray;
         Object value;
         synchronized (this) {
-            columnName = asNameMap(type).get(method.getName());
             if (!getExistingColumns(tableName).contains(columnName)) {
                 value   = null;
                 isArray = false;
@@ -869,7 +869,7 @@ public class MetadataSource implements AutoCloseable {
                  * Note that the usage of 'result' must stay inside this synchronized block
                  * because we can not assume that JDBC connections are thread-safe.
                  */
-                CachedStatement result = take(type, toSearch.preferredIndex);
+                CachedStatement result = take(type, JDK8.toUnsignedInt(toSearch.preferredIndex));
                 if (result == null) {
                     final SQLBuilder helper = helper();
                     final String query = helper.clear().append("SELECT * FROM ")
@@ -884,7 +884,7 @@ public class MetadataSource implements AutoCloseable {
                     value = array.getArray();
                     array.free();
                 }
-                toSearch.preferredIndex = recycle(result, toSearch.preferredIndex);
+                toSearch.preferredIndex = (byte) recycle(result, JDK8.toUnsignedInt(toSearch.preferredIndex));
             }
         }
         /*
@@ -899,7 +899,7 @@ public class MetadataSource implements AutoCloseable {
                     if (isMetadata) {
                         element = lookup(elementType, element.toString());
                     } else try {
-                        element = convert(elementType, element);
+                        element = info.convert(elementType, element);
                     } catch (UnconvertibleObjectException e) {
                         throw new MetadataStoreException(Errors.format(Errors.Keys.IllegalPropertyValueClass_3,
                                 columnName + '[' + i + ']', elementType, element.getClass()), e);
@@ -918,21 +918,13 @@ public class MetadataSource implements AutoCloseable {
          */
         if (value == null) {
             if (wantCollection) {
-                if (Set.class.isAssignableFrom(returnType)) {
-                    if (SortedSet.class.isAssignableFrom(returnType)) {
-                        return CollectionsExt.emptySortedSet();
-                    } else {
-                        return Collections.EMPTY_SET;
-                    }
-                } else {
-                    return Collections.EMPTY_LIST;
-                }
+                return CollectionsExt.empty(returnType);
             }
         } else {
             if (isMetadata) {
                 value = lookup(elementType, value.toString());
             } else try {
-                value = convert(elementType, value);
+                value = info.convert(elementType, value);
             } catch (UnconvertibleObjectException e) {
                 throw new MetadataStoreException(Errors.format(Errors.Keys.IllegalPropertyValueClass_3,
                         columnName, elementType, value.getClass()), e);
@@ -944,28 +936,6 @@ public class MetadataSource implements AutoCloseable {
                     return Collections.singletonList(value);
                 }
             }
-        }
-        return value;
-    }
-
-    /**
-     * Converts the specified non-metadata value into an object of the expected type.
-     * The expected value is an instance of a class outside the metadata package, for example
-     * {@link String}, {@link org.opengis.util.InternationalString}, {@link java.net.URI}, <i>etc.</i>
-     *
-     * @throws UnconvertibleObjectException if the value can not be converter.
-     */
-    @SuppressWarnings({"unchecked","rawtypes"})
-    private Object convert(final Class<?> targetType, Object value) throws UnconvertibleObjectException {
-        final Class<?> sourceType = value.getClass();
-        if (!targetType.isAssignableFrom(sourceType)) {
-            ObjectConverter converter = lastConverter;
-            if (converter == null || !converter.getSourceClass().isAssignableFrom(sourceType) ||
-                                     !targetType.isAssignableFrom(converter.getTargetClass()))
-            {
-                lastConverter = converter = ObjectConverters.find(sourceType, targetType);
-            }
-            value = converter.apply(value);
         }
         return value;
     }
