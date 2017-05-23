@@ -1025,11 +1025,11 @@ public abstract class Vector extends AbstractList<Number> implements RandomAcces
      * @see #floatValue(int)
      */
     public float[] floatValues() {
-        final float[] copy = new float[size()];
-        for (int i=0; i<copy.length; i++) {
-            copy[i] = (float) doubleValue(i);
+        final float[] array = new float[size()];
+        for (int i=0; i<array.length; i++) {
+            array[i] = floatValue(i);
         }
-        return copy;
+        return array;
     }
 
     /**
