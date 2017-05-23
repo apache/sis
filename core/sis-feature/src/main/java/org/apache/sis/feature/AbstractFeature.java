@@ -21,6 +21,7 @@ import java.util.Iterator;
 import java.util.Collection;
 import java.util.Collections;
 import java.io.Serializable;
+import org.opengis.util.ScopedName;
 import org.opengis.util.GenericName;
 import org.opengis.metadata.quality.DataQuality;
 import org.opengis.metadata.maintenance.ScopeCode;
@@ -234,7 +235,7 @@ public abstract class AbstractFeature implements Serializable {
         } else if (pt instanceof DefaultAssociationRole) {
             return ((DefaultAssociationRole) pt).newInstance();
         } else {
-            throw unsupportedPropertyType(pt.getName());
+            throw new IllegalArgumentException(unsupportedPropertyType(pt.getName()));
         }
     }
 
@@ -269,7 +270,7 @@ public abstract class AbstractFeature implements Serializable {
             final int maximumOccurs = ((DefaultAssociationRole) pt).getMaximumOccurs();
             return maximumOccurs > 1 ? Collections.EMPTY_LIST : null;       // No default value for associations.
         } else {
-            throw unsupportedPropertyType(pt.getName());
+            throw new IllegalArgumentException(unsupportedPropertyType(pt.getName()));
         }
     }
 
@@ -435,7 +436,7 @@ public abstract class AbstractFeature implements Serializable {
         } else if (property instanceof AbstractAssociation) {
             setAssociationValue((AbstractAssociation) property, value);
         } else {
-            throw unsupportedPropertyType(property.getName());
+            throw new IllegalArgumentException(unsupportedPropertyType(property.getName()));
         }
     }
 
@@ -463,7 +464,7 @@ public abstract class AbstractFeature implements Serializable {
                     } while ((element = it.next()) == null || base.isInstance(element));
                     // Found an illegal value. Exeption is thrown below.
                 }
-                throw illegalValueClass(pt, base, element);         // 'element' can not be null here.
+                throw new ClassCastException(illegalValueClass(pt, base, element));         // 'element' can not be null here.
             }
         }
         ((AbstractAttribute) attribute).setValue(value);
@@ -481,14 +482,14 @@ public abstract class AbstractFeature implements Serializable {
             if (value instanceof AbstractFeature) {
                 final DefaultFeatureType actual = ((AbstractFeature) value).getType();
                 if (base != actual && !DefaultFeatureType.maybeAssignableFrom(base, actual)) {
-                    throw illegalFeatureType(role, base, actual);
+                    throw new IllegalArgumentException(illegalFeatureType(role, base, actual));
                 }
             } else if (value instanceof Collection<?>) {
                 verifyAssociationValues(role, (Collection<?>) value);
                 association.setValues((Collection<? extends AbstractFeature>) value);
                 return;                                 // Skip the setter at the end of this method.
             } else {
-                throw illegalValueClass(role, AbstractFeature.class, value);
+                throw new ClassCastException(illegalValueClass(role, AbstractFeature.class, value));
             }
         }
         association.setValue((AbstractFeature) value);
@@ -555,7 +556,7 @@ public abstract class AbstractFeature implements Serializable {
                 return verifyAssociationValue((DefaultAssociationRole) pt, value);
             }
         } else {
-            throw unsupportedPropertyType(pt.getName());
+            throw new IllegalArgumentException(unsupportedPropertyType(pt.getName()));
         }
         return value;
     }
@@ -578,7 +579,7 @@ public abstract class AbstractFeature implements Serializable {
         } else if (!isSingleton && value instanceof Collection<?>) {
             return CheckedArrayList.castOrCopy((Collection<?>) value, valueClass);
         } else {
-            throw illegalValueClass(type, valueClass, value);
+            throw new ClassCastException(illegalValueClass(type, valueClass, value));
         }
     }
 
@@ -604,13 +605,13 @@ public abstract class AbstractFeature implements Serializable {
             if (base == valueType || DefaultFeatureType.maybeAssignableFrom(base, valueType)) {
                 return isSingleton ? value : singletonList(AbstractFeature.class, role.getMinimumOccurs(), value);
             } else {
-                throw illegalFeatureType(role, base, valueType);
+                throw new IllegalArgumentException(illegalFeatureType(role, base, valueType));
             }
         } else if (!isSingleton && value instanceof Collection<?>) {
             verifyAssociationValues(role, (Collection<?>) value);
             return CheckedArrayList.castOrCopy((Collection<?>) value, AbstractFeature.class);
         } else {
-            throw illegalValueClass(role, AbstractFeature.class, value);
+            throw new ClassCastException(illegalValueClass(role, AbstractFeature.class, value));
         }
     }
 
@@ -623,11 +624,11 @@ public abstract class AbstractFeature implements Serializable {
         for (final Object value : values) {
             ArgumentChecks.ensureNonNullElement("values", index, value);
             if (!(value instanceof AbstractFeature)) {
-                throw illegalValueClass(role, AbstractFeature.class, value);
+                throw new ClassCastException(illegalValueClass(role, AbstractFeature.class, value));
             }
             final DefaultFeatureType type = ((AbstractFeature) value).getType();
             if (base != type && !DefaultFeatureType.maybeAssignableFrom(base, type)) {
-                throw illegalFeatureType(role, base, type);
+                throw new IllegalArgumentException(illegalFeatureType(role, base, type));
             }
             index++;
         }
@@ -645,34 +646,57 @@ public abstract class AbstractFeature implements Serializable {
     }
 
     /**
-     * Returns the exception for a property type which is neither an attribute or an association.
+     * Returns the exception message for a property not found. The message will differ depending
+     * on whether the property is not found because ambiguous or because it does not exist.
+     *
+     * @param  feature   the name of the feature where a property where searched ({@link String} or {@link GenericName}).
+     * @param  property  the name of the property which has not been found.
+     */
+    static String propertyNotFound(final FeatureType type, final Object feature, final String property) {
+        GenericName ambiguous = null;
+        for (final AbstractIdentifiedType p : type.getProperties(true)) {
+            final GenericName next = p.getName();
+            GenericName name = next;
+            do {
+                if (property.equalsIgnoreCase(name.toString())) {
+                    if (ambiguous == null) {
+                        ambiguous = next;
+                    } else {
+                        return Errors.format(Errors.Keys.AmbiguousName_3, ambiguous, next, property);
+                    }
+                }
+            } while (name instanceof ScopedName && (name = ((ScopedName) name).tail()) != null);
+        }
+        return Resources.format(Resources.Keys.PropertyNotFound_2, feature, property);
+    }
+
+    /**
+     * Returns the exception message for a property type which is neither an attribute or an association.
      * This method is invoked after a {@code PropertyType} has been found for the user-supplied name,
      * but that property can not be stored in or extracted from a {@link Property} instance.
      */
-    static IllegalArgumentException unsupportedPropertyType(final GenericName name) {
-        return new IllegalArgumentException(Resources.format(Resources.Keys.CanNotInstantiateProperty_1, name));
+    static String unsupportedPropertyType(final GenericName name) {
+        return Resources.format(Resources.Keys.CanNotInstantiateProperty_1, name);
     }
 
     /**
-     * Returns the exception for a property value of wrong Java class.
+     * Returns the exception message for a property value of wrong Java class.
      *
      * @param  value  the value, which shall be non-null.
      */
-    private static ClassCastException illegalValueClass(
-            final AbstractIdentifiedType property, final Class<?> expected, final Object value)
-    {
-        return new ClassCastException(Resources.format(Resources.Keys.IllegalPropertyValueClass_3,
-                property.getName(), expected, value.getClass()));
+    private static String illegalValueClass(final AbstractIdentifiedType property, final Class<?> expected, final Object value) {
+        return Resources.format(Resources.Keys.IllegalPropertyValueClass_3,
+                                property.getName(), expected, value.getClass());
     }
 
     /**
-     * Returns the exception for an association value of wrong type.
+     * Returns the exception message for an association value of wrong type.
      */
-    private static IllegalArgumentException illegalFeatureType(
+    private static String illegalFeatureType(
             final DefaultAssociationRole association, final FeatureType expected, final FeatureType actual)
     {
-        return new IllegalArgumentException(Resources.format(Resources.Keys.IllegalFeatureType_3,
-                association.getName(), expected.getName(), actual.getName()));
+        return Resources.format(Resources.Keys.IllegalFeatureType_3,
+                                association.getName(), expected.getName(), actual.getName());
     }
 
     /**

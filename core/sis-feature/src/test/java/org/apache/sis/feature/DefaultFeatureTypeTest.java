@@ -349,6 +349,15 @@ public final strictfp class DefaultFeatureTypeTest extends TestCase {
         } catch (IllegalArgumentException e) {
             final String message = e.getMessage();
             assertTrue(message, message.contains("name"));      // Property name.
+            assertTrue(message, message.contains("ns1:name"));  // Ambiguity 1.
+            assertTrue(message, message.contains("ns2:name"));  // Ambiguity 2.
+        }
+        try {
+            feature.getProperty("other");
+            fail("Expected no property.");
+        } catch (IllegalArgumentException e) {
+            final String message = e.getMessage();
+            assertTrue(message, message.contains("other"));     // Property name.
             assertTrue(message, message.contains("City"));      // Feature name.
         }
     }

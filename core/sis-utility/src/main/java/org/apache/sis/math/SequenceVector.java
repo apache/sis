@@ -16,6 +16,7 @@
  */
 package org.apache.sis.math;
 
+import java.util.Arrays;
 import java.io.Serializable;
 import org.apache.sis.measure.NumberRange;
 import org.apache.sis.util.ArgumentChecks;
@@ -84,6 +85,32 @@ abstract class SequenceVector extends Vector implements Serializable {
     @SuppressWarnings("ReturnOfCollectionOrArrayField")
     public final Vector compress(final double tolerance) {
         return this;
+    }
+
+    /**
+     * Creates the sequence as a floating point array.
+     */
+    @Override
+    public double[] doubleValues() {
+        if (increment(0).doubleValue() == 0) {
+            final double[] array = new double[size()];
+            Arrays.fill(array, doubleValue(0));
+            return array;
+        }
+        return super.doubleValues();
+    }
+
+    /**
+     * Creates the sequence as a floating point array.
+     */
+    @Override
+    public float[] floatValues() {
+        if (increment(0).doubleValue() == 0) {
+            final float[] array = new float[size()];
+            Arrays.fill(array, floatValue(0));
+            return array;
+        }
+        return super.floatValues();
     }
 
 

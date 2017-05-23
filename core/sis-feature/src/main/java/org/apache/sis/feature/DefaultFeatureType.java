@@ -826,7 +826,7 @@ public class DefaultFeatureType extends AbstractIdentifiedType implements Featur
         if (pt != null) {
             return pt;
         }
-        throw new IllegalArgumentException(Resources.format(Resources.Keys.PropertyNotFound_2, getName(), name));
+        throw new IllegalArgumentException(AbstractFeature.propertyNotFound(this, getName(), name));
     }
 
     /**

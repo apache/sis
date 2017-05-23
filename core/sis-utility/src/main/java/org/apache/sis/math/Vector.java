@@ -263,6 +263,8 @@ public abstract class Vector extends AbstractList<Number> implements RandomAcces
      * @throws IndexOutOfBoundsException if the given index is out of bounds.
      * @throws NullPointerException if the value is {@code null} (never happen if this vector wraps an array of primitive type).
      * @throws NumberFormatException if the value is stored as a {@code String} and can not be parsed.
+     *
+     * @see #doubleValues()
      */
     public abstract double doubleValue(int index);
 
@@ -276,6 +278,8 @@ public abstract class Vector extends AbstractList<Number> implements RandomAcces
      * @throws IndexOutOfBoundsException if the given index is out of bounds.
      * @throws NullPointerException if the value is {@code null} (never happen if this vector wraps an array of primitive type).
      * @throws NumberFormatException if the value is stored as a {@code String} and can not be parsed.
+     *
+     * @see #floatValues()
      */
     public abstract float floatValue(int index);
 
@@ -389,6 +393,8 @@ public abstract class Vector extends AbstractList<Number> implements RandomAcces
      * @param  index  the index in the [0 … {@linkplain #size() size}-1] range.
      * @return a string representation of the value at the given index (may be {@code null}).
      * @throws IndexOutOfBoundsException if the given index is out of bounds.
+     *
+     * @see #toString()
      */
     public abstract String stringValue(int index);
 
@@ -998,9 +1004,49 @@ public abstract class Vector extends AbstractList<Number> implements RandomAcces
     }
 
     /**
+     * Copies all values in an array of double precision floating point numbers.
+     * This method is for inter-operability with APIs requiring an array of primitive type.
+     *
+     * <p>The default implementation invokes {@link #doubleValue(int)} for all indices from 0 inclusive
+     * to {@link #size()} exclusive. Subclasses may override with more efficient implementation.</p>
+     *
+     * @return a copy of all floating point values in this vector.
+     *
+     * @see #doubleValue(int)
+     */
+    public double[] doubleValues() {
+        final double[] array = new double[size()];
+        for (int i=0; i<array.length; i++) {
+            array[i] = doubleValue(i);
+        }
+        return array;
+    }
+
+    /**
+     * Copies all values in an array of single precision floating point numbers.
+     * This method is for inter-operability with APIs requiring an array of primitive type.
+     *
+     * <p>The default implementation invokes {@link #floatValue(int)} for all indices from 0 inclusive
+     * to {@link #size()} exclusive. Subclasses may override with more efficient implementation.</p>
+     *
+     * @return a copy of all floating point values in this vector.
+     *
+     * @see #floatValue(int)
+     */
+    public float[] floatValues() {
+        final float[] array = new float[size()];
+        for (int i=0; i<array.length; i++) {
+            array[i] = floatValue(i);
+        }
+        return array;
+    }
+
+    /**
      * Returns a string representation of this vector.
      *
      * @return a string representation of this vector.
+     *
+     * @see #stringValue(int)
      */
     @Override
     public String toString() {

@@ -702,9 +702,29 @@ class PropertyAccessor {
         try {
             return method.invoke(metadata, (Object[]) null);
         } catch (IllegalAccessException e) {
-            // Should never happen since 'getters' should contains only public methods.
-            throw new AssertionError(e);
+            /*
+             * Should never happen since 'getters' should contains only public methods.
+             */
+            throw new AssertionError(method.toString(), e);
+        } catch (IllegalArgumentException e) {
+            /*
+             * May happen if the getter method is defined only in the implementation class, not in the interface,
+             * but the given metadata object is an instance of another implementation class than the expected one.
+             *
+             * Example: CI_Citation.graphics didn't existed in ISO 19115:2003 and has been added in ISO 19115:2014.
+             * Consequently there is no Citation.getGraphics() method in GeoAPI 3.0 interfaces (only in GeoAPI 3.1),
+             * but there is a DefaultCitation.getGraphics() method in Apache SIS implementation since SIS is a little
+             * bit ahead of GeoAPI. But if the 'metadata' argument is another implementation of the Citation interface,
+             * attempt to invoke DefaultCitation.getGraphics() will fail with IllegalArgumentException.
+             */
+            if (!method.getDeclaringClass().isInstance(metadata)) {
+                return null;
+            }
+            throw e;                                // Exception thrown for another reason. This is probably a bug.
         } catch (InvocationTargetException e) {
+            /*
+             * Exception in user code (not a wrong usage of reflection).
+             */
             final Throwable cause = e.getTargetException();
             if (cause instanceof RuntimeException) {
                 throw (RuntimeException) cause;
