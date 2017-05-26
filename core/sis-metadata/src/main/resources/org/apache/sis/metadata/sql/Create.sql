@@ -82,8 +82,7 @@ FOREIGN KEY ("authority") REFERENCES metadata."CI_Citation" (ID) ON UPDATE RESTR
 
 CREATE TABLE metadata."MD_Format" (
   ID                            VARCHAR(15) NOT NULL PRIMARY KEY,
-  "name"                        VARCHAR(120),
-  "specification"               VARCHAR(120),
+  "formatSpecificationCitation" VARCHAR(15) REFERENCES metadata."CI_Citation" (ID) ON UPDATE RESTRICT ON DELETE RESTRICT,
   "amendmentNumber"             VARCHAR(120),
   "fileDecompressionTechnique"  VARCHAR(120));
 
@@ -125,10 +124,10 @@ INSERT INTO metadata."CI_Citation" (ID, "alternateTitle", "title") VALUES
   ('CSV-MF',  'CSV',     'OGC Moving Features Encoding Extension: Simple Comma-Separated Values (CSV)'),
   ('GPX',     'GPX',     'GPS Exchange Format');
 
-INSERT INTO metadata."MD_Format" (ID, "name", "specification") VALUES
-  ('GeoTIFF', 'GeoTIFF', 'GeoTIFF Coverage Encoding Profile'),
-  ('NetCDF',  'NetCDF',  'NetCDF Classic and 64-bit Offset Format'),
-  ('PNG',     'PNG',     'PNG (Portable Network Graphics) Specification'),
-  ('CSV',     'CSV',     'Common Format and MIME Type for Comma-Separated Values (CSV) Files'),
-  ('CSV-MF',  'CSV',     'OGC Moving Features Encoding Extension: Simple Comma-Separated Values (CSV)'),
-  ('GPX',     'GPX',     'GPS Exchange Format');
+INSERT INTO metadata."MD_Format" (ID, "formatSpecificationCitation") VALUES
+  ('GeoTIFF', 'GeoTIFF'),
+  ('NetCDF',  'NetCDF'),
+  ('PNG',     'PNG'),
+  ('CSV',     'CSV'),
+  ('CSV-MF',  'CSV-MF'),
+  ('GPX',     'GPX');
