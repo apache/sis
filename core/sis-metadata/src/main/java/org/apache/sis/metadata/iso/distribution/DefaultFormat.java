@@ -27,6 +27,7 @@ import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.distribution.Format;
 import org.opengis.metadata.distribution.Medium;
 import org.opengis.metadata.distribution.Distributor;
+import org.apache.sis.internal.metadata.Dependencies;
 import org.apache.sis.internal.metadata.LegacyPropertyAdapter;
 import org.apache.sis.metadata.iso.citation.DefaultCitation;
 import org.apache.sis.metadata.iso.ISOMetadata;
@@ -256,6 +257,7 @@ public class DefaultFormat extends ISOMetadata implements Format {
     @Override
     @Deprecated
     @XmlElement(name = "specification")
+    @Dependencies("getFormatSpecificationCitation")
     public InternationalString getSpecification() {
         final Citation citation = getFormatSpecificationCitation();
         return (citation != null) ? citation.getTitle() : null;
@@ -292,6 +294,7 @@ public class DefaultFormat extends ISOMetadata implements Format {
     @Override
     @Deprecated
     @XmlElement(name = "name", required = true)
+    @Dependencies("getFormatSpecificationCitation")
     public InternationalString getName() {
         final Citation citation = getFormatSpecificationCitation();
         if (citation != null) {
@@ -332,6 +335,7 @@ public class DefaultFormat extends ISOMetadata implements Format {
     @Override
     @Deprecated
     @XmlElement(name = "version", required = true)
+    @Dependencies("getFormatSpecificationCitation")
     public InternationalString getVersion() {
         final Citation citation = getFormatSpecificationCitation();
         return (citation != null) ? citation.getEdition() : null;

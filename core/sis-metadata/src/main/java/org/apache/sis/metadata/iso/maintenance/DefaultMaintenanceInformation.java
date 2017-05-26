@@ -37,6 +37,7 @@ import org.opengis.util.InternationalString;
 import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.metadata.iso.citation.DefaultCitationDate;
 import org.apache.sis.internal.metadata.LegacyPropertyAdapter;
+import org.apache.sis.internal.metadata.Dependencies;
 
 import static org.opengis.annotation.Obligation.OPTIONAL;
 import static org.opengis.annotation.Specification.ISO_19115;
@@ -246,6 +247,7 @@ public class DefaultMaintenanceInformation extends ISOMetadata implements Mainte
     @Override
     @Deprecated
     @XmlElement(name = "dateOfNextUpdate")
+    @Dependencies("getMaintenanceDates")
     public Date getDateOfNextUpdate() {
         final Collection<CitationDate> dates = getMaintenanceDates();
         if (dates != null) { // May be null on XML marshalling.
@@ -352,6 +354,7 @@ public class DefaultMaintenanceInformation extends ISOMetadata implements Mainte
     @Override
     @Deprecated
     @XmlElement(name = "updateScope")
+    @Dependencies("getMaintenanceScopes")
     public final Collection<ScopeCode> getUpdateScopes() {
         return new LegacyPropertyAdapter<ScopeCode,Scope>(getMaintenanceScopes()) {
             /** Stores a legacy value into the new kind of value. */
@@ -402,6 +405,7 @@ public class DefaultMaintenanceInformation extends ISOMetadata implements Mainte
     @Override
     @Deprecated
     @XmlElement(name = "updateScopeDescription")
+    @Dependencies("getMaintenanceScopes")
     public final Collection<ScopeDescription> getUpdateScopeDescriptions() {
         return new LegacyPropertyAdapter<ScopeDescription,Scope>(getMaintenanceScopes()) {
             /** Stores a legacy value into the new kind of value. */

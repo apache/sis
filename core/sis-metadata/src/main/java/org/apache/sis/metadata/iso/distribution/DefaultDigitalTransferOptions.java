@@ -30,6 +30,7 @@ import org.opengis.metadata.distribution.Medium;
 import org.apache.sis.internal.metadata.LegacyPropertyAdapter;
 import org.apache.sis.measure.ValueRange;
 import org.apache.sis.metadata.iso.ISOMetadata;
+import org.apache.sis.internal.metadata.Dependencies;
 
 import static org.apache.sis.internal.metadata.MetadataUtilities.ensurePositive;
 
@@ -267,6 +268,7 @@ public class DefaultDigitalTransferOptions extends ISOMetadata implements Digita
     @Override
     @Deprecated
     @XmlElement(name = "offLine")
+    @Dependencies("getOffLines")
     public Medium getOffLine() {
         return LegacyPropertyAdapter.getSingleton(getOffLines(), Medium.class, null, DefaultDigitalTransferOptions.class, "getOffLine");
     }

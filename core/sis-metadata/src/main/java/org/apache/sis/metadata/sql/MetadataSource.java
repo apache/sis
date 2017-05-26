@@ -913,14 +913,11 @@ public class MetadataSource implements AutoCloseable {
             }
         }
         /*
-         * Now converts the value to its final type, including conversion of null
-         * value to empty collections if the return value should be a collection.
+         * Now converts the value to its final type. To be strict, we should convert null values into empty collections
+         * if the return type is a collection type. But we leave this task to the caller (which is the Dispatcher class)
+         * for making easier to detect when a value is absent, for allowing Dispatcher to manage its cache.
          */
-        if (value == null) {
-            if (wantCollection) {
-                return CollectionsExt.empty(returnType);
-            }
-        } else {
+        if (value != null) {
             if (isMetadata) {
                 value = lookup(elementType, value.toString());
             } else try {
