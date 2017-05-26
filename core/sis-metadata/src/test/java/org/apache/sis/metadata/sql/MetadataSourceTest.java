@@ -54,7 +54,7 @@ public final strictfp class MetadataSourceTest extends TestCase {
         try (MetadataSource source = new MetadataSource(MetadataStandard.ISO_19115, ds, "metadata", null)) {
             source.install();
             verifyFormats(source);
-//          testSearch(source);
+            testSearch(source);
         } finally {
             TestDatabase.drop(ds);
         }
