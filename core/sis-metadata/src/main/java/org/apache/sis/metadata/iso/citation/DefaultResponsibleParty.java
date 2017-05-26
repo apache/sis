@@ -31,6 +31,7 @@ import org.opengis.metadata.citation.ResponsibleParty;
 import org.opengis.metadata.citation.Role;
 import org.opengis.util.InternationalString;
 import org.apache.sis.util.iso.Types;
+import org.apache.sis.internal.metadata.Dependencies;
 import org.apache.sis.internal.metadata.LegacyPropertyAdapter;
 
 
@@ -158,7 +159,7 @@ public class DefaultResponsibleParty extends DefaultResponsibility implements Re
             final Class<? extends Party> type, final boolean position)
     {
         InternationalString name = null;
-        if (parties != null) { // May be null on marshalling.
+        if (parties != null) {                              // May be null on marshalling.
             for (final Party party : parties) {
                 if (type.isInstance(party)) {
                     if (name != null) {
@@ -215,6 +216,7 @@ public class DefaultResponsibleParty extends DefaultResponsibility implements Re
     @Override
     @Deprecated
     @XmlElement(name = "individualName")
+    @Dependencies("getParties")
     public String getIndividualName() {
         final InternationalString name = getIndividual(false);
         return (name != null) ? name.toString() : null;
@@ -254,6 +256,7 @@ public class DefaultResponsibleParty extends DefaultResponsibility implements Re
     @Override
     @Deprecated
     @XmlElement(name = "organisationName")
+    @Dependencies("getParties")
     public InternationalString getOrganisationName() {
         return getName(getParties(), Organisation.class, false);
     }
@@ -293,6 +296,7 @@ public class DefaultResponsibleParty extends DefaultResponsibility implements Re
     @Override
     @Deprecated
     @XmlElement(name = "positionName")
+    @Dependencies("getParties")
     public InternationalString getPositionName() {
         return getIndividual(true);
     }
@@ -329,6 +333,7 @@ public class DefaultResponsibleParty extends DefaultResponsibility implements Re
     @Override
     @Deprecated
     @XmlElement(name = "contactInfo")
+    @Dependencies("getParties")
     public Contact getContactInfo() {
         final Collection<Party> parties = getParties();
         if (parties != null) { // May be null on marshalling.

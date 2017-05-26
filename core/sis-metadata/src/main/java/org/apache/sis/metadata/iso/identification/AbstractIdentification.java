@@ -42,6 +42,7 @@ import org.opengis.metadata.maintenance.MaintenanceInformation;
 import org.opengis.metadata.spatial.SpatialRepresentationType;
 import org.opengis.temporal.Duration;
 import org.opengis.util.InternationalString;
+import org.apache.sis.internal.metadata.Dependencies;
 import org.apache.sis.internal.metadata.LegacyPropertyAdapter;
 import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.util.iso.Types;
@@ -742,6 +743,7 @@ public class AbstractIdentification extends ISOMetadata implements Identificatio
     @Override
     @Deprecated
     @XmlElement(name = "aggregationInfo")
+    @Dependencies("getAssociatedResources")
     public Collection<AggregateInformation> getAggregationInfo() {
         return new LegacyPropertyAdapter<AggregateInformation,AssociatedResource>(getAssociatedResources()) {
             @Override protected AssociatedResource wrap(final AggregateInformation value) {
