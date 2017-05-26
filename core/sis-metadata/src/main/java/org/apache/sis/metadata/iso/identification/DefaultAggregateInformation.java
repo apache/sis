@@ -29,6 +29,7 @@ import org.opengis.metadata.identification.AssociatedResource;
 import org.opengis.metadata.identification.AssociationType;
 import org.opengis.metadata.identification.InitiativeType;
 import org.apache.sis.metadata.iso.citation.DefaultCitation;
+import org.apache.sis.internal.metadata.Dependencies;
 
 
 /**
@@ -124,6 +125,7 @@ public class DefaultAggregateInformation extends DefaultAssociatedResource imple
     @Override
     @Deprecated
     @XmlElement(name = "aggregateDataSetName")
+    @Dependencies("getName")
     public Citation getAggregateDataSetName() {
         return getName();
     }
@@ -150,6 +152,7 @@ public class DefaultAggregateInformation extends DefaultAssociatedResource imple
     @Override
     @Deprecated
     @XmlElement(name = "aggregateDataSetIdentifier")
+    @Dependencies("getName")
     public Identifier getAggregateDataSetIdentifier() {
         return getAggregateDataSetIdentifier(getAggregateDataSetName());
     }

@@ -28,6 +28,7 @@ import org.opengis.metadata.content.RangeDimension;
 import org.opengis.metadata.content.SampleDimension;
 import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.metadata.TitleProperty;
+import org.apache.sis.internal.metadata.Dependencies;
 
 
 /**
@@ -193,6 +194,7 @@ public class DefaultRangeDimension extends ISOMetadata implements RangeDimension
     @Override
     @Deprecated
     @XmlElement(name = "descriptor")
+    @Dependencies("getDescription")
     public InternationalString getDescriptor() {
         return getDescription();
     }
