@@ -25,9 +25,11 @@ import org.apache.sis.util.Classes;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.collection.BackingStoreException;
 import org.apache.sis.internal.util.CollectionsExt;
+import org.apache.sis.metadata.MetadataStandard;
 import org.apache.sis.metadata.KeyNamePolicy;
 import org.apache.sis.metadata.ValueExistencePolicy;
 import org.apache.sis.internal.system.Semaphores;
+import org.apache.sis.internal.metadata.Dependencies;
 
 // Branch-dependent imports
 import org.apache.sis.internal.jdk8.JDK8;
@@ -128,13 +130,11 @@ final class Dispatcher implements InvocationHandler {
      */
     @Override
     public Object invoke(final Object proxy, final Method method, final Object[] args) {
-        final Class<?> type = method.getDeclaringClass();
-        final String   name = method.getName();
-        final int      n    = (args != null) ? args.length : 0;
-        switch (name) {
+        final int n = (args != null) ? args.length : 0;
+        switch (method.getName()) {
             case "toString": {
                 if (n != 0) break;
-                return toString(type);
+                return toString(method.getDeclaringClass());
             }
             case "hashCode": {
                 if (n != 0) break;
@@ -149,28 +149,80 @@ final class Dispatcher implements InvocationHandler {
                 return (args[0] == source) ? identifier : null;
             }
             default: {
-                if (n != 0 || !source.standard.isMetadata(type)) {
-                    throw new BackingStoreException(Errors.format(Errors.Keys.UnsupportedOperation_1,
-                                Classes.getShortName(type) + '.' + name));
+                if (n != 0) break;
+                /*
+                 * The invoked method is a method from the metadata interface.
+                 * Consequently, the information should exist in the database.
+                 * First, we will check the cache. If the value is not present, we will query the database and
+                 * fetch the cache again (because the class that implement the cache may perform some computation).
+                 */
+                Object value;
+                try {
+                    value = fetchValue(source.getLookupInfo(method.getDeclaringClass()), method);
+                } catch (ReflectiveOperationException | SQLException | MetadataStoreException e) {
+                    Class<?> returnType = method.getReturnType();
+                    if (Collection.class.isAssignableFrom(returnType)) {
+                        final Class<?> elementType = Classes.boundOfParameterizedProperty(method);
+                        if (elementType != null) {
+                            returnType = elementType;
+                        }
+                    }
+                    throw new BackingStoreException(Errors.format(Errors.Keys.DatabaseError_2, returnType, identifier), e);
                 }
-                break;
+                /*
+                 * At this point we got the metadata property value, which may be null.
+                 * If the method returns a collection, replace null value by empty set or empty list.
+                 */
+                if (value == null) {
+                    final Class<?> returnType = method.getReturnType();
+                    if (Collection.class.isAssignableFrom(returnType)) {
+                        value = CollectionsExt.empty(returnType);
+                    }
+                }
+                return value;
             }
         }
         /*
-         * The invoked method is a method from the metadata interface.
-         * Consequently, the information should exist in the database.
-         * First, we will check the cache. If the value is not present, we will query the database and
-         * fetch the cache again (because the class that implement the cache may perform some computation).
+         * Unknown method invoked, or wrong number of arguments.
          */
+        throw new BackingStoreException(Errors.format(Errors.Keys.UnsupportedOperation_1,
+                    Classes.getShortName(method.getDeclaringClass()) + '.' + method.getName()));
+    }
+
+    /**
+     * Gets, computes or read from the database a metadata property value.
+     * This method returns the first non-null value in the following choices:
+     *
+     * <ol>
+     *   <li>If the property value is present in the {@linkplain #cache}, the cached value.</li>
+     *   <li>If the "cache" can compute the value from other property values, the result of that computation.
+     *       This case happen mostly for deprecated properties that are replaced by one or more newer properties.</li>
+     *   <li>The value stored in the database. The database is queried only once for the requested property
+     *       and the result is cached for future reuse.</li>
+     * </ol>
+     *
+     * @param  info    information related to the <em>interface</em> of the metadata object for which a property
+     *                 value is requested. This is used for fetching information from the {@link MetadataStandard}.
+     * @param  method  the method to be invoked. The class given by {@link Method#getDeclaringClass()} is usually
+     *                 the same than the one given by {@link LookupInfo#getMetadataType()}, but not necessarily.
+     *                 The two classes may differ if the method is declared only in the implementation class.
+     * @return the property value, or {@code null} if none.
+     * @throws ReflectiveOperationException if an error occurred while querying the {@link #cache}.
+     * @throws SQLException if an error occurred while querying the database.
+     * @throws MetadataStoreException if a value was not found or can not be converted to the expected type.
+     */
+    private Object fetchValue(final LookupInfo info, final Method method)
+            throws ReflectiveOperationException, SQLException, MetadataStoreException
+    {
         Object value = null;
-        final LookupInfo info = source.getLookupInfo(type);
         final long nullBit = 1L << info.asIndexMap(source.standard).get(method.getName());     // Okay even if overflow.
         /*
          * The NULL_COLLECTION semaphore prevents creation of new empty collections by getter methods
          * (a consequence of lazy instantiation). The intend is to avoid creation of unnecessary objects
          * for all unused properties. Users should not see behavioral difference.
          */
-        if ((nullValues & nullBit) == 0) try {
+        if ((nullValues & nullBit) == 0) {
+            final Class<?> type = info.getMetadataType();
             final boolean allowNull = Semaphores.queryAndSet(Semaphores.NULL_COLLECTION);
             try {
                 Object cache = this.cache;
@@ -202,6 +254,31 @@ final class Dispatcher implements InvocationHandler {
                                 value = method.invoke(cache);
                             }
                         }
+                    } else {
+                        /*
+                         * If we found no explicit value for the requested property, maybe it is a deprecated property
+                         * computed from other property values and those other properties have not yet been stored in
+                         * the cache object (because that "cache" is also the object computing deprecated properties).
+                         */
+                        final Class<?> impl = source.standard.getImplementation(type);
+                        if (impl != null) {
+                            final Dependencies dependencies = impl.getMethod(method.getName()).getAnnotation(Dependencies.class);
+                            if (dependencies != null) {
+                                boolean hasValue = false;
+                                for (final String dep : dependencies.value()) {
+                                    info.setMetadataType(type);
+                                    hasValue |= (fetchValue(info, impl.getMethod(dep)) != null);
+                                }
+                                if (hasValue) {
+                                    cache = this.cache;             // Created by recursive 'invoke(…)' call above.
+                                    if (cache != null) {
+                                        synchronized (cache) {
+                                            value = method.invoke(cache);             // Attempt a new computation.
+                                        }
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
             } finally {
@@ -209,22 +286,9 @@ final class Dispatcher implements InvocationHandler {
                     Semaphores.clear(Semaphores.NULL_COLLECTION);
                 }
             }
-        } catch (ReflectiveOperationException | SQLException | MetadataStoreException e) {
-            Class<?> returnType = method.getReturnType();
-            if (Collection.class.isAssignableFrom(returnType)) {
-                final Class<?> elementType = Classes.boundOfParameterizedProperty(method);
-                if (elementType != null) {
-                    returnType = elementType;
-                }
-            }
-            throw new BackingStoreException(Errors.format(Errors.Keys.DatabaseError_2, returnType, identifier), e);
         }
         if (value == null) {
             nullValues |= nullBit;
-            final Class<?> returnType = method.getReturnType();
-            if (Collection.class.isAssignableFrom(returnType)) {
-                value = CollectionsExt.empty(returnType);
-            }
         }
         return value;
     }
