@@ -20,12 +20,15 @@ import java.util.Date;
 import java.util.Locale;
 import java.util.Random;
 import java.util.Collection;
+import java.util.Map;
+import java.lang.reflect.Method;
 import org.opengis.util.CodeList;
 import org.opengis.metadata.identification.CharacterSet;
 import org.apache.sis.util.Numbers;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.collection.CheckedContainer;
 import org.apache.sis.internal.util.CollectionsExt;
+import org.apache.sis.internal.metadata.Dependencies;
 import org.apache.sis.test.AnnotationsTestCase;
 import org.apache.sis.test.TestUtilities;
 import org.apache.sis.test.DependsOn;
@@ -112,7 +115,7 @@ public abstract strictfp class MetadataTestCase extends AnnotationsTestCase {
      * @param  type      the type of value to create.
      * @return the value of the given {@code type}, or of a type convertible to the given type.
      */
-    protected Object valueFor(final String property, final Class<?> type) {
+    protected Object sampleValueFor(final String property, final Class<?> type) {
         if (CharSequence.class.isAssignableFrom(type)) {
             return "Dummy value for " + property + '.';
         }
@@ -271,7 +274,7 @@ public abstract strictfp class MetadataTestCase extends AnnotationsTestCase {
                 fail("Non writable property: " + accessor + '.' + property);
             }
             if (isWritable) {
-                final Object newValue = valueFor(property, elementType);
+                final Object newValue = sampleValueFor(property, elementType);
                 final Object oldValue = accessor.set(i, instance, newValue, PropertyAccessor.RETURN_PREVIOUS);
                 assertEquals("PropertyAccessor.set(…) shall return the value previously returned by get(…).", value, oldValue);
                 value = accessor.get(i, instance);
@@ -343,6 +346,52 @@ public abstract strictfp class MetadataTestCase extends AnnotationsTestCase {
 
                     // Property shall be a singleton.
                     assertSame(message, elementType, accessor.type(index, TypeValuePolicy.PROPERTY_TYPE));
+                }
+            }
+        }
+    }
+
+    /**
+     * Verifies the {@link Dependencies} annotations. This method verifies that the annotation is applied on
+     * deprecated getter methods, that the referenced properties exist and the getter methods of referenced
+     * properties are not deprecated.
+     *
+     * @throws NoSuchMethodException if {@link PropertyAccessor} references a non-existent method (would be a bug).
+     *
+     * @since 0.8
+     */
+    @Test
+    public void testDependenciesAnnotation() throws NoSuchMethodException {
+        for (final Class<?> type : types) {
+            final Class<?> impl = standard.getImplementation(type);
+            if (impl != null) {
+                Map<String,String> names = null;
+                for (final Method method : impl.getDeclaredMethods()) {
+                    final Dependencies dep = method.getAnnotation(Dependencies.class);
+                    if (dep != null) {
+                        final String name = method.getName();
+                        if (names == null) {
+                            names = standard.asNameMap(type, KeyNamePolicy.JAVABEANS_PROPERTY, KeyNamePolicy.METHOD_NAME);
+                        }
+                        /*
+                         * Currently, @Dependencies is applied only on deprecated getter methods.
+                         * However this policy may change in future Apache SIS versions.
+                         */
+                        assertTrue(name, name.startsWith("get"));
+                        assertTrue(name, method.isAnnotationPresent(Deprecated.class));
+                        /*
+                         * All dependencies shall be non-deprecated methods. Combined with above
+                         * restriction about @Dependencies applied only on deprected methods, this
+                         * ensure that there is no cycle.
+                         */
+                        for (final String ref : dep.value()) {
+                            // Verify that the dependency is a property name.
+                            assertEquals(name, names.get(ref), ref);
+
+                            // Verify that the referenced method is non-deprecated.
+                            assertFalse(name, impl.getMethod(names.get(ref)).isAnnotationPresent(Deprecated.class));
+                        }
+                    }
                 }
             }
         }

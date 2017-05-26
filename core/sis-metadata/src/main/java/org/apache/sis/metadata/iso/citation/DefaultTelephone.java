@@ -28,6 +28,7 @@ import org.opengis.metadata.citation.Telephone;
 import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.internal.geoapi.evolution.UnsupportedCodeList;
 import org.apache.sis.metadata.iso.ISOMetadata;
+import org.apache.sis.internal.metadata.Dependencies;
 
 import static org.opengis.annotation.Obligation.OPTIONAL;
 import static org.opengis.annotation.Obligation.MANDATORY;
@@ -311,6 +312,7 @@ public class DefaultTelephone extends ISOMetadata implements Telephone {
     @Override
     @Deprecated
     @XmlElement(name = "voice")
+    @Dependencies({"getNumber", "getNumberType"})
     public final Collection<String> getVoices() {
         return new LegacyTelephones(getOwner(), UnsupportedCodeList.VOICE);
     }
@@ -343,6 +345,7 @@ public class DefaultTelephone extends ISOMetadata implements Telephone {
     @Override
     @Deprecated
     @XmlElement(name = "facsimile")
+    @Dependencies({"getNumber", "getNumberType"})
     public final Collection<String> getFacsimiles() {
         return new LegacyTelephones(getOwner(), UnsupportedCodeList.FACSIMILE);
     }

@@ -16,6 +16,7 @@
  */
 package org.apache.sis.metadata.sql;
 
+import java.util.Collections;
 import javax.sql.DataSource;
 import org.postgresql.ds.PGSimpleDataSource;
 import org.opengis.metadata.citation.Citation;
@@ -23,8 +24,10 @@ import org.opengis.metadata.citation.PresentationForm;
 import org.opengis.metadata.citation.OnLineFunction;
 import org.opengis.metadata.citation.OnlineResource;
 import org.opengis.metadata.citation.Role;
+import org.opengis.metadata.citation.Telephone;
 import org.apache.sis.internal.metadata.sql.TestDatabase;
 import org.apache.sis.metadata.iso.citation.HardCodedCitations;
+import org.apache.sis.metadata.iso.citation.DefaultTelephone;
 import org.apache.sis.metadata.MetadataStandard;
 import org.apache.sis.test.TestUtilities;
 import org.apache.sis.test.TestCase;
@@ -69,6 +72,7 @@ public final strictfp class MetadataWriterTest extends TestCase {
             write();
             search();
             read();
+            readWriteDeprecated();
             source.close();
         } finally {
             TestDatabase.drop(ds);
@@ -92,6 +96,7 @@ public final strictfp class MetadataWriterTest extends TestCase {
             write();
             search();
             read();
+            readWriteDeprecated();
         } finally {
             source.close();
         }
@@ -179,5 +184,29 @@ public final strictfp class MetadataWriterTest extends TestCase {
          */
         assertEquals("EPSG", source.proxy (c));
         assertEquals("EPSG", source.search(c));
+    }
+
+    /**
+     * Read and write a metadata object containing deprecated properties.
+     * The metadata tested by this method is:
+     *
+     * {@preformat text
+     *   Telephone
+     *     ├─Number………………… 01.02.03.04
+     *     └─Number type…… Voice
+     * }
+     *
+     * The metadata should be stored in columns named {@code "number"} and {@code "numberType"} even if we
+     * constructed the metadata using the deprecated {@code "voice"} property. Conversely, at reading time
+     * the deprecated {@code "voice"} property should be converted in reading of non-deprecated properties.
+     */
+    @SuppressWarnings("deprecation")
+    private void readWriteDeprecated() throws MetadataStoreException {
+        final DefaultTelephone tel = new DefaultTelephone();
+        tel.setVoices(Collections.singleton("01.02.03.04"));
+        assertEquals("01.02.03.04", source.add(tel));
+
+        final Telephone check = source.lookup(Telephone.class, "01.02.03.04");
+        assertEquals("01.02.03.04", TestUtilities.getSingleton(check.getVoices()));
     }
 }

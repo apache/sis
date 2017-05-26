@@ -32,6 +32,7 @@ import org.opengis.metadata.citation.OnlineResource;
 import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.util.resources.Messages;
 import org.apache.sis.internal.jaxb.Context;
+import org.apache.sis.internal.metadata.Dependencies;
 import org.apache.sis.internal.metadata.LegacyPropertyAdapter;
 import org.apache.sis.internal.geoapi.evolution.UnsupportedCodeList;
 
@@ -229,6 +230,7 @@ public class DefaultContact extends ISOMetadata implements Contact {
     @Override
     @Deprecated
     @XmlElement(name = "phone")
+    @Dependencies("getPhones")
     public Telephone getPhone() {
         Telephone phone = null;
         final Collection<Telephone> phones = getPhones();
@@ -316,6 +318,7 @@ public class DefaultContact extends ISOMetadata implements Contact {
     @Override
     @Deprecated
     @XmlElement(name = "address")
+    @Dependencies("getAddresses")
     public Address getAddress() {
         return LegacyPropertyAdapter.getSingleton(getAddresses(), Address.class, null, DefaultContact.class, "getAddress");
     }
@@ -367,6 +370,7 @@ public class DefaultContact extends ISOMetadata implements Contact {
     @Override
     @Deprecated
     @XmlElement(name = "onlineResource")
+    @Dependencies("getOnlineResources")
     public OnlineResource getOnlineResource() {
         return LegacyPropertyAdapter.getSingleton(getOnlineResources(), OnlineResource.class, null, DefaultContact.class, "getOnlineResource");
     }

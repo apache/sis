@@ -25,6 +25,7 @@ import org.opengis.annotation.UML;
 import org.opengis.util.GenericName;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.content.FeatureCatalogueDescription;
+import org.apache.sis.internal.metadata.Dependencies;
 import org.apache.sis.internal.metadata.LegacyPropertyAdapter;
 
 import static org.opengis.annotation.Obligation.OPTIONAL;
@@ -256,6 +257,7 @@ public class DefaultFeatureCatalogueDescription extends AbstractContentInformati
     @Override
     @Deprecated
     @XmlElement(name = "featureTypes")
+    @Dependencies("getFeatureTypeInfo")
     public final Collection<GenericName> getFeatureTypes() {
         return new LegacyPropertyAdapter<GenericName,DefaultFeatureTypeInfo>(getFeatureTypeInfo()) {
             /** Stores a legacy value into the new kind of value. */

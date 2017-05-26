@@ -31,6 +31,7 @@ import org.apache.sis.measure.ValueRange;
 import org.apache.sis.metadata.TitleProperty;
 import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.internal.jaxb.NonMarshalledAuthority;
+import org.apache.sis.internal.metadata.Dependencies;
 import org.apache.sis.internal.metadata.LegacyPropertyAdapter;
 
 import static org.apache.sis.internal.metadata.MetadataUtilities.ensurePositive;
@@ -228,6 +229,7 @@ public class DefaultMedium extends ISOMetadata implements Medium {
     @Override
     @Deprecated
     @XmlElement(name = "density")
+    @Dependencies("getDensity")
     public Collection<Double> getDensities() {
         return densities = nonNullCollection(densities, Double.class);
     }

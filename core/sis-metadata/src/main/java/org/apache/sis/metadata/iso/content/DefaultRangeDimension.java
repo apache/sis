@@ -29,6 +29,7 @@ import org.opengis.metadata.content.RangeDimension;
 import org.opengis.metadata.content.Band;
 import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.metadata.TitleProperty;
+import org.apache.sis.internal.metadata.Dependencies;
 
 import static org.opengis.annotation.Obligation.OPTIONAL;
 import static org.opengis.annotation.Specification.ISO_19115;
@@ -199,6 +200,7 @@ public class DefaultRangeDimension extends ISOMetadata implements RangeDimension
     @Override
     @Deprecated
     @XmlElement(name = "descriptor")
+    @Dependencies("getDescription")
     public InternationalString getDescriptor() {
         return getDescription();
     }

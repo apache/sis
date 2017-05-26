@@ -38,6 +38,7 @@ import org.apache.sis.metadata.TitleProperty;
 import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.metadata.iso.maintenance.DefaultScope;
 import org.apache.sis.metadata.iso.identification.DefaultResolution;
+import org.apache.sis.internal.metadata.Dependencies;
 import org.apache.sis.util.iso.Types;
 import org.apache.sis.xml.Namespaces;
 
@@ -261,6 +262,7 @@ public class DefaultSource extends ISOMetadata implements Source {
     @Override
     @Deprecated
     @XmlElement(name = "scaleDenominator")
+    @Dependencies("getSourceSpatialResolution")
     public RepresentativeFraction getScaleDenominator() {
         final Resolution resolution = getSourceSpatialResolution();
         return (resolution != null) ? resolution.getEquivalentScale() : null;
@@ -401,6 +403,7 @@ public class DefaultSource extends ISOMetadata implements Source {
     @Override
     @Deprecated
     @XmlElement(name = "sourceExtent")
+    @Dependencies("getScope")
     public Collection<Extent> getSourceExtents() {
         Scope scope = getScope();
         if (!(scope instanceof DefaultScope)) {
