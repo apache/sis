@@ -30,6 +30,7 @@ import org.opengis.util.InternationalString;
 import org.apache.sis.metadata.TitleProperty;
 import org.apache.sis.measure.ValueRange;
 import org.apache.sis.util.iso.Types;
+import org.apache.sis.internal.metadata.Dependencies;
 import org.apache.sis.internal.metadata.LegacyPropertyAdapter;
 
 import static org.apache.sis.internal.metadata.MetadataUtilities.ensurePositive;
@@ -545,6 +546,7 @@ public class DefaultExtendedElementInformation extends ISOMetadata implements Ex
     @Override
     @Deprecated
     @XmlElement(name = "rationale")
+    @Dependencies("getRationale")
     public Collection<InternationalString> getRationales() {
         return new AbstractSet<InternationalString>() {
             /** Returns 0 if empty, or 1 if a density has been specified. */
