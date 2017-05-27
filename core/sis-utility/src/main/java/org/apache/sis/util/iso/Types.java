@@ -502,9 +502,9 @@ public final class Types extends Static {
     }
 
     /**
-     * Returns the GeoAPI interface for the given ISO name, or {@code null} if none.
-     * The identifier argument shall be the value documented in the {@link UML#identifier()}
-     * annotation associated with the GeoAPI interface.
+     * Returns the Java type (usually a GeoAPI interface) for the given ISO name, or {@code null} if none.
+     * The identifier argument shall be the value documented in the {@link UML#identifier()} annotation on
+     * the Java type.
      *
      * <div class="note"><b>Examples:</b>
      * <ul>
@@ -513,8 +513,16 @@ public final class Types extends Static {
      * </ul>
      * </div>
      *
-     * Only identifiers for the stable part of GeoAPI are recognized. This method does not handle
-     * the identifiers for the {@code geoapi-pending} module.
+     * Only identifiers for the stable part of GeoAPI or for some Apache SIS classes are recognized.
+     * This method does not handle the identifiers for interfaces in the {@code geoapi-pending} module.
+     *
+     * <div class="note"><b>Future evolution:</b>
+     * when a new ISO type does not yet have a corresponding GeoAPI interface,
+     * this method may temporarily return an Apache SIS class instead until a future version can use the interface.
+     * For example {@code forStandardName("CI_Individual")} returns
+     * <code>{@linkplain org.apache.sis.metadata.iso.citation.DefaultIndividual}.class</code> in Apache SIS versions
+     * that depend on GeoAPI 3.0, but the return type may be changed to {@code Individual.class} when Apache SIS will
+     * be upgraded to GeoAPI 3.1.</div>
      *
      * @param  identifier  the ISO {@linkplain UML} identifier, or {@code null}.
      * @return the GeoAPI interface, or {@code null} if the given identifier is {@code null} or unknown.

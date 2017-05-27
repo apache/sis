@@ -775,6 +775,25 @@ public class MetadataSource implements AutoCloseable {
     }
 
     /**
+     * If the given identifier specifies a subtype of the given type, then returns that subtype.
+     * For example if the given type is {@code Party.class} and the given identifier is
+     * {@code "{CI_Organisation}EPSG"}, then this method returns {@code Organisation.class}.
+     * Otherwise this method returns {@code type} unchanged.
+     */
+    private static Class<?> subType(Class<?> type, final String identifier) {
+        if (identifier.charAt(0) == TYPE_OPEN) {
+            final int i = identifier.indexOf(TYPE_CLOSE);
+            if (i >= 0) {
+                final Class<?> subType = Types.forStandardName(identifier.substring(1, i));
+                if (subType != null && type.isAssignableFrom(subType)) {
+                    type = subType;
+                }
+            }
+        }
+        return type;
+    }
+
+    /**
      * Returns an implementation of the specified metadata interface filled with the data referenced
      * by the specified identifier. Alternatively, this method can also return a {@link CodeList} element.
      *
@@ -788,22 +807,52 @@ public class MetadataSource implements AutoCloseable {
      */
     public <T> T lookup(final Class<T> type, final String identifier) throws MetadataStoreException {
         ArgumentChecks.ensureNonNull("type", type);
-        ArgumentChecks.ensureNonNull("identifier", identifier);
-        /*
-         * IMPLEMENTATION NOTE: This method must not invoke any method which may access 'statements'.
-         * It is not allowed to acquire the lock on 'statements' neither.
-         */
+        ArgumentChecks.ensureNonEmpty("identifier", identifier);
         Object value;
         if (CodeList.class.isAssignableFrom(type)) {
             value = getCodeList(type, identifier);
         } else {
             final CacheKey key = new CacheKey(type, identifier);
+            /*
+             * IMPLEMENTATION NOTE: be careful to not invoke any method that may synchronize on 'this'
+             * inside the block synchronized on 'pool'.
+             */
             synchronized (pool) {
                 value = pool.get(key);
-                if (value == null) {
+                if (value == null && type.isInterface()) {
                     value = Proxy.newProxyInstance(classloader,
                             new Class<?>[] {type, MetadataProxy.class}, new Dispatcher(identifier, this));
                     pool.put(key, value);
+                }
+            }
+            /*
+             * At this point, a null value means that the given type is a class rather than an interface.
+             * This may happen when a new type defined by a standard has not yet been defined in GeoAPI.
+             * In such case, we only have the implementation class in Apache SIS, not yet the interface.
+             * Since we can not create a Proxy, we have to fetch all property values now. This is not
+             * very efficient and may waste a little bit of memory, but it should not happen too often.
+             */
+            if (value == null) {
+                Method method = null;
+                final Class<?> subType = subType(type, identifier);
+                final Dispatcher toSearch = new Dispatcher(identifier, this);
+                try {
+                    value = subType.newInstance();
+                    final LookupInfo info            = getLookupInfo(subType);
+                    final Map<String,Object> map     = asValueMap(value);
+                    final Map<String,String> methods = standard.asNameMap(subType, NAME_POLICY, KeyNamePolicy.METHOD_NAME);
+                    for (final Map.Entry<String,Object> entry : map.entrySet()) {
+                        method = subType.getMethod(methods.get(entry.getKey()));
+                        info.setMetadataType(subType);
+                        final Object p = readColumn(info, method, toSearch);
+                        if (p != null) {
+                            entry.setValue(p);
+                        }
+                    }
+                } catch (ReflectiveOperationException e) {
+                    throw new MetadataStoreException(Errors.format(Errors.Keys.UnsupportedImplementation_1, subType), e);
+                } catch (SQLException e) {
+                    throw new MetadataStoreException(toSearch.error(method), e);
                 }
             }
         }
@@ -841,16 +890,7 @@ public class MetadataSource implements AutoCloseable {
          * If the identifier is prefixed with a table name as in "{CI_Organisation}identifier",
          * the name between bracket is a subtype of the given 'type' argument.
          */
-        Class<?> type = info.getMetadataType();
-        if (toSearch.identifier.charAt(0) == TYPE_OPEN) {
-            final int i = toSearch.identifier.indexOf(TYPE_CLOSE);
-            if (i >= 0) {
-                final Class<?> subType = Types.forStandardName(toSearch.identifier.substring(1, i));
-                if (subType != null && type.isAssignableFrom(subType)) {
-                    type = subType;
-                }
-            }
-        }
+        final Class<?> type           = subType(info.getMetadataType(), toSearch.identifier);
         final Class<?> returnType     = method.getReturnType();
         final boolean  wantCollection = Collection.class.isAssignableFrom(returnType);
         final Class<?> elementType    = wantCollection ? Classes.boundOfParameterizedProperty(method) : returnType;
@@ -938,8 +978,8 @@ public class MetadataSource implements AutoCloseable {
     }
 
     /**
-     * Returns the code of the given type and name. This method is defined for avoiding the warning message
-     * when the actual class is unknown (it must have been checked dynamically by the caller however).
+     * Returns the code of the given type and name. This method is defined for avoiding the compiler warning
+     * message when the actual class is unknown (it must have been checked dynamically by the caller however).
      */
     @SuppressWarnings({"unchecked","rawtypes"})
     private static CodeList<?> getCodeList(final Class<?> type, final String name) {

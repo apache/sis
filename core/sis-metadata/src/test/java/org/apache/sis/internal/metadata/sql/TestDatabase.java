@@ -30,6 +30,29 @@ import static org.junit.Assume.*;
  * Utility methods for creating temporary databases with Derby.
  * The databases are in-memory only.
  *
+ * <div class="section">Inspecting the database content in a debugger</div>
+ * Make sure that the classpath contains the {@code derbynet.jar} file in addition to {@code derby.jar}.
+ * Then, specify the following options to the JVM (replace the 1527 port number by something else if needed):
+ *
+ * {@preformat text
+ *   -Dderby.drda.startNetworkServer=true
+ *   -Dderby.drda.portNumber=1527
+ * }
+ *
+ * When the application is running, one can verify that the Derby server is listening:
+ *
+ * {@preformat text
+ *   netstat -an | grep "1527"
+ * }
+ *
+ * To connect to the in-memory database, use the {@code "jdbc:derby://localhost:1527/dbname"} URL
+ * (replace {@code "dbname"} by the actual database name.
+ *
+ * <p><b>References:</b>
+ * <ul>
+ *   <li><a href="https://db.apache.org/derby/docs/10.2/adminguide/radminembeddedserverex.html">Embedded server example</a></li>
+ * </ul>
+ *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.7
  * @since   0.7
