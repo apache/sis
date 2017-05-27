@@ -312,7 +312,7 @@ public class MetadataWriter extends MetadataSource {
                  */
                 int maxLength = maximumValueLength;
                 Class<?> rt = colTypes.get(column);
-                final boolean isCodeList = ControlledVocabulary.class.isAssignableFrom(rt);     // Also enums.
+                final boolean isCodeList = ControlledVocabulary.class.isAssignableFrom(rt);     // Accept also some enums.
                 if (isCodeList || standard.isMetadata(rt)) {
                     /*
                      * Found a reference to an other metadata. Remind that column for creating a foreign key
@@ -321,13 +321,15 @@ public class MetadataWriter extends MetadataSource {
                      * may happen when the concrete class is not yet available in the GeoAPI version that we
                      * are using.
                      */
-                    maxLength = maximumIdentifierLength;
                     if (!isCodeList || !Modifier.isAbstract(rt.getModifiers())) {
                         if (foreigners.put(column, new FKey(addTo, rt, null)) != null) {
                             throw new AssertionError(column);                           // Should never happen.
                         }
                     }
                     rt = null;                                                          // For forcing VARCHAR type.
+                    maxLength = maximumIdentifierLength;
+                } else if (rt.isEnum()) {
+                    maxLength = maximumIdentifierLength;
                 }
                 stmt.executeUpdate(helper.createColumn(schema(), addTo, column, rt, maxLength));
                 columns.add(column);
@@ -402,6 +404,8 @@ public class MetadataWriter extends MetadataSource {
             final Class<?> type = value.getClass();
             if (ControlledVocabulary.class.isAssignableFrom(type)) {
                 value = addCode(stmt, (ControlledVocabulary) value);
+            } else if (type.isEnum()) {
+                value = ((Enum<?>) value).name();
             } else if (standard.isMetadata(type)) {
                 String dependency = proxy(value);
                 if (dependency == null) {
