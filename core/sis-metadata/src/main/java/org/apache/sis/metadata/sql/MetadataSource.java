@@ -45,6 +45,7 @@ import java.sql.SQLNonTransientException;
 import java.sql.PreparedStatement;
 import org.opengis.annotation.UML;
 import org.opengis.util.CodeList;
+import org.opengis.util.ControlledVocabulary;
 import org.apache.sis.metadata.MetadataStandard;
 import org.apache.sis.metadata.KeyNamePolicy;
 import org.apache.sis.metadata.ValueExistencePolicy;
@@ -621,8 +622,8 @@ public class MetadataSource implements AutoCloseable {
              * be present in the database in order to ensure foreigner key constraints, but
              * those tables are not used in any way by the org.apache.sis.metadata.sql package.
              */
-            if (metadata instanceof CodeList<?>) {
-                identifier = ((CodeList<?>) metadata).name();
+            if (metadata instanceof ControlledVocabulary) {
+                identifier = Types.getCodeName((ControlledVocabulary) metadata);
             } else {
                 final String table;
                 final Map<String,Object> asMap;
@@ -684,8 +685,8 @@ public class MetadataSource implements AutoCloseable {
              * Note that if a metadata dependency is not found, we can stop the whole process immediately.
              */
             if (value != null) {
-                if (value instanceof CodeList<?>) {
-                    value = ((CodeList<?>) value).name();
+                if (value instanceof ControlledVocabulary) {
+                    value = Types.getCodeName((ControlledVocabulary) value);
                 } else {
                     String dependency = proxy(value);
                     if (dependency != null) {
@@ -795,11 +796,12 @@ public class MetadataSource implements AutoCloseable {
 
     /**
      * Returns an implementation of the specified metadata interface filled with the data referenced
-     * by the specified identifier. Alternatively, this method can also return a {@link CodeList} element.
+     * by the specified identifier. Alternatively, this method can also return a {@link CodeList} or
+     * {@link Enum} element.
      *
      * @param  <T>         the parameterized type of the {@code type} argument.
      * @param  type        the interface to implement (e.g. {@link org.opengis.metadata.citation.Citation}),
-     *                     or the {@link CodeList} type.
+     *                     or the {@link ControlledVocabulary} type ({@link CodeList} or {@link Enum}).
      * @param  identifier  the identifier of the record for the metadata entity to be created.
      *                     This is usually the primary key of the record to search for.
      * @return an implementation of the required interface, or the code list element.
@@ -809,7 +811,7 @@ public class MetadataSource implements AutoCloseable {
         ArgumentChecks.ensureNonNull("type", type);
         ArgumentChecks.ensureNonEmpty("identifier", identifier);
         Object value;
-        if (CodeList.class.isAssignableFrom(type)) {
+        if (ControlledVocabulary.class.isAssignableFrom(type)) {
             value = getCodeList(type, identifier);
         } else {
             final CacheKey key = new CacheKey(type, identifier);
@@ -981,9 +983,13 @@ public class MetadataSource implements AutoCloseable {
      * Returns the code of the given type and name. This method is defined for avoiding the compiler warning
      * message when the actual class is unknown (it must have been checked dynamically by the caller however).
      */
-    @SuppressWarnings({"unchecked","rawtypes"})
-    private static CodeList<?> getCodeList(final Class<?> type, final String name) {
-        return Types.forCodeName((Class) type, name, true);
+    @SuppressWarnings("unchecked")
+    private static ControlledVocabulary getCodeList(final Class<?> type, final String name) {
+        if (type.isEnum()) {
+            return (ControlledVocabulary) Types.forEnumName(type.asSubclass(Enum.class), name);
+        } else {
+            return Types.forCodeName(type.asSubclass(CodeList.class), name, true);
+        }
     }
 
     /**
