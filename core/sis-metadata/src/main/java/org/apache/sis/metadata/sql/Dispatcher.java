@@ -160,14 +160,7 @@ final class Dispatcher implements InvocationHandler {
                 try {
                     value = fetchValue(source.getLookupInfo(method.getDeclaringClass()), method);
                 } catch (ReflectiveOperationException | SQLException | MetadataStoreException e) {
-                    Class<?> returnType = method.getReturnType();
-                    if (Collection.class.isAssignableFrom(returnType)) {
-                        final Class<?> elementType = Classes.boundOfParameterizedProperty(method);
-                        if (elementType != null) {
-                            returnType = elementType;
-                        }
-                    }
-                    throw new BackingStoreException(Errors.format(Errors.Keys.DatabaseError_2, returnType, identifier), e);
+                    throw new BackingStoreException(error(method), e);
                 }
                 /*
                  * At this point we got the metadata property value, which may be null.
@@ -291,6 +284,20 @@ final class Dispatcher implements InvocationHandler {
             nullValues |= nullBit;
         }
         return value;
+    }
+
+    /**
+     * Returns the error message for a failure to query the database for the property identified by the given method.
+     */
+    final String error(final Method method) {
+        Class<?> returnType = method.getReturnType();
+        if (Collection.class.isAssignableFrom(returnType)) {
+            final Class<?> elementType = Classes.boundOfParameterizedProperty(method);
+            if (elementType != null) {
+                returnType = elementType;
+            }
+        }
+        return Errors.format(Errors.Keys.DatabaseError_2, returnType, identifier);
     }
 
     /**

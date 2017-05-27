@@ -160,8 +160,7 @@ public final strictfp class MetadataWriterTest extends TestCase {
         final ResponsibleParty responsible = TestUtilities.getSingleton(c.getCitedResponsibleParties());
         assertEquals(Role.PRINCIPAL_INVESTIGATOR, responsible.getRole());
 
-        org.junit.Assume.assumeTrue("TODO: needs to investigate why information are lost.", false);
-        assertEquals("International Association of Oil & Gas Producers", responsible.getOrganisationName());
+        assertEquals("International Association of Oil & Gas Producers", responsible.getOrganisationName().toString());
 
         OnlineResource resource = responsible.getContactInfo().getOnlineResource();
         assertEquals("http://www.epsg.org", resource.getLinkage().toString());
@@ -202,6 +201,8 @@ public final strictfp class MetadataWriterTest extends TestCase {
      */
     @SuppressWarnings("deprecation")
     private void readWriteDeprecated() throws MetadataStoreException {
+        org.junit.Assume.assumeTrue("TODO: needs to investigate why information are lost.", false);
+
         final DefaultTelephone tel = new DefaultTelephone();
         tel.setVoices(Collections.singleton("01.02.03.04"));
         assertEquals("01.02.03.04", source.add(tel));
