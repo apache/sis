@@ -29,6 +29,7 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import javax.sql.DataSource;
+import java.lang.reflect.Modifier;
 
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
@@ -305,18 +306,26 @@ public class MetadataWriter extends MetadataSource {
                     }
                 }
                 /*
-                 * Determine the column data type.
+                 * Determine the column data type. We infer that type from the method return value, not from the
+                 * actual value for in the given metadata object, since the value type for the same property may
+                 * be different in future calls to this method.
                  */
                 int maxLength = maximumValueLength;
                 Class<?> rt = colTypes.get(column);
-                if (ControlledVocabulary.class.isAssignableFrom(rt) || standard.isMetadata(rt)) {
+                final boolean isCodeList = ControlledVocabulary.class.isAssignableFrom(rt);     // Also enums.
+                if (isCodeList || standard.isMetadata(rt)) {
                     /*
-                     * Found a reference to an other metadata. Remind that
-                     * column for creating a foreign key constraint later.
+                     * Found a reference to an other metadata. Remind that column for creating a foreign key
+                     * constraint later, except if the return type is an abstract CodeList or Enum (in which
+                     * case the reference could be to any CodeList or Enum table). Abstract CodeList or Enum
+                     * may happen when the concrete class is not yet available in the GeoAPI version that we
+                     * are using.
                      */
                     maxLength = maximumIdentifierLength;
-                    if (foreigners.put(column, new FKey(addTo, rt, null)) != null) {
-                        throw new AssertionError(column);                               // Should never happen.
+                    if (!isCodeList || !Modifier.isAbstract(rt.getModifiers())) {
+                        if (foreigners.put(column, new FKey(addTo, rt, null)) != null) {
+                            throw new AssertionError(column);                           // Should never happen.
+                        }
                     }
                     rt = null;                                                          // For forcing VARCHAR type.
                 }
