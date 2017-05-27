@@ -14,23 +14,32 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.sis.internal.geoapi.evolution;
+
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+import java.lang.reflect.Method;
+
 
 /**
- * Provides a transition path for new GeoAPI elements not yet published in a formal release.
- * We try to avoid putting a copy of those new elements in Apache SIS, since it would break
- * compatibility when they would be removed in favor of GeoAPI elements. The approach taken
- * is rather to use in the new API the most immediate parent available in a GeoAPI release.
- * For example for new code list classes, this is {@code CodeList<?>}. The Javadoc for such
- * API shall contain a warning. See {@code warning-templates.txt} for some proposals.
- *
- * <p><STRONG>Do not use!</STRONG></p>
- *
- * This package is for internal use by SIS only. Classes in this package
- * may change in incompatible ways in any future version without notice.
+ * Identifies an interim class to use until an official GeoAPI class or interface is released.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.5
- * @since   0.5
+ * @version 0.8
+ * @since   0.8
  * @module
+ *
+ * @see Interim#getReturnType(Method)
  */
-package org.apache.sis.internal.geoapi.evolution;
+@Target(ElementType.METHOD)
+@Retention(RetentionPolicy.RUNTIME)
+public @interface InterimType {
+    /**
+     * The interim Apache SIS class to use until the GeoAPI class or interface is released.
+     *
+     * @return Apache SIS class to use in the interim.
+     */
+    Class<?> value();
+}
