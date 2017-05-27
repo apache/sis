@@ -622,7 +622,9 @@ public class MetadataSource implements AutoCloseable {
              * those tables are not used in any way by the org.apache.sis.metadata.sql package.
              */
             if (metadata instanceof CodeList<?>) {
-                identifier = ((CodeList<?>) metadata).name();
+                identifier = Types.getCodeName((CodeList<?>) metadata);
+            } else if (metadata instanceof Enum<?>) {
+                identifier = ((Enum<?>) metadata).name();
             } else {
                 final String table;
                 final Map<String,Object> asMap;
@@ -685,7 +687,9 @@ public class MetadataSource implements AutoCloseable {
              */
             if (value != null) {
                 if (value instanceof CodeList<?>) {
-                    value = ((CodeList<?>) value).name();
+                    value = Types.getCodeName((CodeList<?>) value);
+                } else if (value instanceof Enum<?>) {
+                    value = ((Enum<?>) value).name();
                 } else {
                     String dependency = proxy(value);
                     if (dependency != null) {
@@ -795,11 +799,12 @@ public class MetadataSource implements AutoCloseable {
 
     /**
      * Returns an implementation of the specified metadata interface filled with the data referenced
-     * by the specified identifier. Alternatively, this method can also return a {@link CodeList} element.
+     * by the specified identifier. Alternatively, this method can also return a {@link CodeList} or
+     * {@link Enum} element.
      *
      * @param  <T>         the parameterized type of the {@code type} argument.
      * @param  type        the interface to implement (e.g. {@link org.opengis.metadata.citation.Citation}),
-     *                     or the {@link CodeList} type.
+     *                     or the {@code ControlledVocabulary} type ({@link CodeList} or some {@link Enum}).
      * @param  identifier  the identifier of the record for the metadata entity to be created.
      *                     This is usually the primary key of the record to search for.
      * @return an implementation of the required interface, or the code list element.
@@ -981,9 +986,9 @@ public class MetadataSource implements AutoCloseable {
      * Returns the code of the given type and name. This method is defined for avoiding the compiler warning
      * message when the actual class is unknown (it must have been checked dynamically by the caller however).
      */
-    @SuppressWarnings({"unchecked","rawtypes"})
+    @SuppressWarnings("unchecked")
     private static CodeList<?> getCodeList(final Class<?> type, final String name) {
-        return Types.forCodeName((Class) type, name, true);
+        return Types.forCodeName(type.asSubclass(CodeList.class), name, true);
     }
 
     /**
