@@ -26,13 +26,16 @@ import org.opengis.util.CodeList;
 import org.opengis.annotation.UML;
 import org.opengis.metadata.citation.Telephone;
 import org.apache.sis.internal.util.CollectionsExt;
-import org.apache.sis.internal.geoapi.evolution.UnsupportedCodeList;
 import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.internal.metadata.Dependencies;
 
 import static org.opengis.annotation.Obligation.OPTIONAL;
 import static org.opengis.annotation.Obligation.MANDATORY;
 import static org.opengis.annotation.Specification.ISO_19115;
+
+// Branch-specific imports
+import org.apache.sis.internal.geoapi.evolution.InterimType;
+import org.apache.sis.internal.geoapi.evolution.UnsupportedCodeList;
 
 
 /**
@@ -198,6 +201,7 @@ public class DefaultTelephone extends ISOMetadata implements Telephone {
      */
 /// @XmlElement(name = "numberType")
     @UML(identifier="numberType", obligation=OPTIONAL, specification=ISO_19115)
+    @InterimType(UnsupportedCodeList.class)
     public CodeList<?> getNumberType() {
         return numberType;
     }

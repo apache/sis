@@ -72,6 +72,7 @@ import org.apache.sis.util.iso.Types;
 
 // Branch-dependent imports
 import org.apache.sis.internal.jdk8.JDK8;
+import org.apache.sis.internal.geoapi.evolution.Interim;
 
 
 /**
@@ -896,7 +897,7 @@ public class MetadataSource implements AutoCloseable {
          * the name between bracket is a subtype of the given 'type' argument.
          */
         final Class<?> type           = subType(info.getMetadataType(), toSearch.identifier);
-        final Class<?> returnType     = method.getReturnType();
+        final Class<?> returnType     = Interim.getReturnType(method);
         final boolean  wantCollection = Collection.class.isAssignableFrom(returnType);
         final Class<?> elementType    = wantCollection ? Classes.boundOfParameterizedProperty(method) : returnType;
         final boolean  isMetadata     = standard.isMetadata(elementType);

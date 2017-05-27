@@ -31,8 +31,8 @@ import org.apache.sis.internal.jaxb.gmd.CodeListUID;
  *
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.5
  * @version 0.5
+ * @since   0.5
  * @module
  */
 public abstract class UnsupportedCodeListAdapter<ValueType extends UnsupportedCodeListAdapter<ValueType>>
