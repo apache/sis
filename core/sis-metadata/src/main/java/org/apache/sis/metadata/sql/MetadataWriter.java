@@ -30,7 +30,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import javax.sql.DataSource;
 
-import org.opengis.util.CodeList;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
 
@@ -39,6 +38,7 @@ import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.resources.Messages;
 import org.apache.sis.util.iso.DefaultNameSpace;
+import org.apache.sis.util.iso.Types;
 import org.apache.sis.util.collection.Containers;
 import org.apache.sis.metadata.MetadataStandard;
 import org.apache.sis.metadata.KeyNamePolicy;
@@ -47,6 +47,9 @@ import org.apache.sis.metadata.ValueExistencePolicy;
 import org.apache.sis.metadata.TitleProperty;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.internal.metadata.sql.SQLBuilder;
+
+// Branch-dependent imports
+import org.opengis.util.ControlledVocabulary;
 
 
 /**
@@ -185,8 +188,8 @@ public class MetadataWriter extends MetadataSource {
                 boolean success = false;
                 try {
                     try (Statement stmt = connection.createStatement()) {
-                        if (metadata instanceof CodeList<?>) {
-                            identifier = addCode(stmt, (CodeList<?>) metadata);
+                        if (metadata instanceof ControlledVocabulary) {
+                            identifier = addCode(stmt, (ControlledVocabulary) metadata);
                         } else {
                             identifier = add(stmt, metadata, new IdentityHashMap<>(), null);
                         }
@@ -306,7 +309,7 @@ public class MetadataWriter extends MetadataSource {
                  */
                 int maxLength = maximumValueLength;
                 Class<?> rt = colTypes.get(column);
-                if (CodeList.class.isAssignableFrom(rt) || standard.isMetadata(rt)) {
+                if (ControlledVocabulary.class.isAssignableFrom(rt) || standard.isMetadata(rt)) {
                     /*
                      * Found a reference to an other metadata. Remind that
                      * column for creating a foreign key constraint later.
@@ -388,8 +391,8 @@ public class MetadataWriter extends MetadataSource {
         for (final Map.Entry<String,Object> entry : asSingletons.entrySet()) {
             Object value = entry.getValue();
             final Class<?> type = value.getClass();
-            if (CodeList.class.isAssignableFrom(type)) {
-                value = addCode(stmt, (CodeList<?>) value);
+            if (ControlledVocabulary.class.isAssignableFrom(type)) {
+                value = addCode(stmt, (ControlledVocabulary) value);
             } else if (standard.isMetadata(type)) {
                 String dependency = proxy(value);
                 if (dependency == null) {
@@ -464,7 +467,7 @@ public class MetadataWriter extends MetadataSource {
             for (final Map.Entry<String,FKey> entry : foreigners.entrySet()) {
                 final FKey fkey = entry.getValue();
                 Class<?> rt = fkey.tableType;
-                final boolean isCodeList = CodeList.class.isAssignableFrom(rt);
+                final boolean isCodeList = ControlledVocabulary.class.isAssignableFrom(rt);
                 final String primaryKey;
                 if (isCodeList) {
                     primaryKey = CODE_COLUMN;
@@ -475,9 +478,9 @@ public class MetadataWriter extends MetadataSource {
                 final String column = entry.getKey();
                 final String target = getTableName(rt);
                 stmt.executeUpdate(helper.createForeignKey(
-                        schema(), fkey.tableName, column,               // Source (schema.table.column)
-                        target, primaryKey,                             // Target (table.column)
-                        !isCodeList));                                  // CASCADE if metadata, RESTRICT if CodeList.
+                        schema(), fkey.tableName, column,       // Source (schema.table.column)
+                        target, primaryKey,                     // Target (table.column)
+                        !isCodeList));                          // CASCADE if metadata, RESTRICT if CodeList or Enum.
                 /*
                  * In a classical object-oriented model, the constraint would be inherited by child tables.
                  * However this is not yet supported as of PostgreSQL 9.6. If inheritance is not supported,
@@ -624,9 +627,11 @@ public class MetadataWriter extends MetadataSource {
     /**
      * Adds a code list if it is not already present. This is used only in order to enforce
      * foreigner key constraints in the database. The value of CodeList tables are not used
-     * at parsing time.
+     * at parsing time. Enumerations are handled as if they were CodeLists; we do not use
+     * the native SQL {@code ENUM} type for making easier to add new values when a standard
+     * is updated.
      */
-    private String addCode(final Statement stmt, final CodeList<?> code) throws SQLException {
+    private String addCode(final Statement stmt, final ControlledVocabulary code) throws SQLException {
         assert Thread.holdsLock(this);
         final String table = getTableName(code.getClass());
         final Set<String> columns = getExistingColumns(table);
@@ -634,7 +639,7 @@ public class MetadataWriter extends MetadataSource {
             stmt.executeUpdate(createTable(table, CODE_COLUMN));
             columns.add(CODE_COLUMN);
         }
-        final String identifier = code.name();
+        final String identifier = Types.getCodeName(code);
         final String query = helper().clear().append("SELECT ").append(CODE_COLUMN)
                 .append(" FROM ").appendIdentifier(schema(), table).append(" WHERE ")
                 .append(CODE_COLUMN).appendCondition(identifier).toString();
