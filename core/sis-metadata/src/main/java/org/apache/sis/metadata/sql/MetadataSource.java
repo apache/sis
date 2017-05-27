@@ -624,6 +624,8 @@ public class MetadataSource implements AutoCloseable {
              */
             if (metadata instanceof ControlledVocabulary) {
                 identifier = Types.getCodeName((ControlledVocabulary) metadata);
+            } else if (metadata instanceof Enum<?>) {
+                identifier = ((Enum<?>) metadata).name();
             } else {
                 final String table;
                 final Map<String,Object> asMap;
@@ -687,6 +689,8 @@ public class MetadataSource implements AutoCloseable {
             if (value != null) {
                 if (value instanceof ControlledVocabulary) {
                     value = Types.getCodeName((ControlledVocabulary) value);
+                } else if (value instanceof Enum<?>) {
+                    value = ((Enum<?>) value).name();
                 } else {
                     String dependency = proxy(value);
                     if (dependency != null) {
@@ -801,7 +805,7 @@ public class MetadataSource implements AutoCloseable {
      *
      * @param  <T>         the parameterized type of the {@code type} argument.
      * @param  type        the interface to implement (e.g. {@link org.opengis.metadata.citation.Citation}),
-     *                     or the {@link ControlledVocabulary} type ({@link CodeList} or {@link Enum}).
+     *                     or the {@link ControlledVocabulary} type ({@link CodeList} or some {@link Enum}).
      * @param  identifier  the identifier of the record for the metadata entity to be created.
      *                     This is usually the primary key of the record to search for.
      * @return an implementation of the required interface, or the code list element.
