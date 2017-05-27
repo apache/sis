@@ -525,6 +525,16 @@ public class MetadataWriter extends MetadataSource {
     }
 
     /**
+     * Returns the parent of the given type. Normally, {@code type} is an interface, in which case the parent types are
+     * other interfaces that the given type extends. But in some cases (e.g. when Apache SIS implements a new ISO 19115
+     * type not yet defined in GeoAPI), the given type is a class. In such cases we ignore its interface (it usually do
+     * not implement any) and look for its parent class.
+     */
+    private static Class<?>[] getParentTypes(final Class<?> type) {
+        return type.isInterface() ? type.getInterfaces() : new Class<?>[] {type.getSuperclass()};
+    }
+
+    /**
      * Returns {@code true} if the given metadata type is a subtype of another metadata.
      * If true, then we will need to prefix the identifier by the metadata subtype.
      *
@@ -532,7 +542,7 @@ public class MetadataWriter extends MetadataSource {
      *         the result is nevertheless given as a {@code Boolean} wrapper for consistency with {@code createTable(…)}.
      */
     private Boolean isChildTable(final Class<?> type) {
-        for (final Class<?> candidate : type.getInterfaces()) {
+        for (final Class<?> candidate : getParentTypes(type)) {
             if (standard.isMetadata(candidate)) {
                 return Boolean.TRUE;
             }
@@ -559,7 +569,7 @@ public class MetadataWriter extends MetadataSource {
         if (columns.isEmpty()) {
             isChildTable = Boolean.FALSE;
             StringBuilder inherits = null;
-            for (final Class<?> candidate : type.getInterfaces()) {
+            for (final Class<?> candidate : getParentTypes(type)) {
                 if (standard.isMetadata(candidate)) {
                     isChildTable = Boolean.TRUE;
                     final SQLBuilder helper = helper();
