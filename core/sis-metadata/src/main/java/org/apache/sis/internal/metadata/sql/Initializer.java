@@ -389,7 +389,10 @@ public abstract class Initializer {
                     if (home != null) {
                         final Path file = Paths.get(home).resolveSibling("db/lib/derby.jar");
                         if (Files.isRegularFile(file)) {
-                            javadbLoader = loader = new URLClassLoader(new URL[] {file.toUri().toURL()});
+                            javadbLoader = loader = new URLClassLoader(new URL[] {
+                                file.toUri().toURL(),
+                                file.resolveSibling("derbynet.jar").toUri().toURL()
+                            });
                         }
                     }
                 }
