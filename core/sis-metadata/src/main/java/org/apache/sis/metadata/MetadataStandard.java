@@ -592,6 +592,7 @@ public class MetadataStandard implements Serializable {
      * Returns the implementation class for the given interface, or {@code null} if none.
      * If non-null, the returned class must have a public no-argument constructor and the
      * metadata instance created by that constructor must be initially empty (no default value).
+     * That no-argument constructor should never throw any checked exception.
      *
      * <p>The default implementation returns {@code null} in every cases. Subclasses shall
      * override this method in order to map GeoAPI interfaces to their implementation.</p>
