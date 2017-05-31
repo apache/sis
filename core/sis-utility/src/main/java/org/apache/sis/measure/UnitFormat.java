@@ -85,6 +85,12 @@ public class UnitFormat extends Format implements javax.measure.format.UnitForma
     private static final long serialVersionUID = -3064428584419360693L;
 
     /**
+     * The unit name for degrees (not necessarily angular), to be handled in a special way.
+     * Must contain only ASCII lower case letters ([a … z]).
+     */
+    private static final String DEGREES = "degrees";
+
+    /**
      * The unit name for dimensionless unit.
      */
     static final String UNITY = "unity";
@@ -453,6 +459,8 @@ public class UnitFormat extends Format implements javax.measure.format.UnitForma
      *
      * <p>While we said that {@code UnitFormat} is not thread safe, we make an exception for this method
      * for allowing the singleton {@link #INSTANCE} to parse symbols in a multi-threads environment.</p>
+     *
+     * @param  uom  the unit symbol, without leading or trailing spaces.
      */
     @SuppressWarnings("fallthrough")
     private Unit<?> fromName(String uom) {
@@ -462,20 +470,38 @@ public class UnitFormat extends Format implements javax.measure.format.UnitForma
          * special case for the degrees units because SI symbols are case-sentive and unit names in resource
          * bundles are case-insensitive, but the "deg" case is a mix of both.
          */
-        if (uom.regionMatches(true, 0, "deg", 0, 3)) {
-            final int length = uom.length();
-            switch (length) {
-                case 3: return Units.DEGREE;                    // Exactly "deg"  (ignoring case)
-                case 5: final char c = uom.charAt(3);
-                        if (c != '_' && !Character.isSpaceChar(c)) break;
-                        // else fallthrough
-                case 4: switch (uom.charAt(length - 1)) {
-                            case 'K':                           // Unicode U+212A
-                            case 'K': return Units.KELVIN;      // Exactly "degK" (ignoring case except for 'K')
-                            case 'C': return Units.CELSIUS;
-                        }
+        final int length = uom.length();
+        for (int i=0; ; i++) {
+            if (i != DEGREES.length()) {
+                if (i != length && (uom.charAt(i) | ('a' - 'A')) == DEGREES.charAt(i)) {
+                    continue;                           // Loop as long as the characters are the same, ignoring case.
+                }
+                if (i != 3 && i != 6) {
+                    break;                              // Exit if not "deg" (3) or "degree" (6 characters).
+                }
             }
+            if (length == i) {
+                return Units.DEGREE;                    // Exactly "deg", "degree" or "degrees" (ignoring case).
+            }
+            final int c = uom.codePointAt(i);
+            if (c == '_' || Character.isSpaceChar(c)) {
+                i += Character.charCount(c);            // Ignore space in "degree C", "deg C", "deg K", etc.
+            }
+            if (length - i == 1) {
+                switch (uom.charAt(i)) {
+                    case 'K':                           // Unicode U+212A
+                    case 'K': return Units.KELVIN;      // "degK" (ignoring case except for 'K')
+                    case 'C': return Units.CELSIUS;
+                    case 'N':                           // degree_N, degrees_N, degreeN, degreesN.
+                    case 'E': return Units.DEGREE;      // degree_E, degrees_E, degreeE, degreesE.
+                }
+            }
+            break;
         }
+        /*
+         * At this point, we determined that the given unit symbol is not degrees (of angle or of temperature).
+         * Remaining code is generic to all other kinds of units: a check in a HashMap loaded when first needed.
+         */
         Map<String,Unit<?>> map = nameToUnit;
         if (map == null) {
             map = SHARED.get(locale);
@@ -520,7 +546,7 @@ public class UnitFormat extends Format implements javax.measure.format.UnitForma
         uom = CharSequences.replace(CharSequences.replace(CharSequences.replace(CharSequences.toASCII(uom),
                 "meters",  "meter"),
                 "metres",  "metre"),
-                "degrees", "degree").toString();
+                 DEGREES,  "degree").toString();
         return map.get(uom);
     }
 
