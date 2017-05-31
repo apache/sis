@@ -616,6 +616,13 @@ public class AttributeNames {
      * {@link DataIdentification#getCredits() credit}</li></ul>
      *
      * @see <a href="http://www.unidata.ucar.edu/software/netcdf-java/formats/DataDiscoveryAttConvention.html#acknowledgement_Attribute">UCAR reference</a>
+     *
+     * @since 0.8
+     */
+    public static final String ACKNOWLEDGEMENT = ACDD.acknowledgement;
+
+    /**
+     * @deprecated Renamed {@link #ACKNOWLEDGEMENT}.
      */
     public static final String ACKNOWLEDGMENT = "acknowledgment";
 

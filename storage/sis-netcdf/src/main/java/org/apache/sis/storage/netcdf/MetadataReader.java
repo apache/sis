@@ -66,6 +66,7 @@ import org.apache.sis.internal.netcdf.Variable;
 import org.apache.sis.internal.netcdf.GridGeometry;
 import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.util.CharSequences;
 import org.apache.sis.measure.Units;
 
 // The following dependency is used only for static final String constants.
@@ -104,7 +105,7 @@ import static org.apache.sis.internal.util.CollectionsExt.first;
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.5
+ * @version 0.8
  * @since   0.3
  * @module
  */
@@ -202,6 +203,13 @@ final class MetadataReader {
      */
     private Errors errors() {
         return Errors.getResources(decoder.listeners.getLocale());
+    }
+
+    /**
+     * Splits comma-separated values. Leading and trailing spaces are removed.
+     */
+    private static String[] split(final String value) {
+        return (String[]) CharSequences.split(value, ',');
     }
 
     /**
@@ -535,7 +543,7 @@ final class MetadataReader {
             final Keywords keywords = createKeywords(KeywordType.THEME, false);
             final String   topic    = stringValue(TOPIC_CATEGORY);
             final String   type     = stringValue(DATA_TYPE);
-            final String   credits  = stringValue(ACKNOWLEDGMENT);
+            final String   credits  = stringValue(ACKNOWLEDGEMENT);
             final String   license  = stringValue(LICENSE);
             final String   access   = stringValue(ACCESS_CONSTRAINT);
             final Extent   extent   = hasExtent ? null : createExtent();
@@ -550,8 +558,7 @@ final class MetadataReader {
                 if (credits  != null) addIfAbsent(identification.getCredits(), new SimpleInternationalString(credits));
                 if (license  != null) addIfAbsent(identification.getResourceConstraints(), constraints = new DefaultLegalConstraints(license));
                 if (access   != null) {
-                    for (String keyword : access.split(KEYWORD_SEPARATOR)) {
-                        keyword = keyword.trim();
+                    for (final String keyword : split(access)) {
                         if (!keyword.isEmpty()) {
                             if (constraints == null) {
                                 identification.getResourceConstraints().add(constraints = new DefaultLegalConstraints());
@@ -618,8 +625,7 @@ final class MetadataReader {
         DefaultKeywords keywords = null;
         if (list != null) {
             final Set<InternationalString> words = new LinkedHashSet<>();
-            for (String keyword : list.split(KEYWORD_SEPARATOR)) {
-                keyword = keyword.trim();
+            for (final String keyword : split(list)) {
                 if (!keyword.isEmpty()) {
                     words.add(new SimpleInternationalString(keyword));
                 }
