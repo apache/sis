@@ -156,9 +156,26 @@ abstract strictfp class HTMLGenerator implements Closeable {
      * @throws IOException if an error occurred while writing to the file.
      */
     final int openTag(final String tag) throws IOException {
+        return openTag(tag, null);
+    }
+
+    /**
+     * Opens a new HTML tag of the given class and increase the indentation.
+     *
+     * @param  tag     the HTML tag without brackets (e.g. {@code "h2"}).
+     * @param  classe  the CSS class, or {@code null} if none.
+     * @return the value to give to {@link #closeTags(int)} for closing the tags.
+     * @throws IOException if an error occurred while writing to the file.
+     */
+    final int openTag(final String tag, final String classe) throws IOException {
         out.write(margin);
         out.write('<');
         out.write(tag);
+        if (classe != null) {
+            out.write(" class=\"");
+            out.write(classe);
+            out.write('"');
+        }
         out.write('>');
         out.newLine();
         margin = CharSequences.spaces(margin.length() + INDENTATION).toString();
