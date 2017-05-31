@@ -1006,7 +1006,7 @@ search:     for (; fromIndex <= toIndex; fromIndex++) {
         if (text != null) {
             lower = skipLeadingWhitespaces (text, lower, upper);
             upper = skipTrailingWhitespaces(text, lower, upper);
-            if (lower != 0 || upper != length) { // Safety in case subSequence doesn't make the check.
+            if (lower != 0 || upper != length) {                  // Safety in case subSequence doesn't make the check.
                 text = text.subSequence(lower, upper);
             }
         }
