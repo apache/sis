@@ -415,7 +415,23 @@ public final strictfp class UnitFormatTest extends TestCase {
         assertSame(Units.KILOMETRE,  f.parse( "1000.0*m"));
         ConventionalUnitTest.verify(Units.METRE, f.parse("10*-6⋅m"),   "µm", 1E-6);
         ConventionalUnitTest.verify(Units.METRE, f.parse("10*-6.m"),   "µm", 1E-6);
+        ConventionalUnitTest.verify(Units.METRE, f.parse("10^-3.m"),   "mm", 1E-3);
         ConventionalUnitTest.verify(Units.METRE, f.parse( "100 feet"), null, 30.48);
+    }
+
+    /**
+     * Tests parsing of symbols containing an explicit exponentiation operation.
+     * Usually the exponentiation is implicit, as in {@code "m*s-1"}.
+     * However some formats write it explicitely, as in {@code "m*s^-1"}.
+     */
+    @Test
+    @DependsOnMethod("testParseMultiplier")
+    public void testParseExponentiation() {
+        final UnitFormat f = new UnitFormat(Locale.UK);
+        assertSame(Units.HERTZ,             f.parse("s^-1"));
+        assertSame(Units.HERTZ,             f.parse("s**-1"));
+        assertSame(Units.METRES_PER_SECOND, f.parse("m*s^-1"));
+        assertSame(Units.METRES_PER_SECOND, f.parse("m*s**-1"));
     }
 
     /**

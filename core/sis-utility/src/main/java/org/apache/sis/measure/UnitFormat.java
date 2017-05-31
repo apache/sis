@@ -462,7 +462,6 @@ public class UnitFormat extends Format implements javax.measure.format.UnitForma
      *
      * @param  uom  the unit symbol, without leading or trailing spaces.
      */
-    @SuppressWarnings("fallthrough")
     private Unit<?> fromName(String uom) {
         /*
          * Before to search in resource bundles, check for degrees units. The "deg" unit can be both angular
@@ -808,14 +807,32 @@ public class UnitFormat extends Format implements javax.measure.format.UnitForma
     }
 
     /**
-     * Returns {@code true} if the {@code '*'} character at the given index is surrounded by digits
-     * or a sign on its right side. For example this method returns {@code true} for "10*-6", which
-     * means 1E-6 in UCUM syntax. This check is used for heuristic rules at parsing time.
+     * Returns {@code 0} or {@code 1} if the {@code '*'} character at the given index stands for exponentiation
+     * instead than multiplication, or a negative value if the character stands for multiplication. This check
+     * is used for heuristic rules at parsing time. Current implementation applies the following rules:
+     *
+     * <ul>
+     *   <li>The operation is presumed an exponentiation if the '*' symbol is doubled, as in {@code "m**s-1"}.</li>
+     *   <li>The operation is presumed an exponentiation if it is surrounded by digits or a sign on its right side.
+     *       Example: {@code "10*-6"}, which means 1E-6 in UCUM syntax.</li>
+     *   <li>All other cases are currently presumed multiplication.
+     *       Example: {@code "m*s"}.</li>
+     * </ul>
+     *
+     * @return -1 for parsing as a multiplication, or a positive value for exponentiation.
+     *         If positive, this is the number of characters in the exponent symbol minus 1.
      */
-    private static boolean isExponentOperator(final CharSequence symbols, int i, final int length) {
-        char c;
-        return (i != 0) && isDigit(symbols.charAt(i-1)) &&
-               (++i < length) && (isDigit(c = symbols.charAt(i)) || isSign(c));
+    private static int exponentOperator(final CharSequence symbols, int i, final int length) {
+        if (i >= 0 && ++i < length) {
+            final char c = symbols.charAt(i);
+            if (c == Style.EXPONENT_OR_MULTIPLY) {
+                return 1;                               // "**" operator: need to skip one character after '*'.
+            }
+            if ((isDigit(c) || isSign(c)) && isDigit(symbols.charAt(i-2))) {
+                return 0;                               // "*" operator surrounded by digits: no character to skip.
+            }
+        }
+        return -1;
     }
 
     /**
@@ -1012,10 +1029,12 @@ scan:   for (int n; i < end; i += n) {
                  * a unit symbol.
                  */
                 case Style.EXPONENT_OR_MULTIPLY: {
-                    if (!isExponentOperator(symbols, i, end)) {
+                    final int w = exponentOperator(symbols, i, end);
+                    if (w < 0) {
                         next = MULTIPLY;
                         break;
                     }
+                    i += w;
                     // else fall through.
                 }
                 case Style.EXPONENT: {
@@ -1065,7 +1084,7 @@ scan:   for (int n; i < end; i += n) {
              * the above 'switch' statement all cases that end with 'break', not 'break scan' or 'continue').
              */
             if (operation != IMPLICIT) {
-                unit = apply(operation, unit, parseSymbol(symbols, start, i));
+                unit = apply(operation, unit, parseTerm(symbols, start, i));
             }
             hasSpaces = false;
             operation = next;
@@ -1111,7 +1130,7 @@ search:     while ((i = CharSequences.skipTrailingWhitespaces(symbols, start, i)
             }
         }
         if (component == null) {
-            component = parseSymbol(symbols, start, i);
+            component = parseTerm(symbols, start, i);
         }
         unit = apply(operation, unit, component);
         position.setIndex(endOfURI >= 0 ? endOfURI : i);
@@ -1151,7 +1170,8 @@ search:     while ((i = CharSequences.skipTrailingWhitespaces(symbols, start, i)
      * @return the parsed unit symbol (never {@code null}).
      * @throws ParserException if a problem occurred while parsing the given symbols.
      */
-    private Unit<?> parseSymbol(final CharSequence symbols, final int lower, final int upper) throws ParserException {
+    @SuppressWarnings("fallthrough")
+    private Unit<?> parseTerm(final CharSequence symbols, final int lower, final int upper) throws ParserException {
         final String uom = CharSequences.trimWhitespaces(symbols, lower, upper).toString();
         /*
          * Check for labels explicitly given by users. Those labels have precedence over the Apache SIS hard-coded
@@ -1183,11 +1203,11 @@ search:     while ((i = CharSequences.skipTrailingWhitespaces(symbols, start, i)
                                 final int next = CharSequences.skipLeadingWhitespaces(uom, s, length);
                                 if (next < length && AbstractUnit.isSymbolChar(uom.codePointAt(next))) {
                                     multiplier = Double.parseDouble(uom.substring(0, s));
-                                    return parseSymbol(uom, s, length).multiply(multiplier);
+                                    return parseTerm(uom, s, length).multiply(multiplier);
                                 }
                             }
-                            s = uom.lastIndexOf(Style.EXPONENT_OR_MULTIPLY);
-                            if (s >= 0) {
+                            s = uom.lastIndexOf(Style.EXPONENT_OR_MULTIPLY);      // Check standard UCUM symbol first.
+                            if (s >= 0 || (s = uom.lastIndexOf(Style.EXPONENT)) >= 0) {
                                 final int base = Integer.parseInt(uom.substring(0, s));
                                 final int exp  = Integer.parseInt(uom.substring(s+1));
                                 multiplier = Math.pow(base, exp);
@@ -1235,7 +1255,24 @@ search:     while ((i = CharSequences.skipTrailingWhitespaces(symbols, start, i)
                         } while (i != 0);
                     }
                     if (canApply) {
-                        unit = getPrefixed(CharSequences.trimWhitespaces(uom, 0, i).toString());
+                        /*
+                         * At this point we have parsed the exponent. Before to parse the raw unit symbol,
+                         * skip the exponent symbol (^, * or **) if any.
+                         */
+                        i = CharSequences.skipTrailingWhitespaces(uom, 0, i);
+                        if (i != 0) {
+                            switch (uom.charAt(i-1)) {
+                                case Style.EXPONENT_OR_MULTIPLY: {
+                                    if (i != 1 && uom.charAt(i-2) == Style.EXPONENT_OR_MULTIPLY) i--;
+                                    // Fallthrough for skipping the next character and whitespaces.
+                                }
+                                case Style.EXPONENT: {
+                                    i = CharSequences.skipTrailingWhitespaces(uom, 0, i - 1);
+                                    break;
+                                }
+                            }
+                        }
+                        unit = getPrefixed(uom.substring(CharSequences.skipLeadingWhitespaces(uom, 0, i), i));
                         if (unit != null) {
                             return unit.pow(power);
                         }
