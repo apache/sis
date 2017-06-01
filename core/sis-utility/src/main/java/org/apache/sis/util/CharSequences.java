@@ -651,7 +651,7 @@ search:     for (; fromIndex <= toIndex; fromIndex++) {
         }
         if (separator == '\n' || separator == '\r') {
             final CharSequence[] splitted = splitOnEOL(text);
-            for (int i=0; i<splitted.length; i++) {
+            for (int i=0; i < splitted.length; i++) {
                 // For consistency with the rest of this method.
                 splitted[i] = trimWhitespaces(splitted[i]);
             }

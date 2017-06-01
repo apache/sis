@@ -25,6 +25,7 @@ import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.io.IOException;
 import javax.measure.Unit;
@@ -124,11 +125,19 @@ final class MetadataReader {
     private static final String[] SERVICES = {"wms_service", "wcs_service"};
 
     /**
-     * The string to use as a keyword separator. This separator is used for parsing the
-     * {@value org.apache.sis.storage.netcdf.AttributeNames#KEYWORDS} attribute value.
-     * This is a regular expression.
+     * The character to use as a separator in comma-separated list. This separator is used for parsing the
+     * {@value org.apache.sis.storage.netcdf.AttributeNames#KEYWORDS} attribute value for instance.
      */
-    private static final String KEYWORD_SEPARATOR = ",";
+    private static final char SEPARATOR = ',';
+
+    /**
+     * The character to use for quoting strings in a comma-separated list. Quoted strings may contain comma.
+     *
+     * <div class="note"><b>Example:</b>
+     * John Doe, Jane Lee, "L J Smith, Jr."
+     * </div>
+     */
+    private static final char QUOTE = '"';
 
     /**
      * The vertical coordinate reference system to be given to the object created by {@link #createExtent()}.
@@ -206,10 +215,39 @@ final class MetadataReader {
     }
 
     /**
-     * Splits comma-separated values. Leading and trailing spaces are removed.
+     * Splits comma-separated values. Leading and trailing spaces are removed for each item
+     * unless the item is between double quotes. Empty strings are ignored unless between double quotes.
+     * If a value begin with double quotes, all content will be copied verbatim until the closing double quote.
+     * A double quote is considered as a closing double quote if just before a comma separator (ignoring spaces).
      */
-    private static String[] split(final String value) {
-        return (String[]) CharSequences.split(value, ',');
+    static List<String> split(final String value) {
+        final List<String> items = new ArrayList<>();
+        int start = 0;      // Index of the first character of the next item to add in the list.
+        int end;            // Index after the last character of the next item to add in the list.
+        int next;           // Index of the next separator (comma) after 'end'.
+        final int length = CharSequences.skipTrailingWhitespaces(value, 0, value.length());
+split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, length)) < length) {
+            if (value.charAt(start) == QUOTE) {
+                next = ++start;                                 // Skip the quote character.
+                do {
+                    end = value.indexOf(QUOTE, next);           // End of quoted text, may have comma separator before.
+                    if (end < 0) break split;
+                    next = CharSequences.skipLeadingWhitespaces(value, end+1, length);
+                } while (next < length && value.charAt(next) != SEPARATOR);
+            } else {
+                next = value.indexOf(SEPARATOR, start);         // Unquoted text - comma is the item separator.
+                if (next < 0) break;
+                end = CharSequences.skipTrailingWhitespaces(value, start, next);
+            }
+            if (start != end) {
+                items.add(value.substring(start, end));
+            }
+            start = next+1;
+        }
+        if (start < length) {
+            items.add(value.substring(start, length));
+        }
+        return items;
     }
 
     /**

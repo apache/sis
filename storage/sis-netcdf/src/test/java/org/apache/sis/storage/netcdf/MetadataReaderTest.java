@@ -38,7 +38,7 @@ import static org.apache.sis.test.TestUtilities.formatNameAndValue;
  * for reading NetCDF attributes.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.7
+ * @version 0.8
  * @since   0.3
  * @module
  */
@@ -47,6 +47,15 @@ import static org.apache.sis.test.TestUtilities.formatNameAndValue;
     org.apache.sis.internal.netcdf.impl.VariableInfoTest.class
 })
 public final strictfp class MetadataReaderTest extends IOTestCase {
+    /**
+     * Tests {@link MetadataReader#split(String)}.
+     */
+    @Test
+    public void testSplit() {
+        assertArrayEquals(new String[] {"John Doe", "Foo \" Bar", "Jane Lee", "L J Smith, Jr."},
+                MetadataReader.split("John Doe, \"Foo \" Bar\" ,Jane Lee,\"L J Smith, Jr.\"").toArray());
+    }
+
     /**
      * Reads the metadata using the NetCDF decoder embedded with SIS,
      * and compares its string representation with the expected one.
