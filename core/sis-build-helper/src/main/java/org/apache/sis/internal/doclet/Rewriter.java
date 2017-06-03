@@ -144,12 +144,39 @@ final class Rewriter {
     }
 
     /**
+     * Returns {@code true} if the characters just before {@code i} are {@code <td…>} or {@code <th…>}
+     * where {@code …} are ignored characters. If the element before is {@code <a…>}, then that element
+     * is skipped an the other element before it is verified.
+     */
+    private boolean isBeginningOfCell(int i) {
+        while (--i >= 0 && content.charAt(i) == '>') {
+            i = content.lastIndexOf("<", i);
+            final int start = i+1;
+            int end = start;
+            char c;
+            while ((c = content.charAt(end)) >= 'a' && c <= 'z') end++;
+            switch (content.substring(start, end)) {
+                case "th":
+                case "td": return true;
+                case "a" : continue;
+            }
+            break;
+        }
+        return false;
+    }
+
+    /**
      * For any Java identifier inside {@code <code>...</code>} elements, inserts soft-hyphens or zero-width spaces
-     * where this method decides that the code could be wrapped on the next line.
+     * where this method decides that the code could be wrapped on the next line. We make an exception to this rule
+     * if the {@code <code>} tag is just after a {@code <td>} or {@code <th>} tag.
      */
     private void hyphenation() {
         int i = 0;
         while ((i = content.indexOf(OPEN, i)) >= 0) {
+            if (isBeginningOfCell(i)) {
+                i += OPEN.length();
+                continue;
+            }
             int stopAt = content.indexOf(CLOSE, i += OPEN.length());
             /*
              * At this point, we are inside a <code>...</code> element. The text begins at 'i',
