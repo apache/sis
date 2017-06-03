@@ -144,6 +144,8 @@ public final strictfp class MetadataReaderTest extends IOTestCase {
             "  │           ├─Units…………………………………………………………………… K\n" +
             "  │           └─Description…………………………………………………… Sea temperature\n" +
             "  ├─Data quality info\n" +
+            "  │   ├─Scope\n" +
+            "  │   │   └─Level……………………………………………………………………………… Dataset\n" +
             "  │   └─Lineage\n" +
             "  │       └─Statement…………………………………………………………………… 2003-04-07 12:12:50 - created by gribtocdl" +
             "              2005-09-26T21:50:00 - edavis - add attributes for dataset discovery\n" +

@@ -692,7 +692,8 @@ final class ImageFileDirectory {
              */
             case Tags.DateTime: {
                 for (final String value : type.readString(input(), count, encoding())) {
-                    reader.metadata.add(reader.getDateFormat().parse(value), DateType.CREATION);
+                    reader.metadata.addCitationDate(reader.getDateFormat().parse(value),
+                            DateType.CREATION, MetadataBuilder.Scope.RESOURCE);
                 }
                 break;
             }
@@ -1035,7 +1036,7 @@ final class ImageFileDirectory {
         if (geoKeyDirectory != null) {
             final CRSBuilder helper = new CRSBuilder(reader);
             try {
-                metadata.add(helper.build(geoKeyDirectory, numericGeoParameters, asciiGeoParameters));
+                metadata.addReferenceSystem(helper.build(geoKeyDirectory, numericGeoParameters, asciiGeoParameters));
                 helper.complete(metadata);
             } catch (NoSuchIdentifierException | ParameterNotFoundException e) {
                 short key = Resources.Keys.UnsupportedProjectionMethod_1;

@@ -493,8 +493,8 @@ public final class Store extends FeatureStore {
             } catch (MetadataStoreException e) {
                 listeners.warning(null, e);
             }
-            builder.add(encoding, MetadataBuilder.Scope.ALL);
-            builder.add(ScopeCode.DATASET);
+            builder.addEncoding(encoding, MetadataBuilder.Scope.ALL);
+            builder.addResourceScope(ScopeCode.DATASET, null);
             try {
                 builder.addExtent(envelope);
             } catch (TransformException e) {
