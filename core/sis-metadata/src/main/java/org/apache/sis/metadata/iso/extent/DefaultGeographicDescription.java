@@ -30,6 +30,12 @@ import org.apache.sis.util.iso.Types;
 
 /**
  * Description of the geographic area using identifiers.
+ * The following properties are mandatory in a well-formed metadata according ISO 19115:
+ *
+ * <div class="preformat">{@code EX_GeographicDescription}
+ * {@code   └─geographicIdentifier……} The identifier used to represent a geographic area.
+ * {@code       └─code……………………………………} Alphanumeric value identifying an instance in the namespace.</div>
+ *
  * The area is given by a {@linkplain #getGeographicIdentifier() geographic identifier},
  * which may be a code in the codespace of some authority (for example an EPSG code).
  * In addition, the geographic identifier can optionally have a

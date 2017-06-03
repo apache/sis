@@ -26,6 +26,10 @@ import org.opengis.metadata.quality.CompletenessCommission;
 
 /**
  * Presence and absence of features, their attributes and their relationships.
+ * The following property is mandatory in a well-formed metadata according ISO 19115:
+ *
+ * <div class="preformat">{@code DQ_Completeness}
+ * {@code   └─result……………} Value obtained from applying a data quality measure.</div>
  *
  * <p><b>Limitations:</b></p>
  * <ul>

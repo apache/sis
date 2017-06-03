@@ -29,6 +29,10 @@ import org.apache.sis.metadata.iso.ISOMetadata;
 /**
  * Information about content type for groups of attributes for a specific
  * {@linkplain DefaultRangeDimension range dimension}.
+ * The following property is mandatory in a well-formed metadata according ISO 19115:
+ *
+ * <div class="preformat">{@code MD_AttributeGroup}
+ * {@code   └─contentType……} Content type</div>
  *
  * <p><b>Limitations:</b></p>
  * <ul>

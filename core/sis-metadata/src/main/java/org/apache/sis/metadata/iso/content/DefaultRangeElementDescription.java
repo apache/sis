@@ -30,6 +30,12 @@ import org.apache.sis.xml.Namespaces;
 
 /**
  * Description of specific range elements.
+ * The following properties are mandatory in a well-formed metadata according ISO 19115:
+ *
+ * <div class="preformat">{@code MI_RangeElementDescription}
+ * {@code   ├─name………………………………………………} Designation associated with a set of range elements.
+ * {@code   ├─definition………………………………} Description of a set of specific range elements.
+ * {@code   └─rangeElement…………………………} Specific range elements, i.e. range elements associated with a name and their definition.</div>
  *
  * <p><b>Limitations:</b></p>
  * <ul>

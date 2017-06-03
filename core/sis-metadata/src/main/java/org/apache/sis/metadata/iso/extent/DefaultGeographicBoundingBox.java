@@ -44,7 +44,15 @@ import static java.lang.Double.doubleToLongBits;
  * reference system is unnecessary. The CRS shall be geographic with Greenwich prime meridian,
  * but the datum doesn't need to be WGS84.
  *
- * <p>In addition to the standard properties, SIS provides the following methods:</p>
+ * <p>The following properties are mandatory in a well-formed metadata according ISO 19115:</p>
+ *
+ * <div class="preformat">{@code EX_GeographicBoundingBox}
+ * {@code   ├─westBoundLongitude……} The western-most coordinate of the limit of the dataset extent.
+ * {@code   ├─eastBoundLongitude……} The eastern-most coordinate of the limit of the dataset extent.
+ * {@code   ├─southBoundLatitude……} The southern-most coordinate of the limit of the dataset extent.
+ * {@code   └─northBoundLatitude……} The northern-most, coordinate of the limit of the dataset extent.</div>
+ *
+ * In addition to the standard properties, SIS provides the following methods:
  * <ul>
  *   <li>{@link #setBounds(double, double, double, double)} for setting the extent from (λ,φ) values.</li>
  *   <li>{@link #setBounds(Envelope)} for setting the extent from the given envelope.</li>

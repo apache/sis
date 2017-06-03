@@ -34,6 +34,11 @@ import static org.apache.sis.internal.metadata.MetadataUtilities.ensurePositive;
 
 /**
  * Axis properties.
+ * The following properties are mandatory in a well-formed metadata according ISO 19115:
+ *
+ * <div class="preformat">{@code MD_Dimension}
+ * {@code   ├─dimensionName……} Name of the axis.
+ * {@code   └─dimensionSize……} Number of elements along the axis.</div>
  *
  * <p><b>Limitations:</b></p>
  * <ul>

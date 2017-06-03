@@ -24,6 +24,11 @@ import org.opengis.metadata.FeatureTypeList;
 
 /**
  * List of names of feature types with the same spatial representation (same as spatial attributes).
+ * The following properties are mandatory in a well-formed metadata according ISO 19115:
+ *
+ * <div class="preformat">{@code MD_FeatureTypeList}
+ * {@code   ├─spatialObject………………} Instance of a type defined in the spatial schema.
+ * {@code   └─spatialSchemaName……} Name of the spatial schema used.</div>
  *
  * <p><b>Limitations:</b></p>
  * <ul>

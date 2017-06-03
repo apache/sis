@@ -33,6 +33,11 @@ import org.apache.sis.util.iso.Types;
 
 /**
  * Information about the individual and / or organization of the party.
+ * The following property is conditional (i.e. mandatory under some circumstances)
+ * in a well-formed metadata according ISO 19115:
+ *
+ * <div class="preformat">{@code CI_Party}
+ * {@code   └─name……} Name of the party.</div>
  *
  * <p><b>Limitations:</b></p>
  * <ul>

@@ -29,6 +29,11 @@ import static org.apache.sis.internal.metadata.MetadataUtilities.ensurePositive;
 
 /**
  * Distance between consistent parts of (centre, left side, right side) adjacent pixels.
+ * The following properties are mandatory in a well-formed metadata according ISO 19115:
+ *
+ * <div class="preformat">{@code LE_NominalResolution}
+ * {@code   ├─scanningResolution……} Distance between consistent parts of (centre, left side, right side) adjacent pixels in the scan plane.
+ * {@code   └─groundResolution…………} Distance between consistent parts of (centre, left side, right side) adjacent pixels in the object space.</div>
  *
  * <p><b>Limitations:</b></p>
  * <ul>

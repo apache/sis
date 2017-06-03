@@ -29,6 +29,10 @@ import org.opengis.metadata.quality.ConceptualConsistency;
 /**
  * Degree of adherence to logical rules of data structure, attribution and relationships.
  * Data structure can be conceptual, logical or physical.
+ * The following property is mandatory in a well-formed metadata according ISO 19115:
+ *
+ * <div class="preformat">{@code DQ_LogicalConsistency}
+ * {@code   └─result……………} Value obtained from applying a data quality measure.</div>
  *
  * <p><b>Limitations:</b></p>
  * <ul>

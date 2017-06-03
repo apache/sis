@@ -28,6 +28,13 @@ import org.apache.sis.xml.Namespaces;
 
 /**
  * Details of the methodology by which geographic information was derived from the instrument readings.
+ * The following properties are mandatory in a well-formed metadata according ISO 19115:
+ *
+ * <div class="preformat">{@code LE_Algorithm}
+ * {@code   ├─citation…………………………} Information identifying the algorithm and version or date.
+ * {@code   │   ├─title………………………} Name by which the cited resource is known.
+ * {@code   │   └─date…………………………} Reference date for the cited resource.
+ * {@code   └─description…………………} Information describing the algorithm used to generate the data.</div>
  *
  * <p><b>Limitations:</b></p>
  * <ul>

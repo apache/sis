@@ -30,6 +30,13 @@ import org.apache.sis.metadata.iso.ISOMetadata;
 
 /**
  * Information about the party and their role.
+ * The following properties are mandatory or conditional (i.e. mandatory under some circumstances)
+ * in a well-formed metadata according ISO 19115:
+ *
+ * <div class="preformat">{@code CI_Responsibility}
+ * {@code   ├─party……………………} Information about the parties.
+ * {@code   │   └─name……………} Name of the party.
+ * {@code   └─role………………………} Function performed by the responsible party.</div>
  *
  * <p><b>Limitations:</b></p>
  * <ul>

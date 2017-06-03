@@ -35,8 +35,12 @@ import org.apache.sis.internal.metadata.ReferencingServices;
 
 /**
  * Time period covered by the content of the dataset.
+ * The following property is mandatory in a well-formed metadata according ISO 19115:
  *
- * <p>In addition to the standard properties, SIS provides the following methods:</p>
+ * <div class="preformat">{@code EX_TemporalExtent}
+ * {@code   └─extent…………………} The date and time for the content of the dataset.</div>
+ *
+ * In addition to the standard properties, SIS provides the following methods:
  * <ul>
  *   <li>{@link #getStartTime()} for fetching the start time from the temporal primitive.</li>
  *   <li>{@link #getEndTime()} for fetching the end time from the temporal primitive.</li>

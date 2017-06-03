@@ -47,6 +47,10 @@ import static org.apache.sis.util.collection.Containers.isNullOrEmpty;
 
 /**
  * Type of test applied to the data specified by a data quality scope.
+ * The following property is mandatory in a well-formed metadata according ISO 19115:
+ *
+ * <div class="preformat">{@code DQ_Element}
+ * {@code   └─result……………} Value obtained from applying a data quality measure.</div>
  *
  * <p><b>Limitations:</b></p>
  * <ul>
