@@ -18,6 +18,7 @@ package org.apache.sis.internal.storage;
 
 import java.util.Date;
 import java.util.Locale;
+import java.util.Iterator;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -29,16 +30,23 @@ import org.opengis.util.InternationalString;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Role;
 import org.opengis.metadata.citation.DateType;
+import org.opengis.metadata.citation.Citation;
+import org.opengis.metadata.citation.CitationDate;
+import org.opengis.metadata.citation.Responsibility;
 import org.opengis.metadata.spatial.Dimension;
 import org.opengis.metadata.spatial.DimensionNameType;
 import org.opengis.metadata.spatial.CellGeometry;
 import org.opengis.metadata.spatial.PixelOrientation;
+import org.opengis.metadata.spatial.SpatialRepresentationType;
 import org.opengis.metadata.constraint.Restriction;
 import org.opengis.metadata.maintenance.ScopeCode;
 import org.opengis.metadata.acquisition.Context;
 import org.opengis.metadata.acquisition.OperationType;
 import org.opengis.metadata.identification.Progress;
+import org.opengis.metadata.identification.KeywordType;
+import org.opengis.metadata.identification.TopicCategory;
 import org.opengis.metadata.distribution.Format;
+import org.opengis.referencing.crs.VerticalCRS;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.geometry.AbstractEnvelope;
@@ -46,8 +54,10 @@ import org.apache.sis.metadata.iso.DefaultMetadata;
 import org.apache.sis.metadata.iso.DefaultIdentifier;
 import org.apache.sis.metadata.iso.DefaultMetadataScope;
 import org.apache.sis.metadata.iso.extent.DefaultExtent;
+import org.apache.sis.metadata.iso.extent.DefaultVerticalExtent;
 import org.apache.sis.metadata.iso.extent.DefaultTemporalExtent;
 import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
+import org.apache.sis.metadata.iso.extent.DefaultGeographicDescription;
 import org.apache.sis.metadata.iso.spatial.DefaultDimension;
 import org.apache.sis.metadata.iso.spatial.DefaultGeorectified;
 import org.apache.sis.metadata.iso.content.DefaultAttributeGroup;
@@ -63,9 +73,12 @@ import org.apache.sis.metadata.iso.citation.DefaultResponsibility;
 import org.apache.sis.metadata.iso.citation.DefaultIndividual;
 import org.apache.sis.metadata.iso.citation.DefaultOrganisation;
 import org.apache.sis.metadata.iso.constraint.DefaultLegalConstraints;
+import org.apache.sis.metadata.iso.identification.DefaultKeywords;
 import org.apache.sis.metadata.iso.identification.DefaultResolution;
 import org.apache.sis.metadata.iso.identification.DefaultDataIdentification;
 import org.apache.sis.metadata.iso.distribution.DefaultFormat;
+import org.apache.sis.metadata.iso.distribution.DefaultDistributor;
+import org.apache.sis.metadata.iso.distribution.DefaultDistribution;
 import org.apache.sis.metadata.iso.acquisition.DefaultAcquisitionInformation;
 import org.apache.sis.metadata.iso.acquisition.DefaultEvent;
 import org.apache.sis.metadata.iso.acquisition.DefaultInstrument;
@@ -91,7 +104,7 @@ import org.opengis.feature.FeatureType;
 
 /**
  * Helper methods for the metadata created by {@code DataStore} implementations.
- * This is not yet a general-purpose builder suitable for public API, since the
+ * This is not a general-purpose builder suitable for public API, since the
  * methods provided in this class are tailored for Apache SIS data store needs.
  * API of this class may change in any future SIS versions.
  *
@@ -103,103 +116,9 @@ import org.opengis.feature.FeatureType;
  */
 public class MetadataBuilder {
     /**
-     * The metadata created by this reader, or {@code null} if none.
-     */
-    private DefaultMetadata metadata;
-
-    /**
-     * The identification information that are part of {@linkplain #metadata}, or {@code null} if none.
-     */
-    private DefaultDataIdentification identification;
-
-    /**
-     * The citation of data {@linkplain #identification}, or {@code null} if none.
-     */
-    private DefaultCitation citation;
-
-    /**
-     * Part of the responsible party of the {@linkplain #citation}, or {@code null} if none.
-     */
-    private DefaultResponsibility responsibility;
-
-    /**
-     * Part of the responsible party of the {@linkplain #citation}, or {@code null} if none.
-     */
-    private AbstractParty party;
-
-    /**
-     * Copyright information, or {@code null} if none.
-     */
-    private DefaultLegalConstraints constraints;
-
-    /**
-     * The extent information that are part of {@linkplain #identification}, or {@code null} if none.
-     */
-    private DefaultExtent extent;
-
-    /**
-     * Information about the platforms and sensors that collected the data, or {@code null} if none.
-     */
-    private DefaultAcquisitionInformation acquisition;
-
-    /**
-     * Platform where are installed the sensors that collected the data, or {@code null} if none.
-     */
-    private DefaultPlatform platform;
-
-    /**
-     * Information about the grid shape, or {@code null} if none.
-     */
-    private DefaultGeorectified gridRepresentation;
-
-    /**
-     * Information about the content of a grid data cell, or {@code null} if none.
-     * May also be an instance of {@link DefaultImageDescription} if {@link #electromagnetic} is {@code true}.
-     */
-    private DefaultCoverageDescription coverageDescription;
-
-    /**
-     * Information about the feature types, or {@code null} if none.
-     */
-    private DefaultFeatureCatalogueDescription featureDescription;
-
-    /**
-     * Information about content type for groups of attributes for a specific range dimension, or {@code null} if none.
-     */
-    private DefaultAttributeGroup attributeGroup;
-
-    /**
-     * The characteristic of each dimension (layer) included in the resource, or {@code null} if none.
-     */
-    private DefaultSampleDimension sampleDimension;
-
-    /**
-     * The distribution format, or {@code null} if none.
-     * This is part of the resource {@linkplain #identification}.
-     */
-    private Format format;
-
-    /**
-     * Information about the events or source data used in constructing the data specified by the
-     * {@linkplain DefaultLineage#getScope() scope}.
-     */
-    private DefaultLineage lineage;
-
-    /**
-     * Information about an event or transformation in the life of a resource.
-     * This is part of {@link #lineage}.
-     */
-    private DefaultProcessStep processStep;
-
-    /**
-     * Information about the procedures, processes and algorithms applied in the process step.
-     * This is part of {@link #processStep}.
-     */
-    private DefaultProcessing processing;
-
-    /**
      * Whether the next party to create should be an instance of {@link DefaultIndividual} or {@link DefaultOrganisation}.
      *
+     * @see #party()
      * @see #newParty(PartyType)
      */
     private PartyType partyType = PartyType.UNKNOWN;
@@ -208,6 +127,9 @@ public class MetadataBuilder {
      * {@code true} if the next {@code CoverageDescription} to create will be a description of measurements
      * in the electromagnetic spectrum. In that case, the coverage description will actually be an instance
      * of {@code ImageDescription}.
+     *
+     * @see #coverageDescription()
+     * @see #newCoverage(boolean)
      */
     private boolean electromagnetic;
 
@@ -220,10 +142,363 @@ public class MetadataBuilder {
      */
     private final Map<Number,Number> sharedNumbers = new HashMap<>();
 
+    // Other fields declared below together with closely related methods.
+
     /**
-     * Creates a new metadata reader.
+     * Creates a new metadata builder.
      */
     public MetadataBuilder() {
+    }
+
+    /**
+     * The metadata created by this builder, or {@code null} if not yet created.
+     */
+    private DefaultMetadata metadata;
+
+    /**
+     * Creates the metadata object if it does not already exists, then returns it.
+     *
+     * @return the metadata (never {@code null}).
+     * @see #build(boolean)
+     */
+    private DefaultMetadata metadata() {
+        if (metadata == null) {
+            metadata = new DefaultMetadata();
+        }
+        return metadata;
+    }
+
+    /**
+     * The identification information that are part of {@linkplain #metadata}, or {@code null} if none.
+     */
+    private DefaultDataIdentification identification;
+
+    /**
+     * Creates the identification information object if it does not already exists, then returns it.
+     *
+     * @return the identification information (never {@code null}).
+     * @see #newIdentification()
+     */
+    private DefaultDataIdentification identification() {
+        if (identification == null) {
+            identification = new DefaultDataIdentification();
+        }
+        return identification;
+    }
+
+    /**
+     * The citation of data {@linkplain #identification}, or {@code null} if none.
+     */
+    private DefaultCitation citation;
+
+    /**
+     * Creates the citation object if it does not already exists, then returns it.
+     *
+     * @return the citation information (never {@code null}).
+     */
+    private DefaultCitation citation() {
+        if (citation == null) {
+            citation = new DefaultCitation();
+        }
+        return citation;
+    }
+
+    /**
+     * Part of the responsible party of the {@linkplain #citation}, or {@code null} if none.
+     */
+    private DefaultResponsibility responsibility;
+
+    /**
+     * Creates the responsibility object if it does not already exists, then returns it.
+     *
+     * @return the responsibility party (never {@code null}).
+     */
+    private DefaultResponsibility responsibility() {
+        if (responsibility == null) {
+            responsibility = new DefaultResponsibility();
+        }
+        return responsibility;
+    }
+
+    /**
+     * Part of the responsible party of the {@linkplain #citation}, or {@code null} if none.
+     */
+    private AbstractParty party;
+
+    /**
+     * Creates the individual or organization information object if it does not already exists, then returns it.
+     *
+     * <p><b>Limitation:</b> if the party type is unknown, then this method creates an {@code AbstractParty} instead
+     * than one of the subtypes. This is not valid, but we currently have no way to guess if a party is an individual
+     * or an organization. For now we prefer to let users know that the type is unknown rather than to pick a
+     * potentially wrong type.</p>
+     *
+     * @return the individual or organization information (never {@code null}).
+     * @see #newParty(MetadataBuilder.PartyType)
+     */
+    private AbstractParty party() {
+        if (party == null) {
+            switch (partyType) {
+                case UNKNOWN:      party = new AbstractParty();       break;
+                case INDIVIDUAL:   party = new DefaultIndividual();   break;
+                case ORGANISATION: party = new DefaultOrganisation(); break;
+                default:           throw new AssertionError(partyType);
+            }
+        }
+        return party;
+    }
+
+    /**
+     * Copyright information, or {@code null} if none.
+     */
+    private DefaultLegalConstraints constraints;
+
+    /**
+     * Creates the constraints information object if it does not already exists, then returns it.
+     *
+     * @return the constraints information (never {@code null}).
+     */
+    private DefaultLegalConstraints constraints() {
+        if (constraints == null) {
+            constraints = new DefaultLegalConstraints();
+        }
+        return constraints;
+    }
+
+    /**
+     * The extent information that are part of {@linkplain #identification}, or {@code null} if none.
+     */
+    private DefaultExtent extent;
+
+    /**
+     * Creates the extent information object if it does not already exists, then returns it.
+     *
+     * @return the extent information (never {@code null}).
+     */
+    private DefaultExtent extent() {
+        if (extent == null) {
+            extent = new DefaultExtent();
+        }
+        return extent;
+    }
+
+    /**
+     * Information about the platforms and sensors that collected the data, or {@code null} if none.
+     */
+    private DefaultAcquisitionInformation acquisition;
+
+    /**
+     * Creates the acquisition information object if it does not already exists, then returns it.
+     *
+     * @return the acquisition information (never {@code null}).
+     * @see #newAcquisition()
+     */
+    private DefaultAcquisitionInformation acquisition() {
+        if (acquisition == null) {
+            acquisition = new DefaultAcquisitionInformation();
+        }
+        return acquisition;
+    }
+
+    /**
+     * Platform where are installed the sensors that collected the data, or {@code null} if none.
+     */
+    private DefaultPlatform platform;
+
+    /**
+     * Creates a platform object if it does not already exists, then returns it.
+     *
+     * @return the platform information (never {@code null}).
+     */
+    private DefaultPlatform platform() {
+        if (platform == null) {
+            platform = new DefaultPlatform();
+        }
+        return platform;
+    }
+
+    /**
+     * Information about the feature types, or {@code null} if none.
+     */
+    private DefaultFeatureCatalogueDescription featureDescription;
+
+    /**
+     * Creates the feature descriptions object if it does not already exists, then returns it.
+     * This method sets the {@code includedWithDataset} property to {@code true} because the
+     * metadata built by this helper class are typically encoded together with the data.
+     *
+     * @return the feature descriptions (never {@code null}).
+     * @see #newFeatureTypes()
+     */
+    private DefaultFeatureCatalogueDescription featureDescription() {
+        if (featureDescription == null) {
+            featureDescription = new DefaultFeatureCatalogueDescription();
+            featureDescription.setIncludedWithDataset(true);
+        }
+        return featureDescription;
+    }
+
+    /**
+     * Information about the content of a grid data cell, or {@code null} if none.
+     * May also be an instance of {@link DefaultImageDescription} if {@link #electromagnetic} is {@code true}.
+     */
+    private DefaultCoverageDescription coverageDescription;
+
+    /**
+     * Creates the coverage description object if it does not already exists, then returns it.
+     *
+     * @return the coverage description (never {@code null}).
+     * @see #newCoverage(boolean)
+     */
+    private DefaultCoverageDescription coverageDescription() {
+        if (coverageDescription == null) {
+            coverageDescription = electromagnetic ? new DefaultImageDescription() : new DefaultCoverageDescription();
+        }
+        return coverageDescription;
+    }
+
+    /**
+     * Information about content type for groups of attributes for a specific range dimension, or {@code null} if none.
+     */
+    private DefaultAttributeGroup attributeGroup;
+
+    /**
+     * Creates the attribute group object if it does not already exists, then returns it.
+     *
+     * @return the attribute group (never {@code null}).
+     */
+    private DefaultAttributeGroup attributeGroup() {
+        if (attributeGroup == null) {
+            attributeGroup = new DefaultAttributeGroup();
+        }
+        return attributeGroup;
+    }
+
+    /**
+     * The characteristic of each dimension (layer) included in the resource, or {@code null} if none.
+     */
+    private DefaultSampleDimension sampleDimension;
+
+    /**
+     * Creates the sample dimension object if it does not already exists, then returns it.
+     *
+     * @return the sample dimension (never {@code null}).
+     */
+    private DefaultSampleDimension sampleDimension() {
+        if (sampleDimension == null) {
+            sampleDimension = new DefaultSampleDimension();
+        }
+        return sampleDimension;
+    }
+
+    /**
+     * Information about the grid shape, or {@code null} if none.
+     */
+    private DefaultGeorectified gridRepresentation;
+
+    /**
+     * Creates a grid representation object if it does not already exists, then returns it.
+     *
+     * @return the grid representation object (never {@code null}).
+     * @see #newGridRepresentation()
+     */
+    private DefaultGeorectified gridRepresentation() {
+        if (gridRepresentation == null) {
+            gridRepresentation = new DefaultGeorectified();
+        }
+        return gridRepresentation;
+    }
+
+    /**
+     * Information about the distributor of and options for obtaining the resource.
+     */
+    private DefaultDistribution distribution;
+
+    /**
+     * Creates the distribution information object if it does not already exists, then returns it.
+     *
+     * @return the distribution information (never {@code null}).
+     * @see #newDistribution()
+     */
+    private DefaultDistribution distribution() {
+        if (distribution == null) {
+            distribution = new DefaultDistribution();
+        }
+        return distribution;
+    }
+
+    /**
+     * The distribution format, or {@code null} if none.
+     * This is part of the resource {@linkplain #identification}.
+     */
+    private Format format;
+
+    /**
+     * Creates the distribution format object if it does not already exists, then returns it.
+     *
+     * @return the distribution format (never {@code null}).
+     */
+    private DefaultFormat format() {
+        DefaultFormat df = DefaultFormat.castOrCopy(format);
+        if (df == null) {
+            format = df = new DefaultFormat();
+        }
+        return df;
+    }
+
+    /**
+     * Information about the events or source data used in constructing the data specified by the
+     * {@linkplain DefaultLineage#getScope() scope}.
+     */
+    private DefaultLineage lineage;
+
+    /**
+     * Creates the lineage object if it does not already exists, then returns it.
+     *
+     * @return the lineage (never {@code null}).
+     * @see #newLineage()
+     */
+    private DefaultLineage lineage() {
+        if (lineage == null) {
+            lineage = new DefaultLineage();
+        }
+        return lineage;
+    }
+
+    /**
+     * Information about an event or transformation in the life of a resource.
+     * This is part of {@link #lineage}.
+     */
+    private DefaultProcessStep processStep;
+
+    /**
+     * Creates the process step object if it does not already exists, then returns it.
+     *
+     * @return the process step (never {@code null}).
+     */
+    private DefaultProcessStep processStep() {
+        if (processStep == null) {
+            processStep = new DefaultProcessStep();
+        }
+        return processStep;
+    }
+
+    /**
+     * Information about the procedures, processes and algorithms applied in the process step.
+     * This is part of {@link #processStep}.
+     */
+    private DefaultProcessing processing;
+
+    /**
+     * Creates the processing object if it does not already exists, then returns it.
+     *
+     * @return the processing (never {@code null}).
+     */
+    private DefaultProcessing processing() {
+        if (processing == null) {
+            processing = new DefaultProcessing();
+        }
+        return processing;
     }
 
     /**
@@ -344,21 +619,31 @@ public class MetadataBuilder {
     }
 
     /**
-     * Commits all pending information under the metadata "spatial representation" node (dimensions, <i>etc</i>).
-     * If there is no pending spatial representation information, then invoking this method has no effect.
-     * If new spatial representation info are added after this method call, they will be stored in a new element.
+     * Commits all pending information under metadata "distribution" node.
+     * If there is no pending distribution information, then invoking this method has no effect.
+     * If new distribution info are added after this method call, they will be stored in a new element.
      *
-     * <p>This method does not need to be invoked unless a new "spatial representation info" node,
+     * <p>This method does not need to be invoked unless a new "distribution info" node,
      * separated from the previous one, is desired.</p>
      */
-    public final void newGridRepresentation() {
-        if (gridRepresentation != null) {
-            final int n = gridRepresentation.getAxisDimensionProperties().size();
-            if (n != 0) {
-                gridRepresentation.setNumberOfDimensions(shared(n));
-            }
-            addIfNotPresent(metadata.getSpatialRepresentationInfo(), gridRepresentation);
-            gridRepresentation = null;
+    public final void newDistribution() {
+        if (distribution != null) {
+            addIfNotPresent(metadata().getDistributionInfo(), distribution);
+            distribution = null;
+        }
+    }
+
+    /**
+     * Commits all pending information under the metadata "feature catalog" node.
+     * If there is no pending feature description, then invoking this method has no effect.
+     * If new feature descriptions are added after this method call, they will be stored in a new element.
+     *
+     * <p>This method does not need to be invoked unless a new "feature catalog description" node is desired.</p>
+     */
+    public final void newFeatureTypes() {
+        if (featureDescription != null) {
+            addIfNotPresent(metadata().getContentInfo(), featureDescription);
+            featureDescription = null;
         }
     }
 
@@ -376,7 +661,7 @@ public class MetadataBuilder {
      */
     public final void newCoverage(final boolean electromagnetic) {
         if (sampleDimension != null) {
-            addIfNotPresent(attributGroup().getAttributes(), sampleDimension);
+            addIfNotPresent(attributeGroup().getAttributes(), sampleDimension);
             sampleDimension = null;
         }
         if (attributeGroup != null) {
@@ -391,16 +676,21 @@ public class MetadataBuilder {
     }
 
     /**
-     * Commits all pending information under the metadata "feature catalog" node.
-     * If there is no pending feature description, then invoking this method has no effect.
-     * If new feature descriptions are added after this method call, they will be stored in a new element.
+     * Commits all pending information under the metadata "spatial representation" node (dimensions, <i>etc</i>).
+     * If there is no pending spatial representation information, then invoking this method has no effect.
+     * If new spatial representation info are added after this method call, they will be stored in a new element.
      *
-     * <p>This method does not need to be invoked unless a new "feature catalog description" node is desired.</p>
+     * <p>This method does not need to be invoked unless a new "spatial representation info" node,
+     * separated from the previous one, is desired.</p>
      */
-    public final void newFeatureTypes() {
-        if (featureDescription != null) {
-            addIfNotPresent(metadata().getContentInfo(), featureDescription);
-            featureDescription = null;
+    public final void newGridRepresentation() {
+        if (gridRepresentation != null) {
+            final int n = gridRepresentation.getAxisDimensionProperties().size();
+            if (n != 0) {
+                gridRepresentation.setNumberOfDimensions(shared(n));
+            }
+            addIfNotPresent(metadata.getSpatialRepresentationInfo(), gridRepresentation);
+            gridRepresentation = null;
         }
     }
 
@@ -428,243 +718,14 @@ public class MetadataBuilder {
     }
 
     /**
-     * Creates the metadata object if it does not already exists, then returns it.
-     *
-     * @return the metadata (never {@code null}).
-     */
-    private DefaultMetadata metadata() {
-        if (metadata == null) {
-            metadata = new DefaultMetadata();
-        }
-        return metadata;
-    }
-
-    /**
-     * Creates the identification information object if it does not already exists, then returns it.
-     *
-     * @return the identification information (never {@code null}).
-     */
-    private DefaultDataIdentification identification() {
-        if (identification == null) {
-            identification = new DefaultDataIdentification();
-        }
-        return identification;
-    }
-
-    /**
-     * Creates the citation object if it does not already exists, then returns it.
-     *
-     * @return the citation information (never {@code null}).
-     */
-    private DefaultCitation citation() {
-        if (citation == null) {
-            citation = new DefaultCitation();
-        }
-        return citation;
-    }
-
-    /**
-     * Creates the responsibility object if it does not already exists, then returns it.
-     *
-     * @return the responsibility party (never {@code null}).
-     */
-    private DefaultResponsibility responsibility() {
-        if (responsibility == null) {
-            responsibility = new DefaultResponsibility();
-        }
-        return responsibility;
-    }
-
-    /**
-     * Creates the individual or organization information object if it does not already exists, then returns it.
-     *
-     * <p><b>Limitation:</b> if the party type is unknown, then this method creates an {@code AbstractParty} instead
-     * than one of the subtypes. This is not valid, but we currently have no way to guess if a party is an individual
-     * or an organization. For now we prefer to let users know that the type is unknown rather than to pick a
-     * potentially wrong type.</p>
-     *
-     * @return the individual or organization information (never {@code null}).
-     */
-    private AbstractParty party() {
-        if (party == null) {
-            switch (partyType) {
-                case UNKNOWN:      party = new AbstractParty();       break;
-                case INDIVIDUAL:   party = new DefaultIndividual();   break;
-                case ORGANISATION: party = new DefaultOrganisation(); break;
-                default:           throw new AssertionError(partyType);
-            }
-        }
-        return party;
-    }
-
-    /**
-     * Creates the constraints information object if it does not already exists, then returns it.
-     *
-     * @return the constraints information (never {@code null}).
-     */
-    private DefaultLegalConstraints constraints() {
-        if (constraints == null) {
-            constraints = new DefaultLegalConstraints();
-        }
-        return constraints;
-    }
-
-    /**
-     * Creates the extent information object if it does not already exists, then returns it.
-     *
-     * @return the extent information (never {@code null}).
-     */
-    private DefaultExtent extent() {
-        if (extent == null) {
-            extent = new DefaultExtent();
-        }
-        return extent;
-    }
-
-    /**
-     * Creates the acquisition information object if it does not already exists, then returns it.
-     *
-     * @return the acquisition information (never {@code null}).
-     */
-    private DefaultAcquisitionInformation acquisition() {
-        if (acquisition == null) {
-            acquisition = new DefaultAcquisitionInformation();
-        }
-        return acquisition;
-    }
-
-    /**
-     * Creates a platform object if it does not already exists, then returns it.
-     *
-     * @return the platform information (never {@code null}).
-     */
-    private DefaultPlatform platform() {
-        if (platform == null) {
-            platform = new DefaultPlatform();
-        }
-        return platform;
-    }
-
-    /**
-     * Creates a grid representation object if it does not already exists, then returns it.
-     *
-     * @return the grid representation object (never {@code null}).
-     */
-    private DefaultGeorectified gridRepresentation() {
-        if (gridRepresentation == null) {
-            gridRepresentation = new DefaultGeorectified();
-        }
-        return gridRepresentation;
-    }
-
-    /**
-     * Creates the sample dimension object if it does not already exists, then returns it.
-     *
-     * @return the sample dimension (never {@code null}).
-     */
-    private DefaultSampleDimension sampleDimension() {
-        if (sampleDimension == null) {
-            sampleDimension = new DefaultSampleDimension();
-        }
-        return sampleDimension;
-    }
-
-    /**
-     * Creates the attribut group object if it does not already exists, then returns it.
-     *
-     * @return the attribut group (never {@code null}).
-     */
-    private DefaultAttributeGroup attributGroup() {
-        if (attributeGroup == null) {
-            attributeGroup = new DefaultAttributeGroup();
-        }
-        return attributeGroup;
-    }
-
-    /**
-     * Creates the coverage description object if it does not already exists, then returns it.
-     *
-     * @return the coverage description (never {@code null}).
-     */
-    private DefaultCoverageDescription coverageDescription() {
-        if (coverageDescription == null) {
-            coverageDescription = electromagnetic ? new DefaultImageDescription() : new DefaultCoverageDescription();
-        }
-        return coverageDescription;
-    }
-
-    /**
-     * Creates the feature descriptions object if it does not already exists, then returns it.
-     * This method sets the {@code includedWithDataset} property to {@code true} because the
-     * metadata built by this helper class are typically encoded together with the data.
-     *
-     * @return the feature descriptions (never {@code null}).
-     */
-    private DefaultFeatureCatalogueDescription featureDescription() {
-        if (featureDescription == null) {
-            featureDescription = new DefaultFeatureCatalogueDescription();
-            featureDescription.setIncludedWithDataset(true);
-        }
-        return featureDescription;
-    }
-
-    /**
-     * Creates the distribution format object if it does not already exists, then returns it.
-     *
-     * @return the distribution format (never {@code null}).
-     */
-    private DefaultFormat format() {
-        DefaultFormat df = DefaultFormat.castOrCopy(format);
-        if (df == null) {
-            format = df = new DefaultFormat();
-        }
-        return df;
-    }
-
-    /**
-     * Creates the lineage object if it does not already exists, then returns it.
-     *
-     * @return the lineage (never {@code null}).
-     */
-    private DefaultLineage lineage() {
-        if (lineage == null) {
-            lineage = new DefaultLineage();
-        }
-        return lineage;
-    }
-
-    /**
-     * Creates the process step object if it does not already exists, then returns it.
-     *
-     * @return the process step (never {@code null}).
-     */
-    private DefaultProcessStep processStep() {
-        if (processStep == null) {
-            processStep = new DefaultProcessStep();
-        }
-        return processStep;
-    }
-
-    /**
-     * Creates the processing object if it does not already exists, then returns it.
-     *
-     * @return the processing (never {@code null}).
-     */
-    private DefaultProcessing processing() {
-        if (processing == null) {
-            processing = new DefaultProcessing();
-        }
-        return processing;
-    }
-
-    /**
      * Specify if an information apply to data, to metadata or to both.
+     * This is used for setting the locale or character encoding.
      */
     public enum Scope {
         /**
-         * Information applies only to data.
+         * Information applies only to the resource (data).
          */
-        DATA,
+        RESOURCE,
 
         /**
          * Information applies only to metadata.
@@ -672,28 +733,79 @@ public class MetadataBuilder {
         METADATA,
 
         /**
-         * Information applies to both data and metadata.
+         * Information applies to both resource and metadata.
          */
         ALL
+    }
+
+    /**
+     * Adds a resource (data) identifier, a metadata identifier, or both as they are often the same.
+     * The identifier is added only if {@code code} is non-null, regardless other argument values.
+     * Empty strings (ignoring spaces) are ignored.
+     * Storages locations are:
+     *
+     * <ul>
+     *   <li><b>Metadata:</b> {@code metadata/metadataIdentifier}</li>
+     *   <li><b>Resource:</b> {@code metadata/identificationInfo/citation/identifier}</li>
+     * </ul>
+     *
+     * @param  authority  the the person or party responsible for maintenance of the namespace, or {@code null} if none.
+     * @param  code       the identifier code, or {@code null} for no-operation.
+     * @param  scope      whether the date applies to data, to metadata or to both.
+     *
+     * @see #addTitle(CharSequence)
+     */
+    public final void addIdentifier(final Citation authority, String code, final Scope scope) {
+        ArgumentChecks.ensureNonNull("scope", scope);
+        if (code != null && !(code = code.trim()).isEmpty()) {
+            final DefaultIdentifier id = new DefaultIdentifier(authority, code);
+            if (scope != Scope.RESOURCE) metadata().setMetadataIdentifier(id);
+            if (scope != Scope.METADATA) addIfNotPresent(citation().getIdentifiers(), id);
+        }
+    }
+
+    /**
+     * Sets the file format. The given name should be a short name like "GeoTIFF".
+     * The long name will be inferred from the given short name, if possible.
+     * Storage location is:
+     *
+     * <ul>
+     *   <li>{@code metadata/identificationInfo/resourceFormat/formatSpecificationCitation/alternateTitle}</li>
+     * </ul>
+     *
+     * @param  abbreviation  the format short name or abbreviation, or {@code null} for no-operation.
+     * @throws MetadataStoreException  if this method can not connect to the {@code jdbc/SpatialMetadata} database.
+     *         Callers should generally handle this exception as a recoverable one (i.e. log a warning and continue).
+     *
+     * @see #addCompression(CharSequence)
+     */
+    public final void setFormat(final String abbreviation) throws MetadataStoreException {
+        if (abbreviation != null && abbreviation.length() != 0) {
+            if (format == null) {
+                format = MetadataSource.getProvided().lookup(Format.class, abbreviation);
+            }
+        }
     }
 
     /**
      * Adds a language used for documenting data and/or metadata.
      * Storage locations are:
      *
-     * <table class="compact" summary="Storage locations.">
-     * <tr><td>Metadata</td> <td>{@code metadata/language}</td></tr>
-     * <tr><td>Data</td>     <td>{@code metadata/identificationInfo/language}</td></tr>
-     * </table>
+     * <ul>
+     *   <li><b>Metadata:</b> {@code metadata/language}</li>
+     *   <li><b>Resource:</b> {@code metadata/identificationInfo/language}</li>
+     * </ul>
      *
-     * @param  language  a language used for documenting data and/or metadata.
+     * @param  language  a language used for documenting data and/or metadata, or {@code null} for no-operation.
      * @param  scope     whether the language applies to data, to metadata or to both.
+     *
+     * @see #addEncoding(Charset, MetadataBuilder.Scope)
      */
-    public final void add(final Locale language, final Scope scope) {
+    public final void addLanguage(final Locale language, final Scope scope) {
         ArgumentChecks.ensureNonNull("scope", scope);
         if (language != null) {
             // No need to use 'addIfNotPresent(…)' because Locale collection is a Set by default.
-            if (scope != Scope.DATA)           metadata().getLanguages().add(language);
+            if (scope != Scope.RESOURCE) metadata().getLanguages().add(language);
             if (scope != Scope.METADATA) identification().getLanguages().add(language);
         }
     }
@@ -702,19 +814,21 @@ public class MetadataBuilder {
      * Adds a character set used for encoding the data and/or metadata.
      * Storage locations are:
      *
-     * <table class="compact" summary="Storage locations.">
-     * <tr><td>Metadata</td> <td>{@code metadata/characterSet}</td></tr>
-     * <tr><td>Data</td>     <td>{@code metadata/identificationInfo/characterSet}</td></tr>
-     * </table>
+     * <ul>
+     *   <li><b>Metadata:</b> {@code metadata/characterSet}</li>
+     *   <li><b>Resource:</b> {@code metadata/identificationInfo/characterSet}</li>
+     * </ul>
      *
-     * @param  encoding  the character set used for encoding data and/or metadata.
+     * @param  encoding  the character set used for encoding data and/or metadata, or {@code null} for no-operation.
      * @param  scope     whether the encoding applies to data, to metadata or to both.
+     *
+     * @see #addLanguage(Locale, MetadataBuilder.Scope)
      */
-    public final void add(final Charset encoding, final Scope scope) {
+    public final void addEncoding(final Charset encoding, final Scope scope) {
         ArgumentChecks.ensureNonNull("scope", scope);
         if (encoding != null) {
             // No need to use 'addIfNotPresent(…)' because Charset collection is a Set by default.
-            if (scope != Scope.DATA)           metadata().getCharacterSets().add(encoding);
+            if (scope != Scope.RESOURCE) metadata().getCharacterSets().add(encoding);
             if (scope != Scope.METADATA) identification().getCharacterSets().add(encoding);
         }
     }
@@ -722,143 +836,72 @@ public class MetadataBuilder {
     /**
      * Adds information about the scope of the resource.
      * The scope is typically {@link ScopeCode#DATASET}.
-     * Storage location is:
-     *
-     * <pre>metadata/metadataScope/resourceScope</pre>
-     *
-     * @param  scope  the scope of the resource, or {@code null} if none.
-     */
-    public final void add(final ScopeCode scope) {
-        if (scope != null) {
-            addIfNotPresent(metadata().getMetadataScopes(), new DefaultMetadataScope(scope, null));
-        }
-    }
-
-    /**
-     * Adds descriptions for the given feature.
-     * Storage location is:
-     *
-     * <pre>metadata/contentInfo/featureTypes/featureTypeName</pre>
-     *
-     * This method returns the feature name for more convenient chaining with
-     * {@link org.apache.sis.storage.FeatureNaming#add FeatureNaming.add(…)}.
-     * Note that the {@link FeatureCatalogBuilder} subclasses can also be used for that chaining.
-     *
-     * @param  type         the feature type to add, or {@code null}.
-     * @param  occurrences  number of instances of the given feature type, or {@code null} if unknown.
-     * @return the name of the added feature, or {@code null} if none.
-     *
-     * @see FeatureCatalogBuilder#define(FeatureType)
-     */
-    public final GenericName add(final FeatureType type, final Integer occurrences) {
-        if (type != null) {
-            final GenericName name = type.getName();
-            if (name != null) {
-                final DefaultFeatureTypeInfo info = new DefaultFeatureTypeInfo(name);
-                if (occurrences != null) {
-                    info.setFeatureInstanceCount(shared(occurrences));
-                }
-                addIfNotPresent(featureDescription().getFeatureTypeInfo(), info);
-                return name;
-            }
-        }
-        return null;
-    }
-
-    /**
-     * Adds the given coordinate reference system to metadata, if it does not already exists.
-     * This method ensures that there is no duplicated values.
-     * Storage location is:
-     *
-     * <pre>metadata/referenceSystemInfo</pre>
-     *
-     * @param  crs  the coordinate reference system to add to the metadata, or {@code null} if none.
-     */
-    public final void add(final CoordinateReferenceSystem crs) {
-        if (crs != null) {
-            addIfNotPresent(metadata().getReferenceSystemInfo(), crs);
-        }
-    }
-
-    /**
-     * Adds the given envelope, including its CRS, to the metadata. If the metadata already contains a geographic
-     * bounding box, then a new bounding box is added; this method does not compute the union of the two boxes.
-     * Storage location is:
-     *
-     * <pre>metadata/identificationInfo/extent/geographicElement</pre>
-     *
-     * @param  envelope  the extent to add in the metadata, or {@code null} if none.
-     * @throws TransformException if an error occurred while converting the given envelope to extents.
-     */
-    public final void addExtent(final AbstractEnvelope envelope) throws TransformException {
-        if (envelope != null) {
-            add(envelope.getCoordinateReferenceSystem());
-            if (!envelope.isAllNaN()) {
-                extent().addElements(envelope);
-            }
-        }
-    }
-
-    /**
-     * Adds a geographic bounding box initialized to the values in the given array.
-     * The array must contains at least 4 values starting at the given index in this exact order:
+     * Storage locations are:
      *
      * <ul>
-     *   <li>{@code westBoundLongitude} (the minimal λ value), or {@code NaN}</li>
-     *   <li>{@code eastBoundLongitude} (the maximal λ value), or {@code NaN}</li>
-     *   <li>{@code southBoundLatitude} (the minimal φ value), or {@code NaN}</li>
-     *   <li>{@code northBoundLatitude} (the maximal φ value), or {@code NaN}</li>
+     *   <li>{@code metadata/metadataScope/resourceScope}</li>
+     *   <li>{@code metadata/metadataScope/name}</li>
      * </ul>
      *
-     * Storage location is:
-     *
-     * <pre>metadata/identificationInfo/extent/geographicElement</pre>
-     *
-     * @param  ordinates  the geographic coordinates.
-     * @param  index      index of the first value to use in the given array.
+     * @param  scope  the scope of the resource, or {@code null} if none.
+     * @param  name   description of the scope, or {@code null} if none.
      */
-    public final void addExtent(final double[] ordinates, int index) {
-        final DefaultGeographicBoundingBox bbox = new DefaultGeographicBoundingBox(
-                    ordinates[index], ordinates[++index], ordinates[++index], ordinates[++index]);
-        if (!bbox.isEmpty()) {
-            addIfNotPresent(extent().getGeographicElements(), bbox);
+    public final void addResourceScope(final ScopeCode scope, final CharSequence name) {
+        if (scope != null || name != null) {
+            addIfNotPresent(metadata().getMetadataScopes(), new DefaultMetadataScope(scope, name));
         }
     }
 
     /**
-     * Adds a temporal extent covered by the data.
-     * Storage location is:
+     * Adds a date of the given type. This is not the data acquisition time, but rather the metadata creation
+     * or last update time. With {@link Scope#METADATA}, this is the creation of the metadata file as a whole.
+     * With {@link Scope#RESOURCE}, this is the creation of the metadata for a particular "identification info".
+     * They are often the same, since there is typically only one "identification info" per file.
+     * Storage locations are:
      *
-     * <pre>metadata/identificationInfo/extent/temporalElement</pre>
+     * <ul>
+     *   <li><b>Metadata:</b> {@code metadata/dateInfo/*}</li>
+     *   <li><b>Resource:</b> {@code metadata/identificationInfo/citation/date/*}</li>
+     * </ul>
      *
-     * @param  startTime  when the data begins, or {@code null}.
-     * @param  endTime    when the data ends, or {@code null}.
-     * @throws UnsupportedOperationException if the temporal module is not on the classpath.
+     * If a date already exists for the given type, then the earliest date is retained (oldest date are discarded)
+     * except for {@link DateType#LAST_REVISION}, {@link DateType#LAST_UPDATE LAST_UPDATE} or any other date type
+     * prefixed by {@code "LATE_"}, where only the latest date is kept.
+     *
+     * @param  date   the date to add, or {@code null} for no-operation..
+     * @param  type   the type of the date to add, or {@code null} if none (not legal but tolerated).
+     * @param  scope  whether the date applies to data, to metadata or to both.
      *
      * @see #addAcquisitionTime(Date)
      */
-    public final void addExtent(final Date startTime, final Date endTime) {
-        if (startTime != null || endTime != null) {
-            final DefaultTemporalExtent t = new DefaultTemporalExtent();
-            t.setBounds(startTime, endTime);
-            addIfNotPresent(extent().getTemporalElements(), t);
+    public final void addCitationDate(final Date date, final DateType type, final Scope scope) {
+        ArgumentChecks.ensureNonNull("scope", scope);
+        if (date != null) {
+            final DefaultCitationDate cd = new DefaultCitationDate(date, type);
+            if (scope != Scope.RESOURCE) addEarliest(metadata().getDateInfo(), cd, type);
+            if (scope != Scope.METADATA) addEarliest(citation().getDates(),    cd, type);
         }
     }
 
     /**
-     * Adds a date of the given type. This is not the data acquisition time,
-     * but rather the metadata creation or last update time.
-     * Storage location is:
-     *
-     * <pre>metadata/identificationInfo/citation/date/date</pre>
-     *
-     * @param date  the date to add, or {@code null}.
-     * @param type  the type of the date to add, or {@code null}.
+     * Adds a date in the given collection, making sure that there is no two dates of the same type.
+     * If two dates are of the same type, retains the latest one if the type name starts with {@code "LATE_"}
+     * or retains the earliest date otherwise.
      */
-    public final void add(final Date date, final DateType type) {
-        if (date != null) {
-            addIfNotPresent(citation().getDates(), new DefaultCitationDate(date, type));
+    private static void addEarliest(final Collection<CitationDate> dates, final CitationDate cd, final DateType type) {
+        for (final Iterator<CitationDate> it = dates.iterator(); it.hasNext();) {
+            final CitationDate co = it.next();
+            if (type.equals(co.getDateType())) {
+                final Date oldDate = co.getDate();
+                final Date newDate = cd.getDate();
+                if (type.name().startsWith("LATE_") ? oldDate.before(newDate) : oldDate.after(newDate)) {
+                    it.remove();
+                    break;
+                }
+                return;
+            }
         }
+        dates.add(cd);
     }
 
     /**
@@ -875,7 +918,7 @@ public class MetadataBuilder {
     }
 
     /**
-     * Returns the concatenation of the given string. The previous string may be {@code null}.
+     * Returns the concatenation of the given strings. The previous string may be {@code null}.
      * This method does nothing if the previous string already contains the one to append.
      */
     private static InternationalString append(final InternationalString previous, final InternationalString toAdd) {
@@ -907,9 +950,14 @@ public class MetadataBuilder {
      * Adds a title or alternate title of the resource.
      * Storage location is:
      *
-     * <pre>metadata/identificationInfo/citation/title</pre>
+     * <ul>
+     *   <li>{@code metadata/identificationInfo/citation/title} if available</li>
+     *   <li>{@code metadata/identificationInfo/citation/alternateTitle} otherwise</li>
+     * </ul>
      *
-     * @param title  the resource title or alternate title, or {@code null} if none.
+     * @param title  the resource title or alternate title, or {@code null} for no-operation.
+     *
+     * @see #addAbstract(CharSequence)
      */
     public final void addTitle(final CharSequence title) {
         final InternationalString i18n = trim(title);
@@ -929,9 +977,14 @@ public class MetadataBuilder {
      * If a summary already existed, the new one will be appended after a new line.
      * Storage location is:
      *
-     * <pre>metadata/identificationInfo/abstract</pre>
+     * <ul>
+     *   <li>{@code metadata/identificationInfo/abstract}
+     * </ul>
      *
-     * @param description  the summary of resource(s), or {@code null} if none.
+     * @param description  the summary of resource(s), or {@code null} for no-operation.
+     *
+     * @see #addTitle(CharSequence)
+     * @see #addPurpose(CharSequence)
      */
     public final void addAbstract(final CharSequence description) {
         final InternationalString i18n = trim(description);
@@ -942,13 +995,132 @@ public class MetadataBuilder {
     }
 
     /**
+     * Adds a summary of the intentions with which the resource(s) was developed.
+     * If a purpose already existed, the new one will be appended after a new line.
+     * Storage location is:
+     *
+     * <ul>
+     *   <li>{@code metadata/identificationInfo/purpose}</li>
+     * </ul>
+     *
+     * @param intention  the summary of intention(s), or {@code null} for no-operation.
+     *
+     * @see #addAbstract(CharSequence)
+     */
+    public final void addPurpose(final CharSequence intention) {
+        final InternationalString i18n = trim(intention);
+        if (i18n != null) {
+            final DefaultDataIdentification identification = identification();
+            identification.setPurpose(append(identification.getPurpose(), i18n));
+        }
+    }
+
+    /**
+     * Adds other information required to complete the citation that is not recorded elsewhere.
+     * Storage location is:
+     *
+     * <ul>
+     *   <li>{@code metadata/identificationInfo/citation/otherCitationDetails}</li>
+     * </ul>
+     *
+     * @param  details  other details, or {@code null} for no-operation.
+     */
+    public final void addOtherCitationDetails(final CharSequence details) {
+        final InternationalString i18n = trim(details);
+        if (i18n != null) {
+            addIfNotPresent(citation().getOtherCitationDetails(), i18n);
+        }
+    }
+
+    /**
+     * Adds any other descriptive information about the resource.
+     * If information already existed, the new one will be appended after a new line.
+     * Storage location is:
+     *
+     * <ul>
+     *   <li>{@code metadata/identificationInfo/supplementalInformation}</li>
+     * </ul>
+     *
+     * @param info  any other descriptive information about the resource, or {@code null} for no-operation.
+     */
+    public final void addSupplementalInformation(final CharSequence info) {
+        final InternationalString i18n = trim(info);
+        if (i18n != null) {
+            final DefaultDataIdentification identification = identification();
+            identification.setSupplementalInformation(append(identification.getSupplementalInformation(), i18n));
+        }
+    }
+
+    /**
+     * Adds a main theme of the resource.
+     * Storage location is:
+     *
+     * <ul>
+     *   <li>{@code metadata/identificationInfo/topicCategory}</li>
+     * </ul>
+     *
+     * @param  topic  main theme of the resource, or {@code null} for no-operation.
+     */
+    public final void addTopicCategory(final TopicCategory topic) {
+        if (topic != null) {
+            // No need to use 'addIfNotPresent(…)' for enumerations.
+            identification().getTopicCategories().add(topic);
+        }
+    }
+
+    /**
+     * Adds keywords if at least one non-empty element exists in the {@code keywords} array.
+     * Other arguments have no impact on whether keywords are added or not because only the
+     * {@code MD_Keywords.keyword} property is mandatory.
+     * Storage locations are:
+     *
+     * <ul>
+     *   <li>{@code metadata/identificationInfo/descriptiveKeywords}</li>
+     *   <li>{@code metadata/identificationInfo/thesaurusName/title}</li>
+     *   <li>{@code metadata/identificationInfo/type}</li>
+     * </ul>
+     *
+     * @param  keywords       word(s) used to describe the subject, or {@code null} for no-operation.
+     * @param  type           subject matter used to group similar keywords, or {@code null} if none.
+     * @param  thesaurusName  name of the formally registered thesaurus, or {@code null} if none.
+     */
+    public final void addKeywords(final Iterable<? extends CharSequence> keywords, final KeywordType type,
+            final CharSequence thesaurusName)
+    {
+        if (keywords != null) {
+            DefaultKeywords group = null;
+            Collection<InternationalString> list = null;
+            for (final CharSequence kw : keywords) {
+                final InternationalString i18n = trim(kw);
+                if (i18n != null) {
+                    if (list == null) {
+                        group = new DefaultKeywords();
+                        group.setType(type);
+                        final InternationalString c = trim(thesaurusName);
+                        if (c != null) {
+                            group.setThesaurusName(new DefaultCitation(c));
+                        }
+                        list = group.getKeywords();
+                    }
+                    list.add(i18n);
+                }
+            }
+            if (group != null) {
+                addIfNotPresent(identification().getDescriptiveKeywords(), group);
+            }
+        }
+    }
+
+    /**
      * Adds an author name. If an author was already defined with a different name,
      * then a new party instance is created.
      * Storage location is:
      *
-     * <pre>metadata/identificationInfo/citation/party/name</pre>
+     * <ul>
+     *   <li>{@code metadata/identificationInfo/citation/party/name}</li>
+     * </ul>
      *
-     * @param  name  the name of the author or publisher, or {@code null} if none.
+     * @param  name  the name of the author or publisher, or {@code null} for no-operation.
      */
     public final void addAuthor(final CharSequence name) {
         final InternationalString i18n = trim(name);
@@ -967,32 +1139,84 @@ public class MetadataBuilder {
     }
 
     /**
+     * Adds s role, name, contact and position information for an individual or organization that is responsible
+     * for the resource. This method can be used as an alternative to {@link #addAuthor(CharSequence)} when the
+     * caller needs to create the responsibly party itself.
+     *
+     * <p>If the given {@code role} is non-null, then this method will ensure that the added party has the given
+     * role. A copy of the given party will be created if needed (the given party will never be modified).</p>
+     *
+     * Storage locations are:
+     *
+     * <ul>
+     *   <li>{@code metadata/identificationInfo/citation/citedResponsibleParty}</li>
+     *   <li>{@code metadata/identificationInfo/citation/citedResponsibleParty/role}</li>
+     * </ul>
+     *
+     * @param  party  the individual or organization that is responsible, or {@code null} for no-operation.
+     * @param  role   the role to set, or {@code null} for leaving it unchanged.
+     */
+    public final void addCitedResponsibleParty(Responsibility party, final Role role) {
+        if (party != null) {
+            if (role != null && !role.equals(party.getRole())) {
+                party = new DefaultResponsibility(party);
+                ((DefaultResponsibility) party).setRole(role);
+            }
+            addIfNotPresent(citation().getCitedResponsibleParties(), party);
+        }
+    }
+
+    /**
+     * Adds a means of communication with person(s) and organizations(s) associated with the resource(s).
+     * This is often the same party than the above cited responsibly party, with only the role changed.
+     * Storage locations are:
+     *
+     * <ul>
+     *   <li><b>Metadata</b> {@code metadata/contact}</li>
+     *   <li><b>Resource</b> {@code metadata/identificationInfo/pointOfContact}</li>
+     * </ul>
+     *
+     * @param  contact  means of communication with party associated with the resource, or {@code null} for no-operation.
+     * @param  scope    whether the contact applies to data, to metadata or to both.
+     */
+    public final void addPointOfContact(final Responsibility contact, final Scope scope) {
+        ArgumentChecks.ensureNonNull("scope", scope);
+        if (contact != null) {
+            if (scope != Scope.RESOURCE)     addIfNotPresent(metadata().getContacts(), contact);
+            if (scope != Scope.METADATA) addIfNotPresent(identification().getPointOfContacts(), contact);
+        }
+    }
+
+    /**
+     * Adds a distributor. This is often the same than the above responsible party.
+     * Storage location is:
+     *
+     * <ul>
+     *   <li>{@code metadata/distributionInfo/distributor/distributorContact}</li>
+     * </ul>
+     *
+     * @param  distributor  the distributor, or {@code null} for no-operation.
+     */
+    public final void addDistributor(final Responsibility distributor) {
+        if (distributor != null) {
+            addIfNotPresent(distribution().getDistributors(), new DefaultDistributor(distributor));
+        }
+    }
+
+    /**
      * Adds recognition of those who contributed to the resource(s).
      * Storage location is:
      *
-     * <pre>metadata/identificationInfo/credit</pre>
+     * <ul>
+     *   <li>{@code metadata/identificationInfo/credit}</li>
+     * </ul>
      *
-     * @param  credit  recognition of those who contributed to the resource(s).
+     * @param  credit  recognition of those who contributed to the resource, or {@code null} for no-operation.
      */
     public final void addCredits(final CharSequence credit) {
         final InternationalString i18n = trim(credit);
         if (i18n != null) {
             addIfNotPresent(identification().getCredits(), i18n);
-        }
-    }
-
-    /**
-     * Adds a data identifier (not necessarily the same as the metadata identifier).
-     * Empty strings (ignoring spaces) are ignored.
-     * Storage location is:
-     *
-     * <pre>metadata/identificationInfo/citation/identifier</pre>
-     *
-     * @param  code  the identifier code, or {@code null} if none.
-     */
-    public final void addIdentifier(String code) {
-        if (code != null && !(code = code.trim()).isEmpty()) {
-            addIfNotPresent(citation().getIdentifiers(), new DefaultIdentifier(code));
         }
     }
 
@@ -1205,9 +1429,11 @@ parse:      for (int i = 0; i < length;) {
      *
      * Storage location is:
      *
-     * <pre>metadata/identificationInfo/resourceConstraint</pre>
+     * <ul>
+     *   <li>{@code metadata/identificationInfo/resourceConstraint}</li>
+     * </ul>
      *
-     * @param  notice  the legal notice, or {@code null} if none.
+     * @param  notice  the legal notice, or {@code null} for no-operation.
      */
     public final void parseLegalNotice(final String notice) {
         if (notice != null) {
@@ -1216,13 +1442,449 @@ parse:      for (int i = 0; i < length;) {
     }
 
     /**
+     * Adds an access constraint applied to assure the protection of privacy or intellectual property,
+     * and any special restrictions or limitations on obtaining the resource.
+     * Storage location is:
+     *
+     * <ul>
+     *   <li>{@code metadata/identificationInfo/resourceConstraint/accessConstraints}</li>
+     * </ul>
+     *
+     * @param  restriction  access constraints applied, or {@code null} for no-operation.
+     */
+    public final void addAccessConstraint(final Restriction restriction) {
+        if (restriction != null) {
+            // No need to use 'addIfNotPresent(…)' for code lists.
+            constraints().getAccessConstraints().add(restriction);
+        }
+    }
+
+    /**
+     * Adds a limitation affecting the fitness for use of the resource.
+     * Storage location is:
+     *
+     * <ul>
+     *   <li>{@code metadata/identificationInfo/resourceConstraint/useLimitation}</li>
+     * </ul>
+     *
+     * @param  limitation  limitation affecting the fitness for use, or {@code null} for no-operation.
+     */
+    public final void addUseLimitation(final CharSequence limitation) {
+        final InternationalString i18n = trim(limitation);
+        if (i18n != null) {
+            addIfNotPresent(constraints().getUseLimitations(), i18n);
+        }
+    }
+
+    /**
+     * Adds the given coordinate reference system to metadata, if it does not already exists.
+     * This method ensures that there is no duplicated values.
+     * Storage location is:
+     *
+     * <ul>
+     *   <li>{@code metadata/referenceSystemInfo}</li>
+     * </ul>
+     *
+     * @param  crs  the coordinate reference system to add to the metadata, or {@code null} for no-operation.
+     */
+    public final void addReferenceSystem(final CoordinateReferenceSystem crs) {
+        if (crs != null) {
+            addIfNotPresent(metadata().getReferenceSystemInfo(), crs);
+        }
+    }
+
+    /**
+     * Adds a geographic extent described by an identifier. The given identifier is stored as-is as
+     * the natural language description, and possibly in a modified form as the geographic identifier.
+     * See {@link DefaultGeographicDescription#DefaultGeographicDescription(CharSequence)} for details.
+     * Storage locations are:
+     *
+     * <ul>
+     *   <li>{@code metadata/identificationInfo/extent/geographicElement/description}</li>
+     *   <li>{@code metadata/identificationInfo/extent/geographicElement/identifier}</li>
+     * </ul>
+     *
+     * @param  identifier  identifier or description of spatial and temporal extent, or {@code null} for no-operation.
+     */
+    public final void addExtent(final CharSequence identifier) {
+        final InternationalString i18n = trim(identifier);
+        if (i18n != null) {
+            addIfNotPresent(extent().getGeographicElements(), new DefaultGeographicDescription(identifier));
+        }
+    }
+
+    /**
+     * Adds the given envelope, including its CRS, to the metadata. If the metadata already contains a geographic
+     * bounding box, then a new bounding box is added; this method does not compute the union of the two boxes.
+     * Storage location is:
+     *
+     * <ul>
+     *   <li>{@code metadata/identificationInfo/extent/geographicElement}</li>
+     * </ul>
+     *
+     * @param  envelope  the extent to add in the metadata, or {@code null} for no-operation.
+     * @throws TransformException if an error occurred while converting the given envelope to extents.
+     */
+    public final void addExtent(final AbstractEnvelope envelope) throws TransformException {
+        if (envelope != null) {
+            addReferenceSystem(envelope.getCoordinateReferenceSystem());
+            if (!envelope.isAllNaN()) {
+                extent().addElements(envelope);
+            }
+        }
+    }
+
+    /**
+     * Adds a geographic bounding box initialized to the values in the given array.
+     * The array must contains at least 4 values starting at the given index in this exact order:
+     *
+     * <ul>
+     *   <li>{@code westBoundLongitude} (the minimal λ value), or {@code NaN}</li>
+     *   <li>{@code eastBoundLongitude} (the maximal λ value), or {@code NaN}</li>
+     *   <li>{@code southBoundLatitude} (the minimal φ value), or {@code NaN}</li>
+     *   <li>{@code northBoundLatitude} (the maximal φ value), or {@code NaN}</li>
+     * </ul>
+     *
+     * Storage location is:
+     *
+     * <ul>
+     *   <li>{@code metadata/identificationInfo/extent/geographicElement}</li>
+     * </ul>
+     *
+     * @param  ordinates  the geographic coordinates, or {@code null} for no-operation.
+     * @param  index      index of the first value to use in the given array.
+     */
+    public final void addExtent(final double[] ordinates, int index) {
+        if (ordinates != null) {
+            final DefaultGeographicBoundingBox bbox = new DefaultGeographicBoundingBox(
+                        ordinates[index], ordinates[++index], ordinates[++index], ordinates[++index]);
+            if (!bbox.isEmpty()) {
+                addIfNotPresent(extent().getGeographicElements(), bbox);
+            }
+        }
+    }
+
+    /**
+     * Adds a vertical extent covered by the data.
+     * Storage location is:
+     *
+     * <ul>
+     *   <li>{@code metadata/identificationInfo/extent/verticalElement}</li>
+     * </ul>
+     *
+     * @param  minimumValue  the lowest vertical extent contained in the dataset, or {@link Double#NaN} if none.
+     * @param  maximumValue  the highest vertical extent contained in the dataset, or {@link Double#NaN} if none.
+     * @param  verticalCRS   the information about the vertical coordinate reference system, or {@code null}.
+     */
+    public final void addVerticalExtent(final double minimumValue,
+                                        final double maximumValue,
+                                        final VerticalCRS verticalCRS)
+    {
+        if (!Double.isNaN(minimumValue) || !Double.isNaN(maximumValue) || verticalCRS != null) {
+            addIfNotPresent(extent().getVerticalElements(),
+                            new DefaultVerticalExtent(minimumValue, maximumValue, verticalCRS));
+        }
+    }
+
+    /**
+     * Adds a temporal extent covered by the data.
+     * Storage location is:
+     *
+     * <ul>
+     *   <li>{@code metadata/identificationInfo/extent/temporalElement}</li>
+     * </ul>
+     *
+     * @param  startTime  when the data begins, or {@code null} if unbounded.
+     * @param  endTime    when the data ends, or {@code null} if unbounded.
+     * @throws UnsupportedOperationException if the temporal module is not on the classpath.
+     *
+     * @see #addAcquisitionTime(Date)
+     */
+    public final void addTemporalExtent(final Date startTime, final Date endTime) {
+        if (startTime != null || endTime != null) {
+            final DefaultTemporalExtent t = new DefaultTemporalExtent();
+            t.setBounds(startTime, endTime);
+            addIfNotPresent(extent().getTemporalElements(), t);
+        }
+    }
+
+    /**
+     * Adds descriptions for the given feature.
+     * Storage location is:
+     *
+     * <ul>
+     *   <li>{@code metadata/contentInfo/featureTypes/featureTypeName}</li>
+     *   <li>{@code metadata/contentInfo/featureTypes/featureInstanceCount}</li>
+     * </ul>
+     *
+     * This method returns the feature name for more convenient chaining with
+     * {@link org.apache.sis.storage.FeatureNaming#add FeatureNaming.add(…)}.
+     * Note that the {@link FeatureCatalogBuilder} subclasses can also be used for that chaining.
+     *
+     * @param  type         the feature type to add, or {@code null} for no-operation.
+     * @param  occurrences  number of instances of the given feature type, or {@code null} if unknown.
+     * @return the name of the added feature, or {@code null} if none.
+     *
+     * @see FeatureCatalogBuilder#define(FeatureType)
+     */
+    public final GenericName add(final FeatureType type, final Integer occurrences) {
+        if (type != null) {
+            final GenericName name = type.getName();
+            if (name != null) {
+                final DefaultFeatureTypeInfo info = new DefaultFeatureTypeInfo(name);
+                if (occurrences != null) {
+                    info.setFeatureInstanceCount(shared(occurrences));
+                }
+                addIfNotPresent(featureDescription().getFeatureTypeInfo(), info);
+                return name;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Adds a method used to spatially represent geographic information.
+     * Storage location is:
+     *
+     * <ul>
+     *   <li>{@code metadata/identificationInfo/spatialRepresentationType}</li>
+     * </ul>
+     *
+     * @param  type  method used to spatially represent geographic information, or {@code null} for no-operation.
+     */
+    public final void addSpatialRepresentation(final SpatialRepresentationType type) {
+        if (type != null) {
+            // No need to use 'addIfNotPresent(…)' for code lists.
+            identification().getSpatialRepresentationTypes().add(type);
+        }
+    }
+
+    /**
+     * Adds a linear resolution in metres.
+     * Storage location is:
+     *
+     * <ul>
+     *   <li>{@code metadata/identificationInfo/spatialResolution/distance}</li>
+     * </ul>
+     *
+     * @param  distance  the resolution in metres, or {@code NaN} for no-operation.
+     */
+    public final void addResolution(final double distance) {
+        if (!Double.isNaN(distance)) {
+            final DefaultResolution r = new DefaultResolution();
+            r.setDistance(shared(distance));
+            addIfNotPresent(identification().getSpatialResolutions(), r);
+        }
+    }
+
+    /**
+     * Sets identification of grid data as point or cell.
+     * Storage location is:
+     *
+     * <ul>
+     *   <li>{@code metadata/spatialRepresentationInfo/cellGeometry}</li>
+     * </ul>
+     *
+     * @param  value   whether the data represent point or area, or {@code null} for no-operation.
+     */
+    public final void setCellGeometry(final CellGeometry value) {
+        if (value != null) {
+            gridRepresentation().setCellGeometry(value);
+        }
+    }
+
+    /**
+     * Sets the point in a pixel corresponding to the Earth location of the pixel.
+     * Storage location is:
+     *
+     * <ul>
+     *   <li>{@code metadata/spatialRepresentationInfo/pointInPixel}</li>
+     * </ul>
+     *
+     * @param  value   whether the data represent point or area, or {@code null} for no-operation.
+     */
+    public final void setPointInPixel(final PixelOrientation value) {
+        if (value != null) {
+            gridRepresentation().setPointInPixel(value);
+        }
+    }
+
+    /**
+     * Sets a general description of the transformation form grid coordinates to "real world" coordinates.
+     * Storage location is:
+     *
+     * <ul>
+     *   <li>{@code metadata/spatialRepresentationInfo/transformationDimensionDescription}</li>
+     * </ul>
+     *
+     * @param  value  a general description of the "grid to CRS" transformation, or {@code null} for no-operation.
+     */
+    public final void setGridToCRS(final CharSequence value) {
+        final InternationalString i18n = trim(value);
+        if (i18n != null) {
+            gridRepresentation().setTransformationDimensionDescription(i18n);
+        }
+    }
+
+    /**
+     * Returns the axis at the given dimension index. All previous dimensions are created if needed.
+     *
+     * @param  index  index of the desired dimension.
+     * @return dimension at the given index.
+     */
+    private DefaultDimension axis(final short index) {
+        final List<Dimension> axes = gridRepresentation().getAxisDimensionProperties();
+        for (int i=axes.size(); i <= index; i++) {
+            axes.add(new DefaultDimension());
+        }
+        return (DefaultDimension) axes.get(index);
+    }
+
+    /**
+     * Sets the number of cells along the given dimension.
+     * Storage location is:
+     *
+     * <ul>
+     *   <li>{@code metadata/spatialRepresentationInfo/axisDimensionProperties/dimensionName}</li>
+     * </ul>
+     *
+     * @param  dimension  the axis dimension, as a {@code short} for avoiding excessive values.
+     * @param  name       the name to set for the given dimension.
+     */
+    public final void setAxisName(final short dimension, final DimensionNameType name) {
+        axis(dimension).setDimensionName(name);
+    }
+
+    /**
+     * Sets the number of cells along the given dimension.
+     * Storage location is:
+     *
+     * <ul>
+     *   <li>{@code metadata/spatialRepresentationInfo/axisDimensionProperties/dimensionSize}</li>
+     * </ul>
+     *
+     * @param  dimension  the axis dimension, as a {@code short} for avoiding excessive values.
+     * @param  length     number of cell values along the given dimension.
+     */
+    public final void setAxisLength(final short dimension, final int length) {
+        axis(dimension).setDimensionSize(shared(length));
+    }
+
+    /**
+     * Adds a minimal value for the current sample dimension. If a minimal value was already defined, then
+     * the new value will be set only if it is smaller than the existing one. {@code NaN} values are ignored.
+     * Storage location is:
+     *
+     * <ul>
+     *   <li>{@code metadata/contentInfo/attributeGroup/attribute/minValue}</li>
+     * </ul>
+     *
+     * @param value  the minimal value to add to the existing range of sample values, or {@code NaN} for no-operation.
+     */
+    public final void addMinimumSampleValue(final double value) {
+        if (!Double.isNaN(value)) {
+            final DefaultSampleDimension sampleDimension = sampleDimension();
+            final Double current = sampleDimension.getMinValue();
+            if (current == null || value < current) {
+                sampleDimension.setMinValue(shared(value));
+            }
+        }
+    }
+
+    /**
+     * Adds a maximal value for the current sample dimension. If a maximal value was already defined, then
+     * the new value will be set only if it is greater than the existing one. {@code NaN} values are ignored.
+     * Storage location is:
+     *
+     * <ul>
+     *   <li>{@code metadata/contentInfo/attributeGroup/attribute/maxValue}</li>
+     * </ul>
+     *
+     * @param value  the maximal value to add to the existing range of sample values, or {@code NaN} for no-operation.
+     */
+    public final void addMaximumSampleValue(final double value) {
+        if (!Double.isNaN(value)) {
+            final DefaultSampleDimension sampleDimension = sampleDimension();
+            final Double current = sampleDimension.getMaxValue();
+            if (current == null || value > current) {
+                sampleDimension.setMaxValue(shared(value));
+            }
+        }
+    }
+
+    /**
+     * Sets the area of the dataset obscured by clouds, expressed as a percentage of the spatial extent.
+     * This method does nothing if the given value is {@link Double#NaN}.
+     *
+     * <p>This method is available only if {@link #newCoverage(boolean)} has been invoked
+     * with the {@code electromagnetic} parameter set to {@code true}. Storage location is:</p>
+     *
+     * <ul>
+     *   <li>{@code metadata/contentInfo/cloudCoverPercentage}</li>
+     * </ul>
+     *
+     * @param  value  the new cloud percentage, or {@code NaN} for no-operation.
+     * @throws IllegalArgumentException if the given value is out of range.
+     */
+    public final void setCloudCoverPercentage(final double value) {
+        if (!Double.isNaN(value)) {
+            ((DefaultImageDescription) coverageDescription()).setCloudCoverPercentage(shared(value));
+        }
+    }
+
+    /**
+     * Sets the illumination azimuth measured in degrees clockwise from true north at the time the image is taken.
+     * For images from a scanning device, refer to the centre pixel of the image.
+     * This method does nothing if the given value is {@link Double#NaN}.
+     *
+     * <p>This method is available only if {@link #newCoverage(boolean)} has been invoked
+     * with the {@code electromagnetic} parameter set to {@code true}. Storage location is:</p>
+     *
+     * <ul>
+     *   <li>{@code metadata/contentInfo/illuminationAzimuthAngle}</li>
+     * </ul>
+     *
+     * @param  value  the new illumination azimuth angle, or {@code NaN} for no-operation.
+     * @throws IllegalArgumentException if the given value is out of range.
+     */
+    public final void setIlluminationAzimuthAngle(final double value) {
+        if (!Double.isNaN(value)) {
+            ((DefaultImageDescription) coverageDescription()).setIlluminationAzimuthAngle(shared(value));
+        }
+    }
+
+    /**
+     * Sets the illumination elevation measured in degrees clockwise from the target plane
+     * at intersection of the optical line of sight with the Earth's surface.
+     * For images from a canning device, refer to the centre pixel of the image.
+     * This method does nothing if the given value is {@link Double#NaN}.
+     *
+     * <p>This method is available only if {@link #newCoverage(boolean)} has been invoked
+     * with the {@code electromagnetic} parameter set to {@code true}. Storage location is:</p>
+     *
+     * <ul>
+     *   <li>{@code metadata/contentInfo/illuminationElevationAngle}</li>
+     * </ul>
+     *
+     * @param  value  the new illumination azimuth angle, or {@code NaN} for no-operation.
+     * @throws IllegalArgumentException if the given value is out of range.
+     */
+    public final void setIlluminationElevationAngle(final double value) {
+        if (!Double.isNaN(value)) {
+            ((DefaultImageDescription) coverageDescription()).setIlluminationElevationAngle(shared(value));
+        }
+    }
+
+    /**
      * Adds a platform on which instrument are installed. If a platform was already defined
      * with a different identifier, then a new platform instance will be created.
      * Storage location is:
      *
-     * <pre>metadata/acquisitionInformation/platform/identifier</pre>
+     * <ul>
+     *   <li>{@code metadata/acquisitionInformation/platform/identifier}</li>
+     * </ul>
      *
-     * @param  identifier  identifier of the platform to add, or {@code null}.
+     * @param  identifier  identifier of the platform to add, or {@code null} for no-operation.
      */
     public final void addPlatform(String identifier) {
         if (identifier != null && !(identifier = identifier.trim()).isEmpty()) {
@@ -1244,9 +1906,11 @@ parse:      for (int i = 0; i < length;) {
      * Adds an instrument or sensor on the platform.
      * Storage location is:
      *
-     * <pre>metadata/acquisitionInformation/platform/instrument/identifier</pre>
+     * <ul>
+     *   <li>{@code metadata/acquisitionInformation/platform/instrument/identifier}</li>
+     * </ul>
      *
-     * @param  identifier  identifier of the sensor to add, or {@code null}.
+     * @param  identifier  identifier of the sensor to add, or {@code null} for no-operation.
      */
     public final void addInstrument(String identifier) {
         if (identifier != null && !(identifier = identifier.trim()).isEmpty()) {
@@ -1260,11 +1924,13 @@ parse:      for (int i = 0; i < length;) {
      * Adds an event that describe the time at which data were acquired.
      * Storage location is:
      *
-     * <pre>metadata/acquisitionInformation/operation/significantEvent/time</pre>
+     * <ul>
+     *   <li>{@code metadata/acquisitionInformation/operation/significantEvent/time}</li>
+     * </ul>
      *
-     * @param  time  the acquisition time, or {@code null}.
+     * @param  time  the acquisition time, or {@code null} for no-operation.
      *
-     * @see #addExtent(Date, Date)
+     * @see #addTemporalExtent(Date, Date)
      */
     public final void addAcquisitionTime(final Date time) {
         if (time != null) {
@@ -1283,9 +1949,11 @@ parse:      for (int i = 0; i < length;) {
      * Adds the identifier of the requirement to be satisfied by data acquisition.
      * Storage location is:
      *
-     * <pre>metadata/acquisitionInformation/acquisitionRequirement/identifier</pre>
+     * <ul>
+     *   <li>{@code metadata/acquisitionInformation/acquisitionRequirement/identifier}</li>
+     * </ul>
      *
-     * @param  identifier  unique name or code for the requirement, or {@code null}.
+     * @param  identifier  unique name or code for the requirement, or {@code null} for no-operation.
      */
     public final void addAcquisitionRequirement(String identifier) {
         if (identifier != null && !(identifier = identifier.trim()).isEmpty()) {
@@ -1300,9 +1968,11 @@ parse:      for (int i = 0; i < length;) {
      * If a processing was already defined with a different identifier, then a new processing
      * instance will be created. Storage location is:
      *
-     * <pre>metadata/resourceLineage/processStep/processingInformation/identifier</pre>
+     * <ul>
+     *   <li>{@code metadata/resourceLineage/processStep/processingInformation/identifier}</li>
+     * </ul>
      *
-     * @param  identifier  identification of the processing package that produced the data, or {@code null}.
+     * @param  identifier  processing package that produced the data, or {@code null} for no-operation.
      *
      * @see #addSoftwareReference(CharSequence)
      * @see #addHostComputer(CharSequence)
@@ -1330,9 +2000,11 @@ parse:      for (int i = 0; i < length;) {
      * This is added to the processing identified by last call to {@link #addProcessing(String)}.
      * Storage location is:
      *
-     * <pre>metadata/resourceLineage/processStep/processingInformation/softwareReference/title</pre>
+     * <ul>
+     *   <li>{@code metadata/resourceLineage/processStep/processingInformation/softwareReference/title}</li>
+     * </ul>
      *
-     * @param  title  title of the document that describe the software, or {@code null} if none.
+     * @param  title  title of the document that describe the software, or {@code null} for no-operation.
      */
     public final void addSoftwareReference(final CharSequence title) {
         final InternationalString i18n = trim(title);
@@ -1346,9 +2018,11 @@ parse:      for (int i = 0; i < length;) {
      * This is added to the processing identified by last call to {@link #addProcessing(String)}.
      * Storage location is:
      *
-     * <pre>metadata/resourceLineage/processStep/processingInformation/procedureDescription</pre>
+     * <ul>
+     *   <li>{@code metadata/resourceLineage/processStep/processingInformation/procedureDescription}</li>
+     * </ul>
      *
-     * @param  platform  name of the computer or operation system on which the processing has been executed.
+     * @param  platform  name of the system on which the processing has been executed, or {@code null} for no-operation.
      */
     public final void addHostComputer(final CharSequence platform) {
         InternationalString i18n = trim(platform);
@@ -1364,9 +2038,11 @@ parse:      for (int i = 0; i < length;) {
      * If a description already exists, the new one will be added on a new line.
      * Storage location is:
      *
-     * <pre>metadata/resourceLineage/processStep/description</pre>
+     * <ul>
+     *   <li>{@code metadata/resourceLineage/processStep/description}</li>
+     * </ul>
      *
-     * @param  description  additional details about the process step, or {@code null}.
+     * @param  description  additional details about the process step, or {@code null} for no-operation.
      */
     public final void addProcessDescription(final CharSequence description) {
         final InternationalString i18n = trim(description);
@@ -1377,225 +2053,16 @@ parse:      for (int i = 0; i < length;) {
     }
 
     /**
-     * Sets the area of the dataset obscured by clouds, expressed as a percentage of the spatial extent.
-     * This method does nothing if the given value is {@link Double#NaN}.
-     *
-     * <p>This method is available only if {@link #newCoverage(boolean)} has been invoked
-     * with the {@code electromagnetic} parameter set to {@code true}. Storage location is:</p>
-     *
-     * <pre>metadata/contentInfo/cloudCoverPercentage</pre>
-     *
-     * @param  value  the new cloud percentage.
-     * @throws IllegalArgumentException if the given value is out of range.
-     */
-    public final void setCloudCoverPercentage(final double value) {
-        if (!Double.isNaN(value)) {
-            ((DefaultImageDescription) coverageDescription()).setCloudCoverPercentage(shared(value));
-        }
-    }
-
-    /**
-     * Sets the illumination azimuth measured in degrees clockwise from true north at the time the image is taken.
-     * For images from a scanning device, refer to the centre pixel of the image.
-     * This method does nothing if the given value is {@link Double#NaN}.
-     *
-     * <p>This method is available only if {@link #newCoverage(boolean)} has been invoked
-     * with the {@code electromagnetic} parameter set to {@code true}. Storage location is:</p>
-     *
-     * <pre>metadata/contentInfo/illuminationAzimuthAngle</pre>
-     *
-     * @param  value  the new illumination azimuth angle, or {@code null}.
-     * @throws IllegalArgumentException if the given value is out of range.
-     */
-    public final void setIlluminationAzimuthAngle(final double value) {
-        if (!Double.isNaN(value)) {
-            ((DefaultImageDescription) coverageDescription()).setIlluminationAzimuthAngle(shared(value));
-        }
-    }
-
-    /**
-     * Sets the illumination elevation measured in degrees clockwise from the target plane
-     * at intersection of the optical line of sight with the Earth's surface.
-     * For images from a canning device, refer to the centre pixel of the image.
-     * This method does nothing if the given value is {@link Double#NaN}.
-     *
-     * <p>This method is available only if {@link #newCoverage(boolean)} has been invoked
-     * with the {@code electromagnetic} parameter set to {@code true}. Storage location is:</p>
-     *
-     * <pre>metadata/contentInfo/illuminationElevationAngle</pre>
-     *
-     * @param  value  the new illumination azimuth angle, or {@code null}.
-     * @throws IllegalArgumentException if the given value is out of range.
-     */
-    public final void setIlluminationElevationAngle(final double value) {
-        if (!Double.isNaN(value)) {
-            ((DefaultImageDescription) coverageDescription()).setIlluminationElevationAngle(shared(value));
-        }
-    }
-
-    /**
-     * Adds a linear resolution in metres.
-     * Storage location is:
-     *
-     * <pre>metadata/identificationInfo/spatialResolution/distance</pre>
-     *
-     * @param  distance  the resolution in metres, or {@code NaN} if none.
-     */
-    public final void addResolution(final double distance) {
-        if (!Double.isNaN(distance)) {
-            final DefaultResolution r = new DefaultResolution();
-            r.setDistance(shared(distance));
-            addIfNotPresent(identification().getSpatialResolutions(), r);
-        }
-    }
-
-    /**
-     * Sets the file format. The given name should be a short name like "GeoTIFF".
-     * The long name will be inferred from the given short name, if possible.
-     * Storage location is:
-     *
-     * <pre>metadata/identificationInfo/resourceFormat/formatSpecificationCitation/alternateTitle</pre>
-     *
-     * @param  abbreviation  the format short name or abbreviation, or {@code null}.
-     * @throws MetadataStoreException  if this method can not connect to the {@code jdbc/SpatialMetadata} database.
-     *         Callers should generally handle this exception as a recoverable one (i.e. log a warning and continue).
-     */
-    public final void setFormat(final String abbreviation) throws MetadataStoreException {
-        if (abbreviation != null && abbreviation.length() != 0) {
-            if (format == null) {
-                format = MetadataSource.getProvided().lookup(Format.class, abbreviation);
-            }
-        }
-    }
-
-    /**
-     * Sets identification of grid data as point or cell.
-     * Storage location is:
-     *
-     * <pre>metadata/spatialRepresentationInfo/cellGeometry</pre>
-     *
-     * @param  value   whether the data represent point or area, or {@code null} if unknown.
-     */
-    public final void setCellGeometry(final CellGeometry value) {
-        if (value != null) {
-            gridRepresentation().setCellGeometry(value);
-        }
-    }
-
-    /**
-     * Sets the point in a pixel corresponding to the Earth location of the pixel.
-     * Storage location is:
-     *
-     * <pre>metadata/spatialRepresentationInfo/pointInPixel</pre>
-     *
-     * @param  value   whether the data represent point or area, or {@code null} if unknown.
-     */
-    public final void setPointInPixel(final PixelOrientation value) {
-        if (value != null) {
-            gridRepresentation().setPointInPixel(value);
-        }
-    }
-
-    /**
-     * Sets a general description of the transformation form grid coordinates to "real world" coordinates.
-     * Storage location is:
-     *
-     * <pre>metadata/spatialRepresentationInfo/transformationDimensionDescription</pre>
-     *
-     * @param  value  a general description of the "grid to CRS" transformation, or {@code null} if unknown.
-     */
-    public final void setGridToCRS(final CharSequence value) {
-        final InternationalString i18n = trim(value);
-        if (i18n != null) {
-            gridRepresentation().setTransformationDimensionDescription(i18n);
-        }
-    }
-
-    /**
-     * Returns the axis at the given dimension index. All previous dimensions are created if needed.
-     *
-     * @param  index  index of the desired dimension.
-     * @return dimension at the given index.
-     */
-    private DefaultDimension axis(final short index) {
-        final List<Dimension> axes = gridRepresentation().getAxisDimensionProperties();
-        for (int i=axes.size(); i <= index; i++) {
-            axes.add(new DefaultDimension());
-        }
-        return (DefaultDimension) axes.get(index);
-    }
-
-    /**
-     * Sets the number of cells along the given dimension.
-     * Storage location is:
-     *
-     * <pre>metadata/spatialRepresentationInfo/axisDimensionProperties/dimensionName</pre>
-     *
-     * @param  dimension  the axis dimension, as a {@code short} for avoiding excessive values.
-     * @param  name       the name to set for the given dimension.
-     */
-    public final void setAxisName(final short dimension, final DimensionNameType name) {
-        axis(dimension).setDimensionName(name);
-    }
-
-    /**
-     * Sets the number of cells along the given dimension.
-     * Storage location is:
-     *
-     * <pre>metadata/spatialRepresentationInfo/axisDimensionProperties/dimensionSize</pre>
-     *
-     * @param  dimension  the axis dimension, as a {@code short} for avoiding excessive values.
-     * @param  length     number of cell values along the given dimension.
-     */
-    public final void setAxisLength(final short dimension, final int length) {
-        axis(dimension).setDimensionSize(shared(length));
-    }
-
-    /**
-     * Adds a minimal value for the current sample dimension. If a minimal value was already defined, then
-     * the new value will be set only if it is smaller than the existing one. {@code NaN} values are ignored.
-     * Storage location is:
-     *
-     * <pre>metadata/contentInfo/attributeGroup/attribute/minValue</pre>
-     *
-     * @param value  the minimal value to add to the existing range of sample values, or {@code NaN}.
-     */
-    public final void addMinimumSampleValue(final double value) {
-        if (!Double.isNaN(value)) {
-            final DefaultSampleDimension sampleDimension = sampleDimension();
-            final Double current = sampleDimension.getMinValue();
-            if (current == null || value < current) {
-                sampleDimension.setMinValue(shared(value));
-            }
-        }
-    }
-
-    /**
-     * Adds a maximal value for the current sample dimension. If a maximal value was already defined, then
-     * the new value will be set only if it is greater than the existing one. {@code NaN} values are ignored.
-     * Storage location is:
-     *
-     * <pre>metadata/contentInfo/attributeGroup/attribute/maxValue</pre>
-     *
-     * @param value  the maximal value to add to the existing range of sample values, or {@code NaN}.
-     */
-    public final void addMaximumSampleValue(final double value) {
-        if (!Double.isNaN(value)) {
-            final DefaultSampleDimension sampleDimension = sampleDimension();
-            final Double current = sampleDimension.getMaxValue();
-            if (current == null || value > current) {
-                sampleDimension.setMaxValue(shared(value));
-            }
-        }
-    }
-
-    /**
      * Adds a compression name.
      * Storage location is:
      *
-     * <pre>metadata/identificationInfo/resourceFormat/fileDecompressionTechnique</pre>
+     * <ul>
+     *   <li>{@code metadata/identificationInfo/resourceFormat/fileDecompressionTechnique}</li>
+     * </ul>
      *
-     * @param value  the compression name, or {@code null}.
+     * @param value  the compression name, or {@code null} for no-operation.
+     *
+     * @see #setFormat(String)
      */
     public final void addCompression(final CharSequence value) {
         final InternationalString i18n = trim(value);
@@ -1619,6 +2086,7 @@ parse:      for (int i = 0; i < length;) {
         newFeatureTypes();
         newCoverage(false);
         newAcquisition();
+        newDistribution();
         final DefaultMetadata md = metadata;
         metadata = null;
         if (freeze && md != null) {

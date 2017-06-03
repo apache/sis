@@ -27,6 +27,7 @@ import java.util.HashMap;
 import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.io.IOException;
 import javax.measure.Unit;
 import javax.measure.UnitConverter;
@@ -41,7 +42,6 @@ import org.opengis.metadata.spatial.*;
 import org.opengis.metadata.content.*;
 import org.opengis.metadata.citation.*;
 import org.opengis.metadata.identification.*;
-import org.opengis.metadata.extent.Extent;
 import org.opengis.metadata.maintenance.ScopeCode;
 import org.opengis.metadata.constraint.Restriction;
 import org.opengis.referencing.crs.VerticalCRS;
@@ -50,21 +50,18 @@ import org.opengis.util.CodeList;
 import org.apache.sis.util.iso.Types;
 import org.apache.sis.util.iso.SimpleInternationalString;
 import org.apache.sis.metadata.iso.DefaultMetadata;
-import org.apache.sis.metadata.iso.DefaultMetadataScope;
 import org.apache.sis.metadata.iso.DefaultIdentifier;
-import org.apache.sis.metadata.iso.extent.*;
 import org.apache.sis.metadata.iso.spatial.*;
 import org.apache.sis.metadata.iso.content.*;
 import org.apache.sis.metadata.iso.citation.*;
-import org.apache.sis.metadata.iso.distribution.*;
 import org.apache.sis.metadata.iso.identification.*;
 import org.apache.sis.metadata.iso.lineage.DefaultLineage;
 import org.apache.sis.metadata.iso.quality.DefaultDataQuality;
-import org.apache.sis.metadata.iso.constraint.DefaultLegalConstraints;
 import org.apache.sis.internal.netcdf.Axis;
 import org.apache.sis.internal.netcdf.Decoder;
 import org.apache.sis.internal.netcdf.Variable;
 import org.apache.sis.internal.netcdf.GridGeometry;
+import org.apache.sis.internal.storage.MetadataBuilder;
 import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.CharSequences;
@@ -110,7 +107,7 @@ import static org.apache.sis.internal.util.CollectionsExt.first;
  * @since   0.3
  * @module
  */
-final class MetadataReader {
+final class MetadataReader extends MetadataBuilder {
     /**
      * Names of groups where to search for metadata, in precedence order.
      * The {@code null} value stands for global attributes.
@@ -140,7 +137,7 @@ final class MetadataReader {
     private static final char QUOTE = '"';
 
     /**
-     * The vertical coordinate reference system to be given to the object created by {@link #createExtent()}.
+     * The vertical coordinate reference system to be given to the object created by {@link #addExtent()}.
      *
      * @todo Should be set to {@code CommonCRS.MEAN_SEA_LEVEL}.
      */
@@ -221,6 +218,9 @@ final class MetadataReader {
      * A double quote is considered as a closing double quote if just before a comma separator (ignoring spaces).
      */
     static List<String> split(final String value) {
+        if (value == null) {
+            return Collections.emptyList();
+        }
         final List<String> items = new ArrayList<>();
         int start = 0;      // Index of the first character of the next item to add in the list.
         int end;            // Index after the last character of the next item to add in the list.
@@ -263,14 +263,6 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
             }
         }
         return value;
-    }
-
-    /**
-     * Returns the given string as an {@code InternationalString} if non-null, or {@code null} otherwise.
-     * This method does not trim leading or trailing spaces, since this is often already done by the caller.
-     */
-    private static InternationalString toInternationalString(final String value) {
-        return (value != null) ? new SimpleInternationalString(value) : null;
     }
 
     /**
@@ -466,12 +458,12 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
                 }
                 if (!canShare(resource, url)) {
                     resource       = null;
-                    contact        = null; // Clear the parents all the way up to the root.
+                    contact        = null;                  // Clear the parents all the way up to the root.
                     responsibility = null;
                 }
                 if (!canShare(address, email)) {
                     address        = null;
-                    contact        = null; // Clear the parents all the way up to the root.
+                    contact        = null;                  // Clear the parents all the way up to the root.
                     responsibility = null;
                 }
                 if (responsibility != null) {
@@ -512,13 +504,16 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
     }
 
     /**
-     * Creates a {@code Citation} element if at least one of the required attributes is non-null.
-     * This method will reuse the {@link #pointOfContact} field, if non-null and suitable.
+     * Adds a {@code DataIdentification/Citation} element if at least one of the required attributes is non-null.
+     * This method will initialize the {@link #pointOfContact} field, than reuse it if non-null and suitable.
      *
-     * @param  identifier  the citation {@code <gmd:identifier>} attribute.
+     * <p>This method opportunistically collects the name of all publishers.
+     * Those names are useful to {@link #addIdentificationInfo(Set)}.</p>
+     *
      * @throws IOException if an I/O operation was necessary but failed.
+     * @return the name of all publishers, or {@code null} if none.
      */
-    private Citation createCitation(final Identifier identifier) throws IOException {
+    private Set<InternationalString> addCitation() throws IOException {
         String title = stringValue(TITLE);
         if (title == null) {
             title = stringValue("full_name");   // THREDDS attribute documented in TITLE javadoc.
@@ -529,156 +524,104 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
                 }
             }
         }
-        final Date   creation   = decoder.dateValue(DATE_CREATED);
-        final Date   modified   = decoder.dateValue(DATE_MODIFIED);
-        final Date   issued     = decoder.dateValue(DATE_ISSUED);
-        final String references =       stringValue(REFERENCES);
-        final DefaultCitation citation = new DefaultCitation(title);
-        if (identifier != null) {
-            citation.setIdentifiers(singleton(identifier));
+        addTitle(title);
+        addOtherCitationDetails(stringValue(REFERENCES));
+        addCitationDate(decoder.dateValue(METADATA_CREATION), DateType.CREATION,    Scope.ALL);
+        addCitationDate(decoder.dateValue(DATE_CREATED),      DateType.CREATION,    Scope.RESOURCE);
+        addCitationDate(decoder.dateValue(DATE_MODIFIED),     DateType.REVISION,    Scope.RESOURCE);
+        addCitationDate(decoder.dateValue(DATE_ISSUED),       DateType.PUBLICATION, Scope.RESOURCE);
+        /*
+         * Add the responsible party which is declared in global attributes, or in
+         * the THREDDS attributes if no information was found in global attributes.
+         * This responsible party is taken as the point of contact.
+         */
+        for (final String path : searchPath) {
+            decoder.setSearchPath(path);
+            final Responsibility party = createResponsibleParty(CREATOR, true);
+            if (party != pointOfContact) {
+                addPointOfContact(party, Scope.ALL);
+                if (pointOfContact == null) {
+                    pointOfContact = party;
+                }
+            }
         }
-        if (creation != null) citation.setDates(singleton(new DefaultCitationDate(creation, DateType.CREATION)));
-        if (modified != null) citation.getDates()  .add  (new DefaultCitationDate(modified, DateType.REVISION));
-        if (issued   != null) citation.getDates()  .add  (new DefaultCitationDate(issued,   DateType.PUBLICATION));
-        if (pointOfContact != null) {
-            // Same responsible party than the contact, except for the role.
-            final DefaultResponsibility np = new DefaultResponsibility(pointOfContact);
-            np.setRole(Role.ORIGINATOR);
-            citation.setCitedResponsibleParties(singleton(np));
-        }
+        /*
+         * There is no distinction in NetCDF files between "point of contact" and "creator".
+         * We take the first one as the data originator.
+         */
+        addCitedResponsibleParty(pointOfContact, Role.ORIGINATOR);
+        /*
+         * Add the contributors only after we did one full pass over the creators. We keep those two
+         * loops separated in order to increase the chances that pointOfContact has been initialized
+         * (it may not have been initialized on the first pass).
+         */
+        Set<InternationalString> publisher = null;
         for (final String path : searchPath) {
             decoder.setSearchPath(path);
             final Responsibility contributor = createResponsibleParty(CONTRIBUTOR, false);
-            if (contributor != null && contributor != pointOfContact) {
-                addIfAbsent(citation.getCitedResponsibleParties(), contributor);
+            if (contributor != pointOfContact) {
+                addCitedResponsibleParty(contributor, null);
+            }
+            final Responsibility r = createResponsibleParty(PUBLISHER, false);
+            if (r != null) {
+                addDistributor(r);
+                /*
+                 * TODO: There is some transfert option, etc. that we could set there.
+                 * See UnidataDD2MI.xsl for options for OPeNDAP, THREDDS, etc.
+                 */
+                for (final Party party : r.getParties()) {
+                    publisher = addIfNonNull(publisher, party.getName());
+                }
             }
         }
         decoder.setSearchPath(searchPath);
-        if (references != null) {
-            citation.setOtherCitationDetails(singleton(new SimpleInternationalString(references)));
-        }
-        return citation.isEmpty() ? null : citation;
+        return publisher;
     }
 
     /**
-     * Creates a {@code DataIdentification} element if at least one of the required attributes is non-null.
-     * This method will reuse the {@link #pointOfContact} value, if non-null and suitable.
+     * Adds a {@code DataIdentification} element if at least one of the required attributes is non-null.
      *
-     * @param  identifier  the citation {@code <gmd:identifier>} attribute.
      * @param  publisher   the publisher names, built by the caller in an opportunist way.
      * @throws IOException if an I/O operation was necessary but failed.
      */
-    private DataIdentification createIdentificationInfo(final Identifier identifier,
-            final Set<InternationalString> publisher) throws IOException
-    {
-        DefaultDataIdentification identification = null;
-        Set<InternationalString>  project        = null;
-        DefaultLegalConstraints   constraints    = null;
-        boolean hasExtent = false;
+    private void addIdentificationInfo(final Set<InternationalString> publisher) throws IOException {
+        boolean     hasExtent = false;
+        Set<String> project   = null;
+        Set<String> standard  = null;
+        final Set<String> keywords = new LinkedHashSet<>();
         for (final String path : searchPath) {
             decoder.setSearchPath(path);
-            final Keywords standard = createKeywords(KeywordType.THEME, true);
-            final Keywords keywords = createKeywords(KeywordType.THEME, false);
-            final String   topic    = stringValue(TOPIC_CATEGORY);
-            final String   type     = stringValue(DATA_TYPE);
-            final String   credits  = stringValue(ACKNOWLEDGEMENT);
-            final String   license  = stringValue(LICENSE);
-            final String   access   = stringValue(ACCESS_CONSTRAINT);
-            final Extent   extent   = hasExtent ? null : createExtent();
-            if (standard!=null || keywords!=null || topic != null || type!=null || credits!=null || license!=null || access!= null || extent!=null) {
-                if (identification == null) {
-                    identification = new DefaultDataIdentification();
-                }
-                if (topic    != null) addIfAbsent(identification.getTopicCategories(), forEnumName(TopicCategory.class, topic));
-                if (type     != null) addIfAbsent(identification.getSpatialRepresentationTypes(), forCodeName(SpatialRepresentationType.class, type));
-                if (standard != null) addIfAbsent(identification.getDescriptiveKeywords(), standard);
-                if (keywords != null) addIfAbsent(identification.getDescriptiveKeywords(), keywords);
-                if (credits  != null) addIfAbsent(identification.getCredits(), new SimpleInternationalString(credits));
-                if (license  != null) addIfAbsent(identification.getResourceConstraints(), constraints = new DefaultLegalConstraints(license));
-                if (access   != null) {
-                    for (final String keyword : split(access)) {
-                        if (!keyword.isEmpty()) {
-                            if (constraints == null) {
-                                identification.getResourceConstraints().add(constraints = new DefaultLegalConstraints());
-                            }
-                            addIfAbsent(constraints.getAccessConstraints(), forCodeName(Restriction.class, keyword));
-                        }
-                    }
-                }
-                if (extent != null) {
-                    // Takes only ONE extent, because a NetCDF file may declare many time the same
-                    // extent with different precision. The groups are ordered in such a way that
-                    // the first extent should be the most accurate one.
-                    identification.setExtents(singleton(extent));
-                    hasExtent = true;
-                }
+            keywords.addAll(split(stringValue(KEYWORDS)));
+            standard = addIfNonNull(standard, stringValue(STANDARD_NAME));
+            project  = addIfNonNull(project,  stringValue(PROJECT));
+            for (final String keyword : split(stringValue(ACCESS_CONSTRAINT))) {
+                addAccessConstraint(forCodeName(Restriction.class, keyword));
             }
-            project = addIfNonNull(project, toInternationalString(stringValue(PROJECT)));
+            addTopicCategory(forEnumName(TopicCategory.class, stringValue(TOPIC_CATEGORY)));
+            addSpatialRepresentation(forCodeName(SpatialRepresentationType.class, stringValue(DATA_TYPE)));
+            if (!hasExtent) {
+                /*
+                 * Takes only ONE extent, because a NetCDF file may declare many time the same
+                 * extent with different precision. The groups are ordered in such a way that
+                 * the first extent should be the most accurate one.
+                 */
+                hasExtent = addExtent();
+            }
         }
+        /*
+         * For the following properties, use only the first non-empty attribute value found on the search path.
+         */
         decoder.setSearchPath(searchPath);
-        final Citation citation = createCitation(identifier);
-        final String   summary  = stringValue(SUMMARY);
-        final String   purpose  = stringValue(PURPOSE);
-        if (identification == null) {
-            if (citation==null && summary==null && purpose==null && project==null && publisher==null && pointOfContact==null) {
-                return null;
-            }
-            identification = new DefaultDataIdentification();
-        }
-        identification.setCitation(citation);
-        identification.setAbstract(toInternationalString(summary));
-        identification.setPurpose (toInternationalString(purpose));
-        if (pointOfContact != null) {
-            identification.setPointOfContacts(singleton(pointOfContact));
-        }
-        addKeywords(identification, project,   KeywordType.PROJECT);
-        addKeywords(identification, publisher, KeywordType.DATA_CENTRE);
-        identification.setSupplementalInformation(toInternationalString(stringValue(COMMENT)));
-        return identification;
-    }
-
-    /**
-     * Adds the given keywords to the given identification info if the given set is non-null.
-     */
-    private void addKeywords(final DefaultDataIdentification addTo,
-            final Set<InternationalString> words, final KeywordType type)
-    {
-        if (words != null) {
-            final DefaultKeywords keywords = new DefaultKeywords();
-            keywords.setKeywords(words);
-            keywords.setType(type);
-            addTo.getDescriptiveKeywords().add(keywords);
-        }
-    }
-
-    /**
-     * Returns the keywords if at least one required attribute is found, or {@code null} otherwise.
-     * For more consistent results, the caller should restrict the {@linkplain Decoder#setSearchPath
-     * search path} to a single group before invoking this method.
-     *
-     * @throws IOException if an I/O operation was necessary but failed.
-     */
-    private Keywords createKeywords(final KeywordType type, final boolean standard) throws IOException {
-        final String list = stringValue(standard ? STANDARD_NAME : KEYWORDS);
-        DefaultKeywords keywords = null;
-        if (list != null) {
-            final Set<InternationalString> words = new LinkedHashSet<>();
-            for (final String keyword : split(list)) {
-                if (!keyword.isEmpty()) {
-                    words.add(new SimpleInternationalString(keyword));
-                }
-            }
-            if (!words.isEmpty()) {
-                keywords = new DefaultKeywords();
-                keywords.setKeywords(words);
-                keywords.setType(type);
-                final String vocabulary = stringValue(standard ? STANDARD_NAME_VOCABULARY : VOCABULARY);
-                if (vocabulary != null) {
-                    keywords.setThesaurusName(new DefaultCitation(vocabulary));
-                }
-            }
-        }
-        return keywords;
+        addAbstract               (stringValue(SUMMARY));
+        addPurpose                (stringValue(PURPOSE));
+        addSupplementalInformation(stringValue(COMMENT));
+        addCredits                (stringValue(ACKNOWLEDGEMENT));
+        addCredits                (stringValue("acknowledgment"));          // Legacy spelling.
+        addUseLimitation          (stringValue(LICENSE));
+        addKeywords(standard,  KeywordType.THEME,       stringValue(STANDARD_NAME_VOCABULARY));
+        addKeywords(keywords,  KeywordType.THEME,       stringValue(VOCABULARY));
+        addKeywords(project,   KeywordType.PROJECT,     null);
+        addKeywords(publisher, KeywordType.DATA_CENTRE, null);
     }
 
     /**
@@ -713,27 +656,28 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
     }
 
     /**
-     * Returns the extent declared in the given group, or {@code null} if none. For more consistent results,
-     * the caller should restrict the {@linkplain Decoder#setSearchPath search path} to a single group before
-     * invoking this method.
+     * Adds the extent declared in the given group. For more consistent results, the caller should restrict
+     * the {@linkplain Decoder#setSearchPath search path} to a single group before invoking this method.
+     *
+     * @return {@code true} if at least one numerical value has been added.
      */
-    private Extent createExtent() throws IOException {
-        DefaultExtent extent = null;
+    private boolean addExtent() throws IOException {
+        addExtent(stringValue(GEOGRAPHIC_IDENTIFIER));
+        /*
+         * If at least one geographic ordinates is available, add a GeographicBoundingBox.
+         */
         final Number xmin = decoder.numericValue(LONGITUDE.MINIMUM);
         final Number xmax = decoder.numericValue(LONGITUDE.MAXIMUM);
         final Number ymin = decoder.numericValue(LATITUDE .MINIMUM);
         final Number ymax = decoder.numericValue(LATITUDE .MAXIMUM);
         final Number zmin = decoder.numericValue(VERTICAL .MINIMUM);
         final Number zmax = decoder.numericValue(VERTICAL .MAXIMUM);
-        /*
-         * If at least one geographic ordinates above is available, add a GeographicBoundingBox.
-         */
-        if (xmin != null || xmax != null || ymin != null || ymax != null) {
+        boolean hasExtent = (xmin != null || xmax != null || ymin != null || ymax != null);
+        if (hasExtent) {
             final UnitConverter xConv = getConverterTo(decoder.unitValue(LONGITUDE.UNITS), Units.DEGREE);
             final UnitConverter yConv = getConverterTo(decoder.unitValue(LATITUDE .UNITS), Units.DEGREE);
-            extent = new DefaultExtent(null, new DefaultGeographicBoundingBox(
-                    valueOf(xmin, xConv), valueOf(xmax, xConv),
-                    valueOf(ymin, yConv), valueOf(ymax, yConv)), null, null);
+            addExtent(new double[] {valueOf(xmin, xConv), valueOf(xmax, xConv),
+                                    valueOf(ymin, yConv), valueOf(ymax, yConv)}, 0);
         }
         /*
          * If at least one vertical ordinates above is available, add a VerticalExtent.
@@ -747,10 +691,8 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
                 min = -max;
                 max = -tmp;
             }
-            if (extent == null) {
-                extent = new DefaultExtent();
-            }
-            extent.setVerticalElements(singleton(new DefaultVerticalExtent(min, max, VERTICAL_CRS)));
+            addVerticalExtent(min, max, VERTICAL_CRS);
+            hasExtent = true;
         }
         /*
          * Get the start and end times as Date objects if available, or as numeric values otherwise.
@@ -776,26 +718,12 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
          * we will report a warning and leave the temporal extent missing.
          */
         if (startTime != null || endTime != null) try {
-            final DefaultTemporalExtent t = new DefaultTemporalExtent();
-            t.setBounds(startTime, endTime);
-            if (extent == null) {
-                extent = new DefaultExtent();
-            }
-            extent.setTemporalElements(singleton(t));
+            addTemporalExtent(startTime, endTime);
+            hasExtent = true;
         } catch (UnsupportedOperationException e) {
             warning(e);
         }
-        /*
-         * Add the geographic identifier, if present.
-         */
-        final String identifier = stringValue(GEOGRAPHIC_IDENTIFIER);
-        if (identifier != null) {
-            if (extent == null) {
-                extent = new DefaultExtent();
-            }
-            extent.setGeographicElements(singleton(new DefaultGeographicDescription(identifier)));
-        }
-        return extent;
+        return hasExtent;
     }
 
     /**
@@ -956,27 +884,26 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
     }
 
     /**
-     * Returns a globally unique identifier for the current NetCDF {@linkplain #decoder}.
-     * The default implementation builds the identifier from the following attributes:
+     * Adds a globally unique identifier for the current NetCDF {@linkplain #decoder}.
+     * The current implementation builds the identifier from the following attributes:
      *
      * <ul>
      *   <li>{@value AttributeNames#NAMING_AUTHORITY} used as the {@linkplain Identifier#getAuthority() authority}.</li>
      *   <li>{@value AttributeNames#IDENTIFIER}, or {@link ucar.nc2.NetcdfFile#getId()} if no identifier attribute was found.</li>
      * </ul>
      *
-     * @return the globally unique identifier, or {@code null} if none.
      * @throws IOException if an I/O operation was necessary but failed.
      */
-    private Identifier getFileIdentifier() throws IOException {
+    private void addFileIdentifier() throws IOException {
         String identifier = stringValue(IDENTIFIER);
         if (identifier == null) {
             identifier = decoder.getId();
             if (identifier == null) {
-                return null;
+                return;
             }
         }
         final String namespace = stringValue(NAMING_AUTHORITY);
-        return new DefaultIdentifier((namespace != null) ? new DefaultCitation(namespace) : null, identifier);
+        addIdentifier((namespace != null) ? new DefaultCitation(namespace) : null, identifier, Scope.ALL);
     }
 
     /**
@@ -986,75 +913,34 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
      * @throws IOException if an I/O operation was necessary but failed.
      */
     public Metadata read() throws IOException {
-        final DefaultMetadata metadata = new DefaultMetadata();
-        metadata.setMetadataStandards(Citations.ISO_19115);
-        final Identifier identifier = getFileIdentifier();
-        metadata.setMetadataIdentifier(identifier);
-        final Date creation = decoder.dateValue(METADATA_CREATION);
-        if (creation != null) {
-            metadata.setDateInfo(singleton(new DefaultCitationDate(creation, DateType.CREATION)));
-        }
-        metadata.setMetadataScopes(singleton(new DefaultMetadataScope(ScopeCode.DATASET, null)));
+        addFileIdentifier();
+        addResourceScope(ScopeCode.DATASET, null);
+        Set<InternationalString> publisher = addCitation();
+        addIdentificationInfo(publisher);
         for (final String service : SERVICES) {
             final String name = stringValue(service);
             if (name != null) {
-                addIfAbsent(metadata.getMetadataScopes(), new DefaultMetadataScope(ScopeCode.SERVICE, name));
+                addResourceScope(ScopeCode.SERVICE, name);
             }
         }
         /*
-         * Add the responsible party which is declared in global attributes, or in
-         * the THREDDS attributes if no information was found in global attributes.
+         * Add history in Metadata.dataQualityInfo.lineage.statement as specified by UnidataDD2MI.xsl.
+         * However Metadata.resourceLineage.statement could be a more appropriate place.
+         * See https://issues.apache.org/jira/browse/SIS-361
          */
+        final DefaultMetadata metadata = build(false);
         for (final String path : searchPath) {
             decoder.setSearchPath(path);
-            final Responsibility party = createResponsibleParty(CREATOR, true);
-            if (party != null && party != pointOfContact) {
-                addIfAbsent(metadata.getContacts(), party);
-                if (pointOfContact == null) {
-                    pointOfContact = party;
-                }
-            }
-        }
-        /*
-         * Add the publisher AFTER the creator, because this method may
-         * reuse the 'creator' field (if non-null and if applicable).
-         */
-        Set<InternationalString> publisher = null;
-        DefaultDistribution distribution   = null;
-        for (final String path : searchPath) {
-            decoder.setSearchPath(path);
-            final Responsibility r = createResponsibleParty(PUBLISHER, false);
-            if (r != null) {
-                if (distribution == null) {
-                    distribution = new DefaultDistribution();
-                    metadata.setDistributionInfo(singleton(distribution));
-                }
-                final DefaultDistributor distributor = new DefaultDistributor(r);
-                // TODO: There is some transfert option, etc. that we could set there.
-                // See UnidataDD2MI.xsl for options for OPeNDAP, THREDDS, etc.
-                addIfAbsent(distribution.getDistributors(), distributor);
-                for (final Party party : r.getParties()) {
-                    publisher = addIfNonNull(publisher, party.getName());
-                }
-            }
-            // Also add history.
             final String history = stringValue(HISTORY);
             if (history != null) {
-                final DefaultDataQuality quality = new DefaultDataQuality();
+                final DefaultDataQuality quality = new DefaultDataQuality(ScopeCode.DATASET);
                 final DefaultLineage lineage = new DefaultLineage();
                 lineage.setStatement(new SimpleInternationalString(history));
                 quality.setLineage(lineage);
                 addIfAbsent(metadata.getDataQualityInfo(), quality);
             }
         }
-        /*
-         * Add the identification info AFTER the responsible parties (both creator and publisher),
-         * because this method will reuse the 'creator' and 'publisher' information (if non-null).
-         */
-        final DataIdentification identification = createIdentificationInfo(identifier, publisher);
-        if (identification != null) {
-            metadata.setIdentificationInfo(singleton(identification));
-        }
+        decoder.setSearchPath(searchPath);
         metadata.setContentInfo(createContentInfo());
         /*
          * Add the dimension information, if any. This metadata node
@@ -1065,6 +951,7 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
                 metadata.getSpatialRepresentationInfo().add(createSpatialRepresentationInfo(cs));
             }
         }
+        metadata.setMetadataStandards(Citations.ISO_19115);
         return metadata;
     }
 }
