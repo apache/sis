@@ -58,7 +58,7 @@ import org.opengis.metadata.extent.GeographicDescription;
  * <blockquote><table class="compact" summary="List of all NetCDF attributes.">
  * <tr valign="top"><td style="width: 25%">
  * {@value     #ACCESS_CONSTRAINT}<br>
- * {@value     #ACKNOWLEDGMENT}<br>
+ * {@value     #ACKNOWLEDGEMENT}<br>
  * {@value     #COMMENT}<br>
  * {@linkplain #CONTRIBUTOR "contributor_email"}<br>
  * {@linkplain #CONTRIBUTOR "contributor_name"}<br>
@@ -125,7 +125,7 @@ import org.opengis.metadata.extent.GeographicDescription;
  * <ul>
  *   <li><a href="http://wiki.esipfed.org/index.php/Category:Attribute_Conventions_Dataset_Discovery">NetCDF
  *       Attribute Convention for Dataset Discovery</a> wiki</li>
- *   <li><a href="http://ngdc.noaa.gov/metadata/published/xsl/nciso2.0/UnidataDD2MI.xsl">UnidataDD2MI.xsl</a> file</li>
+ *   <li><a href="https://github.com/Unidata/threddsIso/blob/master/src/main/resources/xsl/nciso/UnidataDD2MI.xsl">UnidataDD2MI.xsl</a> file</li>
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
