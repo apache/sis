@@ -34,6 +34,11 @@ import static org.apache.sis.internal.metadata.MetadataUtilities.ensurePositive;
 
 /**
  * The characteristic of each dimension (layer) included in the resource.
+ * The following property is conditional (i.e. mandatory under some circumstances)
+ * in a well-formed metadata according ISO 19115:
+ *
+ * <div class="preformat">{@code MD_SampleDimension}
+ * {@code   └─units………………………} Units of data in each dimension included in the resource.</div>
  *
  * <p><b>Limitations:</b></p>
  * <ul>

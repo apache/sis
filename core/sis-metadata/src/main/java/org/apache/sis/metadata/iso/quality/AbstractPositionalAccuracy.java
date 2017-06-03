@@ -28,6 +28,10 @@ import org.opengis.metadata.quality.RelativeInternalPositionalAccuracy;
 
 /**
  * Accuracy of the position of features.
+ * The following property is mandatory in a well-formed metadata according ISO 19115:
+ *
+ * <div class="preformat">{@code DQ_PositionalAccuracy}
+ * {@code   └─result……………} Value obtained from applying a data quality measure.</div>
  *
  * <p><b>Limitations:</b></p>
  * <ul>

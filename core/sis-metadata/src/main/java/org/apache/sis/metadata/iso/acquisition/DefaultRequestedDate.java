@@ -29,6 +29,11 @@ import static org.apache.sis.internal.metadata.MetadataUtilities.toMilliseconds;
 
 /**
  * Range of date validity.
+ * The following properties are mandatory in a well-formed metadata according ISO 19115:
+ *
+ * <div class="preformat">{@code MI_RequestedDate}
+ * {@code   ├─requestedDateOfCollection……} Preferred date and time of collection.
+ * {@code   └─latestAcceptableDate…………………} Latest date and time collection must be completed.</div>
  *
  * <p><b>Limitations:</b></p>
  * <ul>

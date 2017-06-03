@@ -30,6 +30,19 @@ import org.apache.sis.xml.Namespaces;
 
 /**
  * Result of a data quality measure organising the measured values as a coverage.
+ * The following properties are mandatory in a well-formed metadata according ISO 19115:
+ *
+ * <div class="preformat">{@code QE_CoverageResult}
+ * {@code   ├─spatialRepresentationType……………………} Method used to spatially represent the coverage result.
+ * {@code   ├─resultSpatialRepresentation………………} Digital representation of data quality measures composing the coverage result.
+ * {@code   ├─resultContentDescription………………………} Description of the content of the result coverage, i.e. semantic definition of the data quality measures.
+ * {@code   │   └─attributeDescription………………………} Description of the attribute described by the measurement value.
+ * {@code   ├─resultFormat………………………………………………………} Information about the format of the result coverage data.
+ * {@code   │   └─formatSpecificationCitation……} Citation/URL of the specification format.
+ * {@code   │       ├─title……………………………………………………} Name by which the cited resource is known.
+ * {@code   │       └─date………………………………………………………} Reference date for the cited resource.
+ * {@code   └─resultFile……………………………………………………………} Information about the data file containing the result coverage data.
+ * {@code       └─fileFormat…………………………………………………} Defines the format of the transfer data file.</div>
  *
  * <p><b>Limitations:</b></p>
  * <ul>

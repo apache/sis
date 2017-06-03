@@ -48,8 +48,12 @@ import static org.apache.sis.internal.metadata.MetadataUtilities.ensurePositive;
 /**
  * A scale defined as the inverse of a denominator.
  * Scale is defined as a kind of {@link Number}.
+ * The following property is mandatory in a well-formed metadata according ISO 19115:
  *
- * <p>In addition to the standard properties, SIS provides the following methods:</p>
+ * <div class="preformat">{@code MD_RepresentativeFraction}
+ * {@code   └─denominator…………………………} The number below the line in a vulgar fraction.</div>
+ *
+ * In addition to the standard properties, SIS provides the following methods:
  * <ul>
  *   <li>{@link #setScale(double)} for computing the denominator from a scale value.</li>
  * </ul>

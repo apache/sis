@@ -27,6 +27,10 @@ import org.opengis.metadata.quality.AccuracyOfATimeMeasurement;
 
 /**
  * Accuracy of the temporal attributes and temporal relationships of features.
+ * The following property is mandatory in a well-formed metadata according ISO 19115:
+ *
+ * <div class="preformat">{@code DQ_TemporalAccuracy}
+ * {@code   └─result……………} Value obtained from applying a data quality measure.</div>
  *
  * <p><b>Limitations:</b></p>
  * <ul>

@@ -26,6 +26,10 @@ import org.opengis.metadata.constraint.SecurityConstraints;
 
 /**
  * Handling restrictions imposed on the resource for national security or similar security concerns.
+ * The following property is mandatory in a well-formed metadata according ISO 19115:
+ *
+ * <div class="preformat">{@code MD_SecurityConstraints}
+ * {@code   └─classification…………} Name of the handling restrictions on the resource.</div>
  *
  * <p><b>Limitations:</b></p>
  * <ul>
