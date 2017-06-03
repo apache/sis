@@ -216,7 +216,8 @@ div.block center {
  */
 div.preformat {
   margin: 15px 30px;
-  white-space: pre-wrap
+  line-height: 100%;
+  white-space: pre-wrap;
 }
 
 /*
