@@ -34,6 +34,7 @@ import javax.measure.UnitConverter;
 import javax.measure.IncommensurableException;
 import javax.measure.format.ParserException;
 
+import org.opengis.util.CodeList;
 import org.opengis.util.NameFactory;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.Metadata;
@@ -46,13 +47,10 @@ import org.opengis.metadata.maintenance.ScopeCode;
 import org.opengis.metadata.constraint.Restriction;
 import org.opengis.referencing.crs.VerticalCRS;
 
-import org.opengis.util.CodeList;
 import org.apache.sis.util.iso.Types;
 import org.apache.sis.util.iso.SimpleInternationalString;
 import org.apache.sis.metadata.iso.DefaultMetadata;
-import org.apache.sis.metadata.iso.DefaultIdentifier;
 import org.apache.sis.metadata.iso.spatial.*;
-import org.apache.sis.metadata.iso.content.*;
 import org.apache.sis.metadata.iso.citation.*;
 import org.apache.sis.metadata.iso.identification.*;
 import org.apache.sis.metadata.iso.lineage.DefaultLineage;
@@ -63,6 +61,7 @@ import org.apache.sis.internal.netcdf.Variable;
 import org.apache.sis.internal.netcdf.GridGeometry;
 import org.apache.sis.internal.storage.MetadataBuilder;
 import org.apache.sis.internal.system.DefaultFactories;
+import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.measure.Units;
@@ -184,9 +183,8 @@ final class MetadataReader extends MetadataBuilder {
      * Creates a new <cite>NetCDF to ISO</cite> mapper for the given source.
      *
      * @param  decoder  the source of NetCDF attributes.
-     * @throws IOException if an I/O operation was necessary but failed.
      */
-    MetadataReader(final Decoder decoder) throws IOException {
+    MetadataReader(final Decoder decoder) {
         this.decoder = decoder;
         decoder.setSearchPath(SEARCH_PATH);
         searchPath = decoder.getSearchPath();
@@ -251,11 +249,10 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
     }
 
     /**
-     * Reads the attribute value for the given name, then trims the leading and trailing spaces.
-     * If the value is null, empty or contains only spaces, then this method returns {@code null}.
+     * Trims the leading and trailing spaces of the given string.
+     * If the string is null, empty or contains only spaces, then this method returns {@code null}.
      */
-    private String stringValue(final String name) throws IOException {
-        String value = decoder.stringValue(name);
+    private static String trim(String value) {
         if (value != null) {
             value = value.trim();
             if (value.isEmpty()) {
@@ -263,6 +260,14 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
             }
         }
         return value;
+    }
+
+    /**
+     * Reads the attribute value for the given name, then trims the leading and trailing spaces.
+     * If the value is null, empty or contains only spaces, then this method returns {@code null}.
+     */
+    private String stringValue(final String name) {
+        return trim(decoder.stringValue(name));
     }
 
     /**
@@ -420,15 +425,12 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
      * @param  keys  the group of attribute names to use for fetching the values.
      * @param  isPointOfContact {@code true} for forcing the role to {@link Role#POINT_OF_CONTACT}.
      * @return the responsible party, or {@code null} if none.
-     * @throws IOException if an I/O operation was necessary but failed.
      *
      * @see AttributeNames#CREATOR
      * @see AttributeNames#CONTRIBUTOR
      * @see AttributeNames#PUBLISHER
      */
-    private Responsibility createResponsibleParty(final Responsible keys, final boolean isPointOfContact)
-            throws IOException
-    {
+    private Responsibility createResponsibleParty(final Responsible keys, final boolean isPointOfContact) {
         final String individualName   = stringValue(keys.NAME);
         final String organisationName = stringValue(keys.INSTITUTION);
         final String email            = stringValue(keys.EMAIL);
@@ -510,10 +512,9 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
      * <p>This method opportunistically collects the name of all publishers.
      * Those names are useful to {@link #addIdentificationInfo(Set)}.</p>
      *
-     * @throws IOException if an I/O operation was necessary but failed.
      * @return the name of all publishers, or {@code null} if none.
      */
-    private Set<InternationalString> addCitation() throws IOException {
+    private Set<InternationalString> addCitation() {
         String title = stringValue(TITLE);
         if (title == null) {
             title = stringValue("full_name");   // THREDDS attribute documented in TITLE javadoc.
@@ -582,9 +583,8 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
      * Adds a {@code DataIdentification} element if at least one of the required attributes is non-null.
      *
      * @param  publisher   the publisher names, built by the caller in an opportunist way.
-     * @throws IOException if an I/O operation was necessary but failed.
      */
-    private void addIdentificationInfo(final Set<InternationalString> publisher) throws IOException {
+    private void addIdentificationInfo(final Set<InternationalString> publisher) {
         boolean     hasExtent = false;
         Set<String> project   = null;
         Set<String> standard  = null;
@@ -629,9 +629,8 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
      *
      * @param  cs  the grid geometry (related to the NetCDF coordinate system).
      * @return the grid spatial representation info.
-     * @throws IOException if an I/O operation was necessary but failed.
      */
-    private GridSpatialRepresentation createSpatialRepresentationInfo(final GridGeometry cs) throws IOException {
+    private GridSpatialRepresentation createSpatialRepresentationInfo(final GridGeometry cs) {
         final DefaultGridSpatialRepresentation grid = new DefaultGridSpatialRepresentation();
         grid.setNumberOfDimensions(cs.getTargetDimensions());
         final Axis[] axes = cs.getAxes();
@@ -661,7 +660,7 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
      *
      * @return {@code true} if at least one numerical value has been added.
      */
-    private boolean addExtent() throws IOException {
+    private boolean addExtent() {
         addExtent(stringValue(GEOGRAPHIC_IDENTIFIER));
         /*
          * If at least one geographic ordinates is available, add a GeographicBoundingBox.
@@ -755,108 +754,87 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
     }
 
     /**
-     * Creates a {@code <gmd:contentInfo>} elements from all applicable NetCDF attributes.
-     *
-     * @return the content information.
-     * @throws IOException if an I/O operation was necessary but failed.
+     * Adds information about all NetCDF variables. This is the {@code <gmd:contentInfo>} elements in GML.
+     * This method groups variables by their domains, i.e. variables having the same set of axes are grouped together.
      */
-    private Collection<DefaultCoverageDescription> createContentInfo() throws IOException {
-        final Map<List<String>, DefaultCoverageDescription> contents = new HashMap<>(4);
-        final String processingLevel = stringValue(PROCESSING_LEVEL);
+    private void addContentInfo() {
+        final Map<List<String>, List<Variable>> contents = new HashMap<>(4);
         for (final Variable variable : decoder.getVariables()) {
-            if (!variable.isCoverage(2)) {
-                continue;
+            if (variable.isCoverage(2)) {
+                final List<String> dimensions = Arrays.asList(variable.getGridDimensionNames());
+                CollectionsExt.addToMultiValuesMap(contents, dimensions, variable);
             }
-            DefaultAttributeGroup group = null;
+        }
+        final String processingLevel = stringValue(PROCESSING_LEVEL);
+        for (final List<Variable> group : contents.values()) {
             /*
              * Instantiate a CoverageDescription for each distinct set of NetCDF dimensions
              * (e.g. longitude,latitude,time). This separation is based on the fact that a
              * coverage has only one domain for every range of values.
              */
-            final List<String> dimensions = Arrays.asList(variable.getGridDimensionNames());
-            DefaultCoverageDescription content = contents.get(dimensions);
-            if (content == null) {
-                /*
-                 * If there is some NetCDF attributes that can be stored only in the ImageDescription
-                 * subclass, instantiate that subclass. Otherwise instantiate the more generic class.
-                 */
-                if (processingLevel != null) {
-                    content = new DefaultImageDescription();
-                    content.setProcessingLevelCode(new DefaultIdentifier(processingLevel));
-                } else {
-                    content = new DefaultCoverageDescription();
-                }
-                contents.put(dimensions, content);
-            } else {
-                group = (DefaultAttributeGroup) first(content.getAttributeGroups());
-            }
-            if (group == null) {
-                group = new DefaultAttributeGroup();
-                content.setAttributeGroups(singleton(group));
-            }
-            group.getAttributes().add(createSampleDimension(variable));
-            final Object[] names    = variable.getAttributeValues(FLAG_NAMES,    false);
-            final Object[] meanings = variable.getAttributeValues(FLAG_MEANINGS, false);
-            final Object[] masks    = variable.getAttributeValues(FLAG_MASKS,    true);
-            final Object[] values   = variable.getAttributeValues(FLAG_VALUES,   true);
-            final int length = Math.max(masks.length, Math.max(values.length, Math.max(names.length, meanings.length)));
-            for (int i=0; i<length; i++) {
-                final RangeElementDescription element = createRangeElementDescription(variable,
-                        (i < names   .length) ? (String) names   [i] : null,
-                        (i < meanings.length) ? (String) meanings[i] : null,
-                        (i < masks   .length) ? (Number) masks   [i] : null,
-                        (i < values  .length) ? (Number) values  [i] : null);
-                if (element != null) {
-                    content.getRangeElementDescriptions().add(element);
+            newCoverage(false);
+            setProcessingLevelCode(null, processingLevel);
+            for (final Variable variable : group) {
+                addSampleDimension(variable);
+                final Object[] names    = variable.getAttributeValues(FLAG_NAMES,    false);
+                final Object[] meanings = variable.getAttributeValues(FLAG_MEANINGS, false);
+                final Object[] masks    = variable.getAttributeValues(FLAG_MASKS,    true);
+                final Object[] values   = variable.getAttributeValues(FLAG_VALUES,   true);
+                final int length = Math.max(masks.length, Math.max(values.length, Math.max(names.length, meanings.length)));
+                for (int i=0; i<length; i++) {
+                    addSampleValueDescription(variable,
+                            (i < names   .length) ? (String) names   [i] : null,
+                            (i < meanings.length) ? (String) meanings[i] : null,
+                            (i < masks   .length) ? (Number) masks   [i] : null,
+                            (i < values  .length) ? (Number) values  [i] : null);
                 }
             }
         }
-        return contents.values();
     }
 
     /**
-     * Creates a {@code <gmd:dimension>} element from the given variable.
+     * Adds metadata about a sample dimension (or band) from the given variable.
+     * This is the {@code <gmd:dimension>} element in GML.
      *
      * @param  variable  the NetCDF variable.
-     * @return the sample dimension information.
-     * @throws IOException if an I/O operation was necessary but failed.
      */
-    private Band createSampleDimension(final Variable variable) throws IOException {
-        final DefaultBand band = new DefaultBand();     // TODO: not necessarily a band.
-        String name = variable.getName();
-        if (name != null && !(name = name.trim()).isEmpty()) {
+    private void addSampleDimension(final Variable variable) {
+        newSampleDimension();
+        final String name = trim(variable.getName());
+        if (name != null) {
             if (nameFactory == null) {
                 nameFactory = DefaultFactories.forBuildin(NameFactory.class);
                 // Real dependency injection to be used in a future version.
             }
-            band.setSequenceIdentifier(nameFactory.createMemberName(null, name,
+            setBandIdentifier(nameFactory.createMemberName(null, name,
                     nameFactory.createTypeName(null, variable.getDataTypeName())));
         }
-        String description = variable.getDescription();
-        if (description != null && !(description = description.trim()).isEmpty() && !description.equals(name)) {
-            band.setDescription(new SimpleInternationalString(description));
+        Object[] v = variable.getAttributeValues(STANDARD_NAME, false);
+        final String id = (v.length == 1) ? trim((String) v[0]) : null;
+        if (id != null && !id.equals(name)) {
+            v = variable.getAttributeValues(STANDARD_NAME_VOCABULARY, false);
+            addBandIdentifier(v.length == 1 ? (String) v[0] : null, id);
+        }
+        final String description = trim(variable.getDescription());
+        if (description != null && !description.equals(name) && !description.equals(id)) {
+            addBandDescription(description);
         }
         final String units = variable.getUnitsString();
         if (units != null) try {
-            band.setUnits(Units.valueOf(units));
+            setSampleUnits(Units.valueOf(units));
         } catch (ParserException e) {
             decoder.listeners.warning(errors().getString(Errors.Keys.CanNotAssignUnitToDimension_2, name, units), e);
         }
-        Object[] v = variable.getAttributeValues(CDM.SCALE_FACTOR, true);
-        if (v.length == 1) {
-            band.setScaleFactor(((Number) v[0]).doubleValue());
-            band.setTransferFunctionType(TransferFunctionType.LINEAR);
-        }
-        v = variable.getAttributeValues(CDM.ADD_OFFSET, true);
-        if (v.length == 1) {
-            band.setOffset(((Number) v[0]).doubleValue());
-            band.setTransferFunctionType(TransferFunctionType.LINEAR);
-        }
-        return band;
+        double scale  = Double.NaN;
+        double offset = Double.NaN;
+        v = variable.getAttributeValues(CDM.SCALE_FACTOR, true); if (v.length == 1) scale  = ((Number) v[0]).doubleValue();
+        v = variable.getAttributeValues(CDM.ADD_OFFSET,   true); if (v.length == 1) offset = ((Number) v[0]).doubleValue();
+        setTransferFunction(scale, offset);
     }
 
     /**
-     * Creates a {@code <gmd:rangeElementDescription>} elements from the given information.
+     * Adds metadata about the meaning of a sample value.
+     * This is the {@code <gmd:rangeElementDescription>} element in GML.
      *
      * <p><b>Note:</b> ISO 19115 range elements are approximatively equivalent to
      * {@code org.apache.sis.coverage.Category} in the {@code sis-coverage} module.</p>
@@ -866,21 +844,13 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
      * @param  meaning   one of the elements in the {@link AttributeNames#FLAG_MEANINGS} attribute or {@code null}.
      * @param  mask      one of the elements in the {@link AttributeNames#FLAG_MASKS} attribute or {@code null}.
      * @param  value     one of the elements in the {@link AttributeNames#FLAG_VALUES} attribute or {@code null}.
-     * @return the sample dimension information or {@code null} if none.
-     * @throws IOException if an I/O operation was necessary but failed.
      */
-    private RangeElementDescription createRangeElementDescription(final Variable variable,
-            final String name, final String meaning, final Number mask, final Number value) throws IOException
+    private void addSampleValueDescription(final Variable variable,
+            final String name, final String meaning, final Number mask, final Number value)
     {
-        if (name != null && meaning != null) {
-            final DefaultRangeElementDescription element = new DefaultRangeElementDescription();
-            element.setName(new SimpleInternationalString(name));
-            element.setDefinition(new SimpleInternationalString(meaning));
-            // TODO: create a record from values (and possibly from the masks).
-            //       if (pixel & mask == value) then we have that range element.
-            return element;
-        }
-        return null;
+        addSampleValueDescription(name, meaning);
+        // TODO: create a record from values (and possibly from the masks).
+        //       if (pixel & mask == value) then we have that range element.
     }
 
     /**
@@ -891,10 +861,8 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
      *   <li>{@value AttributeNames#NAMING_AUTHORITY} used as the {@linkplain Identifier#getAuthority() authority}.</li>
      *   <li>{@value AttributeNames#IDENTIFIER}, or {@link ucar.nc2.NetcdfFile#getId()} if no identifier attribute was found.</li>
      * </ul>
-     *
-     * @throws IOException if an I/O operation was necessary but failed.
      */
-    private void addFileIdentifier() throws IOException {
+    private void addFileIdentifier() {
         String identifier = stringValue(IDENTIFIER);
         if (identifier == null) {
             identifier = decoder.getId();
@@ -902,8 +870,7 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
                 return;
             }
         }
-        final String namespace = stringValue(NAMING_AUTHORITY);
-        addIdentifier((namespace != null) ? new DefaultCitation(namespace) : null, identifier, Scope.ALL);
+        addIdentifier(stringValue(NAMING_AUTHORITY), identifier, Scope.ALL);
     }
 
     /**
@@ -923,6 +890,7 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
                 addResourceScope(ScopeCode.SERVICE, name);
             }
         }
+        addContentInfo();
         /*
          * Add history in Metadata.dataQualityInfo.lineage.statement as specified by UnidataDD2MI.xsl.
          * However Metadata.resourceLineage.statement could be a more appropriate place.
@@ -941,7 +909,6 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
             }
         }
         decoder.setSearchPath(searchPath);
-        metadata.setContentInfo(createContentInfo());
         /*
          * Add the dimension information, if any. This metadata node
          * is built from the NetCDF CoordinateSystem objects.

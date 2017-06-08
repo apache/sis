@@ -506,7 +506,7 @@ public final class Store extends FeatureStore {
                  */
                 listeners.warning(null, e);
             }
-            builder.add(featureType, null);
+            builder.addFeatureType(featureType, null);
             metadata = builder.build(true);
         }
         return metadata;
