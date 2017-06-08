@@ -25,6 +25,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.nio.charset.Charset;
+import javax.measure.Unit;
+import org.opengis.util.MemberName;
 import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.Identifier;
@@ -39,6 +41,7 @@ import org.opengis.metadata.spatial.CellGeometry;
 import org.opengis.metadata.spatial.PixelOrientation;
 import org.opengis.metadata.spatial.SpatialRepresentationType;
 import org.opengis.metadata.constraint.Restriction;
+import org.opengis.metadata.content.TransferFunctionType;
 import org.opengis.metadata.maintenance.ScopeCode;
 import org.opengis.metadata.acquisition.Context;
 import org.opengis.metadata.acquisition.OperationType;
@@ -64,6 +67,7 @@ import org.apache.sis.metadata.iso.content.DefaultAttributeGroup;
 import org.apache.sis.metadata.iso.content.DefaultSampleDimension;
 import org.apache.sis.metadata.iso.content.DefaultCoverageDescription;
 import org.apache.sis.metadata.iso.content.DefaultFeatureCatalogueDescription;
+import org.apache.sis.metadata.iso.content.DefaultRangeElementDescription;
 import org.apache.sis.metadata.iso.content.DefaultImageDescription;
 import org.apache.sis.metadata.iso.content.DefaultFeatureTypeInfo;
 import org.apache.sis.metadata.iso.citation.AbstractParty;
@@ -134,13 +138,19 @@ public class MetadataBuilder {
     private boolean electromagnetic;
 
     /**
-     * For using the same instance of {@code Double} when the value is the same.
-     * We use this map because the same values appear many time in a Landsat file.
+     * For using the same instance of {@code Integer} or {@code Double} when the value is the same.
+     * Also used for reusing {@link Citation} instances already created for a given title.
+     * Keys and values can be:
      *
-     * @see #shared(Integer)
-     * @see #shared(Double)
+     * <table class="sis">
+     *   <tr><th>Key</th>                          <th>Value</th>               <th>Method</th></tr>
+     *   <tr><td>{@link Integer}</td>              <td>{@link Integer}</td>     <td>{@link #shared(Integer)}</td></tr>
+     *   <tr><td>{@link Double}</td>               <td>{@link Double}</td>      <td>{@link #shared(Double)}</td></tr>
+     *   <tr><td>{@link Identifier}</td>           <td>{@link Identifier}</td>  <td>{@link #sharedIdentifier(CharSequence, String)}</td></tr>
+     *   <tr><td>{@link InternationalString}</td>  <td>{@link Citation}</td>    <td>{@link #sharedCitation(InternationalString)}</td></tr>
+     * </table>
      */
-    private final Map<Number,Number> sharedNumbers = new HashMap<>();
+    private final Map<Object,Object> sharedValues = new HashMap<>();
 
     // Other fields declared below together with closely related methods.
 
@@ -383,6 +393,7 @@ public class MetadataBuilder {
      * Creates the sample dimension object if it does not already exists, then returns it.
      *
      * @return the sample dimension (never {@code null}).
+     * @see #newSampleDimension()
      */
     private DefaultSampleDimension sampleDimension() {
         if (sampleDimension == null) {
@@ -660,10 +671,7 @@ public class MetadataBuilder {
      *         will be a description of measurements in the electromagnetic spectrum.
      */
     public final void newCoverage(final boolean electromagnetic) {
-        if (sampleDimension != null) {
-            addIfNotPresent(attributeGroup().getAttributes(), sampleDimension);
-            sampleDimension = null;
-        }
+        newSampleDimension();
         if (attributeGroup != null) {
             addIfNotPresent(coverageDescription().getAttributeGroups(), attributeGroup);
             attributeGroup = null;
@@ -673,6 +681,20 @@ public class MetadataBuilder {
             coverageDescription = null;
         }
         this.electromagnetic = electromagnetic;
+    }
+
+    /**
+     * Commits all pending information under the coverage "attribute group" node.
+     * If there is no pending sample dimension description, then invoking this method has no effect.
+     * If new sample dimensions are added after this method call, they will be stored in a new element.
+     *
+     * <p>This method does not need to be invoked unless a new "sample dimension" node is desired.</p>
+     */
+    public final void newSampleDimension() {
+        if (sampleDimension != null) {
+            addIfNotPresent(attributeGroup().getAttributes(), sampleDimension);
+            sampleDimension = null;
+        }
     }
 
     /**
@@ -718,6 +740,33 @@ public class MetadataBuilder {
     }
 
     /**
+     * Creates or fetches a citation for the given title. The same citation may be shared by many metadata objects,
+     * for example identifiers or groups of keywords. Current implementation creates a {@link DefaultCitation} for
+     * the given title and caches the result. Future implementations may return predefined citation constants from
+     * the SQL database when applicable.
+     *
+     * @param  title  the citation title, or {@code null} if none.
+     * @return a (potentially shared) citation for the given title, or {@code null} if the given title was null.
+     */
+    private Citation sharedCitation(final InternationalString title) {
+        if (title == null) return null;
+        return (Citation) sharedValues.computeIfAbsent(title, k -> new DefaultCitation((CharSequence) k));
+    }
+
+    /**
+     * Creates or fetches an identifier for the given authority and code. This method may query the metadata
+     * database for fetching a more complete {@link Citation} for the given {@code authority}.
+     * This method may return a shared {@code Identifier} instance.
+     *
+     * @param  authority  the authority tile, or {@code null} if none.
+     * @param  code       the identifier code (mandatory).
+     */
+    private Identifier sharedIdentifier(final CharSequence authority, final String code) {
+        final DefaultIdentifier id = new DefaultIdentifier(sharedCitation(trim(authority)), code);
+        return (Identifier) sharedValues.getOrDefault(id, id);
+    }
+
+    /**
      * Specify if an information apply to data, to metadata or to both.
      * This is used for setting the locale or character encoding.
      */
@@ -755,10 +804,10 @@ public class MetadataBuilder {
      *
      * @see #addTitle(CharSequence)
      */
-    public final void addIdentifier(final Citation authority, String code, final Scope scope) {
+    public final void addIdentifier(final CharSequence authority, String code, final Scope scope) {
         ArgumentChecks.ensureNonNull("scope", scope);
         if (code != null && !(code = code.trim()).isEmpty()) {
-            final DefaultIdentifier id = new DefaultIdentifier(authority, code);
+            final Identifier id = sharedIdentifier(authority, code);
             if (scope != Scope.RESOURCE) metadata().setMetadataIdentifier(id);
             if (scope != Scope.METADATA) addIfNotPresent(citation().getIdentifiers(), id);
         }
@@ -1097,9 +1146,7 @@ public class MetadataBuilder {
                         group = new DefaultKeywords();
                         group.setType(type);
                         final InternationalString c = trim(thesaurusName);
-                        if (c != null) {
-                            group.setThesaurusName(new DefaultCitation(c));
-                        }
+                        group.setThesaurusName(sharedCitation(c));
                         list = group.getKeywords();
                     }
                     list.add(i18n);
@@ -1627,7 +1674,7 @@ parse:      for (int i = 0; i < length;) {
      *
      * @see FeatureCatalogBuilder#define(FeatureType)
      */
-    public final GenericName add(final FeatureType type, final Integer occurrences) {
+    public final GenericName addFeatureType(final FeatureType type, final Integer occurrences) {
         if (type != null) {
             final GenericName name = type.getName();
             if (name != null) {
@@ -1771,8 +1818,94 @@ parse:      for (int i = 0; i < length;) {
     }
 
     /**
+     * Sets the name or number that uniquely identifies instances of bands of wavelengths on which a sensor operates.
+     * If a coverage contains more than one band, additional bands can be created by calling
+     * {@link #newSampleDimension()} before to call this method.
+     * Storage location is:
+     *
+     * <ul>
+     *   <li>{@code metadata/contentInfo/attributeGroup/attribute/sequenceIdentifier}</li>
+     * </ul>
+     *
+     * @param  sequenceIdentifier  the band name or number, or {@code null} for no-operation.
+     */
+    public final void setBandIdentifier(final MemberName sequenceIdentifier) {
+        if (sequenceIdentifier != null) {
+            sampleDimension().setSequenceIdentifier(sequenceIdentifier);
+        }
+    }
+
+    /**
+     * Adds an identifier for the current band.
+     * These identifiers can be use to provide names for the attribute from a standard set of names.
+     * If a coverage contains more than one band, additional bands can be created by calling
+     * {@link #newSampleDimension()} before to call this method.
+     * Storage location is:
+     *
+     * <ul>
+     *   <li>{@code metadata/contentInfo/attributeGroup/attribute/name}</li>
+     * </ul>
+     *
+     * @param  authority  identifies which controlled list of name is used, or {@code null} if none.
+     * @param  name       the band name, or {@code null} for no-operation.
+     */
+    public final void addBandIdentifier(final CharSequence authority, String name) {
+        if (name != null && !(name = name.trim()).isEmpty()) {
+            addIfNotPresent(sampleDimension().getNames(), sharedIdentifier(authority, name));
+        }
+    }
+
+    /**
+     * Adds a description of the current band.
+     * If a coverage contains more than one band, additional bands can be created by calling
+     * {@link #newSampleDimension()} before to call this method.
+     * Storage location is:
+     *
+     * <ul>
+     *   <li>{@code metadata/contentInfo/attributeGroup/attribute/description}</li>
+     * </ul>
+     *
+     * @param  description  the band description, or {@code null} for no-operation.
+     */
+    public final void addBandDescription(final CharSequence description) {
+        final InternationalString i18n = trim(description);
+        if (i18n != null) {
+            final DefaultSampleDimension sampleDimension = sampleDimension();
+            sampleDimension.setDescription(append(sampleDimension.getDescription(), i18n));
+        }
+    }
+
+    /**
+     * Adds a description of a particular sample value.
+     * Storage location is:
+     *
+     * <ul>
+     *   <li>{@code metadata/contentInfo/rangeElementDescription}</li>
+     * </ul>
+     *
+     * <div class="note"><b>Note:</b>
+     * ISO 19115 range elements are approximatively equivalent to
+     * {@code org.apache.sis.coverage.Category} in the {@code sis-coverage} module.</div>
+     *
+     * @param  name        designation associated with a set of range elements, or {@code null} if none.
+     * @param  definition  description of a set of specific range elements, or {@code null} if none.
+     */
+    public void addSampleValueDescription(final CharSequence name, final CharSequence definition) {
+        final InternationalString i18n = trim(name);
+        final InternationalString def  = trim(definition);
+        if (i18n != null && def != null) {
+            final DefaultRangeElementDescription element = new DefaultRangeElementDescription();
+            element.setName(i18n);
+            element.setDefinition(def);
+            addIfNotPresent(coverageDescription().getRangeElementDescriptions(), element);
+        }
+    }
+
+    /**
      * Adds a minimal value for the current sample dimension. If a minimal value was already defined, then
      * the new value will be set only if it is smaller than the existing one. {@code NaN} values are ignored.
+     * If a coverage contains more than one band, additional bands can be created by calling
+     * {@link #newSampleDimension()} before to call this method.
      * Storage location is:
      *
      * <ul>
@@ -1794,6 +1927,8 @@ parse:      for (int i = 0; i < length;) {
     /**
      * Adds a maximal value for the current sample dimension. If a maximal value was already defined, then
      * the new value will be set only if it is greater than the existing one. {@code NaN} values are ignored.
+     * If a coverage contains more than one band, additional bands can be created by calling
+     * {@link #newSampleDimension()} before to call this method.
      * Storage location is:
      *
      * <ul>
@@ -1808,6 +1943,85 @@ parse:      for (int i = 0; i < length;) {
             final Double current = sampleDimension.getMaxValue();
             if (current == null || value > current) {
                 sampleDimension.setMaxValue(shared(value));
+            }
+        }
+    }
+
+    /**
+     * Sets the units of data in the current band.
+     * If a coverage contains more than one band, additional bands can be created by calling
+     * {@link #newSampleDimension()} before to call this method.
+     * Storage location is:
+     *
+     * <ul>
+     *   <li>{@code metadata/contentInfo/attributeGroup/attribute/unit}</li>
+     * </ul>
+     *
+     * @param  unit  units of measurement of sample values.
+     */
+    public final void setSampleUnits(final Unit<?> unit) {
+        if (unit != null) {
+            sampleDimension().setUnits(unit);
+        }
+    }
+
+    /**
+     * Sets the scale factor and offset which have been applied to the cell value.
+     * The transfer function type is declared {@linkplain TransferFunctionType#LINEAR linear}
+     * If a coverage contains more than one band, additional bands can be created by calling
+     * {@link #newSampleDimension()} before to call this method.
+     * Storage location is:
+     *
+     * <ul>
+     *   <li>{@code metadata/contentInfo/attributeGroup/attribute/scale}</li>
+     *   <li>{@code metadata/contentInfo/attributeGroup/attribute/offset}</li>
+     *   <li>{@code metadata/contentInfo/attributeGroup/attribute/transferFunctionType}</li>
+     * </ul>
+     *
+     * @param scale   the scale factor which has been applied to the cell value.
+     * @param offset  the physical value corresponding to a cell value of zero.
+     */
+    public final void setTransferFunction(final double scale, final double offset) {
+        if (!Double.isNaN(scale) || !Double.isNaN(offset)) {
+            final DefaultSampleDimension sd = sampleDimension();
+            if (!Double.isNaN(scale))  sd.setScaleFactor(scale);
+            if (!Double.isNaN(offset)) sd.setOffset(offset);
+            sd.setTransferFunctionType(TransferFunctionType.LINEAR);
+        }
+    }
+
+    /**
+     * Sets the maximum number of significant bits in the uncompressed representation for the value in current band.
+     * Storage location is:
+     *
+     * <ul>
+     *   <li>{@code metadata/contentInfo/attributeGroup/attribute/bitsPerValue}</li>
+     * </ul>
+     *
+     * @param  bits  the new maximum number of significant bits.
+     * @throws IllegalArgumentException if the given value is zero or negative.
+     */
+    public final void setBitPerSample(final int bits) {
+        sampleDimension().setBitsPerValue(bits);
+    }
+
+    /**
+     * Sets an identifier for the level of processing that has been applied to the coverage.
+     * Storage location is:
+     *
+     * <ul>
+     *   <li>{@code metadata/contentInfo/processingLevelCode}</li>
+     * </ul>
+     *
+     * @param  authority        identifies which controlled list of code is used, or {@code null} if none.
+     * @param  processingLevel  identifier for the level of processing that has been applied to the resource,
+     *                          or {@code null} for no-operation.
+     */
+    public final void setProcessingLevelCode(final CharSequence authority, String processingLevel) {
+        if (processingLevel != null) {
+            processingLevel = processingLevel.trim();
+            if (!processingLevel.isEmpty()) {
+                coverageDescription().setProcessingLevelCode(sharedIdentifier(authority, processingLevel));
             }
         }
     }
@@ -1884,9 +2098,10 @@ parse:      for (int i = 0; i < length;) {
      *   <li>{@code metadata/acquisitionInformation/platform/identifier}</li>
      * </ul>
      *
+     * @param  authority   identifiers the authority that define platform codes, or {@code null} if none.
      * @param  identifier  identifier of the platform to add, or {@code null} for no-operation.
      */
-    public final void addPlatform(String identifier) {
+    public final void addPlatform(final CharSequence authority, String identifier) {
         if (identifier != null && !(identifier = identifier.trim()).isEmpty()) {
             if (platform != null) {
                 final Identifier current = platform.getIdentifier();
@@ -1898,7 +2113,7 @@ parse:      for (int i = 0; i < length;) {
                     platform = null;
                 }
             }
-            platform().setIdentifier(new DefaultIdentifier(identifier));
+            platform().setIdentifier(sharedIdentifier(authority, identifier));
         }
     }
 
@@ -1910,12 +2125,13 @@ parse:      for (int i = 0; i < length;) {
      *   <li>{@code metadata/acquisitionInformation/platform/instrument/identifier}</li>
      * </ul>
      *
+     * @param  authority   identifiers the authority that define instrument codes, or {@code null} if none.
      * @param  identifier  identifier of the sensor to add, or {@code null} for no-operation.
      */
-    public final void addInstrument(String identifier) {
+    public final void addInstrument(final CharSequence authority, String identifier) {
         if (identifier != null && !(identifier = identifier.trim()).isEmpty()) {
             final DefaultInstrument instrument = new DefaultInstrument();
-            instrument.setIdentifier(new DefaultIdentifier(identifier));
+            instrument.setIdentifier(sharedIdentifier(authority, identifier));
             addIfNotPresent(platform().getInstruments(), instrument);
         }
     }
@@ -1953,12 +2169,13 @@ parse:      for (int i = 0; i < length;) {
      *   <li>{@code metadata/acquisitionInformation/acquisitionRequirement/identifier}</li>
      * </ul>
      *
+     * @param  authority   specifies the authority that define requirement codes, or {@code null} if none.
      * @param  identifier  unique name or code for the requirement, or {@code null} for no-operation.
      */
-    public final void addAcquisitionRequirement(String identifier) {
+    public final void addAcquisitionRequirement(final CharSequence authority, String identifier) {
         if (identifier != null && !(identifier = identifier.trim()).isEmpty()) {
             final DefaultRequirement r = new DefaultRequirement();
-            r.setIdentifier(new DefaultIdentifier(identifier));
+            r.setIdentifier(sharedIdentifier(authority, identifier));
             addIfNotPresent(acquisition().getAcquisitionRequirements(), r);
         }
     }
@@ -1972,12 +2189,13 @@ parse:      for (int i = 0; i < length;) {
      *   <li>{@code metadata/resourceLineage/processStep/processingInformation/identifier}</li>
      * </ul>
      *
+     * @param  authority   identifies the authority that defines processing code, or {@code null} if none.
      * @param  identifier  processing package that produced the data, or {@code null} for no-operation.
      *
      * @see #addSoftwareReference(CharSequence)
      * @see #addHostComputer(CharSequence)
      */
-    public final void addProcessing(String identifier) {
+    public final void addProcessing(final CharSequence authority, String identifier) {
         if (identifier != null && !(identifier = identifier.trim()).isEmpty()) {
             if (processing != null) {
                 final Identifier current = processing.getIdentifier();
@@ -1991,13 +2209,13 @@ parse:      for (int i = 0; i < length;) {
                     processStep = null;
                 }
             }
-            processing().setIdentifier(new DefaultIdentifier(identifier));
+            processing().setIdentifier(sharedIdentifier(authority, identifier));
         }
     }
 
     /**
      * Adds a reference to document describing processing software.
-     * This is added to the processing identified by last call to {@link #addProcessing(String)}.
+     * This is added to the processing identified by last call to {@link #addProcessing(CharSequence, String)}.
      * Storage location is:
      *
      * <ul>
@@ -2009,13 +2227,13 @@ parse:      for (int i = 0; i < length;) {
     public final void addSoftwareReference(final CharSequence title) {
         final InternationalString i18n = trim(title);
         if (i18n != null) {
-            addIfNotPresent(processing().getSoftwareReferences(), new DefaultCitation(i18n));
+            addIfNotPresent(processing().getSoftwareReferences(), sharedCitation(i18n));
         }
     }
 
     /**
      * Adds information about the computer and/or operating system in use at the processing time.
-     * This is added to the processing identified by last call to {@link #addProcessing(String)}.
+     * This is added to the processing identified by last call to {@link #addProcessing(CharSequence, String)}.
      * Storage location is:
      *
      * <ul>
@@ -2104,7 +2322,7 @@ parse:      for (int i = 0; i < length;) {
      * @return  the same value, but as an existing instance if possible.
      */
     public final Double shared(final Double value) {
-        final Number existing = sharedNumbers.putIfAbsent(value, value);
+        final Object existing = sharedValues.putIfAbsent(value, value);
         return (existing != null) ? (Double) existing : value;
     }
 
@@ -2117,7 +2335,7 @@ parse:      for (int i = 0; i < length;) {
      * @return  the same value, but as an existing instance if possible.
      */
     public final Integer shared(final Integer value) {
-        final Number existing = sharedNumbers.putIfAbsent(value, value);
+        final Object existing = sharedValues.putIfAbsent(value, value);
         return (existing != null) ? (Integer) existing : value;
     }
 }

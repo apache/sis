@@ -456,7 +456,7 @@ final class LandsatReader {
              * Example: "0501403126384_00011"
              */
             case "REQUEST_ID": {
-                metadata.addAcquisitionRequirement(value);
+                metadata.addAcquisitionRequirement(null, value);
                 break;
             }
             /*
@@ -525,7 +525,7 @@ final class LandsatReader {
              * Example: "LANDSAT_8".
              */
             case "SPACECRAFT_ID": {
-                metadata.addPlatform(value);
+                metadata.addPlatform(null, value);
                 break;
             }
             /*
@@ -533,7 +533,7 @@ final class LandsatReader {
              * Example: "OLI", "TIRS" or "OLI_TIRS".
              */
             case "SENSOR_ID": {
-                metadata.addInstrument(value);
+                metadata.addInstrument(null, value);
                 break;
             }
             /*
