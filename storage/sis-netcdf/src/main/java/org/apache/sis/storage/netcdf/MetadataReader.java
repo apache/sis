@@ -50,7 +50,6 @@ import org.opengis.referencing.crs.VerticalCRS;
 import org.apache.sis.util.iso.Types;
 import org.apache.sis.util.iso.SimpleInternationalString;
 import org.apache.sis.metadata.iso.DefaultMetadata;
-import org.apache.sis.metadata.iso.spatial.*;
 import org.apache.sis.metadata.iso.citation.*;
 import org.apache.sis.metadata.iso.identification.*;
 import org.apache.sis.metadata.iso.lineage.DefaultLineage;
@@ -625,33 +624,29 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
     }
 
     /**
-     * Creates a {@code <gmd:spatialRepresentationInfo>} element from the given grid geometries.
+     * Adds information about axes and cell geometry.
+     * This is the {@code <gmd:spatialRepresentationInfo>} element in XML.
      *
      * @param  cs  the grid geometry (related to the NetCDF coordinate system).
-     * @return the grid spatial representation info.
      */
-    private GridSpatialRepresentation createSpatialRepresentationInfo(final GridGeometry cs) {
-        final DefaultGridSpatialRepresentation grid = new DefaultGridSpatialRepresentation();
-        grid.setNumberOfDimensions(cs.getTargetDimensions());
+    private void addSpatialRepresentationInfo(final GridGeometry cs) {
         final Axis[] axes = cs.getAxes();
-        for (int i=axes.length; --i>=0;) {
-            final Axis axis = axes[i];
-            if (axis.sourceDimensions.length != 0) {
-                final DefaultDimension dimension = new DefaultDimension();
-                dimension.setDimensionSize(axis.sourceSizes[0]);
-                final AttributeNames.Dimension attributeNames = axis.attributeNames;
-                if (attributeNames != null) {
-                    dimension.setDimensionName(attributeNames.DEFAULT_NAME_TYPE);
-                    final Number value = decoder.numericValue(attributeNames.RESOLUTION);
-                    if (value != null) {
-                        dimension.setResolution((value instanceof Double) ? (Double) value : value.doubleValue());
-                    }
+        for (int i=axes.length; i>0;) {
+            final int dim = axes.length - i;
+            final Axis axis = axes[--i];
+            if (axis.sourceSizes.length == 1) {
+                setAxisLength(dim, axis.sourceSizes[0]);
+            }
+            final AttributeNames.Dimension attributeNames = axis.attributeNames;
+            if (attributeNames != null) {
+                setAxisName(dim, attributeNames.DEFAULT_NAME_TYPE);
+                final Number value = decoder.numericValue(attributeNames.RESOLUTION);
+                if (value != null) {
+                    setAxisResolution(dim, value.doubleValue());
                 }
-                grid.getAxisDimensionProperties().add(dimension);
             }
         }
-        grid.setCellGeometry(CellGeometry.AREA);
-        return grid;
+        setCellGeometry(CellGeometry.AREA);
     }
 
     /**
@@ -754,7 +749,7 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
     }
 
     /**
-     * Adds information about all NetCDF variables. This is the {@code <gmd:contentInfo>} elements in GML.
+     * Adds information about all NetCDF variables. This is the {@code <gmd:contentInfo>} element in XML.
      * This method groups variables by their domains, i.e. variables having the same set of axes are grouped together.
      */
     private void addContentInfo() {
@@ -794,7 +789,7 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
 
     /**
      * Adds metadata about a sample dimension (or band) from the given variable.
-     * This is the {@code <gmd:dimension>} element in GML.
+     * This is the {@code <gmd:dimension>} element in XML.
      *
      * @param  variable  the NetCDF variable.
      */
@@ -834,7 +829,7 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
 
     /**
      * Adds metadata about the meaning of a sample value.
-     * This is the {@code <gmd:rangeElementDescription>} element in GML.
+     * This is the {@code <gmd:rangeElementDescription>} element in XML.
      *
      * <p><b>Note:</b> ISO 19115 range elements are approximatively equivalent to
      * {@code org.apache.sis.coverage.Category} in the {@code sis-coverage} module.</p>
@@ -892,6 +887,15 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
         }
         addContentInfo();
         /*
+         * Add the dimension information, if any. This metadata node
+         * is built from the NetCDF CoordinateSystem objects.
+         */
+        for (final GridGeometry cs : decoder.getGridGeometries()) {
+            if (cs.getSourceDimensions() >= Variable.MIN_DIMENSION && cs.getTargetDimensions() >= Variable.MIN_DIMENSION) {
+                addSpatialRepresentationInfo(cs);
+            }
+        }
+        /*
          * Add history in Metadata.dataQualityInfo.lineage.statement as specified by UnidataDD2MI.xsl.
          * However Metadata.resourceLineage.statement could be a more appropriate place.
          * See https://issues.apache.org/jira/browse/SIS-361
@@ -909,15 +913,6 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
             }
         }
         decoder.setSearchPath(searchPath);
-        /*
-         * Add the dimension information, if any. This metadata node
-         * is built from the NetCDF CoordinateSystem objects.
-         */
-        for (final GridGeometry cs : decoder.getGridGeometries()) {
-            if (cs.getSourceDimensions() >= Variable.MIN_DIMENSION && cs.getTargetDimensions() >= Variable.MIN_DIMENSION) {
-                metadata.getSpatialRepresentationInfo().add(createSpatialRepresentationInfo(cs));
-            }
-        }
         metadata.setMetadataStandards(Citations.ISO_19115);
         return metadata;
     }

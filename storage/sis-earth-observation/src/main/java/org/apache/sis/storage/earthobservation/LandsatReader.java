@@ -932,11 +932,11 @@ final class LandsatReader {
             final int width  = gridSizes[i  ];
             final int height = gridSizes[i+1];
             if (width != 0 || height != 0) {
-                metadata.newGridRepresentation();
-                metadata.setAxisName((short) 0, DimensionNameType.SAMPLE);
-                metadata.setAxisName((short) 1, DimensionNameType.LINE);
-                metadata.setAxisLength((short) 0, width);
-                metadata.setAxisLength((short) 1, height);
+                metadata.newGridRepresentation(MetadataBuilder.GridType.GEORECTIFIED);
+                metadata.setAxisName(0, DimensionNameType.SAMPLE);
+                metadata.setAxisName(1, DimensionNameType.LINE);
+                metadata.setAxisLength(0, width);
+                metadata.setAxisLength(1, height);
             }
         }
         /*
