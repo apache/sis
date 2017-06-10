@@ -244,12 +244,12 @@ public class DefaultDimension extends ISOMetadata implements Dimension {
     }
 
     /**
-     * Returns the enhancement/ modifier of the dimension name.
+     * Returns the enhancement / modifier of the dimension name.
      *
      * <div class="note"><b>Example:</b>
      * dimensionName = "column", dimensionTitle = "longitude"</div>
      *
-     * @return the enhancement/ modifier of the dimension name.
+     * @return the enhancement / modifier of the dimension name.
      *
      * @since 0.5
      */
@@ -260,9 +260,9 @@ public class DefaultDimension extends ISOMetadata implements Dimension {
     }
 
     /**
-     * Sets the enhancement/ modifier of the dimension name.
+     * Sets the enhancement / modifier of the dimension name.
      *
-     * @param  newValue  the new enhancement/ modifier of the dimension name.
+     * @param  newValue  the new enhancement / modifier of the dimension name.
      *
      * @since 0.5
      */

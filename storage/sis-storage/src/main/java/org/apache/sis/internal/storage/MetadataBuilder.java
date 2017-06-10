@@ -61,8 +61,10 @@ import org.apache.sis.metadata.iso.extent.DefaultVerticalExtent;
 import org.apache.sis.metadata.iso.extent.DefaultTemporalExtent;
 import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
 import org.apache.sis.metadata.iso.extent.DefaultGeographicDescription;
+import org.apache.sis.metadata.iso.spatial.DefaultGridSpatialRepresentation;
 import org.apache.sis.metadata.iso.spatial.DefaultDimension;
 import org.apache.sis.metadata.iso.spatial.DefaultGeorectified;
+import org.apache.sis.metadata.iso.spatial.DefaultGeoreferenceable;
 import org.apache.sis.metadata.iso.content.DefaultAttributeGroup;
 import org.apache.sis.metadata.iso.content.DefaultSampleDimension;
 import org.apache.sis.metadata.iso.content.DefaultCoverageDescription;
@@ -126,6 +128,14 @@ public class MetadataBuilder {
      * @see #newParty(PartyType)
      */
     private PartyType partyType = PartyType.UNKNOWN;
+
+    /**
+     * Whether the next grid should be an instance of {@link DefaultGeorectified} or {@link DefaultGeoreferenceable}.
+     *
+     * @see #gridRepresentation()
+     * @see #newGridRepresentation(GridType)
+     */
+    private GridType gridType = GridType.UNSPECIFIED;
 
     /**
      * {@code true} if the next {@code CoverageDescription} to create will be a description of measurements
@@ -405,17 +415,21 @@ public class MetadataBuilder {
     /**
      * Information about the grid shape, or {@code null} if none.
      */
-    private DefaultGeorectified gridRepresentation;
+    private DefaultGridSpatialRepresentation gridRepresentation;
 
     /**
      * Creates a grid representation object if it does not already exists, then returns it.
      *
      * @return the grid representation object (never {@code null}).
-     * @see #newGridRepresentation()
+     * @see #newGridRepresentation(GridType)
      */
-    private DefaultGeorectified gridRepresentation() {
+    private DefaultGridSpatialRepresentation gridRepresentation() {
         if (gridRepresentation == null) {
-            gridRepresentation = new DefaultGeorectified();
+            switch (gridType) {
+                case GEORECTIFIED:     gridRepresentation = new DefaultGeorectified(); break;
+                case GEOREFERENCEABLE: gridRepresentation = new DefaultGeoreferenceable(); break;
+                default:               gridRepresentation = new DefaultGridSpatialRepresentation(); break;
+            }
         }
         return gridRepresentation;
     }
@@ -698,14 +712,38 @@ public class MetadataBuilder {
     }
 
     /**
+     * The type of grid spatial representation (georectified, georeferenceable or unspecified).
+     */
+    public enum GridType {
+        /**
+         * Grid is an instance of {@link org.opengis.metadata.spatial.Georectified}.
+         */
+        GEORECTIFIED,
+
+        /**
+         * Grid is an instance of {@link org.opengis.metadata.spatial.Georeferenceable}.
+         */
+        GEOREFERENCEABLE,
+
+        /**
+         * Grid is neither georectified or georeferenceable.
+         * A plain {@link org.opengis.metadata.spatial.GridSpatialRepresentation} instance will be used.
+         */
+        UNSPECIFIED
+    }
+
+    /**
      * Commits all pending information under the metadata "spatial representation" node (dimensions, <i>etc</i>).
      * If there is no pending spatial representation information, then invoking this method has no effect.
      * If new spatial representation info are added after this method call, they will be stored in a new element.
      *
      * <p>This method does not need to be invoked unless a new "spatial representation info" node,
      * separated from the previous one, is desired.</p>
+     *
+     * @param type  whether the next grid should be an instance of {@link DefaultGeorectified} or {@link DefaultGeoreferenceable}.
      */
-    public final void newGridRepresentation() {
+    public final void newGridRepresentation(final GridType type) {
+        ArgumentChecks.ensureNonNull("type", type);
         if (gridRepresentation != null) {
             final int n = gridRepresentation.getAxisDimensionProperties().size();
             if (n != 0) {
@@ -714,6 +752,7 @@ public class MetadataBuilder {
             addIfNotPresent(metadata.getSpatialRepresentationInfo(), gridRepresentation);
             gridRepresentation = null;
         }
+        gridType = type;
     }
 
     /**
@@ -1145,8 +1184,7 @@ public class MetadataBuilder {
                     if (list == null) {
                         group = new DefaultKeywords();
                         group.setType(type);
-                        final InternationalString c = trim(thesaurusName);
-                        group.setThesaurusName(sharedCitation(c));
+                        group.setThesaurusName(sharedCitation(trim(thesaurusName)));
                         list = group.getKeywords();
                     }
                     list.add(i18n);
@@ -1752,7 +1790,7 @@ parse:      for (int i = 0; i < length;) {
      */
     public final void setPointInPixel(final PixelOrientation value) {
         if (value != null) {
-            gridRepresentation().setPointInPixel(value);
+            ((DefaultGeorectified) gridRepresentation()).setPointInPixel(value);
         }
     }
 
@@ -1769,7 +1807,7 @@ parse:      for (int i = 0; i < length;) {
     public final void setGridToCRS(final CharSequence value) {
         final InternationalString i18n = trim(value);
         if (i18n != null) {
-            gridRepresentation().setTransformationDimensionDescription(i18n);
+            ((DefaultGeorectified) gridRepresentation()).setTransformationDimensionDescription(i18n);
         }
     }
 
@@ -1779,7 +1817,7 @@ parse:      for (int i = 0; i < length;) {
      * @param  index  index of the desired dimension.
      * @return dimension at the given index.
      */
-    private DefaultDimension axis(final short index) {
+    private DefaultDimension axis(final int index) {
         final List<Dimension> axes = gridRepresentation().getAxisDimensionProperties();
         for (int i=axes.size(); i <= index; i++) {
             axes.add(new DefaultDimension());
@@ -1795,10 +1833,10 @@ parse:      for (int i = 0; i < length;) {
      *   <li>{@code metadata/spatialRepresentationInfo/axisDimensionProperties/dimensionName}</li>
      * </ul>
      *
-     * @param  dimension  the axis dimension, as a {@code short} for avoiding excessive values.
+     * @param  dimension  the axis dimension.
      * @param  name       the name to set for the given dimension.
      */
-    public final void setAxisName(final short dimension, final DimensionNameType name) {
+    public final void setAxisName(final int dimension, final DimensionNameType name) {
         axis(dimension).setDimensionName(name);
     }
 
@@ -1810,11 +1848,28 @@ parse:      for (int i = 0; i < length;) {
      *   <li>{@code metadata/spatialRepresentationInfo/axisDimensionProperties/dimensionSize}</li>
      * </ul>
      *
-     * @param  dimension  the axis dimension, as a {@code short} for avoiding excessive values.
+     * @param  dimension  the axis dimension.
      * @param  length     number of cell values along the given dimension.
      */
-    public final void setAxisLength(final short dimension, final int length) {
+    public final void setAxisLength(final int dimension, final int length) {
         axis(dimension).setDimensionSize(shared(length));
+    }
+
+    /**
+     * Sets the degree of detail in the given dimension.
+     * Storage location is:
+     *
+     * <ul>
+     *   <li>{@code metadata/spatialRepresentationInfo/axisDimensionProperties/resolution}</li>
+     * </ul>
+     *
+     * @param  dimension   the axis dimension.
+     * @param  resolution  the degree of detail in the grid dataset, or NaN for no-operation.
+     */
+    public final void setAxisResolution(final int dimension, final double resolution) {
+        if (!Double.isNaN(resolution)) {
+            axis(dimension).setResolution(shared(resolution));
+        }
     }
 
     /**
@@ -2300,7 +2355,7 @@ parse:      for (int i = 0; i < length;) {
      */
     public final DefaultMetadata build(final boolean freeze) {
         newIdentification();
-        newGridRepresentation();
+        newGridRepresentation(GridType.UNSPECIFIED);
         newFeatureTypes();
         newCoverage(false);
         newAcquisition();
