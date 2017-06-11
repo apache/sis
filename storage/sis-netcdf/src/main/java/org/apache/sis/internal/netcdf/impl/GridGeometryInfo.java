@@ -29,7 +29,7 @@ import org.apache.sis.storage.netcdf.AttributeNames;
  * (domain) and output (range) of the function that convert grid indices to geodetic coordinates.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.3
+ * @version 0.8
  * @since   0.3
  * @module
  */
@@ -82,6 +82,8 @@ final class GridGeometryInfo extends GridGeometry {
     /**
      * Returns the number of dimensions of target coordinates in the <cite>"grid to CRS"</cite> conversion.
      * This is the number of dimensions of the <em>coordinate reference system</em>.
+     * It should be equal to the size of the array returned by {@link #getAxes()},
+     * but caller should be robust to inconsistencies.
      */
     @Override
     public int getTargetDimensions() {
@@ -90,16 +92,32 @@ final class GridGeometryInfo extends GridGeometry {
 
     /**
      * Returns all axes of the NetCDF coordinate system, together with the grid dimension to which the axis
-     * is associated. See {@code org.apache.sis.internal.netcdf.ucar.GridGeometryWrapper.getAxes()} for more
-     * information on the algorithm applied here, and relationship with the UCAR library.
+     * is associated. See {@code org.apache.sis.internal.netcdf.ucar.GridGeometryWrapper.getAxes()} for a
+     * closer look on the relationship between this algorithm and the UCAR library.
+     *
+     * <p>In this method, the words "domain" and "range" are used in the NetCDF sense: they are the input
+     * (domain) and output (range) of the function that convert grid indices to geodetic coordinates.</p>
+     *
+     * <p>The domain of all axes is often the same than the domain of the variable, but not necessarily.
+     * In particular, the relationship is not straightforward when the coordinate system contains
+     * "two-dimensional axes" (in {@link ucar.nc2.dataset.CoordinateAxis2D} sense).</p>
+     *
+     * @return the CRS axes, in NetCDF order (reverse of "natural" order).
      */
     @Override
     public Axis[] getAxes() {
+        /*
+         * In this method, 'sourceDim' and 'targetDim' are relative to "grid to CRS" conversion.
+         * So 'sourceDim' is the grid (domain) dimension and 'targetDim' is the CRS (range) dimension.
+         */
         int targetDim = range.length;
         final Axis[] axes = new Axis[targetDim];
         while (--targetDim >= 0) {
             final VariableInfo axis = range[targetDim];
-            final Dimension[] axisDomain = axis.dimensions;
+            /*
+             * The AttributeNames are for ISO 19115 metadata. They are not used for locating grid cells
+             * on Earth, but we nevertheless get them now for making MetadataReader work easier.
+             */
             AttributeNames.Dimension attributeNames = null;
             final String type = axis.getAxisType();
             if (type != null) {
@@ -110,7 +128,13 @@ final class GridGeometryInfo extends GridGeometry {
                     }
                 }
             }
+            /*
+             * Get the grid dimensions (part of the "domain" in UCAR terminology) used for computing
+             * the ordinate values along the current axis. There is exactly 1 such grid dimension in
+             * straightforward NetCDF files. However some more complex files may have 2 dimensions.
+             */
             int i = 0;
+            final Dimension[] axisDomain = axis.dimensions;
             final int[] indices = new int[axisDomain.length];
             final int[] sizes   = new int[axisDomain.length];
             for (final Dimension dimension : axisDomain) {
@@ -122,15 +146,15 @@ final class GridGeometryInfo extends GridGeometry {
                     }
                 }
             }
-            axes[targetDim] = new Axis(this, attributeNames,
-                    ArraysExt.resize(indices, i),
-                    ArraysExt.resize(sizes, i));
+            axes[targetDim] = new Axis(this, null, attributeNames,
+                                 ArraysExt.resize(indices, i),
+                                 ArraysExt.resize(sizes, i));
         }
         return axes;
     }
 
     @Override
-    protected double coordinateForCurrentAxis(final int j, final int i) {
+    protected double coordinateForAxis(final Object axis, final int j, final int i) {
         throw new UnsupportedOperationException();
     }
 }
