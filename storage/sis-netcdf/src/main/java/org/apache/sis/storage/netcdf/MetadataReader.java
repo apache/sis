@@ -634,7 +634,13 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
         for (int i=axes.length; i>0;) {
             final int dim = axes.length - i;
             final Axis axis = axes[--i];
-            if (axis.sourceSizes.length == 1) {
+            /*
+             * Axes usually have exactly one dimension. However some NetCDF axes are backed by a two-dimensional
+             * conversion grid. In such case, our Axis constructor should have ensured that the first element in
+             * the 'sourceDimensions' and 'sourceSizes' arrays are for the grid dimension which is most closely
+             * oriented toward the axis direction.
+             */
+            if (axis.sourceSizes.length >= 1) {
                 setAxisLength(dim, axis.sourceSizes[0]);
             }
             final AttributeNames.Dimension attributeNames = axis.attributeNames;

@@ -21,7 +21,7 @@ package org.apache.sis.internal.netcdf;
  * Information about the grid geometry and the conversion from grid coordinates to geodetic coordinates.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.3
+ * @version 0.8
  * @since   0.3
  * @module
  */
@@ -33,38 +33,41 @@ public abstract class GridGeometry {
     }
 
     /**
-     * Returns the number of dimensions in the grid.
-     * This is the number of dimensions of source coordinates in the <cite>"grid to CRS"</cite> transform.
+     * Returns the number of dimensions of source coordinates in the <cite>"grid to CRS"</cite> conversion.
+     * This is the number of dimensions of the <em>grid</em>.
      *
      * @return number of grid dimensions.
      */
     public abstract int getSourceDimensions();
 
     /**
-     * Returns the number of dimensions in the coordinate reference system.
-     * This is the number of dimensions of target coordinates in the <cite>"grid to CRS"</cite> transform.
-     * It should also be equal to the size of the list returned by {@link #getAxes()}.
+     * Returns the number of dimensions of target coordinates in the <cite>"grid to CRS"</cite> conversion.
+     * This is the number of dimensions of the <em>coordinate reference system</em>.
+     * It should be equal to the size of the array returned by {@link #getAxes()},
+     * but caller should be robust to inconsistencies.
      *
      * @return number of CRS dimensions.
      */
     public abstract int getTargetDimensions();
 
     /**
-     * Returns the axes of the coordinate reference system. The size of this list is expected equals to the
-     * value returned by {@link #getTargetDimensions()}, however the caller should be robust to inconsistencies.
+     * Returns the axes of the coordinate reference system. The size of this array is expected equals to the
+     * value returned by {@link #getTargetDimensions()}, but the caller should be robust to inconsistencies.
+     * This array may not be a clone, so callers shall not modify it.
      *
      * @return the CRS axes, in NetCDF order (reverse of "natural" order).
      */
     public abstract Axis[] getAxes();
 
     /**
-     * Returns the coordinate for the given grid coordinate of an axis in the process of being constructed.
-     * This is a callback method for {@link #getAxes()}. In the NetCDF UCAR API, this method maps directly
+     * Returns a coordinate for the given two-dimensional grid coordinate axis. This is (indirectly)
+     * a callback method for {@link #getAxes()}. In the NetCDF UCAR API, this method maps directly
      * to {@link ucar.nc2.dataset.CoordinateAxis2D#getCoordValue(int, int)}.
      *
-     * @param  j  the fastest varying (right-most) index.
-     * @param  i  the slowest varying (left-most) index.
+     * @param  axis  an implementation-dependent object representing the two-dimensional axis, or {@code null} if none.
+     * @param  j     the fastest varying (right-most) index.
+     * @param  i     the slowest varying (left-most) index.
      * @return the coordinate at the given index, or {@link Double#NaN} if it can not be computed.
      */
-    protected abstract double coordinateForCurrentAxis(final int j, final int i);
+    protected abstract double coordinateForAxis(Object axis, int j, int i);
 }
