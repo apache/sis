@@ -174,7 +174,6 @@ public class AttributeNames {
      * {@link Citation#getIdentifiers() identifier} /
      * {@link Identifier#getCode() code}</li></ul>
      *
-     * @see MetadataReader#getFileIdentifier()
      * @see NetcdfFile#getId()
      * @see <a href="http://wiki.esipfed.org/index.php/Attribute_Convention_for_Data_Discovery#id">ESIP reference</a>
      */
@@ -194,7 +193,6 @@ public class AttributeNames {
      * {@link Identifier#getAuthority() authority}</li></ul>
      *
      * @see #IDENTIFIER
-     * @see MetadataReader#getFileIdentifier()
      * @see <a href="http://wiki.esipfed.org/index.php/Attribute_Convention_for_Data_Discovery#naming_authority">ESIP reference</a>
      */
     public static final String NAMING_AUTHORITY = ACDD.naming_authority;
