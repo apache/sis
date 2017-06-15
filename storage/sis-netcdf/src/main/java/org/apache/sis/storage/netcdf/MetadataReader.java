@@ -897,7 +897,9 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
          * is built from the NetCDF CoordinateSystem objects.
          */
         for (final GridGeometry cs : decoder.getGridGeometries()) {
-            if (cs.getSourceDimensions() >= Variable.MIN_DIMENSION && cs.getTargetDimensions() >= Variable.MIN_DIMENSION) {
+            if (cs.getSourceDimensions() >= Variable.MIN_DIMENSION &&
+                cs.getTargetDimensions() >= Variable.MIN_DIMENSION)
+            {
                 addSpatialRepresentationInfo(cs);
             }
         }
