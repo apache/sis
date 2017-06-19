@@ -165,10 +165,12 @@ final class VariableWrapper extends Variable {
 
     /**
      * Reads all the data for this variable and returns them as an array of a Java primitive type.
+     * Multi-dimensional variables are flattened as a one-dimensional array (wrapped in a vector).
+     * This method may cache the returned vector, at UCAR library choice.
      */
     @Override
     public Vector read() throws IOException {
-        final Array array = variable.read();
+        final Array array = variable.read();                // May be cached by the UCAR library.
         return Vector.create(array.get1DJavaArray(array.getElementType()), variable.isUnsigned());
     }
 

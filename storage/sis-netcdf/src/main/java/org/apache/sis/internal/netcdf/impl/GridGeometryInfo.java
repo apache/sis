@@ -16,10 +16,15 @@
  */
 package org.apache.sis.internal.netcdf.impl;
 
+import java.io.IOException;
+import java.util.TreeMap;
+import java.util.SortedMap;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.internal.netcdf.Axis;
 import org.apache.sis.internal.netcdf.GridGeometry;
 import org.apache.sis.storage.netcdf.AttributeNames;
+import org.apache.sis.storage.DataStoreException;
+import org.apache.sis.util.resources.Errors;
 
 
 /**
@@ -103,17 +108,31 @@ final class GridGeometryInfo extends GridGeometry {
      * "two-dimensional axes" (in {@link ucar.nc2.dataset.CoordinateAxis2D} sense).</p>
      *
      * @return the CRS axes, in NetCDF order (reverse of "natural" order).
+     * @throws IOException if an I/O operation was necessary but failed.
+     * @throws DataStoreException if a logical error occurred.
      */
     @Override
-    public Axis[] getAxes() {
+    public Axis[] getAxes() throws IOException, DataStoreException {
+        /*
+         * Process the variables in the order the appear in the sequence of bytes that make the NetCDF files.
+         * This is often the same order than the indices, but not necessarily. The intend is to reduce the
+         * amount of disk seek operations.
+         */
+        final SortedMap<VariableInfo,Integer> variables = new TreeMap<>();
+        for (int i=0; i<range.length; i++) {
+            final VariableInfo v = range[i];
+            if (variables.put(v, i) != null) {
+                throw new DataStoreException(Errors.format(Errors.Keys.DuplicatedElement_1, v.getName()));
+            }
+        }
         /*
          * In this method, 'sourceDim' and 'targetDim' are relative to "grid to CRS" conversion.
          * So 'sourceDim' is the grid (domain) dimension and 'targetDim' is the CRS (range) dimension.
          */
-        int targetDim = range.length;
-        final Axis[] axes = new Axis[targetDim];
-        while (--targetDim >= 0) {
-            final VariableInfo axis = range[targetDim];
+        final Axis[] axes = new Axis[range.length];
+        for (final SortedMap.Entry<VariableInfo,Integer> entry : variables.entrySet()) {
+            final int targetDim = entry.getValue();
+            final VariableInfo axis = entry.getKey();
             /*
              * The AttributeNames are for ISO 19115 metadata. They are not used for locating grid cells
              * on Earth, but we nevertheless get them now for making MetadataReader work easier.
@@ -138,7 +157,7 @@ final class GridGeometryInfo extends GridGeometry {
             final int[] indices = new int[axisDomain.length];
             final int[] sizes   = new int[axisDomain.length];
             for (final Dimension dimension : axisDomain) {
-                for (int sourceDim=domain.length; --sourceDim>=0;) {
+                for (int sourceDim = domain.length; --sourceDim >= 0;) {
                     if (domain[sourceDim] == dimension) {
                         indices[i] = sourceDim;
                         sizes[i++] = dimension.length;
@@ -146,15 +165,21 @@ final class GridGeometryInfo extends GridGeometry {
                     }
                 }
             }
-            axes[targetDim] = new Axis(this, null, attributeNames,
-                                 ArraysExt.resize(indices, i),
-                                 ArraysExt.resize(sizes, i));
+            axes[targetDim] = new Axis(this, axis, attributeNames,
+                                       ArraysExt.resize(indices, i),
+                                       ArraysExt.resize(sizes, i));
         }
         return axes;
     }
 
+    /**
+     * Returns a coordinate for the given two-dimensional grid coordinate axis.
+     * This is (indirectly) a callback method for {@link #getAxes()}.
+     */
     @Override
-    protected double coordinateForAxis(final Object axis, final int j, final int i) {
-        throw new UnsupportedOperationException();
+    protected double coordinateForAxis(final Object axis, final int j, final int i) throws IOException, DataStoreException {
+        final VariableInfo v = ((VariableInfo) axis);
+        final int n = v.getGridEnvelope()[0];
+        return v.read().doubleValue(j + n*i);
     }
 }

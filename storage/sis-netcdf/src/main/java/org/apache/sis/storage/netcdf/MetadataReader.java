@@ -49,6 +49,7 @@ import org.opengis.referencing.crs.VerticalCRS;
 
 import org.apache.sis.util.iso.Types;
 import org.apache.sis.util.iso.SimpleInternationalString;
+import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.metadata.iso.DefaultMetadata;
 import org.apache.sis.metadata.iso.citation.*;
 import org.apache.sis.metadata.iso.identification.*;
@@ -629,7 +630,7 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
      *
      * @param  cs  the grid geometry (related to the NetCDF coordinate system).
      */
-    private void addSpatialRepresentationInfo(final GridGeometry cs) {
+    private void addSpatialRepresentationInfo(final GridGeometry cs) throws IOException, DataStoreException {
         final Axis[] axes = cs.getAxes();
         for (int i=axes.length; i>0;) {
             final int dim = axes.length - i;
@@ -879,8 +880,9 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
      *
      * @return the ISO metadata object.
      * @throws IOException if an I/O operation was necessary but failed.
+     * @throws DataStoreException if a logical error occurred.
      */
-    public Metadata read() throws IOException {
+    public Metadata read() throws IOException, DataStoreException {
         addFileIdentifier();
         addResourceScope(ScopeCode.DATASET, null);
         Set<InternationalString> publisher = addCitation();

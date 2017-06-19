@@ -148,7 +148,7 @@ search: for (final VariableInfo counts : decoder.variables) {
                         }
                     }
                     /*
-                     * At this point, all information has been verified as valid.
+                     * At this point, all information have been verified as valid.
                      */
                     features.add(new FeaturesInfo(counts.read().compress(0), identifiers));
                 }
