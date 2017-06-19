@@ -77,9 +77,10 @@ public final strictfp class MetadataReaderTest extends IOTestCase {
      * its string representation with the expected one.
      *
      * @throws IOException if an I/O error occurred.
+     * @throws DataStoreException if a logical error occurred.
      */
     @Test
-    public void testUCAR() throws IOException {
+    public void testUCAR() throws IOException, DataStoreException {
         final Metadata metadata;
         try (Decoder input = new DecoderWrapper(TestCase.LISTENERS, new NetcdfDataset(open(NCEP)))) {
             metadata = new MetadataReader(input).read();

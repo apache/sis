@@ -16,8 +16,10 @@
  */
 package org.apache.sis.internal.netcdf;
 
+import java.io.IOException;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.storage.netcdf.AttributeNames;
+import org.apache.sis.storage.DataStoreException;
 
 
 /**
@@ -64,14 +66,16 @@ public final class Axis {
      * by itself which grid dimension varies fastest and reorder in-place the elements in the given arrays
      * (those array are modified, not cloned).
      *
-     * @param owner             provides callback for the conversion from grid coordinates to geodetic coordinates.
-     * @param axis              an implementation-dependent object representing the two-dimensional axis, or {@code null} if none.
-     * @param attributeNames    the attributes to use for fetching dimension information, or {@code null} if unknown.
-     * @param sourceDimensions  the index of the grid dimension associated to this axis.
-     * @param sourceSizes       the number of cell elements along that axis.
+     * @param  owner             provides callback for the conversion from grid coordinates to geodetic coordinates.
+     * @param  axis              an implementation-dependent object representing the two-dimensional axis, or {@code null} if none.
+     * @param  attributeNames    the attributes to use for fetching dimension information, or {@code null} if unknown.
+     * @param  sourceDimensions  the index of the grid dimension associated to this axis.
+     * @param  sourceSizes       the number of cell elements along that axis.
+     * @throws IOException if an I/O operation was necessary but failed.
+     * @throws DataStoreException if a logical error occurred.
      */
     public Axis(final GridGeometry owner, final Object axis, final AttributeNames.Dimension attributeNames,
-            final int[] sourceDimensions, final int[] sourceSizes)
+            final int[] sourceDimensions, final int[] sourceSizes) throws IOException, DataStoreException
     {
         this.attributeNames   = attributeNames;
         this.sourceDimensions = sourceDimensions;

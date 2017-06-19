@@ -16,6 +16,9 @@
  */
 package org.apache.sis.internal.netcdf;
 
+import java.io.IOException;
+import org.apache.sis.storage.DataStoreException;
+
 
 /**
  * Information about the grid geometry and the conversion from grid coordinates to geodetic coordinates.
@@ -53,21 +56,27 @@ public abstract class GridGeometry {
     /**
      * Returns the axes of the coordinate reference system. The size of this array is expected equals to the
      * value returned by {@link #getTargetDimensions()}, but the caller should be robust to inconsistencies.
-     * This array may not be a clone, so callers shall not modify it.
+     *
+     * <p>This method is used mostly for producing ISO 19115 metadata. It is typically invoked only once.</p>
      *
      * @return the CRS axes, in NetCDF order (reverse of "natural" order).
+     * @throws IOException if an I/O operation was necessary but failed.
+     * @throws DataStoreException if a logical error occurred.
      */
-    public abstract Axis[] getAxes();
+    public abstract Axis[] getAxes() throws IOException, DataStoreException;
 
     /**
-     * Returns a coordinate for the given two-dimensional grid coordinate axis. This is (indirectly)
-     * a callback method for {@link #getAxes()}. In the NetCDF UCAR API, this method maps directly
-     * to {@link ucar.nc2.dataset.CoordinateAxis2D#getCoordValue(int, int)}.
+     * Returns a coordinate for the given two-dimensional grid coordinate axis. This is (indirectly) a callback
+     * method for {@link #getAxes()}. The (<var>i</var>, <var>j</var>) indices are grid indices <em>before</em>
+     * they get reordered by the {@link Axis} constructor. In the NetCDF UCAR API, this method maps directly to
+     * {@link ucar.nc2.dataset.CoordinateAxis2D#getCoordValue(int, int)}.
      *
      * @param  axis  an implementation-dependent object representing the two-dimensional axis, or {@code null} if none.
      * @param  j     the fastest varying (right-most) index.
      * @param  i     the slowest varying (left-most) index.
      * @return the coordinate at the given index, or {@link Double#NaN} if it can not be computed.
+     * @throws IOException if an I/O operation was necessary but failed.
+     * @throws DataStoreException if a logical error occurred.
      */
-    protected abstract double coordinateForAxis(Object axis, int j, int i);
+    protected abstract double coordinateForAxis(Object axis, int j, int i) throws IOException, DataStoreException;
 }

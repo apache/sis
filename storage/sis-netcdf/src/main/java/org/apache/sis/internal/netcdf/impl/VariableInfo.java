@@ -37,6 +37,8 @@ import org.apache.sis.math.Vector;
 
 /**
  * Description of a variable found in a NetCDF file.
+ * The natural ordering of {@code VariableInfo} is the order in which the variables appear in the stream of bytes
+ * that make the NetCDF file. Reading variables in natural order reduces the amount of channel seek operations.
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
@@ -44,7 +46,7 @@ import org.apache.sis.math.Vector;
  * @since   0.3
  * @module
  */
-final class VariableInfo extends Variable {
+final class VariableInfo extends Variable implements Comparable<VariableInfo> {
     /**
      * The array to be returned by {@link #numberValues(Object)} when the given value is null.
      */
@@ -117,6 +119,13 @@ final class VariableInfo extends Variable {
      * @see #isCoordinateSystemAxis()
      */
     private final boolean isCoordinateSystemAxis;
+
+    /**
+     * The values of the whole variable, or {@code null} if not yet read. This vector should be assigned only
+     * for relatively small variables, or for variables that are critical to the use of other variables
+     * (for example the values in coordinate system axes).
+     */
+    private transient Vector values;
 
     /**
      * Creates a new variable.
@@ -353,31 +362,39 @@ final class VariableInfo extends Variable {
 
     /**
      * Reads all the data for this variable and returns them as an array of a Java primitive type.
+     * Multi-dimensional variables are flattened as a one-dimensional array (wrapped in a vector).
+     * The vector is cached and returned as-is in all future invocation of this method.
      */
     @Override
+    @SuppressWarnings("ReturnOfCollectionOrArrayField")
     public Vector read() throws IOException, DataStoreException {
-        if (reader == null) {
-            throw new DataStoreContentException(unknownType());
+        if (values == null) {
+            if (reader == null) {
+                throw new DataStoreContentException(unknownType());
+            }
+            long length = 1;
+            for (final Dimension dimension : dimensions) {
+                length *= dimension.length();
+            }
+            if (length > Integer.MAX_VALUE) {
+                throw new DataStoreContentException(Errors.format(Errors.Keys.ExcessiveListSize_2, name, length));
+            }
+            final int dimension = dimensions.length;
+            final long[] size  = new long[dimension];
+            final int [] sub   = new int [dimension];
+            for (int i=0; i<dimension; i++) {
+                sub [i] = 1;
+                size[i] = dimensions[(dimension - 1) - i].length();
+            }
+            values = Vector.create(reader.read(new Region(size, new long[dimension], size, sub)), dataType.isUnsigned)
+                    .compress(0);
         }
-        long length = 1;
-        for (final Dimension dimension : dimensions) {
-            length *= dimension.length;
-        }
-        if (length > Integer.MAX_VALUE) {
-            throw new DataStoreContentException(Errors.format(Errors.Keys.ExcessiveListSize_2, name, length));
-        }
-        final int dimension = dimensions.length;
-        final long[] size  = new long[dimension];
-        final int [] sub   = new int [dimension];
-        for (int i=0; i<dimension; i++) {
-            sub [i] = 1;
-            size[i] = dimensions[(dimension - 1) - i].length();
-        }
-        return Vector.create(reader.read(new Region(size, new long[dimension], size, sub)), dataType.isUnsigned);
+        return values;
     }
 
     /**
      * Reads a sub-sampled sub-area of the variable.
+     * Multi-dimensional variables are flattened as a one-dimensional array (wrapped in a vector).
      *
      * @param  areaLower    index of the first value to read along each dimension, as unsigned integers.
      * @param  areaUpper    index after the last value to read along each dimension, as unsigned integers.
@@ -428,5 +445,16 @@ final class VariableInfo extends Variable {
      */
     private String unknownType() {
         return Errors.format(Errors.Keys.UnknownType_1, "NetCDF:" + dataType);
+    }
+
+    /**
+     * Returns -1 if this variable is located before the other variable in the streal of bytes that make
+     * the NetCDF file, or +1 if it is located after.
+     */
+    @Override
+    public int compareTo(final VariableInfo other) {
+        int c = Long.compare(reader.origin, other.reader.origin);
+        if (c == 0) c = name.compareTo(other.name);                 // Should not happen, but we are paranoiac.
+        return c;
     }
 }

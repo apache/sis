@@ -16,6 +16,7 @@
  */
 package org.apache.sis.internal.netcdf.ucar;
 
+import java.io.IOException;
 import java.util.List;
 import ucar.nc2.Dimension;
 import ucar.nc2.constants.AxisType;
@@ -25,6 +26,7 @@ import ucar.nc2.dataset.CoordinateSystem;
 import org.apache.sis.internal.netcdf.Axis;
 import org.apache.sis.internal.netcdf.GridGeometry;
 import org.apache.sis.storage.netcdf.AttributeNames;
+import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.util.ArraysExt;
 
 
@@ -87,9 +89,11 @@ final class GridGeometryWrapper extends GridGeometry {
      * of {@link CoordinateAxis2D}.</p>
      *
      * @return the CRS axes, in NetCDF order (reverse of "natural" order).
+     * @throws IOException if an I/O operation was necessary but failed.
+     * @throws DataStoreException if a logical error occurred.
      */
     @Override
-    public Axis[] getAxes() {
+    public Axis[] getAxes() throws IOException, DataStoreException {
         final List<Dimension> domain = netcdfCS.getDomain();
         final List<CoordinateAxis> range = netcdfCS.getCoordinateAxes();
         /*
@@ -136,15 +140,15 @@ final class GridGeometryWrapper extends GridGeometry {
                  */
             }
             axes[targetDim] = new Axis(this, axis, attributeNames,
-                                 ArraysExt.resize(indices, i),
-                                 ArraysExt.resize(sizes, i));
+                                       ArraysExt.resize(indices, i),
+                                       ArraysExt.resize(sizes, i));
         }
         return axes;
     }
 
     /**
      * Returns a coordinate for the given two-dimensional grid coordinate axis.
-     * This is a callback method for {@link #getAxes()}.
+     * This is (indirectly) a callback method for {@link #getAxes()}.
      */
     @Override
     protected double coordinateForAxis(final Object axis, final int j, final int i) {
