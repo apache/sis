@@ -712,27 +712,59 @@ public class DefaultFeatureType extends AbstractIdentifiedType implements Featur
      */
     private static boolean isAssignableIgnoreName(final PropertyType base, final PropertyType other) {
         if (base != other) {
+            /*
+             * If the base property is an attribute, then the overriding property shall be either an attribute
+             * or a parameterless operation producing an attribute.  The parameterless operation is considered
+             * has having a [1…1] cardinality.
+             */
             if (base instanceof AttributeType<?>) {
-                if (!(other instanceof AttributeType<?>)) {
+                final AttributeType<?> p0 = (AttributeType<?>) base;
+                final AttributeType<?> p1;
+                if (other instanceof AttributeType<?>) {
+                    p1 = (AttributeType<?>) other;
+                } else if (isParameterlessOperation(other)) {
+                    final IdentifiedType result = ((Operation) other).getResult();
+                    if (result instanceof AttributeType<?>) {
+                        p1 = (AttributeType<?>) result;
+                    } else {
+                        return false;
+                    }
+                } else {
                     return false;
                 }
-                final AttributeType<?> p0 = (AttributeType<?>) base;
-                final AttributeType<?> p1 = (AttributeType<?>) other;
-                if (!p0.getValueClass().isAssignableFrom(p1.getValueClass()) ||
-                     p0.getMinimumOccurs() > p1.getMinimumOccurs() ||
-                     p0.getMaximumOccurs() < p1.getMaximumOccurs())
+                final int minOccurs, maxOccurs;
+                if (!p0.getValueClass().isAssignableFrom(p1.getValueClass())    ||
+                    (minOccurs = p0.getMinimumOccurs()) > p1.getMinimumOccurs() ||
+                    (maxOccurs = p0.getMaximumOccurs()) < p1.getMaximumOccurs() ||
+                    (p1 != other && (minOccurs > 1 || maxOccurs < 1)))             // [1…1] cardinality for operations.
                 {
                     return false;
                 }
             }
+            /*
+             * Unconditionally test for associations even if we executed the previous block for attributes,
+             * because an implementation could implement both AttributeType and AssociationRole interfaces.
+             * This is not recommended, but if it happen we want a behavior as consistent as possible.
+             */
             if (base instanceof FeatureAssociationRole) {
-                if (!(other instanceof FeatureAssociationRole)) {
+                final FeatureAssociationRole p0 = (FeatureAssociationRole) base;
+                final FeatureAssociationRole p1;
+                if (other instanceof FeatureAssociationRole) {
+                    p1 = (FeatureAssociationRole) other;
+                } else if (isParameterlessOperation(other)) {
+                    final IdentifiedType result = ((Operation) other).getResult();
+                    if (result instanceof FeatureAssociationRole) {
+                        p1 = (FeatureAssociationRole) result;
+                    } else {
+                        return false;
+                    }
+                } else {
                     return false;
                 }
-                final FeatureAssociationRole p0 = (FeatureAssociationRole) base;
-                final FeatureAssociationRole p1 = (FeatureAssociationRole) other;
-                if (p0.getMinimumOccurs() > p1.getMinimumOccurs() ||
-                    p0.getMaximumOccurs() < p1.getMaximumOccurs())
+                final int minOccurs, maxOccurs;
+                if ((minOccurs = p0.getMinimumOccurs()) > p1.getMinimumOccurs() ||
+                    (maxOccurs = p0.getMaximumOccurs()) < p1.getMaximumOccurs() ||
+                    (p1 != other && (minOccurs > 1 || maxOccurs < 1)))             // [1…1] cardinality for operations.
                 {
                     return false;
                 }
@@ -742,17 +774,26 @@ public class DefaultFeatureType extends AbstractIdentifiedType implements Featur
                     return false;
                 }
             }
+            /*
+             * Operations can be overridden by other operations having the same parameters.
+             * In the special case of parameterless operations, can also be overridden by
+             * AttributeType or FeatureAssociationRole.
+             */
             if (base instanceof Operation) {
-                if (!(other instanceof Operation)) {
-                    return false;
-                }
                 final Operation p0 = (Operation) base;
-                final Operation p1 = (Operation) other;
-                if (!Objects.equals(p0.getParameters(), p1.getParameters())) {
+                final IdentifiedType r1;
+                if (other instanceof Operation) {
+                    final Operation p1 = (Operation) other;
+                    if (!Objects.equals(p0.getParameters(), p1.getParameters())) {
+                        return false;
+                    }
+                    r1 = p1.getResult();
+                } else if (isParameterlessOperation(base)) {
+                    r1 = other;
+                } else {
                     return false;
                 }
                 final IdentifiedType r0 = p0.getResult();
-                final IdentifiedType r1 = p1.getResult();
                 if (r0 != r1) {
                     if (r0 instanceof FeatureType) {
                         if (!(r1 instanceof FeatureType) || !((FeatureType) r0).isAssignableFrom((FeatureType) r1)) {
@@ -761,6 +802,11 @@ public class DefaultFeatureType extends AbstractIdentifiedType implements Featur
                     }
                     if (r0 instanceof PropertyType) {
                         if (!(r1 instanceof PropertyType) || !isAssignableIgnoreName((PropertyType) r0, (PropertyType) r1)) {
+                            return false;
+                        }
+                    }
+                    if (r0 instanceof Operation) {
+                        if (!(r1 instanceof Operation) || !isAssignableIgnoreName((Operation) r0, (Operation) r1)) {
                             return false;
                         }
                     }
