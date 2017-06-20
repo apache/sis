@@ -16,8 +16,6 @@
  */
 package org.apache.sis.util.iso;
 
-import java.util.Arrays;
-import org.opengis.util.GenericName;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
@@ -28,16 +26,16 @@ import static org.apache.sis.util.iso.DefaultNameSpace.DEFAULT_SEPARATOR_STRING;
 
 
 /**
- * Tests the {@link DefaultLocalName} and {@link DefaultScopedName} implementations.
- * This test suite instantiate the objects directly, without using {@link DefaultNameFactory}.
+ * Tests the {@link DefaultLocalName} implementation.
+ * Those tests instantiate the objects directly, without using {@link DefaultNameFactory}.
  * For tests using the name factory, see {@link DefaultNameFactoryTest}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.3
+ * @version 0.8
  * @since   0.3
  * @module
  */
-public final strictfp class AbstractNameTest extends TestCase {
+public final strictfp class DefaultLocalNameTest extends TestCase {
     /**
      * Tests the creation of a local name in the global namespace.
      * The fully qualified name is {@code "EPSG"}.
@@ -71,41 +69,5 @@ public final strictfp class AbstractNameTest extends TestCase {
         assertEquals(EPSG + ':' + WGS84, name.toFullyQualifiedName().toString());
         assertNotSame(name, assertSerializedEquals(name));
         validate(name); // GeoAPI tests.
-    }
-
-    /**
-     * Tests the creation of a scoped name in a new namespace.
-     * The fully qualified name is {@code "urn:ogc:def:crs:epsg:4326"}.
-     */
-    @Test
-    public void testUrnNamespace() {
-        final String[] parsed = new String[] {
-            "urn","ogc","def","crs","epsg","4326"
-        };
-        GenericName name = new DefaultScopedName(null, Arrays.asList(parsed));
-        assertSame(name, name.toFullyQualifiedName());
-        assertEquals("urn:ogc:def:crs:epsg:4326", name.toString());
-        assertNotSame(name, assertSerializedEquals(name));
-        validate(name); // GeoAPI tests.
-        for (int i=parsed.length; --i>=0;) {
-            name = name.tip();
-            validate(name);
-            assertSame(parsed[i], name.toString());
-            name = name.scope().name();
-        }
-    }
-
-    /**
-     * Tests navigation in a name parsed from a string.
-     */
-    @Test
-    public void testNavigating() {
-        final DefaultNameFactory factory = new DefaultNameFactory();
-        final GenericName name = factory.parseGenericName(null, "codespace:subspace:name");
-        assertEquals("codespace:subspace:name", name.toString());
-        assertEquals("codespace:subspace",      name.tip().scope().name().toString());
-        assertEquals("codespace",               name.tip().scope().name().tip().scope().name().toString());
-        assertSame(name, name.toFullyQualifiedName());
-        assertSame(name, name.tip().toFullyQualifiedName());
     }
 }

@@ -16,12 +16,16 @@
  */
 package org.apache.sis.util.iso;
 
-import org.junit.runner.RunWith;
-import org.junit.BeforeClass;
-import org.junit.AfterClass;
+import org.opengis.util.GenericName;
 import org.opengis.test.util.NameTest;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestRunner;
+import org.junit.runner.RunWith;
+import org.junit.BeforeClass;
+import org.junit.AfterClass;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
 
 
 /**
@@ -29,12 +33,12 @@ import org.apache.sis.test.TestRunner;
  * a {@link DefaultNameFactory} instance shared for all tests in this class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.3
+ * @version 0.8
  * @since   0.3
  * @module
  */
 @RunWith(TestRunner.class)
-@DependsOn(AbstractNameTest.class)
+@DependsOn({DefaultLocalNameTest.class, DefaultScopedNameTest.class})
 public final strictfp class DefaultNameFactoryTest extends NameTest {
     /**
      * The factory to test.
@@ -62,5 +66,34 @@ public final strictfp class DefaultNameFactoryTest extends NameTest {
     @AfterClass
     public static void disposeFactory() {
         factorySIS = null;
+    }
+
+    /**
+     * Tests navigation in a name parsed from a string.
+     */
+    @Test
+    public void testNavigation() {
+        final GenericName name = factory.parseGenericName(null, "codespace:subspace:name");
+        assertEquals("codespace:subspace:name", name.toString());
+        assertEquals("codespace:subspace",      name.tip().scope().name().toString());
+        assertEquals("codespace",               name.tip().scope().name().tip().scope().name().toString());
+        assertSame(name, name.toFullyQualifiedName());
+        assertSame(name, name.tip().toFullyQualifiedName());
+    }
+
+    /**
+     * Tests the creation of scoped names where different parts of the name are {@link SimpleInternationalString}
+     * instances. The implementation should be able to detect that the names and their hash codes are equal.
+     *
+     * @see DefaultScopedNameTest#testSimpleInternationalString()
+     */
+    @Test
+    public void testSimpleInternationalString() {
+        GenericName n1 = factory.createGenericName(null, "ns1", "Route");
+        GenericName n2 = factory.createGenericName(null, new SimpleInternationalString("ns1"), "Route");
+        GenericName n3 = factory.createGenericName(null, "ns1", new SimpleInternationalString("Route"));
+        assertSame(n1, n2);
+        assertSame(n1, n3);
+        assertSame(n2, n3);
     }
 }
