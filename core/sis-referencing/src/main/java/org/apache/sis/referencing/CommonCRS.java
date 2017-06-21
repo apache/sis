@@ -1506,7 +1506,17 @@ public enum CommonCRS {
      */
     public enum Temporal {
         /**
-         * Time measured as days since January 1st, 4713 BC at 12:00 UTC.
+         * Time measured as days since January 1st, 4713 BC at 12:00 UTC in proleptic Julian calendar.
+         * This epoch is equivalent to November 24, 4714 BC when expressed in the proleptic Gregorian
+         * calendar instead than the Julian one.
+         *
+         * <p><b>Note on dates formatting:</b>
+         * the legacy date/time formatting classes in the {@link java.text} package uses the proleptic
+         * Julian calendar for dates before October 15, 1582, while the new date/time formatting classes
+         * in the {@link java.time.format} package use the ISO-8601 calendar system, which is equivalent
+         * to the proleptic Gregorian calendar for every dates. For parsing and formatting of Julian days,
+         * the {@link java.text.SimpleDateFormat} class is closer to the common practice (but not ISO 8601
+         * compliant).</p>
          */
         JULIAN(Vocabulary.Keys.Julian, -2440588L * MILLISECONDS_PER_DAY + MILLISECONDS_PER_DAY/2),
 

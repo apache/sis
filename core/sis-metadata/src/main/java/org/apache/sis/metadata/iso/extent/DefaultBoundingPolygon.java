@@ -29,6 +29,11 @@ import org.opengis.metadata.extent.BoundingPolygon;
  * (<var>x</var>,<var>y</var>) coordinates of the polygon.
  * The last point replicates first point.
  *
+ * <p>The following property is mandatory in a well-formed metadata according ISO 19115:</p>
+ *
+ * <div class="preformat">{@code EX_BoundingPolygon}
+ * {@code   └─polygon…………………} The sets of points defining the bounding polygon.</div>
+ *
  * <p><b>Limitations:</b></p>
  * <ul>
  *   <li>Instances of this class are not synchronized for multi-threading.

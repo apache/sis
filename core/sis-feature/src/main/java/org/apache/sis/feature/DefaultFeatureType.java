@@ -703,30 +703,61 @@ public class DefaultFeatureType extends AbstractIdentifiedType implements Featur
     private static boolean isAssignableIgnoreName(final AbstractIdentifiedType base, final AbstractIdentifiedType other) {
         if (base != other) {
             /*
+             * If the base property is an attribute, then the overriding property shall be either an attribute
+             * or a parameterless operation producing an attribute.  The parameterless operation is considered
+             * has having a [1…1] cardinality.
+             *
              * Note: other SIS branches use AttributeType and FeatureAssociationRole
              *       instead than DefaultAttributeType and DefaultAssociationRole.
              */
             if (base instanceof DefaultAttributeType<?>) {
-                if (!(other instanceof DefaultAttributeType<?>)) {
+                final DefaultAttributeType<?> p0 = (DefaultAttributeType<?>) base;
+                final DefaultAttributeType<?> p1;
+                if (other instanceof DefaultAttributeType<?>) {
+                    p1 = (DefaultAttributeType<?>) other;
+                } else if (isParameterlessOperation(other)) {
+                    final AbstractIdentifiedType result = ((AbstractOperation) other).getResult();
+                    if (result instanceof DefaultAttributeType<?>) {
+                        p1 = (DefaultAttributeType<?>) result;
+                    } else {
+                        return false;
+                    }
+                } else {
                     return false;
                 }
-                final DefaultAttributeType<?> p0 = (DefaultAttributeType<?>) base;
-                final DefaultAttributeType<?> p1 = (DefaultAttributeType<?>) other;
-                if (!p0.getValueClass().isAssignableFrom(p1.getValueClass()) ||
-                     p0.getMinimumOccurs() > p1.getMinimumOccurs() ||
-                     p0.getMaximumOccurs() < p1.getMaximumOccurs())
+                final int minOccurs, maxOccurs;
+                if (!p0.getValueClass().isAssignableFrom(p1.getValueClass())    ||
+                    (minOccurs = p0.getMinimumOccurs()) > p1.getMinimumOccurs() ||
+                    (maxOccurs = p0.getMaximumOccurs()) < p1.getMaximumOccurs() ||
+                    (p1 != other && (minOccurs > 1 || maxOccurs < 1)))             // [1…1] cardinality for operations.
                 {
                     return false;
                 }
             }
+            /*
+             * Unconditionally test for associations even if we executed the previous block for attributes,
+             * because an implementation could implement both AttributeType and AssociationRole interfaces.
+             * This is not recommended, but if it happen we want a behavior as consistent as possible.
+             */
             if (base instanceof DefaultAssociationRole) {
-                if (!(other instanceof DefaultAssociationRole)) {
+                final DefaultAssociationRole p0 = (DefaultAssociationRole) base;
+                final DefaultAssociationRole p1;
+                if (other instanceof DefaultAssociationRole) {
+                    p1 = (DefaultAssociationRole) other;
+                } else if (isParameterlessOperation(other)) {
+                    final AbstractIdentifiedType result = ((AbstractOperation) other).getResult();
+                    if (result instanceof DefaultAssociationRole) {
+                        p1 = (DefaultAssociationRole) result;
+                    } else {
+                        return false;
+                    }
+                } else {
                     return false;
                 }
-                final DefaultAssociationRole p0 = (DefaultAssociationRole) base;
-                final DefaultAssociationRole p1 = (DefaultAssociationRole) other;
-                if (p0.getMinimumOccurs() > p1.getMinimumOccurs() ||
-                    p0.getMaximumOccurs() < p1.getMaximumOccurs())
+                final int minOccurs, maxOccurs;
+                if ((minOccurs = p0.getMinimumOccurs()) > p1.getMinimumOccurs() ||
+                    (maxOccurs = p0.getMaximumOccurs()) < p1.getMaximumOccurs() ||
+                    (p1 != other && (minOccurs > 1 || maxOccurs < 1)))             // [1…1] cardinality for operations.
                 {
                     return false;
                 }
@@ -736,24 +767,32 @@ public class DefaultFeatureType extends AbstractIdentifiedType implements Featur
                     return false;
                 }
             }
+            /*
+             * Operations can be overridden by other operations having the same parameters.
+             * In the special case of parameterless operations, can also be overridden by
+             * AttributeType or FeatureAssociationRole.
+             */
             if (base instanceof AbstractOperation) {
-                if (!(other instanceof AbstractOperation)) {
-                    return false;
-                }
                 final AbstractOperation p0 = (AbstractOperation) base;
-                final AbstractOperation p1 = (AbstractOperation) other;
-                if (!Objects.equals(p0.getParameters(), p1.getParameters())) {
+                final AbstractIdentifiedType r1;
+                if (other instanceof AbstractOperation) {
+                    final AbstractOperation p1 = (AbstractOperation) other;
+                    if (!Objects.equals(p0.getParameters(), p1.getParameters())) {
+                        return false;
+                    }
+                    r1 = p1.getResult();
+                } else if (isParameterlessOperation(base)) {
+                    r1 = other;
+                } else {
                     return false;
                 }
                 final AbstractIdentifiedType r0 = p0.getResult();
-                final AbstractIdentifiedType r1 = p1.getResult();
                 if (r0 != r1) {
-                    if (r0 instanceof FeatureType) {
+                    if (r0 instanceof DefaultFeatureType) {
                         if (!(r1 instanceof DefaultFeatureType) || !((FeatureType) r0).isAssignableFrom((DefaultFeatureType) r1)) {
                             return false;
                         }
-                    }
-                    if (r0 != null) {
+                    } else if (r0 != null) {
                         if (r1 == null || !isAssignableIgnoreName(r0, r1)) {
                             return false;
                         }

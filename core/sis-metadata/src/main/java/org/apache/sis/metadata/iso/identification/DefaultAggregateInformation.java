@@ -33,8 +33,16 @@ import org.apache.sis.internal.metadata.Dependencies;
 
 /**
  * Associated resource information.
+ * The following properties are mandatory or conditional (i.e. mandatory under some circumstances)
+ * in a well-formed metadata according ISO 19115:
  *
- * <div class="section">Relationship between properties</div>
+ * <div class="preformat">{@code MD_AggregateInformation}
+ * {@code   ├─associationType…………} Type of relation between the resources.
+ * {@code   ├─metadataReference……} Reference to the metadata of the associated resource.
+ * {@code   │   ├─title…………………………} Name by which the cited resource is known.
+ * {@code   │   └─date……………………………} Reference date for the cited resource.
+ * {@code   └─name………………………………………} Citation information about the associated resource.</div>
+ *
  * According ISO 19115, at least one of {@linkplain #getName() name} and
  * {@linkplain #getMetadataReference() metadata reference} shall be provided.
  *

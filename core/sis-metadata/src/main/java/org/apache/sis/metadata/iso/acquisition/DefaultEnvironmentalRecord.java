@@ -29,6 +29,13 @@ import static org.apache.sis.internal.metadata.MetadataUtilities.ensureInRange;
 
 /**
  * Information about the environmental conditions during the acquisition.
+ * The following properties are mandatory in a well-formed metadata according ISO 19115:
+ *
+ * <div class="preformat">{@code MI_EnvironmentalRecord}
+ * {@code   ├─averageAirTemperature……………} Average air temperature along the flight pass during the photo flight.
+ * {@code   ├─maxRelativeHumidity…………………} Maximum relative humidity along the flight pass during the photo flight.
+ * {@code   ├─maxAltitude………………………………………} Maximum altitude during the photo flight.
+ * {@code   └─meteorologicalConditions……} Meteorological conditions in the photo flight area, in particular clouds, snow and wind.</div>
  *
  * <p><b>Limitations:</b></p>
  * <ul>

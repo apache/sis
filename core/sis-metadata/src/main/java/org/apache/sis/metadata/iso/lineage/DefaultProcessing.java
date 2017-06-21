@@ -32,6 +32,11 @@ import org.apache.sis.internal.jaxb.NonMarshalledAuthority;
 
 /**
  * Comprehensive information about the procedure(s), process(es) and algorithm(s) applied in the process step.
+ * The following properties are mandatory in a well-formed metadata according ISO 19115:
+ *
+ * <div class="preformat">{@code LE_Processing}
+ * {@code   └─identifier……} Information to identify the processing package that produced the data.
+ * {@code       └─code…………} Alphanumeric value identifying an instance in the namespace.</div>
  *
  * <p><b>Limitations:</b></p>
  * <ul>

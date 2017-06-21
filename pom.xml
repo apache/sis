@@ -425,7 +425,7 @@ Apache SIS is a free software, Java language library for developing geospatial a
       <dependency>
         <groupId>org.apache.commons</groupId>
         <artifactId>commons-compress</artifactId>
-        <version>1.13</version>
+        <version>1.14</version>
       </dependency>
 
       <!-- Databases -->
@@ -787,6 +787,7 @@ Apache SIS is a free software, Java language library for developing geospatial a
       <!-- JavaDoc configuration. -->
       <plugin>
         <artifactId>maven-javadoc-plugin</artifactId>
+        <version>2.10.4</version>
         <configuration>
           <source>${maven.compile.source}</source>              <!-- Enables javadoc to handle language constructs present in target JDK. -->
           <encoding>${project.build.sourceEncoding}</encoding>  <!-- Encoding of Java source file. -->
@@ -803,6 +804,7 @@ Apache SIS is a free software, Java language library for developing geospatial a
           <links>
             <link>http://unitsofmeasurement.github.io/unit-api/site/apidocs</link>
             <link>http://www.geoapi.org/3.0/javadoc</link>
+            <link>http://www.unidata.ucar.edu/software/thredds/current/netcdf-java/javadoc</link>
           </links>
 
           <!-- Separates packages on the overview page into the groups specified. -->

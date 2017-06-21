@@ -38,8 +38,25 @@ import static org.opengis.annotation.Specification.ISO_19115;
 /**
  * Information about the events or source data used in constructing the data specified by
  * the scope or lack of knowledge about lineage.
+ * The following properties are mandatory or conditional (i.e. mandatory under some circumstances)
+ * in a well-formed metadata according ISO 19115:
  *
- * <div class="section">Relationship between properties</div>
+ * <div class="preformat">{@code LI_Lineage}
+ * {@code   ├─statement……………………………………………………………} General explanation of the data producer's knowledge about the lineage of a dataset.
+ * {@code   ├─processStep………………………………………………………} Information about an event in the creation process for the data specified by the scope.
+ * {@code   │   └─description……………………………………………} Description of the event, including related parameters or tolerances.
+ * {@code   └─source……………………………………………………………………} Information about the source data used in creating the data specified by the scope.
+ * {@code       ├─description……………………………………………} Detailed description of the level of the source data.
+ * {@code       └─scope……………………………………………………………} Type and / or extent of the source.
+ * {@code           ├─level…………………………………………………} Hierarchical level of the data specified by the scope.
+ * {@code           └─levelDescription……………………} Detailed description about the level of the data specified by the scope.
+ * {@code               ├─attributeInstances……} Attribute instances to which the information applies.
+ * {@code               ├─attributes…………………………} Attributes to which the information applies.
+ * {@code               ├─dataset…………………………………} Dataset to which the information applies.
+ * {@code               ├─featureInstances…………} Feature instances to which the information applies.
+ * {@code               ├─features………………………………} Features to which the information applies.
+ * {@code               └─other………………………………………} Class of information that does not fall into the other categories.</div>
+ *
  * At least one of {@linkplain #getStatement statement}, {@linkplain #getProcessSteps() process steps}
  * and {@link #getSources() sources} shall be provided.
  *

@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.io.IOException;
+import javax.measure.Unit;
 import org.opengis.util.FactoryException;
 import org.opengis.util.GenericName;
 import org.opengis.metadata.extent.GeographicBoundingBox;
@@ -46,6 +47,7 @@ import org.apache.sis.referencing.CRS;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.Characters;
 import org.apache.sis.util.Numbers;
+import org.apache.sis.util.Version;
 
 // Branch-dependent imports
 import org.apache.sis.internal.jdk8.JDK8;
@@ -166,16 +168,24 @@ public strictfp class CoordinateOperationMethods extends HTMLGenerator {
         rangeFormat = new RangeFormat(LOCALE);
         final int header = openTag("header");
         println("h1", "Apache SIS™ Coordinate Operation Methods");
-        openTag("p");
-        println("The following tables summarize the coordinate operation methods known to Apache SIS, together with the recognized parameters.");
-        println("Unless otherwise noticed, all parameters are mandatory");
-        println("(in the sense that they should always be shown in forms, regardless of whether they have default value),");
-        println("but two of them are handled in a special way: the <code>semi-major</code> and <code>semi-minor</code> parameters.");
-        println("Those two parameters are needed for all map projections, but usually do not need to be specified explicitely since they are inferred from the ellipsoid.");
-        println("The only exception is when <a href=\"http://sis.apache.org/apidocs/org/apache/sis/referencing/operation/transform/DefaultMathTransformFactory.html\">creating parameterized transforms directly</a>.");
-        reopenTag("p");
-        println("All map projections support also implicit <code>earth_radius</code> and <code>inverse_flattening</code> parameters (not shown below).");
-        println("Read and write operations on those implicit parameters are delegated to the <code>semi-major</code> and <code>semi-minor</code> parameters.");
+        int item = openTag("p");
+        println("The following tables summarize the coordinate operation methods known to Apache SIS " + Version.SIS);
+        println("together with the recognized parameters. There is three kinds of parameters:");
+        closeTags(item);
+        openTag("ul", "verbose");
+        openTag("li");
+        println("The <code>semi-major</code> and <code>semi-minor</code> parameters are needed for all map projections,");
+        println("but usually do not need to be specified explicitely since they are inferred from the ellipsoid");
+        println("(unless <a href=\"http://sis.apache.org/apidocs/org/apache/sis/referencing/operation/transform/DefaultMathTransformFactory.html\">creating parameterized transforms directly</a>).");
+        println("For this reason, those parameters are usually not shown in <a href=\"http://www.epsg-registry.org\">EPSG registry</a>");
+        println("or <a href=\"http://docs.opengeospatial.org/is/12-063r5/12-063r5.html\">Well Known Text</a> (WKT) definitions.");
+        reopenTag("li");
+        println("The <code>earth_radius</code> and <code>inverse_flattening</code> parameters (not shown below) are implicitly supported by all map projections.");
+        println("They are other ways to specify the ellipsoid (actually rarely used).");
+        println("Read and write operations on those implicit parameters are converted into equivalent operations on <code>semi-major</code> and <code>semi-minor</code> parameters.");
+        reopenTag("li");
+        println("Unless otherwise noticed, all other parameters are mandatory");
+        println("(in the sense that they should always be shown in forms, regardless of whether they have default value).");
         closeTags(header);
     }
 
@@ -187,7 +197,7 @@ public strictfp class CoordinateOperationMethods extends HTMLGenerator {
      */
     public void writeIndex(final Iterable<? extends OperationMethod> methods) throws IOException {
         final int nav = openTag("nav");
-        println("p", "<b>Table of content:</b>");
+        println("h2", "Table of content:");
         int innerUL  = openTag("ul") + 1;
         int category = 0;
         for (final OperationMethod method : methods) {
@@ -318,8 +328,13 @@ public strictfp class CoordinateOperationMethods extends HTMLGenerator {
      */
     private void writeParameters(final ParameterDescriptorGroup group) throws IOException {
         int table = openTag("table class=\"param\"");
-        println("caption", "Operation parameters:");
+        println("caption", "Operation parameters:");
         openTag("tr");
+        if (group.descriptors().isEmpty()) {
+            println("td", "None");
+            closeTags(table);
+            return;
+        }
         println("th", "EPSG");
         println("th class=\"sep\"", "Name");
         println("th class=\"sep\"", "Remarks");
@@ -387,8 +402,8 @@ public strictfp class CoordinateOperationMethods extends HTMLGenerator {
         if (Constants.EPSG.equalsIgnoreCase(codeSpace)) {
             println("summary", escape(name.getCode()));
         } else {
-            println("summary", "<span class=\"non-epsg\">" + codeSpace
-                    + ":</span><code>" + name.getCode() + "</code>");
+            println("summary", "<span class=\"non-epsg\">" + codeSpace + ":</span>" +
+                               "<code>" + name.getCode() + "</code>");
         }
         openTag("table class=\"aliases\"");
         for (final GenericName alias : param.getAlias()) {
@@ -492,12 +507,15 @@ public strictfp class CoordinateOperationMethods extends HTMLGenerator {
      * or an empty string (never {@code null}) if none.
      */
     private static String getUnit(final ParameterDescriptor<?> param) {
-        final String unit = param.getUnit().toString();
-        if (!unit.isEmpty()) {
-            if (unit.equals("°")) {
-                return unit;
+        final Unit<?> unit = param.getUnit();
+        if (unit != null) {
+            final String symbol = unit.toString();
+            if (!symbol.isEmpty()) {
+                if (symbol.equals("°")) {
+                    return symbol;
+                }
+                return " " + symbol;
             }
-            return " " + unit;
         }
         return "";
     }
@@ -548,7 +566,7 @@ public strictfp class CoordinateOperationMethods extends HTMLGenerator {
         if (id == null) {
             id = method.getName().getCode();
         }
-        return id;
+        return id.replace(" ", "_");
     }
 
     /**

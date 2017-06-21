@@ -40,6 +40,10 @@ import org.apache.sis.internal.geoapi.evolution.UnsupportedCodeList;
 
 /**
  * Telephone numbers for contacting the responsible individual or organization.
+ * The following property is mandatory in a well-formed metadata according ISO 19115:
+ *
+ * <div class="preformat">{@code CI_Telephone}
+ * {@code   └─number……} Telephone number by which individuals can contact responsible organisation or individual.</div>
  *
  * <div class="section">Differences between versions 2003 and 2014 of ISO 19115</div>
  * For any contact having more than one telephone number, the way to organize the information

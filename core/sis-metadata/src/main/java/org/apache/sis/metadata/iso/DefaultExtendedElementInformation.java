@@ -42,6 +42,23 @@ import static org.opengis.annotation.Specification.ISO_19115;
 /**
  * New metadata element, not found in ISO 19115, which is required to describe geographic data.
  * Metadata elements are contained in a {@linkplain DefaultMetadataExtensionInformation metadata extension information}.
+ * The following properties are mandatory or conditional (i.e. mandatory under some circumstances)
+ * in a well-formed metadata according ISO 19115:
+ *
+ * <div class="preformat">{@code MD_ExtendedElementInformation}
+ * {@code   ├─name………………………………………………………} Name of the extended metadata element.
+ * {@code   ├─definition………………………………………} Definition of the extended element.
+ * {@code   ├─obligation………………………………………} Obligation of the extended element.
+ * {@code   ├─condition…………………………………………} Condition under which the extended element is mandatory.
+ * {@code   ├─dataType……………………………………………} Code which identifies the kind of value provided in the extended element.
+ * {@code   ├─maximumOccurrence……………………} Maximum occurrence of the extended element.
+ * {@code   ├─domainValue……………………………………} Valid values that can be assigned to the extended element.
+ * {@code   ├─parentEntity…………………………………} Name of the metadata entity(s) under which this extended metadata element may appear.
+ * {@code   ├─rule………………………………………………………} Specifies how the extended element relates to other existing elements and entities.
+ * {@code   └─source…………………………………………………} Name of the person or organisation creating the extended element.
+ * {@code       ├─party…………………………………………} Information about the parties.
+ * {@code       │   └─name…………………………………} Name of the party.
+ * {@code       └─role……………………………………………} Function performed by the responsible party.</div>
  *
  * <p><b>Limitations:</b></p>
  * <ul>

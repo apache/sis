@@ -30,6 +30,11 @@ import org.apache.sis.internal.jaxb.NonMarshalledAuthority;
 
 /**
  * Identification of collection coverage.
+ * The following properties are mandatory in a well-formed metadata according ISO 19115:
+ *
+ * <div class="preformat">{@code MI_PlatformPass}
+ * {@code   └─identifier……} Unique name of the pass.
+ * {@code       └─code…………} Alphanumeric value identifying an instance in the namespace.</div>
  *
  * <p><b>Limitations:</b></p>
  * <ul>

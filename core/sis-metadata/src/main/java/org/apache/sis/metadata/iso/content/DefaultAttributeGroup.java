@@ -34,6 +34,10 @@ import static org.opengis.annotation.Specification.ISO_19115;
 /**
  * Information about content type for groups of attributes for a specific
  * {@linkplain DefaultRangeDimension range dimension}.
+ * The following property is mandatory in a well-formed metadata according ISO 19115:
+ *
+ * <div class="preformat">{@code MD_AttributeGroup}
+ * {@code   └─contentType……} Content type</div>
  *
  * <div class="warning"><b>Note on International Standard versions</b><br>
  * This class is derived from a new type defined in the ISO 19115 international standard published in 2014,

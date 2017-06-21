@@ -30,6 +30,14 @@ import org.apache.sis.xml.Namespaces;
 
 /**
  * Information about a control point collection.
+ * The following properties are mandatory in a well-formed metadata according ISO 19115:
+ *
+ * <div class="preformat">{@code MI_GCPCollection}
+ * {@code   ├─collectionIdentification………} Identifier of the GCP collection.
+ * {@code   ├─collectionName…………………………………} Name of the GCP collection.
+ * {@code   ├─coordinateReferenceSystem……} Coordinate system in which the ground control points are defined.
+ * {@code   └─gcp………………………………………………………………} Ground control point(s) used in the collection.
+ * {@code       └─geographicCoordinates……} Geographic or map position of the control point, in either two or three dimensions.</div>
  *
  * <p><b>Limitations:</b></p>
  * <ul>

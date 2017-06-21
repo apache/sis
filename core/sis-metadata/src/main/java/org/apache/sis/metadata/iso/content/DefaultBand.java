@@ -39,6 +39,11 @@ import static org.opengis.annotation.Specification.ISO_19115;
 
 /**
  * Range of wavelengths in the electromagnetic spectrum.
+ * The following property is conditional (i.e. mandatory under some circumstances)
+ * in a well-formed metadata according ISO 19115:
+ *
+ * <div class="preformat">{@code MD_Band}
+ * {@code   └─units……} Units of data in each dimension included in the resource.</div>
  *
  * <p><b>Limitations:</b></p>
  * <ul>

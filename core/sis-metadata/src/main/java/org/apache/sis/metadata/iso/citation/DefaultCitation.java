@@ -47,6 +47,11 @@ import static org.apache.sis.internal.metadata.MetadataUtilities.toMilliseconds;
 
 /**
  * Standardized resource reference.
+ * The following properties are mandatory in a well-formed metadata according ISO 19115:
+ *
+ * <div class="preformat">{@code CI_Citation}
+ * {@code   ├─title………………………} Name by which the cited resource is known.
+ * {@code   └─date…………………………} Reference date for the cited resource.</div>
  *
  * <div class="section">Unified identifiers view</div>
  * The ISO 19115 model provides specific attributes for the {@linkplain #getISBN() ISBN} and

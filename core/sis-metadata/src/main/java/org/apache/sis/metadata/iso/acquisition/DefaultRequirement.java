@@ -37,6 +37,22 @@ import static org.apache.sis.internal.metadata.MetadataUtilities.toMilliseconds;
 
 /**
  * Requirement to be satisfied by the planned data acquisition.
+ * The following properties are mandatory or conditional (i.e. mandatory under some circumstances)
+ * in a well-formed metadata according ISO 19115:
+ *
+ * <div class="preformat">{@code MI_Requirement}
+ * {@code   ├─identifier………………………………………………………} Unique name, or code, for the requirement.
+ * {@code   │   └─code……………………………………………………………} Alphanumeric value identifying an instance in the namespace.
+ * {@code   ├─requestor…………………………………………………………} Origin of requirement.
+ * {@code   │   ├─party…………………………………………………………} Information about the parties.
+ * {@code   │   │   └─name…………………………………………………} Name of the party.
+ * {@code   │   └─role……………………………………………………………} Function performed by the responsible party.
+ * {@code   ├─recipient…………………………………………………………} Person(s), or body(ies), to receive results of requirement.
+ * {@code   ├─priority……………………………………………………………} Relative ordered importance, or urgency, of the requirement.
+ * {@code   ├─requestedDate………………………………………………} Required or preferred acquisition date and time.
+ * {@code   │   ├─requestedDateOfCollection……} Preferred date and time of collection.
+ * {@code   │   └─latestAcceptableDate…………………} Latest date and time collection must be completed.
+ * {@code   └─expiryDate………………………………………………………} Date and time after which collection is no longer valid.</div>
  *
  * <p><b>Limitations:</b></p>
  * <ul>

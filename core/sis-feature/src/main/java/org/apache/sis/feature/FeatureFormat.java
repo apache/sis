@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.Set;
 import java.util.EnumSet;
 import java.util.Iterator;
+import java.util.Collection;
 import java.util.Locale;
 import java.util.TimeZone;
 import java.io.IOException;
@@ -35,6 +36,7 @@ import org.opengis.util.GenericName;
 import org.apache.sis.io.TableAppender;
 import org.apache.sis.io.TabularFormat;
 import org.apache.sis.util.Deprecable;
+import org.apache.sis.util.Characters;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
@@ -44,7 +46,6 @@ import org.apache.sis.referencing.IdentifiedObjects;
 
 // Branch-dependent imports
 import org.apache.sis.internal.jdk8.UncheckedIOException;
-import org.apache.sis.util.Characters;
 
 
 /**
@@ -364,6 +365,7 @@ public class FeatureFormat extends TabularFormat<Object> {
         final List<String>  remarks = new ArrayList<>();
         for (final AbstractIdentifiedType propertyType : featureType.getProperties(true)) {
             Object value = null;
+            int cardinality = -1;
             if (feature != null) {
                 if (!(propertyType instanceof DefaultAttributeType<?>) &&
                     !(propertyType instanceof DefaultAssociationRole) &&
@@ -374,8 +376,13 @@ public class FeatureFormat extends TabularFormat<Object> {
                 value = feature.getPropertyValue(propertyType.getName().toString());
                 if (value == null) {
                     if (propertyType instanceof FieldType && ((FieldType) propertyType).getMinimumOccurs() == 0) {
-                        continue;                                       // If no value, skip the full row.
+                        continue;                           // If optional and no value, skip the full row.
                     }
+                    cardinality = 0;
+                } else if (value instanceof Collection<?>) {
+                    cardinality = ((Collection<?>) value).size();
+                } else {
+                    cardinality = 1;
                 }
             } else if (propertyType instanceof DefaultAttributeType<?>) {
                 value = ((DefaultAttributeType<?>) propertyType).getDefaultValue();
@@ -440,7 +447,17 @@ public class FeatureFormat extends TabularFormat<Object> {
                         break;
                     }
                     case CARDINALITY: {
+                        table.setCellAlignment(TableAppender.ALIGN_RIGHT);
+                        if (cardinality >= 0) {
+                            table.append(getFormat(Integer.class).format(cardinality, buffer, dummyFP));
+                            buffer.setLength(0);
+                        }
                         if (maximumOccurs >= 0) {
+                            if (cardinality >= 0) {
+                                table.append(' ')
+                                     .append((cardinality >= minimumOccurs && cardinality <= maximumOccurs) ? '∈' : '∉')
+                                     .append(' ');
+                            }
                             final Format format = getFormat(Integer.class);
                             table.append('[').append(format.format(minimumOccurs, buffer, dummyFP)).append(" … ");
                             buffer.setLength(0);
@@ -455,26 +472,28 @@ public class FeatureFormat extends TabularFormat<Object> {
                         break;
                     }
                     case VALUE: {
-                        final Format format = getFormat(valueClass);                        // Null if valueClass is null.
+                        table.setCellAlignment(TableAppender.ALIGN_LEFT);
+                        final Format format = getFormat(valueClass);                            // Null if valueClass is null.
                         final Iterator<?> it = CollectionsExt.toCollection(value).iterator();
                         String separator = "";
                         int length = 0;
                         while (it.hasNext()) {
                             value = it.next();
                             if (value != null) {
-                                if (format != null && valueClass.isInstance(value)) {       // Null safe of getFormat(valueClass) contract.
-                                    value = format.format(value, buffer, dummyFP);
-                                } else if (value instanceof AbstractFeature && propertyType instanceof DefaultAssociationRole) {
+                                if (propertyType instanceof DefaultAssociationRole) {
                                     final String p = DefaultAssociationRole.getTitleProperty((DefaultAssociationRole) propertyType);
                                     if (p != null) {
                                         value = ((AbstractFeature) value).getPropertyValue(p);
                                         if (value == null) continue;
                                     }
+                                } else if (format != null && valueClass.isInstance(value)) {    // Null safe because of getFormat(valueClass) contract.
+                                    value = format.format(value, buffer, dummyFP);
                                 }
                                 length = formatValue(value, table.append(separator), length);
                                 buffer.setLength(0);
-                                separator = ", ";
                                 if (length < 0) break;      // Value is too long, abandon remaining iterations.
+                                separator = ", ";
+                                length += 2;
                             }
                         }
                         break;

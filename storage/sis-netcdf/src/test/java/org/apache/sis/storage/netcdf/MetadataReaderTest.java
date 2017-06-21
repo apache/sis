@@ -38,7 +38,7 @@ import static org.apache.sis.test.TestUtilities.formatNameAndValue;
  * for reading NetCDF attributes.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.7
+ * @version 0.8
  * @since   0.3
  * @module
  */
@@ -47,6 +47,15 @@ import static org.apache.sis.test.TestUtilities.formatNameAndValue;
     org.apache.sis.internal.netcdf.impl.VariableInfoTest.class
 })
 public final strictfp class MetadataReaderTest extends IOTestCase {
+    /**
+     * Tests {@link MetadataReader#split(String)}.
+     */
+    @Test
+    public void testSplit() {
+        assertArrayEquals(new String[] {"John Doe", "Foo \" Bar", "Jane Lee", "L J Smith, Jr."},
+                MetadataReader.split("John Doe, \"Foo \" Bar\" ,Jane Lee,\"L J Smith, Jr.\"").toArray());
+    }
+
     /**
      * Reads the metadata using the NetCDF decoder embedded with SIS,
      * and compares its string representation with the expected one.
@@ -68,9 +77,10 @@ public final strictfp class MetadataReaderTest extends IOTestCase {
      * its string representation with the expected one.
      *
      * @throws IOException if an I/O error occurred.
+     * @throws DataStoreException if a logical error occurred.
      */
     @Test
-    public void testUCAR() throws IOException {
+    public void testUCAR() throws IOException, DataStoreException {
         final Metadata metadata;
         try (Decoder input = new DecoderWrapper(TestCase.LISTENERS, new NetcdfDataset(open(NCEP)))) {
             metadata = new MetadataReader(input).read();
@@ -133,8 +143,11 @@ public final strictfp class MetadataReaderTest extends IOTestCase {
             "  │   └─Attribute group\n" +
             "  │       └─Attribute…………………………………………………………………… SST\n" +
             "  │           ├─Units…………………………………………………………………… K\n" +
-            "  │           └─Description…………………………………………………… Sea temperature\n" +
+            "  │           ├─Description…………………………………………………… Sea temperature\n" +
+            "  │           └─Name……………………………………………………………………… sea_water_temperature\n" +
             "  ├─Data quality info\n" +
+            "  │   ├─Scope\n" +
+            "  │   │   └─Level……………………………………………………………………………… Dataset\n" +
             "  │   └─Lineage\n" +
             "  │       └─Statement…………………………………………………………………… 2003-04-07 12:12:50 - created by gribtocdl" +
             "              2005-09-26T21:50:00 - edavis - add attributes for dataset discovery\n" +

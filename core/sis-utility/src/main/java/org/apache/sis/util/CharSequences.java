@@ -651,7 +651,7 @@ search:     for (; fromIndex <= toIndex; fromIndex++) {
         }
         if (separator == '\n' || separator == '\r') {
             final CharSequence[] splitted = splitOnEOL(text);
-            for (int i=0; i<splitted.length; i++) {
+            for (int i=0; i < splitted.length; i++) {
                 // For consistency with the rest of this method.
                 splitted[i] = trimWhitespaces(splitted[i]);
             }
@@ -1006,7 +1006,7 @@ search:     for (; fromIndex <= toIndex; fromIndex++) {
         if (text != null) {
             lower = skipLeadingWhitespaces (text, lower, upper);
             upper = skipTrailingWhitespaces(text, lower, upper);
-            if (lower != 0 || upper != length) { // Safety in case subSequence doesn't make the check.
+            if (lower != 0 || upper != length) {                  // Safety in case subSequence doesn't make the check.
                 text = text.subSequence(lower, upper);
             }
         }

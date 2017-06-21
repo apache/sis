@@ -144,7 +144,7 @@ public final class StandardDateFormat extends SimpleDateFormat {
      */
     public StandardDateFormat(final Locale locale, final TimeZone zone) {
         super(PATTERN, locale);
-        super.setTimeZone(zone);
+        calendar = new ISOCalendar(locale, zone);
     }
 
     /**

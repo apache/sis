@@ -39,8 +39,17 @@ import static org.opengis.annotation.Specification.ISO_19115;
 
 /**
  * Level of detail expressed as a scale factor or a ground distance.
+ * The following properties are mandatory or conditional (i.e. mandatory under some circumstances)
+ * in a well-formed metadata according ISO 19115:
  *
- * <div class="section">Relationship between properties</div>
+ * <div class="preformat">{@code MD_Resolution}
+ * {@code   ├─angularDistance……} Angular sampling measure.
+ * {@code   ├─distance………………………} Ground sample distance.
+ * {@code   ├─equivalentScale……} Level of detail expressed as the scale of a comparable hardcopy map or chart.
+ * {@code   │   └─denominator……} The number below the line in a vulgar fraction.
+ * {@code   ├─levelOfDetail…………} Brief textual description of the spatial resolution of the resource.
+ * {@code   └─vertical………………………} Vertical sampling distance.</div>
+ *
  * ISO 19115 defines {@code Resolution} as an <cite>union</cite> (in the C/C++ sense):
  * only one of the properties in this class can be set to a non-empty value.
  * Setting any property to a non-empty value discard all the other ones.

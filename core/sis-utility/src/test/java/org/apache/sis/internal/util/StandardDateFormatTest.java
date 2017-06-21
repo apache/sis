@@ -16,6 +16,7 @@
  */
 package org.apache.sis.internal.util;
 
+import java.util.Date;
 import java.text.ParseException;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestCase;
@@ -95,5 +96,22 @@ public final strictfp class StandardDateFormatTest extends TestCase {
         assertEquals(date("2005-09-22 00:00:00"), f.parse("2005-09-22"));
         assertEquals(date("2005-09-22 00:00:00"), f.parse("2005-9-22"));
         assertEquals(date("1992-01-01 00:00:00"), f.parse("1992-1-1"));
+    }
+
+    /**
+     * Tests formatting and parsing a negative year.
+     * This test uses the Julian epoch (January 1st, 4713 BC at 12:00 UTC in proleptic Julian calendar;
+     * equivalent to November 24, 4714 BC when expressed in the proleptic Gregorian calendar instead).
+     * We use astronomical year numbering: 4714 BC is numbered -4713.
+     *
+     * @throws ParseException if an error occurred while parsing the date.
+     */
+    @Test
+    public void testNegativeYear() throws ParseException {
+        final Date julian = new Date(-210866760000000L);            // Same epoch than CommonCRS.Temporal.JULIAN.
+        final String expected = "-4713-11-24T12:00:00.000Z";        // Proleptic Gregorian calendar, astronomical year.
+        final StandardDateFormat f = new StandardDateFormat();
+        assertEquals(expected, f.format(julian));
+        assertEquals(julian, f.parse(expected));
     }
 }
