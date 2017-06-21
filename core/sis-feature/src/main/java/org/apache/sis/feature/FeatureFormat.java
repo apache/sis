@@ -385,8 +385,8 @@ public class FeatureFormat extends TabularFormat<Object> {
                 }
                 value = feature.getPropertyValue(propertyType.getName().toString());
                 if (value == null) {
-                    if (propertyType instanceof AttributeType
-                            && ((AttributeType) propertyType).getMinimumOccurs() == 0)
+                    if (propertyType instanceof AttributeType<?>
+                            && ((AttributeType<?>) propertyType).getMinimumOccurs() == 0)
                     {
                         continue;                           // If optional and no value, skip the full row.
                     }
