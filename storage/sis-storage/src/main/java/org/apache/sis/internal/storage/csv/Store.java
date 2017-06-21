@@ -492,8 +492,8 @@ public final class Store extends FeatureStore {
             } catch (MetadataStoreException e) {
                 listeners.warning(null, e);
             }
-            builder.add(encoding, MetadataBuilder.Scope.ALL);
-            builder.add(ScopeCode.DATASET);
+            builder.addEncoding(encoding, MetadataBuilder.Scope.ALL);
+            builder.addResourceScope(ScopeCode.DATASET, null);
             try {
                 builder.addExtent(envelope);
             } catch (TransformException e) {
@@ -505,7 +505,7 @@ public final class Store extends FeatureStore {
                  */
                 listeners.warning(null, e);
             }
-            builder.add(featureType, null);
+            builder.addFeatureType(featureType, null);
             metadata = builder.build(true);
         }
         return metadata;
@@ -724,7 +724,7 @@ public final class Store extends FeatureStore {
      * @param line      the line to parse.
      * @param elements  an initially empty list where to add elements.
      */
-    static void split(final String line, final List<? super String> elements) {
+    private static void split(final String line, final List<? super String> elements) {
         int startAt = 0;
         boolean isQuoting = false;        // If a quote has been opened and not yet closed.
         boolean hasQuotes = false;        // If the value contains at least one quote (not used for quoting the value).

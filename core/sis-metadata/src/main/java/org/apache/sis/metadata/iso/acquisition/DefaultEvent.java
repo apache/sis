@@ -38,6 +38,15 @@ import static org.apache.sis.internal.metadata.MetadataUtilities.toMilliseconds;
 
 /**
  * Identification of a significant collection point within an operation.
+ * The following properties are mandatory in a well-formed metadata according ISO 19115:
+ *
+ * <div class="preformat">{@code MI_Event}
+ * {@code   ├─identifier……} Event name or number.
+ * {@code   │   └─code…………} Alphanumeric value identifying an instance in the namespace.
+ * {@code   ├─trigger……………} Initiator of the event.
+ * {@code   ├─context……………} Meaning of the event.
+ * {@code   ├─sequence…………} Relative time ordering of the event.
+ * {@code   └─time……………………} Time the event occurred.</div>
  *
  * <p><b>Limitations:</b></p>
  * <ul>

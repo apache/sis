@@ -541,7 +541,7 @@ public class TransformSeparator {
              * not accept arbitrary index for modified ordinates.
              */
             if (containsAll(dimensions, lower, subLower) && containsAll(dimensions, subUpper, upper)) {
-                return factory.createPassThroughTransform(subLower - lower, subTransform, upper - subUpper);
+                return factory.createPassThroughTransform(subLower - lower, subTransform, Math.max(0, upper - subUpper));
             }
         }
         /*
@@ -679,7 +679,7 @@ reduce:     for (int j=0; j <= numTgt; j++) {
      * @return {@code true} if the full range was found in the sequence.
      */
     private static boolean containsAll(final int[] sequence, final int lower, int upper) {
-        if (lower == upper) {
+        if (lower >= upper) {
             return true;
         }
         if (sequence != null) {

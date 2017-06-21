@@ -149,7 +149,7 @@ public class DefaultRangeDimension extends ISOMetadata implements RangeDimension
     }
 
     /**
-     * Sets the number that uniquely identifies instances of bands of wavelengths on which a sensor operates.
+     * Sets the name or number that uniquely identifies instances of bands of wavelengths on which a sensor operates.
      *
      * @param  newValue  the new sequence identifier.
      */

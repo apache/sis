@@ -44,7 +44,7 @@ public final strictfp class VectorTest extends TestCase {
     @Test
     public void testSequenceOfBytes() {
         vector = Vector.createSequence(100, 2, 10);
-        assertEquals(Long.class, vector.getElementType());
+        assertEquals(Integer.class, vector.getElementType());
         assertEquals(10, vector.size());
         for (int i=0; i<vector.size(); i++) {
             assertEquals(100 + 2*i, vector.byteValue(i));

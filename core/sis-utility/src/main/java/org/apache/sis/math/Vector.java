@@ -175,12 +175,19 @@ public abstract class Vector extends AbstractList<Number> implements RandomAcces
         type = Numbers.widestClass(first, increment);
         type = Numbers.widestClass(type,
                Numbers.narrowestClass(first.doubleValue() + increment.doubleValue() * (length-1)));
+        return createSequence(type, first, increment, length);
+    }
+
+    /**
+     * Creates a sequence of the given type.
+     */
+    static Vector createSequence(final Class<? extends Number> type, final Number first, final Number increment, final int length) {
         final int t = Numbers.getEnumConstant(type);
         if (t >= Numbers.BYTE && t <= Numbers.LONG) {
             // Use the long type if possible because not all long values can be represented as double.
-            return new SequenceVector.Longs(first, increment, length);
+            return new SequenceVector.Longs(type, first, increment, length);
         } else {
-            return new SequenceVector.Doubles(first, increment, length);
+            return new SequenceVector.Doubles(type, first, increment, length);
         }
     }
 
@@ -982,7 +989,7 @@ public abstract class Vector extends AbstractList<Number> implements RandomAcces
         final int length = size();
         final Number inc = increment(tolerance);
         if (inc != null) {
-            return createSequence(get(0), inc, length);
+            return createSequence(getElementType(), get(0), inc, length);
         }
         /*
          * Verify if the vector contains only NaN values. This extra check is useful because 'increment()'
@@ -993,7 +1000,7 @@ public abstract class Vector extends AbstractList<Number> implements RandomAcces
             if (!isNaN(i)) return this;
         }
         final Double NaN = Numerics.valueOf(Double.NaN);
-        return new SequenceVector.Doubles(NaN, NaN, length);
+        return new SequenceVector.Doubles(getElementType(), NaN, NaN, length);
     }
 
     /**

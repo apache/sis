@@ -35,6 +35,18 @@ import org.apache.sis.internal.jaxb.NonMarshalledAuthority;
 
 /**
  * Describes the characteristics, spatial and temporal extent of the intended object to be observed.
+ * The following properties are mandatory in a well-formed metadata according ISO 19115:
+ *
+ * <div class="preformat">{@code MI_Objective}
+ * {@code   ├─identifier…………………………} Code used to identify the objective.
+ * {@code   │   └─code………………………………} Alphanumeric value identifying an instance in the namespace.
+ * {@code   └─objectiveOccurence……} Event or events associated with objective completion.
+ * {@code       ├─identifier………………} Event name or number.
+ * {@code       │   └─code……………………} Alphanumeric value identifying an instance in the namespace.
+ * {@code       ├─trigger………………………} Initiator of the event.
+ * {@code       ├─context………………………} Meaning of the event.
+ * {@code       ├─sequence……………………} Relative time ordering of the event.
+ * {@code       └─time………………………………} Time the event occurred.</div>
  *
  * <p><b>Limitations:</b></p>
  * <ul>

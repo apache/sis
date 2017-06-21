@@ -29,6 +29,10 @@ import org.apache.sis.xml.Namespaces;
 
 /**
  * Information on ground control point.
+ * The following property is mandatory in a well-formed metadata according ISO 19115:
+ *
+ * <div class="preformat">{@code MI_GCP}
+ * {@code   └─geographicCoordinates……} Geographic or map position of the control point, in either two or three dimensions.</div>
  *
  * <p><b>Limitations:</b></p>
  * <ul>

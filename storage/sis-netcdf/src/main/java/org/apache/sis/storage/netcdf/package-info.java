@@ -22,7 +22,7 @@
  * <ul>
  *   <li><a href="http://wiki.esipfed.org/index.php/Category:Attribute_Conventions_Dataset_Discovery">NetCDF
  *       Attribute Convention for Dataset Discovery</a> version 1.0.</li>
- *   <li><a href="http://ngdc.noaa.gov/metadata/published/xsl/nciso2.0/UnidataDD2MI.xsl">UnidataDD2MI.xsl</a> file.</li>
+ *   <li><a href="https://github.com/Unidata/threddsIso/blob/master/src/main/resources/xsl/nciso/UnidataDD2MI.xsl">UnidataDD2MI.xsl</a> file.</li>
  * </ul>
  *
  * The NetCDF attributes recognized by this package are listed in the

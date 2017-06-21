@@ -101,7 +101,7 @@ import org.opengis.util.ControlledVocabulary;
  *       <td>{@code "columnCreationPolicy"}</td>
  *       <td>{@link ValueExistencePolicy}</td>
  *       <td>Whether columns should be created only for non-empty attributes ({@link ValueExistencePolicy#NON_EMPTY
- *           NON-EMPTY}, the default) or for all attributes ({@link ValueExistencePolicy#ALL ALL})</td>
+ *           NON_EMPTY}, the default) or for all attributes ({@link ValueExistencePolicy#ALL ALL})</td>
  *   </tr>
  * </table>
  *

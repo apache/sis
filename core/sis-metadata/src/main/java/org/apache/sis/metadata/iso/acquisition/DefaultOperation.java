@@ -36,6 +36,13 @@ import org.apache.sis.internal.jaxb.NonMarshalledAuthority;
 
 /**
  * Designations for the operation used to acquire the dataset.
+ * The following properties are mandatory in a well-formed metadata according ISO 19115:
+ *
+ * <div class="preformat">{@code MI_Operation}
+ * {@code   ├─identifier…………………} Unique identification of the operation.
+ * {@code   │   └─code………………………} Alphanumeric value identifying an instance in the namespace.
+ * {@code   ├─status……………………………} Status of the data acquisition.
+ * {@code   └─parentOperation……} Heritage of the operation.</div>
  *
  * <p><b>Limitations:</b></p>
  * <ul>

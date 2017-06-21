@@ -28,8 +28,8 @@ import org.opengis.feature.FeatureType;
 
 /**
  * Helper methods for the feature metadata created by {@code DataStore} implementations.
- * This is a convenience class for chaining {@link #add(FeatureType, Integer)} method calls
- * with {@link FeatureNaming#add(DataStore, GenericName, Object)}.
+ * This is a convenience class for chaining {@link #addFeatureType(FeatureType, Integer)}
+ * method calls with {@link FeatureNaming#add(DataStore, GenericName, Object)}.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
@@ -74,10 +74,10 @@ public class FeatureCatalogBuilder extends MetadataBuilder {
      * @param  type  the feature type to add, or {@code null}.
      * @throws IllegalNameException if a feature of the same name has already been added.
      *
-     * @see #add(FeatureType, Integer)
+     * @see #addFeatureType(FeatureType, Integer)
      */
     public final void define(final FeatureType type) throws IllegalNameException {
-        final GenericName name = add(type, null);
+        final GenericName name = addFeatureType(type, null);
         if (name != null) {
             features.add(store, name, type);
         }

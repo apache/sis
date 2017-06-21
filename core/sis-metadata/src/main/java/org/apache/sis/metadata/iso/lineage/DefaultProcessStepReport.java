@@ -28,6 +28,10 @@ import org.apache.sis.xml.Namespaces;
 
 /**
  * Report of what occurred during the process step.
+ * The following property is mandatory in a well-formed metadata according ISO 19115:
+ *
+ * <div class="preformat">{@code LE_ProcessStepReport}
+ * {@code   └─name………………………………} Name of the processing report.</div>
  *
  * <p><b>Limitations:</b></p>
  * <ul>
