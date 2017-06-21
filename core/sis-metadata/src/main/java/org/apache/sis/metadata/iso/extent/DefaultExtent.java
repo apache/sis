@@ -36,7 +36,20 @@ import org.apache.sis.internal.metadata.ReferencingServices;
 
 /**
  * Information about spatial, vertical, and temporal extent.
- * This interface has four optional attributes:
+ * The following properties are mandatory or conditional (i.e. mandatory under some circumstances)
+ * in a well-formed metadata according ISO 19115:
+ *
+ * <div class="preformat">{@code EX_Extent}
+ * {@code   ├─description……………………} The spatial and temporal extent for the referring object.
+ * {@code   ├─geographicElement……} Geographic component of the extent of the referring object.
+ * {@code   ├─temporalElement…………} Temporal component of the extent of the referring object.
+ * {@code   │   └─extent………………………} The date and time for the content of the dataset.
+ * {@code   └─verticalElement…………} Vertical component of the extent of the referring object.
+ * {@code       ├─minimumValue………} The lowest vertical extent contained in the dataset.
+ * {@code       ├─maximumValue………} The highest vertical extent contained in the dataset.
+ * {@code       └─verticalCRS…………} Information about the vertical coordinate reference system.</div>
+ *
+ * This type has four conditional properties:
  * {@linkplain #getGeographicElements() geographic elements},
  * {@linkplain #getTemporalElements() temporal elements},
  * {@linkplain #getVerticalElements() vertical elements} and

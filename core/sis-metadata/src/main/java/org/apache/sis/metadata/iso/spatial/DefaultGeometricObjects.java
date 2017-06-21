@@ -29,6 +29,10 @@ import static org.apache.sis.internal.metadata.MetadataUtilities.ensurePositive;
 
 /**
  * Number of objects, listed by geometric object type, used in the dataset.
+ * The following property is mandatory in a well-formed metadata according ISO 19115:
+ *
+ * <div class="preformat">{@code MD_GeometricObjects}
+ * {@code   └─geometricObjectType……} Name of point and vector spatial objects used to locate zero-, one-, and two-dimensional spatial locations in the dataset.</div>
  *
  * <p><b>Limitations:</b></p>
  * <ul>

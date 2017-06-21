@@ -45,6 +45,10 @@ import static org.opengis.annotation.Specification.ISO_19115;
 
 /**
  * Information about the scope and frequency of updating.
+ * The following property is mandatory in a well-formed metadata according ISO 19115:
+ *
+ * <div class="preformat">{@code MD_MaintenanceInformation}
+ * {@code   └─maintenanceAndUpdateFrequency……} Frequency with which changes and additions are made to the resource.</div>
  *
  * <p><b>Limitations:</b></p>
  * <ul>

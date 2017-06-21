@@ -45,6 +45,10 @@ import static org.apache.sis.internal.metadata.MetadataUtilities.toMilliseconds;
 /**
  * Information about an event or transformation in the life of a resource.
  * Includes the process used to maintain the resource.
+ * The following property is mandatory in a well-formed metadata according ISO 19115:
+ *
+ * <div class="preformat">{@code LI_ProcessStep}
+ * {@code   └─description……} Description of the event, including related parameters or tolerances.</div>
  *
  * <p><b>Limitations:</b></p>
  * <ul>

@@ -217,6 +217,7 @@ public abstract class Decoder implements Closeable {
      *
      * @return all grid geometries, or an empty array if none.
      * @throws IOException if an I/O operation was necessary but failed.
+     * @throws DataStoreException if a logical error occurred.
      */
-    public abstract GridGeometry[] getGridGeometries() throws IOException;
+    public abstract GridGeometry[] getGridGeometries() throws IOException, DataStoreException;
 }

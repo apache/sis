@@ -34,6 +34,22 @@ import static org.apache.sis.internal.jaxb.gco.PropertyType.LEGACY_XML;
 
 /**
  * Information required to identify a dataset.
+ * The following properties are mandatory or conditional (i.e. mandatory under some circumstances)
+ * in a well-formed metadata according ISO 19115:
+ *
+ * <div class="preformat">{@code MD_DataIdentification}
+ * {@code   ├─citation………………………………………} Citation data for the resource(s).
+ * {@code   │   ├─title……………………………………} Name by which the cited resource is known.
+ * {@code   │   └─date………………………………………} Reference date for the cited resource.
+ * {@code   ├─abstract………………………………………} Brief narrative summary of the content of the resource(s).
+ * {@code   ├─language………………………………………} Language(s) used within the dataset.
+ * {@code   ├─characterSet……………………………} Full name of the character coding standard(s) used for the dataset.
+ * {@code   ├─topicCategory…………………………} Main theme(s) of the dataset.
+ * {@code   └─extent……………………………………………} Bounding polygon, vertical, and temporal extent of the dataset.
+ * {@code       ├─description……………………} The spatial and temporal extent for the referring object.
+ * {@code       ├─geographicElement……} Geographic component of the extent of the referring object.
+ * {@code       ├─temporalElement…………} Temporal component of the extent of the referring object.
+ * {@code       └─verticalElement…………} Vertical component of the extent of the referring object.</div>
  *
  * <p><b>Limitations:</b></p>
  * <ul>

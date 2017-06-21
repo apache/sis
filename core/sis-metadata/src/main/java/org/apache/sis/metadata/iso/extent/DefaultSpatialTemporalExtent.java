@@ -36,6 +36,11 @@ import static org.opengis.annotation.Specification.ISO_19115;
 
 /**
  * Extent with respect to date/time and spatial boundaries.
+ * The following properties are mandatory in a well-formed metadata according ISO 19115:
+ *
+ * <div class="preformat">{@code EX_SpatialTemporalExtent}
+ * {@code   ├─extent……………………………………} The date and time for the content of the dataset.
+ * {@code   └─spatialExtent…………………} The spatial extent component of composite spatial and temporal extent.</div>
  *
  * <p><b>Limitations:</b></p>
  * <ul>

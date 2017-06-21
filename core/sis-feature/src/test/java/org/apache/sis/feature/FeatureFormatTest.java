@@ -67,12 +67,12 @@ public final strictfp class FeatureFormatTest extends TestCase {
                 "┌──────────────┬─────────────────────┬─────────────┬───────────────┬────────────────────────────┐\n" +
                 "│ Name         │ Type                │ Cardinality │ Default value │ Characteristics            │\n" +
                 "├──────────────┼─────────────────────┼─────────────┼───────────────┼────────────────────────────┤\n" +
-                "│ city         │ String              │ [1 … 1]     │ Utopia        │                            │\n" +
-                "│ population   │ Integer             │ [1 … 1]     │               │                            │\n" +
-                "│ region       │ InternationalString │ [1 … 1]     │               │                            │\n" +
-                "│ isGlobal     │ Boolean             │ [1 … 1]     │               │                            │\n" +
-                "│ universities │ String              │ [0 … ∞]     │               │                            │\n" +
-                "│ temperature  │ Float               │ [1 … 1]     │               │ accuracy = 0.1, units = °C │\n" +
+                "│ city         │ String              │     [1 … 1] │ Utopia        │                            │\n" +
+                "│ population   │ Integer             │     [1 … 1] │               │                            │\n" +
+                "│ region       │ InternationalString │     [1 … 1] │               │                            │\n" +
+                "│ isGlobal     │ Boolean             │     [1 … 1] │               │                            │\n" +
+                "│ universities │ String              │     [0 … ∞] │               │                            │\n" +
+                "│ temperature  │ Float               │     [1 … 1] │               │ accuracy = 0.1, units = °C │\n" +
                 "└──────────────┴─────────────────────┴─────────────┴───────────────┴────────────────────────────┘\n", text);
     }
 
@@ -95,11 +95,11 @@ public final strictfp class FeatureFormatTest extends TestCase {
                 "┌────────────┬─────────┬─────────────┬─────────────────────┐\n" +
                 "│ Name       │ Type    │ Cardinality │ Default value       │\n" +
                 "├────────────┼─────────┼─────────────┼─────────────────────┤\n" +
-                "│ city       │ String  │ [1 … 1]     │ Utopia              │\n" +
-                "│ population │ Integer │ [1 … 1]     │                     │\n" +
-                "│ someId     │ String  │ [1 … 1]     │ = city              │\n" +
-                "│ anotherId  │ String  │ [1 … 1]     │ = <city:population> │\n" +
-                "│ new city   │ String  │ [1 … 1]     │ = create(founder)   │\n" +
+                "│ city       │ String  │     [1 … 1] │ Utopia              │\n" +
+                "│ population │ Integer │     [1 … 1] │                     │\n" +
+                "│ someId     │ String  │     [1 … 1] │ = city              │\n" +
+                "│ anotherId  │ String  │     [1 … 1] │ = <city:population> │\n" +
+                "│ new city   │ String  │     [1 … 1] │ = create(founder)   │\n" +
                 "└────────────┴─────────┴─────────────┴─────────────────────┘\n", text);
     }
 
@@ -129,9 +129,9 @@ public final strictfp class FeatureFormatTest extends TestCase {
                 "┌────────────┬─────────┬─────────────┬───────────────┬─────────────┐\n" +
                 "│ Name       │ Type    │ Cardinality │ Default value │ Remarks     │\n" +
                 "├────────────┼─────────┼─────────────┼───────────────┼─────────────┤\n" +
-                "│ city       │ String  │ [1 … 1]     │ Utopia        │             │\n" +
-                "│ population │ Integer │ [1 … 1]     │               │             │\n" +
-                "│ highway    │ String  │ [0 … 2]     │               │ Deprecated¹ │\n" +
+                "│ city       │ String  │     [1 … 1] │ Utopia        │             │\n" +
+                "│ population │ Integer │     [1 … 1] │               │             │\n" +
+                "│ highway    │ String  │     [0 … 2] │               │ Deprecated¹ │\n" +
                 "└────────────┴─────────┴─────────────┴───────────────┴─────────────┘\n" +
                 "¹ Replaced by pedestrian areas.\n", text);
     }
@@ -156,12 +156,12 @@ public final strictfp class FeatureFormatTest extends TestCase {
                 "┌──────────────┬─────────────────────┬─────────────┬──────────────┬─────────────────┐\n" +
                 "│ Name         │ Type                │ Cardinality │ Value        │ Characteristics │\n" +
                 "├──────────────┼─────────────────────┼─────────────┼──────────────┼─────────────────┤\n" +
-                "│ city         │ String              │ [1 … 1]     │ Tokyo        │                 │\n" +
-                "│ population   │ Integer             │ [1 … 1]     │ 13,185,502   │                 │\n" +
-                "│ region       │ InternationalString │ [1 … 1]     │              │                 │\n" +
-                "│ isGlobal     │ Boolean             │ [1 … 1]     │              │                 │\n" +
-                "│ universities │ String              │ [0 … ∞]     │ Waseda, Keio │                 │\n" +
-                "│ temperature  │ Float               │ [1 … 1]     │              │ accuracy, units │\n" +
+                "│ city         │ String              │ 1 ∈ [1 … 1] │ Tokyo        │                 │\n" +
+                "│ population   │ Integer             │ 1 ∈ [1 … 1] │ 13,185,502   │                 │\n" +
+                "│ region       │ InternationalString │ 0 ∉ [1 … 1] │              │                 │\n" +
+                "│ isGlobal     │ Boolean             │ 0 ∉ [1 … 1] │              │                 │\n" +
+                "│ universities │ String              │ 2 ∈ [0 … ∞] │ Waseda, Keio │                 │\n" +
+                "│ temperature  │ Float               │ 0 ∉ [1 … 1] │              │ accuracy, units │\n" +
                 "└──────────────┴─────────────────────┴─────────────┴──────────────┴─────────────────┘\n", text);
     }
 
@@ -189,9 +189,9 @@ public final strictfp class FeatureFormatTest extends TestCase {
                 "┌────────────┬─────────┬─────────────┬───────────┐\n" +
                 "│ Name       │ Type    │ Cardinality │ Value     │\n" +
                 "├────────────┼─────────┼─────────────┼───────────┤\n" +
-                "│ city       │ String  │ [1 … 1]     │ Paderborn │\n" +
-                "│ population │ Integer │ [1 … 1]     │ 143,174   │\n" +
-                "│ twin town  │ City    │ [0 … 1]     │ Le Mans   │\n" +
+                "│ city       │ String  │ 1 ∈ [1 … 1] │ Paderborn │\n" +
+                "│ population │ Integer │ 1 ∈ [1 … 1] │ 143,174   │\n" +
+                "│ twin town  │ City    │ 1 ∈ [0 … 1] │ Le Mans   │\n" +
                 "└────────────┴─────────┴─────────────┴───────────┘\n", text);
     }
 }

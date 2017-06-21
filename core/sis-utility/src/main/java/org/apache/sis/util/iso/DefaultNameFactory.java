@@ -312,8 +312,10 @@ public class DefaultNameFactory extends AbstractFactory implements NameFactory {
             }
         }
         if (names.size() == 1) {
-            // Preserves the InternationalString (current implementation of
-            // the parsing code above has lost the internationalization).
+            /*
+             * Preserves the InternationalString (current implementation of
+             * the parsing code above has lost the internationalization).
+             */
             return createLocalName(scope, name);
         }
         return createGenericName(scope, names.toArray(new String[names.size()]));

@@ -37,10 +37,24 @@ import org.apache.sis.xml.Namespaces;
  * Any cell in the grid can be geolocated given its grid coordinate and the grid origin, cell spacing,
  * and orientation indication of whether or not geographic.
  *
- * <div class="section">Relationship between properties</div>
- * Providing the {@linkplain #getCheckPointDescription() check point description} implies that
- * {@linkplain #isCheckPointAvailable() check point availability} is {@code true}. The setter
- * methods will ensure that this condition is not violated.
+ * <p>The following properties are mandatory or conditional (i.e. mandatory under some circumstances)
+ * in a well-formed metadata according ISO 19115:</p>
+ *
+ * <div class="preformat">{@code MD_Georectified}
+ * {@code   ├─numberOfDimensions…………………………………………………} Number of independent spatial-temporal axes.
+ * {@code   ├─axisDimensionProperties……………………………………} Information about spatial-temporal axis properties.
+ * {@code   │   ├─dimensionName……………………………………………………} Name of the axis.
+ * {@code   │   └─dimensionSize……………………………………………………} Number of elements along the axis.
+ * {@code   ├─cellGeometry…………………………………………………………………} Identification of grid data as point or cell.
+ * {@code   ├─transformationParameterAvailability……} Whether parameters for transformation exists.
+ * {@code   ├─checkPointAvailability………………………………………} Whether geographic position points are available to test the accuracy of the georeferenced grid data.
+ * {@code   ├─checkPointDescription…………………………………………} Description of geographic position points used to test the accuracy of the georeferenced grid data.
+ * {@code   ├─cornerPoints…………………………………………………………………} Earth location in the coordinate reference system and the grid coordinate of the cells at opposite ends.
+ * {@code   └─pointInPixel…………………………………………………………………} Point in a pixel corresponding to the Earth location of the pixel.</div>
+ *
+ * Providing the {@linkplain #getCheckPointDescription() check point description} implies
+ * that {@linkplain #isCheckPointAvailable() check point availability} is {@code true}.
+ * The setter methods will ensure that this condition is not violated.
  *
  * <div class="section">Limitations</div>
  * <ul>

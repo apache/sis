@@ -17,10 +17,14 @@
 package org.apache.sis.feature.builder;
 
 import java.util.Iterator;
+import java.util.Collections;
 import com.esri.core.geometry.Geometry;
 import com.esri.core.geometry.Point;
+import org.apache.sis.feature.AbstractOperation;
+import org.opengis.geometry.Envelope;
 import org.apache.sis.internal.feature.AttributeConvention;
 import org.apache.sis.feature.DefaultFeatureTypeTest;
+import org.apache.sis.feature.FeatureOperations;
 import org.apache.sis.referencing.crs.HardCodedCRS;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
@@ -287,5 +291,57 @@ public final strictfp class FeatureTypeBuilderTest extends TestCase {
 
         assertNotSame("Should return a new FeatureType since we changed an attribute.",
                       city, builder.build());
+    }
+
+    /**
+     * Tests overriding the "sis:envelope" property. This may happen when the user wants to specify
+     * envelope himself instead than relying on the automatically computed value.
+     */
+    @Test
+    public void testEnvelopeOverride() {
+        FeatureTypeBuilder builder = new FeatureTypeBuilder().setName("CoverageRecord").setAbstract(true);
+        builder.addAttribute(Geometry.class).setName(AttributeConvention.GEOMETRY_PROPERTY).addRole(AttributeRole.DEFAULT_GEOMETRY);
+        final DefaultFeatureType parentType = builder.build();
+
+        builder = new FeatureTypeBuilder().setName("Record").setSuperTypes(parentType);
+        builder.addAttribute(Envelope.class).setName(AttributeConvention.ENVELOPE_PROPERTY);
+        final DefaultFeatureType childType = builder.build();
+
+        final Iterator<? extends AbstractIdentifiedType> it = childType.getProperties(true).iterator();
+        assertPropertyEquals("sis:envelope", Envelope.class, it.next());
+        assertPropertyEquals("sis:geometry", Geometry.class, it.next());
+        assertFalse(it.hasNext());
+    }
+
+    /**
+     * Tests overriding an attribute by an operation.
+     * This is the converse of {@link #testEnvelopeOverride()}.
+     */
+    @Test
+    public void testOverrideByOperation() {
+        FeatureTypeBuilder builder = new FeatureTypeBuilder().setName("Parent").setAbstract(true);
+        final DefaultAttributeType<Integer> pa = builder.addAttribute(Integer.class).setName("A").build();
+        builder.addAttribute(Integer.class).setName("B");
+        final DefaultFeatureType parentType = builder.build();
+
+        builder = new FeatureTypeBuilder().setName("Child").setSuperTypes(parentType);
+        builder.addProperty(FeatureOperations.link(Collections.singletonMap(AbstractOperation.NAME_KEY, "B"), pa));
+        final DefaultFeatureType childType = builder.build();
+
+        final Iterator<? extends AbstractIdentifiedType> it = childType.getProperties(true).iterator();
+        assertPropertyEquals("A", Integer.class, it.next());
+        assertPropertyEquals("B", Integer.class, it.next());
+        assertFalse(it.hasNext());
+    }
+
+    /**
+     * Verifies that the given property is an attribute with the given name and value class.
+     */
+    private static void assertPropertyEquals(final String name, final Class<?> valueClass, AbstractIdentifiedType property) {
+        assertEquals("name", name, property.getName().toString());
+        if (property instanceof AbstractOperation) {
+            property = ((AbstractOperation) property).getResult();
+        }
+        assertEquals("valueClass", valueClass, ((DefaultAttributeType<?>) property).getValueClass());
     }
 }

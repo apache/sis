@@ -774,7 +774,8 @@ public final class ChannelDecoder extends Decoder {
             /*
              * First, find all variables which are used as coordinate system axis. The keys in the map are
              * the grid dimensions which are the domain of the variable (i.e. the sources of the conversion
-             * from grid coordinates to CRS coordinates).
+             * from grid coordinates to CRS coordinates). For each key there is usually only one value, but
+             * we try to make this code robust to unusual NetCDF files.
              */
             final Map<Dimension, List<VariableInfo>> dimToAxes = new IdentityHashMap<>();
             for (final VariableInfo variable : variables) {
@@ -805,7 +806,7 @@ nextVar:    for (final VariableInfo variable : variables) {
                      * This is a "all or nothing" operation.
                      */
                     for (final Dimension dimension : variable.dimensions) {
-                        final List<VariableInfo> axis = dimToAxes.get(dimension);
+                        final List<VariableInfo> axis = dimToAxes.get(dimension);       // Should have only 1 element.
                         if (axis == null) {
                             axes.clear();
                             continue nextVar;

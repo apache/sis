@@ -31,8 +31,14 @@ import org.apache.sis.internal.metadata.ReferencingServices;
 
 /**
  * Vertical domain of dataset.
+ * The following properties are mandatory in a well-formed metadata according ISO 19115:
  *
- * <p>In addition to the standard properties, SIS provides the following methods:</p>
+ * <div class="preformat">{@code EX_VerticalExtent}
+ * {@code   ├─minimumValue……} The lowest vertical extent contained in the dataset.
+ * {@code   ├─maximumValue……} The highest vertical extent contained in the dataset.
+ * {@code   └─verticalCRS………} Information about the vertical coordinate reference system to which the maximum and minimum elevation values are measured. The CRS identification includes unit of measure.</div>
+ *
+ * In addition to the standard properties, SIS provides the following methods:
  * <ul>
  *   <li>{@link #setBounds(Envelope)} for setting the extent from the given envelope.</li>
  * </ul>

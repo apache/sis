@@ -33,6 +33,15 @@ import static org.apache.sis.internal.metadata.MetadataUtilities.ensurePositive;
 
 /**
  * Method used to represent geographic information in the dataset.
+ * The following properties are mandatory in a well-formed metadata according ISO 19115:
+ *
+ * <div class="preformat">{@code MD_GridSpatialRepresentation}
+ * {@code   ├─numberOfDimensions…………………………………………………} Number of independent spatial-temporal axes.
+ * {@code   ├─axisDimensionProperties……………………………………} Information about spatial-temporal axis properties.
+ * {@code   │   ├─dimensionName……………………………………………………} Name of the axis.
+ * {@code   │   └─dimensionSize……………………………………………………} Number of elements along the axis.
+ * {@code   ├─cellGeometry…………………………………………………………………} Identification of grid data as point or cell.
+ * {@code   └─transformationParameterAvailability……} Indication of whether or not parameters for transformation exists.</div>
  *
  * <p><b>Limitations:</b></p>
  * <ul>

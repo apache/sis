@@ -25,8 +25,6 @@ import org.opengis.parameter.ParameterDescriptorGroup;
 import org.apache.sis.internal.feature.FeatureUtilities;
 import org.apache.sis.util.ArgumentChecks;
 
-// Branch-dependent imports
-
 
 /**
  * A link operation, which is like a redirection or an alias.
@@ -64,8 +62,11 @@ final class LinkOperation extends AbstractOperation {
      * @param identification  the name of the link, together with optional information.
      * @param referent        the referenced attribute or feature association.
      */
-    LinkOperation(final Map<String,?> identification, final AbstractIdentifiedType referent) {
+    LinkOperation(final Map<String,?> identification, AbstractIdentifiedType referent) {
         super(identification);
+        if (referent instanceof LinkOperation) {
+            referent = ((LinkOperation) referent).result;
+        }
         result = referent;
         referentName = referent.getName().toString();
     }

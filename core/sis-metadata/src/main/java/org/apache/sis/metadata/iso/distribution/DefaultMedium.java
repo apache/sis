@@ -43,6 +43,11 @@ import static org.opengis.annotation.Specification.ISO_19115;
 
 /**
  * Information about the media on which the resource can be distributed.
+ * The following property is mandatory or conditional (i.e. mandatory under some circumstances)
+ * in a well-formed metadata according ISO 19115:
+ *
+ * <div class="preformat">{@code MD_Medium}
+ * {@code   └─densityUnits……} Units of measure for the recording density.</div>
  *
  * <p><b>Limitations:</b></p>
  * <ul>

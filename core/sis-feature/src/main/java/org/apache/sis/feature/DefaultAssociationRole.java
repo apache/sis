@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.IdentityHashMap;
 import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
+import org.opengis.metadata.Identifier;
 import org.apache.sis.internal.feature.Resources;
 import org.apache.sis.util.Debug;
 
@@ -369,36 +370,63 @@ public class DefaultAssociationRole extends FieldType {
 
     /**
      * Returns the name of the property to use as a title for the associated feature, or {@code null} if none.
-     * This method searches for the first attribute having a value class assignable to {@link CharSequence}.
+     * This method applies the following heuristic rules:
+     *
+     * <ul>
+     *   <li>If associated feature has a property named {@code "sis:identifier"}, then this method returns that name.</li>
+     *   <li>Otherwise if the associated feature has a mandatory property of type {@link CharSequence}, {@link GenericName}
+     *       or {@link Identifier}, then this method returns the name of that property.</li>
+     *   <li>Otherwise if the associated feature has an optional property of type {@link CharSequence}, {@link GenericName}
+     *       or {@link Identifier}, then this method returns the name of that property.</li>
+     *   <li>Otherwise this method returns {@code null}.</li>
+     * </ul>
+     *
+     * This method should be used only for display purpose, not as a reliable or stable way to get the identifier.
+     * The heuristic rules implemented in this method may change in any future Apache SIS version.
      *
      * <p><b>API note:</b> a non-static method would be more elegant in this "SIS for GeoAPI 3.0" branch.
      * However this method needs to be static in other SIS branches, because they work with interfaces
      * rather than SIS implementation. We keep the method static in this branch too for easier merges.</p>
      */
     static String getTitleProperty(final DefaultAssociationRole role) {
-        String p = role.titleProperty; // No synchronization - not a big deal if computed twice.
+        String p = role.titleProperty;       // No synchronization - not a big deal if computed twice.
         if (p != null) {
             return p.isEmpty() ? null : p;
         }
-        p = searchTitleProperty(role);
+        p = searchTitleProperty(role.getValueType());
         role.titleProperty = (p != null) ? p : "";
         return p;
     }
 
     /**
-     * Implementation of {@code getTitleProperty(FeatureAssociationRole)} for first search,
+     * Implementation of {@link #getTitleProperty(DefaultAssociationRole)} for first search,
      * or for non-SIS {@code FeatureAssociationRole} implementations.
      */
-    private static String searchTitleProperty(final DefaultAssociationRole role) {
-        for (final AbstractIdentifiedType type : role.getValueType().getProperties(true)) {
+    private static String searchTitleProperty(final DefaultFeatureType ft) {
+        String fallback = null;
+        try {
+            return ft.getProperty("sis:identifier").getName().toString();
+        } catch (IllegalArgumentException e) {
+            // Ignore.
+        }
+        for (final AbstractIdentifiedType type : ft.getProperties(true)) {
             if (type instanceof DefaultAttributeType<?>) {
                 final DefaultAttributeType<?> pt = (DefaultAttributeType<?>) type;
-                if (pt.getMaximumOccurs() != 0 && CharSequence.class.isAssignableFrom(pt.getValueClass())) {
-                    return pt.getName().toString();
+                final Class<?> valueClass = pt.getValueClass();
+                if (CharSequence.class.isAssignableFrom(valueClass) ||
+                    GenericName .class.isAssignableFrom(valueClass) ||
+                    Identifier  .class.isAssignableFrom(valueClass))
+                {
+                    final String name = pt.getName().toString();
+                    if (pt.getMaximumOccurs() != 0) {
+                        return name;
+                    } else if (fallback == null) {
+                        fallback = name;
+                    }
                 }
             }
         }
-        return null;
+        return fallback;
     }
 
     /**

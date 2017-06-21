@@ -34,6 +34,20 @@ import org.apache.sis.xml.Namespaces;
  * Individual cells can be geolocated using geolocation information supplied with the data but cannot be
  * geolocated from the grid properties alone.
  *
+ * <p>The following properties are mandatory in a well-formed metadata according ISO 19115:</p>
+ *
+ * <div class="preformat">{@code MD_Georeferenceable}
+ * {@code   ├─numberOfDimensions…………………………………………………} Number of independent spatial-temporal axes.
+ * {@code   ├─axisDimensionProperties……………………………………} Information about spatial-temporal axis properties.
+ * {@code   │   ├─dimensionName……………………………………………………} Name of the axis.
+ * {@code   │   └─dimensionSize……………………………………………………} Number of elements along the axis.
+ * {@code   ├─cellGeometry…………………………………………………………………} Identification of grid data as point or cell.
+ * {@code   ├─transformationParameterAvailability……} Indication of whether or not parameters for transformation exists.
+ * {@code   ├─controlPointAvailability…………………………………} Indication of whether or not control point(s) exists.
+ * {@code   ├─orientationParameterAvailability……………} Indication of whether or not orientation parameters are available.
+ * {@code   ├─geolocationInformation………………………………………} Information that can be used to geolocate the data.
+ * {@code   └─georeferencedParameters……………………………………} Terms which support grid data georeferencing.</div>
+ *
  * <p><b>Limitations:</b></p>
  * <ul>
  *   <li>Instances of this class are not synchronized for multi-threading.

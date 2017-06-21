@@ -33,6 +33,10 @@ import static org.opengis.annotation.Specification.ISO_19115;
 /**
  * Information about on-line sources from which the dataset, specification, or
  * community profile name and extended metadata elements can be obtained.
+ * The following property is mandatory in a well-formed metadata according ISO 19115:
+ *
+ * <div class="preformat">{@code CI_OnlineResource}
+ * {@code   └─linkage………………} Location (address) for on-line access using a Uniform Resource Locator address or similar addressing scheme.</div>
  *
  * <p><b>Limitations:</b></p>
  * <ul>

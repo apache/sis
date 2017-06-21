@@ -38,6 +38,15 @@ import static org.apache.sis.internal.metadata.MetadataUtilities.toMilliseconds;
 
 /**
  * Brief description of ways in which the resource(s) is/are currently or has been used.
+ * The following properties are mandatory or conditional (i.e. mandatory under some circumstances)
+ * in a well-formed metadata according ISO 19115:
+ *
+ * <div class="preformat">{@code MD_Usage}
+ * {@code   ├─specificUsage…………} Brief description of the resource and/or resource series usage.
+ * {@code   └─userContactInfo……} Identification of and means of communicating with person(s) and organisation(s).
+ * {@code       ├─party……………………} Information about the parties.
+ * {@code       │   └─name……………} Name of the party.
+ * {@code       └─role………………………} Function performed by the responsible party.</div>
  *
  * <p><b>Limitations:</b></p>
  * <ul>

@@ -41,6 +41,23 @@ import static org.opengis.annotation.Specification.ISO_19115;
 /**
  * Identification of capabilities which a service provider makes available to a service user
  * through a set of interfaces that define a behaviour.
+ * The following properties are mandatory or conditional (i.e. mandatory under some circumstances)
+ * in a well-formed metadata according ISO 19115:
+ *
+ * <div class="preformat">{@code SV_ServiceIdentification}
+ * {@code   ├─citation………………………………………} Citation data for the resource(s).
+ * {@code   │   ├─title……………………………………} Name by which the cited resource is known.
+ * {@code   │   └─date………………………………………} Reference date for the cited resource.
+ * {@code   ├─abstract………………………………………} Brief narrative summary of the content of the resource(s).
+ * {@code   ├─serviceType………………………………} A service type name. For example: "view", "download", or "invoke".
+ * {@code   ├─coupledResource……………………} Further description of the data coupling in the case of tightly coupled services.
+ * {@code   ├─couplingType……………………………} Type of coupling between service and associated data (if exist).
+ * {@code   ├─extent……………………………………………} Bounding polygon, vertical, and temporal extent of the dataset.
+ * {@code   │   ├─description……………………} The spatial and temporal extent for the referring object.
+ * {@code   │   ├─geographicElement……} Geographic component of the extent of the referring object.
+ * {@code   │   ├─temporalElement…………} Temporal component of the extent of the referring object.
+ * {@code   │   └─verticalElement…………} Vertical component of the extent of the referring object.
+ * {@code   └─topicCategory…………………………} Main theme(s) of the dataset.</div>
  *
  * <p><b>Limitations:</b></p>
  * <ul>

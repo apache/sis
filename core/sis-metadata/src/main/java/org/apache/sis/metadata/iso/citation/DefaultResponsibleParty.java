@@ -34,6 +34,13 @@ import org.apache.sis.internal.metadata.LegacyPropertyAdapter;
 /**
  * Identification of, and means of communication with, person(s) and
  * organizations associated with the dataset.
+ * The following properties are mandatory or conditional (i.e. mandatory under some circumstances)
+ * in a well-formed metadata according ISO 19115:
+ *
+ * <div class="preformat">{@code CI_ResponsibleParty}
+ * {@code   ├─role……………………………} Function performed by the responsible party.
+ * {@code   └─party…………………………} Information about the parties.
+ * {@code       └─name…………………} Name of the party.</div>
  *
  * <div class="warning"><b>Upcoming API change — deprecation</b><br>
  * As of ISO 19115:2014, the {@code ResponsibleParty} type has been replaced by {@code Responsibility}

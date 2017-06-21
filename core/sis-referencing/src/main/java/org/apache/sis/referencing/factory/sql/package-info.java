@@ -81,8 +81,11 @@
  * @author  Jody Garnett (Refractions)
  * @author  Didier Richard (IGN)
  * @author  John Grange
- * @version 0.7
- * @since   0.7
+ * @version 0.8
+ *
+ * @see org.apache.sis.metadata.sql
+ *
+ * @since 0.7
  * @module
  */
 package org.apache.sis.referencing.factory.sql;

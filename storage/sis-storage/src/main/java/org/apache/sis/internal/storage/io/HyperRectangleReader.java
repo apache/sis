@@ -45,8 +45,11 @@ public final class HyperRectangleReader {
 
     /**
      * The {@code input} position of the first sample (ignoring sub-area and sub-sampling).
+     * This is the {@code origin} argument given to the constructor, copied verbatim.
+     * This field is public for callers wanting to order {@code HyperRectangleReader} instances
+     * in increasing file offset order, for more sequential reading (less seek operations).
      */
-    private final long origin;
+    public final long origin;
 
     /**
      * Creates a new reader for the given input and source region.

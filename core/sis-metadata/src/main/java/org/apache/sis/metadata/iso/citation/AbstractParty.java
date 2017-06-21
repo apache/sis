@@ -36,6 +36,11 @@ import static org.opengis.annotation.Specification.ISO_19115;
 
 /**
  * Information about the individual and / or organization of the party.
+ * The following property is conditional (i.e. mandatory under some circumstances)
+ * in a well-formed metadata according ISO 19115:
+ *
+ * <div class="preformat">{@code CI_Party}
+ * {@code   └─name……} Name of the party.</div>
  *
  * <div class="warning"><b>Note on International Standard versions</b><br>
  * This class is derived from a new type defined in the ISO 19115 international standard published in 2014,

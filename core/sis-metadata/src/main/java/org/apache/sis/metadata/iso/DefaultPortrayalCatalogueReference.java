@@ -26,6 +26,12 @@ import org.opengis.metadata.PortrayalCatalogueReference;
 
 /**
  * Information identifying the portrayal catalogue used.
+ * The following properties are mandatory in a well-formed metadata according ISO 19115:
+ *
+ * <div class="preformat">{@code MD_PortrayalCatalogueReference}
+ * {@code   └─portrayalCatalogueCitation……} Bibliographic reference to the portrayal catalogue cited.
+ * {@code       ├─title…………………………………………………} Name by which the cited resource is known.
+ * {@code       └─date……………………………………………………} Reference date for the cited resource.</div>
  *
  * <p><b>Limitations:</b></p>
  * <ul>

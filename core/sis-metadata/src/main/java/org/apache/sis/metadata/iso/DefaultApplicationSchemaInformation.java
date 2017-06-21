@@ -27,6 +27,14 @@ import org.opengis.metadata.citation.OnlineResource;
 
 /**
  * Information about the application schema used to build the dataset.
+ * The following properties are mandatory in a well-formed metadata according ISO 19115:
+ *
+ * <div class="preformat">{@code MD_ApplicationSchemaInformation}
+ * {@code   ├─name……………………………………………………………} Name of the application schema used.
+ * {@code   │   ├─title………………………………………………} Name by which the cited resource is known.
+ * {@code   │   └─date…………………………………………………} Reference date for the cited resource.
+ * {@code   ├─schemaLanguage…………………………………} Identification of the schema language used.
+ * {@code   └─constraintLanguage………………………} Formal language used in Application Schema.</div>
  *
  * <p><b>Limitations:</b></p>
  * <ul>

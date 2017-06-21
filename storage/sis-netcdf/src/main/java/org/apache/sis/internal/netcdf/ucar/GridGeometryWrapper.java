@@ -16,6 +16,7 @@
  */
 package org.apache.sis.internal.netcdf.ucar;
 
+import java.io.IOException;
 import java.util.List;
 import ucar.nc2.Dimension;
 import ucar.nc2.constants.AxisType;
@@ -25,6 +26,7 @@ import ucar.nc2.dataset.CoordinateSystem;
 import org.apache.sis.internal.netcdf.Axis;
 import org.apache.sis.internal.netcdf.GridGeometry;
 import org.apache.sis.storage.netcdf.AttributeNames;
+import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.util.ArraysExt;
 
 
@@ -35,7 +37,7 @@ import org.apache.sis.util.ArraysExt;
  * of the grid geometry information.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.3
+ * @version 0.8
  * @since   0.3
  * @module
  */
@@ -44,11 +46,6 @@ final class GridGeometryWrapper extends GridGeometry {
      * The NetCDF coordinate system to wrap.
      */
     private final CoordinateSystem netcdfCS;
-
-    /**
-     * A temporary variable for {@link #coordinateForCurrentAxis(int, int)}.
-     */
-    private transient CoordinateAxis2D axis2D;
 
     /**
      * Creates a new grid geometry for the given NetCDF coordinate system.
@@ -60,7 +57,8 @@ final class GridGeometryWrapper extends GridGeometry {
     }
 
     /**
-     * Returns the number of dimensions in the grid.
+     * Returns the number of dimensions of source coordinates in the <cite>"grid to CRS"</cite> conversion.
+     * This is the number of dimensions of the <em>grid</em>.
      */
     @Override
     public int getSourceDimensions() {
@@ -68,7 +66,10 @@ final class GridGeometryWrapper extends GridGeometry {
     }
 
     /**
-     * Returns the number of dimensions in the coordinate reference system.
+     * Returns the number of dimensions of target coordinates in the <cite>"grid to CRS"</cite> conversion.
+     * This is the number of dimensions of the <em>coordinate reference system</em>.
+     * It should be equal to the size of the array returned by {@link #getAxes()},
+     * but caller should be robust to inconsistencies.
      */
     @Override
     public int getTargetDimensions() {
@@ -86,20 +87,27 @@ final class GridGeometryWrapper extends GridGeometry {
      * is often the same than the domain of the variable, but not necessarily.
      * In particular, the relationship is not straightforward when the coordinate system contains instances
      * of {@link CoordinateAxis2D}.</p>
+     *
+     * @return the CRS axes, in NetCDF order (reverse of "natural" order).
+     * @throws IOException if an I/O operation was necessary but failed.
+     * @throws DataStoreException if a logical error occurred.
      */
     @Override
-    public Axis[] getAxes() {
+    public Axis[] getAxes() throws IOException, DataStoreException {
         final List<Dimension> domain = netcdfCS.getDomain();
         final List<CoordinateAxis> range = netcdfCS.getCoordinateAxes();
+        /*
+         * In this method, 'sourceDim' and 'targetDim' are relative to "grid to CRS" conversion.
+         * So 'sourceDim' is the grid (domain) dimension and 'targetDim' is the CRS (range) dimension.
+         */
         int targetDim = range.size();
         final Axis[] axes = new Axis[targetDim];
-        /*
-         * NetCDF files declare axes in reverse order, so we iterate in the 'netcdfAxes'
-         * list in reverse order for adding to the 'axes' list in "natural" order.
-         */
         while (--targetDim >= 0) {
-            final CoordinateAxis  axis = range.get(targetDim);
-            final List<Dimension> axisDomain = axis.getDimensions();
+            final CoordinateAxis axis = range.get(targetDim);
+            /*
+             * The AttributeNames are for ISO 19115 metadata. They are not used for locating grid cells
+             * on Earth, but we nevertheless get them now for making MetadataReader work easier.
+             */
             AttributeNames.Dimension attributeNames = null;
             final AxisType type = axis.getAxisType();
             if (type != null) switch (type) {
@@ -116,6 +124,7 @@ final class GridGeometryWrapper extends GridGeometry {
              * straightforward NetCDF files. However some more complex files may have 2 dimensions.
              */
             int i = 0;
+            final List<Dimension> axisDomain = axis.getDimensions();
             final int[] indices = new int[axisDomain.size()];
             final int[] sizes   = new int[indices.length];
             for (final Dimension dimension : axisDomain) {
@@ -127,24 +136,22 @@ final class GridGeometryWrapper extends GridGeometry {
                 /*
                  * If the axis dimension has not been found in the coordinate system (sourceDim < 0),
                  * then there is maybe a problem with the NetCDF file. However for the purpose of this
-                 * package, we can proceed as if the dimension does not exist.
+                 * package, we can proceed as if the dimension does not exist ('i' not incremented).
                  */
             }
-            axis2D = (axis instanceof CoordinateAxis2D) ? (CoordinateAxis2D) axis : null;
-            axes[targetDim] = new Axis(this, attributeNames,
-                    ArraysExt.resize(indices, i),
-                    ArraysExt.resize(sizes, i));
+            axes[targetDim] = new Axis(this, axis, attributeNames,
+                                       ArraysExt.resize(indices, i),
+                                       ArraysExt.resize(sizes, i));
         }
-        axis2D = null;
         return axes;
     }
 
     /**
-     * Returns the coordinate for the given grid coordinate of an axis in the process of being constructed.
-     * This is a callback method for {@link #getAxes()}.
+     * Returns a coordinate for the given two-dimensional grid coordinate axis.
+     * This is (indirectly) a callback method for {@link #getAxes()}.
      */
     @Override
-    protected double coordinateForCurrentAxis(final int j, final int i) {
-        return (axis2D != null) ? axis2D.getCoordValue(j, i) : Double.NaN;
+    protected double coordinateForAxis(final Object axis, final int j, final int i) {
+        return (axis instanceof CoordinateAxis2D) ? ((CoordinateAxis2D) axis).getCoordValue(j, i) : Double.NaN;
     }
 }

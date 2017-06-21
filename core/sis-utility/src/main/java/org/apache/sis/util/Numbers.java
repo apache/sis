@@ -37,7 +37,7 @@ import static java.lang.Double.doubleToLongBits;
  * Static methods working with {@link Number} objects, and a few primitive types by extension.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 0.3
+ * @version 0.8
  *
  * @see org.apache.sis.math.MathFunctions
  *
@@ -559,7 +559,7 @@ public final class Numbers extends Static {
     }
 
     /**
-     * Wraps the given value in a {@code Number} of the specified class.
+     * Wraps the given floating-point value in a {@code Number} of the specified class.
      * The given type shall be one of {@link Byte}, {@link Short}, {@link Integer}, {@link Long},
      * {@link Float}, {@link Double}, {@link BigInteger} and {@link BigDecimal} classes.
      * Furthermore, the given value shall be convertible to the given class without precision lost,
@@ -589,6 +589,44 @@ public final class Numbers extends Static {
             default: throw unknownType(type);
         }
         if (doubleToLongBits(number.doubleValue()) != doubleToLongBits(value)) {
+            throw new IllegalArgumentException(Errors.format(Errors.Keys.CanNotConvertValue_2, value, type));
+        }
+        return number;
+    }
+
+    /**
+     * Wraps the given integer value in a {@code Number} of the specified class.
+     * The given type shall be one of {@link Byte}, {@link Short}, {@link Integer}, {@link Long},
+     * {@link Float}, {@link Double}, {@link BigInteger} and {@link BigDecimal} classes.
+     * Furthermore, the given value shall be convertible to the given class without precision lost,
+     * otherwise an {@link IllegalArgumentException} will be thrown.
+     *
+     * @param  <N>    the wrapper class.
+     * @param  value  the value to wrap.
+     * @param  type   the desired wrapper class.
+     * @return the value wrapped in an object of the given class.
+     * @throws IllegalArgumentException if the given type is not one of the primitive wrappers for numeric types,
+     *         or if the given value can not be wrapped in an instance of the given class without precision lost.
+     *
+     * @since 0.8
+     */
+    @SuppressWarnings("unchecked")
+    public static <N extends Number> N wrap(final long value, final Class<N> type)
+            throws IllegalArgumentException
+    {
+        final N number;
+        switch (getEnumConstant(type)) {
+            case BYTE:        number = (N) Byte      .valueOf((byte)   value); break;
+            case SHORT:       number = (N) Short     .valueOf((short)  value); break;
+            case INTEGER:     number = (N) Integer   .valueOf((int)    value); break;
+            case LONG:        return   (N) Long      .valueOf(value);  // No need to verify.
+            case FLOAT:       number = (N) Float     .valueOf((float)  value); break;
+            case DOUBLE:      number = (N) Numerics  .valueOf((double) value); break;
+            case BIG_INTEGER: return   (N) BigInteger.valueOf(value);  // No need to verify.
+            case BIG_DECIMAL: return   (N) BigDecimal.valueOf(value);  // No need to verify.
+            default: throw unknownType(type);
+        }
+        if (number.longValue() != value) {
             throw new IllegalArgumentException(Errors.format(Errors.Keys.CanNotConvertValue_2, value, type));
         }
         return number;

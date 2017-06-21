@@ -78,6 +78,33 @@ import static org.opengis.annotation.Specification.ISO_19115;
 
 /**
  * Root entity which defines metadata about a resource or resources.
+ * The following properties are mandatory or conditional (i.e. mandatory under some circumstances)
+ * in a well-formed metadata according ISO 19115:
+ *
+ * <div class="preformat">{@code MD_Metadata}
+ * {@code   ├─language…………………………………………………} Language used for documenting metadata.
+ * {@code   ├─characterSet………………………………………} Full name of the character coding standard used for the metadata set.
+ * {@code   ├─contact……………………………………………………} Parties responsible for the metadata information.
+ * {@code   │   ├─party………………………………………………} Information about the parties.
+ * {@code   │   │   └─name………………………………………} Name of the party.
+ * {@code   │   └─role…………………………………………………} Function performed by the responsible party.
+ * {@code   ├─identificationInfo………………………} Basic information about the resource(s) to which the metadata applies.
+ * {@code   │   ├─citation………………………………………} Citation data for the resource(s).
+ * {@code   │   │   ├─title……………………………………} Name by which the cited resource is known.
+ * {@code   │   │   └─date………………………………………} Reference date for the cited resource.
+ * {@code   │   ├─abstract………………………………………} Brief narrative summary of the content of the resource(s).
+ * {@code   │   ├─extent……………………………………………} Bounding polygon, vertical, and temporal extent of the dataset.
+ * {@code   │   │   ├─description……………………} The spatial and temporal extent for the referring object.
+ * {@code   │   │   ├─geographicElement……} Geographic component of the extent of the referring object.
+ * {@code   │   │   ├─temporalElement…………} Temporal component of the extent of the referring object.
+ * {@code   │   │   └─verticalElement…………} Vertical component of the extent of the referring object.
+ * {@code   │   └─topicCategory…………………………} Main theme(s) of the dataset.
+ * {@code   ├─dateInfo…………………………………………………} Date(s) associated with the metadata.
+ * {@code   ├─metadataScope……………………………………} The scope or type of resource for which metadata is provided.
+ * {@code   │   └─resourceScope…………………………} Resource scope
+ * {@code   └─parentMetadata…………………………………} Identification of the parent metadata record.
+ * {@code       ├─title………………………………………………} Name by which the cited resource is known.
+ * {@code       └─date…………………………………………………} Reference date for the cited resource.</div>
  *
  * <div class="section">Localization</div>
  * When this object is marshalled as an ISO 19139 compliant XML document, the value

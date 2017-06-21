@@ -24,6 +24,10 @@ import org.apache.sis.xml.Namespaces;
 
 /**
  * Degree of adherence of a dataset to a specific set of user requirements.
+ * The following property is mandatory in a well-formed metadata according ISO 19115:
+ *
+ * <div class="preformat">{@code QE_Usability}
+ * {@code   └─result……………} Value obtained from applying a data quality measure.</div>
  *
  * <p><b>Limitations:</b></p>
  * <ul>

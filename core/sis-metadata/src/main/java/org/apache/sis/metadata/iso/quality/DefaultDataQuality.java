@@ -24,15 +24,22 @@ import org.opengis.metadata.lineage.Lineage;
 import org.opengis.metadata.quality.DataQuality;
 import org.opengis.metadata.quality.Element;
 import org.opengis.metadata.quality.Scope;
+import org.opengis.metadata.maintenance.ScopeCode;
 import org.apache.sis.metadata.iso.ISOMetadata;
+import org.apache.sis.metadata.iso.maintenance.DefaultScope;
 
 
 /**
  * Quality information for the data specified by a data quality scope.
+ * The following properties are mandatory in a well-formed metadata according ISO 19115:
  *
- * <div class="section">Relationship between properties</div>
- * According ISO 19115, at least one of {@linkplain #getLineage() lineage} and
- * {@linkplain #getReports() reports} shall be provided.
+ * <div class="preformat">{@code DQ_DataQuality}
+ * {@code   └─scope………………} The specific data to which the data quality information applies.
+ * {@code       └─level……} Hierarchical level of the data specified by the scope.</div>
+ *
+ * In addition, ISO requires that at least one of {@linkplain #getLineage() lineage}
+ * and {@linkplain #getReports() reports} is provided. Those properties are declared
+ * {@linkplain org.opengis.annotation.Obligation#CONDITIONAL conditional}.
  *
  * <div class="section">Limitations</div>
  * <ul>
@@ -85,6 +92,20 @@ public class DefaultDataQuality extends ISOMetadata implements DataQuality {
      * Constructs an initially empty data quality.
      */
     public DefaultDataQuality() {
+    }
+
+    /**
+     * Creates a data quality initialized to the given scope level.
+     * The scope level is, indirectly, a mandatory property in well-formed metadata.
+     *
+     * @param level  the hierarchical level of the data to which the quality information applies, or {@code null}.
+     *
+     * @since 0.5
+     */
+    public DefaultDataQuality(final ScopeCode level) {
+        if (level != null) {
+            scope = new DefaultScope(level);
+        }
     }
 
     /**

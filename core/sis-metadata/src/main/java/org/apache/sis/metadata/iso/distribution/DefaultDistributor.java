@@ -30,6 +30,18 @@ import org.apache.sis.metadata.iso.ISOMetadata;
 
 /**
  * Information about the distributor.
+ * The following properties are mandatory or conditional (i.e. mandatory under some circumstances)
+ * in a well-formed metadata according ISO 19115:
+ *
+ * <div class="preformat">{@code MD_Distributor}
+ * {@code   ├─distributorContact………………………………………} Party from whom the resource may be obtained. This list need not be exhaustive.
+ * {@code   │   ├─party………………………………………………………………} Information about the parties.
+ * {@code   │   │   └─name………………………………………………………} Name of the party.
+ * {@code   │   └─role…………………………………………………………………} Function performed by the responsible party.
+ * {@code   └─distributorFormat…………………………………………} Information about the format used by the distributor.
+ * {@code       └─formatSpecificationCitation……} Citation/URL of the specification format.
+ * {@code           ├─title……………………………………………………} Name by which the cited resource is known.
+ * {@code           └─date………………………………………………………} Reference date for the cited resource.</div>
  *
  * <p><b>Limitations:</b></p>
  * <ul>

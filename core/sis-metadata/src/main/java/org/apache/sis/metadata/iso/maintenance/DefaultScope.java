@@ -35,6 +35,18 @@ import static org.opengis.annotation.Specification.ISO_19115;
 
 /**
  * The target resource and physical extent for which information is reported.
+ * The following properties are mandatory or conditional (i.e. mandatory under some circumstances)
+ * in a well-formed metadata according ISO 19115:
+ *
+ * <div class="preformat">{@code MD_Scope}
+ * {@code   ├─level…………………………………………………} Hierarchical level of the data specified by the scope.
+ * {@code   └─levelDescription……………………} Detailed description about the level of the data specified by the scope.
+ * {@code       ├─attributeInstances……} Attribute instances to which the information applies.
+ * {@code       ├─attributes…………………………} Attributes to which the information applies.
+ * {@code       ├─dataset…………………………………} Dataset to which the information applies.
+ * {@code       ├─featureInstances…………} Feature instances to which the information applies.
+ * {@code       ├─features………………………………} Features to which the information applies.
+ * {@code       └─other………………………………………} Class of information that does not fall into the other categories.</div>
  *
  * <p><b>Limitations:</b></p>
  * <ul>

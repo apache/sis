@@ -28,6 +28,10 @@ import org.opengis.metadata.quality.QuantitativeAttributeAccuracy;
 /**
  * Accuracy of quantitative attributes and the correctness of non-quantitative attributes
  * and of the classifications of features and their relationships.
+ * The following property is mandatory in a well-formed metadata according ISO 19115:
+ *
+ * <div class="preformat">{@code DQ_ThematicAccuracy}
+ * {@code   └─result……………} Value obtained from applying a data quality measure.</div>
  *
  * <p><b>Limitations:</b></p>
  * <ul>

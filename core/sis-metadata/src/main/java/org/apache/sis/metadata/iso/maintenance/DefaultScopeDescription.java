@@ -40,8 +40,17 @@ import org.opengis.feature.type.FeatureType;
 
 /**
  * Description of the class of information covered by the information.
+ * The following properties are mandatory or conditional (i.e. mandatory under some circumstances)
+ * in a well-formed metadata according ISO 19115:
  *
- * <div class="section">Relationship between properties</div>
+ * <div class="preformat">{@code MD_ScopeDescription}
+ * {@code   ├─attributeInstances……} Attribute instances to which the information applies.
+ * {@code   ├─attributes…………………………} Attributes to which the information applies.
+ * {@code   ├─dataset…………………………………} Dataset to which the information applies.
+ * {@code   ├─featureInstances…………} Feature instances to which the information applies.
+ * {@code   ├─features………………………………} Features to which the information applies.
+ * {@code   └─other………………………………………} Class of information that does not fall into the other categories to which the information applies.</div>
+ *
  * ISO 19115 defines {@code ScopeDescription} as an <cite>union</cite> (in the C/C++ sense):
  * only one of the properties in this class can be set to a non-empty value.
  * Setting any property to a non-empty value discard all the other ones.

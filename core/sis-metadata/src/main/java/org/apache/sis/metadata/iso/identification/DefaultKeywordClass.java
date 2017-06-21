@@ -30,6 +30,13 @@ import org.apache.sis.util.iso.Types;
 /**
  * Specification of a class to categorize keywords in a domain-specific vocabulary
  * that has a binding to a formal ontology.
+ * The following properties are mandatory in a well-formed metadata according ISO 19115:
+ *
+ * <div class="preformat">{@code MD_KeywordClass}
+ * {@code   ├─className………………………} Character string to label the keyword category in natural language.
+ * {@code   └─ontology…………………………} Reference that binds the keyword class to a formal conceptualization of a knowledge domain.
+ * {@code       ├─title………………………} Name by which the cited resource is known.
+ * {@code       └─date…………………………} Reference date for the cited resource.</div>
  *
  * <div class="warning"><b>Note on International Standard versions</b><br>
  * This class is derived from a new type defined in the ISO 19115 international standard published in 2014,

@@ -753,6 +753,7 @@ final class CRSBuilder {
      * @throws NumberFormatException if a numeric value was stored as a string and can not be parsed.
      */
     final void complete(final MetadataBuilder metadata) {
+        metadata.newGridRepresentation(MetadataBuilder.GridType.GEORECTIFIED);
         /*
          * ASCII reference to published documentation on the overall configuration of the GeoTIFF file.
          * Often the projected CRS name, despite GeoKeys.PCSCitation being already for that purpose.

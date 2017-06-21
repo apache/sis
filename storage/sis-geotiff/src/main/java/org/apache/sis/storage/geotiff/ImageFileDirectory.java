@@ -695,7 +695,8 @@ final class ImageFileDirectory {
              */
             case Tags.DateTime: {
                 for (final String value : type.readString(input(), count, encoding())) {
-                    reader.metadata.add(reader.getDateFormat().parse(value), DateType.CREATION);
+                    reader.metadata.addCitationDate(reader.getDateFormat().parse(value),
+                            DateType.CREATION, MetadataBuilder.Scope.RESOURCE);
                 }
                 break;
             }
@@ -732,7 +733,7 @@ final class ImageFileDirectory {
              */
             case Tags.Model: {
                 for (final String value : type.readString(input(), count, encoding())) {
-                    reader.metadata.addInstrument(value);
+                    reader.metadata.addInstrument(null, value);
                 }
                 break;
             }
@@ -879,6 +880,9 @@ final class ImageFileDirectory {
      *   <li>Otherwise throws an exception.</li>
      * </ul>
      *
+     * This method opportunistically computes default value of optional fields
+     * when those values can be computed from other (usually mandatory) fields.
+     *
      * @throws DataStoreContentException if a mandatory tag is missing and can not be inferred.
      */
     final void validateMandatoryTags() throws DataStoreContentException {
@@ -917,6 +921,8 @@ final class ImageFileDirectory {
         if (colorMap != null) {
             ensureSameLength(Tags.ColorMap, Tags.BitsPerSample, colorMap.size(),  3 * (1 << bitsPerSample));
         }
+        if (Double.isNaN(minValue)) minValue = 0;
+        if (Double.isNaN(maxValue)) maxValue = (1 << bitsPerSample) - 1;
         /*
          * All of tile width, height and length information should be provided. But if only one of them is missing,
          * we can compute it provided that the file does not use any compression method. If there is a compression,
@@ -996,6 +1002,8 @@ final class ImageFileDirectory {
         if (compression != null) {
             metadata.addCompression(compression.name().toLowerCase(locale));
         }
+        // TODO: set band name and repeat for each band.
+        metadata.setBitPerSample(bitsPerSample);
         metadata.addMinimumSampleValue(minValue);
         metadata.addMaximumSampleValue(maxValue);
         /*
@@ -1038,7 +1046,7 @@ final class ImageFileDirectory {
         if (geoKeyDirectory != null) {
             final CRSBuilder helper = new CRSBuilder(reader);
             try {
-                metadata.add(helper.build(geoKeyDirectory, numericGeoParameters, asciiGeoParameters));
+                metadata.addReferenceSystem(helper.build(geoKeyDirectory, numericGeoParameters, asciiGeoParameters));
                 helper.complete(metadata);
             } catch (NoSuchIdentifierException | ParameterNotFoundException e) {
                 short key = Resources.Keys.UnsupportedProjectionMethod_1;

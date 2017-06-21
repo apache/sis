@@ -16,8 +16,10 @@
  */
 package org.apache.sis.internal.netcdf;
 
+import java.io.IOException;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.storage.netcdf.AttributeNames;
+import org.apache.sis.storage.DataStoreException;
 
 
 /**
@@ -27,7 +29,7 @@ import org.apache.sis.storage.netcdf.AttributeNames;
  * {@link ucar.nc2.dataset.CoordinateAxis1D} or {@link ucar.nc2.dataset.CoordinateAxis2D} respectively.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.3
+ * @version 0.8
  *
  * @see GridGeometry#getAxes()
  *
@@ -41,14 +43,13 @@ public final class Axis {
     public final AttributeNames.Dimension attributeNames;
 
     /**
-     * The indices of the grid dimension associated to this axis. Values in this array are sorted with more
-     * "significant" (defined below) dimensions first - this is not necessarily increasing order.
-     *
-     * <div class="section">Elements order</div>
-     * The length of this array is often 1. But if more than one grid dimension is associated to this axis
-     * (i.e. if the wrapped NetCDF axis is an instance of {@link ucar.nc2.dataset.CoordinateAxis2D}), then
-     * the first index is what seems the most significant grid dimension (i.e. the dimension which seems
-     * to be varying fastest along this axis).
+     * The indices of the grid dimension associated to this axis. The length of this array is often 1.
+     * But if more than one grid dimension is associated to this axis (i.e. if the wrapped NetCDF axis
+     * is an instance of {@link ucar.nc2.dataset.CoordinateAxis2D}),  then the first value is the grid
+     * dimension which seems most closely oriented toward this axis direction. We do that for allowing
+     * {@code MetadataReader.addSpatialRepresentationInfo(…)} method to get the most appropriate value
+     * for ISO 19115 {@code metadata/spatialRepresentationInfo/axisDimensionProperties/dimensionSize}
+     * metadata property.
      */
     public final int[] sourceDimensions;
 
@@ -61,16 +62,20 @@ public final class Axis {
 
     /**
      * Constructs a new axis associated to an arbitrary number of grid dimension.
-     * In the particular case where the number of dimensions is equals to 2, this
-     * constructor will detects by itself which grid dimension varies fastest.
+     * In the particular case where the number of dimensions is equals to 2, this constructor will detect
+     * by itself which grid dimension varies fastest and reorder in-place the elements in the given arrays
+     * (those array are modified, not cloned).
      *
-     * @param owner             provides callback for the conversion from grid coordinates to geodetic coordinates.
-     * @param attributeNames    the attributes to use for fetching dimension information, or {@code null} if unknown.
-     * @param sourceDimensions  the index of the grid dimension associated to this axis.
-     * @param sourceSizes       the number of cell elements along that axis.
+     * @param  owner             provides callback for the conversion from grid coordinates to geodetic coordinates.
+     * @param  axis              an implementation-dependent object representing the two-dimensional axis, or {@code null} if none.
+     * @param  attributeNames    the attributes to use for fetching dimension information, or {@code null} if unknown.
+     * @param  sourceDimensions  the index of the grid dimension associated to this axis.
+     * @param  sourceSizes       the number of cell elements along that axis.
+     * @throws IOException if an I/O operation was necessary but failed.
+     * @throws DataStoreException if a logical error occurred.
      */
-    public Axis(final GridGeometry owner, final AttributeNames.Dimension attributeNames,
-            final int[] sourceDimensions, final int[] sourceSizes)
+    public Axis(final GridGeometry owner, final Object axis, final AttributeNames.Dimension attributeNames,
+            final int[] sourceDimensions, final int[] sourceSizes) throws IOException, DataStoreException
     {
         this.attributeNames   = attributeNames;
         this.sourceDimensions = sourceDimensions;
@@ -80,9 +85,11 @@ public final class Axis {
             final int up1  = sourceSizes[1];
             final int mid0 = up0 / 2;
             final int mid1 = up1 / 2;
-            final double d1 = (owner.coordinateForCurrentAxis(0, mid1) - owner.coordinateForCurrentAxis(up0-1, mid1)) / up0;
-            final double d2 = (owner.coordinateForCurrentAxis(mid0, 0) - owner.coordinateForCurrentAxis(mid0, up1-1)) / up1;
-            if (Math.abs(d2) > Math.abs(d1)) {
+            final double inc0 = (owner.coordinateForAxis(axis,     0, mid1) -
+                                 owner.coordinateForAxis(axis, up0-1, mid1)) / up0;
+            final double inc1 = (owner.coordinateForAxis(axis, mid0,     0) -
+                                 owner.coordinateForAxis(axis, mid0, up1-1)) / up1;
+            if (Math.abs(inc1) > Math.abs(inc0)) {
                 sourceSizes[0] = up1;
                 sourceSizes[1] = up0;
                 ArraysExt.swap(sourceDimensions, 0, 1);

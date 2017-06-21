@@ -39,6 +39,10 @@ import static org.opengis.annotation.Specification.ISO_19115;
 
 /**
  * Information about the content of a grid data cell.
+ * The following property is mandatory in a well-formed metadata according ISO 19115:
+ *
+ * <div class="preformat">{@code MD_CoverageDescription}
+ * {@code   └─attributeDescription……} Description of the attribute described by the measurement value.</div>
  *
  * <p><b>Limitations:</b></p>
  * <ul>

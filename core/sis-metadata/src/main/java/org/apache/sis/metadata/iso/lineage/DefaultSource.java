@@ -49,8 +49,21 @@ import static org.opengis.annotation.Specification.ISO_19115;
 
 /**
  * Information about the source data used in creating the data specified by the scope.
+ * The following properties are mandatory or conditional (i.e. mandatory under some circumstances)
+ * in a well-formed metadata according ISO 19115:
  *
- * <div class="section">Relationship between properties</div>
+ * <div class="preformat">{@code LI_Source}
+ * {@code   ├─description……………………………………………} Detailed description of the level of the source data.
+ * {@code   └─scope……………………………………………………………} Type and / or extent of the source.
+ * {@code       ├─level…………………………………………………} Hierarchical level of the data specified by the scope.
+ * {@code       └─levelDescription……………………} Detailed description about the level of the data specified by the scope.
+ * {@code           ├─attributeInstances……} Attribute instances to which the information applies.
+ * {@code           ├─attributes…………………………} Attributes to which the information applies.
+ * {@code           ├─dataset…………………………………} Dataset to which the information applies.
+ * {@code           ├─featureInstances…………} Feature instances to which the information applies.
+ * {@code           ├─features………………………………} Features to which the information applies.
+ * {@code           └─other………………………………………} Class of information that does not fall into the other categories to which the information applies.</div>
+ *
  * According ISO 19115, at least one of {@linkplain #getDescription() description} and
  * {@linkplain #getSourceExtents() source extents} shall be provided.
  *

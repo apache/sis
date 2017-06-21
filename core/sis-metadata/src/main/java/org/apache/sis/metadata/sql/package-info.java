@@ -43,7 +43,10 @@
  * @author  Touraïvane (IRD)
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 0.8
- * @since   0.8
+ *
+ * @see org.apache.sis.referencing.factory.sql
+ *
+ * @since 0.8
  * @module
  */
 package org.apache.sis.metadata.sql;

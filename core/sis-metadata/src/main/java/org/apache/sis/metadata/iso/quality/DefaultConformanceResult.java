@@ -28,6 +28,14 @@ import org.apache.sis.util.iso.Types;
 /**
  * Information about the outcome of evaluating the obtained value (or set of values) against
  * a specified acceptable conformance quality level.
+ * The following properties are mandatory in a well-formed metadata according ISO 19115:
+ *
+ * <div class="preformat">{@code DQ_ConformanceResult}
+ * {@code   ├─specification……………} Citation of product specification or user requirement against which data is being evaluated.
+ * {@code   │   ├─title………………………} Name by which the cited resource is known.
+ * {@code   │   └─date…………………………} Reference date for the cited resource.
+ * {@code   ├─explanation…………………} Explanation of the meaning of conformance for this result.
+ * {@code   └─pass……………………………………} Indication of the conformance result.</div>
  *
  * <p><b>Limitations:</b></p>
  * <ul>

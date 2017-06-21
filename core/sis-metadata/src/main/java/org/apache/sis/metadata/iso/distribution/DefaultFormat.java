@@ -43,6 +43,13 @@ import static org.opengis.annotation.Specification.ISO_19115;
 /**
  * Description of the computer language construct that specifies the representation
  * of data objects in a record, file, message, storage device or transmission channel.
+ * The following properties are mandatory in a well-formed metadata according ISO 19115:
+ *
+ * <div class="preformat">{@code MD_Format}
+ * {@code   └─formatSpecificationCitation……} Citation/URL of the specification format.
+ * {@code       ├─title……………………………………………………} Name by which the cited resource is known.
+ * {@code       └─date………………………………………………………} Reference date for the cited resource.</div>
+ *
  * Each {@code Format} instance should contain a {@linkplain #getFormatSpecificationCitation() reference
  * to the format specification}, for example <cite>"PNG (Portable Network Graphics) Specification"</cite>.
  * The specification often has an abbreviation (for example "PNG") which can be stored as an

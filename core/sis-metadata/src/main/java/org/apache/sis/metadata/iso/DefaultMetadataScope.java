@@ -32,6 +32,10 @@ import static org.opengis.annotation.Specification.ISO_19115;
 
 /**
  * Information about the scope of the resource.
+ * The following property is mandatory in a well-formed metadata according ISO 19115:
+ *
+ * <div class="preformat">{@code MD_MetadataScope}
+ * {@code   └─resourceScope……} Resource scope</div>
  *
  * <div class="warning"><b>Note on International Standard versions</b><br>
  * This class is derived from a new type defined in the ISO 19115 international standard published in 2014,

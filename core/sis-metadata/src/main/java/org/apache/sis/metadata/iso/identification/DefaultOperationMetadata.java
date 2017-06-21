@@ -40,6 +40,13 @@ import static org.opengis.annotation.Specification.ISO_19115;
 
 /**
  * Parameter information.
+ * The following properties are mandatory in a well-formed metadata according ISO 19115:
+ *
+ * <div class="preformat">{@code SV_OperationMetadata}
+ * {@code   ├─operationName……………………………………………} A unique identifier for this interface.
+ * {@code   ├─distributedComputingPlatform……} Distributed computing platforms on which the operation has been implemented.
+ * {@code   └─connectPoint………………………………………………} Handle for accessing the service interface.
+ * {@code       └─linkage…………………………………………………} Location for on-line access using a URL address or similar addressing scheme.</div>
  *
  * <div class="warning"><b>Note on International Standard versions</b><br>
  * This class is derived from a new type defined in the ISO 19115 international standard published in 2014,
