@@ -83,20 +83,16 @@ public final strictfp class StandardDateFormatTest extends TestCase {
 
     /**
      * Tests formatting and parsing a negative year.
-     * This test uses the Julian epoch (January 1st, 4713 BC at 12:00 UTC).
+     * This test uses the Julian epoch (January 1st, 4713 BC at 12:00 UTC in proleptic Julian calendar;
+     * equivalent to November 24, 4714 BC when expressed in the proleptic Gregorian calendar instead).
+     * We use astronomical year numbering: 4714 BC is numbered -4713.
      *
      * @throws ParseException if an error occurred while parsing the date.
      */
     @Test
     public void testNegativeYear() throws ParseException {
-        final Date julian = new Date(-210866760000000L);                // Same epoch than CommonCRS.Temporal.JULIAN.
-        /*
-         * java.util.Date and java.time.format disagree on the result of formatting that date,
-         * maybe because they handle differently some aspects like the transition from Julian
-         * calendar to Gregorian calendar (10 days).  For Julian day calculation purpose, the
-         * java.util.Date way is a more accurate match.
-         */
-        final String expected = "-4713-11-24T12:00:00.000";
+        final Date julian = new Date(-210866760000000L);            // Same epoch than CommonCRS.Temporal.JULIAN.
+        final String expected = "-4713-11-24T12:00:00.000";         // Proleptic Gregorian calendar, astronomical year.
         final StandardDateFormat f = new StandardDateFormat();
         assertEquals(expected, f.format(julian));
         assertEquals(julian, f.parse(expected));
