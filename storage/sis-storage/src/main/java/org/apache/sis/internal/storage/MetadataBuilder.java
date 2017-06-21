@@ -34,7 +34,6 @@ import org.opengis.metadata.citation.Role;
 import org.opengis.metadata.citation.DateType;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.citation.CitationDate;
-import org.opengis.metadata.citation.Responsibility;
 import org.opengis.metadata.spatial.Dimension;
 import org.opengis.metadata.spatial.DimensionNameType;
 import org.opengis.metadata.spatial.CellGeometry;
@@ -106,6 +105,7 @@ import static org.apache.sis.internal.util.StandardDateFormat.MILLISECONDS_PER_D
 // Branch-dependent imports
 import java.time.LocalDate;
 import org.opengis.feature.FeatureType;
+import org.opengis.metadata.citation.Responsibility;
 
 
 /**
@@ -1224,7 +1224,7 @@ public class MetadataBuilder {
     }
 
     /**
-     * Adds s role, name, contact and position information for an individual or organization that is responsible
+     * Adds role, name, contact and position information for an individual or organization that is responsible
      * for the resource. This method can be used as an alternative to {@link #addAuthor(CharSequence)} when the
      * caller needs to create the responsibly party itself.
      *
