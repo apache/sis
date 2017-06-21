@@ -41,6 +41,7 @@ import java.time.temporal.TemporalAccessor;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
 import java.time.format.DateTimeParseException;
+import java.time.format.SignStyle;
 
 
 /**
@@ -88,7 +89,7 @@ public final class StandardDateFormat extends DateFormat {
      */
     public static final DateTimeFormatter FORMAT = new DateTimeFormatterBuilder()
             // parseLenient() is for allowing fields with one digit instead of two.
-            .parseLenient()                    .appendValue(ChronoField.YEAR,             4)    // Proleptic year (use negative number if needed).
+            .parseLenient()                    .appendValue(ChronoField.YEAR, 4, 5, SignStyle.NORMAL)    // Proleptic year (use negative number if needed).
             .optionalStart().appendLiteral('-').appendValue(ChronoField.MONTH_OF_YEAR,    2)
             .optionalStart().appendLiteral('-').appendValue(ChronoField.DAY_OF_MONTH,     2)
             .optionalStart().appendLiteral('T').appendValue(ChronoField.HOUR_OF_DAY,      2)
