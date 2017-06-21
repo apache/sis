@@ -27,8 +27,14 @@ import org.opengis.metadata.constraint.LegalConstraints;
 
 /**
  * Restrictions and legal prerequisites for accessing and using the resource.
+ * The following properties are mandatory or conditional (i.e. mandatory under some circumstances)
+ * in a well-formed metadata according ISO 19115:
  *
- * <div class="section">Relationship between properties</div>
+ * <div class="preformat">{@code MD_LegalConstraints}
+ * {@code   ├─accessConstraints……} Access constraints applied to assure the protection of privacy or intellectual property.
+ * {@code   ├─useConstraints……………} Constraints applied to assure the protection of privacy or intellectual property.
+ * {@code   └─otherConstraints………} Other restrictions and legal prerequisites for accessing and using the resource.</div>
+ *
  * The {@linkplain #getOtherConstraints() other constraints} collection shall be non-empty if
  * {@linkplain #getAccessConstraints() access constraints} and/or {@linkplain #getUseConstraints()
  * use constraints} elements have a value of {@link Restriction#OTHER_RESTRICTIONS}.

@@ -40,6 +40,11 @@ import static org.apache.sis.internal.metadata.MetadataUtilities.ensurePositive;
 
 /**
  * Information about the media on which the resource can be distributed.
+ * The following property is mandatory or conditional (i.e. mandatory under some circumstances)
+ * in a well-formed metadata according ISO 19115:
+ *
+ * <div class="preformat">{@code MD_Medium}
+ * {@code   └─densityUnits……} Units of measure for the recording density.</div>
  *
  * <p><b>Limitations:</b></p>
  * <ul>

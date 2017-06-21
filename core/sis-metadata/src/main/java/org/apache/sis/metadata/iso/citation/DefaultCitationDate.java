@@ -31,6 +31,11 @@ import static org.apache.sis.internal.metadata.MetadataUtilities.toMilliseconds;
 
 /**
  * Reference date and event used to describe it.
+ * The following properties are mandatory in a well-formed metadata according ISO 19115:
+ *
+ * <div class="preformat">{@code CI_Date}
+ * {@code   ├─date………………} Reference date for the cited resource.
+ * {@code   └─dateType……} Event used for reference date.</div>
  *
  * <p><b>Limitations:</b></p>
  * <ul>

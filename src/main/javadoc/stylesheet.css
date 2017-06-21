@@ -212,6 +212,15 @@ div.block center {
 }
 
 /*
+ * Text similar to <pre> but without monospace font.
+ */
+div.preformat {
+  margin: 15px 30px;
+  line-height: 100%;
+  white-space: pre-wrap;
+}
+
+/*
  * Output of {@preformat} inline tag.
  */
 pre.code-sample {

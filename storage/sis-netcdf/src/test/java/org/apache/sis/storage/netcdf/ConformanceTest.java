@@ -21,6 +21,7 @@ import java.io.IOException;
 import ucar.nc2.NetcdfFile;
 import org.opengis.metadata.Metadata;
 import org.opengis.metadata.citation.Role;
+import org.opengis.metadata.citation.DateType;
 import org.opengis.metadata.extent.TemporalExtent;
 import org.opengis.metadata.identification.DataIdentification;
 import org.opengis.metadata.maintenance.ScopeCode;
@@ -29,7 +30,9 @@ import org.apache.sis.metadata.iso.DefaultMetadataScope;
 import org.apache.sis.internal.netcdf.Decoder;
 import org.apache.sis.internal.netcdf.ucar.DecoderWrapper;
 import org.apache.sis.internal.netcdf.TestCase;
+import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.test.DependsOn;
+import org.apache.sis.test.TestUtilities;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
@@ -44,7 +47,7 @@ import static org.junit.Assert.*;
  * For a test using the SIS embedded implementation, see {@link MetadataReaderTest}.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.3
+ * @version 0.8
  * @since   0.3
  * @module
  */
@@ -67,8 +70,12 @@ public final strictfp class ConformanceTest extends NetcdfMetadataTest {
     protected Metadata wrap(final NetcdfFile file) throws IOException {
         final Decoder decoder = new DecoderWrapper(TestCase.LISTENERS, file);
         final MetadataReader ncISO = new MetadataReader(decoder);
-        return ncISO.read();
-        // Do not close the file, as this will be done by the parent test class.
+        try {
+            return ncISO.read();
+            // Do not close the file, as this will be done by the parent test class.
+        } catch (DataStoreException e) {
+            throw new AssertionError(e);
+        }
     }
 
     /**
@@ -109,6 +116,8 @@ public final strictfp class ConformanceTest extends NetcdfMetadataTest {
         assertNull(expected.put("identificationInfo.citation.title",           "crm_v1.grd"));
         assertNull(expected.put("identificationInfo.citation.identifier.code", "crm_v1"));
         assertNull(expected.put("contentInfo.dimension.sequenceIdentifier",    "z"));
+        assertNull(expected.put("identificationInfo.citation.date.date", TestUtilities.date("2011-04-19 00:00:00")));
+        assertNull(expected.put("identificationInfo.citation.date.dateType", DateType.CREATION));
         super.testTHREDDS();
         assertArrayEquals("metadataScopes", new DefaultMetadataScope[] {
                 new DefaultMetadataScope(ScopeCode.DATASET, null),
@@ -123,7 +132,7 @@ public final strictfp class ConformanceTest extends NetcdfMetadataTest {
                 getSingleton(getSingleton(metadata.getIdentificationInfo()).getPointOfContacts()));
         /*
          * Properties have been removed from the map as they were processed.
-         * Since expect every properties to have been processed, the maps should be empty by now.
+         * Since we expect every properties to have been processed, the maps should be empty by now.
          */
         assertEmpty(expectedProperties);
         assertEmpty(actualProperties);

@@ -31,6 +31,10 @@ import org.apache.sis.util.iso.Types;
 
 /**
  * Keywords, their type and reference source.
+ * The following property is mandatory in a well-formed metadata according ISO 19115:
+ *
+ * <div class="preformat">{@code MD_Keywords}
+ * {@code   └─keyword……} Commonly used word(s) or formalised word(s) or phrase(s) used to describe the subject.</div>
  *
  * <p><b>Limitations:</b></p>
  * <ul>

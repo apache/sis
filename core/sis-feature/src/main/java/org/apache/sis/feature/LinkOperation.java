@@ -70,8 +70,11 @@ final class LinkOperation extends AbstractOperation {
      *
      * @see FeatureOperations#link(Map, PropertyType)
      */
-    LinkOperation(final Map<String,?> identification, final PropertyType referent) {
+    LinkOperation(final Map<String,?> identification, PropertyType referent) {
         super(identification);
+        if (referent instanceof LinkOperation) {
+            referent = ((LinkOperation) referent).result;
+        }
         result = referent;
         referentName = referent.getName().toString();
     }

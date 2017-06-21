@@ -19,6 +19,7 @@ package org.apache.sis.math;
 import java.util.Arrays;
 import java.io.Serializable;
 import org.apache.sis.measure.NumberRange;
+import org.apache.sis.util.Numbers;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 
@@ -36,7 +37,12 @@ abstract class SequenceVector extends Vector implements Serializable {
     /**
      * For cross-version compatibility.
      */
-    private static final long serialVersionUID = 7980737287789566091L;
+    private static final long serialVersionUID = 2544089499300079707L;
+
+    /**
+     * The type of values in the vector.
+     */
+    final Class<? extends Number> type;
 
     /**
      * The length of this vector.
@@ -46,12 +52,21 @@ abstract class SequenceVector extends Vector implements Serializable {
     /**
      * Creates a sequence of numbers of the given length.
      */
-    SequenceVector(final int length) {
+    SequenceVector(final Class<? extends Number> type, final int length) {
+        this.type   = type;
         this.length = length;
         if (length < 0) {
             throw new IllegalArgumentException(Errors.format(
                     Errors.Keys.IllegalArgumentValue_2, "length", length));
         }
+    }
+
+    /**
+     * Returns the type of elements.
+     */
+    @Override
+    public final Class<? extends Number> getElementType() {
+        return type;
     }
 
     /**
@@ -137,24 +152,20 @@ abstract class SequenceVector extends Vector implements Serializable {
         /**
          * Creates a sequence of numbers in a given range of values using the given increment.
          *
+         * @param  type       the type of elements in the sequence.
          * @param  first      the first value, inclusive.
          * @param  increment  the difference between the values at two adjacent indexes.
          * @param  length     the length of the vector.
          */
-        Doubles(final Number first, final Number increment, final int length) {
-            super(length);
+        Doubles(final Class<? extends Number> type, final Number first, final Number increment, final int length) {
+            super(type, length);
             this.first     = first.doubleValue();
             this.increment = increment.doubleValue();
         }
 
         /** Creates a new sequence for a subrange of this vector. */
         @Override Vector createSubSampling(final int offset, final int step, final int n) {
-            return new Doubles(doubleValue(offset), increment*step, n);
-        }
-
-        /** Returns the type of elements. */
-        @Override public Class<Double> getElementType() {
-            return Double.class;
+            return new Doubles(type, doubleValue(offset), increment*step, n);
         }
 
         /** Returns {@code true} if this vector contains only integer values. */
@@ -187,23 +198,24 @@ abstract class SequenceVector extends Vector implements Serializable {
 
         /** Computes the value at the given index. */
         @Override public Number get(final int index) {
-            return doubleValue(index);
+            return Numbers.wrap(doubleValue(index), type);
         }
 
         /** Returns the increment between all consecutive values */
         @Override public Number increment(final double tolerance) {
-            return increment;
+            return Numbers.wrap(increment, type);
         }
 
         /** Computes the minimal and maximal values in this vector. */
-        @Override public NumberRange<Double> range() {
+        @SuppressWarnings({"unchecked","rawtypes"})
+        @Override public NumberRange<?> range() {
             double min = first;
             double max = first + increment * (length - 1);
             if (max < min) {
                 min = max;
                 max = first;
             }
-            return NumberRange.create(min, true, max, true);
+            return new NumberRange(type, Numbers.wrap(min, type), true, Numbers.wrap(max, type), true);
         }
     }
 
@@ -231,24 +243,20 @@ abstract class SequenceVector extends Vector implements Serializable {
         /**
          * Creates a sequence of numbers in a given range of values using the given increment.
          *
+         * @param  type       the type of elements in the sequence.
          * @param  first      the first value, inclusive.
          * @param  increment  the difference between the values at two adjacent indexes.
          * @param  length     the length of the vector.
          */
-        Longs(final Number first, final Number increment, final int length) {
-            super(length);
+        Longs(final Class<? extends Number> type, final Number first, final Number increment, final int length) {
+            super(type, length);
             this.first     = first.longValue();
             this.increment = increment.longValue();
         }
 
         /** Creates a new sequence for a subrange of this vector. */
         @Override Vector createSubSampling(final int offset, final int step, final int n) {
-            return new Longs(longValue(offset), increment*step, n);
-        }
-
-        /** Returns the type of elements. */
-        @Override public Class<Long> getElementType() {
-            return Long.class;
+            return new Longs(type, longValue(offset), increment*step, n);
         }
 
         /** Returns {@code true} since this vector contains only integer values. */
@@ -284,23 +292,24 @@ abstract class SequenceVector extends Vector implements Serializable {
 
         /** Computes the value at the given index. */
         @Override public Number get(final int index) {
-            return longValue(index);
+            return Numbers.wrap(longValue(index), type);
         }
 
         /** Returns the increment between all consecutive values */
         @Override public Number increment(final double tolerance) {
-            return increment;
+            return Numbers.wrap(increment, type);
         }
 
         /** Computes the minimal and maximal values in this vector. */
-        @Override public NumberRange<Long> range() {
+        @SuppressWarnings({"unchecked","rawtypes"})
+        @Override public NumberRange<?> range() {
             long min = first;
             long max = first + increment * (length - 1);
             if (max < min) {
                 min = max;
                 max = first;
             }
-            return NumberRange.create(min, true, max, true);
+            return new NumberRange(type, Numbers.wrap(min, type), true, Numbers.wrap(max, type), true);
         }
     }
 }

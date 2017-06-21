@@ -23,6 +23,10 @@ import org.opengis.metadata.quality.TopologicalConsistency;
 
 /**
  * Correctness of the explicitly encoded topological characteristics of the dataset as described by the scope.
+ * The following property is mandatory in a well-formed metadata according ISO 19115:
+ *
+ * <div class="preformat">{@code DQ_TopologicalConsistency}
+ * {@code   └─result……………} Value obtained from applying a data quality measure.</div>
  *
  * <p><b>Limitations:</b></p>
  * <ul>

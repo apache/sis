@@ -32,6 +32,10 @@ import org.apache.sis.internal.jaxb.gmx.MimeFileTypeAdapter;
 
 /**
  * Graphic that provides an illustration of the dataset (should include a legend for the graphic).
+ * The following property is mandatory in a well-formed metadata according ISO 19115:
+ *
+ * <div class="preformat">{@code MD_BrowseGraphic}
+ * {@code   └─fileName…………} Name of the file that contains a graphic that provides an illustration of the dataset.</div>
  *
  * <p><b>Limitations:</b></p>
  * <ul>

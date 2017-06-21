@@ -34,6 +34,11 @@ import static org.apache.sis.internal.metadata.MetadataUtilities.ensurePositive;
 
 /**
  * Axis properties.
+ * The following properties are mandatory in a well-formed metadata according ISO 19115:
+ *
+ * <div class="preformat">{@code MD_Dimension}
+ * {@code   ├─dimensionName……} Name of the axis.
+ * {@code   └─dimensionSize……} Number of elements along the axis.</div>
  *
  * <p><b>Limitations:</b></p>
  * <ul>
@@ -239,12 +244,12 @@ public class DefaultDimension extends ISOMetadata implements Dimension {
     }
 
     /**
-     * Returns the enhancement/ modifier of the dimension name.
+     * Returns the enhancement / modifier of the dimension name.
      *
      * <div class="note"><b>Example:</b>
      * dimensionName = "column", dimensionTitle = "longitude"</div>
      *
-     * @return the enhancement/ modifier of the dimension name.
+     * @return the enhancement / modifier of the dimension name.
      *
      * @since 0.5
      */
@@ -255,9 +260,9 @@ public class DefaultDimension extends ISOMetadata implements Dimension {
     }
 
     /**
-     * Sets the enhancement/ modifier of the dimension name.
+     * Sets the enhancement / modifier of the dimension name.
      *
-     * @param  newValue  the new enhancement/ modifier of the dimension name.
+     * @param  newValue  the new enhancement / modifier of the dimension name.
      *
      * @since 0.5
      */

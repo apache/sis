@@ -23,6 +23,10 @@ import org.opengis.metadata.quality.GriddedDataPositionalAccuracy;
 
 /**
  * Closeness of gridded data position values to values accepted as or being true.
+ * The following property is mandatory in a well-formed metadata according ISO 19115:
+ *
+ * <div class="preformat">{@code DQ_GriddedDataPositionalAccuracy}
+ * {@code   └─result……………} Value obtained from applying a data quality measure.</div>
  *
  * <p><b>Limitations:</b></p>
  * <ul>
