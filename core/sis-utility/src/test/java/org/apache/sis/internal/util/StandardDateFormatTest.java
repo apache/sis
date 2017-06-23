@@ -17,6 +17,7 @@
 package org.apache.sis.internal.util;
 
 import java.util.Date;
+import java.util.concurrent.TimeUnit;
 import java.text.ParseException;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
@@ -39,6 +40,17 @@ import java.time.LocalDateTime;
  * @module
  */
 public final strictfp class StandardDateFormatTest extends TestCase {
+    /**
+     * Verifies the {@link StandardDateFormat#MILLISECONDS_PER_DAY}, {@link StandardDateFormat#NANOS_PER_MILLISECOND}
+     * and {@link StandardDateFormat#NANOS_PER_SECOND} constant values.
+     */
+    @Test
+    public void verifyConstantValues() {
+        assertEquals("MILLISECONDS_PER_DAY",  TimeUnit.DAYS.toMillis(1),        StandardDateFormat.MILLISECONDS_PER_DAY);
+        assertEquals("NANOS_PER_MILLISECOND", TimeUnit.MILLISECONDS.toNanos(1), StandardDateFormat.NANOS_PER_MILLISECOND);
+        assertEquals("NANOS_PER_SECOND",      TimeUnit.SECONDS.toNanos(1),      StandardDateFormat.NANOS_PER_SECOND);
+    }
+
     /**
      * Tests parsing a date.
      * Since the implementation is completely different in JDK8 branch than in previous branch,

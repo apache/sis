@@ -21,6 +21,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Random;
 import org.opengis.feature.Feature;
+import org.apache.sis.internal.util.StandardDateFormat;
 
 import static java.util.Collections.singletonMap;
 
@@ -179,7 +180,7 @@ public final class FeatureMemoryBenchmark {
                 long time = System.nanoTime();
                 b.run();
                 time = System.nanoTime() - time;
-                System.console().printf("Ellapsed time: %f%n", time / 1E+9);
+                System.console().printf("Ellapsed time: %f%n", time / (float) StandardDateFormat.NANOS_PER_SECOND);
                 return;
             }
         }

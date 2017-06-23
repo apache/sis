@@ -35,6 +35,7 @@ import org.junit.Test;
 
 import static org.apache.sis.test.Assert.*;
 import static org.apache.sis.internal.util.StandardDateFormat.MILLISECONDS_PER_DAY;
+import static org.apache.sis.internal.util.StandardDateFormat.NANOS_PER_SECOND;
 
 
 /**
@@ -559,7 +560,7 @@ public final strictfp class RangeSetTest extends TestCase {
                     set.remove(lower, upper);
                 }
             }
-            out.print((System.nanoTime() - start) / 1E9);
+            out.print((System.nanoTime() - start) / (float) NANOS_PER_SECOND);
             out.print(" seconds for a size of ");
             out.println(set.size());
             Thread.sleep(1000);
