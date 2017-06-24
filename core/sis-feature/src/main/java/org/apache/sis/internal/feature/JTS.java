@@ -48,7 +48,8 @@ final class JTS extends Geometries {
      * Creates the singleton instance.
      */
     JTS() throws ClassNotFoundException, NoSuchMethodException {
-        super(Class.forName("com.vividsolutions.jts.geom.Geometry"),
+        super(/*GeometryLibrary.JTS, */ null,                               // TODO
+              Class.forName("com.vividsolutions.jts.geom.Geometry"),
               Class.forName("com.vividsolutions.jts.geom.Point"));
         getEnvelopeInternal = rootClass.getMethod("getEnvelopeInternal", (Class[]) null);
         final Class<?> envt = getEnvelopeInternal.getReturnType();

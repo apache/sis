@@ -23,6 +23,7 @@ import com.esri.core.geometry.MultiPath;
 import com.esri.core.geometry.Polyline;
 import com.esri.core.geometry.Point;
 import org.apache.sis.geometry.GeneralEnvelope;
+import org.apache.sis.setup.GeometryLibrary;
 import org.apache.sis.math.Vector;
 
 
@@ -42,7 +43,7 @@ final class ESRI extends Geometries {
      * Creates the singleton instance.
      */
     ESRI() {
-        super(Geometry.class, Point.class);
+        super(GeometryLibrary.ESRI, Geometry.class, Point.class);
     }
 
     /**
