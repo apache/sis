@@ -17,6 +17,8 @@
 package org.apache.sis.internal.storage.gpx;
 
 import java.net.URISyntaxException;
+import org.opengis.util.NameFactory;
+import org.opengis.util.FactoryException;
 import org.opengis.metadata.Metadata;
 import org.opengis.metadata.distribution.Format;
 import org.apache.sis.storage.StorageConnector;
@@ -24,10 +26,14 @@ import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.storage.ConcurrentReadException;
 import org.apache.sis.storage.IllegalNameException;
+import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.internal.storage.xml.stream.StaxDataStore;
 import org.apache.sis.util.collection.BackingStoreException;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Version;
+import org.apache.sis.setup.OptionKey;
+import org.apache.sis.setup.GeometryLibrary;
+import org.apache.sis.util.iso.DefaultNameFactory;
 import org.apache.sis.util.iso.SimpleInternationalString;
 import org.apache.sis.metadata.iso.citation.DefaultCitation;
 import org.apache.sis.metadata.iso.distribution.DefaultFormat;
@@ -84,7 +90,14 @@ public final class Store extends StaxDataStore {
      */
     public Store(final StoreProvider provider, final StorageConnector connector) throws DataStoreException {
         super(provider, connector);
-        types = Types.DEFAULT;
+        final GeometryLibrary library = connector.getOption(OptionKey.GEOMETRY_LIBRARY);
+        if (library == null || Types.DEFAULT.geometries.library == library) {
+            types = Types.DEFAULT;
+        } else try {
+            types = new Types(DefaultFactories.forBuildin(NameFactory.class, DefaultNameFactory.class), null, library);
+        } catch (FactoryException e) {
+            throw new DataStoreException(e);
+        }
     }
 
     /**

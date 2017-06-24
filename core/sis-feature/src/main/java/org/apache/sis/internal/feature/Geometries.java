@@ -22,6 +22,7 @@ import java.util.logging.LogRecord;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.geometry.GeneralEnvelope;
+import org.apache.sis.setup.GeometryLibrary;
 import org.apache.sis.math.Vector;
 
 
@@ -50,6 +51,11 @@ public abstract class Geometries {
     }
 
     /**
+     * The enumeration that identifies the geometry library used.
+     */
+    public final GeometryLibrary library;
+
+    /**
      * The root geometry class.
      */
     public final Class<?> rootClass;
@@ -72,7 +78,8 @@ public abstract class Geometries {
     /**
      * Creates a new adapter for the given root geometry class.
      */
-    Geometries(final Class<?> rootClass, final Class<?> pointClass) {
+    Geometries(final GeometryLibrary library, final Class<?> rootClass, final Class<?> pointClass) {
+        this.library    = library;
         this.rootClass  = rootClass;
         this.pointClass = pointClass;
         fallback = implementation;
@@ -99,10 +106,18 @@ public abstract class Geometries {
     /**
      * Returns an accessor to the default geometry library implementation in use.
      *
+     * @param  library  the required library, or {@code null} for the default.
      * @return the default geometry implementation.
+     * @throws IllegalArgumentException if the given library is non-null but not available.
      */
-    public static Geometries implementation() {
-        return implementation;
+    public static Geometries implementation(final GeometryLibrary library) {
+        if (library == null) {
+            return implementation;
+        }
+        for (Geometries g = implementation; g != null; g = g.fallback) {
+            if (g.library == library) return g;
+        }
+        throw new IllegalArgumentException(Resources.format(Resources.Keys.UnavailableGeometryLibrary_1, library));
     }
 
     /**

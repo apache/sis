@@ -26,6 +26,7 @@ import org.opengis.util.GenericName;
 import org.opengis.util.NameFactory;
 import org.opengis.util.FactoryException;
 import org.opengis.util.InternationalString;
+import org.apache.sis.setup.GeometryLibrary;
 import org.opengis.metadata.citation.OnlineResource;
 import org.opengis.metadata.content.ContentInformation;
 import org.apache.sis.storage.gps.Fix;
@@ -104,7 +105,7 @@ final class Types {
     static final Types DEFAULT;
     static {
         try {
-            DEFAULT = new Types(DefaultFactories.forBuildin(NameFactory.class, DefaultNameFactory.class), null);
+            DEFAULT = new Types(DefaultFactories.forBuildin(NameFactory.class, DefaultNameFactory.class), null, null);
         } catch (FactoryException | IllegalNameException e) {
             throw new AssertionError(e);        // Should never happen with DefaultNameFactory implementation.
         }
@@ -115,10 +116,13 @@ final class Types {
      *
      * @param  factory   the factory to use for creating names, or {@code null} for the default factory.
      * @param  locale    the locale to use for formatting error messages, or {@code null} for the default locale.
+     * @param  library   the required geometry library, or {@code null} for the default.
      * @throws FactoryException if an error occurred while creating an "envelope bounds" operation.
      */
-    Types(final NameFactory factory, final Locale locale) throws FactoryException, IllegalNameException {
-        geometries = Geometries.implementation();
+    Types(final NameFactory factory, final Locale locale, final GeometryLibrary library)
+            throws FactoryException, IllegalNameException
+    {
+        geometries = Geometries.implementation(library);
         final Map<String,InternationalString[]> resources = new HashMap<>();
         final ScopedName    geomName = AttributeConvention.GEOMETRY_PROPERTY;
         final Map<String,?> geomInfo = Collections.singletonMap(AbstractIdentifiedType.NAME_KEY, geomName);

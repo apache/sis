@@ -149,6 +149,11 @@ public final class Resources extends IndexedResourceBundle {
         public static final short PropertyNotFound_2 = 16;
 
         /**
+         * The {0} geometry library is not available in current runtime environment.
+         */
+        public static final short UnavailableGeometryLibrary_1 = 21;
+
+        /**
          * The “{1}” value given to “{0}” property should be separable in {2} components, but we got
          * {3}.
          */

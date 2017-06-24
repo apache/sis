@@ -23,6 +23,7 @@ import java.awt.geom.Path2D;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import org.apache.sis.geometry.GeneralEnvelope;
+import org.apache.sis.setup.GeometryLibrary;
 import org.apache.sis.internal.referencing.j2d.ShapeUtilities;
 import org.apache.sis.math.Vector;
 
@@ -43,7 +44,7 @@ final class Java2D extends Geometries {
      * Creates the singleton instance.
      */
     Java2D() {
-        super(Shape.class, Point2D.class);
+        super(GeometryLibrary.JAVA2D, Shape.class, Point2D.class);
     }
 
     /**
