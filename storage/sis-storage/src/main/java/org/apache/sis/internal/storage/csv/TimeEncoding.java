@@ -100,8 +100,8 @@ class TimeEncoding extends SurjectiveConverter<String,Instant> {
         return Instant.ofEpochMilli(millis + origin)
                       .plusNanos(Math.round((value - millis) * StandardDateFormat.NANOS_PER_MILLISECOND));
         /*
-         * Performance note: the call to .plusNano(…) will usually return 'this'
-         * since the time granularity is rarely finer than milliseconds.
+         * Performance note: the call to .plusNano(…) will usually return the same 'Instant' instance
+         * (without creating new object) since the time granularity is rarely finer than milliseconds.
          */
     }
 

@@ -133,6 +133,12 @@ public final class Resources extends IndexedResourceBundle {
         public static final short NotASingleton_1 = 14;
 
         /**
+         * The {0} optional library is not available. Geometric operations will ignore that library.
+         * Cause is {1}.
+         */
+        public static final short OptionalLibraryNotFound_2 = 19;
+
+        /**
          * Property “{1}” already exists in feature “{0}”.
          */
         public static final short PropertyAlreadyExists_2 = 15;
@@ -152,6 +158,11 @@ public final class Resources extends IndexedResourceBundle {
          * Feature named “{0}” has not yet been resolved.
          */
         public static final short UnresolvedFeatureName_1 = 18;
+
+        /**
+         * Unsupported geometry {0}D object.
+         */
+        public static final short UnsupportedGeometryObject_1 = 20;
     }
 
     /**

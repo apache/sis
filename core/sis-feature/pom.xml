@@ -122,6 +122,7 @@ Representations of geographic features.
     <dependency>
       <groupId>com.esri.geometry</groupId>
       <artifactId>esri-geometry-api</artifactId>
+      <scope>provided</scope>
     </dependency>
 
     <!-- Test dependencies -->
