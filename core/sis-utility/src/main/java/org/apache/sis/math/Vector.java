@@ -207,7 +207,7 @@ public abstract class Vector extends AbstractList<Number> implements RandomAcces
      * may not match:</p>
      *
      * <ul>
-     *   <li>If this vector {@linkplan #isUnsigned() is unsigned}, then the values returned by {@code get(int)}
+     *   <li>If this vector {@linkplain #isUnsigned() is unsigned}, then the values returned by {@code get(int)}
      *       may be instances of a type wider than the type used by this vector for storing the values.</li>
      *   <li>If this vector has been {@linkplain #createForDecimal(float[]) created for decimal numbers},
      *       then the values returned by {@code get(int)} will use double-precision even if this vector
