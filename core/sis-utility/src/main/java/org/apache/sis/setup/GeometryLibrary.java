@@ -16,6 +16,8 @@
  */
 package org.apache.sis.setup;
 
+import org.opengis.metadata.acquisition.GeometryType;
+
 
 /**
  * Some libraries providing geometric objects or topological operations.
@@ -29,6 +31,7 @@ package org.apache.sis.setup;
  * @version 0.8
  *
  * @see OptionKey#GEOMETRY_LIBRARY
+ * @see GeometryType
  *
  * @since 0.8
  * @module
@@ -37,24 +40,36 @@ public enum GeometryLibrary {
     /**
      * The Java Topology Suite (JTS) library. This open source library provides an object model
      * for Euclidean planar geometry together with a set of fundamental geometric functions.
+     * The library is licensed under Eclipse Distribution License.
      *
-     * <ul>
-     *   <li><b>Package name:</b> {@code com.vividsolutions.jts.geom}</li>
-     *   <li><b>Web site:</b> <a href="http://locationtech.github.io/jts/">http://locationtech.github.io/jts/</a></li>
-     *   <li><b>License:</b> LGPL prior JTS 1.14, Eclipse Distribution License afterward.</li>
-     * </ul>
+     * <table class="sis">
+     *   <caption>Implementation classes</caption>
+     *   <tr><th>Geometry type</th>               <th>Class name</th></tr>
+     *   <tr><td>Root geometry class</td>         <td>{@code org.locationtech.jts.geom.Geometry}</td></tr>
+     *   <tr><td>{@link GeometryType#POINT}</td>  <td>{@code org.locationtech.jts.geom.Point}</td></tr>
+     *   <tr><td>{@link GeometryType#LINEAR}</td> <td>{@code org.locationtech.jts.geom.LineString}</td></tr>
+     *   <tr><td>{@link GeometryType#AREAL}</td>  <td>{@code org.locationtech.jts.geom.Polygon}</td></tr>
+     * </table>
+     *
+     * @see <a href="http://locationtech.github.io/jts/">JTS home page</a>
      */
 //  JTS,
 
     /**
      * The ESRI geometry API library. This library can be used for spatial vector data processing.
      * It is used in ESRI GIS Tools for Hadoop and has an Android port.
+     * The library is available under Apache 2 license.
      *
-     * <ul>
-     *   <li><b>Package name:</b> {@code com.esri.core.geometry}</li>
-     *   <li><b>Web site:</b> <a href="https://github.com/Esri/geometry-api-java/wiki">https://github.com/Esri/geometry-api-java/wiki</a></li>
-     *   <li><b>License:</b> Apache 2.</li>
-     * </ul>
+     * <table class="sis">
+     *   <caption>Implementation classes</caption>
+     *   <tr><th>Geometry type</th>               <th>Class name</th></tr>
+     *   <tr><td>Root geometry class</td>         <td>{@code com.esri.core.geometry.Geometry}</td></tr>
+     *   <tr><td>{@link GeometryType#POINT}</td>  <td>{@code com.esri.core.geometry.Point}</td></tr>
+     *   <tr><td>{@link GeometryType#LINEAR}</td> <td>{@code com.esri.core.geometry.Polyline}</td></tr>
+     *   <tr><td>{@link GeometryType#AREAL}</td>  <td>{@code com.esri.core.geometry.Polygon}</td></tr>
+     * </table>
+     *
+     * @see <a href="https://github.com/Esri/geometry-api-java/wiki">API wiki page</a>
      */
     ESRI,
 
@@ -63,11 +78,18 @@ public enum GeometryLibrary {
      * than other libraries, but is available on most standard Java environments and constitute a reliable
      * fallback when no other library is available.
      *
-     * <ul>
-     *   <li><b>Package name:</b> {@code java.awt.geom}</li>
-     *   <li><b>Web site:</b> <a href="http://docs.oracle.com/javase/8/docs/technotes/guides/2d/index.html">http://docs.oracle.com/javase/8/docs/technotes/guides/2d/index.html</a></li>
-     *   <li><b>License:</b> GPL with classpath exception.</li>
-     * </ul>
+     * <table class="sis">
+     *   <caption>Implementation classes</caption>
+     *   <tr><th>Geometry type</th>               <th>Class name</th></tr>
+     *   <tr><td>{@link GeometryType#POINT}</td>  <td>{@code java.awt.geom.Point2D}</td></tr>
+     *   <tr><td>{@link GeometryType#LINEAR}</td> <td>{@code java.awt.Shape}</td></tr>
+     *   <tr><td>{@link GeometryType#AREAL}</td>  <td>{@code java.awt.Shape}</td></tr>
+     * </table>
+     *
+     * Note that contrarily to JTS and ESRI libraries,
+     * a point does not extend any root geometry class in Java2D.
+     *
+     * @see <a href="http://docs.oracle.com/javase/8/docs/technotes/guides/2d/index.html">Java2D home page</a>
      */
     JAVA2D
 }

@@ -44,7 +44,7 @@ final class Java2D extends Geometries {
      * Creates the singleton instance.
      */
     Java2D() {
-        super(GeometryLibrary.JAVA2D, Shape.class, Point2D.class);
+        super(GeometryLibrary.JAVA2D, Shape.class, Point2D.class, Shape.class, Shape.class);
     }
 
     /**

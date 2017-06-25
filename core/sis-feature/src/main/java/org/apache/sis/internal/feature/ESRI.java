@@ -21,6 +21,7 @@ import com.esri.core.geometry.Geometry;
 import com.esri.core.geometry.Envelope2D;
 import com.esri.core.geometry.MultiPath;
 import com.esri.core.geometry.Polyline;
+import com.esri.core.geometry.Polygon;
 import com.esri.core.geometry.Point;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.setup.GeometryLibrary;
@@ -43,7 +44,7 @@ final class ESRI extends Geometries {
      * Creates the singleton instance.
      */
     ESRI() {
-        super(GeometryLibrary.ESRI, Geometry.class, Point.class);
+        super(GeometryLibrary.ESRI, Geometry.class, Point.class, Polyline.class, Polygon.class);
     }
 
     /**

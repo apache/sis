@@ -29,6 +29,7 @@ import org.opengis.util.InternationalString;
 import org.apache.sis.setup.GeometryLibrary;
 import org.opengis.metadata.citation.OnlineResource;
 import org.opengis.metadata.content.ContentInformation;
+import org.opengis.metadata.acquisition.GeometryType;
 import org.apache.sis.storage.gps.Fix;
 import org.apache.sis.storage.FeatureNaming;
 import org.apache.sis.storage.IllegalNameException;
@@ -139,7 +140,7 @@ final class Types {
          * │ sis:identifier │ Integer │   [1 … 1]   │      SIS-specific property
          * └────────────────┴─────────┴─────────────┘
          */
-        FeatureTypeBuilder builder = new FeatureTypeBuilder(null, factory, locale);
+        final FeatureTypeBuilder builder = new FeatureTypeBuilder(factory, library, locale);
         builder.setNameSpace(Tags.PREFIX).setName("GPXEntity").setAbstract(true);
         builder.addAttribute(Integer.class).setName(AttributeConvention.IDENTIFIER_PROPERTY);
         final FeatureType parent = builder.build();
@@ -171,9 +172,8 @@ final class Types {
          * │ dgpsid           │ Integer        │ gpx:dgpsStationType    │   [0 … 1]   │
          * └──────────────────┴────────────────┴────────────────────────┴─────────────┘
          */
-        builder = new FeatureTypeBuilder(null, factory, locale).setSuperTypes(parent);
-        builder.setNameSpace(Tags.PREFIX).setName("WayPoint");
-        builder.addAttribute(geometries.pointClass).setName(geomName)
+        builder.clear().setSuperTypes(parent).setNameSpace(Tags.PREFIX).setName("WayPoint");
+        builder.addAttribute(GeometryType.POINT).setName(geomName)
                 .setCRS(CommonCRS.WGS84.normalizedGeographic())
                 .addRole(AttributeRole.DEFAULT_GEOMETRY);
         builder.setDefaultCardinality(0, 1);
@@ -216,8 +216,7 @@ final class Types {
          */
         final AttributeType<?> groupResult = GroupAsPolylineOperation.getResult(geometries);
         GroupAsPolylineOperation groupOp = new GroupAsPolylineOperation(geomInfo, Tags.ROUTE_POINTS, groupResult);
-        builder = new FeatureTypeBuilder(null, factory, locale).setSuperTypes(parent);
-        builder.setNameSpace(Tags.PREFIX).setName("Route");
+        builder.clear().setSuperTypes(parent).setNameSpace(Tags.PREFIX).setName("Route");
         builder.addProperty(groupOp);
         builder.addProperty(FeatureOperations.envelope(envpInfo, null, groupOp));
         builder.setDefaultCardinality(0, 1);
@@ -242,8 +241,7 @@ final class Types {
          * └────────────────┴──────────┴─────────────┴─────────────┘
          */
         groupOp = new GroupAsPolylineOperation(geomInfo, Tags.TRACK_POINTS, groupResult);
-        builder = new FeatureTypeBuilder(null, factory, locale).setSuperTypes(parent);
-        builder.setNameSpace(Tags.PREFIX).setName("TrackSegment");
+        builder.clear().setSuperTypes(parent).setNameSpace(Tags.PREFIX).setName("TrackSegment");
         builder.addProperty(groupOp);
         builder.addProperty(FeatureOperations.envelope(envpInfo, null, groupOp));
         builder.setDefaultCardinality(0, 1);
@@ -268,8 +266,7 @@ final class Types {
          * └────────────────┴────────────────┴────────────────────────┴─────────────┘
          */
         groupOp = new GroupAsPolylineOperation(geomInfo, Tags.TRACK_SEGMENTS, groupResult);
-        builder = new FeatureTypeBuilder(null, factory, locale).setSuperTypes(parent);
-        builder.setNameSpace(Tags.PREFIX).setName("Track");
+        builder.clear().setSuperTypes(parent).setNameSpace(Tags.PREFIX).setName("Track");
         builder.addProperty(groupOp);
         builder.addProperty(FeatureOperations.envelope(envpInfo, null, groupOp));
         builder.setDefaultCardinality(0, 1);
