@@ -61,9 +61,9 @@ public abstract class Geometries {
     public final Class<?> rootClass;
 
     /**
-     * The class for a point.
+     * The class for a point, ployline and polygon.
      */
-    public final Class<?> pointClass;
+    public final Class<?> pointClass, polylineClass, polygonClass;
 
     /**
      * The default geometry implementation to use. Unmodifiable after class initialization.
@@ -78,10 +78,14 @@ public abstract class Geometries {
     /**
      * Creates a new adapter for the given root geometry class.
      */
-    Geometries(final GeometryLibrary library, final Class<?> rootClass, final Class<?> pointClass) {
-        this.library    = library;
-        this.rootClass  = rootClass;
-        this.pointClass = pointClass;
+    Geometries(final GeometryLibrary library, final Class<?> rootClass, final Class<?> pointClass,
+            final Class<?> polylineClass, final Class<?> polygonClass)
+    {
+        this.library       = library;
+        this.rootClass     = rootClass;
+        this.pointClass    = pointClass;
+        this.polylineClass = polylineClass;
+        this.polygonClass  = polygonClass;
         fallback = implementation;
     }
 

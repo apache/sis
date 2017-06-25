@@ -50,7 +50,9 @@ final class JTS extends Geometries {
     JTS() throws ClassNotFoundException, NoSuchMethodException {
         super(/*GeometryLibrary.JTS, */ null,                               // TODO
               Class.forName("com.vividsolutions.jts.geom.Geometry"),
-              Class.forName("com.vividsolutions.jts.geom.Point"));
+              Class.forName("com.vividsolutions.jts.geom.Point"),
+              Class.forName("com.vividsolutions.jts.geom.LineString"),
+              Class.forName("com.vividsolutions.jts.geom.Polygon"));
         getEnvelopeInternal = rootClass.getMethod("getEnvelopeInternal", (Class[]) null);
         final Class<?> envt = getEnvelopeInternal.getReturnType();
         getMinX = envt.getMethod("getMinX", (Class[]) null);
