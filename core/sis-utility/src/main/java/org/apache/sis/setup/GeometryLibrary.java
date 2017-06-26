@@ -31,7 +31,7 @@ import org.opengis.metadata.acquisition.GeometryType;
  * @version 0.8
  *
  * @see OptionKey#GEOMETRY_LIBRARY
- * @see GeometryType
+ * @see org.apache.sis.feature.builder.FeatureTypeBuilder#addAttribute(GeometryType)
  *
  * @since 0.8
  * @module

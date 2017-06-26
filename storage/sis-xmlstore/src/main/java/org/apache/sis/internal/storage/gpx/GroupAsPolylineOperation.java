@@ -105,7 +105,7 @@ final class GroupAsPolylineOperation extends AbstractOperation {
      */
     static AttributeType<?> getResult(final Geometries geometries) {
         return new DefaultAttributeType<>(Collections.singletonMap(NAME_KEY, AttributeConvention.ENVELOPE_PROPERTY),
-                geometries.rootClass, 1, 1, null);
+                geometries.polylineClass, 1, 1, null);
     }
 
     /**

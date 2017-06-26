@@ -91,12 +91,10 @@ import org.opengis.feature.Operation;
  *   ┌────────────┬─────────┬─────────────┬───────────────┐
  *   │ Name       │ Type    │ Cardinality │ Default value │
  *   ├────────────┼─────────┼─────────────┼───────────────┤
- *   │ name       │ String  │ [1 … 1]     │ Utopia        │
- *   │ population │ Integer │ [1 … 1]     │               │
+ *   │ name       │ String  │     [1 … 1] │ Utopia        │
+ *   │ population │ Integer │     [1 … 1] │               │
  *   └────────────┴─────────┴─────────────┴───────────────┘
  * }
- *
- *
  *
  * <p>{@code FeatureTypeBuilder} instances should be short lived.
  * After the {@code FeatureType} has been created, the builder should be discarded.</p>
