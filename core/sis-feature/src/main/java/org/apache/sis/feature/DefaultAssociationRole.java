@@ -424,7 +424,7 @@ public class DefaultAssociationRole extends FieldType implements FeatureAssociat
                 final Class<?> valueClass = pt.getValueClass();
                 if (CharSequence.class.isAssignableFrom(valueClass) ||
                     GenericName .class.isAssignableFrom(valueClass) ||
-                    Identifier.class.isAssignableFrom(valueClass))
+                    Identifier  .class.isAssignableFrom(valueClass))
                 {
                     final String name = pt.getName().toString();
                     if (pt.getMaximumOccurs() != 0) {

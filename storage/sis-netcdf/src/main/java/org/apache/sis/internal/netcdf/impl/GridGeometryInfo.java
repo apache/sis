@@ -179,7 +179,7 @@ final class GridGeometryInfo extends GridGeometry {
     @Override
     protected double coordinateForAxis(final Object axis, final int j, final int i) throws IOException, DataStoreException {
         final VariableInfo v = ((VariableInfo) axis);
-        final int n = v.getGridEnvelope()[0];
+        final int n = v.dimensions[0].length;
         return v.read().doubleValue(j + n*i);
     }
 }

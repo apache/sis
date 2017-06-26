@@ -96,6 +96,16 @@ public final class StandardDateFormat extends SimpleDateFormat {
     public static final String PATTERN = SHORT_PATTERN + "'T'" + TIME_PATTERN;
 
     /**
+     * Number of nanoseconds in one millisecond.
+     */
+    public static final long NANOS_PER_MILLISECOND = 1000000;
+
+    /**
+     * Number of nanoseconds in one second.
+     */
+    public static final long NANOS_PER_SECOND = 1000000000;
+
+    /**
      * The length of a day in number of milliseconds.
      */
     public static final int MILLISECONDS_PER_DAY = 24*60*60*1000;
