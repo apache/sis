@@ -82,13 +82,12 @@ public abstract class PropertyTypeBuilder extends TypeBuilder {
     }
 
     /**
-     * Creates a new {@code PropertyType} builder initialized to the values of an existing property.
+     * Creates a new {@code PropertyType} builder.
      *
-     * @param owner     the builder of the {@code FeatureType} for which to add this property.
-     * @param template  an existing property to use as a template, or {@code null} if none.
+     * @param owner  the builder of the {@code FeatureType} for which to add this property.
      */
-    PropertyTypeBuilder(final FeatureTypeBuilder owner, final AbstractIdentifiedType template) {
-        super(template, owner.getLocale());
+    PropertyTypeBuilder(final FeatureTypeBuilder owner) {
+        super(owner.getLocale());
         this.owner    = owner;
         minimumOccurs = owner.defaultMinimumOccurs;
         maximumOccurs = owner.defaultMaximumOccurs;

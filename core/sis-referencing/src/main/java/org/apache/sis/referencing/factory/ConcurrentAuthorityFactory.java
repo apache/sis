@@ -56,6 +56,7 @@ import org.apache.sis.internal.system.DelayedRunnable;
 import org.apache.sis.internal.system.Shutdown;
 import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.internal.util.CollectionsExt;
+import org.apache.sis.internal.util.StandardDateFormat;
 import org.apache.sis.util.logging.PerformanceLevel;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.resources.Messages;
@@ -192,7 +193,7 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
                 value = depth;
             } else {
                 text = "%s made available %d seconds ago";
-                value = Math.round((System.nanoTime() - timestamp) / 1E+9);   // Convert nanoseconds to seconds.
+                value = Math.round((System.nanoTime() - timestamp) / (double) StandardDateFormat.NANOS_PER_SECOND);
             }
             return String.format(text, Classes.getShortClassName(factory), value);
         }
@@ -450,8 +451,8 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
                 if (caller == null) {
                     caller = "create".concat(type.getSimpleName());
                 }
-                final Double duration = time / 1E+9;
                 final PerformanceLevel level = PerformanceLevel.forDuration(time, TimeUnit.NANOSECONDS);
+                final Double duration = time / (double) StandardDateFormat.NANOS_PER_SECOND;
                 final Messages resources = Messages.getResources(null);
                 final LogRecord record;
                 if (code != null) {

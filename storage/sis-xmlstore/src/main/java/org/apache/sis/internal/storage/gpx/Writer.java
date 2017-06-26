@@ -20,11 +20,11 @@ import java.io.IOException;
 import java.util.Collection;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.bind.JAXBException;
-import com.esri.core.geometry.Point;
 import org.apache.sis.storage.gps.Fix;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.IllegalFeatureTypeException;
 import org.apache.sis.internal.storage.xml.stream.StaxStreamWriter;
+import org.apache.sis.internal.feature.Geometries;
 import org.apache.sis.util.Version;
 
 // Branch-dependent imports
@@ -191,31 +191,33 @@ final class Writer extends StaxStreamWriter {
      */
     private void writeWayPoint(final AbstractFeature feature, final String tagName) throws XMLStreamException, JAXBException {
         if (feature != null) {
-            final Point pt = (Point) feature.getPropertyValue("sis:geometry");
-            writer.writeStartElement(tagName);
-            writer.writeAttribute(Attributes.LATITUDE, Double.toString(pt.getY()));
-            writer.writeAttribute(Attributes.LONGITUDE, Double.toString(pt.getX()));
+            final double[] pt = Geometries.getCoordinate(feature.getPropertyValue("sis:geometry"));
+            if (pt != null && pt.length >= 2) {
+                writer.writeStartElement(tagName);
+                writer.writeAttribute(Attributes.LATITUDE,  Double.toString(pt[1]));
+                writer.writeAttribute(Attributes.LONGITUDE, Double.toString(pt[0]));
 
-            writeSingleValue(Tags.ELEVATION,       feature.getPropertyValue(Tags.ELEVATION));
-            writeSingleValue(Tags.TIME,            feature.getPropertyValue(Tags.TIME));
-            writeSingleValue(Tags.MAGNETIC_VAR,    feature.getPropertyValue(Tags.MAGNETIC_VAR));
-            writeSingleValue(Tags.GEOID_HEIGHT,    feature.getPropertyValue(Tags.GEOID_HEIGHT));
-            writeSingleValue(Tags.NAME,            feature.getPropertyValue(Tags.NAME));
-            writeSingleValue(Tags.COMMENT,         feature.getPropertyValue(Tags.COMMENT));
-            writeSingleValue(Tags.DESCRIPTION,     feature.getPropertyValue(Tags.DESCRIPTION));
-            writeSingleValue(Tags.SOURCE,          feature.getPropertyValue(Tags.SOURCE));
-            writeLinks((Collection<?>)             feature.getPropertyValue(Tags.LINK));
-            writeSingleValue(Tags.SYMBOL,          feature.getPropertyValue(Tags.SYMBOL));
-            writeSingleValue(Tags.TYPE,            feature.getPropertyValue(Tags.TYPE));
-            writeSingle((Fix)                      feature.getPropertyValue(Tags.FIX));
-            writeSingleValue(Tags.SATELITTES,      feature.getPropertyValue(Tags.SATELITTES));
-            writeSingleValue(Tags.HDOP,            feature.getPropertyValue(Tags.HDOP));
-            writeSingleValue(Tags.VDOP,            feature.getPropertyValue(Tags.VDOP));
-            writeSingleValue(Tags.PDOP,            feature.getPropertyValue(Tags.PDOP));
-            writeSingleValue(Tags.AGE_OF_GPS_DATA, feature.getPropertyValue(Tags.AGE_OF_GPS_DATA));
-            writeSingleValue(Tags.DGPS_ID,         feature.getPropertyValue(Tags.DGPS_ID));
+                writeSingleValue(Tags.ELEVATION,       feature.getPropertyValue(Tags.ELEVATION));
+                writeSingleValue(Tags.TIME,            feature.getPropertyValue(Tags.TIME));
+                writeSingleValue(Tags.MAGNETIC_VAR,    feature.getPropertyValue(Tags.MAGNETIC_VAR));
+                writeSingleValue(Tags.GEOID_HEIGHT,    feature.getPropertyValue(Tags.GEOID_HEIGHT));
+                writeSingleValue(Tags.NAME,            feature.getPropertyValue(Tags.NAME));
+                writeSingleValue(Tags.COMMENT,         feature.getPropertyValue(Tags.COMMENT));
+                writeSingleValue(Tags.DESCRIPTION,     feature.getPropertyValue(Tags.DESCRIPTION));
+                writeSingleValue(Tags.SOURCE,          feature.getPropertyValue(Tags.SOURCE));
+                writeLinks((Collection<?>)             feature.getPropertyValue(Tags.LINK));
+                writeSingleValue(Tags.SYMBOL,          feature.getPropertyValue(Tags.SYMBOL));
+                writeSingleValue(Tags.TYPE,            feature.getPropertyValue(Tags.TYPE));
+                writeSingle((Fix)                      feature.getPropertyValue(Tags.FIX));
+                writeSingleValue(Tags.SATELITTES,      feature.getPropertyValue(Tags.SATELITTES));
+                writeSingleValue(Tags.HDOP,            feature.getPropertyValue(Tags.HDOP));
+                writeSingleValue(Tags.VDOP,            feature.getPropertyValue(Tags.VDOP));
+                writeSingleValue(Tags.PDOP,            feature.getPropertyValue(Tags.PDOP));
+                writeSingleValue(Tags.AGE_OF_GPS_DATA, feature.getPropertyValue(Tags.AGE_OF_GPS_DATA));
+                writeSingleValue(Tags.DGPS_ID,         feature.getPropertyValue(Tags.DGPS_ID));
 
-            writer.writeEndElement();
+                writer.writeEndElement();
+            }
         }
     }
 

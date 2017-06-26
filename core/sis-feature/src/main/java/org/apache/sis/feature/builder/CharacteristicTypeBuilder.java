@@ -94,7 +94,7 @@ public final class CharacteristicTypeBuilder<V> extends TypeBuilder {
      * @param valueClass  the class of characteristic values.
      */
     CharacteristicTypeBuilder(final AttributeTypeBuilder<?> owner, final Class<V> valueClass) {
-        super(null, owner.getLocale());
+        super(owner.getLocale());
         this.owner = owner;
         this.valueClass = valueClass;
     }
@@ -105,11 +105,12 @@ public final class CharacteristicTypeBuilder<V> extends TypeBuilder {
      * @param owner  the builder of the {@code AttributeType} for which to add this property.
      */
     CharacteristicTypeBuilder(final AttributeTypeBuilder<?> owner, final DefaultAttributeType<V> template) {
-        super(template, owner.getLocale());
+        super(owner.getLocale());
         this.owner     = owner;
         characteristic = template;
         valueClass     = template.getValueClass();
         defaultValue   = template.getDefaultValue();
+        initialize(template);
     }
 
     /**

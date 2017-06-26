@@ -16,15 +16,14 @@
  */
 package org.apache.sis.internal.feature;
 
+import java.util.Iterator;
 import java.util.logging.Level;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import com.esri.core.geometry.Geometry;
-import com.esri.core.geometry.Envelope2D;
-import org.apache.sis.geometry.GeneralEnvelope;
-import org.apache.sis.util.Static;
+import java.util.logging.LogRecord;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.internal.system.Loggers;
+import org.apache.sis.geometry.GeneralEnvelope;
+import org.apache.sis.setup.GeometryLibrary;
+import org.apache.sis.math.Vector;
 
 
 /**
@@ -40,110 +39,218 @@ import org.apache.sis.internal.system.Loggers;
  * @since   0.7
  * @module
  */
-public final class Geometries extends Static {
-    /**
-     * The geometry object from Java Topology Suite (JTS),
-     * or {@code null} if the JTS library is not on the classpath.
+public abstract class Geometries {
+    /*
+     * Registers all supported library implementations. Those libraries are optional
+     * (users will typically put at most one on their classpath).
      */
-    private static final Class<?> JTS;
-
-    /**
-     * Getter methods on JTS envelopes, or {@code null} if the JTS library is not on the classpath.
-     * Each methods take no argument and return a {@code double} value.
-     */
-    private static final Method INTERNAL, MIN_X, MIN_Y, MAX_X, MAX_Y;
-
     static {
-        Class<?> type;
-        Method genv, xmin, ymin, xmax, ymax;
-        try {
-            final Class<?> envt;
-            type = Class.forName("com.vividsolutions.jts.geom.Geometry");
-            genv = type.getMethod("getEnvelopeInternal", (Class[]) null);
-            envt = genv.getReturnType();
-            xmin = envt.getMethod("getMinX", (Class[]) null);
-            ymin = envt.getMethod("getMinY", (Class[]) null);
-            xmax = envt.getMethod("getMaxX", (Class[]) null);
-            ymax = envt.getMethod("getMaxY", (Class[]) null);
-        } catch (ClassNotFoundException | NoSuchMethodException e) {
-            Logging.getLogger(Loggers.GEOMETRY).log(Level.CONFIG, e.toString());
-            type = null;
-            genv = null;
-            xmin = null;
-            xmax = null;
-            ymin = null;
-            ymax = null;
-        }
-        JTS = type;
-        INTERNAL = genv;
-        MIN_X = xmin;
-        MIN_Y = ymin;
-        MAX_X = xmax;
-        MAX_Y = ymax;
+        register("Java2D");
+        register("JTS");
+        register("ESRI");       // Default implementation if other libraries are also present.
     }
 
     /**
-     * Do not allow instantiation of this class.
+     * The enumeration that identifies the geometry library used.
      */
-    private Geometries() {
+    public final GeometryLibrary library;
+
+    /**
+     * The root geometry class.
+     */
+    public final Class<?> rootClass;
+
+    /**
+     * The class for a point, ployline and polygon.
+     */
+    public final Class<?> pointClass, polylineClass, polygonClass;
+
+    /**
+     * The default geometry implementation to use. Unmodifiable after class initialization.
+     */
+    private static Geometries implementation;
+
+    /**
+     * The fallback implementation to use if the default one is not available.
+     */
+    private final Geometries fallback;
+
+    /**
+     * Creates a new adapter for the given root geometry class.
+     */
+    Geometries(final GeometryLibrary library, final Class<?> rootClass, final Class<?> pointClass,
+            final Class<?> polylineClass, final Class<?> polygonClass)
+    {
+        this.library       = library;
+        this.rootClass     = rootClass;
+        this.pointClass    = pointClass;
+        this.polylineClass = polylineClass;
+        this.polygonClass  = polygonClass;
+        fallback = implementation;
     }
 
     /**
-     * Returns {@code true} if the given type is one of the type known to Apache SIS.
+     * Registers the library implementation of the given name (JTS or ESRI) if present; ignore otherwise.
+     * The given name shall be the simple name of a {@code Geometries} subclass in the same package.
+     * The last registered library will be the default implementation.
+     */
+    private static void register(final String name) {
+        String classname = Geometries.class.getName();
+        classname = classname.substring(0, classname.lastIndexOf('.')+1).concat(name);
+        try {
+            implementation = (Geometries) Class.forName(classname).newInstance();
+        } catch (ReflectiveOperationException | LinkageError e) {
+            LogRecord record = Resources.forLocale(null).getLogRecord(Level.CONFIG,
+                    Resources.Keys.OptionalLibraryNotFound_2, name, e.toString());
+            record.setLoggerName(Loggers.GEOMETRY);
+            Logging.log(Geometries.class, "register", record);
+        }
+    }
+
+    /**
+     * Returns an accessor to the default geometry library implementation in use.
+     *
+     * @param  library  the required library, or {@code null} for the default.
+     * @return the default geometry implementation.
+     * @throws IllegalArgumentException if the given library is non-null but not available.
+     */
+    public static Geometries implementation(final GeometryLibrary library) {
+        if (library == null) {
+            return implementation;
+        }
+        for (Geometries g = implementation; g != null; g = g.fallback) {
+            if (g.library == library) return g;
+        }
+        throw new IllegalArgumentException(Resources.format(Resources.Keys.UnavailableGeometryLibrary_1, library));
+    }
+
+    /**
+     * Returns {@code true} if the given type is one of the types known to Apache SIS.
      *
      * @param  type  the type to verify.
      * @return {@code true} if the given type is one of the geometry type known to SIS.
      */
     public static boolean isKnownType(final Class<?> type) {
-        return Geometry.class.isAssignableFrom(type) || (JTS != null && JTS.isAssignableFrom(type));
+        for (Geometries g = implementation; g != null; g = g.fallback) {
+            if (g.rootClass.isAssignableFrom(type)) return true;
+        }
+        return false;
     }
+
+    /**
+     * If the given point is an implementation of this library, returns its coordinate.
+     * Otherwise returns {@code null}.
+     */
+    abstract double[] tryGetCoordinate(Object point);
+
+    /**
+     * If the given object is one of the recognized point implementation, returns its coordinate.
+     * Otherwise returns {@code null}. If non-null, the returned array may have a length of 2 or 3.
+     * If the CRS is geographic, then the (x,y) values should be (longitude, latitude) for compliance
+     * with usage in ESRI and JTS libraries.
+     *
+     * @param  point  the point from which to get the coordinate, or {@code null}.
+     * @return the coordinate of the given point as an array of length 2 or 3,
+     *         or {@code null} if the given object is not a recognized implementation.
+     *
+     * @see #createPoint(double, double)
+     */
+    public static double[] getCoordinate(final Object point) {
+        for (Geometries g = implementation; g != null; g = g.fallback) {
+            double[] coord = g.tryGetCoordinate(point);
+            if (coord != null) return coord;
+        }
+        return null;
+    }
+
+    /**
+     * If the given geometry is the type supported by this {@code Geometries} instance,
+     * returns its envelope if non-empty. Otherwise returns {@code null}. We currently
+     * do not distinguish the reasons why this method may return null.
+     */
+    abstract GeneralEnvelope tryGetEnvelope(Object geometry);
 
     /**
      * If the given object is one of the recognized type and its envelope is non-empty,
      * returns that envelope as an Apache SIS implementation. Otherwise returns {@code null}.
      *
      * @param  geometry  the geometry from which to get the envelope, or {@code null}.
-     * @return the envelope of the given object, or {@code null} if the object is not
-     *         a recognized geometry or its envelope is empty.
+     * @return the envelope of the given geometry, or {@code null} if the given object
+     *         is not a recognized geometry or its envelope is empty.
      */
     public static GeneralEnvelope getEnvelope(final Object geometry) {
-        final double xmin, ymin, xmax, ymax;
-        if (geometry instanceof Geometry) {
-            final Envelope2D bounds = new Envelope2D();
-            ((Geometry) geometry).queryEnvelope2D(bounds);
-            if (bounds.isEmpty()) {                                     // Test if there is NaN values.
-                return null;
-            }
-            xmin = bounds.xmin;
-            ymin = bounds.ymin;
-            xmax = bounds.xmax;
-            ymax = bounds.ymax;
-        } else if (JTS != null && JTS.isInstance(geometry)) {
-            try {
-                final Object env = INTERNAL.invoke(geometry, (Object[]) null);
-                xmin = (Double) MIN_X.invoke(env, (Object[]) null);
-                ymin = (Double) MIN_Y.invoke(env, (Object[]) null);
-                xmax = (Double) MAX_X.invoke(env, (Object[]) null);
-                ymax = (Double) MAX_Y.invoke(env, (Object[]) null);
-            } catch (ReflectiveOperationException e) {
-                if (e instanceof InvocationTargetException) {
-                    final Throwable cause = e.getCause();
-                    if (cause instanceof RuntimeException) {
-                        throw (RuntimeException) cause;
-                    }
-                    if (cause instanceof Error) {
-                        throw (Error) cause;
+        for (Geometries g = implementation; g != null; g = g.fallback) {
+            GeneralEnvelope env = g.tryGetEnvelope(geometry);
+            if (env != null) return env;
+        }
+        return null;
+    }
+
+    /**
+     * Creates a two-dimensional point from the given coordinate. If the CRS is geographic, then the
+     * (x,y) values should be (longitude, latitude) for compliance with usage in ESRI and JTS libraries.
+     *
+     * @param  x  the first ordinate value.
+     * @param  y  the second ordinate value.
+     * @return the point for the given ordinate values.
+     *
+     * @see #getCoordinate(Object)
+     */
+    public abstract Object createPoint(double x, double y);
+
+    /**
+     * Creates a path or polyline from the given ordinate values.
+     * Each {@link Double#NaN} ordinate value start a new path.
+     * The implementation returned by this method is an instance of {@link #rootClass}.
+     *
+     * @param  dimension  the number of dimensions (2 or 3).
+     * @param  ordinates  sequence of (x,y) or (x,y,z) tuples.
+     * @return the geometric object for the given points.
+     * @throws UnsupportedOperationException if the geometry library can not create the requested path.
+     */
+    public abstract Object createPolyline(int dimension, Vector ordinates);
+
+    /**
+     * Merges a sequence of polyline instances if the first instance is an implementation of this library.
+     *
+     * @param  first      the first instance to merge.
+     * @param  polylines  the second and subsequent instances to merge.
+     * @return the merged polyline, or {@code null} if the first instance is not an implementation of this library.
+     * @throws ClassCastException if an element in the iterator is not an implementation of this library.
+     */
+    abstract Object tryMergePolylines(Object first, Iterator<?> polylines);
+
+    /**
+     * Merges a sequence of points or polylines into a single polyline instances.
+     * Each previous polyline will be a separated path in the new polyline instances.
+     * The implementation returned by this method is an instance of {@link #rootClass}.
+     *
+     * @param  paths  the points or polylines to merge in a single polyline object.
+     * @return the merged polyline, or {@code null} if the given iterator has no element.
+     * @throws ClassCastException if not all elements in the given iterator are instances of the same library.
+     */
+    public static Object mergePolylines(final Iterator<?> paths) {
+        while (paths.hasNext()) {
+            final Object first = paths.next();
+            if (first != null) {
+                for (Geometries g = implementation; g != null; g = g.fallback) {
+                    final Object merged = g.tryMergePolylines(first, paths);
+                    if (merged != null) {
+                        return merged;
                     }
                 }
-                // Should never happen unless JTS's API changed.
-                throw (Error) new IncompatibleClassChangeError(e.toString()).initCause(e);
+                throw unsupported(2);
             }
-        } else {
-            return null;
         }
-        final GeneralEnvelope env = new GeneralEnvelope(2);
-        env.setRange(0, xmin, xmax);
-        env.setRange(1, ymin, ymax);
-        return env;
+        return null;
+    }
+
+    /**
+     * Returns an error message for an unsupported geometry object.
+     *
+     * @param  dimension  number of dimensions (2 or 3) requested for the geometry object.
+     */
+    static UnsupportedOperationException unsupported(final int dimension) {
+        return new UnsupportedOperationException(Resources.format(Resources.Keys.UnsupportedGeometryObject_1, dimension));
     }
 }

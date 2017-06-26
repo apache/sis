@@ -797,6 +797,7 @@ public class DefaultFeatureType extends AbstractIdentifiedType implements Featur
                             return false;
                         }
                     }
+                    // No need for explicit AttributeType or Operation checks because they are PropertyType.
                 }
             }
         }

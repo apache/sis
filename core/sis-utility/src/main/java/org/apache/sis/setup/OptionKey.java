@@ -75,6 +75,16 @@ public class OptionKey<T> implements Serializable {
     private static final long serialVersionUID = -7580514229639750246L;
 
     /**
+     * The library to use for creating geometric objects at reading time.
+     * Some libraries are the Java Topology Suite (JTS), ESRI geometry API and Java2D.
+     * If this option is not specified, then a library will be selected automatically
+     * among the libraries available in the runtime environment.
+     *
+     * @since 0.8
+     */
+    public static final OptionKey<GeometryLibrary> GEOMETRY_LIBRARY = new OptionKey<>("GEOMETRY_LIBRARY", GeometryLibrary.class);
+
+    /**
      * The locale to use for locale-sensitive data. This option determines the language to use for writing
      * {@link org.apache.sis.util.iso.AbstractInternationalString international strings} when the target
      * storage support only one language. It may also control number and date patterns in some file formats

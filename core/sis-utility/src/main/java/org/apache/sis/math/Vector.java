@@ -203,6 +203,20 @@ public abstract class Vector extends AbstractList<Number> implements RandomAcces
      * is backed by an array of type {@code float[]}, then this method returns {@code Float.class},
      * not {@link Float#TYPE}.
      *
+     * <p>The information returned by this method is only indicative; it is not guaranteed to specify accurately
+     * this kind of objects returned by the {@link #get(int)} method. There is various situation where the types
+     * may not match:</p>
+     *
+     * <ul>
+     *   <li>If this vector {@linkplain #isUnsigned() is unsigned}, then the values returned by {@code get(int)}
+     *       may be instances of a type wider than the type used by this vector for storing the values.</li>
+     *   <li>If this vector has been {@linkplain #createForDecimal(float[]) created for decimal numbers},
+     *       then the values returned by {@code get(int)} will use double-precision even if this vector
+     *       stores the values as single-precision floating point numbers.</li>
+     *   <li>If this vector {@linkplain #compress(double) has been compressed}, then the type returned by this
+     *       method does not describe accurately the range of values that this vector can store.</li>
+     * </ul>
+     *
      * <p>Users of the {@link #doubleValue(int)} method do not need to care about this information since
      * {@code Vector} will perform automatically the type conversion. Users of other methods may want to
      * verify this information for avoiding {@link ArithmeticException}.</p>
@@ -426,14 +440,16 @@ public abstract class Vector extends AbstractList<Number> implements RandomAcces
     /**
      * Sets the number at the given index.
      * The given number should be an instance of the same type than the number returned by {@link #get(int)}.
+     * If not, the stored value may lost precision as a result of the cast.
      *
      * @param  index  the index in the [0 … {@linkplain #size() size}-1] range.
      * @param  value  the value to set at the given index.
      * @return the value previously stored at the given index.
+     * @throws UnsupportedOperationException if this vector is read-only.
      * @throws IndexOutOfBoundsException if the given index is out of bounds.
      * @throws NumberFormatException if the previous value was stored as a {@code String} and can not be parsed.
-     * @throws ClassCastException if the given value can not be converted to the type expected by this vector.
-     * @throws ArrayStoreException if the given value can not be stored in this vector.
+     * @throws ArithmeticException if this vector uses some {@linkplain #compress(double) compression} technic
+     *         and the given value is out of range for that compression.
      */
     @Override
     public abstract Number set(int index, Number value);

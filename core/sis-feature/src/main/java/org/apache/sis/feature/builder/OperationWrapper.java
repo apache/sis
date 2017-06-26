@@ -43,10 +43,11 @@ final class OperationWrapper extends PropertyTypeBuilder {
      * Creates a new wrapper for the given operation.
      */
     OperationWrapper(final FeatureTypeBuilder owner, final AbstractIdentifiedType operation) {
-        super(owner, operation);
+        super(owner);
         this.operation = operation;
         minimumOccurs = 1;
         maximumOccurs = 1;
+        initialize(operation);
     }
 
     /**

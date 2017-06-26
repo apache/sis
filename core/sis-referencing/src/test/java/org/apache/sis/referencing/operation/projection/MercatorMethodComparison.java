@@ -27,6 +27,7 @@ import org.apache.sis.internal.referencing.Resources;
 import org.apache.sis.internal.metadata.ReferencingServices;
 
 import static java.lang.Math.*;     // Not StrictMath in this particular case.
+import static org.apache.sis.internal.util.StandardDateFormat.NANOS_PER_SECOND;
 
 
 /**
@@ -323,9 +324,9 @@ public final class MercatorMethodComparison {   // No 'strictfp' keyword here si
         }
         final long t3 = System.nanoTime();
         final float c = (t1 - t0) / 100f;
-        out.println("Iterative method:         " + ((t1 - t0) / 1E9f) + " seconds (" + round((t1 - t0) / c) + "%).");
-        out.println("Series expansion:         " + ((t2 - t1) / 1E9f) + " seconds (" + round((t2 - t1) / c) + "%).");
-        out.println("Trigonometric identities: " + ((t3 - t2) / 1E9f) + " seconds (" + round((t3 - t2) / c) + "%).");
+        out.println("Iterative method:         " + ((t1 - t0) / (float) NANOS_PER_SECOND) + " seconds (" + round((t1 - t0) / c) + "%).");
+        out.println("Series expansion:         " + ((t2 - t1) / (float) NANOS_PER_SECOND) + " seconds (" + round((t2 - t1) / c) + "%).");
+        out.println("Trigonometric identities: " + ((t3 - t2) / (float) NANOS_PER_SECOND) + " seconds (" + round((t3 - t2) / c) + "%).");
         out.println("Mean φ values: " + (s0 / t.length) + ", "
                                       + (s1 / t.length) + " and "
                                       + (s2 / t.length) + ".");

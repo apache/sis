@@ -1239,7 +1239,7 @@ public class MetadataBuilder {
     }
 
     /**
-     * Adds s role, name, contact and position information for an individual or organization that is responsible
+     * Adds role, name, contact and position information for an individual or organization that is responsible
      * for the resource. This method can be used as an alternative to {@link #addAuthor(CharSequence)} when the
      * caller needs to create the responsibly party itself.
      *
