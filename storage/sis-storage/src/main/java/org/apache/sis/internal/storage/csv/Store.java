@@ -45,10 +45,11 @@ import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.internal.referencing.GeodeticObjectBuilder;
 import org.apache.sis.internal.storage.MetadataBuilder;
 import org.apache.sis.internal.storage.io.IOUtilities;
+import org.apache.sis.internal.storage.FeatureStore;
+import org.apache.sis.internal.feature.Geometries;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.metadata.iso.DefaultMetadata;
 import org.apache.sis.metadata.sql.MetadataStoreException;
-import org.apache.sis.internal.storage.FeatureStore;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.storage.DataStoreReferencingException;
@@ -157,6 +158,18 @@ public final class Store extends FeatureStore {
     private boolean hasTrajectories;
 
     /**
+     * The number of dimensions other than time in the coordinate reference system.
+     * Shall be 2 or 3 according Moving Features CSV encoding specification, but Apache SIS
+     * may be tolerant to other values (depending on the backing geometry library).
+     */
+    private short spatialDimensionCount;
+
+    /**
+     * The factory to use for creating geometries.
+     */
+    private final Geometries geometries;
+
+    /**
      * Appearing order of trajectories (time or sequential), or {@code null} if unspecified.
      *
      * @see #parseFoliation(List)
@@ -186,6 +199,7 @@ public final class Store extends FeatureStore {
             throw new DataStoreException(Errors.format(Errors.Keys.CanNotOpen_1, super.getDisplayName()));
         }
         source = (r instanceof BufferedReader) ? (BufferedReader) r : new LineNumberReader(r);
+        geometries = Geometries.implementation(connector.getOption(OptionKey.GEOMETRY_LIBRARY));
         GeneralEnvelope envelope    = null;
         FeatureType     featureType = null;
         Foliation       foliation   = null;
@@ -236,11 +250,11 @@ public final class Store extends FeatureStore {
             }
             source.reset();
         } catch (IOException e) {
-            throw new DataStoreException(getLocale(), "CSV", super.getDisplayName(), source).initCause(e);
+            throw new DataStoreException(getLocale(), StoreProvider.NAME, super.getDisplayName(), source).initCause(e);
         } catch (FactoryException e) {
-            throw new DataStoreReferencingException(getLocale(), "CSV", super.getDisplayName(), source).initCause(e);
+            throw new DataStoreReferencingException(getLocale(), StoreProvider.NAME, super.getDisplayName(), source).initCause(e);
         } catch (IllegalArgumentException | DateTimeException e) {
-            throw new DataStoreContentException(getLocale(), "CSV", super.getDisplayName(), source).initCause(e);
+            throw new DataStoreContentException(getLocale(), StoreProvider.NAME, super.getDisplayName(), source).initCause(e);
         }
         this.encoding    = connector.getOption(OptionKey.ENCODING);
         this.envelope    = envelope;
@@ -264,6 +278,7 @@ public final class Store extends FeatureStore {
     private GeneralEnvelope parseEnvelope(final List<String> elements) throws DataStoreException, FactoryException {
         CoordinateReferenceSystem crs = null;
         int spatialDimensionCount = 2;
+        boolean    isDimExplicit  = false;
         double[]   lowerCorner    = ArraysExt.EMPTY_DOUBLE;
         double[]   upperCorner    = ArraysExt.EMPTY_DOUBLE;
         Instant    startTime      = null;
@@ -278,8 +293,9 @@ public final class Store extends FeatureStore {
                     case 0: continue;                                       // The "@stboundedby" header.
                     case 1: crs = CRS.forCode(element); continue;
                     case 2: if (element.length() == 2 && Character.toUpperCase(element.charAt(1)) == 'D') {
+                                isDimExplicit = true;
                                 spatialDimensionCount = element.charAt(0) - '0';
-                                if (spatialDimensionCount < 2 || spatialDimensionCount > 3) {
+                                if (spatialDimensionCount < 1 || spatialDimensionCount > 3) {
                                     throw new DataStoreReferencingException(errors().getString(
                                         Errors.Keys.IllegalCoordinateSystem_1, element));
                                 }
@@ -326,12 +342,33 @@ public final class Store extends FeatureStore {
             int count = 0;
             final CoordinateReferenceSystem[] components = new CoordinateReferenceSystem[3];
             components[count++] = crs;
-
-            // If the coordinates are three-dimensional but the CRS is 2D, add a vertical axis.
-            if (spatialDimensionCount >= 3 && crs.getCoordinateSystem().getDimension() == 2) {
-                components[count++] = CommonCRS.Vertical.MEAN_SEA_LEVEL.crs();
+            /*
+             * If the coordinates are three-dimensional but the CRS is 2D, add a vertical axis.
+             * The vertical axis shall be the third one, however we do not enforce that rule
+             * since Apache SIS should work correctly even if the vertical axis is elsewhere.
+             */
+            int dimension = crs.getCoordinateSystem().getDimension();
+            if (isDimExplicit) {
+                if (spatialDimensionCount > dimension) {
+                    components[count++] = CommonCRS.Vertical.MEAN_SEA_LEVEL.crs();
+                    dimension++;
+                }
+                if (dimension != spatialDimensionCount) {
+                    throw new DataStoreReferencingException(errors().getString(
+                            Errors.Keys.MismatchedDimension_3, "@stboundedby(CRS)", spatialDimensionCount, dimension));
+                }
             }
-            // Add a temporal axis if we have a start time (no need for end time).
+            if (dimension > Short.MAX_VALUE) {
+                throw new DataStoreReferencingException(errors().getString(
+                        Errors.Keys.ExcessiveNumberOfDimensions_1, dimension));
+            }
+            spatialDimensionCount = dimension;
+            /*
+             * Add a temporal axis if we have a start time (no need for end time).
+             * This block presumes that the CRS does not already have a time axis.
+             * If a time axis was already present, an exception will be thrown at
+             * builder.createCompoundCRS(…) invocation time.
+             */
             final GeodeticObjectBuilder builder = new GeodeticObjectBuilder();
             String name = crs.getName().getCode();
             if (startTime != null) {
@@ -366,7 +403,7 @@ public final class Store extends FeatureStore {
             (dim = upperCorner.length) != spatialDimensionCount)
         {
             throw new DataStoreReferencingException(errors().getString(
-                    Errors.Keys.MismatchedDimension_2, dim, spatialDimensionCount));
+                    Errors.Keys.MismatchedDimension_3, "@stboundedby(BBOX)", spatialDimensionCount, dim));
         }
         for (int i=0; i<spatialDimensionCount; i++) {
             envelope.setRange(i, lowerCorner[i], upperCorner[i]);
@@ -375,6 +412,7 @@ public final class Store extends FeatureStore {
             envelope.setRange(spatialDimensionCount, timeEncoding.toCRS(startTime.toEpochMilli()),
                     (endTime == null) ? Double.NaN : timeEncoding.toCRS(endTime.toEpochMilli()));
         }
+        this.spatialDimensionCount = (short) spatialDimensionCount;
         return envelope;
     }
 
@@ -434,7 +472,7 @@ public final class Store extends FeatureStore {
                                 properties.add(createProperty("startTime", Instant.class, 1));
                                 properties.add(createProperty(  "endTime", Instant.class, 1));
                             }
-                            type = double[].class;
+                            type = geometries.polylineClass;
                             minOccurrence = 1;
                         }
                         break;
@@ -489,7 +527,7 @@ public final class Store extends FeatureStore {
         if (metadata == null) {
             final MetadataBuilder builder = new MetadataBuilder();
             try {
-                builder.setFormat(timeEncoding != null && hasTrajectories ? "CSV-MF" : "CSV");
+                builder.setFormat(timeEncoding != null && hasTrajectories ? StoreProvider.MOVING : StoreProvider.NAME);
             } catch (MetadataStoreException e) {
                 listeners.warning(null, e);
             }
@@ -498,7 +536,7 @@ public final class Store extends FeatureStore {
             try {
                 builder.addExtent(envelope);
             } catch (TransformException e) {
-                throw new DataStoreReferencingException(getLocale(), "CSV", getDisplayName(), source).initCause(e);
+                throw new DataStoreReferencingException(getLocale(), StoreProvider.NAME, getDisplayName(), source).initCause(e);
             } catch (UnsupportedOperationException e) {
                 /*
                  * Failed to set the temporal components if the sis-temporal module was
@@ -607,7 +645,7 @@ public final class Store extends FeatureStore {
                     }
                     case 3: {
                         if (hasTrajectories) {
-                            c = GeometryParser.INSTANCE;
+                            c = GeometryParser.instance(geometries, spatialDimensionCount);
                             break;
                         }
                         /*
@@ -797,7 +835,7 @@ public final class Store extends FeatureStore {
      * The error message will contain the line number if available.
      */
     final String canNotParseFile() {
-        final Object[] parameters = IOUtilities.errorMessageParameters("CSV", getDisplayName(), source);
+        final Object[] parameters = IOUtilities.errorMessageParameters(StoreProvider.NAME, getDisplayName(), source);
         return errors().getString(IOUtilities.errorMessageKey(parameters), parameters);
     }
 

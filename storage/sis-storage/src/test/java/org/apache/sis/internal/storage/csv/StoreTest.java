@@ -25,6 +25,8 @@ import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
+import com.esri.core.geometry.Point2D;
+import com.esri.core.geometry.Polyline;
 
 import static org.junit.Assert.*;
 import static org.apache.sis.test.TestUtilities.date;
@@ -116,7 +118,7 @@ public final strictfp class StoreTest extends TestCase {
         assertPropertyTypeEquals((AttributeType<?>) it.next(), "mfidref",       String.class,   1);
         assertPropertyTypeEquals((AttributeType<?>) it.next(), "startTime",     Instant.class,  1);
         assertPropertyTypeEquals((AttributeType<?>) it.next(), "endTime",       Instant.class,  1);
-        assertPropertyTypeEquals((AttributeType<?>) it.next(), "trajectory",    double[].class, 1);
+        assertPropertyTypeEquals((AttributeType<?>) it.next(), "trajectory",    Polyline.class, 1);
         assertPropertyTypeEquals((AttributeType<?>) it.next(), "state",         String.class,   0);
         assertPropertyTypeEquals((AttributeType<?>) it.next(), "\"type\" code", Integer.class,  0);
         assertFalse(it.hasNext());
@@ -141,11 +143,17 @@ public final strictfp class StoreTest extends TestCase {
             final String startTime, final String endTime, final double[] trajectory,
             final String state, final int typeCode)
     {
-        assertEquals     ("mfidref",    mfidref,               f.getPropertyValue("mfidref"));
-        assertEquals     ("startTime",  instant(startTime),    f.getPropertyValue("startTime"));
-        assertEquals     ("endTime",    instant(endTime),      f.getPropertyValue("endTime"));
-        assertEquals     ("state",      state,                 f.getPropertyValue("state"));
-        assertEquals     ("typeCode",   typeCode,              f.getPropertyValue("\"type\" code"));
-        assertArrayEquals("trajectory", trajectory, (double[]) f.getPropertyValue("trajectory"), STRICT);
+        assertEquals("mfidref",   mfidref,            f.getPropertyValue("mfidref"));
+        assertEquals("startTime", instant(startTime), f.getPropertyValue("startTime"));
+        assertEquals("endTime",   instant(endTime),   f.getPropertyValue("endTime"));
+        assertEquals("state",     state,              f.getPropertyValue("state"));
+        assertEquals("typeCode",  typeCode,           f.getPropertyValue("\"type\" code"));
+        final Polyline polyline = (Polyline)          f.getPropertyValue("trajectory");
+        assertEquals("pointCount", trajectory.length / 2, polyline.getPointCount());
+        for (int i=0; i < trajectory.length;) {
+            final Point2D xy = polyline.getXY(i / 2);
+            assertEquals("x", trajectory[i++], xy.x, STRICT);
+            assertEquals("y", trajectory[i++], xy.y, STRICT);
+        }
     }
 }
