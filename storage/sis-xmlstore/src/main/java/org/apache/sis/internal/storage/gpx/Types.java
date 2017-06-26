@@ -21,14 +21,15 @@ import java.util.Collections;
 import java.util.Locale;
 import java.util.Map;
 import java.util.HashMap;
-import com.esri.core.geometry.Point;
 import org.opengis.util.ScopedName;
 import org.opengis.util.GenericName;
 import org.opengis.util.NameFactory;
 import org.opengis.util.FactoryException;
 import org.opengis.util.InternationalString;
+import org.apache.sis.setup.GeometryLibrary;
 import org.opengis.metadata.citation.OnlineResource;
 import org.opengis.metadata.content.ContentInformation;
+import org.opengis.metadata.acquisition.GeometryType;
 import org.apache.sis.storage.gps.Fix;
 import org.apache.sis.storage.FeatureNaming;
 import org.apache.sis.storage.IllegalNameException;
@@ -39,15 +40,16 @@ import org.apache.sis.feature.builder.FeatureTypeBuilder;
 import org.apache.sis.feature.builder.PropertyTypeBuilder;
 import org.apache.sis.feature.builder.AttributeRole;
 import org.apache.sis.internal.feature.AttributeConvention;
+import org.apache.sis.internal.feature.Geometries;
 import org.apache.sis.internal.storage.FeatureCatalogBuilder;
 import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.util.iso.ResourceInternationalString;
 import org.apache.sis.util.iso.DefaultNameFactory;
-import org.apache.sis.util.Static;
 
 // Branch-dependent imports
 import org.apache.sis.internal.jdk8.Temporal;
 import org.apache.sis.feature.DefaultFeatureType;
+import org.apache.sis.feature.DefaultAttributeType;
 
 
 /**
@@ -60,7 +62,7 @@ import org.apache.sis.feature.DefaultFeatureType;
  * @since   0.8
  * @module
  */
-final class Types extends Static {
+final class Types {
     /**
      * Way point GPX feature type.
      */
@@ -93,13 +95,18 @@ final class Types extends Static {
     final FeatureNaming<DefaultFeatureType> names;
 
     /**
+     * Accessor to the geometry implementation in use (Java2D, ESRI or JTS).
+     */
+    final Geometries geometries;
+
+    /**
      * A system-wide instance for {@code FeatureType} instances created using the {@link DefaultNameFactory}.
      * This is normally the only instance used in an application.
      */
     static final Types DEFAULT;
     static {
         try {
-            DEFAULT = new Types(DefaultFactories.forBuildin(NameFactory.class, DefaultNameFactory.class), null);
+            DEFAULT = new Types(DefaultFactories.forBuildin(NameFactory.class, DefaultNameFactory.class), null, null);
         } catch (FactoryException | IllegalNameException e) {
             throw new AssertionError(e);        // Should never happen with DefaultNameFactory implementation.
         }
@@ -110,9 +117,13 @@ final class Types extends Static {
      *
      * @param  factory   the factory to use for creating names, or {@code null} for the default factory.
      * @param  locale    the locale to use for formatting error messages, or {@code null} for the default locale.
+     * @param  library   the required geometry library, or {@code null} for the default.
      * @throws FactoryException if an error occurred while creating an "envelope bounds" operation.
      */
-    Types(final NameFactory factory, final Locale locale) throws FactoryException, IllegalNameException {
+    Types(final NameFactory factory, final Locale locale, final GeometryLibrary library)
+            throws FactoryException, IllegalNameException
+    {
+        geometries = Geometries.implementation(library);
         final Map<String,InternationalString[]> resources = new HashMap<>();
         final ScopedName    geomName = AttributeConvention.GEOMETRY_PROPERTY;
         final Map<String,?> geomInfo = Collections.singletonMap(AbstractIdentifiedType.NAME_KEY, geomName);
@@ -129,7 +140,7 @@ final class Types extends Static {
          * │ sis:identifier │ Integer │   [1 … 1]   │      SIS-specific property
          * └────────────────┴─────────┴─────────────┘
          */
-        FeatureTypeBuilder builder = new FeatureTypeBuilder(null, factory, locale);
+        final FeatureTypeBuilder builder = new FeatureTypeBuilder(factory, library, locale);
         builder.setNameSpace(Tags.PREFIX).setName("GPXEntity").setAbstract(true);
         builder.addAttribute(Integer.class).setName(AttributeConvention.IDENTIFIER_PROPERTY);
         final DefaultFeatureType parent = builder.build();
@@ -161,9 +172,8 @@ final class Types extends Static {
          * │ dgpsid           │ Integer        │ gpx:dgpsStationType    │   [0 … 1]   │
          * └──────────────────┴────────────────┴────────────────────────┴─────────────┘
          */
-        builder = new FeatureTypeBuilder(null, factory, locale).setSuperTypes(parent);
-        builder.setNameSpace(Tags.PREFIX).setName("WayPoint");
-        builder.addAttribute(Point.class).setName(geomName)
+        builder.clear().setSuperTypes(parent).setNameSpace(Tags.PREFIX).setName("WayPoint");
+        builder.addAttribute(GeometryType.POINT).setName(geomName)
                 .setCRS(CommonCRS.WGS84.normalizedGeographic())
                 .addRole(AttributeRole.DEFAULT_GEOMETRY);
         builder.setDefaultCardinality(0, 1);
@@ -204,9 +214,9 @@ final class Types extends Static {
          * │ rtept          │ WayPoint       │ gpx:wptType            │   [0 … ∞]   │
          * └────────────────┴────────────────┴────────────────────────┴─────────────┘
          */
-        GroupAsPolylineOperation groupOp = new GroupPointsAsPolylineOperation(geomInfo, Tags.ROUTE_POINTS);
-        builder = new FeatureTypeBuilder(null, factory, locale).setSuperTypes(parent);
-        builder.setNameSpace(Tags.PREFIX).setName("Route");
+        final DefaultAttributeType<?> groupResult = GroupAsPolylineOperation.getResult(geometries);
+        GroupAsPolylineOperation groupOp = new GroupAsPolylineOperation(geomInfo, Tags.ROUTE_POINTS, groupResult);
+        builder.clear().setSuperTypes(parent).setNameSpace(Tags.PREFIX).setName("Route");
         builder.addProperty(groupOp);
         builder.addProperty(FeatureOperations.envelope(envpInfo, null, groupOp));
         builder.setDefaultCardinality(0, 1);
@@ -230,9 +240,8 @@ final class Types extends Static {
          * │ trkpt          │ WayPoint │ gpx:wptType │   [0 … ∞]   │
          * └────────────────┴──────────┴─────────────┴─────────────┘
          */
-        groupOp = new GroupPointsAsPolylineOperation(geomInfo, Tags.TRACK_POINTS);
-        builder = new FeatureTypeBuilder(null, factory, locale).setSuperTypes(parent);
-        builder.setNameSpace(Tags.PREFIX).setName("TrackSegment");
+        groupOp = new GroupAsPolylineOperation(geomInfo, Tags.TRACK_POINTS, groupResult);
+        builder.clear().setSuperTypes(parent).setNameSpace(Tags.PREFIX).setName("TrackSegment");
         builder.addProperty(groupOp);
         builder.addProperty(FeatureOperations.envelope(envpInfo, null, groupOp));
         builder.setDefaultCardinality(0, 1);
@@ -256,9 +265,8 @@ final class Types extends Static {
          * │ trkseg         │ TrackSegment   │ gpx:trksegType         │   [0 … ∞]   │
          * └────────────────┴────────────────┴────────────────────────┴─────────────┘
          */
-        groupOp = new GroupAsPolylineOperation(geomInfo, Tags.TRACK_SEGMENTS);
-        builder = new FeatureTypeBuilder(null, factory, locale).setSuperTypes(parent);
-        builder.setNameSpace(Tags.PREFIX).setName("Track");
+        groupOp = new GroupAsPolylineOperation(geomInfo, Tags.TRACK_SEGMENTS, groupResult);
+        builder.clear().setSuperTypes(parent).setNameSpace(Tags.PREFIX).setName("Track");
         builder.addProperty(groupOp);
         builder.addProperty(FeatureOperations.envelope(envpInfo, null, groupOp));
         builder.setDefaultCardinality(0, 1);

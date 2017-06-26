@@ -65,7 +65,7 @@ public final class AssociationRoleBuilder extends PropertyTypeBuilder {
      * @param owner  the builder of the {@code FeatureType} for which to add this property.
      */
     AssociationRoleBuilder(final FeatureTypeBuilder owner, final DefaultFeatureType type, final GenericName typeName) {
-        super(owner, null);
+        super(owner);
         this.type     = type;
         this.typeName = typeName;
     }
@@ -76,7 +76,7 @@ public final class AssociationRoleBuilder extends PropertyTypeBuilder {
      * @param owner  the builder of the {@code FeatureType} for which to add this property.
      */
     AssociationRoleBuilder(final FeatureTypeBuilder owner, final DefaultAssociationRole template) {
-        super(owner, template);
+        super(owner);
         property      = template;
         minimumOccurs = template.getMinimumOccurs();
         maximumOccurs = template.getMaximumOccurs();
@@ -87,6 +87,7 @@ public final class AssociationRoleBuilder extends PropertyTypeBuilder {
             type     = template.getValueType();
             typeName = type.getName();
         }
+        initialize(template);
     }
 
     /**

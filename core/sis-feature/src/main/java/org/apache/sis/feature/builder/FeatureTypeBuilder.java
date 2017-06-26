@@ -29,11 +29,14 @@ import org.opengis.util.NameSpace;
 import org.opengis.util.GenericName;
 import org.opengis.util.NameFactory;
 import org.opengis.util.FactoryException;
+import org.opengis.metadata.acquisition.GeometryType;
+import org.apache.sis.setup.GeometryLibrary;
 import org.apache.sis.feature.AbstractOperation;
 import org.apache.sis.feature.DefaultFeatureType;
 import org.apache.sis.feature.FeatureOperations;
 import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.internal.feature.AttributeConvention;
+import org.apache.sis.internal.feature.Geometries;
 import org.apache.sis.internal.feature.Resources;
 import org.apache.sis.util.CorruptedObjectException;
 import org.apache.sis.util.resources.Errors;
@@ -87,12 +90,10 @@ import org.apache.sis.feature.DefaultAttributeType;
  *   ┌────────────┬─────────┬─────────────┬───────────────┐
  *   │ Name       │ Type    │ Cardinality │ Default value │
  *   ├────────────┼─────────┼─────────────┼───────────────┤
- *   │ name       │ String  │ [1 … 1]     │ Utopia        │
- *   │ population │ Integer │ [1 … 1]     │               │
+ *   │ name       │ String  │     [1 … 1] │ Utopia        │
+ *   │ population │ Integer │     [1 … 1] │               │
  *   └────────────┴─────────┴─────────────┴───────────────┘
  * }
- *
- *
  *
  * <p>{@code FeatureTypeBuilder} instances should be short lived.
  * After the {@code FeatureType} has been created, the builder should be discarded.</p>
@@ -181,6 +182,11 @@ public class FeatureTypeBuilder extends TypeBuilder {
     AttributeTypeBuilder<?> defaultGeometry;
 
     /**
+     * Provides method for creating geometric objects using the library specified by the user.
+     */
+    private final Geometries geometries;
+
+    /**
      * The object created by this builder, or {@code null} if not yet created.
      * This field must be cleared every time that a setter method is invoked on this builder.
      */
@@ -201,101 +207,157 @@ public class FeatureTypeBuilder extends TypeBuilder {
      * will be defined in GeoAPI.</div>
      *
      * @param template  an existing feature type to use as a template, or {@code null} if none.
+     *
+     * @see #setAll(FeatureType)
      */
     public FeatureTypeBuilder(final DefaultFeatureType template) {
-        this(template, null, null);
+        this(null, null, null);
+        if (template != null) {
+            initialize(template);
+        }
     }
 
     /**
-     * Creates a new builder instance using the given name factory, template and locale for formatting error messages.
+     * Creates a new builder instance using the given name factory, geometry library
+     * and locale for formatting error messages.
+     *
+     * @param factory  the factory to use for creating names, or {@code null} for the default factory.
+     * @param library  the library to use for creating geometric objects, or {@code null} for the default.
+     * @param locale   the locale to use for formatting error messages, or {@code null} for the default locale.
+     */
+    public FeatureTypeBuilder(NameFactory factory, final GeometryLibrary library, final Locale locale) {
+        super(locale);
+        if (factory == null) {
+            factory = DefaultFactories.forBuildin(NameFactory.class);
+        }
+        nameFactory          = factory;
+        geometries           = Geometries.implementation(library);
+        properties           = new ArrayList<>();
+        superTypes           = new ArrayList<>();
+        idDelimiter          = ":";
+        defaultMinimumOccurs = 1;
+        defaultMaximumOccurs = 1;
+    }
+
+    /**
+     * Clears all setting in this builder. After invoking this method, this {@code FeatureTypeBuilder}
+     * is in same state that after it has been constructed. This method can be invoked for reusing the
+     * same builder for creating other {@code FeatureType} instances after {@link #build()} invocation.
+     *
+     * @return {@code this} for allowing method calls chaining.
+     */
+    public FeatureTypeBuilder clear() {
+        reset();
+        properties.clear();
+        superTypes.clear();
+        isAbstract           = false;
+        namespace            = null;
+        defaultMinimumOccurs = 1;
+        defaultMaximumOccurs = 1;
+        idPrefix             = null;
+        idSuffix             = null;
+        idDelimiter          = ":";
+        identifierCount      = 0;
+        defaultGeometry      = null;
+        clearCache();
+        return this;
+    }
+
+    /**
+     * Sets all properties of this builder to the values of the given feature type.
+     * This builder is {@linkplain #clear() cleared} before the properties of the given type are copied.
      *
      * <div class="warning"><b>Warning:</b>
      * The {@code template} argument type will be changed to {@code FeatureType} if and when such interface
      * will be defined in GeoAPI.</div>
      *
-     * @param template  an existing feature type to use as a template, or {@code null} if none.
-     * @param factory   the factory to use for creating names, or {@code null} for the default factory.
-     * @param locale    the locale to use for formatting error messages, or {@code null} for the default locale.
+     * @param  template  an existing feature type to use as a template, or {@code null} if none.
+     * @return {@code this} for allowing method calls chaining.
+     *
+     * @see #FeatureTypeBuilder(FeatureType)
      */
-    public FeatureTypeBuilder(final DefaultFeatureType template, NameFactory factory, final Locale locale) {
-        super(template, locale);
-        if (factory == null) {
-            factory = DefaultFactories.forBuildin(NameFactory.class);
-        }
-        nameFactory = factory;
-        properties  = new ArrayList<>();
-        superTypes  = new ArrayList<>();
-        idDelimiter = ":";
-        defaultMinimumOccurs = 1;
-        defaultMaximumOccurs = 1;
+    public FeatureTypeBuilder setAll(final DefaultFeatureType template) {
+        clear();
         if (template != null) {
-            feature    = template;
-            isAbstract = template.isAbstract();
-            superTypes.addAll(template.getSuperTypes());
-            /*
-             * For each attribute and association, wrap those properties in a builder.
-             * For each operation, wrap them in pseudo-builder only if the operation
-             * is not one of the operations automatically generated by this builder.
-             */
-            final Map<String,Set<AttributeRole>> propertyRoles = new HashMap<>();
-            for (final AbstractIdentifiedType property : template.getProperties(false)) {
-                PropertyTypeBuilder builder;
-                if (property instanceof DefaultAttributeType<?>) {
-                    builder = new AttributeTypeBuilder<>(this, (DefaultAttributeType<?>) property);
-                } else if (property instanceof DefaultAssociationRole) {
-                    builder = new AssociationRoleBuilder(this, (DefaultAssociationRole) property);
-                } else {
-                    builder = null;                             // Do not create OperationWrapper now - see below.
-                }
-                /*
-                 * If the property name is one of our (Apache SIS specific) conventional names, try to reconstitute
-                 * the attribute roles that caused FeatureTypeBuilder to produce such property. Those roles usually
-                 * need to be applied on the source properties used for calculating the current property. There is
-                 * usually at most one role for each source property, but we nevertheless allow an arbitrary amount.
-                 */
-                final AttributeRole role;
-                final GenericName name = property.getName();
-                if (AttributeConvention.IDENTIFIER_PROPERTY.equals(name)) {
-                    role = AttributeRole.IDENTIFIER_COMPONENT;
-                } else if (AttributeConvention.GEOMETRY_PROPERTY.equals(name)) {
-                    role = AttributeRole.DEFAULT_GEOMETRY;
-                } else if (AttributeConvention.ENVELOPE_PROPERTY.equals(name)) {
-                    // If "sis:envelope" is an operation, skip it completely.
-                    // It will be recreated if a default geometry exists.
-                    role = null;
-                } else {
-                    if (builder == null) {
-                        // For all unknown operation, wrap as-is.
-                        builder = new OperationWrapper(this, property);
-                    }
-                    role = null;
-                }
-                if (role != null) {
-                    final Set<AttributeRole> rc = Collections.singleton(role);
-                    if (property instanceof AbstractOperation) {
-                        for (final String dependency : ((AbstractOperation) property).getDependencies()) {
-                            JDK8.merge(propertyRoles, dependency, rc, AttributeRole.merge);
-                        }
-                    } else {
-                        JDK8.merge(propertyRoles, name.toString(), rc, AttributeRole.merge);
-                    }
-                }
-                if (builder != null) {
-                    properties.add(builder);
-                }
+            initialize(template);
+        }
+        return this;
+    }
+
+    /**
+     * Initializes this builder to the value of the given type.
+     * The caller is responsible to invoke {@link #clear()} (if needed) before this method.
+     *
+     * @see #setAll(FeatureType)
+     */
+    private void initialize(final DefaultFeatureType template) {
+        super.initialize(template);
+        feature    = template;
+        isAbstract = template.isAbstract();
+        superTypes.addAll(template.getSuperTypes());
+        /*
+         * For each attribute and association, wrap those properties in a builder.
+         * For each operation, wrap them in pseudo-builder only if the operation
+         * is not one of the operations automatically generated by this builder.
+         */
+        final Map<String,Set<AttributeRole>> propertyRoles = new HashMap<>();
+        for (final AbstractIdentifiedType property : template.getProperties(false)) {
+            PropertyTypeBuilder builder;
+            if (property instanceof DefaultAttributeType<?>) {
+                builder = new AttributeTypeBuilder<>(this, (DefaultAttributeType<?>) property);
+            } else if (property instanceof DefaultAssociationRole) {
+                builder = new AssociationRoleBuilder(this, (DefaultAssociationRole) property);
+            } else {
+                builder = null;                             // Do not create OperationWrapper now - see below.
             }
             /*
-             * At this point we finished to collect information about the attribute roles.
-             * Now assign those roles to the attribute builders. Note that some roles may
-             * be ignored if we didn't found a suitable builder. The roles inference done
-             * in this constructor is only a "best effort".
+             * If the property name is one of our (Apache SIS specific) conventional names, try to reconstitute
+             * the attribute roles that caused FeatureTypeBuilder to produce such property. Those roles usually
+             * need to be applied on the source properties used for calculating the current property. There is
+             * usually at most one role for each source property, but we nevertheless allow an arbitrary amount.
              */
-            if (!propertyRoles.isEmpty()) {
-                for (final Map.Entry<String,Set<AttributeRole>> entry : propertyRoles.entrySet()) {
-                    final PropertyTypeBuilder property = forName(properties, entry.getKey());
-                    if (property instanceof AttributeTypeBuilder<?>) {
-                        ((AttributeTypeBuilder<?>) property).roles().addAll(entry.getValue());
+            final AttributeRole role;
+            final GenericName name = property.getName();
+            if (AttributeConvention.IDENTIFIER_PROPERTY.equals(name)) {
+                role = AttributeRole.IDENTIFIER_COMPONENT;
+            } else if (AttributeConvention.GEOMETRY_PROPERTY.equals(name)) {
+                role = AttributeRole.DEFAULT_GEOMETRY;
+            } else if (AttributeConvention.ENVELOPE_PROPERTY.equals(name)) {
+                // If "sis:envelope" is an operation, skip it completely.
+                // It will be recreated if a default geometry exists.
+                role = null;
+            } else {
+                if (builder == null) {
+                    // For all unknown operation, wrap as-is.
+                    builder = new OperationWrapper(this, property);
+                }
+                role = null;
+            }
+            if (role != null) {
+                final Set<AttributeRole> rc = Collections.singleton(role);
+                if (property instanceof AbstractOperation) {
+                    for (final String dependency : ((AbstractOperation) property).getDependencies()) {
+                        JDK8.merge(propertyRoles, dependency, rc, AttributeRole.merge);
                     }
+                } else {
+                    JDK8.merge(propertyRoles, name.toString(), rc, AttributeRole.merge);
+                }
+            }
+            if (builder != null) {
+                properties.add(builder);
+            }
+        }
+        /*
+         * At this point we finished to collect information about the attribute roles.
+         * Now assign those roles to the attribute builders. Note that some roles may
+         * be ignored if we didn't found a suitable builder. The roles inference done
+         * in this constructor is only a "best effort".
+         */
+        if (!propertyRoles.isEmpty()) {
+            for (final Map.Entry<String,Set<AttributeRole>> entry : propertyRoles.entrySet()) {
+                final PropertyTypeBuilder property = forName(properties, entry.getKey());
+                if (property instanceof AttributeTypeBuilder<?>) {
+                    ((AttributeTypeBuilder<?>) property).roles().addAll(entry.getValue());
                 }
             }
         }
@@ -304,6 +366,8 @@ public class FeatureTypeBuilder extends TypeBuilder {
     /**
      * If the {@code FeatureType} created by the last call to {@link #build()} has been cached,
      * clears that cache. This method must be invoked every time that a setter method is invoked.
+     *
+     * @see #clear()
      */
     @Override
     final void clearCache() {
@@ -629,6 +693,56 @@ public class FeatureTypeBuilder extends TypeBuilder {
     }
 
     /**
+     * Creates a new attribute for geometries of the given type. This method delegates to {@link #addAttribute(Class)}
+     * with a {@code valueClass} argument inferred from the combination of the {@link GeometryType} argument given to
+     * this method with the {@link GeometryLibrary} argument given at {@linkplain #FeatureTypeBuilder(NameFactory,
+     * GeometryLibrary, Locale) builder creation time}.
+     * The geometry type can be:
+     *
+     * <ul>
+     *   <li>{@link GeometryType#POINT}  for {@code Point} or {@code Point2D} type.</li>
+     *   <li>{@link GeometryType#LINEAR} for {@code Polyline} or {@code LineString} type.</li>
+     *   <li>{@link GeometryType#AREAL}  for {@code Polygon} type.</li>
+     * </ul>
+     *
+     * Geometric objects outside the above list can still be used by declaring their type explicitely.
+     * However in this case there is no isolation level between the geometry types and the library that implement them.
+     *
+     * <div class="note"><b>Example:</b>
+     * the following code creates an attribute named "MyPoint" with values of class
+     * {@link java.awt.geom.Point2D} if the library in use is {@linkplain GeometryLibrary#JAVA2D Java2D}.
+     * The Coordinate Reference System (CRS) uses (<var>longitude</var>, <var>latitude</var>) axes on the WGS 84 datum.
+     * Finally that new attribute is declared the feature <em>default</em> geometry:
+     *
+     * {@preformat java
+     *   builder.addAttribute(GeometryType.POINT).setName("MyPoint")
+     *          .setCRS(CommonCRS.WGS84.normalizedGeographic())
+     *          .addRole(AttributeRole.DEFAULT_GEOMETRY);
+     * }
+     *
+     * If the library in use is JTS or ESRI instead than Java2D,
+     * then the {@code Point} class of those libraries will be used instead of {@code Point2D}.
+     * The fully-qualified class names are given in the {@link GeometryLibrary} javadoc.</div>
+     *
+     * @param  type  kind of geometric object (point, polyline or polygon).
+     * @return a builder for an {@code AttributeType}.
+     */
+    public AttributeTypeBuilder<?> addAttribute(final GeometryType type) {
+        ensureNonNull("type", type);
+        final Class<?> c;
+        if (type.equals(GeometryType.POINT)) {
+            c = geometries.pointClass;
+        } else if (type.equals(GeometryType.LINEAR)) {
+            c = geometries.polylineClass;
+        } else if (type.equals(GeometryType.AREAL)) {
+            c = geometries.polygonClass;
+        } else {
+            throw new IllegalArgumentException(errors().getString(Errors.Keys.UnsupportedArgumentValue_1, type));
+        }
+        return addAttribute(c);
+    }
+
+    /**
      * Creates a new {@code FeatureAssociationRole} builder for features of the given type.
      * The default association name is the name of the given type, but callers should invoke one
      * of the {@code AssociationRoleBuilder.setName(…)} methods on the returned instance with a better name.
@@ -772,6 +886,8 @@ public class FeatureTypeBuilder extends TypeBuilder {
      *
      * @return the feature type.
      * @throws IllegalStateException if the builder contains inconsistent information.
+     *
+     * @see #clear()
      */
     @Override
     public DefaultFeatureType build() throws IllegalStateException {

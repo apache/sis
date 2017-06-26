@@ -128,7 +128,7 @@ public final class AttributeTypeBuilder<V> extends PropertyTypeBuilder {
      * @param valueClass  the class of attribute values.
      */
     AttributeTypeBuilder(final FeatureTypeBuilder owner, final Class<V> valueClass) {
-        super(owner, null);
+        super(owner);
         this.valueClass = valueClass;
         characteristics = new ArrayList<>();
     }
@@ -139,7 +139,7 @@ public final class AttributeTypeBuilder<V> extends PropertyTypeBuilder {
      * @param owner  the builder of the {@code FeatureType} for which to add the attribute.
      */
     AttributeTypeBuilder(final FeatureTypeBuilder owner, final DefaultAttributeType<V> template) {
-        super(owner, template);
+        super(owner);
         property      = template;
         minimumOccurs = template.getMinimumOccurs();
         maximumOccurs = template.getMaximumOccurs();
@@ -150,6 +150,7 @@ public final class AttributeTypeBuilder<V> extends PropertyTypeBuilder {
         for (final DefaultAttributeType<?> c : tc.values()) {
             characteristics.add(new CharacteristicTypeBuilder<>(this, c));
         }
+        initialize(template);
     }
 
     /**

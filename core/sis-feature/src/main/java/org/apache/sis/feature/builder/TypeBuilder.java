@@ -34,8 +34,6 @@ import org.apache.sis.util.Localized;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.Debug;
 
-// Branch-dependent imports
-
 
 /**
  * Information common to all kind of types (feature, association, characteristics).
@@ -86,6 +84,8 @@ public abstract class TypeBuilder implements Localized {
 
     /**
      * Creates a new builder initialized to the values of the given builder.
+     * This constructor is for {@link AttributeTypeBuilder#setValueClass(Class)}
+     * and {@link CharacteristicTypeBuilder#setValueClass(Class)} implementations.
      *
      * @param builder  the builder from which to copy information.
      */
@@ -94,19 +94,36 @@ public abstract class TypeBuilder implements Localized {
     }
 
     /**
-     * Creates a new builder initialized to the values of an existing type.
+     * Creates a new builder initialized to the given configuration.
      */
-    TypeBuilder(final AbstractIdentifiedType template, final Locale locale) {
+    TypeBuilder(final Locale locale) {
         identification = new HashMap<>(4);
         putIfNonNull(Errors.LOCALE_KEY, locale);
-        if (template != null) {
-            putIfNonNull(AbstractIdentifiedType.NAME_KEY,        template.getName());
-            putIfNonNull(AbstractIdentifiedType.DEFINITION_KEY,  template.getDefinition());
-            putIfNonNull(AbstractIdentifiedType.DESIGNATION_KEY, template.getDesignation());
-            putIfNonNull(AbstractIdentifiedType.DESCRIPTION_KEY, template.getDescription());
-            if (template instanceof Deprecable && ((Deprecable) template).isDeprecated()) {
-                identification.put(AbstractIdentifiedType.DEPRECATED_KEY, Boolean.TRUE);
-            }
+    }
+
+    /**
+     * Resets the identification map. After invoking this method, this {@code TypeBuilder}
+     * is in same state that after it has been {@linkplain #TypeBuilder(Locale) constructed}.
+     *
+     * @see #clearCache()
+     */
+    final void reset() {
+        final Object locale = identification.get(Errors.LOCALE_KEY);
+        identification.clear();
+        putIfNonNull(Errors.LOCALE_KEY, locale);
+    }
+
+    /**
+     * Initializes this builder to the value of the given type.
+     * The caller is responsible to invoke {@link #reset()} (if needed) before this method.
+     */
+    final void initialize(final AbstractIdentifiedType template) {
+        putIfNonNull(AbstractIdentifiedType.NAME_KEY,        template.getName());
+        putIfNonNull(AbstractIdentifiedType.DEFINITION_KEY,  template.getDefinition());
+        putIfNonNull(AbstractIdentifiedType.DESIGNATION_KEY, template.getDesignation());
+        putIfNonNull(AbstractIdentifiedType.DESCRIPTION_KEY, template.getDescription());
+        if (template instanceof Deprecable && ((Deprecable) template).isDeprecated()) {
+            identification.put(AbstractIdentifiedType.DEPRECATED_KEY, Boolean.TRUE);
         }
     }
 
@@ -150,6 +167,8 @@ public abstract class TypeBuilder implements Localized {
 
     /**
      * If the object created by the last call to {@code build()} has been cached, clears that cache.
+     *
+     * @see #reset()
      */
     abstract void clearCache();
 

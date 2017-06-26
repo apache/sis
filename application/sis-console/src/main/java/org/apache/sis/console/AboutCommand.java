@@ -28,7 +28,6 @@ import javax.management.MBeanServerConnection;
 import javax.management.remote.JMXServiceURL;
 import javax.management.remote.JMXConnector;
 import javax.management.remote.JMXConnectorFactory;
-import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.setup.About;
 import org.apache.sis.util.Version;
 import org.apache.sis.util.logging.Logging;
@@ -37,8 +36,10 @@ import org.apache.sis.util.resources.Messages;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.collection.TreeTable;
 import org.apache.sis.util.collection.TableColumn;
+import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.internal.system.Supervisor;
 import org.apache.sis.internal.system.SupervisorMBean;
+import org.apache.sis.internal.util.StandardDateFormat;
 import org.apache.sis.internal.util.X364;
 
 
@@ -135,7 +136,7 @@ final class AboutCommand extends CommandRunner {
                  * Logs a message telling how long it took to receive the reply.
                  * Sometime the delay gives a hint about the server charge.
                  */
-                double delay = (System.nanoTime() - time) / 1E+9;   // In seconds.
+                double delay = (System.nanoTime() - time) / (double) StandardDateFormat.NANOS_PER_SECOND;   // In seconds.
                 if (delay >= 0.1) {
                     final double scale = (delay >= 10) ? 1 : (delay >= 1) ? 10 : 100;
                     delay = Math.rint(delay * scale) / scale;

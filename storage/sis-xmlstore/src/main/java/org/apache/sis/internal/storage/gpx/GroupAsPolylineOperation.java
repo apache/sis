@@ -17,9 +17,9 @@
 package org.apache.sis.internal.storage.gpx;
 
 import java.util.Map;
+import java.util.Iterator;
 import java.util.Collection;
 import java.util.Collections;
-import com.esri.core.geometry.Polyline;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.parameter.ParameterValueGroup;
 import org.apache.sis.feature.AbstractAttribute;
@@ -27,6 +27,7 @@ import org.apache.sis.feature.AbstractOperation;
 import org.apache.sis.feature.DefaultAttributeType;
 import org.apache.sis.internal.feature.AttributeConvention;
 import org.apache.sis.internal.feature.FeatureUtilities;
+import org.apache.sis.internal.feature.Geometries;
 import org.apache.sis.util.resources.Errors;
 
 // Branch-dependent imports
@@ -35,22 +36,30 @@ import org.apache.sis.feature.AbstractFeature;
 
 /**
  * Creates a single (Multi){@code Polyline} instance from a sequence of points or polylines stored in another property.
- * This base class expects a sequence of {@link Polyline} as input, but subclass will expect other kind of geometries.
+ * This base class expects a sequence of {@code Point} or {@code Polyline} instances as input.
  * The single (Multi){@code Polyline} instance is re-computed every time this property is requested.
  *
- * <div class="note"><b>Example:</b>
+ * <div class="note"><b>Examples:</b>
+ * <p><i>Polylines created from points:</i>
+ * a boat that record it's position every hour.
+ * The list of all positions is stored in an attribute with [0 … ∞] cardinality.
+ * This class will extract each position and create a line as a new attribute.
+ * Any change applied to the positions will be visible on the line.</p>
+ *
+ * <p><i>Polylines created from other polylines:</i>
  * a boat that record track every hour.
  * The list of all tracks is stored in an attribute with [0 … ∞] cardinality.
  * This class will extract each track and create a polyline as a new attribute.
- * Any change applied to the tracks will be visible on the polyline.
+ * Any change applied to the tracks will be visible on the polyline.</p>
  * </div>
  *
  * @author  Johann Sorel (Geomatys)
+ * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
  * @since   0.8
  * @module
  */
-class GroupAsPolylineOperation extends AbstractOperation {
+final class GroupAsPolylineOperation extends AbstractOperation {
     /**
      * For cross-version compatibility.
      */
@@ -62,27 +71,38 @@ class GroupAsPolylineOperation extends AbstractOperation {
     private static final ParameterDescriptorGroup EMPTY_PARAMS = FeatureUtilities.parameters("GroupPolylines");
 
     /**
-     * The type of the values computed by this operation. The name of this type presumes
-     * that the result will be assigned to the "geometry" attribute of the feature type.
-     */
-    static final DefaultAttributeType<Polyline> RESULT_TYPE = new DefaultAttributeType<>(
-            Collections.singletonMap(NAME_KEY, AttributeConvention.ENVELOPE_PROPERTY), Polyline.class, 1, 1, null);
-
-    /**
      * Name of the property to follow in order to get the geometries to add to a polyline.
      * This property shall be a feature association, usually with [0 … ∞] cardinality.
      */
-    final String association;
+    private final String association;
+
+    /**
+     * The expected result type to be returned by {@link #getResult()}.
+     */
+    private final DefaultAttributeType<?> result;
 
     /**
      * Creates a new operation which will look for geometries in the given feature association.
      *
      * @param  identification  name and other information to be given to this operation.
      * @param  association     name of the property to follow in order to get the geometries to add to a polyline.
+     * @param  result          the expected result type to be returned by {@link #getResult()}.
      */
-    GroupAsPolylineOperation(final Map<String,?> identification, final String association) {
+    GroupAsPolylineOperation(final Map<String,?> identification, final String association, final DefaultAttributeType<?> result) {
         super(identification);
         this.association = association;
+        this.result = result;
+    }
+
+    /**
+     * Creates the {@code result} argument for the constructor. This creation is provided in a separated method
+     * because the same instance will be shared by many {@code GroupAsPolylineOperation} instances.
+     *
+     * @param  geometries  accessor to the geometry implementation in use (Java2D, ESRI or JTS).
+     */
+    static DefaultAttributeType<?> getResult(final Geometries geometries) {
+        return new DefaultAttributeType<>(Collections.singletonMap(NAME_KEY, AttributeConvention.ENVELOPE_PROPERTY),
+                geometries.polylineClass, 1, 1, null);
     }
 
     /**
@@ -97,8 +117,8 @@ class GroupAsPolylineOperation extends AbstractOperation {
      * Returns the expected result type.
      */
     @Override
-    public final DefaultAttributeType<Polyline> getResult() {
-        return RESULT_TYPE;
+    public final DefaultAttributeType<?> getResult() {
+        return result;
     }
 
     /**
@@ -107,19 +127,9 @@ class GroupAsPolylineOperation extends AbstractOperation {
      * the result will be recomputed.
      */
     @Override
+    @SuppressWarnings({"rawtypes", "unchecked"})
     public final Object apply(AbstractFeature feature, ParameterValueGroup parameters) {
-        return new Result(feature);
-    }
-
-    /**
-     * Invoked for every geometric objects to put in a single polyline.
-     *
-     * @param addTo     where to add the geometry object.
-     * @param geometry  the point or polyline to add to {@code addTo}.
-     * @param isFirst   whether {@code geometry} is the first object added to the given polyline.
-     */
-    void addGeometry(final Polyline addTo, final Object geometry, final boolean isFirst) {
-        addTo.add((Polyline) geometry, false);
+        return new Result(feature, association, result);
     }
 
 
@@ -129,8 +139,10 @@ class GroupAsPolylineOperation extends AbstractOperation {
      * Note that the cache is not used when {@code apply(Feature, ParameterValueGroup)} is invoked,
      * causing a new value to be computed again. The intend is to behave as if the operation has been
      * executed at {@code apply(…)} invocation time, even if we deferred the actual execution.
+     *
+     * @param  <G>  the root geometry class (implementation-dependent).
      */
-    private final class Result extends AbstractAttribute<Polyline> {
+    private static final class Result<G> extends AbstractAttribute<G> {
         /**
          * For cross-version compatibility.
          */
@@ -142,31 +154,47 @@ class GroupAsPolylineOperation extends AbstractOperation {
         private final AbstractFeature feature;
 
         /**
+         * Name of the property to follow in order to get the geometries to add to a polyline.
+         * This property shall be a feature association, usually with [0 … ∞] cardinality.
+         */
+        private final String association;
+
+        /**
          * The result, computed when first needed.
          */
-        private transient Polyline geometry;
+        private transient G geometry;
 
         /**
          * Creates a new result for an execution on the given feature.
          * The actual computation is deferred to the first call of {@link #getValue()}.
          */
-        Result(final AbstractFeature feature) {
-            super(RESULT_TYPE);
+        Result(final AbstractFeature feature, final String association, final DefaultAttributeType<G> result) {
+            super(result);
             this.feature = feature;
+            this.association = association;
         }
 
         /**
-         * Computes the geometry from all points of polylines found in the associated feature.
+         * Computes the geometry from all points or polylines found in the associated feature.
          */
         @Override
-        public Polyline getValue() {
+        public G getValue() {
             if (geometry == null) {
-                boolean isFirst = true;
-                geometry = new Polyline();
-                for (final Object child : (Collection<?>) feature.getPropertyValue(association)) {
-                    addGeometry(geometry, ((AbstractFeature) child).getPropertyValue("sis:geometry"), isFirst);
-                    isFirst = false;
-                }
+                final Iterator<?> it = ((Collection<?>) feature.getPropertyValue(association)).iterator();
+                final Object geom = Geometries.mergePolylines(new Iterator<Object>() {
+                    @Override public boolean hasNext() {
+                        return it.hasNext();
+                    }
+
+                    @Override public Object next() {
+                        return ((AbstractFeature) it.next()).getPropertyValue("sis:geometry");
+                    }
+
+                    @Override public void remove() {
+                        throw new UnsupportedOperationException();
+                    }
+                });
+                geometry = getType().getValueClass().cast(geom);
             }
             return geometry;
         }
@@ -175,7 +203,7 @@ class GroupAsPolylineOperation extends AbstractOperation {
          * Does not allow modification of this attribute.
          */
         @Override
-        public void setValue(Polyline value) {
+        public void setValue(G value) {
             throw new UnsupportedOperationException(Errors.format(Errors.Keys.UnmodifiableObject_1, AbstractAttribute.class));
         }
     }
