@@ -112,6 +112,11 @@ Read and write files in the GPX format.
       <artifactId>sis-storage</artifactId>
       <version>${project.version}</version>
     </dependency>
+    <dependency>
+      <groupId>com.esri.geometry</groupId>
+      <artifactId>esri-geometry-api</artifactId>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
 
 </project>

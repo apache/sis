@@ -28,6 +28,7 @@ import org.apache.sis.math.StatisticsFormat;
 import org.apache.sis.measure.Latitude;
 import org.apache.sis.parameter.Parameters;
 import org.apache.sis.internal.util.Constants;
+import org.apache.sis.internal.util.StandardDateFormat;
 import org.apache.sis.internal.referencing.provider.AbstractProvider;
 import org.apache.sis.referencing.operation.transform.LinearTransform;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
@@ -216,7 +217,7 @@ public final class Benchmark {
             long time = System.nanoTime();
             projection.transform(sources, 0, targets, 0, NUM_POINTS);
             time = System.nanoTime() - time;
-            final double seconds = time * NANOS_TO_SECONDS;
+            final double seconds = time / (double) StandardDateFormat.NANOS_PER_SECOND;
             System.out.printf("%s time: %1.4f%n", performance.name(), seconds);
             performance.accept(seconds);
         }
@@ -231,15 +232,10 @@ public final class Benchmark {
             kernel.transform(targets, 0, targets, 0, NUM_POINTS);
             time = System.nanoTime() - time;
             denormalize.transform(targets, 0, targets, 0, NUM_POINTS);
-            final double seconds = time * NANOS_TO_SECONDS;
+            final double seconds = time / (double) StandardDateFormat.NANOS_PER_SECOND;
             System.out.printf("%s time: %1.4f%n", performance.name(), seconds);
             performance.accept(seconds);
         }
-
-        /**
-         * For reporting the time measured by {@link System#nanoTime()}.
-         */
-        private static final double NANOS_TO_SECONDS = 1E-9;
     }
 
     /**

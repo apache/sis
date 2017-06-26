@@ -806,11 +806,7 @@ public class DefaultFeatureType extends AbstractIdentifiedType implements Featur
                             return false;
                         }
                     }
-                    if (r0 instanceof Operation) {
-                        if (!(r1 instanceof Operation) || !isAssignableIgnoreName((Operation) r0, (Operation) r1)) {
-                            return false;
-                        }
-                    }
+                    // No need for explicit AttributeType or Operation checks because they are PropertyType.
                 }
             }
         }

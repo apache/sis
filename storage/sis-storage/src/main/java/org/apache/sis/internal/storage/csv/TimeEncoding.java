@@ -20,6 +20,7 @@ import javax.measure.Unit;
 import javax.measure.quantity.Time;
 import org.opengis.referencing.datum.TemporalDatum;
 import org.apache.sis.internal.converter.SurjectiveConverter;
+import org.apache.sis.internal.util.StandardDateFormat;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.measure.Units;
 
@@ -96,7 +97,12 @@ class TimeEncoding extends SurjectiveConverter<String,Instant> {
     public Instant apply(final String time) {
         final double value = Double.parseDouble(time) * interval;
         final long millis = Math.round(value);
-        return Instant.ofEpochMilli(millis + origin).plusNanos(Math.round((value - millis)*1E6));
+        return Instant.ofEpochMilli(millis + origin)
+                      .plusNanos(Math.round((value - millis) * StandardDateFormat.NANOS_PER_MILLISECOND));
+        /*
+         * Performance note: the call to .plusNano(…) will usually return the same 'Instant' instance
+         * (without creating new object) since the time granularity is rarely finer than milliseconds.
+         */
     }
 
     /**

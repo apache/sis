@@ -26,6 +26,7 @@ import java.io.PrintWriter;
 
 import org.apache.sis.math.Statistics;
 import org.apache.sis.math.StatisticsFormat;
+import org.apache.sis.internal.util.StandardDateFormat;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.test.TestUtilities;
 import org.apache.sis.test.TestCase;
@@ -291,7 +292,8 @@ public final strictfp class CacheTest extends TestCase {
         long time = System.nanoTime();
         for (int i=0; i<10; i++) {
             final long t = System.nanoTime();
-            out.printf("Cache size: %4d (after %3d ms)%n", cache.size(), round((t - time) / 1E+6));
+            out.printf("Cache size: %4d (after %3d ms)%n", cache.size(),
+                       round((t - time) / (double) StandardDateFormat.NANOS_PER_MILLISECOND));
             time = t;
             Thread.sleep(250);
             if (i >= 2) {
