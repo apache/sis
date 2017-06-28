@@ -57,7 +57,7 @@ final class DateList extends AbstractList<Instant> implements CheckedContainer<I
         for (final long t : millis) {
             if (t < min) min = t;
         }
-        long max = Long.MIN_VALUE;
+        long max = 1;
         for (int i=0; i<millis.length; i++) {
             final long t = (millis[i] -= min);
             if (t > max) max = t;

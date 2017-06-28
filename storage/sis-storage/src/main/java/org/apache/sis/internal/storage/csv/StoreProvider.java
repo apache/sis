@@ -138,6 +138,6 @@ public final class StoreProvider extends DataStoreProvider {
      */
     @Override
     public DataStore open(final StorageConnector connector) throws DataStoreException {
-        return new Store(this, connector);
+        return new Store(this, connector, false);
     }
 }
