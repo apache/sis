@@ -185,7 +185,7 @@ public class FeatureTypeBuilder extends TypeBuilder {
     /**
      * Provides method for creating geometric objects using the library specified by the user.
      */
-    private final Geometries geometries;
+    private final Geometries<?> geometries;
 
     /**
      * The object created by this builder, or {@code null} if not yet created.

@@ -421,13 +421,17 @@ public class UnitFormat extends Format implements javax.measure.format.UnitForma
         final Unit<?> unitForOldLabel = labelToUnit.remove(unitToLabel.put(unit, label));
         final Unit<?> oldUnitForLabel = labelToUnit.put(label, unit);
         if (oldUnitForLabel != null && !oldUnitForLabel.equals(unit) && !label.equals(unitToLabel.remove(oldUnitForLabel))) {
-            // Assuming there is no bug in our algorithm, this exception should never happen
-            // unless this UnitFormat has been modified concurrently in another thread.
+            /*
+             * Assuming there is no bug in our algorithm, this exception should never happen
+             * unless this UnitFormat has been modified concurrently in another thread.
+             */
             throw new CorruptedObjectException("unitToLabel");
         }
         if (unitForOldLabel != null && !unitForOldLabel.equals(unit)) {
-            // Assuming there is no bug in our algorithm, this exception should never happen
-            // unless this UnitFormat has been modified concurrently in another thread.
+            /*
+             * Assuming there is no bug in our algorithm, this exception should never happen
+             * unless this UnitFormat has been modified concurrently in another thread.
+             */
             throw new CorruptedObjectException("labelToUnit");
         }
     }

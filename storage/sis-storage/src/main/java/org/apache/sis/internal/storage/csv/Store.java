@@ -167,7 +167,7 @@ public final class Store extends FeatureStore {
     /**
      * The factory to use for creating geometries.
      */
-    private final Geometries geometries;
+    private final Geometries<?> geometries;
 
     /**
      * Appearing order of trajectories (time or sequential), or {@code null} if unspecified.

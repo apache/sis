@@ -37,7 +37,7 @@ import org.apache.sis.math.Vector;
  * @todo avoid use of reflection and use JTS API directly after JTS released
  *       a new version of the library under BSD-like license.
  */
-final class JTS extends Geometries {
+final class JTS extends Geometries<Object> {
     /**
      * Getter methods on JTS envelopes.
      * Each methods take no argument and return a {@code double} value.
@@ -49,7 +49,7 @@ final class JTS extends Geometries {
      */
     JTS() throws ClassNotFoundException, NoSuchMethodException {
         super(/*GeometryLibrary.JTS, */ null,                               // TODO
-              Class.forName("com.vividsolutions.jts.geom.Geometry"),
+              (Class) Class.forName("com.vividsolutions.jts.geom.Geometry"),    // TODO
               Class.forName("com.vividsolutions.jts.geom.Point"),
               Class.forName("com.vividsolutions.jts.geom.LineString"),
               Class.forName("com.vividsolutions.jts.geom.Polygon"));
@@ -123,7 +123,7 @@ final class JTS extends Geometries {
      * The implementation returned by this method must be an instance of {@link #rootClass}.
      */
     @Override
-    public Object createPolyline(final int dimension, final Vector ordinates) {
+    public Object createPolyline(final int dimension, final Vector... ordinates) {
         // TODO - see class javadoc
         throw unsupported(dimension);
     }
