@@ -26,8 +26,7 @@ import org.apache.sis.math.Vector;
  * The converter to use for converting a text into a geometry.
  * The geometry class depends on the library available at runtime.
  *
- * @param  <G>  the geometry class. There is actually no easy way this class can ensure that we comply
- *              with this parameterized type. This class shall not be public in part for that reason.
+ * @param  <G>  the geometry class.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
@@ -43,7 +42,7 @@ final class GeometryParser<G> extends SurjectiveConverter<String,G> {
     /**
      * The factory to use for creating polylines.
      */
-    private final Geometries geometries;
+    private final Geometries<G> geometries;
 
     /**
      * The number of dimensions other than time in the coordinate reference system.
@@ -55,7 +54,7 @@ final class GeometryParser<G> extends SurjectiveConverter<String,G> {
     /**
      * Creates a new converter from CSV encoded trajectories to geometries.
      */
-    private GeometryParser(final Geometries geometries, final short spatialDimensionCount) {
+    private GeometryParser(final Geometries<G> geometries, final short spatialDimensionCount) {
         this.geometries = geometries;
         this.spatialDimensionCount = spatialDimensionCount;
     }
@@ -63,7 +62,7 @@ final class GeometryParser<G> extends SurjectiveConverter<String,G> {
     /**
      * Returns a parser instance for the given geometry factory.
      */
-    static GeometryParser<?> instance(final Geometries geometries, final short spatialDimensionCount) {
+    static GeometryParser<?> instance(final Geometries<?> geometries, final short spatialDimensionCount) {
         return (spatialDimensionCount == 2 && INSTANCE.geometries == geometries)
                ? INSTANCE : new GeometryParser<>(geometries, spatialDimensionCount);
     }
@@ -90,14 +89,13 @@ final class GeometryParser<G> extends SurjectiveConverter<String,G> {
      * Converts an element from the CSV file to the geometry type.
      */
     @Override
-    @SuppressWarnings("unchecked")
     public G apply(final String text) {
         /*
          * We could avoid the "unchecked" warning by using getTargetClass().cast(…), but it would be
          * a false sense of safety since 'getTargetClass()' is itself unchecked. The real check will
          * be performed by DefaultFeatureType.setPropertyValue(…) anyway.
          */
-        return (G) geometries.createPolyline(spatialDimensionCount,
+        return geometries.createPolyline(spatialDimensionCount,
                 Vector.create(CharSequences.parseDoubles(text, Store.ORDINATE_SEPARATOR), false));
     }
 }
