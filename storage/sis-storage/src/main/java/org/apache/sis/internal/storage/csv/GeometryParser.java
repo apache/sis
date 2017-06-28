@@ -17,54 +17,30 @@
 package org.apache.sis.internal.storage.csv;
 
 import org.apache.sis.internal.converter.SurjectiveConverter;
-import org.apache.sis.internal.feature.Geometries;
 import org.apache.sis.util.CharSequences;
-import org.apache.sis.math.Vector;
 
 
 /**
  * The converter to use for converting a text into a geometry.
- * The geometry class depends on the library available at runtime.
- *
- * @param  <G>  the geometry class.
+ * This converter performs only the first step, the conversion to a {@code double[]} array.
+ * The second step (the conversion to a geometry object) is performed after we collected all arrays.
+ * The resulting geometry class depends on the library available at runtime.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
  * @since   0.8
  * @module
  */
-final class GeometryParser<G> extends SurjectiveConverter<String,G> {
+final class GeometryParser extends SurjectiveConverter<String,double[]> {
     /**
-     * The unique instance using the default geometry library.
+     * The unique instance.
      */
-    private static final GeometryParser<?> INSTANCE = new GeometryParser<>(Geometries.implementation(null), (short) 2);
+    static final GeometryParser INSTANCE = new GeometryParser();
 
     /**
-     * The factory to use for creating polylines.
+     * For the singleton instance.
      */
-    private final Geometries<G> geometries;
-
-    /**
-     * The number of dimensions other than time in the coordinate reference system.
-     * Shall be 2 or 3 according Moving Features CSV encoding specification, but Apache SIS
-     * may be tolerant to other values (depending on the backing geometry library).
-     */
-    private final short spatialDimensionCount;
-
-    /**
-     * Creates a new converter from CSV encoded trajectories to geometries.
-     */
-    private GeometryParser(final Geometries<G> geometries, final short spatialDimensionCount) {
-        this.geometries = geometries;
-        this.spatialDimensionCount = spatialDimensionCount;
-    }
-
-    /**
-     * Returns a parser instance for the given geometry factory.
-     */
-    static GeometryParser<?> instance(final Geometries<?> geometries, final short spatialDimensionCount) {
-        return (spatialDimensionCount == 2 && INSTANCE.geometries == geometries)
-               ? INSTANCE : new GeometryParser<>(geometries, spatialDimensionCount);
+    private GeometryParser() {
     }
 
     /**
@@ -76,26 +52,18 @@ final class GeometryParser<G> extends SurjectiveConverter<String,G> {
     }
 
     /**
-     * Returns the type of converted elements. The returned type shall be the same than
-     * the type selected by {@code Store.parseFeatureType(…)} for the "trajectory" column.
+     * Returns the type of converted elements.
      */
     @Override
-    @SuppressWarnings("unchecked")
-    public Class<G> getTargetClass() {
-        return (Class<G>) geometries.polylineClass;
+    public Class<double[]> getTargetClass() {
+        return double[].class;
     }
 
     /**
-     * Converts an element from the CSV file to the geometry type.
+     * Converts an element from the CSV file to the array type.
      */
     @Override
-    public G apply(final String text) {
-        /*
-         * We could avoid the "unchecked" warning by using getTargetClass().cast(…), but it would be
-         * a false sense of safety since 'getTargetClass()' is itself unchecked. The real check will
-         * be performed by DefaultFeatureType.setPropertyValue(…) anyway.
-         */
-        return geometries.createPolyline(spatialDimensionCount,
-                Vector.create(CharSequences.parseDoubles(text, Store.ORDINATE_SEPARATOR), false));
+    public double[] apply(final String text) {
+        return CharSequences.parseDoubles(text, Store.ORDINATE_SEPARATOR);
     }
 }

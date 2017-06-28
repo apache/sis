@@ -35,6 +35,7 @@ import java.time.Instant;
 import java.util.function.Consumer;
 import org.opengis.feature.Attribute;
 import org.opengis.feature.AttributeType;
+import org.opengis.feature.Feature;
 
 
 /**
@@ -71,7 +72,7 @@ public final class MovingFeature {
     /**
      * Number of {@code Property} instances added for each index of the {@link #properties} table.
      */
-    private int[] count;
+    private final int[] count;
 
     /**
      * A dynamic property value together with the period of time in which this property is valid.
@@ -110,12 +111,31 @@ public final class MovingFeature {
     }
 
     /**
+     * Overall start and end time over all properties.
+     */
+    private long tmin = Long.MAX_VALUE,
+                 tmax = Long.MIN_VALUE;
+
+    /**
      * Creates a new moving feature.
      *
      * @param numProperties  maximal number of dynamic properties.
      */
     public MovingFeature(final int numProperties) {
         properties = new Period[numProperties];
+        count      = new int   [numProperties];
+    }
+
+    /**
+     * Adds a time range.
+     * The minimal and maximal values will be used by {@link #storeTimeRange(String, String, Feature)}.
+     *
+     * @param  startTime  beginning in milliseconds since Java epoch of the period when the property value is valid.
+     * @param  endTime    end in milliseconds since Java epoch of the period when the the property value is valid.
+     */
+    public final void addTimeRange(final long startTime, final long endTime) {
+        if (startTime < tmin) tmin = startTime;
+        if (  endTime > tmax) tmax =   endTime;
     }
 
     /**
@@ -133,6 +153,21 @@ public final class MovingFeature {
         } else {
             properties[index] = new Period(p, startTime, endTime, value);
             count[index]++;
+        }
+    }
+
+    /**
+     * Stores the start time and end time in the given feature.
+     *
+     * @param  startTime  name of the property where to store the start time.
+     * @param  endTime    name of the property where to store the end time.
+     * @param  dest       feature where to store the start time and end time.
+     */
+    public final void storeTimeRange(final String startTime, final String endTime, final Feature dest) {
+        if (tmin < tmax) {
+            final Instant t = Instant.ofEpochMilli(tmin);
+            dest.setPropertyValue(startTime, t);
+            dest.setPropertyValue(endTime, (tmin == tmax) ? t : Instant.ofEpochMilli(tmax));
         }
     }
 
@@ -180,19 +215,19 @@ public final class MovingFeature {
             final Geometries<G> factory, final Attribute<G> dest, final Consumer<LogRecord> warningListener)
     {
         int n = count[index];
-        final Vector[] coords = new Vector[n];
+        final Vector[] vectors = new Vector[n];
         for (Period p = properties[index]; p != null; p = p.previous) {
-            coords[--n] = Vector.create(p.value, false);
+            vectors[--n] = Vector.create(p.value, false);
         }
         if (n != 0) {
             // Should never happen unless this object has been modified concurrently in another thread.
             throw new CorruptedObjectException();
         }
         int    warnings = 10;                   // Maximal number of warnings, for avoiding to flood the logger.
-        int    numPts   = 0;                    // Total number of points in all vectors, ignoring invalid ones.
+        int    numPts   = 0;                    // Total number of points in all vectors, ignoring null vectors.
         Vector previous = null;                 // If non-null, shall be non-empty.
-        for (int i=0; i<coords.length; i++) {
-            Vector v = coords[i];
+        for (int i=0; i<vectors.length; i++) {
+            Vector v = vectors[i];
             int length;
             if (v == null || (length = v.size()) == 0) {
                 continue;
@@ -217,10 +252,10 @@ public final class MovingFeature {
                     v = v.subList(dimension, length);                               // Skip the first coordinate.
                     length -= dimension;
                     if (length == 0) {
-                        coords[i] = null;
+                        vectors[i] = null;
                         continue;
                     }
-                    coords[i] = v;
+                    vectors[i] = v;
                 }
             }
             numPts += length;
@@ -231,17 +266,21 @@ public final class MovingFeature {
          * We will create the geometry at the end of this method. Before that, interpolate
          * the dates and times.
          */
-        int i = coords.length;
+        int i = vectors.length;
         numPts /= dimension;
         final long[] times = new long[numPts];
         for (Period p = properties[index]; p != null; p = p.previous) {
-            final Vector v = coords[--i];
+            final Vector v = vectors[--i];
             if (v != null) {
                 int c = v.size() / dimension;
-                final long startTime = p.startTime;
-                final double scale = (p.endTime - startTime) / (double) Math.max(c-1, 1);
-                while (--c >= 0) {
-                    times[--numPts] = startTime + Math.round(scale * c);
+                if (c == 1) {
+                    times[--numPts] = p.endTime;
+                } else {
+                    final long startTime = p.startTime;
+                    final double scale = (p.endTime - startTime) / (double) (c-1);
+                    while (--c >= 0) {
+                        times[--numPts] = startTime + Math.round(scale * c);
+                    }
                 }
             }
         }
@@ -252,7 +291,7 @@ public final class MovingFeature {
         /*
          * Store the geometry and characteristics in the attribute.
          */
-        dest.setValue(factory.createPolyline(dimension, coords));
+        dest.setValue(factory.createPolyline(dimension, vectors));
         final Attribute<Instant> c = TIME.newInstance();
         c.setValues(new DateList(times));
         dest.characteristics().values().add(c);
