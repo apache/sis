@@ -126,7 +126,7 @@ public final class Store extends FeatureStore {
 
     /**
      * Index of the column containing trajectory coordinates.
-     * Columns before the trajectory are Moving Feature identifier {@code mfidref}, start time and end time.
+     * Columns before the trajectory are Moving Feature identifier {@code mfIdRef}, start time and end time.
      */
     private static final int TRAJECTORY_COLUMN = 3;
 
@@ -458,7 +458,7 @@ public final class Store extends FeatureStore {
      */
     @SuppressWarnings("rawtypes")               // "rawtypes" because of generic array creation.
     private FeatureType parseFeatureType(final List<String> elements) throws DataStoreException {
-        AttributeType[] characteristics = {};
+        AttributeType[] characteristics = null;
         final int size = elements.size();
         final List<PropertyType> properties = new ArrayList<>();
         for (int i=1; i<size; i++) {
@@ -797,14 +797,14 @@ public final class Store extends FeatureStore {
                 for (int i=0; i<n; i++) {
                     values[i] = converters[i].apply((String) values[i]);
                 }
-                final String  mfidref   =  (String)  values[0];
+                final String  mfIdRef   =  (String)  values[0];
                 final long    startTime = ((Instant) values[1]).toEpochMilli();
                 final long    endTime   = ((Instant) values[2]).toEpochMilli();
                 String        publish   = null;
-                if (!mfidref.equals(identifier)) {
+                if (!mfIdRef.equals(identifier)) {
                     publish    = identifier;
-                    identifier = mfidref;
-                    builder    = builders.computeIfAbsent(mfidref, (k) -> new MovingFeature(np));
+                    identifier = mfIdRef;
+                    builder    = builders.computeIfAbsent(mfIdRef, (k) -> new MovingFeature(np));
                 }
                 builder.addTimeRange(startTime, endTime);
                 for (int i=0; i<np; i++) {
