@@ -114,6 +114,7 @@ final class Tags {
     public static final short YCbCrPositioning            = 0x0213;
     public static final short ReferenceBlackWhite         = 0x0214;
     public static final short Copyright           = (short) 0x8298;
+    public static final short ModelTiePointTag    = (short) 0x8482;
 
 
     /////////////////////////////////////////////////////////

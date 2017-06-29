@@ -311,6 +311,18 @@ final class ImageFileDirectory {
     private String asciiGeoParameters;
 
     /**
+     * Originally part of Intergraph's GeoTIFF tags, but now used in interchangeable GeoTIFF files.
+     *
+     * This tag is also known as <strong>'GeoreferenceTag'</strong>.
+     * This tag stores raster->model tiepoint pairs in the order
+     * ModelTiepointTag = (...,I,J,K, X,Y,Z...)
+     * where (I,J,K) is the point at location (I,J) in raster space with pixel-value K, and (X,Y,Z) is a vector in model space.
+     * In most cases the model space is only two-dimensional, in which case both K and Z should be set to zero;
+     * this third dimension is provided in anticipation of future support for 3D digital elevation models and vertical coordinate systems.
+     */
+    private Vector modelTiePoints;
+
+    /**
      * Creates a new image file directory.
      *
      * @param reader  information about the input stream to read, the metadata and the character encoding.
@@ -646,6 +658,16 @@ final class ImageFileDirectory {
              */
             case Tags.Orientation: {
                 // TODO
+                break;
+            }
+
+            /*
+             * This tag stores raster->model tiepoint pairs in the order
+             * ModelTiepointTag = (...,I,J,K, X,Y,Z...).
+             */
+            case Tags.ModelTiePointTag: {
+                //-- TODO : store into ISO19115 metadata object
+                modelTiePoints = type.readVector(input(), count);
                 break;
             }
 
