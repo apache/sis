@@ -314,7 +314,7 @@ final class ImageFileDirectory {
      * Originally part of Intergraph's GeoTIFF tags, but now used in interchangeable GeoTIFF files.
      *
      * This tag is also known as <strong>'GeoreferenceTag'</strong>.
-     * This tag stores raster->model tiepoint pairs in the order
+     * This tag stores raster model tiepoint pairs into the following order
      * ModelTiepointTag = (...,I,J,K, X,Y,Z...)
      * where (I,J,K) is the point at location (I,J) in raster space with pixel-value K, and (X,Y,Z) is a vector in model space.
      * In most cases the model space is only two-dimensional, in which case both K and Z should be set to zero;
