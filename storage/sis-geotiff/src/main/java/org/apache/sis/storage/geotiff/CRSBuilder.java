@@ -740,6 +740,8 @@ final class CRSBuilder {
      * <ul>
      *   <li>{@link #build(Vector, Vector, String)} must have been invoked before this method.</li>
      *   <li>{@link ImageFileDirectory} must have filled its part of metadata before to invoke this method.</li>
+     *   <li>{@link MetadataBuilder#newGridRepresentation(MetadataBuilder.GridType)} should have been invoked
+     *       with the appropriate {@code GEORECTIFIED} or {@code GEOREFERENCEABLE} type.</li>
      * </ul>
      *
      * After execution, this method emits a warning for unprocessed GeoTIFF tags.
@@ -748,7 +750,6 @@ final class CRSBuilder {
      * @throws NumberFormatException if a numeric value was stored as a string and can not be parsed.
      */
     final void complete(final MetadataBuilder metadata) {
-        metadata.newGridRepresentation(MetadataBuilder.GridType.GEORECTIFIED);
         /*
          * ASCII reference to published documentation on the overall configuration of the GeoTIFF file.
          * Often the projected CRS name, despite GeoKeys.PCSCitation being already for that purpose.

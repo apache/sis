@@ -64,11 +64,14 @@ final class DateList extends AbstractList<Instant> implements CheckedContainer<I
         }
         long inc = max;
         for (long t : millis) {
-            if ((t % inc) != 0) do {
-                final long r = (inc % t);       // Search for greatest common divisor with Euclid's algorithm.
-                inc = t;
-                t = r;
-            } while (t != 0);
+            if ((t % inc) != 0) {
+                do {
+                    final long r = (inc % t);       // Search for greatest common divisor with Euclid's algorithm.
+                    inc = t;
+                    t = r;
+                } while (t != 0);
+                if (inc == 1) break;                // No need to check other values.
+            }
         }
         epoch = min;
         increment = inc;
