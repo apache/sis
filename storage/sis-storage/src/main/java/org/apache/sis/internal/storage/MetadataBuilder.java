@@ -38,6 +38,7 @@ import org.opengis.metadata.spatial.Dimension;
 import org.opengis.metadata.spatial.DimensionNameType;
 import org.opengis.metadata.spatial.CellGeometry;
 import org.opengis.metadata.spatial.PixelOrientation;
+import org.opengis.metadata.spatial.GeolocationInformation;
 import org.opengis.metadata.spatial.SpatialRepresentationType;
 import org.opengis.metadata.constraint.Restriction;
 import org.opengis.metadata.content.TransferFunctionType;
@@ -1790,7 +1791,10 @@ parse:      for (int i = 0; i < length;) {
      */
     public final void setPointInPixel(final PixelOrientation value) {
         if (value != null) {
-            ((DefaultGeorectified) gridRepresentation()).setPointInPixel(value);
+            final DefaultGridSpatialRepresentation gridRepresentation = gridRepresentation();
+            if (gridRepresentation instanceof DefaultGeorectified) {
+                ((DefaultGeorectified) gridRepresentation).setPointInPixel(value);
+            }
         }
     }
 
@@ -1807,7 +1811,29 @@ parse:      for (int i = 0; i < length;) {
     public final void setGridToCRS(final CharSequence value) {
         final InternationalString i18n = trim(value);
         if (i18n != null) {
-            ((DefaultGeorectified) gridRepresentation()).setTransformationDimensionDescription(i18n);
+            final DefaultGridSpatialRepresentation gridRepresentation = gridRepresentation();
+            if (gridRepresentation instanceof DefaultGeorectified) {
+                ((DefaultGeorectified) gridRepresentation).setTransformationDimensionDescription(i18n);
+            }
+        }
+    }
+
+    /**
+     * Adds information about the geolocation of an image.
+     * Storage location is:
+     *
+     * <ul>
+     *   <li>{@code metadata/spatialRepresentationInfo/geolocationInformation}</li>
+     * </ul>
+     *
+     * @param  info  the geolocation information to add, or {@code null} if none.
+     */
+    public final void addGeolocation(final GeolocationInformation info) {
+        if (info != null) {
+            final DefaultGridSpatialRepresentation gridRepresentation = gridRepresentation();
+            if (gridRepresentation instanceof DefaultGeoreferenceable) {
+                addIfNotPresent(((DefaultGeoreferenceable) gridRepresentation).getGeolocationInformation(), info);
+            }
         }
     }
 

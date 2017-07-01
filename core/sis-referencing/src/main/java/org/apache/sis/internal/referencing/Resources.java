@@ -83,6 +83,11 @@ public final class Resources extends IndexedResourceBundle {
         public static final short CanNotCreateObjectAsInstanceOf_2 = 4;
 
         /**
+         * Can not infer a grid size from the given values in {0} range.
+         */
+        public static final short CanNotInferGridSizeFromValues_1 = 75;
+
+        /**
          * Can not instantiate geodetic object for “{0}”.
          */
         public static final short CanNotInstantiateGeodeticObject_1 = 5;

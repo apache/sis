@@ -31,11 +31,15 @@ import org.opengis.util.FactoryException;
 import org.opengis.util.NoSuchIdentifierException;
 import org.opengis.parameter.ParameterNotFoundException;
 import org.opengis.referencing.NoSuchAuthorityCodeException;
+import org.opengis.referencing.operation.TransformException;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.apache.sis.referencing.operation.matrix.Matrices;
+import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.internal.geotiff.Resources;
+import org.apache.sis.internal.storage.MetadataBuilder;
 import org.apache.sis.internal.storage.io.ChannelDataInput;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreContentException;
-import org.apache.sis.internal.storage.MetadataBuilder;
 import org.apache.sis.math.Vector;
 import org.apache.sis.measure.Units;
 
@@ -311,16 +315,30 @@ final class ImageFileDirectory {
     private String asciiGeoParameters;
 
     /**
-     * Originally part of Intergraph's GeoTIFF tags, but now used in interchangeable GeoTIFF files.
-     *
-     * This tag is also known as <strong>'GeoreferenceTag'</strong>.
-     * This tag stores raster model tiepoint pairs into the following order
-     * ModelTiepointTag = (...,I,J,K, X,Y,Z...)
-     * where (I,J,K) is the point at location (I,J) in raster space with pixel-value K, and (X,Y,Z) is a vector in model space.
-     * In most cases the model space is only two-dimensional, in which case both K and Z should be set to zero;
-     * this third dimension is provided in anticipation of future support for 3D digital elevation models and vertical coordinate systems.
+     * Raster model tie points. This vector contains ordinate values structured as (I,J,K, X,Y,Z) records.
+     * The (I,J,K) ordinate values specify the point at location (I,J) in raster space with pixel-value K,
+     * and (X,Y,Z) ordinate values specify the point in the Coordinate Reference System. In most cases the
+     * coordinate system is only two-dimensional, in which case both K and Z should be set to zero.
      */
     private Vector modelTiePoints;
+
+    /**
+     * The conversion from grid coordinates to CRS coordinates. It can be determined in different ways,
+     * from simpler to more complex:
+     *
+     * <ul>
+     *   <li>By a combination of a single {@link #modelTiePoints} with the 3 values given in
+     *       {@link Tags#ModelPixelScaleTag} as documented in the Javadoc of that tag.</li>
+     *   <li>By a {@link Tags#ModelTransformation} giving all coefficients of the 4×4 matrix}.
+     *       Note that the third row and the third column have all their value set to 0 if the
+     *       space model (or the coordinate reference system) should be two-dimensional.</li>
+     *   <li>By building a non-linear transformation from all {@link #modelTiePoints}.
+     *       Such transformation can not be stored in a matrix, so will leave this field {@code null}.</li>
+     * </ul>
+     *
+     * By convention, the translation column is set to NaN values if it needs to be computed from the tie point.
+     */
+    private MatrixSIS gridToCRS;
 
     /**
      * Creates a new image file directory.
@@ -660,13 +678,51 @@ final class ImageFileDirectory {
                 // TODO
                 break;
             }
-
             /*
-             * This tag stores raster->model tiepoint pairs in the order
-             * ModelTiepointTag = (...,I,J,K, X,Y,Z...).
+             * The "grid to CRS" conversion as a 4×4 matrix in row-major fashion. The third matrix row and
+             * the third matrix column may contain only zero values; this block does not reduce the number
+             * of dimensions from 3 to 2.
              */
-            case Tags.ModelTiePointTag: {
-                //-- TODO : store into ISO19115 metadata object
+            case Tags.ModelTransformation: {
+                final Vector m = type.readVector(input(), count);
+                final int size = m.size();
+                final int n;
+                switch (size) {
+                    case  6:                    // Assume 2D model with implicit [0 0 1] last row.
+                    case  9: n = 3; break;      // Assume 2D model with full 3×3 matrix.
+                    case 12:                    // Assume 3D model with implicit [0 0 0 1] last row.
+                    case 16: n = 4; break;      // 3D model with full 4×4 matrix, as required by GeoTIFF spec.
+                    default: return m;
+                }
+                gridToCRS = Matrices.createZero(n, n);
+                gridToCRS.setElement(n-1, n-1, 1);
+                for (int i=0; i<size; i++) {
+                    gridToCRS.setElement(i / n, i % n, m.doubleValue(i));
+                }
+                break;
+            }
+            /*
+             * The "grid to CRS" conversion with only the scale factor specified. This block sets the
+             * translation column to NaN, meaning that it will need to be computed from the tie point.
+             */
+            case Tags.ModelPixelScaleTag: {
+                final Vector m = type.readVector(input(), count);
+                final int size = m.size();
+                if (size < 2 || size > 3) {     // Length should be exactly 3, but we make this reader tolerant.
+                    return m;
+                }
+                gridToCRS = Matrices.createZero(size+1, size+1);
+                gridToCRS.setElement(size, size, 1);
+                for (int i=0; i<size; i++) {
+                    gridToCRS.setElement(i, i, m.doubleValue(i));
+                    gridToCRS.setElement(i, size, Double.NaN);
+                }
+                break;
+            }
+            /*
+             * The mapping from pixel coordinates to CRS coordinates as a sequence of (I,J,K, X,Y,Z) records.
+             */
+            case Tags.ModelTiePoints: {
                 modelTiePoints = type.readVector(input(), count);
                 break;
             }
@@ -1062,10 +1118,15 @@ final class ImageFileDirectory {
          * in which case the CRS builder returns null. This is safe since all MetadataBuilder methods
          * ignore null values (a design choice because this pattern come very often).
          */
+        final boolean isGeorectified = (modelTiePoints == null) || (gridToCRS != null);
+        metadata.newGridRepresentation(isGeorectified ? MetadataBuilder.GridType.GEORECTIFIED
+                                                      : MetadataBuilder.GridType.GEOREFERENCEABLE);
+        CoordinateReferenceSystem crs = null;
         if (geoKeyDirectory != null) {
             final CRSBuilder helper = new CRSBuilder(reader);
             try {
-                metadata.addReferenceSystem(helper.build(geoKeyDirectory, numericGeoParameters, asciiGeoParameters));
+                crs = helper.build(geoKeyDirectory, numericGeoParameters, asciiGeoParameters);
+                metadata.addReferenceSystem(crs);
                 helper.complete(metadata);
             } catch (NoSuchIdentifierException | ParameterNotFoundException e) {
                 short key = Resources.Keys.UnsupportedProjectionMethod_1;
@@ -1078,10 +1139,16 @@ final class ImageFileDirectory {
                     reader.owner.warning(null, e);
                 }
             }
-            geoKeyDirectory      = null;            // Not needed anymore, so let GC do its work.
-            numericGeoParameters = null;
-            asciiGeoParameters   = null;
         }
+        if (!isGeorectified) try {
+            metadata.addGeolocation(new GridGeometry(input().filename, crs, modelTiePoints));
+        } catch (TransformException e) {
+            reader.owner.warning(null, e);
+        }
+        geoKeyDirectory      = null;            // Not needed anymore, so let GC do its work.
+        numericGeoParameters = null;
+        asciiGeoParameters   = null;
+        modelTiePoints       = null;
     }
 
     /**
