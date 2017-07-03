@@ -1799,6 +1799,40 @@ parse:      for (int i = 0; i < length;) {
     }
 
     /**
+     * Sets whether parameters for transformation, control/check point(s) or orientation parameters are available.
+     * Storage location are:
+     *
+     * <ul>
+     *   <li>If georeferenceable:<ul>
+     *     <li>{@code metadata/spatialRepresentationInfo/transformationParameterAvailability}</li>
+     *     <li>{@code metadata/spatialRepresentationInfo/controlPointAvailability}</li>
+     *     <li>{@code metadata/spatialRepresentationInfo/orientationParameterAvailability}</li>
+     *   </ul></li>
+     *   <li>If georeferenced:<ul>
+     *     <li>{@code metadata/spatialRepresentationInfo/transformationParameterAvailability}</li>
+     *     <li>{@code metadata/spatialRepresentationInfo/checkPointAvailability}</li>
+     *   </ul></li>
+     * </ul>
+     *
+     * @param  transformationParameterAvailability  indication of whether or not parameters for transformation exists.
+     * @param  controlPointAvailability             indication of whether or not control or check point(s) exists.
+     * @param  orientationParameterAvailability     indication of whether or not orientation parameters are available.
+     */
+    public final void setGeoreferencingAvailability(final boolean transformationParameterAvailability,
+                                                    final boolean controlPointAvailability,
+                                                    final boolean orientationParameterAvailability)
+    {
+        final DefaultGridSpatialRepresentation gridRepresentation = gridRepresentation();
+        gridRepresentation.setTransformationParameterAvailable(transformationParameterAvailability);
+        if (gridRepresentation instanceof DefaultGeorectified) {
+            ((DefaultGeorectified) gridRepresentation).setCheckPointAvailable(controlPointAvailability);
+        } else if (gridRepresentation instanceof DefaultGeoreferenceable) {
+            ((DefaultGeoreferenceable) gridRepresentation).setControlPointAvailable(controlPointAvailability);
+            ((DefaultGeoreferenceable) gridRepresentation).setOrientationParameterAvailable(orientationParameterAvailability);
+        }
+    }
+
+    /**
      * Sets a general description of the transformation form grid coordinates to "real world" coordinates.
      * Storage location is:
      *
