@@ -24,9 +24,11 @@ import org.opengis.metadata.spatial.GeolocationInformation;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.referencing.operation.transform.LinearTransform;
 import org.apache.sis.referencing.operation.builder.LocalizationGridBuilder;
 import org.apache.sis.referencing.operation.AbstractCoordinateOperation;
+import org.apache.sis.internal.util.DoubleDouble;
 import org.apache.sis.math.Vector;
 
 
@@ -49,6 +51,12 @@ final class GridGeometry extends AbstractCoordinateOperation implements Geolocat
      * Number of floating point values in each (I,J,K,X,Y,Z) record.
      */
     private static final int RECORD_LENGTH = 6;
+
+    /**
+     * The desired precision of coordinate transformations in units of pixels.
+     * This is an arbitrary value that may be adjusted in any future SIS version.
+     */
+    private static final double PRECISION = 1E-6;
 
     /**
      * Creates a new transformation from the information found by {@link ImageFileDirectory}.
@@ -82,7 +90,32 @@ final class GridGeometry extends AbstractCoordinateOperation implements Geolocat
                                  modelTiePoints.doubleValue(i+3),
                                  modelTiePoints.doubleValue(i+4));
         }
+        grid.setDesiredPrecision(PRECISION);
         return grid.create(null);
+    }
+
+    /**
+     * Computes translation terms in the given matrix from the (usually singleton) tie point.
+     *
+     * @param  gridToCRS       the matrix to update. That matrix shall contain the scale factors before to invoke this method.
+     * @param  modelTiePoints  the vector of model tie points. Only the first point will be used.
+     * @return {@code true} if the given vector is non-null and contains at least one complete record.
+     */
+    static boolean setTranslationTerms(final MatrixSIS gridToCRS, final Vector modelTiePoints) {
+        if (modelTiePoints == null || modelTiePoints.size() < RECORD_LENGTH) {
+            return false;
+        }
+        final DoubleDouble t = new DoubleDouble();
+        final int numDim = gridToCRS.getNumRow() - 1;
+        final int trCol  = gridToCRS.getNumCol() - 1;
+        for (int j=0; j<numDim; j++) {
+            t.value = -modelTiePoints.doubleValue(j);
+            t.error = DoubleDouble.errorForWellKnownValue(t.value);
+            t.divide(gridToCRS.getNumber(j, j));
+            t.add(modelTiePoints.doubleValue(j + RECORD_LENGTH/2));
+            gridToCRS.setNumber(j, trCol, t);
+        }
+        return true;
     }
 
     /**

@@ -341,6 +341,12 @@ final class ImageFileDirectory {
     private MatrixSIS gridToCRS;
 
     /**
+     * {@code true} if {@link #gridToCRS} has been specified by a complete matrix ({@link Tags#ModelTransformation}),
+     * or {@code false} if it has been specified by the scale factors only ({@link Tags#ModelPixelScaleTag}).
+     */
+    private boolean completeMatrixSpecified;
+
+    /**
      * Creates a new image file directory.
      *
      * @param reader  information about the input stream to read, the metadata and the character encoding.
@@ -694,6 +700,7 @@ final class ImageFileDirectory {
                     case 16: n = 4; break;      // 3D model with full 4×4 matrix, as required by GeoTIFF spec.
                     default: return m;
                 }
+                completeMatrixSpecified = true;
                 gridToCRS = Matrices.createZero(n, n);
                 gridToCRS.setElement(n-1, n-1, 1);
                 for (int i=0; i<size; i++) {
@@ -711,6 +718,7 @@ final class ImageFileDirectory {
                 if (size < 2 || size > 3) {     // Length should be exactly 3, but we make this reader tolerant.
                     return m;
                 }
+                completeMatrixSpecified = false;
                 gridToCRS = Matrices.createZero(size+1, size+1);
                 gridToCRS.setElement(size, size, 1);
                 for (int i=0; i<size; i++) {
@@ -1042,9 +1050,9 @@ final class ImageFileDirectory {
             }
         }
         /*
-         * Log a warning if the tile offset and tile byte count vectors do not have the same length. Then
-         * ensure that the number of tiles is equal to the expected number.  The formula below is the one
-         * documented in the TIFF specification and reproduced in tileWidth & tileHeight fields javadoc.
+         * Report an error if the tile offset and tile byte count vectors do not have the same length.
+         * Then ensure that the number of tiles is equal to the expected number. The formula below is the
+         * one documented in the TIFF specification and reproduced in tileWidth & tileHeight fields javadoc.
          */
         ensureSameLength(offsetsTag, byteCountsTag, tileOffsets.size(), tileByteCounts.size());
         long expectedCount = Math.multiplyExact(
@@ -1057,6 +1065,15 @@ final class ImageFileDirectory {
         if (actualCount != expectedCount) {
             throw new DataStoreContentException(reader.resources().getString(Resources.Keys.UnexpectedTileCount_3,
                     input().filename, expectedCount, actualCount));
+        }
+        /*
+         * If a "grid to CRS" conversion has been specified with only the scale factor, we need to compute
+         * the translation terms now.
+         */
+        if (gridToCRS != null && !completeMatrixSpecified) {
+            if (!GridGeometry.setTranslationTerms(gridToCRS, modelTiePoints)) {
+                throw missingTag(Tags.ModelTiePoints);
+            }
         }
     }
 
@@ -1121,6 +1138,7 @@ final class ImageFileDirectory {
         final boolean isGeorectified = (modelTiePoints == null) || (gridToCRS != null);
         metadata.newGridRepresentation(isGeorectified ? MetadataBuilder.GridType.GEORECTIFIED
                                                       : MetadataBuilder.GridType.GEOREFERENCEABLE);
+        metadata.setGeoreferencingAvailability(gridToCRS != null, modelTiePoints != null, completeMatrixSpecified);
         CoordinateReferenceSystem crs = null;
         if (geoKeyDirectory != null) {
             final CRSBuilder helper = new CRSBuilder(reader);
