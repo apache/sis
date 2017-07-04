@@ -336,7 +336,7 @@ public class LocalizationGridBuilder extends TransformBuilder {
             }
         }
         if (isExact) {
-            return gridToCoord;
+            return MathTransforms.concatenate(sourceToGrid, gridToCoord);
         }
         final int      width    = linear.gridSize(0);
         final int      height   = linear.gridSize(1);
@@ -387,7 +387,7 @@ public class LocalizationGridBuilder extends TransformBuilder {
             throw new FactoryException(e);                                          // Should never happen.
         }
         if (isLinear) {
-            return gridToCoord;
+            return MathTransforms.concatenate(sourceToGrid, gridToCoord);
         }
         return InterpolatedTransform.createGeodeticTransformation(nonNull(factory),
                 new ResidualGrid(sourceToGrid, gridToCoord, width, height, tgtDim, residual,
