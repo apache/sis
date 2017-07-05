@@ -18,6 +18,7 @@ package org.apache.sis.internal.netcdf;
 
 import java.util.Date;
 import java.util.Objects;
+import java.util.Collection;
 import java.io.Closeable;
 import java.io.IOException;
 import javax.measure.Unit;
@@ -84,6 +85,13 @@ public abstract class Decoder implements Closeable {
      * @return the current search path.
      */
     public abstract String[] getSearchPath();
+
+    /**
+     * Returns the names of all global attributes found in the file.
+     *
+     * @return names of all global attributes in the file.
+     */
+    public abstract Collection<String> getAttributeNames();
 
     /**
      * Returns the value for the attribute of the given name, or {@code null} if none.
