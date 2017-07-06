@@ -29,11 +29,13 @@ import javax.measure.Unit;
 import org.opengis.util.MemberName;
 import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
+import org.opengis.util.FactoryException;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Role;
 import org.opengis.metadata.citation.DateType;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.citation.CitationDate;
+import org.opengis.metadata.spatial.GCP;
 import org.opengis.metadata.spatial.Dimension;
 import org.opengis.metadata.spatial.DimensionNameType;
 import org.opengis.metadata.spatial.CellGeometry;
@@ -49,10 +51,16 @@ import org.opengis.metadata.identification.Progress;
 import org.opengis.metadata.identification.KeywordType;
 import org.opengis.metadata.identification.TopicCategory;
 import org.opengis.metadata.distribution.Format;
+import org.opengis.geometry.DirectPosition;
 import org.opengis.referencing.crs.VerticalCRS;
+import org.opengis.referencing.crs.GeographicCRS;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
+import org.apache.sis.internal.referencing.ReferencingUtilities;
+import org.apache.sis.referencing.CRS;
 import org.apache.sis.geometry.AbstractEnvelope;
+import org.apache.sis.geometry.GeneralDirectPosition;
 import org.apache.sis.metadata.iso.DefaultMetadata;
 import org.apache.sis.metadata.iso.DefaultIdentifier;
 import org.apache.sis.metadata.iso.DefaultMetadataScope;
@@ -65,6 +73,8 @@ import org.apache.sis.metadata.iso.spatial.DefaultGridSpatialRepresentation;
 import org.apache.sis.metadata.iso.spatial.DefaultDimension;
 import org.apache.sis.metadata.iso.spatial.DefaultGeorectified;
 import org.apache.sis.metadata.iso.spatial.DefaultGeoreferenceable;
+import org.apache.sis.metadata.iso.spatial.DefaultGCPCollection;
+import org.apache.sis.metadata.iso.spatial.DefaultGCP;
 import org.apache.sis.metadata.iso.content.DefaultAttributeGroup;
 import org.apache.sis.metadata.iso.content.DefaultSampleDimension;
 import org.apache.sis.metadata.iso.content.DefaultCoverageDescription;
@@ -99,6 +109,7 @@ import org.apache.sis.metadata.sql.MetadataSource;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.iso.Types;
+import org.apache.sis.math.Vector;
 
 import static java.util.Collections.singleton;
 import static org.apache.sis.internal.util.StandardDateFormat.MILLISECONDS_PER_DAY;
@@ -436,6 +447,23 @@ public class MetadataBuilder {
     }
 
     /**
+     * Collection of ground control points.
+     */
+    private DefaultGCPCollection groundControlPoints;
+
+    /**
+     * Creates the collection of ground control points if it does not already exists, then returns it.
+     *
+     * @return the ground control points (never {@code null}).
+     */
+    private DefaultGCPCollection groundControlPoints() {
+        if (groundControlPoints == null) {
+            groundControlPoints = new DefaultGCPCollection();
+        }
+        return groundControlPoints;
+    }
+
+    /**
      * Information about the distributor of and options for obtaining the resource.
      */
     private DefaultDistribution distribution;
@@ -749,6 +777,10 @@ public class MetadataBuilder {
             final int n = gridRepresentation.getAxisDimensionProperties().size();
             if (n != 0) {
                 gridRepresentation.setNumberOfDimensions(shared(n));
+            }
+            if (groundControlPoints != null && gridRepresentation instanceof DefaultGeoreferenceable) {
+                addIfNotPresent(((DefaultGeoreferenceable) gridRepresentation).getGeolocationInformation(), groundControlPoints);
+                groundControlPoints = null;
             }
             addIfNotPresent(metadata.getSpatialRepresentationInfo(), gridRepresentation);
             gridRepresentation = null;
@@ -1833,6 +1865,81 @@ parse:      for (int i = 0; i < length;) {
     }
 
     /**
+     * Adds information about the geolocation of an image.
+     * Storage location is:
+     *
+     * <ul>
+     *   <li>{@code metadata/spatialRepresentationInfo/geolocationInformation}</li>
+     * </ul>
+     *
+     * @param  info  the geolocation information to add, or {@code null} if none.
+     */
+    public final void addGeolocation(final GeolocationInformation info) {
+        if (info != null) {
+            final DefaultGridSpatialRepresentation gridRepresentation = gridRepresentation();
+            if (gridRepresentation instanceof DefaultGeoreferenceable) {
+                addIfNotPresent(((DefaultGeoreferenceable) gridRepresentation).getGeolocationInformation(), info);
+            }
+        }
+    }
+
+    /**
+     * Adds <cite>check points</cite> (if georectified) or <cite>ground control points</cite> (if georeferenceable).
+     * Storage location is:
+     *
+     * <ul>
+     *   <li>{@code metadata/spatialRepresentationInfo/checkPoint/geographicCoordinates} if georectified</li>
+     *   <li>{@code metadata/spatialRepresentationInfo/geolocationInformation/gcp/geographicCoordinates} if georeferenceable</li>
+     * </ul>
+     *
+     * @param  crs        the coordinate reference system of given ordinate values.
+     * @param  ordinates  the ordinate values of control points.
+     * @param  offset     index of the first ordinate value.
+     * @param  stride     increment between two coordinates in the given vector.
+     * @throws FactoryException if an error occurred while preparing the conversion to geographic coordinates
+     * @throws TransformException if an error occurred while converting the given coordinates to geographic coordinates.
+     *
+     * @todo Factor most of this code outside MetadataBuilder. May opportunistically define a class that extend
+     *       AbstractDirectPosition and implement GCP for saving space.
+     */
+    public final void addControlPoints(final CoordinateReferenceSystem crs, final Vector ordinates,
+            int offset, final int stride) throws FactoryException, TransformException
+    {
+        final int size;
+        if (ordinates != null && (size = ordinates.size()) != 0) {
+            final GeographicCRS geoCRS = ReferencingUtilities.toNormalizedGeographicCRS(crs);
+            if (geoCRS == null) {
+                return;
+            }
+            final MathTransform mt = CRS.findOperation(crs, geoCRS, null).getMathTransform();
+            final DefaultGridSpatialRepresentation gridRepresentation = gridRepresentation();
+            final Collection<GCP> points;
+            if (gridRepresentation instanceof DefaultGeorectified) {
+                points = ((DefaultGeorectified) gridRepresentation).getCheckPoints();
+            } else if (gridRepresentation instanceof DefaultGeoreferenceable) {
+                points = groundControlPoints().getGCPs();
+            } else {
+                return;
+            }
+            final int dimension = crs.getCoordinateSystem().getDimension();
+            while (offset < size) {
+                DirectPosition pos = new GeneralDirectPosition(crs);
+                for (int i=0; i<dimension; i++) {
+                    pos.setOrdinate(i, ordinates.doubleValue(offset + i));
+                }
+                pos = mt.transform(pos, pos);
+                final double t = pos.getOrdinate(0);        // Swap ordinate for (latitude, longitude) order.
+                pos.setOrdinate(0, pos.getOrdinate(1));
+                pos.setOrdinate(1, t);
+                final DefaultGCP gcp = new DefaultGCP();
+                gcp.setGeographicCoordinates(pos);
+                points.add(gcp);
+                offset += stride;
+            }
+        }
+    }
+
+    /**
      * Sets a general description of the transformation form grid coordinates to "real world" coordinates.
      * Storage location is:
      *
@@ -1848,25 +1955,6 @@ parse:      for (int i = 0; i < length;) {
             final DefaultGridSpatialRepresentation gridRepresentation = gridRepresentation();
             if (gridRepresentation instanceof DefaultGeorectified) {
                 ((DefaultGeorectified) gridRepresentation).setTransformationDimensionDescription(i18n);
-            }
-        }
-    }
-
-    /**
-     * Adds information about the geolocation of an image.
-     * Storage location is:
-     *
-     * <ul>
-     *   <li>{@code metadata/spatialRepresentationInfo/geolocationInformation}</li>
-     * </ul>
-     *
-     * @param  info  the geolocation information to add, or {@code null} if none.
-     */
-    public final void addGeolocation(final GeolocationInformation info) {
-        if (info != null) {
-            final DefaultGridSpatialRepresentation gridRepresentation = gridRepresentation();
-            if (gridRepresentation instanceof DefaultGeoreferenceable) {
-                addIfNotPresent(((DefaultGeoreferenceable) gridRepresentation).getGeolocationInformation(), info);
             }
         }
     }
