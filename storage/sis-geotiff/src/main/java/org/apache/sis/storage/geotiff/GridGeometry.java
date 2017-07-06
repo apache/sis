@@ -28,6 +28,7 @@ import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.referencing.operation.transform.LinearTransform;
 import org.apache.sis.referencing.operation.builder.LocalizationGridBuilder;
 import org.apache.sis.referencing.operation.AbstractCoordinateOperation;
+import org.apache.sis.internal.storage.MetadataBuilder;
 import org.apache.sis.internal.util.DoubleDouble;
 import org.apache.sis.math.Vector;
 
@@ -116,6 +117,18 @@ final class GridGeometry extends AbstractCoordinateOperation implements Geolocat
             gridToCRS.setNumber(j, trCol, t);
         }
         return true;
+    }
+
+    /**
+     * Writes the check point or Ground Control Points (GCP) in the metadata.
+     *
+     * @param metadata        where to write the ground control points.
+     * @param modelTiePoints  the vector of model tie points.
+     */
+    static void addControlPoints(final CoordinateReferenceSystem crs, final MetadataBuilder metadata, final Vector modelTiePoints)
+            throws FactoryException, TransformException
+    {
+        metadata.addControlPoints(crs, modelTiePoints, RECORD_LENGTH/2, RECORD_LENGTH);
     }
 
     /**

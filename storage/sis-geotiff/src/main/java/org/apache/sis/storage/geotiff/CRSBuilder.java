@@ -914,13 +914,13 @@ final class CRSBuilder {
     private PrimeMeridian createPrimeMeridian(final String[] names, final Unit<Angle> unit) throws FactoryException {
         final int epsg = getAsInteger(GeoKeys.PrimeMeridian);
         switch (epsg) {
-            case GeoCodes.undefined: {
-                break;                      // If not specified, default to Greenwich.
-            }
+            case GeoCodes.undefined:      // If not specified, should default to Greenwich but we nevertheless verify.
             case GeoCodes.userDefined: {
                 final double longitude = getAsDouble(GeoKeys.PrimeMeridianLong);
                 if (Double.isNaN(longitude)) {
-                    missingValue(GeoKeys.PrimeMeridianLong);
+                    if (epsg != GeoCodes.undefined) {
+                        missingValue(GeoKeys.PrimeMeridianLong);
+                    }
                 } else if (longitude != 0) {
                     /*
                      * If the prime meridian is not Greenwich, create that meridian but do not use the

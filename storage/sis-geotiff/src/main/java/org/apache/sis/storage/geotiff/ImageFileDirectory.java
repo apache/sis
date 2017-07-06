@@ -1158,8 +1158,12 @@ final class ImageFileDirectory {
                 }
             }
         }
-        if (!isGeorectified) try {
-            metadata.addGeolocation(new GridGeometry(input().filename, crs, modelTiePoints));
+        try {
+            if (isGeorectified) {
+                GridGeometry.addControlPoints(crs, metadata, modelTiePoints);
+            } else {
+                metadata.addGeolocation(new GridGeometry(input().filename, crs, modelTiePoints));
+            }
         } catch (TransformException e) {
             reader.owner.warning(null, e);
         }
