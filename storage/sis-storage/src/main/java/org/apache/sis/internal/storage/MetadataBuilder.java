@@ -29,7 +29,6 @@ import javax.measure.Unit;
 import org.opengis.util.MemberName;
 import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
-import org.opengis.util.FactoryException;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Role;
 import org.opengis.metadata.citation.DateType;
@@ -51,16 +50,12 @@ import org.opengis.metadata.identification.Progress;
 import org.opengis.metadata.identification.KeywordType;
 import org.opengis.metadata.identification.TopicCategory;
 import org.opengis.metadata.distribution.Format;
+import org.opengis.metadata.quality.Element;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.referencing.crs.VerticalCRS;
-import org.opengis.referencing.crs.GeographicCRS;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
-import org.apache.sis.internal.referencing.ReferencingUtilities;
-import org.apache.sis.referencing.CRS;
 import org.apache.sis.geometry.AbstractEnvelope;
-import org.apache.sis.geometry.GeneralDirectPosition;
 import org.apache.sis.metadata.iso.DefaultMetadata;
 import org.apache.sis.metadata.iso.DefaultIdentifier;
 import org.apache.sis.metadata.iso.DefaultMetadataScope;
@@ -108,8 +103,8 @@ import org.apache.sis.metadata.sql.MetadataStoreException;
 import org.apache.sis.metadata.sql.MetadataSource;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.CharSequences;
+import org.apache.sis.util.iso.Names;
 import org.apache.sis.util.iso.Types;
-import org.apache.sis.math.Vector;
 
 import static java.util.Collections.singleton;
 import static org.apache.sis.internal.util.StandardDateFormat.MILLISECONDS_PER_DAY;
@@ -133,6 +128,11 @@ import org.opengis.metadata.citation.Responsibility;
  * @module
  */
 public class MetadataBuilder {
+    /**
+     * Band numbers, created when first needed.
+     */
+    private static final MemberName[] BAND_NUMBERS = new MemberName[16];
+
     /**
      * Whether the next party to create should be an instance of {@link DefaultIndividual} or {@link DefaultOrganisation}.
      *
@@ -1885,6 +1885,8 @@ parse:      for (int i = 0; i < length;) {
 
     /**
      * Adds <cite>check points</cite> (if georectified) or <cite>ground control points</cite> (if georeferenceable).
+     * Ground control points (GCP) are large marked targets on the ground. GCP should not be used for storing the
+     * localization grid (e.g. "model tie points" in a GeoTIFF file).
      * Storage location is:
      *
      * <ul>
@@ -1892,26 +1894,12 @@ parse:      for (int i = 0; i < length;) {
      *   <li>{@code metadata/spatialRepresentationInfo/geolocationInformation/gcp/geographicCoordinates} if georeferenceable</li>
      * </ul>
      *
-     * @param  crs        the coordinate reference system of given ordinate values.
-     * @param  ordinates  the ordinate values of control points.
-     * @param  offset     index of the first ordinate value.
-     * @param  stride     increment between two coordinates in the given vector.
-     * @throws FactoryException if an error occurred while preparing the conversion to geographic coordinates
-     * @throws TransformException if an error occurred while converting the given coordinates to geographic coordinates.
-     *
-     * @todo Factor most of this code outside MetadataBuilder. May opportunistically define a class that extend
-     *       AbstractDirectPosition and implement GCP for saving space.
+     * @param  geographicCoordinates  the geographic or map position of the control point, in either two or three dimensions.
+     * @param  accuracyReport         the accuracy of a ground control point, or {@code null} if none.
+     *                                Ignored if {@code geographicCoordinates} is null.
      */
-    public final void addControlPoints(final CoordinateReferenceSystem crs, final Vector ordinates,
-            int offset, final int stride) throws FactoryException, TransformException
-    {
-        final int size;
-        if (ordinates != null && (size = ordinates.size()) != 0) {
-            final GeographicCRS geoCRS = ReferencingUtilities.toNormalizedGeographicCRS(crs);
-            if (geoCRS == null) {
-                return;
-            }
-            final MathTransform mt = CRS.findOperation(crs, geoCRS, null).getMathTransform();
+    public final void addControlPoints(final DirectPosition geographicCoordinates, final Element accuracyReport) {
+        if (geographicCoordinates != null) {
             final DefaultGridSpatialRepresentation gridRepresentation = gridRepresentation();
             final Collection<GCP> points;
             if (gridRepresentation instanceof DefaultGeorectified) {
@@ -1921,21 +1909,12 @@ parse:      for (int i = 0; i < length;) {
             } else {
                 return;
             }
-            final int dimension = crs.getCoordinateSystem().getDimension();
-            while (offset < size) {
-                DirectPosition pos = new GeneralDirectPosition(crs);
-                for (int i=0; i<dimension; i++) {
-                    pos.setOrdinate(i, ordinates.doubleValue(offset + i));
-                }
-                pos = mt.transform(pos, pos);
-                final double t = pos.getOrdinate(0);        // Swap ordinate for (latitude, longitude) order.
-                pos.setOrdinate(0, pos.getOrdinate(1));
-                pos.setOrdinate(1, t);
-                final DefaultGCP gcp = new DefaultGCP();
-                gcp.setGeographicCoordinates(pos);
-                points.add(gcp);
-                offset += stride;
+            final DefaultGCP gcp = new DefaultGCP();
+            gcp.setGeographicCoordinates(geographicCoordinates);
+            if (accuracyReport != null) {
+                addIfNotPresent(gcp.getAccuracyReports(), accuracyReport);
             }
+            addIfNotPresent(points, gcp);
         }
     }
 
@@ -2035,6 +2014,34 @@ parse:      for (int i = 0; i < length;) {
     public final void setBandIdentifier(final MemberName sequenceIdentifier) {
         if (sequenceIdentifier != null) {
             sampleDimension().setSequenceIdentifier(sequenceIdentifier);
+        }
+    }
+
+    /**
+     * Sets the number that uniquely identifies instances of bands of wavelengths on which a sensor operates.
+     * This is a convenience method for {@link #setBandIdentifier(MemberName)} when the band is specified only
+     * by a number.
+     *
+     * @param  sequenceIdentifier  the band number, or 0 or negative if none.
+     */
+    public final void setBandIdentifier(final int sequenceIdentifier) {
+        if (sequenceIdentifier > 0) {
+            final boolean cached = (sequenceIdentifier <= BAND_NUMBERS.length);
+            MemberName name = null;
+            if (cached) synchronized (BAND_NUMBERS) {
+                name = BAND_NUMBERS[sequenceIdentifier - 1];
+            }
+            if (name == null) {
+                name = Names.createMemberName(null, null, String.valueOf(sequenceIdentifier), Integer.class);
+                if (cached) synchronized (BAND_NUMBERS) {
+                    /*
+                     * No need to check if a value has been set concurrently because Names.createMemberName(…)
+                     * already checked if an equal instance exists in the current JVM.
+                     */
+                    BAND_NUMBERS[sequenceIdentifier - 1] = name;
+                }
+            }
+            setBandIdentifier(name);
         }
     }
 

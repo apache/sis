@@ -28,7 +28,6 @@ import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.referencing.operation.transform.LinearTransform;
 import org.apache.sis.referencing.operation.builder.LocalizationGridBuilder;
 import org.apache.sis.referencing.operation.AbstractCoordinateOperation;
-import org.apache.sis.internal.storage.MetadataBuilder;
 import org.apache.sis.internal.util.DoubleDouble;
 import org.apache.sis.math.Vector;
 
@@ -40,6 +39,32 @@ import org.apache.sis.math.Vector;
  * This is a placeholder before a real {@code GridGeometry} class is ported to Apache SIS.
  * We implement {@code CoordinateOperation} for now for allowing access to the math transform from
  * outside this package, but we will probably not keep this class hierarchy in a future version.
+ *
+ * <div class="section">Pixel center versus pixel corner</div>
+ * The policy about whether the conversion map pixel corner or pixel center does not seem totally clear.
+ * But the following seems to be the practice at least with GDAL:
+ *
+ * {@preformat text
+ *     ModelTiepointTag = (0.0, 0.0, 0.0, -180.0, 90.0, 0.0)
+ *     ModelPixelScaleTag = (0.002777777778, 0.002777777778, 0.0)
+ *     GeoKeyDirectoryTag:
+ *         GTModelTypeGeoKey    = 2    (ModelTypeGeographic)
+ *         GTRasterTypeGeoKey   = 1    (RasterPixelIsArea)
+ *         GeographicTypeGeoKey = 4326 (GCS_WGS_84)
+ * }
+ *
+ * and
+ *
+ * {@preformat text
+ *     ModelTiepointTag = (-0.5, -0.5, 0.0, -180.0, 90.0, 0.0)
+ *     ModelPixelScaleTag = (0.002777777778, 0.002777777778, 0.0)
+ *     GeoKeyDirectoryTag:
+ *         GTModelTypeGeoKey    = 2    (ModelTypeGeographic)
+ *         GTRasterTypeGeoKey   = 2    (RasterPixelIsPoint)
+ *         GeographicTypeGeoKey = 4326 (GCS_WGS_84)
+ * }
+ *
+ * are considered equivalent.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
@@ -97,38 +122,51 @@ final class GridGeometry extends AbstractCoordinateOperation implements Geolocat
 
     /**
      * Computes translation terms in the given matrix from the (usually singleton) tie point.
+     * This method is invoked when the GeoTIFF file has a {@link Tags#ModelPixelScaleTag} and
+     * {@link Tags#ModelTiePoints}. The later should have a single record.
      *
      * @param  gridToCRS       the matrix to update. That matrix shall contain the scale factors before to invoke this method.
      * @param  modelTiePoints  the vector of model tie points. Only the first point will be used.
      * @return {@code true} if the given vector is non-null and contains at least one complete record.
      */
     static boolean setTranslationTerms(final MatrixSIS gridToCRS, final Vector modelTiePoints) {
-        if (modelTiePoints == null || modelTiePoints.size() < RECORD_LENGTH) {
-            return false;
+        if (modelTiePoints != null) {
+            /*
+             * The GeoTIFF specification recommends that the first point is located at grid indices (0,0).
+             * But as a safety, we will nevertheless search in the grid for the point closest to origin.
+             * If the grid is affine, using the corner closest to (0,0) reduces rounding errors compared
+             * to using another corner. If the grid is not affine, then ModelPixelScaleTag should not have
+             * been defined for that file…
+             */
+            int nearest = 0;                                // Index of the record nearest to origin.
+            double distance = Double.POSITIVE_INFINITY;     // Distance squared of the nearest record.
+            final int size = modelTiePoints.size();
+            for (int i=0; i<size; i += RECORD_LENGTH) {
+                double t;
+                final double d = (t = modelTiePoints.doubleValue(i    )) * t
+                               + (t = modelTiePoints.doubleValue(i + 1)) * t
+                               + (t = modelTiePoints.doubleValue(i + 2)) * t;
+                if (d < distance) {
+                    distance = d;
+                    nearest = i;
+                    if (d == 0) break;                      // Optimization for the standard case.
+                }
+            }
+            if (distance != Double.POSITIVE_INFINITY) {
+                final DoubleDouble t = new DoubleDouble();
+                final int numDim = gridToCRS.getNumRow() - 1;
+                final int trCol  = gridToCRS.getNumCol() - 1;
+                for (int j=0; j<numDim; j++) {
+                    t.value = -modelTiePoints.doubleValue(nearest + j);
+                    t.error = DoubleDouble.errorForWellKnownValue(t.value);
+                    t.divide(gridToCRS.getNumber(j, j));
+                    t.add(modelTiePoints.doubleValue(nearest + j + RECORD_LENGTH/2));
+                    gridToCRS.setNumber(j, trCol, t);
+                }
+                return true;
+            }
         }
-        final DoubleDouble t = new DoubleDouble();
-        final int numDim = gridToCRS.getNumRow() - 1;
-        final int trCol  = gridToCRS.getNumCol() - 1;
-        for (int j=0; j<numDim; j++) {
-            t.value = -modelTiePoints.doubleValue(j);
-            t.error = DoubleDouble.errorForWellKnownValue(t.value);
-            t.divide(gridToCRS.getNumber(j, j));
-            t.add(modelTiePoints.doubleValue(j + RECORD_LENGTH/2));
-            gridToCRS.setNumber(j, trCol, t);
-        }
-        return true;
-    }
-
-    /**
-     * Writes the check point or Ground Control Points (GCP) in the metadata.
-     *
-     * @param metadata        where to write the ground control points.
-     * @param modelTiePoints  the vector of model tie points.
-     */
-    static void addControlPoints(final CoordinateReferenceSystem crs, final MetadataBuilder metadata, final Vector modelTiePoints)
-            throws FactoryException, TransformException
-    {
-        metadata.addControlPoints(crs, modelTiePoints, RECORD_LENGTH/2, RECORD_LENGTH);
+        return false;
     }
 
     /**
