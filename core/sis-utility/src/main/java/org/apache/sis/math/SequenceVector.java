@@ -90,7 +90,7 @@ abstract class SequenceVector extends Vector implements Serializable {
      */
     @Override
     public final Number set(final int index, final Number value) {
-        throw new UnsupportedOperationException(Errors.format(Errors.Keys.UnmodifiableObject_1, "Vector"));
+        throw new UnsupportedOperationException(Errors.format(Errors.Keys.CanNotStoreInVector_1, value));
     }
 
     /**
