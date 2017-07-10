@@ -27,7 +27,7 @@
 
   <parent>
     <groupId>org.apache.sis</groupId>
-    <artifactId>parent</artifactId>
+    <artifactId>storage</artifactId>
     <version>0.8-jdk8-SNAPSHOT</version>
   </parent>
 
@@ -35,12 +35,14 @@
   <!-- ===========================================================
            Module Description
        =========================================================== -->
-  <artifactId>storage</artifactId>
-  <packaging>pom</packaging>
-  <name>Apache SIS storage</name>
+  <groupId>org.apache.sis.storage</groupId>
+  <artifactId>sis-gdal</artifactId>
+  <packaging>bundle</packaging>
+  <name>Apache SIS bindings for Proj4</name>
   <description>
-    Group of modules for reading and writing data from/to various storages.
-    Storages are typically file formats or a database schemas.
+  <!-- Left alignment because this description will be copied in META-INF/MANIFEST.MF
+       The leading space after the first line is necessary for proper formatting. -->
+Referencing services from Proj4 through GeoAPI interfaces.
   </description>
 
 
@@ -48,17 +50,6 @@
            Developers and Contributors
        =========================================================== -->
   <developers>
-    <developer>
-      <name>Johann Sorel</name>
-      <id>jsorel</id>
-      <email>johann.sorel@geomatys.com</email>
-      <organization>Geomatys</organization>
-      <organizationUrl>http://www.geomatys.com</organizationUrl>
-      <timezone>+1</timezone>
-      <roles>
-        <role>developer</role>
-      </roles>
-    </developer>
     <developer>
       <name>Martin Desruisseaux</name>
       <id>desruisseaux</id>
@@ -70,29 +61,16 @@
         <role>developer</role>
       </roles>
     </developer>
+    <developer>
+      <name>Jean-Loup Amiot</name>
+      <organization>Geomatys</organization>
+      <organizationUrl>http://www.geomatys.com</organizationUrl>
+      <timezone>+1</timezone>
+      <roles>
+        <role>developer</role>
+      </roles>
+    </developer>
   </developers>
-  <contributors>
-    <contributor>
-      <name>Thi Phuong Hao Nguyen</name>
-      <email>nguyenthiphuonghao243@gmail.com</email>
-      <organization>VNSC</organization>
-      <organizationUrl>http://vnsc.org.vn</organizationUrl>
-      <timezone>+7</timezone>
-      <roles>
-        <role>developer</role>
-      </roles>
-    </contributor>
-    <contributor>
-      <name>Minh Chinh Vu</name>
-      <email>chinhvm.uet.1995@gmail.com</email>
-      <organization>VNSC</organization>
-      <organizationUrl>http://vnsc.org.vn</organizationUrl>
-      <timezone>+7</timezone>
-      <roles>
-        <role>developer</role>
-      </roles>
-    </contributor>
-  </contributors>
 
 
   <!-- ===========================================================
@@ -100,21 +78,14 @@
        =========================================================== -->
   <build>
     <plugins>
-
-      <!-- Compile properties files into resources UTF files and
-           collect JAR files in <root>/target/binaries directory. -->
       <plugin>
-        <groupId>org.apache.sis.core</groupId>
-        <artifactId>sis-build-helper</artifactId>
-        <version>${sis.plugin.version}</version>
-        <executions>
-          <execution>
-            <goals>
-              <goal>compile-resources</goal>
-              <goal>collect-jars</goal>
-            </goals>
-          </execution>
-        </executions>
+        <groupId>org.apache.felix</groupId>
+        <artifactId>maven-bundle-plugin</artifactId>
+        <configuration>
+          <instructions>
+            <Bundle-SymbolicName>org.apache.sis.storage.gdal</Bundle-SymbolicName>
+          </instructions>
+        </configuration>
       </plugin>
     </plugins>
   </build>
@@ -126,45 +97,9 @@
   <dependencies>
     <dependency>
       <groupId>org.apache.sis.core</groupId>
-      <artifactId>sis-metadata</artifactId>
-      <version>${project.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.sis.core</groupId>
       <artifactId>sis-referencing</artifactId>
       <version>${project.version}</version>
     </dependency>
-    <dependency>
-      <groupId>org.opengis</groupId>
-      <artifactId>geoapi-pending</artifactId>
-    </dependency>
-
-    <!-- Test dependencies -->
-    <dependency>
-      <groupId>org.opengis</groupId>
-      <artifactId>geoapi-conformance</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.sis.core</groupId>
-      <artifactId>sis-utility</artifactId>
-      <version>${project.version}</version>
-      <type>test-jar</type>
-      <scope>test</scope>
-    </dependency>
   </dependencies>
-
-
-  <!-- ===========================================================
-           Sub-modules included in the build
-       =========================================================== -->
-  <modules>
-    <module>sis-storage</module>
-    <module>sis-shapefile</module>
-    <module>sis-netcdf</module>
-    <module>sis-geotiff</module>
-    <module>sis-xmlstore</module>
-    <module>sis-earth-observation</module>
-    <module>sis-gdal</module>
-  </modules>
 
 </project>
