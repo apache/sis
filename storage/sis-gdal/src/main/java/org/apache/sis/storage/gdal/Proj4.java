@@ -20,6 +20,8 @@ import org.opengis.metadata.Identifier;
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.CoordinateOperation;
+import org.apache.sis.internal.system.Modules;
+import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.Static;
 
 
@@ -34,9 +36,9 @@ import org.apache.sis.util.Static;
  */
 public final class Proj4 extends Static {
     /**
-     * The Proj4 parameter used for declaration of axis order. This parameter is handled in a special
-     * way by this factory: it be a comma-separated list of axis order definitions, in which case the
-     * second value is used as the axis order of the {@link org.opengis.referencing.crs.ProjectedCRS#getBaseCRS()}.
+     * The Proj4 parameter used for declaration of axis order. This parameter is handled in a special way
+     * by the factories: it be a comma-separated list of axis order definitions, in which case the second
+     * value is used as the axis order of the {@link org.opengis.referencing.crs.ProjectedCRS#getBaseCRS()}.
      *
      * <p>An other departure from Proj.4 is that Proj.4 expect the axis parameter to be exactly
      * 3 characters long, which our code accepts 2 characters as well. We relax the Proj.4
@@ -51,9 +53,28 @@ public final class Proj4 extends Static {
     static final char AXIS_ORDER_SEPARATOR = ',';
 
     /**
-     * For sub-class constructors only.
+     * Do not allow instantiation of this class.
      */
-    protected Proj4() {
+    private Proj4() {
+    }
+
+    /**
+     * Returns the version number of the Proj4 library.
+     * Returns {@code null} if Proj.4 is not installed on the current system.
+     *
+     * @return the Proj4 release string, or {@code null} if no installation has been found.
+     */
+    public static String getVersion() {
+        try {
+            return PJ.getVersion();
+        } catch (UnsatisfiedLinkError e) {
+            // Thrown the first time that we try to use the library.
+            Logging.unexpectedException(Logging.getLogger(Modules.GDAL), Proj4.class, "version", e);
+        } catch (NoClassDefFoundError e) {
+            // Thrown on all attempts after the first one.
+            Logging.recoverableException(Logging.getLogger(Modules.GDAL), Proj4.class, "version", e);
+        }
+        return null;
     }
 
     /**

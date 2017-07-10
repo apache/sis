@@ -11,14 +11,6 @@ extern "C" {
 #define org_apache_sis_storage_gdal_PJ_DIMENSION_MAX 100L
 /*
  * Class:     org_apache_sis_storage_gdal_PJ
- * Method:    init
- * Signature: ()V
- */
-JNIEXPORT void JNICALL Java_org_apache_sis_storage_gdal_PJ_init
-  (JNIEnv *, jclass);
-
-/*
- * Class:     org_apache_sis_storage_gdal_PJ
  * Method:    allocatePJ
  * Signature: (Ljava/lang/String;)J
  */

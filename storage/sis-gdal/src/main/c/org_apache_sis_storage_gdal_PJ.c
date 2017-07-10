@@ -15,14 +15,11 @@
  * limitations under the License.
  */
 #include <proj_config.h>
-
 #include <math.h>
 #include <string.h>
 #include <projects.h>
 #include <stdbool.h>
 #include <jni.h>
-
-#include "sharedLibraryAccess.h"
 #include "org_apache_sis_storage_gdal_PJ.h"
 
 
@@ -30,52 +27,6 @@
 #define PJ_FIELD_TYPE "J"
 
 
-
-void throw_exception(JNIEnv* env, const char* message) {
-    (*env)->ThrowNew(env, (*env)->FindClass(env, "java/lang/RuntimeException"), NULL);
-}
-
-bool isInit = false;
-
-const char* (*pj_get_release_ptr)();
-projPJ      (*pj_init_plus_ptr)(const char* definition);
-projPJ      (*pj_latlong_from_proj_ptr)(projPJ pj_in);
-char*       (*pj_get_def_ptr)(projPJ pj, int options);
-void        (*pj_dalloc_ptr)(void* ptr);
-int         (*pj_is_latlong_ptr)(projPJ pj);
-int         (*pj_is_geocent_ptr)(projPJ pj);
-int         (*pj_transform_ptr)(projPJ srcdefn, projPJ dstdefn, long point_count, int point_offset, double* x, double* y, double *z);
-char*       (*pj_strerrno_ptr)(int);
-int         (*pj_ctx_get_errno_ptr)(projCtx ctx);
-void        (*pj_free_ptr)(projPJ pj);
-
-void Java_org_apache_sis_storage_gdal_PJ_init(JNIEnv* env, jclass class) {
-    void* handle = dlopen("libproj.so", RTLD_LAZY);
-    if (!handle) {
-        throw_exception(env, "Can't open .so");
-        return;
-    }
-    dlerror();
-
-    pj_get_release_ptr =       dlsym(handle, "pj_get_release");
-    pj_init_plus_ptr =         dlsym(handle, "pj_init_plus");
-    pj_latlong_from_proj_ptr = dlsym(handle, "pj_latlong_from_proj");
-    pj_get_def_ptr =           dlsym(handle, "pj_get_def");
-    pj_dalloc_ptr =            dlsym(handle, "pj_dalloc");
-    pj_is_latlong_ptr =        dlsym(handle, "pj_is_latlong");
-    pj_is_geocent_ptr =        dlsym(handle, "pj_is_geocent");
-    pj_transform_ptr =         dlsym(handle, "pj_transform");
-    pj_strerrno_ptr =          dlsym(handle, "pj_strerrno");
-    pj_ctx_get_errno_ptr =     dlsym(handle, "pj_ctx_get_errno");
-    pj_free_ptr =              dlsym(handle, "pj_free");
-
-    char* error = dlerror();
-    if (error) {
-        throw_exception(env, error);
-        return;
-    }
-    isInit = true;
-}
 
 /*!
  * \brief
@@ -105,7 +56,7 @@ PJ *getPJ(JNIEnv *env, jobject object)
 JNIEXPORT jstring JNICALL Java_org_apache_sis_storage_gdal_PJ_getVersion
   (JNIEnv *env, jclass class)
 {
-    const char *desc = pj_get_release_ptr();
+    const char *desc = pj_get_release();
     return (desc) ? (*env)->NewStringUTF(env, desc) : NULL;
 }
 
@@ -123,7 +74,7 @@ JNIEXPORT jlong JNICALL Java_org_apache_sis_storage_gdal_PJ_allocatePJ
 {
     const char *def_utf = (*env)->GetStringUTFChars(env, definition, NULL);
     if (!def_utf) return 0;             // OutOfMemoryError already thrown.
-    PJ *pj = pj_init_plus_ptr(def_utf);
+    PJ *pj = pj_init_plus(def_utf);
     (*env)->ReleaseStringUTFChars(env, definition, def_utf);
     return (jlong) pj;
 }
@@ -141,7 +92,7 @@ JNIEXPORT jlong JNICALL Java_org_apache_sis_storage_gdal_PJ_allocateGeoPJ
   (JNIEnv *env, jclass class, jobject projected)
 {
     PJ *pj = getPJ(env, projected);
-    return (pj) ? (jlong) pj_latlong_from_proj_ptr(pj) : 0;
+    return (pj) ? (jlong) pj_latlong_from_proj(pj) : 0;
 }
 
 /*!
@@ -157,10 +108,10 @@ JNIEXPORT jstring JNICALL Java_org_apache_sis_storage_gdal_PJ_getDefinition
 {
     PJ *pj = getPJ(env, object);
     if (pj) {
-        const char *desc = pj_get_def_ptr(pj, 0);
+        const char *desc = pj_get_def(pj, 0);
         if (desc) {
             jstring str = (*env)->NewStringUTF(env, desc);
-            pj_dalloc_ptr(desc);
+            pj_dalloc(desc);
             return str;
         }
     }
@@ -204,9 +155,9 @@ JNIEXPORT jobject JNICALL Java_org_apache_sis_storage_gdal_PJ_getType
     PJ *pj = getPJ(env, object);
     if (pj) {
         const char *type;
-        if (pj_is_latlong_ptr(pj)) {
+        if (pj_is_latlong(pj)) {
             type = "GEOGRAPHIC";
-        } else if (pj_is_geocent_ptr(pj)) {
+        } else if (pj_is_geocent(pj)) {
             type = "GEOCENTRIC";
         } else {
             type = "PROJECTED";
@@ -348,10 +299,10 @@ JNIEXPORT jdouble JNICALL Java_org_apache_sis_storage_gdal_PJ_getLinearUnitToMet
  */
 void convertAngularOrdinates(PJ *pj, double* data, jint numPts, int dimension, double factor) {
     int dimToSkip;
-    if (pj_is_latlong_ptr(pj)) {
+    if (pj_is_latlong(pj)) {
         // Convert only the 2 first ordinates and skip all the other dimensions.
         dimToSkip = dimension - 2;
-    } else if (pj_is_geocent_ptr(pj)) {
+    } else if (pj_is_geocent(pj)) {
         // Convert only the 3 first ordinates and skip all the other dimensions.
         dimToSkip = dimension - 3;
     } else {
@@ -416,12 +367,12 @@ JNIEXPORT void JNICALL Java_org_apache_sis_storage_gdal_PJ_transform
             double *y = x + 1;
             double *z = (dimension >= 3) ? y+1 : NULL;
             convertAngularOrdinates(src_pj, x, numPts, dimension, M_PI/180);
-            int err = pj_transform_ptr(src_pj, dst_pj, numPts, dimension, x, y, z);
+            int err = pj_transform(src_pj, dst_pj, numPts, dimension, x, y, z);
             convertAngularOrdinates(dst_pj, x, numPts, dimension, 180/M_PI);
             (*env)->ReleasePrimitiveArrayCritical(env, coordinates, data, 0);
             if (err) {
                 jclass c = (*env)->FindClass(env, "org/opengis/referencing/operation/TransformException");
-                if (c) (*env)->ThrowNew(env, c, pj_strerrno_ptr(err));
+                if (c) (*env)->ThrowNew(env, c, pj_strerrno(err));
             }
         }
     }
@@ -440,9 +391,9 @@ JNIEXPORT jstring JNICALL Java_org_apache_sis_storage_gdal_PJ_getLastError
 {
     PJ *pj = getPJ(env, object);
     if (pj) {
-        int err = pj_ctx_get_errno_ptr(pj->ctx);
+        int err = pj_ctx_get_errno(pj->ctx);
         if (err) {
-            return (*env)->NewStringUTF(env, pj_strerrno_ptr(err));
+            return (*env)->NewStringUTF(env, pj_strerrno(err));
         }
     }
     return NULL;
@@ -468,7 +419,7 @@ JNIEXPORT void JNICALL Java_org_apache_sis_storage_gdal_PJ_finalize
         PJ *pj = (PJ*) (*env)->GetLongField(env, object, id);
         if (pj) {
             (*env)->SetLongField(env, object, id, (jlong) 0);
-            pj_free_ptr(pj);
+            pj_free(pj);
         }
     }
 }

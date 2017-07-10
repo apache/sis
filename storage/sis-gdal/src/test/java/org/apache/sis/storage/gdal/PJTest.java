@@ -63,7 +63,7 @@ public class PJTest {
         assertEquals(PJ.Type.PROJECTED, pj.getType());
         assertArrayEquals(new char[] {'e', 'n', 'u'}, pj.getAxisDirections());
         assertEquals(1.0, pj.getLinearUnitToMetre(true), 0.0);
-        assertIsWGS84(new PJ(pj, PJ.Type.GEOGRAPHIC));
+        assertIsWGS84(new PJ(pj));
     }
 
     /**
