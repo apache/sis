@@ -72,7 +72,7 @@ public class PJTest {
      *
      * @throws TransformException should never happen.
      */
-//    @Test(expected = NullPointerException.class)
+    @Test(expected = NullPointerException.class)
     public void testNullPointerException() throws TransformException {
         final PJ pj = new PJ("+proj=latlong +datum=WGS84");
         pj.transform(null, 2, null, 0, 1);
