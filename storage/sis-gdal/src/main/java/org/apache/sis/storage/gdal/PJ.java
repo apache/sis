@@ -51,14 +51,7 @@ class PJ {
      */
     static {
         System.load("libproj-binding.so");
-        init();
     }
-
-    /**
-     * Initializes the bindings to the Proj4 library.
-     * This method needs to be invoked exactly once before any method in the {@code PJ} class.
-     */
-    private static native void init();
 
     /**
      * The pointer to {@code PJ} structure allocated in the C/C++ heap. This value has no
@@ -74,6 +67,7 @@ class PJ {
      * @throws IllegalArgumentException if the PJ structure can not be created from the given string.
      */
     public PJ(final String definition) throws IllegalArgumentException {
+        Objects.requireNonNull(definition);
         ptr = allocatePJ(definition);
         if (ptr == 0) {
             throw new IllegalArgumentException(definition);
@@ -81,20 +75,16 @@ class PJ {
     }
 
     /**
-     * Creates a new {@code PJ} structure derived from an existing {@code PJ} object.
+     * Creates a new {@code PJ} structure for the geographic part of the given {@code PJ} object.
      * This constructor is usually for getting the
      * {@linkplain org.opengis.referencing.crs.ProjectedCRS#getBaseCRS() base geographic CRS}
      * from a {@linkplain org.opengis.referencing.crs.ProjectedCRS projected CRS}.
      *
      * @param  crs   the CRS (usually projected) from which to derive a new CRS.
-     * @param  type  the type of the new CRS. Currently, only {@link Type#GEOGRAPHIC} is supported.
      * @throws IllegalArgumentException if the PJ structure can not be created.
      */
-    public PJ(final PJ crs, final Type type) throws IllegalArgumentException {
-        Objects.requireNonNull(crs, "The CRS must be non-null.");
-        if (type != Type.GEOGRAPHIC) {
-            throw new IllegalArgumentException("Can not derive the " + type + " type.");
-        }
+    public PJ(final PJ crs) throws IllegalArgumentException {
+        Objects.requireNonNull(crs);
         ptr = allocateGeoPJ(crs);
         if (ptr == 0) {
             throw new IllegalArgumentException(crs.getLastError());
@@ -150,7 +140,7 @@ class PJ {
      * In the Proj4 library, a CRS can only be geographic, geocentric or projected,
      * without distinction between 2D and 3D CRS.
      */
-    public enum Type {
+    enum Type {
         /*
          * IMPLEMENTATION NOTE: Do not rename those fields, unless you update the
          * native C code accordingly.
@@ -280,5 +270,6 @@ class PJ {
      * <strong>NEVER INVOKE THIS METHOD EXPLICITELY, NEVER OVERRIDE</strong>.
      */
     @Override
+    @SuppressWarnings("FinalizeDeclaration")
     protected final native void finalize();
 }
