@@ -14,18 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include <proj_config.h>
 #include <math.h>
 #include <string.h>
 #include <projects.h>
-#include <stdbool.h>
 #include <jni.h>
 #include "org_apache_sis_storage_gdal_PJ.h"
 
 
 #define PJ_FIELD_NAME "ptr"
 #define PJ_FIELD_TYPE "J"
-
 
 
 /*!
