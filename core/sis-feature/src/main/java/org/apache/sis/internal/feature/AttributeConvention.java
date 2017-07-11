@@ -29,6 +29,8 @@ import org.opengis.feature.AttributeType;
 import org.opengis.feature.IdentifiedType;
 import org.opengis.feature.Operation;
 import org.opengis.feature.Property;
+import org.opengis.feature.PropertyType;
+import org.opengis.feature.FeatureType;
 
 
 /**
@@ -251,6 +253,25 @@ public final class AttributeConvention extends Static {
     }
 
     /**
+     * Returns the Coordinate Reference Systems characteristic for the given property type, or {@code null} if none.
+     * This method gets the default value from the characteristic named {@link #CRS_CHARACTERISTIC}.
+     * If the given property is a link, then this method follows the link in the given feature type (if non-null).
+     *
+     * <p>This method should be used only when the actual property instance is unknown.
+     * Otherwise, {@link #getCRSCharacteristic(Property)} should be used because the CRS
+     * may vary for each property instance.</p>
+     *
+     * @param  feature    the feature type in which to follow links, or {@code null} if none.
+     * @param  attribute  the attribute type for which to get the CRS, or {@code null}.
+     * @return the Coordinate Reference System characteristic of the given property type, or {@code null} if none.
+     * @throws ClassCastException if {@link #CRS_CHARACTERISTIC} has been found but is associated
+     *         to an object which is not a {@link CoordinateReferenceSystem} instance.
+     */
+    public static CoordinateReferenceSystem getCRSCharacteristic(final FeatureType feature, final PropertyType attribute) {
+        return (CoordinateReferenceSystem) getCharacteristic(feature, attribute, CRS_CHARACTERISTIC.toString());
+    }
+
+    /**
      * Returns whether the given operation or attribute type is characterized by a maximal length.
      * This method verifies whether a characteristic named {@link #MAXIMAL_LENGTH_CHARACTERISTIC}
      * with values of class {@link Integer} exists (directly or indirectly) for the given type.
@@ -266,8 +287,8 @@ public final class AttributeConvention extends Static {
      * Returns the maximal length characteristic for the given attribute, or {@code null} if none.
      * This method gets the value or default value from the characteristic named {@link #MAXIMAL_LENGTH_CHARACTERISTIC}.
      *
-     * @param  attribute  the attribute for which to get the CRS, or {@code null}.
-     * @return the Coordinate Reference System characteristic of the given attribute, or {@code null} if none.
+     * @param  attribute  the attribute for which to get the maximal length, or {@code null}.
+     * @return the maximal length characteristic of the given attribute, or {@code null} if none.
      * @throws ClassCastException if {@link #MAXIMAL_LENGTH_CHARACTERISTIC} has been found but is associated
      *         to an object which is not an {@link Integer} instance.
      *
@@ -275,6 +296,25 @@ public final class AttributeConvention extends Static {
      */
     public static Integer getMaximalLengthCharacteristic(final Property attribute) {
         return (Integer) getCharacteristic(attribute, MAXIMAL_LENGTH_CHARACTERISTIC.toString());
+    }
+
+    /**
+     * Returns the maximal length characteristic for the given property type, or {@code null} if none.
+     * This method gets the default value from the characteristic named {@link #MAXIMAL_LENGTH_CHARACTERISTIC}.
+     * If the given property is a link, then this method follows the link in the given feature type (if non-null).
+     *
+     * <p>This method should be used only when the actual property instance is unknown.
+     * Otherwise, {@link #getMaximalLengthCharacteristic(Property)} should be used because
+     * the maximal length may vary for each property instance.</p>
+     *
+     * @param  feature    the feature type in which to follow links, or {@code null} if none.
+     * @param  attribute  the attribute type for which to get the maximal length, or {@code null}.
+     * @return the maximal length characteristic of the given property type, or {@code null} if none.
+     * @throws ClassCastException if {@link #MAXIMAL_LENGTH_CHARACTERISTIC} has been found but is associated
+     *         to an object which is not a {@link CoordinateReferenceSystem} instance.
+     */
+    public static Integer getMaximalLengthCharacteristic(final FeatureType feature, final PropertyType attribute) {
+        return (Integer) getCharacteristic(feature, attribute, MAXIMAL_LENGTH_CHARACTERISTIC.toString());
     }
 
     /**
@@ -318,6 +358,30 @@ public final class AttributeConvention extends Static {
                 }
             }
             final AttributeType<?> type = ((Attribute<?>) attribute).getType().characteristics().get(name);
+            if (type != null) {
+                return type.getDefaultValue();
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Fetches from the given property the default value of the characteristic of the given name.
+     * If the given property is a link, then this method follows the link in the given feature type
+     * (unless that feature type is null).
+     *
+     * @param  feature         the feature type in which to follow links, or {@code null} if none.
+     * @param  property        the property from which to get the characteristic value, or {@code null}.
+     * @param  characteristic  name of the characteristic from which to get the default value.
+     * @return the default value of the named characteristic in the given property, or {@code null} if none.
+     */
+    private static Object getCharacteristic(final FeatureType feature, PropertyType property, final String characteristic) {
+        final String referent = FeatureUtilities.linkOf(property);
+        if (referent != null && feature != null) {
+            property = feature.getProperty(referent);
+        }
+        if (property instanceof AttributeType<?>) {
+            final AttributeType<?> type = ((AttributeType<?>) property).characteristics().get(characteristic);
             if (type != null) {
                 return type.getDefaultValue();
             }

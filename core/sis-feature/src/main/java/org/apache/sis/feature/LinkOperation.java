@@ -24,6 +24,7 @@ import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.apache.sis.internal.feature.FeatureUtilities;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.resources.Errors;
 
 // Branch-dependent imports
 import org.opengis.feature.Feature;
@@ -48,11 +49,6 @@ final class LinkOperation extends AbstractOperation {
     private static final long serialVersionUID = 765096861589501215L;
 
     /**
-     * The parameter descriptor for the "Link" operation, which does not take any parameter.
-     */
-    private static final ParameterDescriptorGroup EMPTY_PARAMS = FeatureUtilities.parameters("Link");
-
-    /**
      * The type of the result.
      */
     private final PropertyType result;
@@ -74,9 +70,13 @@ final class LinkOperation extends AbstractOperation {
         super(identification);
         if (referent instanceof LinkOperation) {
             referent = ((LinkOperation) referent).result;
+            // Avoiding links to links may help performance and reduce the risk of circular references.
         }
         result = referent;
         referentName = referent.getName().toString();
+        if (referentName.equals(getName().toString())) {
+            throw new IllegalArgumentException(Errors.format(Errors.Keys.CircularReference));
+        }
     }
 
     /**
@@ -84,7 +84,7 @@ final class LinkOperation extends AbstractOperation {
      */
     @Override
     public ParameterDescriptorGroup getParameters() {
-        return EMPTY_PARAMS;
+        return FeatureUtilities.LINK_PARAMS;
     }
 
     /**

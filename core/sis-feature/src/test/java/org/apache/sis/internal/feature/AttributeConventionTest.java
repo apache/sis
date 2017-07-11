@@ -22,6 +22,8 @@ import com.esri.core.geometry.Point;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.referencing.crs.HardCodedCRS;
 import org.apache.sis.feature.DefaultAttributeType;
+import org.apache.sis.feature.DefaultFeatureType;
+import org.apache.sis.feature.FeatureOperations;
 import org.apache.sis.util.iso.Names;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
@@ -30,6 +32,7 @@ import static org.junit.Assert.*;
 
 // Branch-dependent imports
 import org.opengis.feature.Property;
+import org.opengis.feature.Operation;
 import org.opengis.feature.IdentifiedType;
 
 
@@ -88,6 +91,14 @@ public final strictfp class AttributeConventionTest extends TestCase {
         type = new DefaultAttributeType<>(properties, Point.class, 1, 1, null, characteristic);
         assertTrue("characterizedByCRS", AttributeConvention.characterizedByCRS(type));
         assertEquals(HardCodedCRS.WGS84, AttributeConvention.getCRSCharacteristic(type.newInstance()));
+        assertEquals(HardCodedCRS.WGS84, AttributeConvention.getCRSCharacteristic(null, type));
+        /*
+         * Test again AttributeConvention.getCRSCharacteristic(…, PropertyType), but following link.
+         */
+        final Operation link = FeatureOperations.link(Collections.singletonMap(DefaultAttributeType.NAME_KEY, "geom"), type);
+        final DefaultFeatureType feat = new DefaultFeatureType(Collections.singletonMap(DefaultAttributeType.NAME_KEY, "feat"), false, null, type, link);
+        assertEquals(HardCodedCRS.WGS84, AttributeConvention.getCRSCharacteristic(feat, link));
+        assertNull(                      AttributeConvention.getCRSCharacteristic(null, link));
     }
 
     /**
