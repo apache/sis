@@ -51,6 +51,14 @@ JNIEXPORT jobject JNICALL Java_org_apache_sis_storage_gdal_PJ_getType
 
 /*
  * Class:     org_apache_sis_storage_gdal_PJ
+ * Method:    getEccentricitySquared
+ * Signature: ()D
+ */
+JNIEXPORT jdouble JNICALL Java_org_apache_sis_storage_gdal_PJ_getEccentricitySquared
+  (JNIEnv *, jobject);
+
+/*
+ * Class:     org_apache_sis_storage_gdal_PJ
  * Method:    getSemiMajorAxis
  * Signature: ()D
  */
@@ -67,10 +75,10 @@ JNIEXPORT jdouble JNICALL Java_org_apache_sis_storage_gdal_PJ_getSemiMinorAxis
 
 /*
  * Class:     org_apache_sis_storage_gdal_PJ
- * Method:    getEccentricitySquared
+ * Method:    getGreenwichLongitude
  * Signature: ()D
  */
-JNIEXPORT jdouble JNICALL Java_org_apache_sis_storage_gdal_PJ_getEccentricitySquared
+JNIEXPORT jdouble JNICALL Java_org_apache_sis_storage_gdal_PJ_getGreenwichLongitude
   (JNIEnv *, jobject);
 
 /*
@@ -79,14 +87,6 @@ JNIEXPORT jdouble JNICALL Java_org_apache_sis_storage_gdal_PJ_getEccentricitySqu
  * Signature: ()[C
  */
 JNIEXPORT jcharArray JNICALL Java_org_apache_sis_storage_gdal_PJ_getAxisDirections
-  (JNIEnv *, jobject);
-
-/*
- * Class:     org_apache_sis_storage_gdal_PJ
- * Method:    getGreenwichLongitude
- * Signature: ()D
- */
-JNIEXPORT jdouble JNICALL Java_org_apache_sis_storage_gdal_PJ_getGreenwichLongitude
   (JNIEnv *, jobject);
 
 /*

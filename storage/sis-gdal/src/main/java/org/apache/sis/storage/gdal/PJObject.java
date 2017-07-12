@@ -24,6 +24,7 @@ import org.opengis.util.InternationalString;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.extent.Extent;
 import org.opengis.referencing.IdentifiedObject;
+import org.apache.sis.internal.simple.SimpleIdentifier;
 
 
 /**
@@ -71,6 +72,29 @@ class PJObject implements IdentifiedObject {
     PJObject(final IdentifiedObject object) {
         name    = object.getName();
         aliases = object.getAlias();
+    }
+
+    /**
+     * Returns the value of the given parameter as an identifier, or {@code null} if none.
+     * The given parameter key shall include the {@code '+'} prefix and {@code '='} suffix,
+     * for example {@code "+proj="}. This is a helper method for providing the {@code name}
+     * argument in constructors.
+     *
+     * @param  definition  the Proj.4 definition string to parse.
+     * @param  key         the parameter name.
+     * @return the parameter value as an identifier.
+     */
+    static Identifier identifier(final String definition, final String key) {
+        int i = definition.indexOf(key);
+        if (i >= 0) {
+            i += key.length();
+            final int stop = definition.indexOf(' ', i);
+            String value = (stop >= 0) ? definition.substring(i, stop) : definition.substring(i);
+            if (!(value = value.trim()).isEmpty()) {
+                return new SimpleIdentifier(null, value, false);
+            }
+        }
+        return null;
     }
 
     /**

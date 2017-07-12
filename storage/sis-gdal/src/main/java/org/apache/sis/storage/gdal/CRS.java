@@ -30,6 +30,7 @@ import org.opengis.referencing.datum.GeodeticDatum;
 import org.opengis.referencing.operation.Projection;
 
 import org.apache.sis.measure.Units;
+import org.apache.sis.referencing.factory.InvalidGeodeticParameterException;
 
 
 /**
@@ -45,7 +46,7 @@ class CRS extends PJObject implements CoordinateReferenceSystem, CoordinateSyste
     /**
      * The geodetic datum, which is also the object to use for performing call to Proj4 functions.
      */
-    final PJDatum pj;
+    final PJ pj;
 
     /**
      * The coordinate system axes. The length of this array is the dimension,
@@ -61,7 +62,7 @@ class CRS extends PJObject implements CoordinateReferenceSystem, CoordinateSyste
      * @param dimension   the number of dimensions of the new CRS. Must be at least 2.
      * @param unit        the horizontal axes unit.
      */
-    CRS(final Identifier identifier, final PJDatum datum, final int dimension, final Unit<?> unit) {
+    CRS(final Identifier identifier, final PJ datum, final int dimension, final Unit<?> unit) {
         super(identifier);
         pj = datum;
         axes = new CoordinateSystemAxis[dimension];
@@ -116,7 +117,7 @@ class CRS extends PJObject implements CoordinateReferenceSystem, CoordinateSyste
      * The geocentric specialization of {@link CRS}.
      */
     static final class Geocentric extends CRS implements GeocentricCRS {
-        Geocentric(final Identifier identifier, final PJDatum datum, final int dimension) {
+        Geocentric(final Identifier identifier, final PJ datum, final int dimension) {
             super(identifier, datum, dimension, Units.DEGREE);
         }
     }
@@ -125,7 +126,7 @@ class CRS extends PJObject implements CoordinateReferenceSystem, CoordinateSyste
      * The geographic specialization of {@link CRS}.
      */
     static final class Geographic extends CRS implements GeographicCRS, EllipsoidalCS {
-        Geographic(final Identifier identifier, final PJDatum datum, final int dimension) {
+        Geographic(final Identifier identifier, final PJ datum, final int dimension) {
             super(identifier, datum, dimension, Units.DEGREE);
         }
 
@@ -162,7 +163,7 @@ class CRS extends PJObject implements CoordinateReferenceSystem, CoordinateSyste
         /**
          * Creates a new projected CRS.
          */
-        Projected(final Identifier identifier, final PJDatum datum, final int dimension,
+        Projected(final Identifier identifier, final PJ datum, final int dimension,
                 final String axisOrientations)
         {
             super(identifier, datum, dimension, datum.getLinearUnit(false));
@@ -213,7 +214,7 @@ class CRS extends PJObject implements CoordinateReferenceSystem, CoordinateSyste
         public synchronized Geographic getBaseCRS() {
             if (baseCRS == null) {
                 int dimension = axes.length;
-                PJDatum base = new PJDatum(pj);
+                PJ base = new PJ(pj);
                 if (axisOrientations != null) {
                     final int s = axisOrientations.indexOf(Proj4.AXIS_ORDER_SEPARATOR);
                     if (s >= 0) {
@@ -229,7 +230,11 @@ class CRS extends PJObject implements CoordinateReferenceSystem, CoordinateSyste
                             }
                             ap += Proj4.AXIS_ORDER_PARAM.length();
                             definition.replace(ap, findWordEnd(definition, ap), orientation);
-                            base = new PJDatum(base.getName(), definition.toString());
+                            try {
+                                base = new PJ(base.getName(), definition.toString());
+                            } catch (InvalidGeodeticParameterException e) {
+                                throw new IllegalStateException(e);
+                            }
                         }
                     }
                 }

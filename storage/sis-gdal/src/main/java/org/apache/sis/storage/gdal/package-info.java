@@ -16,7 +16,7 @@
  */
 
 /**
- * GeoAPI implementation as wrapper around the C/C++ <a href="http://proj.osgeo.org/">Proj4</a> library.
+ * Referencing services as wrapper around the C/C++ <a href="http://proj.osgeo.org/">Proj4</a> library.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
