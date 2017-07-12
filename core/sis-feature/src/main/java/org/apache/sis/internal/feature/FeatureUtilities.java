@@ -24,6 +24,7 @@ import org.opengis.parameter.ParameterDescriptorGroup;
 import org.apache.sis.parameter.DefaultParameterDescriptorGroup;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.feature.AbstractOperation;
+import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.util.Static;
 
 // Branch-dependent imports
@@ -79,7 +80,12 @@ public final class FeatureUtilities extends Static {
         if (property instanceof AbstractOperation) {
             final AbstractOperation op = (AbstractOperation) property;
             if (op.getParameters() == LINK_PARAMS) {
-                return op.getDependencies().iterator().next();          // Should always have exactly one element.
+                /*
+                 * The dependencies collection contains exactly one element on Apache SIS implementation.
+                 * However the user could define his own operation with the same parameter descriptor name.
+                 * This is unlikely since it would probably be a bug, but we are paranoiac.
+                 */
+                return CollectionsExt.first(op.getDependencies());
             }
         }
         return null;
