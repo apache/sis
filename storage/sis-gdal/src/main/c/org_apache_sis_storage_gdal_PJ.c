@@ -17,7 +17,6 @@
 #include <math.h>
 #include <string.h>
 #include <projects.h>
-#include <jni.h>
 #include "org_apache_sis_storage_gdal_PJ.h"
 
 
