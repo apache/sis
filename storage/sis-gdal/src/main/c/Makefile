@@ -71,5 +71,7 @@ ifndef OUTDIR
     $(error The $(OS) platform is not supported by this makefile.)
 endif
 
+# The $(LIB) parameter should be last (it way work anywhere,
+# but putting it last allows more predictable results).
 all:
-	gcc $(FLAG) $(INCLUDE_DIR) $(LIB) -o ../resources/native/$(OUTDIR)/$(OUT) $(SRC)
+	gcc $(FLAG) $(INCLUDE_DIR) -o ../resources/native/$(OUTDIR)/$(OUT) $(SRC) $(LIB)

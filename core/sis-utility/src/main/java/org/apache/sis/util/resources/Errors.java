@@ -556,6 +556,11 @@ public final class Errors extends IndexedResourceBundle {
         public static final short MutuallyExclusiveOptions_2 = 91;
 
         /**
+         * Native interfaces “{1}” not available for the {0} platform.
+         */
+        public static final short NativeInterfacesNotFound_2 = 176;
+
+        /**
          * Argument ‘{0}’ shall not be negative. The given value was {1}.
          */
         public static final short NegativeArgument_2 = 92;

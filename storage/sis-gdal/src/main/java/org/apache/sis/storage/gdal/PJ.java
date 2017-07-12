@@ -19,19 +19,19 @@ package org.apache.sis.storage.gdal;
 import java.util.Objects;
 import java.lang.annotation.Native;
 import org.opengis.referencing.operation.TransformException;
+import org.apache.sis.internal.system.OS;
 
 
 /**
  * Wraps the <a href="http://proj.osgeo.org/">Proj4</a> {@code PJ} native data structure.
- * Almost every methods defined in this class are native methods delegating the work to the
- * Proj4 library. This class is the only place where such native methods are defined.
+ * Almost every methods defined in this class are native methods delegating the work to the Proj4 library.
+ * This class is the only place where such native methods are defined.
  *
  * <p>In the Proj4 library, the {@code PJ} structure aggregates in a single place information usually
  * splitted in many different ISO 19111 interfaces: {@link org.opengis.referencing.datum.Ellipsoid},
  * {@link org.opengis.referencing.datum.Datum}, {@link org.opengis.referencing.datum.PrimeMeridian},
  * {@link org.opengis.referencing.cs.CoordinateSystem}, {@link org.opengis.referencing.crs.CoordinateReferenceSystem}
- * and their sub-interfaces. The relationship with the GeoAPI methods is indicated in the
- * "See" tags when appropriate.</p>
+ * and their sub-interfaces. The relationship with the GeoAPI methods is indicated in the "See" tags when appropriate.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
@@ -48,9 +48,12 @@ class PJ {
 
     /**
      * Loads the Proj4 library.
+     * This static initializer may throw a {@link UnsatisfiedLinkError} if the static library can not be loaded.
+     * In such case, any future attempt to use this {@code PJ} class will cause a {@link NoClassDefFoundError}
+     * as per Java language specification.
      */
     static {
-        System.load("libproj-binding.so");
+        OS.load(PJ.class, "libproj-binding");
     }
 
     /**

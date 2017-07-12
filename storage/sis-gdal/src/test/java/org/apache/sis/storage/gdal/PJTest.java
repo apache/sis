@@ -17,9 +17,12 @@
 package org.apache.sis.storage.gdal;
 
 import org.opengis.referencing.operation.TransformException;
+import org.apache.sis.test.TestCase;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
+import static org.junit.Assume.*;
 
 
 /**
@@ -30,7 +33,27 @@ import static org.junit.Assert.*;
  * @since   0.8
  * @module
  */
-public class PJTest {
+public final strictfp class PJTest extends TestCase {
+    /**
+     * If the Proj4 library has been successfully initialized, an empty string.
+     * Otherwise, the reason why the library is not available.
+     */
+    private static String status;
+
+    /**
+     * Verifies if the Proj4 library is available.
+     */
+    @BeforeClass
+    public static synchronized void verifyNativeLibraryAvailability() {
+        if (status == null) try {
+            out.println("Proj.4 version: " + PJ.getVersion());
+            status = "";
+        } catch (UnsatisfiedLinkError e) {
+            status = e.toString();
+        }
+        assumeTrue(status, status.isEmpty());
+    }
+
     /**
      * Ensures that the given object is the WGS84 definition.
      */
@@ -72,10 +95,15 @@ public class PJTest {
      *
      * @throws TransformException should never happen.
      */
-    @Test(expected = NullPointerException.class)
+    @Test
     public void testNullPointerException() throws TransformException {
         final PJ pj = new PJ("+proj=latlong +datum=WGS84");
-        pj.transform(null, 2, null, 0, 1);
+        try {
+            pj.transform(null, 2, null, 0, 1);
+            fail("Expected an exception to be thrown.");
+        } catch (NullPointerException e) {
+            // This is the expected exception.
+        }
     }
 
     /**
@@ -84,10 +112,15 @@ public class PJTest {
      *
      * @throws TransformException should never happen.
      */
-    @Test(expected = IndexOutOfBoundsException.class)
+    @Test
     public void testIndexOutOfBoundsException() throws TransformException {
         final PJ pj = new PJ("+proj=latlong +datum=WGS84");
-        pj.transform(pj, 2, new double[5], 2, 2);
+        try {
+            pj.transform(pj, 2, new double[5], 2, 2);
+            fail("Expected an exception to be thrown.");
+        } catch (IndexOutOfBoundsException e) {
+            // This is the expected exception.
+        }
     }
 
     /**
