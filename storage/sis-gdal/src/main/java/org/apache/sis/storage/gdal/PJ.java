@@ -16,20 +16,31 @@
  */
 package org.apache.sis.storage.gdal;
 
+import java.util.Date;
 import java.util.Objects;
 import java.lang.annotation.Native;
+import javax.measure.Unit;
+import javax.measure.quantity.Angle;
+import javax.measure.quantity.Length;
+import org.opengis.metadata.Identifier;
+import org.opengis.metadata.extent.Extent;
+import org.opengis.util.InternationalString;
+import org.opengis.referencing.datum.Ellipsoid;
+import org.opengis.referencing.datum.GeodeticDatum;
+import org.opengis.referencing.datum.PrimeMeridian;
 import org.opengis.referencing.operation.TransformException;
+import org.apache.sis.referencing.factory.InvalidGeodeticParameterException;
 import org.apache.sis.internal.system.OS;
+import org.apache.sis.measure.Units;
 
 
 /**
  * Wraps the <a href="http://proj.osgeo.org/">Proj4</a> {@code PJ} native data structure.
- * Almost every methods defined in this class are native methods delegating the work to the Proj4 library.
- * This class is the only place where such native methods are defined.
+ * Many methods defined in this class are native methods delegating their work to the Proj4 library.
+ * This class is the only place where such native methods are defined for Proj4 support.
  *
  * <p>In the Proj4 library, the {@code PJ} structure aggregates in a single place information usually
- * splitted in many different ISO 19111 interfaces: {@link org.opengis.referencing.datum.Ellipsoid},
- * {@link org.opengis.referencing.datum.Datum}, {@link org.opengis.referencing.datum.PrimeMeridian},
+ * splitted in many different ISO 19111 interfaces: {@link Ellipsoid}, {@link GeodeticDatum}, {@link PrimeMeridian},
  * {@link org.opengis.referencing.cs.CoordinateSystem}, {@link org.opengis.referencing.crs.CoordinateReferenceSystem}
  * and their sub-interfaces. The relationship with the GeoAPI methods is indicated in the "See" tags when appropriate.</p>
  *
@@ -38,7 +49,7 @@ import org.apache.sis.internal.system.OS;
  * @since   0.8
  * @module
  */
-class PJ {
+final class PJ extends PJObject implements GeodeticDatum, PrimeMeridian, Ellipsoid {
     /**
      * The maximal number of dimension accepted by the {@link #transform(PJ, int, double[], int, int)} method.
      * This upper limit is actually somewhat arbitrary. This limit exists mostly as a safety against potential misuse.
@@ -66,14 +77,16 @@ class PJ {
     /**
      * Creates a new {@code PJ} structure from the given Proj4 definition string.
      *
+     * @param  name        the datum identifier, or {@code null} for inferring it from the definition.
      * @param  definition  the Proj4 definition string.
-     * @throws IllegalArgumentException if the PJ structure can not be created from the given string.
+     * @throws InvalidGeodeticParameterException if the PJ structure can not be created from the given string.
      */
-    public PJ(final String definition) throws IllegalArgumentException {
+    public PJ(Identifier name, final String definition) throws InvalidGeodeticParameterException {
+        super(name != null ? name : identifier(definition, "+datum="));
         Objects.requireNonNull(definition);
         ptr = allocatePJ(definition);
         if (ptr == 0) {
-            throw new IllegalArgumentException(definition);
+            throw new InvalidGeodeticParameterException(definition);
         }
     }
 
@@ -87,7 +100,7 @@ class PJ {
      * @throws IllegalArgumentException if the PJ structure can not be created.
      */
     public PJ(final PJ crs) throws IllegalArgumentException {
-        Objects.requireNonNull(crs);
+        super(identifier(crs.getDefinition(), "+datum="));
         ptr = allocateGeoPJ(crs);
         if (ptr == 0) {
             throw new IllegalArgumentException(crs.getLastError());
@@ -95,10 +108,9 @@ class PJ {
     }
 
     /**
-     * Allocates a PJ native data structure and returns the pointer to it. This method should be
-     * invoked by the constructor only, and the return value <strong>must</strong> be assigned
-     * to the {@link #ptr} field. The allocated structure is released by the {@link #finalize()}
-     * method.
+     * Allocates a PJ native data structure and returns the pointer to it. This method should be invoked by
+     * the constructor only, and the return value <strong>must</strong> be assigned to the {@link #ptr} field.
+     * The allocated structure is released by the {@link #finalize()} method.
      *
      * @param  definition  the Proj4 definition string.
      * @return a pointer to the PJ native data structure, or 0 if the operation failed.
@@ -106,10 +118,9 @@ class PJ {
     private static native long allocatePJ(String definition);
 
     /**
-     * Allocates a PJ native data structure for the base geographic CRS of the given CRS, and
-     * returns the pointer to it. This method should be invoked by the constructor only, and
-     * the return value <strong>must</strong> be assigned to the {@link #ptr} field.
-     * The allocated structure is released by the {@link #finalize()} method.
+     * Allocates a PJ native data structure for the base geographic CRS of the given CRS, and returns the pointer to it.
+     * This method should be invoked by the constructor only, and the return value <strong>must</strong> be assigned to
+     * the {@link #ptr} field. The allocated structure is released by the {@link #finalize()} method.
      *
      * @param  projected  the CRS from which to derive the base geographic CRS.
      * @return a pointer to the PJ native data structure, or 0 if the operation failed.
@@ -169,34 +180,129 @@ class PJ {
     }
 
     /**
+     * Returns the ellipsoid associated with this geodetic datum.
+     * In Proj4 implementation, the datum and its ellipsoid are represented by the same {@code PJ} object.
+     */
+    @Override
+    public Ellipsoid getEllipsoid() {
+        return this;
+    }
+
+    /**
+     * Returns {@code true} if the ellipsoid is a sphere.
+     */
+    @Override
+    public boolean isSphere() {
+        return getEccentricitySquared() == 0;
+    }
+
+    /**
+     * Returns {@code true} unconditionally since the inverse eccentricity squared in definitive
+     * in the Proj4 library, and the eccentricity is directly related to the flattening.
+     */
+    @Override
+    public boolean isIvfDefinitive() {
+        return true;
+    }
+
+    /**
+     * Returns the inverse flattening, computed from the eccentricity.
+     */
+    @Override
+    public double getInverseFlattening() {
+        return 1 / (1 - Math.sqrt(1 - getEccentricitySquared()));
+    }
+
+    /**
+     * Returns the square of the ellipsoid eccentricity (ε²). The eccentricity is related to axis length
+     * by ε=√(1-(<var>b</var>/<var>a</var>)²). The eccentricity of a sphere is zero.
+     *
+     * @return the eccentricity.
+     *
+     * @see #isSphere()
+     * @see #getInverseFlattening()
+     */
+    public native double getEccentricitySquared();
+
+    /**
      * Returns the value stored in the {@code a_orig} PJ field.
      *
      * @return the axis length stored in {@code a_orig}.
-     *
-     * @see org.opengis.referencing.datum.Ellipsoid#getSemiMajorAxis()
      */
+    @Override
     public native double getSemiMajorAxis();
 
     /**
      * Returns the value computed from PJ fields by {@code √((a_orig)² × (1 - es_orig))}.
      *
      * @return the axis length computed by {@code √((a_orig)² × (1 - es_orig))}.
-     *
-     * @see org.opengis.referencing.datum.Ellipsoid#getSemiMinorAxis()
      */
+    @Override
     public native double getSemiMinorAxis();
 
     /**
-     * Returns the square of the ellipsoid eccentricity (ε²). The eccentricity
-     * is related to axis length by ε=√(1-(<var>b</var>/<var>a</var>)²). The
-     * eccentricity of a sphere is zero.
-     *
-     * @return the eccentricity.
-     *
-     * @see org.opengis.referencing.datum.Ellipsoid#isSphere()
-     * @see org.opengis.referencing.datum.Ellipsoid#getInverseFlattening()
+     * Returns the ellipsoid axis unit, which is assumed metres in the case of the Proj4 library.
+     * Not to be confused with the {@linkplain #getLinearUnit(boolean) coordinate system axis unit}.
      */
-    public native double getEccentricitySquared();
+    @Override
+    public Unit<Length> getAxisUnit() {
+        return Units.METRE;
+    }
+
+    /**
+     * Returns the prime meridian associated with this geodetic datum.
+     * In Proj4 implementation, the datum and its prime meridian are represented by the same {@code PJ} object.
+     */
+    @Override
+    public PrimeMeridian getPrimeMeridian() {
+        return this;
+    }
+
+    /**
+     * Returns the units of the prime meridian.
+     * All angular units are converted from radians to degrees in the JNI code.
+     *
+     * @see #getLinearUnit(boolean)
+     */
+    @Override
+    public Unit<Angle> getAngularUnit() {
+        return Units.DEGREE;
+    }
+
+    /**
+     * Longitude of the prime meridian measured from the Greenwich meridian, positive eastward.
+     *
+     * @return the prime meridian longitude, in degrees.
+     */
+    @Override
+    public native double getGreenwichLongitude();
+
+    /**
+     * Returns a description of the relationship used to anchor the coordinate system to the Earth.
+     * Current implementation returns {@code null}.
+     */
+    @Override
+    public InternationalString getAnchorPoint() {
+        return null;
+    }
+
+    /**
+     * Returns the time after which this datum definition is valid.
+     * Current implementation returns {@code null}.
+     */
+    @Override
+    public Date getRealizationEpoch() {
+        return null;
+    }
+
+    /**
+     * Returns the area or region or timeframe in which this datum is valid.
+     * Current implementation returns {@code null}.
+     */
+    @Override
+    public Extent getDomainOfValidity() {
+        return null;
+    }
 
     /**
      * Returns an array of character indicating the direction of each axis. Directions are
@@ -209,13 +315,14 @@ class PJ {
     public native char[] getAxisDirections();
 
     /**
-     * Longitude of the prime meridian measured from the Greenwich meridian, positive eastward.
+     * Returns the linear unit for the horizontal or the vertical coordinate system axes.
+     * Not to be confused with the {@linkplain #getAxisUnit() ellipsoid axis unit}.
      *
-     * @return the prime meridian longitude, in degrees.
-     *
-     * @see org.opengis.referencing.datum.PrimeMeridian#getGreenwichLongitude()
+     * @see #getAngularUnit()
      */
-    public native double getGreenwichLongitude();
+    public Unit<Length> getLinearUnit(final boolean vertical) {
+        return Units.METRE.divide(getLinearUnitToMetre(vertical));
+    }
 
     /**
      * Returns the conversion factor from the linear units to metres.
@@ -224,7 +331,7 @@ class PJ {
      *         or {@code true} for the conversion factor of the vertical axis.
      * @return the conversion factor to metres for the given axis.
      */
-    public native double getLinearUnitToMetre(boolean vertical);
+    native double getLinearUnitToMetre(boolean vertical);
 
     /**
      * Transforms in-place the coordinates in the given array. The coordinates array shall contain
@@ -257,7 +364,7 @@ class PJ {
      *
      * @return the last error that occurred, or {@code null}.
      */
-    public native String getLastError();
+    native String getLastError();
 
     /**
      * Returns the string representation of the PJ structure.
@@ -270,7 +377,6 @@ class PJ {
     /**
      * Deallocates the native PJ data structure. This method can be invoked only by the garbage
      * collector, and must be invoked exactly once (no more, no less).
-     * <strong>NEVER INVOKE THIS METHOD EXPLICITELY, NEVER OVERRIDE</strong>.
      */
     @Override
     @SuppressWarnings("FinalizeDeclaration")

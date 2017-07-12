@@ -88,11 +88,11 @@ public final class Proj4 extends Static {
      * @param  dimension   the number of dimension of the CRS to create.
      * @return a CRS created from the given definition string and number of dimension.
      * @throws NullPointerException if the definition string is {@code null}.
-     * @throws IllegalArgumentException if one of the given argument has an invalid value.
+     * @throws FactoryException if one of the given argument has an invalid value.
      */
     public static CoordinateReferenceSystem createCRS(final Identifier crsId,
             final Identifier datumId, String definition, final int dimension)
-            throws IllegalArgumentException
+            throws FactoryException
     {
         if ((definition = definition.trim()).isEmpty()) {
             throw new IllegalArgumentException("The definition must be non-empty.");
@@ -129,7 +129,7 @@ public final class Proj4 extends Static {
         /*
          * Create the Proj.4 wrapper.
          */
-        final PJDatum datum = new PJDatum(datumId, definition);
+        final PJ datum = new PJ(datumId, definition);
         final PJ.Type type = datum.getType();
         final CoordinateReferenceSystem crs;
         switch (type) {

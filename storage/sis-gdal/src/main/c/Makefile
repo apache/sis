@@ -33,7 +33,7 @@
 #
 # GCC options reminder:
 #    -shared		Produce a shared object which can then be linked with other objects to form an executable.
-#    -shared-libgcc	Use the shared version of libgcc.
+#    -shared-libgcc	Use the shared version of libgcc. Recommended for JNI when exceptions may be thrown from gcc.
 #    -fpic		Generate position-independent code suitable for use in a shared library.
 #    -O2		Performs nearly all supported optimizations that do not involve a space-speed tradeoff.
 #

@@ -17,6 +17,8 @@
 package org.apache.sis.storage.gdal;
 
 import org.opengis.referencing.operation.TransformException;
+import org.apache.sis.referencing.factory.InvalidGeodeticParameterException;
+import org.apache.sis.measure.Units;
 import org.apache.sis.test.TestCase;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -61,43 +63,66 @@ public final strictfp class PJTest extends TestCase {
         assertEquals("+proj=latlong +datum=WGS84 +ellps=WGS84 +towgs84=0,0,0", pj.getDefinition().trim());
         assertEquals("Lat/long (Geodetic alias)", pj.toString().trim());
         assertEquals(PJ.Type.GEOGRAPHIC, pj.getType());
+        assertEquals("WGS84",            pj.getName().getCode());
         assertEquals(6378137.0,          pj.getSemiMajorAxis(),         1E-9);
         assertEquals(6356752.314245179,  pj.getSemiMinorAxis(),         1E-9);
-        assertEquals(0.0,                pj.getGreenwichLongitude(),    0.0);
-        assertEquals(1.0,                pj.getLinearUnitToMetre(true), 0.0);
+        assertEquals(298.257223563,      pj.getInverseFlattening(),     1E-9);
+        assertEquals(0.0,                pj.getGreenwichLongitude(),    STRICT);
+        assertEquals(1.0,                pj.getLinearUnitToMetre(true), STRICT);
+        assertSame  (Units.METRE,        pj.getAxisUnit());
+        assertFalse(pj.isSphere());
         assertArrayEquals(new char[] {'e', 'n', 'u'}, pj.getAxisDirections());
     }
 
     /**
      * Tests the creation of a simple WGS84 object.
+     *
+     * @throws InvalidGeodeticParameterException if the Proj4 definition string used in this test is invalid.
      */
     @Test
-    public void testWGS84() {
-        final PJ pj = new PJ("+proj=latlong +datum=WGS84");
+    public void testWGS84() throws InvalidGeodeticParameterException {
+        final PJ pj = new PJ(null, "+proj=latlong +datum=WGS84");
         assertIsWGS84(pj);
     }
 
     /**
-     * Tests the creation of the EPSG:3395 projected CRS
+     * Tests the creation of the EPSG:3395 projected CRS.
+     *
+     * @throws InvalidGeodeticParameterException if the Proj4 definition string used in this test is invalid.
      */
     @Test
-    public void testEPSG3395() {
-        final PJ pj = new PJ("+init=epsg:3395");
+    public void testEPSG3395() throws InvalidGeodeticParameterException {
+        final PJ pj = new PJ(null, "+init=epsg:3395");
         assertEquals(PJ.Type.PROJECTED, pj.getType());
         assertArrayEquals(new char[] {'e', 'n', 'u'}, pj.getAxisDirections());
-        assertEquals(1.0, pj.getLinearUnitToMetre(true), 0.0);
+        assertEquals(1.0, pj.getLinearUnitToMetre(true), STRICT);
         assertIsWGS84(new PJ(pj));
+    }
+
+    /**
+     * Tests the {@link PJ#getLinearUnit(boolean)} method.
+     *
+     * @throws InvalidGeodeticParameterException if the Proj4 definition string used in this test is invalid.
+     */
+    @Test
+    public void testGetLinearUnit() throws InvalidGeodeticParameterException {
+        PJ pj;
+        pj = new PJ(null, "+proj=merc +to_meter=1");
+        assertSame(Units.METRE, pj.getLinearUnit(false));
+        pj = new PJ(null, "+proj=merc +to_meter=0.001");
+        assertSame(Units.KILOMETRE, pj.getLinearUnit(false));
     }
 
     /**
      * Ensures that the native code correctly detects the case of null pointers.
      * This is important in order to ensure that we don't have a JVM crash.
      *
+     * @throws InvalidGeodeticParameterException if the Proj4 definition string used in this test is invalid.
      * @throws TransformException should never happen.
      */
     @Test
-    public void testNullPointerException() throws TransformException {
-        final PJ pj = new PJ("+proj=latlong +datum=WGS84");
+    public void testNullPointerException() throws InvalidGeodeticParameterException, TransformException {
+        final PJ pj = new PJ(null, "+proj=latlong +datum=WGS84");
         try {
             pj.transform(null, 2, null, 0, 1);
             fail("Expected an exception to be thrown.");
@@ -110,11 +135,12 @@ public final strictfp class PJTest extends TestCase {
      * Ensures that the native code correctly detects the case of index out of bounds.
      * This is important in order to ensure that we don't have a JVM crash.
      *
+     * @throws InvalidGeodeticParameterException if the Proj4 definition string used in this test is invalid.
      * @throws TransformException should never happen.
      */
     @Test
-    public void testIndexOutOfBoundsException() throws TransformException {
-        final PJ pj = new PJ("+proj=latlong +datum=WGS84");
+    public void testIndexOutOfBoundsException() throws InvalidGeodeticParameterException, TransformException {
+        final PJ pj = new PJ(null, "+proj=latlong +datum=WGS84");
         try {
             pj.transform(pj, 2, new double[5], 2, 2);
             fail("Expected an exception to be thrown.");
@@ -127,11 +153,13 @@ public final strictfp class PJTest extends TestCase {
      * Tests a method that returns NaN. The native code is expected to returns the
      * {@link java.lang.Double#NaN} constant, because not all C/C++ compiler define
      * a {@code NAN} constant.
+     *
+     * @throws InvalidGeodeticParameterException if the Proj4 definition string used in this test is invalid.
      */
     @Test
     @SuppressWarnings("FinalizeCalledExplicitly")
-    public void testNaN() {
-        final PJ pj = new PJ("+proj=latlong +datum=WGS84");
+    public void testNaN() throws InvalidGeodeticParameterException {
+        final PJ pj = new PJ(null, "+proj=latlong +datum=WGS84");
         pj.finalize();              // This cause the disposal of the internal PJ structure.
         assertNull(pj.getType());
         assertNaN(pj.getSemiMajorAxis());

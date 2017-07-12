@@ -107,7 +107,7 @@ JNIEXPORT jstring JNICALL Java_org_apache_sis_storage_gdal_PJ_getDefinition
         const char *desc = pj_get_def(pj, 0);
         if (desc) {
             jstring str = (*env)->NewStringUTF(env, desc);
-            pj_dalloc(desc);
+            pj_dalloc((char*) desc);
             return str;
         }
     }
