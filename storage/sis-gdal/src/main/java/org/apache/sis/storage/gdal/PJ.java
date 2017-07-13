@@ -49,7 +49,7 @@ import org.apache.sis.measure.Units;
  * @since   0.8
  * @module
  */
-final class PJ extends PJObject implements GeodeticDatum, PrimeMeridian, Ellipsoid {
+final class PJ extends PJObject implements GeodeticDatum, Ellipsoid, PrimeMeridian {
     /**
      * The maximal number of dimension accepted by the {@link #transform(PJ, int, double[], int, int)} method.
      * This upper limit is actually somewhat arbitrary. This limit exists mostly as a safety against potential misuse.

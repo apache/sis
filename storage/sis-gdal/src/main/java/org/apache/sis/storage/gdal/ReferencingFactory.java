@@ -54,16 +54,16 @@ import org.apache.sis.measure.Units;
  * @since   0.8
  * @module
  */
-final class CRSFactory extends AbstractFactory implements org.opengis.referencing.crs.CRSFactory {
+final class ReferencingFactory extends AbstractFactory implements CRSFactory {
     /**
      * The unique instance.
      */
-    static final CRSFactory INSTANCE = new CRSFactory();
+    static final ReferencingFactory INSTANCE = new ReferencingFactory();
 
     /**
      * Creates a new factory.
      */
-    private CRSFactory() {
+    private ReferencingFactory() {
     }
 
     /**
