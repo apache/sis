@@ -315,7 +315,7 @@ public abstract class AbstractAttribute<V> extends Field<V> implements Attribute
      *     Example:
      *
      *     {@preformat java
-     *       Attribute<?> accuracy = ...; // To be created by the caller.
+     *       Attribute<?> accuracy = ...;                               // To be created by the caller.
      *       characteristics.put("accuracy", accuracy);
      *     }</li>
      *
@@ -325,7 +325,7 @@ public abstract class AbstractAttribute<V> extends Field<V> implements Attribute
      *     Example:
      *
      *     {@preformat java
-     *       Attribute<?> accuracy = ...; // To be created by the caller.
+     *       Attribute<?> accuracy = ...;                               // To be created by the caller.
      *       characteristics.values().add(accuracy);
      *     }</li>
      *
@@ -334,9 +334,9 @@ public abstract class AbstractAttribute<V> extends Field<V> implements Attribute
      *     Example:
      *
      *     {@preformat java
-     *       characteristics.keySet().add("accuracy"); // Ensure that an entry will exist for that name.
+     *       characteristics.keySet().add("accuracy");                  // Ensure that an entry will exist for that name.
      *       Attribute<?> accuracy = characteristics.get("accuracy");
-     *       Features.cast(accuracy, Float.class).setValue(...); // Set new accuracy value here as a float.
+     *       Features.cast(accuracy, Float.class).setValue(...);        // Set new accuracy value here as a float.
      *     }</li>
      * </ol>
      *

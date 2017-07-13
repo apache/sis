@@ -31,11 +31,15 @@ import org.opengis.util.FactoryException;
 import org.opengis.util.NoSuchIdentifierException;
 import org.opengis.parameter.ParameterNotFoundException;
 import org.opengis.referencing.NoSuchAuthorityCodeException;
+import org.opengis.referencing.operation.TransformException;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.apache.sis.referencing.operation.matrix.Matrices;
+import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.internal.geotiff.Resources;
+import org.apache.sis.internal.storage.MetadataBuilder;
 import org.apache.sis.internal.storage.io.ChannelDataInput;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreContentException;
-import org.apache.sis.internal.storage.MetadataBuilder;
 import org.apache.sis.math.Vector;
 import org.apache.sis.measure.Units;
 
@@ -64,6 +68,13 @@ final class ImageFileDirectory {
      * was specified using the {@code Tile*} family of TIFF tags or the {@code Strip*} family.
      */
     private static final byte TILE = 1, STRIP = 2;
+
+    /**
+     * Possible value for {@link #sampleFormat} specifying how to interpret each data sample in a pixel.
+     * Those values are not necessarily the same than the ones documented in {@link Tags#SampleFormat}.
+     * Default value is {@link #UNSIGNED}.
+     */
+    private static final byte SIGNED = 1, UNSIGNED = 0, FLOAT = 3;
 
     /**
      * The GeoTIFF reader which contain this {@code ImageFileDirectory}.
@@ -157,6 +168,12 @@ final class ImageFileDirectory {
      * (for example RGB data stored as RGBRGBRGB).
      */
     private boolean isPlanar;
+
+    /**
+     * How to interpret each data sample in a pixel.
+     * Possible values are {@link #SIGNED}, {@link #UNSIGNED} or {@link #FLOAT}.
+     */
+    private byte sampleFormat;
 
     /**
      * Whether the bit order should be reversed. This boolean value is determined from the {@code FillOrder} TIFF tag.
@@ -268,9 +285,10 @@ final class ImageFileDirectory {
     private short cellWidth = -1, cellHeight = -1;
 
     /**
-     * The minimum or maximum sample value found in the image, or {@code NaN} if unspecified.
+     * The minimum or maximum sample value found in the image, with one value per band.
+     * May be a vector of length 1 if the same single value applies to all bands.
      */
-    private double minValue = Double.NaN, maxValue = Double.NaN;
+    private Vector minValues, maxValues;
 
     /**
      * The number of pixels per {@link #resolutionUnit} in the {@link #imageWidth} and the {@link #imageHeight}
@@ -314,6 +332,38 @@ final class ImageFileDirectory {
     private String asciiGeoParameters;
 
     /**
+     * Raster model tie points. This vector contains ordinate values structured as (I,J,K, X,Y,Z) records.
+     * The (I,J,K) ordinate values specify the point at location (I,J) in raster space with pixel-value K,
+     * and (X,Y,Z) ordinate values specify the point in the Coordinate Reference System. In most cases the
+     * coordinate system is only two-dimensional, in which case both K and Z should be set to zero.
+     */
+    private Vector modelTiePoints;
+
+    /**
+     * The conversion from grid coordinates to CRS coordinates. It can be determined in different ways,
+     * from simpler to more complex:
+     *
+     * <ul>
+     *   <li>By a combination of a single {@link #modelTiePoints} with the 3 values given in
+     *       {@link Tags#ModelPixelScaleTag} as documented in the Javadoc of that tag.</li>
+     *   <li>By a {@link Tags#ModelTransformation} giving all coefficients of the 4×4 matrix}.
+     *       Note that the third row and the third column have all their value set to 0 if the
+     *       space model (or the coordinate reference system) should be two-dimensional.</li>
+     *   <li>By building a non-linear transformation from all {@link #modelTiePoints}.
+     *       Such transformation can not be stored in a matrix, so will leave this field {@code null}.</li>
+     * </ul>
+     *
+     * By convention, the translation column is set to NaN values if it needs to be computed from the tie point.
+     */
+    private MatrixSIS gridToCRS;
+
+    /**
+     * {@code true} if {@link #gridToCRS} has been specified by a complete matrix ({@link Tags#ModelTransformation}),
+     * or {@code false} if it has been specified by the scale factors only ({@link Tags#ModelPixelScaleTag}).
+     */
+    private boolean completeMatrixSpecified;
+
+    /**
      * Creates a new image file directory.
      *
      * @param reader  information about the input stream to read, the metadata and the character encoding.
@@ -327,6 +377,13 @@ final class ImageFileDirectory {
      */
     private ChannelDataInput input() {
         return reader.input;
+    }
+
+    /**
+     * Shortcut for a frequently requested information.
+     */
+    private String filename() {
+        return input().filename;
     }
 
     /**
@@ -486,6 +543,21 @@ final class ImageFileDirectory {
                 break;
             }
             /*
+             * How to interpret each data sample in a pixel. The size of data samples is still
+             * specified by the BitsPerSample field.
+             */
+            case Tags.SampleFormat: {
+                final int value = type.readInt(input(), count);
+                switch (value) {
+                    default: return value;                          // Warning to be reported by the caller.
+                    case 1: sampleFormat = UNSIGNED; break;         // Unsigned integer data (default).
+                    case 2: sampleFormat = SIGNED;   break;         // Two’s complement signed integer data.
+                    case 3: sampleFormat = FLOAT;    break;         // IEEE floating point data.
+                    case 4: warning(Level.WARNING, Resources.Keys.UndefinedDataFormat_1, filename()); break;
+                }
+                break;
+            }
+            /*
              * Number of bits per component. The array length should be the number of components in a
              * pixel (e.g. 3 for RGB values). Typically, all components have the same number of bits.
              * But the TIFF specification allows different values.
@@ -502,7 +574,7 @@ final class ImageFileDirectory {
                 for (int i = 1; i < length; i++) {
                     if (values.shortValue(i) != bitsPerSample) {
                         throw new DataStoreContentException(reader.resources().getString(
-                                Resources.Keys.ConstantValueRequired_3, "BitsPerSample", input().filename, values));
+                                Resources.Keys.ConstantValueRequired_3, "BitsPerSample", filename(), values));
                     }
                 }
                 break;
@@ -559,11 +631,12 @@ final class ImageFileDirectory {
                 break;
             }
             /*
-             * The minimum component value used. Default is 0.
+             * The minimum component value used. MinSampleValue is a single value that apply to all bands
+             * while SMinSampleValue lists separated values for each band. Default is 0.
              */
-            case Tags.MinSampleValue: {
-                final double v = type.readDouble(input(), count);
-                if (Double.isNaN(minValue) || v < minValue) minValue = v;
+            case Tags.MinSampleValue:
+            case Tags.SMinSampleValue: {
+                minValues = extremum(minValues, type.readVector(input(), count), false);
                 break;
             }
             /*
@@ -571,9 +644,9 @@ final class ImageFileDirectory {
              * This field is for statistical purposes and should not to be used to affect the
              * visual appearance of an image, unless a map styling is applied.
              */
-            case Tags.MaxSampleValue: {
-                final double v = type.readDouble(input(), count);
-                if (Double.isNaN(maxValue) || v > maxValue) maxValue = v;
+            case Tags.MaxSampleValue:
+            case Tags.SMaxSampleValue: {
+                maxValues = extremum(maxValues, type.readVector(input(), count), true);
                 break;
             }
 
@@ -649,6 +722,58 @@ final class ImageFileDirectory {
              */
             case Tags.Orientation: {
                 // TODO
+                break;
+            }
+            /*
+             * The "grid to CRS" conversion as a 4×4 matrix in row-major fashion. The third matrix row and
+             * the third matrix column may contain only zero values; this block does not reduce the number
+             * of dimensions from 3 to 2.
+             */
+            case Tags.ModelTransformation: {
+                final Vector m = type.readVector(input(), count);
+                final int size = m.size();
+                final int n;
+                switch (size) {
+                    case  6:                    // Assume 2D model with implicit [0 0 1] last row.
+                    case  9: n = 3; break;      // Assume 2D model with full 3×3 matrix.
+                    case 12:                    // Assume 3D model with implicit [0 0 0 1] last row.
+                    case 16: n = 4; break;      // 3D model with full 4×4 matrix, as required by GeoTIFF spec.
+                    default: return m;
+                }
+                completeMatrixSpecified = true;
+                gridToCRS = Matrices.createZero(n, n);
+                gridToCRS.setElement(n-1, n-1, 1);
+                for (int i=0; i<size; i++) {
+                    gridToCRS.setElement(i / n, i % n, m.doubleValue(i));
+                }
+                break;
+            }
+            /*
+             * The "grid to CRS" conversion with only the scale factor specified. This block sets the
+             * translation column to NaN, meaning that it will need to be computed from the tie point.
+             */
+            case Tags.ModelPixelScaleTag: {
+                final Vector m = type.readVector(input(), count);
+                final int size = m.size();
+                if (size < 2 || size > 3) {     // Length should be exactly 3, but we make this reader tolerant.
+                    return m;
+                }
+                completeMatrixSpecified = false;
+                gridToCRS = Matrices.createZero(size+1, size+1);
+                gridToCRS.setElement(size, size, 1);
+                for (int i=0; i<size; i++) {
+                    double e = m.doubleValue(i);
+                    if (i == 1) e = -e;                             // Make y scale factor negative.
+                    gridToCRS.setElement(i, i, e);
+                    gridToCRS.setElement(i, size, Double.NaN);
+                }
+                break;
+            }
+            /*
+             * The mapping from pixel coordinates to CRS coordinates as a sequence of (I,J,K, X,Y,Z) records.
+             */
+            case Tags.ModelTiePoints: {
+                modelTiePoints = type.readVector(input(), count);
                 break;
             }
 
@@ -831,9 +956,36 @@ final class ImageFileDirectory {
     private void setTileTagFamily(final byte family) throws DataStoreContentException {
         if (tileTagFamily != family && tileTagFamily != 0) {
             throw new DataStoreContentException(reader.resources().getString(
-                    Resources.Keys.InconsistentTileStrip_1, input().filename));
+                    Resources.Keys.InconsistentTileStrip_1, filename()));
         }
         tileTagFamily = family;
+    }
+
+    /**
+     * Computes the minimal or maximal values of the given vector. Those vectors do not need to have the same length.
+     * One of those two vector will be modified in-place.
+     *
+     * @param  a    the first vector, or {@code null} if none.
+     * @param  b    the new vector to combine with the existing one. Can not be null.
+     * @param  max  {@code true} for computing the maximal values, or {@code false} for the minimal value.
+     */
+    private static Vector extremum(Vector a, Vector b, final boolean max) {
+        if (a != null) {
+            int s = b.size();
+            int i = a.size();
+            if (i > s) {                            // If a vector is longer than b, swap a and b.
+                i = s;
+                final Vector t = a; a = b; b = t;
+            }
+            while (--i >= 0) {                      // At this point, 'b' shall be the longest vector.
+                final double va = a.doubleValue(i);
+                final double vb = b.doubleValue(i);
+                if (Double.isNaN(vb) || (max ? va > vb : va < vb)) {
+                    b.set(i, va);
+                }
+            }
+        }
+        return b;
     }
 
     /**
@@ -904,7 +1056,7 @@ final class ImageFileDirectory {
             }
             default: {
                 throw new DataStoreContentException(reader.resources().getString(
-                        Resources.Keys.InconsistentTileStrip_1, input().filename));
+                        Resources.Keys.InconsistentTileStrip_1, filename()));
             }
         }
         if (tileOffsets == null) {
@@ -921,8 +1073,25 @@ final class ImageFileDirectory {
         if (colorMap != null) {
             ensureSameLength(Tags.ColorMap, Tags.BitsPerSample, colorMap.size(),  3 * (1 << bitsPerSample));
         }
-        if (Double.isNaN(minValue)) minValue = 0;
-        if (Double.isNaN(maxValue)) maxValue = (1 << bitsPerSample) - 1;
+        if (sampleFormat != FLOAT) {
+            long minValue, maxValue;
+            if (sampleFormat == UNSIGNED) {
+                minValue =  0L;
+                maxValue = -1L;                 // All bits set to 1.
+            } else {
+                minValue = Long.MIN_VALUE;
+                maxValue = Long.MAX_VALUE;
+            }
+            final int shift = Long.SIZE - bitsPerSample;
+            if (shift >= 0 && shift < Long.SIZE) {
+                minValue >>>= shift;
+                maxValue >>>= shift;
+                if (minValue < maxValue) {      // Exclude the unsigned long case since we can not represent it.
+                    minValues = extremum(minValues, Vector.createSequence(minValue, 0, samplesPerPixel), false);
+                    maxValues = extremum(maxValues, Vector.createSequence(maxValue, 0, samplesPerPixel), true);
+                }
+            }
+        }
         /*
          * All of tile width, height and length information should be provided. But if only one of them is missing,
          * we can compute it provided that the file does not use any compression method. If there is a compression,
@@ -967,9 +1136,9 @@ final class ImageFileDirectory {
             }
         }
         /*
-         * Log a warning if the tile offset and tile byte count vectors do not have the same length. Then
-         * ensure that the number of tiles is equal to the expected number.  The formula below is the one
-         * documented in the TIFF specification and reproduced in tileWidth & tileHeight fields javadoc.
+         * Report an error if the tile offset and tile byte count vectors do not have the same length.
+         * Then ensure that the number of tiles is equal to the expected number. The formula below is the
+         * one documented in the TIFF specification and reproduced in tileWidth & tileHeight fields javadoc.
          */
         ensureSameLength(offsetsTag, byteCountsTag, tileOffsets.size(), tileByteCounts.size());
         long expectedCount = JDK8.multiplyExact(
@@ -981,7 +1150,16 @@ final class ImageFileDirectory {
         final int actualCount = Math.min(tileOffsets.size(), tileByteCounts.size());
         if (actualCount != expectedCount) {
             throw new DataStoreContentException(reader.resources().getString(Resources.Keys.UnexpectedTileCount_3,
-                    input().filename, expectedCount, actualCount));
+                    filename(), expectedCount, actualCount));
+        }
+        /*
+         * If a "grid to CRS" conversion has been specified with only the scale factor, we need to compute
+         * the translation terms now.
+         */
+        if (gridToCRS != null && !completeMatrixSpecified) {
+            if (!GridGeometry.setTranslationTerms(gridToCRS, modelTiePoints)) {
+                throw missingTag(Tags.ModelTiePoints);
+            }
         }
     }
 
@@ -1002,10 +1180,13 @@ final class ImageFileDirectory {
         if (compression != null) {
             metadata.addCompression(compression.name().toLowerCase(locale));
         }
-        // TODO: set band name and repeat for each band.
-        metadata.setBitPerSample(bitsPerSample);
-        metadata.addMinimumSampleValue(minValue);
-        metadata.addMaximumSampleValue(maxValue);
+        for (int band = 0; band < samplesPerPixel;) {
+            metadata.newSampleDimension();
+            metadata.setBitPerSample(bitsPerSample);
+            if (minValues != null) metadata.addMinimumSampleValue(minValues.doubleValue(Math.min(band, minValues.size()-1)));
+            if (maxValues != null) metadata.addMaximumSampleValue(maxValues.doubleValue(Math.min(band, maxValues.size()-1)));
+            metadata.setBandIdentifier(++band);
+        }
         /*
          * Add the resolution into the metadata. Our current ISO 19115 implementation restricts
          * the resolution unit to metres, but it may be relaxed in a future SIS version.
@@ -1043,10 +1224,16 @@ final class ImageFileDirectory {
          * in which case the CRS builder returns null. This is safe since all MetadataBuilder methods
          * ignore null values (a design choice because this pattern come very often).
          */
+        final boolean isGeorectified = (modelTiePoints == null) || (gridToCRS != null);
+        metadata.newGridRepresentation(isGeorectified ? MetadataBuilder.GridType.GEORECTIFIED
+                                                      : MetadataBuilder.GridType.GEOREFERENCEABLE);
+        metadata.setGeoreferencingAvailability(gridToCRS != null, false, false);
+        CoordinateReferenceSystem crs = null;
         if (geoKeyDirectory != null) {
             final CRSBuilder helper = new CRSBuilder(reader);
             try {
-                metadata.addReferenceSystem(helper.build(geoKeyDirectory, numericGeoParameters, asciiGeoParameters));
+                crs = helper.build(geoKeyDirectory, numericGeoParameters, asciiGeoParameters);
+                metadata.addReferenceSystem(crs);
                 helper.complete(metadata);
             } catch (NoSuchIdentifierException | ParameterNotFoundException e) {
                 short key = Resources.Keys.UnsupportedProjectionMethod_1;
@@ -1059,10 +1246,18 @@ final class ImageFileDirectory {
                     reader.owner.warning(null, e);
                 }
             }
-            geoKeyDirectory      = null;            // Not needed anymore, so let GC do its work.
-            numericGeoParameters = null;
-            asciiGeoParameters   = null;
         }
+        try {
+            if (!isGeorectified) {
+                metadata.addGeolocation(new GridGeometry(filename(), crs, modelTiePoints));
+            }
+        } catch (TransformException e) {
+            reader.owner.warning(null, e);
+        }
+        geoKeyDirectory      = null;            // Not needed anymore, so let GC do its work.
+        numericGeoParameters = null;
+        asciiGeoParameters   = null;
+        modelTiePoints       = null;
     }
 
     /**
@@ -1106,6 +1301,6 @@ final class ImageFileDirectory {
      */
     private DataStoreContentException missingTag(final short missing) {
         return new DataStoreContentException(reader.resources().getString(
-                Resources.Keys.MissingValue_2, input().filename, Tags.name(missing)));
+                Resources.Keys.MissingValue_2, filename(), Tags.name(missing)));
     }
 }

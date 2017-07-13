@@ -137,7 +137,7 @@ public final class Fraction extends Number implements Comparable<Fraction>, Seri
                 num /= den;                     // Simplify  xy/x  as  y/1
                 den = 1;
             } else {
-                do {                            // Search for greater common divisor with Euclid's algorithm.
+                do {                            // Search for greatest common divisor with Euclid's algorithm.
                     a   = gcd;
                     gcd = remainder;
                     remainder = a % gcd;

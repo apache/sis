@@ -18,6 +18,8 @@ package org.apache.sis.internal.netcdf.impl;
 
 import java.util.Set;
 import java.util.Map;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.AbstractMap;
 import java.util.LinkedHashSet;
 import java.util.LinkedHashMap;
@@ -650,6 +652,8 @@ public final class ChannelDecoder extends Decoder {
      *
      * @param  name  the name of the attribute to search, or {@code null}.
      * @return the attribute value, or {@code null} if none.
+     *
+     * @see #getAttributeNames()
      */
     private Object findAttribute(final String name) {
         Object value = attributeMap.get(name);
@@ -661,6 +665,16 @@ public final class ChannelDecoder extends Decoder {
             }
         }
         return value;
+    }
+
+    /**
+     * Returns the names of all global attributes found in the file.
+     *
+     * @return names of all global attributes in the file.
+     */
+    @Override
+    public Collection<String> getAttributeNames() {
+        return Collections.unmodifiableSet(attributeMap.keySet());
     }
 
     /**

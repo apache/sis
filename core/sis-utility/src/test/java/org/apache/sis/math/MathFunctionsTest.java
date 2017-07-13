@@ -36,7 +36,7 @@ import org.apache.sis.internal.jdk8.JDK8;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Johann Sorel (Geomatys)
- * @version 0.7
+ * @version 0.8
  * @since   0.3
  * @module
  */
@@ -246,6 +246,7 @@ public final strictfp class MathFunctionsTest extends TestCase {
      * Tests the {@link MathFunctions#toNanFloat(int)} method. This will indirectly test the
      * converse {@link MathFunctions#toNanOrdinal(float)} method through Java assertions.
      */
+    @Test
     public void testToNanFloat() {
         final int standardNaN = Float.floatToRawIntBits(Float.NaN);
         for (int ordinal = 0; ordinal < MathFunctions.MAX_NAN_ORDINAL; ordinal += 256) {
@@ -257,6 +258,15 @@ public final strictfp class MathFunctionsTest extends TestCase {
             assertEquals(ordinal == 0, standardNaN == bn);
             assertEquals(ordinal == 0, bp == bn);
         }
+    }
+
+    /**
+     * Tests a part of the {@link MathFunctions#toNanOrdinal(float)} method contract.
+     * More extensive tests is performed indirectly by the {@link #testToNanFloat()} method.
+     */
+    @Test
+    public void testToNanOrdinal() {
+        assertEquals(0, toNanOrdinal(Float.NaN));
     }
 
     /**

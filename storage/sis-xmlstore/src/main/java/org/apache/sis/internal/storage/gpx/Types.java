@@ -97,7 +97,7 @@ final class Types {
     /**
      * Accessor to the geometry implementation in use (Java2D, ESRI or JTS).
      */
-    final Geometries geometries;
+    final Geometries<?> geometries;
 
     /**
      * A system-wide instance for {@code FeatureType} instances created using the {@link DefaultNameFactory}.

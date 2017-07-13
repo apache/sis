@@ -30,12 +30,8 @@ import org.apache.sis.util.iso.DefaultRecordSchema;
  * @since   0.7
  * @module
  */
+@SuppressWarnings("serial")  // serialVersionUID not needed because of writeReplace().
 final class RecordSchemaSIS extends DefaultRecordSchema implements Serializable {
-    /**
-     * For cross-version compatibility.
-     */
-    private static final long serialVersionUID = 2708181165532467516L;
-
     /**
      * The schema used in SIS for creating records.
      */
@@ -51,7 +47,7 @@ final class RecordSchemaSIS extends DefaultRecordSchema implements Serializable 
     /**
      * On serialization, returns a proxy which will be resolved as {@link #INSTANCE} on deserialization.
      */
-    Object writeReplace() throws ObjectStreamException {
+    protected Object writeReplace() throws ObjectStreamException {
         return new Proxy();
     }
 

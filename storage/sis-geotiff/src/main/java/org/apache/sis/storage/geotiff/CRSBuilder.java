@@ -745,6 +745,8 @@ final class CRSBuilder {
      * <ul>
      *   <li>{@link #build(Vector, Vector, String)} must have been invoked before this method.</li>
      *   <li>{@link ImageFileDirectory} must have filled its part of metadata before to invoke this method.</li>
+     *   <li>{@link MetadataBuilder#newGridRepresentation(MetadataBuilder.GridType)} should have been invoked
+     *       with the appropriate {@code GEORECTIFIED} or {@code GEOREFERENCEABLE} type.</li>
      * </ul>
      *
      * After execution, this method emits a warning for unprocessed GeoTIFF tags.
@@ -753,7 +755,6 @@ final class CRSBuilder {
      * @throws NumberFormatException if a numeric value was stored as a string and can not be parsed.
      */
     final void complete(final MetadataBuilder metadata) {
-        metadata.newGridRepresentation(MetadataBuilder.GridType.GEORECTIFIED);
         /*
          * ASCII reference to published documentation on the overall configuration of the GeoTIFF file.
          * Often the projected CRS name, despite GeoKeys.PCSCitation being already for that purpose.
@@ -921,13 +922,13 @@ final class CRSBuilder {
     private PrimeMeridian createPrimeMeridian(final String[] names, final Unit<Angle> unit) throws FactoryException {
         final int epsg = getAsInteger(GeoKeys.PrimeMeridian);
         switch (epsg) {
-            case GeoCodes.undefined: {
-                break;                      // If not specified, default to Greenwich.
-            }
+            case GeoCodes.undefined:      // If not specified, should default to Greenwich but we nevertheless verify.
             case GeoCodes.userDefined: {
                 final double longitude = getAsDouble(GeoKeys.PrimeMeridianLong);
                 if (Double.isNaN(longitude)) {
-                    missingValue(GeoKeys.PrimeMeridianLong);
+                    if (epsg != GeoCodes.undefined) {
+                        missingValue(GeoKeys.PrimeMeridianLong);
+                    }
                 } else if (longitude != 0) {
                     /*
                      * If the prime meridian is not Greenwich, create that meridian but do not use the

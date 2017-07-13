@@ -146,6 +146,11 @@ public final class Resources extends IndexedResourceBundle {
         public static final short RandomizedProcessApplied = 15;
 
         /**
+         * The “{0}” GeoTIFF file does not specify the values format.
+         */
+        public static final short UndefinedDataFormat_1 = 25;
+
+        /**
          * A single value was expected for the “{0}” key but {1} values have been found.
          */
         public static final short UnexpectedListOfValues_2 = 16;

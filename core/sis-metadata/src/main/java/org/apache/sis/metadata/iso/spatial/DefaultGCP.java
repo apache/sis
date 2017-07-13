@@ -29,6 +29,8 @@ import org.apache.sis.xml.Namespaces;
 
 /**
  * Information on ground control point.
+ * Ground control points (GCP) are large marked targets on the ground,
+ * not to be confused with <cite>localization grid</cite> points embedded in some file formats like GeoTIFF or NetCDF.
  * The following property is mandatory in a well-formed metadata according ISO 19115:
  *
  * <div class="preformat">{@code MI_GCP}
@@ -46,7 +48,10 @@ import org.apache.sis.xml.Namespaces;
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.3
- * @since   0.3
+ *
+ * @see DefaultGCPCollection
+ *
+ * @since 0.3
  * @module
  */
 @SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.

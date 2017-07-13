@@ -46,7 +46,7 @@ public final class Stream<T> implements AutoCloseable {
     }
 
     /**
-     * Note a JDK method - provided as a placeholder for {@code Collection.stream()}.
+     * Not a JDK method - provided as a placeholder for {@code Collection.stream()}.
      *
      * @param  <T>  the type of objects in the collection.
      * @param  c    the collection from which to get the stream.

@@ -161,6 +161,35 @@ final class Tags {
     public static final short GeoAsciiParams = (short) 0x87B1;            // 34737
 
     /**
+     * The tie points as (I,J,K,X,Y,Z) records in an array of floating-point numbers.
+     * This tag is also known as {@code Georeference}.
+     */
+    public static final short ModelTiePoints = (short) 0x8482;            // 33922
+
+    /**
+     * A vector of 3 floating-point values defining the "grid to CRS" conversion without rotation.
+     * The conversion is defined as below, when (I,J,K,X,Y,Z) is the tie point singleton record:
+     *
+     * ┌                       ┐
+     * │   Sx   0    0    Tx   │       Tx = X - I/Sx
+     * │   0   -Sy   0    Ty   │       Ty = Y + J/Sy
+     * │   0    0    Sz   Tz   │       Tz = Z - K/Sz  (if not 0)
+     * │   0    0    0    1    │
+     * └                       ┘
+     *
+     * Only one of {@code ModelPixelScaleTag} and {@link #ModelTransformation} should be used.
+     */
+    public static final short ModelPixelScaleTag = (short) 0x830E;        // 33550
+
+    /**
+     * Specifies the "grid to CRS" conversion (the transformation matrix between the raster space and the model space).
+     * If specified, the tag shall have the 16 values of a 4×4 matrix in row-major fashion. The last matrix row (i.e.
+     * the last 4 values) should be [0 0 0 1]. The row before should be [0 0 0 0] if the conversion is two-dimensional.
+     * Only one of {@link #ModelPixelScaleTag} and {@code ModelTransformation} should be used.
+     */
+    public static final short ModelTransformation = (short) 0x85D8;       // 34264
+
+    /**
      * Do not allow instantiation of this class.
      */
     private Tags() {

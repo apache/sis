@@ -23,7 +23,7 @@
  *   <li><a href="http://partners.adobe.com/public/developer/en/tiff/TIFF6.pdf">TIFF specification</a>: baseline</li>
  *   <li><a href="http://partners.adobe.com/public/developer/en/tiff/TIFFphotoshop.pdf">TIFF Tecnical Notes</a>: add new compressions</li>
  *   <li><a href="http://www.awaresystems.be/imaging/tiff/tifftags.html">TIFF Tag Reference</a></li>
- *   <li><a href="http://www.remotesensing.org/geotiff/spec/contents.html">GeoTIFF specification</a></li>
+ *   <li><a href="http://download.osgeo.org/geotiff/spec/geotiff.rtf">GeoTIFF specification</a></li>
  * </ul>
  *
  * @author  Rémi Maréchal (Geomatys)

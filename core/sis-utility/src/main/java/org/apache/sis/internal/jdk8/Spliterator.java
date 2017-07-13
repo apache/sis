@@ -34,6 +34,11 @@ public interface Spliterator<T> {
     int ORDERED = 0x10;
 
     /**
+     * Flag for iterators that can provides accurate information about the number of elements.
+     */
+    int SIZED = 0x40;
+
+    /**
      * Flag for iterators that do not return null values.
      */
     int NONNULL = 0x100;

@@ -448,7 +448,7 @@ public abstract class Vector extends AbstractList<Number> implements RandomAcces
      * @throws UnsupportedOperationException if this vector is read-only.
      * @throws IndexOutOfBoundsException if the given index is out of bounds.
      * @throws NumberFormatException if the previous value was stored as a {@code String} and can not be parsed.
-     * @throws ArithmeticException if this vector uses some {@linkplain #compress(double) compression} technic
+     * @throws IllegalArgumentException if this vector uses some {@linkplain #compress(double) compression} technic
      *         and the given value is out of range for that compression.
      */
     @Override
@@ -994,8 +994,8 @@ public abstract class Vector extends AbstractList<Number> implements RandomAcces
      *
      * <div class="section">When to use</div>
      * It is usually not worth to compress small arrays. Performance-critical arrays may not be compressed neither.
-     * This method is best suited for arrays that may potentially be large and for which the cost of reading that
-     * array is small compared to the calculation performed with the values.
+     * This method is best suited for vectors that may potentially be large and for which the cost of fetching
+     * values in that vector is small compared to the calculation performed with the values.
      *
      * @param  tolerance  maximal difference allowed between original and compressed vectors (can be zero).
      * @return a more compact vector with the same data than this vector, or {@code this}.
@@ -1012,11 +1012,38 @@ public abstract class Vector extends AbstractList<Number> implements RandomAcces
          * returns null if the array contains NaN. Note that for array of integers, 'isNaN(int)' is very
          * efficient and the loop will stop immediately after the first iteration.
          */
-        for (int i=0; i<length; i++) {
-            if (!isNaN(i)) return this;
+        int i = 0;
+        do if (i >= length) {
+            final Double NaN = Numerics.valueOf(Double.NaN);
+            return new SequenceVector.Doubles(getElementType(), NaN, NaN, length);
+        } while (isNaN(i++));
+        /*
+         * Try to copy the values in a more compact format.
+         * We will use a vector backed by IntegerList in order to use only the amount of bits needed,
+         * unless that amount is exactly the number of bits of a primitive type (8, 16, 32 or 64) in
+         * which case using one of the specialized classes in this ArrayVector is more performant.
+         */
+        final NumberRange<?> range = range();
+        if (range != null && !range.isEmpty()) {
+            final Number min = range.getMinValue();
+            final Number max = range.getMaxValue();
+            final boolean isInteger = (min.doubleValue() >= Long.MIN_VALUE &&
+                                       max.doubleValue() <= Long.MAX_VALUE &&
+                                       isInteger());                                // May scan the vector.
+            Vector vec;
+            if (isInteger) {
+                vec = PackedVector.compress(this, min.longValue(), max.longValue());
+                if (vec == null) {
+                    vec = ArrayVector.compress(this, min.longValue(), max.longValue());
+                }
+            } else {
+                vec = ArrayVector.compress(this, tolerance);
+            }
+            if (vec != null) {
+                return vec;
+            }
         }
-        final Double NaN = Numerics.valueOf(Double.NaN);
-        return new SequenceVector.Doubles(getElementType(), NaN, NaN, length);
+        return this;
     }
 
     /**

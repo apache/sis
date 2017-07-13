@@ -39,7 +39,7 @@ import org.apache.sis.math.Vector;
  * @since   0.7
  * @module
  */
-final class ESRI extends Geometries {
+final class ESRI extends Geometries<Geometry> {
     /**
      * Creates the singleton instance.
      */
@@ -107,23 +107,27 @@ final class ESRI extends Geometries {
      * The implementation returned by this method must be an instance of {@link #rootClass}.
      */
     @Override
-    public Object createPolyline(final int dimension, final Vector ordinates) {
+    public Geometry createPolyline(final int dimension, final Vector... ordinates) {
         if (dimension != 2) {
             throw unsupported(dimension);
         }
-        final Polyline path = new Polyline();
-        final int size = ordinates.size();
         boolean lineTo = false;
-        for (int i=0; i<size;) {
-            final double x = ordinates.doubleValue(i++);
-            final double y = ordinates.doubleValue(i++);
-            if (Double.isNaN(x) || Double.isNaN(y)) {
-                lineTo = false;
-            } else if (lineTo) {
-                path.lineTo(x, y);
-            } else {
-                path.startPath(x, y);
-                lineTo = true;
+        final Polyline path = new Polyline();
+        for (final Vector v : ordinates) {
+            if (v != null) {
+                final int size = v.size();
+                for (int i=0; i<size;) {
+                    final double x = v.doubleValue(i++);
+                    final double y = v.doubleValue(i++);
+                    if (Double.isNaN(x) || Double.isNaN(y)) {
+                        lineTo = false;
+                    } else if (lineTo) {
+                        path.lineTo(x, y);
+                    } else {
+                        path.startPath(x, y);
+                        lineTo = true;
+                    }
+                }
             }
         }
         return path;
@@ -135,7 +139,7 @@ final class ESRI extends Geometries {
      * @throws ClassCastException if an element in the iterator is not a JTS geometry.
      */
     @Override
-    final Object tryMergePolylines(Object next, final Iterator<?> polylines) {
+    final Geometry tryMergePolylines(Object next, final Iterator<?> polylines) {
         if (!(next instanceof MultiPath || next instanceof Point)) {
             return null;
         }
