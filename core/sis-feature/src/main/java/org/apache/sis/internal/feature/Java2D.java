@@ -23,6 +23,7 @@ import java.awt.geom.Path2D;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import org.apache.sis.geometry.GeneralEnvelope;
+import org.apache.sis.internal.jdk8.JDK8;
 import org.apache.sis.setup.GeometryLibrary;
 import org.apache.sis.internal.referencing.j2d.ShapeUtilities;
 import org.apache.sis.math.Vector;
@@ -39,7 +40,7 @@ import org.apache.sis.math.Vector;
  * @since   0.7
  * @module
  */
-final class Java2D extends Geometries {
+final class Java2D extends Geometries<Shape> {
     /**
      * Creates the singleton instance.
      */
@@ -94,64 +95,71 @@ final class Java2D extends Geometries {
     }
 
     /**
-     * Returns {@code true} if all values in the given vector can be casted to {@code float} without precision lost.
-     *
-     * @param  data  the data to test.
-     * @return whether all the given data can be casted to {@code float} type.
-     */
-    private static boolean isConvertibleToFloats(final Vector data) {
-        for (int i=data.size(); --i >= 0;) {
-            final double value = data.doubleValue(i);
-            if (Double.doubleToRawLongBits(value) != Double.doubleToRawLongBits((float) value)) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    /**
      * Creates a path from the given ordinate values.
      * Each {@link Double#NaN} ordinate value start a new path.
      * The implementation returned by this method must be an instance of {@link #rootClass}.
      */
     @Override
-    public Object createPolyline(final int dimension, final Vector ordinates) {
+    public Shape createPolyline(final int dimension, final Vector... ordinates) {
         if (dimension != 2) {
             throw unsupported(dimension);
         }
-        final boolean isFloat = isConvertibleToFloats(ordinates);
-        final int size = ordinates.size();
+        /*
+         * Computes the total length of all vectors and verifies if all values
+         * can be casted to float without precision lost.
+         */
+        int length = 0;
+        boolean isFloat = true;
+        for (final Vector v : ordinates) {
+            if (v != null) {
+                length = JDK8.addExact(length, v.size());
+                if (isFloat) {
+                    for (int i=v.size(); --i >= 0;) {
+                        final double value = v.doubleValue(i);
+                        if (Double.doubleToRawLongBits(value) != Double.doubleToRawLongBits((float) value)) {
+                            isFloat = false;
+                            break;
+                        }
+                    }
+                }
+            }
+        }
         /*
          * Note: Point2D is not an instance of Shape, so we can not make a special case for it.
          */
-        if (size == 4) {
+        length /= 2;
+        if (length == 2 && ordinates.length == 1) {
+            final Vector v = ordinates[0];
             final double x1, y1, x2, y2;
-            if (!Double.isNaN(x1 = ordinates.doubleValue(0)) &&
-                !Double.isNaN(y1 = ordinates.doubleValue(1)) &&
-                !Double.isNaN(x2 = ordinates.doubleValue(2)) &&
-                !Double.isNaN(y2 = ordinates.doubleValue(3)))
+            if (!Double.isNaN(x1 = v.doubleValue(0)) &&
+                !Double.isNaN(y1 = v.doubleValue(1)) &&
+                !Double.isNaN(x2 = v.doubleValue(2)) &&
+                !Double.isNaN(y2 = v.doubleValue(3)))
             {
                 final Line2D path = isFloat ? new Line2D.Float() : new Line2D.Double();
                 path.setLine(x1, y1, x2, y2);
                 return path;
             }
         }
-        final Path2D path = isFloat ? new Path2D.Float (Path2D.WIND_NON_ZERO, size/2)
-                                    : new Path2D.Double(Path2D.WIND_NON_ZERO, size/2);
+        final Path2D path = isFloat ? new Path2D.Float (Path2D.WIND_NON_ZERO, length)
+                                    : new Path2D.Double(Path2D.WIND_NON_ZERO, length);
         boolean lineTo = false;
-        for (int i=0; i<size;) {
-            final double x = ordinates.doubleValue(i++);
-            final double y = ordinates.doubleValue(i++);
-            if (Double.isNaN(x) || Double.isNaN(y)) {
-                lineTo = false;
-            } else if (lineTo) {
-                path.lineTo(x, y);
-            } else {
-                path.moveTo(x, y);
-                lineTo = true;
+        for (final Vector v : ordinates) {
+            final int size = v.size();
+            for (int i=0; i<size;) {
+                final double x = v.doubleValue(i++);
+                final double y = v.doubleValue(i++);
+                if (Double.isNaN(x) || Double.isNaN(y)) {
+                    lineTo = false;
+                } else if (lineTo) {
+                    path.lineTo(x, y);
+                } else {
+                    path.moveTo(x, y);
+                    lineTo = true;
+                }
             }
         }
-        return path;
+        return ShapeUtilities.toPrimitive(path);
     }
 
     /**
@@ -160,7 +168,7 @@ final class Java2D extends Geometries {
      * @throws ClassCastException if an element in the iterator is not a {@link Shape} or a {@link Point2D}.
      */
     @Override
-    final Object tryMergePolylines(Object next, final Iterator<?> polylines) {
+    final Shape tryMergePolylines(Object next, final Iterator<?> polylines) {
         if (!(next instanceof Shape || next instanceof Point2D)) {
             return null;
         }

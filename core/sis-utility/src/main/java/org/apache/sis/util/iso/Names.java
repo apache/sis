@@ -208,7 +208,7 @@ public final class Names extends Static {
      *
      * @param  namespace  the namespace, or {@code null} for the global namespace.
      * @param  separator  the separator between the namespace and the local part, or {@code null}
-     *                    for the {@linkplain DefaultNameSpace#DEFAULT_SEPARATOR default separator}..
+     *                    for the {@linkplain DefaultNameSpace#DEFAULT_SEPARATOR default separator}.
      * @param  localPart  the name which is locale in the given namespace.
      * @return a type name in the given namespace.
      *
@@ -230,7 +230,7 @@ public final class Names extends Static {
      *
      * @param  namespace  the namespace, or {@code null} for the global namespace.
      * @param  separator  the separator between the namespace and the local part, or {@code null}
-     *                    for the {@linkplain DefaultNameSpace#DEFAULT_SEPARATOR default separator}..
+     *                    for the {@linkplain DefaultNameSpace#DEFAULT_SEPARATOR default separator}.
      * @param  localPart  the name which is locale in the given namespace.
      * @param  valueClass the type of values, used for inferring a {@link TypeName} instance.
      * @return a member name in the given namespace for values of the given type.

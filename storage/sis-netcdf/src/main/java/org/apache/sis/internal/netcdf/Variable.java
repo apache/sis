@@ -16,6 +16,7 @@
  */
 package org.apache.sis.internal.netcdf;
 
+import java.util.Collection;
 import java.io.IOException;
 import java.awt.image.DataBuffer;
 import org.apache.sis.math.Vector;
@@ -152,6 +153,13 @@ public abstract class Variable extends NamedElement {
      * @return the number of grid cells for each dimension, in NetCDF order (reverse of "natural" order).
      */
     public abstract int[] getGridEnvelope();
+
+    /**
+     * Returns the names of all attributes associated to this variable.
+     *
+     * @return names of all attributes associated to this variable.
+     */
+    public abstract Collection<String> getAttributeNames();
 
     /**
      * Returns the sequence of values for the given attribute, or an empty array if none.
