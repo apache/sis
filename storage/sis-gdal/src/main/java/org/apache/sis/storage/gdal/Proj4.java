@@ -109,7 +109,7 @@ public final class Proj4 extends Static {
         if (beginParam >= 0) {
             beginParam += AXIS_ORDER_PARAM.length();
             final int length = definition.length();
-            while (beginParam < length) { // Skip whitespaces.
+            while (beginParam < length) {                                   // Skip whitespaces.
                 final int c = definition.codePointAt(beginParam);
                 if (!Character.isWhitespace(c)) break;
                 beginParam += Character.charCount(c);
