@@ -80,7 +80,7 @@ final class EPSGFactory extends AbstractFactory implements CRSAuthorityFactory {
      *        use the axis order declared by the EPSG database, or {@code false} for
      *        the Proj.4 axis order. The default value is {@code true}.
      */
-    private EPSGFactory(final boolean useEpsgAxisOrder) {
+    EPSGFactory(final boolean useEpsgAxisOrder) {
         this.useEpsgAxisOrder = useEpsgAxisOrder;
     }
 

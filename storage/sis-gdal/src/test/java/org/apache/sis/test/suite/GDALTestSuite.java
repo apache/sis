@@ -30,7 +30,8 @@ import org.junit.runners.Suite;
  * @module
  */
 @Suite.SuiteClasses({
-    org.apache.sis.storage.gdal.PJTest.class
+    org.apache.sis.storage.gdal.PJTest.class,
+    org.apache.sis.storage.gdal.EPSGFactoryTest.class
 })
 public final strictfp class GDALTestSuite extends TestSuite {
     /**
