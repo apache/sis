@@ -19,6 +19,10 @@ package org.apache.sis.internal.netcdf.ucar;
 import org.apache.sis.internal.netcdf.DiscreteSampling;
 import ucar.nc2.ft.FeatureCollection;
 
+// Branch-dependent imports
+import org.apache.sis.internal.jdk8.Stream;
+import org.apache.sis.feature.AbstractFeature;
+
 
 /**
  * A wrapper around the UCAR {@code ucar.nc2.ft} package.
@@ -41,5 +45,12 @@ final class FeaturesWrapper extends DiscreteSampling {
         this.features = features;
     }
 
-    // TODO
+
+    /**
+     * Returns the stream of features.
+     */
+    @Override
+    public Stream<AbstractFeature> features() {
+        throw new UnsupportedOperationException();      // TODO
+    }
 }

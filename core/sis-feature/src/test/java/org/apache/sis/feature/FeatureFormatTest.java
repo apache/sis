@@ -149,6 +149,7 @@ public final strictfp class FeatureFormatTest extends TestCase {
         feature.setPropertyValue("city", "Tokyo");
         feature.setPropertyValue("population", 13185502);                               // In 2011.
         feature.setPropertyValue("universities", Arrays.asList("Waseda", "Keio"));
+        feature.setPropertyValue("temperature", Float.NaN);
 
         final FeatureFormat format = create();
         final String text = format.format(feature);
@@ -161,7 +162,7 @@ public final strictfp class FeatureFormatTest extends TestCase {
                 "│ region       │ InternationalString │ 0 ∉ [1 … 1] │              │                 │\n" +
                 "│ isGlobal     │ Boolean             │ 0 ∉ [1 … 1] │              │                 │\n" +
                 "│ universities │ String              │ 2 ∈ [0 … ∞] │ Waseda, Keio │                 │\n" +
-                "│ temperature  │ Float               │ 0 ∉ [1 … 1] │              │ accuracy, units │\n" +
+                "│ temperature  │ Float               │ 1 ∈ [1 … 1] │ NaN          │ accuracy, units │\n" +
                 "└──────────────┴─────────────────────┴─────────────┴──────────────┴─────────────────┘\n", text);
     }
 

@@ -20,6 +20,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.EnumSet;
 import java.util.Formatter;
+import java.util.Collection;
 import java.io.IOException;
 import ucar.nc2.Group;
 import ucar.nc2.Attribute;
@@ -167,6 +168,16 @@ public final class DecoderWrapper extends Decoder implements CancelTask {
             }
         }
         return path;
+    }
+
+    /**
+     * Returns the names of all global attributes found in the file.
+     *
+     * @return names of all global attributes in the file.
+     */
+    @Override
+    public Collection<String> getAttributeNames() {
+        return VariableWrapper.toNames(file.getGlobalAttributes());
     }
 
     /**

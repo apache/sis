@@ -33,13 +33,15 @@ import org.apache.sis.math.Vector;
  * This gives us a single place to review if we want to support different geometry libraries,
  * or if Apache SIS come with its own implementation.
  *
+ * @param   <G>  the base class of all geometry objects (except point in some implementations).
+ *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
  * @since   0.7
  * @module
  */
-public abstract class Geometries {
+public abstract class Geometries<G> {
     /*
      * Registers all supported library implementations. Those libraries are optional
      * (users will typically put at most one on their classpath).
@@ -58,28 +60,33 @@ public abstract class Geometries {
     /**
      * The root geometry class.
      */
-    public final Class<?> rootClass;
+    public final Class<G> rootClass;
 
     /**
-     * The class for a point, ployline and polygon.
+     * The class for points.
      */
-    public final Class<?> pointClass, polylineClass, polygonClass;
+    public final Class<?> pointClass;
+
+    /**
+     * The class for polylines and polygons.
+     */
+    public final Class<? extends G> polylineClass, polygonClass;
 
     /**
      * The default geometry implementation to use. Unmodifiable after class initialization.
      */
-    private static Geometries implementation;
+    private static Geometries<?> implementation;
 
     /**
      * The fallback implementation to use if the default one is not available.
      */
-    private final Geometries fallback;
+    private final Geometries<?> fallback;
 
     /**
      * Creates a new adapter for the given root geometry class.
      */
-    Geometries(final GeometryLibrary library, final Class<?> rootClass, final Class<?> pointClass,
-            final Class<?> polylineClass, final Class<?> polygonClass)
+    Geometries(final GeometryLibrary library, final Class<G> rootClass, final Class<?> pointClass,
+            final Class<? extends G> polylineClass, final Class<? extends G> polygonClass)
     {
         this.library       = library;
         this.rootClass     = rootClass;
@@ -114,11 +121,11 @@ public abstract class Geometries {
      * @return the default geometry implementation.
      * @throws IllegalArgumentException if the given library is non-null but not available.
      */
-    public static Geometries implementation(final GeometryLibrary library) {
+    public static Geometries<?> implementation(final GeometryLibrary library) {
         if (library == null) {
             return implementation;
         }
-        for (Geometries g = implementation; g != null; g = g.fallback) {
+        for (Geometries<?> g = implementation; g != null; g = g.fallback) {
             if (g.library == library) return g;
         }
         throw new IllegalArgumentException(Resources.format(Resources.Keys.UnavailableGeometryLibrary_1, library));
@@ -131,7 +138,7 @@ public abstract class Geometries {
      * @return {@code true} if the given type is one of the geometry type known to SIS.
      */
     public static boolean isKnownType(final Class<?> type) {
-        for (Geometries g = implementation; g != null; g = g.fallback) {
+        for (Geometries<?> g = implementation; g != null; g = g.fallback) {
             if (g.rootClass.isAssignableFrom(type)) return true;
         }
         return false;
@@ -156,7 +163,7 @@ public abstract class Geometries {
      * @see #createPoint(double, double)
      */
     public static double[] getCoordinate(final Object point) {
-        for (Geometries g = implementation; g != null; g = g.fallback) {
+        for (Geometries<?> g = implementation; g != null; g = g.fallback) {
             double[] coord = g.tryGetCoordinate(point);
             if (coord != null) return coord;
         }
@@ -179,7 +186,7 @@ public abstract class Geometries {
      *         is not a recognized geometry or its envelope is empty.
      */
     public static GeneralEnvelope getEnvelope(final Object geometry) {
-        for (Geometries g = implementation; g != null; g = g.fallback) {
+        for (Geometries<?> g = implementation; g != null; g = g.fallback) {
             GeneralEnvelope env = g.tryGetEnvelope(geometry);
             if (env != null) return env;
         }
@@ -200,7 +207,9 @@ public abstract class Geometries {
 
     /**
      * Creates a path or polyline from the given ordinate values.
-     * Each {@link Double#NaN} ordinate value start a new path.
+     * The array of ordinate vectors will be handled as if all vectors were concatenated in a single vector,
+     * ignoring {@code null} array elements.
+     * Each {@link Double#NaN} ordinate value in the concatenated vector starts a new path.
      * The implementation returned by this method is an instance of {@link #rootClass}.
      *
      * @param  dimension  the number of dimensions (2 or 3).
@@ -208,7 +217,7 @@ public abstract class Geometries {
      * @return the geometric object for the given points.
      * @throws UnsupportedOperationException if the geometry library can not create the requested path.
      */
-    public abstract Object createPolyline(int dimension, Vector ordinates);
+    public abstract G createPolyline(int dimension, Vector... ordinates);
 
     /**
      * Merges a sequence of polyline instances if the first instance is an implementation of this library.
@@ -218,7 +227,7 @@ public abstract class Geometries {
      * @return the merged polyline, or {@code null} if the first instance is not an implementation of this library.
      * @throws ClassCastException if an element in the iterator is not an implementation of this library.
      */
-    abstract Object tryMergePolylines(Object first, Iterator<?> polylines);
+    abstract G tryMergePolylines(Object first, Iterator<?> polylines);
 
     /**
      * Merges a sequence of points or polylines into a single polyline instances.
@@ -233,7 +242,7 @@ public abstract class Geometries {
         while (paths.hasNext()) {
             final Object first = paths.next();
             if (first != null) {
-                for (Geometries g = implementation; g != null; g = g.fallback) {
+                for (Geometries<?> g = implementation; g != null; g = g.fallback) {
                     final Object merged = g.tryMergePolylines(first, paths);
                     if (merged != null) {
                         return merged;

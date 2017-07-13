@@ -17,6 +17,8 @@
 package org.apache.sis.internal.netcdf.impl;
 
 import java.util.Map;
+import java.util.Collection;
+import java.util.Collections;
 import java.io.IOException;
 import java.lang.reflect.Array;
 import ucar.nc2.constants.CF;
@@ -268,6 +270,16 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
             shape[i] = dimensions[i].length;
         }
         return shape;
+    }
+
+    /**
+     * Returns the names of all attributes associated to this variable.
+     *
+     * @return names of all attributes associated to this variable.
+     */
+    @Override
+    public Collection<String> getAttributeNames() {
+        return Collections.unmodifiableSet(attributes.keySet());
     }
 
     /**

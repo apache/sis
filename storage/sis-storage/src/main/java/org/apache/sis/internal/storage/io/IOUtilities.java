@@ -531,6 +531,23 @@ public final class IOUtilities extends Static {
     }
 
     /**
+     * Returns the error message for a file that can not be parsed.
+     * The error message will contain the line number if available.
+     *
+     * @param  locale    the language for the error message.
+     * @param  format    abbreviation of the file format (e.g. "CSV", "GML", "WKT", <i>etc</i>).
+     * @param  filename  name of the file or the data store.
+     * @param  store     the input or output object, or {@code null}.
+     * @return the parameters for a localized error message for a file that can not be processed.
+     *
+     * @since 0.8
+     */
+    public static String canNotReadFile(final Locale locale, final String format, final String filename, final Object store) {
+        final Object[] parameters = errorMessageParameters(format, filename, store);
+        return Resources.forLocale(locale).getString(errorMessageKey(parameters), parameters);
+    }
+
+    /**
      * Returns the {@link Resources.Keys} value together with the parameters given by {@code errorMessageParameters(…)}.
      *
      * @param   parameters  the result of {@code errorMessageParameters(…)} method call.

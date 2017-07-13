@@ -189,6 +189,22 @@ public final class JDK8 {
      *
      * @since 0.8
      */
+    public static int addExact(final int x, final int y) {
+        final long r = x + y;
+        if ((r & 0xFFFFFFFF00000000L) == 0) return (int) r;
+        throw new ArithmeticException();
+    }
+
+    /**
+     * Safe sum of the given numbers.
+     *
+     * @param  x  first value to add.
+     * @param  y  second value to add.
+     * @return the sum.
+     * @throws ArithmeticException if the result overflows.
+     *
+     * @since 0.8
+     */
     public static long addExact(final long x, final long y) {
         final long r = x + y;
         if (((x ^ r) & (y ^ r)) >= 0) return r;

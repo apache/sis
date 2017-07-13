@@ -51,12 +51,8 @@ import org.apache.sis.util.Debug;
  * @since   0.7
  * @module
  */
+@SuppressWarnings("serial")   // serialVersionUID not needed because of writeReplace().
 final class AuthorityCodes extends AbstractMap<String,String> implements Serializable {
-    /**
-     * For compatibility with different versions.
-     */
-    private static final long serialVersionUID = 6118171679321975503L;
-
     /**
      * Highest code value (inclusive) that this {@code AuthorityCodes} support during iterations.
      * This is based on the upper value of the highest range of codes once used by EPSG.

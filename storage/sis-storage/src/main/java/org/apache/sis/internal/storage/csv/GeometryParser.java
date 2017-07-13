@@ -21,8 +21,10 @@ import org.apache.sis.util.CharSequences;
 
 
 /**
- * The converter to use for converting a text into a geometry. In current implementation,
- * geometries are line strings represented by an array of ordinate values.
+ * The converter to use for converting a text into a geometry.
+ * This converter performs only the first step, the conversion to a {@code double[]} array.
+ * The second step (the conversion to a geometry object) is performed after we collected all arrays.
+ * The resulting geometry class depends on the library available at runtime.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
@@ -58,7 +60,7 @@ final class GeometryParser extends SurjectiveConverter<String,double[]> {
     }
 
     /**
-     * Converts an element from the CSV file to our current pseudo-geometry type.
+     * Converts an element from the CSV file to the array type.
      */
     @Override
     public double[] apply(final String text) {

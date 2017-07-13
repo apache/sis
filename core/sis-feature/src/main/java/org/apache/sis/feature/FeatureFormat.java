@@ -43,6 +43,7 @@ import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.referencing.IdentifiedObjects;
+import org.apache.sis.math.MathFunctions;
 
 // Branch-dependent imports
 import org.apache.sis.internal.jdk8.UncheckedIOException;
@@ -487,8 +488,32 @@ public class FeatureFormat extends TabularFormat<Object> {
                                         if (value == null) continue;
                                     }
                                 } else if (format != null && valueClass.isInstance(value)) {    // Null safe because of getFormat(valueClass) contract.
-                                    value = format.format(value, buffer, dummyFP);
+                                    /*
+                                     * Convert numbers, dates, angles, etc. to character sequences before to append them in the table.
+                                     * Note that DecimalFormat writes Not-a-Number as "NaN" in some locales and as "�" in other locales
+                                     * (U+FFFD - Unicode replacement character). The "�" seems to be used mostly for historical reasons;
+                                     * as of 2017 the Unicode Common Locale Data Repository (CLDR) seems to define "NaN" for all locales.
+                                     * We could configure DecimalFormatSymbols for using "NaN", but (for now) we rather substitute "�" by
+                                     * "NaN" here for avoiding to change the DecimalFormat configuration and for distinguishing the NaNs.
+                                     */
+                                    final StringBuffer t = format.format(value, buffer, dummyFP);
+                                    if (value instanceof Number) {
+                                        final float f = ((Number) value).floatValue();
+                                        if (Float.isNaN(f)) {
+                                            if ("�".contentEquals(t)) {
+                                                t.setLength(0);
+                                                t.append("NaN");
+                                            }
+                                            final int n = MathFunctions.toNanOrdinal(f);
+                                            if (n > 0) buffer.append(" #").append(n);
+                                        }
+                                    }
+                                    value = t;
                                 }
+                                /*
+                                 * All values: the numbers, dates, angles, etc. formatted above, any other character sequences
+                                 * (e.g. InternationalString), or other kind of values - some of them handled in a special way.
+                                 */
                                 length = formatValue(value, table.append(separator), length);
                                 buffer.setLength(0);
                                 if (length < 0) break;      // Value is too long, abandon remaining iterations.

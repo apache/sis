@@ -370,14 +370,16 @@ public final strictfp class VectorTest extends TestCase {
          */
         vec =  Vector.create(new double[] {30, 120, -50, -120}, false);
         assertNotSame(vec, compressed = vec.compress(0));
+        assertInstanceOf("vector.compress(0)", ArrayVector.class, compressed);
         assertEquals("elementType", Byte.class, compressed.getElementType());
         assertFalse("isUnsigned()", compressed.isUnsigned());
         assertContentEquals(vec, compressed);
         /*
-         * Values that can be compressed as unsigned signed bytes.
+         * Values that can be compressed as unsigned bytes.
          */
         vec =  Vector.create(new float[] {30, 120, 250, 1}, false);
         assertNotSame(vec, compressed = vec.compress(0));
+        assertInstanceOf("vector.compress(0)", ArrayVector.class, compressed);
         assertEquals("elementType", Byte.class, compressed.getElementType());
         assertTrue("isUnsigned()", compressed.isUnsigned());
         assertContentEquals(vec, compressed);
@@ -386,6 +388,7 @@ public final strictfp class VectorTest extends TestCase {
          */
         vec =  Vector.create(new long[] {32000, 120, -25000, 14}, false);
         assertNotSame(vec, compressed = vec.compress(0));
+        assertInstanceOf("vector.compress(0)", ArrayVector.class, compressed);
         assertEquals("elementType", Short.class, compressed.getElementType());
         assertFalse("isUnsigned()", compressed.isUnsigned());
         assertContentEquals(vec, compressed);
@@ -394,14 +397,36 @@ public final strictfp class VectorTest extends TestCase {
          */
         vec =  Vector.create(new float[] {3, 60000, 25, 4}, false);
         assertNotSame(vec, compressed = vec.compress(0));
+        assertInstanceOf("vector.compress(0)", ArrayVector.class, compressed);
         assertEquals("elementType", Short.class, compressed.getElementType());
         assertTrue("isUnsigned()", compressed.isUnsigned());
         assertContentEquals(vec, compressed);
         /*
          * Values that can be compressed in a PackedVector.
          * Values below require less bits than the 'byte' type.
+         * Note that we need at least PackedVector.MINIMAL_SIZE data for enabling this test.
          */
-        vec =  Vector.create(new double[] {30, 27, 93, 72, -8}, false);
+        vec =  Vector.create(new double[] {30, 27, 93, 72, -8, -3, 12, 4, 29, -5}, false);
+        assertTrue(vec.size() >= PackedVector.MINIMAL_SIZE);
+        assertNotSame(vec, compressed = vec.compress(0));
+        assertInstanceOf("vector.compress(0)", PackedVector.class, compressed);
+        assertContentEquals(vec, compressed);
+        /*
+         * Vector that could be compressed in a PackedVector, but without advantage
+         * because the number of bits required for storing the values is exactly 8.
+         */
+        vec =  Vector.create(new double[] {200, 100, 20, 80, 180, 10, 11, 12}, false);
+        assertTrue(vec.size() >= PackedVector.MINIMAL_SIZE);
+        assertNotSame(vec, compressed = vec.compress(0));
+        assertInstanceOf("vector.compress(0)", ArrayVector.class, compressed);
+        assertEquals("elementType", Byte.class, compressed.getElementType());
+        assertTrue("isUnsigned()", compressed.isUnsigned());
+        assertContentEquals(vec, compressed);
+        /*
+         * Vector that can be compressed in a PackedVector as bytes with a factor of 20.
+         */
+        vec =  Vector.create(new double[] {200, 100, 20, 80, 180, 2000, 500, 120}, false);
+        assertTrue(vec.size() >= PackedVector.MINIMAL_SIZE);
         assertNotSame(vec, compressed = vec.compress(0));
         assertInstanceOf("vector.compress(0)", PackedVector.class, compressed);
         assertContentEquals(vec, compressed);
@@ -410,6 +435,7 @@ public final strictfp class VectorTest extends TestCase {
          */
         vec =  Vector.create(new double[] {3.10, 60.59, -25.32, 4.78}, false);
         assertNotSame(vec, compressed = vec.compress(0));
+        assertInstanceOf("vector.compress(0)", ArrayVector.class, compressed);
         assertEquals("elementType", Float.class, compressed.getElementType());
         assertFalse("isUnsigned()", compressed.isUnsigned());
         assertContentEquals(vec, compressed);

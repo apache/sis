@@ -16,6 +16,8 @@
  */
 package org.apache.sis.internal.storage.csv;
 
+import java.util.Map;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -42,12 +44,15 @@ import org.apache.sis.feature.DefaultFeatureType;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.internal.referencing.GeodeticObjectBuilder;
+import org.apache.sis.internal.util.UnmodifiableArrayList;
 import org.apache.sis.internal.storage.MetadataBuilder;
 import org.apache.sis.internal.storage.io.IOUtilities;
+import org.apache.sis.internal.storage.FeatureStore;
+import org.apache.sis.internal.feature.Geometries;
+import org.apache.sis.internal.feature.MovingFeature;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.metadata.iso.DefaultMetadata;
 import org.apache.sis.metadata.sql.MetadataStoreException;
-import org.apache.sis.internal.storage.FeatureStore;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.storage.DataStoreReferencingException;
@@ -65,6 +70,7 @@ import org.apache.sis.measure.Units;
 // Branch-dependent imports
 import org.apache.sis.internal.jdk8.Instant;
 import org.apache.sis.feature.AbstractFeature;
+import org.apache.sis.feature.AbstractAttribute;
 import org.apache.sis.feature.AbstractIdentifiedType;
 import org.apache.sis.internal.jdk8.DateTimeException;
 import org.apache.sis.internal.jdk8.Consumer;
@@ -116,6 +122,12 @@ public final class Store extends FeatureStore {
     private static final String TYPE_PREFIX = "xsd:";
 
     /**
+     * Index of the column containing trajectory coordinates.
+     * Columns before the trajectory are Moving Feature identifier {@code mfIdRef}, start time and end time.
+     */
+    private static final int TRAJECTORY_COLUMN = 3;
+
+    /**
      * The reader, set by the constructor and cleared when no longer needed.
      */
     private BufferedReader source;
@@ -154,6 +166,18 @@ public final class Store extends FeatureStore {
     private boolean hasTrajectories;
 
     /**
+     * The number of dimensions other than time in the coordinate reference system.
+     * Shall be 2 or 3 according Moving Features CSV encoding specification, but Apache SIS
+     * may be tolerant to other values (depending on the backing geometry library).
+     */
+    private short spatialDimensionCount;
+
+    /**
+     * The factory to use for creating geometries.
+     */
+    private final Geometries<?> geometries;
+
+    /**
      * Appearing order of trajectories (time or sequential), or {@code null} if unspecified.
      *
      * @see #parseFoliation(List)
@@ -166,16 +190,30 @@ public final class Store extends FeatureStore {
     private TimeEncoding timeEncoding;
 
     /**
+     * {@code true} if this reader should create a separated {@code Feature} instance for each line in the CSV file.
+     * By default, this is {@code true} if the CSV files does not seem to contain moving features.
+     * But the user can also force this value to {@code true}, for example for testing purposes.
+     */
+    private boolean dissociate;
+
+    /**
+     * All parsed moving features, or {@code null} if none or if not yet parsed. If {@link #dissociate}
+     * is {@code false}, then this list will be created by {@link #features()} when first needed.
+     */
+    private transient List<AbstractFeature> movingFeatures;
+
+    /**
      * Creates a new CSV store from the given file, URL or stream.
      *
      * <p>If the CSV file is known to be a Moving Feature file, then the given connector should
      * have an {@link org.apache.sis.setup.OptionKey#ENCODING} associated to the UTF-8 value.</p>
      *
-     * @param  provider   the factory that created this {@code DataStore} instance, or {@code null} if unspecified.
-     * @param  connector  information about the storage (URL, stream, <i>etc</i>).
+     * @param  provider    the factory that created this {@code DataStore} instance, or {@code null} if unspecified.
+     * @param  connector   information about the storage (URL, stream, <i>etc</i>).
+     * @param  dissociate  {@code true} for forcing the creation of a different {@code Feature} instance for each line.
      * @throws DataStoreException if an error occurred while opening the stream.
      */
-    public Store(final StoreProvider provider, final StorageConnector connector) throws DataStoreException {
+    public Store(final StoreProvider provider, final StorageConnector connector, boolean dissociate) throws DataStoreException {
         super(provider, connector);
         final Reader r = connector.getStorageAs(Reader.class);
         connector.closeAllExcept(r);
@@ -183,9 +221,11 @@ public final class Store extends FeatureStore {
             throw new DataStoreException(Errors.format(Errors.Keys.CanNotOpen_1, super.getDisplayName()));
         }
         source = (r instanceof BufferedReader) ? (BufferedReader) r : new LineNumberReader(r);
-        GeneralEnvelope envelope = null;
+        geometries = Geometries.implementation(connector.getOption(OptionKey.GEOMETRY_LIBRARY));
+        this.dissociate = dissociate;
+        GeneralEnvelope    envelope    = null;
         DefaultFeatureType featureType = null;
-        Foliation foliation = null;
+        Foliation          foliation   = null;
         try {
             final List<String> elements = new ArrayList<>();
             source.mark(1024);
@@ -204,6 +244,7 @@ public final class Store extends FeatureStore {
                             throw new DataStoreContentException(duplicated("@stboundedby"));
                         }
                         envelope = parseEnvelope(elements);
+                        dissociate |= (timeEncoding == null);   // Need to be updated before parseFeatureType(…) execution.
                         break;
                     }
                     case "@columns": {
@@ -233,16 +274,17 @@ public final class Store extends FeatureStore {
             }
             source.reset();
         } catch (IOException e) {
-            throw new DataStoreException(getLocale(), "CSV", super.getDisplayName(), source).initCause(e);
+            throw new DataStoreException(getLocale(), StoreProvider.NAME, super.getDisplayName(), source).initCause(e);
         } catch (FactoryException e) {
-            throw new DataStoreReferencingException(getLocale(), "CSV", super.getDisplayName(), source).initCause(e);
+            throw new DataStoreReferencingException(getLocale(), StoreProvider.NAME, super.getDisplayName(), source).initCause(e);
         } catch (IllegalArgumentException | DateTimeException e) {
-            throw new DataStoreContentException(getLocale(), "CSV", super.getDisplayName(), source).initCause(e);
+            throw new DataStoreContentException(getLocale(), StoreProvider.NAME, super.getDisplayName(), source).initCause(e);
         }
         this.encoding    = connector.getOption(OptionKey.ENCODING);
         this.envelope    = envelope;
         this.featureType = featureType;
         this.foliation   = foliation;
+        this.dissociate |= (timeEncoding == null);
     }
 
     /**
@@ -261,6 +303,7 @@ public final class Store extends FeatureStore {
     private GeneralEnvelope parseEnvelope(final List<String> elements) throws DataStoreException, FactoryException {
         CoordinateReferenceSystem crs = null;
         int spatialDimensionCount = 2;
+        boolean    isDimExplicit  = false;
         double[]   lowerCorner    = ArraysExt.EMPTY_DOUBLE;
         double[]   upperCorner    = ArraysExt.EMPTY_DOUBLE;
         Instant    startTime      = null;
@@ -275,8 +318,9 @@ public final class Store extends FeatureStore {
                     case 0: continue;                                       // The "@stboundedby" header.
                     case 1: crs = CRS.forCode(element); continue;
                     case 2: if (element.length() == 2 && Character.toUpperCase(element.charAt(1)) == 'D') {
+                                isDimExplicit = true;
                                 spatialDimensionCount = element.charAt(0) - '0';
-                                if (spatialDimensionCount < 2 || spatialDimensionCount > 3) {
+                                if (spatialDimensionCount < 1 || spatialDimensionCount > 3) {
                                     throw new DataStoreReferencingException(errors().getString(
                                         Errors.Keys.IllegalCoordinateSystem_1, element));
                                 }
@@ -323,12 +367,33 @@ public final class Store extends FeatureStore {
             int count = 0;
             final CoordinateReferenceSystem[] components = new CoordinateReferenceSystem[3];
             components[count++] = crs;
-
-            // If the coordinates are three-dimensional but the CRS is 2D, add a vertical axis.
-            if (spatialDimensionCount >= 3 && crs.getCoordinateSystem().getDimension() == 2) {
-                components[count++] = CommonCRS.Vertical.MEAN_SEA_LEVEL.crs();
+            /*
+             * If the coordinates are three-dimensional but the CRS is 2D, add a vertical axis.
+             * The vertical axis shall be the third one, however we do not enforce that rule
+             * since Apache SIS should work correctly even if the vertical axis is elsewhere.
+             */
+            int dimension = crs.getCoordinateSystem().getDimension();
+            if (isDimExplicit) {
+                if (spatialDimensionCount > dimension) {
+                    components[count++] = CommonCRS.Vertical.MEAN_SEA_LEVEL.crs();
+                    dimension++;
+                }
+                if (dimension != spatialDimensionCount) {
+                    throw new DataStoreReferencingException(errors().getString(
+                            Errors.Keys.MismatchedDimension_3, "@stboundedby(CRS)", spatialDimensionCount, dimension));
+                }
             }
-            // Add a temporal axis if we have a start time (no need for end time).
+            if (dimension > Short.MAX_VALUE) {
+                throw new DataStoreReferencingException(errors().getString(
+                        Errors.Keys.ExcessiveNumberOfDimensions_1, dimension));
+            }
+            spatialDimensionCount = dimension;
+            /*
+             * Add a temporal axis if we have a start time (no need for end time).
+             * This block presumes that the CRS does not already have a time axis.
+             * If a time axis was already present, an exception will be thrown at
+             * builder.createCompoundCRS(…) invocation time.
+             */
             final GeodeticObjectBuilder builder = new GeodeticObjectBuilder();
             String name = crs.getName().getCode();
             if (startTime != null) {
@@ -363,7 +428,7 @@ public final class Store extends FeatureStore {
             (dim = upperCorner.length) != spatialDimensionCount)
         {
             throw new DataStoreReferencingException(errors().getString(
-                    Errors.Keys.MismatchedDimension_2, dim, spatialDimensionCount));
+                    Errors.Keys.MismatchedDimension_3, "@stboundedby(BBOX)", spatialDimensionCount, dim));
         }
         for (int i=0; i<spatialDimensionCount; i++) {
             envelope.setRange(i, lowerCorner[i], upperCorner[i]);
@@ -372,6 +437,7 @@ public final class Store extends FeatureStore {
             envelope.setRange(spatialDimensionCount, timeEncoding.toCRS(startTime.toEpochMilli()),
                     (endTime == null) ? Double.NaN : timeEncoding.toCRS(endTime.toEpochMilli()));
         }
+        this.spatialDimensionCount = (short) spatialDimensionCount;
         return envelope;
     }
 
@@ -384,10 +450,12 @@ public final class Store extends FeatureStore {
      *   &#64;columns, mfidref, trajectory, state,xsd:token, "type code",xsd:integer
      * }
      *
-     * @param  elements  the line elements. The first elements should be {@code "@columns"}.
+     * @param  elements  the line elements. The first element should be {@code "@columns"}.
      * @return the column metadata, or {@code null} if the given list does not contain enough elements.
      */
+    @SuppressWarnings("rawtypes")               // "rawtypes" because of generic array creation.
     private DefaultFeatureType parseFeatureType(final List<String> elements) throws DataStoreException {
+        DefaultAttributeType[] characteristics = null;
         final int size = elements.size();
         final List<AbstractIdentifiedType> properties = new ArrayList<>();
         for (int i=1; i<size; i++) {
@@ -409,6 +477,7 @@ public final class Store extends FeatureStore {
                 }
             }
             int minOccurrence = 0;
+            int maxOccurrence = dissociate ? 1 : Integer.MAX_VALUE;
             if (type == null) {
                 /*
                  * If the column name was not followed by a type, default to a String type except in the special
@@ -423,22 +492,33 @@ public final class Store extends FeatureStore {
                  */
                 type = String.class;
                 switch (--i) {
-                    case 1: minOccurrence = 1; break;
-                    case 2: {
+                    case 0:                                             // "@column" (should not happen actually)
+                    case 1: {
+                        minOccurrence = 1;                              // "mfidref"
+                        maxOccurrence = 1;
+                        break;
+                    }
+                    case 2: {                                           // "trajectory" or property.
                         if (name.equalsIgnoreCase("trajectory")) {
                             hasTrajectories = true;
                             if (timeEncoding != null) {
-                                properties.add(createProperty("startTime", Instant.class, 1));
-                                properties.add(createProperty(  "endTime", Instant.class, 1));
+                                properties.add(createProperty("startTime", Instant.class, 1, 1, null));
+                                properties.add(createProperty(  "endTime", Instant.class, 1, 1, null));
                             }
-                            type = double[].class;
+                            if (dissociate) {
+                                type = double[].class;
+                            } else {
+                                type = geometries.polylineClass;
+                                characteristics = new DefaultAttributeType[] {MovingFeature.TIME};
+                            }
                             minOccurrence = 1;
+                            maxOccurrence = 1;
                         }
                         break;
                     }
                 }
             }
-            properties.add(createProperty(name, type, minOccurrence));
+            properties.add(createProperty(name, type, minOccurrence, maxOccurrence, characteristics));
         }
         String name = super.getDisplayName();
         final int s = name.lastIndexOf('.');
@@ -452,8 +532,11 @@ public final class Store extends FeatureStore {
     /**
      * Creates a property type for the given name and type.
      */
-    private static AbstractIdentifiedType createProperty(final String name, final Class<?> type, final int minOccurrence) {
-        return new DefaultAttributeType<>(Collections.singletonMap(DefaultAttributeType.NAME_KEY, name), type, minOccurrence, 1, null);
+    private static AbstractIdentifiedType createProperty(final String name, final Class<?> type,
+            final int minOccurrence, final int maxOccurrence, final DefaultAttributeType<?>[] characteristics)
+    {
+        return new DefaultAttributeType<>(Collections.singletonMap(DefaultAttributeType.NAME_KEY, name),
+                type, minOccurrence, maxOccurrence, null, characteristics);
     }
 
     /**
@@ -486,7 +569,7 @@ public final class Store extends FeatureStore {
         if (metadata == null) {
             final MetadataBuilder builder = new MetadataBuilder();
             try {
-                builder.setFormat(timeEncoding != null && hasTrajectories ? "CSV-MF" : "CSV");
+                builder.setFormat(timeEncoding != null && hasTrajectories ? StoreProvider.MOVING : StoreProvider.NAME);
             } catch (MetadataStoreException e) {
                 listeners.warning(null, e);
             }
@@ -495,7 +578,7 @@ public final class Store extends FeatureStore {
             try {
                 builder.addExtent(envelope);
             } catch (TransformException e) {
-                throw new DataStoreReferencingException(getLocale(), "CSV", getDisplayName(), source).initCause(e);
+                throw new DataStoreReferencingException(getLocale(), StoreProvider.NAME, getDisplayName(), source).initCause(e);
             } catch (UnsupportedOperationException e) {
                 /*
                  * Failed to set the temporal components if the sis-temporal module was
@@ -538,18 +621,30 @@ public final class Store extends FeatureStore {
      * Returns the stream of features.
      *
      * @return a stream over all features in the CSV file.
+     * @throws DataStoreException if an error occurred while creating the feature stream.
      *
      * @todo Needs to reset the position when doing another pass on the features.
+     * @todo If sequential order, publish Feature as soon as identifier changed.
      */
     @Override
-    public Stream<AbstractFeature> features() {
-        return StreamSupport.stream(new Iter(), false);
+    public synchronized Stream<AbstractFeature> features() throws DataStoreException {
+        if (dissociate) {
+            return StreamSupport.stream(new Iter(), false);
+        }
+        if (movingFeatures == null) try {
+            final Iter iter = new Iter();
+            iter.readMoving(null, true);
+            movingFeatures = UnmodifiableArrayList.wrap(iter.createMovingFeatures());
+        } catch (IOException | IllegalArgumentException | DateTimeException e) {
+            throw new DataStoreException(canNotParseFile(), e);
+        }
+        return Stream.create(movingFeatures);
     }
 
     /**
      * Implementation of the iterator returned by {@link #features()}.
      */
-    private final class Iter implements Spliterator<AbstractFeature> {
+    private final class Iter implements Spliterator<AbstractFeature>, Consumer<LogRecord> {
         /**
          * Converters from string representations to the values to store in the {@link #values} array.
          */
@@ -566,6 +661,21 @@ public final class Store extends FeatureStore {
          * Name of the property where to store a value.
          */
         private final String[] propertyNames;
+
+        /**
+         * Identifier of the feature in process of being parsed.
+         */
+        private String identifier;
+
+        /**
+         * Where to store the property values and the trajectory of the feature in process of being parsed.
+         */
+        private MovingFeature builder;
+
+        /**
+         * All builders by feature name (not only the one being parsed).
+         */
+        private final Map<String,MovingFeature> builders;
 
         /**
          * Creates a new iterator.
@@ -602,7 +712,7 @@ public final class Store extends FeatureStore {
                          * Fall through in order to process trajectory.
                          */
                     }
-                    case 3: {
+                    case TRAJECTORY_COLUMN: {
                         if (hasTrajectories) {
                             c = GeometryParser.INSTANCE;
                             break;
@@ -620,10 +730,103 @@ public final class Store extends FeatureStore {
                 }
                 converters[i] = c;
             }
+            builders = new LinkedHashMap<>();
+        }
+
+        /**
+         * Creates all moving features.
+         * This method can only be invoked after {@link #readMoving(Consumer, boolean)} completion.
+         * This method is ignored if the CSV file contains only static features.
+         */
+        AbstractFeature[] createMovingFeatures() {
+            int n = 0;
+            final int np = values.length - TRAJECTORY_COLUMN;
+            final AbstractFeature[] features = new AbstractFeature[builders.size()];
+            for (final Map.Entry<String,MovingFeature> entry : builders.entrySet()) {
+                features[n++] = createMovingFeature(entry.getKey(), entry.getValue(), np);
+            }
+            return features;
+        }
+
+        /**
+         * Creates the moving feature of the given name.
+         * This method can only be invoked after {@link #readMoving(Consumer, boolean)}.
+         *
+         * @param  featureName  name of the feature to create.
+         * @param  np           number of properties, ignoring the ones before the trajectory column.
+         */
+        @SuppressWarnings("unchecked")
+        private AbstractFeature createMovingFeature(final String featureName, final MovingFeature mf, final int np) {
+            final AbstractFeature feature = featureType.newInstance();
+            feature.setPropertyValue(propertyNames[0], featureName);
+            mf.storeTimeRange(propertyNames[1], propertyNames[2], feature);
+            int column = 0;
+            if (hasTrajectories) {
+                mf.storeGeometry(featureName, column, spatialDimensionCount, geometries,
+                        (AbstractAttribute) feature.getProperty(propertyNames[TRAJECTORY_COLUMN]), this);
+                column++;
+            }
+            while (column < np) {
+                mf.storeAttribute(column, (AbstractAttribute<?>) feature.getProperty(propertyNames[TRAJECTORY_COLUMN + column]));
+                column++;
+            }
+            return feature;
+        }
+
+        /**
+         * Executes the given action for the next moving feature or for all remaining moving features.
+         * This method assumes that the 4 first columns are as documented in the constructor.
+         *
+         * @param  action  the action to execute as soon as the {@code mfidref} change, or {@code null} if none.
+         * @param  all     {@code true} for executing the given action on all remaining features.
+         * @return {@code false} if there is no remaining feature after this method call.
+         * @throws IOException if an I/O error occurred while reading a feature.
+         * @throws IllegalArgumentException if parsing of a number failed, or other error.
+         * @throws DateTimeException if parsing of a date failed.
+         */
+        boolean readMoving(final Consumer<? super AbstractFeature> action, final boolean all) throws IOException {
+            final FixedSizeList elements = new FixedSizeList(values);
+            final int np = values.length - TRAJECTORY_COLUMN;
+            String line;
+            while ((line = source.readLine()) != null) {
+                split(line, elements);
+                int n = elements.size();
+                for (int i=0; i<n; i++) {
+                    values[i] = converters[i].apply((String) values[i]);
+                }
+                final String  mfIdRef   =  (String)  values[0];
+                final long    startTime = ((Instant) values[1]).toEpochMilli();
+                final long    endTime   = ((Instant) values[2]).toEpochMilli();
+                String        publish   = null;
+                if (!mfIdRef.equals(identifier)) {
+                    publish    = identifier;
+                    identifier = mfIdRef;
+                    builder = builders.get(mfIdRef);
+                    if (builder == null) {
+                        builder = new MovingFeature(np);
+                        builders.put(mfIdRef, builder);
+                    }
+                }
+                builder.addTimeRange(startTime, endTime);
+                for (int i=0; i<np; i++) {
+                    builder.addValue(i, startTime, endTime, values[i + TRAJECTORY_COLUMN]);
+                }
+                /*
+                 * If we started a new feature and the features are stored in sequential order,
+                 * we can publish the previous one right away.
+                 */
+                if (publish != null && action != null) {
+                    action.accept(createMovingFeature(publish, builders.remove(publish), np));
+                    if (!all) return true;
+                }
+                elements.clear();
+            }
+            return false;
         }
 
         /**
          * Executes the given action for the next feature or for all remaining features.
+         * The features are assumed static, with one feature per line.
          *
          * <p><b>Multi-threading:</b>
          * There is no need for {@code synchronize(Store.this)} statement since this method uses only final and
@@ -637,7 +840,7 @@ public final class Store extends FeatureStore {
          * @throws IllegalArgumentException if parsing of a number failed, or other error.
          * @throws DateTimeException if parsing of a date failed.
          */
-        private boolean read(final Consumer<? super AbstractFeature> action, boolean all) throws IOException {
+        private boolean read(final Consumer<? super AbstractFeature> action, final boolean all) throws IOException {
             final FixedSizeList elements = new FixedSizeList(values);
             String line;
             while ((line = source.readLine()) != null) {
@@ -712,6 +915,16 @@ public final class Store extends FeatureStore {
         @Override
         public int characteristics() {
             return ORDERED | NONNULL | IMMUTABLE;
+        }
+
+        /**
+         * Invoked when a warning occurred while computing the geometry.
+         */
+        @Override
+        public void accept(final LogRecord warning) {
+            warning.setSourceClassName(Store.class.getName());
+            warning.setSourceMethodName("stream");
+            listeners.warning(warning);
         }
     }
 
@@ -794,8 +1007,7 @@ public final class Store extends FeatureStore {
      * The error message will contain the line number if available.
      */
     final String canNotParseFile() {
-        final Object[] parameters = IOUtilities.errorMessageParameters("CSV", getDisplayName(), source);
-        return errors().getString(IOUtilities.errorMessageKey(parameters), parameters);
+        return IOUtilities.canNotReadFile(getLocale(), StoreProvider.NAME, getDisplayName(), source);
     }
 
     /**

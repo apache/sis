@@ -409,6 +409,7 @@ Apache SIS is a free software, Java language library for developing geospatial a
         <groupId>com.esri.geometry</groupId>
         <artifactId>esri-geometry-api</artifactId>
         <version>1.2.1</version>
+        <optional>true</optional>
       </dependency>
       <dependency>
         <groupId>gov.nist.math</groupId>

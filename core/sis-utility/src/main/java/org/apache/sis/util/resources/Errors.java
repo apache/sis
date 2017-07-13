@@ -151,6 +151,11 @@ public final class Errors extends IndexedResourceBundle {
         public static final short CanNotSetPropertyValue_1 = 15;
 
         /**
+         * Can not store the {0} value in this vector.
+         */
+        public static final short CanNotStoreInVector_1 = 175;
+
+        /**
          * Can not transform envelope.
          */
         public static final short CanNotTransformEnvelope = 16;
@@ -549,6 +554,11 @@ public final class Errors extends IndexedResourceBundle {
          * Options “{0}” and “{1}” are mutually exclusive.
          */
         public static final short MutuallyExclusiveOptions_2 = 91;
+
+        /**
+         * Native interfaces “{1}” not available for the {0} platform.
+         */
+        public static final short NativeInterfacesNotFound_2 = 176;
 
         /**
          * Argument ‘{0}’ shall not be negative. The given value was {1}.

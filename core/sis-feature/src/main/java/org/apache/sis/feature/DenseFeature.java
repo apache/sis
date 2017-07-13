@@ -65,7 +65,7 @@ final class DenseFeature extends AbstractFeature implements Cloneable {
     /**
      * Creates a new feature of the given type.
      *
-     * @param type Information about the feature (name, characteristics, <i>etc.</i>).
+     * @param type  information about the feature (name, characteristics, <i>etc.</i>).
      */
     public DenseFeature(final DefaultFeatureType type) {
         super(type);

@@ -65,7 +65,7 @@
       </fileset>
       -->
 
-      <!-- Other resources (properties files, SQL scripts). -->
+      <!-- Other resources (properties files, SQL scripts, native libraries). -->
       <fileset dir="${project.root}/core/sis-utility/src/main/resources">
         <include name="**/*.properties"/>
       </fileset>
@@ -77,6 +77,11 @@
       </fileset>
       <fileset dir="${project.root}/storage/sis-xmlstore/src/main/resources">
         <include name="**/*.properties"/>
+      </fileset>
+      <fileset dir="${project.root}/storage/sis-gdal/src/main/resources">
+        <include name="**/*.txt"/>
+        <include name="**/*.dll"/>
+        <include name="**/*.so"/>
       </fileset>
       <fileset dir="${project.root}/application/sis-console/src/main/resources">
         <include name="**/*.properties"/>

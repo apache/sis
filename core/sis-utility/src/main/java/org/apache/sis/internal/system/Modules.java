@@ -73,6 +73,11 @@ public final class Modules {
     public static final String EARTH_OBSERVATION = "org.apache.sis.storage.earth-observation";
 
     /**
+     * The {@value} module name.
+     */
+    public static final String GDAL = "org.apache.sis.storage.gdal";
+
+    /**
      * The major version number of all Apache SIS modules.
      *
      * @see org.apache.sis.util.Version

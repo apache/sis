@@ -34,10 +34,12 @@ import org.opengis.metadata.citation.Role;
 import org.opengis.metadata.citation.DateType;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.citation.CitationDate;
+import org.opengis.metadata.spatial.GCP;
 import org.opengis.metadata.spatial.Dimension;
 import org.opengis.metadata.spatial.DimensionNameType;
 import org.opengis.metadata.spatial.CellGeometry;
 import org.opengis.metadata.spatial.PixelOrientation;
+import org.opengis.metadata.spatial.GeolocationInformation;
 import org.opengis.metadata.spatial.SpatialRepresentationType;
 import org.opengis.metadata.constraint.Restriction;
 import org.opengis.metadata.content.TransferFunctionType;
@@ -48,6 +50,8 @@ import org.opengis.metadata.identification.Progress;
 import org.opengis.metadata.identification.KeywordType;
 import org.opengis.metadata.identification.TopicCategory;
 import org.opengis.metadata.distribution.Format;
+import org.opengis.metadata.quality.Element;
+import org.opengis.geometry.DirectPosition;
 import org.opengis.referencing.crs.VerticalCRS;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.TransformException;
@@ -64,6 +68,8 @@ import org.apache.sis.metadata.iso.spatial.DefaultGridSpatialRepresentation;
 import org.apache.sis.metadata.iso.spatial.DefaultDimension;
 import org.apache.sis.metadata.iso.spatial.DefaultGeorectified;
 import org.apache.sis.metadata.iso.spatial.DefaultGeoreferenceable;
+import org.apache.sis.metadata.iso.spatial.DefaultGCPCollection;
+import org.apache.sis.metadata.iso.spatial.DefaultGCP;
 import org.apache.sis.metadata.iso.content.DefaultAttributeGroup;
 import org.apache.sis.metadata.iso.content.DefaultSampleDimension;
 import org.apache.sis.metadata.iso.content.DefaultCoverageDescription;
@@ -97,6 +103,7 @@ import org.apache.sis.metadata.sql.MetadataStoreException;
 import org.apache.sis.metadata.sql.MetadataSource;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.CharSequences;
+import org.apache.sis.util.iso.Names;
 import org.apache.sis.util.iso.Types;
 
 import static java.util.Collections.singleton;
@@ -124,6 +131,11 @@ import org.apache.sis.metadata.iso.citation.DefaultResponsibleParty;
  * @module
  */
 public class MetadataBuilder {
+    /**
+     * Band numbers, created when first needed.
+     */
+    private static final MemberName[] BAND_NUMBERS = new MemberName[16];
+
     /**
      * Whether the next party to create should be an instance of {@link DefaultIndividual} or {@link DefaultOrganisation}.
      *
@@ -435,6 +447,23 @@ public class MetadataBuilder {
             }
         }
         return gridRepresentation;
+    }
+
+    /**
+     * Collection of ground control points.
+     */
+    private DefaultGCPCollection groundControlPoints;
+
+    /**
+     * Creates the collection of ground control points if it does not already exists, then returns it.
+     *
+     * @return the ground control points (never {@code null}).
+     */
+    private DefaultGCPCollection groundControlPoints() {
+        if (groundControlPoints == null) {
+            groundControlPoints = new DefaultGCPCollection();
+        }
+        return groundControlPoints;
     }
 
     /**
@@ -751,6 +780,10 @@ public class MetadataBuilder {
             final int n = gridRepresentation.getAxisDimensionProperties().size();
             if (n != 0) {
                 gridRepresentation.setNumberOfDimensions(shared(n));
+            }
+            if (groundControlPoints != null && gridRepresentation instanceof DefaultGeoreferenceable) {
+                addIfNotPresent(((DefaultGeoreferenceable) gridRepresentation).getGeolocationInformation(), groundControlPoints);
+                groundControlPoints = null;
             }
             addIfNotPresent(metadata.getSpatialRepresentationInfo(), gridRepresentation);
             gridRepresentation = null;
@@ -1808,7 +1841,98 @@ parse:      for (int i = 0; i < length;) {
      */
     public final void setPointInPixel(final PixelOrientation value) {
         if (value != null) {
-            ((DefaultGeorectified) gridRepresentation()).setPointInPixel(value);
+            final DefaultGridSpatialRepresentation gridRepresentation = gridRepresentation();
+            if (gridRepresentation instanceof DefaultGeorectified) {
+                ((DefaultGeorectified) gridRepresentation).setPointInPixel(value);
+            }
+        }
+    }
+
+    /**
+     * Sets whether parameters for transformation, control/check point(s) or orientation parameters are available.
+     * Storage location are:
+     *
+     * <ul>
+     *   <li>If georeferenceable:<ul>
+     *     <li>{@code metadata/spatialRepresentationInfo/transformationParameterAvailability}</li>
+     *     <li>{@code metadata/spatialRepresentationInfo/controlPointAvailability}</li>
+     *     <li>{@code metadata/spatialRepresentationInfo/orientationParameterAvailability}</li>
+     *   </ul></li>
+     *   <li>If georeferenced:<ul>
+     *     <li>{@code metadata/spatialRepresentationInfo/transformationParameterAvailability}</li>
+     *     <li>{@code metadata/spatialRepresentationInfo/checkPointAvailability}</li>
+     *   </ul></li>
+     * </ul>
+     *
+     * @param  transformationParameterAvailability  indication of whether or not parameters for transformation exists.
+     * @param  controlPointAvailability             indication of whether or not control or check point(s) exists.
+     * @param  orientationParameterAvailability     indication of whether or not orientation parameters are available.
+     */
+    public final void setGeoreferencingAvailability(final boolean transformationParameterAvailability,
+                                                    final boolean controlPointAvailability,
+                                                    final boolean orientationParameterAvailability)
+    {
+        final DefaultGridSpatialRepresentation gridRepresentation = gridRepresentation();
+        gridRepresentation.setTransformationParameterAvailable(transformationParameterAvailability);
+        if (gridRepresentation instanceof DefaultGeorectified) {
+            ((DefaultGeorectified) gridRepresentation).setCheckPointAvailable(controlPointAvailability);
+        } else if (gridRepresentation instanceof DefaultGeoreferenceable) {
+            ((DefaultGeoreferenceable) gridRepresentation).setControlPointAvailable(controlPointAvailability);
+            ((DefaultGeoreferenceable) gridRepresentation).setOrientationParameterAvailable(orientationParameterAvailability);
+        }
+    }
+
+    /**
+     * Adds information about the geolocation of an image.
+     * Storage location is:
+     *
+     * <ul>
+     *   <li>{@code metadata/spatialRepresentationInfo/geolocationInformation}</li>
+     * </ul>
+     *
+     * @param  info  the geolocation information to add, or {@code null} if none.
+     */
+    public final void addGeolocation(final GeolocationInformation info) {
+        if (info != null) {
+            final DefaultGridSpatialRepresentation gridRepresentation = gridRepresentation();
+            if (gridRepresentation instanceof DefaultGeoreferenceable) {
+                addIfNotPresent(((DefaultGeoreferenceable) gridRepresentation).getGeolocationInformation(), info);
+            }
+        }
+    }
+
+    /**
+     * Adds <cite>check points</cite> (if georectified) or <cite>ground control points</cite> (if georeferenceable).
+     * Ground control points (GCP) are large marked targets on the ground. GCP should not be used for storing the
+     * localization grid (e.g. "model tie points" in a GeoTIFF file).
+     * Storage location is:
+     *
+     * <ul>
+     *   <li>{@code metadata/spatialRepresentationInfo/checkPoint/geographicCoordinates} if georectified</li>
+     *   <li>{@code metadata/spatialRepresentationInfo/geolocationInformation/gcp/geographicCoordinates} if georeferenceable</li>
+     * </ul>
+     *
+     * @param  geographicCoordinates  the geographic or map position of the control point, in either two or three dimensions.
+     * @param  accuracyReport         the accuracy of a ground control point, or {@code null} if none.
+     *                                Ignored if {@code geographicCoordinates} is null.
+     */
+    public final void addControlPoints(final DirectPosition geographicCoordinates, final Element accuracyReport) {
+        if (geographicCoordinates != null) {
+            final DefaultGridSpatialRepresentation gridRepresentation = gridRepresentation();
+            final Collection<GCP> points;
+            if (gridRepresentation instanceof DefaultGeorectified) {
+                points = ((DefaultGeorectified) gridRepresentation).getCheckPoints();
+            } else if (gridRepresentation instanceof DefaultGeoreferenceable) {
+                points = groundControlPoints().getGCPs();
+            } else {
+                return;
+            }
+            final DefaultGCP gcp = new DefaultGCP();
+            gcp.setGeographicCoordinates(geographicCoordinates);
+            if (accuracyReport != null) {
+                addIfNotPresent(gcp.getAccuracyReports(), accuracyReport);
+            }
+            addIfNotPresent(points, gcp);
         }
     }
 
@@ -1825,7 +1949,10 @@ parse:      for (int i = 0; i < length;) {
     public final void setGridToCRS(final CharSequence value) {
         final InternationalString i18n = trim(value);
         if (i18n != null) {
-            ((DefaultGeorectified) gridRepresentation()).setTransformationDimensionDescription(i18n);
+            final DefaultGridSpatialRepresentation gridRepresentation = gridRepresentation();
+            if (gridRepresentation instanceof DefaultGeorectified) {
+                ((DefaultGeorectified) gridRepresentation).setTransformationDimensionDescription(i18n);
+            }
         }
     }
 
@@ -1905,6 +2032,34 @@ parse:      for (int i = 0; i < length;) {
     public final void setBandIdentifier(final MemberName sequenceIdentifier) {
         if (sequenceIdentifier != null) {
             sampleDimension().setSequenceIdentifier(sequenceIdentifier);
+        }
+    }
+
+    /**
+     * Sets the number that uniquely identifies instances of bands of wavelengths on which a sensor operates.
+     * This is a convenience method for {@link #setBandIdentifier(MemberName)} when the band is specified only
+     * by a number.
+     *
+     * @param  sequenceIdentifier  the band number, or 0 or negative if none.
+     */
+    public final void setBandIdentifier(final int sequenceIdentifier) {
+        if (sequenceIdentifier > 0) {
+            final boolean cached = (sequenceIdentifier <= BAND_NUMBERS.length);
+            MemberName name = null;
+            if (cached) synchronized (BAND_NUMBERS) {
+                name = BAND_NUMBERS[sequenceIdentifier - 1];
+            }
+            if (name == null) {
+                name = Names.createMemberName(null, null, String.valueOf(sequenceIdentifier), Integer.class);
+                if (cached) synchronized (BAND_NUMBERS) {
+                    /*
+                     * No need to check if a value has been set concurrently because Names.createMemberName(…)
+                     * already checked if an equal instance exists in the current JVM.
+                     */
+                    BAND_NUMBERS[sequenceIdentifier - 1] = name;
+                }
+            }
+            setBandIdentifier(name);
         }
     }
 
