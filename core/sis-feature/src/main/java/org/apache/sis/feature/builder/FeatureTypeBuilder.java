@@ -184,7 +184,7 @@ public class FeatureTypeBuilder extends TypeBuilder {
     /**
      * Provides method for creating geometric objects using the library specified by the user.
      */
-    private final Geometries geometries;
+    private final Geometries<?> geometries;
 
     /**
      * The object created by this builder, or {@code null} if not yet created.
@@ -207,8 +207,6 @@ public class FeatureTypeBuilder extends TypeBuilder {
      * will be defined in GeoAPI.</div>
      *
      * @param template  an existing feature type to use as a template, or {@code null} if none.
-     *
-     * @see #setAll(FeatureType)
      */
     public FeatureTypeBuilder(final DefaultFeatureType template) {
         this(null, null, null);
@@ -273,8 +271,6 @@ public class FeatureTypeBuilder extends TypeBuilder {
      *
      * @param  template  an existing feature type to use as a template, or {@code null} if none.
      * @return {@code this} for allowing method calls chaining.
-     *
-     * @see #FeatureTypeBuilder(FeatureType)
      */
     public FeatureTypeBuilder setAll(final DefaultFeatureType template) {
         clear();
@@ -287,8 +283,6 @@ public class FeatureTypeBuilder extends TypeBuilder {
     /**
      * Initializes this builder to the value of the given type.
      * The caller is responsible to invoke {@link #clear()} (if needed) before this method.
-     *
-     * @see #setAll(FeatureType)
      */
     private void initialize(final DefaultFeatureType template) {
         super.initialize(template);

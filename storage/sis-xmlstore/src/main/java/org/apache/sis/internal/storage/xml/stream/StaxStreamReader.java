@@ -568,8 +568,7 @@ parse:  switch (value.length()) {
      * @return a localized error message for a file that can not be parsed.
      */
     protected final String canNotParseFile() {
-        final Object[] parameters = IOUtilities.errorMessageParameters(owner.getFormatName(), owner.getDisplayName(), reader);
-        return errors().getString(IOUtilities.errorMessageKey(parameters), parameters);
+        return IOUtilities.canNotReadFile(owner.getLocale(), owner.getFormatName(), owner.getDisplayName(), reader);
     }
 
     /**

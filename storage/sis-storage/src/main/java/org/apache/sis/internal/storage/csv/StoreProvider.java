@@ -42,6 +42,11 @@ import org.apache.sis.internal.storage.wkt.FirstKeywordPeek;
 @Capabilities(Capability.READ)
 public final class StoreProvider extends DataStoreProvider {
     /**
+     * The format names for static features and moving features.
+     */
+    static final String NAME = "CSV", MOVING = "CSV-MF";
+
+    /**
      * The object to use for verifying if the first keyword is the expected one.
      */
     private static final class Peek extends FirstKeywordPeek {
@@ -108,7 +113,7 @@ public final class StoreProvider extends DataStoreProvider {
      */
     @Override
     public String getShortName() {
-        return "CSV";
+        return NAME;
     }
 
     /**
@@ -133,6 +138,6 @@ public final class StoreProvider extends DataStoreProvider {
      */
     @Override
     public DataStore open(final StorageConnector connector) throws DataStoreException {
-        return new Store(this, connector);
+        return new Store(this, connector, false);
     }
 }

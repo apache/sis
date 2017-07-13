@@ -100,7 +100,7 @@ final class GroupAsPolylineOperation extends AbstractOperation {
      *
      * @param  geometries  accessor to the geometry implementation in use (Java2D, ESRI or JTS).
      */
-    static DefaultAttributeType<?> getResult(final Geometries geometries) {
+    static <G> DefaultAttributeType<? extends G> getResult(final Geometries<G> geometries) {
         return new DefaultAttributeType<>(Collections.singletonMap(NAME_KEY, AttributeConvention.ENVELOPE_PROPERTY),
                 geometries.polylineClass, 1, 1, null);
     }

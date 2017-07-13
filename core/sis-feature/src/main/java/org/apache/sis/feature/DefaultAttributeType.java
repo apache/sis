@@ -189,6 +189,7 @@ public class DefaultAttributeType<V> extends FieldType {
      *
      * @see org.apache.sis.feature.builder.AttributeTypeBuilder
      */
+    @SuppressWarnings("ThisEscapedInObjectConstruction")    // Okay because used only in package-private class.
     public DefaultAttributeType(final Map<String,?> identification, final Class<V> valueClass,
             final int minimumOccurs, final int maximumOccurs, final V defaultValue,
             final DefaultAttributeType<?>... characterizedBy)

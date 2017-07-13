@@ -16,6 +16,10 @@
  */
 package org.apache.sis.internal.netcdf;
 
+// Branch-dependent imports
+import org.apache.sis.internal.jdk8.Stream;
+import org.apache.sis.feature.AbstractFeature;
+
 
 /**
  * Returns the features encoded in the NetCDF files when they are encoded as discrete sampling.
@@ -34,4 +38,11 @@ public abstract class DiscreteSampling {
      */
     protected DiscreteSampling() {
     }
+
+    /**
+     * Returns the stream of features.
+     *
+     * @return the stream of features.
+     */
+    public abstract Stream<AbstractFeature> features();
 }

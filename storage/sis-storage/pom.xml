@@ -135,6 +135,11 @@ Provides the interfaces and base classes to be implemented by various storage fo
       <type>test-jar</type>
       <scope>test</scope>
     </dependency>
+    <dependency>
+      <groupId>com.esri.geometry</groupId>
+      <artifactId>esri-geometry-api</artifactId>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
 
 </project>
