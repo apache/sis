@@ -122,7 +122,6 @@ public final class Affine extends AbstractProvider {
      *
      * @see org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory
      */
-    @SuppressWarnings("ThisEscapedInObjectConstruction")
     public Affine() {
         super(IDENTIFICATION_EPSG, EPSG_DIMENSION, EPSG_DIMENSION, new Descriptor(IDENTIFICATION_EPSG,
                 Arrays.copyOfRange( // Discards param 0 and 1, take only the ones in index range [2…7].

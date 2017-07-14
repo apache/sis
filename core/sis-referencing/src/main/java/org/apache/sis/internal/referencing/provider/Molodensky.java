@@ -133,7 +133,6 @@ public final class Molodensky extends GeocentricAffineBetweenGeographic {
     /**
      * Constructs a new provider.
      */
-    @SuppressWarnings("ThisEscapedInObjectConstruction")
     public Molodensky() {
         this(3, 3, new Molodensky[4]);
         redimensioned[0] = new Molodensky(2, 2, redimensioned);
