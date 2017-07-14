@@ -65,7 +65,6 @@ public final class LongitudeRotation extends GeographicOffsets {
     /**
      * Constructs a provider with default parameters.
      */
-    @SuppressWarnings("ThisEscapedInObjectConstruction")
     public LongitudeRotation() {
         this(2, 2, new LongitudeRotation[4]);
         redimensioned[0] = this;

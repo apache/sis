@@ -54,7 +54,6 @@ public final class MolodenskyInterpolation extends FranceGeocentricInterpolation
     /**
      * Constructs a provider.
      */
-    @SuppressWarnings("ThisEscapedInObjectConstruction")
     public MolodenskyInterpolation() {
         super(2, 2, builder().setCodeSpace(null, Constants.SIS).addName("Molodensky interpolation")
                         .createGroupWithSameParameters(PARAMETERS), new MolodenskyInterpolation[4]);
