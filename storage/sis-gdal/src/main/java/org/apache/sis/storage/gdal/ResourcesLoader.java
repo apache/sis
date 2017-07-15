@@ -21,7 +21,6 @@ import java.util.Set;
 import java.util.List;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -52,11 +51,6 @@ import org.apache.sis.referencing.operation.DefaultOperationMethod;
  */
 final class ResourcesLoader {
     /**
-     * The file which contains the axis orientations for each CRS code.
-     */
-    static final String AXIS_FILE = "axis-orientations.txt";
-
-    /**
      * The file which contains parameter aliases.
      */
     static final String PARAMETERS_FILE = "parameter-names.txt";
@@ -65,12 +59,6 @@ final class ResourcesLoader {
      * The file which contains projection aliases.
      */
     static final String PROJECTIONS_FILE = "projection-names.txt";
-
-    /**
-     * The map of axis orientations for each CRS codes.
-     * This map will be loaded from the {@value #AXIS_FILE} file when first needed.
-     */
-    private static Map<String,String> axisOrientations;
 
     /**
      * The Proj.4 names for OGC, EPSG or GeoTIFF projection names.
@@ -98,58 +86,6 @@ final class ResourcesLoader {
      * Do not allows instantiation of this class.
      */
     private ResourcesLoader() {
-    }
-
-    /**
-     * Returns the axis orientation map. Callers shall not modify the returned map.
-     * The file format is the one created by {@code SupportedCodes.write()} in the
-     * test directory.
-     *
-     * @throws FactoryException if the resource file can not be loaded.
-     */
-    @SuppressWarnings("ReturnOfCollectionOrArrayField")
-    static synchronized Map<String,String> getAxisOrientations() throws FactoryException {
-        if (axisOrientations != null) {
-            return axisOrientations;
-        }
-        IOException cause = null;
-        final InputStream in = ResourcesLoader.class.getResourceAsStream(AXIS_FILE);
-        if (in != null) try {
-            final Map<String,String> map = new LinkedHashMap<>(5000);
-            try (BufferedReader reader = new BufferedReader(new InputStreamReader(in, "UTF-8"))) {
-                String line;
-                while ((line = reader.readLine()) != null) {
-                    if ((line = line.trim()).isEmpty()) {
-                        continue;                                       // Skip empty lines.
-                    }
-                    switch (line.charAt(0)) {
-                        case '#': {
-                            break;                                      // A line of comment. Ignore.
-                        }
-                        case '[': {
-                            // The authority. Actually we don't parse yet
-                            // this element. Maybe a future version will do.
-                            break;
-                        }
-                        default: {
-                            int s = line.indexOf(':');
-                            final String orientation = line.substring(0, s).trim();
-                            do {
-                                final int p = s+1;
-                                s = line.indexOf(' ', p);
-                                final String code = (s >= 0) ? line.substring(p,s) : line.substring(p);
-                                map.put(code.trim(), orientation);
-                            } while (s >= 0);
-                            break;
-                        }
-                    }
-                }
-            }
-            return axisOrientations = map;
-        } catch (IOException e) {
-            cause = e;
-        }
-        throw new FactoryException("Can not read the \"" + AXIS_FILE + "\" resource", cause);
     }
 
     /**

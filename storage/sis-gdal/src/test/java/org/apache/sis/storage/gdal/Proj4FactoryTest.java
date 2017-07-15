@@ -28,7 +28,7 @@ import static org.junit.Assert.*;
 
 
 /**
- * Tests the {@link EPSGFactory} class.
+ * Tests the {@link Proj4Factory} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
@@ -36,7 +36,7 @@ import static org.junit.Assert.*;
  * @module
  */
 @DependsOn(PJTest.class)
-public final strictfp class EPSGFactoryTest extends TestCase {
+public final strictfp class Proj4FactoryTest extends TestCase {
     /**
      * Verifies if the {@literal Proj.4} library is available.
      */
@@ -46,21 +46,19 @@ public final strictfp class EPSGFactoryTest extends TestCase {
     }
 
     /**
-     * Tests the creation of the EPSG:4326 geographic CRS. The interesting part of this test
-     * is the check for axis order. The result will depend on whether the axis orientations
-     * map has been properly created or not.
+     * Tests the creation of the {@code "+init=epsg:4326"} geographic CRS.
      *
      * @throws FactoryException if an error occurred while creating the CRS objects.
      */
     @Test
     public void testEPSG_4326() throws FactoryException {
-        final EPSGFactory factory = new EPSGFactory(true);
-        final GeographicCRS crs = factory.createGeographicCRS("EPSG:4326");
+        final Proj4Factory factory = Proj4Factory.INSTANCE;
+        final GeographicCRS crs = factory.createGeographicCRS("+init=epsg:4326");
         /*
          * Use Proj.4 specific API to check axis order.
          */
         final PJ pj = (PJ) TestUtilities.getSingleton(crs.getIdentifiers());
         assertEquals(PJ.Type.GEOGRAPHIC, pj.getType());
-        assertArrayEquals(new char[] {'n', 'e', 'u'}, pj.getAxisDirections());
+        assertArrayEquals(new char[] {'e', 'n', 'u'}, pj.getAxisDirections());
     }
 }

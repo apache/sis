@@ -36,6 +36,7 @@ import org.opengis.referencing.operation.CoordinateOperation;
 import org.apache.sis.referencing.factory.UnavailableFactoryException;
 import org.apache.sis.internal.metadata.AxisDirections;
 import org.apache.sis.internal.system.Modules;
+import org.apache.sis.internal.system.OS;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ArgumentChecks;
@@ -151,7 +152,7 @@ public final class Proj4 extends Static {
          * Appends axis directions. This method always format a vertical direction (up or down)
          * even if the coordinate system is two-dimensional, because Proj.4 seems to require it.
          */
-        definition.append(' ').append(EPSGFactory.AXIS_ORDER_PARAM);
+        definition.append(' ').append(Proj4Factory.AXIS_ORDER_PARAM);
         final int dimension = Math.min(cs.getDimension(), 3);
         boolean hasVertical = false;
         for (int i=0; i<dimension; i++) {
@@ -184,10 +185,9 @@ public final class Proj4 extends Static {
         ArgumentChecks.ensureNonEmpty(definition, definition);
         ArgumentChecks.ensureBetween("dimension", 2, 3, dimension);
         try {
-            return ReferencingFactory.INSTANCE.createCRS(definition, dimension >= 3);
+            return Proj4Factory.INSTANCE.createCRS(definition, dimension >= 3);
         } catch (UnsatisfiedLinkError | NoClassDefFoundError e) {
-            throw new UnavailableFactoryException(Errors.format(Errors.Keys.NativeInterfacesNotFound_2,
-                    System.getProperty("os.name"), "libproj"), e);
+            throw new UnavailableFactoryException(Errors.format(Errors.Keys.NativeInterfacesNotFound_2, OS.uname(), "libproj"), e);
         }
     }
 
@@ -206,17 +206,9 @@ public final class Proj4 extends Static {
         ArgumentChecks.ensureNonNull("sourceCRS", sourceCRS);
         ArgumentChecks.ensureNonNull("targetCRS", targetCRS);
         try {
-            return ReferencingFactory.INSTANCE.createOperation(sourceCRS, targetCRS);
+            return Proj4Factory.INSTANCE.createOperation(sourceCRS, targetCRS);
         } catch (UnsatisfiedLinkError | NoClassDefFoundError e) {
-            throw new UnavailableFactoryException(Errors.format(Errors.Keys.NativeInterfacesNotFound_2,
-                    System.getProperty("os.name"), "libproj"), e);
+            throw new UnavailableFactoryException(Errors.format(Errors.Keys.NativeInterfacesNotFound_2, OS.uname(), "libproj"), e);
         }
-    }
-
-    /**
-     * Returns the exception to throw when a feature is not yet supported.
-     */
-    static FactoryException unsupportedOperation() {
-        return new FactoryException("Not supported yet.");
     }
 }
