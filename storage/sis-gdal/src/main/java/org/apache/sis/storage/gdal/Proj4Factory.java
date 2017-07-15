@@ -17,11 +17,14 @@
 package org.apache.sis.storage.gdal;
 
 import java.util.Map;
+import java.util.Set;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.Collections;
 import javax.measure.Unit;
 import org.opengis.util.FactoryException;
 import org.opengis.metadata.Identifier;
+import org.opengis.metadata.citation.Citation;
 import org.opengis.referencing.cs.*;
 import org.opengis.referencing.crs.*;
 import org.opengis.referencing.datum.*;
@@ -29,32 +32,57 @@ import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.operation.Conversion;
 import org.opengis.referencing.operation.CoordinateOperation;
 import org.apache.sis.referencing.operation.AbstractCoordinateOperation;
-import org.apache.sis.internal.system.DefaultFactories;
-import org.apache.sis.internal.metadata.AxisDirections;
+import org.apache.sis.referencing.factory.GeodeticAuthorityFactory;
+import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.metadata.iso.ImmutableIdentifier;
+import org.apache.sis.internal.metadata.AxisDirections;
+import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.util.collection.WeakValueHashMap;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.util.iso.AbstractFactory;
-import org.apache.sis.referencing.CommonCRS;
+import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.CharSequences;
 import org.apache.sis.measure.Units;
 
 
 /**
- * Creates Coordinate Reference System instances form {@link PJ} objects.
+ * A factory for Coordinate Reference Systems created from {@literal Proj.4} definitions.
+ * This authority factory recognizes codes in the {@code "Proj4"} name space.
+ * The main methods in this class are:
+ * <ul>
+ *   <li>{@link #getAuthority()}</li>
+ *   <li>{@link #createCoordinateReferenceSystem(String)}</li>
+ * </ul>
+ *
+ * The following methods delegate to {@link #createCoordinateReferenceSystem(String)} and cast
+ * the result if possible, or throw a {@link FactoryException} otherwise.
+ * <ul>
+ *   <li>{@link #createGeographicCRS(String)}</li>
+ *   <li>{@link #createGeocentricCRS(String)}</li>
+ *   <li>{@link #createProjectedCRS(String)}</li>
+ *   <li>{@link #createObject(String)}</li>
+ * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
  * @since   0.8
  * @module
  */
-final class ReferencingFactory extends AbstractFactory {
+public class Proj4Factory extends GeodeticAuthorityFactory implements CRSAuthorityFactory {
+    /**
+     * The {@literal Proj.4} parameter used for declaration of axis order.  Proj.4 expects the axis parameter
+     * to be exactly 3 characters long, but Apache SIS accepts 2 characters as well. We relax the Proj.4 rule
+     * because we use the number of characters for determining the number of dimensions.
+     * This is okay since 1 character = 1 axis.
+     */
+    static final String AXIS_ORDER_PARAM = "+axis=";
+
     /**
      * The default factory instance.
      */
-    static final ReferencingFactory INSTANCE = new ReferencingFactory();
+    static final Proj4Factory INSTANCE = new Proj4Factory();
 
     /**
      * The factory for coordinate reference system objects.
@@ -74,24 +102,167 @@ final class ReferencingFactory extends AbstractFactory {
     /**
      * Poll of identifiers created by this factory.
      */
-    private final Map<String,Identifier> identifiers;
+    private final Map<String,Identifier> identifiers = new HashMap<>();
 
     /**
      * Pool of {@literal Proj.4} objects created so far. The keys are the Proj.4 definition strings.
      * The same {@link PJ} instance may appear more than once if various definition strings resulted
      * in the same Proj.4 object.
      */
-    private final WeakValueHashMap<String,PJ> pool;
+    private final WeakValueHashMap<String,PJ> pool = new WeakValueHashMap<>(String.class);
 
     /**
-     * Creates a new factory.
+     * Creates a new {@literal Proj.4} factory using the default CRS, CS and datum factories.
      */
-    private ReferencingFactory() {
+    public Proj4Factory() {
         crsFactory   = DefaultFactories.forBuildin(CRSFactory.class);
         csFactory    = DefaultFactories.forBuildin(CSFactory.class);
         datumFactory = DefaultFactories.forBuildin(DatumFactory.class);
-        identifiers  = new HashMap<>();
-        pool         = new WeakValueHashMap<>(String.class);
+    }
+
+    /**
+     * Creates a new {@literal Proj.4} factory using the specified CRS, CS and datum factories.
+     *
+     * @param crsFactory    the factory to use for creating Coordinate Reference Systems.
+     * @param csFactory     the factory to use for creating Coordinate Systems.
+     * @param datumFactory  the factory to use for creating Geodetic Datums.
+     */
+    public Proj4Factory(final CRSFactory   crsFactory,
+                        final CSFactory    csFactory,
+                        final DatumFactory datumFactory)
+    {
+        ArgumentChecks.ensureNonNull("crsFactory",   crsFactory);
+        ArgumentChecks.ensureNonNull("csFactory",    csFactory);
+        ArgumentChecks.ensureNonNull("datumFactory", datumFactory);
+        this.crsFactory   = crsFactory;
+        this.csFactory    = csFactory;
+        this.datumFactory = datumFactory;
+    }
+
+    /**
+     * Returns the project that defines the codes recognized by this factory.
+     * The authority determines the {@linkplain #getCodeSpaces() code space}.
+     *
+     * @return {@link Citations#PROJ4}.
+     */
+    @Override
+    public Citation getAuthority() {
+        return Citations.PROJ4;
+    }
+
+    /**
+     * Returns the code space of the authority. The code space is the prefix that may appear before codes.
+     * It allows to differentiate Proj.4 definitions from EPSG codes or other authorities. The code space is
+     * removed by {@link #createCoordinateReferenceSystem(String)} before the definition string is passed to Proj.4
+     *
+     * <div class="note"><b>Example</b>
+     * a complete identifier can be {@code "Proj4:+init=epsg:4326"}.
+     * Note that this is <strong>not</strong> equivalent to the standard {@code "EPSG:4326"} definition since the
+     * axis order is not the same. The {@code "Proj4:"} prefix specifies that the remaining part of the string is
+     * a Proj.4 definition; the presence of an {@code "epsg"} word in the definition does not change that fact.
+     * </div>
+     *
+     * @return {@code "Proj4"}.
+     */
+    @Override
+    public Set<String> getCodeSpaces() {
+        return Collections.singleton(Constants.PROJ4);
+    }
+
+    /**
+     * Returns the set of authority codes for objects of the given type.
+     * Current implementation can not return complete Proj.4 definition strings.
+     * Instead, this method currently returns only fragments (e.g. {@code "+init="}).
+     *
+     * @param  type  the spatial reference objects type.
+     * @return fragments of definition strings for spatial reference objects of the given type.
+     * @throws FactoryException if access to the underlying database failed.
+     */
+    @Override
+    public Set<String> getAuthorityCodes(Class<? extends IdentifiedObject> type) throws FactoryException {
+        final String method;
+        if (type.isAssignableFrom(ProjectedCRS.class)) {                // Must be tested first.
+            method = "";
+        } else if (type.isAssignableFrom(GeodeticCRS.class)) {          // Should be tested before GeocentricCRS.
+            method = "latlon";
+        } else if (type.isAssignableFrom(GeocentricCRS.class)) {
+            method = "geocent";
+        } else {
+            return Collections.emptySet();
+        }
+        final Set<String> codes = new LinkedHashSet<>(4);
+        codes.add("+init=");
+        codes.add("+proj=".concat(method));
+        return codes;
+    }
+
+    /**
+     * Creates a new geodetic object from the given {@literal Proj.4} definition.
+     * The default implementation delegates to {@link #createCoordinateReferenceSystem(String)}.
+     *
+     * @param  code  the Proj.4 definition of the geodetic object to create.
+     * @return a geodetic created from the given definition.
+     * @throws FactoryException if the geodetic object can not be created for the given definition.
+     */
+    @Override
+    public IdentifiedObject createObject(String code) throws FactoryException {
+        return createCoordinateReferenceSystem(code);
+    }
+
+    /**
+     * Creates a new CRS from the given {@literal Proj.4} definition.
+     * The {@code "Proj4:"} prefix (ignoring case), if present, is ignored.
+     *
+     * <div class="section">Apache SIS extension</div>
+     * Proj.4 unconditionally requires 3 letters for the {@code "+axis="} parameter — for example {@code "neu"} for
+     * <cite>North</cite>, <cite>East</cite> and <cite>Up</cite> respectively — regardless the number of dimensions
+     * in the CRS to create. Apache SIS makes the vertical direction optional:
+     *
+     * <ul>
+     *   <li>If the vertical direction is present (as in {@code "neu"}), a three-dimensional CRS is created.</li>
+     *   <li>If the vertical direction is absent (as in {@code "ne"}), a two-dimensional CRS is created.</li>
+     * </ul>
+     *
+     * <div class="note"><b>Examples:</b>
+     * <ul>
+     *   <li>{@code "+init=epsg:4326"} (<strong>not</strong> equivalent to the standard EPSG::4326 definition)</li>
+     *   <li>{@code "+proj=latlong +datum=WGS84 +ellps=WGS84 +towgs84=0,0,0"} (default to two-dimensional CRS)</li>
+     *   <li>{@code "+proj=latlon +a=6378137.0 +b=6356752.314245179 +pm=0.0 +axis=ne"} (explicitely two-dimensional)</li>
+     *   <li>{@code "+proj=latlon +a=6378137.0 +b=6356752.314245179 +pm=0.0 +axis=neu"} (three-dimensional)</li>
+     * </ul>
+     * </div>
+     *
+     * @param  code  the Proj.4 definition of the CRS object to create.
+     * @return a CRS created from the given definition.
+     * @throws FactoryException if the CRS object can not be created for the given definition.
+     */
+    @Override
+    public CoordinateReferenceSystem createCoordinateReferenceSystem(String code) throws FactoryException {
+        code = trimNamespace(code);
+        boolean hasHeight = false;
+        /*
+         * Count the number of axes declared in the "+axis" parameter.
+         * If there is only two axes, add a 'u' (up) direction even in the two-dimensional case.
+         * We make this addition because Proj.4 seems to require the 3-letters code in all case.
+         */
+        int offset = code.indexOf(AXIS_ORDER_PARAM);
+        if (offset >= 0) {
+            offset += AXIS_ORDER_PARAM.length();
+            final CharSequence orientation = CharSequences.token(code, offset);
+            for (int i=orientation.length(); --i >= 0;) {
+                final char c = orientation.charAt(i);
+                hasHeight = (c == 'u' || c == 'd');
+                if (hasHeight) break;
+            }
+            if (!hasHeight && orientation.length() < 3) {
+                offset = code.indexOf(orientation.toString(), offset);
+                if (offset >= 0) {                          // Should never be -1, but we are paranoiac.
+                    offset += orientation.length();
+                    code = new StringBuilder(code).insert(offset, 'u').toString();
+                }
+            }
+        }
+        return createCRS(code, hasHeight);
     }
 
     /**
@@ -193,7 +364,7 @@ final class ReferencingFactory extends AbstractFactory {
          * attempt to create a new one for a given CRS.
          */
         final Map<String,Identifier> csName = identifier("Unnamed");
-        final Map<String,Identifier> name = new HashMap<>(identifier(pj.getName()));
+        final Map<String,Identifier> name = new HashMap<>(identifier(String.valueOf(pj.getDescription())));
         name.put(CoordinateReferenceSystem.IDENTIFIERS_KEY, pj);
         switch (type) {
             case GEOGRAPHIC: {
@@ -247,11 +418,14 @@ final class ReferencingFactory extends AbstractFactory {
 
     /**
      * Creates a coordinate reference system from the given {@literal Proj.4} definition string.
+     * The {@code Proj4} suffix shall have been removed before to invoke this method.
      *
      * @param  definition  the Proj.4 definition.
      * @param  withHeight  whether to include a height axis.
+     *
+     * @see Proj4#createCRS(String, int)
      */
-    public CoordinateReferenceSystem createCRS(final String definition, final boolean withHeight) throws FactoryException {
+    final CoordinateReferenceSystem createCRS(final String definition, final boolean withHeight) throws FactoryException {
         PJ pj = pool.get(definition);
         if (pj == null) {
             pj = unique(new PJ(definition));
@@ -262,6 +436,9 @@ final class ReferencingFactory extends AbstractFactory {
 
     /**
      * Creates an operation for conversion or transformation between two coordinate reference systems.
+     * This implementation always uses Proj.4 for performing the coordinate operations, regardless if
+     * the given CRS were created from a Proj.4 definition string or not. This method fails if it can
+     * not map the given CRS to Proj.4 structures.
      *
      * @param  sourceCRS  the source coordinate reference system.
      * @param  targetCRS  the target coordinate reference system.

@@ -78,12 +78,29 @@ public enum OS {
     }
 
     /**
+     * Returns the name value of {@code "os.name"} property, or {@code null} if the security manager
+     * does not allow us to access this information.
+     *
+     * <div class="note"><b>Note:</b> {@code uname} is an Unix command providing the same information.</div>
+     *
+     * @return the operation system name, or {@code null} if this information is not available.
+     */
+    public static String uname() {
+        try {
+            return System.getProperty("os.name");
+        } catch (SecurityException e) {
+            Logging.recoverableException(Logging.getLogger(Loggers.SYSTEM), OS.class, "uname", e);
+            return null;
+        }
+    }
+
+    /**
      * Returns the operating system SIS is currently on.
      *
      * @return the operation system.
      */
     public static OS current() {
-        final String name = System.getProperty("os.name");
+        final String name = uname();
         if (name != null) {
             if (name.contains("Windows")) return WINDOWS;
             if (name.contains("Mac OS"))  return MAC_OS;
@@ -144,6 +161,6 @@ public enum OS {
                 return tmp.toString();
             }
         }
-        throw new UnsatisfiedLinkError(Errors.format(Errors.Keys.NativeInterfacesNotFound_2, System.getProperty("os.name"), name));
+        throw new UnsatisfiedLinkError(Errors.format(Errors.Keys.NativeInterfacesNotFound_2, uname(), name));
     }
 }

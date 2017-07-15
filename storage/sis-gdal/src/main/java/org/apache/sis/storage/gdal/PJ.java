@@ -25,11 +25,13 @@ import org.opengis.metadata.citation.Citation;
 import org.opengis.referencing.datum.Ellipsoid;
 import org.opengis.referencing.datum.GeodeticDatum;
 import org.opengis.referencing.datum.PrimeMeridian;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.referencing.factory.InvalidGeodeticParameterException;
 import org.apache.sis.util.iso.SimpleInternationalString;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.referencing.IdentifiedObjects;
+import org.apache.sis.util.resources.Errors;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.internal.system.OS;
 
@@ -84,7 +86,8 @@ final class PJ implements Identifier {
         Objects.requireNonNull(definition);
         ptr = allocatePJ(definition);
         if (ptr == 0) {
-            throw new InvalidGeodeticParameterException(definition);
+            throw new InvalidGeodeticParameterException(Errors.format(Errors.Keys.UnparsableStringForClass_2,
+                    CoordinateReferenceSystem.class, definition));
         }
     }
 
@@ -194,6 +197,7 @@ final class PJ implements Identifier {
 
     /**
      * Returns the string representation of the PJ structure.
+     * Note that the string returned by Proj.4 contains <cite>End Of Line</cite> characters.
      *
      * <div class="note"><b>Example:</b> "Lat/long (Geodetic alias)"</div>
      */
@@ -206,8 +210,14 @@ final class PJ implements Identifier {
      */
     @Override
     public InternationalString getDescription() {
-        final String name = getName();
-        return (name != null) ? new SimpleInternationalString(getName()) : null;
+        String name = getName();
+        if (name != null) {
+            name = name.trim();
+            if (!name.isEmpty()) {
+               return new SimpleInternationalString(name);
+            }
+        }
+        return null;
     }
 
     /**
@@ -342,6 +352,8 @@ final class PJ implements Identifier {
      * Returns a description of the last error that occurred, or {@code null} if none.
      *
      * @return the last error that occurred, or {@code null}.
+     *
+     * @todo this method is not thread-safe. Proj.4 provides a better alternative using a context parameter.
      */
     native String getLastError();
 
