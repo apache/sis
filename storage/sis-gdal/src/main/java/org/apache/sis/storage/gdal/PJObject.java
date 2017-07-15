@@ -24,11 +24,10 @@ import org.opengis.util.InternationalString;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.extent.Extent;
 import org.opengis.referencing.IdentifiedObject;
-import org.apache.sis.internal.simple.SimpleIdentifier;
 
 
 /**
- * Base class of implementations in this Proj4 wrappers package.
+ * Base class of implementations in this {@literal Proj.4} wrappers package.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
@@ -75,29 +74,6 @@ class PJObject implements IdentifiedObject {
     }
 
     /**
-     * Returns the value of the given parameter as an identifier, or {@code null} if none.
-     * The given parameter key shall include the {@code '+'} prefix and {@code '='} suffix,
-     * for example {@code "+proj="}. This is a helper method for providing the {@code name}
-     * argument in constructors.
-     *
-     * @param  definition  the Proj.4 definition string to parse.
-     * @param  key         the parameter name.
-     * @return the parameter value as an identifier.
-     */
-    static Identifier identifier(final String definition, final String key) {
-        int i = definition.indexOf(key);
-        if (i >= 0) {
-            i += key.length();
-            final int stop = definition.indexOf(' ', i);
-            String value = (stop >= 0) ? definition.substring(i, stop) : definition.substring(i);
-            if (!(value = value.trim()).isEmpty()) {
-                return new SimpleIdentifier(null, value, false);
-            }
-        }
-        return null;
-    }
-
-    /**
      * Returns the name of this referencing object, or {@code null} if none.
      * Note that this attribute is mandatory according ISO 19111, but this
      * simple Proj.4 wrapper is lenient about that.
@@ -129,7 +105,7 @@ class PJObject implements IdentifiedObject {
     }
 
     /**
-     * Returns {@code null} since we do not define any scope in our Proj4 wrappers.
+     * Returns {@code null} since we do not define any scope in our {@literal Proj.4} wrappers.
      * Note that this method is not inherited from {@link IdentifiedObject}, but is
      * defined in sub-interfaces like {@link org.opengis.referencing.crs.SingleCRS}.
      */
@@ -147,7 +123,7 @@ class PJObject implements IdentifiedObject {
     }
 
     /**
-     * Returns {@code null} since there is no remarks associated with our Proj4 wrappers.
+     * Returns {@code null} since there is no remarks associated with our {@literal Proj.4} wrappers.
      */
     @Override
     public InternationalString getRemarks() {

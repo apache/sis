@@ -17,310 +17,289 @@
 package org.apache.sis.storage.gdal;
 
 import java.util.Map;
+import java.util.HashMap;
+import java.util.Collections;
 import javax.measure.Unit;
-import javax.measure.quantity.Angle;
-
+import org.opengis.util.FactoryException;
+import org.opengis.metadata.Identifier;
 import org.opengis.referencing.cs.*;
 import org.opengis.referencing.crs.*;
 import org.opengis.referencing.datum.*;
-import org.opengis.referencing.operation.*;
-import org.opengis.util.FactoryException;
-import org.opengis.metadata.Identifier;
-import org.opengis.parameter.ParameterValue;
-import org.opengis.parameter.ParameterValueGroup;
-import org.opengis.parameter.GeneralParameterValue;
-
+import org.opengis.referencing.IdentifiedObject;
+import org.opengis.referencing.operation.Conversion;
+import org.opengis.referencing.operation.CoordinateOperation;
+import org.apache.sis.referencing.operation.AbstractCoordinateOperation;
+import org.apache.sis.internal.system.DefaultFactories;
+import org.apache.sis.internal.metadata.AxisDirections;
+import org.apache.sis.internal.util.Constants;
+import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.metadata.iso.ImmutableIdentifier;
+import org.apache.sis.util.collection.WeakValueHashMap;
+import org.apache.sis.util.resources.Vocabulary;
+import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.iso.AbstractFactory;
+import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.measure.Units;
 
 
 /**
- * A factory for {@linkplain CoordinateReferenceSystem Coordinate Reference System} objects
- * created from property maps.
- *
- * <p>The supported methods in this class are:</p>
- *
- * <ul>
- *   <li>{@link #createGeocentricCRS(Map, GeodeticDatum, CartesianCS)}</li>
- *   <li>{@link #createGeographicCRS(Map, GeodeticDatum, EllipsoidalCS)}</li>
- *   <li>{@link #createProjectedCRS(Map, GeographicCRS, Conversion, CartesianCS)}</li>
- * </ul>
- *
- * All other methods throw a {@link FactoryException}.
+ * Creates Coordinate Reference System instances form {@link PJ} objects.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
  * @since   0.8
  * @module
  */
-final class ReferencingFactory extends AbstractFactory implements CRSFactory {
+final class ReferencingFactory extends AbstractFactory {
     /**
-     * The unique instance.
+     * The default factory instance.
      */
     static final ReferencingFactory INSTANCE = new ReferencingFactory();
+
+    /**
+     * The factory for coordinate reference system objects.
+     */
+    private final CRSFactory crsFactory;
+
+    /**
+     * The factory for coordinate system objects.
+     */
+    private final CSFactory csFactory;
+
+    /**
+     * The factory for datum objects.
+     */
+    private final DatumFactory datumFactory;
+
+    /**
+     * Poll of identifiers created by this factory.
+     */
+    private final Map<String,Identifier> identifiers;
+
+    /**
+     * Pool of {@literal Proj.4} objects created so far. The keys are the Proj.4 definition strings.
+     * The same {@link PJ} instance may appear more than once if various definition strings resulted
+     * in the same Proj.4 object.
+     */
+    private final WeakValueHashMap<String,PJ> pool;
 
     /**
      * Creates a new factory.
      */
     private ReferencingFactory() {
+        crsFactory   = DefaultFactories.forBuildin(CRSFactory.class);
+        csFactory    = DefaultFactories.forBuildin(CSFactory.class);
+        datumFactory = DefaultFactories.forBuildin(DatumFactory.class);
+        identifiers  = new HashMap<>();
+        pool         = new WeakValueHashMap<>(String.class);
     }
 
     /**
-     * Appends the prime meridian to the given definition string buffer.
+     * Returns the value of the given parameter as an identifier, or {@code null} if none.
+     * The given parameter key shall include the {@code '+'} prefix and {@code '='} suffix,
+     * for example {@code "+proj="}. This is a helper method for providing the {@code name}
+     * property value in constructors.
      *
-     * @param def  the definition string buffer.
-     * @param pm   the prime meridian, or {@code null} if none.
+     * @param  definition  the Proj.4 definition string to parse.
+     * @param  keyword     the parameter name.
+     * @return the parameter value as an identifier.
      */
-    private static void appendPrimeMeridian(final StringBuilder def, final PrimeMeridian pm) {
-        if (pm != null) {
-            double lon = pm.getGreenwichLongitude();
-            final Unit<Angle> unit = pm.getAngularUnit();
-            if (unit != null) {
-                lon = unit.getConverterTo(Units.DEGREE).convert(lon);
-            }
-            def.append(" +pm=").append(lon);
-        }
-    }
-
-    /**
-     * Appends the axis directions in the given definition string buffer.
-     *
-     * @param  def        the definition string buffer.
-     * @param  cs         the coordinate system.
-     * @param  dimension  the number of dimension to format (may be lower than the CS dimension).
-     * @throws FactoryException if an axis direction is not supported.
-     */
-    private static void appendAxisDirections(final StringBuilder def, final CoordinateSystem cs,
-            final int dimension) throws FactoryException
-    {
-        for (int i=0; i<dimension; i++) {
-            final AxisDirection dir = cs.getAxis(i).getDirection();
-            final char c;
-                 if (dir == AxisDirection.EAST ) c = 'e';
-            else if (dir == AxisDirection.WEST ) c = 'w';
-            else if (dir == AxisDirection.NORTH) c = 'n';
-            else if (dir == AxisDirection.SOUTH) c = 's';
-            else if (dir == AxisDirection.UP   ) c = 'u';
-            else if (dir == AxisDirection.DOWN ) c = 'd';
-            else throw new FactoryException("Unsupported axis direction: " + dir);
-            def.append(c);
-        }
-    }
-
-    /**
-     * Creates a geographic or geocentric coordinate reference system.
-     *
-     * @param  type        {@code "latlon"} or {@code "geocent"}.
-     * @param  properties  name to give to the new object.
-     * @param  datum       geodetic datum to use in created CRS.
-     * @param  cs          the ellipsoidal coordinate system for the created CRS.
-     * @return the coordinate reference system for the given properties.
-     * @throws FactoryException if the object creation failed.
-     */
-    private CoordinateReferenceSystem createGeodeticCRS(final String type, final Map<String,?> properties,
-            final GeodeticDatum datum, final CoordinateSystem cs) throws FactoryException
-    {
-        final int           dimension  = cs.getDimension();
-        final Identifier    name       = new ImmutableIdentifier(properties);
-        final Ellipsoid     ellipsoid  = datum.getEllipsoid();
-        final StringBuilder definition = new StringBuilder(100);
-        definition.append("+proj=").append(type)
-                .append(" +a=").append(ellipsoid.getSemiMajorAxis())
-                .append(" +b=").append(ellipsoid.getSemiMinorAxis());
-        appendPrimeMeridian(definition, datum.getPrimeMeridian());
-        appendAxisDirections(definition.append(' ').append(Proj4.AXIS_ORDER_PARAM), cs, Math.min(dimension, 3));
-        try {
-            return Proj4.createCRS(name, datum.getName(), definition.toString(), dimension);
-        } catch (IllegalArgumentException e) {
-            throw new FactoryException(e.getMessage(), e);
-        }
-    }
-
-    /**
-     * Creates a geographic coordinate reference system.
-     * It can be <var>Latitude</var>/<var>Longitude</var> or <var>Longitude</var>/<var>Latitude</var>.
-     *
-     * @param  properties  name to give to the new object.
-     * @param  datum       geodetic datum to use in created CRS.
-     * @param  cs          the ellipsoidal coordinate system for the created CRS.
-     * @return the coordinate reference system for the given properties.
-     * @throws FactoryException if the object creation failed.
-     */
-    @Override
-    public GeographicCRS createGeographicCRS(final Map<String,?> properties,
-            final GeodeticDatum datum, final EllipsoidalCS cs) throws FactoryException
-    {
-        return (GeographicCRS) createGeodeticCRS("latlon", properties, datum, cs);
-    }
-
-    /**
-     * Creates a geocentric coordinate reference system.
-     *
-     * @param  properties  name to give to the new object.
-     * @param  datum       geodetic datum to use in created CRS.
-     * @param  cs          the coordinate system for the created CRS.
-     * @return the coordinate reference system for the given properties.
-     * @throws FactoryException if the object creation failed.
-     */
-    @Override
-    public GeocentricCRS createGeocentricCRS(final Map<String,?> properties,
-            final GeodeticDatum datum, final CartesianCS cs) throws FactoryException
-    {
-        return (GeocentricCRS) createGeodeticCRS("geocent", properties, datum, cs);
-    }
-
-    /**
-     * Unconditionally throws an exception, since this functionality is not supported yet.
-     *
-     * @throws FactoryException always thrown.
-     */
-    @Override
-    public GeocentricCRS createGeocentricCRS (Map<String,?> properties, GeodeticDatum datum, SphericalCS cs) throws FactoryException {
-        throw Proj4.unsupportedOperation();
-    }
-
-    /**
-     * Creates a projected coordinate reference system from a defining conversion.
-     * The projection and parameter names in the {@code conversionFromBase} can be
-     * Proj.4 names, OGC names, EPSG names or GeoTIFF names.
-     *
-     * @param  properties          name to give to the new object.
-     * @param  baseCRS             geographic coordinate reference system to base the projection on.
-     * @param  conversionFromBase  the defining conversion.
-     * @param  derivedCS           the coordinate system for the projected CRS.
-     * @return the coordinate reference system for the given properties.
-     * @throws FactoryException if the object creation failed.
-     */
-    @Override
-    public ProjectedCRS createProjectedCRS(final Map<String,?> properties, final GeographicCRS baseCRS,
-            final Conversion conversionFromBase, final CartesianCS derivedCS) throws FactoryException
-    {
-        final int                 dimension  = derivedCS.getDimension();
-        final Identifier          name       = new ImmutableIdentifier(properties);
-        final EllipsoidalCS       baseCS     = baseCRS.getCoordinateSystem();
-        final GeodeticDatum       datum      = baseCRS.getDatum();
-        final Ellipsoid           ellipsoid  = datum.getEllipsoid();
-        final ParameterValueGroup parameters = conversionFromBase.getParameterValues();
-        final StringBuilder       definition = new StringBuilder(200);
-        definition.append("+proj=").append(ResourcesLoader.getProjName(parameters, false).substring(1));
-        boolean hasSemiMajor = false;
-        boolean hasSemiMinor = false;
-        for (final GeneralParameterValue parameter : parameters.values()) {
-            if (parameter instanceof ParameterValue) {
-                final Object value = ((ParameterValue) parameter).getValue();
-                if (value != null) {
-                    final String pn = ResourcesLoader.getProjName(parameter, true);
-                    if (pn.equals("+a")) hasSemiMajor = true;
-                    if (pn.equals("+b")) hasSemiMinor = true;
-                    definition.append(' ').append(pn).append('=').append(value);
-                }
+    private Map<String,Identifier> identifier(final String definition, final String keyword) {
+        String value = "";
+        if (keyword != null) {
+            int i = definition.indexOf(keyword);
+            if (i >= 0) {
+                i += keyword.length();
+                final int stop = definition.indexOf(' ', i);
+                value = (stop >= 0) ? definition.substring(i, stop) : definition.substring(i);
+                value = value.trim();
             }
         }
-        if (!hasSemiMajor) definition.append(" +a=").append(ellipsoid.getSemiMajorAxis());
-        if (!hasSemiMinor) definition.append(" +b=").append(ellipsoid.getSemiMinorAxis());
-        appendPrimeMeridian (definition, datum.getPrimeMeridian());
-        appendAxisDirections(definition.append(' ').append(Proj4.AXIS_ORDER_PARAM), derivedCS, Math.min(dimension, 3));
-        appendAxisDirections(definition.append(Proj4.AXIS_ORDER_SEPARATOR), baseCS, Math.min(baseCS.getDimension(), 3));
-        final CRS.Projected crs;
-        try {
-            crs = (CRS.Projected) Proj4.createCRS(name, datum.getName(), definition.toString(), dimension);
-        } catch (IllegalArgumentException e) {
-            throw new FactoryException(e.getMessage(), e);
+        if (value.isEmpty()) {
+            value = "Unnamed";
         }
-        if (baseCRS instanceof CRS.Geographic) {
-            crs.baseCRS = (CRS.Geographic) baseCRS;
+        return identifier(value);
+    }
+
+    /**
+     * Returns the identifier for the given code in {@literal Proj.4} namespace.
+     */
+    private Map<String,Identifier> identifier(final String code) {
+        Identifier id = identifiers.computeIfAbsent(code, (k) -> {
+            short i18n = 0;
+            if (k.equalsIgnoreCase("Unnamed")) i18n = Vocabulary.Keys.Unnamed;
+            if (k.equalsIgnoreCase("Unknown")) i18n = Vocabulary.Keys.Unknown;
+            return new ImmutableIdentifier(Citations.PROJ4, Constants.PROJ4, k, null,
+                    (i18n != 0) ? Vocabulary.formatInternational(i18n) : null);
+        });
+        return Collections.singletonMap(IdentifiedObject.NAME_KEY, id);
+    }
+
+    /**
+     * Creates a geodetic datum from the given {@literal Proj.4} wrapper.
+     *
+     * @param  pj  the Proj.4 object to wrap.
+     */
+    private GeodeticDatum createDatum(final PJ pj) throws FactoryException {
+        final PrimeMeridian pm;
+        final double greenwichLongitude = pj.getGreenwichLongitude();
+        if (greenwichLongitude == 0) {
+            pm = CommonCRS.WGS84.datum().getPrimeMeridian();
+        } else {
+            pm = datumFactory.createPrimeMeridian(identifier("Unnamed"), greenwichLongitude, Units.DEGREE);
         }
-        return crs;
+        final String definition = pj.getCode();
+        return datumFactory.createGeodeticDatum(identifier(definition, "+datum="),
+               datumFactory.createEllipsoid    (identifier(definition, "+ellps="),
+                    pj.getSemiMajorAxis(), pj.getSemiMinorAxis(), Units.METRE), pm);
     }
 
     /**
-     * Unconditionally throws an exception, since this functionality is not supported yet.
+     * Creates a coordinate reference system from the given {@literal Proj.4} wrapper.
+     * The given {@code pj} will be stored as the CRS identifier.
      *
-     * @throws FactoryException always thrown.
+     * @param  pj          the Proj.4 object to wrap.
+     * @param  withHeight  whether to include a height axis.
      */
-    @Override
-    public VerticalCRS createVerticalCRS(Map<String,?> properties, VerticalDatum datum, VerticalCS cs) throws FactoryException {
-        throw Proj4.unsupportedOperation();
+    private CoordinateReferenceSystem createCRS(final PJ pj, final boolean withHeight) throws FactoryException {
+        final PJ.Type type = pj.getType();
+        final boolean geographic = PJ.Type.GEOGRAPHIC.equals(type);
+        final char[] dir = pj.getAxisDirections();
+        final CoordinateSystemAxis[] axes = new CoordinateSystemAxis[withHeight ? dir.length : 2];
+        for (int i=0; i<axes.length; i++) {
+            final char d = Character.toLowerCase(dir[i]);
+            char abbreviation = Character.toUpperCase(d);
+            boolean vertical = false;
+            final AxisDirection c;
+            final String name;
+            switch (d) {
+                case 'e': c = AxisDirection.EAST;  name = geographic ? "Geodetic longitude" : "Easting";  break;
+                case 'w': c = AxisDirection.WEST;  name = geographic ? "Geodetic longitude" : "Westing";  break;
+                case 'n': c = AxisDirection.NORTH; name = geographic ? "Geodetic latitude"  : "Northing"; break;
+                case 's': c = AxisDirection.SOUTH; name = geographic ? "Geodetic latitude"  : "Southing"; break;
+                case 'u': c = AxisDirection.UP;    name = "Height";  vertical = true; abbreviation = 'h'; break;
+                case 'd': c = AxisDirection.DOWN;  name = "Depth";   vertical = true; break;
+                default:  c = AxisDirection.OTHER; name = "Unknown"; break;
+            }
+            if (geographic && AxisDirections.isCardinal(c)) {
+                abbreviation = (d == 'e' || d == 'w') ? 'λ' : 'φ';
+            }
+            final Unit<?> unit = (vertical || !geographic) ? Units.METRE.divide(pj.getLinearUnitToMetre(vertical)) : Units.DEGREE;
+            axes[i] = csFactory.createCoordinateSystemAxis(identifier(name), String.valueOf(abbreviation).intern(), c, unit);
+        }
+        /*
+         * At this point we got the coordinate system axes. Now create the CRS. The given Proj.4 object
+         * will be stored as the CRS identifier for allowing OperationFactory to get it back before to
+         * attempt to create a new one for a given CRS.
+         */
+        final Map<String,Identifier> csName = identifier("Unnamed");
+        final Map<String,Identifier> name = new HashMap<>(identifier(pj.getName()));
+        name.put(CoordinateReferenceSystem.IDENTIFIERS_KEY, pj);
+        switch (type) {
+            case GEOGRAPHIC: {
+                return crsFactory.createGeographicCRS(name, createDatum(pj), withHeight ?
+                        csFactory.createEllipsoidalCS(csName, axes[0], axes[1], axes[2]) :
+                        csFactory.createEllipsoidalCS(csName, axes[0], axes[1]));
+            }
+            case GEOCENTRIC: {
+                return crsFactory.createGeocentricCRS(name, createDatum(pj),
+                        csFactory.createCartesianCS(csName, axes[0], axes[1], axes[2]));
+            }
+            case PROJECTED: {
+                final CoordinateReferenceSystem base = createCRS(unique(new PJ(pj)), withHeight);
+                final Conversion fromBase = null;   // TODO
+                return crsFactory.createProjectedCRS(name, (GeographicCRS) base, fromBase, withHeight ?
+                        csFactory.createCartesianCS(csName, axes[0], axes[1], axes[2]) :
+                        csFactory.createCartesianCS(csName, axes[0], axes[1]));
+            }
+            default: {
+                throw new FactoryException(Errors.format(Errors.Keys.UnknownEnumValue_2, type, PJ.Type.class));
+            }
+        }
     }
 
     /**
-     * Unconditionally throws an exception, since this functionality is not supported yet.
-     *
-     * @throws FactoryException always thrown.
+     * Gets the {@literal Proj.4} object from the given coordinate reference system. If an existing {@code PJ}
+     * instance is found, returns it. Otherwise creates a new {@code PJ} instance from a Proj.4 definition
+     * inferred from the given CRS. This method is the converse of {@link #createCRS(PJ, boolean)}.
      */
-    @Override
-    public TemporalCRS createTemporalCRS(Map<String, ?> properties, TemporalDatum datum, TimeCS cs) throws FactoryException {
-        throw Proj4.unsupportedOperation();
+    private PJ unwrapOrCreate(final CoordinateReferenceSystem crs) throws FactoryException {
+        for (final Identifier id : crs.getIdentifiers()) {
+            if (id instanceof PJ) {
+                return (PJ) id;
+            }
+        }
+        return unique(new PJ(Proj4.definition(crs)));
     }
 
     /**
-     * Unconditionally throws an exception, since this functionality is not supported yet.
-     *
-     * @throws FactoryException always thrown.
+     * Returns a unique instance of the given {@literal Proj.4} object.
      */
-    @Override
-    public ParametricCRS createParametricCRS(Map<String, ?> properties, ParametricDatum datum, ParametricCS cs) throws FactoryException {
-        throw Proj4.unsupportedOperation();
+    @SuppressWarnings("FinalizeCalledExplicitly")
+    private PJ unique(PJ pj) {
+        final PJ existing = pool.putIfAbsent(pj.getCode(), pj);
+        if (existing != null) {
+            pj.finalize();          // Release Proj.4 resources.
+            return existing;
+        }
+        return pj;
     }
 
     /**
-     * Unconditionally throws an exception, since this functionality is not supported yet.
+     * Creates a coordinate reference system from the given {@literal Proj.4} definition string.
      *
-     * @throws FactoryException always thrown.
+     * @param  definition  the Proj.4 definition.
+     * @param  withHeight  whether to include a height axis.
      */
-    @Override
-    public ImageCRS createImageCRS(Map<String, ?> properties, ImageDatum datum, AffineCS cs) throws FactoryException {
-        throw Proj4.unsupportedOperation();
+    public CoordinateReferenceSystem createCRS(final String definition, final boolean withHeight) throws FactoryException {
+        PJ pj = pool.get(definition);
+        if (pj == null) {
+            pj = unique(new PJ(definition));
+            pool.putIfAbsent(definition, pj);
+        }
+        return createCRS(pj, withHeight);
     }
 
     /**
-     * Unconditionally throws an exception, since this functionality is not supported yet.
+     * Creates an operation for conversion or transformation between two coordinate reference systems.
      *
-     * @throws FactoryException always thrown.
+     * @param  sourceCRS  the source coordinate reference system.
+     * @param  targetCRS  the target coordinate reference system.
+     * @return a coordinate operation for transforming coordinates from the given source CRS to the given target CRS.
+     * @throws FactoryException if the given CRS are not instances recognized by this class.
      */
-    @Override
-    public EngineeringCRS createEngineeringCRS(Map<String, ?> properties, EngineeringDatum datum, CoordinateSystem cs) throws FactoryException {
-        throw Proj4.unsupportedOperation();
+    public CoordinateOperation createOperation(final CoordinateReferenceSystem sourceCRS,
+                                               final CoordinateReferenceSystem targetCRS)
+            throws FactoryException
+    {
+        Identifier id;
+        String src = null, tgt = null, name = "Unnamed";
+        if ((id = sourceCRS.getName()) != null) src = id.getCode();
+        if ((id = targetCRS.getName()) != null) tgt = id.getCode();
+        if (src != null || tgt != null) {
+            final StringBuilder buffer = new StringBuilder();
+            if (src != null) buffer.append("From ").append(src);
+            if (tgt != null) buffer.append(buffer.length() == 0 ? "To " : " to ").append(tgt);
+            name = buffer.toString();
+        }
+        final Transform tr = new Transform(unwrapOrCreate(sourceCRS), is3D("sourceCRS", sourceCRS),
+                                           unwrapOrCreate(targetCRS), is3D("targetCRS", targetCRS));
+        /*
+         * TODO: should create a more specific coordinate operation.
+         */
+        return new AbstractCoordinateOperation(identifier(name), sourceCRS, targetCRS, null, tr);
     }
 
     /**
-     * Unconditionally throws an exception, since this functionality is not supported yet.
-     *
-     * @throws FactoryException always thrown.
+     * Returns whether the given CRS is three-dimensional.
+     * Thrown an exception if the number of dimension is unsupported.
      */
-    @Override
-    public DerivedCRS createDerivedCRS(Map<String, ?> properties, CoordinateReferenceSystem baseCRS, Conversion conversionFromBase, CoordinateSystem derivedCS) throws FactoryException {
-        throw Proj4.unsupportedOperation();
-    }
-
-    /**
-     * Unconditionally throws an exception, since this functionality is not supported yet.
-     *
-     * @throws FactoryException always thrown.
-     */
-    @Override
-    public CompoundCRS createCompoundCRS(Map<String, ?> properties, CoordinateReferenceSystem... elements) throws FactoryException {
-        throw Proj4.unsupportedOperation();
-    }
-
-    /**
-     * Unconditionally throws an exception, since this functionality is not supported yet.
-     *
-     * @throws FactoryException always thrown.
-     */
-    @Override
-    public CoordinateReferenceSystem createFromXML(String xml) throws FactoryException {
-        throw Proj4.unsupportedOperation();
-    }
-
-    /**
-     * Unconditionally throws an exception, since this functionality is not supported yet.
-     *
-     * @throws FactoryException always thrown.
-     */
-    @Override
-    public CoordinateReferenceSystem createFromWKT(String wkt) throws FactoryException {
-        throw Proj4.unsupportedOperation();
+    private static boolean is3D(final String arg, final CoordinateReferenceSystem crs) throws FactoryException {
+        final int dim = crs.getCoordinateSystem().getDimension();
+        final boolean is3D = (dim >= 3);
+        if (dim < 2 || dim > 3) {
+            throw new FactoryException(Errors.format(Errors.Keys.MismatchedDimension_3, arg, is3D ? 3 : 2, dim));
+        }
+        return is3D;
     }
 }

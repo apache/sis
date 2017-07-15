@@ -174,7 +174,7 @@ public final class ServicesForUtility extends MetadataServices {
                 alternateTitle = key;
                 break;
             }
-            case "Proj4": {
+            case Constants.PROJ4: {
                 title = "Proj.4";
                 break;
             }

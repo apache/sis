@@ -20,6 +20,7 @@ import org.opengis.util.FactoryException;
 import org.opengis.referencing.crs.GeographicCRS;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
+import org.apache.sis.test.TestUtilities;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -37,7 +38,7 @@ import static org.junit.Assert.*;
 @DependsOn(PJTest.class)
 public final strictfp class EPSGFactoryTest extends TestCase {
     /**
-     * Verifies if the Proj4 library is available.
+     * Verifies if the {@literal Proj.4} library is available.
      */
     @BeforeClass
     public static void verifyNativeLibraryAvailability() {
@@ -55,8 +56,11 @@ public final strictfp class EPSGFactoryTest extends TestCase {
     public void testEPSG_4326() throws FactoryException {
         final EPSGFactory factory = new EPSGFactory(true);
         final GeographicCRS crs = factory.createGeographicCRS("EPSG:4326");
-        // Use Proj.4 specific API to check axis order.
-        final PJ pj = (PJ) crs.getDatum();
+        /*
+         * Use Proj.4 specific API to check axis order.
+         */
+        final PJ pj = (PJ) TestUtilities.getSingleton(crs.getIdentifiers());
+        assertEquals(PJ.Type.GEOGRAPHIC, pj.getType());
         assertArrayEquals(new char[] {'n', 'e', 'u'}, pj.getAxisDirections());
     }
 }

@@ -27,18 +27,26 @@ JNIEXPORT jlong JNICALL Java_org_apache_sis_storage_gdal_PJ_allocateGeoPJ
 
 /*
  * Class:     org_apache_sis_storage_gdal_PJ
- * Method:    getVersion
+ * Method:    getRelease
  * Signature: ()Ljava/lang/String;
  */
-JNIEXPORT jstring JNICALL Java_org_apache_sis_storage_gdal_PJ_getVersion
+JNIEXPORT jstring JNICALL Java_org_apache_sis_storage_gdal_PJ_getRelease
   (JNIEnv *, jclass);
 
 /*
  * Class:     org_apache_sis_storage_gdal_PJ
- * Method:    getDefinition
+ * Method:    getCode
  * Signature: ()Ljava/lang/String;
  */
-JNIEXPORT jstring JNICALL Java_org_apache_sis_storage_gdal_PJ_getDefinition
+JNIEXPORT jstring JNICALL Java_org_apache_sis_storage_gdal_PJ_getCode
+  (JNIEnv *, jobject);
+
+/*
+ * Class:     org_apache_sis_storage_gdal_PJ
+ * Method:    getName
+ * Signature: ()Ljava/lang/String;
+ */
+JNIEXPORT jstring JNICALL Java_org_apache_sis_storage_gdal_PJ_getName
   (JNIEnv *, jobject);
 
 /*
@@ -111,14 +119,6 @@ JNIEXPORT void JNICALL Java_org_apache_sis_storage_gdal_PJ_transform
  * Signature: ()Ljava/lang/String;
  */
 JNIEXPORT jstring JNICALL Java_org_apache_sis_storage_gdal_PJ_getLastError
-  (JNIEnv *, jobject);
-
-/*
- * Class:     org_apache_sis_storage_gdal_PJ
- * Method:    toString
- * Signature: ()Ljava/lang/String;
- */
-JNIEXPORT jstring JNICALL Java_org_apache_sis_storage_gdal_PJ_toString
   (JNIEnv *, jobject);
 
 /*

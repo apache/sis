@@ -22,13 +22,9 @@ import org.opengis.util.FactoryException;
 import org.opengis.util.InternationalString;
 import org.opengis.referencing.crs.*;
 import org.opengis.referencing.IdentifiedObject;
-import org.opengis.referencing.NoSuchAuthorityCodeException;
 import org.opengis.metadata.citation.Citation;
-import org.opengis.metadata.Identifier;
 
 import org.apache.sis.metadata.iso.citation.Citations;
-import org.apache.sis.metadata.iso.ImmutableIdentifier;
-import org.apache.sis.util.iso.SimpleInternationalString;
 import org.apache.sis.util.iso.AbstractFactory;
 
 
@@ -62,6 +58,19 @@ import org.apache.sis.util.iso.AbstractFactory;
  * @module
  */
 final class EPSGFactory extends AbstractFactory implements CRSAuthorityFactory {
+    /**
+     * The {@literal Proj.4} parameter used for declaration of axis order. Proj.4 expects the axis parameter
+     * to be exactly 3 characters long, but Apache SIS accepts 2 characters as well. We relax the Proj.4 rule
+     * because we use the number of characters for determining the number of dimensions.
+     * This is okay since 1 character = 1 axis.
+     */
+    static final String AXIS_ORDER_PARAM = "+axis=";
+
+    /**
+     * The character used for separating the {@literal Proj.4} axis order declarations.
+     */
+    private static final char AXIS_ORDER_SEPARATOR = ',';
+
     /**
      * {@code true} if the CRS created by this factory should use the axis order declared by the EPSG database.
      */
@@ -107,34 +116,13 @@ final class EPSGFactory extends AbstractFactory implements CRSAuthorityFactory {
     }
 
     /**
-     * Returns the name of the CRS identified by the given code. The default implementation
-     * returns a non-null value only for a few common codes.
+     * Returns the name of the CRS identified by the given code, or {@code null} if none.
      *
      * @throws FactoryException if an error occurred while fetching the description.
      */
     @Override
     public InternationalString getDescriptionText(final String code) throws FactoryException {
-        final String name = getName(code, null, false);
-        return (name != null) ? new SimpleInternationalString(code) : null;
-    }
-
-    /**
-     * Returns a hard-coded name for the given code, or {@code null} if none.
-     * Only the most frequent CRS are recognized by this method.
-     *
-     * @param isDatum  {@code false} for creating a CRS name (the usual case), or
-     *                 {@code true} for creating a datum name.
-     */
-    private static String getName(String code, final String defaultValue, final boolean isDatum) {
-        final int s = code.indexOf(':');
-        if (s<0 || code.substring(0,s).trim().equalsIgnoreCase("epsg")) try {
-            switch (Integer.parseInt(code.substring(s+1).trim())) {
-                case 4326: return isDatum ? "World Geodetic System 1984" : "WGS 84";
-            }
-        } catch (NumberFormatException e) {
-            // Ignore - this is okay for this method contract.
-        }
-        return defaultValue;
+        return null;
     }
 
     /**
@@ -169,20 +157,13 @@ final class EPSGFactory extends AbstractFactory implements CRSAuthorityFactory {
              */
             String orientation = ResourcesLoader.getAxisOrientations().get(code);
             if (orientation != null) {
-                definition.append(' ').append(Proj4.AXIS_ORDER_PARAM).append(orientation);
-                final int end = orientation.indexOf(Proj4.AXIS_ORDER_SEPARATOR);
+                definition.append(' ').append(AXIS_ORDER_PARAM).append(orientation);
+                final int end = orientation.indexOf(AXIS_ORDER_SEPARATOR);
                 dimension = (end >= 0) ? end : orientation.length();
+                if (dimension == 2) definition.append('u');
             }
         }
-        final String crsName   = getName(code, code,   false);
-        final String datumName = getName(code, crsName, true);
-        final Identifier crsId = new ImmutableIdentifier(null, codespace, crsName);
-        final Identifier datumId = datumName.equals(crsName) ? crsId : new ImmutableIdentifier(null, codespace, datumName);
-        try {
-            return Proj4.createCRS(crsId, datumId, definition.toString(), dimension);
-        } catch (IllegalArgumentException e) {
-            throw new NoSuchAuthorityCodeException(e.getMessage(), codespace, code);
-        }
+        return Proj4.createCRS(definition.toString(), dimension);
     }
 
     /**
