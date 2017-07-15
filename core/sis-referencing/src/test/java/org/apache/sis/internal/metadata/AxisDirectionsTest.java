@@ -110,6 +110,34 @@ public final strictfp class AxisDirectionsTest extends TestCase {
     }
 
     /**
+     * Tests {@link AxisDirections#isCardinal(AxisDirection)}.
+     *
+     * @since 0.8
+     */
+    @Test
+    public void testIsCardinal() {
+        assertTrue (AxisDirections.isCardinal(NORTH));
+        assertFalse(AxisDirections.isCardinal(NORTH_NORTH_EAST));
+        assertFalse(AxisDirections.isCardinal(NORTH_EAST));
+        assertFalse(AxisDirections.isCardinal(EAST_NORTH_EAST));
+        assertTrue (AxisDirections.isCardinal(EAST));
+        assertFalse(AxisDirections.isCardinal(EAST_SOUTH_EAST));
+        assertFalse(AxisDirections.isCardinal(SOUTH_EAST));
+        assertFalse(AxisDirections.isCardinal(SOUTH_SOUTH_EAST));
+        assertTrue (AxisDirections.isCardinal(SOUTH));
+        assertFalse(AxisDirections.isCardinal(SOUTH_SOUTH_WEST));
+        assertFalse(AxisDirections.isCardinal(SOUTH_WEST));
+        assertFalse(AxisDirections.isCardinal(WEST_SOUTH_WEST));
+        assertTrue (AxisDirections.isCardinal(WEST));
+        assertFalse(AxisDirections.isCardinal(WEST_NORTH_WEST));
+        assertFalse(AxisDirections.isCardinal(NORTH_WEST));
+        assertFalse(AxisDirections.isCardinal(NORTH_NORTH_WEST));
+        assertFalse(AxisDirections.isCardinal(UP));
+        assertFalse(AxisDirections.isCardinal(FUTURE));
+        assertFalse(AxisDirections.isCardinal(OTHER));
+    }
+
+    /**
      * Tests {@link AxisDirections#isIntercardinal(AxisDirection)}.
      */
     @Test

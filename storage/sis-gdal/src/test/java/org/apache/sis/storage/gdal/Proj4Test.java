@@ -14,34 +14,33 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.test.suite;
+package org.apache.sis.storage.gdal;
 
-import org.apache.sis.test.TestSuite;
-import org.junit.BeforeClass;
-import org.junit.runners.Suite;
+import org.opengis.util.FactoryException;
+import org.apache.sis.referencing.crs.HardCodedCRS;
+import org.apache.sis.test.TestCase;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
 
 
 /**
- * All tests from the {@code sis-gdal} module, in approximative dependency order.
+ * Tests the {@link Proj4} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
  * @since   0.8
  * @module
  */
-@Suite.SuiteClasses({
-    org.apache.sis.storage.gdal.PJTest.class,
-    org.apache.sis.storage.gdal.Proj4Test.class,
-    org.apache.sis.storage.gdal.EPSGFactoryTest.class
-})
-public final strictfp class GDALTestSuite extends TestSuite {
+public final strictfp class Proj4Test extends TestCase {
     /**
-     * Verifies the list of tests before to run the suite.
-     * See {@link #verifyTestList(Class, Class[])} for more information.
+     * Tests {@link Proj4#definition(CoordinateReferenceSystem)} on geographic CRS.
+     *
+     * @throws FactoryException if an error occurred while computing the Proj.4 definition string.
      */
-    @BeforeClass
-    public static void verifyTestList() {
-        assertNoMissingTest(GDALTestSuite.class);
-        verifyTestList(GDALTestSuite.class);
+    @Test
+    public void testGeographicDefinition() throws FactoryException {
+        assertEquals("+proj=latlon +a=6378137.0 +b=6356752.314245179 +pm=0.0 +axis=enu", Proj4.definition(HardCodedCRS.WGS84));
+        assertEquals("+proj=latlon +a=6378137.0 +b=6356752.314245179 +pm=0.0 +axis=neu", Proj4.definition(HardCodedCRS.WGS84_φλ));
     }
 }
