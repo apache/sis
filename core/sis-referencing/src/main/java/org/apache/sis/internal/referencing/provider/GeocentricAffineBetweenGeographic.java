@@ -62,6 +62,8 @@ public abstract class GeocentricAffineBetweenGeographic extends GeocentricAffine
      * Furthermore it would not solve the case where the number of input dimensions is different than the number of
      * output dimensions. We can not afford to have wrong default values since it would confuse our interpretation
      * of user's parameters in {@link #createMathTransform(MathTransformFactory, ParameterValueGroup)}.</p>
+     *
+     * @see GeographicToGeocentric#DIMENSION
      */
     public static final ParameterDescriptor<Integer> DIMENSION;
 

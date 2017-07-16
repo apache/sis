@@ -51,7 +51,6 @@ public final class GeocentricTranslation3D extends GeocentricAffineBetweenGeogra
     /**
      * Constructs the provider.
      */
-    @SuppressWarnings("ThisEscapedInObjectConstruction")
     public GeocentricTranslation3D() {
         this(3, 3, new GeocentricAffineBetweenGeographic[4]);
         redimensioned[0] = new GeocentricTranslation2D(      redimensioned);

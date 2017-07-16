@@ -42,6 +42,7 @@ import org.opengis.parameter.InvalidParameterValueException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.cs.EllipsoidalCS;
+import org.opengis.referencing.cs.CartesianCS;
 import org.opengis.referencing.datum.Ellipsoid;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
@@ -61,6 +62,8 @@ import org.apache.sis.internal.referencing.j2d.ParameterizedAffine;
 import org.apache.sis.internal.referencing.provider.AbstractProvider;
 import org.apache.sis.internal.referencing.provider.VerticalOffset;
 import org.apache.sis.internal.referencing.provider.Providers;
+import org.apache.sis.internal.referencing.provider.GeographicToGeocentric;
+import org.apache.sis.internal.referencing.provider.GeocentricToGeographic;
 import org.apache.sis.internal.referencing.Resources;
 import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.metadata.iso.citation.Citations;
@@ -1210,13 +1213,71 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
      * @return a conversion from the given source to the given target coordinate system.
      * @throws FactoryException if the conversion can not be created.
      *
+     * @deprecated Replaced by {@link #createCoordinateSystemChange(CoordinateSystem, CoordinateSystem, Ellipsoid)}
+     *
      * @since 0.7
      */
+    @Deprecated
     public MathTransform createCoordinateSystemChange(final CoordinateSystem source, final CoordinateSystem target)
             throws FactoryException
     {
+        return createCoordinateSystemChange(source, target, null);
+    }
+
+    /**
+     * Creates a math transform that represent a change of coordinate system. If exactly one argument is
+     * an {@linkplain org.apache.sis.referencing.cs.DefaultEllipsoidalCS ellipsoidal coordinate systems},
+     * then the {@code ellipsoid} argument is mandatory. In all other cases (including the case where both
+     * coordinate systems are ellipsoidal), the ellipsoid argument is ignored and can be {@code null}.
+     *
+     * <div class="note"><b>Design note:</b>
+     * this method does not accept separated ellipsoid arguments for {@code source} and {@code target} because
+     * this method should not be used for datum shifts. If the two given coordinate systems are ellipsoidal,
+     * then they are assumed to use the same ellipsoid. If different ellipsoids are desired, then a
+     * {@linkplain #createParameterizedTransform parameterized transform} like <cite>"Molodensky"</cite>,
+     * <cite>"Geocentric translations"</cite>, <cite>"Coordinate Frame Rotation"</cite> or
+     * <cite>"Position Vector transformation"</cite> should be used instead.</div>
+     *
+     * @param  source     the source coordinate system.
+     * @param  target     the target coordinate system.
+     * @param  ellipsoid  the ellipsoid of {@code EllipsoidalCS}, or {@code null} if none.
+     * @return a conversion from the given source to the given target coordinate system.
+     * @throws FactoryException if the conversion can not be created.
+     *
+     * @since 0.8
+     */
+    public MathTransform createCoordinateSystemChange(final CoordinateSystem source, final CoordinateSystem target,
+            final Ellipsoid ellipsoid) throws FactoryException
+    {
         ArgumentChecks.ensureNonNull("source", source);
         ArgumentChecks.ensureNonNull("target", target);
+        if (ellipsoid != null) {
+            final boolean isEllipsoidalSource = (source instanceof EllipsoidalCS);
+            if (isEllipsoidalSource != (target instanceof EllipsoidalCS)) {
+                /*
+                 * For now we support only conversion between EllipsoidalCS and CartesianCS.
+                 * But future Apache SIS versions could add support for conversions between
+                 * EllipsoidalCS and SphericalCS or other coordinate systems.
+                 */
+                if ((isEllipsoidalSource ? target : source) instanceof CartesianCS) {
+                    final Context context = new Context();
+                    final EllipsoidalCS cs;
+                    final String operation;
+                    if (isEllipsoidalSource) {
+                        operation = GeographicToGeocentric.NAME;
+                        context.setSource(cs = (EllipsoidalCS) source, ellipsoid);
+                        context.setTarget(target);
+                    } else {
+                        operation = GeocentricToGeographic.NAME;
+                        context.setSource(source);
+                        context.setTarget(cs = (EllipsoidalCS) target, ellipsoid);
+                    }
+                    final ParameterValueGroup pg = getDefaultParameters(operation);
+                    if (cs.getDimension() < 3) pg.parameter("dim").setValue(2);       // Apache SIS specific parameter.
+                    return createParameterizedTransform(pg, context);
+                }
+            }
+        }
         return CoordinateSystemTransform.create(this, source, target);
         // No need to use unique(…) here.
     }

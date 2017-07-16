@@ -32,6 +32,7 @@ import org.apache.sis.internal.util.Constants;
 import org.apache.sis.geometry.DirectPosition2D;
 import org.apache.sis.io.wkt.WKTFormat;
 import org.apache.sis.referencing.CRS;
+import org.apache.sis.referencing.CommonCRS;
 
 // Test dependencies
 import org.apache.sis.referencing.operation.transform.MathTransformTestCase;
@@ -45,10 +46,17 @@ import static org.apache.sis.test.ReferencingAssert.*;
 
 
 /**
- * Tests {@link DefaultCoordinateOperationFactory}.
+ * Tests {@link DefaultCoordinateOperationFactory}, with or without EPSG geodetic dataset.
+ *
+ * <p><b>Relationship with other tests:</b></p>
+ * <ul>
+ *   <li>{@link CoordinateOperationRegistryTest} requires an EPSG geodetic dataset (otherwise tests are skipped).</li>
+ *   <li>{@link CoordinateOperationFinderTest} do not use any EPSG geodetic dataset.</li>
+ *   <li>{@code DefaultCoordinateOperationFactoryTest} is a mix of both.</li>
+ * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.7
+ * @version 0.8
  * @since   0.7
  * @module
  */
@@ -313,5 +321,33 @@ public final strictfp class DefaultCoordinateOperationFactoryTest extends MathTr
         assertSame(targetPt, transform.transform(sourcePt, targetPt));
         assertEquals("Easting should be unchanged", sourcePt.getX(),  targetPt.getX(), STRICT);
         assertEquals("Expected 27 km shift", 27476, targetPt.getY() - sourcePt.getY(), tolerance);
+    }
+
+    /**
+     * Tests a datum shift applied as a position vector transformation in geocentric domain.  This method performs
+     * the same test than {@link CoordinateOperationFinderTest#testPositionVectorTransformation()} except that the
+     * EPSG geodetic dataset may be used. The result however should be the same because of the {@code TOWGS84}
+     * parameter in the WKT used for the test.
+     *
+     * @throws ParseException if a CRS used in this test can not be parsed.
+     * @throws FactoryException if the operation can not be created.
+     * @throws TransformException if an error occurred while converting the test points.
+     *
+     * @see CoordinateOperationFinderTest#testPositionVectorTransformation()
+     * @see <a href="https://issues.apache.org/jira/browse/SIS-364">SIS-364</a>
+     *
+     * @since 0.8
+     */
+    @Test
+    public void testPositionVectorTransformation() throws ParseException, FactoryException, TransformException {
+        final CoordinateReferenceSystem sourceCRS = CommonCRS.WGS84.geographic();
+        final CoordinateReferenceSystem targetCRS = parse(CoordinateOperationFinderTest.AGD66());
+        final CoordinateOperation operation = factory.createOperation(sourceCRS, targetCRS);
+        transform  = operation.getMathTransform();
+        tolerance  = Formulas.LINEAR_TOLERANCE;
+        λDimension = new int[] {0};
+        verifyTransform(CoordinateOperationFinderTest.expectedAGD66(true),
+                        CoordinateOperationFinderTest.expectedAGD66(false));
+        validate();
     }
 }

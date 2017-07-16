@@ -70,7 +70,6 @@ public final class AbridgedMolodensky extends GeocentricAffineBetweenGeographic 
     /**
      * Constructs a new provider.
      */
-    @SuppressWarnings("ThisEscapedInObjectConstruction")
     public AbridgedMolodensky() {
         this(3, 3, new AbridgedMolodensky[4]);
         redimensioned[0] = new AbridgedMolodensky(2, 2, redimensioned);
