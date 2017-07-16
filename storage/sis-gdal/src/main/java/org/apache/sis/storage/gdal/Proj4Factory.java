@@ -25,13 +25,17 @@ import javax.measure.Unit;
 import org.opengis.util.FactoryException;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
+import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.referencing.cs.*;
 import org.opengis.referencing.crs.*;
 import org.opengis.referencing.datum.*;
 import org.opengis.referencing.IdentifiedObject;
+import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.referencing.operation.Conversion;
 import org.opengis.referencing.operation.CoordinateOperation;
-import org.apache.sis.referencing.operation.AbstractCoordinateOperation;
+import org.opengis.referencing.operation.CoordinateOperationFactory;
+import org.apache.sis.referencing.operation.DefaultConversion;
+import org.apache.sis.referencing.operation.DefaultCoordinateOperationFactory;
 import org.apache.sis.referencing.factory.GeodeticAuthorityFactory;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.internal.util.Constants;
@@ -39,9 +43,11 @@ import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.metadata.iso.ImmutableIdentifier;
 import org.apache.sis.internal.metadata.AxisDirections;
 import org.apache.sis.internal.system.DefaultFactories;
+import org.apache.sis.internal.system.Modules;
 import org.apache.sis.util.collection.WeakValueHashMap;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.measure.Units;
@@ -100,6 +106,12 @@ public class Proj4Factory extends GeodeticAuthorityFactory implements CRSAuthori
     private final DatumFactory datumFactory;
 
     /**
+     * The factory for coordinate operation objects.
+     * Currently restricted to Apache SIS implementation because we use a method not yet available in GeoAPI.
+     */
+    private final DefaultCoordinateOperationFactory opFactory;
+
+    /**
      * Poll of identifiers created by this factory.
      */
     private final Map<String,Identifier> identifiers = new HashMap<>();
@@ -118,6 +130,7 @@ public class Proj4Factory extends GeodeticAuthorityFactory implements CRSAuthori
         crsFactory   = DefaultFactories.forBuildin(CRSFactory.class);
         csFactory    = DefaultFactories.forBuildin(CSFactory.class);
         datumFactory = DefaultFactories.forBuildin(DatumFactory.class);
+        opFactory    = DefaultFactories.forBuildin(CoordinateOperationFactory.class, DefaultCoordinateOperationFactory.class);
     }
 
     /**
@@ -126,17 +139,23 @@ public class Proj4Factory extends GeodeticAuthorityFactory implements CRSAuthori
      * @param crsFactory    the factory to use for creating Coordinate Reference Systems.
      * @param csFactory     the factory to use for creating Coordinate Systems.
      * @param datumFactory  the factory to use for creating Geodetic Datums.
+     * @param opFactory     the factory to use for creating Coordinate Operations.
+     *                      Current implementation requires an instance of {@link DefaultCoordinateOperationFactory},
+     *                      but this may be related in a future Apache SIS version.
      */
     public Proj4Factory(final CRSFactory   crsFactory,
                         final CSFactory    csFactory,
-                        final DatumFactory datumFactory)
+                        final DatumFactory datumFactory,
+                        final CoordinateOperationFactory opFactory)
     {
         ArgumentChecks.ensureNonNull("crsFactory",   crsFactory);
         ArgumentChecks.ensureNonNull("csFactory",    csFactory);
         ArgumentChecks.ensureNonNull("datumFactory", datumFactory);
+        ArgumentChecks.ensureNonNull("opFactory",    opFactory);
         this.crsFactory   = crsFactory;
         this.csFactory    = csFactory;
         this.datumFactory = datumFactory;
+        this.opFactory    = (DefaultCoordinateOperationFactory) opFactory;
     }
 
     /**
@@ -183,7 +202,7 @@ public class Proj4Factory extends GeodeticAuthorityFactory implements CRSAuthori
         final String method;
         if (type.isAssignableFrom(ProjectedCRS.class)) {                // Must be tested first.
             method = "";
-        } else if (type.isAssignableFrom(GeodeticCRS.class)) {          // Should be tested before GeocentricCRS.
+        } else if (type.isAssignableFrom(GeographicCRS.class)) {        // Should be tested before GeocentricCRS.
             method = "latlon";
         } else if (type.isAssignableFrom(GeocentricCRS.class)) {
             method = "geocent";
@@ -377,9 +396,29 @@ public class Proj4Factory extends GeodeticAuthorityFactory implements CRSAuthori
                         csFactory.createCartesianCS(csName, axes[0], axes[1], axes[2]));
             }
             case PROJECTED: {
-                final CoordinateReferenceSystem base = createCRS(unique(new PJ(pj)), withHeight);
-                final Conversion fromBase = null;   // TODO
-                return crsFactory.createProjectedCRS(name, (GeographicCRS) base, fromBase, withHeight ?
+                final PJ base = unique(new PJ(pj));
+                final CoordinateReferenceSystem baseCRS = createCRS(base, withHeight);
+                final Transform tr = new Transform(pj, withHeight, base, withHeight);
+                /*
+                 * Try to convert the Proj.4 parameters into OGC parameters in order to have a less opaque structure.
+                 * Failure to perform this conversion will not cause a failure to create the ProjectedCRS. After all,
+                 * maybe the user invokes this method for using a map projection not yet supported by Apache SIS.
+                 * Instead, fallback on the more opaque Transform.METHOD description. Apache SIS will not be able to
+                 * perform analysis on those parameters, but it will not prevent the Proj.4 transformation to work.
+                 */
+                OperationMethod method;
+                ParameterValueGroup parameters;
+                try {
+                    final Proj4Parser parser = new Proj4Parser(pj.getCode());
+                    method = parser.method(opFactory);
+                    parameters = parser.parameters();
+                } catch (IllegalArgumentException | FactoryException e) {
+                    Logging.recoverableException(Logging.getLogger(Modules.GDAL), Proj4Factory.class, "createProjectedCRS", e);
+                    method = Transform.METHOD;
+                    parameters = null;              // Will let Apache SIS infers the parameters from the Transform instance.
+                }
+                final Conversion fromBase = new DefaultConversion(name, method, tr, parameters);
+                return crsFactory.createProjectedCRS(name, (GeographicCRS) baseCRS, fromBase, withHeight ?
                         csFactory.createCartesianCS(csName, axes[0], axes[1], axes[2]) :
                         csFactory.createCartesianCS(csName, axes[0], axes[1]));
             }
@@ -461,10 +500,7 @@ public class Proj4Factory extends GeodeticAuthorityFactory implements CRSAuthori
         }
         final Transform tr = new Transform(unwrapOrCreate(sourceCRS), is3D("sourceCRS", sourceCRS),
                                            unwrapOrCreate(targetCRS), is3D("targetCRS", targetCRS));
-        /*
-         * TODO: should create a more specific coordinate operation.
-         */
-        return new AbstractCoordinateOperation(identifier(name), sourceCRS, targetCRS, null, tr);
+        return opFactory.createSingleOperation(identifier(name), sourceCRS, targetCRS, null, Transform.METHOD, tr);
     }
 
     /**

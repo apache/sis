@@ -16,9 +16,18 @@
  */
 package org.apache.sis.storage.gdal;
 
+import java.util.Collections;
+import org.opengis.parameter.ParameterValueGroup;
+import org.opengis.parameter.ParameterDescriptor;
+import org.opengis.parameter.ParameterDescriptorGroup;
+import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
+import org.apache.sis.internal.util.Constants;
+import org.apache.sis.metadata.iso.citation.Citations;
+import org.apache.sis.parameter.ParameterBuilder;
+import org.apache.sis.referencing.operation.DefaultOperationMethod;
 import org.apache.sis.referencing.operation.transform.AbstractMathTransform;
 
 
@@ -31,6 +40,22 @@ import org.apache.sis.referencing.operation.transform.AbstractMathTransform;
  * @module
  */
 final class Transform extends AbstractMathTransform {
+    /**
+     * The operation method for a transformation between two {@link PJ} instances.
+     * The parameter names are taken from
+     * <a href="http://proj4.org/development/api.html#pj-transform">Proj.4 API</a>.
+     */
+    static final OperationMethod METHOD;
+    static {
+        final ParameterBuilder builder = new ParameterBuilder().setCodeSpace(Citations.PROJ4, Constants.PROJ4);
+        final ParameterDescriptor<?>[] p = {
+            builder.addName("srcdefn").setDescription("Source (input) coordinate system.").create(String.class, null),
+            builder.addName("dstdefn").setDescription("Destination (output) coordinate system.").create(String.class, null)
+        };
+        final ParameterDescriptorGroup params = builder.addName("pj_transform").createGroup(1, 1, p);
+        METHOD = new DefaultOperationMethod(Collections.singletonMap(OperationMethod.NAME_KEY, params.getName()), null, null, params);
+    }
+
     /**
      * The source and target CRS.
      */
@@ -54,6 +79,25 @@ final class Transform extends AbstractMathTransform {
         this.target   = target;
         this.source3D = source3D;
         this.target3D = target3D;
+    }
+
+    /**
+     * Returns the parameter descriptors for this math transform.
+     */
+    @Override
+    public ParameterDescriptorGroup getParameterDescriptors() {
+        return METHOD.getParameters();
+    }
+
+    /**
+     * Returns a copy of the parameter values for this parameterized object.
+     */
+    @Override
+    public ParameterValueGroup getParameterValues() {
+        final ParameterValueGroup pg = getParameterDescriptors().createValue();
+        pg.parameter("srcdefn").setValue(source.getCode());
+        pg.parameter("dstdefn").setValue(target.getCode());
+        return pg;
     }
 
     /**
