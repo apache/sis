@@ -16,8 +16,11 @@
  */
 package org.apache.sis.storage.gdal;
 
+import java.util.Arrays;
 import org.opengis.util.FactoryException;
+import org.opengis.referencing.crs.ProjectedCRS;
 import org.opengis.referencing.crs.GeographicCRS;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.TestUtilities;
@@ -35,7 +38,7 @@ import static org.junit.Assert.*;
  * @since   0.8
  * @module
  */
-@DependsOn(PJTest.class)
+@DependsOn({PJTest.class, Proj4ParserTest.class})
 public final strictfp class Proj4FactoryTest extends TestCase {
     /**
      * Verifies if the {@literal Proj.4} library is available.
@@ -46,12 +49,25 @@ public final strictfp class Proj4FactoryTest extends TestCase {
     }
 
     /**
+     * Tests {@link Proj4Factory#getAuthorityCodes(Class)}.
+     *
+     * @throws FactoryException if an error occurred while querying the factory.
+     */
+    @Test
+    public void testGetAuthorityCodes() throws FactoryException {
+        final Proj4Factory factory = Proj4Factory.INSTANCE;
+        assertTrue(factory.getAuthorityCodes(GeographicCRS.class).containsAll(Arrays.asList("+init=", "+proj=latlon")));
+        assertTrue(factory.getAuthorityCodes(CoordinateReferenceSystem.class).containsAll(Arrays.asList("+init=", "+proj=")));
+    }
+
+    /**
      * Tests the creation of the {@code "+init=epsg:4326"} geographic CRS.
+     * Note that the axis order is not the same than standard EPSG:4326.
      *
      * @throws FactoryException if an error occurred while creating the CRS objects.
      */
     @Test
-    public void testEPSG_4326() throws FactoryException {
+    public void test4326() throws FactoryException {
         final Proj4Factory factory = Proj4Factory.INSTANCE;
         final GeographicCRS crs = factory.createGeographicCRS("+init=epsg:4326");
         /*
@@ -59,6 +75,23 @@ public final strictfp class Proj4FactoryTest extends TestCase {
          */
         final PJ pj = (PJ) TestUtilities.getSingleton(crs.getIdentifiers());
         assertEquals(PJ.Type.GEOGRAPHIC, pj.getType());
+        assertArrayEquals(new char[] {'e', 'n', 'u'}, pj.getAxisDirections());
+    }
+
+    /**
+     * Tests the creation of the {@code "+init=epsg:3395"} projected CRS.
+     *
+     * @throws FactoryException if an error occurred while creating the CRS objects.
+     */
+    @Test
+    public void test3395() throws FactoryException {
+        final Proj4Factory factory = Proj4Factory.INSTANCE;
+        final ProjectedCRS crs = factory.createProjectedCRS("+init=epsg:3395");
+        /*
+         * Use Proj.4 specific API to check axis order.
+         */
+        final PJ pj = (PJ) TestUtilities.getSingleton(crs.getIdentifiers());
+        assertEquals(PJ.Type.PROJECTED, pj.getType());
         assertArrayEquals(new char[] {'e', 'n', 'u'}, pj.getAxisDirections());
     }
 }

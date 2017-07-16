@@ -28,10 +28,11 @@ import org.opengis.referencing.datum.PrimeMeridian;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.referencing.factory.InvalidGeodeticParameterException;
-import org.apache.sis.util.iso.SimpleInternationalString;
-import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.referencing.IdentifiedObjects;
+import org.apache.sis.metadata.iso.citation.Citations;
+import org.apache.sis.util.iso.SimpleInternationalString;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.util.CharSequences;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.internal.system.OS;
 
@@ -212,7 +213,13 @@ final class PJ implements Identifier {
     public InternationalString getDescription() {
         String name = getName();
         if (name != null) {
-            name = name.trim();
+            final StringBuilder buffer = new StringBuilder(name.length());
+            for (CharSequence line : CharSequences.splitOnEOL(getName())) {
+                line = CharSequences.trimWhitespaces(line);
+                if (buffer.length() != 0) buffer.append(' ');
+                buffer.append(line);
+            }
+            name = buffer.toString();
             if (!name.isEmpty()) {
                return new SimpleInternationalString(name);
             }

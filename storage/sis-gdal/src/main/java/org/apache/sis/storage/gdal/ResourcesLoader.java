@@ -17,13 +17,7 @@
 package org.apache.sis.storage.gdal;
 
 import java.util.Map;
-import java.util.Set;
-import java.util.List;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashSet;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -34,11 +28,7 @@ import org.opengis.util.FactoryException;
 import org.opengis.util.NoSuchIdentifierException;
 import org.opengis.parameter.GeneralParameterValue;
 import org.opengis.referencing.IdentifiedObject;
-import org.opengis.referencing.operation.OperationMethod;
 
-import org.apache.sis.metadata.iso.citation.Citations;
-import org.apache.sis.referencing.NamedIdentifier;
-import org.apache.sis.referencing.operation.DefaultOperationMethod;
 
 
 /**
@@ -53,12 +43,12 @@ final class ResourcesLoader {
     /**
      * The file which contains parameter aliases.
      */
-    static final String PARAMETERS_FILE = "parameter-names.txt";
+    private static final String PARAMETERS_FILE = "parameter-names.txt";
 
     /**
      * The file which contains projection aliases.
      */
-    static final String PROJECTIONS_FILE = "projection-names.txt";
+    private static final String PROJECTIONS_FILE = "projection-names.txt";
 
     /**
      * The Proj.4 names for OGC, EPSG or GeoTIFF projection names.
@@ -71,16 +61,6 @@ final class ResourcesLoader {
      * Will be filled when first needed.
      */
     private static final Map<String,String> parameterNames = new HashMap<>();
-
-    /**
-     * Pool of identifiers, filled when first needed.
-     */
-    private static final Map<String, List<GenericName>> aliases = new HashMap<>();
-
-    /**
-     * The set of all operation methods, filled when first needed.
-     */
-    private static final Set<OperationMethod> methods = new LinkedHashSet<>();
 
     /**
      * Do not allows instantiation of this class.
@@ -161,63 +141,5 @@ final class ResourcesLoader {
             throw new NoSuchIdentifierException("Unknown identifier: " + proj, proj);
         }
         return proj;
-    }
-
-    /**
-     * Returns the list of aliases for the given name, or an empty list if none.
-     */
-    static List<GenericName> getAliases(String name, final boolean isParam) throws FactoryException {
-        // Replace the name by the Proj.4 name, if we find it.
-        final Map<String, String> map = getAliases(isParam);
-        final String projName = map.get(name);
-        if (projName != null) {
-            name = projName;
-        }
-        return getAliases(name, map);
-    }
-
-    /**
-     * Returns the list of aliases for the given Proj.4 name, or an empty list if none.
-     */
-    private static List<GenericName> getAliases(final String name, final Map<String,String> map) {
-        List<GenericName> list;
-        synchronized (aliases) {
-            list = aliases.get(name);
-            if (list == null) {
-                list = new ArrayList<>();
-                for (final Map.Entry<String,String> entry : map.entrySet()) {
-                    if (name.equalsIgnoreCase(entry.getValue())) {
-                        list.add(new NamedIdentifier(null, entry.getKey()));
-                    }
-                }
-                if (list.isEmpty()) {
-                    list = Collections.emptyList();
-                } else {
-                    ((ArrayList<?>) list).trimToSize();
-                    list = Collections.unmodifiableList(list);
-                }
-            }
-        }
-        return list;
-    }
-
-    /**
-     * Returns the set of all operation methods.
-     */
-    static Set<OperationMethod> getMethods() throws FactoryException {
-        synchronized (methods) {
-            if (methods.isEmpty()) {
-                final Map<String,String> map = getAliases(false);
-                final Map<String,Object> properties = new HashMap<>(4);
-                for (final String name : new HashSet<>(map.values())) {
-                    final NamedIdentifier id = new NamedIdentifier(Citations.PROJ4, name);
-                    final List<GenericName> aliases = getAliases(name, map);
-                    properties.put(DefaultOperationMethod.NAME_KEY, id);
-                    properties.put(DefaultOperationMethod.ALIAS_KEY, aliases);
-                    methods.add(new DefaultOperationMethod(properties, 2, 2, new ParameterGroup(id, aliases)));
-                }
-            }
-        }
-        return Collections.unmodifiableSet(methods);
     }
 }
