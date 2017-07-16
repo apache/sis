@@ -118,8 +118,8 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
      * The accuracy threshold (in metres) for allowing the use of Molodensky approximation instead than the
      * Geocentric Translation method. The accuracy of datum shifts with Molodensky approximation is about 5
      * or 10 metres. However for this constant, we are not interested in absolute accuracy but rather in the
-     * difference between Molodensky and Geocentric Translation methods, which is much lower. We nevertheless
-     * use a relatively high threshold as a conservative approach.
+     * difference between Molodensky and Geocentric Translation methods, which is much lower (less than 1 m).
+     * We nevertheless use a relatively high threshold as a conservative approach.
      *
      * @see #desiredAccuracy
      */
@@ -501,8 +501,8 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
             if (parameters == null) {
                 parameters = TensorParameters.WKT1.createValueGroup(properties(Constants.AFFINE), datumShift);
                 final CoordinateSystem normalized = CommonCRS.WGS84.geocentric().getCoordinateSystem();
-                before = mtFactory.createCoordinateSystemChange(sourceCS, normalized);
-                after  = mtFactory.createCoordinateSystemChange(normalized, targetCS);
+                before = mtFactory.createCoordinateSystemChange(sourceCS, normalized, sourceDatum.getEllipsoid());
+                after  = mtFactory.createCoordinateSystemChange(normalized, targetCS, targetDatum.getEllipsoid());
                 context.setSource(normalized);
                 context.setTarget(normalized);
             }
@@ -522,7 +522,13 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
                 parameters = TensorParameters.WKT1.createValueGroup(properties(Constants.AFFINE));      // Initialized to identity.
                 parameters.parameter(Constants.NUM_COL).setValue(targetDim + 1);
                 parameters.parameter(Constants.NUM_ROW).setValue(targetDim + 1);
-                before = mtFactory.createCoordinateSystemChange(sourceCS, targetCS);
+                /*
+                 * createCoordinateSystemChange(…) needs the ellipsoid associated to the ellipsoidal coordinate system,
+                 * if any. If none or both coordinate systems are ellipsoidal, then the ellipsoid will be ignored (see
+                 * createCoordinateSystemChange(…) javadoc for the rational) so it does not matter which one we pick.
+                 */
+                before = mtFactory.createCoordinateSystemChange(sourceCS, targetCS,
+                        (sourceCS instanceof EllipsoidalCS ? sourceDatum : targetDatum).getEllipsoid());
                 context.setSource(targetCS);
             }
         }

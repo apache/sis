@@ -77,7 +77,6 @@ public class GeographicOffsets extends GeodeticOperation {
     /**
      * Constructs a provider with default parameters.
      */
-    @SuppressWarnings("ThisEscapedInObjectConstruction")
     public GeographicOffsets() {
         super(3, 3, PARAMETERS, new GeographicOffsets[4]);
         redimensioned[0] = new GeographicOffsets2D(redimensioned);

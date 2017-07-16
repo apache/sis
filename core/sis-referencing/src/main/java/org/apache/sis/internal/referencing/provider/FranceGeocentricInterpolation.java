@@ -169,7 +169,6 @@ public class FranceGeocentricInterpolation extends GeodeticOperation {
     /**
      * Constructs a provider.
      */
-    @SuppressWarnings("ThisEscapedInObjectConstruction")
     public FranceGeocentricInterpolation() {
         this(2, 2, PARAMETERS, new FranceGeocentricInterpolation[4]);
         redimensioned[0] = this;

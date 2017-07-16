@@ -54,7 +54,6 @@ public final class PositionVector7Param3D extends GeocentricAffineBetweenGeograp
     /**
      * Constructs the provider.
      */
-    @SuppressWarnings("ThisEscapedInObjectConstruction")
     public PositionVector7Param3D() {
         this(3, 3, new GeocentricAffineBetweenGeographic[4]);
         redimensioned[0] = new PositionVector7Param2D(      redimensioned);
