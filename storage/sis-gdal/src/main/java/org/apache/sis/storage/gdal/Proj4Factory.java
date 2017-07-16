@@ -254,6 +254,8 @@ public class Proj4Factory extends GeodeticAuthorityFactory implements CRSAuthori
      * @param  code  the Proj.4 definition of the CRS object to create.
      * @return a CRS created from the given definition.
      * @throws FactoryException if the CRS object can not be created for the given definition.
+     *
+     * @see Proj4#createCRS(String, int)
      */
     @Override
     public CoordinateReferenceSystem createCoordinateReferenceSystem(String code) throws FactoryException {
@@ -463,6 +465,7 @@ public class Proj4Factory extends GeodeticAuthorityFactory implements CRSAuthori
      * @param  withHeight  whether to include a height axis.
      *
      * @see Proj4#createCRS(String, int)
+     * @see #createCoordinateReferenceSystem(String)
      */
     final CoordinateReferenceSystem createCRS(final String definition, final boolean withHeight) throws FactoryException {
         PJ pj = pool.get(definition);
@@ -483,6 +486,8 @@ public class Proj4Factory extends GeodeticAuthorityFactory implements CRSAuthori
      * @param  targetCRS  the target coordinate reference system.
      * @return a coordinate operation for transforming coordinates from the given source CRS to the given target CRS.
      * @throws FactoryException if the given CRS are not instances recognized by this class.
+     *
+     * @see Proj4#createOperation(CoordinateReferenceSystem, CoordinateReferenceSystem)
      */
     public CoordinateOperation createOperation(final CoordinateReferenceSystem sourceCRS,
                                                final CoordinateReferenceSystem targetCRS)

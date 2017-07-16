@@ -95,8 +95,8 @@ final class Transform extends AbstractMathTransform {
     @Override
     public ParameterValueGroup getParameterValues() {
         final ParameterValueGroup pg = getParameterDescriptors().createValue();
-        pg.parameter("srcdefn").setValue(source.getCode());
-        pg.parameter("dstdefn").setValue(target.getCode());
+        pg.parameter("srcdefn").setValue(source.getCode().trim());
+        pg.parameter("dstdefn").setValue(target.getCode().trim());
         return pg;
     }
 

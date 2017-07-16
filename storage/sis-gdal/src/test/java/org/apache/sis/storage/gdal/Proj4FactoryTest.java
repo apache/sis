@@ -18,16 +18,22 @@ package org.apache.sis.storage.gdal;
 
 import java.util.Arrays;
 import org.opengis.util.FactoryException;
+import org.opengis.geometry.DirectPosition;
 import org.opengis.referencing.crs.ProjectedCRS;
 import org.opengis.referencing.crs.GeographicCRS;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.opengis.referencing.operation.CoordinateOperation;
+import org.opengis.referencing.operation.Conversion;
+import org.opengis.referencing.operation.MathTransform;
+import org.opengis.referencing.operation.TransformException;
+import org.apache.sis.geometry.DirectPosition2D;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.TestUtilities;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import static org.junit.Assert.*;
+import static org.opengis.test.Assert.*;
 
 
 /**
@@ -93,5 +99,26 @@ public final strictfp class Proj4FactoryTest extends TestCase {
         final PJ pj = (PJ) TestUtilities.getSingleton(crs.getIdentifiers());
         assertEquals(PJ.Type.PROJECTED, pj.getType());
         assertArrayEquals(new char[] {'e', 'n', 'u'}, pj.getAxisDirections());
+    }
+
+    /**
+     * Tests the transformation from {@code "+init=epsg:4326"} to {@code "+init=epsg:3395"}.
+     *
+     * @throws FactoryException if an error occurred while creating the CRS objects.
+     * @throws TransformException if an error occurred while projecting a test point.
+     */
+    @Test
+    public void testTransform() throws FactoryException, TransformException {
+        final Proj4Factory  factory   = Proj4Factory.INSTANCE;
+        final GeographicCRS sourceCRS = factory.createGeographicCRS("+init=epsg:4326");
+        final ProjectedCRS  targetCRS = factory.createProjectedCRS("+init=epsg:3395");
+        final CoordinateOperation op  = factory.createOperation(sourceCRS, targetCRS);
+        assertInstanceOf("createOperation", Conversion.class, op);
+
+        final MathTransform mt = op.getMathTransform();
+        DirectPosition pt = new DirectPosition2D(20, 40);
+        pt = mt.transform(pt, pt);
+        assertEquals("Easting",  2226389.816, pt.getOrdinate(0), 0.01);
+        assertEquals("Northing", 4838471.398, pt.getOrdinate(1), 0.01);
     }
 }
