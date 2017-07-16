@@ -22,6 +22,7 @@ import org.opengis.util.FactoryException;
 import org.opengis.parameter.ParameterValue;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.GeneralParameterValue;
+import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.crs.GeodeticCRS;
 import org.opengis.referencing.crs.ProjectedCRS;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
@@ -34,6 +35,8 @@ import org.opengis.referencing.datum.GeodeticDatum;
 import org.opengis.referencing.datum.PrimeMeridian;
 import org.opengis.referencing.operation.CoordinateOperation;
 import org.apache.sis.referencing.factory.UnavailableFactoryException;
+import org.apache.sis.referencing.IdentifiedObjects;
+import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.internal.metadata.AxisDirections;
 import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.system.OS;
@@ -42,6 +45,7 @@ import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Static;
 import org.apache.sis.measure.Units;
+import org.opengis.referencing.operation.Projection;
 
 
 /**
@@ -105,9 +109,10 @@ public final class Proj4 extends Static {
             datum      = ((GeodeticCRS) crs).getDatum();
             parameters = null;
         } else if (crs instanceof ProjectedCRS) {
-            datum      = ((ProjectedCRS) crs).getDatum();
-            parameters = ((ProjectedCRS) crs).getConversionFromBase().getParameterValues();
-            method     = ResourcesLoader.getProjName(parameters, false).substring(1);
+            Projection c = ((ProjectedCRS) crs).getConversionFromBase();
+            datum        = ((ProjectedCRS) crs).getDatum();
+            method       = name(c.getMethod());
+            parameters   = c.getParameterValues();
         } else {
             throw new FactoryException(Errors.format(Errors.Keys.UnsupportedType_1, crs.getClass()));
         }
@@ -125,7 +130,7 @@ public final class Proj4 extends Static {
                 if (parameter instanceof ParameterValue) {
                     final Object value = ((ParameterValue) parameter).getValue();
                     if (value != null) {
-                        final String pn = ResourcesLoader.getProjName(parameter, true);
+                        final String pn = name(parameter.getDescriptor());
                         if (pn.equals("+a")) hasSemiMajor = true;
                         if (pn.equals("+b")) hasSemiMinor = true;
                         definition.append(' ').append(pn).append('=').append(value);
@@ -172,6 +177,18 @@ public final class Proj4 extends Static {
     }
 
     /**
+     * Returns the {@literal Proj.4} name for the given parameter,
+     * or throws an exception if the {@literal Proj.4} name is unknown.
+     */
+    private static String name(final IdentifiedObject object) throws FactoryException {
+        final String name = IdentifiedObjects.getName(object, Citations.PROJ4);
+        if (name == null) {
+            throw new FactoryException(Errors.format(Errors.Keys.CanNotSetParameterValue_1, object.getName()));
+        }
+        return name;
+    }
+
+    /**
      * Creates a new CRS from the given {@literal Proj.4} definition string.
      *
      * @param  definition  the Proj.4 definition string.
@@ -179,6 +196,8 @@ public final class Proj4 extends Static {
      * @return a CRS created from the given definition string and number of dimensions.
      * @throws NullPointerException if the definition string is {@code null}.
      * @throws FactoryException if one of the given argument has an invalid value.
+     *
+     * @see Proj4Factory#createCoordinateReferenceSystem(String)
      */
     public static CoordinateReferenceSystem createCRS(String definition, final int dimension) throws FactoryException {
         definition = definition.trim();
@@ -193,11 +212,16 @@ public final class Proj4 extends Static {
 
     /**
      * Creates an operation for conversion or transformation between two coordinate reference systems.
+     * This implementation always uses Proj.4 for performing the coordinate operations, regardless if
+     * the given CRS were created from a Proj.4 definition string or not. This method fails if it can
+     * not map the given CRS to Proj.4 structures.
      *
      * @param  sourceCRS   the source coordinate reference system.
      * @param  targetCRS   the target coordinate reference system.
      * @return a coordinate operation for transforming coordinates from the given source CRS to the given target CRS.
      * @throws FactoryException if an error occurred while creating the coordinate operation.
+     *
+     * @see Proj4Factory#createOperation(CoordinateReferenceSystem, CoordinateReferenceSystem)
      */
     public static CoordinateOperation createOperation(final CoordinateReferenceSystem sourceCRS,
                                                       final CoordinateReferenceSystem targetCRS)
