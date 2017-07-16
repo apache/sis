@@ -906,6 +906,16 @@ public final class Errors extends IndexedResourceBundle {
         public static final short UnsupportedArgumentValue_1 = 170;
 
         /**
+         * Axes with “{0}” direction are not supported by this operation.
+         */
+        public static final short UnsupportedAxisDirection_1 = 177;
+
+        /**
+         * The “{0}” coordinate system is not supported by this operation.
+         */
+        public static final short UnsupportedCoordinateSystem_1 = 178;
+
+        /**
          * The “{0}” datum is not supported by this operation.
          */
         public static final short UnsupportedDatum_1 = 168;

@@ -24,6 +24,7 @@ import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.opengis.util.FactoryException;
 import org.apache.sis.metadata.iso.citation.Citations;
+import org.apache.sis.parameter.Parameters;
 
 
 /**
@@ -31,14 +32,14 @@ import org.apache.sis.metadata.iso.citation.Citations;
  * This provider creates transforms from geocentric to geographic coordinate reference systems.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 0.7
+ * @version 0.8
  *
  * @see GeographicToGeocentric
  *
  * @since 0.7
  * @module
  */
-public final class GeocentricToGeographic extends AbstractProvider {
+public final class GeocentricToGeographic extends GeodeticOperation {
     /**
      * Serial number for inter-operability with different versions.
      */
@@ -47,7 +48,7 @@ public final class GeocentricToGeographic extends AbstractProvider {
     /**
      * The OGC name used for this operation method.
      */
-    static final String NAME = "Geocentric_To_Ellipsoid";
+    public static final String NAME = "Geocentric_To_Ellipsoid";
 
     /**
      * The group of all parameters expected by this coordinate operation.
@@ -56,7 +57,7 @@ public final class GeocentricToGeographic extends AbstractProvider {
     static {
         PARAMETERS = builder()
                 .addName(Citations.OGC, NAME)
-                .createGroupForMapProjection();
+                .createGroupForMapProjection(GeographicToGeocentric.DIMENSION);
                 // Not really a map projection, but we leverage the same axis parameters.
     }
 
@@ -64,7 +65,19 @@ public final class GeocentricToGeographic extends AbstractProvider {
      * Constructs a provider for the 3-dimensional case.
      */
     public GeocentricToGeographic() {
-        super(3, 3, PARAMETERS);
+        this(3, new GeocentricToGeographic[4]);
+        redimensioned[2] = new GeocentricToGeographic(2, redimensioned);
+        redimensioned[3] = this;
+    }
+
+    /**
+     * Constructs a provider for the given dimensions.
+     *
+     * @param targetDimensions  number of dimensions in the target CRS of this operation method.
+     * @param redimensioned     providers for all combinations between 2D and 3D cases.
+     */
+    private GeocentricToGeographic(int targetDimensions, GeodeticOperation[] redimensioned) {
+        super(3, targetDimensions, PARAMETERS, redimensioned);
     }
 
     /**
@@ -89,6 +102,16 @@ public final class GeocentricToGeographic extends AbstractProvider {
     }
 
     /**
+     * Specifies that the inverse of this operation is a different kind of operation.
+     *
+     * @return {@code false}.
+     */
+    @Override
+    public boolean isInvertible() {
+        return false;
+    }
+
+    /**
      * Creates a transform from the specified group of parameter values.
      *
      * @param  factory  the factory to use for creating the transform.
@@ -100,7 +123,7 @@ public final class GeocentricToGeographic extends AbstractProvider {
     public MathTransform createMathTransform(final MathTransformFactory factory, final ParameterValueGroup values)
             throws FactoryException
     {
-        MathTransform tr = GeographicToGeocentric.create(factory, values);
+        MathTransform tr = GeographicToGeocentric.create(factory, Parameters.castOrWrap(values));
         try {
             tr = tr.inverse();
         } catch (NoninvertibleTransformException e) {
