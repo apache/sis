@@ -56,7 +56,6 @@ public final class CoordinateFrameRotation3D extends GeocentricAffineBetweenGeog
     /**
      * Constructs the provider.
      */
-    @SuppressWarnings("ThisEscapedInObjectConstruction")
     public CoordinateFrameRotation3D() {
         this(3, 3, new GeocentricAffineBetweenGeographic[4]);
         redimensioned[0] = new CoordinateFrameRotation2D(      redimensioned);

@@ -247,6 +247,21 @@ public final class AxisDirections extends Static {
     }
 
     /**
+     * Returns {@code true} if the specified direction is cardinal direction.
+     * Cardinal directions are {@code NORTH}, {@code SOUTH}, {@code EAST} and {@code WEST}.
+     *
+     * @param  dir  the direction to test, or {@code null}.
+     * @return {@code true} if the given direction is a cardinal direction.
+     *
+     * @since 0.8
+     */
+    public static boolean isCardinal(final AxisDirection dir) {
+        if (dir == null) return false;
+        final int n  = dir.ordinal() - NORTH.ordinal();
+        return n >= 0 && n < COMPASS_COUNT && (n & 3) == 0;
+    }
+
+    /**
      * Returns {@code true} if the specified direction is an inter-cardinal direction.
      * Inter-cardinal directions are {@code NORTH_EAST}, {@code SOUTH_SOUTH_EAST}, etc.
      *

@@ -19,9 +19,10 @@ package org.apache.sis.internal.referencing.provider;
 import javax.measure.Unit;
 import javax.measure.quantity.Length;
 import org.opengis.util.FactoryException;
-import org.opengis.parameter.ParameterValueGroup;
-import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.parameter.ParameterValue;
+import org.opengis.parameter.ParameterValueGroup;
+import org.opengis.parameter.ParameterDescriptor;
+import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.referencing.cs.CartesianCS;
 import org.opengis.referencing.cs.EllipsoidalCS;
 import org.opengis.referencing.operation.Conversion;
@@ -30,6 +31,8 @@ import org.opengis.referencing.operation.MathTransformFactory;
 import org.apache.sis.referencing.operation.transform.EllipsoidToCentricTransform;
 import org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory;
 import org.apache.sis.metadata.iso.citation.Citations;
+import org.apache.sis.parameter.ParameterBuilder;
+import org.apache.sis.parameter.Parameters;
 import org.apache.sis.internal.util.Constants;
 
 
@@ -45,28 +48,43 @@ import org.apache.sis.internal.util.Constants;
  * @since 0.7
  * @module
  */
-public final class GeographicToGeocentric extends AbstractProvider {
+public final class GeographicToGeocentric extends GeodeticOperation {
     /**
      * Serial number for inter-operability with different versions.
      */
     private static final long serialVersionUID = -5690807111952562344L;
 
     /**
-     * The OGC name used for this operation method. The OGC name is preferred to the EPSG name
-     * because it allows to distinguish between the forward and the inverse conversion.
+     * The OGC name used for this operation method. The OGC name is preferred to the EPSG name in Apache SIS
+     * implementation because it allows to distinguish between the forward and the inverse conversion.
      */
-    static final String NAME = "Ellipsoid_To_Geocentric";
+    public static final String NAME = "Ellipsoid_To_Geocentric";
+
+    /**
+     * An Apache SIS specific parameter for the number of dimensions (2 or 3).
+     * This parameter is practically the same than {@link GeocentricAffineBetweenGeographic#DIMENSION} except:
+     *
+     * <ul>
+     *   <li>The code space is {@code "SIS"} instead than {@code "OGC"} since this parameter is not defined in OGC 01-009.</li>
+     *   <li>The default number of dimensions is 3 instead of unspecified.</li>
+     * </ul>
+     *
+     * @see GeocentricAffineBetweenGeographic#DIMENSION
+     */
+    public static final ParameterDescriptor<Integer> DIMENSION;
 
     /**
      * The group of all parameters expected by this coordinate operation.
      */
     public static final ParameterDescriptorGroup PARAMETERS;
     static {
-        PARAMETERS = builder()
+        final ParameterBuilder builder = builder();
+        DIMENSION = builder.addName(Citations.SIS, "dim").setRequired(false).createBounded(Integer.class, 2, 3, 3);
+        PARAMETERS = builder
                 .addIdentifier("9602")
                 .addName("Geographic/geocentric conversions")
                 .addName(Citations.OGC, NAME)
-                .createGroupForMapProjection();
+                .createGroupForMapProjection(DIMENSION);
                 // Not really a map projection, but we leverage the same axis parameters.
     }
 
@@ -74,7 +92,19 @@ public final class GeographicToGeocentric extends AbstractProvider {
      * Constructs a provider for the 3-dimensional case.
      */
     public GeographicToGeocentric() {
-        super(3, 3, PARAMETERS);
+        this(3, new GeographicToGeocentric[4]);
+        redimensioned[1] = new GeographicToGeocentric(2, redimensioned);
+        redimensioned[3] = this;
+    }
+
+    /**
+     * Constructs a provider for the given dimensions.
+     *
+     * @param sourceDimensions  number of dimensions in the source CRS of this operation method.
+     * @param redimensioned     providers for all combinations between 2D and 3D cases.
+     */
+    private GeographicToGeocentric(int sourceDimensions, GeodeticOperation[] redimensioned) {
+        super(sourceDimensions, 3, PARAMETERS, redimensioned);
     }
 
     /**
@@ -121,6 +151,16 @@ public final class GeographicToGeocentric extends AbstractProvider {
     }
 
     /**
+     * Specifies that the inverse of this operation is a different kind of operation.
+     *
+     * @return {@code false}.
+     */
+    @Override
+    public boolean isInvertible() {
+        return false;
+    }
+
+    /**
      * Creates a transform from the specified group of parameter values.
      *
      * @param  factory  the factory to use for creating the transform.
@@ -132,20 +172,20 @@ public final class GeographicToGeocentric extends AbstractProvider {
     public MathTransform createMathTransform(final MathTransformFactory factory, final ParameterValueGroup values)
             throws FactoryException
     {
-        return create(factory, values);
+        return create(factory, Parameters.castOrWrap(values));
     }
 
     /**
      * Implementation of {@link #createMathTransform(MathTransformFactory, ParameterValueGroup)}
      * shared with {@link GeocentricToGeographic}.
      */
-    static MathTransform create(final MathTransformFactory factory, final ParameterValueGroup values)
+    static MathTransform create(final MathTransformFactory factory, final Parameters values)
             throws FactoryException
     {
         final ParameterValue<?> semiMajor = values.parameter(Constants.SEMI_MAJOR);
         final Unit<Length> unit = semiMajor.getUnit().asType(Length.class);
         return EllipsoidToCentricTransform.createGeodeticConversion(factory, semiMajor.doubleValue(),
-                values.parameter(Constants.SEMI_MINOR).doubleValue(unit), unit, true,
+                values.parameter(Constants.SEMI_MINOR).doubleValue(unit), unit, values.intValue(DIMENSION) >= 3,
                 EllipsoidToCentricTransform.TargetType.CARTESIAN);
     }
 }

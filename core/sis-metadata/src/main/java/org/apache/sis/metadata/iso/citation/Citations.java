@@ -361,7 +361,7 @@ public final class Citations extends Static {
      *
      * @since 0.4
      */
-    public static final IdentifierSpace<String> PROJ4 = new CitationConstant.Authority<>("Proj4");
+    public static final IdentifierSpace<String> PROJ4 = new CitationConstant.Authority<>(Constants.PROJ4);
 
     /**
      * The authority for identifiers of objects defined by MapInfo.

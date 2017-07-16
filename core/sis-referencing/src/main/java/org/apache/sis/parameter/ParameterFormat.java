@@ -688,7 +688,8 @@ public class ParameterFormat extends TabularFormat<Object> {
                 /*
                  * Writes the values, each on its own line, together with their unit of measurement.
                  */
-                table.setCellAlignment(TableAppender.ALIGN_RIGHT);
+                final byte alignment = Number.class.isAssignableFrom(valueClass) ? TableAppender.ALIGN_RIGHT : TableAppender.ALIGN_LEFT;
+                table.setCellAlignment(alignment);
                 final int length = row.values.size();
                 for (int i=0; i<length; i++) {
                     Object value = row.values.get(i);
@@ -706,7 +707,7 @@ public class ParameterFormat extends TabularFormat<Object> {
                                 table.append(ditto);
                                 nextColumn(table);
                             }
-                            table.setCellAlignment(TableAppender.ALIGN_RIGHT);
+                            table.setCellAlignment(alignment);
                         }
                         /*
                          * Format the value followed by the unit of measure, or followed by spaces if there is no unit

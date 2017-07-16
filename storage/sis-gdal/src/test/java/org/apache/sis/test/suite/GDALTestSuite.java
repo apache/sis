@@ -31,7 +31,9 @@ import org.junit.runners.Suite;
  */
 @Suite.SuiteClasses({
     org.apache.sis.storage.gdal.PJTest.class,
-    org.apache.sis.storage.gdal.EPSGFactoryTest.class
+    org.apache.sis.storage.gdal.Proj4Test.class,
+    org.apache.sis.storage.gdal.Proj4ParserTest.class,
+    org.apache.sis.storage.gdal.Proj4FactoryTest.class
 })
 public final strictfp class GDALTestSuite extends TestSuite {
     /**

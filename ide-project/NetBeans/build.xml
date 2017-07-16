@@ -79,7 +79,6 @@
         <include name="**/*.properties"/>
       </fileset>
       <fileset dir="${project.root}/storage/sis-gdal/src/main/resources">
-        <include name="**/*.txt"/>
         <include name="**/*.dll"/>
         <include name="**/*.so"/>
       </fileset>

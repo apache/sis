@@ -49,7 +49,7 @@ PJ *getPJ(JNIEnv *env, jobject object)
  * \param  class - The class from which this method has been invoked.
  * \return The Proj4 release number, or NULL.
  */
-JNIEXPORT jstring JNICALL Java_org_apache_sis_storage_gdal_PJ_getVersion
+JNIEXPORT jstring JNICALL Java_org_apache_sis_storage_gdal_PJ_getRelease
   (JNIEnv *env, jclass class)
 {
     const char *desc = pj_get_release();
@@ -99,7 +99,7 @@ JNIEXPORT jlong JNICALL Java_org_apache_sis_storage_gdal_PJ_allocateGeoPJ
  * \param  object - The Java object wrapping the PJ structure (not allowed to be NULL).
  * \return The definition string.
  */
-JNIEXPORT jstring JNICALL Java_org_apache_sis_storage_gdal_PJ_getDefinition
+JNIEXPORT jstring JNICALL Java_org_apache_sis_storage_gdal_PJ_getCode
   (JNIEnv *env, jobject object)
 {
     PJ *pj = getPJ(env, object);
@@ -122,7 +122,7 @@ JNIEXPORT jstring JNICALL Java_org_apache_sis_storage_gdal_PJ_getDefinition
  * \param  object - The Java object wrapping the PJ structure (not allowed to be NULL).
  * \return The description associated to the PJ structure.
  */
-JNIEXPORT jstring JNICALL Java_org_apache_sis_storage_gdal_PJ_toString
+JNIEXPORT jstring JNICALL Java_org_apache_sis_storage_gdal_PJ_getName
   (JNIEnv *env, jobject object)
 {
     PJ *pj = getPJ(env, object);
