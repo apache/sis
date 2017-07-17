@@ -105,11 +105,29 @@ public final class Proj4 extends Static {
      */
     public static String definition(final CoordinateReferenceSystem crs) throws FactoryException {
         ArgumentChecks.ensureNonNull("crs", crs);
-        for (final Identifier id : crs.getIdentifiers()) {
-            if (id instanceof PJ) {
-                return ((PJ) id).getCode();
+        /*
+         * If the given CRS object is associated to a Proj.4 structure, let Proj.4 formats itself
+         * the definition string. Note that this operation may fail if there is no Proj.4 library
+         * in the current system, or no JNI bindings to that library.
+         */
+        try {
+            for (final Identifier id : crs.getIdentifiers()) {
+                if (id instanceof PJ) {
+                    return ((PJ) id).getCode();
+                }
             }
+        } catch (UnsatisfiedLinkError e) {
+            // Thrown the first time that we try to use the library.
+            Logging.unexpectedException(Logging.getLogger(Modules.GDAL), Proj4.class, "definition", e);
+        } catch (NoClassDefFoundError e) {
+            // Thrown on all attempts after the first one.
+            Logging.recoverableException(Logging.getLogger(Modules.GDAL), Proj4.class, "definition", e);
         }
+        /*
+         * If we found no Proj.4 structure, formats the definition string ourself. The string may differ from
+         * what Proj.4 would have given. In particular, we do not provide "+init=" or "+datum=" parameter.
+         * But the definition should still be semantically equivalent.
+         */
         final String method;
         final GeodeticDatum datum;
         final ParameterValueGroup parameters;
