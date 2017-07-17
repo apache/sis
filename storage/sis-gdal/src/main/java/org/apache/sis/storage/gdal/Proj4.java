@@ -18,6 +18,7 @@ package org.apache.sis.storage.gdal;
 
 import javax.measure.Unit;
 import javax.measure.quantity.Angle;
+import org.opengis.metadata.Identifier;
 import org.opengis.util.FactoryException;
 import org.opengis.parameter.ParameterValue;
 import org.opengis.parameter.ParameterValueGroup;
@@ -33,6 +34,7 @@ import org.opengis.referencing.cs.EllipsoidalCS;
 import org.opengis.referencing.datum.Ellipsoid;
 import org.opengis.referencing.datum.GeodeticDatum;
 import org.opengis.referencing.datum.PrimeMeridian;
+import org.opengis.referencing.operation.Projection;
 import org.opengis.referencing.operation.CoordinateOperation;
 import org.apache.sis.referencing.factory.UnavailableFactoryException;
 import org.apache.sis.referencing.IdentifiedObjects;
@@ -45,11 +47,19 @@ import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Static;
 import org.apache.sis.measure.Units;
-import org.opengis.referencing.operation.Projection;
 
 
 /**
- * Bindings to the {@literal Proj.4} library.
+ * Bindings to the {@literal Proj.4} library as static convenience methods.
+ * The methods in this class allow to:
+ *
+ * <ul>
+ *   <li>{@linkplain #createCRS Create a Coordinate Reference System instance from a Proj.4 definition string}.</li>
+ *   <li>Conversely, {@link #definition get a Proj.4 definition string from a Coordinate Reference System}.</li>
+ *   <li>{@linkplain #createOperation Create a coordinate operation backed by Proj.4 between two arbitrary CRS}.</li>
+ * </ul>
+ *
+ * Most methods in this class delegate to {@link Proj4Factory}.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Johann Sorel (Geomatys)
@@ -94,6 +104,30 @@ public final class Proj4 extends Static {
      * @throws FactoryException if the Proj.4 definition string can not be created from the given CRS.
      */
     public static String definition(final CoordinateReferenceSystem crs) throws FactoryException {
+        ArgumentChecks.ensureNonNull("crs", crs);
+        /*
+         * If the given CRS object is associated to a Proj.4 structure, let Proj.4 formats itself
+         * the definition string. Note that this operation may fail if there is no Proj.4 library
+         * in the current system, or no JNI bindings to that library.
+         */
+        try {
+            for (final Identifier id : crs.getIdentifiers()) {
+                if (id instanceof PJ) {
+                    return ((PJ) id).getCode();
+                }
+            }
+        } catch (UnsatisfiedLinkError e) {
+            // Thrown the first time that we try to use the library.
+            Logging.unexpectedException(Logging.getLogger(Modules.GDAL), Proj4.class, "definition", e);
+        } catch (NoClassDefFoundError e) {
+            // Thrown on all attempts after the first one.
+            Logging.recoverableException(Logging.getLogger(Modules.GDAL), Proj4.class, "definition", e);
+        }
+        /*
+         * If we found no Proj.4 structure, formats the definition string ourself. The string may differ from
+         * what Proj.4 would have given. In particular, we do not provide "+init=" or "+datum=" parameter.
+         * But the definition should still be semantically equivalent.
+         */
         final String method;
         final GeodeticDatum datum;
         final ParameterValueGroup parameters;
