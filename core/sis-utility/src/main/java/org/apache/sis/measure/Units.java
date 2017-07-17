@@ -597,7 +597,7 @@ public final class Units extends Static {
     public static final Unit<Speed> METRES_PER_SECOND;
 
     /**
-     * Unit of measurement defined as 60/1000 metres per second (1 km/h).
+     * Unit of measurement defined as 1/3.6 metres per second (1 km/h).
      * The {@linkplain ConventionalUnit#getSystemUnit() system unit} is {@link #METRES_PER_SECOND}
      * and the unlocalized name is “kilometres per hour”.
      *
@@ -1149,7 +1149,7 @@ public final class Units extends Static {
          */
         mps.related(1);
         METRES_PER_SECOND   = mps;
-        KILOMETRES_PER_HOUR = add(mps, LinearConverter.scale(6, 100), "km∕h", ACCEPTED, (short) 0);
+        KILOMETRES_PER_HOUR = add(mps, LinearConverter.scale(10, 36), "km∕h", ACCEPTED, (short) 0);
         /*
          * All Unit<Pressure>.
          */

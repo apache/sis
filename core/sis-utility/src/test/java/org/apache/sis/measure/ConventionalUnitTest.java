@@ -71,7 +71,7 @@ public final strictfp class ConventionalUnitTest extends TestCase {
         verify(Units.SECOND,            Units.HOUR,                   "h",  3600);
         verify(Units.PASCAL,            Units.PASCAL,                "Pa",     1);
         verify(Units.PASCAL,            Units.HECTOPASCAL,          "hPa",   100);
-        verify(Units.METRES_PER_SECOND, Units.KILOMETRES_PER_HOUR, "km∕h",  0.06);
+        verify(Units.METRES_PER_SECOND, Units.KILOMETRES_PER_HOUR, "km∕h",  1/3.6);
         verify(Units.CUBIC_METRE,       Units.LITRE,                  "L",  1E-3);
         verify(Units.KILOGRAM,          Units.KILOGRAM,              "kg",     1);
         verify(Units.KILOGRAM,          Units.GRAM,                   "g",  1E-3);
