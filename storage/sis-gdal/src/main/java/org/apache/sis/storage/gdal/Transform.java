@@ -16,6 +16,7 @@
  */
 package org.apache.sis.storage.gdal;
 
+import java.io.Serializable;
 import java.util.Collections;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptor;
@@ -39,7 +40,12 @@ import org.apache.sis.referencing.operation.transform.AbstractMathTransform;
  * @since   0.8
  * @module
  */
-final class Transform extends AbstractMathTransform {
+final class Transform extends AbstractMathTransform implements Serializable {
+    /**
+     * For cross-version compatibility.
+     */
+    private static final long serialVersionUID = -8593638007439108805L;
+
     /**
      * The operation method for a transformation between two {@link PJ} instances.
      * The parameter names are taken from

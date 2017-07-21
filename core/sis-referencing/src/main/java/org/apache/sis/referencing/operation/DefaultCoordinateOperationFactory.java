@@ -147,8 +147,8 @@ public class DefaultCoordinateOperationFactory extends AbstractFactory implement
 
     /**
      * Constructs a factory with the given default properties.
-     * {@code DefaultCoordinateOperationFactory} will fallback on the map given to this constructor
-     * for any property not present in the map provided to a {@code createFoo(Map<String,?>, …)} method.
+     * The new factory will fallback on the map given to this constructor
+     * for any property not present in the map given to a {@code createFoo(Map<String,?>, …)} method.
      *
      * @param properties  the default properties, or {@code null} if none.
      * @param factory     the factory to use for creating {@linkplain AbstractMathTransform math transforms},
@@ -174,6 +174,7 @@ public class DefaultCoordinateOperationFactory extends AbstractFactory implement
                 throw new IllegalArgumentException(Errors.getResources(properties)
                         .getString(Errors.Keys.IllegalPropertyValueClass_2, key, Classes.getClass(value)));
             }
+            properties.remove(ReferencingServices.DATUM_FACTORY);
             properties = CollectionsExt.compact(properties);
         }
         defaultProperties = properties;
@@ -513,7 +514,7 @@ next:   for (int i=components.size(); --i >= 0;) {
             if (parameters == null) {
                 throw new NullArgumentException(Errors.format(Errors.Keys.NullArgument_1, "transform"));
             }
-            transform = mtFactory.createBaseToDerived(sourceCRS, parameters, targetCRS.getCoordinateSystem());
+            transform = getMathTransformFactory().createBaseToDerived(sourceCRS, parameters, targetCRS.getCoordinateSystem());
         }
         /*
          * The "operationType" property is currently undocumented. The intend is to help this factory method in

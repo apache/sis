@@ -125,7 +125,8 @@ public final class LambertConformal2SP extends AbstractLambert {
          * Special case: default value shall be the value of LATITUDE_OF_FALSE_ORIGIN.
          */
         STANDARD_PARALLEL_1 = createMandatoryLatitude(builder
-                .addNamesAndIdentifiers(Mercator2SP.STANDARD_PARALLEL));
+                .addNamesAndIdentifiers(Mercator2SP.STANDARD_PARALLEL)
+                .rename(Citations.PROJ4, "lat_1"));
         /*
          * EPSG:    Latitude of 2nd standard parallel
          * OGC:     standard_parallel_2

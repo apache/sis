@@ -7,8 +7,6 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-#undef org_apache_sis_storage_gdal_PJ_DIMENSION_MAX
-#define org_apache_sis_storage_gdal_PJ_DIMENSION_MAX 100L
 /*
  * Class:     org_apache_sis_storage_gdal_PJ
  * Method:    allocatePJ

@@ -26,6 +26,7 @@ import org.opengis.referencing.operation.CoordinateOperation;
 import org.opengis.referencing.operation.Conversion;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
+import org.opengis.parameter.ParameterValueGroup;
 import org.apache.sis.geometry.DirectPosition2D;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
@@ -114,11 +115,31 @@ public final strictfp class Proj4FactoryTest extends TestCase {
         final ProjectedCRS  targetCRS = factory.createProjectedCRS("+init=epsg:3395");
         final CoordinateOperation op  = factory.createOperation(sourceCRS, targetCRS);
         assertInstanceOf("createOperation", Conversion.class, op);
+        testMercatorProjection(op.getMathTransform());
+    }
 
-        final MathTransform mt = op.getMathTransform();
+    /**
+     * Tests EPSG:3395 on a point.
+     */
+    private static void testMercatorProjection(final MathTransform mt) throws TransformException {
         DirectPosition pt = new DirectPosition2D(20, 40);
         pt = mt.transform(pt, pt);
         assertEquals("Easting",  2226389.816, pt.getOrdinate(0), 0.01);
         assertEquals("Northing", 4838471.398, pt.getOrdinate(1), 0.01);
+    }
+
+    /**
+     * Tests {@link Proj4Factory#createParameterizedTransform(ParameterValueGroup)}.
+     *
+     * @throws FactoryException if an error occurred while creating the CRS objects.
+     * @throws TransformException if an error occurred while projecting a test point.
+     */
+    @Test
+    public void testParameterizedTransform() throws FactoryException, TransformException {
+        final Proj4Factory factory   = Proj4Factory.INSTANCE;
+        final ParameterValueGroup pg = factory.getDefaultParameters("merc");
+        pg.parameter("a").setValue(6378137.0);
+        pg.parameter("b").setValue(6356752.314245179);
+        testMercatorProjection(factory.createParameterizedTransform(pg));
     }
 }

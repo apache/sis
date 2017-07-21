@@ -23,8 +23,8 @@ import org.apache.sis.test.TestCase;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import static org.junit.Assert.*;
 import static org.junit.Assume.*;
+import static org.apache.sis.test.Assert.*;
 
 
 /**
@@ -176,5 +176,17 @@ public final strictfp class PJTest extends TestCase {
      */
     private static void assertNaN(final double value) {
         assertEquals(Double.doubleToRawLongBits(Double.NaN), Double.doubleToRawLongBits(value));
+    }
+
+    /**
+     * Tests serialization. Since we can not serialize native resources, {@link PJ} is expected
+     * to serialize the Proj.4 definition string instead.
+     *
+     * @throws FactoryException if the Proj.4 definition string used in this test is invalid.
+     */
+    @Test
+    public void testSerialization() throws FactoryException {
+        final PJ pj = new PJ("+proj=latlong +datum=WGS84");
+        assertNotSame(pj, assertSerializedEquals(pj));
     }
 }
