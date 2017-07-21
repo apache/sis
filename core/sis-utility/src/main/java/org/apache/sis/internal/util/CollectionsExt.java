@@ -28,6 +28,9 @@ import org.opengis.parameter.InvalidParameterCardinalityException;
 
 import static org.apache.sis.util.collection.Containers.hashMapCapacity;
 
+// Branch-dependent imports
+import java.util.function.Predicate;
+
 
 /**
  * Static methods working on {@link Collection} objects.
@@ -859,6 +862,57 @@ public final class CollectionsExt extends Static {
             }
         }
         return map;
+    }
+
+    /**
+     * Returns an iterator over the elements of the given iterator where the predicate returns {@code true}.
+     * The iterator may return {@code null} elements.
+     *
+     * @param  <E>     type of elements in the iterator to return.
+     * @param  it      the iterator to filter.
+     * @param  filter  the predicate to use for filtering elements.
+     * @return an iterator over filtered elements.
+     */
+    public static <E> Iterator<E> filter(final Iterator<E> it, final Predicate<? super E> filter) {
+        return new Iterator<E>() {
+            /** Whether the {@code next} element has been verified as valid. */
+            private boolean valid;
+
+            /** The next element to return. */
+            private E next;
+
+            /** Tests whether there is more elements to return. */
+            @Override public boolean hasNext() {
+                if (!valid) {
+                    do {
+                        if (!it.hasNext()) {
+                            return false;
+                        }
+                        next = it.next();
+                    } while (!filter.test(next));
+                    valid = true;
+                }
+                return true;
+            }
+
+            /**
+             * Returns the next element. If there is no more elements,
+             * the exception will be thrown by the wrapped iterator.
+             */
+            @Override public E next() {
+                if (!valid) {
+                    do next = it.next();
+                    while (!filter.test(next));
+                }
+                valid = false;
+                return next;
+            }
+
+            /** Remove the last element returned by the iterator. */
+            @Override public void remove() {
+                it.remove();
+            }
+        };
     }
 
     /**

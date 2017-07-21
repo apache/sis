@@ -23,33 +23,38 @@ import java.util.LinkedHashSet;
 import java.util.Collections;
 import javax.measure.Unit;
 import org.opengis.util.FactoryException;
+import org.opengis.util.NoSuchIdentifierException;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
+import org.opengis.parameter.GeneralParameterValue;
+import org.opengis.parameter.ParameterValue;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.referencing.cs.*;
 import org.opengis.referencing.crs.*;
 import org.opengis.referencing.datum.*;
+import org.opengis.referencing.operation.*;
 import org.opengis.referencing.IdentifiedObject;
-import org.opengis.referencing.operation.OperationMethod;
-import org.opengis.referencing.operation.Conversion;
-import org.opengis.referencing.operation.CoordinateOperation;
-import org.opengis.referencing.operation.CoordinateOperationFactory;
+import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.operation.DefaultConversion;
 import org.apache.sis.referencing.operation.DefaultCoordinateOperationFactory;
+import org.apache.sis.referencing.factory.InvalidGeodeticParameterException;
 import org.apache.sis.referencing.factory.GeodeticAuthorityFactory;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.metadata.iso.ImmutableIdentifier;
 import org.apache.sis.internal.metadata.AxisDirections;
+import org.apache.sis.internal.metadata.ReferencingServices;
 import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.internal.system.Modules;
+import org.apache.sis.internal.util.CollectionsExt;
+import org.apache.sis.internal.util.LazySet;
 import org.apache.sis.util.collection.WeakValueHashMap;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.logging.Logging;
-import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.CharSequences;
+import org.apache.sis.util.Classes;
 import org.apache.sis.measure.Units;
 
 
@@ -60,16 +65,11 @@ import org.apache.sis.measure.Units;
  * <ul>
  *   <li>{@link #getAuthority()}</li>
  *   <li>{@link #createCoordinateReferenceSystem(String)}</li>
+ *   <li>{@link #createOperation(CoordinateReferenceSystem, CoordinateReferenceSystem)}</li>
+ *   <li>{@link #createParameterizedTransform(ParameterValueGroup)}</li>
  * </ul>
  *
- * The following methods delegate to {@link #createCoordinateReferenceSystem(String)} and cast
- * the result if possible, or throw a {@link FactoryException} otherwise.
- * <ul>
- *   <li>{@link #createGeographicCRS(String)}</li>
- *   <li>{@link #createGeocentricCRS(String)}</li>
- *   <li>{@link #createProjectedCRS(String)}</li>
- *   <li>{@link #createObject(String)}</li>
- * </ul>
+ * Other methods delegate to one of above-cited methods if possible, or throw a {@link FactoryException} otherwise.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
@@ -77,6 +77,19 @@ import org.apache.sis.measure.Units;
  * @module
  */
 public class Proj4Factory extends GeodeticAuthorityFactory implements CRSAuthorityFactory {
+    /*
+     * NOTE: Proj4Factory could implement CoordinateOperationFactory or MathTransformFactory.
+     *       But we don't do that yet because we are not sure about exposing large amount of
+     *       methods that are not really supported by Proj.4 wrappers. However this approach
+     *       is experimented in the MTFactory class in the test directory. MTFactory methods
+     *       could be refactored here if experience shows us that it would be useful.
+     */
+
+    /**
+     * The {@literal Proj.4} parameter used for projection name.
+     */
+    static final String PROJ_PARAM = '+' + Proj4Parser.PROJ + '=';
+
     /**
      * The {@literal Proj.4} parameter used for declaration of axis order.  Proj.4 expects the axis parameter
      * to be exactly 3 characters long, but Apache SIS accepts 2 characters as well. We relax the Proj.4 rule
@@ -88,7 +101,14 @@ public class Proj4Factory extends GeodeticAuthorityFactory implements CRSAuthori
     /**
      * The default factory instance.
      */
-    static final Proj4Factory INSTANCE = new Proj4Factory();
+    static final Proj4Factory INSTANCE = new Proj4Factory(null);
+
+    /**
+     * The default properties, or an empty map if none. This map shall not change after construction in
+     * order to allow usage without synchronization in multi-thread context. But we do not need to wrap
+     * in a unmodifiable map since {@code Proj4Factory} does not provide public access to it.
+     */
+    private final Map<String,?> defaultProperties;
 
     /**
      * The factory for coordinate reference system objects.
@@ -106,10 +126,18 @@ public class Proj4Factory extends GeodeticAuthorityFactory implements CRSAuthori
     private final DatumFactory datumFactory;
 
     /**
-     * The factory for coordinate operation objects.
-     * Currently restricted to Apache SIS implementation because we use a method not yet available in GeoAPI.
+     * The {@code MathTransform} factory on which to delegate operations that are not supported by {@code Proj4Factory}.
      */
-    private final DefaultCoordinateOperationFactory opFactory;
+    private final MathTransformFactory mtFactory;
+
+    /**
+     * The factory for coordinate operation objects, created when first needed.
+     * Currently restricted to Apache SIS implementation because we use a method not yet available in GeoAPI and
+     * because we configure it for using the {@link MathTransformFactory} provided by this {@code Proj4Factory}.
+     *
+     * @see #opFactory()
+     */
+    private volatile DefaultCoordinateOperationFactory opFactory;
 
     /**
      * Poll of identifiers created by this factory.
@@ -124,38 +152,55 @@ public class Proj4Factory extends GeodeticAuthorityFactory implements CRSAuthori
     private final WeakValueHashMap<String,PJ> pool = new WeakValueHashMap<>(String.class);
 
     /**
-     * Creates a new {@literal Proj.4} factory using the default CRS, CS and datum factories.
+     * Creates a new {@literal Proj.4} factory. The {@code properties} argument is an optional map
+     * for specifying common properties shared by the objects to create. Some available properties are
+     * {@linkplain org.apache.sis.referencing.AbstractIdentifiedObject#AbstractIdentifiedObject(Map) listed there}.
+     * Unknown properties, or properties that do not apply, or properties for which {@code Proj4Factory} supplies
+     * itself a value, are ignored.
+     *
+     * @param properties  common properties for the objects to create, or {@code null} if none.
      */
-    public Proj4Factory() {
-        crsFactory   = DefaultFactories.forBuildin(CRSFactory.class);
-        csFactory    = DefaultFactories.forBuildin(CSFactory.class);
-        datumFactory = DefaultFactories.forBuildin(DatumFactory.class);
-        opFactory    = DefaultFactories.forBuildin(CoordinateOperationFactory.class, DefaultCoordinateOperationFactory.class);
+    public Proj4Factory(Map<String,?> properties) {
+        properties   = new HashMap<>(properties != null ? properties : Collections.emptyMap());
+        crsFactory   = factory(CRSFactory.class,           properties, ReferencingServices.CRS_FACTORY);
+        csFactory    = factory(CSFactory.class,            properties, ReferencingServices.CS_FACTORY);
+        datumFactory = factory(DatumFactory.class,         properties, ReferencingServices.DATUM_FACTORY);
+        mtFactory    = factory(MathTransformFactory.class, properties, ReferencingServices.MT_FACTORY);
+        defaultProperties = CollectionsExt.compact(properties);
     }
 
     /**
-     * Creates a new {@literal Proj.4} factory using the specified CRS, CS and datum factories.
-     *
-     * @param crsFactory    the factory to use for creating Coordinate Reference Systems.
-     * @param csFactory     the factory to use for creating Coordinate Systems.
-     * @param datumFactory  the factory to use for creating Geodetic Datums.
-     * @param opFactory     the factory to use for creating Coordinate Operations.
-     *                      Current implementation requires an instance of {@link DefaultCoordinateOperationFactory},
-     *                      but this may be related in a future Apache SIS version.
+     * Returns the factory to use, using the instance specified in the properties map if it exists,
+     * or the system-wide default instance otherwise.
      */
-    public Proj4Factory(final CRSFactory   crsFactory,
-                        final CSFactory    csFactory,
-                        final DatumFactory datumFactory,
-                        final CoordinateOperationFactory opFactory)
-    {
-        ArgumentChecks.ensureNonNull("crsFactory",   crsFactory);
-        ArgumentChecks.ensureNonNull("csFactory",    csFactory);
-        ArgumentChecks.ensureNonNull("datumFactory", datumFactory);
-        ArgumentChecks.ensureNonNull("opFactory",    opFactory);
-        this.crsFactory   = crsFactory;
-        this.csFactory    = csFactory;
-        this.datumFactory = datumFactory;
-        this.opFactory    = (DefaultCoordinateOperationFactory) opFactory;
+    @SuppressWarnings("unchecked")
+    private static <T> T factory(final Class<T> type, final Map<String,?> properties, final String key) {
+        final Object value = properties.remove(key);
+        if (value == null) {
+            return DefaultFactories.forBuildin(type);
+        }
+        if (type.isInstance(value)) {
+            return (T) value;
+        }
+        throw new IllegalArgumentException(Errors.getResources(properties)
+                .getString(Errors.Keys.IllegalPropertyValueClass_2, key, Classes.getClass(value)));
+    }
+
+    /**
+     * Returns the factory for coordinate operation objects.
+     * The factory is backed by this {@code Proj4Factory} as the {@code MathTransformFactory} implementation.
+     */
+    final DefaultCoordinateOperationFactory opFactory() {
+        DefaultCoordinateOperationFactory factory = opFactory;
+        if (factory == null) {
+            final Map<String,Object> properties = new HashMap<>(defaultProperties);
+            properties.put(ReferencingServices.CRS_FACTORY,   crsFactory);
+            properties.put(ReferencingServices.CS_FACTORY,    csFactory);
+            properties.put(ReferencingServices.DATUM_FACTORY, datumFactory);
+            factory = new DefaultCoordinateOperationFactory(properties, mtFactory);
+            opFactory = factory;
+        }
+        return factory;
     }
 
     /**
@@ -211,8 +256,153 @@ public class Proj4Factory extends GeodeticAuthorityFactory implements CRSAuthori
         }
         final Set<String> codes = new LinkedHashSet<>(4);
         codes.add("+init=");
-        codes.add("+proj=".concat(method));
+        codes.add(PROJ_PARAM.concat(method));
         return codes;
+    }
+
+    /**
+     * Returns some map projection methods supported by {@literal Proj.4}.
+     * Current implementation can not return the complete list of Proj.4 method, but returns the main ones.
+     * For each operation method in the returned set, the Proj.4 projection name can be obtained as below:
+     *
+     * {@preformat java
+     *     String proj = IdentifiedObjects.getName(method, Citations.PROJ4);
+     * }
+     *
+     * The {@code proj} names obtained as above can be given in argument to the
+     * {@link #getOperationMethod(String)} and {@link #getDefaultParameters(String)} methods.
+     *
+     * @param  type <code>{@linkplain SingleOperation}.class</code> for fetching all operation methods, or
+     *              <code>{@linkplain Projection}.class</code> for fetching only map projection methods.
+     * @return methods available in this factory for coordinate operations of the given type.
+     *
+     * @see org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory#getAvailableMethods(Class)
+     */
+    public Set<OperationMethod> getAvailableMethods(final Class<? extends SingleOperation> type) {
+        return new LazySet<>(CollectionsExt.filter(mtFactory.getAvailableMethods(type).iterator(), Proj4Factory::isSupported));
+    }
+
+    /**
+     * Returns the operation method of the given name. The given argument can be a Proj.4 projection name,
+     * but other authorities (OGC, EPSG…) are also accepted. A partial list of supported projection names
+     * can be obtained by {@link #getAvailableMethods(Class)}. Some examples of Proj.4 projection names
+     * are given below (not all of them are supported by this Proj.4 wrapper).
+     *
+     * <table class="sis">
+     *   <caption>Some Proj.4 projection names</caption>
+     *   <tr><th>Name</th>            <th>Meaning</th></tr>
+     *   <tr><td>{@code aea}</td>     <td>Albers Equal-Area Conic</td></tr>
+     *   <tr><td>{@code aeqd}</td>    <td>Azimuthal Equidistant</td></tr>
+     *   <tr><td>{@code cass}</td>    <td>Cassini-Soldner</td></tr>
+     *   <tr><td>{@code cea}</td>     <td>Cylindrical Equal Area</td></tr>
+     *   <tr><td>{@code eck4}</td>    <td>Eckert IV</td></tr>
+     *   <tr><td>{@code eck6}</td>    <td>Eckert VI</td></tr>
+     *   <tr><td>{@code eqdc}</td>    <td>Equidistant Conic</td></tr>
+     *   <tr><td>{@code gall}</td>    <td>Gall Stereograpic</td></tr>
+     *   <tr><td>{@code geos}</td>    <td>Geostationary Satellite View</td></tr>
+     *   <tr><td>{@code gnom}</td>    <td>Gnomonic</td></tr>
+     *   <tr><td>{@code krovak}</td>  <td>Krovak Oblique Conic Conformal</td></tr>
+     *   <tr><td>{@code laea}</td>    <td>Lambert Azimuthal Equal Area</td></tr>
+     *   <tr><td>{@code lcc}</td>     <td>Lambert Conic Conformal</td></tr>
+     *   <tr><td>{@code merc}</td>    <td>Mercator</td></tr>
+     *   <tr><td>{@code mill}</td>    <td>Miller Cylindrical</td></tr>
+     *   <tr><td>{@code moll}</td>    <td>Mollweide</td></tr>
+     *   <tr><td>{@code nzmg}</td>    <td>New Zealand Map Grid</td></tr>
+     *   <tr><td>{@code omerc}</td>   <td>Oblique Mercator</td></tr>
+     *   <tr><td>{@code ortho}</td>   <td>Orthographic</td></tr>
+     *   <tr><td>{@code sterea}</td>  <td>Oblique Stereographic</td></tr>
+     *   <tr><td>{@code stere}</td>   <td>Stereographic</td></tr>
+     *   <tr><td>{@code robin}</td>   <td>Robinson</td></tr>
+     *   <tr><td>{@code sinu}</td>    <td>Sinusoidal</td></tr>
+     *   <tr><td>{@code tmerc}</td>   <td>Transverse Mercator</td></tr>
+     *   <tr><td>{@code vandg}</td>   <td>VanDerGrinten</td></tr>
+     * </table>
+     *
+     * The default implementation delegates to a {@code DefaultCoordinateOperationFactory} instance.
+     * It works because the Apache SIS operation methods declare the Proj.4 projection names as
+     * {@linkplain org.apache.sis.referencing.AbstractIdentifiedObject#getAlias() aliases}.
+     *
+     * @param  name  the name of the operation method to fetch.
+     * @return the operation method of the given name.
+     * @throws FactoryException if the requested operation method can not be fetched.
+     *
+     * @see org.apache.sis.referencing.operation.DefaultCoordinateOperationFactory#getOperationMethod(String)
+     */
+    public OperationMethod getOperationMethod(final String name) throws FactoryException {
+        final OperationMethod method = opFactory().getOperationMethod(name);
+        if (isSupported(method)) {
+            return method;
+        }
+        throw new NoSuchIdentifierException(Errors.getResources(defaultProperties)
+                .getString(Errors.Keys.UnsupportedOperation_1, name), name);
+    }
+
+    /**
+     * Returns the default parameter values for a math transform using the given operation method.
+     * The given argument can be a Proj.4 projection name, but other authorities (OGC, EPSG…) are also accepted.
+     * A partial list of supported projection names can be obtained by {@link #getAvailableMethods(Class)}.
+     * The returned parameters can be given to {@link #createParameterizedTransform(ParameterValueGroup)}.
+     *
+     * @param  method  the case insensitive name of the coordinate operation method to search for.
+     * @return a new group of parameter values for the {@code OperationMethod} identified by the given name.
+     * @throws NoSuchIdentifierException if there is no method registered for the given name or identifier.
+     */
+    public ParameterValueGroup getDefaultParameters(final String method) throws NoSuchIdentifierException {
+        final ParameterValueGroup parameters = mtFactory.getDefaultParameters(method);
+        if (isSupported(parameters.getDescriptor())) {
+            return parameters;
+        }
+        throw new NoSuchIdentifierException(Errors.getResources(defaultProperties)
+                .getString(Errors.Keys.UnsupportedOperation_1, method), method);
+    }
+
+    /**
+     * Creates a transform from a group of parameters. The {@link OperationMethod} name is inferred from
+     * the {@linkplain org.opengis.parameter.ParameterDescriptorGroup#getName() parameter group name}.
+     * Each parameter value is formatted as a Proj.4 parameter in a definition string.
+     *
+     * <div class="note"><b>Example:</b>
+     * {@preformat java
+     *     ParameterValueGroup p = factory.getDefaultParameters("Mercator");
+     *     p.parameter("semi_major").setValue(6378137.000);
+     *     p.parameter("semi_minor").setValue(6356752.314);
+     *     MathTransform mt = factory.createParameterizedTransform(p);
+     * }
+     *
+     * The corresponding Proj.4 definition string is:
+     *
+     * {@preformat text
+     *     +proj=merc +a=6378137.0 +b=6356752.314
+     * }
+     * </div>
+     *
+     * @param  parameters  the parameter values.
+     * @return the parameterized transform.
+     * @throws FactoryException if the object creation failed. This exception is thrown
+     *         if some required parameter has not been supplied, or has illegal value.
+     *
+     * @see #getDefaultParameters(String)
+     * @see #getAvailableMethods(Class)
+     */
+    public MathTransform createParameterizedTransform(final ParameterValueGroup parameters) throws FactoryException {
+        final String proj = name(parameters.getDescriptor(), Errors.Keys.UnsupportedOperation_1);
+        final StringBuilder buffer = new StringBuilder(100).append(PROJ_PARAM).append(proj);
+        for (final GeneralParameterValue p : parameters.values()) {
+            /*
+             * Unconditionally ask the parameter name in order to throw an exception
+             * with better error message in case of unrecognized parameter.
+             */
+            final String name = name(p.getDescriptor(), Errors.Keys.UnexpectedParameter_1);
+            if (p instanceof ParameterValue) {
+                final Object value = ((ParameterValue) p).getValue();
+                if (value != null) {
+                    buffer.append(" +").append(name).append('=').append(value);
+                }
+            }
+        }
+        final PJ pj = unique(new PJ(buffer.toString()));
+        final PJ base = unique(new PJ(pj));
+        return new Transform(base, false, pj, false);
     }
 
     /**
@@ -296,7 +486,7 @@ public class Proj4Factory extends GeodeticAuthorityFactory implements CRSAuthori
      * @param  keyword     the parameter name.
      * @return the parameter value as an identifier.
      */
-    private Map<String,Identifier> identifier(final String definition, final String keyword) {
+    private Map<String,Object> identifier(final String definition, final String keyword) {
         String value = "";
         if (keyword != null) {
             int i = definition.indexOf(keyword);
@@ -316,7 +506,7 @@ public class Proj4Factory extends GeodeticAuthorityFactory implements CRSAuthori
     /**
      * Returns the identifier for the given code in {@literal Proj.4} namespace.
      */
-    private Map<String,Identifier> identifier(final String code) {
+    private Map<String,Object> identifier(final String code) {
         Identifier id = identifiers.computeIfAbsent(code, (k) -> {
             short i18n = 0;
             if (k.equalsIgnoreCase("Unnamed")) i18n = Vocabulary.Keys.Unnamed;
@@ -324,7 +514,9 @@ public class Proj4Factory extends GeodeticAuthorityFactory implements CRSAuthori
             return new ImmutableIdentifier(Citations.PROJ4, Constants.PROJ4, k, null,
                     (i18n != 0) ? Vocabulary.formatInternational(i18n) : null);
         });
-        return Collections.singletonMap(IdentifiedObject.NAME_KEY, id);
+        final Map<String,Object> properties = new HashMap<>(defaultProperties);
+        properties.put(IdentifiedObject.NAME_KEY, id);
+        return properties;
     }
 
     /**
@@ -384,8 +576,8 @@ public class Proj4Factory extends GeodeticAuthorityFactory implements CRSAuthori
          * will be stored as the CRS identifier for allowing OperationFactory to get it back before to
          * attempt to create a new one for a given CRS.
          */
-        final Map<String,Identifier> csName = identifier("Unnamed");
-        final Map<String,Identifier> name = new HashMap<>(identifier(String.valueOf(pj.getDescription())));
+        final Map<String,Object> csName = identifier("Unnamed");
+        final Map<String,Object> name = new HashMap<>(identifier(String.valueOf(pj.getDescription())));
         name.put(CoordinateReferenceSystem.IDENTIFIERS_KEY, pj);
         switch (type) {
             case GEOGRAPHIC: {
@@ -412,7 +604,7 @@ public class Proj4Factory extends GeodeticAuthorityFactory implements CRSAuthori
                 ParameterValueGroup parameters;
                 try {
                     final Proj4Parser parser = new Proj4Parser(pj.getCode());
-                    method = parser.method(opFactory);
+                    method = parser.method(opFactory());
                     parameters = parser.parameters();
                 } catch (IllegalArgumentException | FactoryException e) {
                     Logging.recoverableException(Logging.getLogger(Modules.GDAL), Proj4Factory.class, "createProjectedCRS", e);
@@ -425,7 +617,8 @@ public class Proj4Factory extends GeodeticAuthorityFactory implements CRSAuthori
                         csFactory.createCartesianCS(csName, axes[0], axes[1]));
             }
             default: {
-                throw new FactoryException(Errors.format(Errors.Keys.UnknownEnumValue_2, type, PJ.Type.class));
+                throw new FactoryException(Errors.getResources(defaultProperties)
+                        .getString(Errors.Keys.UnknownEnumValue_2, type, PJ.Type.class));
             }
         }
     }
@@ -488,6 +681,7 @@ public class Proj4Factory extends GeodeticAuthorityFactory implements CRSAuthori
      * @throws FactoryException if the given CRS are not instances recognized by this class.
      *
      * @see Proj4#createOperation(CoordinateReferenceSystem, CoordinateReferenceSystem)
+     * @see DefaultCoordinateOperationFactory#createOperation(CoordinateReferenceSystem, CoordinateReferenceSystem)
      */
     public CoordinateOperation createOperation(final CoordinateReferenceSystem sourceCRS,
                                                final CoordinateReferenceSystem targetCRS)
@@ -505,19 +699,51 @@ public class Proj4Factory extends GeodeticAuthorityFactory implements CRSAuthori
         }
         final Transform tr = new Transform(unwrapOrCreate(sourceCRS), is3D("sourceCRS", sourceCRS),
                                            unwrapOrCreate(targetCRS), is3D("targetCRS", targetCRS));
-        return opFactory.createSingleOperation(identifier(name), sourceCRS, targetCRS, null, Transform.METHOD, tr);
+        return opFactory().createSingleOperation(identifier(name), sourceCRS, targetCRS, null, Transform.METHOD, tr);
     }
 
     /**
      * Returns whether the given CRS is three-dimensional.
      * Thrown an exception if the number of dimension is unsupported.
      */
-    private static boolean is3D(final String arg, final CoordinateReferenceSystem crs) throws FactoryException {
+    private boolean is3D(final String arg, final CoordinateReferenceSystem crs) throws FactoryException {
         final int dim = crs.getCoordinateSystem().getDimension();
         final boolean is3D = (dim >= 3);
         if (dim < 2 || dim > 3) {
-            throw new FactoryException(Errors.format(Errors.Keys.MismatchedDimension_3, arg, is3D ? 3 : 2, dim));
+            throw new FactoryException(Errors.getResources(defaultProperties)
+                    .getString(Errors.Keys.MismatchedDimension_3, arg, is3D ? 3 : 2, dim));
         }
         return is3D;
+    }
+
+    /**
+     * Returns {@code true} if the given coordinate operation method or parameter group is supported.
+     */
+    private static boolean isSupported(final IdentifiedObject method) {
+        return IdentifiedObjects.getName(method, Citations.PROJ4) != null;
+    }
+
+    /**
+     * Returns the {@literal Proj.4} name of the given parameter value or parameter group.
+     *
+     * @param  param    the parameter value or parameter group for which to get the Proj.4 name.
+     * @param  errorKey the resource key of the error message to produce if no Proj.4 name has been found.
+     *                  The message shall expect exactly one argument. This error key can be
+     *                  {@link Errors.Keys#UnsupportedOperation_1} or {@link Errors.Keys#UnexpectedParameter_1}.
+     * @return the Proj.4 name of the given object (never null).
+     * @throws FactoryException if the Proj.4 name has not been found.
+     */
+    private String name(final IdentifiedObject param, final short errorKey) throws FactoryException {
+        String name = IdentifiedObjects.getName(param, Citations.PROJ4);
+        if (name == null) {
+            name = param.getName().getCode();
+            final String message = Errors.getResources(defaultProperties).getString(errorKey, name);
+            if (errorKey == Errors.Keys.UnsupportedOperation_1) {
+                throw new NoSuchIdentifierException(message, name);
+            } else {
+                throw new InvalidGeodeticParameterException(message);
+            }
+        }
+        return name;
     }
 }

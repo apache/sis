@@ -339,7 +339,7 @@ JNIEXPORT void JNICALL Java_org_apache_sis_storage_gdal_PJ_transform
         if (c) (*env)->ThrowNew(env, c, "The target CRS and the coordinates array can not be null.");
         return;
     }
-    if (dimension < 2 || dimension > 100) { // Arbitrary upper value for catching potential misuse.
+    if (dimension < 2 || dimension > 100) {     // Arbitrary upper value for catching potential misuse.
         jclass c = (*env)->FindClass(env, "java/lang/IllegalArgumentException");
         if (c) (*env)->ThrowNew(env, c, "Illegal dimension. Must be in the [2-100] range.");
         return;

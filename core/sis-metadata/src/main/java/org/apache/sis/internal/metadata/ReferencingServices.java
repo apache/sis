@@ -39,6 +39,7 @@ import org.opengis.referencing.cs.CartesianCS;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.opengis.referencing.cs.EllipsoidalCS;
+import org.opengis.referencing.datum.DatumFactory;
 import org.opengis.referencing.datum.PrimeMeridian;
 import org.opengis.referencing.datum.VerticalDatum;
 import org.opengis.referencing.operation.MathTransform;
@@ -127,6 +128,11 @@ public class ReferencingServices extends OptionalDependency {
      * The key for specifying a {@link CSFactory} instance to use for geodetic object constructions.
      */
     public static final String CS_FACTORY = "csFactory";
+
+    /**
+     * The key for specifying a {@link DatumFactory} instance to use for geodetic object constructions.
+     */
+    public static final String DATUM_FACTORY = "datumFactory";
 
     /**
      * The services, fetched when first needed.

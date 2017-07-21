@@ -55,7 +55,7 @@ import org.apache.sis.measure.Units;
  *
  * <ul>
  *   <li>{@linkplain #createCRS Create a Coordinate Reference System instance from a Proj.4 definition string}.</li>
- *   <li>Conversely, {@link #definition get a Proj.4 definition string from a Coordinate Reference System}.</li>
+ *   <li>Conversely, {@linkplain #definition get a Proj.4 definition string from a Coordinate Reference System}.</li>
  *   <li>{@linkplain #createOperation Create a coordinate operation backed by Proj.4 between two arbitrary CRS}.</li>
  * </ul>
  *
@@ -80,7 +80,7 @@ public final class Proj4 extends Static {
      *
      * <div class="note"><b>Example:</b> Rel. 4.9.3, 15 August 2016</div>
      *
-     * @return the Proj.4 release string, or {@code null} if no installation has been found.
+     * @return the Proj.4 release string, or {@code null} if the native library has been found.
      */
     public static String version() {
         try {
@@ -156,7 +156,7 @@ public final class Proj4 extends Static {
          * associated to the CRS.
          */
         final StringBuilder definition = new StringBuilder(100);
-        definition.append("+proj=").append(method);
+        definition.append(Proj4Factory.PROJ_PARAM).append(method);
         boolean hasSemiMajor = false;
         boolean hasSemiMinor = false;
         if (parameters != null) {
@@ -229,18 +229,20 @@ public final class Proj4 extends Static {
      * @param  dimension   the number of dimension of the CRS to create (2 or 3).
      * @return a CRS created from the given definition string and number of dimensions.
      * @throws NullPointerException if the definition string is {@code null}.
-     * @throws FactoryException if one of the given argument has an invalid value.
+     * @throws IllegalArgumentException if the definition string is empty or the dimension argument is out of range.
+     * @throws UnavailableFactoryException if the Proj.4 native library is not available.
+     * @throws FactoryException if the CRS creation failed for another reason.
      *
      * @see Proj4Factory#createCoordinateReferenceSystem(String)
      */
     public static CoordinateReferenceSystem createCRS(String definition, final int dimension) throws FactoryException {
-        definition = definition.trim();
-        ArgumentChecks.ensureNonEmpty(definition, definition);
+        ArgumentChecks.ensureNonEmpty("definition", definition);
         ArgumentChecks.ensureBetween("dimension", 2, 3, dimension);
+        definition = definition.trim();
         try {
             return Proj4Factory.INSTANCE.createCRS(definition, dimension >= 3);
         } catch (UnsatisfiedLinkError | NoClassDefFoundError e) {
-            throw new UnavailableFactoryException(Errors.format(Errors.Keys.NativeInterfacesNotFound_2, OS.uname(), "libproj"), e);
+            throw new UnavailableFactoryException(unavailable(), e);
         }
     }
 
@@ -253,7 +255,8 @@ public final class Proj4 extends Static {
      * @param  sourceCRS   the source coordinate reference system.
      * @param  targetCRS   the target coordinate reference system.
      * @return a coordinate operation for transforming coordinates from the given source CRS to the given target CRS.
-     * @throws FactoryException if an error occurred while creating the coordinate operation.
+     * @throws UnavailableFactoryException if the Proj.4 native library is not available.
+     * @throws FactoryException if the operation creation failed for another reason.
      *
      * @see Proj4Factory#createOperation(CoordinateReferenceSystem, CoordinateReferenceSystem)
      */
@@ -266,7 +269,14 @@ public final class Proj4 extends Static {
         try {
             return Proj4Factory.INSTANCE.createOperation(sourceCRS, targetCRS);
         } catch (UnsatisfiedLinkError | NoClassDefFoundError e) {
-            throw new UnavailableFactoryException(Errors.format(Errors.Keys.NativeInterfacesNotFound_2, OS.uname(), "libproj"), e);
+            throw new UnavailableFactoryException(unavailable(), e);
         }
+    }
+
+    /**
+     * Returns the error message for a {@literal Proj.4} not found.
+     */
+    static String unavailable() {
+        return Errors.format(Errors.Keys.NativeInterfacesNotFound_2, OS.uname(), "libproj");
     }
 }

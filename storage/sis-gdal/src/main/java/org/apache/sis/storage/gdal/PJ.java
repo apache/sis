@@ -17,7 +17,9 @@
 package org.apache.sis.storage.gdal;
 
 import java.util.Objects;
-import java.lang.annotation.Native;
+import java.io.Serializable;
+import java.io.ObjectStreamException;
+import java.io.InvalidObjectException;
 import org.opengis.metadata.Identifier;
 import org.opengis.util.FactoryException;
 import org.opengis.util.InternationalString;
@@ -52,14 +54,8 @@ import org.apache.sis.internal.system.OS;
  * @since   0.8
  * @module
  */
-final class PJ implements Identifier {
-    /**
-     * The maximal number of dimension accepted by the {@link #transform(PJ, int, double[], int, int)} method.
-     * This upper limit is actually somewhat arbitrary. This limit exists mostly as a safety against potential misuse.
-     */
-    @Native
-    static final int DIMENSION_MAX = 100;
-
+@SuppressWarnings("serial")     // serialVersionUID not needed since writeReplace() gives another kind of object.
+final class PJ implements Identifier, Serializable {
     /**
      * Loads the {@literal Proj.4} library.
      * This static initializer may throw a {@link UnsatisfiedLinkError} if the static library can not be loaded.
@@ -71,8 +67,8 @@ final class PJ implements Identifier {
     }
 
     /**
-     * The pointer to {@code PJ} structure allocated in the C/C++ heap. This value has no
-     * meaning in Java code. <strong>Do not modify</strong>, since this value is used by Proj.4.
+     * The pointer to {@code PJ} structure allocated in the C/C++ heap. This value has no meaning in Java code,
+     * except 0 which means no native object. <strong>Do not modify</strong>, since this value is used by Proj.4.
      * Do not rename neither, unless you update accordingly the C code in JNI wrappers.
      */
     private final long ptr;
@@ -342,7 +338,7 @@ final class PJ implements Identifier {
      * </ul>
      *
      * @param  target       the target CRS.
-     * @param  dimension    the dimension of each coordinate value. Must be in the [2-{@value #DIMENSION_MAX}] range.
+     * @param  dimension    the dimension of each coordinate value. Typically 2, 3 or 4.
      * @param  coordinates  the coordinates to transform, as a sequence of (<var>x</var>,<var>y</var>,&lt;<var>z</var>&gt;,…) tuples.
      * @param  offset       offset of the first coordinate in the given array.
      * @param  numPts       number of points to transform.
@@ -397,4 +393,59 @@ final class PJ implements Identifier {
     @Override
     @SuppressWarnings("FinalizeDeclaration")
     protected final native void finalize();
+
+    /**
+     * The object serialized in place of {@literal Proj.4} wrappers.
+     * Deserialization checks for the presence of Proj.4 native library.
+     *
+     * @author  Martin Desruisseaux (Geomatys)
+     * @version 0.8
+     * @since   0.8
+     * @module
+     */
+    private static final class Serialized implements Serializable {
+        /**
+         * For cross-version compatibility.
+         */
+        private static final long serialVersionUID = -5705027681492462823L;
+
+        /**
+         * The {@literal Proj.4} definition string.
+         */
+        private final String definition;
+
+        /**
+         * Creates a new proxy for the given {@literal Proj.4} definition.
+         */
+        Serialized(final String definition) {
+            this.definition = definition;
+        }
+
+        /**
+         * Automatically invoked on deserialization for reconstructing the wrapper
+         * from the {@literal Proj.4} definition string.
+         */
+        protected final Object readResolve() throws ObjectStreamException {
+            final String message;
+            final Throwable cause;
+            try {
+                return new PJ(definition);
+            } catch (UnsatisfiedLinkError | NoClassDefFoundError e) {
+                message = Proj4.unavailable();
+                cause = e;
+            } catch (InvalidGeodeticParameterException e) {
+                message = e.getLocalizedMessage();
+                cause = e;
+            }
+            throw (InvalidObjectException) new InvalidObjectException(message).initCause(cause);
+        }
+    }
+
+    /**
+     * Invoked automatically on serialization.
+     * Replaces this {@literal Proj.4} wrapper by a proxy without native resource.
+     */
+    protected final Object writeReplace() throws ObjectStreamException {
+        return new Serialized(getCode());
+    }
 }

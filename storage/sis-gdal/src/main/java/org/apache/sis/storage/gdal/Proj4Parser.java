@@ -57,6 +57,11 @@ final class Proj4Parser {
     }
 
     /**
+     * The {@value} keyword used for projection name in {@literal Proj.4} definition strings.
+     */
+    static final String PROJ = "proj";
+
+    /**
      * The values extracted from the {@literal Proj.4} definition strings.
      * Keys are Proj.4 keywords like {@code "a"} or {@code "ts"}.
      */
@@ -96,9 +101,9 @@ final class Proj4Parser {
      */
     final OperationMethod method(final DefaultCoordinateOperationFactory opFactory) throws FactoryException {
         if (method == null) {
-            final String name = parameters.remove("proj");
+            final String name = parameters.remove(PROJ);
             if (name == null) {
-                throw new InvalidGeodeticParameterException(Errors.format(Errors.Keys.ElementNotFound_1, "proj"));
+                throw new InvalidGeodeticParameterException(Errors.format(Errors.Keys.ElementNotFound_1, PROJ));
             }
             method = opFactory.getOperationMethod(name);
         }
