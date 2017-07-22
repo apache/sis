@@ -75,6 +75,27 @@ class MTFactory extends Proj4Factory implements CoordinateOperationFactory, Math
     }
 
     /**
+     * Creates an operation for conversion or transformation between two coordinate reference systems.
+     * This implementation always uses Proj.4 for performing the coordinate operations, regardless if
+     * the given CRS were created from Proj.4 definition strings or not. This method fails if it can
+     * not map the given CRS to Proj.4 data structures.
+     *
+     * @param  sourceCRS  the source coordinate reference system.
+     * @param  targetCRS  the target coordinate reference system.
+     * @return a coordinate operation for transforming coordinates from the given source CRS to the given target CRS.
+     * @throws FactoryException if the given CRS are not instances recognized by this class.
+     *
+     * @see Proj4#createOperation(CoordinateReferenceSystem, CoordinateReferenceSystem, boolean)
+     */
+    @Override
+    public CoordinateOperation createOperation(final CoordinateReferenceSystem sourceCRS,
+                                               final CoordinateReferenceSystem targetCRS)
+            throws FactoryException
+    {
+        return createOperation(sourceCRS, targetCRS, true);
+    }
+
+    /**
      * Ignores the given {@code method} argument and delegates to
      * <code>{@linkplain #createOperation(CoordinateReferenceSystem, CoordinateReferenceSystem)
      * createOperation}(sourceCRS, targetCRS)</code>.

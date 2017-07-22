@@ -176,17 +176,17 @@ public class TableAppender extends Appender implements Flushable {
     private String lineSeparator;
 
     /**
-     * The column separator.
+     * The column separator, or an empty string if none.
      */
     private final String columnSeparator;
 
     /**
-     * The left table border.
+     * The left table border, or an empty string if none.
      */
     private final String leftBorder;
 
     /**
-     * The right table border.
+     * The right table border, or an empty string if none.
      */
     private final String rightBorder;
 

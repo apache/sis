@@ -113,7 +113,7 @@ public final strictfp class Proj4FactoryTest extends TestCase {
         final Proj4Factory  factory   = Proj4Factory.INSTANCE;
         final GeographicCRS sourceCRS = factory.createGeographicCRS("+init=epsg:4326");
         final ProjectedCRS  targetCRS = factory.createProjectedCRS("+init=epsg:3395");
-        final CoordinateOperation op  = factory.createOperation(sourceCRS, targetCRS);
+        final CoordinateOperation op  = factory.createOperation(sourceCRS, targetCRS, true);
         assertInstanceOf("createOperation", Conversion.class, op);
         testMercatorProjection(op.getMathTransform());
     }
@@ -121,7 +121,7 @@ public final strictfp class Proj4FactoryTest extends TestCase {
     /**
      * Tests EPSG:3395 on a point.
      */
-    private static void testMercatorProjection(final MathTransform mt) throws TransformException {
+    static void testMercatorProjection(final MathTransform mt) throws TransformException {
         DirectPosition pt = new DirectPosition2D(20, 40);
         pt = mt.transform(pt, pt);
         assertEquals("Easting",  2226389.816, pt.getOrdinate(0), 0.01);

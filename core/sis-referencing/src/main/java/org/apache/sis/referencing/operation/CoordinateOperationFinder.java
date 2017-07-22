@@ -41,6 +41,7 @@ import org.apache.sis.internal.referencing.provider.Geographic3Dto2D;
 import org.apache.sis.internal.referencing.provider.GeographicToGeocentric;
 import org.apache.sis.internal.referencing.provider.GeocentricToGeographic;
 import org.apache.sis.internal.referencing.provider.GeocentricAffine;
+import org.apache.sis.internal.referencing.SpecializedOperationFactory;
 import org.apache.sis.internal.referencing.Resources;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.measure.Units;
@@ -219,6 +220,17 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
         }
         if (previousSearches.put(key, Boolean.TRUE) != null) {
             throw new FactoryException(Resources.format(Resources.Keys.RecursiveCreateCallForCode_2, CoordinateOperation.class, key));
+        }
+        /*
+         * Verify if some extension module handles this pair of CRS in a special way. For example it may
+         * be the "sis-gdal" module checking if the given CRS are wrappers around Proj.4 data structure.
+         */
+        for (final SpecializedOperationFactory sp : factorySIS.getSpecializedFactories()) {
+            for (final CoordinateOperation op : sp.findOperations(sourceCRS, targetCRS)) {
+                if (filter(op)) {
+                    return op;
+                }
+            }
         }
         /*
          * If the user did not specified an area of interest, use the domain of validity of the CRS.
