@@ -25,11 +25,13 @@ import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
+import org.opengis.referencing.operation.MathTransformFactory;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.parameter.ParameterBuilder;
 import org.apache.sis.referencing.operation.DefaultOperationMethod;
 import org.apache.sis.referencing.operation.transform.AbstractMathTransform;
+import org.opengis.util.FactoryException;
 
 
 /**
@@ -175,5 +177,23 @@ final class Transform extends AbstractMathTransform implements Serializable {
             inverse.inverse = this;
         }
         return inverse;
+    }
+
+    /**
+     * If both transforms are {@literal Proj.4} wrappers, returns a single transform without intermediate step.
+     */
+    @Override
+    protected MathTransform tryConcatenate(final boolean applyOtherFirst, final MathTransform other,
+            final MathTransformFactory factory) throws FactoryException
+    {
+        if (other instanceof Transform) {
+            final Transform tr = (Transform) other;
+            if (applyOtherFirst) {
+                return new Transform(tr.source, tr.source3D, target, target3D);
+            } else {
+                return new Transform(source, source3D, tr.target, tr.target3D);
+            }
+        }
+        return super.tryConcatenate(applyOtherFirst, other, factory);
     }
 }
