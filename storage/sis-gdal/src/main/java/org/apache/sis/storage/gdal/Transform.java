@@ -18,6 +18,7 @@ package org.apache.sis.storage.gdal;
 
 import java.io.Serializable;
 import java.util.Collections;
+import org.opengis.util.FactoryException;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
@@ -26,12 +27,13 @@ import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.referencing.operation.MathTransformFactory;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.parameter.ParameterBuilder;
 import org.apache.sis.referencing.operation.DefaultOperationMethod;
 import org.apache.sis.referencing.operation.transform.AbstractMathTransform;
-import org.opengis.util.FactoryException;
+import org.apache.sis.util.ComparisonMode;
 
 
 /**
@@ -195,5 +197,44 @@ final class Transform extends AbstractMathTransform implements Serializable {
             }
         }
         return super.tryConcatenate(applyOtherFirst, other, factory);
+    }
+
+    /**
+     * Returns {@code true} if this math transform is for the given pair of source and target CRS.
+     */
+    final boolean isFor(final CoordinateReferenceSystem sourceCRS, final PJ sourcePJ,
+                        final CoordinateReferenceSystem targetCRS, final PJ targetPJ)
+    {
+        return source.equals(sourcePJ) && dimensionMatches(sourceCRS, source3D) &&
+               target.equals(targetPJ) && dimensionMatches(targetCRS, target3D);
+    }
+
+    /**
+     * Tests whether the given CRS matches the expected number of dimensions.
+     */
+    private static boolean dimensionMatches(final CoordinateReferenceSystem crs, final boolean is3D) {
+        return crs.getCoordinateSystem().getDimension() == (is3D ? 3 : 2);
+    }
+
+    /**
+     * Computes a hash value for this transform. This method is invoked by {@link #hashCode()} when first needed.
+     */
+    @Override
+    protected int computeHashCode() {
+        return super.computeHashCode() + source.hashCode() + 31*target.hashCode();
+    }
+
+    /**
+     * Compares the given object with this transform for equality.
+     * This implementation can not ignore metadata or rounding errors.
+     */
+    @Override
+    public boolean equals(final Object object, final ComparisonMode mode) {
+        if (object instanceof Transform) {
+            final Transform that = (Transform) object;
+            return source.equals(that.source) && source3D == that.source3D
+                && target.equals(that.target) && target3D == that.target3D;
+        }
+        return false;
     }
 }

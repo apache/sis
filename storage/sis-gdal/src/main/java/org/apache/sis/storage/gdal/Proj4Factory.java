@@ -38,6 +38,7 @@ import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.operation.DefaultConversion;
 import org.apache.sis.referencing.operation.DefaultCoordinateOperationFactory;
 import org.apache.sis.referencing.factory.InvalidGeodeticParameterException;
+import org.apache.sis.referencing.factory.UnavailableFactoryException;
 import org.apache.sis.referencing.factory.GeodeticAuthorityFactory;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.internal.util.Constants;
@@ -65,7 +66,7 @@ import org.apache.sis.measure.Units;
  * <ul>
  *   <li>{@link #getAuthority()}</li>
  *   <li>{@link #createCoordinateReferenceSystem(String)}</li>
- *   <li>{@link #createOperation(CoordinateReferenceSystem, CoordinateReferenceSystem)}</li>
+ *   <li>{@link #createOperation(CoordinateReferenceSystem, CoordinateReferenceSystem, boolean)}</li>
  *   <li>{@link #createParameterizedTransform(ParameterValueGroup)}</li>
  * </ul>
  *
@@ -101,7 +102,7 @@ public class Proj4Factory extends GeodeticAuthorityFactory implements CRSAuthori
     /**
      * The default factory instance.
      */
-    static final Proj4Factory INSTANCE = new Proj4Factory(null);
+    static final Proj4Factory INSTANCE = new Proj4Factory();
 
     /**
      * The default properties, or an empty map if none. This map shall not change after construction in
@@ -150,6 +151,13 @@ public class Proj4Factory extends GeodeticAuthorityFactory implements CRSAuthori
      * in the same Proj.4 object.
      */
     private final WeakValueHashMap<String,PJ> pool = new WeakValueHashMap<>(String.class);
+
+    /**
+     * Creates a default factory.
+     */
+    public Proj4Factory() {
+        this(null);
+    }
 
     /**
      * Creates a new {@literal Proj.4} factory. The {@code properties} argument is an optional map
@@ -473,7 +481,11 @@ public class Proj4Factory extends GeodeticAuthorityFactory implements CRSAuthori
                 }
             }
         }
-        return createCRS(code, hasHeight);
+        try {
+            return createCRS(code, hasHeight);
+        } catch (UnsatisfiedLinkError | NoClassDefFoundError e) {
+            throw new UnavailableFactoryException(Proj4.unavailable(), e);
+        }
     }
 
     /**
@@ -625,16 +637,17 @@ public class Proj4Factory extends GeodeticAuthorityFactory implements CRSAuthori
 
     /**
      * Gets the {@literal Proj.4} object from the given coordinate reference system. If an existing {@code PJ}
-     * instance is found, returns it. Otherwise creates a new {@code PJ} instance from a Proj.4 definition
-     * inferred from the given CRS. This method is the converse of {@link #createCRS(PJ, boolean)}.
+     * instance is found, returns it. Otherwise if {@code force} is {@code true}, creates a new {@code PJ}
+     * instance from a Proj.4 definition inferred from the given CRS.
+     * This method is the converse of {@link #createCRS(PJ, boolean)}.
      */
-    private PJ unwrapOrCreate(final CoordinateReferenceSystem crs) throws FactoryException {
+    private PJ unwrapOrCreate(final CoordinateReferenceSystem crs, final boolean force) throws FactoryException {
         for (final Identifier id : crs.getIdentifiers()) {
             if (id instanceof PJ) {
                 return (PJ) id;
             }
         }
-        return unique(new PJ(Proj4.definition(crs)));
+        return force ? unique(new PJ(Proj4.definition(crs))) : null;
     }
 
     /**
@@ -671,22 +684,57 @@ public class Proj4Factory extends GeodeticAuthorityFactory implements CRSAuthori
 
     /**
      * Creates an operation for conversion or transformation between two coordinate reference systems.
-     * This implementation always uses Proj.4 for performing the coordinate operations, regardless if
-     * the given CRS were created from a Proj.4 definition string or not. This method fails if it can
-     * not map the given CRS to Proj.4 structures.
+     * The given CRSs should be instances {@linkplain #createCoordinateReferenceSystem created by this factory}.
+     * If not, then there is a choice:
+     *
+     * <ul>
+     *   <li>If {@code force} is {@code false}, then this method returns {@code null}.</li>
+     *   <li>Otherwise this method always uses Proj.4 for performing the coordinate operations,
+     *       regardless if the given CRS were created from Proj.4 definition strings or not.
+     *       This method fails if it can not map the given CRS to Proj.4 data structures.</li>
+     * </ul>
      *
      * @param  sourceCRS  the source coordinate reference system.
      * @param  targetCRS  the target coordinate reference system.
-     * @return a coordinate operation for transforming coordinates from the given source CRS to the given target CRS.
-     * @throws FactoryException if the given CRS are not instances recognized by this class.
+     * @param  force      whether to force the creation of a Proj.4 transform
+     *                    even if the given CRS are not wrappers around Proj.4 data structures.
+     * @return a coordinate operation for transforming coordinates from the given source CRS to the given target CRS, or
+     *         {@code null} if the given CRS are not wrappers around Proj.4 data structures and {@code force} is false.
+     * @throws FactoryException if {@code force} is {@code true} and this method can not create Proj.4 transform
+     *         for the given pair of coordinate reference systems.
      *
-     * @see Proj4#createOperation(CoordinateReferenceSystem, CoordinateReferenceSystem)
+     * @see Proj4#createOperation(CoordinateReferenceSystem, CoordinateReferenceSystem, boolean)
      * @see DefaultCoordinateOperationFactory#createOperation(CoordinateReferenceSystem, CoordinateReferenceSystem)
      */
     public CoordinateOperation createOperation(final CoordinateReferenceSystem sourceCRS,
-                                               final CoordinateReferenceSystem targetCRS)
+                                               final CoordinateReferenceSystem targetCRS,
+                                               final boolean force)
             throws FactoryException
     {
+        final PJ source, target;
+        if ((source = unwrapOrCreate(sourceCRS, force)) == null ||
+            (target = unwrapOrCreate(targetCRS, force)) == null)
+        {
+            return null;            // At least one CRS is not a Proj.4 wrapper and 'force' is false.
+        }
+        /*
+         * Before to create a transform, verify if the target CRS already contains a suitable transform.
+         * In such case, returning the existing operation is preferable since it usually contains better
+         * parameter description than what this method build.
+         */
+        if (targetCRS instanceof GeneralDerivedCRS) {
+            final CoordinateOperation op = ((GeneralDerivedCRS) targetCRS).getConversionFromBase();
+            final MathTransform tr = op.getMathTransform();
+            if (tr instanceof Transform && ((Transform) tr).isFor(sourceCRS, source, targetCRS, target)) {
+                return op;
+            }
+        }
+        /*
+         * The 'Transform' construction implies parameter validation, so we do it first before to
+         * construct other objects.
+         */
+        final Transform tr = new Transform(source, is3D("sourceCRS", sourceCRS),
+                                           target, is3D("targetCRS", targetCRS));
         Identifier id;
         String src = null, tgt = null, name = "Unnamed";
         if ((id = sourceCRS.getName()) != null) src = id.getCode();
@@ -697,8 +745,6 @@ public class Proj4Factory extends GeodeticAuthorityFactory implements CRSAuthori
             if (tgt != null) buffer.append(buffer.length() == 0 ? "To " : " to ").append(tgt);
             name = buffer.toString();
         }
-        final Transform tr = new Transform(unwrapOrCreate(sourceCRS), is3D("sourceCRS", sourceCRS),
-                                           unwrapOrCreate(targetCRS), is3D("targetCRS", targetCRS));
         return opFactory().createSingleOperation(identifier(name), sourceCRS, targetCRS, null, Transform.METHOD, tr);
     }
 
