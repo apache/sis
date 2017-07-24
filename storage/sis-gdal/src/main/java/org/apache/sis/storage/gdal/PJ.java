@@ -426,18 +426,11 @@ final class PJ implements Identifier, Serializable {
          * from the {@literal Proj.4} definition string.
          */
         protected final Object readResolve() throws ObjectStreamException {
-            final String message;
-            final Throwable cause;
             try {
                 return new PJ(definition);
-            } catch (UnsatisfiedLinkError | NoClassDefFoundError e) {
-                message = Proj4.unavailable();
-                cause = e;
-            } catch (InvalidGeodeticParameterException e) {
-                message = e.getLocalizedMessage();
-                cause = e;
+            } catch (UnsatisfiedLinkError | NoClassDefFoundError | InvalidGeodeticParameterException e) {
+                throw (InvalidObjectException) new InvalidObjectException(Proj4.unavailable(e)).initCause(e);
             }
-            throw (InvalidObjectException) new InvalidObjectException(message).initCause(cause);
         }
     }
 

@@ -16,7 +16,7 @@
  */
 
 /**
- * Referencing services as wrapper around the C/C++ {@literal Proj.4} library.
+ * Extensions to referencing services as wrapper around the C/C++ {@literal Proj.4} library.
  * Current version wraps only referencing services, but future versions are expected to wrap more GDAL functionalities.
  * Unless otherwise specified, this optional module requires the native (C/C++) <a href="http://proj.osgeo.org/">Proj.4</a>
  * library to be installed on the local machine. This package allows to:
@@ -31,6 +31,19 @@
  * reproduce the exact same numerical results than Proj.4. But some Apache SIS features like
  * {@linkplain org.apache.sis.referencing.operation.transform.AbstractMathTransform#derivative transform derivatives}
  * are not available through the Proj.4 wrappers.
+ *
+ * <p>When this optional module is available, the {@link org.apache.sis.referencing.CRS#forCode CRS.forCode(String)}
+ * method accepts Proj.4 definition strings prefixed by {@code "Proj4::"}. Example:</p>
+ *
+ * {@preformat java
+ *     CoordinateReferenceSystem crs = CRS.forCode("Proj4::+init=epsg:3395");
+ * }
+ *
+ * Calls to {@link org.apache.sis.referencing.CRS#findOperation CRS.findOperation(…)} will delegate the coordinate
+ * transformation to Proj.4 if an only if {@code sourceCRS} and {@code targetCRS} were both obtained from a code
+ * in {@code "Proj4"} namespace or by a method in this package. If at least one CRS were obtained by another way,
+ * then Apache SIS will use its own referencing engine. The backing referencing engine can be seen by printing
+ * the {@code CoordinateOperation}.
  *
  * <div class="section">Note on Proj.4 definition strings</div>
  * Proj.4 unconditionally requires 3 letters for the {@code "+axis="} parameter — for example {@code "neu"} for

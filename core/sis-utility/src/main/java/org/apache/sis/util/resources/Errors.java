@@ -464,6 +464,11 @@ public final class Errors extends IndexedResourceBundle {
         public static final short InsufficientArgumentSize_3 = 74;
 
         /**
+         * “{0}” is an invalid version identifier.
+         */
+        public static final short InvalidVersionIdentifier_1 = 179;
+
+        /**
          * A different value is already associated to the “{0}” key.
          */
         public static final short KeyCollision_1 = 75;

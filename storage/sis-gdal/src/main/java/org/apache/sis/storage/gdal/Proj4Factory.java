@@ -43,6 +43,7 @@ import org.apache.sis.referencing.factory.GeodeticAuthorityFactory;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.metadata.iso.citation.Citations;
+import org.apache.sis.metadata.iso.citation.DefaultCitation;
 import org.apache.sis.metadata.iso.ImmutableIdentifier;
 import org.apache.sis.internal.metadata.AxisDirections;
 import org.apache.sis.internal.metadata.ReferencingServices;
@@ -50,6 +51,7 @@ import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.internal.util.LazySet;
+import org.apache.sis.util.iso.SimpleInternationalString;
 import org.apache.sis.util.collection.WeakValueHashMap;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.resources.Errors;
@@ -103,6 +105,13 @@ public class Proj4Factory extends GeodeticAuthorityFactory implements CRSAuthori
      * The default factory instance.
      */
     static final Proj4Factory INSTANCE = new Proj4Factory();
+
+    /**
+     * The {@literal Proj.4} authority completed by the version string. Created when first needed.
+     *
+     * @see #getAuthority()
+     */
+    private volatile Citation authority;
 
     /**
      * The default properties, or an empty map if none. This map shall not change after construction in
@@ -219,7 +228,19 @@ public class Proj4Factory extends GeodeticAuthorityFactory implements CRSAuthori
      */
     @Override
     public Citation getAuthority() {
-        return Citations.PROJ4;
+        Citation c = authority;
+        if (c == null) {
+            c = Citations.PROJ4;
+            final String release = Proj4.version();
+            if (release != null) {
+                final DefaultCitation df = new DefaultCitation(c);
+                df.setEdition(new SimpleInternationalString(release));
+                df.freeze();
+                c = df;
+            }
+            authority = c;
+        }
+        return c;
     }
 
     /**
@@ -408,9 +429,14 @@ public class Proj4Factory extends GeodeticAuthorityFactory implements CRSAuthori
                 }
             }
         }
-        final PJ pj = unique(new PJ(buffer.toString()));
-        final PJ base = unique(new PJ(pj));
-        return new Transform(base, false, pj, false);
+        final String definition = buffer.toString();
+        try {
+            final PJ pj = unique(new PJ(definition));
+            final PJ base = unique(new PJ(pj));
+            return new Transform(base, false, pj, false);
+        } catch (UnsatisfiedLinkError | NoClassDefFoundError e) {
+            throw new UnavailableFactoryException(Proj4.unavailable(e), e);
+        }
     }
 
     /**
@@ -484,7 +510,7 @@ public class Proj4Factory extends GeodeticAuthorityFactory implements CRSAuthori
         try {
             return createCRS(code, hasHeight);
         } catch (UnsatisfiedLinkError | NoClassDefFoundError e) {
-            throw new UnavailableFactoryException(Proj4.unavailable(), e);
+            throw new UnavailableFactoryException(Proj4.unavailable(e), e);
         }
     }
 
@@ -712,10 +738,14 @@ public class Proj4Factory extends GeodeticAuthorityFactory implements CRSAuthori
             throws FactoryException
     {
         final PJ source, target;
-        if ((source = unwrapOrCreate(sourceCRS, force)) == null ||
-            (target = unwrapOrCreate(targetCRS, force)) == null)
-        {
-            return null;            // At least one CRS is not a Proj.4 wrapper and 'force' is false.
+        try {
+            if ((source = unwrapOrCreate(sourceCRS, force)) == null ||
+                (target = unwrapOrCreate(targetCRS, force)) == null)
+            {
+                return null;            // At least one CRS is not a Proj.4 wrapper and 'force' is false.
+            }
+        } catch (UnsatisfiedLinkError | NoClassDefFoundError e) {
+            throw new UnavailableFactoryException(Proj4.unavailable(e), e);
         }
         /*
          * Before to create a transform, verify if the target CRS already contains a suitable transform.

@@ -19,10 +19,11 @@ package org.apache.sis.storage.gdal;
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.CoordinateOperation;
+import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.test.TestCase;
+import org.junit.BeforeClass;
 import org.junit.Test;
-import org.opengis.referencing.operation.TransformException;
 
 import static org.opengis.test.Assert.*;
 
@@ -37,16 +38,24 @@ import static org.opengis.test.Assert.*;
  */
 public final strictfp class IntegrationTest extends TestCase {
     /**
-     * Tests usage of {@link CRS#forCode(String)}.
+     * Verifies if the {@literal Proj.4} library is available.
+     */
+    @BeforeClass
+    public static void verifyNativeLibraryAvailability() {
+        PJTest.verifyNativeLibraryAvailability();
+    }
+
+    /**
+     * Tests usage of {@link CRS#forCode(String)}. Note that the {@code "Proj4::"} prefix needs two colons,
+     * otherwise the text between {@code "Proj4:"} and {@code ":4326"} is interpreted as a version string.
      *
      * @throws FactoryException if the coordinate reference system can not be created.
      * @throws TransformException if an error occurred while testing a coordinate transformation.
      */
     @Test
-    @org.junit.Ignore
     public void testCRS() throws FactoryException, TransformException {
-        final CoordinateReferenceSystem sourceCRS = CRS.forCode("Proj4:+init=epsg:4326");
-        final CoordinateReferenceSystem targetCRS = CRS.forCode("Proj4:+init=epsg:3395");
+        final CoordinateReferenceSystem sourceCRS = CRS.forCode("Proj4::+init=epsg:4326");
+        final CoordinateReferenceSystem targetCRS = CRS.forCode("Proj4::+init=epsg:3395");
         final CoordinateOperation op = CRS.findOperation(sourceCRS, targetCRS, null);
         assertInstanceOf("Expected Proj.4 wrapper.", Transform.class, op.getMathTransform());
         Proj4FactoryTest.testMercatorProjection(op.getMathTransform());
