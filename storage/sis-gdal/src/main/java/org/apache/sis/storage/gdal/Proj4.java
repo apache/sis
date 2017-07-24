@@ -312,7 +312,7 @@ public final class Proj4 extends Static {
         try {
             return Proj4Factory.INSTANCE.createCRS(definition, dimension >= 3);
         } catch (UnsatisfiedLinkError | NoClassDefFoundError e) {
-            throw new UnavailableFactoryException(unavailable(), e);
+            throw new UnavailableFactoryException(unavailable(e), e);
         }
     }
 
@@ -362,14 +362,18 @@ public final class Proj4 extends Static {
         try {
             return Proj4Factory.INSTANCE.createOperation(sourceCRS, targetCRS, force);
         } catch (UnsatisfiedLinkError | NoClassDefFoundError e) {
-            throw new UnavailableFactoryException(unavailable(), e);
+            throw new UnavailableFactoryException(unavailable(e), e);
         }
     }
 
     /**
      * Returns the error message for a {@literal Proj.4} not found.
      */
-    static String unavailable() {
-        return Errors.format(Errors.Keys.NativeInterfacesNotFound_2, OS.uname(), "libproj");
+    static String unavailable(final Throwable e) {
+        String message = e.getLocalizedMessage();
+        if (message == null || message.indexOf(' ') < 0) {      // Keep existing message if it is a sentence.
+            message = Errors.format(Errors.Keys.NativeInterfacesNotFound_2, OS.uname(), "libproj");
+        }
+        return message;
     }
 }
