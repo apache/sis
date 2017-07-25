@@ -103,6 +103,11 @@ public class Proj4Factory extends GeodeticAuthorityFactory implements CRSAuthori
     static final String AXIS_ORDER_PARAM = "+axis=";
 
     /**
+     * The name to use when no specific name were found for an object.
+     */
+    static final String UNNAMED = "Unnamed";
+
+    /**
      * The default factory instance.
      */
     static final Proj4Factory INSTANCE = new Proj4Factory();
@@ -523,7 +528,7 @@ public class Proj4Factory extends GeodeticAuthorityFactory implements CRSAuthori
     private Map<String,Object> identifier(final String code) {
         Identifier id = identifiers.computeIfAbsent(code, (k) -> {
             short i18n = 0;
-            if (k.equalsIgnoreCase("Unnamed")) i18n = Vocabulary.Keys.Unnamed;
+            if (k.equalsIgnoreCase( UNNAMED )) i18n = Vocabulary.Keys.Unnamed;
             if (k.equalsIgnoreCase("Unknown")) i18n = Vocabulary.Keys.Unknown;
             return new ImmutableIdentifier(Citations.PROJ4, Constants.PROJ4, k, null,
                     (i18n != 0) ? Vocabulary.formatInternational(i18n) : null);
@@ -546,11 +551,11 @@ public class Proj4Factory extends GeodeticAuthorityFactory implements CRSAuthori
         if (greenwichLongitude == 0) {
             pm = CommonCRS.WGS84.datum().getPrimeMeridian();
         } else {
-            pm = datumFactory.createPrimeMeridian(identifier("Unnamed"), greenwichLongitude, Units.DEGREE);
+            pm = datumFactory.createPrimeMeridian(identifier(UNNAMED), greenwichLongitude, Units.DEGREE);
         }
         final double[] def = pj.getEllipsoidDefinition();
-        return datumFactory.createGeodeticDatum(identifier(parser.value("datum", "Unnamed")),
-               datumFactory.createEllipsoid    (identifier(parser.value("ellps", "Unnamed")),
+        return datumFactory.createGeodeticDatum(identifier(parser.value("datum", UNNAMED)),
+               datumFactory.createEllipsoid    (identifier(parser.value("ellps", UNNAMED)),
                     def[0],                             // Semi-major axis length
                     def[0] * Math.sqrt(1 - def[1]),     // Semi-minor axis length
                     Units.METRE), pm);
@@ -597,8 +602,8 @@ public class Proj4Factory extends GeodeticAuthorityFactory implements CRSAuthori
          * will be stored as the CRS identifier for allowing OperationFactory to get it back before to
          * attempt to create a new one for a given CRS.
          */
-        final Map<String,Object> csName = identifier("Unnamed");
-        final Map<String,Object> name = new HashMap<>(identifier(String.valueOf(pj.getDescription())));
+        final Map<String,Object> csName = identifier(UNNAMED);
+        final Map<String,Object> name = new HashMap<>(identifier(parser.name(type == PJ.Type.PROJECTED)));
         name.put(CoordinateReferenceSystem.IDENTIFIERS_KEY, pj);
         switch (type) {
             case GEOGRAPHIC: {
@@ -748,7 +753,7 @@ public class Proj4Factory extends GeodeticAuthorityFactory implements CRSAuthori
         final Transform tr = new Transform(source, is3D("sourceCRS", sourceCRS),
                                            target, is3D("targetCRS", targetCRS));
         Identifier id;
-        String src = null, tgt = null, name = "Unnamed";
+        String src = null, tgt = null, name = UNNAMED;
         if ((id = sourceCRS.getName()) != null) src = id.getCode();
         if ((id = targetCRS.getName()) != null) tgt = id.getCode();
         if (src != null || tgt != null) {
