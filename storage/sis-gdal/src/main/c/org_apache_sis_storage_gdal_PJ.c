@@ -16,7 +16,7 @@
  */
 #include <math.h>
 #include <string.h>
-#include <projects.h>
+#include <proj_api.h>
 #include "org_apache_sis_storage_gdal_PJ.h"
 
 
@@ -35,10 +35,10 @@
  * \return The address of the PJ structure, or NULL if the operation fails (for example
  *         because the "ptr" field was not found).
  */
-PJ *getPJ(JNIEnv *env, jobject object)
+projPJ getPJ(JNIEnv *env, jobject object)
 {
     jfieldID id = (*env)->GetFieldID(env, (*env)->GetObjectClass(env, object), PJ_FIELD_NAME, PJ_FIELD_TYPE);
-    return (id) ? (PJ*) (*env)->GetLongField(env, object, id) : NULL;
+    return (id) ? (projPJ) (*env)->GetLongField(env, object, id) : NULL;
 }
 
 /*!
@@ -70,7 +70,7 @@ JNIEXPORT jlong JNICALL Java_org_apache_sis_storage_gdal_PJ_allocatePJ
 {
     const char *def_utf = (*env)->GetStringUTFChars(env, definition, NULL);
     if (!def_utf) return 0;             // OutOfMemoryError already thrown.
-    PJ *pj = pj_init_plus(def_utf);
+    projPJ pj = pj_init_plus(def_utf);
     (*env)->ReleaseStringUTFChars(env, definition, def_utf);
     return (jlong) pj;
 }
@@ -87,7 +87,7 @@ JNIEXPORT jlong JNICALL Java_org_apache_sis_storage_gdal_PJ_allocatePJ
 JNIEXPORT jlong JNICALL Java_org_apache_sis_storage_gdal_PJ_allocateGeoPJ
   (JNIEnv *env, jclass class, jobject projected)
 {
-    PJ *pj = getPJ(env, projected);
+    projPJ pj = getPJ(env, projected);
     return (pj) ? (jlong) pj_latlong_from_proj(pj) : 0;
 }
 
@@ -102,34 +102,13 @@ JNIEXPORT jlong JNICALL Java_org_apache_sis_storage_gdal_PJ_allocateGeoPJ
 JNIEXPORT jstring JNICALL Java_org_apache_sis_storage_gdal_PJ_getCode
   (JNIEnv *env, jobject object)
 {
-    PJ *pj = getPJ(env, object);
+    projPJ pj = getPJ(env, object);
     if (pj) {
         const char *desc = pj_get_def(pj, 0);
         if (desc) {
             jstring str = (*env)->NewStringUTF(env, desc);
             pj_dalloc((char*) desc);
             return str;
-        }
-    }
-    return NULL;
-}
-
-/*!
- * \brief
- * Returns the description associated to the PJ structure.
- *
- * \param  env    - The JNI environment.
- * \param  object - The Java object wrapping the PJ structure (not allowed to be NULL).
- * \return The description associated to the PJ structure.
- */
-JNIEXPORT jstring JNICALL Java_org_apache_sis_storage_gdal_PJ_getName
-  (JNIEnv *env, jobject object)
-{
-    PJ *pj = getPJ(env, object);
-    if (pj) {
-        const char *desc = pj->descr;
-        if (desc) {
-            return (*env)->NewStringUTF(env, desc);
         }
     }
     return NULL;
@@ -148,7 +127,7 @@ JNIEXPORT jstring JNICALL Java_org_apache_sis_storage_gdal_PJ_getName
 JNIEXPORT jobject JNICALL Java_org_apache_sis_storage_gdal_PJ_getType
   (JNIEnv *env, jobject object)
 {
-    PJ *pj = getPJ(env, object);
+    projPJ pj = getPJ(env, object);
     if (pj) {
         const char *type;
         if (pj_is_latlong(pj)) {
@@ -171,115 +150,32 @@ JNIEXPORT jobject JNICALL Java_org_apache_sis_storage_gdal_PJ_getType
 
 /*!
  * \brief
- * Returns the semi-major axis length.
+ * Returns the semi-major axis length and eccentricity squared in an array of length 2.
  *
  * \param  env    - The JNI environment.
  * \param  object - The Java object wrapping the PJ structure (not allowed to be NULL).
- * \return The semi-major axis length.
+ * \return The semi-major axis length and eccentricity squared in an array of length 2.
  */
-JNIEXPORT jdouble JNICALL Java_org_apache_sis_storage_gdal_PJ_getSemiMajorAxis
+JNIEXPORT jdoubleArray JNICALL Java_org_apache_sis_storage_gdal_PJ_getEllipsoidDefinition
   (JNIEnv *env, jobject object)
 {
-    PJ *pj = getPJ(env, object);
-    return pj ? pj->a_orig : NAN;
-}
-
-/*!
- * \brief
- * Computes the semi-minor axis length from the semi-major axis length and the eccentricity
- * squared.
- *
- * \param  env    - The JNI environment.
- * \param  object - The Java object wrapping the PJ structure (not allowed to be NULL).
- * \return The semi-minor axis length.
- */
-JNIEXPORT jdouble JNICALL Java_org_apache_sis_storage_gdal_PJ_getSemiMinorAxis
-  (JNIEnv *env, jobject object)
-{
-    PJ *pj = getPJ(env, object);
-    if (!pj) return NAN;
-    double a = pj->a_orig;
-    return sqrt(a*a * (1.0 - pj->es_orig));
-}
-
-/*!
- * \brief
- * Returns the eccentricity squared.
- *
- * \param  env    - The JNI environment.
- * \param  object - The Java object wrapping the PJ structure (not allowed to be NULL).
- * \return The eccentricity.
- */
-JNIEXPORT jdouble JNICALL Java_org_apache_sis_storage_gdal_PJ_getEccentricitySquared
-  (JNIEnv *env, jobject object)
-{
-    PJ *pj = getPJ(env, object);
-    return pj ? pj->es_orig : NAN;
-}
-
-/*!
- * \brief
- * Returns an array of character indicating the direction of each axis.
- *
- * \param  env    - The JNI environment.
- * \param  object - The Java object wrapping the PJ structure (not allowed to be NULL).
- * \return The axis directions.
- */
-JNIEXPORT jcharArray JNICALL Java_org_apache_sis_storage_gdal_PJ_getAxisDirections
-  (JNIEnv *env, jobject object)
-{
-    PJ *pj = getPJ(env, object);
+    projPJ pj = getPJ(env, object);
     if (pj) {
-        int length = strlen(pj->axis);
-        jcharArray array = (*env)->NewCharArray(env, length);
+        double major_axis;
+        double eccentricity_squared;
+        pj_get_spheroid_defn(pj, &major_axis, &eccentricity_squared);
+        jdoubleArray array = (*env)->NewDoubleArray(env, 2);
         if (array) {
-            jchar* axis = (*env)->GetCharArrayElements(env, array, NULL);
-            if (axis) {
-                // Don't use memcp because the type may not be the same.
-                int i;
-                for (i=0; i<length; i++) {
-                    axis[i] = pj->axis[i];
-                }
-                (*env)->ReleaseCharArrayElements(env, array, axis, 0);
+            jdouble* def = (*env)->GetDoubleArrayElements(env, array, NULL);
+            if (def) {
+                def[0] = major_axis;
+                def[1] = eccentricity_squared;
+                (*env)->ReleaseDoubleArrayElements(env, array, def, 0);
             }
             return array;
         }
     }
     return NULL;
-}
-
-/*!
- * \brief
- * Longitude of the prime meridian measured from the Greenwich meridian, positive eastward.
- *
- * \param env    - The JNI environment.
- * \param object - The Java object wrapping the PJ structure (not allowed to be NULL).
- * \return The prime meridian longitude, in degrees.
- */
-JNIEXPORT jdouble JNICALL Java_org_apache_sis_storage_gdal_PJ_getGreenwichLongitude
-  (JNIEnv *env, jobject object)
-{
-    PJ *pj = getPJ(env, object);
-    return (pj) ? (pj->from_greenwich)*(180/M_PI) : NAN;
-}
-
-/*!
- * \brief
- * Returns the conversion factor from linear units to metres.
- *
- * \param env      - The JNI environment.
- * \param object   - The Java object wrapping the PJ structure (not allowed to be NULL).
- * \param vertical - JNI_FALSE for horizontal axes, or JNI_TRUE for the vertical axis.
- * \return The conversion factor to metres.
- */
-JNIEXPORT jdouble JNICALL Java_org_apache_sis_storage_gdal_PJ_getLinearUnitToMetre
-  (JNIEnv *env, jobject object, jboolean vertical)
-{
-    PJ *pj = getPJ(env, object);
-    if (pj) {
-        return (vertical) ? pj->vto_meter : pj->to_meter;
-    }
-    return NAN;
 }
 
 /*!
@@ -293,7 +189,7 @@ JNIEXPORT jdouble JNICALL Java_org_apache_sis_storage_gdal_PJ_getLinearUnitToMet
  * \param dimension - Dimension of points in the coordinate array.
  * \param factor    - The scale factor to apply: M_PI/180 for inputs or 180/M_PI for outputs.
  */
-void convertAngularOrdinates(PJ *pj, double* data, jint numPts, int dimension, double factor) {
+void convertAngularOrdinates(projPJ pj, double* data, jint numPts, int dimension, double factor) {
     int dimToSkip;
     if (pj_is_latlong(pj)) {
         // Convert only the 2 first ordinates and skip all the other dimensions.
@@ -339,7 +235,7 @@ JNIEXPORT void JNICALL Java_org_apache_sis_storage_gdal_PJ_transform
         if (c) (*env)->ThrowNew(env, c, "The target CRS and the coordinates array can not be null.");
         return;
     }
-    if (dimension < 2 || dimension > 100) { // Arbitrary upper value for catching potential misuse.
+    if (dimension < 2 || dimension > 100) {     // Arbitrary upper value for catching potential misuse.
         jclass c = (*env)->FindClass(env, "java/lang/IllegalArgumentException");
         if (c) (*env)->ThrowNew(env, c, "Illegal dimension. Must be in the [2-100] range.");
         return;
@@ -349,8 +245,8 @@ JNIEXPORT void JNICALL Java_org_apache_sis_storage_gdal_PJ_transform
         if (c) (*env)->ThrowNew(env, c, "Illegal offset or illegal number of points.");
         return;
     }
-    PJ *src_pj = getPJ(env, object);
-    PJ *dst_pj = getPJ(env, target);
+    projPJ src_pj = getPJ(env, object);
+    projPJ dst_pj = getPJ(env, target);
     if (src_pj && dst_pj) {
         // Using GetPrimitiveArrayCritical/ReleasePrimitiveArrayCritical rather than
         // GetDoubleArrayElements/ReleaseDoubleArrayElements increase the chances that
@@ -385,9 +281,9 @@ JNIEXPORT void JNICALL Java_org_apache_sis_storage_gdal_PJ_transform
 JNIEXPORT jstring JNICALL Java_org_apache_sis_storage_gdal_PJ_getLastError
   (JNIEnv *env, jobject object)
 {
-    PJ *pj = getPJ(env, object);
+    projPJ pj = getPJ(env, object);
     if (pj) {
-        int err = pj_ctx_get_errno(pj->ctx);
+        int err = *pj_get_errno_ref();
         if (err) {
             return (*env)->NewStringUTF(env, pj_strerrno(err));
         }
@@ -412,7 +308,7 @@ JNIEXPORT void JNICALL Java_org_apache_sis_storage_gdal_PJ_finalize
 {
     jfieldID id = (*env)->GetFieldID(env, (*env)->GetObjectClass(env, object), PJ_FIELD_NAME, PJ_FIELD_TYPE);
     if (id) {
-        PJ *pj = (PJ*) (*env)->GetLongField(env, object, id);
+        projPJ pj = (projPJ) (*env)->GetLongField(env, object, id);
         if (pj) {
             (*env)->SetLongField(env, object, id, (jlong) 0);
             pj_free(pj);

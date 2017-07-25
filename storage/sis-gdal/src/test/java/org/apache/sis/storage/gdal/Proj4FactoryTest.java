@@ -19,6 +19,7 @@ package org.apache.sis.storage.gdal;
 import java.util.Arrays;
 import org.opengis.util.FactoryException;
 import org.opengis.geometry.DirectPosition;
+import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.crs.ProjectedCRS;
 import org.opengis.referencing.crs.GeographicCRS;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
@@ -26,6 +27,7 @@ import org.opengis.referencing.operation.CoordinateOperation;
 import org.opengis.referencing.operation.Conversion;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
+import org.opengis.parameter.ParameterValueGroup;
 import org.apache.sis.geometry.DirectPosition2D;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
@@ -33,7 +35,7 @@ import org.apache.sis.test.TestUtilities;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import static org.opengis.test.Assert.*;
+import static org.apache.sis.test.Assert.*;
 
 
 /**
@@ -76,12 +78,12 @@ public final strictfp class Proj4FactoryTest extends TestCase {
     public void test4326() throws FactoryException {
         final Proj4Factory factory = Proj4Factory.INSTANCE;
         final GeographicCRS crs = factory.createGeographicCRS("+init=epsg:4326");
-        /*
-         * Use Proj.4 specific API to check axis order.
-         */
         final PJ pj = (PJ) TestUtilities.getSingleton(crs.getIdentifiers());
         assertEquals(PJ.Type.GEOGRAPHIC, pj.getType());
-        assertArrayEquals(new char[] {'e', 'n', 'u'}, pj.getAxisDirections());
+        final String definition = pj.getCode();
+        assertTrue(definition, definition.contains("+proj=longlat"));
+        assertTrue(definition, definition.contains("+datum=WGS84"));
+        assertAxisDirectionsEqual(definition, crs.getCoordinateSystem(), AxisDirection.EAST, AxisDirection.NORTH);
     }
 
     /**
@@ -93,12 +95,12 @@ public final strictfp class Proj4FactoryTest extends TestCase {
     public void test3395() throws FactoryException {
         final Proj4Factory factory = Proj4Factory.INSTANCE;
         final ProjectedCRS crs = factory.createProjectedCRS("+init=epsg:3395");
-        /*
-         * Use Proj.4 specific API to check axis order.
-         */
         final PJ pj = (PJ) TestUtilities.getSingleton(crs.getIdentifiers());
         assertEquals(PJ.Type.PROJECTED, pj.getType());
-        assertArrayEquals(new char[] {'e', 'n', 'u'}, pj.getAxisDirections());
+        final String definition = pj.getCode();
+        assertTrue(definition, definition.contains("+proj=merc"));
+        assertTrue(definition, definition.contains("+datum=WGS84"));
+        assertAxisDirectionsEqual(definition, crs.getCoordinateSystem(), AxisDirection.EAST, AxisDirection.NORTH);
     }
 
     /**
@@ -112,13 +114,33 @@ public final strictfp class Proj4FactoryTest extends TestCase {
         final Proj4Factory  factory   = Proj4Factory.INSTANCE;
         final GeographicCRS sourceCRS = factory.createGeographicCRS("+init=epsg:4326");
         final ProjectedCRS  targetCRS = factory.createProjectedCRS("+init=epsg:3395");
-        final CoordinateOperation op  = factory.createOperation(sourceCRS, targetCRS);
+        final CoordinateOperation op  = factory.createOperation(sourceCRS, targetCRS, true);
         assertInstanceOf("createOperation", Conversion.class, op);
+        testMercatorProjection(op.getMathTransform());
+    }
 
-        final MathTransform mt = op.getMathTransform();
+    /**
+     * Tests EPSG:3395 on a point.
+     */
+    static void testMercatorProjection(final MathTransform mt) throws TransformException {
         DirectPosition pt = new DirectPosition2D(20, 40);
         pt = mt.transform(pt, pt);
         assertEquals("Easting",  2226389.816, pt.getOrdinate(0), 0.01);
         assertEquals("Northing", 4838471.398, pt.getOrdinate(1), 0.01);
+    }
+
+    /**
+     * Tests {@link Proj4Factory#createParameterizedTransform(ParameterValueGroup)}.
+     *
+     * @throws FactoryException if an error occurred while creating the CRS objects.
+     * @throws TransformException if an error occurred while projecting a test point.
+     */
+    @Test
+    public void testParameterizedTransform() throws FactoryException, TransformException {
+        final Proj4Factory factory   = Proj4Factory.INSTANCE;
+        final ParameterValueGroup pg = factory.getDefaultParameters("merc");
+        pg.parameter("a").setValue(6378137.0);
+        pg.parameter("b").setValue(6356752.314245179);
+        testMercatorProjection(factory.createParameterizedTransform(pg));
     }
 }

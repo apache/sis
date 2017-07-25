@@ -36,6 +36,9 @@ import org.junit.Test;
 
 import static org.apache.sis.test.Assert.*;
 
+// Branch-dependent imports
+import org.apache.sis.internal.jdk8.Predicate;
+
 
 /**
  * Tests the {@link CollectionsExt} class.
@@ -148,6 +151,25 @@ public final strictfp class CollectionsExtTest extends TestCase {
             Collections.shuffle(elements);
             assertMapEquals(expected, CollectionsExt.toCaseInsensitiveNameMap(elements, Locale.ROOT));
         }
+    }
+
+    /**
+     * Tests {@link CollectionsExt#filter(Iterator, Predicate)}.
+     */
+    @Test
+    public void testFilter() {
+        final Iterator<Integer> it = CollectionsExt.filter(Arrays.asList(2, 5, 7, 4, 8).iterator(), new Predicate<Integer>() {
+            @Override public boolean test(Integer n) {
+                return (n & 1) == 0;
+            }
+        });
+        assertTrue  (   it.hasNext());
+        assertEquals(2, it.next().intValue());
+        assertEquals(4, it.next().intValue());
+        assertTrue  (   it.hasNext());
+        assertTrue  (   it.hasNext());
+        assertEquals(8, it.next().intValue());
+        assertFalse (   it.hasNext());
     }
 
     /**

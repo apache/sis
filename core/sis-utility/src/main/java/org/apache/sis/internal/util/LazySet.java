@@ -22,7 +22,6 @@ import java.util.Objects;
 import java.util.Iterator;
 import java.util.ServiceLoader;
 import java.util.NoSuchElementException;
-import org.apache.sis.util.Workaround;
 import org.apache.sis.internal.system.DefaultFactories;
 
 
@@ -37,7 +36,8 @@ import org.apache.sis.internal.system.DefaultFactories;
  * {@link org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory#DefaultMathTransformFactory()}.</p>
  *
  * <p>Some usages for this class are to prepend some values before the elements given by the source {@code Iterable},
- * or to replace some values when they are loaded.</p>
+ * or to replace some values when they are loaded. It may also be used for creating filtered sets when used together
+ * with {@link CollectionsExt#filter CollectionsExt.filter(…)}.</p>
  *
  * <p>This class is not thread-safe. Synchronization, if desired, shall be done by the caller.</p>
  *
@@ -49,7 +49,6 @@ import org.apache.sis.internal.system.DefaultFactories;
  * @since 0.6
  * @module
  */
-@Workaround(library="JDK", version="1.8.0_31-b13")
 public class LazySet<E> extends SetOfUnknownSize<E> {
     /**
      * The type of service to request with {@link ServiceLoader}, or {@code null} if unknown.

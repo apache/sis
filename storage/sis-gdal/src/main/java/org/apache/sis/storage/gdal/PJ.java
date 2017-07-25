@@ -17,6 +17,9 @@
 package org.apache.sis.storage.gdal;
 
 import java.util.Objects;
+import java.io.Serializable;
+import java.io.ObjectStreamException;
+import java.io.InvalidObjectException;
 import org.opengis.util.FactoryException;
 import org.opengis.util.InternationalString;
 import org.opengis.referencing.ReferenceIdentifier;
@@ -29,9 +32,7 @@ import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.referencing.factory.InvalidGeodeticParameterException;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.metadata.iso.citation.Citations;
-import org.apache.sis.util.iso.SimpleInternationalString;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.util.CharSequences;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.internal.system.OS;
 
@@ -51,13 +52,8 @@ import org.apache.sis.internal.system.OS;
  * @since   0.8
  * @module
  */
-final class PJ implements ReferenceIdentifier {
-    /**
-     * The maximal number of dimension accepted by the {@link #transform(PJ, int, double[], int, int)} method.
-     * This upper limit is actually somewhat arbitrary. This limit exists mostly as a safety against potential misuse.
-     */
-    static final int DIMENSION_MAX = 100;
-
+@SuppressWarnings("serial")     // serialVersionUID not needed since writeReplace() gives another kind of object.
+final class PJ implements ReferenceIdentifier, Serializable {
     /**
      * Loads the {@literal Proj.4} library.
      * This static initializer may throw a {@link UnsatisfiedLinkError} if the static library can not be loaded.
@@ -69,8 +65,8 @@ final class PJ implements ReferenceIdentifier {
     }
 
     /**
-     * The pointer to {@code PJ} structure allocated in the C/C++ heap. This value has no
-     * meaning in Java code. <strong>Do not modify</strong>, since this value is used by Proj.4.
+     * The pointer to {@code PJ} structure allocated in the C/C++ heap. This value has no meaning in Java code,
+     * except 0 which means no native object. <strong>Do not modify</strong>, since this value is used by Proj.4.
      * Do not rename neither, unless you update accordingly the C code in JNI wrappers.
      */
     private final long ptr;
@@ -196,31 +192,10 @@ final class PJ implements ReferenceIdentifier {
 
     /**
      * Returns the string representation of the PJ structure.
-     * Note that the string returned by Proj.4 contains <cite>End Of Line</cite> characters.
-     *
-     * <div class="note"><b>Example:</b> "Lat/long (Geodetic alias)"</div>
-     */
-    native String getName();
-
-    /**
-     * Returns the string representation of the PJ structure.
      *
      * @return the string representation, or {@code null} if none.
      */
     public InternationalString getDescription() {
-        String name = getName();
-        if (name != null) {
-            final StringBuilder buffer = new StringBuilder(name.length());
-            for (CharSequence line : CharSequences.splitOnEOL(getName())) {
-                line = CharSequences.trimWhitespaces(line);
-                if (buffer.length() != 0) buffer.append(' ');
-                buffer.append(line);
-            }
-            name = buffer.toString();
-            if (!name.isEmpty()) {
-               return new SimpleInternationalString(name);
-            }
-        }
         return null;
     }
 
@@ -262,69 +237,21 @@ final class PJ implements ReferenceIdentifier {
     }
 
     /**
-     * Returns the square of the ellipsoid eccentricity (ε²). The eccentricity is related to axis length
-     * by ε=√(1-(<var>b</var>/<var>a</var>)²). The eccentricity of a sphere is zero.
+     * Returns the semi-major axis length and the square of the ellipsoid eccentricity (ε²).
+     * The eccentricity is related to axis length by ε=√(1-(<var>b</var>/<var>a</var>)²).
+     * The eccentricity of a sphere is zero. Other related quantities are:
      *
-     * @return the eccentricity.
+     * <ul>
+     *   <li>semi-minor axis length: b = a × √(1 - ε²)</li>
+     *   <li>inverse flattening: invf = 1 / (1 - √(1 - ε²))</li>
+     * </ul>
+     *
+     * @return the semi-major axis length and the eccentricity squared in an array of length 2.
      *
      * @see Ellipsoid#isSphere()
      * @see Ellipsoid#getInverseFlattening()
      */
-    public native double getEccentricitySquared();
-
-    /**
-     * Returns the inverse flattening, computed from the eccentricity.
-     * The inverse flattening factor of a sphere is infinity.
-     */
-    public double getInverseFlattening() {
-        return 1 / (1 - Math.sqrt(1 - getEccentricitySquared()));
-    }
-
-    /**
-     * Returns the value stored in the {@code a_orig} PJ field.
-     *
-     * @return the axis length stored in {@code a_orig}.
-     *
-     * @see Ellipsoid#getSemiMajorAxis()
-     */
-    public native double getSemiMajorAxis();
-
-    /**
-     * Returns the value computed from PJ fields by {@code √((a_orig)² × (1 - es_orig))}.
-     *
-     * @return the axis length computed by {@code √((a_orig)² × (1 - es_orig))}.
-     *
-     * @see Ellipsoid#getSemiMinorAxis()
-     */
-    public native double getSemiMinorAxis();
-
-    /**
-     * Longitude of the prime meridian measured from the Greenwich meridian, positive eastward.
-     *
-     * @return the prime meridian longitude, in degrees.
-     *
-     * @see PrimeMeridian#getGreenwichLongitude()
-     */
-    public native double getGreenwichLongitude();
-
-    /**
-     * Returns an array of character indicating the direction of each axis. Directions are
-     * characters like {@code 'e'} for East, {@code 'n'} for North and {@code 'u'} for Up.
-     *
-     * @return the axis directions.
-     *
-     * @see org.opengis.referencing.cs.CoordinateSystemAxis#getDirection()
-     */
-    public native char[] getAxisDirections();
-
-    /**
-     * Returns the conversion factor from the linear units to metres.
-     *
-     * @param  vertical {@code false} for the conversion factor of horizontal axes,
-     *         or {@code true} for the conversion factor of the vertical axis.
-     * @return the conversion factor to metres for the given axis.
-     */
-    public native double getLinearUnitToMetre(boolean vertical);
+    public native double[] getEllipsoidDefinition();
 
     /**
      * Transforms in-place the coordinates in the given array.
@@ -339,7 +266,7 @@ final class PJ implements ReferenceIdentifier {
      * </ul>
      *
      * @param  target       the target CRS.
-     * @param  dimension    the dimension of each coordinate value. Must be in the [2-{@value #DIMENSION_MAX}] range.
+     * @param  dimension    the dimension of each coordinate value. Typically 2, 3 or 4.
      * @param  coordinates  the coordinates to transform, as a sequence of (<var>x</var>,<var>y</var>,&lt;<var>z</var>&gt;,…) tuples.
      * @param  offset       offset of the first coordinate in the given array.
      * @param  numPts       number of points to transform.
@@ -394,4 +321,52 @@ final class PJ implements ReferenceIdentifier {
     @Override
     @SuppressWarnings("FinalizeDeclaration")
     protected final native void finalize();
+
+    /**
+     * The object serialized in place of {@literal Proj.4} wrappers.
+     * Deserialization checks for the presence of Proj.4 native library.
+     *
+     * @author  Martin Desruisseaux (Geomatys)
+     * @version 0.8
+     * @since   0.8
+     * @module
+     */
+    private static final class Serialized implements Serializable {
+        /**
+         * For cross-version compatibility.
+         */
+        private static final long serialVersionUID = -5705027681492462823L;
+
+        /**
+         * The {@literal Proj.4} definition string.
+         */
+        private final String definition;
+
+        /**
+         * Creates a new proxy for the given {@literal Proj.4} definition.
+         */
+        Serialized(final String definition) {
+            this.definition = definition;
+        }
+
+        /**
+         * Automatically invoked on deserialization for reconstructing the wrapper
+         * from the {@literal Proj.4} definition string.
+         */
+        protected final Object readResolve() throws ObjectStreamException {
+            try {
+                return new PJ(definition);
+            } catch (UnsatisfiedLinkError | NoClassDefFoundError | InvalidGeodeticParameterException e) {
+                throw (InvalidObjectException) new InvalidObjectException(Proj4.unavailable(e)).initCause(e);
+            }
+        }
+    }
+
+    /**
+     * Invoked automatically on serialization.
+     * Replaces this {@literal Proj.4} wrapper by a proxy without native resource.
+     */
+    protected final Object writeReplace() throws ObjectStreamException {
+        return new Serialized(getCode());
+    }
 }

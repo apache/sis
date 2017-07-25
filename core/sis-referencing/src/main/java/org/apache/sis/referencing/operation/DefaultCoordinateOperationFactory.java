@@ -20,6 +20,7 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.Collections;
 import java.util.List;
+import java.util.ServiceLoader;
 import org.opengis.util.FactoryException;
 import org.opengis.util.NoSuchIdentifierException;
 import org.opengis.parameter.ParameterValueGroup;
@@ -36,10 +37,12 @@ import org.opengis.referencing.cs.CSFactory;
 import org.opengis.referencing.datum.Datum;
 import org.apache.sis.internal.referencing.Resources;
 import org.apache.sis.internal.referencing.MergedProperties;
+import org.apache.sis.internal.referencing.SpecializedOperationFactory;
 import org.apache.sis.internal.metadata.ReferencingServices;
 import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.internal.util.Constants;
+import org.apache.sis.internal.util.LazySet;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.factory.InvalidGeodeticParameterException;
 import org.apache.sis.referencing.operation.transform.AbstractMathTransform;
@@ -122,6 +125,17 @@ public class DefaultCoordinateOperationFactory extends AbstractFactory implement
     private volatile MathTransformFactory mtFactory;
 
     /**
+     * Factories specialized to some particular pair of CRS. For example a module doing the bindings between
+     * Apache SIS and another map projection library may create wrappers around the transformation method of
+     * that other library when {@code SpecializedOperationFactory.tryCreateOperation(…)} recognizes the given
+     * CRS as wrappers around their data structures.
+     *
+     * <p>This array is created when first needed. After creation, the array shall not be modified anymore.</p>
+     */
+    @SuppressWarnings("VolatileArrayField")
+    private volatile SpecializedOperationFactory[] specializedFactories;
+
+    /**
      * Weak references to existing objects.
      * This set is used in order to return a pre-existing object instead of creating a new one.
      * This applies to objects created explicitly, not to coordinate operations inferred by a
@@ -147,8 +161,8 @@ public class DefaultCoordinateOperationFactory extends AbstractFactory implement
 
     /**
      * Constructs a factory with the given default properties.
-     * {@code DefaultCoordinateOperationFactory} will fallback on the map given to this constructor
-     * for any property not present in the map provided to a {@code createFoo(Map<String,?>, …)} method.
+     * The new factory will fallback on the map given to this constructor
+     * for any property not present in the map given to a {@code createFoo(Map<String,?>, …)} method.
      *
      * @param properties  the default properties, or {@code null} if none.
      * @param factory     the factory to use for creating {@linkplain AbstractMathTransform math transforms},
@@ -174,6 +188,7 @@ public class DefaultCoordinateOperationFactory extends AbstractFactory implement
                 throw new IllegalArgumentException(Errors.getResources(properties)
                         .getString(Errors.Keys.IllegalPropertyValueClass_2, key, Classes.getClass(value)));
             }
+            properties.remove(ReferencingServices.DATUM_FACTORY);
             properties = CollectionsExt.compact(properties);
         }
         defaultProperties = properties;
@@ -251,6 +266,20 @@ public class DefaultCoordinateOperationFactory extends AbstractFactory implement
             return (DefaultMathTransformFactory) factory;
         }
         return DefaultFactories.forBuildin(MathTransformFactory.class, DefaultMathTransformFactory.class);
+    }
+
+    /**
+     * Returns all known factories specialized in the creation of coordinate operations between some particular
+     * pairs of CRS.
+     */
+    final SpecializedOperationFactory[] getSpecializedFactories() {
+        SpecializedOperationFactory[] factories = specializedFactories;
+        if (factories == null) {
+            final LazySet<SpecializedOperationFactory> set =
+                    new LazySet<>(ServiceLoader.load(SpecializedOperationFactory.class).iterator());
+            specializedFactories = factories = set.toArray(new SpecializedOperationFactory[set.size()]);
+        }
+        return factories;
     }
 
     /**
@@ -511,7 +540,7 @@ next:   for (int i=components.size(); --i >= 0;) {
             if (parameters == null) {
                 throw new NullArgumentException(Errors.format(Errors.Keys.NullArgument_1, "transform"));
             }
-            transform = mtFactory.createBaseToDerived(sourceCRS, parameters, targetCRS.getCoordinateSystem());
+            transform = getMathTransformFactory().createBaseToDerived(sourceCRS, parameters, targetCRS.getCoordinateSystem());
         }
         /*
          * The "operationType" property is currently undocumented. The intend is to help this factory method in

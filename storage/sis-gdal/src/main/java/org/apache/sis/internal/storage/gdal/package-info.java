@@ -14,36 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.test.suite;
-
-import org.apache.sis.test.TestSuite;
-import org.junit.BeforeClass;
-import org.junit.runners.Suite;
-
 
 /**
- * All tests from the {@code sis-gdal} module, in approximative dependency order.
+ * Service providers for {@code sis-gdal} module.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
  * @since   0.8
  * @module
  */
-@Suite.SuiteClasses({
-    org.apache.sis.storage.gdal.PJTest.class,
-    org.apache.sis.storage.gdal.Proj4Test.class,
-    org.apache.sis.storage.gdal.Proj4ParserTest.class,
-    org.apache.sis.storage.gdal.Proj4FactoryTest.class,
-    org.apache.sis.storage.gdal.IntegrationTest.class
-})
-public final strictfp class GDALTestSuite extends TestSuite {
-    /**
-     * Verifies the list of tests before to run the suite.
-     * See {@link #verifyTestList(Class, Class[])} for more information.
-     */
-    @BeforeClass
-    public static void verifyTestList() {
-        assertNoMissingTest(GDALTestSuite.class);
-        verifyTestList(GDALTestSuite.class);
-    }
-}
+package org.apache.sis.internal.storage.gdal;

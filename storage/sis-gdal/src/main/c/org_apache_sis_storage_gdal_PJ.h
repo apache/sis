@@ -7,8 +7,6 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-#undef org_apache_sis_storage_gdal_PJ_DIMENSION_MAX
-#define org_apache_sis_storage_gdal_PJ_DIMENSION_MAX 100L
 /*
  * Class:     org_apache_sis_storage_gdal_PJ
  * Method:    allocatePJ
@@ -43,14 +41,6 @@ JNIEXPORT jstring JNICALL Java_org_apache_sis_storage_gdal_PJ_getCode
 
 /*
  * Class:     org_apache_sis_storage_gdal_PJ
- * Method:    getName
- * Signature: ()Ljava/lang/String;
- */
-JNIEXPORT jstring JNICALL Java_org_apache_sis_storage_gdal_PJ_getName
-  (JNIEnv *, jobject);
-
-/*
- * Class:     org_apache_sis_storage_gdal_PJ
  * Method:    getType
  * Signature: ()Lorg/apache/sis/storage/gdal/PJ/Type;
  */
@@ -59,51 +49,11 @@ JNIEXPORT jobject JNICALL Java_org_apache_sis_storage_gdal_PJ_getType
 
 /*
  * Class:     org_apache_sis_storage_gdal_PJ
- * Method:    getEccentricitySquared
- * Signature: ()D
+ * Method:    getEllipsoidDefinition
+ * Signature: ()[D
  */
-JNIEXPORT jdouble JNICALL Java_org_apache_sis_storage_gdal_PJ_getEccentricitySquared
+JNIEXPORT jdoubleArray JNICALL Java_org_apache_sis_storage_gdal_PJ_getEllipsoidDefinition
   (JNIEnv *, jobject);
-
-/*
- * Class:     org_apache_sis_storage_gdal_PJ
- * Method:    getSemiMajorAxis
- * Signature: ()D
- */
-JNIEXPORT jdouble JNICALL Java_org_apache_sis_storage_gdal_PJ_getSemiMajorAxis
-  (JNIEnv *, jobject);
-
-/*
- * Class:     org_apache_sis_storage_gdal_PJ
- * Method:    getSemiMinorAxis
- * Signature: ()D
- */
-JNIEXPORT jdouble JNICALL Java_org_apache_sis_storage_gdal_PJ_getSemiMinorAxis
-  (JNIEnv *, jobject);
-
-/*
- * Class:     org_apache_sis_storage_gdal_PJ
- * Method:    getGreenwichLongitude
- * Signature: ()D
- */
-JNIEXPORT jdouble JNICALL Java_org_apache_sis_storage_gdal_PJ_getGreenwichLongitude
-  (JNIEnv *, jobject);
-
-/*
- * Class:     org_apache_sis_storage_gdal_PJ
- * Method:    getAxisDirections
- * Signature: ()[C
- */
-JNIEXPORT jcharArray JNICALL Java_org_apache_sis_storage_gdal_PJ_getAxisDirections
-  (JNIEnv *, jobject);
-
-/*
- * Class:     org_apache_sis_storage_gdal_PJ
- * Method:    getLinearUnitToMetre
- * Signature: (Z)D
- */
-JNIEXPORT jdouble JNICALL Java_org_apache_sis_storage_gdal_PJ_getLinearUnitToMetre
-  (JNIEnv *, jobject, jboolean);
 
 /*
  * Class:     org_apache_sis_storage_gdal_PJ
