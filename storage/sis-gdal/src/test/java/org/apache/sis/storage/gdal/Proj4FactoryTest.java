@@ -19,6 +19,7 @@ package org.apache.sis.storage.gdal;
 import java.util.Arrays;
 import org.opengis.util.FactoryException;
 import org.opengis.geometry.DirectPosition;
+import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.crs.ProjectedCRS;
 import org.opengis.referencing.crs.GeographicCRS;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
@@ -77,12 +78,12 @@ public final strictfp class Proj4FactoryTest extends TestCase {
     public void test4326() throws FactoryException {
         final Proj4Factory factory = Proj4Factory.INSTANCE;
         final GeographicCRS crs = factory.createGeographicCRS("+init=epsg:4326");
-        /*
-         * Use Proj.4 specific API to check axis order.
-         */
         final PJ pj = (PJ) TestUtilities.getSingleton(crs.getIdentifiers());
         assertEquals(PJ.Type.GEOGRAPHIC, pj.getType());
-        assertArrayEquals(new char[] {'e', 'n', 'u'}, pj.getAxisDirections());
+        final String definition = pj.getCode();
+        assertTrue(definition, definition.contains("+proj=longlat"));
+        assertTrue(definition, definition.contains("+datum=WGS84"));
+        assertAxisDirectionsEqual(definition, crs.getCoordinateSystem(), AxisDirection.EAST, AxisDirection.NORTH);
     }
 
     /**
@@ -94,12 +95,12 @@ public final strictfp class Proj4FactoryTest extends TestCase {
     public void test3395() throws FactoryException {
         final Proj4Factory factory = Proj4Factory.INSTANCE;
         final ProjectedCRS crs = factory.createProjectedCRS("+init=epsg:3395");
-        /*
-         * Use Proj.4 specific API to check axis order.
-         */
         final PJ pj = (PJ) TestUtilities.getSingleton(crs.getIdentifiers());
         assertEquals(PJ.Type.PROJECTED, pj.getType());
-        assertArrayEquals(new char[] {'e', 'n', 'u'}, pj.getAxisDirections());
+        final String definition = pj.getCode();
+        assertTrue(definition, definition.contains("+proj=merc"));
+        assertTrue(definition, definition.contains("+datum=WGS84"));
+        assertAxisDirectionsEqual(definition, crs.getCoordinateSystem(), AxisDirection.EAST, AxisDirection.NORTH);
     }
 
     /**
