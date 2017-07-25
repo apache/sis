@@ -23,8 +23,8 @@ import org.apache.sis.test.TestCase;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import static org.junit.Assert.*;
 import static org.junit.Assume.*;
+import static org.apache.sis.test.Assert.*;
 
 
 /**
@@ -60,18 +60,15 @@ public final strictfp class PJTest extends TestCase {
      * Ensures that the given object is the WGS84 definition.
      */
     private static void assertIsWGS84(final PJ pj) {
-        assertEquals("Lat/long (Geodetic alias)", pj.getName().trim());
         assertEquals("+proj=latlong +datum=WGS84 +ellps=WGS84 +towgs84=0,0,0", pj.getCode().trim());
         assertEquals("Proj4",            pj.getCodeSpace());
         assertSame  (Citations.PROJ4,    pj.getAuthority());
         assertTrue  (Character.isDigit(  pj.getVersion().codePointAt(0)));
         assertEquals(PJ.Type.GEOGRAPHIC, pj.getType());
-        assertEquals(6378137.0,          pj.getSemiMajorAxis(),         1E-9);
-        assertEquals(6356752.314245179,  pj.getSemiMinorAxis(),         1E-9);
-        assertEquals(298.257223563,      pj.getInverseFlattening(),     1E-9);
-        assertEquals(0.0,                pj.getGreenwichLongitude(),    STRICT);
-        assertEquals(1.0,                pj.getLinearUnitToMetre(true), STRICT);
-        assertArrayEquals(new char[] {'e', 'n', 'u'}, pj.getAxisDirections());
+        final double[] ellps = pj.getEllipsoidDefinition();
+        assertEquals(2, ellps.length);
+        ellps[1] = 1 / (1 - StrictMath.sqrt(1 - ellps[1]));     // Replace eccentricity squared by inverse flattening.
+        assertArrayEquals(new double[] {6378137.0, 298.257223563}, ellps, 1E-9);
     }
 
     /**
@@ -94,13 +91,15 @@ public final strictfp class PJTest extends TestCase {
     public void testEPSG3395() throws FactoryException {
         final PJ pj = new PJ("+init=epsg:3395");
         assertEquals(PJ.Type.PROJECTED, pj.getType());
-        assertArrayEquals(new char[] {'e', 'n', 'u'}, pj.getAxisDirections());
-        assertEquals(1.0, pj.getLinearUnitToMetre(true), STRICT);
+        final String definition = pj.getCode();
+        assertTrue(definition, definition.contains("+proj=merc"));
+        assertTrue(definition, definition.contains("+datum=WGS84"));
+        assertTrue(definition, definition.contains("+units=m"));
         assertIsWGS84(new PJ(pj));
     }
 
     /**
-     * Tests the {@link PJ#getLinearUnitToMetre(boolean)} method.
+     * Tests the units of measurement.
      *
      * @throws FactoryException if the Proj.4 definition string used in this test is invalid.
      */
@@ -108,9 +107,11 @@ public final strictfp class PJTest extends TestCase {
     public void testGetLinearUnit() throws FactoryException {
         PJ pj;
         pj = new PJ("+proj=merc +to_meter=1");
-        assertEquals(1, pj.getLinearUnitToMetre(false), STRICT);
+        String definition = pj.getCode();
+        assertTrue(definition, definition.contains("+to_meter=1"));
         pj = new PJ("+proj=merc +to_meter=0.001");
-        assertEquals(0.001, pj.getLinearUnitToMetre(false), STRICT);
+        definition = pj.getCode();
+        assertTrue(definition, definition.contains("+to_meter=0.001"));
     }
 
     /**
@@ -161,20 +162,20 @@ public final strictfp class PJTest extends TestCase {
     public void testNaN() throws FactoryException {
         final PJ pj = new PJ("+proj=latlong +datum=WGS84");
         pj.finalize();              // This cause the disposal of the internal PJ structure.
+        assertNull(pj.getCode());
         assertNull(pj.getType());
-        assertNaN(pj.getSemiMajorAxis());
-        assertNaN(pj.getSemiMinorAxis());
-        assertNaN(pj.getEccentricitySquared());
-        assertNaN(pj.getGreenwichLongitude());
-        assertNaN(pj.getLinearUnitToMetre(false));
-        assertNaN(pj.getLinearUnitToMetre(true));
+        assertNull(pj.getEllipsoidDefinition());
     }
 
     /**
-     * Asserts that the bits pattern of the given value is strictly identical to the bits
-     * pattern of the {@link java.lang.Double#NaN} constant.
+     * Tests serialization. Since we can not serialize native resources, {@link PJ} is expected
+     * to serialize the Proj.4 definition string instead.
+     *
+     * @throws FactoryException if the Proj.4 definition string used in this test is invalid.
      */
-    private static void assertNaN(final double value) {
-        assertEquals(Double.doubleToRawLongBits(Double.NaN), Double.doubleToRawLongBits(value));
+    @Test
+    public void testSerialization() throws FactoryException {
+        final PJ pj = new PJ("+proj=latlong +datum=WGS84");
+        assertNotSame(pj, assertSerializedEquals(pj));
     }
 }

@@ -239,7 +239,7 @@ public final strictfp class EllipsoidToCentricTransformTest extends MathTransfor
     }
 
     /**
-     * Tests {@link EllipsoidToCentricTransform#concatenate(MathTransform, boolean, MathTransformFactory)}.
+     * Tests {@link EllipsoidToCentricTransform#tryConcatenate(boolean, MathTransform, MathTransformFactory)}.
      * The test creates <cite>"Geographic 3D to 2D conversion"</cite>, <cite>"Geographic/Geocentric conversions"</cite>
      * and <cite>"Geocentric translation"</cite> transforms, then concatenate them.
      *

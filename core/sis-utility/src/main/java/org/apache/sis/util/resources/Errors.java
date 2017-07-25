@@ -126,6 +126,11 @@ public final class Errors extends IndexedResourceBundle {
         public static final short CanNotParseFile_2 = 10;
 
         /**
+         * Can not parse “{0}”.
+         */
+        public static final short CanNotParse_1 = 180;
+
+        /**
          * Can not read property “{1}” in file “{0}”.
          */
         public static final short CanNotReadPropertyInFile_2 = 11;
@@ -462,6 +467,11 @@ public final class Errors extends IndexedResourceBundle {
          * Argument ‘{0}’ shall contain at least {1} elements. A number of {2} is insufficient.
          */
         public static final short InsufficientArgumentSize_3 = 74;
+
+        /**
+         * “{0}” is an invalid version identifier.
+         */
+        public static final short InvalidVersionIdentifier_1 = 179;
 
         /**
          * A different value is already associated to the “{0}” key.

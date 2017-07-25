@@ -542,9 +542,16 @@ class CoordinateOperationRegistry {
              * FactoryException propagate.
              */
             bestChoice = complete(bestChoice, sourceCRS, targetCRS);
-            if (filter == null || filter.test(bestChoice)) break;
+            if (filter(bestChoice)) break;
         }
         return bestChoice;
+    }
+
+    /**
+     * Returns {@code true} if the given operation can be accepted.
+     */
+    final boolean filter(final CoordinateOperation op) {
+        return filter == null || filter.test(op);
     }
 
     /**

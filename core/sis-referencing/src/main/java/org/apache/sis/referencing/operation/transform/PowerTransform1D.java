@@ -31,7 +31,7 @@ import org.apache.sis.util.ComparisonMode;
  * Future version may expand on that.
  *
  * <p>Before to make this class public (if we do), we need to revisit the class name, define parameters
- * and improve the {@link #concatenate(MathTransform, boolean, MathTransformFactory)} method.</p>
+ * and improve the {@link #tryConcatenate(boolean, MathTransform, MathTransformFactory)} method.</p>
  *
  * <div class="section">Serialization</div>
  * Serialized instances of this class are not guaranteed to be compatible with future SIS versions.
@@ -171,21 +171,22 @@ final class PowerTransform1D extends AbstractMathTransform1D implements Serializ
     /**
      * Concatenates in an optimized way a {@link MathTransform} {@code other} to this {@code MathTransform}.
      *
-     * @param  other            the math transform to apply.
      * @param  applyOtherFirst  {@code true} if the transformation order is {@code other} followed by {@code this},
      *                          or {@code false} if the transformation order is {@code this} followed by {@code other}.
+     * @param  other            the other math transform to (pre-)concatenate with this transform.
      * @param  factory          the factory which is (indirectly) invoking this method, or {@code null} if none.
      * @return the combined math transform, or {@code null} if no optimized combined transform is available.
      */
     @Override
-    final MathTransform concatenate(final MathTransform other, final boolean applyOtherFirst,
+    protected MathTransform tryConcatenate(final boolean applyOtherFirst, final MathTransform other,
             final MathTransformFactory factory) throws FactoryException
     {
         if (other instanceof PowerTransform1D) {
+            // Valid for both concatenation and pre-concatenation.
             return create(power + ((PowerTransform1D) other).power);
         }
         // TODO: more optimization could go here for logarithmic and exponential cases.
-        return super.concatenate(other, applyOtherFirst, factory);
+        return super.tryConcatenate(applyOtherFirst, other, factory);
     }
 
     /**
