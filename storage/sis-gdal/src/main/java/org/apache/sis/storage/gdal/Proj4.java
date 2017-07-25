@@ -18,6 +18,7 @@ package org.apache.sis.storage.gdal;
 
 import javax.measure.Unit;
 import javax.measure.quantity.Angle;
+import javax.measure.format.ParserException;
 import org.opengis.metadata.Identifier;
 import org.opengis.util.FactoryException;
 import org.opengis.parameter.ParameterValue;
@@ -40,6 +41,7 @@ import org.opengis.referencing.operation.Projection;
 import org.opengis.referencing.operation.CoordinateOperation;
 import org.apache.sis.referencing.operation.AbstractCoordinateOperation;
 import org.apache.sis.referencing.factory.UnavailableFactoryException;
+import org.apache.sis.referencing.factory.InvalidGeodeticParameterException;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.metadata.iso.citation.Citations;
@@ -311,6 +313,8 @@ public final class Proj4 extends Static {
         definition = definition.trim();
         try {
             return Proj4Factory.INSTANCE.createCRS(definition, dimension >= 3);
+        } catch (IllegalArgumentException | ParserException e) {
+            throw new InvalidGeodeticParameterException(canNotParse(definition), e);
         } catch (UnsatisfiedLinkError | NoClassDefFoundError e) {
             throw new UnavailableFactoryException(unavailable(e), e);
         }
@@ -375,5 +379,12 @@ public final class Proj4 extends Static {
             message = Errors.format(Errors.Keys.NativeInterfacesNotFound_2, OS.uname(), "libproj");
         }
         return message;
+    }
+
+    /**
+     * Returns the error message for a {@literal Proj.4} string that can not be parsed.
+     */
+    static String canNotParse(final String code) {
+        return Errors.format(Errors.Keys.CanNotParse_1, code);
     }
 }

@@ -22,6 +22,7 @@ import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.Collections;
 import javax.measure.Unit;
+import javax.measure.format.ParserException;
 import org.opengis.util.FactoryException;
 import org.opengis.util.NoSuchIdentifierException;
 import org.opengis.metadata.Identifier;
@@ -509,36 +510,11 @@ public class Proj4Factory extends GeodeticAuthorityFactory implements CRSAuthori
         }
         try {
             return createCRS(code, hasHeight);
+        } catch (IllegalArgumentException | ParserException e) {
+            throw new InvalidGeodeticParameterException(Proj4.canNotParse(code), e);
         } catch (UnsatisfiedLinkError | NoClassDefFoundError e) {
             throw new UnavailableFactoryException(Proj4.unavailable(e), e);
         }
-    }
-
-    /**
-     * Returns the value of the given parameter as an identifier, or {@code null} if none.
-     * The given parameter key shall include the {@code '+'} prefix and {@code '='} suffix,
-     * for example {@code "+proj="}. This is a helper method for providing the {@code name}
-     * property value in constructors.
-     *
-     * @param  definition  the Proj.4 definition string to parse.
-     * @param  keyword     the parameter name.
-     * @return the parameter value as an identifier.
-     */
-    private Map<String,Object> identifier(final String definition, final String keyword) {
-        String value = "";
-        if (keyword != null) {
-            int i = definition.indexOf(keyword);
-            if (i >= 0) {
-                i += keyword.length();
-                final int stop = definition.indexOf(' ', i);
-                value = (stop >= 0) ? definition.substring(i, stop) : definition.substring(i);
-                value = value.trim();
-            }
-        }
-        if (value.isEmpty()) {
-            value = "Unnamed";
-        }
-        return identifier(value);
     }
 
     /**
@@ -560,20 +536,24 @@ public class Proj4Factory extends GeodeticAuthorityFactory implements CRSAuthori
     /**
      * Creates a geodetic datum from the given {@literal Proj.4} wrapper.
      *
-     * @param  pj  the Proj.4 object to wrap.
+     * @param  pj      the Proj.4 object to wrap.
+     * @param  parser  the parameter values of the Proj.4 object to wrap.
+     * @throws NumberFormatException if a Proj.4 parameter value can not be parsed.
      */
-    private GeodeticDatum createDatum(final PJ pj) throws FactoryException {
+    private GeodeticDatum createDatum(final PJ pj, final Proj4Parser parser) throws FactoryException {
         final PrimeMeridian pm;
-        final double greenwichLongitude = pj.getGreenwichLongitude();
+        final double greenwichLongitude = Double.parseDouble(parser.value("pm", "0"));
         if (greenwichLongitude == 0) {
             pm = CommonCRS.WGS84.datum().getPrimeMeridian();
         } else {
             pm = datumFactory.createPrimeMeridian(identifier("Unnamed"), greenwichLongitude, Units.DEGREE);
         }
-        final String definition = pj.getCode();
-        return datumFactory.createGeodeticDatum(identifier(definition, "+datum="),
-               datumFactory.createEllipsoid    (identifier(definition, "+ellps="),
-                    pj.getSemiMajorAxis(), pj.getSemiMinorAxis(), Units.METRE), pm);
+        final double[] def = pj.getEllipsoidDefinition();
+        return datumFactory.createGeodeticDatum(identifier(parser.value("datum", "Unnamed")),
+               datumFactory.createEllipsoid    (identifier(parser.value("ellps", "Unnamed")),
+                    def[0],                             // Semi-major axis length
+                    def[0] * Math.sqrt(1 - def[1]),     // Semi-minor axis length
+                    Units.METRE), pm);
     }
 
     /**
@@ -582,14 +562,17 @@ public class Proj4Factory extends GeodeticAuthorityFactory implements CRSAuthori
      *
      * @param  pj          the Proj.4 object to wrap.
      * @param  withHeight  whether to include a height axis.
+     * @throws IllegalArgumentException if a Proj.4 parameter value can not be parsed or assigned.
+     * @throws ParserException if a unit symbol can not be parsed.
      */
     private CoordinateReferenceSystem createCRS(final PJ pj, final boolean withHeight) throws FactoryException {
         final PJ.Type type = pj.getType();
         final boolean geographic = PJ.Type.GEOGRAPHIC.equals(type);
-        final char[] dir = pj.getAxisDirections();
-        final CoordinateSystemAxis[] axes = new CoordinateSystemAxis[withHeight ? dir.length : 2];
+        final Proj4Parser parser = new Proj4Parser(pj.getCode());
+        final String dir = parser.value("axis", "enu");
+        final CoordinateSystemAxis[] axes = new CoordinateSystemAxis[withHeight ? dir.length() : 2];
         for (int i=0; i<axes.length; i++) {
-            final char d = Character.toLowerCase(dir[i]);
+            final char d = Character.toLowerCase(dir.charAt(i));
             char abbreviation = Character.toUpperCase(d);
             boolean vertical = false;
             final AxisDirection c;
@@ -606,7 +589,7 @@ public class Proj4Factory extends GeodeticAuthorityFactory implements CRSAuthori
             if (geographic && AxisDirections.isCardinal(c)) {
                 abbreviation = (d == 'e' || d == 'w') ? 'λ' : 'φ';
             }
-            final Unit<?> unit = (vertical || !geographic) ? Units.METRE.divide(pj.getLinearUnitToMetre(vertical)) : Units.DEGREE;
+            final Unit<?> unit = (vertical || !geographic) ? parser.unit(vertical) : Units.DEGREE;
             axes[i] = csFactory.createCoordinateSystemAxis(identifier(name), String.valueOf(abbreviation).intern(), c, unit);
         }
         /*
@@ -619,12 +602,12 @@ public class Proj4Factory extends GeodeticAuthorityFactory implements CRSAuthori
         name.put(CoordinateReferenceSystem.IDENTIFIERS_KEY, pj);
         switch (type) {
             case GEOGRAPHIC: {
-                return crsFactory.createGeographicCRS(name, createDatum(pj), withHeight ?
+                return crsFactory.createGeographicCRS(name, createDatum(pj, parser), withHeight ?
                         csFactory.createEllipsoidalCS(csName, axes[0], axes[1], axes[2]) :
                         csFactory.createEllipsoidalCS(csName, axes[0], axes[1]));
             }
             case GEOCENTRIC: {
-                return crsFactory.createGeocentricCRS(name, createDatum(pj),
+                return crsFactory.createGeocentricCRS(name, createDatum(pj, parser),
                         csFactory.createCartesianCS(csName, axes[0], axes[1], axes[2]));
             }
             case PROJECTED: {
@@ -641,7 +624,6 @@ public class Proj4Factory extends GeodeticAuthorityFactory implements CRSAuthori
                 OperationMethod method;
                 ParameterValueGroup parameters;
                 try {
-                    final Proj4Parser parser = new Proj4Parser(pj.getCode());
                     method = parser.method(opFactory());
                     parameters = parser.parameters();
                 } catch (IllegalArgumentException | FactoryException e) {
