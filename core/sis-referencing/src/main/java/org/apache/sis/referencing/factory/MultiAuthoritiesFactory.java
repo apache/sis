@@ -781,6 +781,9 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
             end = CharSequences.skipTrailingWhitespaces(code, start, afterVersion);
             version = (start < end && !code.regionMatches(start, DefinitionURI.NO_VERSION, 0,
                     DefinitionURI.NO_VERSION.length())) ? code.substring(start, end) : null;
+            if (version != null && !Character.isUnicodeIdentifierPart(version.codePointAt(0))) {
+                throw new NoSuchAuthorityCodeException(Errors.format(Errors.Keys.InvalidVersionIdentifier_1, version), authority, code);
+            }
             /*
              * Separate the code from the authority and the version.
              */

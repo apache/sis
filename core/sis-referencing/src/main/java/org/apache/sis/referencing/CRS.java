@@ -182,6 +182,8 @@ public final class CRS extends Static {
      *
      * Note that the {@link IdentifiedObjects#lookupURN(IdentifiedObject, Citation)}
      * method can be seen as a converse of this method.
+     * More codes may also be supported depending on which extension modules are available.
+     * See for example the {@linkplain org.apache.sis.storage.gdal bindings to Proj.4 library}.
      *
      * @param  code  the authority code.
      * @return the Coordinate Reference System for the given authority code.

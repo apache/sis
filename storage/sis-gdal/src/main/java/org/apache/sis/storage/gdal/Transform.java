@@ -16,7 +16,9 @@
  */
 package org.apache.sis.storage.gdal;
 
+import java.io.Serializable;
 import java.util.Collections;
+import org.opengis.util.FactoryException;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
@@ -24,11 +26,14 @@ import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
+import org.opengis.referencing.operation.MathTransformFactory;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.parameter.ParameterBuilder;
 import org.apache.sis.referencing.operation.DefaultOperationMethod;
 import org.apache.sis.referencing.operation.transform.AbstractMathTransform;
+import org.apache.sis.util.ComparisonMode;
 
 
 /**
@@ -39,7 +44,12 @@ import org.apache.sis.referencing.operation.transform.AbstractMathTransform;
  * @since   0.8
  * @module
  */
-final class Transform extends AbstractMathTransform {
+final class Transform extends AbstractMathTransform implements Serializable {
+    /**
+     * For cross-version compatibility.
+     */
+    private static final long serialVersionUID = -8593638007439108805L;
+
     /**
      * The operation method for a transformation between two {@link PJ} instances.
      * The parameter names are taken from
@@ -169,5 +179,62 @@ final class Transform extends AbstractMathTransform {
             inverse.inverse = this;
         }
         return inverse;
+    }
+
+    /**
+     * If both transforms are {@literal Proj.4} wrappers, returns a single transform without intermediate step.
+     */
+    @Override
+    protected MathTransform tryConcatenate(final boolean applyOtherFirst, final MathTransform other,
+            final MathTransformFactory factory) throws FactoryException
+    {
+        if (other instanceof Transform) {
+            final Transform tr = (Transform) other;
+            if (applyOtherFirst) {
+                return new Transform(tr.source, tr.source3D, target, target3D);
+            } else {
+                return new Transform(source, source3D, tr.target, tr.target3D);
+            }
+        }
+        return super.tryConcatenate(applyOtherFirst, other, factory);
+    }
+
+    /**
+     * Returns {@code true} if this math transform is for the given pair of source and target CRS.
+     */
+    final boolean isFor(final CoordinateReferenceSystem sourceCRS, final PJ sourcePJ,
+                        final CoordinateReferenceSystem targetCRS, final PJ targetPJ)
+    {
+        return source.equals(sourcePJ) && dimensionMatches(sourceCRS, source3D) &&
+               target.equals(targetPJ) && dimensionMatches(targetCRS, target3D);
+    }
+
+    /**
+     * Tests whether the given CRS matches the expected number of dimensions.
+     */
+    private static boolean dimensionMatches(final CoordinateReferenceSystem crs, final boolean is3D) {
+        return crs.getCoordinateSystem().getDimension() == (is3D ? 3 : 2);
+    }
+
+    /**
+     * Computes a hash value for this transform. This method is invoked by {@link #hashCode()} when first needed.
+     */
+    @Override
+    protected int computeHashCode() {
+        return super.computeHashCode() + source.hashCode() + 31*target.hashCode();
+    }
+
+    /**
+     * Compares the given object with this transform for equality.
+     * This implementation can not ignore metadata or rounding errors.
+     */
+    @Override
+    public boolean equals(final Object object, final ComparisonMode mode) {
+        if (object instanceof Transform) {
+            final Transform that = (Transform) object;
+            return source.equals(that.source) && source3D == that.source3D
+                && target.equals(that.target) && target3D == that.target3D;
+        }
+        return false;
     }
 }

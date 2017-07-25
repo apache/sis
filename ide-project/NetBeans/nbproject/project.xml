@@ -31,8 +31,6 @@
                 <root id="src.netcdf.dir" name="NetCDF"/>
                 <root id="src.shapefile.dir" name="Shapefile"/>
                 <root id="src.xmlstore.dir" name="XMLStore"/>
-                <root id="src.gdal.dir" name="GDAL/Proj4"/>
-                <root id="src.c.gdal.dir" name="GDAL/Proj4 JNI"/>
                 <root id="src.storage.dir" name="Storage"/>
                 <root id="src.feature.dir" name="Feature"/>
                 <root id="src.referencing.dir" name="Referencing"/>
@@ -40,6 +38,8 @@
                 <root id="src.metadata.dir" name="Metadata"/>
                 <root id="src.utility.dir" name="Utility"/>
                 <root id="src.fra-profile.dir" name="French profile"/>
+                <root id="src.gdal.dir" name="GDAL/Proj4"/>
+                <root id="src.c.gdal.dir" name="GDAL/Proj4 JNI"/>
             </source-roots>
             <test-roots>
                 <root id="test.webapp.dir" name="Test web application"/>
@@ -49,7 +49,6 @@
                 <root id="test.netcdf.dir" name="Test NetCDF"/>
                 <root id="test.shapefile.dir" name="Test Shapefile"/>
                 <root id="test.xmlstore.dir" name="Test XMLStore"/>
-                <root id="test.gdal.dir" name="Test GDAL/Proj4"/>
                 <root id="test.storage.dir" name="Test Storage"/>
                 <root id="test.feature.dir" name="Test Feature"/>
                 <root id="test.referencing.dir" name="Test Referencing"/>
@@ -57,6 +56,7 @@
                 <root id="test.metadata.dir" name="Test Metadata"/>
                 <root id="test.utility.dir" name="Test Utility"/>
                 <root id="test.fra-profile.dir" name="Test French profile"/>
+                <root id="test.gdal.dir" name="Test GDAL/Proj4"/>
             </test-roots>
         </data>
         <spellchecker-wordlist xmlns="http://www.netbeans.org/ns/spellchecker-wordlist/1">

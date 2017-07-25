@@ -134,6 +134,11 @@ public class ReferencingServices extends OptionalDependency {
     public static final String CS_FACTORY = "csFactory";
 
     /**
+     * The key for specifying a {@link DatumFactory} instance to use for geodetic object constructions.
+     */
+    public static final String DATUM_FACTORY = "datumFactory";
+
+    /**
      * The services, fetched when first needed.
      */
     private static volatile ReferencingServices instance;
