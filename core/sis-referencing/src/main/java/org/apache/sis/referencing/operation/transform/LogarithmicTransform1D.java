@@ -113,14 +113,14 @@ class LogarithmicTransform1D extends AbstractMathTransform1D implements Serializ
      * {@code MathTransform}. This implementation can optimize some concatenation with
      * {@link LinearTransform1D} and {@link ExponentialTransform1D}.
      *
-     * @param  other            the math transform to apply.
      * @param  applyOtherFirst  {@code true} if the transformation order is {@code other} followed by {@code this}, or
      *                          {@code false} if the transformation order is {@code this} followed by {@code other}.
+     * @param  other            the other math transform to (pre-)concatenate with this transform.
      * @param  factory          the factory which is (indirectly) invoking this method, or {@code null} if none.
      * @return the combined math transform, or {@code null} if no optimized combined transform is available.
      */
     @Override
-    final MathTransform concatenate(final MathTransform other, final boolean applyOtherFirst,
+    protected MathTransform tryConcatenate(final boolean applyOtherFirst, final MathTransform other,
             final MathTransformFactory factory) throws FactoryException
     {
         if (other instanceof LinearTransform1D) {
@@ -138,7 +138,7 @@ class LogarithmicTransform1D extends AbstractMathTransform1D implements Serializ
         } else if (other instanceof ExponentialTransform1D) {
             return ((ExponentialTransform1D) other).concatenateLog(this, !applyOtherFirst);
         }
-        return super.concatenate(other, applyOtherFirst, factory);
+        return super.tryConcatenate(applyOtherFirst, other, factory);
     }
 
     /**

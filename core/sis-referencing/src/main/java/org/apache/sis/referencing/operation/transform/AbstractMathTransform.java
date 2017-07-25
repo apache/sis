@@ -792,7 +792,7 @@ public abstract class AbstractMathTransform extends FormattableObject
     }
 
     /**
-     * Concatenates in an optimized way this math transform with the given one.
+     * Concatenates or pre-concatenates in an optimized way this math transform with the given one.
      * A new math transform is created to perform the combined transformation.
      * The {@code applyOtherFirst} value determines the transformation order as bellow:
      *
@@ -810,16 +810,20 @@ public abstract class AbstractMathTransform extends FormattableObject
      * {@link ConcatenatedTransform}.
      *
      * <p>The default implementation always returns {@code null}. This method is ought to be overridden
-     * by subclasses capable of concatenating some combination of transforms in a special way.
-     * Examples are {@link ExponentialTransform1D} and {@link LogarithmicTransform1D}.</p>
+     * by subclasses capable of concatenating some combination of transforms in a special way.</p>
      *
-     * @param  other            the math transform to apply.
      * @param  applyOtherFirst  {@code true} if the transformation order is {@code other} followed by {@code this}, or
      *                          {@code false} if the transformation order is {@code this} followed by {@code other}.
+     * @param  other            the other math transform to (pre-)concatenate with this transform.
      * @param  factory          the factory which is (indirectly) invoking this method, or {@code null} if none.
      * @return the combined math transform, or {@code null} if no optimized combined transform is available.
+     * @throws FactoryException if an error occurred while combining the transforms.
+     *
+     * @see DefaultMathTransformFactory#createConcatenatedTransform(MathTransform, MathTransform)
+     *
+     * @since 0.8
      */
-    MathTransform concatenate(MathTransform other, boolean applyOtherFirst, MathTransformFactory factory)
+    protected MathTransform tryConcatenate(boolean applyOtherFirst, MathTransform other, MathTransformFactory factory)
             throws FactoryException
     {
         return null;

@@ -21,6 +21,7 @@ import org.opengis.referencing.operation.CoordinateOperationFactory;
 import org.apache.sis.referencing.operation.DefaultCoordinateOperationFactory;
 import org.apache.sis.internal.referencing.provider.Mercator1SP;
 import org.apache.sis.internal.system.DefaultFactories;
+import org.apache.sis.measure.Units;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 import org.opengis.parameter.ParameterValueGroup;
@@ -62,5 +63,21 @@ public final strictfp class Proj4ParserTest extends TestCase {
         assertInstanceOf("method", Mercator1SP.class, parser.method(opFactory));
         final ParameterValueGroup pg = parser.parameters();
         assertEquals("scale_factor", pg.parameter("scale_factor").getValue(), 1.0);
+        assertEquals(Units.METRE, parser.unit(false));
+    }
+
+    /**
+     * Tests parsing a definition string with axes in kilometres.
+     *
+     * @throws FactoryException if the parsing failed.
+     */
+    @Test
+    public void testKilometres() throws FactoryException {
+        final Proj4Parser parser = new Proj4Parser("+proj=merc +to_meter=0.001");
+
+        assertInstanceOf("method", Mercator1SP.class, parser.method(opFactory));
+        final ParameterValueGroup pg = parser.parameters();
+        assertEquals("scale_factor", pg.parameter("scale_factor").getValue(), 1.0);
+        assertEquals(Units.KILOMETRE, parser.unit(false));
     }
 }

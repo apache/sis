@@ -915,7 +915,7 @@ next:   while (--numPts >= 0) {
          * </ul>
          */
         @Override
-        final MathTransform concatenate(final MathTransform other, final boolean applyOtherFirst,
+        protected MathTransform tryConcatenate(final boolean applyOtherFirst, final MathTransform other,
                 final MathTransformFactory factory) throws FactoryException
         {
             if (!applyOtherFirst && withHeight && other instanceof LinearTransform && other.getTargetDimensions() == 2) {
@@ -937,7 +937,7 @@ next:   while (--numPts >= 0) {
                     }
                 }
             }
-            return super.concatenate(other, applyOtherFirst, factory);
+            return super.tryConcatenate(applyOtherFirst, other, factory);
         }
 
         /**
@@ -993,9 +993,12 @@ next:   while (--numPts >= 0) {
      *   <li>Allow use of the more efficient {@link java.awt.geom.AffineTransform} before this transform
      *       instead than a transform based on a matrix of size 4×3.</li>
      * </ul>
+     *
+     * @return the combined math transform, or {@code null} if no optimized combined transform is available.
+     * @throws FactoryException if an error occurred while combining the transforms.
      */
     @Override
-    final MathTransform concatenate(final MathTransform other, final boolean applyOtherFirst,
+    protected MathTransform tryConcatenate(final boolean applyOtherFirst, final MathTransform other,
             final MathTransformFactory factory) throws FactoryException
     {
         if (applyOtherFirst && withHeight && other instanceof LinearTransform && other.getSourceDimensions() == 2) {
@@ -1017,7 +1020,7 @@ next:   while (--numPts >= 0) {
                 }
             }
         }
-        return super.concatenate(other, applyOtherFirst, factory);
+        return super.tryConcatenate(applyOtherFirst, other, factory);
     }
 
     /**

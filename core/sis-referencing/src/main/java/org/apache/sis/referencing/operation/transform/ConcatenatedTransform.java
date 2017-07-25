@@ -330,13 +330,13 @@ class ConcatenatedTransform extends AbstractMathTransform implements Serializabl
          * The main use case is Logarithmic vs Exponential transforms.
          */
         if (tr1 instanceof AbstractMathTransform) {
-            final MathTransform optimized = ((AbstractMathTransform) tr1).concatenate(tr2, false, factory);
+            final MathTransform optimized = ((AbstractMathTransform) tr1).tryConcatenate(false, tr2, factory);
             if (optimized != null) {
                 return optimized;
             }
         }
         if (tr2 instanceof AbstractMathTransform) {
-            final MathTransform optimized = ((AbstractMathTransform) tr2).concatenate(tr1, true, factory);
+            final MathTransform optimized = ((AbstractMathTransform) tr2).tryConcatenate(true, tr1, factory);
             if (optimized != null) {
                 return optimized;
             }
