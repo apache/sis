@@ -90,13 +90,35 @@ final class Proj4Parser {
             if (end >= 0 && (next < 0 || end < next)) {
                 final String keyword = CharSequences.trimWhitespaces(definition, start, end).toString().toLowerCase(Locale.US);
                 final String value   = CharSequences.trimWhitespaces(definition, end+1, (next >= 0) ? next : length).toString();
-                final String old = parameters.put(keyword, value);
-                if (old != null && !old.equals(value)) {
-                    throw new InvalidGeodeticParameterException(Errors.format(Errors.Keys.DuplicatedElement_1, keyword));
+                if (!value.isEmpty()) {
+                    final String old = parameters.put(keyword, value);
+                    if (old != null && !old.equals(value)) {
+                        throw new InvalidGeodeticParameterException(Errors.format(Errors.Keys.DuplicatedElement_1, keyword));
+                    }
                 }
             }
             start = next;
         }
+    }
+
+    /**
+     * Returns a suggested name for the coordinate reference system object to build.
+     */
+    final String name(final boolean isProjected) {
+        String name = parameters.get("datum");
+        if (name == null) {
+            name = parameters.get("ellps");
+            if (name == null) {
+                name = Proj4Factory.UNNAMED;
+            }
+        }
+        if (isProjected) {
+            final String proj = parameters.get(PROJ);
+            if (proj != null) {
+                name = name + ' ' + Proj4Factory.PROJ_PARAM + proj;
+            }
+        }
+        return name;
     }
 
     /**
@@ -105,7 +127,7 @@ final class Proj4Parser {
      */
     final String value(final String keyword, final String defaultValue) {
         final String value = parameters.remove(keyword);
-        return (value != null && !value.isEmpty()) ? value : defaultValue;
+        return (value != null) ? value : defaultValue;
     }
 
     /**
@@ -133,11 +155,8 @@ final class Proj4Parser {
         for (final Map.Entry<String,String> entry : parameters.entrySet()) {
             final String keyword = entry.getKey();
             if (!EXCLUDES.contains(keyword)) {
-                final String v = entry.getValue();
-                if (!v.isEmpty()) {
-                    final ParameterValue<?> value = pg.parameter(keyword);
-                    value.setValue(Double.parseDouble(v));
-                }
+                final ParameterValue<?> value = pg.parameter(keyword);
+                value.setValue(Double.parseDouble(entry.getValue()));
             }
         }
         return pg;
@@ -154,11 +173,11 @@ final class Proj4Parser {
      */
     final Unit<?> unit(final boolean vertical) throws ParserException {
         String v = parameters.remove(vertical ? "vto_meter" : "to_meter");
-        if (v != null && !v.isEmpty()) {
+        if (v != null) {
             return Units.METRE.divide(Double.parseDouble(v));
         }
         v = parameters.remove(vertical ? "vunits" : "units");
-        if (v != null && !v.isEmpty()) {
+        if (v != null) {
             return Units.valueOf(v);
         }
         return Units.METRE;
