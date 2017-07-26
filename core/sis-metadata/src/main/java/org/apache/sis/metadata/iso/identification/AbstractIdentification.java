@@ -42,6 +42,7 @@ import org.opengis.metadata.maintenance.MaintenanceInformation;
 import org.opengis.metadata.spatial.SpatialRepresentationType;
 import org.opengis.temporal.Duration;
 import org.opengis.util.InternationalString;
+import org.apache.sis.internal.metadata.Dependencies;
 import org.apache.sis.internal.metadata.LegacyPropertyAdapter;
 import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.util.iso.Types;
@@ -49,6 +50,20 @@ import org.apache.sis.util.iso.Types;
 
 /**
  * Basic information required to uniquely identify a resource or resources.
+ * The following properties are mandatory or conditional (i.e. mandatory under some circumstances)
+ * in a well-formed metadata according ISO 19115:
+ *
+ * <div class="preformat">{@code MD_Identification}
+ * {@code   ├─citation………………………………………} Citation data for the resource(s).
+ * {@code   │   ├─title……………………………………} Name by which the cited resource is known.
+ * {@code   │   └─date………………………………………} Reference date for the cited resource.
+ * {@code   ├─abstract………………………………………} Brief narrative summary of the content of the resource(s).
+ * {@code   ├─extent……………………………………………} Bounding polygon, vertical, and temporal extent of the dataset.
+ * {@code   │   ├─description……………………} The spatial and temporal extent for the referring object.
+ * {@code   │   ├─geographicElement……} Geographic component of the extent of the referring object.
+ * {@code   │   ├─temporalElement…………} Temporal component of the extent of the referring object.
+ * {@code   │   └─verticalElement…………} Vertical component of the extent of the referring object.
+ * {@code   └─topicCategory…………………………} Main theme(s) of the dataset.</div>
  *
  * <p><b>Limitations:</b></p>
  * <ul>
@@ -626,6 +641,8 @@ public class AbstractIdentification extends ISOMetadata implements Identificatio
      * Provides a description of the format of the resource(s).
      *
      * @return description of the format.
+     *
+     * @see org.apache.sis.metadata.iso.distribution.DefaultDistribution#getDistributionFormats()
      */
     @Override
     @XmlElement(name = "resourceFormat")
@@ -637,6 +654,8 @@ public class AbstractIdentification extends ISOMetadata implements Identificatio
      * Sets a description of the format of the resource(s).
      *
      * @param  newValues  the new resource format.
+     *
+     * @see org.apache.sis.metadata.iso.distribution.DefaultDistribution#setDistributionFormats(Collection)
      */
     public void setResourceFormats(final Collection<? extends Format> newValues) {
         resourceFormats = writeCollection(newValues, resourceFormats, Format.class);
@@ -738,6 +757,7 @@ public class AbstractIdentification extends ISOMetadata implements Identificatio
     @Override
     @Deprecated
     @XmlElement(name = "aggregationInfo")
+    @Dependencies("getAssociatedResources")
     public Collection<AggregateInformation> getAggregationInfo() {
         return new LegacyPropertyAdapter<AggregateInformation,AssociatedResource>(getAssociatedResources()) {
             @Override protected AssociatedResource wrap(final AggregateInformation value) {

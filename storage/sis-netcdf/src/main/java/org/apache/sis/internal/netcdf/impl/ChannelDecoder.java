@@ -18,6 +18,8 @@ package org.apache.sis.internal.netcdf.impl;
 
 import java.util.Set;
 import java.util.Map;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.AbstractMap;
 import java.util.LinkedHashSet;
 import java.util.LinkedHashMap;
@@ -45,6 +47,7 @@ import org.apache.sis.internal.netcdf.Resources;
 import org.apache.sis.internal.storage.io.ChannelDataInput;
 import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.internal.util.StandardDateFormat;
+import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.util.iso.DefaultNameSpace;
@@ -222,7 +225,7 @@ public final class ChannelDecoder extends Decoder {
      * @throws IOException if an error occurred while reading the channel.
      * @throws DataStoreException if the content of the given channel is not a NetCDF file.
      */
-    public ChannelDecoder(final WarningListeners<?> listeners, final ChannelDataInput input)
+    public ChannelDecoder(final WarningListeners<DataStore> listeners, final ChannelDataInput input)
             throws IOException, DataStoreException
     {
         super(listeners);
@@ -648,6 +651,8 @@ public final class ChannelDecoder extends Decoder {
      *
      * @param  name  the name of the attribute to search, or {@code null}.
      * @return the attribute value, or {@code null} if none.
+     *
+     * @see #getAttributeNames()
      */
     private Object findAttribute(final String name) {
         Object value = attributeMap.get(name);
@@ -659,6 +664,16 @@ public final class ChannelDecoder extends Decoder {
             }
         }
         return value;
+    }
+
+    /**
+     * Returns the names of all global attributes found in the file.
+     *
+     * @return names of all global attributes in the file.
+     */
+    @Override
+    public Collection<String> getAttributeNames() {
+        return Collections.unmodifiableSet(attributeMap.keySet());
     }
 
     /**
@@ -772,7 +787,8 @@ public final class ChannelDecoder extends Decoder {
             /*
              * First, find all variables which are used as coordinate system axis. The keys in the map are
              * the grid dimensions which are the domain of the variable (i.e. the sources of the conversion
-             * from grid coordinates to CRS coordinates).
+             * from grid coordinates to CRS coordinates). For each key there is usually only one value, but
+             * we try to make this code robust to unusual NetCDF files.
              */
             final Map<Dimension, List<VariableInfo>> dimToAxes = new IdentityHashMap<>();
             for (final VariableInfo variable : variables) {
@@ -803,7 +819,7 @@ nextVar:    for (final VariableInfo variable : variables) {
                      * This is a "all or nothing" operation.
                      */
                     for (final Dimension dimension : variable.dimensions) {
-                        final List<VariableInfo> axis = dimToAxes.get(dimension);
+                        final List<VariableInfo> axis = dimToAxes.get(dimension);       // Should have only 1 element.
                         if (axis == null) {
                             axes.clear();
                             continue nextVar;

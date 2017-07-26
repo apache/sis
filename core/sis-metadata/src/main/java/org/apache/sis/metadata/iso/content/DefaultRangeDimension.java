@@ -27,6 +27,8 @@ import org.opengis.metadata.Identifier;
 import org.opengis.metadata.content.RangeDimension;
 import org.opengis.metadata.content.SampleDimension;
 import org.apache.sis.metadata.iso.ISOMetadata;
+import org.apache.sis.metadata.TitleProperty;
+import org.apache.sis.internal.metadata.Dependencies;
 
 
 /**
@@ -50,6 +52,7 @@ import org.apache.sis.metadata.iso.ISOMetadata;
  * @module
  */
 @SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
+@TitleProperty(name = "sequenceIdentifier")
 @XmlType(name = "MD_RangeDimension_Type", propOrder = {
     "sequenceIdentifier",
     "descriptor",
@@ -146,7 +149,7 @@ public class DefaultRangeDimension extends ISOMetadata implements RangeDimension
     }
 
     /**
-     * Sets the number that uniquely identifies instances of bands of wavelengths on which a sensor operates.
+     * Sets the name or number that uniquely identifies instances of bands of wavelengths on which a sensor operates.
      *
      * @param  newValue  the new sequence identifier.
      */
@@ -191,6 +194,7 @@ public class DefaultRangeDimension extends ISOMetadata implements RangeDimension
     @Override
     @Deprecated
     @XmlElement(name = "descriptor")
+    @Dependencies("getDescription")
     public InternationalString getDescriptor() {
         return getDescription();
     }

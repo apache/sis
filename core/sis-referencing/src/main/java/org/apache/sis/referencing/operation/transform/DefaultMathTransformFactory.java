@@ -42,6 +42,7 @@ import org.opengis.parameter.InvalidParameterValueException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.cs.EllipsoidalCS;
+import org.opengis.referencing.cs.CartesianCS;
 import org.opengis.referencing.datum.Ellipsoid;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
@@ -61,6 +62,8 @@ import org.apache.sis.internal.referencing.j2d.ParameterizedAffine;
 import org.apache.sis.internal.referencing.provider.AbstractProvider;
 import org.apache.sis.internal.referencing.provider.VerticalOffset;
 import org.apache.sis.internal.referencing.provider.Providers;
+import org.apache.sis.internal.referencing.provider.GeographicToGeocentric;
+import org.apache.sis.internal.referencing.provider.GeocentricToGeographic;
 import org.apache.sis.internal.referencing.Resources;
 import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.metadata.iso.citation.Citations;
@@ -848,7 +851,8 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
          * <p>The given method and parameters are stored in the {@link #provider} and {@link #parameters}
          * fields respectively. The actual stored values may differ from the values given to this method.</p>
          *
-         * @param  method  description of the transform to be created, or {@code null} if unknown.
+         * @param  factory  the enclosing factory.
+         * @param  method   description of the transform to be created, or {@code null} if unknown.
          * @return the exception if the operation failed, or {@code null} if none. This exception is not thrown now
          *         because the caller may succeed in creating the transform anyway, or otherwise may produce a more
          *         informative exception.
@@ -858,9 +862,23 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
          * @see #getCompletedParameters()
          */
         @SuppressWarnings("null")
-        final RuntimeException completeParameters(OperationMethod method, final ParameterValueGroup userParams)
-                throws IllegalArgumentException
+        final RuntimeException completeParameters(final DefaultMathTransformFactory factory, OperationMethod method,
+                final ParameterValueGroup userParams) throws FactoryException, IllegalArgumentException
         {
+            /*
+             * The "Geographic/geocentric conversions" conversion (EPSG:9602) can be either:
+             *
+             *    - "Ellipsoid_To_Geocentric"
+             *    - "Geocentric_To_Ellipsoid"
+             *
+             * EPSG defines both by a single operation, but Apache SIS needs to distinguish them.
+             */
+            if (method instanceof AbstractProvider) {
+                final String alt = ((AbstractProvider) method).resolveAmbiguity(this);
+                if (alt != null) {
+                    method = factory.getOperationMethod(alt);
+                }
+            }
             provider   = method;
             parameters = userParams;
             /*
@@ -896,8 +914,8 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
                 if (targetEllipsoid != null) n |= 2;
             }
             /*
-             * Set the ellipsoid axis-length parameter values. Those parameters may appear in the source
-             * ellipsoid, in the target ellipsoid or in both ellipsoids.
+             * Set the ellipsoid axis-length parameter values. Those parameters may appear in the source ellipsoid,
+             * in the target ellipsoid or in both ellipsoids.
              */
             switch (n) {
                 case 0: return null;
@@ -1020,7 +1038,7 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
                  * since the standard place where to provide this information is in the ellipsoid object.
                  */
                 if (context != null) {
-                    failure = context.completeParameters(method, parameters);
+                    failure    = context.completeParameters(this, method, parameters);
                     parameters = context.parameters;
                     method     = context.provider;
                 }
@@ -1048,8 +1066,10 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
             lastMethod.set(method);     // May be null in case of failure, which is intended.
             if (context != null) {
                 context.provider = null;
-                // For now we conservatively reset the provider information to null. But if we choose to make
-                // that information public in a future SIS version, then we would remove this code.
+                /*
+                 * For now we conservatively reset the provider information to null. But if we choose to
+                 * make that information public in a future SIS version, then we would remove this code.
+                 */
             }
         }
         return transform;
@@ -1190,13 +1210,71 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
      * @return a conversion from the given source to the given target coordinate system.
      * @throws FactoryException if the conversion can not be created.
      *
+     * @deprecated Replaced by {@link #createCoordinateSystemChange(CoordinateSystem, CoordinateSystem, Ellipsoid)}
+     *
      * @since 0.7
      */
+    @Deprecated
     public MathTransform createCoordinateSystemChange(final CoordinateSystem source, final CoordinateSystem target)
             throws FactoryException
     {
+        return createCoordinateSystemChange(source, target, null);
+    }
+
+    /**
+     * Creates a math transform that represent a change of coordinate system. If exactly one argument is
+     * an {@linkplain org.apache.sis.referencing.cs.DefaultEllipsoidalCS ellipsoidal coordinate systems},
+     * then the {@code ellipsoid} argument is mandatory. In all other cases (including the case where both
+     * coordinate systems are ellipsoidal), the ellipsoid argument is ignored and can be {@code null}.
+     *
+     * <div class="note"><b>Design note:</b>
+     * this method does not accept separated ellipsoid arguments for {@code source} and {@code target} because
+     * this method should not be used for datum shifts. If the two given coordinate systems are ellipsoidal,
+     * then they are assumed to use the same ellipsoid. If different ellipsoids are desired, then a
+     * {@linkplain #createParameterizedTransform parameterized transform} like <cite>"Molodensky"</cite>,
+     * <cite>"Geocentric translations"</cite>, <cite>"Coordinate Frame Rotation"</cite> or
+     * <cite>"Position Vector transformation"</cite> should be used instead.</div>
+     *
+     * @param  source     the source coordinate system.
+     * @param  target     the target coordinate system.
+     * @param  ellipsoid  the ellipsoid of {@code EllipsoidalCS}, or {@code null} if none.
+     * @return a conversion from the given source to the given target coordinate system.
+     * @throws FactoryException if the conversion can not be created.
+     *
+     * @since 0.8
+     */
+    public MathTransform createCoordinateSystemChange(final CoordinateSystem source, final CoordinateSystem target,
+            final Ellipsoid ellipsoid) throws FactoryException
+    {
         ArgumentChecks.ensureNonNull("source", source);
         ArgumentChecks.ensureNonNull("target", target);
+        if (ellipsoid != null) {
+            final boolean isEllipsoidalSource = (source instanceof EllipsoidalCS);
+            if (isEllipsoidalSource != (target instanceof EllipsoidalCS)) {
+                /*
+                 * For now we support only conversion between EllipsoidalCS and CartesianCS.
+                 * But future Apache SIS versions could add support for conversions between
+                 * EllipsoidalCS and SphericalCS or other coordinate systems.
+                 */
+                if ((isEllipsoidalSource ? target : source) instanceof CartesianCS) {
+                    final Context context = new Context();
+                    final EllipsoidalCS cs;
+                    final String operation;
+                    if (isEllipsoidalSource) {
+                        operation = GeographicToGeocentric.NAME;
+                        context.setSource(cs = (EllipsoidalCS) source, ellipsoid);
+                        context.setTarget(target);
+                    } else {
+                        operation = GeocentricToGeographic.NAME;
+                        context.setSource(source);
+                        context.setTarget(cs = (EllipsoidalCS) target, ellipsoid);
+                    }
+                    final ParameterValueGroup pg = getDefaultParameters(operation);
+                    if (cs.getDimension() < 3) pg.parameter("dim").setValue(2);       // Apache SIS specific parameter.
+                    return createParameterizedTransform(pg, context);
+                }
+            }
+        }
         return CoordinateSystemTransform.create(this, source, target);
         // No need to use unique(…) here.
     }
@@ -1313,6 +1391,9 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
      * Creates a math transform object from a
      * <a href="http://www.geoapi.org/snapshot/javadoc/org/opengis/referencing/doc-files/WKT.html"><cite>Well
      * Known Text</cite> (WKT)</a>.
+     * If the given text contains non-fatal anomalies (unknown or unsupported WKT elements,
+     * inconsistent unit definitions, <i>etc.</i>), warnings may be reported in a
+     * {@linkplain java.util.logging.Logger logger} named {@code "org.apache.sis.io.wkt"}.
      *
      * @param  text  math transform encoded in Well-Known Text format.
      * @return the math transform (never {@code null}).

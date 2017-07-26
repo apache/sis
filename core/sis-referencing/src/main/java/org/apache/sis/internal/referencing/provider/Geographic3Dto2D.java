@@ -20,7 +20,6 @@ import javax.xml.bind.annotation.XmlTransient;
 import org.opengis.util.FactoryException;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptorGroup;
-import org.opengis.referencing.operation.Conversion;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.operation.NoninvertibleTransformException;
@@ -40,12 +39,15 @@ import org.apache.sis.internal.referencing.WKTUtilities;
  * The inverse operation arbitrarily sets the ellipsoidal height to zero.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.7
- * @since   0.7
+ * @version 0.8
+ *
+ * @see Geographic2Dto3D
+ *
+ * @since 0.7
  * @module
  */
 @XmlTransient
-public final class Geographic3Dto2D extends AbstractProvider {
+public final class Geographic3Dto2D extends GeographicRedimension {
     /**
      * Serial number for inter-operability with different versions.
      */
@@ -66,17 +68,18 @@ public final class Geographic3Dto2D extends AbstractProvider {
      * Constructs a provider with default parameters.
      */
     public Geographic3Dto2D() {
-        super(3, 2, PARAMETERS);
+        this(new GeodeticOperation[4]);
+        redimensioned[0] = new GeographicRedimension(2, redimensioned);
+        redimensioned[1] = new Geographic2Dto3D(redimensioned);
+        redimensioned[2] = this;
+        redimensioned[3] = new GeographicRedimension(3, redimensioned);
     }
 
     /**
-     * Returns the operation type.
-     *
-     * @return interface implemented by all coordinate operations that use this method.
+     * Constructs a provider that can be resized.
      */
-    @Override
-    public Class<Conversion> getOperationType() {
-        return Conversion.class;
+    private Geographic3Dto2D(GeodeticOperation[] redimensioned) {
+        super(3, 2, PARAMETERS, redimensioned);
     }
 
     /**

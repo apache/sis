@@ -29,12 +29,21 @@ import org.opengis.metadata.identification.AssociatedResource;
 import org.opengis.metadata.identification.AssociationType;
 import org.opengis.metadata.identification.InitiativeType;
 import org.apache.sis.metadata.iso.citation.DefaultCitation;
+import org.apache.sis.internal.metadata.Dependencies;
 
 
 /**
  * Aggregate dataset information.
+ * The following properties are mandatory or conditional (i.e. mandatory under some circumstances)
+ * in a well-formed metadata according ISO 19115:
  *
- * <div class="section">Relationship between properties</div>
+ * <div class="preformat">{@code MD_AggregateInformation}
+ * {@code   ├─associationType…………} Type of relation between the resources.
+ * {@code   ├─metadataReference……} Reference to the metadata of the associated resource.
+ * {@code   │   ├─title…………………………} Name by which the cited resource is known.
+ * {@code   │   └─date……………………………} Reference date for the cited resource.
+ * {@code   └─name………………………………………} Citation information about the associated resource.</div>
+ *
  * According ISO 19115, at least one of {@linkplain #getAggregateDataSetName() aggregate dataset name}
  * and {@linkplain #getAggregateDataSetIdentifier() aggregate dataset identifier} shall be provided.
  *
@@ -124,6 +133,7 @@ public class DefaultAggregateInformation extends DefaultAssociatedResource imple
     @Override
     @Deprecated
     @XmlElement(name = "aggregateDataSetName")
+    @Dependencies("getName")
     public Citation getAggregateDataSetName() {
         return getName();
     }
@@ -150,6 +160,7 @@ public class DefaultAggregateInformation extends DefaultAssociatedResource imple
     @Override
     @Deprecated
     @XmlElement(name = "aggregateDataSetIdentifier")
+    @Dependencies("getName")
     public Identifier getAggregateDataSetIdentifier() {
         return getAggregateDataSetIdentifier(getAggregateDataSetName());
     }

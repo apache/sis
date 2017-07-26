@@ -18,6 +18,7 @@ package org.apache.sis.internal.netcdf.ucar;
 
 import java.util.List;
 import java.io.IOException;
+import java.util.Collection;
 import ucar.ma2.Array;
 import ucar.ma2.Section;
 import ucar.ma2.InvalidRangeException;
@@ -27,6 +28,7 @@ import ucar.nc2.VariableIF;
 import org.apache.sis.math.Vector;
 import org.apache.sis.internal.netcdf.DataType;
 import org.apache.sis.internal.netcdf.Variable;
+import org.apache.sis.internal.util.UnmodifiableArrayList;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreContentException;
 
@@ -130,6 +132,16 @@ final class VariableWrapper extends Variable {
     }
 
     /**
+     * Returns the names of all attributes associated to this variable.
+     *
+     * @return names of all attributes associated to this variable.
+     */
+    @Override
+    public Collection<String> getAttributeNames() {
+        return toNames(variable.getAttributes());
+    }
+
+    /**
      * Returns the sequence of values for the given attribute, or an empty array if none.
      * The elements will be of class {@link String} if {@code numeric} is {@code false},
      * or {@link Number} if {@code numeric} is {@code true}.
@@ -164,11 +176,24 @@ final class VariableWrapper extends Variable {
     }
 
     /**
+     * Returns the names of all attributes in the given list.
+     */
+    static List<String> toNames(final List<Attribute> attributes) {
+        final String[] names = new String[attributes.size()];
+        for (int i=0; i<names.length; i++) {
+            names[i] = attributes.get(i).getShortName();
+        }
+        return UnmodifiableArrayList.wrap(names);
+    }
+
+    /**
      * Reads all the data for this variable and returns them as an array of a Java primitive type.
+     * Multi-dimensional variables are flattened as a one-dimensional array (wrapped in a vector).
+     * This method may cache the returned vector, at UCAR library choice.
      */
     @Override
     public Vector read() throws IOException {
-        final Array array = variable.read();
+        final Array array = variable.read();                // May be cached by the UCAR library.
         return Vector.create(array.get1DJavaArray(array.getElementType()), variable.isUnsigned());
     }
 

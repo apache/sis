@@ -31,6 +31,10 @@ import static org.apache.sis.internal.metadata.MetadataUtilities.ensurePositive;
 
 /**
  * Information about an image's suitability for use.
+ * The following property is mandatory in a well-formed metadata according ISO 19115:
+ *
+ * <div class="preformat">{@code MD_ImageDescription}
+ * {@code   └─attributeDescription……} Description of the attribute described by the measurement value.</div>
  *
  * <p><b>Limitations:</b></p>
  * <ul>

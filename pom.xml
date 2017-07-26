@@ -24,10 +24,6 @@
          xsi:schemaLocation = "http://maven.apache.org/POM/4.0.0
                                http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
-  <prerequisites>
-    <maven>3.5.0</maven>
-  </prerequisites>
-
   <parent>
     <groupId>org.apache</groupId>
     <artifactId>apache</artifactId>
@@ -413,6 +409,7 @@ Apache SIS is a free software, Java language library for developing geospatial a
         <groupId>com.esri.geometry</groupId>
         <artifactId>esri-geometry-api</artifactId>
         <version>1.2.1</version>
+        <optional>true</optional>
       </dependency>
       <dependency>
         <groupId>gov.nist.math</groupId>
@@ -429,20 +426,20 @@ Apache SIS is a free software, Java language library for developing geospatial a
       <dependency>
         <groupId>org.apache.commons</groupId>
         <artifactId>commons-compress</artifactId>
-        <version>1.13</version>
+        <version>1.14</version>
       </dependency>
 
       <!-- Databases -->
       <dependency>
         <groupId>org.hsqldb</groupId>
         <artifactId>hsqldb</artifactId>
-        <version>2.3.4</version>
+        <version>2.4.0</version>
         <scope>test</scope>
       </dependency>
       <dependency>
         <groupId>org.postgresql</groupId>
         <artifactId>postgresql</artifactId>
-        <version>42.0.0</version>
+        <version>42.1.1</version>
         <scope>test</scope>
       </dependency>
 
@@ -488,7 +485,7 @@ Apache SIS is a free software, Java language library for developing geospatial a
          The last properties in this list depend on the Apache SIS branch.
        =================================================================== -->
   <properties>
-    <netcdf.version>4.6.8</netcdf.version>
+    <netcdf.version>4.6.9</netcdf.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <website.encoding>UTF-8</website.encoding>
     <website.locale>en</website.locale>
@@ -558,6 +555,7 @@ Apache SIS is a free software, Java language library for developing geospatial a
             <arg>-Xlint:all</arg>
             <arg>-Xdoclint:syntax,html,missing/protected,accessibility/protected</arg>
             <arg>--add-modules</arg> <arg>java.xml.bind,java.xml.ws.annotation</arg>
+            <arg>-h</arg> <arg>${project.build.sourceDirectory}/../c</arg>
           </compilerArgs>
         </configuration>
       </plugin>
@@ -676,6 +674,10 @@ Apache SIS is a free software, Java language library for developing geospatial a
                   <module name="FileTabCharacter"/>                 <!-- No tab characters in the file. -->
                   <module name="NewlineAtEndOfFile"/>               <!-- Newline at the end of each file. -->
                   <module name="TreeWalker">
+                    <module name="RegexpSinglelineJava">
+                      <property name="format" value="\s+$"/>
+                      <property name="message" value="Trailing spaces not allowed."/>
+                    </module>
                     <module name="NoLineWrap"/>                     <!-- Imports and package statements are not line-wrapped. -->
                     <module name="RedundantImport"/>                <!-- No redundant import statements. -->
                     <module name="GenericWhitespace"/>              <!-- Whitespace around the Generic tokens follow typical convention. -->
@@ -753,6 +755,7 @@ Apache SIS is a free software, Java language library for developing geospatial a
       <!-- JavaDoc configuration. -->
       <plugin>
         <artifactId>maven-javadoc-plugin</artifactId>
+        <version>2.10.4</version>
         <configuration>
           <source>${maven.compile.source}</source>              <!-- Enables javadoc to handle language constructs present in target JDK. -->
           <encoding>${project.build.sourceEncoding}</encoding>  <!-- Encoding of Java source file. -->
@@ -769,6 +772,7 @@ Apache SIS is a free software, Java language library for developing geospatial a
           <links>
             <link>http://unitsofmeasurement.github.io/unit-api/site/apidocs</link>
             <link>http://www.geoapi.org/snapshot/pending</link>
+            <link>http://www.unidata.ucar.edu/software/thredds/current/netcdf-java/javadoc</link>
           </links>
 
           <additionalparam>

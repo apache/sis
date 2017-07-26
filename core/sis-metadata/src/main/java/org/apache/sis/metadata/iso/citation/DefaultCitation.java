@@ -32,6 +32,7 @@ import org.opengis.metadata.identification.BrowseGraphic;
 import org.opengis.util.InternationalString;
 import org.apache.sis.util.iso.Types;
 import org.apache.sis.internal.jaxb.NonMarshalledAuthority;
+import org.apache.sis.metadata.TitleProperty;
 import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.xml.IdentifierSpace;
 import org.apache.sis.xml.IdentifierMap;
@@ -43,6 +44,11 @@ import static org.apache.sis.internal.metadata.MetadataUtilities.toMilliseconds;
 
 /**
  * Standardized resource reference.
+ * The following properties are mandatory in a well-formed metadata according ISO 19115:
+ *
+ * <div class="preformat">{@code CI_Citation}
+ * {@code   ├─title………………………} Name by which the cited resource is known.
+ * {@code   └─date…………………………} Reference date for the cited resource.</div>
  *
  * <div class="section">Unified identifiers view</div>
  * The ISO 19115 model provides specific attributes for the {@linkplain #getISBN() ISBN} and
@@ -67,6 +73,7 @@ import static org.apache.sis.internal.metadata.MetadataUtilities.toMilliseconds;
  * @module
  */
 @SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
+@TitleProperty(name = "title")
 @XmlType(name = "CI_Citation_Type", propOrder = {
     "title",
     "alternateTitles",

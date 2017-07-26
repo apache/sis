@@ -138,10 +138,12 @@ public class ResourceInternationalString extends AbstractInternationalString imp
      *
      * @param  locale  the locale for which to get the resource bundle.
      * @return the resource bundle for the given locale.
+     * @throws MissingResourceException if no resource bundle can be found for the base name specified
+     *         at {@linkplain #ResourceInternationalString(String, String) construction time}.
      *
      * @see ResourceBundle#getBundle(String, Locale, ClassLoader)
      */
-    protected ResourceBundle getBundle(final Locale locale) {
+    protected ResourceBundle getBundle(final Locale locale) throws MissingResourceException {
         return ResourceBundle.getBundle(resources, locale);
     }
 
@@ -157,7 +159,8 @@ public class ResourceInternationalString extends AbstractInternationalString imp
      *
      * @param  locale  the desired locale for the string to be returned.
      * @return the string in the specified locale, or in a fallback locale.
-     * @throws MissingResourceException if the key given to the constructor is invalid.
+     * @throws MissingResourceException if no resource can be found for the base name or for the key
+     *         specified at {@linkplain #ResourceInternationalString(String, String) construction time}.
      */
     @Override
     public String toString(Locale locale) throws MissingResourceException {

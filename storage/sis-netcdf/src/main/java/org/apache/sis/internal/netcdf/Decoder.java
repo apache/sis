@@ -18,11 +18,13 @@ package org.apache.sis.internal.netcdf;
 
 import java.util.Date;
 import java.util.Objects;
+import java.util.Collection;
 import java.io.Closeable;
 import java.io.IOException;
 import javax.measure.Unit;
 import javax.measure.format.ParserException;
 import org.apache.sis.measure.Units;
+import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.util.logging.WarningListeners;
 
@@ -42,7 +44,7 @@ public abstract class Decoder implements Closeable {
     /**
      * Where to send the warnings.
      */
-    public final WarningListeners<?> listeners;
+    public final WarningListeners<DataStore> listeners;
 
     /**
      * Sets to {@code true} for canceling a reading process.
@@ -55,7 +57,7 @@ public abstract class Decoder implements Closeable {
      *
      * @param  listeners  where to send the warnings.
      */
-    protected Decoder(final WarningListeners<?> listeners) {
+    protected Decoder(final WarningListeners<DataStore> listeners) {
         Objects.requireNonNull(listeners);
         this.listeners = listeners;
     }
@@ -83,6 +85,13 @@ public abstract class Decoder implements Closeable {
      * @return the current search path.
      */
     public abstract String[] getSearchPath();
+
+    /**
+     * Returns the names of all global attributes found in the file.
+     *
+     * @return names of all global attributes in the file.
+     */
+    public abstract Collection<String> getAttributeNames();
 
     /**
      * Returns the value for the attribute of the given name, or {@code null} if none.
@@ -216,6 +225,7 @@ public abstract class Decoder implements Closeable {
      *
      * @return all grid geometries, or an empty array if none.
      * @throws IOException if an I/O operation was necessary but failed.
+     * @throws DataStoreException if a logical error occurred.
      */
-    public abstract GridGeometry[] getGridGeometries() throws IOException;
+    public abstract GridGeometry[] getGridGeometries() throws IOException, DataStoreException;
 }

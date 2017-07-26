@@ -32,15 +32,22 @@ import org.apache.sis.internal.util.UnmodifiableArrayList;
 
 /**
  * Holds a list of {@link WarningListener} instances and provides convenience methods for emitting warnings.
- * The convenience {@code warning(…)} methods can build {@code LogRecord} from an exception or from a string.
- *
- * <p>In the default implementation, all {@code warning(…)} methods delegate to {@link #warning(LogRecord)},
- * thus providing a single point that subclasses can override for intercepting all warnings.
- * The default behavior is:</p>
+ * This is a helper class for {@link org.apache.sis.storage.DataStore} implementations or for other services
+ * susceptible to emit warnings.
+ * Observers can {@linkplain #addWarningListener can add listeners} for being notified about warnings, and
+ * processes can invoke one of the {@code warning(…)} methods for emitting warnings. All warnings are given
+ * to the listeners as {@link LogRecord} instances (this allows localizable messages and additional information
+ * like {@linkplain LogRecord#getMillis() timestamp} and {@linkplain LogRecord#getThrown() stack trace}).
+ * This {@code WarningListeners} class provides convenience methods like {@link #warning(String, Exception)},
+ * which builds {@code LogRecord} from an exception or from a string, but all those {@code warning(…)} methods
+ * ultimately delegate to {@link #warning(LogRecord)}, thus providing a single point that subclasses can override.
+ * When a warning is emitted, the default behavior is:
  *
  * <ul>
  *   <li>If at least one {@link WarningListener} is registered,
  *       then all listeners are notified and the warning is <strong>not</strong> logged.
+ *   <li>Otherwise if the value returned by {@link LogRecord#getLoggerName()} is non-null,
+ *       then the warning will be logged to that named logger.</li>
  *   <li>Otherwise the warning is logged to the logger returned by {@link #getLogger()}.</li>
  * </ul>
  *
@@ -83,7 +90,8 @@ public class WarningListeners<S> implements Localized {
 
     /**
      * Creates a new instance with initially no listener.
-     * Warnings will be logger to the logger, unless at least one listener is registered.
+     * Warnings will be logger to the destination given by {@link #getLogger()},
+     * unless at least one listener is {@linkplain #addWarningListener registered}.
      *
      * @param source  the declared source of warnings. This is not necessarily the real source,
      *                but this is the source that the implementor wants to declare as public API.
@@ -95,6 +103,8 @@ public class WarningListeners<S> implements Localized {
 
     /**
      * Creates a new instance initialized with the same listeners than the given instance.
+     * This constructor is useful when a {@code DataStore} or other data producer needs to
+     * be duplicated for concurrency reasons.
      *
      * @param source  the declared source of warnings. This is not necessarily the real source,
      *                but this is the source that the implementor wants to declare as public API.
@@ -120,19 +130,35 @@ public class WarningListeners<S> implements Localized {
     }
 
     /**
-     * Returns the logger where to send the warnings. The default implementation returns a logger for
-     * the package name of the {@code source} object. Subclasses should override this method if they
-     * can provide a fixed logger instance (typically a static final constant).
+     * Returns the logger where to send the warnings when no other destination is specified.
+     * This logger is used when:
      *
-     * @return  the logger where to send the warnings when there is no registered listeners.
+     * <ul>
+     *   <li>no listener has been {@linkplain #addWarningListener registered}, and</li>
+     *   <li>the {@code LogRecord} does not {@linkplain LogRecord#getLoggerName() specify a logger}.</li>
+     * </ul>
+     *
+     * The default implementation infers a logger name from the package name of the {@code source} object.
+     * Subclasses should override this method if they can provide a more determinist logger instance,
+     * typically from a static final constant.
+     *
+     * @return the logger where to send the warnings when there is no other destination.
      */
     public Logger getLogger() {
         return Logging.getLogger(source.getClass());
     }
 
     /**
-     * Reports a warning represented by the given log record. The default implementation notifies the listeners
-     * if any, or logs the message to the logger returned by {@link #getLogger()} otherwise.
+     * Reports a warning represented by the given log record. The default implementation forwards
+     * the given record to <strong>one</strong> of the following destinations, in preference order:
+     *
+     * <ol>
+     *   <li><code>{@linkplain WarningListener#warningOccured WarningListener.warningOccured}(source, record)</code>
+     *       on all {@linkplain #addWarningListener registered listeners} it at least one such listener exists.</li>
+     *   <li><code>{@linkplain Logging#getLogger(String) Logging.getLogger}(record.{@linkplain LogRecord#getLoggerName
+     *       getLoggerName()}).{@linkplain Logger#log(LogRecord) log}(record)</code> if the logger name is non-null.</li>
+     *   <li><code>{@linkplain #getLogger()}.{@linkplain Logger#log(LogRecord) log}(record)</code> otherwise.</li>
+     * </ol>
      *
      * @param record  the warning as a log record.
      */
@@ -146,8 +172,14 @@ public class WarningListeners<S> implements Localized {
                 listener.warningOccured(source, record);
             }
         } else {
-            final Logger logger = getLogger();
-            record.setLoggerName(logger.getName());
+            final String name = record.getLoggerName();
+            final Logger logger;
+            if (name != null) {
+                logger = Logging.getLogger(name);
+            } else {
+                logger = getLogger();
+                record.setLoggerName(logger.getName());
+            }
             if (record instanceof QuietLogRecord) {
                 ((QuietLogRecord) record).clearThrown();
             }

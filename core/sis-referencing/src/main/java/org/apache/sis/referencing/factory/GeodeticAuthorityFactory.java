@@ -63,7 +63,7 @@ import org.apache.sis.util.Debug;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Johann Sorel (Geomatys)
- * @version 0.7
+ * @version 0.8
  * @since   0.7
  * @module
  */
@@ -1237,8 +1237,10 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      * @param  code  the code to trim.
      * @return the code with the namespace part removed if that part matched one of the values given by
      *         {@link #getCodeSpaces()}.
+     *
+     * @since 0.8
      */
-    final String trimNamespace(final String code) {
+    protected final String trimNamespace(final String code) {
         int s = code.indexOf(DefaultNameSpace.DEFAULT_SEPARATOR);
         if (s >= 0) {
             final int end   = CharSequences.skipTrailingWhitespaces(code, 0, s);

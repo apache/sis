@@ -83,6 +83,11 @@ public final class Resources extends IndexedResourceBundle {
         public static final short CanNotCreateObjectAsInstanceOf_2 = 4;
 
         /**
+         * Can not infer a grid size from the given values in {0} range.
+         */
+        public static final short CanNotInferGridSizeFromValues_1 = 75;
+
+        /**
          * Can not instantiate geodetic object for “{0}”.
          */
         public static final short CanNotInstantiateGeodeticObject_1 = 5;
@@ -275,6 +280,11 @@ public final class Resources extends IndexedResourceBundle {
         public static final short MissingInterpolationOrdinates = 41;
 
         /**
+         * Missing parameter values for “{0}” coordinate operation.
+         */
+        public static final short MissingParameterValues_1 = 74;
+
+        /**
          * No spatial or temporal dimension found in “{0}”
          */
         public static final short MissingSpatioTemporalDimension_1 = 42;
@@ -319,6 +329,19 @@ public final class Resources extends IndexedResourceBundle {
          * No operation method found for name or identifier “{0}”.
          */
         public static final short NoSuchOperationMethod_1 = 50;
+
+        /**
+         * The coordinate system axes in the given “{0}” description do not conform to the expected
+         * axes according “{1}” authoritative description.
+         */
+        public static final short NonConformAxes_2 = 72;
+
+        /**
+         * The given “{0}” description does not conform to the “{1}” authoritative description.
+         * Differences are found in {2,choice,0#conversion method|1#conversion description|2#coordinate
+         * system|3#datum|4#prime meridian|5#CRS}.
+         */
+        public static final short NonConformCRS_3 = 73;
 
         /**
          * No horizontal component found in the “{0}” coordinate reference system.

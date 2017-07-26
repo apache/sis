@@ -33,17 +33,32 @@ import org.opengis.metadata.identification.Resolution;
 import org.opengis.metadata.identification.RepresentativeFraction;
 import org.opengis.metadata.maintenance.Scope;
 import org.opengis.referencing.ReferenceSystem;
+import org.apache.sis.metadata.TitleProperty;
 import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.metadata.iso.maintenance.DefaultScope;
 import org.apache.sis.metadata.iso.identification.DefaultResolution;
+import org.apache.sis.internal.metadata.Dependencies;
 import org.apache.sis.util.iso.Types;
 import org.apache.sis.xml.Namespaces;
 
 
 /**
  * Information about the source data used in creating the data specified by the scope.
+ * The following properties are mandatory or conditional (i.e. mandatory under some circumstances)
+ * in a well-formed metadata according ISO 19115:
  *
- * <div class="section">Relationship between properties</div>
+ * <div class="preformat">{@code LI_Source}
+ * {@code   ├─description……………………………………………} Detailed description of the level of the source data.
+ * {@code   └─scope……………………………………………………………} Type and / or extent of the source.
+ * {@code       ├─level…………………………………………………} Hierarchical level of the data specified by the scope.
+ * {@code       └─levelDescription……………………} Detailed description about the level of the data specified by the scope.
+ * {@code           ├─attributeInstances……} Attribute instances to which the information applies.
+ * {@code           ├─attributes…………………………} Attributes to which the information applies.
+ * {@code           ├─dataset…………………………………} Dataset to which the information applies.
+ * {@code           ├─featureInstances…………} Feature instances to which the information applies.
+ * {@code           ├─features………………………………} Features to which the information applies.
+ * {@code           └─other………………………………………} Class of information that does not fall into the other categories to which the information applies.</div>
+ *
  * According ISO 19115, at least one of {@linkplain #getDescription() description} and
  * {@linkplain #getSourceExtents() source extents} shall be provided.
  *
@@ -65,6 +80,7 @@ import org.apache.sis.xml.Namespaces;
  * @module
  */
 @SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
+@TitleProperty(name = "description")
 @XmlType(name = "LI_Source_Type", propOrder = {
     "description",
     "scaleDenominator",
@@ -249,6 +265,7 @@ public class DefaultSource extends ISOMetadata implements Source {
     @Override
     @Deprecated
     @XmlElement(name = "scaleDenominator")
+    @Dependencies("getSourceSpatialResolution")
     public RepresentativeFraction getScaleDenominator() {
         final Resolution resolution = getSourceSpatialResolution();
         return (resolution != null) ? resolution.getEquivalentScale() : null;
@@ -389,6 +406,7 @@ public class DefaultSource extends ISOMetadata implements Source {
     @Override
     @Deprecated
     @XmlElement(name = "sourceExtent")
+    @Dependencies("getScope")
     public Collection<Extent> getSourceExtents() {
         Scope scope = getScope();
         if (!(scope instanceof DefaultScope)) {

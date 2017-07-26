@@ -21,6 +21,7 @@ import javax.xml.bind.annotation.XmlTransient;
 import org.opengis.metadata.extent.Extent;
 import org.opengis.metadata.quality.Scope;
 import org.opengis.metadata.maintenance.ScopeCode;
+import org.apache.sis.internal.metadata.Dependencies;
 import org.apache.sis.internal.metadata.LegacyPropertyAdapter;
 
 
@@ -117,6 +118,7 @@ public class DefaultScope extends org.apache.sis.metadata.iso.maintenance.Defaul
      */
     @Override
     @Deprecated
+    @Dependencies("getExtents")
     public Extent getExtent() {
         return LegacyPropertyAdapter.getSingleton(getExtents(), Extent.class, null, DefaultScope.class, "getExtent");
     }

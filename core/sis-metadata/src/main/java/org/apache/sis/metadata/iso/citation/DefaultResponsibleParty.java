@@ -31,12 +31,20 @@ import org.opengis.metadata.citation.ResponsibleParty;
 import org.opengis.metadata.citation.Role;
 import org.opengis.util.InternationalString;
 import org.apache.sis.util.iso.Types;
+import org.apache.sis.internal.metadata.Dependencies;
 import org.apache.sis.internal.metadata.LegacyPropertyAdapter;
 
 
 /**
  * Identification of, and means of communication with, person(s) and
  * organizations associated with the dataset.
+ * The following properties are mandatory or conditional (i.e. mandatory under some circumstances)
+ * in a well-formed metadata according ISO 19115:
+ *
+ * <div class="preformat">{@code CI_ResponsibleParty}
+ * {@code   ├─role……………………………} Function performed by the responsible party.
+ * {@code   └─party…………………………} Information about the parties.
+ * {@code       └─name…………………} Name of the party.</div>
  *
  * @deprecated As of ISO 19115:2014, the {@code ResponsibleParty} type has been replaced by {@code Responsibility}
  *             to allow more flexible associations of individuals, organizations, and roles.
@@ -158,7 +166,7 @@ public class DefaultResponsibleParty extends DefaultResponsibility implements Re
             final Class<? extends Party> type, final boolean position)
     {
         InternationalString name = null;
-        if (parties != null) { // May be null on marshalling.
+        if (parties != null) {                              // May be null on marshalling.
             for (final Party party : parties) {
                 if (type.isInstance(party)) {
                     if (name != null) {
@@ -215,6 +223,7 @@ public class DefaultResponsibleParty extends DefaultResponsibility implements Re
     @Override
     @Deprecated
     @XmlElement(name = "individualName")
+    @Dependencies("getParties")
     public String getIndividualName() {
         final InternationalString name = getIndividual(false);
         return (name != null) ? name.toString() : null;
@@ -254,6 +263,7 @@ public class DefaultResponsibleParty extends DefaultResponsibility implements Re
     @Override
     @Deprecated
     @XmlElement(name = "organisationName")
+    @Dependencies("getParties")
     public InternationalString getOrganisationName() {
         return getName(getParties(), Organisation.class, false);
     }
@@ -293,6 +303,7 @@ public class DefaultResponsibleParty extends DefaultResponsibility implements Re
     @Override
     @Deprecated
     @XmlElement(name = "positionName")
+    @Dependencies("getParties")
     public InternationalString getPositionName() {
         return getIndividual(true);
     }
@@ -329,6 +340,7 @@ public class DefaultResponsibleParty extends DefaultResponsibility implements Re
     @Override
     @Deprecated
     @XmlElement(name = "contactInfo")
+    @Dependencies("getParties")
     public Contact getContactInfo() {
         final Collection<Party> parties = getParties();
         if (parties != null) { // May be null on marshalling.

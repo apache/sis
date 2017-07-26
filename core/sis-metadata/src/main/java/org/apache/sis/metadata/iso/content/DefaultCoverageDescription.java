@@ -31,11 +31,16 @@ import org.opengis.metadata.content.RangeDimension;
 import org.opengis.metadata.content.RangeElementDescription;
 import org.opengis.util.RecordType;
 import org.apache.sis.xml.Namespaces;
+import org.apache.sis.internal.metadata.Dependencies;
 import org.apache.sis.internal.metadata.LegacyPropertyAdapter;
 
 
 /**
  * Information about the content of a grid data cell.
+ * The following property is mandatory in a well-formed metadata according ISO 19115:
+ *
+ * <div class="preformat">{@code MD_CoverageDescription}
+ * {@code   └─attributeDescription……} Description of the attribute described by the measurement value.</div>
  *
  * <p><b>Limitations:</b></p>
  * <ul>
@@ -228,13 +233,14 @@ public class DefaultCoverageDescription extends AbstractContentInformation imple
     @Override
     @Deprecated
     @XmlElement(name = "contentType", required = true)
+    @Dependencies("getAttributeGroups")
     public CoverageContentType getContentType() {
         CoverageContentType type = null;
         final Collection<AttributeGroup> groups = getAttributeGroups();
-        if (groups != null) { // May be null on marshalling.
+        if (groups != null) {                                               // May be null on marshalling.
             for (final AttributeGroup g : groups) {
                 final Collection<? extends CoverageContentType> contentTypes = g.getContentTypes();
-                if (contentTypes != null) { // May be null on marshalling.
+                if (contentTypes != null) {                                 // May be null on marshalling.
                     for (final CoverageContentType t : contentTypes) {
                         if (type == null) {
                             type = t;
@@ -292,6 +298,7 @@ public class DefaultCoverageDescription extends AbstractContentInformation imple
     @Override
     @Deprecated
     @XmlElement(name = "dimension")
+    @Dependencies("getAttributeGroups")
     public final Collection<RangeDimension> getDimensions() {
         return new LegacyPropertyAdapter<RangeDimension,AttributeGroup>(getAttributeGroups()) {
             /** Stores a legacy value into the new kind of value. */

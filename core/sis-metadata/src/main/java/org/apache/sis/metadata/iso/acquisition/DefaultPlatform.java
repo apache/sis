@@ -32,6 +32,15 @@ import org.apache.sis.internal.jaxb.NonMarshalledAuthority;
 
 /**
  * Designation of the platform used to acquire the dataset.
+ * The following properties are mandatory in a well-formed metadata according ISO 19115:
+ *
+ * <div class="preformat">{@code MI_Platform}
+ * {@code   ├─identifier………………} Unique identification of the platform.
+ * {@code   │   └─code……………………} Alphanumeric value identifying an instance in the namespace.
+ * {@code   ├─description……………} Narrative description of the platform supporting the instrument.
+ * {@code   └─instrument………………} Instrument(s) mounted on a platform.
+ * {@code       ├─identifier……} Unique identification of the instrument.
+ * {@code       └─type……………………} Name of the type of instrument.</div>
  *
  * <p><b>Limitations:</b></p>
  * <ul>

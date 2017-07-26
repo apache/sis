@@ -22,11 +22,17 @@ import javax.xml.bind.annotation.XmlRootElement;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.util.InternationalString;
+import org.apache.sis.metadata.TitleProperty;
 import org.apache.sis.internal.util.Citations;
 
 
 /**
  * Value uniquely identifying an object within a namespace.
+ * The following property is mandatory in a well-formed metadata according ISO 19115:
+ *
+ * <div class="preformat">{@code MD_Identifier}
+ * {@code   └─code……………} Alphanumeric value identifying an instance in the namespace.</div>
+ *
  * One or more {@code Identifier} instances can be associated to some metadata objects like
  * {@linkplain org.apache.sis.metadata.iso.acquisition.DefaultOperation operation},
  * {@linkplain org.apache.sis.metadata.iso.acquisition.DefaultPlatform platform},
@@ -85,6 +91,7 @@ import org.apache.sis.internal.util.Citations;
  * @module
  */
 @SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
+@TitleProperty(name = "code")
 @XmlType(name = "MD_Identifier_Type", propOrder = {
     "authority",
     "code"

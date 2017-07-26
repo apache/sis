@@ -24,11 +24,20 @@ import org.opengis.metadata.spatial.GCP;
 import org.opengis.metadata.spatial.GCPCollection;
 import org.opengis.referencing.ReferenceSystem;
 import org.opengis.util.InternationalString;
+import org.apache.sis.metadata.TitleProperty;
 import org.apache.sis.xml.Namespaces;
 
 
 /**
  * Information about a control point collection.
+ * The following properties are mandatory in a well-formed metadata according ISO 19115:
+ *
+ * <div class="preformat">{@code MI_GCPCollection}
+ * {@code   ├─collectionIdentification………} Identifier of the GCP collection.
+ * {@code   ├─collectionName…………………………………} Name of the GCP collection.
+ * {@code   ├─coordinateReferenceSystem……} Coordinate system in which the ground control points are defined.
+ * {@code   └─gcp………………………………………………………………} Ground control point(s) used in the collection.
+ * {@code       └─geographicCoordinates……} Geographic or map position of the control point, in either two or three dimensions.</div>
  *
  * <p><b>Limitations:</b></p>
  * <ul>
@@ -42,10 +51,14 @@ import org.apache.sis.xml.Namespaces;
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.3
- * @since   0.3
+ *
+ * @see DefaultGCP
+ *
+ * @since 0.3
  * @module
  */
 @SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
+@TitleProperty(name = "collectionName")
 @XmlType(name = "MI_GCPCollection_Type", propOrder = {
     "collectionIdentification",
     "collectionName",

@@ -29,8 +29,10 @@ import org.opengis.metadata.distribution.Medium;
 import org.opengis.metadata.distribution.MediumName;
 import org.opengis.metadata.distribution.MediumFormat;
 import org.apache.sis.measure.ValueRange;
+import org.apache.sis.metadata.TitleProperty;
 import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.internal.jaxb.NonMarshalledAuthority;
+import org.apache.sis.internal.metadata.Dependencies;
 import org.apache.sis.internal.metadata.LegacyPropertyAdapter;
 
 import static org.apache.sis.internal.metadata.MetadataUtilities.ensurePositive;
@@ -38,6 +40,11 @@ import static org.apache.sis.internal.metadata.MetadataUtilities.ensurePositive;
 
 /**
  * Information about the media on which the resource can be distributed.
+ * The following property is mandatory or conditional (i.e. mandatory under some circumstances)
+ * in a well-formed metadata according ISO 19115:
+ *
+ * <div class="preformat">{@code MD_Medium}
+ * {@code   └─densityUnits……} Units of measure for the recording density.</div>
  *
  * <p><b>Limitations:</b></p>
  * <ul>
@@ -56,6 +63,7 @@ import static org.apache.sis.internal.metadata.MetadataUtilities.ensurePositive;
  * @module
  */
 @SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
+@TitleProperty(name = "name")
 @XmlType(name = "MD_Medium_Type", propOrder = {
     "name",
     "densities",
@@ -221,6 +229,7 @@ public class DefaultMedium extends ISOMetadata implements Medium {
     @Override
     @Deprecated
     @XmlElement(name = "density")
+    @Dependencies("getDensity")
     public Collection<Double> getDensities() {
         return new AbstractSet<Double>() {
             /** Returns 0 if empty, or 1 if a density has been specified. */

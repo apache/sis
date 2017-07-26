@@ -151,12 +151,12 @@ public final strictfp class CRSTest extends TestCase {
     }
 
     /**
-     * Tests {@link CRS#suggestTargetCRS(GeographicBoundingBox, CoordinateReferenceSystem...)}.
+     * Tests {@link CRS#suggestCommonTarget(GeographicBoundingBox, CoordinateReferenceSystem...)}.
      *
      * @since 0.8
      */
     @Test
-    public void testSuggestTargetCRS() {
+    public void testSuggestCommonTarget() {
         /*
          * Prepare 4 CRS with different datum (so we can more easily differentiate them in the assertions) and
          * different domain of validity. CRS[1] is given a domain large enough for all CRS except the last one.
@@ -185,34 +185,34 @@ public final strictfp class CRSTest extends TestCase {
          * of validity large enough for all CRS; this is the second CRS created in above 'switch' statement.
          */
         assertSame("Expected CRS with widest domain of validity.", crs[1],
-                   CRS.suggestTargetCRS(null, overlappingCRS));
+                   CRS.suggestCommonTarget(null, overlappingCRS));
         /*
          * If we specify a smaller region of interest, we should get the CRS having the smallest domain of validity that
          * cover the ROI. Following lines gradually increase the ROI size and verify that we get CRS for larger domain.
          */
         final DefaultGeographicBoundingBox regionOfInterest = new DefaultGeographicBoundingBox(-1, +1, 2.1, 2.9);
         assertSame("Expected best fit for [2.1 … 2.9]°N", crs[2],
-                   CRS.suggestTargetCRS(regionOfInterest, overlappingCRS));
+                   CRS.suggestCommonTarget(regionOfInterest, overlappingCRS));
 
         regionOfInterest.setNorthBoundLatitude(3.1);
         assertSame("Expected best fit for [2.1 … 3.1]°N", crs[0],
-                   CRS.suggestTargetCRS(regionOfInterest, overlappingCRS));
+                   CRS.suggestCommonTarget(regionOfInterest, overlappingCRS));
 
         regionOfInterest.setSouthBoundLatitude(1.9);
         assertSame("Expected best fit for [1.9 … 3.1]°N", crs[1],
-                   CRS.suggestTargetCRS(regionOfInterest, overlappingCRS));
+                   CRS.suggestCommonTarget(regionOfInterest, overlappingCRS));
         /*
          * All above tests returned one of the CRS in the given array. Test now a case where none of those CRS
-         * have a domain of validity wide enough, so suggestTargetCRS(…) need to search among the base CRS.
+         * have a domain of validity wide enough, so suggestCommonTarget(…) need to search among the base CRS.
          */
         assertSame("Expected a GeodeticCRS since none of the ProjectedCRS have a domain of validity wide enough.",
-                   crs[0].getBaseCRS(), CRS.suggestTargetCRS(null, crs));
+                   crs[0].getBaseCRS(), CRS.suggestCommonTarget(null, crs));
         /*
-         * With the same domain of validity than above, suggestTargetCRS(…) should not need to fallback on the
+         * With the same domain of validity than above, suggestCommonTarget(…) should not need to fallback on the
          * base CRS anymore.
          */
         assertSame("Expected best fit for [1.9 … 3.1]°N", crs[1],
-                   CRS.suggestTargetCRS(regionOfInterest, crs));
+                   CRS.suggestCommonTarget(regionOfInterest, crs));
     }
 
     /**

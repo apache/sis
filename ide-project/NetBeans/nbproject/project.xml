@@ -21,7 +21,7 @@
     <type>org.netbeans.modules.java.j2seproject</type>
     <configuration>
         <data xmlns="http://www.netbeans.org/ns/j2se-project/3">
-            <name>Apache SIS for JDK9</name>
+            <name>Apache SIS for JDK8</name>
             <explicit-platform explicit-source-supported="true"/>
             <source-roots>
                 <root id="src.local-src.dir" name="Local sources (unversioned)"/>
@@ -39,6 +39,8 @@
                 <root id="src.metadata.dir" name="Metadata"/>
                 <root id="src.utility.dir" name="Utility"/>
                 <root id="src.fra-profile.dir" name="French profile"/>
+                <root id="src.gdal.dir" name="GDAL/Proj4"/>
+                <root id="src.c.gdal.dir" name="GDAL/Proj4 JNI"/>
             </source-roots>
             <test-roots>
                 <root id="test.webapp.dir" name="Test web application"/>
@@ -55,6 +57,7 @@
                 <root id="test.metadata.dir" name="Test Metadata"/>
                 <root id="test.utility.dir" name="Test Utility"/>
                 <root id="test.fra-profile.dir" name="Test French profile"/>
+                <root id="test.gdal.dir" name="Test GDAL/Proj4"/>
             </test-roots>
         </data>
         <references xmlns="http://www.netbeans.org/ns/ant-project-references/1">
@@ -95,6 +98,8 @@
             <word>namespaces</word>
             <word>orthodromic</word>
             <word>parsable</word>
+            <word>polyline</word>
+            <word>polylines</word>
             <word>spliterator</word>
             <word>timezone</word>
             <word>Unicode</word>

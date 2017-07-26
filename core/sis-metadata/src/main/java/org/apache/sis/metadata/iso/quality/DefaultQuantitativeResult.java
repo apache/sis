@@ -29,6 +29,11 @@ import org.opengis.util.RecordType;
 
 /**
  * Information about the value (or set of values) obtained from applying a data quality measure.
+ * The following properties are mandatory in a well-formed metadata according ISO 19115:
+ *
+ * <div class="preformat">{@code DQ_QuantitativeResult}
+ * {@code   ├─valueUnit……………………} Value unit for reporting a data quality result.
+ * {@code   └─value………………………………} Quantitative value or values, content determined by the evaluation procedure used.</div>
  *
  * <p><b>Limitations:</b></p>
  * <ul>

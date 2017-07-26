@@ -27,6 +27,8 @@ import org.apache.sis.internal.util.LazySet;
  *
  * <p>This class is <strong>not</strong> thread-safe. Synchronization are user's responsibility.</p>
  *
+ * <p>This class is not needed on the JDK9 branch.</p>
+ *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.7
  * @since   0.7
@@ -54,11 +56,11 @@ public final class Providers extends LazySet<OperationMethod> {
                 for (int i=cached.size(); --i >= 0;) {
                     final OperationMethod m = cached.get(i);
                     if (m.getClass() == variant3D) {
-                        final GeodeticOperation candidate = ((GeodeticOperation) m).redimensioned[0];
-                        if (candidate != null) {            // Should not be null, but let be safe.
-                            assert candidate.getClass() == element.getClass() : variant3D;
-                            element = candidate;
-                            break;
+                        for (final GeodeticOperation candidate : ((GeodeticOperation) m).redimensioned) {
+                            if (candidate != null && candidate.getClass() == element.getClass()) {
+                                element = candidate;
+                                break;
+                            }
                         }
                     }
                 }

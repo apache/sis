@@ -16,6 +16,7 @@
  */
 package org.apache.sis.internal.netcdf;
 
+import java.util.Collection;
 import java.io.IOException;
 import java.awt.image.DataBuffer;
 import org.apache.sis.math.Vector;
@@ -154,6 +155,13 @@ public abstract class Variable extends NamedElement {
     public abstract int[] getGridEnvelope();
 
     /**
+     * Returns the names of all attributes associated to this variable.
+     *
+     * @return names of all attributes associated to this variable.
+     */
+    public abstract Collection<String> getAttributeNames();
+
+    /**
      * Returns the sequence of values for the given attribute, or an empty array if none.
      * The elements will be of class {@link String} if {@code numeric} is {@code false},
      * or {@link Number} if {@code numeric} is {@code true}.
@@ -166,6 +174,28 @@ public abstract class Variable extends NamedElement {
 
     /**
      * Reads all the data for this variable and returns them as an array of a Java primitive type.
+     * Multi-dimensional variables are flattened as a one-dimensional array (wrapped in a vector).
+     * Example:
+     *
+     * {@preformat text
+     *   DIMENSIONS:
+     *     time: 3
+     *     lat : 2
+     *     lon : 4
+     *
+     *   VARIABLES:
+     *     temperature (time,lat,lon)
+     *
+     *   DATA INDICES:
+     *     (0,0,0) (0,0,1) (0,0,2) (0,0,3)
+     *     (0,1,0) (0,1,1) (0,1,2) (0,1,3)
+     *     (1,0,0) (1,0,1) (1,0,2) (1,0,3)
+     *     (1,1,0) (1,1,1) (1,1,2) (1,1,3)
+     *     (2,0,0) (2,0,1) (2,0,2) (2,0,3)
+     *     (2,1,0) (2,1,1) (2,1,2) (2,1,3)
+     * }
+     *
+     * This method may cache the returned vector, at implementation choice.
      *
      * @return the data as an array of a Java primitive type.
      * @throws IOException if an error occurred while reading the data.
@@ -182,6 +212,9 @@ public abstract class Variable extends NamedElement {
      *   <li>For each index <var>i</var>, value of {@code area[i]} shall be in the range from 0 inclusive
      *       to {@code Integer.toUnsignedLong(getGridEnvelope()[i])} exclusive.</li>
      * </ul>
+     *
+     * If the variable has more than one dimension, then the data are packed in a one-dimensional vector
+     * in the same way than {@link #read()}.
      *
      * @param  areaLower    index of the first value to read along each dimension.
      * @param  areaUpper    index after the last value to read along each dimension.

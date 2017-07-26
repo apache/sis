@@ -30,6 +30,7 @@ import org.apache.sis.util.StringBuilders;
 import org.apache.sis.internal.metadata.sql.ScriptRunner;
 import org.apache.sis.internal.metadata.sql.SQLUtilities;
 import org.apache.sis.internal.system.DefaultFactories;
+import org.apache.sis.internal.util.StandardDateFormat;
 import org.apache.sis.internal.util.Fallback;
 import org.apache.sis.util.Exceptions;
 import org.apache.sis.util.resources.Messages;
@@ -42,7 +43,8 @@ import static org.apache.sis.internal.util.Constants.EPSG;
 /**
  * Runs the SQL scripts for creating an EPSG database.
  *
- * See {@code EPSGDataFormatter} in the test directory for more information about how the scripts are formatted.
+ * See {@code org.apache.sis.referencing.factory.sql.epsg.DataScriptFormatter}
+ * in the test directory for more information about how the scripts are formatted.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
@@ -248,7 +250,7 @@ final class EPSGInstaller extends ScriptRunner {
         time = System.nanoTime() - time;
         InstallationScriptProvider.log(Messages.getResources(locale).getLogRecord(
                 PerformanceLevel.forDuration(time, TimeUnit.NANOSECONDS),
-                Messages.Keys.InsertDuration_2, numRows, time / 1E9f));
+                Messages.Keys.InsertDuration_2, numRows, time / (float) StandardDateFormat.NANOS_PER_SECOND));
     }
 
     /**

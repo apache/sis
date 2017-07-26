@@ -27,11 +27,17 @@ import org.opengis.metadata.citation.Individual;
 import org.opengis.metadata.citation.Organisation;
 import org.opengis.metadata.citation.Party;
 import org.apache.sis.metadata.iso.ISOMetadata;
+import org.apache.sis.metadata.TitleProperty;
 import org.apache.sis.util.iso.Types;
 
 
 /**
  * Information about the individual and / or organization of the party.
+ * The following property is conditional (i.e. mandatory under some circumstances)
+ * in a well-formed metadata according ISO 19115:
+ *
+ * <div class="preformat">{@code CI_Party}
+ * {@code   └─name……} Name of the party.</div>
  *
  * <p><b>Limitations:</b></p>
  * <ul>
@@ -49,6 +55,7 @@ import org.apache.sis.util.iso.Types;
  * @module
  */
 @SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
+@TitleProperty(name = "name")
 @XmlType(name = "AbstractCI_Party_Type", propOrder = {
     "name",
     "contactInfo"

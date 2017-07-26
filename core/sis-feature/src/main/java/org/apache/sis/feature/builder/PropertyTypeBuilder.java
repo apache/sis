@@ -85,13 +85,12 @@ public abstract class PropertyTypeBuilder extends TypeBuilder {
     }
 
     /**
-     * Creates a new {@code PropertyType} builder initialized to the values of an existing property.
+     * Creates a new {@code PropertyType} builder.
      *
-     * @param owner     the builder of the {@code FeatureType} for which to add this property.
-     * @param template  an existing property to use as a template, or {@code null} if none.
+     * @param owner  the builder of the {@code FeatureType} for which to add this property.
      */
-    PropertyTypeBuilder(final FeatureTypeBuilder owner, final PropertyType template) {
-        super(template, owner.getLocale());
+    PropertyTypeBuilder(final FeatureTypeBuilder owner) {
+        super(owner.getLocale());
         this.owner    = owner;
         minimumOccurs = owner.defaultMinimumOccurs;
         maximumOccurs = owner.defaultMaximumOccurs;
@@ -186,12 +185,21 @@ public abstract class PropertyTypeBuilder extends TypeBuilder {
     }
 
     /**
-     * Delegates the creation of a new name to the enclosing builder.
+     * Creates a local name in the {@linkplain FeatureTypeBuilder#setNameSpace feature namespace}.
      */
     @Override
-    final GenericName name(final String scope, final String localPart) {
+    final GenericName createLocalName(final CharSequence name) {
         ensureAlive(owner);
-        return owner.name(scope, localPart);
+        return owner.createLocalName(name);
+    }
+
+    /**
+     * Creates a generic name in the {@linkplain FeatureTypeBuilder#setNameSpace feature namespace}.
+     */
+    @Override
+    final GenericName createGenericName(final CharSequence... names) {
+        ensureAlive(owner);
+        return owner.createGenericName(names);
     }
 
     /**

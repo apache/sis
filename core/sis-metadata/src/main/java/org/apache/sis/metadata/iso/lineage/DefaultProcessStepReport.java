@@ -22,11 +22,16 @@ import javax.xml.bind.annotation.XmlType;
 import org.opengis.metadata.lineage.ProcessStepReport;
 import org.opengis.util.InternationalString;
 import org.apache.sis.metadata.iso.ISOMetadata;
+import org.apache.sis.metadata.TitleProperty;
 import org.apache.sis.xml.Namespaces;
 
 
 /**
  * Report of what occurred during the process step.
+ * The following property is mandatory in a well-formed metadata according ISO 19115:
+ *
+ * <div class="preformat">{@code LE_ProcessStepReport}
+ * {@code   └─name………………………………} Name of the processing report.</div>
  *
  * <p><b>Limitations:</b></p>
  * <ul>
@@ -45,6 +50,7 @@ import org.apache.sis.xml.Namespaces;
  * @module
  */
 @SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
+@TitleProperty(name = "name")
 @XmlType(name = "LE_ProcessStepReport_Type", propOrder = {
     "name",
     "description",

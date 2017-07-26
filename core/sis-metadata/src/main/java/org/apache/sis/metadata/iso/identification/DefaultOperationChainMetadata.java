@@ -24,12 +24,22 @@ import org.opengis.metadata.identification.OperationChainMetadata;
 import org.opengis.metadata.identification.OperationMetadata;
 import org.opengis.util.InternationalString;
 import org.apache.sis.metadata.iso.ISOMetadata;
+import org.apache.sis.metadata.TitleProperty;
 import org.apache.sis.util.iso.Types;
 import org.apache.sis.xml.Namespaces;
 
 
 /**
  * Operation chain information.
+ * The following properties are mandatory in a well-formed metadata according ISO 19115:
+ *
+ * <div class="preformat">{@code SV_OperationChainMetadata}
+ * {@code   ├─name………………………………………………………………………………} The name as used by the service for this chain.
+ * {@code   └─operation…………………………………………………………………} Information about the operations applied by the chain.
+ * {@code       ├─operationName……………………………………………} A unique identifier for this interface.
+ * {@code       ├─distributedComputingPlatform……} Distributed computing platforms on which the operation has been implemented.
+ * {@code       └─connectPoint………………………………………………} Handle for accessing the service interface.
+ * {@code           └─linkage…………………………………………………} Location for on-line access using a URL address or similar addressing scheme.</div>
  *
  * <p><b>Limitations:</b></p>
  * <ul>
@@ -47,6 +57,7 @@ import org.apache.sis.xml.Namespaces;
  * @module
  */
 @SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
+@TitleProperty(name = "name")
 @XmlType(name = "SV_OperationChainMetadata_Type", namespace = Namespaces.SRV, propOrder = {
     "name",
     "description",

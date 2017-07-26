@@ -468,9 +468,15 @@ final class SystemUnit<Q extends Quantity<Q>> extends AbstractUnit<Q> implements
      * @return the unit after the specified transformation.
      */
     @Override
-    public Unit<Q> transform(final UnitConverter operation) {
+    @SuppressWarnings("unchecked")
+    public Unit<Q> transform(UnitConverter operation) {
         ArgumentChecks.ensureNonNull("operation", operation);
-        return ConventionalUnit.create(this, operation);
+        AbstractUnit<Q> base = this;
+        if (this == Units.KILOGRAM) {
+            base = (AbstractUnit<Q>) Units.GRAM;
+            operation = operation.concatenate(LinearConverter.forPrefix('k'));
+        }
+        return ConventionalUnit.create(base, operation);
     }
 
     /**
@@ -486,9 +492,10 @@ final class SystemUnit<Q extends Quantity<Q>> extends AbstractUnit<Q> implements
     }
 
     /**
-     * Returns units for the same quantity but with scale factors that are not the SI one.
+     * Returns units for the same quantity but with scale factors that are not the SI one, or {@code null} if none.
      * This method returns a direct reference to the internal field; caller shall not modify.
      */
+    @Override
     @SuppressWarnings("ReturnOfCollectionOrArrayField")
     final ConventionalUnit<Q>[] related() {
         return related;

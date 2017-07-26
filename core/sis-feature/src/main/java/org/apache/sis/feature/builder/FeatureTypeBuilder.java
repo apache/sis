@@ -25,14 +25,18 @@ import java.util.Map;
 import java.util.Locale;
 import java.util.Set;
 import java.util.Objects;
+import org.opengis.util.NameSpace;
 import org.opengis.util.GenericName;
 import org.opengis.util.NameFactory;
 import org.opengis.util.FactoryException;
+import org.opengis.metadata.acquisition.GeometryType;
+import org.apache.sis.setup.GeometryLibrary;
 import org.apache.sis.feature.AbstractOperation;
 import org.apache.sis.feature.DefaultFeatureType;
 import org.apache.sis.feature.FeatureOperations;
 import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.internal.feature.AttributeConvention;
+import org.apache.sis.internal.feature.Geometries;
 import org.apache.sis.internal.feature.Resources;
 import org.apache.sis.util.CorruptedObjectException;
 import org.apache.sis.util.resources.Errors;
@@ -52,8 +56,47 @@ import org.opengis.feature.Operation;
  * This builder can create the arguments to be given to the
  * {@linkplain DefaultFeatureType#DefaultFeatureType feature type constructor}
  * from simpler parameters given to this builder.
+ * The main methods provided in this class are:
  *
- * <p>{@code FeatureTypeBuilder} should be short lived.
+ * <ul>
+ *   <li>Various {@link #setName(CharSequence) setName(...)} methods for specifying the feature type name (mandatory).</li>
+ *   <li>Methods for optionally setting {@linkplain #setDesignation designation}, {@linkplain #setDefinition definition} or
+ *       {@linkplain #setDescription description} texts, or the {@linkplain #setDeprecated deprecation status}.</li>
+ *   <li>Methods for optionally specifying the feature type hierarchy: its {@linkplain #setSuperTypes super types}
+ *       and whether the feature type is {@linkplain #setAbstract abstract}.</li>
+ *   <li>Convenience methods for setting the {@linkplain #setNameSpace name space} and the
+ *       {@linkplain #setDefaultCardinality default cardinality} of properties to be added to the feature type.</li>
+ *   <li>Methods for {@linkplain #addAttribute(Class) adding an attribute}, {@linkplain #addAssociation(FeatureType)
+ *       an association} or {@linkplain #addProperty an operation}.</li>
+ *   <li>Method for listing the previously added {@linkplain #properties() properties}.</li>
+ *   <li>A {@link #build()} method for creating the {@code FeatureType} instance from all previous information.</li>
+ * </ul>
+ *
+ * The following example creates a city named "Utopia" by default:
+ *
+ * {@preformat java
+ *     FeatureTypeBuilder builder;
+ *
+ *     // Create a feature type for a city, which contains a name and a population.
+ *     builder = new FeatureTypeBuilder() .setName("City");
+ *     builder.addAttribute(String.class) .setName("name").setDefaultValue("Utopia");
+ *     builder.addAttribute(Integer.class).setName("population");
+ *     FeatureType city = builder.build();
+ * }
+ *
+ * A call to {@code System.out.println(city)} prints the following table:
+ *
+ * {@preformat text
+ *   City
+ *   ┌────────────┬─────────┬─────────────┬───────────────┐
+ *   │ Name       │ Type    │ Cardinality │ Default value │
+ *   ├────────────┼─────────┼─────────────┼───────────────┤
+ *   │ name       │ String  │     [1 … 1] │ Utopia        │
+ *   │ population │ Integer │     [1 … 1] │               │
+ *   └────────────┴─────────┴─────────────┴───────────────┘
+ * }
+ *
+ * <p>{@code FeatureTypeBuilder} instances should be short lived.
  * After the {@code FeatureType} has been created, the builder should be discarded.</p>
  *
  * @author  Johann Sorel (Geomatys)
@@ -90,12 +133,12 @@ public class FeatureTypeBuilder extends TypeBuilder {
     private boolean isAbstract;
 
     /**
-     * The default scope to use when {@link #name(String, String)} is invoked with a null scope.
+     * The namespace to use when a {@link #setName(CharSequence)} method is invoked.
      *
-     * @see #getDefaultScope()
-     * @see #setDefaultScope(String)
+     * @see #getNameSpace()
+     * @see #setNameSpace(CharSequence)
      */
-    private String defaultScope;
+    private NameSpace namespace;
 
     /**
      * The default minimum number of property values.
@@ -140,6 +183,11 @@ public class FeatureTypeBuilder extends TypeBuilder {
     AttributeTypeBuilder<?> defaultGeometry;
 
     /**
+     * Provides method for creating geometric objects using the library specified by the user.
+     */
+    private final Geometries<?> geometries;
+
+    /**
      * The object created by this builder, or {@code null} if not yet created.
      * This field must be cleared every time that a setter method is invoked on this builder.
      */
@@ -156,97 +204,153 @@ public class FeatureTypeBuilder extends TypeBuilder {
      * Creates a new builder instance using the given feature type as a template.
      *
      * @param template  an existing feature type to use as a template, or {@code null} if none.
+     *
+     * @see #setAll(FeatureType)
      */
     public FeatureTypeBuilder(final FeatureType template) {
-        this(template, null, null);
+        this(null, null, null);
+        if (template != null) {
+            initialize(template);
+        }
     }
 
     /**
-     * Creates a new builder instance using the given name factory, template and locale for formatting error messages.
+     * Creates a new builder instance using the given name factory, geometry library
+     * and locale for formatting error messages.
      *
-     * @param template  an existing feature type to use as a template, or {@code null} if none.
-     * @param factory   the factory to use for creating names, or {@code null} for the default factory.
-     * @param locale    the locale to use for formatting error messages, or {@code null} for the default locale.
+     * @param factory  the factory to use for creating names, or {@code null} for the default factory.
+     * @param library  the library to use for creating geometric objects, or {@code null} for the default.
+     * @param locale   the locale to use for formatting error messages, or {@code null} for the default locale.
      */
-    public FeatureTypeBuilder(final FeatureType template, NameFactory factory, final Locale locale) {
-        super(template, locale);
+    public FeatureTypeBuilder(NameFactory factory, final GeometryLibrary library, final Locale locale) {
+        super(locale);
         if (factory == null) {
             factory = DefaultFactories.forBuildin(NameFactory.class);
         }
-        nameFactory = factory;
-        properties  = new ArrayList<>();
-        superTypes  = new ArrayList<>();
-        idDelimiter = ":";
+        nameFactory          = factory;
+        geometries           = Geometries.implementation(library);
+        properties           = new ArrayList<>();
+        superTypes           = new ArrayList<>();
+        idDelimiter          = ":";
         defaultMinimumOccurs = 1;
         defaultMaximumOccurs = 1;
+    }
+
+    /**
+     * Clears all setting in this builder. After invoking this method, this {@code FeatureTypeBuilder}
+     * is in same state that after it has been constructed. This method can be invoked for reusing the
+     * same builder for creating other {@code FeatureType} instances after {@link #build()} invocation.
+     *
+     * @return {@code this} for allowing method calls chaining.
+     */
+    public FeatureTypeBuilder clear() {
+        reset();
+        properties.clear();
+        superTypes.clear();
+        isAbstract           = false;
+        namespace            = null;
+        defaultMinimumOccurs = 1;
+        defaultMaximumOccurs = 1;
+        idPrefix             = null;
+        idSuffix             = null;
+        idDelimiter          = ":";
+        identifierCount      = 0;
+        defaultGeometry      = null;
+        clearCache();
+        return this;
+    }
+
+    /**
+     * Sets all properties of this builder to the values of the given feature type.
+     * This builder is {@linkplain #clear() cleared} before the properties of the given type are copied.
+     *
+     * @param  template  an existing feature type to use as a template, or {@code null} if none.
+     * @return {@code this} for allowing method calls chaining.
+     *
+     * @see #FeatureTypeBuilder(FeatureType)
+     */
+    public FeatureTypeBuilder setAll(final FeatureType template) {
+        clear();
         if (template != null) {
-            feature    = template;
-            isAbstract = template.isAbstract();
-            superTypes.addAll(template.getSuperTypes());
-            /*
-             * For each attribute and association, wrap those properties in a builder.
-             * For each operation, wrap them in pseudo-builder only if the operation
-             * is not one of the operations automatically generated by this builder.
-             */
-            final Map<String,Set<AttributeRole>> propertyRoles = new HashMap<>();
-            for (final PropertyType property : template.getProperties(false)) {
-                PropertyTypeBuilder builder;
-                if (property instanceof AttributeType<?>) {
-                    builder = new AttributeTypeBuilder<>(this, (AttributeType<?>) property);
-                } else if (property instanceof FeatureAssociationRole) {
-                    builder = new AssociationRoleBuilder(this, (FeatureAssociationRole) property);
-                } else {
-                    builder = null;                             // Do not create OperationWrapper now - see below.
-                }
-                /*
-                 * If the property name is one of our (Apache SIS specific) conventional names, try to reconstitute
-                 * the attribute roles that caused FeatureTypeBuilder to produce such property. Those roles usually
-                 * need to be applied on the source properties used for calculating the current property. There is
-                 * usually at most one role for each source property, but we nevertheless allow an arbitrary amount.
-                 */
-                final AttributeRole role;
-                final GenericName name = property.getName();
-                if (AttributeConvention.IDENTIFIER_PROPERTY.equals(name)) {
-                    role = AttributeRole.IDENTIFIER_COMPONENT;
-                } else if (AttributeConvention.GEOMETRY_PROPERTY.equals(name)) {
-                    role = AttributeRole.DEFAULT_GEOMETRY;
-                } else if (AttributeConvention.ENVELOPE_PROPERTY.equals(name)) {
-                    // If "sis:envelope" is an operation, skip it completely.
-                    // It will be recreated if a default geometry exists.
-                    role = null;
-                } else {
-                    if (builder == null) {
-                        // For all unknown operation, wrap as-is.
-                        builder = new OperationWrapper(this, property);
-                    }
-                    role = null;
-                }
-                if (role != null) {
-                    final Set<AttributeRole> rc = Collections.singleton(role);
-                    if (property instanceof AbstractOperation) {
-                        for (final String dependency : ((AbstractOperation) property).getDependencies()) {
-                            propertyRoles.merge(dependency, rc, AttributeRole::merge);
-                        }
-                    } else {
-                        propertyRoles.merge(name.toString(), rc, AttributeRole::merge);
-                    }
-                }
-                if (builder != null) {
-                    properties.add(builder);
-                }
+            initialize(template);
+        }
+        return this;
+    }
+
+    /**
+     * Initializes this builder to the value of the given type.
+     * The caller is responsible to invoke {@link #clear()} (if needed) before this method.
+     *
+     * @see #setAll(FeatureType)
+     */
+    private void initialize(final FeatureType template) {
+        super.initialize(template);
+        feature    = template;
+        isAbstract = template.isAbstract();
+        superTypes.addAll(template.getSuperTypes());
+        /*
+         * For each attribute and association, wrap those properties in a builder.
+         * For each operation, wrap them in pseudo-builder only if the operation
+         * is not one of the operations automatically generated by this builder.
+         */
+        final Map<String,Set<AttributeRole>> propertyRoles = new HashMap<>();
+        for (final PropertyType property : template.getProperties(false)) {
+            PropertyTypeBuilder builder;
+            if (property instanceof AttributeType<?>) {
+                builder = new AttributeTypeBuilder<>(this, (AttributeType<?>) property);
+            } else if (property instanceof FeatureAssociationRole) {
+                builder = new AssociationRoleBuilder(this, (FeatureAssociationRole) property);
+            } else {
+                builder = null;                             // Do not create OperationWrapper now - see below.
             }
             /*
-             * At this point we finished to collect information about the attribute roles.
-             * Now assign those roles to the attribute builders. Note that some roles may
-             * be ignored if we didn't found a suitable builder. The roles inference done
-             * in this constructor is only a "best effort".
+             * If the property name is one of our (Apache SIS specific) conventional names, try to reconstitute
+             * the attribute roles that caused FeatureTypeBuilder to produce such property. Those roles usually
+             * need to be applied on the source properties used for calculating the current property. There is
+             * usually at most one role for each source property, but we nevertheless allow an arbitrary amount.
              */
-            if (!propertyRoles.isEmpty()) {
-                for (final Map.Entry<String,Set<AttributeRole>> entry : propertyRoles.entrySet()) {
-                    final PropertyTypeBuilder property = forName(properties, entry.getKey());
-                    if (property instanceof AttributeTypeBuilder<?>) {
-                        ((AttributeTypeBuilder<?>) property).roles().addAll(entry.getValue());
+            final AttributeRole role;
+            final GenericName name = property.getName();
+            if (AttributeConvention.IDENTIFIER_PROPERTY.equals(name)) {
+                role = AttributeRole.IDENTIFIER_COMPONENT;
+            } else if (AttributeConvention.GEOMETRY_PROPERTY.equals(name)) {
+                role = AttributeRole.DEFAULT_GEOMETRY;
+            } else if (AttributeConvention.ENVELOPE_PROPERTY.equals(name)) {
+                // If "sis:envelope" is an operation, skip it completely.
+                // It will be recreated if a default geometry exists.
+                role = null;
+            } else {
+                if (builder == null) {
+                    // For all unknown operation, wrap as-is.
+                    builder = new OperationWrapper(this, property);
+                }
+                role = null;
+            }
+            if (role != null) {
+                final Set<AttributeRole> rc = Collections.singleton(role);
+                if (property instanceof AbstractOperation) {
+                    for (final String dependency : ((AbstractOperation) property).getDependencies()) {
+                        propertyRoles.merge(dependency, rc, AttributeRole::merge);
                     }
+                } else {
+                    propertyRoles.merge(name.toString(), rc, AttributeRole::merge);
+                }
+            }
+            if (builder != null) {
+                properties.add(builder);
+            }
+        }
+        /*
+         * At this point we finished to collect information about the attribute roles.
+         * Now assign those roles to the attribute builders. Note that some roles may
+         * be ignored if we didn't found a suitable builder. The roles inference done
+         * in this constructor is only a "best effort".
+         */
+        if (!propertyRoles.isEmpty()) {
+            for (final Map.Entry<String,Set<AttributeRole>> entry : propertyRoles.entrySet()) {
+                final PropertyTypeBuilder property = forName(properties, entry.getKey());
+                if (property instanceof AttributeTypeBuilder<?>) {
+                    ((AttributeTypeBuilder<?>) property).roles().addAll(entry.getValue());
                 }
             }
         }
@@ -255,6 +359,8 @@ public class FeatureTypeBuilder extends TypeBuilder {
     /**
      * If the {@code FeatureType} created by the last call to {@link #build()} has been cached,
      * clears that cache. This method must be invoked every time that a setter method is invoked.
+     *
+     * @see #clear()
      */
     @Override
     final void clearCache() {
@@ -318,6 +424,51 @@ public class FeatureTypeBuilder extends TypeBuilder {
     }
 
     /**
+     * Returns the namespace of the names created by {@code setName(CharSequence...)} method calls.
+     * A {@code null} value means that the names are in the
+     * {@linkplain org.apache.sis.util.iso.DefaultNameSpace#isGlobal() global namespace}.
+     *
+     * @return the namespace to use when {@link #setName(CharSequence)} is invoked, or {@code null} if none.
+     */
+    public CharSequence getNameSpace() {
+        return (namespace != null) ? namespace.name().toString() : null;
+    }
+
+    /**
+     * Sets the namespace of the next names to be created by {@code setName(CharSequence...)} method calls.
+     * This method applies only to the next calls to {@link #setName(CharSequence)} or
+     * {@link #setName(CharSequence...)} methods; the result of all previous calls stay unmodified.
+     * Example:
+     *
+     * {@preformat java
+     *     FeatureTypeBuilder builder = new FeatureTypeBuilder().setNameSpace("MyNameSpace").setName("City");
+     *     FeatureType city = builder.build();
+     *
+     *     System.out.println(city.getName());                              // Prints "City"
+     *     System.out.println(city.getName().toFullyQualifiedName());       // Prints "MyNameSpace:City"
+     * }
+     *
+     * There is different conventions about the use of name spaces. ISO 19109 suggests that the namespace of all
+     * {@code AttributeType} names is the name of the enclosing {@code FeatureType}, but this is not mandatory.
+     * Users who want to apply this convention can invoke {@code setNameSpace(featureName)} after
+     * <code>{@linkplain #setName(CharSequence) FeatureTypeBuilder.setName}(featureName)</code> but before
+     * <code>{@linkplain AttributeTypeBuilder#setName(CharSequence) AttributeTypeBuilder.setName}(attributeName)</code>.
+     *
+     * @param  ns  the new namespace, or {@code null} if none.
+     * @return {@code this} for allowing method calls chaining.
+     */
+    public FeatureTypeBuilder setNameSpace(final CharSequence ns) {
+        if (ns != null && ns.length() != 0) {
+            namespace = nameFactory.createNameSpace(nameFactory.createLocalName(null, ns), null);
+        } else {
+            namespace = null;
+        }
+        // No need to clear the cache because this change affects
+        // only the next names to be created, not the existing ones.
+        return this;
+    }
+
+    /**
      * Sets the {@code FeatureType} name as a generic name.
      * If another name was defined before this method call, that previous value will be discarded.
      *
@@ -334,83 +485,58 @@ public class FeatureTypeBuilder extends TypeBuilder {
     }
 
     /**
-     * Sets the {@code FeatureType} name as a simple string with the default scope.
-     * The default scope is the value specified by the last call to {@link #setDefaultScope(String)}.
-     * The name will be a {@linkplain org.apache.sis.util.iso.DefaultLocalName local name} if no default scope
-     * has been specified, or a {@linkplain org.apache.sis.util.iso.DefaultScopedName scoped name} otherwise.
+     * Sets the {@code FeatureType} name as a simple string.
+     * The namespace will be the value specified by the last call to {@link #setNameSpace(CharSequence)},
+     * but that namespace will not be visible in the {@linkplain org.apache.sis.util.iso.DefaultLocalName#toString()
+     * string representation} unless the {@linkplain org.apache.sis.util.iso.DefaultLocalName#toFullyQualifiedName()
+     * fully qualified name} is requested.
      *
-     * <p>This convenience method creates a {@link GenericName} instance,
-     * then delegates to {@link #setName(GenericName)}.</p>
+     * <p>This convenience method creates a {@link org.opengis.util.LocalName} instance from
+     * the given {@code CharSequence}, then delegates to {@link #setName(GenericName)}.</p>
      *
      * @return {@code this} for allowing method calls chaining.
      */
     @Override
-    public FeatureTypeBuilder setName(final String localPart) {
+    public FeatureTypeBuilder setName(final CharSequence localPart) {
         super.setName(localPart);
         return this;
     }
 
     /**
      * Sets the {@code FeatureType} name as a string in the given scope.
-     * The name will be a {@linkplain org.apache.sis.util.iso.DefaultLocalName local name} if the given scope is
-     * {@code null} or empty, or a {@linkplain org.apache.sis.util.iso.DefaultScopedName scoped name} otherwise.
-     * If a {@linkplain #setDefaultScope(String) default scope} has been specified, then the
-     * {@code scope} argument overrides it.
+     * The {@code components} array must contain at least one element.
+     * In addition to the path specified by the {@code components} array, the name may also contain
+     * a namespace specified by the last call to {@link #setNameSpace(CharSequence)}.
+     * But contrarily to the specified components, the namespace will not be visible in the name
+     * {@linkplain org.apache.sis.util.iso.DefaultScopedName#toString() string representation} unless the
+     * {@linkplain org.apache.sis.util.iso.DefaultScopedName#toFullyQualifiedName() fully qualified name} is requested.
      *
-     * <p>This convenience method creates a {@link GenericName} instance,
-     * then delegates to {@link #setName(GenericName)}.</p>
+     * <p>This convenience method creates a {@link org.opengis.util.LocalName} or {@link org.opengis.util.ScopedName}
+     * instance depending on whether the {@code names} array contains exactly 1 element or more than 1 element, then
+     * delegates to {@link #setName(GenericName)}.</p>
      *
      * @return {@code this} for allowing method calls chaining.
      */
     @Override
-    public FeatureTypeBuilder setName(final String scope, final String localPart) {
-        super.setName(scope, localPart);
+    public FeatureTypeBuilder setName(final CharSequence... components) {
+        super.setName(components);
         return this;
     }
 
     /**
-     * Invoked by {@link TypeBuilder} for creating new {@code LocalName} or {@code GenericName} instances.
+     * Creates a local name in the {@linkplain #setNameSpace feature namespace}.
      */
     @Override
-    final GenericName name(String scope, final String localPart) {
-        if (scope == null) {
-            scope = getDefaultScope();
-        }
-        if (scope == null || scope.isEmpty()) {
-            return nameFactory.createLocalName(null, localPart);
-        } else {
-            return nameFactory.createGenericName(null, scope, localPart);
-        }
+    final GenericName createLocalName(final CharSequence name) {
+        return nameFactory.createLocalName(namespace, name);
     }
 
     /**
-     * Returns the scope of the names created by {@code setName(String)} method calls.
-     *
-     * @return the scope to use by default when {@link #setName(String)} is invoked.
+     * Creates a generic name in the {@linkplain #setNameSpace feature namespace}.
      */
-    public String getDefaultScope() {
-        return defaultScope;
-    }
-
-    /**
-     * Sets the scope of the next names created by {@code setName(String)} method calls.
-     * This method applies only to the next calls to {@code setName(String)};
-     * the result of all previous calls stay unmodified.
-     *
-     * <p>There is different conventions about the use of name scopes. ISO 19109 suggests that the scope of all
-     * {@code AttributeType} names is the name of the enclosing {@code FeatureType}, but this is not mandatory.
-     * Users who want to apply this convention can invoke {@code setDefaultScope(featureName)} after
-     * <code>{@linkplain #setName(String) FeatureTypeBuilder.setName}(featureName)</code> but before
-     * <code>{@linkplain AttributeTypeBuilder#setName(String) AttributeTypeBuilder.setName}(attributeName)</code>.</p>
-     *
-     * @param  scope  the new default scope, or {@code null} if none.
-     * @return {@code this} for allowing method calls chaining.
-     */
-    public FeatureTypeBuilder setDefaultScope(final String scope) {
-        defaultScope = scope;
-        // No need to clear the cache because this change affects
-        // only the next names to be created, not the existing ones.
-        return this;
+    @Override
+    final GenericName createGenericName(final CharSequence... names) {
+        return nameFactory.createGenericName(namespace, names);
     }
 
     /**
@@ -551,6 +677,56 @@ public class FeatureTypeBuilder extends TypeBuilder {
     }
 
     /**
+     * Creates a new attribute for geometries of the given type. This method delegates to {@link #addAttribute(Class)}
+     * with a {@code valueClass} argument inferred from the combination of the {@link GeometryType} argument given to
+     * this method with the {@link GeometryLibrary} argument given at {@linkplain #FeatureTypeBuilder(NameFactory,
+     * GeometryLibrary, Locale) builder creation time}.
+     * The geometry type can be:
+     *
+     * <ul>
+     *   <li>{@link GeometryType#POINT}  for {@code Point} or {@code Point2D} type.</li>
+     *   <li>{@link GeometryType#LINEAR} for {@code Polyline} or {@code LineString} type.</li>
+     *   <li>{@link GeometryType#AREAL}  for {@code Polygon} type.</li>
+     * </ul>
+     *
+     * Geometric objects outside the above list can still be used by declaring their type explicitely.
+     * However in this case there is no isolation level between the geometry types and the library that implement them.
+     *
+     * <div class="note"><b>Example:</b>
+     * the following code creates an attribute named "MyPoint" with values of class
+     * {@link java.awt.geom.Point2D} if the library in use is {@linkplain GeometryLibrary#JAVA2D Java2D}.
+     * The Coordinate Reference System (CRS) uses (<var>longitude</var>, <var>latitude</var>) axes on the WGS 84 datum.
+     * Finally that new attribute is declared the feature <em>default</em> geometry:
+     *
+     * {@preformat java
+     *   builder.addAttribute(GeometryType.POINT).setName("MyPoint")
+     *          .setCRS(CommonCRS.WGS84.normalizedGeographic())
+     *          .addRole(AttributeRole.DEFAULT_GEOMETRY);
+     * }
+     *
+     * If the library in use is JTS or ESRI instead than Java2D,
+     * then the {@code Point} class of those libraries will be used instead of {@code Point2D}.
+     * The fully-qualified class names are given in the {@link GeometryLibrary} javadoc.</div>
+     *
+     * @param  type  kind of geometric object (point, polyline or polygon).
+     * @return a builder for an {@code AttributeType}.
+     */
+    public AttributeTypeBuilder<?> addAttribute(final GeometryType type) {
+        ensureNonNull("type", type);
+        final Class<?> c;
+        if (type.equals(GeometryType.POINT)) {
+            c = geometries.pointClass;
+        } else if (type.equals(GeometryType.LINEAR)) {
+            c = geometries.polylineClass;
+        } else if (type.equals(GeometryType.AREAL)) {
+            c = geometries.polygonClass;
+        } else {
+            throw new IllegalArgumentException(errors().getString(Errors.Keys.UnsupportedArgumentValue_1, type));
+        }
+        return addAttribute(c);
+    }
+
+    /**
      * Creates a new {@code FeatureAssociationRole} builder for features of the given type.
      * The default association name is the name of the given type, but callers should invoke one
      * of the {@code AssociationRoleBuilder.setName(…)} methods on the returned instance with a better name.
@@ -680,6 +856,8 @@ public class FeatureTypeBuilder extends TypeBuilder {
      *
      * @return the feature type.
      * @throws IllegalStateException if the builder contains inconsistent information.
+     *
+     * @see #clear()
      */
     @Override
     public FeatureType build() throws IllegalStateException {

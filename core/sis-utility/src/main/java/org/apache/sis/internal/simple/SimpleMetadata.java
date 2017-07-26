@@ -386,7 +386,7 @@ public class SimpleMetadata implements Metadata, MetadataScope, DataIdentificati
     }
 
     /**
-     * Restrictions on the access and use of data.
+     * Restrictions on the access and use of metadata.
      */
     @Override
     public Collection<Constraints> getMetadataConstraints() {

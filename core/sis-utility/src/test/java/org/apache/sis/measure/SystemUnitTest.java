@@ -53,7 +53,7 @@ public final strictfp class SystemUnitTest extends TestCase {
      *
      * @throws ReflectiveOperationException if an error occurred while iterating over the field values.
      *
-     * @see ConventionalUnit#create(SystemUnit, UnitConverter)
+     * @see ConventionalUnit#create(AbstractUnit, UnitConverter)
      */
     @Test
     public void verifyRelatedUnits() throws ReflectiveOperationException {

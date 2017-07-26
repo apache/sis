@@ -21,7 +21,6 @@ import org.opengis.util.FactoryException;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
-import org.opengis.referencing.operation.Conversion;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
 import org.apache.sis.referencing.operation.matrix.Matrices;
@@ -41,12 +40,15 @@ import org.apache.sis.parameter.Parameters;
  * format the inverse ({@code "INVERSE_MT"}) of 3D to 2D transform.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.7
- * @since   0.7
+ * @version 0.8
+ *
+ * @see Geographic3Dto2D
+ *
+ * @since 0.7
  * @module
  */
 @XmlTransient
-public final class Geographic2Dto3D extends AbstractProvider {
+public final class Geographic2Dto3D extends GeographicRedimension {
     /**
      * Serial number for inter-operability with different versions.
      */
@@ -71,17 +73,24 @@ public final class Geographic2Dto3D extends AbstractProvider {
      * Constructs a provider with default parameters.
      */
     public Geographic2Dto3D() {
-        super(2, 3, PARAMETERS);
+        this(null);
     }
 
     /**
-     * Returns the operation type.
-     *
-     * @return interface implemented by all coordinate operations that use this method.
+     * Constructs a provider that can be resized.
+     */
+    Geographic2Dto3D(GeodeticOperation[] redimensioned) {
+        super(2, 3, PARAMETERS, redimensioned);
+    }
+
+    /**
+     * Returns the tree-dimensional variant of this class.
+     * Used for having a unique instance of this provider.
+     * This hack is not needed on the JDK9 branch.
      */
     @Override
-    public Class<Conversion> getOperationType() {
-        return Conversion.class;
+    Class<Geographic3Dto2D> variant3D() {
+        return Geographic3Dto2D.class;
     }
 
     /**

@@ -41,6 +41,7 @@ import java.time.temporal.TemporalAccessor;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
 import java.time.format.DateTimeParseException;
+import java.time.format.SignStyle;
 
 
 /**
@@ -88,7 +89,7 @@ public final class StandardDateFormat extends DateFormat {
      */
     public static final DateTimeFormatter FORMAT = new DateTimeFormatterBuilder()
             // parseLenient() is for allowing fields with one digit instead of two.
-            .parseLenient()                    .appendValue(ChronoField.YEAR,             4)    // Proleptic year (use negative number if needed).
+            .parseLenient()                    .appendValue(ChronoField.YEAR, 4, 5, SignStyle.NORMAL)    // Proleptic year (use negative number if needed).
             .optionalStart().appendLiteral('-').appendValue(ChronoField.MONTH_OF_YEAR,    2)
             .optionalStart().appendLiteral('-').appendValue(ChronoField.DAY_OF_MONTH,     2)
             .optionalStart().appendLiteral('T').appendValue(ChronoField.HOUR_OF_DAY,      2)
@@ -129,6 +130,16 @@ public final class StandardDateFormat extends DateFormat {
      * The length of a day in number of milliseconds.
      */
     public static final int MILLISECONDS_PER_DAY = 24*60*60*1000;
+
+    /**
+     * Number of nanoseconds in one millisecond.
+     */
+    public static final long NANOS_PER_MILLISECOND = 1000000;
+
+    /**
+     * Number of nanoseconds in one second.
+     */
+    public static final long NANOS_PER_SECOND = 1000000000;
 
     /**
      * Converts the given legacy {@code Date} object into a {@code java.time} implementation in given timezone.

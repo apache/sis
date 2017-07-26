@@ -24,11 +24,18 @@ import org.opengis.util.Record;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.content.RangeElementDescription;
 import org.apache.sis.metadata.iso.ISOMetadata;
+import org.apache.sis.metadata.TitleProperty;
 import org.apache.sis.xml.Namespaces;
 
 
 /**
  * Description of specific range elements.
+ * The following properties are mandatory in a well-formed metadata according ISO 19115:
+ *
+ * <div class="preformat">{@code MI_RangeElementDescription}
+ * {@code   ├─name………………………………………………} Designation associated with a set of range elements.
+ * {@code   ├─definition………………………………} Description of a set of specific range elements.
+ * {@code   └─rangeElement…………………………} Specific range elements, i.e. range elements associated with a name and their definition.</div>
  *
  * <p><b>Limitations:</b></p>
  * <ul>
@@ -46,6 +53,7 @@ import org.apache.sis.xml.Namespaces;
  * @module
  */
 @SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
+@TitleProperty(name = "name")
 @XmlType(name = "MI_RangeElementDescription_Type", propOrder = {
     "name",
     "definition"/*,

@@ -19,6 +19,7 @@ package org.apache.sis.internal.storage.gpx;
 import java.util.Arrays;
 import java.net.URI;
 import java.net.URISyntaxException;
+import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
@@ -36,6 +37,7 @@ import static org.apache.sis.test.TestUtilities.date;
  * @since   0.8
  * @module
  */
+@DependsOn(TypesTest.class)
 public final strictfp class MetadataTest extends TestCase {
     /**
      * Tests the {@link Metadata#equals(Object)} and {@link Metadata#hashCode()}.

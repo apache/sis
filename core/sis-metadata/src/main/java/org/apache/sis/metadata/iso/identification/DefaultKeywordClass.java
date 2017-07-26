@@ -24,12 +24,20 @@ import org.opengis.util.InternationalString;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.identification.KeywordClass;
 import org.apache.sis.metadata.iso.ISOMetadata;
+import org.apache.sis.metadata.TitleProperty;
 import org.apache.sis.util.iso.Types;
 
 
 /**
  * Specification of a class to categorize keywords in a domain-specific vocabulary
  * that has a binding to a formal ontology.
+ * The following properties are mandatory in a well-formed metadata according ISO 19115:
+ *
+ * <div class="preformat">{@code MD_KeywordClass}
+ * {@code   ├─className………………………} Character string to label the keyword category in natural language.
+ * {@code   └─ontology…………………………} Reference that binds the keyword class to a formal conceptualization of a knowledge domain.
+ * {@code       ├─title………………………} Name by which the cited resource is known.
+ * {@code       └─date…………………………} Reference date for the cited resource.</div>
  *
  * <p><b>Limitations:</b></p>
  * <ul>
@@ -46,6 +54,7 @@ import org.apache.sis.util.iso.Types;
  * @module
  */
 @SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
+@TitleProperty(name = "className")
 @XmlType(name = "MD_KeywordClass_Type", propOrder = {
     "className",
     "conceptIdentifier",

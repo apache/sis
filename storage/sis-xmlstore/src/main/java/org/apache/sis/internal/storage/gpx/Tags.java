@@ -33,17 +33,22 @@ final class Tags extends Static {
     /**
      * GPX scope name used for feature type names.
      */
-    static final String NAMESPACE = "http://www.topografix.com";
+    static final String PREFIX = "gpx";
+
+    /**
+     * GPX XML namespace (common root to all versions).
+     */
+    static final String NAMESPACE = "http://www.topografix.com/GPX/";
 
     /**
      * GPX 1.0 XML namespace (v1.0).
      */
-    static final String NAMESPACE_V10 = "http://www.topografix.com/GPX/1/0";
+    static final String NAMESPACE_V10 = NAMESPACE + "1/0";
 
     /**
      * GPX 1.1 XML namespace (v1.1).
      */
-    static final String NAMESPACE_V11 = "http://www.topografix.com/GPX/1/1";
+    static final String NAMESPACE_V11 = NAMESPACE + "1/1";
 
     /** Main GPX XML tags.              */  static final String GPX             = "gpx";
     /** A tag used a bit everywhere.    */  static final String NAME            = "name";

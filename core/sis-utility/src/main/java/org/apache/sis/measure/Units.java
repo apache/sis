@@ -33,6 +33,11 @@ import org.apache.sis.internal.util.Constants;
 
 import static java.lang.Math.PI;
 import static java.lang.Math.abs;
+import static org.apache.sis.measure.UnitRegistry.SI;
+import static org.apache.sis.measure.UnitRegistry.ACCEPTED;
+import static org.apache.sis.measure.UnitRegistry.IMPERIAL;
+import static org.apache.sis.measure.UnitRegistry.OTHER;
+import static org.apache.sis.measure.UnitRegistry.PREFIXABLE;
 import static org.apache.sis.measure.SexagesimalConverter.EPS;
 
 
@@ -324,6 +329,14 @@ public final class Units extends Static {
     public static final Unit<Volume> CUBIC_METRE;
 
     /**
+     * The unit for litre volume (L, l or ℓ).
+     * The unlocalized name is “litre”.
+     *
+     * @since 0.8
+     */
+    public static final Unit<Volume> LITRE;
+
+    /**
      * The SI unit for solid angles (sr).
      * The unlocalized name is “steradian”.
      *
@@ -584,7 +597,7 @@ public final class Units extends Static {
     public static final Unit<Speed> METRES_PER_SECOND;
 
     /**
-     * Unit of measurement defined as 60/1000 metres per second (1 km/h).
+     * Unit of measurement defined as 1/3.6 metres per second (1 km/h).
      * The {@linkplain ConventionalUnit#getSystemUnit() system unit} is {@link #METRES_PER_SECOND}
      * and the unlocalized name is “kilometres per hour”.
      *
@@ -942,6 +955,14 @@ public final class Units extends Static {
     public static final Unit<Illuminance> LUX;
 
     /**
+     * A SI conventional unit for mass (g).
+     * The unlocalized name is “gram”.
+     *
+     * @since 0.8
+     */
+    public static final Unit<Mass> GRAM;
+
+    /**
      * The SI base unit for mass (kg).
      * The unlocalized name is “kilogram”.
      *
@@ -1061,14 +1082,16 @@ public final class Units extends Static {
         /*
          * Base, derived or alternate units that we need to reuse more than once in this static initializer.
          */
-        final SystemUnit<Length>        m   = add(Length.class,        Scalar.Length::new,        length,        "m",   UnitRegistry.SI, Constants.EPSG_METRE);
-        final SystemUnit<Area>          m2  = add(Area.class,          Scalar.Area::new,          area,          "m²",  UnitRegistry.SI, (short) 0);
-        final SystemUnit<Time>          s   = add(Time.class,          Scalar.Time::new,          time,          "s",   UnitRegistry.SI, (short) 1040);
-        final SystemUnit<Temperature>   K   = add(Temperature.class,   Scalar.Temperature::new,   temperature,   "K",   UnitRegistry.SI, (short) 0);
-        final SystemUnit<Speed>         mps = add(Speed.class,         Scalar.Speed::new,         speed,         "m∕s", UnitRegistry.SI, (short) 1026);
-        final SystemUnit<Pressure>      Pa  = add(Pressure.class,      Scalar.Pressure::new,      pressure,      "Pa",  UnitRegistry.SI, (short) 0);
-        final SystemUnit<Angle>         rad = add(Angle.class,         Scalar.Angle::new,         dimensionless, "rad", UnitRegistry.SI, (short) 9101);
-        final SystemUnit<Dimensionless> one = add(Dimensionless.class, Scalar.Dimensionless::new, dimensionless, "",    UnitRegistry.SI, (short) 9201);
+        final SystemUnit<Length>        m   = add(Length.class,        Scalar.Length::new,        length,        "m",   (byte) (SI | PREFIXABLE), Constants.EPSG_METRE);
+        final SystemUnit<Area>          m2  = add(Area.class,          Scalar.Area::new,          area,          "m²",  (byte) (SI | PREFIXABLE), (short) 0);
+        final SystemUnit<Volume>        m3  = add(Volume.class,        Scalar.Volume::new,        length.pow(3), "m³",  (byte) (SI | PREFIXABLE), (short) 0);
+        final SystemUnit<Time>          s   = add(Time.class,          Scalar.Time::new,          time,          "s",   (byte) (SI | PREFIXABLE), (short) 1040);
+        final SystemUnit<Temperature>   K   = add(Temperature.class,   Scalar.Temperature::new,   temperature,   "K",   (byte) (SI | PREFIXABLE), (short) 0);
+        final SystemUnit<Speed>         mps = add(Speed.class,         Scalar.Speed::new,         speed,         "m∕s", (byte) (SI | PREFIXABLE), (short) 1026);
+        final SystemUnit<Pressure>      Pa  = add(Pressure.class,      Scalar.Pressure::new,      pressure,      "Pa",  (byte) (SI | PREFIXABLE), (short) 0);
+        final SystemUnit<Angle>         rad = add(Angle.class,         Scalar.Angle::new,         dimensionless, "rad", (byte) (SI | PREFIXABLE), (short) 9101);
+        final SystemUnit<Dimensionless> one = add(Dimensionless.class, Scalar.Dimensionless::new, dimensionless, "",            SI,               (short) 9201);
+        final SystemUnit<Mass>          kg  = add(Mass.class,          Scalar.Mass::new,          mass,          "kg",          SI,               (short) 0);
         /*
          * All SI prefix to be used below, with additional converters to be used more than once.
          */
@@ -1087,96 +1110,100 @@ public final class Units extends Static {
          */
         rad.related(4);
         RADIAN      = rad;
-        GRAD        = add(rad, LinearConverter.scale(Math.PI / 20, 200       / 20), "grad", UnitRegistry.OTHER,    (short) 9105);
-        DEGREE      = add(rad, LinearConverter.scale(Math.PI / 20, 180       / 20), "°",    UnitRegistry.ACCEPTED, Constants.EPSG_PARAM_DEGREES);
-        ARC_MINUTE  = add(rad, LinearConverter.scale(Math.PI / 20, 180*60    / 20), "′",    UnitRegistry.ACCEPTED, (short) 9103);
-        ARC_SECOND  = add(rad, LinearConverter.scale(Math.PI / 20, 180*60*60 / 20), "″",    UnitRegistry.ACCEPTED, (short) 9104);
-        MICRORADIAN = add(rad, micro,                                               "µrad", UnitRegistry.SI,       (short) 9109);
+        GRAD        = add(rad, LinearConverter.scale(Math.PI / 20, 200       / 20), "grad", OTHER,    (short) 9105);
+        DEGREE      = add(rad, LinearConverter.scale(Math.PI / 20, 180       / 20), "°",    ACCEPTED, Constants.EPSG_PARAM_DEGREES);
+        ARC_MINUTE  = add(rad, LinearConverter.scale(Math.PI / 20, 180*60    / 20), "′",    ACCEPTED, (short) 9103);
+        ARC_SECOND  = add(rad, LinearConverter.scale(Math.PI / 20, 180*60*60 / 20), "″",    ACCEPTED, (short) 9104);
+        MICRORADIAN = add(rad, micro,                                               "µrad", SI,       (short) 9109);
         /*
          * All Unit<Length>.
          */
         m.related(7);
         METRE          = m;
-        NANOMETRE      = add(m, nano,                                     "nm",    UnitRegistry.SI,       (short) 0);
-        MILLIMETRE     = add(m, milli,                                    "mm",    UnitRegistry.SI,       (short) 1025);
-        CENTIMETRE     = add(m, centi,                                    "cm",    UnitRegistry.SI,       (short) 1033);
-        KILOMETRE      = add(m, kilo,                                     "km",    UnitRegistry.SI,       (short) 9036);
-        NAUTICAL_MILE  = add(m, LinearConverter.scale(   1852,        1), "M",     UnitRegistry.OTHER,    (short) 9030);
-        STATUTE_MILE   = add(m, LinearConverter.scale(1609344,      100), "mi",    UnitRegistry.IMPERIAL, (short) 9093);
-        US_SURVEY_FOOT = add(m, LinearConverter.scale(   1200,     3937), "ftUS",  UnitRegistry.OTHER,    (short) 9003);
-        CLARKE_FOOT    = add(m, LinearConverter.scale(3047972654d, 1E10), "ftCla", UnitRegistry.OTHER,    (short) 9005);
-        FOOT           = add(m, LinearConverter.scale(   3048,    10000), "ft",    UnitRegistry.IMPERIAL, (short) 9002);
-        INCH           = add(m, LinearConverter.scale(    254,    10000), "in",    UnitRegistry.IMPERIAL, (short) 0);
-        POINT          = add(m, LinearConverter.scale( 996264, 72000000), "pt",    UnitRegistry.OTHER,    (short) 0);
+        NANOMETRE      = add(m, nano,                                     "nm",    SI,       (short) 0);
+        MILLIMETRE     = add(m, milli,                                    "mm",    SI,       (short) 1025);
+        CENTIMETRE     = add(m, centi,                                    "cm",    SI,       (short) 1033);
+        KILOMETRE      = add(m, kilo,                                     "km",    SI,       (short) 9036);
+        NAUTICAL_MILE  = add(m, LinearConverter.scale(   1852,        1), "M",     OTHER,    (short) 9030);
+        STATUTE_MILE   = add(m, LinearConverter.scale(1609344,      100), "mi",    IMPERIAL, (short) 9093);
+        US_SURVEY_FOOT = add(m, LinearConverter.scale(   1200,     3937), "ftUS",  OTHER,    (short) 9003);
+        CLARKE_FOOT    = add(m, LinearConverter.scale(3047972654d, 1E10), "ftCla", OTHER,    (short) 9005);
+        FOOT           = add(m, LinearConverter.scale(   3048,    10000), "ft",    IMPERIAL, (short) 9002);
+        INCH           = add(m, LinearConverter.scale(    254,    10000), "in",    IMPERIAL, (short) 0);
+        POINT          = add(m, LinearConverter.scale( 996264, 72000000), "pt",    OTHER,    (short) 0);
         /*
          * All Unit<Time>.
          */
         s.related(5);
         SECOND         = s;
-        MILLISECOND    = add(s, milli, "ms", UnitRegistry.SI, (short) 0);
-        MINUTE         = add(s, LinearConverter.scale(         60,      1), "min", UnitRegistry.ACCEPTED, (short) 0);
-        HOUR           = add(s, LinearConverter.scale(      60*60,      1), "h",   UnitRegistry.ACCEPTED, (short) 0);
-        DAY            = add(s, LinearConverter.scale(   24*60*60,      1), "d",   UnitRegistry.ACCEPTED, (short) 0);
-        WEEK           = add(s, LinearConverter.scale( 7*24*60*60,      1), "wk",  UnitRegistry.OTHER,    (short) 0);
-        TROPICAL_YEAR  = add(s, LinearConverter.scale(31556925445.0, 1000), "a",   UnitRegistry.OTHER,    (short) 1029);
+        MILLISECOND    = add(s, milli,                                      "ms",  SI,       (short) 0);
+        MINUTE         = add(s, LinearConverter.scale(         60,      1), "min", ACCEPTED, (short) 0);
+        HOUR           = add(s, LinearConverter.scale(      60*60,      1), "h",   ACCEPTED, (short) 0);
+        DAY            = add(s, LinearConverter.scale(   24*60*60,      1), "d",   ACCEPTED, (short) 0);
+        WEEK           = add(s, LinearConverter.scale( 7*24*60*60,      1), "wk",  OTHER,    (short) 0);
+        TROPICAL_YEAR  = add(s, LinearConverter.scale(31556925445.0, 1000), "a",   OTHER,    (short) 1029);
         /*
          * All Unit<Speed>.
          */
         mps.related(1);
         METRES_PER_SECOND   = mps;
-        KILOMETRES_PER_HOUR = add(mps, LinearConverter.scale(6, 100), "km∕h", UnitRegistry.ACCEPTED, (short) 0);
+        KILOMETRES_PER_HOUR = add(mps, LinearConverter.scale(10, 36), "km∕h", ACCEPTED, (short) 0);
         /*
          * All Unit<Pressure>.
          */
         Pa.related(3);
         PASCAL      = Pa;
-        HECTOPASCAL = add(Pa,  hecto,                            "hPa",  UnitRegistry.SI,    (short) 0);
-        DECIBAR     = add(Pa,  ten4,                             "dbar", UnitRegistry.OTHER, (short) 0);
-        BAR         = add(Pa,  LinearConverter.scale(100000, 1), "bar",  UnitRegistry.OTHER, (short) 0);
-        ATMOSPHERE  = add(Pa,  LinearConverter.scale(101325, 1), "atm",  UnitRegistry.OTHER, (short) 0);
+        HECTOPASCAL = add(Pa,  hecto,                            "hPa",  SI,    (short) 0);
+        DECIBAR     = add(Pa,  ten4,                             "dbar", OTHER, (short) 0);
+        BAR         = add(Pa,  LinearConverter.scale(100000, 1), "bar",  OTHER, (short) 0);
+        ATMOSPHERE  = add(Pa,  LinearConverter.scale(101325, 1), "atm",  OTHER, (short) 0);
         /*
          * All Unit<Temperature>.
          */
         K.related(1);
-        KELVIN     = K;
-        CELSIUS    = add(K, LinearConverter.offset(  27315, 100), "°C", UnitRegistry.SI,    (short) 0);
-        FAHRENHEIT = add(K, new LinearConverter(100, 45967, 180), "°F", UnitRegistry.OTHER, (short) 0);
+        KELVIN       = K;
+        CELSIUS      = add(K, LinearConverter.offset(  27315, 100), "°C", SI,    (short) 0);
+        FAHRENHEIT   = add(K, new LinearConverter(100, 45967, 180), "°F", OTHER, (short) 0);
         /*
-         * Electricity and magnetism.
-         */
-        AMPERE  = add(ElectricCurrent.class,     null, current,                      "A",  UnitRegistry.SI, (short) 0);
-        COULOMB = add(ElectricCharge.class,      null, charge,                       "C",  UnitRegistry.SI, (short) 0);
-        VOLT    = add(ElectricPotential.class,   null, potential,                    "V",  UnitRegistry.SI, (short) 0);
-        FARAD   = add(ElectricCapacitance.class, null, charge.divide(potential),     "F",  UnitRegistry.SI, (short) 0);
-        SIEMENS = add(ElectricConductance.class, null, current.divide(potential),    "S",  UnitRegistry.SI, (short) 0);
-        OHM     = add(ElectricResistance.class,  null, potential.divide(current),    "Ω",  UnitRegistry.SI, (short) 0);
-        WEBER   = add(MagneticFlux.class,        null, magneticFlux,                 "Wb", UnitRegistry.SI, (short) 0);
-        TESLA   = add(MagneticFluxDensity.class, null, magneticFlux.divide(area),    "T",  UnitRegistry.SI, (short) 0);
-        HENRY   = add(ElectricInductance.class,  null, magneticFlux.divide(current), "H",  UnitRegistry.SI, (short) 0);
-        /*
-         * Other units.
+         * Unit<Volume> and Unit<Mass>. Those units need to be handled in a special way because:
+         * 1) The base unit of mass is "kg", not "g". This is handled by a hard-coded case in SystemUnit.
+         * 2) The liter unit is not a SI units, but despite that is commonly used with SI prefixes.
          */
         SQUARE_METRE = m2;
-        HECTARE      = add(m2,  ten4,                                                             "ha",  UnitRegistry.ACCEPTED, (short) 0);
-        CUBIC_METRE  = add(Volume.class,            Scalar.Volume::new,    length.pow(3),         "m³",  UnitRegistry.SI,       (short) 0);
-        HERTZ        = add(Frequency.class,         Scalar.Frequency::new, time.pow(-1),          "Hz",  UnitRegistry.SI,       (short) 0);
-        KILOGRAM     = add(Mass.class,              Scalar.Mass::new,      mass,                  "kg",  UnitRegistry.SI,       (short) 0);
-        NEWTON       = add(Force.class,             Scalar.Force::new,     force,                 "N",   UnitRegistry.SI,       (short) 0);
-        JOULE        = add(Energy.class,            Scalar.Energy::new,    energy,                "J",   UnitRegistry.SI,       (short) 0);
-        WATT         = add(Power.class,             Scalar.Power::new,     power,                 "W",   UnitRegistry.SI,       (short) 0);
-        LUX          = add(Illuminance.class,       null,                  luminous.divide(area), "lx",  UnitRegistry.SI,       (short) 0);
-        LUMEN        = add(LuminousFlux.class,      null,                  luminous,              "lm",  UnitRegistry.SI,       (short) 0);
-        CANDELA      = add(LuminousIntensity.class, null,                  luminous,              "cd",  UnitRegistry.SI,       (short) 0);    // Must be after Lumen.
-        MOLE         = add(AmountOfSubstance.class, null,                  amount,                "mol", UnitRegistry.SI,       (short) 0);
-        STERADIAN    = add(SolidAngle.class,        null,                  dimensionless,         "sr",  UnitRegistry.SI,       (short) 0);
+        CUBIC_METRE  = m3;
+        KILOGRAM     = kg;
+        HECTARE      = add(m2, ten4,  "ha",        ACCEPTED,               (short) 0);
+        LITRE        = add(m3, milli, "L", (byte) (ACCEPTED | PREFIXABLE), (short) 0);
+        GRAM         = add(kg, milli, "g", (byte) (ACCEPTED | PREFIXABLE), (short) 0);
+        /*
+         * Force, energy, electricity, magnetism and other units.
+         */
+        HERTZ      = add(Frequency.class,           Scalar.Frequency::new, time.pow(-1),                 "Hz",  (byte) (SI | PREFIXABLE), (short) 0);
+        NEWTON     = add(Force.class,               Scalar.Force::new,     force,                        "N",   (byte) (SI | PREFIXABLE), (short) 0);
+        JOULE      = add(Energy.class,              Scalar.Energy::new,    energy,                       "J",   (byte) (SI | PREFIXABLE), (short) 0);
+        WATT       = add(Power.class,               Scalar.Power::new,     power,                        "W",   (byte) (SI | PREFIXABLE), (short) 0);
+        AMPERE     = add(ElectricCurrent.class,     null,                  current,                      "A",   (byte) (SI | PREFIXABLE), (short) 0);
+        COULOMB    = add(ElectricCharge.class,      null,                  charge,                       "C",   (byte) (SI | PREFIXABLE), (short) 0);
+        VOLT       = add(ElectricPotential.class,   null,                  potential,                    "V",   (byte) (SI | PREFIXABLE), (short) 0);
+        FARAD      = add(ElectricCapacitance.class, null,                  charge.divide(potential),     "F",   (byte) (SI | PREFIXABLE), (short) 0);
+        SIEMENS    = add(ElectricConductance.class, null,                  current.divide(potential),    "S",   (byte) (SI | PREFIXABLE), (short) 0);
+        OHM        = add(ElectricResistance.class,  null,                  potential.divide(current),    "Ω",   (byte) (SI | PREFIXABLE), (short) 0);
+        WEBER      = add(MagneticFlux.class,        null,                  magneticFlux,                 "Wb",  (byte) (SI | PREFIXABLE), (short) 0);
+        TESLA      = add(MagneticFluxDensity.class, null,                  magneticFlux.divide(area),    "T",   (byte) (SI | PREFIXABLE), (short) 0);
+        HENRY      = add(ElectricInductance.class,  null,                  magneticFlux.divide(current), "H",   (byte) (SI | PREFIXABLE), (short) 0);
+        LUX        = add(Illuminance.class,         null,                  luminous.divide(area),        "lx",  (byte) (SI | PREFIXABLE), (short) 0);
+        LUMEN      = add(LuminousFlux.class,        null,                  luminous,                     "lm",  (byte) (SI | PREFIXABLE), (short) 0);
+        CANDELA    = add(LuminousIntensity.class,   null,                  luminous,                     "cd",  (byte) (SI | PREFIXABLE), (short) 0);    // Must be after Lumen.
+        MOLE       = add(AmountOfSubstance.class,   null,                  amount,                       "mol", (byte) (SI | PREFIXABLE), (short) 0);
+        STERADIAN  = add(SolidAngle.class,          null,                  dimensionless,                "sr",  (byte) (SI | PREFIXABLE), (short) 0);
         /*
          * All Unit<Dimensionless>.
          */
-        PERCENT = add(one, centi,                                                    "%",     UnitRegistry.OTHER, (short) 0);
-        PPM     = add(one, micro,                                                    "ppm",   UnitRegistry.OTHER, (short) 9202);
-        PSU     = add(Dimensionless.class, Scalar.Dimensionless::new, dimensionless, "psu",   UnitRegistry.OTHER, (short) 0);
-        SIGMA   = add(Dimensionless.class, Scalar.Dimensionless::new, dimensionless, "sigma", UnitRegistry.OTHER, (short) 0);
-        PIXEL   = add(Dimensionless.class, Scalar.Dimensionless::new, dimensionless, "px",    UnitRegistry.OTHER, (short) 0);
+        PERCENT = add(one, centi,                                                    "%",     OTHER, (short) 0);
+        PPM     = add(one, micro,                                                    "ppm",   OTHER, (short) 9202);
+        PSU     = add(Dimensionless.class, Scalar.Dimensionless::new, dimensionless, "psu",   OTHER, (short) 0);
+        SIGMA   = add(Dimensionless.class, Scalar.Dimensionless::new, dimensionless, "sigma", OTHER, (short) 0);
+        PIXEL   = add(Dimensionless.class, Scalar.Dimensionless::new, dimensionless, "px",    OTHER, (short) 0);
         UNITY   = UnitRegistry.init(one);  // Must be last in order to take precedence over all other units associated to UnitDimension.NONE.
 
         UnitRegistry.alias(UNITY,       Short.valueOf((short) 9203));
@@ -1189,6 +1216,8 @@ public final class Units extends Static {
         UnitRegistry.alias(FAHRENHEIT,  "℉");
         UnitRegistry.alias(GRAD,      "gon");
         UnitRegistry.alias(HECTARE,   "hm²");
+        UnitRegistry.alias(LITRE,       "l");
+        UnitRegistry.alias(LITRE,       "ℓ");
         UnitRegistry.alias(UNITY,       "1");
 
         initialized = true;

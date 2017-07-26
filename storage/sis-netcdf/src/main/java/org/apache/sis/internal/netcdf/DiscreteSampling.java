@@ -16,6 +16,10 @@
  */
 package org.apache.sis.internal.netcdf;
 
+// Branch-dependent imports
+import java.util.stream.Stream;
+import org.opengis.feature.Feature;
+
 
 /**
  * Returns the features encoded in the NetCDF files when they are encoded as discrete sampling.
@@ -34,4 +38,11 @@ public abstract class DiscreteSampling {
      */
     protected DiscreteSampling() {
     }
+
+    /**
+     * Returns the stream of features.
+     *
+     * @return the stream of features.
+     */
+    public abstract Stream<Feature> features();
 }

@@ -26,6 +26,7 @@ import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.distribution.Format;
 import org.opengis.metadata.distribution.Medium;
 import org.opengis.metadata.distribution.Distributor;
+import org.apache.sis.internal.metadata.Dependencies;
 import org.apache.sis.internal.metadata.LegacyPropertyAdapter;
 import org.apache.sis.metadata.iso.citation.DefaultCitation;
 import org.apache.sis.metadata.iso.ISOMetadata;
@@ -38,6 +39,13 @@ import java.util.function.BiConsumer;
 /**
  * Description of the computer language construct that specifies the representation
  * of data objects in a record, file, message, storage device or transmission channel.
+ * The following properties are mandatory in a well-formed metadata according ISO 19115:
+ *
+ * <div class="preformat">{@code MD_Format}
+ * {@code   └─formatSpecificationCitation……} Citation/URL of the specification format.
+ * {@code       ├─title……………………………………………………} Name by which the cited resource is known.
+ * {@code       └─date………………………………………………………} Reference date for the cited resource.</div>
+ *
  * Each {@code Format} instance should contain a {@linkplain #getFormatSpecificationCitation() reference
  * to the format specification}, for example <cite>"PNG (Portable Network Graphics) Specification"</cite>.
  * The specification often has an abbreviation (for example "PNG") which can be stored as an
@@ -246,6 +254,7 @@ public class DefaultFormat extends ISOMetadata implements Format {
     @Override
     @Deprecated
     @XmlElement(name = "specification")
+    @Dependencies("getFormatSpecificationCitation")
     public InternationalString getSpecification() {
         final Citation citation = getFormatSpecificationCitation();
         return (citation != null) ? citation.getTitle() : null;
@@ -278,6 +287,7 @@ public class DefaultFormat extends ISOMetadata implements Format {
     @Override
     @Deprecated
     @XmlElement(name = "name", required = true)
+    @Dependencies("getFormatSpecificationCitation")
     public InternationalString getName() {
         final Citation citation = getFormatSpecificationCitation();
         if (citation != null) {
@@ -315,6 +325,7 @@ public class DefaultFormat extends ISOMetadata implements Format {
     @Override
     @Deprecated
     @XmlElement(name = "version", required = true)
+    @Dependencies("getFormatSpecificationCitation")
     public InternationalString getVersion() {
         final Citation citation = getFormatSpecificationCitation();
         return (citation != null) ? citation.getEdition() : null;

@@ -80,103 +80,77 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
     }
 
     /**
-     * Returns a vector with the same data than this vector but encoded in a more compact way,
-     * or {@code this} if this method can not do better than current {@code Vector} instance.
+     * Returns a vector with the same data than the given vector but encoded in a more compact way,
+     * or {@code null} if this method can not do better than the given {@code Vector} instance.
+     * This method shall be invoked only for vector of integer values (this is not verified).
      */
-    @Override
-    public final Vector compress(final double tolerance) {
-        final Vector vec = super.compress(tolerance);
-        if (vec == this && !isEmpty()) {
-            if (isInteger()) {
-                /*
-                 * For integer values, verify if we can pack the data into a smaller type.
-                 * We will use a vector backed by IntegerList in order to use only the amount of bits needed,
-                 * unless that amount is exactly the number of bits of a primitive type (8, 16, 32 or 64) in
-                 * which case using one of the specialized class in this ArrayVector is more performant.
-                 */
-                final NumberRange<?> range = range();
-                if (range != null && !range.isEmpty() && range.getMinDouble() >= Long.MIN_VALUE
-                                                      && range.getMaxDouble() <= Long.MAX_VALUE)
-                {
-                    final long min      = range.getMinValue().longValue();
-                    final long max      = range.getMaxValue().longValue();
-                    final long delta    = Math.subtractExact(max, min);
-                    final int  bitCount = Long.SIZE - Long.numberOfLeadingZeros(delta);
-                    if (bitCount != Numbers.primitiveBitCount(getElementType())) {
-                        switch (bitCount) {
-                            case Byte.SIZE: {
-                                final boolean isSigned = (min >= Byte.MIN_VALUE && max <= Byte.MAX_VALUE);
-                                if (isSigned || (min >= 0 && max <= 0xFF)) {
-                                    final byte[] array = new byte[size()];
-                                    for (int i=0; i < array.length; i++) {
-                                        array[i] = (byte) intValue(i);
-                                    }
-                                    return isSigned ? new Bytes(array) : new UnsignedBytes(array);
-                                }
-                                break;
-                            }
-                            case Short.SIZE: {
-                                final boolean isSigned = (min >= Short.MIN_VALUE && max <= Short.MAX_VALUE);
-                                if (isSigned || (min >= 0 && max <= 0xFFFF)) {
-                                    final short[] array = new short[size()];
-                                    for (int i=0; i < array.length; i++) {
-                                        array[i] = (short) intValue(i);
-                                    }
-                                    return isSigned ? new Shorts(array) : new UnsignedShorts(array);
-                                }
-                                break;
-                            }
-                            case Integer.SIZE: {
-                                final boolean isSigned = (min >= Integer.MIN_VALUE && max <= Integer.MAX_VALUE);
-                                if (isSigned || (min >= 0 && max <= 0xFFFFFFFF)) {
-                                    final int[] array = new int[size()];
-                                    for (int i=0; i < array.length; i++) {
-                                        array[i] = (int) longValue(i);
-                                    }
-                                    return isSigned ? new Integers(array) : new UnsignedIntegers(array);
-                                }
-                                break;
-                            }
-                            // The Long.SIZE case should never happen because of the 'bitCount' check before the switch.
-                        }
-                        return new PackedVector(this, min, Math.toIntExact(delta));
-                    }
-                }
-            } else if (!Float.class.equals(getElementType())) {
-                /*
-                 * For floating point types, verify if values are equivalent to 'float' values.
-                 * There is two different ways to pad extra fraction digits in 'double' values:
-                 * with zero fraction digits in base 2 representation (the standard Java cast),
-                 * or with zero fraction digits in base 10 representation.
-                 */
-                final int length = size();
-                int i = 0;
-                double v;
-                do if (i >= length) {
-                    return new Floats(toFloatArray());
-                } while (!(Math.abs((v = doubleValue(i++)) - (float) v) > tolerance));    // Use '!' for accepting NaN.
-                /*
-                 * Same try than above loop, but now using base 10 representation.
-                 * This is a more costly computation.
-                 */
-                i = 0;
-                do if (i >= length) {
-                    return new Decimal(toFloatArray());
-                } while (!(Math.abs((v = doubleValue(i++)) - DecimalFunctions.floatToDouble((float) v)) > tolerance));
+    static Vector compress(final Vector source, final long min, final long max) {
+        boolean isSigned = (min >= Byte.MIN_VALUE && max <= Byte.MAX_VALUE);
+        if (isSigned || (min >= 0 && max <= 0xFF)) {
+            if (source instanceof Bytes) return null;
+            final byte[] array = new byte[source.size()];
+            for (int i=0; i < array.length; i++) {
+                array[i] = (byte) source.intValue(i);
             }
+            return isSigned ? new Bytes(array) : new UnsignedBytes(array);
         }
-        return vec;
+        isSigned = (min >= Short.MIN_VALUE && max <= Short.MAX_VALUE);
+        if (isSigned || (min >= 0 && max <= 0xFFFF)) {
+            if (source instanceof Shorts) return null;
+            final short[] array = new short[source.size()];
+            for (int i=0; i < array.length; i++) {
+                array[i] = (short) source.intValue(i);
+            }
+            return isSigned ? new Shorts(array) : new UnsignedShorts(array);
+        }
+        isSigned = (min >= Integer.MIN_VALUE && max <= Integer.MAX_VALUE);
+        if (isSigned || (min >= 0 && max <= 0xFFFFFFFF)) {
+            if (source instanceof Integers) return null;
+            final int[] array = new int[source.size()];
+            for (int i=0; i < array.length; i++) {
+                array[i] = (int) source.longValue(i);
+            }
+            return isSigned ? new Integers(array) : new UnsignedIntegers(array);
+        }
+        if (!(source instanceof Longs) && !(source instanceof Floats) && !(source instanceof Doubles)) {
+            final long[] array = new long[source.size()];
+            for (int i=0; i < array.length; i++) {
+                array[i] = source.longValue(i);
+            }
+            return new Longs(array);
+        }
+        return null;
     }
 
     /**
-     * Returns a copy of current data as a floating point array.
+     * Returns a vector with the same data than the given vector but encoded in a more compact way,
+     * or {@code null} if this method can not do better than the given {@code Vector} instance.
+     * This method shall be invoked only for vector of floating point values (this is not verified).
      */
-    float[] toFloatArray() {
-        final float[] copy = new float[size()];
-        for (int i=0; i<copy.length; i++) {
-            copy[i] = (float) doubleValue(i);
+    static Vector compress(final Vector source, final double tolerance) {
+        if (!Float.class.equals(source.getElementType())) {
+            /*
+             * For floating point types, verify if values are equivalent to 'float' values.
+             * There is two different ways to pad extra fraction digits in 'double' values:
+             * with zero fraction digits in base 2 representation (the standard Java cast),
+             * or with zero fraction digits in base 10 representation.
+             */
+            final int length = source.size();
+            int i = 0;
+            double v;
+            do if (i >= length) {
+                return new Floats(source.floatValues());
+            } while (!(Math.abs((v = source.doubleValue(i++)) - (float) v) > tolerance));    // Use '!' for accepting NaN.
+            /*
+             * Same try than above loop, but now using base 10 representation.
+             * This is a more costly computation.
+             */
+            i = 0;
+            do if (i >= length) {
+                return new Decimal(source.floatValues());
+            } while (!(Math.abs((v = source.doubleValue(i++)) - DecimalFunctions.floatToDouble((float) v)) > tolerance));
         }
-        return copy;
+        return null;
     }
 
     /**
@@ -269,11 +243,6 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
             return old;
         }
 
-        /** Returns a copy of current data as a floating point array. */
-        @Override float[] toFloatArray() {
-            return Numerics.copyAsFloats(array);
-        }
-
         /** Finds the minimum and maximum values in the array or in a subset of the array. */
         @Override NumberRange<Double> range(final IntSupplier indices, int n) {
             double min = Double.POSITIVE_INFINITY;
@@ -284,6 +253,16 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
                 if (value > max) max = value;
             }
             return NumberRange.create(min, true, max, true);
+        }
+
+        /** Returns a copy of current data as a floating point array. */
+        @Override public double[] doubleValues() {
+            return array.clone();
+        }
+
+        /** Returns a copy of current data as a floating point array. */
+        @Override public float[] floatValues() {
+            return Numerics.copyAsFloats(array);
         }
     }
 
@@ -358,6 +337,11 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
         NumberRange<?> createRange(final float min, final float max) {
             return NumberRange.create(min, true, max, true);
         }
+
+        /** Returns a copy of current data as a floating point array. */
+        @Override public final float[] floatValues() {
+            return array.clone();
+        }
     }
 
     /**
@@ -410,6 +394,11 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
         /** Returns the type of elements in the backing array. */
         @Override public final Class<Long> getElementType() {
             return Long.class;
+        }
+
+        /** Values in this vector are guaranteed to be integers. */
+        @Override public final boolean isInteger() {
+            return true;
         }
 
         /** Returns the string representation at the given index. */
@@ -491,6 +480,11 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
         /** Returns the type of elements in the backing array. */
         @Override public final Class<Integer> getElementType() {
             return Integer.class;
+        }
+
+        /** Values in this vector are guaranteed to be integers. */
+        @Override public final boolean isInteger() {
+            return true;
         }
 
         /** Returns the string representation at the given index. */
@@ -578,6 +572,11 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
             return Short.class;
         }
 
+        /** Values in this vector are guaranteed to be integers. */
+        @Override public final boolean isInteger() {
+            return true;
+        }
+
         /** Returns the string representation at the given index. */
         @Override public String stringValue(final int index) {
             return Short.toString(array[index]);
@@ -636,6 +635,11 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
         /** Returns the type of elements in the backing array. */
         @Override public final Class<Byte> getElementType() {
             return Byte.class;
+        }
+
+        /** Values in this vector are guaranteed to be integers. */
+        @Override public final boolean isInteger() {
+            return true;
         }
 
         /** Returns the string representation at the given index. */

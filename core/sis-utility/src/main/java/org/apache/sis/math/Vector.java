@@ -174,12 +174,19 @@ public abstract class Vector extends AbstractList<Number> implements RandomAcces
         type = Numbers.widestClass(first, increment);
         type = Numbers.widestClass(type,
                Numbers.narrowestClass(first.doubleValue() + increment.doubleValue() * (length-1)));
+        return createSequence(type, first, increment, length);
+    }
+
+    /**
+     * Creates a sequence of the given type.
+     */
+    static Vector createSequence(final Class<? extends Number> type, final Number first, final Number increment, final int length) {
         final int t = Numbers.getEnumConstant(type);
         if (t >= Numbers.BYTE && t <= Numbers.LONG) {
             // Use the long type if possible because not all long values can be represented as double.
-            return new SequenceVector.Longs(first, increment, length);
+            return new SequenceVector.Longs(type, first, increment, length);
         } else {
-            return new SequenceVector.Doubles(first, increment, length);
+            return new SequenceVector.Doubles(type, first, increment, length);
         }
     }
 
@@ -194,6 +201,20 @@ public abstract class Vector extends AbstractList<Number> implements RandomAcces
      * then this method returns the <em>wrapper</em> class, not the primitive type. For example if this vector
      * is backed by an array of type {@code float[]}, then this method returns {@code Float.class},
      * not {@link Float#TYPE}.
+     *
+     * <p>The information returned by this method is only indicative; it is not guaranteed to specify accurately
+     * this kind of objects returned by the {@link #get(int)} method. There is various situation where the types
+     * may not match:</p>
+     *
+     * <ul>
+     *   <li>If this vector {@linkplain #isUnsigned() is unsigned}, then the values returned by {@code get(int)}
+     *       may be instances of a type wider than the type used by this vector for storing the values.</li>
+     *   <li>If this vector has been {@linkplain #createForDecimal(float[]) created for decimal numbers},
+     *       then the values returned by {@code get(int)} will use double-precision even if this vector
+     *       stores the values as single-precision floating point numbers.</li>
+     *   <li>If this vector {@linkplain #compress(double) has been compressed}, then the type returned by this
+     *       method does not describe accurately the range of values that this vector can store.</li>
+     * </ul>
      *
      * <p>Users of the {@link #doubleValue(int)} method do not need to care about this information since
      * {@code Vector} will perform automatically the type conversion. Users of other methods may want to
@@ -262,6 +283,8 @@ public abstract class Vector extends AbstractList<Number> implements RandomAcces
      * @throws IndexOutOfBoundsException if the given index is out of bounds.
      * @throws NullPointerException if the value is {@code null} (never happen if this vector wraps an array of primitive type).
      * @throws NumberFormatException if the value is stored as a {@code String} and can not be parsed.
+     *
+     * @see #doubleValues()
      */
     public abstract double doubleValue(int index);
 
@@ -275,6 +298,8 @@ public abstract class Vector extends AbstractList<Number> implements RandomAcces
      * @throws IndexOutOfBoundsException if the given index is out of bounds.
      * @throws NullPointerException if the value is {@code null} (never happen if this vector wraps an array of primitive type).
      * @throws NumberFormatException if the value is stored as a {@code String} and can not be parsed.
+     *
+     * @see #floatValues()
      */
     public abstract float floatValue(int index);
 
@@ -388,6 +413,8 @@ public abstract class Vector extends AbstractList<Number> implements RandomAcces
      * @param  index  the index in the [0 … {@linkplain #size() size}-1] range.
      * @return a string representation of the value at the given index (may be {@code null}).
      * @throws IndexOutOfBoundsException if the given index is out of bounds.
+     *
+     * @see #toString()
      */
     public abstract String stringValue(int index);
 
@@ -412,14 +439,16 @@ public abstract class Vector extends AbstractList<Number> implements RandomAcces
     /**
      * Sets the number at the given index.
      * The given number should be an instance of the same type than the number returned by {@link #get(int)}.
+     * If not, the stored value may lost precision as a result of the cast.
      *
      * @param  index  the index in the [0 … {@linkplain #size() size}-1] range.
      * @param  value  the value to set at the given index.
      * @return the value previously stored at the given index.
+     * @throws UnsupportedOperationException if this vector is read-only.
      * @throws IndexOutOfBoundsException if the given index is out of bounds.
      * @throws NumberFormatException if the previous value was stored as a {@code String} and can not be parsed.
-     * @throws ClassCastException if the given value can not be converted to the type expected by this vector.
-     * @throws ArrayStoreException if the given value can not be stored in this vector.
+     * @throws IllegalArgumentException if this vector uses some {@linkplain #compress(double) compression} technic
+     *         and the given value is out of range for that compression.
      */
     @Override
     public abstract Number set(int index, Number value);
@@ -956,8 +985,8 @@ public abstract class Vector extends AbstractList<Number> implements RandomAcces
      *
      * <div class="section">When to use</div>
      * It is usually not worth to compress small arrays. Performance-critical arrays may not be compressed neither.
-     * This method is best suited for arrays that may potentially be large and for which the cost of reading that
-     * array is small compared to the calculation performed with the values.
+     * This method is best suited for vectors that may potentially be large and for which the cost of fetching
+     * values in that vector is small compared to the calculation performed with the values.
      *
      * @param  tolerance  maximal difference allowed between original and compressed vectors (can be zero).
      * @return a more compact vector with the same data than this vector, or {@code this}.
@@ -967,18 +996,45 @@ public abstract class Vector extends AbstractList<Number> implements RandomAcces
         final int length = size();
         final Number inc = increment(tolerance);
         if (inc != null) {
-            return createSequence(get(0), inc, length);
+            return createSequence(getElementType(), get(0), inc, length);
         }
         /*
          * Verify if the vector contains only NaN values. This extra check is useful because 'increment()'
          * returns null if the array contains NaN. Note that for array of integers, 'isNaN(int)' is very
          * efficient and the loop will stop immediately after the first iteration.
          */
-        for (int i=0; i<length; i++) {
-            if (!isNaN(i)) return this;
+        int i = 0;
+        do if (i >= length) {
+            final Double NaN = Numerics.valueOf(Double.NaN);
+            return new SequenceVector.Doubles(getElementType(), NaN, NaN, length);
+        } while (isNaN(i++));
+        /*
+         * Try to copy the values in a more compact format.
+         * We will use a vector backed by IntegerList in order to use only the amount of bits needed,
+         * unless that amount is exactly the number of bits of a primitive type (8, 16, 32 or 64) in
+         * which case using one of the specialized classes in this ArrayVector is more performant.
+         */
+        final NumberRange<?> range = range();
+        if (range != null && !range.isEmpty()) {
+            final Number min = range.getMinValue();
+            final Number max = range.getMaxValue();
+            final boolean isInteger = (min.doubleValue() >= Long.MIN_VALUE &&
+                                       max.doubleValue() <= Long.MAX_VALUE &&
+                                       isInteger());                                // May scan the vector.
+            Vector vec;
+            if (isInteger) {
+                vec = PackedVector.compress(this, min.longValue(), max.longValue());
+                if (vec == null) {
+                    vec = ArrayVector.compress(this, min.longValue(), max.longValue());
+                }
+            } else {
+                vec = ArrayVector.compress(this, tolerance);
+            }
+            if (vec != null) {
+                return vec;
+            }
         }
-        final Double NaN = Numerics.valueOf(Double.NaN);
-        return new SequenceVector.Doubles(NaN, NaN, length);
+        return this;
     }
 
     /**
@@ -989,9 +1045,49 @@ public abstract class Vector extends AbstractList<Number> implements RandomAcces
     }
 
     /**
+     * Copies all values in an array of double precision floating point numbers.
+     * This method is for inter-operability with APIs requiring an array of primitive type.
+     *
+     * <p>The default implementation invokes {@link #doubleValue(int)} for all indices from 0 inclusive
+     * to {@link #size()} exclusive. Subclasses may override with more efficient implementation.</p>
+     *
+     * @return a copy of all floating point values in this vector.
+     *
+     * @see #doubleValue(int)
+     */
+    public double[] doubleValues() {
+        final double[] array = new double[size()];
+        for (int i=0; i<array.length; i++) {
+            array[i] = doubleValue(i);
+        }
+        return array;
+    }
+
+    /**
+     * Copies all values in an array of single precision floating point numbers.
+     * This method is for inter-operability with APIs requiring an array of primitive type.
+     *
+     * <p>The default implementation invokes {@link #floatValue(int)} for all indices from 0 inclusive
+     * to {@link #size()} exclusive. Subclasses may override with more efficient implementation.</p>
+     *
+     * @return a copy of all floating point values in this vector.
+     *
+     * @see #floatValue(int)
+     */
+    public float[] floatValues() {
+        final float[] array = new float[size()];
+        for (int i=0; i<array.length; i++) {
+            array[i] = floatValue(i);
+        }
+        return array;
+    }
+
+    /**
      * Returns a string representation of this vector.
      *
      * @return a string representation of this vector.
+     *
+     * @see #stringValue(int)
      */
     @Override
     public String toString() {

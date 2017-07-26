@@ -590,8 +590,12 @@ public class MetadataStandard implements Serializable {
 
     /**
      * Returns the implementation class for the given interface, or {@code null} if none.
-     * The default implementation returns {@code null} in every cases. Subclasses shall
-     * override this method in order to map GeoAPI interfaces to their implementation.
+     * If non-null, the returned class must have a public no-argument constructor and the
+     * metadata instance created by that constructor must be initially empty (no default value).
+     * That no-argument constructor should never throw any checked exception.
+     *
+     * <p>The default implementation returns {@code null} in every cases. Subclasses shall
+     * override this method in order to map GeoAPI interfaces to their implementation.</p>
      *
      * @param  <T>   the compile-time {@code type}.
      * @param  type  the interface, typically from the {@code org.opengis.metadata} package.
@@ -645,14 +649,14 @@ public class MetadataStandard implements Serializable {
     }
 
     /**
-     * Returns the type of all properties, or their declaring type, defined in the given
-     * metadata type. The keys in the returned map are the same than the keys in the above
-     * {@linkplain #asNameMap name map}. The values are determined by the {@code valuePolicy}
-     * argument, which can be {@linkplain TypeValuePolicy#ELEMENT_TYPE element type} or the
+     * Returns the type of all properties, or their declaring type, defined in the given metadata type.
+     * The keys in the returned map are the same than the keys in the above {@linkplain #asNameMap name map}.
+     * The values are determined by the {@code valuePolicy} argument, which can be
+     * {@linkplain TypeValuePolicy#ELEMENT_TYPE element type} or the
      * {@linkplain TypeValuePolicy#DECLARING_INTERFACE declaring interface} among others.
      *
-     * <p><b>Example:</b> the following code prints the
-     * {@link org.opengis.util.InternationalString} class name:</p>
+     * <div class="note"><b>Example:</b>
+     * the following code prints the {@link org.opengis.util.InternationalString} class name:
      *
      * {@preformat java
      *   MetadataStandard  standard = MetadataStandard.ISO_19115;
@@ -660,6 +664,7 @@ public class MetadataStandard implements Serializable {
      *   Class<?> value = types.get("alternateTitle");
      *   System.out.println(value);                       // class org.opengis.util.InternationalString
      * }
+     * </div>
      *
      * @param  type         the interface or implementation class of a metadata.
      * @param  keyPolicy    determines the string representation of map keys.
@@ -708,7 +713,7 @@ public class MetadataStandard implements Serializable {
      * </ul>
      *
      * <div class="note"><b>Note:</b>
-     * The rational for implementing {@code CheckedContainer} is to consider each {@code ExtendedElementInformation}
+     * the rational for implementing {@code CheckedContainer} is to consider each {@code ExtendedElementInformation}
      * instance as the set of all possible values for the property. If the information had a {@code contains(E)} method,
      * it would return {@code true} if the given value is valid for that property.</div>
      *
@@ -726,8 +731,8 @@ public class MetadataStandard implements Serializable {
      *
      * @see org.apache.sis.metadata.iso.DefaultExtendedElementInformation
      */
-    public Map<String,ExtendedElementInformation> asInformationMap(Class<?> type,
-            final KeyNamePolicy keyPolicy) throws ClassCastException
+    public Map<String,ExtendedElementInformation> asInformationMap(Class<?> type, final KeyNamePolicy keyPolicy)
+            throws ClassCastException
     {
         ensureNonNull("type",     type);
         ensureNonNull("keyNames", keyPolicy);
@@ -736,6 +741,35 @@ public class MetadataStandard implements Serializable {
             type = implementation;
         }
         return new InformationMap(getAccessor(new CacheKey(type), true), keyPolicy);
+    }
+
+    /**
+     * Returns indices for all properties defined in the given metadata type.
+     * The keys in the returned map are the same than the keys in the above {@linkplain #asNameMap name map}.
+     * The values are arbitrary indices numbered from 0 inclusive to <var>n</var> exclusive, where <var>n</var>
+     * is the number of properties declared in the given metadata type.
+     *
+     * <p>Property indices may be used as an alternative to property names by some applications doing their own storage.
+     * Such index usages are fine for temporary storage during the Java Virtual Machine lifetime, but indices should not
+     * be used in permanent storage. The indices are stable as long as the metadata implementation does not change,
+     * but may change when the implementation is upgraded to a newer version.</p>
+     *
+     * @param  type       the interface or implementation class of a metadata.
+     * @param  keyPolicy  determines the string representation of map keys.
+     * @return indices of all properties defined by the given metadata type.
+     * @throws ClassCastException if the specified interface or implementation class does
+     *         not extend or implement a metadata interface of the expected package.
+     */
+    public Map<String,Integer> asIndexMap(Class<?> type, final KeyNamePolicy keyPolicy)
+            throws ClassCastException
+    {
+        ensureNonNull("type",      type);
+        ensureNonNull("keyPolicy", keyPolicy);
+        final Class<?> implementation = getImplementation(type);
+        if (implementation != null) {
+            type = implementation;
+        }
+        return new IndexMap(getAccessor(new CacheKey(type), true), keyPolicy);
     }
 
     /**
@@ -860,7 +894,7 @@ public class MetadataStandard implements Serializable {
      * adds a title to a citation:
      *
      * {@preformat java
-     *     TreeTable.Node node = ...; // The node for a DefaultCitation.
+     *     TreeTable.Node node = ...;                               // The node for a DefaultCitation.
      *     TreeTable.Node child = node.newChild();
      *     child.setValue(TableColumn.IDENTIFIER, "title");
      *     child.setValue(TableColumn.VALUE, "Le petit prince");

@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.referencing.factory.sql;
+package org.apache.sis.referencing.factory.sql.epsg;
 
 import java.util.Map;
 import java.util.HashMap;
@@ -42,81 +42,15 @@ import org.apache.sis.internal.metadata.sql.TestDatabase;
 /**
  * Rewrites the {@code INSERT TO ...} statements in a SQL script in a more compact form.
  * This class is used only for updating the SQL scripts used by Apache SIS for the EPSG
- * dataset when a newer release of the EPSG dataset is available. Steps to follow:
- *
- * <ol class="verbose">
- *   <li><p>Download the latest SQL scripts for PostgreSQL from <a href="http://www.epsg.org">http://www.epsg.org</a>.</p></li>
- *   <li><p>Unzip in the directory of your choice (replace "8_9" by the appropriate version number in the ZIP filename),
- *          and remember the path to that directory:</p>
- *
- *          {@preformat text
- *            unzip epsg-v8_9sql-PostgreSQL.zip
- *            cd epsg-v8_9sql-PostgreSQL
- *            export EPSG_SCRIPTS=$PWD
- *          }
- *   </li>
- *
- *   <li><p>Move to the directory which contains the Apache SIS scripts:</p>
- *
- *         {@preformat text
- *           cd <SIS_HOME>/core/sis-referencing/src/main/resources/org/apache/sis/referencing/factory/sql/
- *         }
- *   </li>
- *
- *   <li><p>Overwrite {@code Tables.sql} and {@code FKeys.sql} with the new SQL scripts
- *          (replace "8.8" by the appropriate version number in the commands show below).
- *          Do not overwrite {@code Data.sql} and {@code Indexes.sql}:</p>
- *
- *          {@preformat text
- *            cp $EPSG_SCRIPTS/EPSG_v8_8.mdb_Tables_PostgreSQL.sql Tables.sql
- *            cp $EPSG_SCRIPTS/EPSG_v8_8.mdb_FKeys_PostgreSQL.sql  FKeys.sql
- *          }
- *   </li>
- *
- *   <li><p>Open the {@code Tables.sql} file for edition:</p>
- *     <ul>
- *       <li>Keep the header comments that existed in the overwritten file.</li>
- *       <li>In the statement creating the {@code coordinateaxis} table,
- *           add the {@code NOT NULL} constraint to the {@code coord_axis_code} column.</li>
- *       <li>In the statement creating the {@code change} table,
- *           remove the {@code UNIQUE} constraint on the {@code change_id} column
- *           and add a {@code CONSTRAINT pk_change PRIMARY KEY (change_id)} line instead.</li>
- *       <li>In the statement creating the {@code epsg_datum} table,
- *           change the type of the {@code realization_epoch} column to {@code SMALLINT}.</li>
- *       <li>Change the type of {@code ellipsoid_shape}, {@code reverse_op}, {@code param_sign_reversal}
- *           {@code show_crs}, {@code show_operation} and all {@code deprecated} fields from {@code SMALLINT}
- *           (or sometime {@code VARCHAR(3)}) to {@code BOOLEAN}.</li>
- *       <li>Change the type of every {@code table_name} columns from {@code VARCHAR(80)} to {@code epsg_table_name}.</li>
- *       <li>Change the type of {@code coord_ref_sys_kind} column from {@code VARCHAR(24)} to {@code epsg_crs_kind}.</li>
- *       <li>Change the type of {@code coord_sys_type} column from {@code VARCHAR(24)} to {@code epsg_cs_kind}.</li>
- *       <li>Change the type of {@code datum_type} column from {@code VARCHAR(24)} to {@code epsg_datum_kind}.</li>
- *       <li>Suppress trailing spaces and save.</li>
- *     </ul>
- *     <p>Usually this results in no change at all compared to the previous script (ignoring white spaces),
- *        in which case the maintainer can just revert the changes in order to preserve the formatting.</p>
- *   </li>
- *
- *   <li><p>Open the {@code FKeys.sql} file for edition:</p>
- *     <ul>
- *       <li>At the end of all {@code ALTER TABLE} statement,
- *           append {@code ON UPDATE RESTRICT ON DELETE RESTRICT}.</li>
- *       <li>suppress trailing spaces and save.</li>
- *     </ul>
- *     <p>In most cases this results in unmodified {@code FKeys.sql} file compared to the previous version.</p>
- *   </li>
- *
- *   <li><p>Run the {@code main} method of this class.</p></li>
- *
- *   <li><p>Upgrade the {@code FACTORY.VERSION} value defined in the
- *          {@code org.apache.sis.referencing.report.CoordinateReferenceSystems} class.</p></li>
- * </ol>
+ * dataset when a newer release of the EPSG dataset is available.
+ * The steps to follow are documented in the {@code package.html} file.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 0.8
  * @since   0.7
  * @module
  */
-public final class EPSGDataFormatter extends ScriptRunner {
+public final class DataScriptFormatter extends ScriptRunner {
     /**
      * Compacts the {@code Data.sql} file provided by EPSG. This method expects two arguments.
      * The first argument is the file of the SQL script to read, which must exist.
@@ -140,7 +74,7 @@ public final class EPSGDataFormatter extends ScriptRunner {
         }
         final DataSource ds = TestDatabase.create("dummy");
         try (Connection c = ds.getConnection()) {
-            final EPSGDataFormatter f = new EPSGDataFormatter(c);
+            final DataScriptFormatter f = new DataScriptFormatter(c);
             f.run(new File(arguments[0]), new File(arguments[1]));
         } finally {
             TestDatabase.drop(ds);
@@ -169,11 +103,6 @@ public final class EPSGDataFormatter extends ScriptRunner {
     private String insertStatement;
 
     /**
-     * {@code true} if insertions are currently done in the datum table.
-     */
-    private boolean insertDatum;
-
-    /**
      * Index (in reversal order) of columns to change from type SMALLINT to type BOOLEAN.
      * Index 0 is the last columns, index 1 is the column before the last, <i>etc</i>.
      * We use the reverse order because most boolean columns in the EPSG dataset are last.
@@ -191,7 +120,7 @@ public final class EPSGDataFormatter extends ScriptRunner {
      * @param  c  a dummy connection. Will be used for fetching metadata.
      * @throws SQLException if an error occurred while fetching metadata.
      */
-    private EPSGDataFormatter(final Connection c) throws SQLException {
+    private DataScriptFormatter(final Connection c) throws SQLException {
         super(c, Integer.MAX_VALUE);
         final Map<String,int[]> m = new HashMap<>();
         m.put("epsg_alias",                     new int[] {   });
@@ -225,7 +154,7 @@ public final class EPSGDataFormatter extends ScriptRunner {
      * @return {@code true} if the line should be omitted.
      */
     private static boolean omit(final String line) {
-        // We omit the following line because we changed the type from VARCHAR to SMALLINT.
+        // We omit the following line because we changed the type from VARCHAR to DATE.
         return line.startsWith("UPDATE epsg_datum SET realization_epoch = replace(realization_epoch, CHR(182), CHR(10))");
     }
 
@@ -248,7 +177,7 @@ public final class EPSGDataFormatter extends ScriptRunner {
                       "---    See  http://www.epsg.org/TermsOfUse  (a copy is in ./LICENSE.txt).\n" +
                       "---\n" +
                       "---    This file has been reformatted (without any change in the data) for the needs of Apache SIS project.\n" +
-                      "---    See org.apache.sis.referencing.factory.sql.EPSGDataFormatter.\n" +
+                      "---    See org.apache.sis.referencing.factory.sql.epsg.DataScriptFormatter.\n" +
                       "---\n" +
                       "\n");
             run(inputFile.getName(), in);
@@ -333,9 +262,6 @@ public final class EPSGDataFormatter extends ScriptRunner {
                 line = CharSequences.trimWhitespaces(line, insertStatement.length(), line.length()).toString();
                 line = replaceIntegerByBoolean(line);
                 line = removeUselessExponents(line);
-                if (insertDatum) {
-                    line = removeRealizationEpochQuotes(line);
-                }
                 out.append(",\n");      // Really want Unix EOL, not the platform-specific one.
                 writeValues(line);
                 return 1;
@@ -351,7 +277,6 @@ public final class EPSGDataFormatter extends ScriptRunner {
             }
             final String table = CharSequences.trimWhitespaces(line, INSERT_INTO.length(), valuesStart).toString();
             booleanColumnIndices = booleanColumnIndicesForTables.get(table);
-            insertDatum = table.equals("epsg_datum");
             /*
              * We are beginning insertions in a new table.
              */
@@ -360,9 +285,6 @@ public final class EPSGDataFormatter extends ScriptRunner {
             line = CharSequences.trimWhitespaces(line, insertStatement.length(), line.length()).toString();
             line = replaceIntegerByBoolean(line);
             line = removeUselessExponents(line);
-            if (insertDatum) {
-                line = removeRealizationEpochQuotes(line);
-            }
             out.append(insertStatement);
             out.append('\n');
             writeValues(line);
@@ -475,55 +397,6 @@ public final class EPSGDataFormatter extends ScriptRunner {
             matcher.reset(line);
             cleaned.setLength(0);
         }
-    }
-
-    /**
-     * Removes the quotes in REALIZATION_EPOCH column (i.e. change the type from TEXT to INTEGER).
-     * This is the 5th column.
-     */
-    private static String removeRealizationEpochQuotes(final String line) {
-        int index = getIndexForColumn(line, 5);
-        if (line.charAt(index) != '\'') {
-            return line;
-        }
-        final StringBuilder cleaned = new StringBuilder(line.substring(0, index));
-        if (line.charAt(++index) == '\'') {
-            cleaned.append("Null");
-        } else do {
-            cleaned.append(line.charAt(index));
-        }
-        while (line.charAt(++index) != '\'');
-        cleaned.append(line, index+1, line.length());
-        return cleaned.toString();
-    }
-
-    /**
-     * Returns the start index for the given column in the specified {@code VALUES} string.
-     * Column numbers start at 1.
-     */
-    private static int getIndexForColumn(final String line, int column) {
-        if (--column == 0) {
-            return 0;
-        }
-        boolean quote = false;
-        final int length = line.length();
-        for (int index=0; index<length; index++) {
-            switch (line.charAt(index)) {
-                case '\'': {
-                    if (index == 0 || line.charAt(index-1) != '\\') {
-                        quote = !quote;
-                    }
-                    break;
-                }
-                case ',': {
-                    if (!quote && --column==0) {
-                        return CharSequences.skipLeadingWhitespaces(line, index+1, length);
-                    }
-                    break;
-                }
-            }
-        }
-        return length;
     }
 
     /**

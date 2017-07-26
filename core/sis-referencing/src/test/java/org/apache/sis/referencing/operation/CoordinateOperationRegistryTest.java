@@ -49,9 +49,11 @@ import static org.junit.Assume.*;
 
 
 /**
- * Tests {@link CoordinateOperationRegistry}.
- * This class tests the following operations:
+ * Tests {@link CoordinateOperationRegistry} using the EPSG geodetic dataset.
+ * If no EPSG geodetic dataset is available in the running environment, then tests are skipped.
+ * For tests without the need of an EPSG database, see {@link CoordinateOperationFinderTest}.
  *
+ * <p>This class tests the following operations:</p>
  * <ul>
  *   <li><cite>"NTF (Paris) to WGS 84 (1)"</cite> operation (EPSG:8094), which implies a longitude rotation
  *       followed by a geocentric translation in the geographic domain.</li>

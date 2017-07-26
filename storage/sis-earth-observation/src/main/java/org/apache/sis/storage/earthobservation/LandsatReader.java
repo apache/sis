@@ -27,12 +27,10 @@ import java.util.regex.Pattern;
 import java.io.LineNumberReader;
 
 import org.opengis.metadata.Metadata;
-import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.citation.DateType;
 import org.opengis.metadata.spatial.DimensionNameType;
 import org.opengis.metadata.content.CoverageContentType;
 import org.opengis.metadata.content.TransferFunctionType;
-import org.opengis.metadata.identification.Identification;
 import org.opengis.metadata.maintenance.ScopeCode;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.referencing.crs.ProjectedCRS;
@@ -50,6 +48,7 @@ import org.apache.sis.metadata.iso.content.DefaultCoverageDescription;
 import org.apache.sis.metadata.sql.MetadataStoreException;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.CommonCRS;
+import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreReferencingException;
 import org.apache.sis.util.Characters;
@@ -67,7 +66,6 @@ import org.apache.sis.internal.util.StandardDateFormat;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.internal.util.Utilities;
 
-import static java.util.Collections.singleton;
 import static org.apache.sis.internal.util.CollectionsExt.singletonOrNull;
 
 // Branch-dependent imports
@@ -220,7 +218,7 @@ final class LandsatReader {
     /**
      * Where to send the warnings.
      */
-    private final WarningListeners<?> listeners;
+    private final WarningListeners<DataStore> listeners;
 
     /**
      * Group in process of being parsed, or {@code null} if none.
@@ -297,7 +295,7 @@ final class LandsatReader {
      * @param  filename   an identifier of the file being read, or {@code null} if unknown.
      * @param  listeners  where to sent warnings that may occur during the parsing process.
      */
-    LandsatReader(final String filename, final WarningListeners<?> listeners) {
+    LandsatReader(final String filename, final WarningListeners<DataStore> listeners) {
         this.filename  = filename;
         this.listeners = listeners;
         this.metadata  = new MetadataBuilder();
@@ -458,7 +456,7 @@ final class LandsatReader {
              * Example: "0501403126384_00011"
              */
             case "REQUEST_ID": {
-                metadata.addAcquisitionRequirement(value);
+                metadata.addAcquisitionRequirement(null, value);
                 break;
             }
             /*
@@ -467,7 +465,7 @@ final class LandsatReader {
              * Example: "LC81230522014071LGN00".
              */
             case "LANDSAT_SCENE_ID": {
-                metadata.addIdentifier(value);
+                metadata.addIdentifier(null, value, MetadataBuilder.Scope.ALL);
                 break;
             }
             /*
@@ -477,7 +475,8 @@ final class LandsatReader {
              * Example: "2014-03-12T06:06:35Z".
              */
             case "FILE_DATE": {
-                metadata.add(StandardDateFormat.toDate(OffsetDateTime.parse(value)), DateType.CREATION);
+                metadata.addCitationDate(StandardDateFormat.toDate(OffsetDateTime.parse(value)),
+                                         DateType.CREATION, MetadataBuilder.Scope.ALL);
                 break;
             }
             /*
@@ -511,8 +510,8 @@ final class LandsatReader {
              * Value is "GEOTIFF".
              */
             case "OUTPUT_FORMAT": {
-                if ("GeoTIFF".equalsIgnoreCase(value)) {
-                    value = "GeoTIFF";                      // Because 'metadata.setFormat(…)' is case-sensitive.
+                if (Constants.GEOTIFF.equalsIgnoreCase(value)) {
+                    value = Constants.GEOTIFF;              // Because 'metadata.setFormat(…)' is case-sensitive.
                 }
                 try {
                     metadata.setFormat(value);
@@ -526,7 +525,7 @@ final class LandsatReader {
              * Example: "LANDSAT_8".
              */
             case "SPACECRAFT_ID": {
-                metadata.addPlatform(value);
+                metadata.addPlatform(null, value);
                 break;
             }
             /*
@@ -534,7 +533,7 @@ final class LandsatReader {
              * Example: "OLI", "TIRS" or "OLI_TIRS".
              */
             case "SENSOR_ID": {
-                metadata.addInstrument(value);
+                metadata.addInstrument(null, value);
                 break;
             }
             /*
@@ -844,7 +843,7 @@ final class LandsatReader {
             final Date t = StandardDateFormat.toDate(st);
             metadata.addAcquisitionTime(t);
             try {
-                metadata.addExtent(t, t);
+                metadata.addTemporalExtent(t, t);
             } catch (UnsupportedOperationException e) {
                 // May happen if the temporal module (which is optional) is not on the classpath.
                 warning(null, null, e);
@@ -889,8 +888,8 @@ final class LandsatReader {
      * @throws FactoryException if an error occurred while creating the Coordinate Reference System.
      */
     final Metadata getMetadata() throws FactoryException {
-        metadata.add(Locale.ENGLISH, MetadataBuilder.Scope.METADATA);
-        metadata.add(ScopeCode.COVERAGE);
+        metadata.addLanguage(Locale.ENGLISH, MetadataBuilder.Scope.METADATA);
+        metadata.addResourceScope(ScopeCode.COVERAGE, null);
         try {
             flushSceneTime();
         } catch (DateTimeException e) {
@@ -904,7 +903,7 @@ final class LandsatReader {
          */
         if (datum != null) {
             if (utmZone > 0) {
-                metadata.add(datum.universal(1, TransverseMercator.Zoner.UTM.centralMeridian(utmZone)));
+                metadata.addReferenceSystem(datum.universal(1, TransverseMercator.Zoner.UTM.centralMeridian(utmZone)));
             }
             if (projection != null) {
                 final double sp = projection.parameter(Constants.STANDARD_PARALLEL_1).doubleValue();
@@ -920,7 +919,7 @@ final class LandsatReader {
                             Collections.singletonMap(ProjectedCRS.NAME_KEY, "Polar stereographic"),
                             datum.geographic(), projection, crs.getCoordinateSystem());
                 }
-                metadata.add(crs);
+                metadata.addReferenceSystem(crs);
             }
         }
         /*
@@ -933,11 +932,11 @@ final class LandsatReader {
             final int width  = gridSizes[i  ];
             final int height = gridSizes[i+1];
             if (width != 0 || height != 0) {
-                metadata.newGridRepresentation();
-                metadata.setAxisName((short) 0, DimensionNameType.SAMPLE);
-                metadata.setAxisName((short) 1, DimensionNameType.LINE);
-                metadata.setAxisLength((short) 0, width);
-                metadata.setAxisLength((short) 1, height);
+                metadata.newGridRepresentation(MetadataBuilder.GridType.GEORECTIFIED);
+                metadata.setAxisName(0, DimensionNameType.SAMPLE);
+                metadata.setAxisName(1, DimensionNameType.LINE);
+                metadata.setAxisLength(0, width);
+                metadata.setAxisLength(1, height);
             }
         }
         /*
@@ -947,18 +946,6 @@ final class LandsatReader {
          */
         final DefaultMetadata result = metadata.build(false);
         if (result != null) {
-            /*
-             * If there is exactly one data identification (which is usually the case, unless the user has invoked the
-             * read(BufferedReader) method many times), use the same identifier and date for the metadata as a whole.
-             */
-            final Identification id = singletonOrNull(result.getIdentificationInfo());
-            if (id != null) {
-                final Citation citation = id.getCitation();
-                if (citation != null) {
-                    result.setMetadataIdentifier(singletonOrNull(citation.getIdentifiers()));
-                    result.setDateInfo(singleton(singletonOrNull(citation.getDates())));
-                }
-            }
             /*
              * Set information about all non-null bands. The bands are categorized in three groups:
              * PANCHROMATIC, REFLECTIVE and THERMAL. The group in which each band belong is encoded

@@ -23,6 +23,7 @@ import java.util.Locale;
 import java.util.Objects;
 import org.opengis.util.ScopedName;
 import org.opengis.util.GenericName;
+import org.opengis.util.InternationalString;
 import org.apache.sis.internal.feature.Resources;
 import org.apache.sis.feature.AbstractIdentifiedType;
 import org.apache.sis.util.resources.Vocabulary;
@@ -49,12 +50,28 @@ import org.opengis.feature.PropertyNotFoundException;
  *   <li>the description — information beyond that required for concise definition of the element.</li>
  * </ul>
  *
+ * The name is mandatory and can be specified as either {@link org.opengis.util.LocalName},
+ * {@link org.opengis.util.ScopedName}, {@link String} or {@link InternationalString} instance.
+ * All other properties are optional.
+ *
  * <div class="section">Default namespace</div>
  * In many cases, the names of all {@code AttributeType}s and {@code AssociationRole}s to create
  * within a {@code FeatureType} share the same namespace.
- * For making name creations more convenient, a default namespace can be
- * {@linkplain FeatureTypeBuilder#setDefaultScope specified once} and applied automatically
- * to all names created by the {@link #setName(String)} method.
+ * For making name creations more convenient, the namespace can be
+ * {@linkplain FeatureTypeBuilder#setNameSpace specified once} and applied automatically
+ * to all names created by the {@link #setName(CharSequence)} method.
+ * Note that namespaces will not be visible in the name {@linkplain org.apache.sis.util.iso.DefaultLocalName#toString()
+ * string representation} unless the {@linkplain org.apache.sis.util.iso.DefaultLocalName#toFullyQualifiedName() fully
+ * qualified name} is requested.
+ * Example:
+ *
+ * {@preformat java
+ *     FeatureTypeBuilder builder = new FeatureTypeBuilder().setNameSpace("MyNameSpace").setName("City");
+ *     FeatureType city = builder.build();
+ *
+ *     System.out.println(city.getName());                              // Prints "City"
+ *     System.out.println(city.getName().toFullyQualifiedName());       // Prints "MyNameSpace:City"
+ * }
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
@@ -71,6 +88,8 @@ public abstract class TypeBuilder implements Localized {
 
     /**
      * Creates a new builder initialized to the values of the given builder.
+     * This constructor is for {@link AttributeTypeBuilder#setValueClass(Class)}
+     * and {@link CharacteristicTypeBuilder#setValueClass(Class)} implementations.
      *
      * @param builder  the builder from which to copy information.
      */
@@ -79,19 +98,36 @@ public abstract class TypeBuilder implements Localized {
     }
 
     /**
-     * Creates a new builder initialized to the values of an existing type.
+     * Creates a new builder initialized to the given configuration.
      */
-    TypeBuilder(final IdentifiedType template, final Locale locale) {
+    TypeBuilder(final Locale locale) {
         identification = new HashMap<>(4);
         putIfNonNull(Errors.LOCALE_KEY, locale);
-        if (template != null) {
-            putIfNonNull(AbstractIdentifiedType.NAME_KEY,        template.getName());
-            putIfNonNull(AbstractIdentifiedType.DEFINITION_KEY,  template.getDefinition());
-            putIfNonNull(AbstractIdentifiedType.DESIGNATION_KEY, template.getDesignation());
-            putIfNonNull(AbstractIdentifiedType.DESCRIPTION_KEY, template.getDescription());
-            if (template instanceof Deprecable && ((Deprecable) template).isDeprecated()) {
-                identification.put(AbstractIdentifiedType.DEPRECATED_KEY, Boolean.TRUE);
-            }
+    }
+
+    /**
+     * Resets the identification map. After invoking this method, this {@code TypeBuilder}
+     * is in same state that after it has been {@linkplain #TypeBuilder(Locale) constructed}.
+     *
+     * @see #clearCache()
+     */
+    final void reset() {
+        final Object locale = identification.get(Errors.LOCALE_KEY);
+        identification.clear();
+        putIfNonNull(Errors.LOCALE_KEY, locale);
+    }
+
+    /**
+     * Initializes this builder to the value of the given type.
+     * The caller is responsible to invoke {@link #reset()} (if needed) before this method.
+     */
+    final void initialize(final IdentifiedType template) {
+        putIfNonNull(AbstractIdentifiedType.NAME_KEY,        template.getName());
+        putIfNonNull(AbstractIdentifiedType.DEFINITION_KEY,  template.getDefinition());
+        putIfNonNull(AbstractIdentifiedType.DESIGNATION_KEY, template.getDesignation());
+        putIfNonNull(AbstractIdentifiedType.DESCRIPTION_KEY, template.getDescription());
+        if (template instanceof Deprecable && ((Deprecable) template).isDeprecated()) {
+            identification.put(AbstractIdentifiedType.DEPRECATED_KEY, Boolean.TRUE);
         }
     }
 
@@ -126,7 +162,7 @@ public abstract class TypeBuilder implements Localized {
                             name = buffer.appendCodePoint(lc).append(name, n, length).toString();
                         }
                     }
-                    identification.put(AbstractIdentifiedType.NAME_KEY, name(null, name));
+                    identification.put(AbstractIdentifiedType.NAME_KEY, createLocalName(name));
                 }
             }
         }
@@ -135,18 +171,20 @@ public abstract class TypeBuilder implements Localized {
 
     /**
      * If the object created by the last call to {@code build()} has been cached, clears that cache.
+     *
+     * @see #reset()
      */
     abstract void clearCache();
 
     /**
-     * Creates a generic name from the given scope and local part.
-     * An empty scope means no scope. A {@code null} scope means the
-     * {@linkplain FeatureTypeBuilder#setDefaultScope(String) default scope}.
-     *
-     * @param scope      the scope of the name to create, or {@code null} if the name is local.
-     * @param localPart  the local part of the generic name (can not be {@code null}).
+     * Creates a local name in the {@linkplain FeatureTypeBuilder#setNameSpace feature namespace}.
      */
-    abstract GenericName name(String scope, String localPart);
+    abstract GenericName createLocalName(final CharSequence name);
+
+    /**
+     * Creates a generic name in the {@linkplain FeatureTypeBuilder#setNameSpace feature namespace}.
+     */
+    abstract GenericName createGenericName(final CharSequence... names);
 
     /**
      * Returns the name of the {@code IdentifiedType} to create, or {@code null} if undefined.
@@ -155,8 +193,9 @@ public abstract class TypeBuilder implements Localized {
      *
      * @return the name of the {@code IdentifiedType} to create (may be a default name or {@code null}).
      *
-     * @see AbstractIdentifiedType#getName()
      * @see #setName(GenericName)
+     * @see AbstractIdentifiedType#getName()
+     * @see FeatureTypeBuilder#getNameSpace()
      */
     public GenericName getName() {
         return (GenericName) identification().get(AbstractIdentifiedType.NAME_KEY);
@@ -190,7 +229,7 @@ public abstract class TypeBuilder implements Localized {
      * @return {@code this} for allowing method calls chaining.
      *
      * @see #getName()
-     * @see #setName(String)
+     * @see #setName(CharSequence)
      * @see AbstractIdentifiedType#NAME_KEY
      */
     public TypeBuilder setName(final GenericName name) {
@@ -202,48 +241,64 @@ public abstract class TypeBuilder implements Localized {
     }
 
     /**
-     * Sets the {@code IdentifiedType} name as a simple string with the default scope.
-     * The default scope is the value specified by the last call to {@link FeatureTypeBuilder#setDefaultScope(String)}.
-     * The name will be a {@linkplain org.apache.sis.util.iso.DefaultLocalName local name} if no default scope
-     * has been specified, or a {@linkplain org.apache.sis.util.iso.DefaultScopedName scoped name} otherwise.
+     * Sets the {@code IdentifiedType} name as a simple string (local name).
+     * The namespace will be the value specified by the last call to {@link FeatureTypeBuilder#setNameSpace(CharSequence)},
+     * but that namespace will not be visible in the {@linkplain org.apache.sis.util.iso.DefaultLocalName#toString()
+     * string representation} unless the {@linkplain org.apache.sis.util.iso.DefaultLocalName#toFullyQualifiedName()
+     * fully qualified name} is requested.
      *
-     * <p>This convenience method creates a {@link GenericName} instance,
-     * then delegates to {@link #setName(GenericName)}.</p>
+     * <p>This convenience method creates a {@link org.opengis.util.LocalName} instance from
+     * the given {@code CharSequence}, then delegates to {@link #setName(GenericName)}.</p>
      *
-     * @param  localPart  the local part of the generic name (can not be {@code null}).
+     * @param  localPart  the local part of the generic name as a {@link String} or {@link InternationalString}.
      * @return {@code this} for allowing method calls chaining.
      *
      * @see #getName()
-     * @see #setName(String, String)
+     * @see #setName(CharSequence...)
+     * @see FeatureTypeBuilder#getNameSpace()
      */
-    public TypeBuilder setName(final String localPart) {
+    public TypeBuilder setName(final CharSequence localPart) {
         ensureNonEmpty("localPart", localPart);
-        return setName(name(null, localPart));
+        return setName(createLocalName(localPart));
     }
 
     /**
      * Sets the {@code IdentifiedType} name as a string in the given scope.
-     * The name will be a {@linkplain org.apache.sis.util.iso.DefaultLocalName local name} if the given scope is
-     * {@code null} or empty, or a {@linkplain org.apache.sis.util.iso.DefaultScopedName scoped name} otherwise.
-     * If a {@linkplain FeatureTypeBuilder#setDefaultScope(String) default scope} has been specified, then the
-     * {@code scope} argument overrides it.
+     * The {@code components} array must contain at least one element.
+     * The last component (the {@linkplain org.apache.sis.util.iso.DefaultScopedName#tip() tip}) will be sufficient
+     * in many cases for calls to the {@link org.apache.sis.feature.AbstractFeature#getProperty(String)} method.
+     * The other elements before the last one are optional and can be used for resolving ambiguity.
+     * They will be visible as the name {@linkplain org.apache.sis.util.iso.DefaultScopedName#path() path}.
      *
-     * <p>This convenience method creates a {@link GenericName} instance,
-     * then delegates to {@link #setName(GenericName)}.</p>
+     * <div class="note"><b>Example:</b>
+     * a call to {@code setName("A", "B", "C")} will create a "A:B:C" name.
+     * A property built with this name can be obtained from a feature by a call to {@code feature.getProperty("C")}
+     * if there is no ambiguity, or otherwise by a call to {@code feature.getProperty("B:C")} (if non-ambiguous) or
+     * {@code feature.getProperty("A:B:C")}.</div>
      *
-     * @param  scope      the scope of the name to create, or {@code null} if the name is local.
-     * @param  localPart  the local part of the generic name (can not be {@code null}).
+     * In addition to the path specified by the {@code components} array, the name may also contain
+     * a namespace specified by the last call to {@link FeatureTypeBuilder#setNameSpace(CharSequence)}.
+     * But contrarily to the specified components, the namespace will not be visible in the name
+     * {@linkplain org.apache.sis.util.iso.DefaultScopedName#toString() string representation} unless the
+     * {@linkplain org.apache.sis.util.iso.DefaultScopedName#toFullyQualifiedName() fully qualified name} is requested.
+     *
+     * <p>This convenience method creates a {@link org.opengis.util.LocalName} or {@link org.opengis.util.ScopedName}
+     * instance depending on whether the {@code names} array contains exactly 1 element or more than 1 element, then
+     * delegates to {@link #setName(GenericName)}.</p>
+     *
+     * @param  components  the name components as an array of {@link String} or {@link InternationalString} instances.
      * @return {@code this} for allowing method calls chaining.
      *
      * @see #getName()
-     * @see #setName(String)
+     * @see #setName(CharSequence)
+     * @see FeatureTypeBuilder#getNameSpace()
      */
-    public TypeBuilder setName(String scope, final String localPart) {
-        ensureNonEmpty("localPart", localPart);
-        if (scope == null) {
-            scope = "";                                 // For preventing the use of default scope.
+    public TypeBuilder setName(final CharSequence... components) {
+        ensureNonNull("components", components);
+        if (components.length == 0) {
+            throw new IllegalArgumentException(errors().getString(Errors.Keys.EmptyArgument_1, "components"));
         }
-        return setName(name(scope, localPart));
+        return setName(createGenericName(components));
     }
 
     /**
@@ -469,7 +524,7 @@ public abstract class TypeBuilder implements Localized {
      * @throws NullArgumentException if {@code text} is null.
      * @throws IllegalArgumentException if {@code text} is empty.
      */
-    final void ensureNonEmpty(final String name, final String text) {
+    final void ensureNonEmpty(final String name, final CharSequence text) {
         if (text == null) {
             throw new NullArgumentException(errors().getString(Errors.Keys.NullArgument_1, name));
         }

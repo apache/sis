@@ -20,7 +20,7 @@ import org.opengis.util.FactoryException;
 
 
 /**
- * Thrown when an object can not be created because a resource is missing.
+ * Thrown when a particular object can not be created because a resource is missing.
  * The most common case is a NADCON or NTv2 datum shift operation requested while the
  * datum shift grids was not found in the {@code $SIS_DATA/DatumChanges} directory.
  *

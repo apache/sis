@@ -81,6 +81,8 @@
  *       than an inclusion area.</li>
  * </ul>
  *
+ * @see org.apache.sis.setup.GeometryLibrary
+ *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 0.8
  * @since   0.3

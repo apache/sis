@@ -101,7 +101,7 @@ import java.util.function.Function;
  * @author  Martin Desruisseaux (IRD)
  * @author  Didier Richard (IGN)
  * @author  John Grange
- * @version 0.7
+ * @version 0.8
  * @since   0.7
  * @module
  */
@@ -161,12 +161,19 @@ public class SQLTranslator implements Function<String,String> {
      *       In such case, {@code SQLTranslator} will tries to automatically detect the schema.</li>
      * </ul>
      *
-     * <p><b>Consider this field as final.</b> This field is non-final only for construction convenience,
-     * or for updating after the {@link EPSGInstaller} class created the database.</p>
+     * <b>Consider this field as final.</b> This field is non-final only for construction convenience,
+     * or for updating after the {@link EPSGInstaller} class created the database.
      *
      * @see #getSchema()
      */
     private String schema;
+
+    /**
+     * Whether the table names are prefixed by {@value #TABLE_PREFIX}. When installed by Apache SIS,
+     * the table names are not prefixed if the tables are stored in a schema. However the dataset may
+     * have been installed manually by users following different rules.
+     */
+    private boolean isPrefixed;
 
     /**
      * Mapping from words used in the MS-Access database to words used in the ANSI versions of EPSG databases.
@@ -256,6 +263,7 @@ public class SQLTranslator implements Function<String,String> {
             try (ResultSet result = md.getTables(catalog, schema, table, null)) {
                 if (result.next()) {
                     isTableFound    = true;
+                    isPrefixed      = table.startsWith(TABLE_PREFIX);
                     quoteTableNames = (i == MIXED_CASE);
                     do {
                         catalog = result.getString("TABLE_CAT");
@@ -406,7 +414,7 @@ public class SQLTranslator implements Function<String,String> {
                 if (quoteTableNames) {
                     ansi.append(quote);
                 }
-                if (schema == null) {
+                if (isPrefixed) {
                     ansi.append(TABLE_PREFIX);
                 }
                 if (quoteTableNames) {

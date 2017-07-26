@@ -126,6 +126,11 @@ public final class Errors extends IndexedResourceBundle {
         public static final short CanNotParseFile_2 = 10;
 
         /**
+         * Can not parse “{0}”.
+         */
+        public static final short CanNotParse_1 = 180;
+
+        /**
          * Can not read property “{1}” in file “{0}”.
          */
         public static final short CanNotReadPropertyInFile_2 = 11;
@@ -149,6 +154,11 @@ public final class Errors extends IndexedResourceBundle {
          * Can not set a value for property “{0}”.
          */
         public static final short CanNotSetPropertyValue_1 = 15;
+
+        /**
+         * Can not store the {0} value in this vector.
+         */
+        public static final short CanNotStoreInVector_1 = 175;
 
         /**
          * Can not transform envelope.
@@ -184,6 +194,11 @@ public final class Errors extends IndexedResourceBundle {
          * Database error while creating a ‘{0}’ object for the “{1}” identifier.
          */
         public static final short DatabaseError_2 = 21;
+
+        /**
+         * Failed to {0,choice,0#insert|1#update} record “{2}” in database table “{1}”.
+         */
+        public static final short DatabaseUpdateFailure_3 = 174;
 
         /**
          * Thread “{0}” is dead.
@@ -454,6 +469,11 @@ public final class Errors extends IndexedResourceBundle {
         public static final short InsufficientArgumentSize_3 = 74;
 
         /**
+         * “{0}” is an invalid version identifier.
+         */
+        public static final short InvalidVersionIdentifier_1 = 179;
+
+        /**
          * A different value is already associated to the “{0}” key.
          */
         public static final short KeyCollision_1 = 75;
@@ -535,9 +555,20 @@ public final class Errors extends IndexedResourceBundle {
         public static final short MissingValueInColumn_1 = 90;
 
         /**
+         * Can not return a single value for “{0}” because there is at least two occurrences, at
+         * indices {1} and {2}.
+         */
+        public static final short MultiOccurenceValueAtIndices_3 = 173;
+
+        /**
          * Options “{0}” and “{1}” are mutually exclusive.
          */
         public static final short MutuallyExclusiveOptions_2 = 91;
+
+        /**
+         * Native interfaces “{1}” not available for the {0} platform.
+         */
+        public static final short NativeInterfacesNotFound_2 = 176;
 
         /**
          * Argument ‘{0}’ shall not be negative. The given value was {1}.
@@ -883,6 +914,16 @@ public final class Errors extends IndexedResourceBundle {
          * The “{0}” argument value is unsupported.
          */
         public static final short UnsupportedArgumentValue_1 = 170;
+
+        /**
+         * Axes with “{0}” direction are not supported by this operation.
+         */
+        public static final short UnsupportedAxisDirection_1 = 177;
+
+        /**
+         * The “{0}” coordinate system is not supported by this operation.
+         */
+        public static final short UnsupportedCoordinateSystem_1 = 178;
 
         /**
          * The “{0}” datum is not supported by this operation.

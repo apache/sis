@@ -25,6 +25,7 @@ import org.opengis.metadata.spatial.Dimension;
 import org.opengis.metadata.spatial.DimensionNameType;
 import org.apache.sis.internal.jaxb.gco.GO_Measure;
 import org.apache.sis.metadata.iso.ISOMetadata;
+import org.apache.sis.metadata.TitleProperty;
 import org.apache.sis.measure.ValueRange;
 import org.apache.sis.util.ArgumentChecks;
 
@@ -33,6 +34,11 @@ import static org.apache.sis.internal.metadata.MetadataUtilities.ensurePositive;
 
 /**
  * Axis properties.
+ * The following properties are mandatory in a well-formed metadata according ISO 19115:
+ *
+ * <div class="preformat">{@code MD_Dimension}
+ * {@code   ├─dimensionName……} Name of the axis.
+ * {@code   └─dimensionSize……} Number of elements along the axis.</div>
  *
  * <p><b>Limitations:</b></p>
  * <ul>
@@ -52,6 +58,7 @@ import static org.apache.sis.internal.metadata.MetadataUtilities.ensurePositive;
  * @module
  */
 @SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
+@TitleProperty(name = "dimensionName")
 @XmlType(name = "MD_Dimension_Type", propOrder = {
     "dimensionName",
     "dimensionSize",
@@ -237,12 +244,12 @@ public class DefaultDimension extends ISOMetadata implements Dimension {
     }
 
     /**
-     * Returns the enhancement/ modifier of the dimension name.
+     * Returns the enhancement / modifier of the dimension name.
      *
      * <div class="note"><b>Example:</b>
      * dimensionName = "column", dimensionTitle = "longitude"</div>
      *
-     * @return the enhancement/ modifier of the dimension name.
+     * @return the enhancement / modifier of the dimension name.
      *
      * @since 0.5
      */
@@ -253,9 +260,9 @@ public class DefaultDimension extends ISOMetadata implements Dimension {
     }
 
     /**
-     * Sets the enhancement/ modifier of the dimension name.
+     * Sets the enhancement / modifier of the dimension name.
      *
-     * @param  newValue  the new enhancement/ modifier of the dimension name.
+     * @param  newValue  the new enhancement / modifier of the dimension name.
      *
      * @since 0.5
      */

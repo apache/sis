@@ -34,6 +34,11 @@ import static org.apache.sis.internal.metadata.MetadataUtilities.ensurePositive;
 
 /**
  * The characteristic of each dimension (layer) included in the resource.
+ * The following property is conditional (i.e. mandatory under some circumstances)
+ * in a well-formed metadata according ISO 19115:
+ *
+ * <div class="preformat">{@code MD_SampleDimension}
+ * {@code   └─units………………………} Units of data in each dimension included in the resource.</div>
  *
  * <p><b>Limitations:</b></p>
  * <ul>
@@ -73,6 +78,11 @@ public class DefaultSampleDimension extends DefaultRangeDimension implements Sam
     private static final long serialVersionUID = 4517148689016920767L;
 
     /**
+     * Number of values used in a thematic classification resource.
+     */
+    private Integer numberOfValues;
+
+    /**
      * Minimum value of data values in each dimension included in the resource.
      */
     private Double minValue;
@@ -86,11 +96,6 @@ public class DefaultSampleDimension extends DefaultRangeDimension implements Sam
      * Mean value of data values in each dimension included in the resource.
      */
     private Double meanValue;
-
-    /**
-     * Number of values used in a thematicClassification resource.
-     */
-    private Integer numberOfValues;
 
     /**
      * Standard deviation of data values in each dimension included in the resource.
@@ -213,6 +218,31 @@ public class DefaultSampleDimension extends DefaultRangeDimension implements Sam
     }
 
     /**
+     * Returns the number of values used in a thematic classification resource.
+     *
+     * @return the number of values used in a thematic classification resource, or {@code null} if none.
+     */
+    @Override
+    @ValueRange(minimum = 0)
+/// @XmlElement(name = "numberOfValues")
+    public Integer getNumberOfValues() {
+        return numberOfValues;
+    }
+
+    /**
+     * Sets the number of values used in a thematic classification resource.
+     *
+     * @param  newValue  the new number of values used in a thematic classification resource.
+     * @throws IllegalArgumentException if the given value is negative.
+     */
+    public void setNumberOfValues(final Integer newValue) {
+        checkWritePermission();
+        if (ensurePositive(DefaultSampleDimension.class, "numberOfValues", false, newValue)) {
+            numberOfValues = newValue;
+        }
+    }
+
+    /**
      * Returns the minimum value of data values in each dimension included in the resource.
      *
      * @return minimum value of data values in each dimension included in the resource, or {@code null} if unspecified.
@@ -273,31 +303,6 @@ public class DefaultSampleDimension extends DefaultRangeDimension implements Sam
     public void setMeanValue(final Double newValue) {
         checkWritePermission();
         meanValue = newValue;
-    }
-
-    /**
-     * Returns the number of values used in a thematic classification resource.
-     *
-     * @return the number of values used in a thematic classification resource, or {@code null} if none.
-     */
-    @Override
-    @ValueRange(minimum = 0)
-/// @XmlElement(name = "numberOfValues")
-    public Integer getNumberOfValues() {
-        return numberOfValues;
-    }
-
-    /**
-     * Sets the number of values used in a thematic classification resource.
-     *
-     * @param  newValue  the new number of values used in a thematic classification resource.
-     * @throws IllegalArgumentException if the given value is negative.
-     */
-    public void setNumberOfValues(final Integer newValue) {
-        checkWritePermission();
-        if (ensurePositive(DefaultSampleDimension.class, "numberOfValues", false, newValue)) {
-            numberOfValues = newValue;
-        }
     }
 
     /**
@@ -377,7 +382,7 @@ public class DefaultSampleDimension extends DefaultRangeDimension implements Sam
     /**
      * Sets the physical value corresponding to a cell value of zero.
      *
-     * @param  newValue  the new physical value corresponding to a cell value of zero, or {@code null} if none..
+     * @param  newValue  the new physical value corresponding to a cell value of zero.
      */
     public void setOffset(final Double newValue) {
         checkWritePermission();

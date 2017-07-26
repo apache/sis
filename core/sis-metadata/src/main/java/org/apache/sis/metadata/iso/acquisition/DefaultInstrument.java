@@ -31,6 +31,12 @@ import org.apache.sis.internal.jaxb.NonMarshalledAuthority;
 
 /**
  * Designations for the measuring instruments.
+ * The following properties are mandatory in a well-formed metadata according ISO 19115:
+ *
+ * <div class="preformat">{@code MI_Instrument}
+ * {@code   ├─identifier……} Unique identification of the instrument.
+ * {@code   │   └─code…………} Alphanumeric value identifying an instance in the namespace.
+ * {@code   └─type……………………} Name of the type of instrument.</div>
  *
  * <p><b>Limitations:</b></p>
  * <ul>

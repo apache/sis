@@ -16,6 +16,8 @@
  */
 package org.apache.sis.internal.util;
 
+import java.util.Date;
+import java.util.concurrent.TimeUnit;
 import java.text.ParseException;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
@@ -38,6 +40,17 @@ import java.time.LocalDateTime;
  * @module
  */
 public final strictfp class StandardDateFormatTest extends TestCase {
+    /**
+     * Verifies the {@link StandardDateFormat#MILLISECONDS_PER_DAY}, {@link StandardDateFormat#NANOS_PER_MILLISECOND}
+     * and {@link StandardDateFormat#NANOS_PER_SECOND} constant values.
+     */
+    @Test
+    public void verifyConstantValues() {
+        assertEquals("MILLISECONDS_PER_DAY",  TimeUnit.DAYS.toMillis(1),        StandardDateFormat.MILLISECONDS_PER_DAY);
+        assertEquals("NANOS_PER_MILLISECOND", TimeUnit.MILLISECONDS.toNanos(1), StandardDateFormat.NANOS_PER_MILLISECOND);
+        assertEquals("NANOS_PER_SECOND",      TimeUnit.SECONDS.toNanos(1),      StandardDateFormat.NANOS_PER_SECOND);
+    }
+
     /**
      * Tests parsing a date.
      * Since the implementation is completely different in JDK8 branch than in previous branch,
@@ -78,5 +91,22 @@ public final strictfp class StandardDateFormatTest extends TestCase {
         assertEquals(LocalDateTime.of(2016, 6, 27, 16, 48, 12),                    StandardDateFormat.parseBest("2016-06-27T16:48:12"));
         assertEquals(LocalDateTime.of(2016, 6, 27, 16, 48),                        StandardDateFormat.parseBest("2016-06-27T16:48"));
         assertEquals(LocalDate.of(2016, 6, 27),                                    StandardDateFormat.parseBest("2016-06-27"));
+    }
+
+    /**
+     * Tests formatting and parsing a negative year.
+     * This test uses the Julian epoch (January 1st, 4713 BC at 12:00 UTC in proleptic Julian calendar;
+     * equivalent to November 24, 4714 BC when expressed in the proleptic Gregorian calendar instead).
+     * We use astronomical year numbering: 4714 BC is numbered -4713.
+     *
+     * @throws ParseException if an error occurred while parsing the date.
+     */
+    @Test
+    public void testNegativeYear() throws ParseException {
+        final Date julian = new Date(-210866760000000L);            // Same epoch than CommonCRS.Temporal.JULIAN.
+        final String expected = "-4713-11-24T12:00:00.000";         // Proleptic Gregorian calendar, astronomical year.
+        final StandardDateFormat f = new StandardDateFormat();
+        assertEquals(expected, f.format(julian));
+        assertEquals(julian, f.parse(expected));
     }
 }

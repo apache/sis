@@ -22,9 +22,7 @@ import java.util.UUID;
 import java.util.Objects;
 import java.io.Serializable;
 import java.util.logging.Level;
-import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
-import org.opengis.util.InternationalString;
 import org.apache.sis.xml.XLink;
 import org.apache.sis.xml.IdentifierMap;
 import org.apache.sis.xml.IdentifierSpace;
@@ -32,6 +30,10 @@ import org.apache.sis.xml.ValueConverter;
 import org.apache.sis.util.Debug;
 import org.apache.sis.util.resources.Messages;
 import org.apache.sis.internal.util.Citations;
+
+// Branch-dependent imports
+import org.opengis.metadata.Identifier;
+import org.opengis.util.InternationalString;
 
 
 /**

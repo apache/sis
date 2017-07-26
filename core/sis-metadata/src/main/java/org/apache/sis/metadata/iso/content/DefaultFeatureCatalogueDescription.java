@@ -25,11 +25,19 @@ import org.opengis.util.GenericName;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.content.FeatureCatalogueDescription;
 import org.opengis.metadata.content.FeatureTypeInfo;
+import org.apache.sis.internal.metadata.Dependencies;
 import org.apache.sis.internal.metadata.LegacyPropertyAdapter;
 
 
 /**
  * Information identifying the feature catalogue or the conceptual schema.
+ * The following properties are mandatory in a well-formed metadata according ISO 19115:
+ *
+ * <div class="preformat">{@code MD_FeatureCatalogueDescription}
+ * {@code   ├─includedWithDataset…………………} Indication of whether or not the feature catalogue is included with the dataset.
+ * {@code   └─featureCatalogueCitation……} Complete bibliographic reference to one or more external feature catalogues.
+ * {@code       ├─title……………………………………………} Name by which the cited resource is known.
+ * {@code       └─date………………………………………………} Reference date for the cited resource.</div>
  *
  * <p><b>Limitations:</b></p>
  * <ul>
@@ -239,6 +247,7 @@ public class DefaultFeatureCatalogueDescription extends AbstractContentInformati
     @Override
     @Deprecated
     @XmlElement(name = "featureTypes")
+    @Dependencies("getFeatureTypeInfo")
     public final Collection<GenericName> getFeatureTypes() {
         return new LegacyPropertyAdapter<GenericName,FeatureTypeInfo>(getFeatureTypeInfo()) {
             /** Stores a legacy value into the new kind of value. */

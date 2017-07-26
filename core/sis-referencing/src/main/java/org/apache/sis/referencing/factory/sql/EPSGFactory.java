@@ -38,6 +38,7 @@ import org.opengis.referencing.operation.CoordinateOperationFactory;
 import org.opengis.referencing.operation.CoordinateOperationAuthorityFactory;
 import org.opengis.referencing.operation.MathTransformFactory;
 import org.apache.sis.internal.metadata.sql.Initializer;
+import org.apache.sis.internal.referencing.DeferredCoordinateOperation;
 import org.apache.sis.internal.referencing.Resources;
 import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.internal.util.Constants;
@@ -459,7 +460,11 @@ public class EPSGFactory extends ConcurrentAuthorityFactory<EPSGDataAccess> impl
             } catch (SQLException e2) {
                 e.addSuppressed(e2);
             }
-            exception = new UnavailableFactoryException(message(e), e);
+            /*
+             * Derby sometime wraps SQLException into another SQLException.  For making the stack strace a
+             * little bit simpler, keep only the root cause provided that the exception type is compatible.
+             */
+            exception = new UnavailableFactoryException(message(e), Exceptions.unwrap(e));
         }
         exception.setUnavailableFactory(this);
         throw exception;
@@ -502,5 +507,18 @@ public class EPSGFactory extends ConcurrentAuthorityFactory<EPSGDataAccess> impl
     @Override
     protected boolean canClose(final EPSGDataAccess factory) {
         return factory.canClose();
+    }
+
+    /**
+     * Returns whether the given object can be cached.
+     * This method is invoked after {@link EPSGDataAccess} created a new object not previously in the cache.
+     *
+     * @return whether the given object should be cached.
+     *
+     * @since 0.8
+     */
+    @Override
+    protected boolean isCacheable(String code, Object object) {
+        return !(object instanceof DeferredCoordinateOperation);
     }
 }

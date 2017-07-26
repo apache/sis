@@ -24,15 +24,16 @@ import java.util.logging.LogRecord;
 /**
  * Intercepts non-fatal error messages logged by {@link org.apache.sis.storage.DataStore} or other SIS objects.
  * Warnings are encapsulated in {@link LogRecord} objects and logged at {@link Level#WARNING} if the emitter does not
- * have any registered any {@code WarningListener}. This listener allows applications to intercept warning records for:
+ * have registered any {@code WarningListener}. This listener allows applications to intercept warning records for
+ * displaying them in a dialog (or any other action that the application may choose) instead than logging them.
  *
- * <ul>
- *   <li>displaying the warning in a dialog or performing any other action that the application may choose,</li>
- *   <li>reducing the amount of records to be logged.</li>
- * </ul>
- *
- * The difference between using this listener or configuring the logging {@link java.util.logging.Handler} is
- * that listeners allow to handle the warnings on a per-{@code DataStore} (or any other emitter) instance.
+ * <div class="note"><b>Comparison with alternative approaches:</b>
+ * it is also possible to listen to login events by registering a custom {@link java.util.logging.Handler} to the logger.
+ * But {@code Handler} instances are registered on a per-logger basis and receive all messages sent to that logger
+ * regardless their emitter. By contrast, {@code WarningListener} instances are registered on a per-{@code DataStore}
+ * basis (or any other emitter) and receive all messages sent by that emitter regardless the destination logger.
+ * The emitter is part of the information given to the {@link #warningOccured(Object, LogRecord)} method,
+ * in addition to the log record.</div>
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.3

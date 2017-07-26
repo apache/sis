@@ -214,11 +214,12 @@ import org.junit.BeforeClass;
     org.apache.sis.referencing.factory.MultiAuthoritiesFactoryTest.class,
     org.apache.sis.referencing.factory.sql.EPSGFactoryTest.class,
     org.apache.sis.referencing.factory.sql.EPSGInstallerTest.class,
-    org.apache.sis.referencing.factory.sql.EPSGDataFormatterTest.class,
+    org.apache.sis.referencing.factory.sql.epsg.DataScriptFormatterTest.class,
     org.apache.sis.referencing.EPSGFactoryFallbackTest.class,
     org.apache.sis.referencing.AuthorityFactoriesTest.class,
     org.apache.sis.referencing.cs.CodesTest.class,
     org.apache.sis.referencing.CRSTest.class,
+    org.apache.sis.internal.referencing.DefinitionVerifierTest.class,
 
     // Coordinate operation finders are last, since they need everything else.
     org.apache.sis.referencing.operation.CoordinateOperationRegistryTest.class,
@@ -245,6 +246,7 @@ import org.junit.BeforeClass;
 
     org.apache.sis.distance.LatLonPointRadiusTest.class,        // Pending refactoring in a geometry package.
 
+    org.apache.sis.test.integration.CoordinateOperationTest.class,
     org.apache.sis.test.integration.DatumShiftTest.class,
     org.apache.sis.test.integration.MetadataTest.class,
     org.apache.sis.test.integration.ConsistencyTest.class

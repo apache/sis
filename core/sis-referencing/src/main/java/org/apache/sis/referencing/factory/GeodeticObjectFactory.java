@@ -62,6 +62,7 @@ import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.io.wkt.Parser;
+import org.apache.sis.util.Exceptions;
 import org.apache.sis.xml.XML;
 
 
@@ -1557,7 +1558,26 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
         try {
             object = XML.unmarshal(xml);
         } catch (JAXBException e) {
-            throw new FactoryException(e.getLocalizedMessage(), e);
+            /*
+             * The JAXB exception if often a wrapper around other exceptions, sometime InvocationTargetException.
+             * The exception cause is called "linked exception" by JAXB, presumably because it predates standard
+             * chained exception mechanism introduced in Java 1.4. The JAXB linked exceptions do not propagate the
+             * error message, so we have to take it from the cause, skipping InvocationTargetException since they
+             * are wrapper for other causes. If the cause is a JAXBException, we will keep it as the declared cause
+             * for simplifying the stack trace.
+             */
+            String message = e.getLocalizedMessage();
+            Throwable cause = e.getCause();
+            if (cause instanceof Exception) {
+                cause = Exceptions.unwrap((Exception) cause);
+                if (cause instanceof JAXBException) {
+                    e = (JAXBException) cause;
+                }
+                if (message == null) {
+                    message = cause.getLocalizedMessage();
+                }
+            }
+            throw new FactoryException(message, e);
         }
         if (object instanceof CoordinateReferenceSystem) {
             return (CoordinateReferenceSystem) object;
@@ -1593,6 +1613,13 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
      *     Id["EPSG",5641]]
      * }
      * </div>
+     *
+     * If the given text contains non-fatal anomalies
+     * (unknown or unsupported WKT elements, inconsistent unit definitions, unparsable axis abbreviations, <i>etc.</i>),
+     * warnings may be reported in a {@linkplain java.util.logging.Logger logger} named {@code "org.apache.sis.io.wkt"}.
+     * However this parser does not verify if the overall parsed object matches the EPSG (or other authority) definition,
+     * since this geodetic object factory is not an {@linkplain GeodeticAuthorityFactory authority factory}.
+     * For such verification, see the {@link org.apache.sis.referencing.CRS#fromWKT(String)} convenience method.
      *
      * <div class="section">Usage and performance considerations</div>
      * The default implementation uses a shared instance of {@link org.apache.sis.io.wkt.WKTFormat}

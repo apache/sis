@@ -36,10 +36,15 @@ import org.opengis.util.InternationalString;
 import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.metadata.iso.citation.DefaultCitationDate;
 import org.apache.sis.internal.metadata.LegacyPropertyAdapter;
+import org.apache.sis.internal.metadata.Dependencies;
 
 
 /**
  * Information about the scope and frequency of updating.
+ * The following property is mandatory in a well-formed metadata according ISO 19115:
+ *
+ * <div class="preformat">{@code MD_MaintenanceInformation}
+ * {@code   └─maintenanceAndUpdateFrequency……} Frequency with which changes and additions are made to the resource.</div>
  *
  * <p><b>Limitations:</b></p>
  * <ul>
@@ -230,6 +235,7 @@ public class DefaultMaintenanceInformation extends ISOMetadata implements Mainte
     @Override
     @Deprecated
     @XmlElement(name = "dateOfNextUpdate")
+    @Dependencies("getMaintenanceDates")
     public Date getDateOfNextUpdate() {
         final Collection<CitationDate> dates = getMaintenanceDates();
         if (dates != null) { // May be null on XML marshalling.
@@ -336,6 +342,7 @@ public class DefaultMaintenanceInformation extends ISOMetadata implements Mainte
     @Override
     @Deprecated
     @XmlElement(name = "updateScope")
+    @Dependencies("getMaintenanceScopes")
     public final Collection<ScopeCode> getUpdateScopes() {
         return new LegacyPropertyAdapter<ScopeCode,Scope>(getMaintenanceScopes()) {
             /** Stores a legacy value into the new kind of value. */
@@ -386,6 +393,7 @@ public class DefaultMaintenanceInformation extends ISOMetadata implements Mainte
     @Override
     @Deprecated
     @XmlElement(name = "updateScopeDescription")
+    @Dependencies("getMaintenanceScopes")
     public final Collection<ScopeDescription> getUpdateScopeDescriptions() {
         return new LegacyPropertyAdapter<ScopeDescription,Scope>(getMaintenanceScopes()) {
             /** Stores a legacy value into the new kind of value. */

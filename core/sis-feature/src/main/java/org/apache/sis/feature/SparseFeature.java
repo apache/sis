@@ -22,7 +22,6 @@ import java.util.Objects;
 import java.util.ConcurrentModificationException;
 import org.opengis.metadata.maintenance.ScopeCode;
 import org.opengis.metadata.quality.DataQuality;
-import org.apache.sis.internal.feature.Resources;
 import org.apache.sis.internal.util.Cloner;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.CorruptedObjectException;
@@ -59,7 +58,7 @@ final class SparseFeature extends AbstractFeature implements Cloneable {
     /**
      * A {@link #valuesKind} flag meaning that the {@link #properties} map contains raw values.
      */
-    private static final byte VALUES = 0; // Must be zero, because we want it to be 'valuesKind' default value.
+    private static final byte VALUES = 0;   // Must be zero, because we want it to be 'valuesKind' default value.
 
     /**
      * A {@link #valuesKind} flag meaning that the {@link #properties} map contains {@link Property} instances.
@@ -128,7 +127,7 @@ final class SparseFeature extends AbstractFeature implements Cloneable {
         if (index != null) {
             return index;
         }
-        throw new PropertyNotFoundException(Resources.format(Resources.Keys.PropertyNotFound_2, getName(), name));
+        throw new PropertyNotFoundException(propertyNotFound(type, getName(), name));
     }
 
     /**
@@ -243,7 +242,7 @@ final class SparseFeature extends AbstractFeature implements Cloneable {
             } else if (element instanceof FeatureAssociation) {
                 return getAssociationValue((FeatureAssociation) element);
             } else if (valuesKind == PROPERTIES) {
-                throw unsupportedPropertyType(((Property) element).getName());
+                throw new IllegalArgumentException(unsupportedPropertyType(((Property) element).getName()));
             } else {
                 throw new CorruptedObjectException(getName());
             }
@@ -278,7 +277,7 @@ final class SparseFeature extends AbstractFeature implements Cloneable {
              * a new value or a value of a different type, then we need to check the name and type validity.
              */
             if (!canSkipVerification(previous, value)) {
-                Object toStore = previous; // This initial value will restore the previous value if the check fail.
+                Object toStore = previous;  // This initial value will restore the previous value if the check fail.
                 try {
                     toStore = verifyPropertyValue(name, value);
                 } finally {

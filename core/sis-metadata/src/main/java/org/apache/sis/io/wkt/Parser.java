@@ -37,6 +37,12 @@ import org.opengis.util.FactoryException;
  *   <li>{@link org.apache.sis.geometry.Envelopes#fromWKT(CharSequence)}</li>
  * </ul>
  *
+ * Non-fatal anomalies found in Well Known Texts are reported in a {@linkplain java.util.logging.Logger logger}
+ * named {@code "org.apache.sis.io.wkt"}. Warnings may be for unknown or unsupported WKT elements, inconsistent
+ * unit definitions (unit symbol, scale factor or EPSG code), unparsable axis abbreviations, <i>etc.</i>
+ * However this parser does not verify if the overall parsed object matches the EPSG (or other authority) definition.
+ * For such verification, see {@link org.apache.sis.referencing.CRS#fromWKT(String)}.
+ *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.6
  * @since   0.6
@@ -48,6 +54,12 @@ public interface Parser {
      * Objects returned by this method are typically (but not necessarily)
      * {@linkplain org.apache.sis.referencing.crs.AbstractCRS Coordinate Reference Systems} or
      * {@linkplain org.apache.sis.referencing.operation.transform.AbstractMathTransform Math Transforms}.
+     * If the given text contains non-fatal anomalies, warnings may be reported in a
+     * {@linkplain java.util.logging.Logger logger} named {@code "org.apache.sis.io.wkt"}.
+     *
+     * <div class="note"><b>Tip:</b>
+     * for processing warnings in a different way than logging them, one can use
+     * {@link WKTFormat#parseObject(String)} followed by a call to {@link WKTFormat#getWarnings()}.</div>
      *
      * @param  text  object encoded in Well-Known Text format (version 1 or 2).
      * @return the result of parsing the given text.

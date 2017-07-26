@@ -31,6 +31,7 @@ import org.opengis.metadata.lineage.Processing;
 import org.opengis.metadata.lineage.ProcessStep;
 import org.opengis.metadata.lineage.ProcessStepReport;
 import org.apache.sis.metadata.iso.ISOMetadata;
+import org.apache.sis.metadata.TitleProperty;
 import org.apache.sis.util.iso.Types;
 import org.apache.sis.xml.Namespaces;
 
@@ -41,6 +42,10 @@ import static org.apache.sis.internal.metadata.MetadataUtilities.toMilliseconds;
 /**
  * Information about an event or transformation in the life of a resource.
  * Includes the process used to maintain the resource.
+ * The following property is mandatory in a well-formed metadata according ISO 19115:
+ *
+ * <div class="preformat">{@code LI_ProcessStep}
+ * {@code   └─description……} Description of the event, including related parameters or tolerances.</div>
  *
  * <p><b>Limitations:</b></p>
  * <ul>
@@ -60,6 +65,7 @@ import static org.apache.sis.internal.metadata.MetadataUtilities.toMilliseconds;
  * @module
  */
 @SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
+@TitleProperty(name = "description")
 @XmlType(name = "LI_ProcessStep_Type", propOrder = {
     "description",
     "rationale",

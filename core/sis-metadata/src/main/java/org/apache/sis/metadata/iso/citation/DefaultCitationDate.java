@@ -23,6 +23,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 import org.opengis.metadata.citation.CitationDate;
 import org.opengis.metadata.citation.DateType;
 import org.apache.sis.metadata.iso.ISOMetadata;
+import org.apache.sis.metadata.TitleProperty;
 
 import static org.apache.sis.internal.metadata.MetadataUtilities.toDate;
 import static org.apache.sis.internal.metadata.MetadataUtilities.toMilliseconds;
@@ -30,6 +31,11 @@ import static org.apache.sis.internal.metadata.MetadataUtilities.toMilliseconds;
 
 /**
  * Reference date and event used to describe it.
+ * The following properties are mandatory in a well-formed metadata according ISO 19115:
+ *
+ * <div class="preformat">{@code CI_Date}
+ * {@code   ├─date………………} Reference date for the cited resource.
+ * {@code   └─dateType……} Event used for reference date.</div>
  *
  * <p><b>Limitations:</b></p>
  * <ul>
@@ -47,6 +53,7 @@ import static org.apache.sis.internal.metadata.MetadataUtilities.toMilliseconds;
  * @module
  */
 @SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
+@TitleProperty(name = "date")
 @XmlType(name = "CI_Date_Type", propOrder = {
     "date",
     "dateType"

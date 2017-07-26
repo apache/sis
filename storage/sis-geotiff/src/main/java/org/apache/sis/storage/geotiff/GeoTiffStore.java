@@ -33,6 +33,7 @@ import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.storage.UnsupportedStorageException;
 import org.apache.sis.internal.storage.io.ChannelDataInput;
 import org.apache.sis.internal.storage.MetadataBuilder;
+import org.apache.sis.internal.util.Constants;
 import org.apache.sis.metadata.sql.MetadataStoreException;
 import org.apache.sis.storage.DataStoreClosedException;
 import org.apache.sis.util.resources.Errors;
@@ -107,12 +108,12 @@ public class GeoTiffStore extends DataStore {
             final Reader reader = reader();
             final MetadataBuilder builder = reader.metadata;
             try {
-                builder.setFormat("GeoTIFF");
+                builder.setFormat(Constants.GEOTIFF);
             } catch (MetadataStoreException e) {
                 warning(null, e);
             }
-            builder.add(encoding, MetadataBuilder.Scope.METADATA);
-            builder.add(ScopeCode.COVERAGE);
+            builder.addEncoding(encoding, MetadataBuilder.Scope.METADATA);
+            builder.addResourceScope(ScopeCode.COVERAGE, null);
             final Locale locale = getLocale();
             int n = 0;
             try {
@@ -136,7 +137,7 @@ public class GeoTiffStore extends DataStore {
     private Reader reader() throws DataStoreException {
         final Reader r = reader;
         if (r == null) {
-            throw new DataStoreClosedException(getLocale(), "GeoTIFF", StandardOpenOption.READ);
+            throw new DataStoreClosedException(getLocale(), Constants.GEOTIFF, StandardOpenOption.READ);
         }
         return r;
     }

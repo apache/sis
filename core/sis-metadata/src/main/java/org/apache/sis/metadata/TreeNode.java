@@ -178,9 +178,17 @@ class TreeNode implements Node {
         this.parent   = parent;
         this.metadata = metadata;
         this.baseType = baseType;
-        if (!table.standard.isMetadata(baseType)) {
+        if (!isMetadata(baseType)) {
             children = LEAF;
         }
+    }
+
+    /**
+     * Returns {@code true} if nodes for values of the given type can be expanded with more children.
+     * A return value of {@code false} means that values of the given type are leaves.
+     */
+    final boolean isMetadata(final Class<?> type) {
+        return table.standard.isMetadata(type);
     }
 
     /**
@@ -344,10 +352,63 @@ class TreeNode implements Node {
          * {@link KeyNamePolicy#UML_IDENTIFIER} instead than {@link KeyNamePolicy#JAVABEANS_PROPERTY}
          * in order to get the singular form instead of the plural one, because we will create one
          * node for each element in a collection.
+         *
+         * <p>If the property name is equals, ignoring case, to the simple type name, then this method
+         * returns the subtype name. For example instead of:</p>
+         *
+         * {@preformat text
+         *   Citation
+         *    └─Cited responsible party
+         *       └─Party
+         *          └─Name ……………………………… Jon Smith
+         * }
+         *
+         * we format:
+         *
+         * {@preformat
+         *   Citation
+         *    └─Cited responsible party
+         *       └─Individual
+         *          └─Name ……………………………… Jon Smith
+         * }
+         *
+         * @see <a href="https://issues.apache.org/jira/browse/SIS-298">SIS-298</a>
          */
         @Override
         CharSequence getName() {
-            return CharSequences.camelCaseToSentence(getIdentifier()).toString();
+            String identifier = getIdentifier();
+            if (identifier.equalsIgnoreCase(Classes.getShortName(baseType))) {
+                final Object value = getUserObject();
+                if (value != null) {
+                    Class<?> type = standardSubType(Classes.getLeafInterfaces(value.getClass(), baseType));
+                    if (type != null && type != Void.TYPE) {
+                        identifier = Classes.getShortName(type);
+                    }
+                }
+            }
+            return CharSequences.camelCaseToSentence(identifier).toString();
+        }
+
+        /**
+         * Returns the element of the given array which is both assignable to {@link #baseType} and a member
+         * of the standard represented by {@link TreeTableView#standard}. If no such type is found, returns
+         * {@code null}. If more than one type is found, returns the {@link Void#TYPE} sentinel value.
+         */
+        private Class<?> standardSubType(final Class<?>[] subtypes) {
+            Class<?> type = null;
+            for (Class<?> c : subtypes) {
+                if (baseType.isAssignableFrom(c)) {
+                    if (!isMetadata(c)) {
+                        c = standardSubType(c.getInterfaces());
+                    }
+                    if (type == null) {
+                        type = c;
+                    } else if (type != c) {
+                        return Void.TYPE;
+                    }
+                }
+            }
+            return type;
         }
 
         /**
@@ -592,19 +653,14 @@ class TreeNode implements Node {
             cachedValue = null;             // Use the cached value only once after iteration.
             /*
              * If there is a value, check if the cached collection is still applicable.
+             * We verify that the collection is a wrapper for the same metadata object.
+             * If we need to create a new collection, we know that the property accessor
+             * exists otherwise the call to 'isLeaf()' above would have returned 'true'.
              */
-            if (children instanceof TreeNodeChildren) {
-                final TreeNodeChildren candidate = (TreeNodeChildren) children;
-                if (candidate.metadata == value) {
-                    return candidate;
-                }
+            if (children == null || ((TreeNodeChildren) children).metadata != value) {
+                children = new TreeNodeChildren(this, value,
+                        table.standard.getAccessor(new CacheKey(value.getClass(), baseType), true));
             }
-            /*
-             * At this point, we need to create a new collection. The property accessor shall
-             * exist, otherwise the call to 'isLeaf()' above would have returned 'true'.
-             */
-            children = new TreeNodeChildren(this, value,
-                    table.standard.getAccessor(new CacheKey(value.getClass(), baseType), true));
         }
         return children;
     }
@@ -712,8 +768,10 @@ class TreeNode implements Node {
                         throw new IllegalArgumentException(Errors.format(Errors.Keys.ElementAlreadyPresent_1, value));
                     }
                     delegate = siblings.childAt(indexInData, indexInList);
-                    // Do not set 'delegate.cachedValue = value', since 'value' may
-                    // have been converted by the setter method to an other value.
+                    /*
+                     * Do not set 'delegate.cachedValue = value', since 'value' may
+                     * have been converted by the setter method to another value.
+                     */
                     return;
                 }
             }
@@ -736,36 +794,54 @@ class TreeNode implements Node {
     }
 
     /**
+     * Returns the children if the value policy is {@link ValueExistencePolicy#COMPACT}, or {@code null} otherwise.
+     */
+    private TreeNodeChildren getCompactChildren() {
+        if (table.valuePolicy == ValueExistencePolicy.COMPACT) {
+            final Collection<Node> children = getChildren();
+            if (children instanceof TreeNodeChildren) {
+                return (TreeNodeChildren) children;
+            }
+        }
+        return null;
+    }
+
+    /**
      * Returns the value of this node in the given column, or {@code null} if none. This method verifies
      * the {@code column} argument, then delegates to {@link #getName()}, {@link #getUserObject()} or
      * other properties.
      */
     @Override
     public final <V> V getValue(final TableColumn<V> column) {
-        ArgumentChecks.ensureNonNull("column", column);
         Object value = null;
-
-        // Check the columns in what we think may be the most frequently
-        // asked columns first, and less frequently asked columns last.
-        if (column == TableColumn.VALUE) {
+        ArgumentChecks.ensureNonNull("column", column);
+        if (column == TableColumn.IDENTIFIER) {
+            value = getIdentifier();
+        } else if (column == TableColumn.INDEX) {
+            value = getIndex();
+        } else if (column == TableColumn.NAME) {
+            if (name == null) {
+                name = getName();
+            }
+            value = name;
+        } else if (column == TableColumn.TYPE) {
+            final TreeNodeChildren children = getCompactChildren();
+            if (children == null || (value = children.getParentType()) == null) {
+                value = baseType;
+            }
+        } else if (column == TableColumn.VALUE) {
             if (isLeaf()) {
                 value = cachedValue;
                 cachedValue = null;                 // Use the cached value only once after iteration.
                 if (value == null) {
                     value = getUserObject();
                 }
+            } else {
+                final TreeNodeChildren children = getCompactChildren();
+                if (children != null) {
+                    value = children.getParentTitle();
+                }
             }
-        } else if (column == TableColumn.NAME) {
-            if (name == null) {
-                name = getName();
-            }
-            value = name;
-        } else if (column == TableColumn.IDENTIFIER) {
-            value = getIdentifier();
-        } else if (column == TableColumn.INDEX) {
-            value = getIndex();
-        } else if (column == TableColumn.TYPE) {
-            value = baseType;
         }
         return column.getElementType().cast(value);
     }
@@ -783,9 +859,12 @@ class TreeNode implements Node {
     public final <V> void setValue(final TableColumn<V> column, final V value) throws UnsupportedOperationException {
         ArgumentChecks.ensureNonNull("column", column);
         if (column == TableColumn.VALUE) {
-            ArgumentChecks.ensureNonNull("value", value);
+            ArgumentChecks.ensureNonNull("value", value);                       // See javadoc.
             cachedValue = null;
-            setUserObject(value);
+            final TreeNodeChildren children = getCompactChildren();
+            if (children == null || !(children.setParentTitle(value))) {
+                setUserObject(value);
+            }
         } else if (TreeTableView.COLUMNS.contains(column)) {
             throw new UnsupportedOperationException(unmodifiableCellValue(column));
         } else {

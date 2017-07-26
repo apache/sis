@@ -353,6 +353,12 @@ public final strictfp class CoordinateReferenceSystems extends AuthorityCodesRep
         rd("Voirol 1879",                                                 "Voirol");
         rd("Voirol 1879 (Paris)",                                         "Voirol");
         rd("WGS 72 Transit Broadcast Ephemeris",                          "World Geodetic System 1972 — Transit Broadcast Ephemeris");
+        rd("World Geodetic System 1984 (G1150)",                          "World Geodetic System 1984");
+        rd("World Geodetic System 1984 (G1674)",                          "World Geodetic System 1984");
+        rd("World Geodetic System 1984 (G1762)",                          "World Geodetic System 1984");
+        rd("World Geodetic System 1984 (G730)",                           "World Geodetic System 1984");
+        rd("World Geodetic System 1984 (G873)",                           "World Geodetic System 1984");
+        rd("World Geodetic System 1984 (Transit)",                        "World Geodetic System 1984");
         rd("Yellow Sea 1956",                                             "Yellow Sea");
         rd("Yellow Sea 1985",                                             "Yellow Sea");
     }
@@ -453,7 +459,7 @@ public final strictfp class CoordinateReferenceSystems extends AuthorityCodesRep
         properties.setProperty("PRODUCT.URL",     "http://sis.apache.org");
         properties.setProperty("JAVADOC.GEOAPI",  "http://www.geoapi.org/snapshot/javadoc");
         properties.setProperty("FACTORY.NAME",    "EPSG");
-        properties.setProperty("FACTORY.VERSION", "8.9");
+        properties.setProperty("FACTORY.VERSION", "9.0");
         properties.setProperty("FACTORY.VERSION.SUFFIX", ", together with other sources");
         properties.setProperty("PRODUCT.VERSION.SUFFIX", " (provided that <a href=\"http://sis.apache.org/epsg.html\">a connection to an EPSG database exists</a>)");
         properties.setProperty("DESCRIPTION", "<p><b>Notation:</b></p>\n" +

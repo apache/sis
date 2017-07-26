@@ -25,7 +25,6 @@ import java.net.URISyntaxException;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 import javax.xml.bind.JAXBException;
-import com.esri.core.geometry.Point;
 import org.apache.sis.storage.gps.Fix;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreContentException;
@@ -108,7 +107,7 @@ final class Reader extends StaxStreamReader {
      * Returns {@code true} if the given namespace is a GPX namespace or is null.
      */
     private static boolean isGPX(final String ns) {
-        return (ns == null) || ns.startsWith(Tags.NAMESPACE + "/GPX/");
+        return (ns == null) || ns.startsWith(Tags.NAMESPACE);
     }
 
     /**
@@ -408,9 +407,10 @@ parse:  while (reader.hasNext()) {
             throw new DataStoreContentException(errors().getString(Errors.Keys.MandatoryAttribute_2,
                     (lat == null) ? Attributes.LATITUDE : Attributes.LONGITUDE, tagName));
         }
-        final Feature feature = ((Store) owner).types.wayPoint.newInstance();
+        final Types types = ((Store) owner).types;
+        final Feature feature = types.wayPoint.newInstance();
         feature.setPropertyValue("sis:identifier", index);
-        feature.setPropertyValue("sis:geometry", new Point(parseDouble(lon), parseDouble(lat)));
+        feature.setPropertyValue("sis:geometry", types.geometries.createPoint(parseDouble(lon), parseDouble(lat)));
         List<Link> links = null;
         while (true) {
             /*

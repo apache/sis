@@ -26,10 +26,15 @@ import org.opengis.metadata.citation.Telephone;
 import org.opengis.metadata.citation.TelephoneType;
 import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.metadata.iso.ISOMetadata;
+import org.apache.sis.internal.metadata.Dependencies;
 
 
 /**
  * Telephone numbers for contacting the responsible individual or organization.
+ * The following property is mandatory in a well-formed metadata according ISO 19115:
+ *
+ * <div class="preformat">{@code CI_Telephone}
+ * {@code   └─number……} Telephone number by which individuals can contact responsible organisation or individual.</div>
  *
  * <div class="section">Differences between versions 2003 and 2014 of ISO 19115</div>
  * For any contact having more than one telephone number, the way to organize the information
@@ -264,6 +269,7 @@ public class DefaultTelephone extends ISOMetadata implements Telephone {
     @Override
     @Deprecated
     @XmlElement(name = "voice")
+    @Dependencies({"getNumber", "getNumberType"})
     public final Collection<String> getVoices() {
         return new LegacyTelephones(getOwner(), TelephoneType.VOICE);
     }
@@ -296,6 +302,7 @@ public class DefaultTelephone extends ISOMetadata implements Telephone {
     @Override
     @Deprecated
     @XmlElement(name = "facsimile")
+    @Dependencies({"getNumber", "getNumberType"})
     public final Collection<String> getFacsimiles() {
         return new LegacyTelephones(getOwner(), TelephoneType.FACSIMILE);
     }

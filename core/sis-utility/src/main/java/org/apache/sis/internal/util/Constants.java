@@ -47,6 +47,11 @@ public final class Constants extends Static {
     /**
      * The {@value} code space.
      */
+    public static final String GEOTIFF = "GeoTIFF";
+
+    /**
+     * The {@value} code space.
+     */
     public static final String EPSG = "EPSG";
 
     /**
@@ -64,6 +69,12 @@ public final class Constants extends Static {
      * The {@value} code space.
      */
     public static final String SIS = "SIS";
+
+    /**
+     * The {@value} code space. The project name is {@code "Proj.4"}, but this constant omits
+     * the dot because this name is used as a codes pace and we want to avoid risk of confusion.
+     */
+    public static final String PROJ4 = "Proj4";
 
     /**
      * The {@value} code space.

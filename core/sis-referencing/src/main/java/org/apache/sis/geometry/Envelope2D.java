@@ -834,9 +834,10 @@ public class Envelope2D extends Rectangle2D.Double implements Envelope, Emptiabl
             }
             /*
              * See AbstractEnvelope.intersects(Envelope) for an illustration of the algorithm applied here.
+             * We use < operator, not <=, for consistency with the standard "intersects" definition.
              */
-            final boolean minCondition = (min1 <= min0 + span0);
-            final boolean maxCondition = (min1 + span1 >= min0);
+            final boolean minCondition = (min1 < min0 + span0);
+            final boolean maxCondition = (min1 + span1 > min0);
             if (maxCondition & minCondition) {
                 continue;
             }

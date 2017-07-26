@@ -46,6 +46,7 @@ import org.apache.sis.internal.util.AbstractMap;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.internal.util.Utilities;
 import org.apache.sis.io.wkt.WKTFormat;
+import org.apache.sis.io.InvalidSeekException;
 import org.apache.sis.storage.ConcurrentReadException;
 import org.apache.sis.storage.ConcurrentWriteException;
 import org.apache.sis.storage.DataStoreClosedException;
@@ -266,7 +267,7 @@ public abstract class StaxDataStore extends FeatureStore {
      * @throws IOException if an error occurred while reseting the stream.
      */
     private boolean reset() throws IOException {
-        if (streamPosition >= 0) {
+        if (streamPosition >= 0) try {
             final Markable m = (Markable) stream;
             long p;
             do {
@@ -278,6 +279,8 @@ public abstract class StaxDataStore extends FeatureStore {
                 state = START;
                 return true;
             }
+        } catch (InvalidSeekException e) {
+            listeners.warning(null, e);
         }
         return false;
     }
@@ -332,7 +335,8 @@ public abstract class StaxDataStore extends FeatureStore {
         @Override
         public void report(String message, String errorType, Object info, Location location) {
             final LogRecord record = new LogRecord(Level.WARNING, message);
-            record.setSourceClassName(getClass().getCanonicalName());
+            record.setSourceClassName(StaxDataStore.this.getClass().getCanonicalName());
+            // record.setLoggerName(…) will be invoked by 'listeners' with inferred name.
             listeners.warning(record);
         }
 
@@ -344,6 +348,7 @@ public abstract class StaxDataStore extends FeatureStore {
          */
         @Override
         public void warningOccured(final Object source, final LogRecord warning) {
+            warning.setLoggerName(null);        // For allowing 'listeners' to select a logger name.
             listeners.warning(warning);
         }
 

@@ -155,20 +155,31 @@ public class DefaultNameSpace implements NameSpace, Serializable {
      *          the separator to insert between the {@linkplain AbstractName#getParsedNames()
      *          parsed names} of any name in that namespace.
      */
-    protected DefaultNameSpace(final DefaultNameSpace parent, CharSequence name,
+    protected DefaultNameSpace(final DefaultNameSpace parent, final CharSequence name,
                                final String headSeparator, final String separator)
     {
         this.parent = (parent != GlobalNameSpace.GLOBAL) ? parent : null;
         ensureNonNull("name",          name);
         ensureNonNull("headSeparator", headSeparator);
         ensureNonNull("separator",     separator);
-        if (!(name instanceof InternationalString)) {
-            name = name.toString();
-        }
-        this.name          = name;
+        this.name          = simplify(name);
         this.headSeparator = headSeparator;
         this.separator     = separator;
         init();
+    }
+
+    /**
+     * Converts the given name to its {@link String} representation if that name is not an {@link InternationalString}
+     * instance from which this {@code DefaultNameSpace} implementation can extract useful information. For example if
+     * the given name is a {@link SimpleInternationalString}, that international string does not give more information
+     * than the {@code String} that it wraps. Using the {@code String} as the canonical value increase the chances that
+     * {@link #equals(Object)} detect that two {@code GenericName} instances are equal.
+     */
+    private static CharSequence simplify(CharSequence name) {
+        if (!(name instanceof InternationalString) || name.getClass() == SimpleInternationalString.class) {
+            name = name.toString();
+        }
+        return name;
     }
 
     /**
@@ -386,6 +397,8 @@ public class DefaultNameSpace implements NameSpace, Serializable {
         ensureNonNull("key", key);
         if (name == null) {
             name = key;
+        } else {
+            name = simplify(name);
         }
         final WeakValueHashMap<String,Object> childs = this.childs;     // Paranoiac protection against accidental changes.
         DefaultNameSpace child;
@@ -433,7 +446,7 @@ public class DefaultNameSpace implements NameSpace, Serializable {
             final Object existing = childs.get(key);
             if (existing instanceof DefaultLocalName) {
                 child = (DefaultLocalName) existing;
-                if (name.equals(child.name)) {
+                if (simplify(name).equals(child.name)) {
                     assert (child.scope != null ? child.scope : GlobalNameSpace.GLOBAL) == this;
                     return child;
                 }

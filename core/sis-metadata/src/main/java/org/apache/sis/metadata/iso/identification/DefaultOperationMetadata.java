@@ -23,6 +23,7 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import org.opengis.util.InternationalString;
 import org.apache.sis.metadata.iso.ISOMetadata;
+import org.apache.sis.metadata.TitleProperty;
 import org.opengis.metadata.citation.OnlineResource;
 import org.opengis.metadata.identification.DistributedComputingPlatform;
 import org.opengis.metadata.identification.OperationMetadata;
@@ -32,6 +33,13 @@ import org.apache.sis.xml.Namespaces;
 
 /**
  * Parameter information.
+ * The following properties are mandatory in a well-formed metadata according ISO 19115:
+ *
+ * <div class="preformat">{@code SV_OperationMetadata}
+ * {@code   ├─operationName……………………………………………} A unique identifier for this interface.
+ * {@code   ├─distributedComputingPlatform……} Distributed computing platforms on which the operation has been implemented.
+ * {@code   └─connectPoint………………………………………………} Handle for accessing the service interface.
+ * {@code       └─linkage…………………………………………………} Location for on-line access using a URL address or similar addressing scheme.</div>
  *
  * <p><b>Limitations:</b></p>
  * <ul>
@@ -49,6 +57,7 @@ import org.apache.sis.xml.Namespaces;
  * @module
  */
 @SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
+@TitleProperty(name = "operationName")
 @XmlType(name = "SV_OperationMetadata_Type", namespace = Namespaces.SRV, propOrder = {
     "operationName",
     "distributedComputingPlatforms",

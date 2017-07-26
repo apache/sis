@@ -27,6 +27,10 @@ import org.apache.sis.util.iso.Types;
 
 /**
  * Information about the scope of the resource.
+ * The following property is mandatory in a well-formed metadata according ISO 19115:
+ *
+ * <div class="preformat">{@code MD_MetadataScope}
+ * {@code   └─resourceScope……} Resource scope</div>
  *
  * <p><b>Limitations:</b></p>
  * <ul>

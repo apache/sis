@@ -26,10 +26,19 @@ import org.opengis.metadata.distribution.Distribution;
 import org.opengis.metadata.distribution.Distributor;
 import org.opengis.metadata.distribution.Format;
 import org.apache.sis.metadata.iso.ISOMetadata;
+import org.apache.sis.metadata.TitleProperty;
 
 
 /**
  * Information about the distributor of and options for obtaining the resource.
+ * The following properties are mandatory or conditional (i.e. mandatory under some circumstances)
+ * in a well-formed metadata according ISO 19115:
+ *
+ * <div class="preformat">{@code MD_Distribution}
+ * {@code   └─distributionFormat………………………………………} Description of the format of the data to be distributed.
+ * {@code       └─formatSpecificationCitation……} Citation/URL of the specification format.
+ * {@code           ├─title……………………………………………………} Name by which the cited resource is known.
+ * {@code           └─date………………………………………………………} Reference date for the cited resource.</div>
  *
  * <p><b>Limitations:</b></p>
  * <ul>
@@ -48,6 +57,7 @@ import org.apache.sis.metadata.iso.ISOMetadata;
  * @module
  */
 @SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
+@TitleProperty(name = "description")
 @XmlType(name = "MD_Distribution_Type", propOrder = {
     "distributionFormats",
     "distributors",
@@ -159,6 +169,8 @@ public class DefaultDistribution extends ISOMetadata implements Distribution {
      * Provides a description of the format of the data to be distributed.
      *
      * @return description of the format of the data to be distributed.
+     *
+     * @see org.apache.sis.metadata.iso.identification.AbstractIdentification#getResourceFormats()
      */
     @Override
     @XmlElement(name = "distributionFormat")
@@ -170,6 +182,8 @@ public class DefaultDistribution extends ISOMetadata implements Distribution {
      * Sets a description of the format of the data to be distributed.
      *
      * @param  newValues  the new distribution formats.
+     *
+     * @see org.apache.sis.metadata.iso.identification.AbstractIdentification#setResourceFormats(Collection)
      */
     public void setDistributionFormats(final Collection<? extends Format> newValues) {
         distributionFormats = writeCollection(newValues, distributionFormats, Format.class);

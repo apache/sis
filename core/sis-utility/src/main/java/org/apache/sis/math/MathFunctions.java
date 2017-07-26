@@ -559,8 +559,9 @@ public final class MathFunctions extends Static {
      * Some of those bits, named the <cite>payload</cite>, can be used for storing custom information.
      * This method maps some of the payload values to each ordinal value.
      *
-     * <p>The relationship between payload values and ordinal values is implementation dependent and
-     * may change in any future version of the SIS library. The current implementation restricts the
+     * <p>This method guarantees that {@code toNanFloat(0)} returns the standard {@link Float#NaN} value.
+     * For all other {@code ordinal} values, the relationship to the payload values is implementation dependent
+     * and may change in any future version of the SIS library. The current implementation restricts the
      * range of allowed ordinal values to a smaller one than the range of all possible values.</p>
      *
      * @param  ordinal  the NaN ordinal value, from {@code -0x200000} to {@code 0x1FFFFF} inclusive.
@@ -579,6 +580,10 @@ public final class MathFunctions extends Static {
     /**
      * Returns the ordinal value of the given NaN number.
      * This method is the converse of {@link #toNanFloat(int)}.
+     *
+     * <p>If the given float is the standard {@link Float#NaN} value, then this method returns 0.
+     * For all other values, the relationship between the float payload and the returned ordinal
+     * is implementation dependent and may change in any future Apache SIS version.</p>
      *
      * @param  value  the value from which to get the NaN ordinal value.
      * @return the NaN ordinal value of the given floating point value.
