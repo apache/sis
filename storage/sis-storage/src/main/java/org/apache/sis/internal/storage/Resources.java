@@ -149,6 +149,11 @@ public final class Resources extends IndexedResourceBundle {
         public static final short ProcessingExecutedOn_1 = 12;
 
         /**
+         * The “{1}” element must be declared before “{0}”.
+         */
+        public static final short ShallBeDeclaredBefore_2 = 22;
+
+        /**
          * Can not move backward in the “{0}” stream.
          */
         public static final short StreamIsForwardOnly_1 = 13;
