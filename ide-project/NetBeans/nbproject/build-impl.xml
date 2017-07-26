@@ -409,18 +409,27 @@ is divided into following sections:
             <attribute default="${includes}" name="includes"/>
             <attribute default="${excludes}" name="excludes"/>
             <attribute default="${javac.debug}" name="debug"/>
-            <attribute default="${empty.dir}" name="sourcepath"/>
+            <attribute default="${empty.dir}" name="sourcepath" unless:set="named.module.internal"/>
+            <attribute default="${src.local-src.dir}:${src.webapp.dir}:${src.console.dir}:${src.earth-obs.dir}:${src.geotiff.dir}:${src.netcdf.dir}:${src.shapefile.dir}:${src.xmlstore.dir}:${src.storage.dir}:${src.feature.dir}:${src.referencing.dir}:${src.ref-by-id.dir}:${src.metadata.dir}:${src.utility.dir}:${src.fra-profile.dir}" if:set="named.module.internal" name="sourcepath"/>
             <attribute default="${empty.dir}" name="gensrcdir"/>
             <element name="customize" optional="true"/>
             <sequential>
+                <condition property="warn.excludes.internal">
+                    <and>
+                        <isset property="named.module.internal"/>
+                        <length length="0" string="@{excludes}" trim="true" when="greater"/>
+                    </and>
+                </condition>
+                <echo if:set="warn.excludes.internal" level="warning" message="The javac excludes are not supported in the JDK 9 Named Module."/>
                 <property location="${build.dir}/empty" name="empty.dir"/>
                 <mkdir dir="${empty.dir}"/>
                 <mkdir dir="@{apgeneratedsrcdir}"/>
                 <condition property="processormodulepath.set">
-                    <and>
-                        <isset property="processormodulepath"/>
-                        <length length="0" string="@{toString:processormodulepath}" when="greater"/>
-                    </and>
+                    <resourcecount count="0" when="greater">
+                        <path>
+                            <pathelement path="@{processormodulepath}"/>
+                        </path>
+                    </resourcecount>
                 </condition>
                 <javac debug="@{debug}" deprecation="${javac.deprecation}" destdir="@{destdir}" encoding="${source.encoding}" excludes="@{excludes}" executable="${platform.javac}" fork="yes" includeantruntime="false" includes="@{includes}" source="${javac.source}" sourcepath="@{sourcepath}" srcdir="@{srcdir}" target="${javac.target}" tempdir="${java.io.tmpdir}">
                     <src>
@@ -1320,10 +1329,15 @@ is divided into following sections:
         <!-- You can override this target in the ../build.xml file. -->
     </target>
     <target depends="init,compile" name="-check-module-main-class">
+        <pathconvert property="main.class.file">
+            <string value="${main.class}"/>
+            <unpackagemapper from="*" to="*.class"/>
+        </pathconvert>
         <condition property="do.module.main.class">
             <and>
                 <isset property="main.class.available"/>
                 <available file="${build.classes.dir}/module-info.class"/>
+                <available file="${build.classes.dir}/${main.class.file}"/>
                 <isset property="libs.CopyLibs.classpath"/>
                 <available classname="org.netbeans.modules.java.j2seproject.moduletask.ModuleMainClass" classpath="${libs.CopyLibs.classpath}"/>
             </and>
@@ -1440,6 +1454,7 @@ is divided into following sections:
     </target>
     <target depends="init,-do-jar,-post-jar,-pre-deploy,-check-jlink" if="do.jlink.internal" name="-do-deploy">
         <delete dir="${dist.jlink.dir}" failonerror="false" quiet="true"/>
+        <property name="jlink.launcher.name" value="${application.title}"/>
         <condition else="${module.name}" property="jlink.add.modules" value="${module.name},${jlink.additionalmodules}">
             <and>
                 <isset property="jlink.additionalmodules"/>
@@ -1458,6 +1473,12 @@ is divided into following sections:
                 <length length="0" string="${jlink.additionalparam}" when="greater"/>
             </and>
         </condition>
+        <condition property="jlink.do.launcher.internal">
+            <and>
+                <istrue value="${jlink.launcher}"/>
+                <isset property="main.class.available"/>
+            </and>
+        </condition>
         <property name="platform.jlink" value="${platform.home}/bin/jlink"/>
         <property name="jlink.systemmodules.internal" value="${platform.home}/jmods"/>
         <exec executable="${platform.jlink}">
@@ -1466,6 +1487,8 @@ is divided into following sections:
             <arg value="--add-modules"/>
             <arg value="${jlink.add.modules}"/>
             <arg if:set="jlink.do.strip.internal" value="--strip-debug"/>
+            <arg if:set="jlink.do.launcher.internal" value="--launcher"/>
+            <arg if:set="jlink.do.launcher.internal" value="${jlink.launcher.name}=${module.name}/${main.class}"/>
             <arg if:set="jlink.do.additionalparam.internal" line="${jlink.additionalparam}"/>
             <arg value="--output"/>
             <arg value="${dist.jlink.output}"/>
@@ -1787,7 +1810,13 @@ is divided into following sections:
     </target>
     <target depends="-init-source-module-properties" if="named.module.internal" name="-init-test-javac-module-properties-with-module">
         <j2seproject3:modulename property="test.module.name" sourcepath="${test.webapp.dir}:${test.console.dir}:${test.earth-obs.dir}:${test.geotiff.dir}:${test.netcdf.dir}:${test.shapefile.dir}:${test.xmlstore.dir}:${test.storage.dir}:${test.feature.dir}:${test.referencing.dir}:${test.ref-by-id.dir}:${test.metadata.dir}:${test.utility.dir}:${test.fra-profile.dir}"/>
-        <condition else="-Xmodule:${module.name} --add-reads ${module.name}=ALL-UNNAMED" property="javac.test.compilerargs" value="--add-reads ${test.module.name}=ALL-UNNAMED">
+        <condition else="${empty.dir}" property="javac.test.sourcepath" value="${test.webapp.dir}:${test.console.dir}:${test.earth-obs.dir}:${test.geotiff.dir}:${test.netcdf.dir}:${test.shapefile.dir}:${test.xmlstore.dir}:${test.storage.dir}:${test.feature.dir}:${test.referencing.dir}:${test.ref-by-id.dir}:${test.metadata.dir}:${test.utility.dir}:${test.fra-profile.dir}">
+            <and>
+                <isset property="test.module.name"/>
+                <length length="0" string="${test.module.name}" when="greater"/>
+            </and>
+        </condition>
+        <condition else="--patch-module ${module.name}=${test.webapp.dir}:${test.console.dir}:${test.earth-obs.dir}:${test.geotiff.dir}:${test.netcdf.dir}:${test.shapefile.dir}:${test.xmlstore.dir}:${test.storage.dir}:${test.feature.dir}:${test.referencing.dir}:${test.ref-by-id.dir}:${test.metadata.dir}:${test.utility.dir}:${test.fra-profile.dir} --add-reads ${module.name}=ALL-UNNAMED" property="javac.test.compilerargs" value="--add-reads ${test.module.name}=ALL-UNNAMED">
             <and>
                 <isset property="test.module.name"/>
                 <length length="0" string="${test.module.name}" when="greater"/>
@@ -1822,6 +1851,7 @@ is divided into following sections:
         </condition>
     </target>
     <target depends="-init-source-module-properties" name="-init-test-module-properties-without-module" unless="named.module.internal">
+        <property name="javac.test.sourcepath" value="${empty.dir}"/>
         <property name="javac.test.compilerargs" value=""/>
         <property name="run.test.jvmargs" value=""/>
     </target>
@@ -1830,7 +1860,7 @@ is divided into following sections:
         <j2seproject3:depend classpath="${javac.test.classpath}" destdir="${build.test.classes.dir}" srcdir="${test.webapp.dir}:${test.console.dir}:${test.earth-obs.dir}:${test.geotiff.dir}:${test.netcdf.dir}:${test.shapefile.dir}:${test.xmlstore.dir}:${test.storage.dir}:${test.feature.dir}:${test.referencing.dir}:${test.ref-by-id.dir}:${test.metadata.dir}:${test.utility.dir}:${test.fra-profile.dir}"/>
     </target>
     <target depends="init,deps-jar,compile,-init-test-module-properties,-pre-pre-compile-test,-pre-compile-test,-compile-test-depend" if="have.tests" name="-do-compile-test">
-        <j2seproject3:javac apgeneratedsrcdir="${build.test.classes.dir}" classpath="${javac.test.classpath}" debug="true" destdir="${build.test.classes.dir}" modulepath="${javac.test.modulepath}" processorpath="${javac.test.processorpath}" srcdir="${test.webapp.dir}:${test.console.dir}:${test.earth-obs.dir}:${test.geotiff.dir}:${test.netcdf.dir}:${test.shapefile.dir}:${test.xmlstore.dir}:${test.storage.dir}:${test.feature.dir}:${test.referencing.dir}:${test.ref-by-id.dir}:${test.metadata.dir}:${test.utility.dir}:${test.fra-profile.dir}">
+        <j2seproject3:javac apgeneratedsrcdir="${build.test.classes.dir}" classpath="${javac.test.classpath}" debug="true" destdir="${build.test.classes.dir}" modulepath="${javac.test.modulepath}" processorpath="${javac.test.processorpath}" sourcepath="${javac.test.sourcepath}" srcdir="${test.webapp.dir}:${test.console.dir}:${test.earth-obs.dir}:${test.geotiff.dir}:${test.netcdf.dir}:${test.shapefile.dir}:${test.xmlstore.dir}:${test.storage.dir}:${test.feature.dir}:${test.referencing.dir}:${test.ref-by-id.dir}:${test.metadata.dir}:${test.utility.dir}:${test.fra-profile.dir}">
             <customize>
                 <compilerarg line="${javac.test.compilerargs}"/>
             </customize>
