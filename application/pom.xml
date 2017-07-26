@@ -114,7 +114,7 @@
            Sub-modules included in the build in dependency order
        =========================================================== -->
   <modules>
-    <module>sis-webapp</module>
+<!--<module>sis-webapp</module>         Omitted until maven-war-plugin is made compatible with JDK9. -->
     <module>sis-console</module>
 <!--<module>sis-openoffice</module>     Omitted for now because of the numerous warnings emitted by Pack200. -->
   </modules>
