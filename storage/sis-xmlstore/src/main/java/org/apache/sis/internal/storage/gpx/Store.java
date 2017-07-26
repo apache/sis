@@ -182,11 +182,12 @@ public final class Store extends StaxDataStore {
     /**
      * Returns the stream of features.
      *
+     * @param  parallel  ignored in current implementation.
      * @return a stream over all features in the XML file.
      * @throws DataStoreException if an error occurred while creating the feature stream.
      */
     @Override
-    public synchronized Stream<AbstractFeature> features() throws DataStoreException {
+    public synchronized Stream<AbstractFeature> features(final boolean parallel) throws DataStoreException {
         Reader r = reader;
         reader = null;
         if (r == null) try {
