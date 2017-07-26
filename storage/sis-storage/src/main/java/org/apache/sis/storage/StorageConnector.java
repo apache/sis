@@ -474,8 +474,6 @@ public class StorageConnector implements Serializable {
             ByteBuffer buffer = getOption(OptionKey.BYTE_BUFFER);
             if (buffer == null) {
                 buffer = ByteBuffer.allocate(DEFAULT_BUFFER_SIZE);
-                // TODO: we do not create direct buffer yet, but this is something
-                // we may want to consider in a future SIS version.
             }
             if (asImageInputStream) {
                 asDataInput = new ChannelImageInputStream(name, channel, buffer, false);

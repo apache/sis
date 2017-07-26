@@ -142,11 +142,11 @@ public enum OS {
      *
      * @see System#load(String)
      */
-    private String nativeLibrary(final ClassLoader loader, String name) throws IOException {
+    private String nativeLibrary(final ClassLoader loader, final String name) throws IOException {
         if (libdir != null) {
             final String ext = unix ? ".so" : ".dll";
-            name = "native/" + libdir + '/' + name + ext;
-            final URL res = loader.getResource(name);
+            final String path = "native/" + libdir + '/' + name + ext;
+            final URL res = loader.getResource(path);
             if (res != null) {
                 try {
                     return new File(res.toURI()).getAbsolutePath();

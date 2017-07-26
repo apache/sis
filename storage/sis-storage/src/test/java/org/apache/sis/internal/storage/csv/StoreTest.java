@@ -100,7 +100,7 @@ public final strictfp class StoreTest extends TestCase {
     }
 
     /**
-     * Verifies the feature type, then tests {@link Store#features()}.
+     * Verifies the feature type, then tests {@link Store#features(boolean)}.
      *
      * @throws DataStoreException if an error occurred while parsing the data.
      */
@@ -109,7 +109,7 @@ public final strictfp class StoreTest extends TestCase {
         try (Store store = new Store(null, new StorageConnector(testData()), true)) {
             verifyFeatureType(store.featureType, double[].class, 1);
             assertEquals("foliation", Foliation.TIME, store.foliation);
-            final Iterator<AbstractFeature> it = store.features().iterator();
+            final Iterator<AbstractFeature> it = store.features(false).iterator();
             assertPropertyEquals(it.next(), "a", "12:33:51", "12:36:11", new double[] {11, 2, 12, 3},        "walking", 1);
             assertPropertyEquals(it.next(), "b", "12:33:51", "12:36:51", new double[] {10, 2, 11, 3},        "walking", 2);
             assertPropertyEquals(it.next(), "a", "12:36:11", "12:36:51", new double[] {12, 3, 10, 3},        "walking", 2);
@@ -138,7 +138,7 @@ public final strictfp class StoreTest extends TestCase {
         try (Store store = new Store(null, new StorageConnector(testData()), false)) {
             verifyFeatureType(store.featureType, Polyline.class, Integer.MAX_VALUE);
             assertEquals("foliation", Foliation.TIME, store.foliation);
-            final Iterator<AbstractFeature> it = store.features().iterator();
+            final Iterator<AbstractFeature> it = store.features(false).iterator();
             assertPropertyEquals(it.next(), "a", "12:33:51", "12:36:51", new double[] {11, 2, 12, 3, 10, 3}, singletonList("walking"), Arrays.asList(1, 2));
             assertPropertyEquals(it.next(), "b", "12:33:51", "12:36:51", new double[] {10, 2, 11, 3},        singletonList("walking"), singletonList(2));
             assertPropertyEquals(it.next(), "c", "12:33:51", "12:36:51", new double[] {12, 1, 10, 2, 11, 3}, singletonList("vehicle"), singletonList(1));
