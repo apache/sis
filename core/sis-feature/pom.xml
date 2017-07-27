@@ -37,7 +37,7 @@
        =========================================================== -->
   <groupId>org.apache.sis.core</groupId>
   <artifactId>sis-feature</artifactId>
-  <packaging>bundle</packaging>
+  <packaging>jar</packaging>
   <name>Apache SIS features</name>
   <description>
   <!-- Left alignment because this description will be copied in META-INF/MANIFEST.MF
@@ -78,26 +78,6 @@ Representations of geographic features.
       </roles>
     </contributor>
   </contributors>
-
-
-  <!-- ===========================================================
-           Build configuration
-       =========================================================== -->
-  <build>
-    <plugins>
-
-      <!-- Package as OSGi bundle -->
-      <plugin>
-        <groupId>org.apache.felix</groupId>
-        <artifactId>maven-bundle-plugin</artifactId>
-        <configuration>
-          <instructions>
-            <Bundle-SymbolicName>org.apache.sis.feature</Bundle-SymbolicName>
-          </instructions>
-        </configuration>
-      </plugin>
-    </plugins>
-  </build>
 
 
   <!-- ===========================================================

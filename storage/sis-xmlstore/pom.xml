@@ -37,7 +37,7 @@
        =========================================================== -->
   <groupId>org.apache.sis.storage</groupId>
   <artifactId>sis-xmlstore</artifactId>
-  <packaging>bundle</packaging>
+  <packaging>jar</packaging>
   <name>Apache SIS XML storage</name>
   <description>
   <!-- Left alignment because this description will be copied in META-INF/MANIFEST.MF
@@ -82,17 +82,6 @@ Read and write files in the GPX format.
             </goals>
           </execution>
         </executions>
-      </plugin>
-
-      <!-- Package as OSGi bundle -->
-      <plugin>
-        <groupId>org.apache.felix</groupId>
-        <artifactId>maven-bundle-plugin</artifactId>
-        <configuration>
-          <instructions>
-            <Bundle-SymbolicName>org.apache.sis.storage.xmlstore</Bundle-SymbolicName>
-          </instructions>
-        </configuration>
       </plugin>
     </plugins>
   </build>

@@ -33,7 +33,7 @@
 
   <groupId>org.apache.sis.core</groupId>
   <artifactId>sis-referencing</artifactId>
-  <packaging>bundle</packaging>
+  <packaging>aar</packaging>
   <name>Apache SIS referencing</name>
   <description>
   <!-- Left alignment because this description will be copied in META-INF/MANIFEST.MF
@@ -85,31 +85,6 @@ Implementations of Coordinate Reference Systems (CRS),
 
 
   <!-- ===========================================================
-           Build configuration
-       =========================================================== -->
-  <build>
-    <plugins>
-
-      <!-- Package as OSGi bundle -->
-      <plugin>
-        <groupId>org.apache.felix</groupId>
-        <artifactId>maven-bundle-plugin</artifactId>
-        <configuration>
-          <instructions>
-            <Bundle-SymbolicName>org.apache.sis.referencing</Bundle-SymbolicName>
-            <Export-Package>org.apache.sis.internal.referencing, *</Export-Package>
-            <Require-Capability>osgi.extender;
-            filter:="(osgi.extender=osgi.serviceloader.registrar)"</Require-Capability>
-            <Provide-Capability>osgi.serviceloader;
-            osgi.serviceloader=org.apache.sis.internal.jaxb.TypeRegistration; osgi.serviceloader=org.apache.sis.internal.jaxb.AdapterReplacement,org.opengis.referencing.operation.MathTransformFactory,org.opengis.referencing.operation.OperationMethod,org.opengis.temporal.TemporalFactory</Provide-Capability>
-          </instructions>
-        </configuration>
-      </plugin>
-    </plugins>
-  </build>
-
-
-  <!-- ===========================================================
            Dependencies
        =========================================================== -->
   <dependencies>
@@ -117,11 +92,15 @@ Implementations of Coordinate Reference Systems (CRS),
       <groupId>org.apache.sis.core</groupId>
       <artifactId>sis-utility</artifactId>
       <version>${project.version}</version>
+      <scope>provided</scope>
+      <type>aar</type>
     </dependency>
     <dependency>
       <groupId>org.apache.sis.core</groupId>
       <artifactId>sis-metadata</artifactId>
       <version>${project.version}</version>
+      <scope>provided</scope>
+      <type>aar</type>
     </dependency>
 
     <!-- Test dependencies -->

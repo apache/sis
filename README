@@ -29,10 +29,23 @@ Getting Started
 SIS requires Java 6 and uses the Maven 3 <http://maven.apache.org/>
 build system. To build SIS, use the following command in this directory:
 
-    mvn clean install
+    mvn clean package
 
-Information for running a command-line tool can be found on the web site:
-(<http://sis.apache.org/command-line.html>)
+
+Android26 Branch
+=================
+This branch is compatible with Android API version 26 or better.
+
+
+Branch Specific Dependencies
+============================
+javax.xml.bind:jaxb-api
+javax.xml.stream:stax-api
+javax.xml:jaxp-api
+javax.activation:activation
+com.sun.xml.bind:jaxb-core
+com.sun.xml.bind:jaxb-impl
+com.fasterxml:aalto-xml
 
 
 License (see also LICENSE)

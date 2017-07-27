@@ -37,7 +37,7 @@
        =========================================================== -->
   <groupId>org.apache.sis.storage</groupId>
   <artifactId>sis-storage</artifactId>
-  <packaging>bundle</packaging>
+  <packaging>jar</packaging>
   <name>Apache SIS common storage</name>
   <description>
   <!-- Left alignment because this description will be copied in META-INF/MANIFEST.MF
@@ -96,25 +96,6 @@ Provides the interfaces and base classes to be implemented by various storage fo
       </roles>
     </developer>
   </developers>
-
-
-  <!-- ===========================================================
-           Build configuration
-       =========================================================== -->
-  <build>
-    <plugins>
-      <plugin>
-        <groupId>org.apache.felix</groupId>
-        <artifactId>maven-bundle-plugin</artifactId>
-        <configuration>
-          <instructions>
-            <Bundle-SymbolicName>org.apache.sis.storage</Bundle-SymbolicName>
-            <Export-Package>org.apache.sis.internal.storage; x-friends=org.apache.sis.storage.netcdf, *</Export-Package>
-          </instructions>
-        </configuration>
-      </plugin>
-    </plugins>
-  </build>
 
 
   <!-- ===========================================================

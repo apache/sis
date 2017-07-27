@@ -37,7 +37,7 @@
        =========================================================== -->
   <groupId>org.apache.sis.profiles</groupId>
   <artifactId>sis-french-profile</artifactId>
-  <packaging>bundle</packaging>
+  <packaging>jar</packaging>
   <name>Apache SIS French profiles</name>
   <description>
   <!-- Left alignment because this description will be copied in META-INF/MANIFEST.MF
@@ -84,25 +84,6 @@ Extensions to ISO-19115 metadata mandated by the French government.
       </roles>
     </contributor>
   </contributors>
-
-
-  <!-- ===========================================================
-           Build configuration
-       =========================================================== -->
-  <build>
-    <plugins>
-      <plugin>
-        <groupId>org.apache.felix</groupId>
-        <artifactId>maven-bundle-plugin</artifactId>
-        <configuration>
-          <instructions>
-            <Bundle-SymbolicName>org.apache.sis.metadata.fra</Bundle-SymbolicName>
-            <Export-Package>*</Export-Package>
-          </instructions>
-        </configuration>
-      </plugin>
-    </plugins>
-  </build>
 
 
   <!-- ===========================================================

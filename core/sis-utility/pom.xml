@@ -37,7 +37,7 @@
        =========================================================== -->
   <groupId>org.apache.sis.core</groupId>
   <artifactId>sis-utility</artifactId>
-  <packaging>bundle</packaging>
+  <packaging>aar</packaging>
   <name>Apache SIS utilities</name>
   <description>
   <!-- Left alignment because this description will be copied in META-INF/MANIFEST.MF
@@ -109,44 +109,10 @@ Miscellaneous utilities.
 
 
   <!-- ===========================================================
-           Build configuration
-       =========================================================== -->
-  <build>
-    <plugins>
-
-      <!-- Package as OSGi bundle -->
-      <plugin>
-        <groupId>org.apache.felix</groupId>
-        <artifactId>maven-bundle-plugin</artifactId>
-        <configuration>
-          <instructions>
-            <Bundle-SymbolicName>org.apache.sis.util</Bundle-SymbolicName>
-            <Bundle-Activator>org.apache.sis.internal.system.OSGiActivator</Bundle-Activator>
-            <Export-Package>*</Export-Package>
-            <Require-Capability>
-              osgi.extender;
-              filter:="(osgi.extender=osgi.serviceloader.registrar)",
-              osgi.serviceloader;
-              ;cardinality:=multiple,osgi.extender;
-              filter:="(osgi.extender=osgi.serviceloader.processor)"
-            </Require-Capability>
-            <SPI-Producer>*</SPI-Producer>
-          </instructions>
-        </configuration>
-      </plugin>
-    </plugins>
-  </build>
-
-
-  <!-- ===========================================================
            Dependencies
        =========================================================== -->
   <dependencies>
     <!-- Optional dependencies (provided scope) -->
-    <dependency>
-      <groupId>org.osgi</groupId>
-      <artifactId>org.osgi.core</artifactId>
-    </dependency>
     <dependency>
       <groupId>javax</groupId>
       <artifactId>javaee-api</artifactId>

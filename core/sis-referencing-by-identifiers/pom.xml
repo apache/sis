@@ -33,7 +33,7 @@
 
   <groupId>org.apache.sis.core</groupId>
   <artifactId>sis-referencing-by-identifiers</artifactId>
-  <packaging>bundle</packaging>
+  <packaging>aar</packaging>
   <name>Apache SIS referencing by geographic identifiers</name>
   <description>
   <!-- Left alignment because this description will be copied in META-INF/MANIFEST.MF
@@ -74,26 +74,6 @@ Implementations of Spatial Reference Systems using Geographic Identifiers
 
 
   <!-- ===========================================================
-           Build configuration
-       =========================================================== -->
-  <build>
-    <plugins>
-
-      <!-- Package as OSGi bundle -->
-      <plugin>
-        <groupId>org.apache.felix</groupId>
-        <artifactId>maven-bundle-plugin</artifactId>
-        <configuration>
-          <instructions>
-            <Bundle-SymbolicName>org.apache.sis.referencing.gazetteer</Bundle-SymbolicName>
-          </instructions>
-        </configuration>
-      </plugin>
-    </plugins>
-  </build>
-
-
-  <!-- ===========================================================
            Dependencies
        =========================================================== -->
   <dependencies>
@@ -101,16 +81,22 @@ Implementations of Spatial Reference Systems using Geographic Identifiers
       <groupId>org.apache.sis.core</groupId>
       <artifactId>sis-utility</artifactId>
       <version>${project.version}</version>
+      <scope>provided</scope>
+      <type>aar</type>
     </dependency>
     <dependency>
       <groupId>org.apache.sis.core</groupId>
       <artifactId>sis-metadata</artifactId>
       <version>${project.version}</version>
+      <scope>provided</scope>
+      <type>aar</type>
     </dependency>
     <dependency>
       <groupId>org.apache.sis.core</groupId>
       <artifactId>sis-referencing</artifactId>
       <version>${project.version}</version>
+      <scope>provided</scope>
+      <type>aar</type>
     </dependency>
 
     <!-- Test dependencies -->

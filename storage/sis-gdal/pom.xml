@@ -37,7 +37,7 @@
        =========================================================== -->
   <groupId>org.apache.sis.storage</groupId>
   <artifactId>sis-gdal</artifactId>
-  <packaging>bundle</packaging>
+  <packaging>jar</packaging>
   <name>Apache SIS bindings for Proj4</name>
   <description>
   <!-- Left alignment because this description will be copied in META-INF/MANIFEST.MF
@@ -71,24 +71,6 @@ Referencing services from Proj4 through GeoAPI interfaces.
       </roles>
     </developer>
   </developers>
-
-
-  <!-- ===========================================================
-           Build configuration
-       =========================================================== -->
-  <build>
-    <plugins>
-      <plugin>
-        <groupId>org.apache.felix</groupId>
-        <artifactId>maven-bundle-plugin</artifactId>
-        <configuration>
-          <instructions>
-            <Bundle-SymbolicName>org.apache.sis.storage.gdal</Bundle-SymbolicName>
-          </instructions>
-        </configuration>
-      </plugin>
-    </plugins>
-  </build>
 
 
   <!-- ===========================================================
