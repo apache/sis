@@ -38,7 +38,7 @@
        ============================================================== -->
   <groupId>org.apache.sis</groupId>
   <artifactId>parent</artifactId>
-  <version>0.8-SNAPSHOT</version>
+  <version>0.8-android-SNAPSHOT</version>
   <packaging>pom</packaging>
 
   <name>Apache SIS</name>
@@ -493,7 +493,7 @@ Apache SIS is a free software, Java language library for developing geospatial a
     <!-- Following properties are branch-specific -->
     <maven.compile.source>1.7</maven.compile.source>
     <maven.compile.target>1.7</maven.compile.target>
-    <sis.plugin.version>${project.version}</sis.plugin.version>
+    <sis.plugin.version>0.8-SNAPSHOT</sis.plugin.version>
     <geoapi.version>3.0.1-RC1</geoapi.version>
   </properties>
 
