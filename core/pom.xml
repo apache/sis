@@ -186,7 +186,6 @@
            Sub-modules included in the build in dependency order
        =========================================================== -->
   <modules>
-    <module>sis-build-helper</module>
     <module>sis-utility</module>
     <module>sis-metadata</module>
     <module>sis-referencing</module>
