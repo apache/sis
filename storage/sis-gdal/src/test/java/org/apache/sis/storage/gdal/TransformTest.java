@@ -24,6 +24,7 @@ import org.opengis.util.NoSuchIdentifierException;
 import org.opengis.test.referencing.ParameterizedTransformTest;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
+import org.junit.BeforeClass;
 import org.junit.AfterClass;
 
 import static org.apache.sis.test.Assert.*;
@@ -61,6 +62,14 @@ public class TransformTest extends ParameterizedTransformTest {
             }
         });
         isDerivativeSupported = false;
+    }
+
+    /**
+     * Verifies if the {@literal Proj.4} library is available.
+     */
+    @BeforeClass
+    public static void verifyNativeLibraryAvailability() {
+        PJTest.verifyNativeLibraryAvailability();
     }
 
     /**
