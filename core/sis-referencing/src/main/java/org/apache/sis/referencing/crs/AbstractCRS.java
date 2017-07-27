@@ -18,8 +18,9 @@ package org.apache.sis.referencing.crs;
 
 import java.util.Map;
 import java.util.EnumMap;
+import java.util.Objects;
 import java.util.ConcurrentModificationException;
-import javax.measure.unit.Unit;
+import javax.measure.Unit;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlSeeAlso;
@@ -31,20 +32,18 @@ import org.opengis.referencing.crs.SingleCRS;
 import org.opengis.referencing.crs.GeneralDerivedCRS;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.internal.referencing.ReferencingUtilities;
+import org.apache.sis.internal.metadata.MetadataUtilities;
 import org.apache.sis.referencing.AbstractReferenceSystem;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.referencing.cs.AbstractCS;
 import org.apache.sis.util.ComparisonMode;
+import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.io.wkt.Formatter;
 
 import static org.apache.sis.util.Utilities.deepEquals;
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 import static org.apache.sis.internal.referencing.WKTUtilities.toFormattable;
-import static org.apache.sis.internal.referencing.ReferencingUtilities.canSetProperty;
-
-// Branch-dependent imports
-import org.apache.sis.internal.jdk7.Objects;
 
 
 /**
@@ -79,20 +78,25 @@ import org.apache.sis.internal.jdk7.Objects;
  * without synchronization.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.4
- * @version 0.6
- * @module
+ * @version 0.7
  *
  * @see AbstractCS
  * @see org.apache.sis.referencing.datum.AbstractDatum
+ *
+ * @since 0.4
+ * @module
  */
-@XmlType(name="AbstractCRSType")
+@XmlType(name = "AbstractCRSType", propOrder = {
+    "domainOfValidity",
+    "scope"
+})
 @XmlRootElement(name = "AbstractCRS")
 @XmlSeeAlso({
     AbstractDerivedCRS.class,
     DefaultGeodeticCRS.class,
     DefaultVerticalCRS.class,
     DefaultTemporalCRS.class,
+    DefaultParametricCRS.class,
     DefaultEngineeringCRS.class,
     DefaultImageCRS.class,
     DefaultCompoundCRS.class
@@ -120,15 +124,6 @@ public class AbstractCRS extends AbstractReferenceSystem implements CoordinateRe
      * @see #forConvention(AxesConvention)
      */
     private transient Map<AxesConvention,AbstractCRS> forConvention;
-
-    /**
-     * Constructs a new object in which every attributes are set to a null value.
-     * <strong>This is not a valid object.</strong> This constructor is strictly
-     * reserved to JAXB, which will assign values to the fields using reflexion.
-     */
-    AbstractCRS() {
-        super(org.apache.sis.internal.referencing.NilReferencingObject.INSTANCE);
-    }
 
     /**
      * Creates a coordinate reference system from the given properties and coordinate system.
@@ -164,19 +159,19 @@ public class AbstractCRS extends AbstractReferenceSystem implements CoordinateRe
      *     <td>{@link #getRemarks()}</td>
      *   </tr>
      *   <tr>
-     *     <td>{@value org.opengis.referencing.datum.Datum#DOMAIN_OF_VALIDITY_KEY}</td>
+     *     <td>{@value org.opengis.referencing.ReferenceSystem#DOMAIN_OF_VALIDITY_KEY}</td>
      *     <td>{@link org.opengis.metadata.extent.Extent}</td>
      *     <td>{@link #getDomainOfValidity()}</td>
      *   </tr>
      *   <tr>
-     *     <td>{@value org.opengis.referencing.datum.Datum#SCOPE_KEY}</td>
+     *     <td>{@value org.opengis.referencing.ReferenceSystem#SCOPE_KEY}</td>
      *     <td>{@link org.opengis.util.InternationalString} or {@link String}</td>
      *     <td>{@link #getScope()}</td>
      *   </tr>
      * </table>
      *
-     * @param properties The properties to be given to the coordinate reference system.
-     * @param cs The coordinate system.
+     * @param properties  the properties to be given to the coordinate reference system.
+     * @param cs          the coordinate system.
      */
     public AbstractCRS(final Map<String,?> properties, final CoordinateSystem cs) {
         super(properties);
@@ -191,7 +186,7 @@ public class AbstractCRS extends AbstractReferenceSystem implements CoordinateRe
      *
      * <p>This constructor performs a shallow copy, i.e. the properties are not cloned.</p>
      *
-     * @param crs The coordinate reference system to copy.
+     * @param  crs  the coordinate reference system to copy.
      *
      * @see #castOrCopy(CoordinateReferenceSystem)
      */
@@ -226,8 +221,8 @@ public class AbstractCRS extends AbstractReferenceSystem implements CoordinateRe
      *       properties contained in the given object are not recursively copied.</li>
      * </ul>
      *
-     * @param  object The object to get as a SIS implementation, or {@code null} if none.
-     * @return A SIS implementation containing the values of the given object (may be the
+     * @param  object  the object to get as a SIS implementation, or {@code null} if none.
+     * @return a SIS implementation containing the values of the given object (may be the
      *         given object itself), or {@code null} if the argument was null.
      */
     public static AbstractCRS castOrCopy(final CoordinateReferenceSystem object) {
@@ -239,7 +234,7 @@ public class AbstractCRS extends AbstractReferenceSystem implements CoordinateRe
      * The default implementation returns {@code CoordinateReferenceSystem.class}.
      * Subclasses implementing a more specific GeoAPI interface shall override this method.
      *
-     * @return The coordinate reference system interface implemented by this class.
+     * @return the coordinate reference system interface implemented by this class.
      */
     @Override
     public Class<? extends CoordinateReferenceSystem> getInterface() {
@@ -255,18 +250,20 @@ public class AbstractCRS extends AbstractReferenceSystem implements CoordinateRe
      * Subclasses implementing {@code SingleCRS} (basically all SIS subclasses except {@link DefaultCompoundCRS})
      * will override this method with public access and more specific return type.
      *
-     * @return The datum, or {@code null} if none.
+     * @return the datum, or {@code null} if none.
      */
     Datum getDatum() {
-        // User could provide his own CRS implementation outside this SIS package, so we have
-        // to check for SingleCRS interface. But all SIS classes override this implementation.
+        /*
+         * User could provide his own CRS implementation outside this SIS package, so we have
+         * to check for SingleCRS interface. But all SIS classes override this implementation.
+         */
         return (this instanceof SingleCRS) ? ((SingleCRS) this).getDatum() : null;
     }
 
     /**
      * Returns the coordinate system.
      *
-     * @return The coordinate system.
+     * @return the coordinate system.
      */
     @Override
     public CoordinateSystem getCoordinateSystem() {
@@ -290,45 +287,6 @@ public class AbstractCRS extends AbstractReferenceSystem implements CoordinateRe
     }
 
     /**
-     * Sets the coordinate system to the given value. This method is invoked only by JAXB at
-     * unmarshalling time and can be invoked only if the coordinate system has never been set.
-     *
-     * <div class="note"><b>Implementation note:</b>
-     * It was easy to put JAXB annotations directly on datum fields in subclasses because each CRS type
-     * can be associated to only one datum type. But we do not have this convenience for coordinate systems,
-     * where the same CRS may accept different kinds of CS. In GML, the different kinds of CS are marshalled
-     * as different XML elements. The usual way to handle such {@code <xs:choice>} with JAXB is to annotate
-     * a single method like below:
-     *
-     * {@preformat java
-     *   &#64;Override
-     *   &#64;XmlElements({
-     *     &#64;XmlElement(name = "cartesianCS",   type = DefaultCartesianCS.class),
-     *     &#64;XmlElement(name = "affineCS",      type = DefaultAffineCS.class),
-     *     &#64;XmlElement(name = "cylindricalCS", type = DefaultCylindricalCS.class),
-     *     &#64;XmlElement(name = "linearCS",      type = DefaultLinearCS.class),
-     *     &#64;XmlElement(name = "polarCS",       type = DefaultPolarCS.class),
-     *     &#64;XmlElement(name = "sphericalCS",   type = DefaultSphericalCS.class),
-     *     &#64;XmlElement(name = "userDefinedCS", type = DefaultUserDefinedCS.class)
-     *   })
-     *   public CoordinateSystem getCoordinateSystem() {
-     *       return super.getCoordinateSystem();
-     *   }
-     * }
-     *
-     * However our attempts to apply this approach have not been conclusive.
-     * For an unknown reason, the unmarshalled CS object was empty.</div>
-     *
-     * @param  name The property name, used only in case of error message to format.
-     * @throws IllegalStateException If the coordinate system has already been set.
-     */
-    final void setCoordinateSystem(final String name, final CoordinateSystem cs) {
-        if (cs != null && canSetProperty(AbstractCRS.class, "setCoordinateSystem", name, coordinateSystem != null)) {
-            coordinateSystem = cs;
-        }
-    }
-
-    /**
      * Returns the existing CRS for the given convention, or {@code null} if none.
      */
     final AbstractCRS getCached(final AxesConvention convention) {
@@ -339,13 +297,13 @@ public class AbstractCRS extends AbstractReferenceSystem implements CoordinateRe
     /**
      * Sets the CRS for the given axes convention.
      *
-     * @param crs The CRS to cache.
-     * @return The cached CRS. May be different than the given {@code crs} if an existing instance has been found.
+     * @param  crs  the CRS to cache.
+     * @return the cached CRS. May be different than the given {@code crs} if an existing instance has been found.
      */
     final AbstractCRS setCached(final AxesConvention convention, AbstractCRS crs) {
         assert Thread.holdsLock(this);
         if (forConvention == null) {
-            forConvention = new EnumMap<AxesConvention,AbstractCRS>(AxesConvention.class);
+            forConvention = new EnumMap<>(AxesConvention.class);
         } else if (crs != this) {
             for (final AbstractCRS existing : forConvention.values()) {
                 if (crs.equals(existing)) {
@@ -355,7 +313,7 @@ public class AbstractCRS extends AbstractReferenceSystem implements CoordinateRe
             }
         }
         if (forConvention.put(convention, crs) != null) {
-            throw new ConcurrentModificationException(); // Should never happen, unless we have a synchronization bug.
+            throw new ConcurrentModificationException();    // Should never happen, unless we have a synchronization bug.
         }
         return crs;
     }
@@ -364,8 +322,8 @@ public class AbstractCRS extends AbstractReferenceSystem implements CoordinateRe
      * Returns a coordinate reference system equivalent to this one but with axes rearranged according the given
      * convention. If this CRS is already compatible with the given convention, then this method returns {@code this}.
      *
-     * @param  convention The axes convention for which a coordinate reference system is desired.
-     * @return A coordinate reference system compatible with the given convention (may be {@code this}).
+     * @param  convention  the axes convention for which a coordinate reference system is desired.
+     * @return a coordinate reference system compatible with the given convention (may be {@code this}).
      *
      * @see AbstractCS#forConvention(AxesConvention)
      */
@@ -400,10 +358,10 @@ public class AbstractCRS extends AbstractReferenceSystem implements CoordinateRe
      * compared including the {@linkplain #getDomainOfValidity() domain of validity} and
      * the {@linkplain #getScope() scope}.
      *
-     * @param  object The object to compare to {@code this}.
-     * @param  mode {@link ComparisonMode#STRICT STRICT} for performing a strict comparison, or
-     *         {@link ComparisonMode#IGNORE_METADATA IGNORE_METADATA} for comparing only properties
-     *         relevant to coordinate transformations.
+     * @param  object  the object to compare to {@code this}.
+     * @param  mode    {@link ComparisonMode#STRICT STRICT} for performing a strict comparison, or
+     *                 {@link ComparisonMode#IGNORE_METADATA IGNORE_METADATA} for comparing only
+     *                 properties relevant to coordinate transformations.
      * @return {@code true} if both objects are equal.
      */
     @Override
@@ -430,7 +388,7 @@ public class AbstractCRS extends AbstractReferenceSystem implements CoordinateRe
      * See {@link org.apache.sis.referencing.AbstractIdentifiedObject#computeHashCode()}
      * for more information.
      *
-     * @return The hash code value. This value may change in any future Apache SIS version.
+     * @return the hash code value. This value may change in any future Apache SIS version.
      */
     @Override
     protected long computeHashCode() {
@@ -456,22 +414,27 @@ public class AbstractCRS extends AbstractReferenceSystem implements CoordinateRe
      * </ul>
      *
      * @return {@inheritDoc}
+     *
+     * @see <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html">WKT 2 specification</a>
+     * @see <a href="http://www.geoapi.org/3.0/javadoc/org/opengis/referencing/doc-files/WKT.html">Legacy WKT 1</a>
      */
     @Override
     protected String formatTo(final Formatter formatter) {
-        final String  keyword = super.formatTo(formatter);
+        final String keyword = super.formatTo(formatter);
         formatter.newLine();
         formatter.append(toFormattable(getDatum()));
         formatter.newLine();
-        final boolean isWKT1 = formatter.getConvention().majorVersion() == 1;
-        if (isWKT1 || !isBaseCRS(formatter)) {
-            formatCS(formatter, getCoordinateSystem(), isWKT1);
+        final Convention convention = formatter.getConvention();
+        final boolean isWKT1 = convention.majorVersion() == 1;
+        if (isWKT1 || convention == Convention.INTERNAL || !isBaseCRS(formatter)) {
+            final CoordinateSystem cs = getCoordinateSystem();
+            formatCS(formatter, cs, ReferencingUtilities.getUnit(cs), isWKT1);
         }
         return keyword;
     }
 
     /**
-     * Returns {@code true} if the given formatter is in the process of formatting the base CRS of a
+     * Returns {@code true} if the given formatter is in the process of formatting the base CRS of an
      * {@link AbstractDerivedCRS}. In such case, the coordinate system axes shall not be formatted.
      *
      * <p>This method should return {@code true} when {@code this} CRS is the value returned by
@@ -490,39 +453,93 @@ public class AbstractCRS extends AbstractReferenceSystem implements CoordinateRe
      *
      * <p>In WKT 2 format, this method should not be invoked if {@link #isBaseCRS(Formatter)} returned {@code true}
      * because ISO 19162 excludes the coordinate system definition in base CRS. Note however that WKT 1 includes the
-     * coordinate systems.</p>
+     * coordinate systems. The SIS-specific {@link Convention#INTERNAL} formats also those coordinate systems.</p>
      *
-     * @param formatter The formatter where to append the coordinate system.
-     * @param cs        The coordinate system to append.
-     * @param isWKT1    {@code true} if formatting WKT 1, or {@code false} for WKT 2.
+     * <div class="note"><b>Note:</b> the {@code unit} and {@code isWKT1} arguments could be computed by this method,
+     * but are requested in order to avoid computing them twice, because the caller usually have them anyway.</div>
+     *
+     * @param  formatter  the formatter where to append the coordinate system.
+     * @param  cs         the coordinate system to append.
+     * @param  unit       the value of {@code ReferencingUtilities.getUnit(cs)}.
+     * @param  isWKT1    { @code true} if formatting WKT 1, or {@code false} for WKT 2.
      */
-    final void formatCS(final Formatter formatter, final CoordinateSystem cs, final boolean isWKT1) {
+    final void formatCS(final Formatter formatter, final CoordinateSystem cs, final Unit<?> unit, final boolean isWKT1) {
+        assert unit == ReferencingUtilities.getUnit(cs) : unit;
         assert (formatter.getConvention().majorVersion() == 1) == isWKT1 : isWKT1;
-        assert isWKT1 || !isBaseCRS(formatter) : isWKT1;    // Condition documented in javadoc.
+        assert isWKT1 || !isBaseCRS(formatter) || formatter.getConvention() == Convention.INTERNAL;    // Condition documented in javadoc.
 
-        final Unit<?> unit    = ReferencingUtilities.getUnit(cs);
         final Unit<?> oldUnit = formatter.addContextualUnit(unit);
-        if (isWKT1) { // WKT 1 writes unit before axes, while WKT 2 writes them after axes.
+        if (isWKT1) {                               // WKT 1 writes unit before axes, while WKT 2 writes them after axes.
             formatter.append(unit);
             if (unit == null) {
                 formatter.setInvalidWKT(this, null);
             }
         } else {
-            formatter.append(toFormattable(cs)); // WKT2 only, since the concept of CoordinateSystem was not explicit in WKT 1.
+            formatter.append(toFormattable(cs));    // WKT2 only, since the concept of CoordinateSystem was not explicit in WKT 1.
             formatter.indent(+1);
         }
-        final int dimension = cs.getDimension();
-        for (int i=0; i<dimension; i++) {
-            formatter.newLine();
-            formatter.append(toFormattable(cs.getAxis(i)));
+        if (!isWKT1 || formatter.getConvention() != Convention.WKT1_IGNORE_AXES) {
+            if (cs != null) {                       // Should never be null, except sometime temporarily during construction.
+                final int dimension = cs.getDimension();
+                for (int i=0; i<dimension; i++) {
+                    formatter.newLine();
+                    formatter.append(toFormattable(cs.getAxis(i)));
+                }
+            }
         }
-        if (!isWKT1) { // WKT 2 writes unit after axes, while WKT 1 wrote them before axes.
+        if (!isWKT1) {                              // WKT 2 writes unit after axes, while WKT 1 wrote them before axes.
             formatter.newLine();
             formatter.append(unit);
             formatter.indent(-1);
         }
-        formatter.removeContextualUnit(unit);
-        formatter.addContextualUnit(oldUnit);
-        formatter.newLine(); // For writing the ID[…] element on its own line.
+        formatter.restoreContextualUnit(unit, oldUnit);
+        formatter.newLine();                        // For writing the ID[…] element on its own line.
+    }
+
+
+
+
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+    ////////                                                                                  ////////
+    ////////                               XML support with JAXB                              ////////
+    ////////                                                                                  ////////
+    ////////        The following methods are invoked by JAXB using reflection (even if       ////////
+    ////////        they are private) or are helpers for other methods invoked by JAXB.       ////////
+    ////////        Those methods can be safely removed if Geographic Markup Language         ////////
+    ////////        (GML) support is not needed.                                              ////////
+    ////////                                                                                  ////////
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Constructs a new object in which every attributes are set to a null value.
+     * <strong>This is not a valid object.</strong> This constructor is strictly
+     * reserved to JAXB, which will assign values to the fields using reflexion.
+     */
+    AbstractCRS() {
+        super(org.apache.sis.internal.referencing.NilReferencingObject.INSTANCE);
+        /*
+         * The coordinate system is mandatory for SIS working. We do not verify its presence here
+         * because the verification would have to be done in an 'afterMarshal(…)' method and throwing
+         * an exception in that method causes the whole unmarshalling to fail. But the SC_CRS adapter
+         * does some verifications.
+         */
+    }
+
+    /**
+     * Sets the coordinate system to the given value.
+     * This method is indirectly invoked by JAXB at unmarshalling time.
+     *
+     * @param  name  the property name, used only in case of error message to format. Can be null for auto-detect.
+     * @throws IllegalStateException if the coordinate system has already been set.
+     */
+    final void setCoordinateSystem(String name, final CoordinateSystem cs) {
+        if (coordinateSystem == null) {
+            coordinateSystem = cs;
+        } else {
+            if (name == null) {
+                name = String.valueOf(ReferencingUtilities.toPropertyName(CoordinateSystem.class, cs.getClass()));
+            }
+            MetadataUtilities.propertyAlreadySet(AbstractCRS.class, "setCoordinateSystem", name);
+        }
     }
 }

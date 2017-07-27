@@ -49,10 +49,10 @@ public class SQLNotDateException extends SQLException {
      */
     public SQLNotDateException(String message, String sqlStatement, File dbf, String colName, String wrongValue) {
         super(message);
-        sql = sqlStatement;
-        database = dbf;
-        columnName = colName;
-        value = wrongValue;
+        this.sql = sqlStatement;
+        this.database = dbf;
+        this.columnName = colName;
+        this.value = wrongValue;
     }
 
     /**
@@ -60,7 +60,7 @@ public class SQLNotDateException extends SQLException {
      * @return SQL statement or null.
      */
     public String getSQL() {
-        return sql;
+        return this.sql;
     }
 
     /**
@@ -68,7 +68,7 @@ public class SQLNotDateException extends SQLException {
      * @return Column name.
      */
     public String getColumnName() {
-        return columnName;
+        return this.columnName;
     }
 
     /**
@@ -76,7 +76,7 @@ public class SQLNotDateException extends SQLException {
      * @return Value.
      */
     public String getValue() {
-        return value;
+        return this.value;
     }
 
     /**
@@ -84,6 +84,6 @@ public class SQLNotDateException extends SQLException {
      * @return Database file.
      */
     public File getDatabase() {
-        return database;
+        return this.database;
     }
 }

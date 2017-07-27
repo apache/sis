@@ -168,7 +168,7 @@ div.description div.section {
 
 /*
  * Bullet and ordered lists. Put some space before and after the list.
- * Listes of the "verbose" class also have some space betweem items.
+ * Lists of the "verbose" class also have some space betweem items.
  */
 div.block ul,
 div.block ol {
@@ -180,7 +180,7 @@ div.block ol {
 div.block ul > li,
 div.block ol > li {
   margin-top:    0;
-  margin-bottom: 3px;
+  margin-bottom: 0;
 }
 
 div.block ul.verbose > li,
@@ -212,13 +212,44 @@ div.block center {
 }
 
 /*
+ * Text similar to <pre> but without monospace font.
+ */
+div.preformat {
+  margin: 15px 30px;
+  line-height: 100%;
+  white-space: pre-wrap;
+}
+
+/*
+ * Output of {@preformat} inline tag.
+ */
+pre.code-sample {
+  margin-left:   40px;
+  margin-right:  40px;
+  margin-top:    12px;
+  margin-bottom: 12px;
+}
+
+td > pre.code-sample {
+  margin: 9px;
+}
+
+:not(td) > pre.code-sample {
+  padding:      9px;
+  border-style: solid;
+  border-width: 1px;
+  border-color: gray;
+  background-color: rgba(200, 200, 200, 0.1);
+}
+
+/*
  * Miscellaneous.
  */
 span.deprecated {
   text-decoration: line-through;
 }
 
-div.block {
+:not(td) > div.block {
   text-align: justify;
 }
 
@@ -246,11 +277,6 @@ pre, div.block pre, code, tt, dt code, table tr td dt code {
 div.block pre, code, tt, dt code, table tr td dt code {
   line-height: 1em;
   font-size:   1em;
-}
-
-h5 {
-  font-size: 110%;
-  margin-bottom: 3pt;
 }
 
 /* Appareance of links in the "Description" column of class and package summaries.

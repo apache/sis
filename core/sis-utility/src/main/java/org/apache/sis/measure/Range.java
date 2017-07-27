@@ -16,19 +16,17 @@
  */
 package org.apache.sis.measure;
 
+import java.util.Objects;
 import java.util.Formatter;
 import java.util.Formattable;
 import java.util.FormattableFlags;
 import java.io.Serializable;
-import javax.measure.unit.Unit;
+import javax.measure.Unit;
 import org.apache.sis.internal.util.Utilities;
 import org.apache.sis.util.collection.CheckedContainer;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Emptiable;
 import org.apache.sis.util.Numbers;
-
-// Branch-dependent imports
-import org.apache.sis.internal.jdk7.Objects;
 
 
 /**
@@ -58,38 +56,38 @@ import org.apache.sis.internal.jdk7.Objects;
  *
  * <div class="section">Relationship with ISO 19123 definition of range</div>
  * The ISO 19123 standard (<cite>Coverage geometry and functions</cite>) defines the range as the set
- * (either finite or {@linkplain org.opengis.geometry.TransfiniteSet transfinite}) of feature attribute
- * values associated by a function (the {@linkplain org.opengis.coverage.Coverage coverage}) with the
+ * (either finite or transfinite) of feature attribute
+ * values associated by a function (the coverage) with the
  * elements of the coverage domain. In other words, if we see a coverage as a function, then a range
  * is the set of possible return values.
  *
  * <p>The characteristics of the spatial domain are defined by the ISO 19123 standard whereas the
  * characteristics of the attribute range are not part of that standard. In Apache SIS, those
- * characteristics are described by the {@link org.apache.sis.coverage.SampleDimension} class,
+ * characteristics are described by the {@code SampleDimension} class,
  * which may contain one or many {@code Range} instances. Consequently this {@code Range} class
  * is closely related, but not identical, to the ISO 19123 definition or range.</p>
  *
  * <p>Ranges are not necessarily numeric. Numeric and non-numeric ranges can be associated to
- * {@linkplain org.opengis.coverage.DiscreteCoverage discrete coverages}, while typically only
- * numeric ranges can be associated to {@linkplain org.opengis.coverage.ContinuousCoverage
- * continuous coverages}.</p>
+ * discrete coverages, while typically only
+ * numeric ranges can be associated to continuous coverages.</p>
  *
  * <div class="section">Immutability and thread safety</div>
  * This class and the {@link NumberRange} / {@link MeasurementRange} subclasses are immutable,
  * and thus inherently thread-safe. Other subclasses may or may not be immutable, at implementation choice.
  * But implementors are encouraged to make sure that all subclasses remain immutable for more predictable behavior.
  *
- * @param <E> The type of range elements, typically a {@link Number} subclass or {@link java.util.Date}.
- *
  * @author  Joe White
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Jody Garnett (for parameterized type inspiration)
- * @since   0.3
- * @version 0.3
- * @module
+ * @version 0.8
+ *
+ * @param <E>  the type of range elements, typically a {@link Number} subclass or {@link java.util.Date}.
  *
  * @see RangeFormat
  * @see org.apache.sis.util.collection.RangeSet
+ *
+ * @since 0.3
+ * @module
  */
 public class Range<E extends Comparable<? super E>> implements CheckedContainer<E>, Formattable, Emptiable, Serializable {
     /**
@@ -118,7 +116,7 @@ public class Range<E extends Comparable<? super E>> implements CheckedContainer<
      * Constructs a range with the same type and the same values than the specified range.
      * This is a copy constructor.
      *
-     * @param range The range to copy.
+     * @param  range  the range to copy.
      */
     public Range(final Range<E> range) {
         elementType   = range.elementType;
@@ -137,11 +135,11 @@ public class Range<E extends Comparable<? super E>> implements CheckedContainer<
      * are enabled. This verification is not performed in normal execution because theoretically unnecessary
      * unless Java generic types have been tricked.</div>
      *
-     * @param elementType    The base type of the range elements.
-     * @param minValue       The minimal value, or {@code null} if none.
-     * @param isMinIncluded  {@code true} if the minimal value is inclusive, or {@code false} if exclusive.
-     * @param maxValue       The maximal value, or {@code null} if none.
-     * @param isMaxIncluded  {@code true} if the maximal value is inclusive, or {@code false} if exclusive.
+     * @param  elementType    the base type of the range elements.
+     * @param  minValue       the minimal value, or {@code null} if none.
+     * @param  isMinIncluded  {@code true} if the minimal value is inclusive, or {@code false} if exclusive.
+     * @param  maxValue       the maximal value, or {@code null} if none.
+     * @param  isMaxIncluded  {@code true} if the maximal value is inclusive, or {@code false} if exclusive.
      */
     public Range(final Class<E> elementType,
             final E minValue, final boolean isMinIncluded,
@@ -173,7 +171,7 @@ public class Range<E extends Comparable<? super E>> implements CheckedContainer<
     Range<E> create(final E minValue, final boolean isMinIncluded,
                     final E maxValue, final boolean isMaxIncluded)
     {
-        return new Range<E>(elementType, minValue, isMinIncluded, maxValue, isMaxIncluded);
+        return new Range<>(elementType, minValue, isMinIncluded, maxValue, isMaxIncluded);
     }
 
     /**
@@ -184,7 +182,7 @@ public class Range<E extends Comparable<? super E>> implements CheckedContainer<
      * by the {@link #create(Comparable, boolean, Comparable, boolean)} method - otherwise we may
      * get an {@link ArrayStoreException}.
      */
-    @SuppressWarnings({"unchecked","rawtypes"}) // Generic array creation.
+    @SuppressWarnings({"unchecked","rawtypes"})                     // Generic array creation.
     Range<E>[] newArray(final int length) {
         return new Range[length];
     }
@@ -192,7 +190,7 @@ public class Range<E extends Comparable<? super E>> implements CheckedContainer<
     /**
      * To be overridden by {@link MeasurementRange} only.
      *
-     * @return The unit of measurement, or {@code null}.
+     * @return the unit of measurement, or {@code null}.
      */
     Unit<?> unit() {
         return null;
@@ -223,7 +221,7 @@ public class Range<E extends Comparable<? super E>> implements CheckedContainer<
      * If non-null, the returned value is either inclusive or exclusive depending on
      * the boolean returned by {@link #isMinIncluded()}.
      *
-     * @return The minimal value, or {@code null} if this range is unbounded on the lower side.
+     * @return the minimal value, or {@code null} if this range is unbounded on the lower side.
      */
     public E getMinValue() {
         return minValue;
@@ -245,7 +243,7 @@ public class Range<E extends Comparable<? super E>> implements CheckedContainer<
      * If non-null, the returned value is either inclusive or exclusive depending on
      * the boolean returned by {@link #isMaxIncluded()}.
      *
-     * @return The maximal value, or {@code null} if this range is unbounded on the upper side.
+     * @return the maximal value, or {@code null} if this range is unbounded on the upper side.
      */
     public E getMaxValue() {
         return maxValue;
@@ -277,11 +275,11 @@ public class Range<E extends Comparable<? super E>> implements CheckedContainer<
     @Override
     public final boolean isEmpty() {
         if (minValue == null || maxValue == null) {
-            return false; // Unbounded: can't be empty.
+            return false;                               // Unbounded: can not be empty.
         }
         final int c = minValue.compareTo(maxValue);
         if (c < 0) {
-            return false; // Minimum is smaller than maximum.
+            return false;                               // Minimum is smaller than maximum.
         }
         // If min and max are equal, then the range is empty if at least one of them is exclusive.
         return (c != 0) || !isMinIncluded || !isMaxIncluded;
@@ -293,7 +291,7 @@ public class Range<E extends Comparable<? super E>> implements CheckedContainer<
      * stating that null {@linkplain #getMinValue() minimum} or {@linkplain #getMaxValue() maximum}
      * values are exclusive.
      *
-     * @param  value The value to check for inclusion in this range.
+     * @param  value  the value to check for inclusion in this range.
      * @return {@code true} if the given value is included in this range.
      */
     public boolean contains(final E value) {
@@ -331,9 +329,9 @@ public class Range<E extends Comparable<? super E>> implements CheckedContainer<
     /**
      * Returns {@code true} if the supplied range is fully contained within this range.
      *
-     * @param  range The range to check for inclusion in this range.
+     * @param  range  the range to check for inclusion in this range.
      * @return {@code true} if the given range is included in this range.
-     * @throws IllegalArgumentException is the given range is incompatible,
+     * @throws IllegalArgumentException if the given range is incompatible,
      *         for example because of incommensurable units of measurement.
      */
     public boolean contains(final Range<? extends E> range) {
@@ -365,9 +363,9 @@ public class Range<E extends Comparable<? super E>> implements CheckedContainer<
     /**
      * Returns {@code true} if this range intersects the given range.
      *
-     * @param  range The range to check for intersection with this range.
+     * @param  range  the range to check for intersection with this range.
      * @return {@code true} if the given range intersects this range.
-     * @throws IllegalArgumentException is the given range is incompatible,
+     * @throws IllegalArgumentException if the given range is incompatible,
      *         for example because of incommensurable units of measurement.
      */
     public boolean intersects(final Range<? extends E> range) {
@@ -378,12 +376,14 @@ public class Range<E extends Comparable<? super E>> implements CheckedContainer<
     /**
      * Returns the intersection between this range and the given range.
      *
-     * @param  range The range to intersect.
-     * @return The intersection of this range with the given range.
-     * @throws IllegalArgumentException is the given range is incompatible,
+     * @param  range  the range to intersect.
+     * @return the intersection of this range with the given range.
+     * @throws IllegalArgumentException if the given range is incompatible,
      *         for example because of incommensurable units of measurement.
      */
     public Range<E> intersect(final Range<E> range) {
+        if (range.isEmpty()) return range;
+        if (this .isEmpty()) return this;
         /*
          * For two ranges [L₁ … H₁] and [L₂ … H₂], the intersection is given by
          * ([max(L₁, L₂) … min(H₁, H₂)]). Only two comparisons is needed.
@@ -410,12 +410,15 @@ public class Range<E extends Comparable<? super E>> implements CheckedContainer<
     /**
      * Returns the union of this range with the given range.
      *
-     * @param  range The range to add to this range.
-     * @return The union of this range with the given range.
-     * @throws IllegalArgumentException is the given range is incompatible,
+     * @param  range  the range to add to this range.
+     * @return the union of this range with the given range.
+     * @throws IllegalArgumentException if the given range is incompatible,
      *         for example because of incommensurable units of measurement.
      */
     public Range<E> union(final Range<E> range) {
+        if (range.isEmpty()) return this;
+        if (this .isEmpty()) return range;
+
         final Range<E> union, min, max;
         min = compareMinTo(range.minValue, range.isMinIncluded ? 0 : -1) > 0 ? range : this;
         max = compareMaxTo(range.maxValue, range.isMaxIncluded ? 0 : +1) < 0 ? range : this;
@@ -440,9 +443,9 @@ public class Range<E extends Comparable<? super E>> implements CheckedContainer<
      *   <li>Otherwise returns an array of length 1.</li>
      * </ul>
      *
-     * @param  range The range to subtract.
-     * @return This range without the given range, as an array of length 0, 1 or 2.
-     * @throws IllegalArgumentException is the given range is incompatible,
+     * @param  range  the range to subtract.
+     * @return this range without the given range, as an array of length 0, 1 or 2.
+     * @throws IllegalArgumentException if the given range is incompatible,
      *         for example because of incommensurable units of measurement.
      */
     public Range<E>[] subtract(final Range<E> range) {
@@ -493,9 +496,9 @@ public class Range<E extends Comparable<? super E>> implements CheckedContainer<
      *
      * Note that the non-zero position shall be exactly -1 or +1, not arbitrary negative or positive.
      *
-     * @param  value    An endpoint value of the other range to be compared to the minimal value of this range.
-     * @param  position The position of {@code value} relative to the inclusive values of the other range.
-     * @return Position (-, + or 0) of the inclusive values of this range compared to the other range.
+     * @param  value     an endpoint value of the other range to be compared to the minimal value of this range.
+     * @param  position  the position of {@code value} relative to the inclusive values of the other range.
+     * @return position (-, + or 0) of the inclusive values of this range compared to the other range.
      *
      * @see #contains(Range)
      */
@@ -561,8 +564,17 @@ public class Range<E extends Comparable<? super E>> implements CheckedContainer<
 
     /**
      * Compares this range with the given object for equality.
+     * Two ranges are considered equal if they have the same {@link #getElementType() element type} and:
      *
-     * @param  object The object to compare with this range for equality.
+     * <ul>
+     *   <li>are both {@linkplain #isEmpty() empty}, or</li>
+     *   <li>have equal {@linkplain #getMinValue() minimum} and {@linkplain #getMaxValue() maximum} values
+     *       with equal inclusive/exclusive flags.</li>
+     * </ul>
+     *
+     * Note that subclasses may add other requirements, for example on units of measurement.
+     *
+     * @param  object  the object to compare with this range for equality.
      * @return {@code true} if the given object is equal to this range.
      */
     @Override
@@ -606,7 +618,6 @@ public class Range<E extends Comparable<? super E>> implements CheckedContainer<
      * only one digit. This method assumes that we have verified that the element type
      * is an integer type before to invoke this method.
      */
-    @SuppressWarnings("unchecked")
     private static boolean isCompact(final Comparable<?> value, final boolean ifNull) {
         if (value == null) {
             return ifNull;
@@ -667,9 +678,13 @@ public class Range<E extends Comparable<? super E>> implements CheckedContainer<
         }
         final Unit<?> unit = unit();
         if (unit != null) {
-            // No need to check if we should omit the space because Unit.toString()
-            // uses UCUM format, so we will never have symbol like the ° one.
-            buffer.append(' ').append(unit);
+            final String symbol = unit.toString();
+            if (symbol != null && !symbol.isEmpty()) {
+                if (Character.isLetterOrDigit(symbol.codePointAt(0))) {
+                    buffer.append(' ');
+                }
+                buffer.append(symbol);
+            }
         }
         return buffer.toString();
     }
@@ -683,10 +698,10 @@ public class Range<E extends Comparable<? super E>> implements CheckedContainer<
      * be formatted using the {@linkplain RangeFormat#isAlternateForm() alternate form}
      * for exclusive bounds.</p>
      *
-     * @param formatter The formatter in which to format this angle.
-     * @param flags     {@link FormattableFlags#LEFT_JUSTIFY} for left alignment, or 0 for right alignment.
-     * @param width     Minimal number of characters to write, padding with {@code ' '} if necessary.
-     * @param precision Maximal number of characters to write, or -1 if no limit.
+     * @param  formatter  the formatter in which to format this angle.
+     * @param  flags      {@link FormattableFlags#LEFT_JUSTIFY} for left alignment, or 0 for right alignment.
+     * @param  width      minimal number of characters to write, padding with {@code ' '} if necessary.
+     * @param  precision  maximal number of characters to write, or -1 if no limit.
      */
     @Override
     public void formatTo(final Formatter formatter, final int flags, final int width, int precision) {

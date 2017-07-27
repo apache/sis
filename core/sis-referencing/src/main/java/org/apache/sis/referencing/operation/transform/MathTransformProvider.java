@@ -60,8 +60,8 @@ import org.opengis.referencing.operation.MathTransformFactory;
  *
  *         &#64;Override
  *         public MathTransform createMathTransform(MathTransformFactory factory, ParameterValueGroup parameters) {
- *             double semiMajor = values.parameter("semi_major").doubleValue(SI.METRE);
- *             double semiMinor = values.parameter("semi_minor").doubleValue(SI.METRE);
+ *             double semiMajor = values.parameter("semi_major").doubleValue(Units.METRE);
+ *             double semiMinor = values.parameter("semi_minor").doubleValue(Units.METRE);
  *             // etc...
  *             return new MyProjection(semiMajor, semiMinor, ...);
  *         }
@@ -76,13 +76,14 @@ import org.opengis.referencing.operation.MathTransformFactory;
  * }
  *
  * @author  Martin Desruisseaux (Geomatys, IRD)
- * @since   0.6
  * @version 0.6
- * @module
  *
  * @see org.apache.sis.referencing.operation.DefaultOperationMethod
  * @see DefaultMathTransformFactory
  * @see AbstractMathTransform
+ *
+ * @since 0.6
+ * @module
  */
 public interface MathTransformProvider {
     /**
@@ -94,8 +95,8 @@ public interface MathTransformProvider {
      *
      * {@preformat java
      *     public MathTransform createMathTransform(MathTransformFactory factory, ParameterValueGroup parameters) {
-     *         double semiMajor = values.parameter("semi_major").doubleValue(SI.METRE);
-     *         double semiMinor = values.parameter("semi_minor").doubleValue(SI.METRE);
+     *         double semiMajor = values.parameter("semi_major").doubleValue(Units.METRE);
+     *         double semiMinor = values.parameter("semi_minor").doubleValue(Units.METRE);
      *         // etc...
      *         return new MyProjection(semiMajor, semiMinor, ...);
      *     }
@@ -109,9 +110,9 @@ public interface MathTransformProvider {
      * with other kind of transforms. In such cases, implementors should use the given factory for creating
      * the steps.
      *
-     * @param  factory The factory to use if this constructor needs to create other math transforms.
-     * @param  parameters The parameter values that define the transform to create.
-     * @return The math transform created from the given parameters.
+     * @param  factory     the factory to use if this constructor needs to create other math transforms.
+     * @param  parameters  the parameter values that define the transform to create.
+     * @return the math transform created from the given parameters.
      * @throws InvalidParameterNameException if the given parameter group contains an unknown parameter.
      * @throws ParameterNotFoundException if a required parameter was not found.
      * @throws InvalidParameterValueException if a parameter has an invalid value.

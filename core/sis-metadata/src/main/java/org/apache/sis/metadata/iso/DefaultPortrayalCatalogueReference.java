@@ -26,6 +26,12 @@ import org.opengis.metadata.PortrayalCatalogueReference;
 
 /**
  * Information identifying the portrayal catalogue used.
+ * The following properties are mandatory in a well-formed metadata according ISO 19115:
+ *
+ * <div class="preformat">{@code MD_PortrayalCatalogueReference}
+ * {@code   └─portrayalCatalogueCitation……} Bibliographic reference to the portrayal catalogue cited.
+ * {@code       ├─title…………………………………………………} Name by which the cited resource is known.
+ * {@code       └─date……………………………………………………} Reference date for the cited resource.</div>
  *
  * <p><b>Limitations:</b></p>
  * <ul>
@@ -39,15 +45,14 @@ import org.opengis.metadata.PortrayalCatalogueReference;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Touraïvane (IRD)
  * @author  Cédric Briançon (Geomatys)
- * @since   0.3
  * @version 0.3
+ * @since   0.3
  * @module
  */
+@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "MD_PortrayalCatalogueReference_Type")
 @XmlRootElement(name = "MD_PortrayalCatalogueReference")
-public class DefaultPortrayalCatalogueReference extends ISOMetadata
-        implements PortrayalCatalogueReference
-{
+public class DefaultPortrayalCatalogueReference extends ISOMetadata implements PortrayalCatalogueReference {
     /**
      * Serial number for compatibility with different versions.
      */
@@ -67,7 +72,7 @@ public class DefaultPortrayalCatalogueReference extends ISOMetadata
     /**
      * Creates a portrayal catalogue reference initialized to the given reference.
      *
-     * @param portrayalCatalogueCitation The bibliographic reference, or {@code null} if none.
+     * @param portrayalCatalogueCitation  the bibliographic reference, or {@code null} if none.
      */
     public DefaultPortrayalCatalogueReference(final Citation portrayalCatalogueCitation) {
         portrayalCatalogueCitations = singleton(portrayalCatalogueCitation, Citation.class);
@@ -78,7 +83,7 @@ public class DefaultPortrayalCatalogueReference extends ISOMetadata
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
-     * @param object The metadata to copy values from, or {@code null} if none.
+     * @param  object  the metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(PortrayalCatalogueReference)
      */
@@ -103,8 +108,8 @@ public class DefaultPortrayalCatalogueReference extends ISOMetadata
      *       metadata contained in the given object are not recursively copied.</li>
      * </ul>
      *
-     * @param  object The object to get as a SIS implementation, or {@code null} if none.
-     * @return A SIS implementation containing the values of the given object (may be the
+     * @param  object  the object to get as a SIS implementation, or {@code null} if none.
+     * @return a SIS implementation containing the values of the given object (may be the
      *         given object itself), or {@code null} if the argument was null.
      */
     public static DefaultPortrayalCatalogueReference castOrCopy(final PortrayalCatalogueReference object) {
@@ -117,7 +122,7 @@ public class DefaultPortrayalCatalogueReference extends ISOMetadata
     /**
      * Bibliographic reference to the portrayal catalogue cited.
      *
-     * @return References to the portrayal catalogue cited.
+     * @return references to the portrayal catalogue cited.
      */
     @Override
     @XmlElement(name = "portrayalCatalogueCitation", required = true)
@@ -128,7 +133,7 @@ public class DefaultPortrayalCatalogueReference extends ISOMetadata
     /**
      * Sets bibliographic reference to the portrayal catalogue cited.
      *
-     * @param newValues The new portrayal catalogue citations.
+     * @param  newValues  the new portrayal catalogue citations.
      */
     public void setPortrayalCatalogueCitations(Collection<? extends Citation> newValues) {
         portrayalCatalogueCitations = writeCollection(newValues, portrayalCatalogueCitations, Citation.class);

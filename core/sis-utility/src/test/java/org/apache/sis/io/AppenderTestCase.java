@@ -29,8 +29,8 @@ import static org.apache.sis.test.Assert.*;
  * This is public because JUnit requires it, but should be considered as an implementation details.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.3
+ * @since   0.3
  * @module
  */
 public abstract class AppenderTestCase extends TestCase {
@@ -61,16 +61,16 @@ public abstract class AppenderTestCase extends TestCase {
      * Implementations shall write in the {@link #appender}, then test
      * the result with {@link #assertOutputEquals(String)}.
      *
-     * @param  lineSeparator The line separator to use.
-     * @throws IOException Should never happen.
+     * @param  lineSeparator  the line separator to use.
+     * @throws IOException should never happen since the tests will write in a buffer.
      */
     abstract void run(final String lineSeparator) throws IOException;
 
     /**
      * Ensures that the buffer content is equals to the given string.
      *
-     * @param  expected The expected content.
-     * @throws IOException Should never happen.
+     * @param  expected  the expected content.
+     * @throws IOException should never happen since the tests will write in a buffer.
      */
     final void assertOutputEquals(final String expected) throws IOException {
         IO.flush(appender);
@@ -91,7 +91,7 @@ public abstract class AppenderTestCase extends TestCase {
      * Tests a sequence of {@link Appendable#append(char)} calls,
      * with Unix line terminators mixed in.
      *
-     * @throws IOException Should never happen.
+     * @throws IOException should never happen since the tests will write in a buffer.
      */
     @Test
     public void testCharsWithLF() throws IOException {
@@ -103,7 +103,7 @@ public abstract class AppenderTestCase extends TestCase {
      * Tests a few {@link Appendable#append(CharSequence)} calls,
      * with Unix line terminators in the sequences.
      *
-     * @throws IOException Should never happen.
+     * @throws IOException should never happen since the tests will write in a buffer.
      */
     @Test
     @DependsOnMethod("testCharsWithLF")
@@ -115,7 +115,7 @@ public abstract class AppenderTestCase extends TestCase {
      * Tests a sequence of {@link Appendable#append(char)} calls,
      * with CR line terminators mixed in.
      *
-     * @throws IOException Should never happen.
+     * @throws IOException should never happen since the tests will write in a buffer.
      */
     @Test
     @DependsOnMethod("testCharsWithLF")
@@ -128,7 +128,7 @@ public abstract class AppenderTestCase extends TestCase {
      * Tests a few {@link Appendable#append(CharSequence)} calls,
      * with CR line terminators in the sequences.
      *
-     * @throws IOException Should never happen.
+     * @throws IOException should never happen since the tests will write in a buffer.
      */
     @Test
     @DependsOnMethod("testCharsWithCR")
@@ -140,7 +140,7 @@ public abstract class AppenderTestCase extends TestCase {
      * Tests a sequence of {@link Appendable#append(char)} calls,
      * with Windows line terminators mixed in.
      *
-     * @throws IOException Should never happen.
+     * @throws IOException should never happen since the tests will write in a buffer.
      */
     @Test
     @DependsOnMethod("testCharsWithCR")
@@ -153,7 +153,7 @@ public abstract class AppenderTestCase extends TestCase {
      * Tests a few {@link Appendable#append(CharSequence)} calls,
      * with Windows line terminators in the sequences.
      *
-     * @throws IOException Should never happen.
+     * @throws IOException should never happen since the tests will write in a buffer.
      */
     @Test
     @DependsOnMethod("testCharsWithCRLF")
@@ -165,7 +165,7 @@ public abstract class AppenderTestCase extends TestCase {
      * Tests a sequence of {@link Appendable#append(char)} calls,
      * with Unicode line terminators mixed in.
      *
-     * @throws IOException Should never happen.
+     * @throws IOException should never happen since the tests will write in a buffer.
      */
     @Test
     @DependsOnMethod("testCharsWithLF")
@@ -178,7 +178,7 @@ public abstract class AppenderTestCase extends TestCase {
      * Tests a few {@link Appendable#append(CharSequence)} calls,
      * with Unicode line terminators in the sequences.
      *
-     * @throws IOException Should never happen.
+     * @throws IOException should never happen since the tests will write in a buffer.
      */
     @Test
     @DependsOnMethod("testCharsWithUnicode")
@@ -190,7 +190,7 @@ public abstract class AppenderTestCase extends TestCase {
      * Tests a few {@link java.io.Writer#write(String)} calls,
      * with Unix line terminators in the sequences.
      *
-     * @throws IOException Should never happen.
+     * @throws IOException should never happen since the tests will write in a buffer.
      */
     public void testSequencesToWriter() throws IOException {
         appender = IO.asWriter(appender);

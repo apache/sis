@@ -16,6 +16,7 @@
  */
 package org.apache.sis.internal.converter;
 
+import java.util.Queue;
 import java.util.Deque;
 import java.util.ArrayDeque;
 import java.io.Serializable;
@@ -40,8 +41,8 @@ import static org.apache.sis.test.Assert.*;
  * isolated.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
+ * @version 0.8
  * @since   0.3
- * @version 0.3
  * @module
  */
 @DependsOn({
@@ -58,7 +59,7 @@ public final strictfp class ConverterRegistryTest extends TestCase {
      * All converters registered in a test case. Only the converter type and properties
      * will be verified; no conversion or serialization shall be attempted.
      */
-    private final Deque<ObjectConverter<?,?>> converters = new ArrayDeque<ObjectConverter<?,?>>();
+    private final Deque<ObjectConverter<?,?>> converters = new ArrayDeque<>();
 
     /**
      * Registers a converter to test.
@@ -82,7 +83,7 @@ public final strictfp class ConverterRegistryTest extends TestCase {
      * Ensures that the current converters is also registered for the given target class.
      * The given target may not be the same than the {@link ObjectConverter#getTargetClass()}.
      *
-     * @param targetClass The target class to ensure that the converter is registered for.
+     * @param  targetClass  the target class to ensure that the converter is registered for.
      */
     private void assertSameConverterForTarget(final Class<?> targetClass) {
         final ObjectConverter<?,?> converter = converters.peekLast();
@@ -101,7 +102,7 @@ public final strictfp class ConverterRegistryTest extends TestCase {
     /**
      * Ensures that there is no converter for the given target.
      *
-     * @param targetClass The target which should not have any registered converter.
+     * @param  targetClass  the target which should not have any registered converter.
      */
     private void assertNoConverterForTarget(final Class<?> targetClass) {
         final ObjectConverter<?,?> converter = converters.peekLast();
@@ -123,7 +124,7 @@ public final strictfp class ConverterRegistryTest extends TestCase {
     /**
      * Ensures that the converter for the given target is an {@link IdentityConverter}.
      *
-     * @param targetClass The target for which an identity converter should be obtained.
+     * @param  targetClass  the target for which an identity converter should be obtained.
      */
     private void assertIdentityForTarget(final Class<?> targetClass) {
         final ObjectConverter<?,?> converter = converters.peekLast();
@@ -136,10 +137,9 @@ public final strictfp class ConverterRegistryTest extends TestCase {
     }
 
     /**
-     * Asserts that the converter to the given target is a fallback having the given string
-     * representation.
+     * Asserts that the converter to the given target is a fallback having the given string representation.
      *
-     * @param expected The expected string representation of the fallback.
+     * @param  expected  the expected string representation of the fallback.
      */
     private void assertFallbackEquals(final Class<?> target, final String expected) {
         ObjectConverter<?,?> converter = converters.peekLast();
@@ -170,7 +170,7 @@ public final strictfp class ConverterRegistryTest extends TestCase {
         assertMultilinesEquals("After StringConverter.Short",
             "ConverterRegistry\n" +
             "  ├─Short         ← String\n" +
-            "  ├─Number        ← String\n" +  // Same instance than above, applied to Number target.
+            "  ├─Number        ← String\n" +                // Same instance than above, applied to Number target.
             "  │   └─Short     ← String\n" +
             "  ├─Object        ← String\n" +
             "  ├─Comparable    ← String\n" +
@@ -198,7 +198,7 @@ public final strictfp class ConverterRegistryTest extends TestCase {
             "  ├─Comparable    ← String\n" +
             "  ├─Serializable  ← String\n" +
             "  ├─Long          ← String\n" +
-            "  └─Number        ← String\n" + // The FallbackConverter, which replaced the previous.
+            "  └─Number        ← String\n" +                // The FallbackConverter, which replaced the previous.
             "      ├─Short     ← String\n" +
             "      └─Long      ← String\n", registry.toString());
         /*
@@ -243,7 +243,7 @@ public final strictfp class ConverterRegistryTest extends TestCase {
             "  ├─Serializable  ← String\n" +
             "  ├─Long          ← String\n" +
             "  ├─Boolean       ← String\n" +
-            "  └─Number        ← String\n", registry.toString()); // Replaced the FallbackConverter.
+            "  └─Number        ← String\n", registry.toString());       // Replaced the FallbackConverter.
         /*
          * Adds String ← Float
          * Expected side-effect: none
@@ -319,7 +319,7 @@ public final strictfp class ConverterRegistryTest extends TestCase {
          * Expected side-effect: none
          */
         assertAllConvertersAreRegistered();
-        register(new NumberConverter<Number,Float>(Number.class, Float.class));
+        register(new NumberConverter<>(Number.class, Float.class));
         assertSameConverterForTarget(Float.class);
         assertMultilinesEquals("After NumberConverter.Float",
             "ConverterRegistry\n" +
@@ -341,7 +341,7 @@ public final strictfp class ConverterRegistryTest extends TestCase {
      */
     @Test
     public void testArrayOfWrapperTypes() {
-        register(new NumberConverter<Float,Double>(Float.class, Double.class));
+        register(new NumberConverter<>(Float.class, Double.class));
         final ObjectConverter<?,?> converter = registry.find(Float[].class, Double[].class);
         assertInstanceOf("Array conversions", ArrayConverter.class, converter);
         assertEquals(Float [].class, converter.getSourceClass());
@@ -355,11 +355,66 @@ public final strictfp class ConverterRegistryTest extends TestCase {
     @Test
     @DependsOnMethod("testArrayOfWrapperTypes")
     public void testArrayOfPrimitiveTypes() {
-        register(new NumberConverter<Float,Double>(Float.class, Double.class));
+        register(new NumberConverter<>(Float.class, Double.class));
         final ObjectConverter<?,?> converter = registry.find(float[].class, double[].class);
         assertInstanceOf("Array conversions", ArrayConverter.class, converter);
         assertEquals(float [].class, converter.getSourceClass());
         assertEquals(double[].class, converter.getTargetClass());
         assertSame("Converter shall be cached.", converter, registry.find(float[].class, double[].class));
+    }
+
+    /**
+     * Registers two converters where the source types are interfaces.
+     * The source type of one converter is a sub-type of the source type of the other converter.
+     *
+     * @return the converter having the most specific source type.
+     */
+    @SuppressWarnings("rawtypes")
+    private ObjectConverter<?,Integer> registerSourceInterfaces() {
+        final ObjectConverter<?,Integer> child = new SurjectiveConverter<Deque, Integer>() {
+            @Override public Class<Deque>   getSourceClass() {return Deque.class;}
+            @Override public Class<Integer> getTargetClass() {return Integer.class;}
+            @Override public Integer        apply(Deque o)   {return 43;}
+        };
+        register(new SurjectiveConverter<Queue, Integer>() {
+            @Override public Class<Queue>   getSourceClass() {return Queue.class;}
+            @Override public Class<Integer> getTargetClass() {return Integer.class;}
+            @Override public Integer        apply(Queue o)   {return 42;}
+        });
+        register(child);
+        return child;
+    }
+
+    /**
+     * Tests the search for a converter when the only available types are interfaces, and there is an ambiguity
+     * about which interfaces to choose. The search methods shall throw an {@link UnconvertibleObjectException}.
+     */
+    @Test
+    public void testAmbiguousInterfaces() {
+        registerSourceInterfaces();
+        register(new SurjectiveConverter<Serializable, Integer>() {
+            @Override public Class<Serializable> getSourceClass()      {return Serializable.class;}
+            @Override public Class<Integer>      getTargetClass()      {return Integer.class;}
+            @Override public Integer             apply(Serializable o) {return 44;}
+        });
+        try {
+            registry.find(ArrayDeque.class, Integer.class);
+            fail("Should not find a converter when there is an ambiguity in the interfaces.");
+        } catch (UnconvertibleObjectException e) {
+            final String message = e.getMessage();
+            assertTrue(message, message.contains("ArrayDeque"));
+            assertTrue(message, message.contains("Integer"));
+        }
+    }
+
+    /**
+     * Tests the search for a converter when the only available types are interfaces, and a most specific interface
+     * can be identified.
+     */
+    @Test
+    public void testSourceInterface() {
+        final ObjectConverter<?,Integer> child = registerSourceInterfaces();
+        assertSame("Shall fallback on most specific interface.", child, registry.find(ArrayDeque.class, Integer.class));
+        assertSame("Shall fallback on most specific interface.", child, registry.find(ArrayDeque.class, Number.class));
     }
 }

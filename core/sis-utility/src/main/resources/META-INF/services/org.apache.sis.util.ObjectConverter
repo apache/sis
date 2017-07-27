@@ -14,12 +14,19 @@ org.apache.sis.internal.converter.StringConverter$Locale
 org.apache.sis.internal.converter.StringConverter$Charset
 org.apache.sis.internal.converter.StringConverter$InternationalString
 org.apache.sis.internal.converter.StringConverter$File
+org.apache.sis.internal.converter.StringConverter$Path
 org.apache.sis.internal.converter.StringConverter$URI
 org.apache.sis.internal.converter.StringConverter$URL
 org.apache.sis.internal.converter.StringConverter$Unit
 org.apache.sis.internal.converter.StringConverter$Angle
 org.apache.sis.internal.converter.AngleConverter
 org.apache.sis.internal.converter.AngleConverter$Inverse
+org.apache.sis.internal.converter.PathConverter$FilePath
+org.apache.sis.internal.converter.PathConverter$URLPath
+org.apache.sis.internal.converter.PathConverter$URIPath
+org.apache.sis.internal.converter.PathConverter$PathURI
+org.apache.sis.internal.converter.PathConverter$PathURL
+org.apache.sis.internal.converter.PathConverter$PathFile
 org.apache.sis.internal.converter.PathConverter$FileURI
 org.apache.sis.internal.converter.PathConverter$FileURL
 org.apache.sis.internal.converter.PathConverter$URLFile
@@ -31,3 +38,5 @@ org.apache.sis.internal.converter.DateConverter$SQL
 org.apache.sis.internal.converter.DateConverter$Timestamp
 org.apache.sis.internal.converter.CollectionConverter$List
 org.apache.sis.internal.converter.CollectionConverter$Set
+org.apache.sis.internal.converter.FractionConverter
+org.apache.sis.internal.converter.FractionConverter$FromInteger

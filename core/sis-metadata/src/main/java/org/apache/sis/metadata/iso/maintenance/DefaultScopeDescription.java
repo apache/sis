@@ -40,8 +40,17 @@ import org.opengis.feature.type.FeatureType;
 
 /**
  * Description of the class of information covered by the information.
+ * The following properties are mandatory or conditional (i.e. mandatory under some circumstances)
+ * in a well-formed metadata according ISO 19115:
  *
- * <div class="section">Relationship between properties</div>
+ * <div class="preformat">{@code MD_ScopeDescription}
+ * {@code   ├─attributeInstances……} Attribute instances to which the information applies.
+ * {@code   ├─attributes…………………………} Attributes to which the information applies.
+ * {@code   ├─dataset…………………………………} Dataset to which the information applies.
+ * {@code   ├─featureInstances…………} Feature instances to which the information applies.
+ * {@code   ├─features………………………………} Features to which the information applies.
+ * {@code   └─other………………………………………} Class of information that does not fall into the other categories to which the information applies.</div>
+ *
  * ISO 19115 defines {@code ScopeDescription} as an <cite>union</cite> (in the C/C++ sense):
  * only one of the properties in this class can be set to a non-empty value.
  * Setting any property to a non-empty value discard all the other ones.
@@ -58,10 +67,11 @@ import org.opengis.feature.type.FeatureType;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Touraïvane (IRD)
  * @author  Cédric Briançon (Geomatys)
- * @since   0.3
  * @version 0.5
+ * @since   0.3
  * @module
  */
+@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "MD_ScopeDescription_Type") // No need for propOrder since this structure is a union (see javadoc).
 @XmlRootElement(name = "MD_ScopeDescription")
 public class DefaultScopeDescription extends ISOMetadata implements ScopeDescription {
@@ -139,7 +149,7 @@ public class DefaultScopeDescription extends ISOMetadata implements ScopeDescrip
      * {@linkplain #getAttributeInstances() attribute instances}
      * and {@linkplain #getOther() other}.</p>
      *
-     * @param object The metadata to copy values from, or {@code null} if none.
+     * @param  object  the metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(ScopeDescription)
      */
@@ -193,8 +203,8 @@ public class DefaultScopeDescription extends ISOMetadata implements ScopeDescrip
      *       metadata contained in the given object are not recursively copied.</li>
      * </ul>
      *
-     * @param  object The object to get as a SIS implementation, or {@code null} if none.
-     * @return A SIS implementation containing the values of the given object (may be the
+     * @param  object  the object to get as a SIS implementation, or {@code null} if none.
+     * @return a SIS implementation containing the values of the given object (may be the
      *         given object itself), or {@code null} if the argument was null.
      */
     public static DefaultScopeDescription castOrCopy(final ScopeDescription object) {
@@ -229,8 +239,10 @@ public class DefaultScopeDescription extends ISOMetadata implements ScopeDescrip
                        ? null : new ExcludedSet<E>(NAMES[code-1], NAMES[property-1]);
             }
         }
-        // Unconditionally create a new set, because the
-        // user may hold a reference to the previous one.
+        /*
+         * Unconditionally create a new set, because the
+         * user may hold a reference to the previous one.
+         */
         final Set<E> c = nonNullSet(null, type);
         property = code;
         this.value = c;
@@ -241,8 +253,8 @@ public class DefaultScopeDescription extends ISOMetadata implements ScopeDescrip
      * Sets the properties identified by the {@code code} argument, if non-null and non-empty.
      * This discards any other properties.
      *
-     * @param caller The caller method, for logging purpose.
-     * @param code   The property which is going to be set.
+     * @param newValue  the value to set.
+     * @param code      the property which is going to be set.
      */
     private <E> void setProperty(final Set<? extends E> newValue, final Class<E> type, final byte code) {
         Set<E> c = null;
@@ -260,11 +272,11 @@ public class DefaultScopeDescription extends ISOMetadata implements ScopeDescrip
     /**
      * Sends a warning if setting the value for the given property would overwrite an existing property.
      *
-     * @param code The property which is going to be set.
+     * @param  code  the property which is going to be set.
      */
     private void warningOnOverwrite(final byte code) {
         if (value != null && property != code) {
-            Context.warningOccured(Context.current(), LOGGER, DefaultScopeDescription.class, SETTERS[code-1],
+            Context.warningOccured(Context.current(), DefaultScopeDescription.class, SETTERS[code-1],
                     Messages.class, Messages.Keys.DiscardedExclusiveProperty_2, NAMES[property-1], NAMES[code-1]);
         }
     }
@@ -279,7 +291,7 @@ public class DefaultScopeDescription extends ISOMetadata implements ScopeDescrip
      * “<cite>Administrative area A, B &amp; C</cite>” description.
      * </div>
      *
-     * @return Dataset to which the information applies, or {@code null}.
+     * @return dataset to which the information applies, or {@code null}.
      */
     @Override
     @XmlElement(name = "dataset")
@@ -294,7 +306,7 @@ public class DefaultScopeDescription extends ISOMetadata implements ScopeDescrip
      * If and only if the {@code newValue} is non-null, then this method automatically
      * discards all other properties.
      *
-     * @param newValue The new dataset.
+     * @param  newValue  the new dataset.
      */
     public void setDataset(final String newValue) {
         checkWritePermission();
@@ -322,7 +334,7 @@ public class DefaultScopeDescription extends ISOMetadata implements ScopeDescrip
      * The type of this property may be changed to {@code Set<CharSequence>} for ISO 19115:2014 conformance.
      * See <a href="http://jira.codehaus.org/browse/GEO-238">GEO-238</a> for more information.</div>
      *
-     * @return Feature types to which the information applies.
+     * @return feature types to which the information applies.
      */
     @Override
     public Set<FeatureType> getFeatures() {
@@ -340,7 +352,7 @@ public class DefaultScopeDescription extends ISOMetadata implements ScopeDescrip
      * The type of this property may be changed to {@code Set<CharSequence>} for ISO 19115:2014 conformance.
      * See <a href="http://jira.codehaus.org/browse/GEO-238">GEO-238</a> for more information.</div>
      *
-     * @param newValues The new feature types.
+     * @param  newValues  the new feature types.
      */
     public void setFeatures(final Set<? extends FeatureType> newValues) {
         setProperty(newValues, FeatureType.class, FEATURES);
@@ -363,7 +375,7 @@ public class DefaultScopeDescription extends ISOMetadata implements ScopeDescrip
      * The type of this property may be changed to {@code Set<CharSequence>} for ISO 19115:2014 conformance.
      * See <a href="http://jira.codehaus.org/browse/GEO-238">GEO-238</a> for more information.</div>
      *
-     * @return Attribute types to which the information applies.
+     * @return attribute types to which the information applies.
      */
     @Override
     public Set<AttributeType> getAttributes() {
@@ -381,7 +393,7 @@ public class DefaultScopeDescription extends ISOMetadata implements ScopeDescrip
      * The type of this property may be changed to {@code Set<CharSequence>} for ISO 19115:2014 conformance.
      * See <a href="http://jira.codehaus.org/browse/GEO-238">GEO-238</a> for more information.</div>
      *
-     * @param newValues The new attribute types.
+     * @param  newValues  the new attribute types.
      */
     public void setAttributes(final Set<? extends AttributeType> newValues) {
         setProperty(newValues, AttributeType.class, ATTRIBUTES);
@@ -404,7 +416,7 @@ public class DefaultScopeDescription extends ISOMetadata implements ScopeDescrip
      * The type of this property may be changed to {@code Set<CharSequence>} for ISO 19115:2014 conformance.
      * See <a href="http://jira.codehaus.org/browse/GEO-238">GEO-238</a> for more information.</div>
      *
-     * @return Feature instances to which the information applies.
+     * @return feature instances to which the information applies.
      */
     @Override
     public Set<FeatureType> getFeatureInstances() {
@@ -422,7 +434,7 @@ public class DefaultScopeDescription extends ISOMetadata implements ScopeDescrip
      * The type of this property may be changed to {@code Set<CharSequence>} for ISO 19115:2014 conformance.
      * See <a href="http://jira.codehaus.org/browse/GEO-238">GEO-238</a> for more information.</div>
      *
-     * @param newValues The new feature instances.
+     * @param  newValues  the new feature instances.
      */
     public void setFeatureInstances(final Set<? extends FeatureType> newValues) {
         setProperty(newValues, FeatureType.class, FEATURE_INSTANCES);
@@ -445,7 +457,7 @@ public class DefaultScopeDescription extends ISOMetadata implements ScopeDescrip
      * The type of this property may be changed to {@code Set<CharSequence>} for ISO 19115:2014 conformance.
      * See <a href="http://jira.codehaus.org/browse/GEO-238">GEO-238</a> for more information.</div>
      *
-     * @return Attribute instances to which the information applies.
+     * @return attribute instances to which the information applies.
      */
     @Override
     public Set<AttributeType> getAttributeInstances() {
@@ -463,7 +475,7 @@ public class DefaultScopeDescription extends ISOMetadata implements ScopeDescrip
      * The type of this property may be changed to {@code Set<CharSequence>} for ISO 19115:2014 conformance.
      * See <a href="http://jira.codehaus.org/browse/GEO-238">GEO-238</a> for more information.</div>
      *
-     * @param newValues The new attribute instances.
+     * @param  newValues  the new attribute instances.
      */
     public void setAttributeInstances(final Set<? extends AttributeType> newValues) {
         setProperty(newValues, AttributeType.class, ATTRIBUTE_INSTANCES);
@@ -476,7 +488,7 @@ public class DefaultScopeDescription extends ISOMetadata implements ScopeDescrip
      * The type of this property may be changed to {@link InternationalString} for ISO 19115:2014 conformance.
      * See <a href="http://jira.codehaus.org/browse/GEO-221">GEO-221</a> for more information.</div>
      *
-     * @return Class of information that does not fall into the other categories, or {@code null}.
+     * @return class of information that does not fall into the other categories, or {@code null}.
      */
     @Override
     @XmlElement(name = "other")

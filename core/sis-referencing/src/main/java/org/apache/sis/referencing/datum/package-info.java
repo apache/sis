@@ -33,20 +33,34 @@
  *   <li>{@link org.apache.sis.referencing.datum.DefaultEllipsoid#getAuthalicRadius()}</li>
  *   <li>{@link org.apache.sis.referencing.datum.DefaultEllipsoid#getEccentricity()}</li>
  *   <li>{@link org.apache.sis.referencing.datum.DefaultEllipsoid#orthodromicDistance(double, double, double, double)}</li>
- *   <li>{@link org.apache.sis.referencing.datum.DefaultPrimeMeridian#getGreenwichLongitude(javax.measure.unit.Unit)
+ *   <li>{@link org.apache.sis.referencing.datum.DefaultPrimeMeridian#getGreenwichLongitude(javax.measure.Unit)
  *       DefaultPrimeMeridian.getGreenwichLongitude(Unit)}</li>
  *   <li>{@link org.apache.sis.referencing.datum.DefaultGeodeticDatum#getBursaWolfParameters()}</li>
  *   <li>{@link org.apache.sis.referencing.datum.DefaultGeodeticDatum#getPositionVectorTransformation
  *       DefaultGeodeticDatum.getPositionVectorTransformation(GeodeticDatum, Extent)}</li>
  * </ul>
  *
+ * <div class="section">Datum shifts</div>
+ * Three classes are provided in support of coordinate transformations between different datums:
+ * <ul>
+ *   <li>{@link org.apache.sis.referencing.datum.BursaWolfParameters} performs an approximation
+ *       based on a translation, rotation and scale of geocentric coordinates.</li>
+ *   <li>{@link org.apache.sis.referencing.datum.TimeDependentBWP} is like {@code BursaWolfParameters},
+ *       but varies with time for taking in account the motion of plate tectonic.</li>
+ *   <li>{@link org.apache.sis.referencing.datum.DatumShiftGrid} is used for more accurate transformations
+ *       than what {@code BursaWolfParameters} allows, by interpolating the geographic or geocentric translations
+ *       in a grid (e.g. NADCON or NTv2) instead than apply the same transformation for every points.</li>
+ * </ul>
+ *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Cédric Briançon (Geomatys)
+ * @version 0.7
  * @since   0.4
- * @version 0.4
  * @module
  */
-@XmlSchema(elementFormDefault = XmlNsForm.QUALIFIED, namespace = Namespaces.GML, xmlns = {
+@XmlSchema(location = "http://schemas.opengis.net/gml/3.2.1/datums.xsd",
+           elementFormDefault = XmlNsForm.QUALIFIED, namespace = Namespaces.GML, xmlns =
+{
     @XmlNs(prefix = "gml", namespaceURI = Namespaces.GML),
     @XmlNs(prefix = "gmd", namespaceURI = Namespaces.GMD),
     @XmlNs(prefix = "gco", namespaceURI = Namespaces.GCO),

@@ -16,12 +16,16 @@
  */
 package org.apache.sis.referencing.cs;
 
-import javax.measure.unit.SI;
-import javax.measure.converter.ConversionException;
+import javax.measure.Unit;
+import javax.measure.IncommensurableException;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.CoordinateSystem;
+import org.opengis.referencing.cs.CoordinateSystemAxis;
+import org.opengis.referencing.cs.EllipsoidalCS;
+import org.opengis.referencing.cs.VerticalCS;
 import org.apache.sis.referencing.operation.matrix.Matrices;
+import org.apache.sis.measure.Units;
 import org.apache.sis.measure.Angle;
 import org.apache.sis.measure.ElevationAngle;
 import org.apache.sis.test.DependsOnMethod;
@@ -41,20 +45,15 @@ import static org.apache.sis.test.Assert.*;
  * Tests the {@link CoordinateSystems} class.
  *
  * @author  Martin Desruisseaux (IRD)
+ * @version 0.6
  * @since   0.4
- * @version 0.4
  * @module
  */
 @DependsOn({
-    org.apache.sis.internal.referencing.AxisDirectionsTest.class,
-    DirectionAlongMeridianTest.class
+    DirectionAlongMeridianTest.class,
+    NormalizerTest.class
 })
 public final strictfp class CoordinateSystemsTest extends TestCase {
-    /**
-     * Tolerance threshold for strict floating point comparisons.
-     */
-    static final double STRICT = 0;
-
     /**
      * Tests {@link CoordinateSystems#parseAxisDirection(String)}.
      */
@@ -163,10 +162,10 @@ public final strictfp class CoordinateSystemsTest extends TestCase {
      * Tests {@link CoordinateSystems#swapAndScaleAxes(CoordinateSystem, CoordinateSystem)} for (λ,φ) ↔ (φ,λ).
      * This very common conversion is of critical importance to Apache SIS.
      *
-     * @throws ConversionException Should not happen.
+     * @throws IncommensurableException if a conversion between incompatible units was attempted.
      */
     @Test
-    public void testSwapAndScaleAxes2D() throws ConversionException {
+    public void testSwapAndScaleAxes2D() throws IncommensurableException {
         final CoordinateSystem λφ = new DefaultEllipsoidalCS(singletonMap(NAME_KEY, "(λ,φ)"),
                 HardCodedAxes.GEODETIC_LONGITUDE,
                 HardCodedAxes.GEODETIC_LATITUDE);
@@ -187,11 +186,11 @@ public final strictfp class CoordinateSystemsTest extends TestCase {
      * Tests {@link CoordinateSystems#swapAndScaleAxes(CoordinateSystem, CoordinateSystem)} for (λ,φ,h) ↔ (φ,λ,h).
      * This very common conversion is of critical importance to Apache SIS.
      *
-     * @throws ConversionException Should not happen.
+     * @throws IncommensurableException if a conversion between incompatible units was attempted.
      */
     @Test
     @DependsOnMethod("testSwapAndScaleAxes2D")
-    public void testSwapAndScaleAxes3D() throws ConversionException {
+    public void testSwapAndScaleAxes3D() throws IncommensurableException {
         final CoordinateSystem λφh = new DefaultEllipsoidalCS(singletonMap(NAME_KEY, "(λ,φ,h)"),
                 HardCodedAxes.GEODETIC_LONGITUDE,
                 HardCodedAxes.GEODETIC_LATITUDE,
@@ -215,11 +214,11 @@ public final strictfp class CoordinateSystemsTest extends TestCase {
      * Tests {@link CoordinateSystems#swapAndScaleAxes(CoordinateSystem, CoordinateSystem)}
      * with a more arbitrary case, which include unit conversions.
      *
-     * @throws ConversionException Should not happen.
+     * @throws IncommensurableException if a conversion between incompatible units was attempted.
      */
     @Test
     @DependsOnMethod("testSwapAndScaleAxes3D")
-    public void testSwapAndScaleAxes() throws ConversionException {
+    public void testSwapAndScaleAxes() throws IncommensurableException {
         final CoordinateSystem hxy = new DefaultCartesianCS(singletonMap(NAME_KEY, "(h,x,y)"),
                 HardCodedAxes.HEIGHT_cm,
                 HardCodedAxes.EASTING,
@@ -246,14 +245,14 @@ public final strictfp class CoordinateSystemsTest extends TestCase {
     /**
      * Tests {@link CoordinateSystems#swapAndScaleAxes(CoordinateSystem, CoordinateSystem)} with a non-square matrix.
      *
-     * @throws ConversionException Should not happen.
+     * @throws IncommensurableException if a conversion between incompatible units was attempted.
      */
     @Test
     @DependsOnMethod("testSwapAndScaleAxes")
-    public void testScaleAndSwapAxesNonSquare() throws ConversionException {
+    public void testScaleAndSwapAxesNonSquare() throws IncommensurableException {
         final DefaultCartesianCS cs = new DefaultCartesianCS(singletonMap(NAME_KEY, "Test"),
-                new DefaultCoordinateSystemAxis(getProperties(HardCodedAxes.SOUTHING), "y", AxisDirection.SOUTH, SI.CENTIMETRE),
-                new DefaultCoordinateSystemAxis(getProperties(HardCodedAxes.EASTING),  "x", AxisDirection.EAST,  SI.MILLIMETRE));
+                new DefaultCoordinateSystemAxis(getProperties(HardCodedAxes.SOUTHING), "y", AxisDirection.SOUTH, Units.CENTIMETRE),
+                new DefaultCoordinateSystemAxis(getProperties(HardCodedAxes.EASTING),  "x", AxisDirection.EAST,  Units.MILLIMETRE));
 
         Matrix matrix = swapAndScaleAxes(HardCodedCS.CARTESIAN_2D, cs);
         assertMatrixEquals("(x,y) → (y,x)", Matrices.create(3, 3, new double[] {
@@ -268,5 +267,63 @@ public final strictfp class CoordinateSystemsTest extends TestCase {
                 1000,  0,   0,   0,
                 0,     0,   0,   1
         }), matrix, STRICT);
+    }
+
+    /**
+     * Tests {@link CoordinateSystems#replaceAxes(CoordinateSystem, AxisFilter)}
+     * without change of coordinate system type.
+     */
+    @Test
+    public void testReplaceAxes() {
+        final EllipsoidalCS    sourceCS = HardCodedCS.GEODETIC_3D;
+        final EllipsoidalCS    targetCS = HardCodedCS.ELLIPSOIDAL_gon;  // What we want to get.
+        final CoordinateSystem actualCS = CoordinateSystems.replaceAxes(sourceCS, new AxisFilter() {
+            @Override
+            public boolean accept(final CoordinateSystemAxis axis) {
+                return Units.isAngular(axis.getUnit());
+            }
+
+            @Override
+            public Unit<?> getUnitReplacement(CoordinateSystemAxis axis, Unit<?> unit) {
+                if (Units.isAngular(unit)) {
+                    unit = Units.GRAD;
+                }
+                return unit;
+            }
+
+            @Override
+            public AxisDirection getDirectionReplacement(CoordinateSystemAxis axis, final AxisDirection direction) {
+                return direction;
+            }
+        });
+        assertEqualsIgnoreMetadata(targetCS, actualCS);
+    }
+
+    /**
+     * Tests {@link CoordinateSystems#replaceAxes(CoordinateSystem, AxisFilter)}
+     * with a change of coordinate system type.
+     */
+    @Test
+    @DependsOnMethod("testReplaceAxes")
+    public void testReplaceAxesWithTypeChange() {
+        final EllipsoidalCS    sourceCS = HardCodedCS.GEODETIC_3D;
+        final VerticalCS       targetCS = HardCodedCS.ELLIPSOIDAL_HEIGHT;   // What we want to get.
+        final CoordinateSystem actualCS = CoordinateSystems.replaceAxes(sourceCS, new AxisFilter() {
+            @Override
+            public boolean accept(final CoordinateSystemAxis axis) {
+                return Units.isLinear(axis.getUnit());
+            }
+
+            @Override
+            public Unit<?> getUnitReplacement(CoordinateSystemAxis axis, final Unit<?> unit) {
+                return unit;
+            }
+
+            @Override
+            public AxisDirection getDirectionReplacement(CoordinateSystemAxis axis, final AxisDirection direction) {
+                return direction;
+            }
+        });
+        assertEqualsIgnoreMetadata(targetCS, actualCS);
     }
 }

@@ -33,10 +33,7 @@ import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.collection.Containers;
 import org.apache.sis.internal.util.CollectionsExt;
 
-// Branch-dependent imports
-import org.apache.sis.internal.jdk7.JDK7;
 import org.apache.sis.internal.simple.SimpleAttributeType;
-
 
 /**
  * Holds a {@code Record} definition in a way more convenient for Apache SIS than
@@ -51,12 +48,12 @@ import org.apache.sis.internal.simple.SimpleAttributeType;
  * {@link #computeTransientFields(Map)}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.5
  * @version 0.5
+ * @since   0.5
  * @module
  */
 @XmlTransient
-abstract class RecordDefinition { // Intentionally not Serializable.
+abstract class RecordDefinition {                                       // Intentionally not Serializable.
     /**
      * {@code RecordDefinition} implementation used as a fallback when the user-supplied {@link RecordType}
      * is not an instance of {@link DefaultRecordType}. So this adapter is used only if Apache SIS is mixed
@@ -74,7 +71,7 @@ abstract class RecordDefinition { // Intentionally not Serializable.
         /**
          * The wrapped record type.
          */
-        private final RecordType recordType; // This is the only serialized field in this file.
+        private final RecordType recordType;            // This is the only serialized field in this file.
 
         /**
          * Creates a new adapter for the given record type.
@@ -87,9 +84,9 @@ abstract class RecordDefinition { // Intentionally not Serializable.
         /**
          * Invoked on deserialization for restoring the transient fields.
          *
-         * @param  in The input stream from which to deserialize an attribute.
-         * @throws IOException If an I/O error occurred while reading or if the stream contains invalid data.
-         * @throws ClassNotFoundException If the class serialized on the stream is not on the classpath.
+         * @param  in  the input stream from which to deserialize an attribute.
+         * @throws IOException if an I/O error occurred while reading or if the stream contains invalid data.
+         * @throws ClassNotFoundException if the class serialized on the stream is not on the classpath.
          */
         private void readObject(final ObjectInputStream in) throws IOException, ClassNotFoundException {
             in.defaultReadObject();
@@ -144,14 +141,14 @@ abstract class RecordDefinition { // Intentionally not Serializable.
     /**
      * Invoked on construction or deserialization for computing the transient fields.
      *
-     * @param  memberTypes The (<var>name</var>, <var>type</var>) pairs in this record type.
-     * @return The values in the given map. This information is not stored in {@code RecordDefinition}
+     * @param  memberTypes  the (<var>name</var>, <var>type</var>) pairs in this record type.
+     * @return the values in the given map. This information is not stored in {@code RecordDefinition}
      *         because not needed by this class, but the {@link DefaultRecordType} subclass will store it.
      */
     final Type[] computeTransientFields(final Map<? extends MemberName, ? extends Type> memberTypes) {
         final int size = memberTypes.size();
         members       = new MemberName[size];
-        memberIndices = new LinkedHashMap<MemberName,Integer>(Containers.hashMapCapacity(size));
+        memberIndices = new LinkedHashMap<>(Containers.hashMapCapacity(size));
         final Type[] types = new Type[size];
         int i = 0;
         for (final Map.Entry<? extends MemberName, ? extends Type> entry : memberTypes.entrySet()) {
@@ -187,6 +184,7 @@ abstract class RecordDefinition { // Intentionally not Serializable.
     /**
      * Read-only access to the map of member indices.
      */
+    @SuppressWarnings("ReturnOfCollectionOrArrayField")
     final Map<MemberName,Integer> memberIndices() {
         return memberIndices;
     }
@@ -195,7 +193,8 @@ abstract class RecordDefinition { // Intentionally not Serializable.
      * Returns the number of elements in records.
      */
     final int size() {
-        return members.length;
+        // 'members' should not be null, but let be safe.
+        return (members != null) ? members.length : 0;
     }
 
     /**
@@ -223,7 +222,7 @@ abstract class RecordDefinition { // Intentionally not Serializable.
      * Returns a string representation of this object.
      * The string representation is for debugging purpose and may change in any future SIS version.
      *
-     * @return A string representation of this record type.
+     * @return a string representation of this record type.
      */
     @Debug
     @Override
@@ -234,14 +233,14 @@ abstract class RecordDefinition { // Intentionally not Serializable.
     /**
      * Returns a string representation of a {@code Record} or {@code RecordType}.
      *
-     * @param  head   Either {@code "Record"} or {@code "RecordType"}.
-     * @param  values The values as an array, or {@code null} for writing the types instead.
-     * @return The string representation.
+     * @param  head    either {@code "Record"} or {@code "RecordType"}.
+     * @param  values  the values as an array, or {@code null} for writing the types instead.
+     * @return the string representation.
      */
     final String toString(final String head, final Object values) {
         final StringBuilder buffer = new StringBuilder(250);
-        final String lineSeparator = JDK7.lineSeparator();
-        final String[] names = new String[members.length];
+        final String lineSeparator = System.lineSeparator();
+        final String[] names = new String[size()];
         int width = 0;
         buffer.append(head).append("[“").append(getRecordType().getTypeName()).append("”] {").append(lineSeparator);
         for (int i=0; i<names.length; i++) {

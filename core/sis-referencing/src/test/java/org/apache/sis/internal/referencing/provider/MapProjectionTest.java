@@ -34,8 +34,8 @@ import static org.apache.sis.internal.util.Constants.*;
  * Verifies some parameters of {@link MapProjection} and a few subclasses.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.6
  * @version 0.6
+ * @since   0.6
  * @module
  */
 public final strictfp class MapProjectionTest extends TestCase {
@@ -64,12 +64,12 @@ public final strictfp class MapProjectionTest extends TestCase {
         assertParamEquals(null,                                   SEMI_MAJOR,          true,  it.next());
         assertParamEquals(null,                                   SEMI_MINOR,          true,  it.next());
         assertParamEquals("Latitude of 1st standard parallel",    STANDARD_PARALLEL_1, true,  it.next());
-        assertParamEquals("Latitude of natural origin",          "latitude_of_origin", false, it.next());
+        assertParamEquals("Latitude of natural origin",           LATITUDE_OF_ORIGIN,  false, it.next());
         assertParamEquals("Longitude of natural origin",          CENTRAL_MERIDIAN,    true,  it.next());
         assertParamEquals("False easting",                        FALSE_EASTING,       true,  it.next());
         assertParamEquals("False northing",                       FALSE_NORTHING,      true,  it.next());
         assertFalse(it.hasNext());
-        assertIsForcedToZero((ParameterDescriptor<?>) Equirectangular.PARAMETERS.descriptor("latitude_of_origin"));
+        assertIsForcedToZero((ParameterDescriptor<?>) Equirectangular.PARAMETERS.descriptor(LATITUDE_OF_ORIGIN));
     }
 
     /**
@@ -82,13 +82,13 @@ public final strictfp class MapProjectionTest extends TestCase {
         assertParamEquals("Mercator (variant A)",          "Mercator_1SP",       true, Mercator1SP.PARAMETERS);
         assertParamEquals(null,                             SEMI_MAJOR,          true, it.next());
         assertParamEquals(null,                             SEMI_MINOR,          true, it.next());
-        assertParamEquals("Latitude of natural origin",    "latitude_of_origin", true, it.next());
+        assertParamEquals("Latitude of natural origin",     LATITUDE_OF_ORIGIN,  true, it.next());
         assertParamEquals("Longitude of natural origin",    CENTRAL_MERIDIAN,    true, it.next());
         assertParamEquals("Scale factor at natural origin", SCALE_FACTOR,        true, it.next());
         assertParamEquals("False easting",                  FALSE_EASTING,       true, it.next());
         assertParamEquals("False northing",                 FALSE_NORTHING,      true, it.next());
         assertFalse(it.hasNext());
-        assertIsForcedToZero((ParameterDescriptor<?>) Mercator1SP.PARAMETERS.descriptor("latitude_of_origin"));
+        assertIsForcedToZero((ParameterDescriptor<?>) Mercator1SP.PARAMETERS.descriptor(LATITUDE_OF_ORIGIN));
     }
 
     /**
@@ -102,13 +102,13 @@ public final strictfp class MapProjectionTest extends TestCase {
         assertParamEquals(null,                                SEMI_MAJOR,           true,  it.next());
         assertParamEquals(null,                                SEMI_MINOR,           true,  it.next());
         assertParamEquals("Latitude of 1st standard parallel", STANDARD_PARALLEL_1,  true,  it.next());
-        assertParamEquals("Latitude of natural origin",        "latitude_of_origin",  false, it.next());
+        assertParamEquals("Latitude of natural origin",        LATITUDE_OF_ORIGIN,   false, it.next());
         assertParamEquals("Longitude of natural origin",       CENTRAL_MERIDIAN,     true,  it.next());
         assertParamEquals(null,                                SCALE_FACTOR,         false, it.next());
         assertParamEquals("False easting",                     FALSE_EASTING,        true,  it.next());
         assertParamEquals("False northing",                    FALSE_NORTHING,       true,  it.next());
         assertFalse(it.hasNext());
-        assertIsForcedToZero((ParameterDescriptor<?>) Mercator1SP.PARAMETERS.descriptor("latitude_of_origin"));
+        assertIsForcedToZero((ParameterDescriptor<?>) Mercator1SP.PARAMETERS.descriptor(LATITUDE_OF_ORIGIN));
     }
 
     /**
@@ -141,8 +141,7 @@ public final strictfp class MapProjectionTest extends TestCase {
      * This test is mostly for {@link Equirectangular#LATITUDE_OF_ORIGIN}.
      */
     private static void assertIsForcedToZero(final ParameterDescriptor<?> parameter) {
-        final Double zero = Double.valueOf(0);
-        assertEquals("minimumValue", zero, parameter.getMinimumValue());
-        assertEquals("maximumValue", zero, parameter.getMaximumValue());
+        assertEquals("minimumValue", -0.0, parameter.getMinimumValue());
+        assertEquals("maximumValue", +0.0, parameter.getMaximumValue());
     }
 }

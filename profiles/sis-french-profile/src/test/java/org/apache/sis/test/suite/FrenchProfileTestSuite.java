@@ -25,8 +25,8 @@ import org.junit.BeforeClass;
  * All tests from the {@code sis-french-profile} module, in approximative dependency order.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.4
  * @version 0.4
+ * @since   0.4
  * @module
  */
 @Suite.SuiteClasses({

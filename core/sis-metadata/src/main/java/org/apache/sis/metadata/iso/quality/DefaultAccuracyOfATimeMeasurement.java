@@ -23,6 +23,10 @@ import org.opengis.metadata.quality.AccuracyOfATimeMeasurement;
 
 /**
  * Correctness of the temporal references of an item (reporting of error in time measurement).
+ * The following property is mandatory in a well-formed metadata according ISO 19115:
+ *
+ * <div class="preformat">{@code DQ_AccuracyOfATimeMeasurement}
+ * {@code   └─result……………} Value obtained from applying a data quality measure.</div>
  *
  * <p><b>Limitations:</b></p>
  * <ul>
@@ -35,10 +39,11 @@ import org.opengis.metadata.quality.AccuracyOfATimeMeasurement;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Touraïvane (IRD)
- * @since   0.3
  * @version 0.3
+ * @since   0.3
  * @module
  */
+@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "DQ_AccuracyOfATimeMeasurement_Type")
 @XmlRootElement(name = "DQ_AccuracyOfATimeMeasurement")
 public class DefaultAccuracyOfATimeMeasurement extends AbstractTemporalAccuracy
@@ -60,7 +65,7 @@ public class DefaultAccuracyOfATimeMeasurement extends AbstractTemporalAccuracy
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
-     * @param object The metadata to copy values from, or {@code null} if none.
+     * @param  object  the metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(AccuracyOfATimeMeasurement)
      */
@@ -82,8 +87,8 @@ public class DefaultAccuracyOfATimeMeasurement extends AbstractTemporalAccuracy
      *       metadata contained in the given object are not recursively copied.</li>
      * </ul>
      *
-     * @param  object The object to get as a SIS implementation, or {@code null} if none.
-     * @return A SIS implementation containing the values of the given object (may be the
+     * @param  object  the object to get as a SIS implementation, or {@code null} if none.
+     * @return a SIS implementation containing the values of the given object (may be the
      *         given object itself), or {@code null} if the argument was null.
      */
     public static DefaultAccuracyOfATimeMeasurement castOrCopy(final AccuracyOfATimeMeasurement object) {

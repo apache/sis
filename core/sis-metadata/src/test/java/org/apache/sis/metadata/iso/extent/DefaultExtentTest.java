@@ -22,6 +22,7 @@ import javax.xml.bind.JAXBException;
 import org.apache.sis.xml.IdentifierSpace;
 import org.apache.sis.test.XMLTestCase;
 import org.apache.sis.test.DependsOn;
+import org.apache.sis.xml.Namespaces;
 import org.junit.Test;
 
 import static org.apache.sis.test.Assert.*;
@@ -33,8 +34,8 @@ import static org.apache.sis.test.TestUtilities.date;
  *
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
+ * @version 0.6
  * @since   0.3
- * @version 0.4
  * @module
  */
 @DependsOn(DefaultGeographicBoundingBoxTest.class)
@@ -47,8 +48,8 @@ public final strictfp class DefaultExtentTest extends XMLTestCase {
      *   <li>{@code "core/sis-metadata/src/test/resources/org/apache/sis/metadata/iso/extent"}</li>
      * </ul>
      *
-     * @param  filename The name of the XML file.
-     * @return The URL to the given XML file.
+     * @param  filename  the name of the XML file.
+     * @return the URL to the given XML file.
      */
     public static URL getResource(final String filename) {
         final URL resource = DefaultExtentTest.class.getResource(filename);
@@ -63,8 +64,8 @@ public final strictfp class DefaultExtentTest extends XMLTestCase {
      * <p><b>XML test file:</b>
      * {@code "core/sis-metadata/src/test/resources/org/apache/sis/metadata/iso/extent/Extent.xml"}</p>
      *
-     * @throws IOException   If an error occurred while reading the XML file.
-     * @throws JAXBException If an error occurred during the during marshalling / unmarshalling processes.
+     * @throws IOException   if an error occurred while reading the XML file.
+     * @throws JAXBException if an error occurred during the during marshalling / unmarshalling processes.
      */
     @Test
     public void testXML() throws IOException, JAXBException {
@@ -86,5 +87,34 @@ public final strictfp class DefaultExtentTest extends XMLTestCase {
          * Final comparison: ensure that we didn't lost any information.
          */
         assertEquals(extent, unmarshal(DefaultExtent.class, xml));
+    }
+
+    /**
+     * Tests XML marshalling of the {@link Extents#WORLD} constant, which is a {@code DefaultExtent} instance.
+     *
+     * @throws JAXBException if an error occurred during the during marshalling / unmarshalling processes.
+     *
+     * @since 0.6
+     */
+    @Test
+    public void testWorldConstant() throws JAXBException {
+        final String xml = marshal(Extents.WORLD);
+        assertXmlEquals("<gmd:EX_Extent" +
+                " xmlns:gco=\"" + Namespaces.GCO + '"' +
+                " xmlns:gmd=\"" + Namespaces.GMD + "\">\n" +
+                "  <gmd:description>\n" +
+                "    <gco:CharacterString>World</gco:CharacterString>\n" +
+                "  </gmd:description>\n" +
+                "  <gmd:geographicElement>\n" +
+                "    <gmd:EX_GeographicBoundingBox>\n" +
+                "      <gmd:extentTypeCode>    <gco:Boolean> true </gco:Boolean></gmd:extentTypeCode>\n" +
+                "      <gmd:westBoundLongitude><gco:Decimal> -180 </gco:Decimal></gmd:westBoundLongitude>\n" +
+                "      <gmd:eastBoundLongitude><gco:Decimal>  180 </gco:Decimal></gmd:eastBoundLongitude>\n" +
+                "      <gmd:southBoundLatitude><gco:Decimal>  -90 </gco:Decimal></gmd:southBoundLatitude>\n" +
+                "      <gmd:northBoundLatitude><gco:Decimal>   90 </gco:Decimal></gmd:northBoundLatitude>\n" +
+                "    </gmd:EX_GeographicBoundingBox>\n" +
+                "  </gmd:geographicElement>\n" +
+                "</gmd:EX_Extent>",
+                xml, "xmlns:*", "xsi:schemaLocation");
     }
 }

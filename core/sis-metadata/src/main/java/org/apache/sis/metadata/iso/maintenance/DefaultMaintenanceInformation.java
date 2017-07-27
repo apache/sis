@@ -37,6 +37,7 @@ import org.opengis.util.InternationalString;
 import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.metadata.iso.citation.DefaultCitationDate;
 import org.apache.sis.internal.metadata.LegacyPropertyAdapter;
+import org.apache.sis.internal.metadata.Dependencies;
 
 import static org.opengis.annotation.Obligation.OPTIONAL;
 import static org.opengis.annotation.Specification.ISO_19115;
@@ -44,6 +45,10 @@ import static org.opengis.annotation.Specification.ISO_19115;
 
 /**
  * Information about the scope and frequency of updating.
+ * The following property is mandatory in a well-formed metadata according ISO 19115:
+ *
+ * <div class="preformat">{@code MD_MaintenanceInformation}
+ * {@code   └─maintenanceAndUpdateFrequency……} Frequency with which changes and additions are made to the resource.</div>
  *
  * <p><b>Limitations:</b></p>
  * <ul>
@@ -59,10 +64,11 @@ import static org.opengis.annotation.Specification.ISO_19115;
  * @author  Cédric Briançon (Geomatys)
  * @author  Guilhem Legal (Geomatys)
  * @author  Rémi Maréchal (Geomatys)
- * @since   0.3
  * @version 0.5
+ * @since   0.3
  * @module
  */
+@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "MD_MaintenanceInformation_Type", propOrder = {
     "maintenanceAndUpdateFrequency",
     "dateOfNextUpdate",
@@ -125,7 +131,7 @@ public class DefaultMaintenanceInformation extends ISOMetadata implements Mainte
     /**
      * Creates a maintenance information.
      *
-     * @param maintenanceAndUpdateFrequency The frequency with which changes and additions are
+     * @param maintenanceAndUpdateFrequency  the frequency with which changes and additions are
      *        made to the resource after the initial resource is completed, or {@code null} if none.
      */
     public DefaultMaintenanceInformation(final MaintenanceFrequency maintenanceAndUpdateFrequency) {
@@ -137,7 +143,7 @@ public class DefaultMaintenanceInformation extends ISOMetadata implements Mainte
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
-     * @param object The metadata to copy values from, or {@code null} if none.
+     * @param  object  the metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(MaintenanceInformation)
      */
@@ -174,8 +180,8 @@ public class DefaultMaintenanceInformation extends ISOMetadata implements Mainte
      *       metadata contained in the given object are not recursively copied.</li>
      * </ul>
      *
-     * @param  object The object to get as a SIS implementation, or {@code null} if none.
-     * @return A SIS implementation containing the values of the given object (may be the
+     * @param  object  the object to get as a SIS implementation, or {@code null} if none.
+     * @return a SIS implementation containing the values of the given object (may be the
      *         given object itself), or {@code null} if the argument was null.
      */
     public static DefaultMaintenanceInformation castOrCopy(final MaintenanceInformation object) {
@@ -189,7 +195,7 @@ public class DefaultMaintenanceInformation extends ISOMetadata implements Mainte
      * Returns the frequency with which changes and additions are made to the resource
      * after the initial resource is completed.
      *
-     * @return Frequency with which changes and additions are made to the resource, or {@code null}.
+     * @return frequency with which changes and additions are made to the resource, or {@code null}.
      */
     @Override
     @XmlElement(name = "maintenanceAndUpdateFrequency", required = true)
@@ -201,7 +207,7 @@ public class DefaultMaintenanceInformation extends ISOMetadata implements Mainte
      * Sets the frequency with which changes and additions are made to the resource
      * after the initial resource is completed.
      *
-     * @param newValue The new maintenance frequency.
+     * @param  newValue  the new maintenance frequency.
      */
     public void setMaintenanceAndUpdateFrequency(final MaintenanceFrequency newValue) {
         checkWritePermission();
@@ -211,7 +217,7 @@ public class DefaultMaintenanceInformation extends ISOMetadata implements Mainte
     /**
      * Return the date information associated with maintenance of resource.
      *
-     * @return Date information associated with maintenance of resource.
+     * @return date information associated with maintenance of resource.
      *
      * @since 0.5
      */
@@ -224,7 +230,7 @@ public class DefaultMaintenanceInformation extends ISOMetadata implements Mainte
     /**
      * Sets the date information associated with maintenance of resource.
      *
-     * @param newValues The new date information associated with maintenance of resource.
+     * @param  newValues  the new date information associated with maintenance of resource.
      *
      * @since 0.5
      */
@@ -236,7 +242,7 @@ public class DefaultMaintenanceInformation extends ISOMetadata implements Mainte
      * Returns the scheduled revision date for resource.
      * This method fetches the value from the {@linkplain #getMaintenanceDates() maintenance dates}.
      *
-     * @return Scheduled revision date, or {@code null}.
+     * @return scheduled revision date, or {@code null}.
      *
      * @deprecated As of ISO 19115:2014, replaced by {@link #getMaintenanceDates()} in order to enable inclusion
      *             of a {@link DateType} to describe the type of the date. The associated date type is
@@ -245,6 +251,7 @@ public class DefaultMaintenanceInformation extends ISOMetadata implements Mainte
     @Override
     @Deprecated
     @XmlElement(name = "dateOfNextUpdate")
+    @Dependencies("getMaintenanceDates")
     public Date getDateOfNextUpdate() {
         final Collection<CitationDate> dates = getMaintenanceDates();
         if (dates != null) { // May be null on XML marshalling.
@@ -261,7 +268,7 @@ public class DefaultMaintenanceInformation extends ISOMetadata implements Mainte
      * Sets the scheduled revision date for resource.
      * This method stores the value in the {@linkplain #getMaintenanceDates() maintenance dates}.
      *
-     * @param newValue The new date of next update.
+     * @param  newValue  the new date of next update.
      */
     @Deprecated
     public void setDateOfNextUpdate(final Date newValue) {
@@ -296,7 +303,7 @@ public class DefaultMaintenanceInformation extends ISOMetadata implements Mainte
     /**
      * Returns the maintenance period other than those defined.
      *
-     * @return The maintenance period, or {@code null}.
+     * @return the maintenance period, or {@code null}.
      */
     @Override
     @XmlElement(name = "userDefinedMaintenanceFrequency")
@@ -307,7 +314,7 @@ public class DefaultMaintenanceInformation extends ISOMetadata implements Mainte
     /**
      * Sets the maintenance period other than those defined.
      *
-     * @param newValue The new user defined maintenance frequency.
+     * @param  newValue  the new user defined maintenance frequency.
      */
     public void setUserDefinedMaintenanceFrequency(final PeriodDuration newValue) {
         checkWritePermission();
@@ -330,7 +337,7 @@ public class DefaultMaintenanceInformation extends ISOMetadata implements Mainte
     /**
      * Sets the types of resource and / or extents to which the maintenance information applies.
      *
-     * @param newValues The types of resource and / or extents to which the maintenance information applies.
+     * @param  newValues  the types of resource and / or extents to which the maintenance information applies.
      *
      * @since 0.5
      */
@@ -342,7 +349,7 @@ public class DefaultMaintenanceInformation extends ISOMetadata implements Mainte
      * Returns the scope of data to which maintenance is applied.
      * This method fetches the values from the {@linkplain #getMaintenanceScopes() maintenance scopes}.
      *
-     * @return Scope of data to which maintenance is applied.
+     * @return scope of data to which maintenance is applied.
      *
      * @deprecated As of ISO 19115:2014, {@code getUpdateScopes()} and {@link #getUpdateScopeDescriptions()}
      *             were combined into {@link #getMaintenanceScopes()} in order to allow specifying a scope
@@ -351,6 +358,7 @@ public class DefaultMaintenanceInformation extends ISOMetadata implements Mainte
     @Override
     @Deprecated
     @XmlElement(name = "updateScope")
+    @Dependencies("getMaintenanceScopes")
     public final Collection<ScopeCode> getUpdateScopes() {
         return new LegacyPropertyAdapter<ScopeCode,Scope>(getMaintenanceScopes()) {
             /** Stores a legacy value into the new kind of value. */
@@ -378,7 +386,7 @@ public class DefaultMaintenanceInformation extends ISOMetadata implements Mainte
      * Sets the scope of data to which maintenance is applied.
      * This method stores the values in the {@linkplain #getMaintenanceScopes() maintenance scopes}.
      *
-     * @param newValues The new update scopes.
+     * @param  newValues  the new update scopes.
      *
      * @deprecated As of ISO 19115:2014, replaced by {@link #setMaintenanceScopes(Collection)}.
      */
@@ -392,7 +400,7 @@ public class DefaultMaintenanceInformation extends ISOMetadata implements Mainte
      * Returns additional information about the range or extent of the resource.
      * This method fetches the values from the {@linkplain #getMaintenanceScopes() maintenance scopes}.
      *
-     * @return Additional information about the range or extent of the resource.
+     * @return additional information about the range or extent of the resource.
      *
      * @deprecated As of ISO 19115:2014, {@link #getUpdateScopes()} and {@code getUpdateScopeDescriptions()}
      *             were combined into {@link #getMaintenanceScopes()} in order to allow specifying a scope
@@ -401,6 +409,7 @@ public class DefaultMaintenanceInformation extends ISOMetadata implements Mainte
     @Override
     @Deprecated
     @XmlElement(name = "updateScopeDescription")
+    @Dependencies("getMaintenanceScopes")
     public final Collection<ScopeDescription> getUpdateScopeDescriptions() {
         return new LegacyPropertyAdapter<ScopeDescription,Scope>(getMaintenanceScopes()) {
             /** Stores a legacy value into the new kind of value. */
@@ -431,7 +440,7 @@ public class DefaultMaintenanceInformation extends ISOMetadata implements Mainte
      * Sets additional information about the range or extent of the resource.
      * This method stores the values in the {@linkplain #getMaintenanceScopes() maintenance scopes}.
      *
-     * @param newValues The new update scope descriptions.
+     * @param  newValues  the new update scope descriptions.
      *
      * @deprecated As of ISO 19115:2014, replaced by {@link #setMaintenanceScopes(Collection)}.
      */
@@ -444,7 +453,7 @@ public class DefaultMaintenanceInformation extends ISOMetadata implements Mainte
     /**
      * Returns information regarding specific requirements for maintaining the resource.
      *
-     * @return Information regarding specific requirements for maintaining the resource.
+     * @return information regarding specific requirements for maintaining the resource.
      */
     @Override
     @XmlElement(name = "maintenanceNote")
@@ -455,7 +464,7 @@ public class DefaultMaintenanceInformation extends ISOMetadata implements Mainte
     /**
      * Sets information regarding specific requirements for maintaining the resource.
      *
-     * @param newValues The new maintenance notes.
+     * @param  newValues  the new maintenance notes.
      */
     public void setMaintenanceNotes(final Collection<? extends InternationalString> newValues) {
         maintenanceNotes = writeCollection(newValues, maintenanceNotes, InternationalString.class);
@@ -466,11 +475,11 @@ public class DefaultMaintenanceInformation extends ISOMetadata implements Mainte
      * person(s) and organization(s) with responsibility for maintaining the resource.
      *
      * <div class="warning"><b>Upcoming API change — generalization</b><br>
-     * As of ISO 19115:2014, {@code ResponsibleParty} is replaced by the {@link Responsibility} parent interface.
+     * As of ISO 19115:2014, {@code ResponsibleParty} is replaced by the {@code Responsibility} parent interface.
      * This change may be applied in GeoAPI 4.0.
      * </div>
      *
-     * @return Means of communicating with person(s) and organization(s) with responsibility
+     * @return means of communicating with person(s) and organization(s) with responsibility
      *         for maintaining the resource.
      */
     @Override
@@ -484,12 +493,12 @@ public class DefaultMaintenanceInformation extends ISOMetadata implements Mainte
      * person(s) and organization(s) with responsibility for maintaining the resource.
      *
      * <div class="warning"><b>Upcoming API change — generalization</b><br>
-     * As of ISO 19115:2014, {@code ResponsibleParty} is replaced by the {@link Responsibility} parent interface.
+     * As of ISO 19115:2014, {@code ResponsibleParty} is replaced by the {@code Responsibility} parent interface.
      * This change may be applied in GeoAPI 4.0.
      * </div>
      *
-     * @param newValues The new identification of person(s) and organization(s)
-     *                  with responsibility for maintaining the resource.
+     * @param  newValues  the new identification of person(s) and organization(s)
+     *                    with responsibility for maintaining the resource.
      */
     public void setContacts(final Collection<? extends ResponsibleParty> newValues) {
         contacts = writeCollection(newValues, contacts, ResponsibleParty.class);

@@ -44,20 +44,13 @@ public class DBFResultSetTest extends AbstractTestBaseForInternalJDBC {
      */
     @Test
     public void readFirstRecord() throws SQLException {
-        Connection connection = connect();
-        Statement stmt = connection.createStatement();
-        ResultSet rs = stmt.executeQuery("SELECT * FROM SignedBikeRoute");
-        try {
+        try(Connection connection = connect(); Statement stmt = connection.createStatement(); ResultSet rs = stmt.executeQuery("SELECT * FROM SignedBikeRoute")) {
             rs.next();
             assertEquals("getString(\"ST_NAME\")", "36TH ST", rs.getString("ST_NAME"));                                    // ST_NAME Character(29)
             assertEquals("getInt(\"FNODE_\")", 1199, rs.getInt("FNODE_"));                                                 // FNODE_ Number(10, 0)
             assertEquals("getDouble(\"SHAPE_LEN\")", 43.0881492571, rs.getDouble("SHAPE_LEN"), 0.1);                       // SHAPE_LEN Number(19, 11)
             assertEquals("getBigDecimal(\"SHAPE_LEN\")", 43.0881492571, rs.getBigDecimal("SHAPE_LEN").doubleValue(), 0.1); // SHAPE_LEN Number(19, 11)
             assertEquals("getDate(\"TR_DATE\")", null, rs.getDate("TR_DATE"));                       // TR_DATE Date(8)
-        } finally {
-            rs.close();
-            stmt.close();
-            connection.close();
         }
     }
 
@@ -68,14 +61,11 @@ public class DBFResultSetTest extends AbstractTestBaseForInternalJDBC {
     @Test
     @DependsOnMethod("readFirstRecord")
     public void readAllRecords() throws SQLException {
-        Connection connection = connect();
-        Statement stmt = connection.createStatement();
-        ResultSet rs = stmt.executeQuery("SELECT * FROM SignedBikeRoute");
-        try {
+        try(Connection connection = connect(); Statement stmt = connection.createStatement(); ResultSet rs = stmt.executeQuery("SELECT * FROM SignedBikeRoute")) {
             int count = 0;
 
             while(rs.next()) {
-                ArrayList<Object> record = new ArrayList<Object>();
+                ArrayList<Object> record = new ArrayList<>();
 
                 record.add(rs.getLong("OBJECTID"));         // Type : Number, Field length : 10, Decimal positions : 0
                 record.add(rs.getLong("FNODE_"));           // Type : Number, Field length : 10, Decimal positions : 0
@@ -135,14 +125,11 @@ public class DBFResultSetTest extends AbstractTestBaseForInternalJDBC {
                 record.add(rs.getBigDecimal("SHAPE_LEN"));  // Type : Number, Field length : 19, Decimal positions : 11
 
                 count ++;
-                log.info(MessageFormat.format("Record {0,number} : {1}\n", count, record));
+                assertEquals("The record number returned by the ResultSet is not the same of the manual counting we are doing." , count, ((DBFRecordBasedResultSet)rs).getRowNum());
+                this.log.info(MessageFormat.format("Record {0,number} : {1}\n", count, record));
             }
 
             assertTrue("Less than one record was readed.", count > 1);
-        } finally {
-            rs.close();
-            stmt.close();
-            connection.close();
         }
     }
 
@@ -154,29 +141,25 @@ public class DBFResultSetTest extends AbstractTestBaseForInternalJDBC {
     public void resultSetClosed() throws SQLException {
         // 1) Open a connection, open a statement, open and close a ResultSet.
         String sql = "SELECT * FROM SignedBikeRoute";
-        Connection connection = connect();
-        Statement stmt = connection.createStatement();
-        try {
+
+        try(Connection connection = connect(); Statement stmt = connection.createStatement()) {
             // Then, attempt to use it.
             try {
                 ResultSet rs = stmt.executeQuery(sql);
                 rs.close();
             }
             catch(SQLConnectionClosedException e) {
-                assertEquals("The database name in this exception is not well set.", e.getDatabase().getName(), dbfFile.getName());
+                assertEquals("The database name in this exception is not well set.", e.getDatabase().getName(), this.dbfFile.getName());
                 assertEquals("The SQL Query is exception is not well set.", e.getSQL(), sql);
             }
             catch(SQLException e) {
                 fail("Not the expected exception for using a closed ResultSet.");
             }
-        } finally {
-            stmt.close();
-            connection.close();
         }
 
         // 2) Same, but we close the connection instead.
-        connection = connect();
-        stmt = connection.createStatement();
+        Connection connection = connect();
+        Statement stmt = connection.createStatement();
         ResultSet rs = stmt.executeQuery(sql);
 
         connection.close(); // At this time, you expect also a warning on the console, telling that you have one statement and one ResultSet still opened.
@@ -186,7 +169,7 @@ public class DBFResultSetTest extends AbstractTestBaseForInternalJDBC {
             rs.next();
         }
         catch(SQLConnectionClosedException e) {
-            assertEquals("The database name is exception message is not well set.", e.getDatabase().getName(), dbfFile.getName());
+            assertEquals("The database name is exception message is not well set.", e.getDatabase().getName(), this.dbfFile.getName());
         }
         catch(SQLException e) {
             fail("Not the expected exception for using a closed ResultSet.");
@@ -197,8 +180,7 @@ public class DBFResultSetTest extends AbstractTestBaseForInternalJDBC {
         }
 
         // 3) Same, but we close the statement instead .
-        Connection cnt = connect();
-        try {
+        try(Connection cnt = connect()) {
             stmt = cnt.createStatement();
             rs = stmt.executeQuery(sql);
 
@@ -209,7 +191,7 @@ public class DBFResultSetTest extends AbstractTestBaseForInternalJDBC {
                 rs.next();
             }
             catch(SQLConnectionClosedException e) {
-                assertEquals("The database name is exception message is not well set.", e.getDatabase().getName(), dbfFile.getName());
+                assertEquals("The database name is exception message is not well set.", e.getDatabase().getName(), this.dbfFile.getName());
             }
             catch(SQLException e) {
                 fail("Not the expected exception for using a closed ResultSet.");
@@ -218,8 +200,6 @@ public class DBFResultSetTest extends AbstractTestBaseForInternalJDBC {
                 rs.close();
                 stmt.close();
             }
-        } finally {
-            cnt.close();
         }
     }
 }

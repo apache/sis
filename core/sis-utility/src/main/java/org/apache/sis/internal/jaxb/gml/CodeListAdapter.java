@@ -25,15 +25,16 @@ import org.apache.sis.util.iso.Types;
  * JAXB adapter for GML code lists, in order to integrate the value in an element
  * complying with GML standard. A subclass shall exist for each code list.
  *
- * @param <BoundType> The code list being wrapped.
- *
  * @author  Guilhem Legal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.3
+ *
+ * @param <BoundType>  the code list being wrapped.
+ *
+ * @since 0.3
  * @module
  */
-public abstract class CodeListAdapter<BoundType extends CodeList<BoundType>> extends XmlAdapter<CodeListProxy,BoundType> {
+public abstract class CodeListAdapter<BoundType extends CodeList<BoundType>> extends XmlAdapter<CodeListUID,BoundType> {
     /**
      * Empty constructor for subclasses only.
      */
@@ -43,7 +44,7 @@ public abstract class CodeListAdapter<BoundType extends CodeList<BoundType>> ext
     /**
      * Returns the class of code list wrapped by this adapter.
      *
-     * @return The code list class.
+     * @return the code list class.
      */
     protected abstract Class<BoundType> getCodeListClass();
 
@@ -51,7 +52,7 @@ public abstract class CodeListAdapter<BoundType extends CodeList<BoundType>> ext
      * Returns the default code space for the wrapped code list.
      * The default implementation returns {@code null}.
      *
-     * @return The default code space, or {@code null}.
+     * @return the default code space, or {@code null}.
      */
     protected String getCodeSpace() {
         return null;
@@ -61,23 +62,23 @@ public abstract class CodeListAdapter<BoundType extends CodeList<BoundType>> ext
      * Substitutes the adapter value read from an XML stream by the object which will
      * contain the value. JAXB calls automatically this method at unmarshalling time.
      *
-     * @param  proxy The proxy for the GML value.
-     * @return A code list which represents the GML value.
+     * @param  identifier  the code space and identifier.
+     * @return a code list which represents the GML value.
      */
     @Override
-    public final BoundType unmarshal(final CodeListProxy proxy) {
-        return (proxy != null) ? Types.forCodeName(getCodeListClass(), proxy.identifier, true) : null;
+    public final BoundType unmarshal(final CodeListUID identifier) {
+        return (identifier != null) ? Types.forCodeName(getCodeListClass(), identifier.value, true) : null;
     }
 
     /**
      * Substitutes the code list by the proxy to be marshalled into an XML file
      * or stream. JAXB calls automatically this method at marshalling time.
      *
-     * @param  value The code list value.
-     * @return The proxy for the given code list.
+     * @param  code  the code list value.
+     * @return the proxy for the given code list.
      */
     @Override
-    public final CodeListProxy marshal(final BoundType value) {
-        return (value != null) ? new CodeListProxy(getCodeSpace(), value) : null;
+    public final CodeListUID marshal(final BoundType code) {
+        return (code != null) ? new CodeListUID(getCodeSpace(), code) : null;
     }
 }

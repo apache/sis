@@ -17,6 +17,7 @@
 package org.apache.sis.util.collection;
 
 import java.util.Arrays;
+import java.util.Objects;
 import java.util.Iterator;
 import java.util.AbstractSet;
 import java.lang.reflect.Array;
@@ -28,9 +29,6 @@ import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.NullArgumentException;
 
 import static org.apache.sis.util.collection.WeakEntry.*;
-
-// Branch-dependent imports
-import org.apache.sis.internal.jdk7.Objects;
 
 
 /**
@@ -69,14 +67,15 @@ import org.apache.sis.internal.jdk7.Objects;
  * the caller. But if a sequence of two or more method calls need to appear atomic from other threads perspective,
  * then the caller can synchronize on {@code this}.
  *
- * @param <E> The type of elements in the set.
- *
  * @author  Martin Desruisseaux (MPO, IRD, Geomatys)
- * @since   0.3
  * @version 0.3
- * @module
+ *
+ * @param <E>  the type of elements in the set.
  *
  * @see java.util.WeakHashMap
+ *
+ * @since 0.3
+ * @module
  */
 public class WeakHashSet<E> extends AbstractSet<E> implements CheckedContainer<E> {
     /**
@@ -134,7 +133,7 @@ public class WeakHashSet<E> extends AbstractSet<E> implements CheckedContainer<E
     /**
      * Creates a {@code WeakHashSet} for elements of the specified type.
      *
-     * @param type The type of the element to be included in this set.
+     * @param  type  the type of the element to be included in this set.
      */
     public WeakHashSet(final Class<E> type) {
         elementType            = type;
@@ -198,7 +197,7 @@ public class WeakHashSet<E> extends AbstractSet<E> implements CheckedContainer<E
     /**
      * Returns the count of element in this set.
      *
-     * @return Number of elements in this set.
+     * @return number of elements in this set.
      */
     @Override
     public synchronized int size() {
@@ -211,9 +210,9 @@ public class WeakHashSet<E> extends AbstractSet<E> implements CheckedContainer<E
      * If this set already contains the specified element, the call leaves
      * this set unchanged and returns {@code false}.
      *
-     * @param  element Element to be added to this set.
+     * @param  element  element to be added to this set.
      * @return {@code true} if this set did not already contain the specified element.
-     * @throws NullArgumentException If the given object is {@code null}.
+     * @throws NullArgumentException if the given object is {@code null}.
      */
     @Override
     public synchronized boolean add(final E element) throws NullArgumentException {
@@ -225,7 +224,7 @@ public class WeakHashSet<E> extends AbstractSet<E> implements CheckedContainer<E
      * Removes a single instance of the specified element from this set, if it is present
      * Null values are considered never present.
      *
-     * @param  element element to be removed from this set, if present. Can be {@code null}.
+     * @param  element  element to be removed from this set, if present. Can be {@code null}.
      * @return {@code true} if the set contained the specified element.
      */
     @Override
@@ -238,8 +237,8 @@ public class WeakHashSet<E> extends AbstractSet<E> implements CheckedContainer<E
      * contain any object equals to {@code element}, then this method returns {@code null}.
      * Null values are considered never present.
      *
-     * @param  element The element to get.
-     * @return An element equals to the given one if already presents in the set,
+     * @param  element  the element to get.
+     * @return an element equals to the given one if already presents in the set,
      *         or {@code null} otherwise.
      *
      * @see #unique(Object)
@@ -252,7 +251,7 @@ public class WeakHashSet<E> extends AbstractSet<E> implements CheckedContainer<E
      * Returns {@code true} if this set contains the specified element.
      * Null values are considered never present.
      *
-     * @param  element Object to be checked for containment in this set. Can be {@code null}.
+     * @param  element  object to be checked for containment in this set. Can be {@code null}.
      * @return {@code true} if this set contains the specified element.
      */
     @Override
@@ -277,16 +276,18 @@ public class WeakHashSet<E> extends AbstractSet<E> implements CheckedContainer<E
      *     return element;
      * }
      *
-     * @param  <T> The type of the element to get. Can be {@code null}.
-     * @param  element The element to get or to add in the set if not already presents,
-     *         or {@code null} if the given element was null.
-     * @return An element equals to the given one if already presents in the set,
+     * @param  <T>      the type of the element to get. Can be {@code null}.
+     * @param  element  the element to get or to add in the set if not already presents,
+     *                  or {@code null} if the given element was null.
+     * @return an element equals to the given one if already presents in the set,
      *         or the given {@code object} otherwise.
      */
     public synchronized <T extends E> T unique(final T element) {
-        // There is no way to make sure that this operation is really safe.
-        // We have to trust the Object.equals(Object) method to be strict
-        // about the type of compared objects.
+        /*
+         * There is no way to make sure that this operation is really safe.
+         * We have to trust the Object.equals(Object) method to be strict
+         * about the type of compared objects.
+         */
         return (T) intern(element, INTERN);
     }
 
@@ -357,7 +358,7 @@ public class WeakHashSet<E> extends AbstractSet<E> implements CheckedContainer<E
      * order. Note that this array contains strong references. Consequently, no
      * object reclamation will occur as long as a reference to this array is hold.
      *
-     * @return All elements in this set.
+     * @return all elements in this set.
      */
     @Override
     public synchronized E[] toArray() {
@@ -381,7 +382,7 @@ public class WeakHashSet<E> extends AbstractSet<E> implements CheckedContainer<E
      * No element from this set will be garbage collected as long as a
      * reference to the iterator is hold.
      *
-     * @return An iterator over all elements in this set.
+     * @return an iterator over all elements in this set.
      */
     @Override
     public Iterator<E> iterator() {

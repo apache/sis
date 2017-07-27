@@ -46,12 +46,13 @@ import static org.apache.sis.internal.util.Numerics.SIGNIFICAND_SIZE;
  * since base 10 is not more "real" than base 2 for natural phenomenon.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.4
  * @version 0.4
- * @module
  *
  * @see MathFunctions#pow10(int)
  * @see Math#log10(double)
+ *
+ * @since 0.4
+ * @module
  */
 public final class DecimalFunctions extends Static {
     /**
@@ -105,7 +106,7 @@ public final class DecimalFunctions extends Static {
      * public {@link MathFunctions#pow10(int)} method, defined here in order to allow the
      * JVM to initialize the {@link #POW10} table only when first needed.
      *
-     * @param x The exponent.
+     * @param  x  the exponent.
      * @return 10 raised to the given exponent.
      */
     static double pow10(int x) {
@@ -135,8 +136,8 @@ public final class DecimalFunctions extends Static {
      *   return Double.parseDouble(Float.toString(value));
      * }
      *
-     * @param  value The {@code float} value to convert as a {@code double}.
-     * @return The given value as a {@code double} with the extra decimal fraction digits set to zero.
+     * @param  value  the {@code float} value to convert as a {@code double}.
+     * @return the given value as a {@code double} with the extra decimal fraction digits set to zero.
      */
     public static double floatToDouble(final float value) {
         /*
@@ -146,7 +147,7 @@ public final class DecimalFunctions extends Static {
          */
         final int e = Math.getExponent(value) - Numerics.SIGNIFICAND_SIZE_OF_FLOAT;
         if (e >= 0) {
-            return value; // Integer, infinity or NaN.
+            return value;                               // Integer, infinity or NaN.
         }
         final int m = Numerics.getSignificand(value);
         assert Math.scalb((float) m, e) == Math.abs(value) : value;
@@ -162,9 +163,9 @@ public final class DecimalFunctions extends Static {
          *
          * Note: the conversation factor c is also equals to 1 ULP converted to the units of (m × c).
          */
-        final int    e10 = -Numerics.toExp10(e);        // Range: [0 … 45] inclusive.
-        final double c   = Math.scalb(pow10(e10), e);   // Range: (1 … 10) exclusive.
-        final double mc  = m * c;                       // Only integer part is meaningful.
+        final int    e10 = -Numerics.toExp10(e);                // Range: [0 … 45] inclusive.
+        final double c   = Math.scalb(pow10(e10), e);           // Range: (1 … 10) exclusive.
+        final double mc  = m * c;                               // Only integer part is meaningful.
         /*
          * First, presume that our representation in base 10 has one extranous digit, so we will round
          * to the tens instead of unities. If the difference appears to not be smaller than half a ULP,
@@ -212,8 +213,8 @@ public final class DecimalFunctions extends Static {
      * threshold, this method returns {@code NaN} because of insufficient algorithm accuracy.
      * This limitation may change in any future SIS version if we find a better algorithm.
      *
-     * @param  value The value for which to get the delta compared to its base 10 representation.
-     * @return The delta that would need to be added to the given {@code double} value for getting a result
+     * @param  value  the value for which to get the delta compared to its base 10 representation.
+     * @return the delta that would need to be added to the given {@code double} value for getting a result
      *         closer to its base 10 representation, or {@link Double#NaN NaN} if it can not be computed.
      */
     public static double deltaForDoubleToDecimal(final double value) {
@@ -225,18 +226,18 @@ public final class DecimalFunctions extends Static {
          */
         final int e = Math.getExponent(value) - SIGNIFICAND_SIZE;
         if (e >= 0) {
-            return 0; // Integer, infinity or NaN.
+            return 0;                                   // Integer, infinity or NaN.
         }
-        if (e < -24 - SIGNIFICAND_SIZE) {         // 2.9802322E-8 threshold found empirically.
-            return (e == -1075) ? 0 : Double.NaN; // Returns 0 for the 0 value, NaN for all others.
+        if (e < -24 - SIGNIFICAND_SIZE) {               // 2.9802322E-8 threshold found empirically.
+            return (e == -1075) ? 0 : Double.NaN;       // Returns 0 for the 0 value, NaN for all others.
         }
         final long m = Numerics.getSignificand(value);
         assert Math.scalb((double) m, e) == Math.abs(value) : value;
-        final int e10 = -Numerics.toExp10(e); // Range: [0 … 324] inclusive.
+        final int e10 = -Numerics.toExp10(e);           // Range: [0 … 324] inclusive.
         /*
          * If we were continuing with the same strategy than in floatToDouble(float), we would compute:
          *
-         *    c = Math.scalb(pow10(e10), e);  // Range: (1 … 10) exclusive.
+         *    c = Math.scalb(pow10(e10), e);            // Range: (1 … 10) exclusive.
          *
          * Unfortunately this would require a floating point type with twice the accuracy of 'double',
          * which we don't have. Instead, we will apply a trick with integer arithmetic. But before to
@@ -249,8 +250,8 @@ public final class DecimalFunctions extends Static {
          * will be equals or greater than 2^52. At that threshold, 'double' values can not have
          * fraction digits.
          */
-        final int PRECISION = SIGNIFICAND_SIZE + 4;            // Number of bits to use for scaling to integers.
-        double cs = Math.scalb(pow10(e10 - 1), e + PRECISION); // Range: (0.1 × 2^56  …  2^56) exclusive.
+        final int PRECISION = SIGNIFICAND_SIZE + 4;               // Number of bits to use for scaling to integers.
+        double cs = Math.scalb(pow10(e10 - 1), e + PRECISION);    // Range: (0.1 × 2^56  …  2^56) exclusive.
         /*
          * This is where magic happen: the following multiplication overflow (we would need a 128 bits integer
          * for representing it), but we don't care because we are interrested only in the fraction digits (the
@@ -269,8 +270,8 @@ public final class DecimalFunctions extends Static {
          * The above digit is guaranteed to be in the [0 … 9] range. We will wraparound in the [-5 … 4] range
          * because the delta must be no more than ±0.5 ULP of the 'value' argument.
          */
-        if (mc >= (5L << PRECISION) / 10) { // The  0.5 × 2^56  threshold.
-            mc -= (1L << PRECISION);        // Shift [5 … 9] digits to [-5 … -1].
+        if (mc >= (5L << PRECISION) / 10) {                 // The  0.5 × 2^56  threshold.
+            mc -= (1L << PRECISION);                        // Shift [5 … 9] digits to [-5 … -1].
         }
         /*
          * At this point, 'mc' is less than 0.5 ULP if the last decimal digits were zero.
@@ -283,8 +284,8 @@ public final class DecimalFunctions extends Static {
          * we care only about the remainder after we removed the effet of that last digit.
          */
         if (Math.abs(mc) >= ci/2) {
-            mc %= (1L << PRECISION) / 10; // Remove the effect of last decimal digit.
-            if (mc >= 0) {                // Check if changing the sign would make it smaller.
+            mc %= (1L << PRECISION) / 10;               // Remove the effect of last decimal digit.
+            if (mc >= 0) {                              // Check if changing the sign would make it smaller.
                 if (mc >= (1L << PRECISION) / 20) {
                     mc -= (1L << PRECISION) / 10;
                 }
@@ -351,11 +352,11 @@ public final class DecimalFunctions extends Static {
      * -{@linkplain Math#floor(double) floor}({@linkplain Math#log10(double) log10}(accuracy))</code>
      * except for the 0, {@code NaN}, infinities and {@code 0.…95} special cases.
      *
-     * @param  accuracy The desired accuracy of numbers to format in base 10.
+     * @param  accuracy  the desired accuracy of numbers to format in base 10.
      * @param  strict {@code true} for checking the {@code 0.…95} special case.
      *         If {@code false}, then the difference between adjacent formatted numbers is not
      *         guaranteed to be smaller than {@code accuracy} in every cases.
-     * @return Number of fraction digits needed for formatting numbers with the given accuracy.
+     * @return number of fraction digits needed for formatting numbers with the given accuracy.
      *         May be negative.
      *
      * @see java.text.NumberFormat#setMaximumFractionDigits(int)
@@ -364,7 +365,7 @@ public final class DecimalFunctions extends Static {
         accuracy = Math.abs(accuracy);
         int i = MathFunctions.getExponent(accuracy);
         if (i == Double.MAX_EXPONENT + 1) {
-            return 0; // NaN or infinities.
+            return 0;                                       // NaN or infinities.
         }
         i = Numerics.toExp10(i);
         if (accuracy >= pow10(i+1)) {
@@ -374,7 +375,7 @@ public final class DecimalFunctions extends Static {
         if (strict) {
             double scale = pow10(i);
             while ((accuracy *= scale) >= 9.5) {
-                i++; // The 0.…95 special case.
+                i++;                                        // The 0.…95 special case.
                 accuracy -= Math.floor(accuracy);
                 scale = 10;
             }
@@ -409,8 +410,8 @@ public final class DecimalFunctions extends Static {
      * This method is useful with {@link java.text.NumberFormat} for formatting all significant digits of a
      * {@code double} value, padding with trailing zeros if necessary, but no more than necessary.</div>
      *
-     * @param  value The value for which to get the number of significant fraction digits.
-     * @return The number of significant fraction digits (may be negative), or 0 if {@code value} is NaN or infinity.
+     * @param  value  the value for which to get the number of significant fraction digits.
+     * @return the number of significant fraction digits (may be negative), or 0 if {@code value} is NaN or infinity.
      *
      * @see java.text.NumberFormat#setMinimumFractionDigits(int)
      */
@@ -423,7 +424,7 @@ public final class DecimalFunctions extends Static {
          * normal numbers (in order to reproduce the Math.ulp behavior).
          */
         final int exponent = Math.getExponent(value);
-        if (exponent <= Double.MAX_EXPONENT) { // Exclude NaN and ±∞ cases.
+        if (exponent <= Double.MAX_EXPONENT) {                          // Exclude NaN and ±∞ cases.
             return -Numerics.toExp10(exponent - SIGNIFICAND_SIZE);
         }
         return 0;
@@ -441,8 +442,10 @@ public final class DecimalFunctions extends Static {
      *   <li>Otherwise this method returns {@code fractionDigits}.</li>
      * </ul>
      *
-     * Examples:
+     * <div class="note"><b>Note:</b>
+     * The threshold of 4 trailing fraction digits is arbitrary and may change in any future SIS version.</div>
      *
+     * <div class="note"><b>Examples:</b>
      * <ul>
      *   <li>{@code fractionDigitsForValue(179.12499999999824)} returns 14,
      *       the amount of digits after the decimal separator.</li>
@@ -455,13 +458,11 @@ public final class DecimalFunctions extends Static {
      *   <li>{@code fractionDigitsForValue(179.12499997999999, 3)} returns 14 because rounding the 3 last digits
      *       results in 179.12499997000. The condition for 4 trailing zero fraction digits is not meet.</li>
      * </ul>
+     * </div>
      *
-     * <div class="note"><b>Note:</b>
-     * The threshold of 4 trailing fraction digits is arbitrary and may change in any future SIS version.</div>
-     *
-     * @param  value The value for which to get the number of significant fraction fraction digits minus rounding error.
-     * @param  uncertainDigits Number of trailing fraction digits which may be rounding error artefacts.
-     * @return Suggested number of significant digits (may be negative), or 0 if {@code value} is NaN or infinity.
+     * @param  value  the value for which to get the number of significant fraction fraction digits minus rounding error.
+     * @param  uncertainDigits  number of trailing fraction digits which may be rounding error artefacts.
+     * @return suggested number of significant digits (may be negative), or 0 if {@code value} is NaN or infinity.
      */
     public static int fractionDigitsForValue(double value, final int uncertainDigits) {
         ArgumentChecks.ensurePositive("uncertainDigits", uncertainDigits);

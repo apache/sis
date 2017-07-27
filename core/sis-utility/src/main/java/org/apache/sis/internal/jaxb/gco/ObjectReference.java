@@ -39,14 +39,15 @@ import org.apache.sis.internal.jaxb.SpecializedIdentifier;
  * implementations in the public {@link org.apache.sis.metadata.iso} package and sub-packages.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.3
- * @module
  *
  * @see PropertyType
  * @see <a href="ObjectIdentification.html">ObjectIdentification</a>
  * @see <a href="http://schemas.opengis.net/iso/19139/20070417/gco/gcoBase.xsd">OGC schema</a>
  * @see <a href="http://jira.geotoolkit.org/browse/GEOTK-165">GEOTK-165</a>
+ *
+ * @since 0.3
+ * @module
  */
 final class ObjectReference {
     /**
@@ -87,11 +88,11 @@ final class ObjectReference {
      *
      * <p>This method is invoked at unmarshalling time by {@link PropertyType#resolve(Context)}.</p>
      *
-     * @param  <T>       The compile-time type of the {@code type} argument.
-     * @param  context   The marshalling context, or {@code null} if none.
-     * @param  type      The expected type of the metadata object.
-     * @param  metadata  The metadata object, or {@code null}.
-     * @return A metadata object for the identifiers, or {@code null}
+     * @param  <T>       the compile-time type of the {@code type} argument.
+     * @param  context   the marshalling context, or {@code null} if none.
+     * @param  type      the expected type of the metadata object.
+     * @param  metadata  the metadata object, or {@code null}.
+     * @return a metadata object for the identifiers, or {@code null}
      */
     final <T> T resolve(final Context context, final Class<T> type, T metadata) {
         if (metadata == null) {
@@ -99,18 +100,22 @@ final class ObjectReference {
             if ((uuid  == null || (metadata = resolver.resolve(context, type, uuid )) == null) &&
                 (xlink == null || (metadata = resolver.resolve(context, type, xlink)) == null))
             {
-                // Failed to find an existing metadata instance.
-                // Creates an empty instance with the identifiers.
+                /*
+                 * Failed to find an existing metadata instance.
+                 * Creates an empty instance with the identifiers.
+                 */
                 int count = 0;
                 SpecializedIdentifier<?>[] identifiers  = new SpecializedIdentifier<?>[2];
-                if (uuid  != null) identifiers[count++] = new SpecializedIdentifier<UUID> (IdentifierSpace.UUID,  uuid);
-                if (xlink != null) identifiers[count++] = new SpecializedIdentifier<XLink>(IdentifierSpace.XLINK, xlink);
+                if (uuid  != null) identifiers[count++] = new SpecializedIdentifier<>(IdentifierSpace.UUID,  uuid);
+                if (xlink != null) identifiers[count++] = new SpecializedIdentifier<>(IdentifierSpace.XLINK, xlink);
                 identifiers = ArraysExt.resize(identifiers, count);
                 metadata = resolver.newIdentifiedObject(context, type, identifiers);
             }
         } else {
-            // In principle, the XML should contain a full metadata object OR a uuidref attribute.
-            // However if both are present, assign the identifiers to that instance.
+            /*
+             * In principle, the XML should contain a full metadata object OR a uuidref attribute.
+             * However if both are present, assign the identifiers to that instance.
+             */
             if (metadata instanceof IdentifiedObject) {
                 final IdentifierMap map = ((IdentifiedObject) metadata).getIdentifierMap();
                 putInto(context, map, IdentifierSpace.UUID,  uuid);
@@ -138,9 +143,9 @@ final class ObjectReference {
      * the previous value if they are not equal. The previous value is the "{@code uuid}" attribute, which is
      * assumed more closely tied to the actual metadata than the {@code uuidref} attribute.
      *
-     * @param map       The map in which to write the identifier.
-     * @param authority The identifier authority.
-     * @param value     The identifier value, or {@code null} if not yet defined.
+     * @param  map        the map in which to write the identifier.
+     * @param  authority  the identifier authority.
+     * @param  value      the identifier value, or {@code null} if not yet defined.
      */
     private static <T> void putInto(final Context context, final IdentifierMap map,
             final IdentifierSpace<T> authority, final T value)
@@ -148,7 +153,7 @@ final class ObjectReference {
         if (value != null) {
             final T previous = map.putSpecialized(authority, value);
             if (previous != null && !previous.equals(value)) {
-                Context.warningOccured(context, Context.LOGGER, IdentifierMap.class, "putSpecialized",
+                Context.warningOccured(context, IdentifierMap.class, "putSpecialized",
                         Errors.class, Errors.Keys.InconsistentAttribute_2, authority.getName(), value);
                 map.putSpecialized(authority, previous);
             }

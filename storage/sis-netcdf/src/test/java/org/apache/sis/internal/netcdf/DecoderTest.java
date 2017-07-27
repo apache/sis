@@ -18,6 +18,7 @@ package org.apache.sis.internal.netcdf;
 
 import java.util.Date;
 import java.io.IOException;
+import org.apache.sis.storage.DataStoreException;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
@@ -32,18 +33,19 @@ import static org.apache.sis.storage.netcdf.AttributeNames.*;
  * {@link #createDecoder(String)} method in order to test a different implementation.
  *
  * @author  Martin Desruisseaux (Geomatys)
+ * @version 0.8
  * @since   0.3
- * @version 0.3
  * @module
  */
 public strictfp class DecoderTest extends TestCase {
     /**
      * Tests {@link Decoder#stringValue(String)} with global attributes.
      *
-     * @throws IOException If an error occurred while reading the NetCDF file.
+     * @throws IOException if an I/O error occurred while opening the file.
+     * @throws DataStoreException if a logical error occurred.
      */
     @Test
-    public void testStringValue() throws IOException {
+    public void testStringValue() throws IOException, DataStoreException {
         selectDataset(NCEP);
         assertAttributeEquals("Sea Surface Temperature Analysis Model",      TITLE);
         assertAttributeEquals("NCEP SST Global 5.0 x 2.5 degree model data", SUMMARY);
@@ -63,10 +65,11 @@ public strictfp class DecoderTest extends TestCase {
     /**
      * Tests {@link Decoder#numericValue(String)} with global attributes.
      *
-     * @throws IOException If an error occurred while reading the NetCDF file.
+     * @throws IOException if an I/O error occurred while opening the file.
+     * @throws DataStoreException if a logical error occurred.
      */
     @Test
-    public void testNumericValue() throws IOException {
+    public void testNumericValue() throws IOException, DataStoreException {
         selectDataset(NCEP);
         assertAttributeEquals(Double.valueOf( -90), LATITUDE .MINIMUM);
         assertAttributeEquals(Double.valueOf( +90), LATITUDE .MAXIMUM);
@@ -80,10 +83,11 @@ public strictfp class DecoderTest extends TestCase {
     /**
      * Tests {@link Decoder#dateValue(String)} with global attributes.
      *
-     * @throws IOException If an error occurred while reading the NetCDF file.
+     * @throws IOException if an I/O error occurred while opening the file.
+     * @throws DataStoreException if a logical error occurred.
      */
     @Test
-    public void testDateValue() throws IOException {
+    public void testDateValue() throws IOException, DataStoreException {
         selectDataset(NCEP);
         assertAttributeEquals(date("2005-09-22 00:00:00"), DATE_CREATED);
         assertAttributeEquals((Date) null,                 DATE_MODIFIED);
@@ -92,10 +96,11 @@ public strictfp class DecoderTest extends TestCase {
     /**
      * Tests {@link Decoder#numberToDate(String, Number[])}.
      *
-     * @throws IOException If an error occurred while reading the NetCDF file.
+     * @throws IOException if an I/O error occurred while opening the file.
+     * @throws DataStoreException if a logical error occurred.
      */
     @Test
-    public void testNumberToDate() throws IOException {
+    public void testNumberToDate() throws IOException, DataStoreException {
         final Decoder decoder = selectDataset(NCEP);
         assertArrayEquals(new Date[] {
             date("2005-09-22 00:00:00")
@@ -106,5 +111,23 @@ public strictfp class DecoderTest extends TestCase {
             date("1969-12-29 06:00:00"),
             date("1993-04-10 00:00:00")
         }, decoder.numberToDate("days since 1970-01-01T00:00:00Z", 8.75, -2.75, 8500));
+    }
+
+    /**
+     * Tests {@link Decoder#getTitle()} and {@link Decoder#getId()}.
+     *
+     * @throws IOException if an I/O error occurred while opening the file.
+     * @throws DataStoreException if a logical error occurred.
+     */
+    @Test
+    public void testGetTitleAndID() throws IOException, DataStoreException {
+        final Decoder decoder = selectDataset(NCEP);
+        /*
+         * Actually we really want a null value, even if the NCEP file contains 'title' and 'id' attributes,
+         * because the decoder methods are supposed to check only for the "_Title" and "_Id" attributes as a
+         * last resort fallback when MetadataReader failed to find the title and identifier by itself.
+         */
+        assertNull("title", decoder.getTitle());
+        assertNull("id",    decoder.getId());
     }
 }

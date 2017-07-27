@@ -28,8 +28,8 @@ import static org.apache.sis.test.Assert.*;
  * Tests the {@link Line} class.
  *
  * @author  Martin Desruisseaux (MPO, IRD)
- * @since   0.5
  * @version 0.5
+ * @since   0.5
  * @module
  */
 @DependsOn(org.apache.sis.internal.util.DoubleDoubleTest.class)

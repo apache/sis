@@ -19,6 +19,7 @@ package org.apache.sis.xml;
 import javax.xml.stream.XMLStreamWriter;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.namespace.NamespaceContext;
+import org.apache.sis.internal.util.StreamWriterDelegate;
 
 
 /**
@@ -29,18 +30,13 @@ import javax.xml.namespace.NamespaceContext;
  * See {@link FilteredNamespaces} for more information.
  *
  * @author  Martin Desruisseaux (Geomatys)
+ * @version 0.8
  * @since   0.4
- * @version 0.4
  * @module
  */
-final class FilteredStreamWriter implements XMLStreamWriter {
+final class FilteredStreamWriter extends StreamWriterDelegate {
     /**
-     * Where to write the XML.
-     */
-    private final XMLStreamWriter out;
-
-    /**
-     * The other version to marshall to.
+     * The other version to marshal to.
      */
     private final FilterVersion version;
 
@@ -48,7 +44,7 @@ final class FilteredStreamWriter implements XMLStreamWriter {
      * Creates a new filter for the given version of the standards.
      */
     FilteredStreamWriter(final XMLStreamWriter out, final FilterVersion version) {
-        this.out     = out;
+        super(out);
         this.version = version;
     }
 
@@ -58,12 +54,6 @@ final class FilteredStreamWriter implements XMLStreamWriter {
     private String toView(final String uri) {
         final String replacement = version.toView.get(uri);
         return (replacement != null) ? replacement : uri;
-    }
-
-    /** Forwards the call verbatim. */
-    @Override
-    public void writeStartElement(final String localName) throws XMLStreamException {
-        out.writeStartElement(localName);
     }
 
     /** Replaces the given URI if needed, then forwards the call. */
@@ -94,45 +84,9 @@ final class FilteredStreamWriter implements XMLStreamWriter {
         out.writeEmptyElement(prefix, localName, toView(namespaceURI));
     }
 
-    /** Forwards the call verbatim. */
-    @Override
-    public void writeEmptyElement(final String localName) throws XMLStreamException {
-        out.writeEmptyElement(localName);
-    }
-
-    /** Forwards the call verbatim. */
-    @Override
-    public void writeEndElement() throws XMLStreamException {
-        out.writeEndElement();
-    }
-
-    /** Forwards the call verbatim. */
-    @Override
-    public void writeEndDocument() throws XMLStreamException {
-        out.writeEndDocument();
-    }
-
-    /** Forwards the call verbatim. */
-    @Override
-    public void close() throws XMLStreamException {
-        out.close();
-    }
-
-    /** Forwards the call verbatim. */
-    @Override
-    public void flush() throws XMLStreamException {
-        out.flush();
-    }
-
-    /** Forwards the call verbatim. */
-    @Override
-    public void writeAttribute(final String localName, final String value) throws XMLStreamException {
-        out.writeAttribute(localName, value);
-    }
-
     /** Replaces the given URI if needed, then forwards the call. */
     @Override
-    public void writeAttribute(final String prefix, final String namespaceURI,final  String localName,
+    public void writeAttribute(final String prefix, final String namespaceURI, final String localName,
             final String value) throws XMLStreamException
     {
         out.writeAttribute(prefix, toView(namespaceURI), localName, value);
@@ -156,72 +110,6 @@ final class FilteredStreamWriter implements XMLStreamWriter {
     @Override
     public void writeDefaultNamespace(final String namespaceURI) throws XMLStreamException {
         out.writeDefaultNamespace(toView(namespaceURI));
-    }
-
-    /** Forwards the call verbatim. */
-    @Override
-    public void writeComment(final String data) throws XMLStreamException {
-        out.writeComment(data);
-    }
-
-    /** Forwards the call verbatim. */
-    @Override
-    public void writeProcessingInstruction(final String target) throws XMLStreamException {
-        out.writeProcessingInstruction(target);
-    }
-
-    /** Forwards the call verbatim. */
-    @Override
-    public void writeProcessingInstruction(final String target, final String data) throws XMLStreamException {
-        out.writeProcessingInstruction(target, data);
-    }
-
-    /** Forwards the call verbatim. */
-    @Override
-    public void writeCData(final String data) throws XMLStreamException {
-        out.writeCData(data);
-    }
-
-    /** Forwards the call verbatim. */
-    @Override
-    public void writeDTD(final String dtd) throws XMLStreamException {
-        out.writeDTD(dtd);
-    }
-
-    /** Forwards the call verbatim. */
-    @Override
-    public void writeEntityRef(final String name) throws XMLStreamException {
-        out.writeEntityRef(name);
-    }
-
-    /** Forwards the call verbatim. */
-    @Override
-    public void writeStartDocument() throws XMLStreamException {
-        out.writeStartDocument();
-    }
-
-    /** Forwards the call verbatim. */
-    @Override
-    public void writeStartDocument(final String version) throws XMLStreamException {
-        out.writeStartDocument(version);
-    }
-
-    /** Forwards the call verbatim. */
-    @Override
-    public void writeStartDocument(final String encoding, final String version) throws XMLStreamException {
-        out.writeStartDocument(encoding, version);
-    }
-
-    /** Forwards the call verbatim. */
-    @Override
-    public void writeCharacters(final String text) throws XMLStreamException {
-        out.writeCharacters(text);
-    }
-
-    /** Forwards the call verbatim. */
-    @Override
-    public void writeCharacters(final char[] text, final int start, final int len) throws XMLStreamException {
-        out.writeCharacters(text, start, len);
     }
 
     /** Replaces the given URI if needed, then forwards the call. */
@@ -257,11 +145,5 @@ final class FilteredStreamWriter implements XMLStreamWriter {
     @Override
     public NamespaceContext getNamespaceContext() {
         return new FilteredNamespaces(out.getNamespaceContext(), version, false);
-    }
-
-    /** Forwards the call verbatim. */
-    @Override
-    public Object getProperty(final String name) throws IllegalArgumentException {
-        return out.getProperty(name);
     }
 }

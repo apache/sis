@@ -18,10 +18,10 @@ package org.apache.sis.referencing.cs;
 
 import java.util.Map;
 import java.util.Arrays;
-import javax.measure.unit.SI;
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.apache.sis.util.resources.Vocabulary;
+import org.apache.sis.measure.Units;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
@@ -35,8 +35,8 @@ import static org.apache.sis.test.ReferencingAssert.*;
  * Tests the {@link Normalizer} class.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
+ * @version 0.8
  * @since   0.4
- * @version 0.5
  * @module
  */
 @DependsOn({
@@ -45,7 +45,7 @@ import static org.apache.sis.test.ReferencingAssert.*;
 })
 public final strictfp class NormalizerTest extends TestCase {
     /**
-     * Tests {@link Normalizer#sort(CoordinateSystemAxis[])}.
+     * Tests {@link Normalizer#sort(CoordinateSystemAxis[], int)}.
      */
     @Test
     public void testSort() {
@@ -70,8 +70,8 @@ public final strictfp class NormalizerTest extends TestCase {
 
         // A plausible CS.
         assertOrdered(new AxisDirection[] {
-            AxisDirection.EAST,    // Right handed-rule
-            AxisDirection.NORTH,   // Right handed-rule
+            AxisDirection.EAST,                 // Right handed-rule
+            AxisDirection.NORTH,                // Right handed-rule
             AxisDirection.UP
         }, new AxisDirection[] {
             AxisDirection.NORTH,
@@ -82,8 +82,8 @@ public final strictfp class NormalizerTest extends TestCase {
         // A very dummy CS just for testing. The order of
         // any non-compass direction should be unchanged.
         assertOrdered(new AxisDirection[] {
-            AxisDirection.NORTH_EAST,        // Right handed-rule
-            AxisDirection.NORTH_NORTH_WEST,  // Right handed-rule
+            AxisDirection.NORTH_EAST,           // Right handed-rule
+            AxisDirection.NORTH_NORTH_WEST,     // Right handed-rule
             AxisDirection.GEOCENTRIC_X,
             AxisDirection.GEOCENTRIC_Y,
             AxisDirection.PAST
@@ -97,8 +97,8 @@ public final strictfp class NormalizerTest extends TestCase {
 
         // An other plausible CS.
         assertOrdered(new AxisDirection[] {
-            AxisDirection.WEST,   // Right handed-rule
-            AxisDirection.SOUTH,  // Right handed-rule
+            AxisDirection.WEST,                 // Right handed-rule
+            AxisDirection.SOUTH,                // Right handed-rule
             AxisDirection.DOWN
         }, new AxisDirection[] {
             AxisDirection.SOUTH,
@@ -108,8 +108,8 @@ public final strictfp class NormalizerTest extends TestCase {
 
         // An other plausible CS.
         assertOrdered(new AxisDirection[] {
-            AxisDirection.SOUTH,  // Right handed-rule
-            AxisDirection.EAST,   // Right handed-rule
+            AxisDirection.SOUTH,                // Right handed-rule
+            AxisDirection.EAST,                 // Right handed-rule
             AxisDirection.DOWN
         }, new AxisDirection[] {
             AxisDirection.SOUTH,
@@ -136,7 +136,7 @@ public final strictfp class NormalizerTest extends TestCase {
                                       final CoordinateSystemAxis[] actual)
     {
         final boolean changeExpected = !Arrays.equals(actual, expected);
-        assertEquals(changeExpected, Normalizer.sort(actual));
+        assertEquals(changeExpected, Normalizer.sort(actual, 0));
         assertArrayEquals(expected, actual);
     }
 
@@ -156,37 +156,45 @@ public final strictfp class NormalizerTest extends TestCase {
         final Map<String,?> properties = singletonMap(NAME_KEY, "Temporary axis");
         final CoordinateSystemAxis[] axis = new CoordinateSystemAxis[directions.length];
         for (int i=0; i<directions.length; i++) {
-            axis[i] = new DefaultCoordinateSystemAxis(properties, "none", directions[i], SI.METRE);
+            axis[i] = new DefaultCoordinateSystemAxis(properties, "none", directions[i], Units.METRE);
         }
         return axis;
     }
 
     /**
-     * Tests {@link Normalizer#normalize(CoordinateSystemAxis)}.
+     * Asserts that a collection of pre-defined axes is not modified by the given {@link AxesConvention}.
+     */
+    private static void assertSameAfterNormalization(final AxisFilter changes) {
+        assertSame(HardCodedAxes.GEODETIC_LATITUDE,  Normalizer.normalize(HardCodedAxes.GEODETIC_LATITUDE, changes));
+        assertSame(HardCodedAxes.GEODETIC_LONGITUDE, Normalizer.normalize(HardCodedAxes.GEODETIC_LONGITUDE, changes));
+        assertSame(HardCodedAxes.EASTING,            Normalizer.normalize(HardCodedAxes.EASTING, changes));
+        assertSame(HardCodedAxes.NORTHING,           Normalizer.normalize(HardCodedAxes.NORTHING, changes));
+        assertSame(HardCodedAxes.ALTITUDE,           Normalizer.normalize(HardCodedAxes.ALTITUDE, changes));
+        assertSame(HardCodedAxes.TIME,               Normalizer.normalize(HardCodedAxes.TIME, changes));
+        assertSame(HardCodedAxes.DISTANCE,           Normalizer.normalize(HardCodedAxes.DISTANCE, changes));
+    }
+
+    /**
+     * Tests {@link Normalizer#normalize(CoordinateSystemAxis, AxisFilter)}.
      */
     @Test
     public void testNormalizeAxis() {
-        boolean normalizeUnits = false;
-        do { // Executed twice, first without units normalization, then with units normalization.
-            assertSame(HardCodedAxes.GEODETIC_LATITUDE,  Normalizer.normalize(HardCodedAxes.GEODETIC_LATITUDE, normalizeUnits));
-            assertSame(HardCodedAxes.GEODETIC_LONGITUDE, Normalizer.normalize(HardCodedAxes.GEODETIC_LONGITUDE, normalizeUnits));
-            assertSame(HardCodedAxes.EASTING,            Normalizer.normalize(HardCodedAxes.EASTING, normalizeUnits));
-            assertSame(HardCodedAxes.NORTHING,           Normalizer.normalize(HardCodedAxes.NORTHING, normalizeUnits));
-            assertSame(HardCodedAxes.ALTITUDE,           Normalizer.normalize(HardCodedAxes.ALTITUDE, normalizeUnits));
-            assertSame(HardCodedAxes.TIME,               Normalizer.normalize(HardCodedAxes.TIME, normalizeUnits));
-        } while ((normalizeUnits = !normalizeUnits) == true);
+        // Execute twice, first without units normalization, then with units normalization.
+        assertSameAfterNormalization(AxesConvention.CONVENTIONALLY_ORIENTED);
+        assertSameAfterNormalization(AxesConvention.NORMALIZED);
         /*
          * Test a change of unit from centimetre to metre.
          */
-        assertSame(HardCodedAxes.HEIGHT_cm, Normalizer.normalize(HardCodedAxes.HEIGHT_cm, false));
+        assertSame(HardCodedAxes.HEIGHT_cm, Normalizer.normalize(HardCodedAxes.HEIGHT_cm,
+                AxesConvention.CONVENTIONALLY_ORIENTED));                                   // Do not change unit.
         assertAxisEquals("Height", "h", AxisDirection.UP,
-            Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, SI.METRE, null,
-            Normalizer.normalize(HardCodedAxes.HEIGHT_cm, true));
+                Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, Units.METRE, null,
+                Normalizer.normalize(HardCodedAxes.HEIGHT_cm, AxesConvention.NORMALIZED));
         /*
          * Test a change of direction from West to East.
          */
         assertAxisEquals(Vocabulary.format(Vocabulary.Keys.Unnamed), "E",
-            AxisDirection.EAST, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, SI.METRE, null,
-            Normalizer.normalize(HardCodedAxes.WESTING, true));
+                AxisDirection.EAST, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, Units.METRE, null,
+                Normalizer.normalize(HardCodedAxes.WESTING, AxesConvention.NORMALIZED));
     }
 }

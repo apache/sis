@@ -37,10 +37,24 @@ import org.apache.sis.xml.Namespaces;
  * Any cell in the grid can be geolocated given its grid coordinate and the grid origin, cell spacing,
  * and orientation indication of whether or not geographic.
  *
- * <div class="section">Relationship between properties</div>
- * Providing the {@linkplain #getCheckPointDescription() check point description} implies that
- * {@linkplain #isCheckPointAvailable() check point availability} is {@code true}. The setter
- * methods will ensure that this condition is not violated.
+ * <p>The following properties are mandatory or conditional (i.e. mandatory under some circumstances)
+ * in a well-formed metadata according ISO 19115:</p>
+ *
+ * <div class="preformat">{@code MD_Georectified}
+ * {@code   ├─numberOfDimensions…………………………………………………} Number of independent spatial-temporal axes.
+ * {@code   ├─axisDimensionProperties……………………………………} Information about spatial-temporal axis properties.
+ * {@code   │   ├─dimensionName……………………………………………………} Name of the axis.
+ * {@code   │   └─dimensionSize……………………………………………………} Number of elements along the axis.
+ * {@code   ├─cellGeometry…………………………………………………………………} Identification of grid data as point or cell.
+ * {@code   ├─transformationParameterAvailability……} Whether parameters for transformation exists.
+ * {@code   ├─checkPointAvailability………………………………………} Whether geographic position points are available to test the accuracy of the georeferenced grid data.
+ * {@code   ├─checkPointDescription…………………………………………} Description of geographic position points used to test the accuracy of the georeferenced grid data.
+ * {@code   ├─cornerPoints…………………………………………………………………} Earth location in the coordinate reference system and the grid coordinate of the cells at opposite ends.
+ * {@code   └─pointInPixel…………………………………………………………………} Point in a pixel corresponding to the Earth location of the pixel.</div>
+ *
+ * Providing the {@linkplain #getCheckPointDescription() check point description} implies
+ * that {@linkplain #isCheckPointAvailable() check point availability} is {@code true}.
+ * The setter methods will ensure that this condition is not violated.
  *
  * <div class="section">Limitations</div>
  * <ul>
@@ -54,10 +68,11 @@ import org.apache.sis.xml.Namespaces;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Touraïvane (IRD)
  * @author  Cédric Briançon (Geomatys)
- * @since   0.3
  * @version 0.3
+ * @since   0.3
  * @module
  */
+@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "MD_Georectified_Type", propOrder = {
     "checkPointAvailable",
     "checkPointDescription",
@@ -135,7 +150,7 @@ public class DefaultGeorectified extends DefaultGridSpatialRepresentation implem
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
-     * @param object The metadata to copy values from, or {@code null} if none.
+     * @param  object  the metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(Georectified)
      */
@@ -171,8 +186,8 @@ public class DefaultGeorectified extends DefaultGridSpatialRepresentation implem
      *       metadata contained in the given object are not recursively copied.</li>
      * </ul>
      *
-     * @param  object The object to get as a SIS implementation, or {@code null} if none.
-     * @return A SIS implementation containing the values of the given object (may be the
+     * @param  object  the object to get as a SIS implementation, or {@code null} if none.
+     * @return a SIS implementation containing the values of the given object (may be the
      *         given object itself), or {@code null} if the argument was null.
      */
     public static DefaultGeorectified castOrCopy(final Georectified object) {
@@ -186,7 +201,7 @@ public class DefaultGeorectified extends DefaultGridSpatialRepresentation implem
      * Returns an indication of whether or not geographic position points are available to test the
      * accuracy of the georeferenced grid data.
      *
-     * @return Whether or not geographic position points are available to test accuracy.
+     * @return whether or not geographic position points are available to test accuracy.
      */
     @Override
     @XmlElement(name = "checkPointAvailability", required = true)
@@ -211,7 +226,7 @@ public class DefaultGeorectified extends DefaultGridSpatialRepresentation implem
             booleans |= CHECK_POINT_MASK;
         } else {
             if (checkPointDescription != null && (booleans & CHECK_POINT_MASK) != 0) {
-                Context.warningOccured(Context.current(), LOGGER, DefaultGeorectified.class, "setCheckPointAvailable",
+                Context.warningOccured(Context.current(), DefaultGeorectified.class, "setCheckPointAvailable",
                         Messages.class, Messages.Keys.PropertyHiddenBy_2, "checkPointDescription", "checkPointAvailability");
             }
             booleans &= ~CHECK_POINT_MASK;
@@ -223,7 +238,7 @@ public class DefaultGeorectified extends DefaultGridSpatialRepresentation implem
      * georeferenced grid data. This value is non-null only if {@link #isCheckPointAvailable()}
      * returns {@code true}.
      *
-     * @return Description of geographic position points used to test accuracy, or {@code null}.
+     * @return description of geographic position points used to test accuracy, or {@code null}.
      */
     @Override
     @XmlElement(name = "checkPointDescription")
@@ -239,7 +254,7 @@ public class DefaultGeorectified extends DefaultGridSpatialRepresentation implem
      * If and only if the given {@code newValue} is non-null, then this method automatically sets
      * the {@linkplain #setCheckPointAvailable check point availability} property to {@code true}.
      *
-     * @param newValue The new check point description.
+     * @param  newValue  the new check point description.
      */
     public void setCheckPointDescription(final InternationalString newValue) {
         checkWritePermission();
@@ -253,7 +268,7 @@ public class DefaultGeorectified extends DefaultGridSpatialRepresentation implem
      * Returns the Earth location in the coordinate system defined by the Spatial Reference System
      * and the grid coordinate of the cells at opposite ends of grid coverage along two diagonals.
      *
-     * @return The corner points.
+     * @return the corner points.
      */
     @Override
     @XmlElement(name = "cornerPoints", required = true)
@@ -270,7 +285,7 @@ public class DefaultGeorectified extends DefaultGridSpatialRepresentation implem
      *
      * <p>The first corner point shall correspond to the origin of the grid.</p>
      *
-     * @param newValues The new corner points.
+     * @param  newValues  the new corner points.
      */
     public void setCornerPoints(final List<? extends Point> newValues) {
         cornerPoints = writeList(newValues, cornerPoints, Point.class);
@@ -281,7 +296,7 @@ public class DefaultGeorectified extends DefaultGridSpatialRepresentation implem
      * and the grid coordinate of the cell halfway between opposite ends of the grid in the
      * spatial dimensions.
      *
-     * @return The center point, or {@code null}.
+     * @return the center point, or {@code null}.
      */
     @Override
     @XmlElement(name = "centerPoint")
@@ -292,7 +307,7 @@ public class DefaultGeorectified extends DefaultGridSpatialRepresentation implem
     /**
      * Sets the center point.
      *
-     * @param newValue The new center point.
+     * @param  newValue  the new center point.
      */
     public void setCenterPoint(final Point newValue) {
         checkWritePermission();
@@ -302,7 +317,7 @@ public class DefaultGeorectified extends DefaultGridSpatialRepresentation implem
     /**
      * Returns the point in a pixel corresponding to the Earth location of the pixel.
      *
-     * @return Earth location of the pixel, or {@code null}.
+     * @return earth location of the pixel, or {@code null}.
      */
     @Override
     @XmlElement(name = "pointInPixel", required = true)
@@ -313,7 +328,7 @@ public class DefaultGeorectified extends DefaultGridSpatialRepresentation implem
     /**
      * Sets the point in a pixel corresponding to the Earth location of the pixel.
      *
-     * @param newValue The new point in a pixel.
+     * @param  newValue  the new point in a pixel.
      */
     public void setPointInPixel(final PixelOrientation newValue) {
         checkWritePermission();
@@ -323,7 +338,7 @@ public class DefaultGeorectified extends DefaultGridSpatialRepresentation implem
     /**
      * Returns a general description of the transformation.
      *
-     * @return General description of the transformation, or {@code null}.
+     * @return general description of the transformation, or {@code null}.
      */
     @Override
     @XmlElement(name = "transformationDimensionDescription")
@@ -334,7 +349,7 @@ public class DefaultGeorectified extends DefaultGridSpatialRepresentation implem
     /**
      * Sets a general description of the transformation.
      *
-     * @param newValue The new general description.
+     * @param  newValue  the new general description.
      */
     public void setTransformationDimensionDescription(final InternationalString newValue) {
         checkWritePermission();
@@ -344,7 +359,7 @@ public class DefaultGeorectified extends DefaultGridSpatialRepresentation implem
     /**
      * Returns information about which grid dimensions are the spatial dimensions.
      *
-     * @return Information about which grid dimensions are the spatial dimensions, or {@code null}.
+     * @return information about which grid dimensions are the spatial dimensions, or {@code null}.
      */
     @Override
     @XmlElement(name = "transformationDimensionMapping")
@@ -356,7 +371,7 @@ public class DefaultGeorectified extends DefaultGridSpatialRepresentation implem
      * Sets information about which grid dimensions are the spatial dimensions.
      * The given list should contain at most 2 elements.
      *
-     * @param newValues The new transformation mapping.
+     * @param  newValues  the new transformation mapping.
      */
     public void setTransformationDimensionMapping(final Collection<? extends InternationalString> newValues) {
         transformationDimensionMapping = writeCollection(newValues, transformationDimensionMapping, InternationalString.class);
@@ -365,7 +380,7 @@ public class DefaultGeorectified extends DefaultGridSpatialRepresentation implem
     /**
      * Returns the geographic references used to validate georectification of the data.
      *
-     * @return Geographic references used to validate georectification.
+     * @return geographic references used to validate georectification.
      */
     @Override
     @XmlElement(name = "checkPoint", namespace = Namespaces.GMI)
@@ -376,7 +391,7 @@ public class DefaultGeorectified extends DefaultGridSpatialRepresentation implem
     /**
      * Sets the geographic references used to validate georectification of the data.
      *
-     * @param newValues The new check points values.
+     * @param  newValues  the new check points values.
      */
     public void setCheckPoints(final Collection<? extends GCP> newValues) {
         checkPoints = writeCollection(newValues, checkPoints, GCP.class);

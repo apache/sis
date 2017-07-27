@@ -19,7 +19,7 @@ package org.apache.sis.internal.jaxb.code;
 import javax.xml.bind.annotation.XmlElement;
 import org.opengis.metadata.spatial.GeometricObjectType;
 import org.apache.sis.internal.jaxb.gmd.CodeListAdapter;
-import org.apache.sis.internal.jaxb.gmd.CodeListProxy;
+import org.apache.sis.internal.jaxb.gmd.CodeListUID;
 
 
 /**
@@ -28,8 +28,8 @@ import org.apache.sis.internal.jaxb.gmd.CodeListProxy;
  * handling of {@code CodeList} in ISO-19139.
  *
  * @author  Cédric Briançon (Geomatys)
- * @since   0.3
  * @version 0.3
+ * @since   0.3
  * @module
  */
 public final class MD_GeometricObjectTypeCode
@@ -42,26 +42,26 @@ public final class MD_GeometricObjectTypeCode
     }
 
     /**
-     * Creates a new adapter for the given proxy.
+     * Creates a new adapter for the given value.
      */
-    private MD_GeometricObjectTypeCode(final CodeListProxy proxy) {
-        super(proxy);
+    private MD_GeometricObjectTypeCode(final CodeListUID value) {
+        super(value);
     }
 
     /**
      * {@inheritDoc}
      *
-     * @return The wrapper for the code list value.
+     * @return the wrapper for the code list value.
      */
     @Override
-    protected MD_GeometricObjectTypeCode wrap(CodeListProxy proxy) {
-        return new MD_GeometricObjectTypeCode(proxy);
+    protected MD_GeometricObjectTypeCode wrap(final CodeListUID value) {
+        return new MD_GeometricObjectTypeCode(value);
     }
 
     /**
      * {@inheritDoc}
      *
-     * @return The code list class.
+     * @return the code list class.
      */
     @Override
     protected Class<GeometricObjectType> getCodeListClass() {
@@ -71,20 +71,20 @@ public final class MD_GeometricObjectTypeCode
     /**
      * Invoked by JAXB on marshalling.
      *
-     * @return The value to be marshalled.
+     * @return the value to be marshalled.
      */
     @Override
     @XmlElement(name = "MD_GeometricObjectTypeCode")
-    public CodeListProxy getElement() {
-        return proxy;
+    public CodeListUID getElement() {
+        return identifier;
     }
 
     /**
      * Invoked by JAXB on unmarshalling.
      *
-     * @param proxy The unmarshalled value.
+     * @param  value  the unmarshalled value.
      */
-    public void setElement(final CodeListProxy proxy) {
-        this.proxy = proxy;
+    public void setElement(final CodeListUID value) {
+        identifier = value;
     }
 }

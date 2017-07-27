@@ -29,6 +29,7 @@ import org.opengis.metadata.citation.ResponsibleParty;
 import org.opengis.util.CodeList;
 import org.opengis.util.InternationalString;
 import org.apache.sis.internal.simple.SimpleIdentifier;
+import org.apache.sis.internal.system.Modules;
 import org.apache.sis.measure.ValueRange;
 import org.apache.sis.util.iso.Types;
 import org.apache.sis.util.Numbers;
@@ -50,17 +51,18 @@ import org.apache.sis.util.logging.Logging;
  * <div class="section">Immutability and thread safety</div>
  * This final class is immutable and thus thread-safe.
  *
- * @param <E> The value type, either the method return type if not a collection,
- *            or the type of elements in the collection otherwise.
- *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.5
- * @module
+ *
+ * @param <E>  the value type, either the method return type if not a collection,
+ *             or the type of elements in the collection otherwise.
  *
  * @see InformationMap
  * @see MetadataStandard#asInformationMap(Class, KeyNamePolicy)
  * @see <a href="https://issues.apache.org/jira/browse/SIS-80">SIS-80</a>
+ *
+ * @since 0.3
+ * @module
  */
 final class PropertyInformation<E> extends SimpleIdentifier
         implements ExtendedElementInformation, CheckedContainer<E>
@@ -116,19 +118,19 @@ final class PropertyInformation<E> extends SimpleIdentifier
     /**
      * Creates a new {@code PropertyInformation} instance from the annotations on the given getter method.
      *
-     * @param  standard    The international standard that define the property, or {@code null} if none.
-     * @param  property    The property name as defined by the international {@code standard}.
-     * @param  getter      The getter method defined in the interface.
-     * @param  elementType The value type, either the method return type if not a collection,
-     *                     or the type of elements in the collection otherwise.
-     * @param  range       The range of valid values, or {@code null} if none. This information is associated to the
-     *                     implementation method rather than the interface one, because it is specific to SIS.
+     * @param  standard     the international standard that define the property, or {@code null} if none.
+     * @param  property     the property name as defined by the international {@code standard}.
+     * @param  getter       the getter method defined in the interface.
+     * @param  elementType  the value type, either the method return type if not a collection,
+     *                      or the type of elements in the collection otherwise.
+     * @param  range        the range of valid values, or {@code null} if none. This information is associated to the
+     *                      implementation method rather than the interface one, because it is specific to SIS.
      */
     @SuppressWarnings({"unchecked","rawtypes"})
     PropertyInformation(final Citation standard, final String property, final Method getter,
             final Class<E> elementType, final ValueRange range)
     {
-        super(standard, property);
+        super(standard, property, getter.isAnnotationPresent(Deprecated.class));
         parent = getter.getDeclaringClass();
         this.elementType = elementType;
         final UML uml = getter.getAnnotation(UML.class);
@@ -271,7 +273,8 @@ final class PropertyInformation<E> extends SimpleIdentifier
 
     /**
      * Returns valid values that can be assigned to the extended element, or {@code null} if none.
-     * In the particular case of SIS implementation, this method may return a subclass of {@link NumberRange}.
+     * In the particular case of SIS implementation, this method may return a subclass of
+     * {@link org.apache.sis.measure.NumberRange}.
      */
     @Override
     @SuppressWarnings({"unchecked","rawtypes"})
@@ -289,7 +292,8 @@ final class PropertyInformation<E> extends SimpleIdentifier
                      * to have an IllegalArgumentException while he didn't provided any argument.
                      * Returning null as a fallback is compliant with the method contract.
                      */
-                    Logging.unexpectedException(PropertyInformation.class, "getDomainValue", e);
+                    Logging.unexpectedException(Logging.getLogger(Modules.METADATA),
+                            PropertyInformation.class, "getDomainValue", e);
                     domain = null;
                 }
                 domainValue = domain;
@@ -345,7 +349,7 @@ final class PropertyInformation<E> extends SimpleIdentifier
     /**
      * Compares the given object with this element information for equality.
      *
-     * @param  obj The object to compare with this element information for equality.
+     * @param  obj  the object to compare with this element information for equality.
      * @return {@code true} if both objects are equal.
      */
     @Override
@@ -375,8 +379,7 @@ final class PropertyInformation<E> extends SimpleIdentifier
     }
 
     /**
-     * Invoked by {@link #toString()} in order to append additional information
-     * after the identifier.
+     * Invoked by {@link #toString()} in order to append additional information after the identifier.
      */
     @Override
     protected void appendToString(final StringBuilder buffer) {

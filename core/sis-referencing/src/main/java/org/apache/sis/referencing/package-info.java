@@ -23,22 +23,50 @@
  * <p>The most commonly used kinds of Reference Systems in Apache SIS are the <cite>Coordinate Reference Systems</cite>
  * (CRS), which handle coordinates of arbitrary dimensions. The SIS implementations can handle 2D and 3D coordinates,
  * as well as 4D, 5D, <i>etc</i>. An other less-frequently used kind of Reference System uses labels instead, as in
- * postal address. This package is the root for both kinds, with an emphasis on the one for coordinates.</p>
+ * postal address. This package is the root for both kinds, with an emphasis on the one for coordinates.
+ * The two kinds of referencing system are implemented in the following packages:</p>
+ * <ul>
+ *   <li>{@link org.apache.sis.referencing.crs} for <cite>referencing by coordinates</cite> (ISO 19111)</li>
+ *   <li>{@link org.apache.sis.referencing.gazetteer} for <cite>referencing by geographic identifiers</cite>
+ *       (ISO 19112), together with the linking from geographic identifiers to coordinates.</li>
+ * </ul>
  *
  * <div class="section">Fetching geodetic object instances</div>
- * Geodetic objects can be instantiated either directly by specifying all information to a factory method
- * or constructor, or indirectly by specifying the identifier of an entry in a database. In particular,
- * the <a href="http://www.epsg.org">EPSG</a> database provides definitions for many geodetic objects,
+ * Geodetic objects can be instantiated either
+ * {@linkplain org.apache.sis.referencing.factory.GeodeticObjectFactory directly by specifying all information to a factory method or constructor}, or
+ * {@linkplain org.apache.sis.referencing.factory.GeodeticAuthorityFactory indirectly by specifying the identifier of an entry in a database}.
+ * In particular, the <a href="http://www.epsg.org">EPSG</a> database provides definitions for many geodetic objects,
  * and Apache SIS provides convenience shortcuts for some of them in the
- * {@link org.apache.sis.referencing.CommonCRS} enumerations.
+ * {@link org.apache.sis.referencing.CommonCRS} enumerations. Other convenience methods are
+ * {@link org.apache.sis.referencing.CRS#forCode(String)},
+ * {@link org.apache.sis.referencing.CRS#fromWKT(String)} and
+ * {@link org.apache.sis.referencing.CRS#fromXML(String)}
+ *
+ * <div class="section">Usage example</div>
+ * The following example projects a (<var>latitude</var>, <var>longitude</var>) coordinate to
+ * a <cite>Universal Transverse Mercator</cite> projection in the zone of the coordinate:
+ *
+ * {@preformat java
+ *   GeographicCRS source = CommonCRS.WGS84.geographic();
+ *   ProjectedCRS  target = CommonCRS.WGS84.UTM(20, 30);                        // 20°N 30°E   (watch out axis order!)
+ *   CoordinateOperation operation = CRS.findOperation(source, target, null);
+ *   if (CRS.getLinearAccuracy(operation) > 100) {
+ *       // If the accuracy is coarser than 100 metres (or any other threshold at application choice)
+ *       // maybe the operation is not suitable. Decide here what to do (throw an exception, etc).
+ *   }
+ *   MathTransform mt = operation.getMathTransform();
+ *   DirectPosition position = new DirectPosition2D(20, 30);                    // 20°N 30°E   (watch out axis order!)
+ *   position = mt.transform(position, position);
+ *   System.out.println(position);
+ * }
  *
  * <div class="section">The EPSG database</div>
  * The EPSG geodetic parameter dataset is a structured database required to:
  *
  * <ul>
- *   <li>define {@linkplain org.opengis.referencing.crs.CoordinateReferenceSystem Coordinate Reference Systems}
+ *   <li>define {@linkplain org.apache.sis.referencing.crs.AbstractCRS Coordinate Reference Systems}
  *       (CRS) such that coordinates describe positions unambiguously;</li>
- *   <li>define {@linkplain org.opengis.referencing.operation.CoordinateOperation Coordinate Operations}
+ *   <li>define {@linkplain org.apache.sis.referencing.operation.AbstractCoordinateOperation Coordinate Operations}
  *       that allow coordinates to be changed from one CRS to another CRS.</li>
  * </ul>
  *
@@ -66,16 +94,19 @@
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Guilhem Legal (Geomatys)
+ * @version 0.8
  * @since   0.4
- * @version 0.4
  * @module
  */
-@XmlSchema(elementFormDefault = XmlNsForm.QUALIFIED, namespace = Namespaces.GML, xmlns = {
+@XmlSchema(location = "http://schemas.opengis.net/gml/3.2.1/referenceSystems.xsd",
+           elementFormDefault = XmlNsForm.QUALIFIED, namespace = Namespaces.GML, xmlns =
+{
     @XmlNs(prefix = "gml", namespaceURI = Namespaces.GML),
     @XmlNs(prefix = "gmd", namespaceURI = Namespaces.GMD)
 })
 @XmlAccessorType(XmlAccessType.NONE)
 @XmlJavaTypeAdapters({
+    @XmlJavaTypeAdapter(EX_Extent.class),
     @XmlJavaTypeAdapter(CI_Citation.class),
     @XmlJavaTypeAdapter(RS_Identifier.class),
     @XmlJavaTypeAdapter(StringAdapter.class),

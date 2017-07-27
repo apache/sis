@@ -28,14 +28,15 @@ import org.apache.sis.measure.ValueRange;
  * in order to make possible to return this range from the {@link PropertyInformation#getDomainValue()}
  * method.
  *
- * @param <E> The type of range elements as a subclass of {@link Number}.
- *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.3
- * @module
+ *
+ * @param <E>  the type of range elements as a subclass of {@link Number}.
  *
  * @see PropertyInformation#getDomainValue()
+ *
+ * @since 0.3
+ * @module
  */
 final class DomainRange<E extends Number & Comparable<? super E>> extends NumberRange<E>
         implements InternationalString
@@ -58,11 +59,10 @@ final class DomainRange<E extends Number & Comparable<? super E>> extends Number
      * the given type is not wide enough, then the values are truncated in the same way
      * than the Java language casts primitive types.
      *
-     * @param  type  The element type, restricted to one of {@link Byte}, {@link Short},
-     *               {@link Integer}, {@link Long}, {@link Float} or {@link Double}.
-     * @param  range The range of values.
-     * @throws IllegalArgumentException If the given type is not one of the primitive
-     *         wrappers for numeric types.
+     * @param  type   the element type, restricted to one of {@link Byte}, {@link Short},
+     *                {@link Integer}, {@link Long}, {@link Float} or {@link Double}.
+     * @param  range  the range of values.
+     * @throws IllegalArgumentException if the given type is not one of the primitive wrappers for numeric types.
      */
     DomainRange(final Class<E> type, final ValueRange range) throws IllegalArgumentException {
         super(type, range);

@@ -53,8 +53,8 @@ import org.apache.sis.xml.Namespaces;
  * The two later use a quite different XML structure, with an {@code aName} element instead than a XML value.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.5
  * @version 0.5
+ * @since   0.5
  * @module
  */
 @XmlSeeAlso({
@@ -77,9 +77,15 @@ public class CodeType {
     String codeSpace;
 
     /**
+     * Invoked by reflection by JAXB on unmarshalling.
+     */
+    public CodeType() {
+    }
+
+    /**
      * Sets the value from the given name.
      *
-     * @param name The name to marshal.
+     * @param name  the name to marshal.
      */
     public final void setName(final GenericName name) {
         this.value = name.toString();
@@ -92,10 +98,10 @@ public class CodeType {
     /**
      * Returns the name from the current value.
      *
-     * @return The unmarshalled name.
+     * @return the unmarshalled name.
      */
     public GenericName getName() {
-        return Names.parseGenericName(codeSpace, ":", value);
+        return Names.parseGenericName(codeSpace, null, value);
     }
 
     /**
@@ -104,7 +110,7 @@ public class CodeType {
     @XmlRootElement(name = "LocalName", namespace = Namespaces.GCO)
     public static final class LocalName extends CodeType {
         @Override public GenericName getName() {
-            return Names.createLocalName(codeSpace, ":", value);
+            return Names.createLocalName(codeSpace, null, value);
         }
     }
 

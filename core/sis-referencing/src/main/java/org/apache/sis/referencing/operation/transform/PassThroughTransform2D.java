@@ -31,8 +31,8 @@ import org.apache.sis.geometry.DirectPosition2D;
  * A pass-through transform in the two-dimensional case.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.5
  * @version 0.5
+ * @since   0.5
  * @module
  */
 final class PassThroughTransform2D extends PassThroughTransform implements MathTransform2D {
@@ -44,9 +44,9 @@ final class PassThroughTransform2D extends PassThroughTransform implements MathT
     /**
      * Creates a pass through transform.
      *
-     * @param firstAffectedOrdinate Index of the first affected ordinate.
-     * @param subTransform The sub transform.
-     * @param numTrailingOrdinates Number of trailing ordinates to pass through.
+     * @param firstAffectedOrdinate  index of the first affected ordinate.
+     * @param subTransform           the sub transform.
+     * @param numTrailingOrdinates   number of trailing ordinates to pass through.
      */
     PassThroughTransform2D(final int firstAffectedOrdinate,
                            final MathTransform subTransform,
@@ -84,7 +84,7 @@ final class PassThroughTransform2D extends PassThroughTransform implements MathT
      * Gets the derivative of this transform at a point.
      *
      * @return {@inheritDoc}
-     * @throws TransformException If the {@linkplain #getSubTransform() sub-transform} failed.
+     * @throws TransformException if the {@linkplain #getSubTransform() sub-transform} failed.
      */
     @Override
     public Matrix derivative(final Point2D point) throws TransformException {

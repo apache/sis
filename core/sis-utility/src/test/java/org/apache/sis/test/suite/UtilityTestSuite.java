@@ -25,8 +25,8 @@ import org.junit.BeforeClass;
  * All tests from the {@code sis-utility} module, in approximative dependency order.
  *
  * @author  Martin Desruisseaux (Geomatys)
+ * @version 0.8
  * @since   0.3
- * @version 0.6
  * @module
  */
 @Suite.SuiteClasses({
@@ -36,6 +36,7 @@ import org.junit.BeforeClass;
     org.apache.sis.internal.test.XMLComparatorTest.class,
 
     // Most basic functions of SIS library.
+    org.apache.sis.internal.system.LoggersTest.class,
     org.apache.sis.internal.util.NumericsTest.class,
     org.apache.sis.setup.OptionKeyTest.class,
     org.apache.sis.util.ArraysExtTest.class,
@@ -50,11 +51,13 @@ import org.junit.BeforeClass;
     org.apache.sis.util.LocalesTest.class,
     org.apache.sis.util.resources.LoaderTest.class,
     org.apache.sis.util.resources.IndexedResourceBundleTest.class,
-    org.apache.sis.util.ArgumentChecksTest.class, // Uses resources.
+    org.apache.sis.util.ArgumentChecksTest.class,                       // Uses resources.
     org.apache.sis.util.logging.PerformanceLevelTest.class,
     org.apache.sis.util.logging.WarningListenersTest.class,
     org.apache.sis.util.logging.MonolineFormatterTest.class,
     org.apache.sis.util.logging.LoggerAdapterTest.class,
+    org.apache.sis.math.FractionTest.class,
+    org.apache.sis.math.VectorTest.class,
     org.apache.sis.math.MathFunctionsTest.class,
     org.apache.sis.math.DecimalFunctionsTest.class,
     org.apache.sis.math.StatisticsTest.class,
@@ -67,6 +70,8 @@ import org.junit.BeforeClass;
     // Collections.
     org.apache.sis.internal.util.CheckedArrayListTest.class,
     org.apache.sis.internal.system.ReferenceQueueConsumerTest.class,
+    org.apache.sis.util.collection.FrequencySortedSetTest.class,
+    org.apache.sis.util.collection.IntegerListTest.class,
     org.apache.sis.util.collection.WeakHashSetTest.class,
     org.apache.sis.util.collection.WeakValueHashMapTest.class,
     org.apache.sis.util.collection.CacheTest.class,
@@ -88,7 +93,8 @@ import org.junit.BeforeClass;
     org.apache.sis.util.iso.SimpleInternationalStringTest.class,
     org.apache.sis.util.iso.DefaultInternationalStringTest.class,
     org.apache.sis.internal.util.LocalizedParseExceptionTest.class,
-    org.apache.sis.util.iso.AbstractNameTest.class,
+    org.apache.sis.util.iso.DefaultLocalNameTest.class,
+    org.apache.sis.util.iso.DefaultScopedNameTest.class,
     org.apache.sis.util.iso.DefaultNameFactoryTest.class,
     org.apache.sis.util.iso.NamesTest.class,
     org.apache.sis.util.iso.TypeNamesTest.class,
@@ -99,7 +105,15 @@ import org.junit.BeforeClass;
 
     // Measurements and formatting.
     org.apache.sis.measure.SexagesimalConverterTest.class,
+    org.apache.sis.measure.LinearConverterTest.class,
+    org.apache.sis.measure.UnitDimensionTest.class,
+    org.apache.sis.measure.SystemUnitTest.class,
+    org.apache.sis.measure.ConventionalUnitTest.class,
+    org.apache.sis.measure.UnitFormatTest.class,
     org.apache.sis.measure.UnitsTest.class,
+    org.apache.sis.measure.ScalarTest.class,
+    org.apache.sis.measure.QuantitiesTest.class,
+    org.apache.sis.measure.UnitServicesTest.class,
     org.apache.sis.measure.RangeTest.class,
     org.apache.sis.measure.DateRangeTest.class,
     org.apache.sis.measure.NumberRangeTest.class,
@@ -117,6 +131,9 @@ import org.junit.BeforeClass;
     org.apache.sis.io.TableAppenderTest.class,
     org.apache.sis.util.collection.TreeTableFormatTest.class,
     org.apache.sis.util.collection.RangeSetTest.class,
+    org.apache.sis.internal.util.StandardDateFormatTest.class,
+    org.apache.sis.internal.jdk8.OffsetDateTimeTest.class,
+    org.apache.sis.internal.jdk8.OffsetTimeTest.class,
 
     // Converters.
     org.apache.sis.internal.converter.AngleConverterTest.class,
@@ -126,9 +143,10 @@ import org.junit.BeforeClass;
     org.apache.sis.internal.converter.ArrayConverterTest.class,
     org.apache.sis.internal.converter.ConverterRegistryTest.class,
     org.apache.sis.internal.converter.SystemRegistryTest.class,
-    org.apache.sis.internal.converter.NumberConverterTest.class, // Shall be after SystemRegistryTest.
+    org.apache.sis.internal.converter.NumberConverterTest.class,        // Shall be after SystemRegistryTest.
 
     // XML most basic types.
+    org.apache.sis.xml.NamespacesTest.class,
     org.apache.sis.xml.XLinkTest.class,
     org.apache.sis.xml.NilReasonTest.class,
     org.apache.sis.xml.LegacyCodesTest.class,
@@ -137,12 +155,12 @@ import org.junit.BeforeClass;
     org.apache.sis.xml.MarshallerPoolTest.class,
     org.apache.sis.internal.jaxb.XmlUtilitiesTest.class,
     org.apache.sis.internal.jaxb.IdentifierMapAdapterTest.class,
-    org.apache.sis.internal.jaxb.IdentifierMapWithSpecialCasesTest.class,
+    org.apache.sis.internal.jaxb.ModifiableIdentifierMapTest.class,
     org.apache.sis.internal.jaxb.gco.StringAdapterTest.class,
-    org.apache.sis.internal.jaxb.gco.MeasureTest.class,
     org.apache.sis.internal.jaxb.gco.PropertyTypeTest.class,
     org.apache.sis.internal.jaxb.gmd.LanguageCodeTest.class,
     org.apache.sis.internal.jaxb.gml.TimePeriodTest.class,
+    org.apache.sis.internal.jaxb.gml.MeasureTest.class,
     org.apache.sis.util.iso.NameMarshallingTest.class
 })
 public final strictfp class UtilityTestSuite extends TestSuite {

@@ -27,6 +27,7 @@ import org.opengis.util.NameSpace;
 import org.opengis.util.ScopedName;
 import org.apache.sis.util.UnknownNameException;
 import org.apache.sis.internal.system.DefaultFactories;
+import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
@@ -38,12 +39,27 @@ import static org.junit.Assert.*;
  * Tests the {@link Names} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
+ * @version 0.8
  * @since   0.5
- * @version 0.5
  * @module
  */
 @DependsOn(DefaultNameFactoryTest.class)
 public final strictfp class NamesTest extends TestCase {
+    /**
+     * Tests {@link Names#createScopedName(GenericName, String, CharSequence)}.
+     */
+    @Test
+    @DependsOnMethod("testCreateLocalName")
+    public void testCreateScopedName() {
+        final LocalName scope = Names.createLocalName("Apache", null, "sis");
+        final ScopedName name = Names.createScopedName(scope, null, "identifier");
+        assertSame  ("path()",      scope,                   name.path());
+        assertEquals("tail()",      "identifier",            name.tail().toString());
+        assertEquals("toString()",  "sis:identifier",        name.toString());
+        assertEquals("full",        "Apache:sis:identifier", name.toFullyQualifiedName().toString());
+        assertEquals("tail().full", "Apache:sis:identifier", name.tail().toFullyQualifiedName().toString());
+    }
+
     /**
      * Tests {@link Names#createLocalName(CharSequence, String, CharSequence)}.
      */
@@ -96,8 +112,8 @@ public final strictfp class NamesTest extends TestCase {
     @Test
     public void testClassFromOtherNamespaces() {
         assertValueClassEquals(null,         Names.createTypeName("MyOrg", ":", "CharacterString"));
-        assertValueClassEquals(String.class, Names.createTypeName(null,    ":", "CharacterString"));
-        assertValueClassEquals(null,         Names.createTypeName(null,    ":", "Dummy"));
+        assertValueClassEquals(String.class, Names.createTypeName(null,   null, "CharacterString"));
+        assertValueClassEquals(null,         Names.createTypeName(null,   null, "Dummy"));
     }
 
     /**
@@ -119,8 +135,9 @@ public final strictfp class NamesTest extends TestCase {
      */
     private static void assertValueClassEquals(final Class<?> expected, final TypeName type) {
         assertEquals(expected, toClass(type));
-
-        // Tests detection with an implementation which is not the SIS one.
+        /*
+         * Tests detection with an implementation which is not the SIS one.
+         */
         assertEquals(expected, toClass(new TypeName() {
             @Override public int                       depth()                  {return type.depth();}
             @Override public List<? extends LocalName> getParsedNames()         {return type.getParsedNames();}

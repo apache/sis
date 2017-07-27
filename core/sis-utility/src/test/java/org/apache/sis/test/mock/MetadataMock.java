@@ -16,29 +16,15 @@
  */
 package org.apache.sis.test.mock;
 
-import java.util.Date;
 import java.util.Locale;
 import java.util.Collection;
+import java.util.Collections;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import org.opengis.metadata.Metadata;
-import org.opengis.metadata.MetadataExtensionInformation;
-import org.opengis.metadata.ApplicationSchemaInformation;
-import org.opengis.metadata.PortrayalCatalogueReference;
-import org.opengis.metadata.acquisition.AcquisitionInformation;
-import org.opengis.metadata.citation.ResponsibleParty;
-import org.opengis.metadata.constraint.Constraints;
-import org.opengis.metadata.content.ContentInformation;
-import org.opengis.metadata.distribution.Distribution;
-import org.opengis.metadata.identification.CharacterSet;
-import org.opengis.metadata.identification.Identification;
-import org.opengis.metadata.maintenance.MaintenanceInformation;
-import org.opengis.metadata.maintenance.ScopeCode;
-import org.opengis.metadata.quality.DataQuality;
-import org.opengis.metadata.spatial.SpatialRepresentation;
-import org.opengis.referencing.ReferenceSystem;
 import org.apache.sis.internal.jaxb.gmd.LocaleAdapter;
+import org.apache.sis.internal.simple.SimpleMetadata;
 import org.apache.sis.xml.Namespaces;
 
 
@@ -46,12 +32,12 @@ import org.apache.sis.xml.Namespaces;
  * A dummy implementation of {@link Metadata} with minimal XML (un)marshalling capability.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.4
  * @version 0.5
+ * @since   0.4
  * @module
  */
 @XmlRootElement(name = "MD_Metadata", namespace = Namespaces.GMD)
-public final strictfp class MetadataMock implements Metadata {
+public final strictfp class MetadataMock extends SimpleMetadata {
     /**
      * The language used for documenting metadata.
      */
@@ -70,20 +56,20 @@ public final strictfp class MetadataMock implements Metadata {
      * Creates an initially empty metadata with the given language.
      * Callers are free to assign new value to the {@link #language} field directly.
      *
-     * @param language The initial {@link #language} value (can be {@code null}).
+     * @param  language  the initial {@link #language} value (can be {@code null}).
      */
     public MetadataMock(final Locale language) {
         this.language = language;
     }
 
     /**
-     * Undefined property.
-     * @return {@code null}.
+     * Returns {@link #language} in a singleton set or an empty set.
+     *
+     * @return {@link #language}
      */
     @Override
-    @Deprecated
-    public String getFileIdentifier() {
-        return null;
+    public Collection<Locale> getLanguages() {
+        return (language != null) ? Collections.<Locale>singleton(language) : Collections.<Locale>emptySet();
     }
 
     /**
@@ -95,212 +81,5 @@ public final strictfp class MetadataMock implements Metadata {
     @Deprecated
     public Locale getLanguage() {
         return language;
-    }
-
-    /**
-     * Undefined property.
-     * @return {@code null}.
-     */
-    @Override
-    @Deprecated
-    public Collection<Locale> getLocales() {
-        return null;
-    }
-
-    /**
-     * Undefined property.
-     * @return {@code null}.
-     */
-    @Override
-    @Deprecated
-    public CharacterSet getCharacterSet() {
-        return null;
-    }
-
-    /**
-     * Undefined property.
-     * @return {@code null}.
-     */
-    @Override
-    @Deprecated
-    public String getParentIdentifier() {
-        return null;
-    }
-
-    /**
-     * Undefined property.
-     * @return {@code null}.
-     */
-    @Override
-    @Deprecated
-    public Collection<ScopeCode> getHierarchyLevels() {
-        return null;
-    }
-
-    /**
-     * Undefined property.
-     * @return {@code null}.
-     */
-    @Override
-    @Deprecated
-    public Collection<String> getHierarchyLevelNames() {
-        return null;
-    }
-
-    /**
-     * Undefined property.
-     * @return {@code null}.
-     */
-    @Override
-    public Collection<? extends ResponsibleParty> getContacts() {
-        return null;
-    }
-
-    /**
-     * Undefined property.
-     * @return {@code null}.
-     */
-    @Override
-    @Deprecated
-    public Date getDateStamp() {
-        return null;
-    }
-
-    /**
-     * Undefined property.
-     * @return {@code null}.
-     */
-    @Override
-    @Deprecated
-    public String getMetadataStandardName() {
-        return null;
-    }
-
-    /**
-     * Undefined property.
-     * @return {@code null}.
-     */
-    @Override
-    @Deprecated
-    public String getMetadataStandardVersion() {
-        return null;
-    }
-
-    /**
-     * Undefined property.
-     * @return {@code null}.
-     */
-    @Override
-    @Deprecated
-    public String getDataSetUri() {
-        return null;
-    }
-
-    /**
-     * Undefined property.
-     * @return {@code null}.
-     */
-    @Override
-    public Collection<? extends SpatialRepresentation> getSpatialRepresentationInfo() {
-        return null;
-    }
-
-    /**
-     * Undefined property.
-     * @return {@code null}.
-     */
-    @Override
-    public Collection<? extends ReferenceSystem> getReferenceSystemInfo() {
-        return null;
-    }
-
-    /**
-     * Undefined property.
-     * @return {@code null}.
-     */
-    @Override
-    public Collection<? extends MetadataExtensionInformation> getMetadataExtensionInfo() {
-        return null;
-    }
-
-    /**
-     * Undefined property.
-     * @return {@code null}.
-     */
-    @Override
-    public Collection<? extends Identification> getIdentificationInfo() {
-        return null;
-    }
-
-    /**
-     * Undefined property.
-     * @return {@code null}.
-     */
-    @Override
-    public Collection<? extends ContentInformation> getContentInfo() {
-        return null;
-    }
-
-    /**
-     * Undefined property.
-     * @return {@code null}.
-     */
-    @Override
-    public Distribution getDistributionInfo() {
-        return null;
-    }
-
-    /**
-     * Undefined property.
-     * @return {@code null}.
-     */
-    @Override
-    public Collection<? extends DataQuality> getDataQualityInfo() {
-        return null;
-    }
-
-    /**
-     * Undefined property.
-     * @return {@code null}.
-     */
-    @Override
-    public Collection<? extends PortrayalCatalogueReference> getPortrayalCatalogueInfo() {
-        return null;
-    }
-
-    /**
-     * Undefined property.
-     * @return {@code null}.
-     */
-    @Override
-    public Collection<? extends Constraints> getMetadataConstraints() {
-        return null;
-    }
-
-    /**
-     * Undefined property.
-     * @return {@code null}.
-     */
-    @Override
-    public Collection<? extends ApplicationSchemaInformation> getApplicationSchemaInfo() {
-        return null;
-    }
-
-    /**
-     * Undefined property.
-     * @return {@code null}.
-     */
-    @Override
-    public MaintenanceInformation getMetadataMaintenance() {
-        return null;
-    }
-
-    /**
-     * Undefined property.
-     * @return {@code null}.
-     */
-    @Override
-    public Collection<? extends AcquisitionInformation> getAcquisitionInformation() {
-        return null;
     }
 }

@@ -20,10 +20,10 @@ import java.util.Arrays;
 import java.io.Serializable;
 import java.awt.geom.AffineTransform;
 import org.opengis.referencing.operation.Matrix;
+import org.apache.sis.internal.referencing.Resources;
 import org.apache.sis.internal.referencing.ExtendedPrecisionMatrix;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.util.ArgumentChecks;
-import org.apache.sis.util.resources.Errors;
 
 
 /**
@@ -31,8 +31,8 @@ import org.apache.sis.util.resources.Errors;
  * used in double-double arithmetic.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.5
  * @version 0.5
+ * @since   0.5
  * @module
  */
 final class AffineMatrix implements ExtendedPrecisionMatrix, Serializable, Cloneable {
@@ -76,8 +76,8 @@ final class AffineMatrix implements ExtendedPrecisionMatrix, Serializable, Clone
     /**
      * Creates a new matrix wrapping the given transform.
      *
-     * @param transform The transform to wrap.
-     * @param elements The elements used for creating the matrix (optionally with error terms), or {@code null}.
+     * @param transform  the transform to wrap.
+     * @param elements   the elements used for creating the matrix (optionally with error terms), or {@code null}.
      */
     AffineMatrix(final AffineTransform transform, final double[] elements) {
         this.transform = transform;
@@ -168,13 +168,14 @@ final class AffineMatrix implements ExtendedPrecisionMatrix, Serializable, Clone
      */
     @Override
     public final void setElement(final int row, final int column, final double value) {
-        throw new UnsupportedOperationException(Errors.format(Errors.Keys.UnmodifiableAffineTransform));
+        throw new UnsupportedOperationException(Resources.format(Resources.Keys.UnmodifiableAffineTransform));
     }
 
     /**
      * Returns a copy of the matrix that user can modify.
      */
     @Override
+    @SuppressWarnings("CloneDoesntCallSuperClone")
     public final Matrix clone() {
         return Matrices.copy(this);
     }
@@ -182,7 +183,7 @@ final class AffineMatrix implements ExtendedPrecisionMatrix, Serializable, Clone
     /**
      * Returns a string representation of this matrix.
      *
-     * @return String representation of this matrix.
+     * @return a string representation of this matrix.
      */
     @Override
     public String toString() {

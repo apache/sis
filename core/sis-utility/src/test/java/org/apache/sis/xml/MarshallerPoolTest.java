@@ -30,8 +30,8 @@ import static org.junit.Assert.*;
  * Tests the {@link MarshallerPool}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.3
+ * @since   0.3
  * @module
  */
 @DependsOn(OGCNamespacePrefixMapperTest.class)
@@ -41,7 +41,7 @@ public final strictfp class MarshallerPoolTest extends TestCase {
      * The marshaller should be reset to its initial state
      * despite the setter method we may have invoked on it.
      *
-     * @throws JAXBException Should not happen.
+     * @throws JAXBException if (un)marhaller construction failed.
      */
     @Test
     public void testAcquireRelease() throws JAXBException {

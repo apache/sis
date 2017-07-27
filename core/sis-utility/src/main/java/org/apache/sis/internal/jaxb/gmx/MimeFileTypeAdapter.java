@@ -26,8 +26,8 @@ import org.apache.sis.internal.jaxb.gco.GO_CharacterString;
  * JAXB adapter wrapping a {@code String} value with a {@code <gmx:MimeFileType>} element.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.4
  * @version 0.4
+ * @since   0.4
  * @module
  */
 public final class MimeFileTypeAdapter extends StringAdapter {
@@ -41,14 +41,14 @@ public final class MimeFileTypeAdapter extends StringAdapter {
      * Converts a MIME type to the object to be marshalled in a XML file or stream.
      * JAXB calls automatically this method at marshalling time.
      *
-     * @param  value The MIME type, or {@code null}.
-     * @return The wrapper for the given MIME type, or {@code null}.
+     * @param  value  the MIME type, or {@code null}.
+     * @return the wrapper for the given MIME type, or {@code null}.
      */
     @Override
     public GO_CharacterString marshal(final String value) {
         final Context context = Context.current();
         final GO_CharacterString wrapper = CharSequenceAdapter.wrap(context, value, value);
-        if (wrapper != null) {
+        if (wrapper != null && wrapper.type == 0) {
             if (!Context.isFlagSet(context, Context.SUBSTITUTE_MIMETYPE)) {
                 wrapper.type = GO_CharacterString.MIME_TYPE;
             }

@@ -16,7 +16,7 @@
  */
 package org.apache.sis.io.wkt;
 
-import javax.measure.unit.Unit;
+import javax.measure.Unit;
 import org.opengis.util.CodeList;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
@@ -33,8 +33,8 @@ import org.apache.sis.util.Numbers;
  * Different kinds of elements can be associated to different {@linkplain Colors colors}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.4
  * @version 0.4
+ * @since   0.4
  * @module
  */
 public enum ElementKind {
@@ -59,7 +59,7 @@ public enum ElementKind {
     INTEGER,
 
     /**
-     * {@linkplain javax.measure.unit.Unit Units of measurement},
+     * {@linkplain javax.measure.Unit Units of measurement},
      * often represented by {@code UNIT[…]} elements.
      */
     UNIT,
@@ -148,8 +148,8 @@ public enum ElementKind {
      * The given type can be any sub-type of the above types. If an object implements more
      * than one of the above interfaces, then the selected {@code ElementKind} is arbitrary.
      *
-     * @param  type The object type, or {@code null}.
-     * @return The element kind of the given type, or {@code null} if none match.
+     * @param  type  the object type, or {@code null}.
+     * @return the element kind of the given type, or {@code null} if none match.
      */
     public static ElementKind forType(final Class<?> type) {
         if (type != null) {

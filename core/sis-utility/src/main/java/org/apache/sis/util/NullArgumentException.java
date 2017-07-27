@@ -18,7 +18,7 @@ package org.apache.sis.util;
 
 
 /**
- * Throws when a null argument has been given to a method that doesn't accept them.
+ * Thrown when a null argument has been given to a method that doesn't accept them.
  * This exception extends {@link NullPointerException} in order to stress out that
  * the error is an illegal argument rather than an unexpected usage of a null pointer
  * inside a method body.
@@ -29,11 +29,12 @@ package org.apache.sis.util;
  * is now the recommended one in the <cite>Effective Java</cite> book.</div>
  *
  * @author Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.3
- * @module
  *
  * @see ArgumentChecks#ensureNonNull(String, Object)
+ *
+ * @since 0.3
+ * @module
  */
 public class NullArgumentException extends NullPointerException {
     /**
@@ -51,7 +52,7 @@ public class NullArgumentException extends NullPointerException {
     /**
      * Constructs an exception with the specified detail message.
      *
-     * @param message The detail message.
+     * @param message  the detail message.
      */
     public NullArgumentException(final String message) {
         super(message);

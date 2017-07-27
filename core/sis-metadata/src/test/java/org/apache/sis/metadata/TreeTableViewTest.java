@@ -20,6 +20,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import org.opengis.metadata.citation.Citation;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
@@ -35,8 +36,8 @@ import static org.apache.sis.test.TestUtilities.formatNameAndValue;
  * Unless otherwise specified, all tests use the {@link MetadataStandard#ISO_19115} constant.
  *
  * @author  Martin Desruisseaux (Geomatys)
+ * @version 0.8
  * @since   0.3
- * @version 0.5
  * @module
  */
 @DependsOn(TreeNodeTest.class)
@@ -45,7 +46,7 @@ public final strictfp class TreeTableViewTest extends TestCase {
      * Creates a table to be tested for the given value policy.
      */
     private static TreeTableView create(final ValueExistencePolicy valuePolicy) {
-        return new TreeTableView(MetadataStandard.ISO_19115, TreeNodeTest.metadataWithHierarchy(), valuePolicy);
+        return new TreeTableView(MetadataStandard.ISO_19115, TreeNodeTest.metadataWithHierarchy(), Citation.class, valuePolicy);
     }
 
     /**
@@ -53,19 +54,16 @@ public final strictfp class TreeTableViewTest extends TestCase {
      * with {@link ValueExistencePolicy#NON_EMPTY}.
      */
     private static final String EXPECTED =
-            "Citation\n" +
-            "  ├─Title……………………………………………………………………………………………… Some title\n" +
+            "Citation………………………………………………………………………………………………… Some title\n" +
             "  ├─Alternate title (1 of 2)…………………………………………… First alternate title\n" +
             "  ├─Alternate title (2 of 2)…………………………………………… Second alternate title\n" +
             "  ├─Edition………………………………………………………………………………………… Some edition\n" +
             "  ├─Cited responsible party (1 of 2)\n" +
             "  │   ├─Role……………………………………………………………………………………… Distributor\n" +
-            "  │   └─Party\n" +
-            "  │       └─Name…………………………………………………………………………… Some organisation\n" +
+            "  │   └─Party…………………………………………………………………………………… Some organisation\n" +
             "  ├─Cited responsible party (2 of 2)\n" +
             "  │   ├─Role……………………………………………………………………………………… Point of contact\n" +
-            "  │   └─Party\n" +
-            "  │       ├─Name…………………………………………………………………………… Some person of contact\n" +
+            "  │   └─Party…………………………………………………………………………………… Some person of contact\n" +
             "  │       └─Contact info\n" +
             "  │           └─Address\n" +
             "  │               └─Electronic mail address…… Some email\n" +
@@ -80,35 +78,29 @@ public final strictfp class TreeTableViewTest extends TestCase {
      */
     @Test
     public void testToString() {
-        final TreeTableView metadata = create(ValueExistencePolicy.NON_EMPTY);
-        assertMultilinesEquals(EXPECTED, formatNameAndValue(metadata)); // Locale-independent
-        assertArrayEquals(toTreeStructure(EXPECTED), toTreeStructure(metadata.toString())); // Locale-dependent.
+        final TreeTableView metadata = create(ValueExistencePolicy.COMPACT);
+        assertMultilinesEquals(EXPECTED, formatNameAndValue(metadata));                         // Locale-independent
+        assertArrayEquals(toTreeStructure(EXPECTED), toTreeStructure(metadata.toString()));     // Locale-dependent.
     }
 
     /**
      * Tests serialization.
      *
-     * @throws Exception If an error occurred during the serialization process.
+     * @throws Exception if an error occurred during the serialization process.
      */
     @Test
     @DependsOnMethod("testToString")
     public void testSerialization() throws Exception {
-        final Object original = create(ValueExistencePolicy.NON_EMPTY);
+        final Object original = create(ValueExistencePolicy.COMPACT);
         final Object deserialized;
         final ByteArrayOutputStream buffer = new ByteArrayOutputStream();
-        final ObjectOutputStream out = new ObjectOutputStream(buffer);
-        try {
+        try (ObjectOutputStream out = new ObjectOutputStream(buffer)) {
             out.writeObject(original);
-        } finally {
-            out.close();
         }
         // Now reads the object we just serialized.
         final byte[] data = buffer.toByteArray();
-        final ObjectInputStream in = new ObjectInputStream(new ByteArrayInputStream(data));
-        try {
+        try (ObjectInputStream in = new ObjectInputStream(new ByteArrayInputStream(data))) {
             deserialized = in.readObject();
-        } finally {
-            in.close();
         }
         assertMultilinesEquals(EXPECTED, formatNameAndValue((TreeTableView) deserialized));
     }

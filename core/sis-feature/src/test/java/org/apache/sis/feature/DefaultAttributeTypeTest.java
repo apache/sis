@@ -36,15 +36,15 @@ import static org.apache.sis.test.Assert.*;
  * Characteristics are tested by {@link CharacteristicTypeMapTest} instead.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.5
  * @version 0.5
+ * @since   0.5
  * @module
  */
 public final strictfp class DefaultAttributeTypeTest extends TestCase {
     /**
      * Creates an attribute type for city name.
      *
-     * @return An attribute type for a city name.
+     * @return an attribute type for a city name.
      */
     public static DefaultAttributeType<String> city() {
         return city(new HashMap<String,Object>());
@@ -53,7 +53,7 @@ public final strictfp class DefaultAttributeTypeTest extends TestCase {
     /**
      * Implementation of {@link #city()} using the given map (for reusing existing objects).
      *
-     * @param identification An empty temporary map (provided only for recycling existing instances).
+     * @param  identification  an empty temporary map (provided only for recycling existing instances).
      */
     static DefaultAttributeType<String> city(final Map<String,Object> identification) {
         assertNull(identification.put(DefaultAttributeType.NAME_KEY, "city"));
@@ -64,7 +64,7 @@ public final strictfp class DefaultAttributeTypeTest extends TestCase {
         assertNull(identification.put(DefaultAttributeType.DEFINITION_KEY  + "_fr", "Le nom de la ville."));
         assertNull(identification.put(DefaultAttributeType.DEFINITION_KEY  + "_ja", "都市の名前。"));
         assertNull(identification.put(DefaultAttributeType.DESCRIPTION_KEY, "Some verbose description."));
-        final DefaultAttributeType<String> city = new DefaultAttributeType<String>(identification,
+        final DefaultAttributeType<String> city = new DefaultAttributeType<>(identification,
                 String.class, 1, 1, "Utopia");
         identification.clear();
         return city;
@@ -73,13 +73,13 @@ public final strictfp class DefaultAttributeTypeTest extends TestCase {
     /**
      * Creates an attribute type for city population.
      *
-     * @param identification An empty temporary map (provided only for recycling existing instances).
+     * @param  identification  an empty temporary map (provided only for recycling existing instances).
      */
     static DefaultAttributeType<Integer> population(final Map<String,Object> identification) {
         assertNull(identification.put(DefaultAttributeType.NAME_KEY, "population"));
         // We may add more properties here in a future version.
 
-        final DefaultAttributeType<Integer> population = new DefaultAttributeType<Integer>(
+        final DefaultAttributeType<Integer> population = new DefaultAttributeType<>(
                 identification, Integer.class, 1, 1, null);
         identification.clear();
         return population;
@@ -90,7 +90,7 @@ public final strictfp class DefaultAttributeTypeTest extends TestCase {
      * This applies only to features of type "Capital".
      * This is used for testing feature type inheritance.
      *
-     * @return An attribute type for the name of the parliament in a capital.
+     * @return an attribute type for the name of the parliament in a capital.
      */
     public static DefaultAttributeType<String> parliament() {
         return attribute("parliament");
@@ -100,10 +100,10 @@ public final strictfp class DefaultAttributeTypeTest extends TestCase {
      * Creates an attribute type for a list of universities.
      * The cardinality is [0 … ∞].
      *
-     * @return An attribute type for university names.
+     * @return an attribute type for university names.
      */
     public static DefaultAttributeType<String> universities() {
-        return new DefaultAttributeType<String>(
+        return new DefaultAttributeType<>(
                 singletonMap(DefaultAttributeType.NAME_KEY, "universities"),
                 String.class, 0, Integer.MAX_VALUE, null);
     }
@@ -113,8 +113,7 @@ public final strictfp class DefaultAttributeTypeTest extends TestCase {
      * This is the kind of attribute created by the ShapeFile reader.
      */
     static DefaultAttributeType<String> attribute(final String name) {
-        return new DefaultAttributeType<String>(singletonMap(DefaultAttributeType.NAME_KEY, name),
-                String.class, 1, 1, null);
+        return new DefaultAttributeType<>(singletonMap(DefaultAttributeType.NAME_KEY, name), String.class, 1, 1, null);
     }
 
     /**
@@ -151,8 +150,9 @@ public final strictfp class DefaultAttributeTypeTest extends TestCase {
      * Tests attribute comparison.
      */
     @Test
+    @SuppressWarnings("ObjectEqualsNull")
     public void testEquals() {
-        final Map<String,Object> identification = new HashMap<String,Object>(4);
+        final Map<String,Object> identification = new HashMap<>(4);
         final DefaultAttributeType<Integer> a1 = population(identification);
         final DefaultAttributeType<Integer> a2 = population(identification);
         assertFalse ("equals",   a1.equals(null));

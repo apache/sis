@@ -18,15 +18,13 @@ package org.apache.sis.feature;
 
 import java.util.Set;
 import java.util.Map;
-import java.util.HashMap;
 import java.util.Collections;
-import org.opengis.metadata.Identifier;
+import java.io.IOException;
 import org.opengis.parameter.ParameterValueGroup;
-import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
-import org.apache.sis.parameter.DefaultParameterDescriptorGroup;
-import org.apache.sis.metadata.iso.citation.Citations;
+import org.apache.sis.internal.feature.FeatureUtilities;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.resources.Errors;
 
 
 /**
@@ -34,8 +32,8 @@ import org.apache.sis.util.ArgumentChecks;
  * The operation acts like a reference to another property.
  *
  * @author  Johann Sorel (Geomatys)
+ * @version 0.8
  * @since   0.6
- * @version 0.6
  * @module
  */
 final class LinkOperation extends AbstractOperation {
@@ -45,30 +43,6 @@ final class LinkOperation extends AbstractOperation {
     private static final long serialVersionUID = 765096861589501215L;
 
     /**
-     * Creates a parameter descriptor in the Apache SIS namespace. This convenience method shall
-     * not be in public API, because users should define operations in their own namespace.
-     *
-     * <div class="note"><b>Note:</b>
-     * this method is shared by other operations in this package, but is declared here in order to delay
-     * {@link org.apache.sis.parameter} classes loading until we need to instantiate an operation like this
-     * {@code LinkOperation}. Since {@code LinkOperation} is very light and often used, the cost for other
-     * operations of loading this class is considered negligible.</div>
-     */
-    static ParameterDescriptorGroup parameters(final String name, final int minimumOccurs,
-            final ParameterDescriptor<?>... parameters)
-    {
-        final Map<String,Object> properties = new HashMap<String,Object>(4);
-        properties.put(ParameterDescriptorGroup.NAME_KEY, name);
-        properties.put(Identifier.AUTHORITY_KEY, Citations.SIS);
-        return new DefaultParameterDescriptorGroup(properties, minimumOccurs, 1);
-    }
-
-    /**
-     * The parameter descriptor for the "Link" operation, which does not take any parameter.
-     */
-    private static final ParameterDescriptorGroup EMPTY_PARAMS = parameters("Link", 1);
-
-    /**
      * The type of the result.
      */
     private final AbstractIdentifiedType result;
@@ -76,18 +50,25 @@ final class LinkOperation extends AbstractOperation {
     /**
      * The name of the referenced attribute or feature association.
      */
-    final String propertyName;
+    final String referentName;
 
     /**
      * Creates a new link to the given attribute or association.
      *
-     * @param identification The name of the link, together with optional information.
-     * @param propertyType   The referenced attribute or feature association.
+     * @param identification  the name of the link, together with optional information.
+     * @param referent        the referenced attribute or feature association.
      */
-    LinkOperation(final Map<String, ?> identification, final AbstractIdentifiedType propertyType) {
+    LinkOperation(final Map<String,?> identification, AbstractIdentifiedType referent) {
         super(identification);
-        result = propertyType;
-        propertyName = propertyType.getName().toString();
+        if (referent instanceof LinkOperation) {
+            referent = ((LinkOperation) referent).result;
+            // Avoiding links to links may help performance and reduce the risk of circular references.
+        }
+        result = referent;
+        referentName = referent.getName().toString();
+        if (referentName.equals(getName().toString())) {
+            throw new IllegalArgumentException(Errors.format(Errors.Keys.CircularReference));
+        }
     }
 
     /**
@@ -95,7 +76,7 @@ final class LinkOperation extends AbstractOperation {
      */
     @Override
     public ParameterDescriptorGroup getParameters() {
-        return EMPTY_PARAMS;
+        return FeatureUtilities.LINK_PARAMS;
     }
 
     /**
@@ -111,19 +92,46 @@ final class LinkOperation extends AbstractOperation {
      */
     @Override
     public Set<String> getDependencies() {
-        return Collections.singleton(propertyName);
+        return Collections.singleton(referentName);
     }
 
     /**
      * Returns the property from the referenced attribute of feature association.
      *
-     * @param  feature    The feature from which to get the property.
-     * @param  parameters Ignored.
-     * @return The property from the given feature.
+     * @param  feature     the feature from which to get the property.
+     * @param  parameters  ignored (can be {@code null}).
+     * @return the linked property from the given feature.
      */
     @Override
     public Object apply(final AbstractFeature feature, final ParameterValueGroup parameters) {
         ArgumentChecks.ensureNonNull("feature", feature);
-        return feature.getProperty(propertyName);
+        return feature.getProperty(referentName);
+    }
+
+    /**
+     * Computes a hash-code value for this operation.
+     */
+    @Override
+    public int hashCode() {
+        return super.hashCode() + referentName.hashCode();
+    }
+
+    /**
+     * Compares this operation with the given object for equality.
+     */
+    @Override
+    public boolean equals(final Object obj) {
+        // 'this.result' is compared (indirectly) by the super class.
+        return super.equals(obj) && referentName.equals(((LinkOperation) obj).referentName);
+    }
+
+    /**
+     * Appends a string representation of the "formula" used for computing the result.
+     *
+     * @param  buffer  where to format the "formula".
+     */
+    @Override
+    void formatResultFormula(final Appendable buffer) throws IOException {
+        buffer.append(referentName);
     }
 }

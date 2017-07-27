@@ -16,7 +16,7 @@
  */
 package org.apache.sis.metadata.iso.content;
 
-import javax.measure.unit.Unit;
+import javax.measure.Unit;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlSeeAlso;
@@ -28,7 +28,7 @@ import org.opengis.util.RecordType;
 import org.opengis.metadata.content.Band;
 import org.apache.sis.measure.ValueRange;
 
-import static org.apache.sis.internal.metadata.MetadataUtilities.warnNonPositiveArgument;
+import static org.apache.sis.internal.metadata.MetadataUtilities.ensurePositive;
 
 // Branch-specific imports
 import org.opengis.annotation.UML;
@@ -39,6 +39,11 @@ import static org.opengis.annotation.Specification.ISO_19115;
 
 /**
  * The characteristic of each dimension (layer) included in the resource.
+ * The following property is conditional (i.e. mandatory under some circumstances)
+ * in a well-formed metadata according ISO 19115:
+ *
+ * <div class="preformat">{@code MD_SampleDimension}
+ * {@code   └─units………………………} Units of data in each dimension included in the resource.</div>
  *
  * <div class="warning"><b>Note on International Standard versions</b><br>
  * This class is derived from a new type defined in the ISO 19115 international standard published in 2014,
@@ -63,6 +68,7 @@ import static org.opengis.annotation.Specification.ISO_19115;
  * @since   0.5
  * @module
  */
+@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "MD_SampleDimension_Type", propOrder = {
     "maxValue",
     "minValue",
@@ -86,6 +92,11 @@ public class DefaultSampleDimension extends DefaultRangeDimension {
     private static final long serialVersionUID = 4517148689016920767L;
 
     /**
+     * Number of values used in a thematic classification resource.
+     */
+    private Integer numberOfValues;
+
+    /**
      * Minimum value of data values in each dimension included in the resource.
      */
     private Double minValue;
@@ -99,11 +110,6 @@ public class DefaultSampleDimension extends DefaultRangeDimension {
      * Mean value of data values in each dimension included in the resource.
      */
     private Double meanValue;
-
-    /**
-     * Number of values used in a thematicClassification resource.
-     */
-    private Integer numberOfValues;
 
     /**
      * Standard deviation of data values in each dimension included in the resource.
@@ -171,9 +177,7 @@ public class DefaultSampleDimension extends DefaultRangeDimension {
      * metadata instances can also be obtained by unmarshalling an invalid XML document.
      * </div>
      *
-     * @param object The metadata to copy values from, or {@code null} if none.
-     *
-     * @see #castOrCopy(SampleDimension)
+     * @param  object  the metadata to copy values from, or {@code null} if none.
      */
     public DefaultSampleDimension(final DefaultSampleDimension object) {
         super(object);
@@ -221,88 +225,9 @@ public class DefaultSampleDimension extends DefaultRangeDimension {
     }
 
     /**
-     * Ensures that the given property value is positive.
-     *
-     * @param property Name of the property to check.
-     * @param strict   {@code false} is zero is a legal value.
-     * @param newValue The property value to verify.
-     * @throws IllegalArgumentException if the given value is negative and the problem has not been logged.
-     */
-    static void ensurePositive(final String property, final boolean strict, final Number newValue)
-            throws IllegalArgumentException
-    {
-        if (newValue != null && !(strict ? newValue.doubleValue() > 0 : newValue.doubleValue() >= 0)) { // Use '!' for catching NaN.
-            warnNonPositiveArgument(DefaultSampleDimension.class, property, strict, newValue);
-        }
-    }
-
-    /**
-     * Returns the minimum value of data values in each dimension included in the resource.
-     *
-     * @return Minimum value of data values in each dimension included in the resource, or {@code null} if unspecified.
-     */
-    @XmlElement(name = "minValue")
-    @UML(identifier="minValue", obligation=OPTIONAL, specification=ISO_19115)
-    public Double getMinValue() {
-        return minValue;
-    }
-
-    /**
-     * Sets the minimum value of data values in each dimension included in the resource.
-     *
-     * @param newValue The new new minimum value.
-     */
-    public void setMinValue(final Double newValue) {
-        checkWritePermission();
-        minValue = newValue;
-    }
-
-    /**
-     * Returns the maximum value of data values in each dimension included in the resource.
-     *
-     * @return Maximum value of data values in each dimension included in the resource, or {@code null} if unspecified.
-     */
-    @XmlElement(name = "maxValue")
-    @UML(identifier="maxValue", obligation=OPTIONAL, specification=ISO_19115)
-    public Double getMaxValue() {
-        return maxValue;
-    }
-
-    /**
-     * Sets the maximum value of data values in each dimension included in the resource.
-     *
-     * @param newValue The new new maximum value.
-     */
-    public void setMaxValue(final Double newValue) {
-        checkWritePermission();
-        maxValue = newValue;
-    }
-
-    /**
-     * Returns the mean value of data values in each dimension included in the resource.
-     *
-     * @return The mean value of data values in each dimension included in the resource, or {@code null} if none.
-     */
-/// @XmlElement(name = "meanValue")
-    @UML(identifier="meanValue", obligation=OPTIONAL, specification=ISO_19115)
-    public Double getMeanValue() {
-        return meanValue;
-    }
-
-    /**
-     * Sets the mean value of data values in each dimension included in the resource.
-     *
-     * @param newValue The new mean value of data values in each dimension included in the resource.
-     */
-    public void setMeanValue(final Double newValue) {
-        checkWritePermission();
-        meanValue = newValue;
-    }
-
-    /**
      * Returns the number of values used in a thematic classification resource.
      *
-     * @return The number of values used in a thematic classification resource, or {@code null} if none.
+     * @return the number of values used in a thematic classification resource, or {@code null} if none.
      */
     @ValueRange(minimum = 0)
 /// @XmlElement(name = "numberOfValues")
@@ -314,19 +239,83 @@ public class DefaultSampleDimension extends DefaultRangeDimension {
     /**
      * Sets the number of values used in a thematic classification resource.
      *
-     * @param newValue The new number of values used in a thematic classification resource.
+     * @param  newValue  the new number of values used in a thematic classification resource.
      * @throws IllegalArgumentException if the given value is negative.
      */
     public void setNumberOfValues(final Integer newValue) {
         checkWritePermission();
-        ensurePositive("numberOfValues", false, newValue);
-        numberOfValues = newValue;
+        if (ensurePositive(DefaultSampleDimension.class, "numberOfValues", false, newValue)) {
+            numberOfValues = newValue;
+        }
+    }
+
+    /**
+     * Returns the minimum value of data values in each dimension included in the resource.
+     *
+     * @return minimum value of data values in each dimension included in the resource, or {@code null} if unspecified.
+     */
+    @XmlElement(name = "minValue")
+    @UML(identifier="minValue", obligation=OPTIONAL, specification=ISO_19115)
+    public Double getMinValue() {
+        return minValue;
+    }
+
+    /**
+     * Sets the minimum value of data values in each dimension included in the resource.
+     *
+     * @param  newValue  the new new minimum value.
+     */
+    public void setMinValue(final Double newValue) {
+        checkWritePermission();
+        minValue = newValue;
+    }
+
+    /**
+     * Returns the maximum value of data values in each dimension included in the resource.
+     *
+     * @return maximum value of data values in each dimension included in the resource, or {@code null} if unspecified.
+     */
+    @XmlElement(name = "maxValue")
+    @UML(identifier="maxValue", obligation=OPTIONAL, specification=ISO_19115)
+    public Double getMaxValue() {
+        return maxValue;
+    }
+
+    /**
+     * Sets the maximum value of data values in each dimension included in the resource.
+     *
+     * @param  newValue  the new new maximum value.
+     */
+    public void setMaxValue(final Double newValue) {
+        checkWritePermission();
+        maxValue = newValue;
+    }
+
+    /**
+     * Returns the mean value of data values in each dimension included in the resource.
+     *
+     * @return the mean value of data values in each dimension included in the resource, or {@code null} if none.
+     */
+/// @XmlElement(name = "meanValue")
+    @UML(identifier="meanValue", obligation=OPTIONAL, specification=ISO_19115)
+    public Double getMeanValue() {
+        return meanValue;
+    }
+
+    /**
+     * Sets the mean value of data values in each dimension included in the resource.
+     *
+     * @param  newValue  the new mean value of data values in each dimension included in the resource.
+     */
+    public void setMeanValue(final Double newValue) {
+        checkWritePermission();
+        meanValue = newValue;
     }
 
     /**
      * Returns the standard deviation of data values in each dimension included in the resource.
      *
-     * @return Standard deviation of data values in each dimension included in the resource, or {@code null} if none.
+     * @return standard deviation of data values in each dimension included in the resource, or {@code null} if none.
      */
 /// @XmlElement(name = "standardDeviation")
     @UML(identifier="standardDeviation", obligation=OPTIONAL, specification=ISO_19115)
@@ -337,7 +326,7 @@ public class DefaultSampleDimension extends DefaultRangeDimension {
     /**
      * Sets the standard deviation of data values in each dimension included in the resource.
      *
-     * @param newValue The new standard deviation of data values in each dimension included in the resource.
+     * @param  newValue  the new standard deviation of data values in each dimension included in the resource.
      */
     public void setStandardDeviation(final Double newValue) {
         checkWritePermission();
@@ -347,7 +336,7 @@ public class DefaultSampleDimension extends DefaultRangeDimension {
     /**
      * Returns the units of data in the dimension.
      *
-     * @return The units of data in the dimension, or {@code null} if unspecified.
+     * @return the units of data in the dimension, or {@code null} if unspecified.
      */
     @XmlElement(name = "units")
     @UML(identifier="units", obligation=CONDITIONAL, specification=ISO_19115)
@@ -358,7 +347,7 @@ public class DefaultSampleDimension extends DefaultRangeDimension {
     /**
      * Sets the units of data in the dimension.
      *
-     * @param newValue The new units of data in the dimension.
+     * @param  newValue  the new units of data in the dimension.
      */
     public void setUnits(final Unit<?> newValue) {
         checkWritePermission();
@@ -368,7 +357,7 @@ public class DefaultSampleDimension extends DefaultRangeDimension {
     /**
      * Returns the scale factor which has been applied to the cell value.
      *
-     * @return Scale factor which has been applied to the cell value, or {@code null} if none.
+     * @return scale factor which has been applied to the cell value, or {@code null} if none.
      */
 /// @XmlElement(name = "scaleFactor")
     @UML(identifier="scaleFactor", obligation=OPTIONAL, specification=ISO_19115)
@@ -379,7 +368,7 @@ public class DefaultSampleDimension extends DefaultRangeDimension {
     /**
      * Sets the scale factor which has been applied to the cell value.
      *
-     * @param newValue The new scale factor which has been applied to the cell value.
+     * @param  newValue  the new scale factor which has been applied to the cell value.
      */
     public void setScaleFactor(final Double newValue) {
         checkWritePermission();
@@ -389,7 +378,7 @@ public class DefaultSampleDimension extends DefaultRangeDimension {
     /**
      * Returns the physical value corresponding to a cell value of zero.
      *
-     * @return The physical value corresponding to a cell value of zero, or {@code null} if none.
+     * @return the physical value corresponding to a cell value of zero, or {@code null} if none.
      */
 /// @XmlElement(name = "offset")
     @UML(identifier="offset", obligation=OPTIONAL, specification=ISO_19115)
@@ -400,7 +389,7 @@ public class DefaultSampleDimension extends DefaultRangeDimension {
     /**
      * Sets the physical value corresponding to a cell value of zero.
      *
-     * @param newValue The new physical value corresponding to a cell value of zero, or {@code null} if none..
+     * @param  newValue  the new physical value corresponding to a cell value of zero.
      */
     public void setOffset(final Double newValue) {
         checkWritePermission();
@@ -410,7 +399,7 @@ public class DefaultSampleDimension extends DefaultRangeDimension {
     /**
      * Returns type of transfer function to be used when scaling a physical value for a given element.
      *
-     * @return Type of transfer function, or {@code null}.
+     * @return type of transfer function, or {@code null}.
      */
     public TransferFunctionType getTransferFunctionType() {
         return transferFunctionType;
@@ -419,7 +408,7 @@ public class DefaultSampleDimension extends DefaultRangeDimension {
     /**
      * Sets the type of transfer function to be used when scaling a physical value for a given element.
      *
-     * @param newValue The new transfer function value.
+     * @param  newValue  the new transfer function value.
      */
     public void setTransferFunctionType(final TransferFunctionType newValue) {
         checkWritePermission();
@@ -430,7 +419,7 @@ public class DefaultSampleDimension extends DefaultRangeDimension {
      * Returns the maximum number of significant bits in the uncompressed representation
      * for the value in each band of each pixel.
      *
-     * @return Maximum number of significant bits in the uncompressed representation
+     * @return maximum number of significant bits in the uncompressed representation
      *         for the value in each band of each pixel, or {@code null} if none.
      */
     @ValueRange(minimum = 1)
@@ -444,20 +433,21 @@ public class DefaultSampleDimension extends DefaultRangeDimension {
      * Sets the maximum number of significant bits in the uncompressed representation
      * for the value in each band of each pixel.
      *
-     * @param newValue The new maximum number of significant bits.
+     * @param  newValue  the new maximum number of significant bits.
      * @throws IllegalArgumentException if the given value is zero or negative.
      */
     public void setBitsPerValue(final Integer newValue) {
         checkWritePermission();
-        ensurePositive("bitsPerValue", true, newValue);
-        bitsPerValue = newValue;
+        if (ensurePositive(DefaultSampleDimension.class, "bitsPerValue", true, newValue)) {
+            bitsPerValue = newValue;
+        }
     }
 
     /**
      * Returns the smallest distance between which separate points can be distinguished,
      * as specified in instrument design.
      *
-     * @return Smallest distance between which separate points can be distinguished, or {@code null}.
+     * @return smallest distance between which separate points can be distinguished, or {@code null}.
      */
     @ValueRange(minimum = 0, isMinIncluded = false)
     public Double getNominalSpatialResolution() {
@@ -468,19 +458,20 @@ public class DefaultSampleDimension extends DefaultRangeDimension {
      * Sets the smallest distance between which separate points can be distinguished,
      * as specified in instrument design.
      *
-     * @param newValue The new nominal spatial resolution.
+     * @param  newValue  the new nominal spatial resolution.
      * @throws IllegalArgumentException if the given value is negative.
      */
     public void setNominalSpatialResolution(final Double newValue) {
         checkWritePermission();
-        ensurePositive("nominalSpatialResolution", true, newValue);
-        nominalSpatialResolution = newValue;
+        if (ensurePositive(DefaultSampleDimension.class, "nominalSpatialResolution", true, newValue)) {
+            nominalSpatialResolution = newValue;
+        }
     }
 
     /**
      * Returns type of other attribute description.
      *
-     * @return Type of other attribute description, or {@code null} if none.
+     * @return type of other attribute description, or {@code null} if none.
      */
 /// @XmlElement(name = "otherPropertyType")
     @UML(identifier="otherPropertyType", obligation=OPTIONAL, specification=ISO_19115)
@@ -491,7 +482,7 @@ public class DefaultSampleDimension extends DefaultRangeDimension {
     /**
      * Sets a new type of other attribute description.
      *
-     * @param newValue The new type of other attribute description.
+     * @param  newValue  the new type of other attribute description.
      */
     public void setOtherPropertyType(final RecordType newValue) {
         checkWritePermission();
@@ -514,7 +505,7 @@ public class DefaultSampleDimension extends DefaultRangeDimension {
      * Sets a new instance of other/attributeType that defines attributes not explicitly
      * included in {@link CoverageContentType}.
      *
-     * @param newValue The new instance of other/attributeType.
+     * @param  newValue  the new instance of other/attributeType.
      */
     public void setOtherProperty(final Record newValue) {
         checkWritePermission();

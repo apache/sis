@@ -16,17 +16,23 @@
  */
 package org.apache.sis.storage.netcdf;
 
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.file.NoSuchFileException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.UndeclaredThrowableException;
 import org.apache.sis.internal.netcdf.Decoder;
+import org.apache.sis.internal.netcdf.Resources;
 import org.apache.sis.internal.netcdf.impl.ChannelDecoder;
 import org.apache.sis.internal.netcdf.ucar.DecoderWrapper;
-import org.apache.sis.internal.storage.ChannelDataInput;
+import org.apache.sis.internal.storage.io.ChannelDataInput;
+import org.apache.sis.internal.storage.Capabilities;
+import org.apache.sis.internal.storage.Capability;
 import org.apache.sis.internal.system.SystemListener;
 import org.apache.sis.internal.system.Modules;
 import org.apache.sis.storage.DataStore;
@@ -51,12 +57,14 @@ import org.apache.sis.util.Version;
  * the part of the caller. However the {@link NetcdfStore} instances created by this factory are not thread-safe.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
- * @version 0.4
- * @module
+ * @version 0.8
  *
  * @see NetcdfStore
+ *
+ * @since 0.3
+ * @module
  */
+@Capabilities(Capability.READ)
 public class NetcdfStoreProvider extends DataStoreProvider {
     /**
      * The MIME type for NetCDF files.
@@ -112,21 +120,31 @@ public class NetcdfStoreProvider extends DataStoreProvider {
     }
 
     /**
+     * Returns a generic name for this data store, used mostly in warnings or error messages.
+     *
+     * @return a short name or abbreviation for the data format.
+     */
+    @Override
+    public String getShortName() {
+        return "NetCDF";
+    }
+
+    /**
      * Returns {@link ProbeResult#SUPPORTED} if the given storage appears to be supported by {@link NetcdfStore}.
      * Returning {@code SUPPORTED} from this method does not guarantee that reading or writing will succeed,
      * only that there appears to be a reasonable chance of success based on a brief inspection of the
      * {@linkplain StorageConnector#getStorage() storage object} or contents.
      *
-     * @param  storage Information about the storage (URL, stream, {@link ucar.nc2.NetcdfFile} instance, <i>etc</i>).
-     * @return {@code SUPPORTED} if the given storage seems to be usable by the {@code NetcdfStore} instances.
+     * @param  connector  information about the storage (URL, stream, {@link ucar.nc2.NetcdfFile} instance, <i>etc</i>).
+     * @return {@code SUPPORTED} if the given storage seems to be usable by {@code NetcdfStore} instances.
      * @throws DataStoreException if an I/O error occurred.
      */
     @Override
-    public ProbeResult probeContent(StorageConnector storage) throws DataStoreException {
+    public ProbeResult probeContent(final StorageConnector connector) throws DataStoreException {
         int     version     = 0;
         boolean hasVersion  = false;
         boolean isSupported = false;
-        final ByteBuffer buffer = storage.getStorageAs(ByteBuffer.class);
+        final ByteBuffer buffer = connector.getStorageAs(ByteBuffer.class);
         if (buffer != null) {
             if (buffer.remaining() < Integer.SIZE / Byte.SIZE) {
                 return ProbeResult.INSUFFICIENT_BYTES;
@@ -148,9 +166,9 @@ public class NetcdfStoreProvider extends DataStoreProvider {
          * has special cases for "file:", "http:", "nodods:" and "slurp:" protocols.
          */
         if (!isSupported) {
-            final String path = storage.getStorageAs(String.class);
+            final String path = connector.getStorageAs(String.class);
             if (path != null) {
-                ensureInitialized();
+                ensureInitialized(false);
                 final Method method = canOpenFromPath;
                 if (method != null) try {
                     isSupported = (Boolean) method.invoke(null, path);
@@ -162,17 +180,16 @@ public class NetcdfStoreProvider extends DataStoreProvider {
                     if (cause instanceof DataStoreException) throw (DataStoreException) cause;
                     if (cause instanceof RuntimeException)   throw (RuntimeException)   cause;
                     if (cause instanceof Error)              throw (Error)              cause;
-                    if (cause instanceof FileNotFoundException) {
+                    if (cause instanceof FileNotFoundException || cause instanceof NoSuchFileException) {
                         /*
                          * Happen if the String argument uses any protocol not recognized by the UCAR library,
                          * in which case UCAR tries to open it as a file even if it is not a file. For example
                          * we get this exception for "jar:file:/file.jar!/entry.nc".
                          */
-                        Logging.recoverableException(
-                                Logging.getLogger("org.apache.sis.storage"), netcdfFileClass, "canOpen", cause);
+                        Logging.recoverableException(Logging.getLogger(Modules.NETCDF), netcdfFileClass, "canOpen", cause);
                         return ProbeResult.UNSUPPORTED_STORAGE;
                     }
-                    throw new DataStoreException(e); // The cause may be IOException.
+                    throw new DataStoreException(e);                        // The cause may be IOException.
                 }
             } else {
                 /*
@@ -180,7 +197,7 @@ public class NetcdfStoreProvider extends DataStoreProvider {
                  * We check classnames instead of netcdfFileClass.isInstance(storage)
                  * in order to avoid loading the UCAR library if not needed.
                  */
-                for (Class<?> type = storage.getStorage().getClass(); type != null; type = type.getSuperclass()) {
+                for (Class<?> type = connector.getStorage().getClass(); type != null; type = type.getSuperclass()) {
                     if (UCAR_CLASSNAME.equals(type.getName())) {
                         isSupported = true;
                         break;
@@ -201,26 +218,26 @@ public class NetcdfStoreProvider extends DataStoreProvider {
     /**
      * Returns a {@link NetcdfStore} implementation associated with this provider.
      *
-     * @param  storage Information about the storage (URL, stream, {@link ucar.nc2.NetcdfFile} instance, <i>etc</i>).
-     * @return A data store implementation associated with this provider for the given storage.
-     * @throws DataStoreException If an error occurred while creating the data store instance.
+     * @param  connector  information about the storage (URL, stream, {@link ucar.nc2.NetcdfFile} instance, <i>etc</i>).
+     * @return a data store implementation associated with this provider for the given storage.
+     * @throws DataStoreException if an error occurred while creating the data store instance.
      */
     @Override
-    public DataStore open(final StorageConnector storage) throws DataStoreException {
-        return new NetcdfStore(storage);
+    public DataStore open(final StorageConnector connector) throws DataStoreException {
+        return new NetcdfStore(this, connector);
     }
 
     /**
      * Creates a decoder for the given input. This method invokes
      * {@link StorageConnector#closeAllExcept(Object)} after the decoder has been created.
      *
-     * @param  listeners Where to send the warnings.
-     * @param  storage Information about the input (file, input stream, <i>etc.</i>)
-     * @return The decoder for the given input.
-     * @throws IOException If an error occurred while opening the NetCDF file.
-     * @throws DataStoreException If a logical error (other than I/O) occurred.
+     * @param  listeners  where to send the warnings.
+     * @param  storage    information about the input (file, input stream, <i>etc.</i>)
+     * @return the decoder for the given input, or {@code null} if the input type is not recognized.
+     * @throws IOException if an error occurred while opening the NetCDF file.
+     * @throws DataStoreException if a logical error (other than I/O) occurred.
      */
-    static Decoder decoder(final WarningListeners<?> listeners, final StorageConnector storage)
+    static Decoder decoder(final WarningListeners<DataStore> listeners, final StorageConnector storage)
             throws IOException, DataStoreException
     {
         Decoder decoder;
@@ -231,9 +248,11 @@ public class NetcdfStoreProvider extends DataStoreProvider {
             keepOpen = input;
         } catch (DataStoreException e) {
             final String path = storage.getStorageAs(String.class);
-            if (path != null) {
+            if (path != null) try {
                 decoder = createByReflection(listeners, path, false);
                 keepOpen = path;
+            } catch (IOException | DataStoreException s) {
+                e.addSuppressed(s);
             }
             throw e;
         } else {
@@ -249,18 +268,18 @@ public class NetcdfStoreProvider extends DataStoreProvider {
      * not create our embedded NetCDF decoder. This method uses reflection for creating the wrapper, in order
      * to keep the UCAR dependency optional.
      *
-     * @param  listeners Where to send the warnings.
-     * @param  input  The NetCDF file object of filename string from which to read data.
-     * @param  isUCAR {@code true} if {@code input} is an instance of the UCAR {@link ucar.nc2.NetcdfFile} object,
-     *                or {@code false} if it is the filename as a {@code String}.
-     * @return The {@link DecoderWrapper} instance for the given input.
-     * @throws IOException If an error occurred while opening the NetCDF file.
-     * @throws DataStoreException If a logical error (other than I/O) occurred.
+     * @param  listeners  where to send the warnings.
+     * @param  input      the NetCDF file object of filename string from which to read data.
+     * @param  isUCAR     {@code true} if {@code input} is an instance of the UCAR {@link ucar.nc2.NetcdfFile} object,
+     *                    or {@code false} if it is the filename as a {@code String}.
+     * @return the {@link DecoderWrapper} instance for the given input, or {@code null} if the input type is not recognized.
+     * @throws IOException if an error occurred while opening the NetCDF file.
+     * @throws DataStoreException if a logical error (other than I/O) occurred.
      */
-    private static Decoder createByReflection(final WarningListeners<?> listeners, final Object input, final boolean isUCAR)
+    private static Decoder createByReflection(final WarningListeners<DataStore> listeners, final Object input, final boolean isUCAR)
             throws IOException, DataStoreException
     {
-        ensureInitialized();
+        ensureInitialized(true);
         /*
          * Get the appropriate constructor for the isUCAR argument. This constructor will be null
          * if the above code failed to load the UCAR library. Otherwise, instantiate the wrapper.
@@ -285,17 +304,23 @@ public class NetcdfStoreProvider extends DataStoreProvider {
             if (cause instanceof DataStoreException) throw (DataStoreException) cause;
             if (cause instanceof RuntimeException)   throw (RuntimeException)   cause;
             if (cause instanceof Error)              throw (Error)              cause;
-            throw new UndeclaredThrowableException(cause); // Should never happen actually.
-        } catch (Exception e) { // (ReflectiveOperationException) on JDK7 branch.
-            throw new AssertionError(e); // Should never happen (shall be verified by the JUnit tests).
+            throw new UndeclaredThrowableException(cause);  // Should never happen actually.
+        } catch (ReflectiveOperationException e) {
+            throw new AssertionError(e);                    // Should never happen (shall be verified by the JUnit tests).
         }
     }
 
     /**
      * Gets the {@link java.lang.Class} that represent the {@link ucar.nc2.NetcdfFile type}.
+     *
+     * @param  open  {@code true} if this method is invoked (indirectly) from the {@link #open(StorageConnector)}
+     *               method, or {@code false} if invoked from the {@link #probeContent(StorageConnector)} method.
+     *               This is used only for logging message.
      */
-    private static void ensureInitialized() {
+    private static void ensureInitialized(final boolean open) {
         if (netcdfFileClass == null) {
+            Level  severity = null;                             // Logging level to use in case of failure.
+            Throwable cause = null;                             // Cause of the failure (may stay null).
             synchronized (NetcdfStoreProvider.class) {
                 /*
                  * No double-check because it is not a big deal if the constructors are fetched twice.
@@ -303,29 +328,50 @@ public class NetcdfStoreProvider extends DataStoreProvider {
                  */
                 try {
                     netcdfFileClass = Class.forName(UCAR_CLASSNAME);
-                } catch (ClassNotFoundException e) {
-                    netcdfFileClass = Void.TYPE;
-                    return;
-                }
-                try {
-                    /*
-                     * UCAR API.
-                     */
                     canOpenFromPath = netcdfFileClass.getMethod("canOpen", String.class);
-                    assert canOpenFromPath.getReturnType() == Boolean.TYPE;
+                    if (canOpenFromPath.getReturnType() == Boolean.TYPE) {
+                        /*
+                         * At this point we found the class and method from UCAR API. Now get the Apache SIS wrapper
+                         * using reflection for avoiding "hard" dependency from this provider to the UCAR library.
+                         */
+                        final Class<? extends Decoder> wrapper =
+                                Class.forName("org.apache.sis.internal.netcdf.ucar.DecoderWrapper").asSubclass(Decoder.class);
+                        final Class<?>[] parameterTypes = new Class<?>[] {WarningListeners.class, netcdfFileClass};
+                        createFromUCAR = wrapper.getConstructor(parameterTypes);
+                        parameterTypes[1] = String.class;
+                        createFromPath = wrapper.getConstructor(parameterTypes);
+                        return;                                                                         // Success
+                    }
+                } catch (ClassNotFoundException e) {
                     /*
-                     * SIS Wrapper API.
+                     * Happen if the UCAR library is not on the classpath. Log at the configuration level without
+                     * reporting the exception (for avoiding scaring logs) because this is a typical use case.
                      */
-                    final Class<? extends Decoder> wrapper =
-                            Class.forName("org.apache.sis.internal.netcdf.ucar.DecoderWrapper").asSubclass(Decoder.class);
-                    final Class<?>[] parameterTypes = new Class<?>[] {WarningListeners.class, netcdfFileClass};
-                    createFromUCAR = wrapper.getConstructor(parameterTypes);
-                    parameterTypes[1] = String.class;
-                    createFromPath = wrapper.getConstructor(parameterTypes);
-                } catch (Exception e) { // (ReflectiveOperationException) on JDK7 branch.
-                    throw new AssertionError(e); // Should never happen (shall be verified by the JUnit tests).
+                    severity = Level.CONFIG;
+                } catch (NoClassDefFoundError | ReflectiveOperationException e) {
+                    /*
+                     * NoClassDefFoundError may happen if the UCAR class has been found but one of its dependencies
+                     * is missing (for example SLF4J). Log at the warning level because the user probably wanted to
+                     * use the UCAR library.
+                     *
+                     * ReflectiveOperationException should never happen because API compatibility shall be verified
+                     * by the JUnit tests. If it happen anyway  (for example because the user puts on his classpath
+                     * a different version of the NetCDF library than the one we tested), report a warning.
+                     */
+                    severity = Level.WARNING;
+                    cause = e;
                 }
+                /*
+                 * At this point we failed to use the UCAR library. Remember that failure while we are still in the
+                 * synchronized block, then log a message outside the synchronized block.
+                 */
+                reset();
+                netcdfFileClass = Void.TYPE;
             }
+            final LogRecord record = Resources.forLocale(null).getLogRecord(severity, Resources.Keys.CanNotUseUCAR);
+            record.setThrown(cause);
+            record.setLoggerName(Modules.NETCDF);
+            Logging.log(NetcdfStoreProvider.class, open ? "open" : "probeContent", record);
         }
     }
 

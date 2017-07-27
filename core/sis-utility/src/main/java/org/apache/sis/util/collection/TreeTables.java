@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Locale;
 import java.io.File;
+import java.nio.file.Path;
 import java.text.ParseException;
 import org.opengis.util.InternationalString;
 import org.apache.sis.util.Static;
@@ -98,11 +99,12 @@ import org.apache.sis.util.ArgumentChecks;
  * }
  *
  * @author  Martin Desruisseaux
- * @since   0.3
  * @version 0.3
- * @module
  *
  * @see TreeTable
+ *
+ * @since 0.3
+ * @module
  */
 public final class TreeTables extends Static {
     /**
@@ -130,10 +132,42 @@ public final class TreeTables extends Static {
      *             └─data
      * }
      *
-     * @param  from   The root node from which to start the search.
-     * @param  column The column containing the file name.
-     * @param  path   The file for which to find or create a node.
-     * @return The node for the given file, either as an existing node or a new node.
+     * @param  from    the root node from which to start the search.
+     * @param  column  the column containing the file name.
+     * @param  path    the path for which to find or create a node.
+     * @return the node for the given path, either as an existing node or a new node.
+     */
+    public static TreeTable.Node nodeForPath(TreeTable.Node from,
+            final TableColumn<? super String> column, final Path path)
+    {
+        final Path parent = path.getParent();
+        if (parent != null) {
+            from = nodeForPath(from, column, parent);
+        }
+        Path filename = path.getFileName();
+        if (filename == null) {
+            filename = path.getRoot();
+        }
+        final String name = filename.toString();
+        for (final TreeTable.Node child : from.getChildren()) {
+            if (name.equals(child.getValue(column))) {
+                return child;
+            }
+        }
+        from = from.newChild();
+        from.setValue(column, name);
+        return from;
+    }
+
+    /**
+     * Finds the node for the given file, or creates a new node if none exists.
+     * This method performs the same work than the above variant, but working on
+     * {@code File} instances rather than {@code Path}.
+     *
+     * @param  from    the root node from which to start the search.
+     * @param  column  the column containing the file name.
+     * @param  path    the file for which to find or create a node.
+     * @return the node for the given file, either as an existing node or a new node.
      */
     public static TreeTable.Node nodeForPath(TreeTable.Node from,
             final TableColumn<? super String> column, final File path)
@@ -144,7 +178,7 @@ public final class TreeTables extends Static {
         }
         String name = path.getName();
         if (name.isEmpty() && parent == null) {
-            name = File.separator; // Root directory.
+            name = File.separator;                                  // Root directory in Unix path syntax.
         }
         for (final TreeTable.Node child : from.getChildren()) {
             if (name.equals(child.getValue(column))) {
@@ -164,9 +198,9 @@ public final class TreeTables extends Static {
      * <p>This method may be invoked before to serialize the table in order to reduce the
      * serialization stream size.</p>
      *
-     * @param  table  The table in which to replace values by their string representations.
-     * @param  locale The locale to use when replacing {@link InternationalString} instances. Can be {@code null}.
-     * @return Number of replacements done.
+     * @param  table   the table in which to replace values by their string representations.
+     * @param  locale  the locale to use when replacing {@link InternationalString} instances. Can be {@code null}.
+     * @return number of replacements done.
      */
     @SuppressWarnings({"unchecked", "rawtypes"})
     public static int replaceCharSequences(final TreeTable table, final Locale locale) {
@@ -186,11 +220,11 @@ public final class TreeTables extends Static {
     /**
      * Implementation of the public {@link #replaceCharSequences(TreeTable, Locale)} method.
      *
-     * @param  node    The node in which to replace values by their string representations.
-     * @param  columns The columns where to perform the replacements.
-     * @param  locale  The locale to use when replacing {@link InternationalString} instances. Can be {@code null}.
-     * @param  pool    An initially empty pool of string representations, to be filled by this method.
-     * @return Number of replacements done.
+     * @param  node     the node in which to replace values by their string representations.
+     * @param  columns  the columns where to perform the replacements.
+     * @param  locale   the locale to use when replacing {@link InternationalString} instances. Can be {@code null}.
+     * @param  pool     an initially empty pool of string representations, to be filled by this method.
+     * @return number of replacements done.
      */
     private static int replaceCharSequences(final TreeTable.Node node, final TableColumn<? super String>[] columns,
             final Locale locale, final Map<String,String> pool)
@@ -229,8 +263,8 @@ public final class TreeTables extends Static {
      * developers are encouraged to create and configure their own {@code TreeTableFormat}
      * instance.
      *
-     * @param  table The tree table to format.
-     * @return A string representation of the given tree table.
+     * @param  table  the tree table to format.
+     * @return a string representation of the given tree table.
      */
     public static String toString(final TreeTable table) {
         ArgumentChecks.ensureNonNull("table", table);
@@ -244,11 +278,11 @@ public final class TreeTables extends Static {
      * This helper method is sometime useful for quick tests or debugging purposes.
      * For more extensive use, consider using {@link TreeTableFormat} instead.
      *
-     * @param  tree         The string representation of the tree to parse.
-     * @param  labelColumn  The columns where to store the node labels. This is often {@link TableColumn#NAME}.
-     * @param  otherColumns Optional columns where to store the values, if any.
-     * @return A tree parsed from the given string.
-     * @throws ParseException If an error occurred while parsing the tree.
+     * @param  tree          the string representation of the tree to parse.
+     * @param  labelColumn   the columns where to store the node labels. This is often {@link TableColumn#NAME}.
+     * @param  otherColumns  optional columns where to store the values, if any.
+     * @return a tree parsed from the given string.
+     * @throws ParseException if an error occurred while parsing the tree.
      */
     public static TreeTable parse(final String tree, final TableColumn<?> labelColumn,
             final TableColumn<?>... otherColumns) throws ParseException

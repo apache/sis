@@ -28,8 +28,8 @@ import static org.apache.sis.test.Assert.*;
  * Tests the {@link Symbols} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.4
  * @version 0.4
+ * @since   0.4
  * @module
  */
 public final strictfp class SymbolsTest extends TestCase {
@@ -100,7 +100,7 @@ public final strictfp class SymbolsTest extends TestCase {
         symbols.setPairedQuotes("“”", "\"\"");
         assertEquals("quote", "”", symbols.getQuote());
         final Symbols c = assertSerializedEquals(symbols);
-        assertNotSame(symbols, c); // Expect a new instance.
-        assertEquals("quote", "”", c.getQuote()); // Verify the recomputed value.
+        assertNotSame("Expected a new instance.", symbols, c);
+        assertEquals("quote", "”", c.getQuote());               // Verify the recomputed value.
     }
 }

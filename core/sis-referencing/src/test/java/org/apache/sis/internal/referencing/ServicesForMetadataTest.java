@@ -16,17 +16,26 @@
  */
 package org.apache.sis.internal.referencing;
 
+import java.util.Map;
+import java.util.Collections;
 import org.opengis.geometry.Envelope;
 import org.opengis.metadata.extent.GeographicBoundingBox;
 import org.opengis.metadata.extent.VerticalExtent;
+import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.opengis.referencing.crs.GeographicCRS;
+import org.opengis.referencing.crs.SingleCRS;
 import org.opengis.referencing.operation.TransformException;
+import org.opengis.util.FactoryException;
+import org.apache.sis.internal.metadata.ReferencingServices;
 import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
 import org.apache.sis.metadata.iso.extent.DefaultVerticalExtent;
 import org.apache.sis.metadata.iso.extent.DefaultSpatialTemporalExtent;
 import org.apache.sis.geometry.GeneralEnvelope;
+import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.referencing.crs.HardCodedCRS;
+import org.apache.sis.referencing.factory.GeodeticObjectFactory;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
@@ -40,8 +49,8 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
  * Tests {@link ServicesForMetadata}.
  *
  * @author  Martin Desruisseaux (Geomatys)
+ * @version 0.8
  * @since   0.5
- * @version 0.5
  * @module
  */
 @DependsOn({
@@ -49,11 +58,6 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
     org.apache.sis.referencing.CommonCRSTest.class
 })
 public final strictfp class ServicesForMetadataTest extends TestCase {
-    /**
-     * Tolerance threshold for strict floating point comparisons.
-     */
-    private static final double STRICT = 0;
-
     /**
      * Creates a test envelope with the given CRS and initialized with
      * [-10 … 70]° of longitude, [-20 … 30]° of latitude, [-40 … 60] metres of elevation
@@ -64,9 +68,9 @@ public final strictfp class ServicesForMetadataTest extends TestCase {
         final GeneralEnvelope envelope = new GeneralEnvelope(crs);
         switch (crs.getCoordinateSystem().getDimension()) {
             default: throw new AssertionError();
-            case 4: envelope.setRange(3, 51000, 52000); // Fall through
-            case 3: envelope.setRange(2, -10, 70); // Fall through
-            case 2: envelope.setRange(1, -20, 30); // Fall through
+            case 4: envelope.setRange(3, 51000, 52000);                 // Fall through
+            case 3: envelope.setRange(2, -10, 70);                      // Fall through
+            case 2: envelope.setRange(1, -20, 30);                      // Fall through
             case 1: envelope.setRange(0, -40, 60);
             case 0: break;
         }
@@ -158,5 +162,65 @@ public final strictfp class ServicesForMetadataTest extends TestCase {
         extent.setBounds(createEnvelope(HardCodedCRS.GEOID_3D));
         verifySpatialExtent((GeographicBoundingBox) getSingleton(extent.getSpatialExtent()));
         verifyVerticalExtent(CommonCRS.Vertical.MEAN_SEA_LEVEL, extent.getVerticalExtent());
+    }
+
+    /**
+     * Tests {@link ServicesForMetadata#createCompoundCRS ReferencingUtilities.createCompoundCRS(…)}.
+     *
+     * @throws FactoryException if a CRS can not be created.
+     *
+     * @see <a href="https://issues.apache.org/jira/browse/SIS-303">SIS-303</a>
+     *
+     * @since 0.7
+     */
+    @Test
+    public void testCreateCompoundCRS() throws FactoryException {
+        final ReferencingServices services = ServicesForMetadata.getInstance();
+        final GeodeticObjectFactory factory = new GeodeticObjectFactory();
+        final Map<String,String> properties = Collections.singletonMap(CoordinateReferenceSystem.NAME_KEY, "WGS 84 (4D)");
+        /*
+         * createCompoundCRS(…) should not combine GeographicCRS with non-ellipsoidal height.
+         */
+        CoordinateReferenceSystem compound = services.createCompoundCRS(factory, factory, properties,
+                HardCodedCRS.WGS84, HardCodedCRS.GRAVITY_RELATED_HEIGHT, HardCodedCRS.TIME);
+        assertArrayEqualsIgnoreMetadata(new SingleCRS[] {HardCodedCRS.WGS84, HardCodedCRS.GRAVITY_RELATED_HEIGHT, HardCodedCRS.TIME},
+                CRS.getSingleComponents(compound).toArray());
+        /*
+         * createCompoundCRS(…) should combine GeographicCRS with ellipsoidal height.
+         */
+        compound = services.createCompoundCRS(factory, factory, properties,
+                HardCodedCRS.WGS84, HardCodedCRS.ELLIPSOIDAL_HEIGHT);
+        assertArrayEqualsIgnoreMetadata(new SingleCRS[] {HardCodedCRS.WGS84_3D},
+                CRS.getSingleComponents(compound).toArray());
+        /*
+         * createCompoundCRS(…) should combine GeographicCRS with ellipsoidal height and keep time.
+         */
+        compound = services.createCompoundCRS(factory, factory, properties,
+                HardCodedCRS.WGS84, HardCodedCRS.ELLIPSOIDAL_HEIGHT, HardCodedCRS.TIME);
+        assertArrayEqualsIgnoreMetadata(new SingleCRS[] {HardCodedCRS.WGS84_3D, HardCodedCRS.TIME},
+                CRS.getSingleComponents(compound).toArray());
+        /*
+         * Non-standard feature: accept (VerticalCRS + GeodeticCRS) order.
+         * The test below use the reverse order for all axes compared to the previous test.
+         */
+        compound = services.createCompoundCRS(factory, factory, properties,
+                HardCodedCRS.TIME, HardCodedCRS.ELLIPSOIDAL_HEIGHT, HardCodedCRS.WGS84_φλ);
+        final Object[] components = CRS.getSingleComponents(compound).toArray();
+        assertEquals(2, components.length);
+        assertEqualsIgnoreMetadata(HardCodedCRS.TIME, components[0]);
+        assertInstanceOf("Shall be a three-dimensional geographic CRS.", GeographicCRS.class, components[1]);
+        assertAxisDirectionsEqual("Shall be a three-dimensional geographic CRS.",
+                ((CoordinateReferenceSystem) components[1]).getCoordinateSystem(),
+                AxisDirection.UP, AxisDirection.NORTH, AxisDirection.EAST);
+    }
+
+    /**
+     * Tests {@link org.apache.sis.metadata.iso.extent.Extents#centroid(GeographicBoundingBox)}.
+     *
+     * @since 0.8
+     */
+    @Test
+    public void testGeographicBoundingBoxCentroid() {
+        org.apache.sis.metadata.iso.extent.ExtentsTest.testCentroid();
     }
 }

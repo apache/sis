@@ -28,8 +28,8 @@ import org.apache.sis.internal.jaxb.gco.PropertyType;
  *
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.3
+ * @since   0.3
  * @module
  */
 public final class MI_Plan extends PropertyType<MI_Plan, Plan> {
@@ -62,8 +62,8 @@ public final class MI_Plan extends PropertyType<MI_Plan, Plan> {
      * Invoked by {@link PropertyType} at marshalling time for wrapping the given metadata value
      * in a {@code <gmi:MI_Plan>} XML element.
      *
-     * @param  metadata The metadata element to marshall.
-     * @return A {@code PropertyType} wrapping the given the metadata element.
+     * @param  metadata  the metadata element to marshall.
+     * @return a {@code PropertyType} wrapping the given the metadata element.
      */
     @Override
     protected MI_Plan wrap(final Plan metadata) {
@@ -75,7 +75,7 @@ public final class MI_Plan extends PropertyType<MI_Plan, Plan> {
      * inside the {@code <gmi:MI_Plan>} XML element.
      * This is the value or a copy of the value given in argument to the {@code wrap} method.
      *
-     * @return The metadata to be marshalled.
+     * @return the metadata to be marshalled.
      */
     @XmlElementRef
     public DefaultPlan getElement() {
@@ -85,7 +85,7 @@ public final class MI_Plan extends PropertyType<MI_Plan, Plan> {
     /**
      * Invoked by JAXB at unmarshalling time for storing the result temporarily.
      *
-     * @param metadata The unmarshalled metadata.
+     * @param  metadata  the unmarshalled metadata.
      */
     public void setElement(final DefaultPlan metadata) {
         this.metadata = metadata;

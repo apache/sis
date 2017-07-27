@@ -23,9 +23,9 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.io.File;
+import java.io.IOException;
 import java.net.URL;
 import java.net.URISyntaxException;
-import javax.management.JMException;
 import org.apache.sis.internal.system.Shutdown;
 import org.apache.sis.internal.system.SystemListener;
 import org.apache.sis.util.Classes;
@@ -40,8 +40,8 @@ import static org.junit.Assert.*;
  * Base class of Apache SIS test suites (except the ones that extend GeoAPI suites).
  *
  * @author  Martin Desruisseaux (Geomatys)
+ * @version 0.7
  * @since   0.3
- * @version 0.5
  * @module
  */
 @RunWith(Suite.class)
@@ -58,7 +58,7 @@ public abstract strictfp class TestSuite {
     /**
      * Expected suffix in name of test classes.
      */
-    private static final String CLASSNAME_SUFFIX = "Test";
+    static final String CLASSNAME_SUFFIX = "Test";
 
     /**
      * {@code true} for disabling the search for missing tests. This is necessary
@@ -66,6 +66,12 @@ public abstract strictfp class TestSuite {
      * <a href="https://svn.apache.org/repos/asf/sis/release-test/maven">release test</a>.
      */
     static boolean skipCheckForMissingTests;
+
+    /**
+     * {@code true} for disabling {@link #shutdown()}. This is necessary when the test suites
+     * are executed from an external project (same need than {@link #skipCheckForMissingTests}).
+     */
+    static boolean skipShutdown;
 
     /**
      * Creates a new test suite.
@@ -79,7 +85,7 @@ public abstract strictfp class TestSuite {
      *
      * <p>This check is disabled if {@link #skipCheckForMissingTests} is {@code true}.</p>
      *
-     * @param suite The suite for which to check for missing tests.
+     * @param  suite  the suite for which to check for missing tests.
      */
     protected static void assertNoMissingTest(final Class<? extends TestSuite> suite) {
         if (skipCheckForMissingTests) return;
@@ -89,7 +95,7 @@ public abstract strictfp class TestSuite {
         File root;
         try {
             root = new File(url.toURI());
-        } catch (Exception e) { // (URISyntaxException | IllegalArgumentException) on JDK7 branch.
+        } catch (URISyntaxException | IllegalArgumentException e) {
             // If not a file, then it is probably an entry in a JAR file.
             fail(e.toString());
             return;
@@ -119,13 +125,15 @@ public abstract strictfp class TestSuite {
          * and fail on the first missing test file if any.
          */
         List<Class<?>> declared = Arrays.asList(suite.getAnnotation(Suite.SuiteClasses.class).value());
-        final Set<Class<?>> tests = new HashSet<Class<?>>(declared);
+        final Set<Class<?>> tests = new HashSet<>(declared);
         if (tests.size() != declared.size()) {
-            declared = new ArrayList<Class<?>>(declared);
+            declared = new ArrayList<>(declared);
             assertTrue(declared.removeAll(tests));
             fail("Classes defined twice in " + suite.getSimpleName() + ": " + declared);
         }
-        // Ignore classes that are not really test, like "APIVerifier".
+        /*
+         * Ignore classes that are not really test, like "APIVerifier".
+         */
         for (final Iterator<Class<?>> it=tests.iterator(); it.hasNext();) {
             if (!it.next().getName().endsWith(CLASSNAME_SUFFIX)) {
                 it.remove();
@@ -194,7 +202,7 @@ public abstract strictfp class TestSuite {
      *    }
      * }
      *
-     * @param suite The suite for which to verify test order.
+     * @param  suite  the suite for which to verify test order.
      */
     protected static void verifyTestList(final Class<? extends TestSuite> suite) {
         verifyTestList(suite, BASE_TEST_CLASSES);
@@ -206,12 +214,12 @@ public abstract strictfp class TestSuite {
      * the rare cases where some test cases need to extend something else than geoapi-conformance
      * or Apache SIS test class.
      *
-     * @param suite The suite for which to verify test order.
-     * @param baseTestClasses The set of base classes that all test cases are expected to extends.
+     * @param  suite            the suite for which to verify test order.
+     * @param  baseTestClasses  the set of base classes that all test cases are expected to extends.
      */
     protected static void verifyTestList(final Class<? extends TestSuite> suite, final Class<?>[] baseTestClasses) {
         final Class<?>[] testCases = suite.getAnnotation(Suite.SuiteClasses.class).value();
-        final Set<Class<?>> done = new HashSet<Class<?>>(testCases.length);
+        final Set<Class<?>> done = new HashSet<>(testCases.length);
         for (final Class<?> testCase : testCases) {
             if (!Classes.isAssignableToAny(testCase, baseTestClasses)) {
                 fail("Class " + testCase.getCanonicalName() + " does not extends TestCase.");
@@ -240,11 +248,22 @@ public abstract strictfp class TestSuite {
      * <p>Since this method stops SIS daemon threads, the SIS library shall not be used anymore after
      * this method execution.</p>
      *
-     * @throws JMException If an error occurred during unregistration of the supervisor MBean.
+     * @throws Exception if an error occurred during unregistration of the supervisor MBean or resource disposal.
      */
     @AfterClass
-    public static void shutdown() throws JMException {
-        SystemListener.fireClasspathChanged();
-        Shutdown.stop(TestSuite.class);
+    @SuppressWarnings("UseOfSystemOutOrSystemErr")
+    public static void shutdown() throws Exception {
+        if (!skipShutdown) {
+            skipShutdown = true;
+            TestCase.LOGGER.removeHandler(LogRecordCollector.INSTANCE);
+            System.err.flush();   // Flushs log messages sent by ConsoleHandler.
+            try {
+                LogRecordCollector.INSTANCE.report(System.out);
+            } catch (IOException e) {   // Should never happen.
+                throw new AssertionError(e);
+            }
+            SystemListener.fireClasspathChanged();
+            Shutdown.stop(TestSuite.class);
+        }
     }
 }

@@ -71,15 +71,16 @@ import org.apache.sis.internal.jdk8.Function;
  *       can be declared as an injective function if the other values meet the criteria.
  * </ul>
  *
- * @param <S> The type of objects to convert.
- * @param <T> The type of converted objects.
- *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.3
- * @module
+ *
+ * @param <S>  the type of objects to convert.
+ * @param <T>  the type of converted objects.
  *
  * @see ObjectConverters
+ *
+ * @since 0.3
+ * @module
  */
 public interface ObjectConverter<S,T> extends Function<S,T> {
     /**
@@ -102,11 +103,11 @@ public interface ObjectConverter<S,T> extends Function<S,T> {
      *       a sequence of decreasing <var>T</var> values.</li>
      * </ul>
      *
-     * Note that if the {@link #apply(Object)} method returns {@code null} for any non-convertible
-     * source value, then this properties set can not contain the {@link FunctionProperty#INJECTIVE}
-     * value. See class javadoc for more discussion.
+     * Note that if the {@link #apply(Object)} method returns {@code null} for unconvertible source values,
+     * then this properties set can not contain {@link FunctionProperty#INJECTIVE} because more than one
+     * source value could be converted to the same {@code null} target value.
      *
-     * @return The manners in which source values are mapped to target values.
+     * @return the manners in which source values are mapped to target values.
      *         May be an empty set, but never null.
      */
     Set<FunctionProperty> properties();
@@ -114,34 +115,46 @@ public interface ObjectConverter<S,T> extends Function<S,T> {
     /**
      * Returns the type of objects to convert.
      *
-     * @return The type of objects to convert.
+     * @return the type of objects to convert.
      */
     Class<S> getSourceClass();
 
     /**
      * Returns the type of converted objects.
      *
-     * @return The type of converted objects.
+     * @return the type of converted objects.
      */
     Class<T> getTargetClass();
 
     /**
      * Converts the given object from the source type <var>S</var> to the target type <var>T</var>.
-     * If the given object can not be converted, then this method may either returns {@code null} or
-     * throws an exception, at implementation choice. Note that this choice may affect the set of
-     * function {@linkplain #properties() properties} - see the class Javadoc for more discussion.
+     * If the given object can not be converted, then this method may either returns {@code null} or throws an exception,
+     * at implementation choice (except for {@linkplain FunctionProperty#INJECTIVE injective} functions, which must throw
+     * an exception - see the class Javadoc for more discussion about function {@linkplain #properties() properties}).
      *
-     * @param  object The object to convert, or {@code null}.
-     * @return The converted object, or {@code null}.
-     * @throws UnconvertibleObjectException If the given object is not an element of the function domain.
+     * <div class="note"><b>Example:</b>
+     * in Apache SIS implementation, converters from {@link String} to {@link Number} distinguish two kinds of
+     * unconvertible objects:
+     *
+     * <ul>
+     *   <li>Null or empty source string result in a {@code null} value to be returned.</li>
+     *   <li>All other kind of unparsable strings results in an exception to be thrown.</li>
+     * </ul>
+     *
+     * In other words, the {@code ""} value is unconvertible but nevertheless considered as part of the converter
+     * domain, and is mapped to <cite>"no number"</cite>. All other unparsable strings are considered outside the
+     * converter domain.</div>
+     *
+     * @param  object  the object to convert, or {@code null}.
+     * @return the converted object, or {@code null}.
+     * @throws UnconvertibleObjectException if the given object is not an element of the function domain.
      */
     @Override
     T apply(S object) throws UnconvertibleObjectException;
 
     /**
-     * Returns a converter capable to convert instances of <var>T</var> back to instances of
-     * <var>S</var>. Before to invoke this method, callers can verify if this converter is
-     * invertible as below:
+     * Returns a converter capable to convert instances of <var>T</var> back to instances of <var>S</var>.
+     * Before to invoke this method, callers can verify if this converter is invertible as below:
      *
      * {@preformat java
      *     if (converter.properties().contains(FunctionProperty.INVERTIBLE)) {
@@ -149,8 +162,8 @@ public interface ObjectConverter<S,T> extends Function<S,T> {
      *     }
      * }
      *
-     * @return A converter for converting instances of <var>T</var> back to instances of <var>S</var>.
-     * @throws UnsupportedOperationException If this converter is not invertible.
+     * @return a converter for converting instances of <var>T</var> back to instances of <var>S</var>.
+     * @throws UnsupportedOperationException if this converter is not invertible.
      *
      * @see FunctionProperty#INVERTIBLE
      */

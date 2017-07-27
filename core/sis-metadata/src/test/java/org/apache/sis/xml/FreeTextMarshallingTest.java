@@ -30,12 +30,13 @@ import static org.apache.sis.test.Assert.*;
  * Tests the XML marshalling of {@code FreeText}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.3
- * @module
  *
  * @see <a href="http://jira.geotoolkit.org/browse/GEOTK-107">GEOTK-107</a>
  * @see <a href="http://jira.geotoolkit.org/browse/GEOTK-152">GEOTK-152</a>
+ *
+ * @since 0.3
+ * @module
  */
 public final strictfp class FreeTextMarshallingTest extends XMLTestCase {
     /**
@@ -54,7 +55,7 @@ public final strictfp class FreeTextMarshallingTest extends XMLTestCase {
      * The free text is wrapped inside a citation for marshalling
      * purpose, but only the free text is actually tested.
      *
-     * @throws JAXBException If the XML in this test can not be parsed by JAXB.
+     * @throws JAXBException if the XML in this test can not be parsed by JAXB.
      */
     @Test
     public void testStandard() throws JAXBException {
@@ -88,7 +89,7 @@ public final strictfp class FreeTextMarshallingTest extends XMLTestCase {
      * also because it is more compact and closer to what we would expect
      * inside a {@code <textGroup>} node.
      *
-     * @throws JAXBException If the XML in this test can not be parsed by JAXB.
+     * @throws JAXBException if the XML in this test can not be parsed by JAXB.
      */
     @Test
     public void testLegacy() throws JAXBException {

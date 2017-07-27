@@ -25,9 +25,6 @@ import org.apache.sis.util.StringBuilders;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 
-// Related to JK7
-import org.apache.sis.internal.jdk7.JDK7;
-
 
 /**
  * Base class for parser and formatter of tabular data, providing control on line and column separators.
@@ -64,13 +61,14 @@ import org.apache.sis.internal.jdk7.JDK7;
  * }
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.3
- * @module
  *
- * @param <T> The base type of objects parsed and formatted by this class.
+ * @param <T>  the base type of objects parsed and formatted by this class.
  *
  * @see TableAppender
+ *
+ * @since 0.3
+ * @module
  */
 public abstract class TabularFormat<T> extends CompoundFormat<T> {
     /**
@@ -123,30 +121,31 @@ public abstract class TabularFormat<T> extends CompoundFormat<T> {
     private boolean isParsePatternDefined;
 
     /**
-     * The pattern used at parsing time for finding the column separators, or {@code null}
-     * if not yet constructed. This field is serialized because it may be a user-specified pattern.
+     * The pattern used at parsing time for finding the column separators, or {@code null} if not
+     * yet constructed. This field is serialized because it may be a user-specified pattern.
+     * The same {@code Pattern} instance can be safely shared by many {@code TabularFormat} instances.
      */
     private Pattern parsePattern;
 
     /**
      * Creates a new tabular format.
      *
-     * @param locale   The locale to use for numbers, dates and angles formatting,
-     *                 or {@code null} for the {@linkplain Locale#ROOT root locale}.
-     * @param timezone The timezone, or {@code null} for UTC.
+     * @param  locale    the locale to use for numbers, dates and angles formatting,
+     *                   or {@code null} for the {@linkplain Locale#ROOT root locale}.
+     * @param  timezone  the timezone, or {@code null} for UTC.
      */
     public TabularFormat(final Locale locale, final TimeZone timezone) {
         super(locale, timezone);
         beforeFill      = "";
         fillCharacter   = ' ';
         columnSeparator = " ";
-        lineSeparator   = JDK7.lineSeparator();
+        lineSeparator   = System.lineSeparator();
     }
 
     /**
      * Returns the current line separator. The default value is system-dependent.
      *
-     * @return The current line separator.
+     * @return the current line separator.
      */
     public String getLineSeparator() {
         return lineSeparator;
@@ -155,7 +154,7 @@ public abstract class TabularFormat<T> extends CompoundFormat<T> {
     /**
      * Sets the line separator. Can not be a null or empty string.
      *
-     * @param separator The new line separator.
+     * @param  separator  the new line separator.
      */
     public void setLineSeparator(final String separator) {
         ArgumentChecks.ensureNonEmpty("separator", separator);
@@ -167,7 +166,7 @@ public abstract class TabularFormat<T> extends CompoundFormat<T> {
      * only if more than one column is formatted. See {@link #setColumnSeparatorPattern(String)}
      * for a description of the pattern syntax.
      *
-     * @return The pattern of the current column separator.
+     * @return the pattern of the current column separator.
      */
     public String getColumnSeparatorPattern() {
         final StringBuilder buffer = new StringBuilder(8);
@@ -215,7 +214,7 @@ public abstract class TabularFormat<T> extends CompoundFormat<T> {
      *   <li>If present, {@code '?'} shall be the first character in the pattern.</li>
      *   <li>The repeated character (specified inside the pair of brackets) is mandatory.</li>
      *   <li>In the current implementation, the repeated character must be in the
-     *       {@linkplain Character#isBmpCodePoint(int) Basic Multilanguage Plane}.</li>
+     *       Basic Multilanguage Plane.</li>
      *   <li>If {@code '/'} is present, anything on its right side shall be compliant
      *       with the {@link Pattern} syntax.</li>
      * </ul>
@@ -226,8 +225,8 @@ public abstract class TabularFormat<T> extends CompoundFormat<T> {
      * then insert a space"</cite>.
      * </div>
      *
-     * @param  pattern The pattern of the new column separator.
-     * @throws IllegalArgumentException If the given pattern is illegal.
+     * @param  pattern  the pattern of the new column separator.
+     * @throws IllegalArgumentException if the given pattern is illegal.
      */
     public void setColumnSeparatorPattern(final String pattern) throws IllegalArgumentException {
         ArgumentChecks.ensureNonEmpty("pattern", pattern);
@@ -241,9 +240,9 @@ public abstract class TabularFormat<T> extends CompoundFormat<T> {
 scan:   for (int i=0; i<length; i++) {
             final char c = pattern.charAt(i);
             switch (c) {
-                case '\uFFFF': { // This "character" is reserved.
+                case '\uFFFF': {                        // This "character" is reserved.
                     prefix = null;
-                    break scan; // This will cause IllegalArgumentException to be thrown.
+                    break scan;                         // This will cause IllegalArgumentException to be thrown.
                 }
                 case '\\': {
                     if (i != separatorIndex) {
@@ -265,7 +264,7 @@ scan:   for (int i=0; i<length; i++) {
                     if (i != separatorIndex) {
                         if (separatorIndex >= 0) {
                             prefix = null;
-                            break scan; // This will cause IllegalArgumentException to be thrown.
+                            break scan;                 // This will cause IllegalArgumentException to be thrown.
                         }
                         separatorIndex = i+1;
                     }
@@ -315,8 +314,8 @@ scan:   for (int i=0; i<length; i++) {
      * Returns a matcher for the column separators in the given text.
      * This method is invoked by subclasses in their {@code parse(…)} implementations.
      *
-     * @param  text The text for which to get a matcher.
-     * @return A matcher for the column separators in the given text.
+     * @param  text  the text for which to get a matcher.
+     * @return a matcher for the column separators in the given text.
      */
     protected Matcher getColumnSeparatorMatcher(final CharSequence text) {
         if (parsePattern == null) {
@@ -331,5 +330,15 @@ scan:   for (int i=0; i<length; i++) {
             parsePattern = Pattern.compile(pattern.toString());
         }
         return parsePattern.matcher(text);
+    }
+
+    /**
+     * Returns a clone of this format.
+     *
+     * @return a clone of this format.
+     */
+    @Override
+    public TabularFormat<T> clone() {
+        return (TabularFormat<T>) super.clone();
     }
 }

@@ -25,18 +25,19 @@ import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.XMLTestCase;
 import org.junit.Test;
 
-import static org.apache.sis.test.Assert.*;
+import static org.apache.sis.test.MetadataAssert.*;
 
 
 /**
  * Tests the XML marshalling of object having {@code uuid} or {@code uuidref} attributes.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.4
- * @module
  *
  * @see <a href="http://jira.geotoolkit.org/browse/GEOTK-165">GEOTK-165</a>
+ *
+ * @since 0.3
+ * @module
  */
 @DependsOn(NilReasonMarshallingTest.class)
 public final strictfp class UUIDMarshallingTest extends XMLTestCase {
@@ -117,12 +118,12 @@ public final strictfp class UUIDMarshallingTest extends XMLTestCase {
      * On an implementation note, the {@code uuid} and other attributes of the {@code <gmd:CI_Series>}
      * elements are handled by {@link org.apache.sis.internal.jaxb.gco.PropertyType}.
      *
-     * @throws JAXBException Should never happen.
+     * @throws JAXBException if an error occurred during (un)marshalling.
      */
     @Test
     public void testIdentification() throws JAXBException {
         final Citation citation = (Citation) XML.unmarshal(IDENTIFIED_XML);
-        assertEquals("title", "My data", citation.getTitle().toString());
+        assertTitleEquals("Citation", "My data", citation);
         /*
          * Programmatic verification of the Series properties,
          * which is the main object of interest in this test.
@@ -168,12 +169,12 @@ public final strictfp class UUIDMarshallingTest extends XMLTestCase {
      * On an implementation note, the {@code uuidref}, {@code xlink:href} and other attributes of the
      * {@code <gmd:series>} element are handled by {@link org.apache.sis.internal.jaxb.gco.PropertyType}.
      *
-     * @throws JAXBException Should never happen.
+     * @throws JAXBException if an error occurred during (un)marshalling.
      */
     @Test
     public void testReference() throws JAXBException {
         final Citation citation = (Citation) XML.unmarshal(REFERENCED_XML_WITH_BODY);
-        assertEquals("Citation.title",  "My data", citation.getTitle().toString());
+        assertTitleEquals("Citation.title", "My data", citation);
         /*
          * Programmatic verification of the Series properties,
          * which is the main object of interest in this test.
@@ -200,13 +201,13 @@ public final strictfp class UUIDMarshallingTest extends XMLTestCase {
      * The same test than {@link #testReference()}, except that the {@code <gmd:CI_Series>} element is empty.
      * This situation shall force the creation of a new, empty, element for storing the {@code uuidref} information.
      *
-     * @throws JAXBException Should never happen.
+     * @throws JAXBException if an error occurred during (un)marshalling.
      */
     @Test
     @DependsOnMethod("testReference")
     public void testReferenceInEmptyObject() throws JAXBException {
         final Citation citation = (Citation) XML.unmarshal(REFERENCED_XML);
-        assertEquals("Citation.title",  "My data", citation.getTitle().toString());
+        assertTitleEquals("Citation.title", "My data", citation);
         /*
          * Programmatic verification of the Series properties,
          * which is the main object of interest in this test.

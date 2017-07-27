@@ -29,8 +29,8 @@ import java.lang.annotation.Target;
  * dependency failed, then all tests in the annotated class will be skipped.
  *
  * @author  Martin Desruisseaux
- * @since   0.3
  * @version 0.3
+ * @since   0.3
  * @module
  */
 @Inherited
@@ -41,7 +41,7 @@ public @interface DependsOn {
     /**
      * The other test classes on which this test depends.
      *
-     * @return The test dependencies.
+     * @return the test dependencies.
      */
     Class<?>[] value();
 }

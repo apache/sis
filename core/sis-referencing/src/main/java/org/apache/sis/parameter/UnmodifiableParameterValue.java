@@ -16,7 +16,8 @@
  */
 package org.apache.sis.parameter;
 
-import javax.measure.unit.Unit;
+import javax.measure.Unit;
+import javax.xml.bind.annotation.XmlTransient;
 import org.opengis.parameter.ParameterValue;
 import org.apache.sis.internal.util.Cloner;
 import org.apache.sis.util.collection.WeakHashSet;
@@ -47,13 +48,15 @@ import org.apache.sis.util.resources.Errors;
  * Transverse Mercator</cite> (UTM) projections use the same scale factor (0.9996) and false easting (500000 metres).
  * </div>
  *
- * @param <T> The type of the value stored in this parameter.
- *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.6
  * @version 0.6
+ *
+ * @param <T>  the type of the value stored in this parameter.
+ *
+ * @since 0.6
  * @module
  */
+@XmlTransient
 final class UnmodifiableParameterValue<T> extends DefaultParameterValue<T> {
     /**
      * For cross-version compatibility.
@@ -66,7 +69,7 @@ final class UnmodifiableParameterValue<T> extends DefaultParameterValue<T> {
      */
     @SuppressWarnings("rawtypes")
     private static final WeakHashSet<UnmodifiableParameterValue> POOL =
-            new WeakHashSet<UnmodifiableParameterValue>(UnmodifiableParameterValue.class);
+            new WeakHashSet<>(UnmodifiableParameterValue.class);
 
     /**
      * Creates a new parameter with the same value than the given one.
@@ -79,15 +82,15 @@ final class UnmodifiableParameterValue<T> extends DefaultParameterValue<T> {
      * Returns an unmodifiable implementation of the given parameter value.
      * See class javadoc for more information.
      *
-     * @param  <T> The type of the value stored in the given parameter.
-     * @param  parameter The parameter to make unmodifiable, or {@code null}.
-     * @return An unmodifiable implementation of the given parameter, or {@code null} if the given parameter was null.
+     * @param  <T>        the type of the value stored in the given parameter.
+     * @param  parameter  the parameter to make unmodifiable, or {@code null}.
+     * @return an unmodifiable implementation of the given parameter, or {@code null} if the given parameter was null.
      */
     static <T> UnmodifiableParameterValue<T> create(final ParameterValue<T> parameter) {
         if (parameter == null || parameter instanceof UnmodifiableParameterValue<?>) {
             return (UnmodifiableParameterValue<T>) parameter;
         } else {
-            return POOL.unique(new UnmodifiableParameterValue<T>(parameter));
+            return POOL.unique(new UnmodifiableParameterValue<>(parameter));
         }
     }
 
@@ -117,7 +120,8 @@ final class UnmodifiableParameterValue<T> extends DefaultParameterValue<T> {
      * Returns a modifiable copy of this parameter.
      */
     @Override
+    @SuppressWarnings("CloneDoesntCallSuperClone")
     public DefaultParameterValue<T> clone() {
-        return new DefaultParameterValue<T>(this);
+        return new DefaultParameterValue<>(this);
     }
 }

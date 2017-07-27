@@ -26,6 +26,10 @@ import org.opengis.metadata.constraint.SecurityConstraints;
 
 /**
  * Handling restrictions imposed on the resource for national security or similar security concerns.
+ * The following property is mandatory in a well-formed metadata according ISO 19115:
+ *
+ * <div class="preformat">{@code MD_SecurityConstraints}
+ * {@code   └─classification…………} Name of the handling restrictions on the resource.</div>
  *
  * <p><b>Limitations:</b></p>
  * <ul>
@@ -39,10 +43,11 @@ import org.opengis.metadata.constraint.SecurityConstraints;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Touraïvane (IRD)
  * @author  Cédric Briançon (Geomatys)
- * @since   0.3
  * @version 0.3
+ * @since   0.3
  * @module
  */
+@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "MD_SecurityConstraints_Type", propOrder = {
     "classification",
     "userNote",
@@ -86,7 +91,7 @@ public class DefaultSecurityConstraints extends DefaultConstraints implements Se
     /**
      * Constructs a new constraints with the given {@linkplain #getUseLimitations() use limitation}.
      *
-     * @param useLimitation The use limitation, or {@code null} if none.
+     * @param useLimitation  the use limitation, or {@code null} if none.
      */
     public DefaultSecurityConstraints(final CharSequence useLimitation) {
         super(useLimitation);
@@ -95,7 +100,7 @@ public class DefaultSecurityConstraints extends DefaultConstraints implements Se
     /**
      * Creates a security constraints initialized with the specified classification.
      *
-     * @param classification The name of the handling restrictions on the resource, or {@code null}.
+     * @param classification  the name of the handling restrictions on the resource, or {@code null}.
      */
     public DefaultSecurityConstraints(final Classification classification) {
         this.classification = classification;
@@ -106,7 +111,7 @@ public class DefaultSecurityConstraints extends DefaultConstraints implements Se
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
-     * @param object The metadata to copy values from, or {@code null} if none.
+     * @param  object  the metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(SecurityConstraints)
      */
@@ -134,8 +139,8 @@ public class DefaultSecurityConstraints extends DefaultConstraints implements Se
      *       metadata contained in the given object are not recursively copied.</li>
      * </ul>
      *
-     * @param  object The object to get as a SIS implementation, or {@code null} if none.
-     * @return A SIS implementation containing the values of the given object (may be the
+     * @param  object  the object to get as a SIS implementation, or {@code null} if none.
+     * @return a SIS implementation containing the values of the given object (may be the
      *         given object itself), or {@code null} if the argument was null.
      */
     public static DefaultSecurityConstraints castOrCopy(final SecurityConstraints object) {
@@ -148,7 +153,7 @@ public class DefaultSecurityConstraints extends DefaultConstraints implements Se
     /**
      * Returns the name of the handling restrictions on the resource.
      *
-     * @return Name of the handling restrictions on the resource, or {@code null}.
+     * @return name of the handling restrictions on the resource, or {@code null}.
      */
     @Override
     @XmlElement(name = "classification", required = true)
@@ -159,7 +164,7 @@ public class DefaultSecurityConstraints extends DefaultConstraints implements Se
     /**
      * Sets the name of the handling restrictions on the resource.
      *
-     * @param newValue The new classification.
+     * @param  newValue  the new classification.
      */
     public void setClassification(final Classification newValue) {
         checkWritePermission();
@@ -170,7 +175,7 @@ public class DefaultSecurityConstraints extends DefaultConstraints implements Se
      * Returns the explanation of the application of the legal constraints or other restrictions and legal
      * prerequisites for obtaining and using the resource.
      *
-     * @return Explanation of the application of the legal constraints, or {@code null}.
+     * @return explanation of the application of the legal constraints, or {@code null}.
      */
     @Override
     @XmlElement(name = "userNote")
@@ -182,7 +187,7 @@ public class DefaultSecurityConstraints extends DefaultConstraints implements Se
      * Sets the explanation of the application of the legal constraints or other restrictions and legal
      * prerequisites for obtaining and using the resource.
      *
-     * @param newValue The new user note.
+     * @param  newValue  the new user note.
      */
     public void setUserNote(final InternationalString newValue) {
         checkWritePermission();
@@ -192,7 +197,7 @@ public class DefaultSecurityConstraints extends DefaultConstraints implements Se
     /**
      * Returns the name of the classification system.
      *
-     * @return Name of the classification system, or {@code null}.
+     * @return name of the classification system, or {@code null}.
      */
     @Override
     @XmlElement(name = "classificationSystem")
@@ -203,7 +208,7 @@ public class DefaultSecurityConstraints extends DefaultConstraints implements Se
     /**
      * Sets the name of the classification system.
      *
-     * @param newValue The new classification system.
+     * @param  newValue  the new classification system.
      */
     public void setClassificationSystem(final InternationalString newValue) {
         checkWritePermission();
@@ -213,7 +218,7 @@ public class DefaultSecurityConstraints extends DefaultConstraints implements Se
     /**
      * Returns the additional information about the restrictions on handling the resource.
      *
-     * @return Additional information about the restrictions, or {@code null}.
+     * @return additional information about the restrictions, or {@code null}.
      */
     @Override
     @XmlElement(name = "handlingDescription")
@@ -224,7 +229,7 @@ public class DefaultSecurityConstraints extends DefaultConstraints implements Se
     /**
      * Sets the additional information about the restrictions on handling the resource.
      *
-     * @param newValue The new handling description.
+     * @param  newValue  the new handling description.
      */
     public void setHandlingDescription(final InternationalString newValue) {
         checkWritePermission();

@@ -18,18 +18,18 @@ package org.apache.sis.xml;
 
 import java.net.URI;
 import java.util.Locale;
+import java.util.Objects;
 import java.io.Serializable;
 import javax.xml.bind.annotation.XmlEnum;
 import javax.xml.bind.annotation.XmlEnumValue;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlTransient;
+import javax.xml.bind.annotation.XmlSchemaType;
 import org.opengis.util.InternationalString;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Errors;
-
-// Branch-dependent imports
-import org.apache.sis.internal.jdk7.Objects;
+import org.apache.sis.internal.system.Loggers;
 
 
 /**
@@ -72,12 +72,13 @@ import org.apache.sis.internal.jdk7.Objects;
  *
  * @author  Guilhem Legal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.3
- * @module
  *
  * @see <a href="http://www.w3.org/TR/xlink/">XML Linking Language</a>
  * @see <a href="http://schemas.opengis.net/xlink/1.0.0/xlinks.xsd">OGC schema</a>
+ *
+ * @since 0.3
+ * @module
  */
 @XmlTransient
 public class XLink implements Serializable {
@@ -207,14 +208,14 @@ public class XLink implements Serializable {
      * attribute values in a {@link XLink} instance.
      *
      * @author  Martin Desruisseaux (Geomatys)
-     * @since   0.3
      * @version 0.3
+     * @since   0.3
      * @module
      *
      * @see XLink#getType()
      */
     @XmlEnum
-    public static enum Type {
+    public enum Type {
         /**
          * A simple link. Allows the {@link XLink#getHRef() href}, {@link XLink#getRole() role},
          * {@link XLink#getArcRole() arcrole}, {@link #getTitle() title}, {@link XLink#getShow()
@@ -338,7 +339,7 @@ public class XLink implements Serializable {
      * invoked with the {@link org.apache.sis.xml.XLink.Type#AUTO AUTO} enum, then this method
      * will infer a type from the attributes having a non-null value.
      *
-     * @return The type of link, or {@code null}.
+     * @return the type of link, or {@code null}.
      */
     @XmlAttribute(name = "type", namespace = Namespaces.XLINK, required = true)
     public Type getType() {
@@ -352,7 +353,7 @@ public class XLink implements Serializable {
         for (final Type candidate : Type.values()) {
             final int forbidden = ~candidate.fieldMask;
             if (forbidden == 0) {
-                continue; // Skip the AUTO enum.
+                continue;                   // Skip the AUTO enum.
             }
             // Test if this XLink instance defines only values allowed by the candidate type.
             if ((defined & forbidden) != 0) {
@@ -369,7 +370,7 @@ public class XLink implements Serializable {
                 best = candidate;
             }
         }
-        return best; // May still null.
+        return best;                        // May still null.
     }
 
     /**
@@ -377,7 +378,7 @@ public class XLink implements Serializable {
      * Type.AUTO} (including {@code null}) will overwrite the value inferred automatically by
      * {@link #getType()}. A {@code AUTO} value will enable automatic type detection.
      *
-     * @param type The new type of link, or {@code null} if none.
+     * @param  type  the new type of link, or {@code null} if none.
      */
     public void setType(final Type type) {
         canWrite(0x1, "type", "type"); // We want a non-null value in all cases.
@@ -390,9 +391,9 @@ public class XLink implements Serializable {
     /**
      * Checks if the given attribute can be set.
      *
-     * @param  field The attribute code, as documented in {@link XLink.Type#fieldMask}.
-     * @throws UnsupportedOperationException If this {@code xlink} is unmodifiable.
-     * @throws IllegalStateException If the given field can not be set for this kind of {@code xlink}.
+     * @param  field  the attribute code, as documented in {@link XLink.Type#fieldMask}.
+     * @throws UnsupportedOperationException if this {@code xlink} is unmodifiable.
+     * @throws IllegalStateException if the given field can not be set for this kind of {@code xlink}.
      */
     private void canWrite(final int field, final String name, final Object value) throws IllegalStateException {
         if (hashCode != 0) {
@@ -415,17 +416,13 @@ public class XLink implements Serializable {
     }
 
     /**
-     * Returns a URN to an external resources, or to an other part of a XML document, or an
-     * identifier.
+     * Returns a URN to an external resources, or to an other part of a XML document, or an identifier.
      *
-     * <div class="note"><b>Note:</b>
-     * This serves a role similar to {@code idref}. The {@code idref} attribute allows an XML element
-     * to refer to another XML element that has a corresponding {@code id} attribute.</div>
-     *
-     * @return A URN to a resources, or {@code null} if none.
+     * @return a URN to a resources, or {@code null} if none.
      *
      * @category locator
      */
+    @XmlSchemaType(name = "anyURI")
     @XmlAttribute(name = "href", namespace = Namespaces.XLINK)
     public URI getHRef() {
         return href;
@@ -434,9 +431,9 @@ public class XLink implements Serializable {
     /**
      * Sets the URN to a resources.
      *
-     * @param  href A URN to a resources, or {@code null} if none.
-     * @throws UnsupportedOperationException If this {@code xlink} is unmodifiable.
-     * @throws IllegalStateException If the link type {@linkplain #setType has been explicitely set}.
+     * @param  href  a URN to a resources, or {@code null} if none.
+     * @throws UnsupportedOperationException if this {@code xlink} is unmodifiable.
+     * @throws IllegalStateException if the link type {@linkplain #setType has been explicitely set}.
      *         and that type does not allow the {@code "href"} attribute.
      *
      * @category locator
@@ -449,10 +446,11 @@ public class XLink implements Serializable {
     /**
      * Returns a URI reference for some description of the arc role.
      *
-     * @return A URI reference for some description of the arc role, or {@code null} if none.
+     * @return a URI reference for some description of the arc role, or {@code null} if none.
      *
      * @category semantic
      */
+    @XmlSchemaType(name = "anyURI")
     @XmlAttribute(name = "role", namespace = Namespaces.XLINK)
     public URI getRole() {
         return role;
@@ -461,9 +459,9 @@ public class XLink implements Serializable {
     /**
      * Sets the URI reference for some description of the arc role.
      *
-     * @param  role A URI reference for some description of the arc role, or {@code null} if none.
-     * @throws UnsupportedOperationException If this {@code xlink} is unmodifiable.
-     * @throws IllegalStateException If the link type {@linkplain #setType has been explicitely set}.
+     * @param  role  a URI reference for some description of the arc role, or {@code null} if none.
+     * @throws UnsupportedOperationException if this {@code xlink} is unmodifiable.
+     * @throws IllegalStateException if the link type {@linkplain #setType has been explicitely set}.
      *         and that type does not allow the {@code "role"} attribute.
      *
      * @category semantic
@@ -476,10 +474,11 @@ public class XLink implements Serializable {
     /**
      * Returns a URI reference for some description of the arc role.
      *
-     * @return A URI reference for some description of the arc role, or {@code null} if none.
+     * @return a URI reference for some description of the arc role, or {@code null} if none.
      *
      * @category semantic
      */
+    @XmlSchemaType(name = "anyURI")
     @XmlAttribute(name = "arcrole", namespace = Namespaces.XLINK)
     public URI getArcRole() {
         return arcrole;
@@ -488,9 +487,9 @@ public class XLink implements Serializable {
     /**
      * Sets a URI reference for some description of the arc role.
      *
-     * @param  arcrole A URI reference for some description of the arc role, or {@code null} if none.
-     * @throws UnsupportedOperationException If this {@code xlink} is unmodifiable.
-     * @throws IllegalStateException If the link type {@linkplain #setType has been explicitely set}.
+     * @param  arcrole  a URI reference for some description of the arc role, or {@code null} if none.
+     * @throws UnsupportedOperationException if this {@code xlink} is unmodifiable.
+     * @throws IllegalStateException if the link type {@linkplain #setType has been explicitely set}.
      *         and that type does not allow the {@code "arcrole"} attribute.
      *
      * @category semantic
@@ -503,7 +502,7 @@ public class XLink implements Serializable {
     /**
      * Returns a human-readable string with a short description for the arc.
      *
-     * @return A human-readable string with a short description for the arc, or {@code null} if none.
+     * @return a human-readable string with a short description for the arc, or {@code null} if none.
      *
      * @category semantic
      */
@@ -515,10 +514,9 @@ public class XLink implements Serializable {
     /**
      * Sets a human-readable string with a short description for the arc.
      *
-     * @param  title A human-readable string with a short description for the arc,
-     *         or {@code null} if none.
-     * @throws UnsupportedOperationException If this {@code xlink} is unmodifiable.
-     * @throws IllegalStateException If the link type {@linkplain #setType has been explicitely set}.
+     * @param  title  a human-readable string with a short description for the arc, or {@code null} if none.
+     * @throws UnsupportedOperationException if this {@code xlink} is unmodifiable.
+     * @throws IllegalStateException if the link type {@linkplain #setType has been explicitely set}.
      *         and that type does not allow the {@code "title"} attribute.
      *
      * @category semantic
@@ -533,14 +531,14 @@ public class XLink implements Serializable {
      * from the starting resource.
      *
      * @author  Martin Desruisseaux (Geomatys)
-     * @since   0.3
      * @version 0.3
+     * @since   0.3
      * @module
      *
      * @see XLink#getShow()
      */
     @XmlEnum
-    public static enum Show {
+    public enum Show {
         /**
          * Load ending resource in a new window, frame, pane, or other presentation context.
          */
@@ -579,7 +577,7 @@ public class XLink implements Serializable {
      *   <li><b>none:</b>    behavior is unconstrained</li>
      * </ul>
      *
-     * @return The desired presentation of the ending resource, or {@code null} if unspecified.
+     * @return the desired presentation of the ending resource, or {@code null} if unspecified.
      *
      * @category behavior
      */
@@ -591,9 +589,9 @@ public class XLink implements Serializable {
     /**
      * Sets the desired presentation of the ending resource on traversal from the starting resource.
      *
-     * @param  show The desired presentation of the ending resource, or {@code null} if unspecified.
-     * @throws UnsupportedOperationException If this {@code xlink} is unmodifiable.
-     * @throws IllegalStateException If the link type {@linkplain #setType has been explicitely set}.
+     * @param  show  the desired presentation of the ending resource, or {@code null} if unspecified.
+     * @throws UnsupportedOperationException if this {@code xlink} is unmodifiable.
+     * @throws IllegalStateException if the link type {@linkplain #setType has been explicitely set}.
      *         and that type does not allow the {@code "show"} attribute.
      *
      * @category behavior
@@ -608,14 +606,14 @@ public class XLink implements Serializable {
      * resource.
      *
      * @author  Martin Desruisseaux (Geomatys)
-     * @since   0.3
      * @version 0.3
+     * @since   0.3
      * @module
      *
      * @see XLink#getActuate()
      */
     @XmlEnum
-    public static enum Actuate {
+    public enum Actuate {
         /**
          * Traverse to the ending resource immediately on loading the starting resource.
          */
@@ -649,7 +647,7 @@ public class XLink implements Serializable {
      *   <li><b>none:</b>      behavior is unconstrained</li>
      * </ul>
      *
-     * @return The desired timing of traversal from the starting resource to the ending resource,
+     * @return the desired timing of traversal from the starting resource to the ending resource,
      *         or {@code null} if unspecified.
      *
      * @category behavior
@@ -662,10 +660,10 @@ public class XLink implements Serializable {
     /**
      * Sets the desired timing of traversal from the starting resource to the ending resource.
      *
-     * @param  actuate The desired timing of traversal from the starting resource to the ending
-     *         resource, or {@code null} if unspecified.
-     * @throws UnsupportedOperationException If this {@code xlink} is unmodifiable.
-     * @throws IllegalStateException If the link type {@linkplain #setType has been explicitely set}.
+     * @param  actuate  the desired timing of traversal from the starting resource to the ending resource,
+     *                  or {@code null} if unspecified.
+     * @throws UnsupportedOperationException if this {@code xlink} is unmodifiable.
+     * @throws IllegalStateException if the link type {@linkplain #setType has been explicitely set}.
      *         and that type does not allow the {@code "actuate"} attribute.
      *
      * @category behavior
@@ -678,7 +676,7 @@ public class XLink implements Serializable {
     /**
      * Returns an identification of the target of a {@code from} or {@code to} attribute.
      *
-     * @return An identification of the target of a {@code from} or {@code to} attribute, or {@code null}.
+     * @return an identification of the target of a {@code from} or {@code to} attribute, or {@code null}.
      *
      * @category traversal
      */
@@ -689,9 +687,9 @@ public class XLink implements Serializable {
     /**
      * Sets an identification of the target of a {@code from} or {@code to} attribute.
      *
-     * @param  label An identification of the target of a {@code from} or {@code to} attribute, or {@code null}.
-     * @throws UnsupportedOperationException If this {@code xlink} is unmodifiable.
-     * @throws IllegalStateException If the link type {@linkplain #setType has been explicitely set}.
+     * @param  label  an identification of the target of a {@code from} or {@code to} attribute, or {@code null}.
+     * @throws UnsupportedOperationException if this {@code xlink} is unmodifiable.
+     * @throws IllegalStateException if the link type {@linkplain #setType has been explicitely set}.
      *         and that type does not allow the {@code "label"} attribute.
      *
      * @category traversal
@@ -705,7 +703,7 @@ public class XLink implements Serializable {
      * Returns the starting resource. The value must correspond to the same value for some
      * {@code label} attribute.
      *
-     * @return The starting resource, or {@code null}.
+     * @return the starting resource, or {@code null}.
      *
      * @category traversal
      */
@@ -717,9 +715,9 @@ public class XLink implements Serializable {
      * Sets the starting resource. The value must correspond to the same value for some
      * {@code label} attribute.
      *
-     * @param  from The starting resource, or {@code null}.
-     * @throws UnsupportedOperationException If this {@code xlink} is unmodifiable.
-     * @throws IllegalStateException If the link type {@linkplain #setType has been explicitely set}.
+     * @param  from  the starting resource, or {@code null}.
+     * @throws UnsupportedOperationException if this {@code xlink} is unmodifiable.
+     * @throws IllegalStateException if the link type {@linkplain #setType has been explicitely set}.
      *         and that type does not allow the {@code "from"} attribute.
      *
      * @category traversal
@@ -733,7 +731,7 @@ public class XLink implements Serializable {
      * Returns the ending resource. The value must correspond to the same value for some
      * {@code label} attribute.
      *
-     * @return The ending resource, or {@code null}.
+     * @return the ending resource, or {@code null}.
      *
      * @category traversal
      */
@@ -745,9 +743,9 @@ public class XLink implements Serializable {
      * Sets the ending resource. The value must correspond to the same value for some
      * {@code label} attribute.
      *
-     * @param  to The ending resource, or {@code null}.
-     * @throws UnsupportedOperationException If this {@code xlink} is unmodifiable.
-     * @throws IllegalStateException If the link type {@linkplain #setType has been explicitely set}.
+     * @param  to  the ending resource, or {@code null}.
+     * @throws UnsupportedOperationException if this {@code xlink} is unmodifiable.
+     * @throws IllegalStateException if the link type {@linkplain #setType has been explicitely set}.
      *         and that type does not allow the {@code "to"} attribute.
      *
      * @category traversal
@@ -772,7 +770,7 @@ public class XLink implements Serializable {
     /**
      * Compares this {@code XLink} with the given object for equality.
      *
-     * @param object The object to compare with this XLink.
+     * @param  object  the object to compare with this XLink.
      */
     @Override
     public boolean equals(final Object object) {
@@ -785,7 +783,7 @@ public class XLink implements Serializable {
             if (h0 != 0) {
                 final int h1 = that.hashCode;
                 if (h1 != 0 && h0 != h1) {
-                    return false; // Slight optimization using the pre-computed hash code values.
+                    return false;                   // Slight optimization using the pre-computed hash code values.
                 }
             }
             return Objects.equals(this.type,    that.type)    &&
@@ -868,9 +866,8 @@ public class XLink implements Serializable {
                     value = xml.value();
                 }
             } catch (NoSuchFieldException e) {
-                // Should never happen with Enums. But if it
-                // happen anyway, this is not a fatal error.
-                Logging.unexpectedException(XLink.class, "toString", e);
+                // Should never happen with Enums. But if it happen anyway, this is not a fatal error.
+                Logging.unexpectedException(Logging.getLogger(Loggers.XML), XLink.class, "toString", e);
             }
             buffer.append(label).append("=\"").append(value).append('"');
         }

@@ -29,8 +29,8 @@ import org.apache.sis.internal.jaxb.Context;
  * Java object.
  *
  * @author  Cédric Briançon (Geomatys)
- * @since   0.3
  * @version 0.3
+ * @since   0.3
  * @module
  */
 public final class GO_URL extends XmlAdapter<GO_URL, URI> {
@@ -50,7 +50,7 @@ public final class GO_URL extends XmlAdapter<GO_URL, URI> {
     /**
      * Builds an adapter for the given URI.
      *
-     * @param value The URI to marshal.
+     * @param  value  the URI to marshal.
      */
     private GO_URL(final URI value) {
         uri = value.toString();
@@ -60,8 +60,8 @@ public final class GO_URL extends XmlAdapter<GO_URL, URI> {
      * Converts a URI read from a XML stream to the object which will contains
      * the value. JAXB calls automatically this method at unmarshalling time.
      *
-     * @param value The adapter for this metadata value.
-     * @return A {@link URI} which represents the metadata value.
+     * @param  value  the adapter for this metadata value.
+     * @return a {@link URI} which represents the metadata value.
      * @throws URISyntaxException if the given value contains an invalid URI.
      */
     @Override
@@ -77,8 +77,8 @@ public final class GO_URL extends XmlAdapter<GO_URL, URI> {
      * Converts a {@link URI} to the object to be marshalled in a XML file
      * or stream. JAXB calls automatically this method at marshalling time.
      *
-     * @param value The URI value.
-     * @return The adapter for this URI.
+     * @param  value  the URI value.
+     * @return the adapter for this URI.
      */
     @Override
     public GO_URL marshal(final URI value) {

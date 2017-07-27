@@ -34,12 +34,13 @@ import org.apache.sis.util.Debug;
  * for {@link ConverterRegistry}. Subclasses should also be immutable, but this requirement is not as strong
  * as for {@code ClassPair} (because subclasses are not used as keys in hash map).
  *
- * @param <S> The base type of source objects.
- * @param <T> The base type of converted objects.
- *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.3
+ *
+ * @param <S>  the base type of source objects.
+ * @param <T>  the base type of converted objects.
+ *
+ * @since 0.3
  * @module
  */
 class ClassPair<S,T> implements Serializable {
@@ -61,8 +62,8 @@ class ClassPair<S,T> implements Serializable {
     /**
      * Creates an entry for the given source and target classes.
      *
-     * @param sourceClass The {@linkplain ObjectConverter#getSourceClass() source class}.
-     * @param targetClass The {@linkplain ObjectConverter#getTargetClass() target class}.
+     * @param  sourceClass  the {@linkplain ObjectConverter#getSourceClass() source class}.
+     * @param  targetClass  the {@linkplain ObjectConverter#getTargetClass() target class}.
      */
     ClassPair(final Class<S> sourceClass, final Class<T> targetClass) {
         this.sourceClass = sourceClass;
@@ -84,24 +85,24 @@ class ClassPair<S,T> implements Serializable {
      *
      * The target class is left unchanged.
      *
-     * @return A key for the parent source, or {@code null}.
+     * @return a key for the parent source, or {@code null}.
      */
-    @SuppressWarnings({"unchecked","rawtypes"})
     final ClassPair<? super S, T> parentSource() {
         final Class<? super S> source;
         if (sourceClass.isInterface()) {
+            @SuppressWarnings({"unchecked","rawtypes"})
             final Class<? super S>[] interfaces = (Class[]) sourceClass.getInterfaces();
             if (interfaces.length == 0) {
                 return null;
             }
-            source = interfaces[0]; // Take only the first interface declaration; ignore others.
+            source = interfaces[0];         // Take only the first interface declaration; ignore others.
         } else {
             source = sourceClass.getSuperclass();
             if (source == null) {
                 return null;
             }
         }
-        return new ClassPair(source, targetClass); // Checked in JDK7 branch.
+        return new ClassPair<>(source, targetClass);
     }
 
     /**
@@ -133,7 +134,7 @@ class ClassPair<S,T> implements Serializable {
      * doing the same conversions. However the {@link SystemConverter} subclass overrides this
      * method with an additional safety check.</p>
      *
-     * @param  other The object to compare with this {@code ClassPair}.
+     * @param  other  the object to compare with this {@code ClassPair}.
      * @return {@code true} if the given object is a {@code ClassPair}
      *         having the same source and target classes.
      */

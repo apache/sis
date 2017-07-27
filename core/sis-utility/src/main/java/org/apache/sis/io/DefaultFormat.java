@@ -20,6 +20,7 @@ import java.text.Format;
 import java.text.FieldPosition;
 import java.text.ParsePosition;
 import java.text.ParseException;
+import java.io.ObjectStreamException;
 import org.apache.sis.util.Numbers;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.internal.util.LocalizedParseException;
@@ -37,10 +38,11 @@ import org.apache.sis.internal.util.LocalizedParseException;
  * for arbitrary {@code Format} classes.
  *
  * @author  Martin Desruisseaux (Geomatys)
+ * @version 0.8
  * @since   0.3
- * @version 0.3
  * @module
  */
+@SuppressWarnings("CloneableClassWithoutClone")   // Because this class does not contain field that need to be cloned.
 final class DefaultFormat extends Format {
     /**
      * For cross-version compatibility.
@@ -99,7 +101,7 @@ final class DefaultFormat extends Format {
      * Parses the given string. Callers shall catch the {@link NumberFormatException}
      * and handle the error according the caller's method contract.
      *
-     * @throws NumberFormatException If the parsing failed.
+     * @throws NumberFormatException if the parsing failed.
      */
     private Object valueOf(final String source) throws NumberFormatException {
         return (type != Number.class) ? Numbers.valueOf(source, type) : Numbers.narrowestNumber(source);
@@ -114,9 +116,7 @@ final class DefaultFormat extends Format {
         try {
             return valueOf(source);
         } catch (NumberFormatException cause) {
-            ParseException e = new LocalizedParseException(null, type, source, null);
-            e.initCause(cause);
-            throw e;
+            throw new LocalizedParseException(null, type, source, null).initCause(cause);
         }
     }
 
@@ -125,21 +125,45 @@ final class DefaultFormat extends Format {
      */
     @Override
     public Object parseObject(String source, final ParsePosition pos) {
-        final int length = source.length();
-        final int index = CharSequences.skipLeadingWhitespaces(source, pos.getIndex(), length);
-        source = source.substring(index, CharSequences.skipTrailingWhitespaces(source, index, length));
+        boolean exponent = false;
+        final int index = CharSequences.skipLeadingWhitespaces(source, pos.getIndex(), source.length());
+        int end;
+        for (end = index; end < source.length(); end++) {
+            final char c = source.charAt(end);
+            switch (c) {
+                default: {
+                    if (c >= '+' && c <= '9') continue;
+                    break;
+                    /*
+                     * ASCII characters in above range are +,-./0123456789
+                     * But the , and / characters are excluded by the case below.
+                     */
+                }
+                case ',': case '/': break;
+                case 'E': case 'e': {
+                    if (exponent) break;
+                    exponent = true;
+                    continue;
+                }
+            }
+            break;
+        }
+        source = source.substring(index, end);
+        final Object value;
         try {
-            return valueOf(source);
+            value = valueOf(source);
         } catch (NumberFormatException cause) {
             pos.setErrorIndex(index);
             return null;
         }
+        pos.setIndex(end);
+        return value;
     }
 
     /**
      * Resolves to the singleton instance on deserialization.
      */
-    private Object readResolve() {
+    private Object readResolve() throws ObjectStreamException {
         final Format format = getInstance(type);
         return (format != null) ? format : this;
     }

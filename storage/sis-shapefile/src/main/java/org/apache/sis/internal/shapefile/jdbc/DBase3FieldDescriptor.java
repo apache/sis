@@ -20,18 +20,24 @@ import java.nio.MappedByteBuffer;
 
 import org.apache.sis.internal.shapefile.AutoChecker;
 
+// Branch-dependent imports
+import org.apache.sis.internal.jdk8.JDK8;
+
 
 /**
  * Field descriptor.
  *
  * @author  Travis L. Pinney
- * @since   0.5
  * @version 0.5
+ * @since   0.5
  * @module
  */
 public class DBase3FieldDescriptor extends AutoChecker {
     /** Field name. */
     private byte[] fieldName = new byte[11];
+
+    /** Field name as String, for performance issues. */
+    private String stringFieldName;
 
     /** Field type. */
     private DBaseDataType fieldType;
@@ -65,30 +71,30 @@ public class DBase3FieldDescriptor extends AutoChecker {
      */
     public DBase3FieldDescriptor(MappedByteBuffer byteBuffer) {
         // Field name.
-        byteBuffer.get(fieldName);
+        byteBuffer.get(this.fieldName);
 
         // Field type.
         char dt = (char)byteBuffer.get();
-        fieldType = DBaseDataType.valueOfDataType(dt);
+        this.fieldType = DBaseDataType.valueOfDataType(dt);
 
         // Field address.
-        byteBuffer.get(fieldAddress);
+        byteBuffer.get(this.fieldAddress);
 
         // Length and scale.
-        fieldLength = byteBuffer.get();
-        fieldDecimalCount = byteBuffer.get();
+        this.fieldLength = byteBuffer.get();
+        this.fieldDecimalCount = byteBuffer.get();
 
         byteBuffer.getShort(); // reserved
 
-        byteBuffer.get(dbasePlusLanReserved2);
+        byteBuffer.get(this.dbasePlusLanReserved2);
 
         // Work area id.
-        workAreaID = byteBuffer.get();
+        this.workAreaID = byteBuffer.get();
 
-        byteBuffer.get(dbasePlusLanReserved3);
+        byteBuffer.get(this.dbasePlusLanReserved3);
 
         // Fields.
-        setFields = byteBuffer.get();
+        this.setFields = byteBuffer.get();
 
         byte[] data = new byte[6];
         byteBuffer.get(data); // reserved
@@ -115,11 +121,17 @@ public class DBase3FieldDescriptor extends AutoChecker {
      * @return Field name.
      */
     public String getName() {
-        int length = fieldName.length;
-        while (length != 0 && fieldName[length - 1] <= ' ') {
-            length--;
+        // Converting bytes to String takes time. Only do that once.
+        if (this.stringFieldName == null) {
+            int length = this.fieldName.length;
+            while (length != 0 && JDK8.toUnsignedInt(this.fieldName[length - 1]) <= ' ') {
+                length--;
+            }
+
+            this.stringFieldName = new String(this.fieldName, 0, length);
         }
-        return new String(this.fieldName, 0, length);
+
+        return this.stringFieldName;
     }
 
     /**
@@ -127,7 +139,7 @@ public class DBase3FieldDescriptor extends AutoChecker {
      * @return Data type.
      */
     public DBaseDataType getType() {
-        return(fieldType);
+        return(this.fieldType);
     }
 
     /**
@@ -135,7 +147,7 @@ public class DBase3FieldDescriptor extends AutoChecker {
      */
     @Override
     public String toString() {
-        String text = format("toString", getName(), fieldType, fieldLength, fieldDecimalCount);
+        String text = format("toString", getName(), this.fieldType, JDK8.toUnsignedInt(this.fieldLength), JDK8.toUnsignedInt(this.fieldDecimalCount));
         return text;
     }
 }

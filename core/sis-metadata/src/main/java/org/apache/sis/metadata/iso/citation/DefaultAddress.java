@@ -40,10 +40,11 @@ import org.apache.sis.metadata.iso.ISOMetadata;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Touraïvane (IRD)
  * @author  Cédric Briançon (Geomatys)
- * @since   0.3
  * @version 0.3
+ * @since   0.3
  * @module
  */
+@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "CI_Address_Type", propOrder = {
     "deliveryPoints",
     "city",
@@ -100,7 +101,7 @@ public class DefaultAddress extends ISOMetadata implements Address {
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
-     * @param object The metadata to copy values from, or {@code null} if none.
+     * @param  object  the metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(Address)
      */
@@ -130,8 +131,8 @@ public class DefaultAddress extends ISOMetadata implements Address {
      *       metadata contained in the given object are not recursively copied.</li>
      * </ul>
      *
-     * @param  object The object to get as a SIS implementation, or {@code null} if none.
-     * @return A SIS implementation containing the values of the given object (may be the
+     * @param  object  the object to get as a SIS implementation, or {@code null} if none.
+     * @return a SIS implementation containing the values of the given object (may be the
      *         given object itself), or {@code null} if the argument was null.
      */
     public static DefaultAddress castOrCopy(final Address object) {
@@ -144,7 +145,7 @@ public class DefaultAddress extends ISOMetadata implements Address {
     /**
      * Return the state, province of the location.
      *
-     * @return State, province of the location, or {@code null}.
+     * @return state, province of the location, or {@code null}.
      */
     @Override
     @XmlElement(name = "administrativeArea")
@@ -155,7 +156,7 @@ public class DefaultAddress extends ISOMetadata implements Address {
     /**
      * Sets the state, province of the location.
      *
-     * @param newValue The new administrative area.
+     * @param  newValue  the new administrative area.
      */
     public void setAdministrativeArea(final InternationalString newValue) {
         checkWritePermission();
@@ -165,7 +166,7 @@ public class DefaultAddress extends ISOMetadata implements Address {
     /**
      * Returns the city of the location.
      *
-     * @return The city of the location, or {@code null}.
+     * @return the city of the location, or {@code null}.
      */
     @Override
     @XmlElement(name = "city")
@@ -176,7 +177,7 @@ public class DefaultAddress extends ISOMetadata implements Address {
     /**
      * Sets the city of the location.
      *
-     * @param newValue The new city, or {@code null} if none.
+     * @param  newValue  the new city, or {@code null} if none.
      */
     public void setCity(final InternationalString newValue) {
         checkWritePermission();
@@ -186,7 +187,7 @@ public class DefaultAddress extends ISOMetadata implements Address {
     /**
      * Returns the country of the physical address.
      *
-     * @return Country of the physical address, or {@code null}.
+     * @return country of the physical address, or {@code null}.
      */
     @Override
     @XmlElement(name = "country")
@@ -197,7 +198,7 @@ public class DefaultAddress extends ISOMetadata implements Address {
     /**
      * Sets the country of the physical address.
      *
-     * @param newValue The new country, or {@code null} if none.
+     * @param  newValue  the new country, or {@code null} if none.
      */
     public void setCountry(final InternationalString newValue) {
         checkWritePermission();
@@ -212,7 +213,7 @@ public class DefaultAddress extends ISOMetadata implements Address {
      * {@code Collection<? extends InternationalString>} in GeoAPI 4.0.
      * </div>
      *
-     * @return Address line for the location.
+     * @return address line for the location.
      */
     @Override
     @XmlElement(name = "deliveryPoint")
@@ -228,7 +229,7 @@ public class DefaultAddress extends ISOMetadata implements Address {
      * {@code Collection<? extends InternationalString>} in GeoAPI 4.0.
      * </div>
      *
-     * @param newValues The new delivery points, or {@code null} if none.
+     * @param  newValues  the new delivery points, or {@code null} if none.
      */
     public void setDeliveryPoints(final Collection<? extends String> newValues) {
         deliveryPoints = writeCollection(newValues, deliveryPoints, String.class);
@@ -237,7 +238,7 @@ public class DefaultAddress extends ISOMetadata implements Address {
     /**
      * Returns the address of the electronic mailbox of the responsible organization or individual.
      *
-     * @return Address of the electronic mailbox of the responsible organization or individual.
+     * @return address of the electronic mailbox of the responsible organization or individual.
      */
     @Override
     @XmlElement(name = "electronicMailAddress")
@@ -248,7 +249,7 @@ public class DefaultAddress extends ISOMetadata implements Address {
     /**
      * Sets the address of the electronic mailbox of the responsible organization or individual.
      *
-     * @param newValues The new electronic mail addresses, or {@code null} if none.
+     * @param  newValues  the new electronic mail addresses, or {@code null} if none.
      */
     public void setElectronicMailAddresses(final Collection<? extends String> newValues) {
         electronicMailAddresses = writeCollection(newValues, electronicMailAddresses, String.class);
@@ -268,7 +269,7 @@ public class DefaultAddress extends ISOMetadata implements Address {
     /**
      * Sets ZIP or other postal code.
      *
-     * @param newValue The new postal code, or {@code null} if none.
+     * @param  newValue  the new postal code, or {@code null} if none.
      */
     public void setPostalCode(final String newValue) {
         checkWritePermission();

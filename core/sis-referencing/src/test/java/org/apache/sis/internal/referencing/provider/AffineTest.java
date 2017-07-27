@@ -17,6 +17,7 @@
 package org.apache.sis.internal.referencing.provider;
 
 import org.opengis.parameter.GeneralParameterDescriptor;
+import org.opengis.referencing.operation.SingleOperation;
 import org.opengis.referencing.operation.Matrix;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.test.DependsOnMethod;
@@ -31,12 +32,23 @@ import static org.apache.sis.test.MetadataAssert.*;
  * Tests the {@link Affine} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.6
  * @version 0.6
+ * @since   0.6
  * @module
  */
 @DependsOn(org.apache.sis.parameter.TensorValuesTest.class)
 public final strictfp class AffineTest extends TestCase {
+    /**
+     * Verifies that {@link Affine#getOperationType()} is {@link SingleOperation}.
+     * The {@code Affine} class can not return one of the above, because we do not
+     * know if this operation method will be used for a transformation ora conversion
+     * (it can be used for both).
+     */
+    @Test
+    public void testOperationType() {
+        assertEquals(SingleOperation.class, new Affine().getOperationType());
+    }
+
     /**
      * Tests {@link Affine#getParameters()} on a standard EPSG:9624 instance.
      */
@@ -82,8 +94,8 @@ public final strictfp class AffineTest extends TestCase {
     public void testWKT() {
         final Matrix matrix = Matrices.createDiagonal(3, 3);
         assertWktEquals(
-                "ParameterGroup[“Affine parametric transformation”," +
-                " Id[“EPSG”, 9624, Citation[“IOGP”]]]", Affine.parameters(matrix));
+                "PARAMETERGROUP[“Affine parametric transformation”," +
+                " ID[“EPSG”, 9624]]", Affine.parameters(matrix));
         /*
          * Try arbitrary values.
          */
@@ -91,23 +103,23 @@ public final strictfp class AffineTest extends TestCase {
         matrix.setElement(1, 1,  0);  // B1
         matrix.setElement(1, 2, -1);  // B2
         assertWktEquals(
-                "ParameterGroup[“Affine parametric transformation”,\n" +
-                "  Parameter[“A1”, 2.0, Id[“EPSG”, 8624]],\n"  +
-                "  Parameter[“B1”, 0.0, Id[“EPSG”, 8640]],\n" +
-                "  Parameter[“B2”, -1.0, Id[“EPSG”, 8641]],\n" +
-                "  Id[“EPSG”, 9624, Citation[“IOGP”]]]", Affine.parameters(matrix));
+                "PARAMETERGROUP[“Affine parametric transformation”,\n" +
+                "  PARAMETER[“A1”, 2.0, ID[“EPSG”, 8624]],\n"  +
+                "  PARAMETER[“B1”, 0.0, ID[“EPSG”, 8640]],\n" +
+                "  PARAMETER[“B2”, -1.0, ID[“EPSG”, 8641]],\n" +
+                "  ID[“EPSG”, 9624]]", Affine.parameters(matrix));
         /*
          * Setting a value on the last row make the matrix non-affine.
          * So it should not be anymore EPSG:9624.
          */
         matrix.setElement(2, 0, 3);  // C0
         assertWktEquals(
-                "ParameterGroup[“Affine”,\n" +
-                "  Parameter[“num_row”, 3],\n"  +
-                "  Parameter[“num_col”, 3],\n"  +
-                "  Parameter[“elt_0_1”, 2.0],\n"  +
-                "  Parameter[“elt_1_1”, 0.0],\n" +
-                "  Parameter[“elt_1_2”, -1.0],\n" +
-                "  Parameter[“elt_2_0”, 3.0]]", Affine.parameters(matrix));
+                "PARAMETERGROUP[“Affine”,\n" +
+                "  PARAMETER[“num_row”, 3],\n"  +
+                "  PARAMETER[“num_col”, 3],\n"  +
+                "  PARAMETER[“elt_0_1”, 2.0],\n"  +
+                "  PARAMETER[“elt_1_1”, 0.0],\n" +
+                "  PARAMETER[“elt_1_2”, -1.0],\n" +
+                "  PARAMETER[“elt_2_0”, 3.0]]", Affine.parameters(matrix));
     }
 }

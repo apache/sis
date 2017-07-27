@@ -21,14 +21,13 @@ import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.JAXBException;
 import org.opengis.referencing.datum.VerticalDatumType;
-import org.apache.sis.internal.referencing.VerticalDatumTypes;
+import org.apache.sis.internal.metadata.VerticalDatumTypes;
 import org.apache.sis.internal.jaxb.LegacyNamespaces;
 import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.util.Version;
 import org.apache.sis.xml.XML;
 import org.apache.sis.xml.MarshallerPool;
 import org.apache.sis.test.XMLTestCase;
-import org.apache.sis.test.DependsOn;
 import org.junit.Test;
 
 import static java.util.Collections.singletonMap;
@@ -40,21 +39,20 @@ import static org.apache.sis.referencing.GeodeticObjectVerifier.*;
  * Tests the {@link DefaultVerticalDatum} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.4
  * @version 0.4
+ * @since   0.4
  * @module
  */
-@DependsOn(org.apache.sis.internal.referencing.VerticalDatumTypesTest.class)
 public final strictfp class DefaultVerticalDatumTest extends XMLTestCase {
     /**
      * An XML file in this package containing a vertical datum definition.
      */
-    private static final String XML_FILE = "Mean Sea Level.xml";
+    private static final String XML_FILE = "VerticalDatum.xml";
 
     /**
      * An XML file with the same content than {@link #XML_FILE}, but written in an older GML format.
      */
-    private static final String GML31_FILE = "Mean Sea Level (GML 3.1).xml";
+    private static final String GML31_FILE = "VerticalDatum (GML 3.1).xml";
 
     /**
      * Tests the {@link DefaultVerticalDatum#getVerticalDatumType()} method in a state
@@ -91,17 +89,19 @@ public final strictfp class DefaultVerticalDatumTest extends XMLTestCase {
         DefaultVerticalDatum datum;
         datum = new DefaultVerticalDatum(singletonMap(DefaultVerticalDatum.NAME_KEY, "Geoidal"), VerticalDatumType.GEOIDAL);
         assertWktEquals(Convention.WKT1, "VERT_DATUM[“Geoidal”, 2005]", datum);
-        assertWktEquals(Convention.WKT2, "VerticalDatum[“Geoidal”]", datum);
+        assertWktEquals(Convention.WKT2, "VDATUM[“Geoidal”]", datum);
+        assertWktEquals(Convention.WKT2_SIMPLIFIED, "VerticalDatum[“Geoidal”]", datum);
 
         datum = new DefaultVerticalDatum(singletonMap(DefaultVerticalDatum.NAME_KEY, "Ellipsoidal"), VerticalDatumTypes.ELLIPSOIDAL);
         assertWktEquals(Convention.WKT1, "VERT_DATUM[“Ellipsoidal”, 2002]", datum);
-        assertWktEquals(Convention.WKT2, "VerticalDatum[“Ellipsoidal”]", datum);
+        assertWktEquals(Convention.WKT2, "VDATUM[“Ellipsoidal”]", datum);
+        assertWktEquals(Convention.WKT2_SIMPLIFIED, "VerticalDatum[“Ellipsoidal”]", datum);
     }
 
     /**
      * Tests XML (un)marshalling.
      *
-     * @throws JAXBException If an error occurred during (un)marshalling.
+     * @throws JAXBException if an error occurred during (un)marshalling.
      */
     @Test
     public void testXML() throws JAXBException {
@@ -109,10 +109,9 @@ public final strictfp class DefaultVerticalDatumTest extends XMLTestCase {
         assertIsMeanSeaLevel(datum, true);
         /*
          * Following attribute does not exist in GML 3.2, so it has been inferred.
-         * Our datum name is "Mean Sea Level", which for now is not yet mapped to
-         * the geoidal type (this could change in any future SIS version).
+         * Our datum name is "Mean Sea Level", which is mapped to the geoidal type.
          */
-        assertEquals("vertDatumType", VerticalDatumType.OTHER_SURFACE, datum.getVerticalDatumType());
+        assertEquals("vertDatumType", VerticalDatumType.GEOIDAL, datum.getVerticalDatumType());
         /*
          * Values in the following tests are specific to our XML file.
          * The actual texts in the EPSG database are more descriptive.
@@ -129,7 +128,7 @@ public final strictfp class DefaultVerticalDatumTest extends XMLTestCase {
     /**
      * Tests (un)marshalling of an older version, GML 3.1.
      *
-     * @throws JAXBException If an error occurred during unmarshalling.
+     * @throws JAXBException if an error occurred during unmarshalling.
      *
      * @see <a href="http://issues.apache.org/jira/browse/SIS-160">SIS-160: Need XSLT between GML 3.1 and 3.2</a>
      */

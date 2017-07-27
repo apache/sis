@@ -45,8 +45,8 @@ import org.apache.sis.util.resources.Errors;
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Guilhem Legal (Geomatys)
- * @since   0.3
  * @version 0.5
+ * @since   0.3
  * @module
  */
 abstract class NameAdapter<ValueType extends NameAdapter<ValueType,BoundType>, BoundType extends GenericName>
@@ -66,7 +66,7 @@ abstract class NameAdapter<ValueType extends NameAdapter<ValueType,BoundType>, B
     /**
      * Ensures that the {@linkplain #name} is not already defined.
      *
-     * @throws IllegalStateException If a name is already defined.
+     * @throws IllegalStateException if a name is already defined.
      */
     private void ensureUndefined() throws IllegalStateException {
         if (name != null) {
@@ -78,7 +78,7 @@ abstract class NameAdapter<ValueType extends NameAdapter<ValueType,BoundType>, B
      * Returns the {@code LocalName} or {@code ScopedName} to marshall. Returns {@code null} if the name
      * is a {@link TypeName} or a {@link MemberName}, in order to use {@link #getNameType()} instead.
      *
-     * @return The code for the current name, or {@code null} if none.
+     * @return the code for the current name, or {@code null} if none.
      */
     @XmlElementRef
     public final CodeType getCodeType() {
@@ -103,8 +103,8 @@ abstract class NameAdapter<ValueType extends NameAdapter<ValueType,BoundType>, B
      * Sets the value for the {@code LocalName} or {@code ScopedName}.
      * This method is called at unmarshalling-time by JAXB.
      *
-     * @param  code The new name.
-     * @throws IllegalStateException If a name is already defined.
+     * @param  code  the new name.
+     * @throws IllegalStateException if a name is already defined.
      */
     public final void setCodeType(final CodeType code) throws IllegalStateException {
         ensureUndefined();
@@ -117,7 +117,7 @@ abstract class NameAdapter<ValueType extends NameAdapter<ValueType,BoundType>, B
      * Returns the {@code TypeName} or {@code MemberName} to marshall. Returns {@code null} if the name
      * is a {@link LocalName} or {@link ScopedName}, in order to use {@link #getCodeType()} instead.
      *
-     * @return The current name, or {@code null} if none.
+     * @return the current name, or {@code null} if none.
      */
     @XmlElementRef
     public final DefaultLocalName getNameType() {
@@ -135,8 +135,8 @@ abstract class NameAdapter<ValueType extends NameAdapter<ValueType,BoundType>, B
      * Sets the value from the {@code TypeName} or {@code MemberName}.
      * This method is called at unmarshalling-time by JAXB.
      *
-     * @param  value The new name.
-     * @throws IllegalStateException If a name is already defined.
+     * @param  value  the new name.
+     * @throws IllegalStateException if a name is already defined.
      */
     public final void setNameType(final DefaultLocalName value) throws IllegalStateException {
         ensureUndefined();

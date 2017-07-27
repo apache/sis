@@ -16,6 +16,8 @@
  */
 package org.apache.sis.measure;
 
+import java.math.RoundingMode;
+import java.util.Objects;
 import java.util.Locale;
 import java.text.Format;
 import java.text.FieldPosition;
@@ -31,18 +33,15 @@ import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.internal.util.LocalizedParseException;
 
-import static java.lang.Math.abs;
-import static java.lang.Math.rint;
 import static java.lang.Double.NaN;
 import static java.lang.Double.isNaN;
-import static java.lang.Double.isInfinite;
 import static org.apache.sis.math.MathFunctions.pow10;
 import static org.apache.sis.math.MathFunctions.truncate;
 import static org.apache.sis.math.MathFunctions.isNegative;
 import static org.apache.sis.math.DecimalFunctions.fractionDigitsForDelta;
 
 // Branch-dependent imports
-import org.apache.sis.internal.jdk7.Objects;
+import org.apache.sis.internal.jdk8.JDK8;
 
 
 /**
@@ -121,13 +120,15 @@ import org.apache.sis.internal.jdk7.Objects;
  * </div>
  *
  * @author  Martin Desruisseaux (MPO, IRD, Geomatys)
- * @since   0.3
- * @version 0.4
- * @module
+ * @version 0.8
  *
  * @see Angle
  * @see Latitude
  * @see Longitude
+ * @see org.apache.sis.geometry.CoordinateFormat
+ *
+ * @since 0.3
+ * @module
  */
 public class AngleFormat extends Format implements Localized {
     /**
@@ -178,7 +179,7 @@ public class AngleFormat extends Format implements Localized {
      * a string, this value may be specified to the {@link FieldPosition} constructor in order to
      * get the bounding index where fraction digits have been written.
      */
-    private static final int FRACTION_FIELD = 3; // Not yet implemented.
+    private static final int FRACTION_FIELD = 3;                        // Not yet implemented.
 
     /**
      * Constant for hemisphere field. When formatting a string, this value may be specified to the
@@ -205,8 +206,8 @@ public class AngleFormat extends Format implements Localized {
      * {@link AngleFormat#formatToCharacterIterator(Object)}.
      *
      * @author  Martin Desruisseaux (Geomatys)
-     * @since   0.3
      * @version 0.3
+     * @since   0.3
      * @module
      */
     public static final class Field extends FormatField {
@@ -300,6 +301,13 @@ public class AngleFormat extends Format implements Localized {
                    secondsSuffix;
 
     /**
+     * The rounding mode, or {@code null} for the default mode (which is {@link RoundingMode#HALF_EVEN}).
+     *
+     * @see #getRoundingMode()
+     */
+    private RoundingMode roundingMode;
+
+    /**
      * {@code true} if the {@link #parse(String, ParsePosition)} method is allowed to fallback
      * on the build-in default symbols if the string to parse doesn't match the pattern.
      *
@@ -346,13 +354,11 @@ public class AngleFormat extends Format implements Localized {
 
     /**
      * A temporary variable which may be set to the character iterator for which the
-     * attributes need to be set. IF non-null, then this is actually an instance of
-     * {@link FormattedCharacterIterator}. But we use the interface here for avoiding
-     * too early class loading.
+     * attributes need to be set.
      *
      * @see #formatToCharacterIterator(Object)
      */
-    private transient AttributedCharacterIterator characterIterator;
+    private transient FormattedCharacterIterator characterIterator;
 
     /**
      * Returns the number format, created when first needed.
@@ -377,7 +383,7 @@ public class AngleFormat extends Format implements Localized {
     /**
      * Constructs a new {@code AngleFormat} for the default pattern and the current default locale.
      *
-     * @return An angle format for the current default locale.
+     * @return an angle format for the current default locale.
      */
     public static AngleFormat getInstance() {
         return new AngleFormat();
@@ -386,8 +392,8 @@ public class AngleFormat extends Format implements Localized {
     /**
      * Constructs a new {@code AngleFormat} for the default pattern and the specified locale.
      *
-     * @param  locale The locale to use.
-     * @return An angle format for the given locale.
+     * @param  locale  the locale to use.
+     * @return an angle format for the given locale.
      */
     public static AngleFormat getInstance(final Locale locale) {
         return new AngleFormat(locale);
@@ -397,14 +403,15 @@ public class AngleFormat extends Format implements Localized {
      * Constructs a new {@code AngleFormat} for the default pattern and the current default locale.
      */
     public AngleFormat() {
-        this(Locale.getDefault());
+        this(Locale.getDefault(Locale.Category.FORMAT));
     }
 
     /**
      * Constructs a new {@code AngleFormat} for the default pattern and the specified locale.
      *
-     * @param  locale The locale to use.
+     * @param  locale  the locale to use.
      */
+    @SuppressWarnings("PointlessBitwiseExpression")  // We rely on the compiler for simplifying the expression.
     public AngleFormat(final Locale locale) {
         ArgumentChecks.ensureNonNull("locale", locale);
         this.locale = locale;
@@ -422,21 +429,21 @@ public class AngleFormat extends Format implements Localized {
     /**
      * Constructs a new {@code AngleFormat} for the specified pattern and the current default locale.
      *
-     * @param  pattern Pattern to use for parsing and formatting angles.
+     * @param  pattern  the pattern to use for parsing and formatting angles.
      *         See class description for an explanation of pattern syntax.
-     * @throws IllegalArgumentException If the specified pattern is illegal.
+     * @throws IllegalArgumentException if the specified pattern is illegal.
      */
     public AngleFormat(final String pattern) throws IllegalArgumentException {
-        this(pattern, Locale.getDefault());
+        this(pattern, Locale.getDefault(Locale.Category.FORMAT));
     }
 
     /**
      * Constructs a new {@code AngleFormat} using the specified pattern and locale.
      *
-     * @param  pattern Pattern to use for parsing and formatting angles.
-     *         See class description for an explanation of pattern syntax.
-     * @param  locale Locale to use.
-     * @throws IllegalArgumentException If the specified pattern is illegal.
+     * @param  pattern  the pattern to use for parsing and formatting angles.
+     *                  See class description for an explanation of pattern syntax.
+     * @param  locale   the locale to use.
+     * @throws IllegalArgumentException if the specified pattern is illegal.
      */
     public AngleFormat(final String pattern, final Locale locale) throws IllegalArgumentException {
         ArgumentChecks.ensureNonEmpty("pattern", pattern);
@@ -449,8 +456,8 @@ public class AngleFormat extends Format implements Localized {
      * Sets the pattern to use for parsing and formatting angles.
      * See class description for a description of pattern syntax.
      *
-     * @param  pattern Pattern to use for parsing and formatting angle.
-     * @throws IllegalArgumentException If the specified pattern is not legal.
+     * @param  pattern  the pattern to use for parsing and formatting angle.
+     * @throws IllegalArgumentException if the specified pattern is not legal.
      *
      * @see #setMinimumFractionDigits(int)
      * @see #setMaximumFractionDigits(int)
@@ -476,9 +483,9 @@ public class AngleFormat extends Format implements Localized {
      * Actual implementation of {@link #applyPattern(String)}, as a private method for use by the constructor.
      * All fields related to the pattern shall be set to 0 or null before this method call.
      *
-     * @param symbols An array of code points containing the reserved symbols as upper-case letters.
-     *        This is always the {@link #SYMBOLS} array, unless we apply localized patterns.
-     * @param decimalSeparator The code point which represent decimal separator in the pattern.
+     * @param  symbols  an array of code points containing the reserved symbols as upper-case letters.
+     *                  This is always the {@link #SYMBOLS} array, unless we apply localized patterns.
+     * @param  decimalSeparator  the code point which represent decimal separator in the pattern.
      */
     @SuppressWarnings("fallthrough")
     private void applyPattern(final String pattern, final int[] symbols, final int decimalSeparator) {
@@ -610,9 +617,9 @@ public class AngleFormat extends Format implements Localized {
     /**
      * Returns the field index for the given upper case character, or -1 if none.
      *
-     * @param  symbols An array of code points containing the reserved symbols as upper-case letters.
-     * @param  c The symbol to search, as an upper-case character (code point actually).
-     * @return The index of the given character, or -1 if not found.
+     * @param  symbols  an array of code points containing the reserved symbols as upper-case letters.
+     * @param  c  the symbol to search, as an upper-case character (code point actually).
+     * @return the index of the given character, or -1 if not found.
      */
     private static int fieldForSymbol(final int[] symbols, final int c) {
         for (int field=DEGREES_FIELD; field<=FRACTION_FIELD; field++) {
@@ -635,7 +642,7 @@ public class AngleFormat extends Format implements Localized {
      * Returns the pattern used for parsing and formatting angles.
      * See class description for an explanation of how patterns work.
      *
-     * @return The formatting pattern.
+     * @return the formatting pattern.
      *
      * @see #getMinimumFractionDigits()
      * @see #getMaximumFractionDigits()
@@ -648,9 +655,9 @@ public class AngleFormat extends Format implements Localized {
      * Actual implementation of {@link #toPattern()} and {@code toLocalizedPattern()}
      * (the later method may be provided in a future SIS version).
      *
-     * @param symbols An array of code points containing the reserved symbols as upper-case letters.
-     *        This is always the {@link #SYMBOLS} array, unless we apply localized patterns.
-     * @param decimalSeparator The code point which represent decimal separator in the pattern.
+     * @param  symbols  an array of code points containing the reserved symbols as upper-case letters.
+     *                  this is always the {@link #SYMBOLS} array, unless we apply localized patterns.
+     * @param  decimalSeparator  the code point which represent decimal separator in the pattern.
      */
     private String toPattern(final int[] symbols, final int decimalSeparator) {
         int symbol = 0;
@@ -701,7 +708,7 @@ public class AngleFormat extends Format implements Localized {
                 buffer.appendCodePoint(symbols[OPTIONAL_FIELD]);
             }
             if (width <= 0) {
-                break; // The "if" case above has been executed for writing the fractional part, so we are done.
+                break;      // The "if" case above has been executed for writing the fractional part, so we are done.
             }
             /*
              * This is the main part of the loop, before the final fractional part handled in the above "if" case.
@@ -724,11 +731,73 @@ public class AngleFormat extends Format implements Localized {
     }
 
     /**
+     * Returns the rounding mode. Default value is {@link RoundingMode#HALF_EVEN}.
+     *
+     * @return the rounding mode.
+     *
+     * @see NumberFormat#getRoundingMode()
+     *
+     * @since 0.8
+     */
+    public RoundingMode getRoundingMode() {
+        return (roundingMode != null) ? roundingMode : RoundingMode.HALF_EVEN;
+    }
+
+    /**
+     * Sets the rounding mode to the specified value. The given mode can be one of the following:
+     *
+     * <table class="sis">
+     *   <caption>Supported rounding modes</caption>
+     *   <tr><th>Rounding mode</th>                             <th>Result</th></tr>
+     *   <tr><td>{@link RoundingMode#UP        UP}</td>         <td>Round away from zero.</td></tr>
+     *   <tr><td>{@link RoundingMode#DOWN      DOWN}</td>       <td>Round towards zero.</td></tr>
+     *   <tr><td>{@link RoundingMode#CEILING   CEILING}</td>    <td>Round towards positive infinity.</td></tr>
+     *   <tr><td>{@link RoundingMode#FLOOR     FLOOR}</td>      <td>Round towards negative infinity.</td></tr>
+     *   <tr><td>{@link RoundingMode#HALF_EVEN HALF_EVEN}</td>  <td>Round towards nearest neighbor.</td></tr>
+     * </table>
+     *
+     * The {@link RoundingMode#HALF_UP} and {@link RoundingMode#HALF_DOWN HALF_DOWN} values are not supported
+     * by the current {@code AngleFormat} implementation.
+     *
+     * @param  mode  the new rounding mode.
+     *
+     * @see NumberFormat#setRoundingMode(RoundingMode)
+     *
+     * @since 0.8
+     */
+    public void setRoundingMode(final RoundingMode mode) {
+        ArgumentChecks.ensureNonNull("mode", mode);
+        if (mode == RoundingMode.HALF_UP || mode == RoundingMode.HALF_DOWN) {
+            throw new IllegalArgumentException(Errors.format(Errors.Keys.UnsupportedArgumentValue_1, mode));
+        }
+        roundingMode = mode;
+    }
+
+    /**
+     * Rounds the given value according current {@link #roundingMode}.
+     *
+     * @param  sign   the sign of the value to round.
+     * @param  value  the positive value to round.
+     * @return the rounded positive value.
+     */
+    private double round(final double sign, final double value) {
+        if (roundingMode != null) {
+            switch (roundingMode) {
+                case UP:      return Math.ceil (value);
+                case DOWN:    return Math.floor(value);
+                case CEILING: return Math.abs(Math.ceil (Math.copySign(value, sign)));
+                case FLOOR:   return Math.abs(Math.floor(Math.copySign(value, sign)));
+            }
+        }
+        return Math.rint(value);
+    }
+
+    /**
      * Returns the minimum number of digits allowed in the fraction portion of the last field.
      * This value can be set by the repetition of {@code 'd'}, {@code 'm'} or {@code 's'} symbol
      * in the pattern.
      *
-     * @return The minimum number of digits allowed in the fraction portion.
+     * @return the minimum number of digits allowed in the fraction portion.
      *
      * @see DecimalFormat#getMinimumFractionDigits()
      */
@@ -741,7 +810,7 @@ public class AngleFormat extends Format implements Localized {
      * If the given value is greater than the {@linkplain #getMaximumFractionDigits() maximum
      * number of fraction digits}, then that maximum number will be set to the given value too.
      *
-     * @param count The minimum number of digits allowed in the fraction portion.
+     * @param  count  the minimum number of digits allowed in the fraction portion.
      *
      * @see DecimalFormat#setMinimumFractionDigits(int)
      */
@@ -761,7 +830,7 @@ public class AngleFormat extends Format implements Localized {
      * Returns the maximum number of digits allowed in the fraction portion of the last field.
      * This value can be set by the repetition of {@code '#'} symbol in the pattern.
      *
-     * @return The maximum number of digits allowed in the fraction portion.
+     * @return the maximum number of digits allowed in the fraction portion.
      *
      * @see DecimalFormat#getMaximumFractionDigits()
      */
@@ -774,7 +843,7 @@ public class AngleFormat extends Format implements Localized {
      * If the given value is smaller than the {@linkplain #getMinimumFractionDigits() minimum
      * number of fraction digits}, then that minimum number will be set to the given value too.
      *
-     * @param count The maximum number of digits allowed in the fraction portion.
+     * @param  count  the maximum number of digits allowed in the fraction portion.
      *
      * @see DecimalFormat#setMaximumFractionDigits(int)
      */
@@ -810,7 +879,7 @@ public class AngleFormat extends Format implements Localized {
      * <p>This method does not take into account the space needed for the hemisphere symbol when
      * formatting {@link Latitude} or {@link Longitude} objects.</p>
      *
-     * @param width The maximum total width of formatted angle.
+     * @param  width  the maximum total width of formatted angle.
      */
     @SuppressWarnings("fallthrough")
     public void setMaximumWidth(int width) {
@@ -840,8 +909,8 @@ public class AngleFormat extends Format implements Localized {
              */
             if (width < 0) {
                 switch (field) {
-                    default:  width += (degreesFieldWidth-1); degreesFieldWidth = 1; // Fall through
-                    case MINUTES_FIELD: minutesSuffix = null; minutesFieldWidth = 0; // Fall through
+                    default:  width += (degreesFieldWidth-1); degreesFieldWidth = 1;    // Fall through
+                    case MINUTES_FIELD: minutesSuffix = null; minutesFieldWidth = 0;    // Fall through
                     case SECONDS_FIELD: secondsSuffix = null; secondsFieldWidth = 0;
                 }
                 if (field >= MINUTES_FIELD) {
@@ -880,8 +949,8 @@ public class AngleFormat extends Format implements Localized {
      * Formats an angle. The angle will be formatted according the pattern given to the last call
      * of {@link #applyPattern(String)}.
      *
-     * @param  angle Angle to format, in decimal degrees.
-     * @return The formatted string.
+     * @param  angle  angle to format, in decimal degrees.
+     * @return the formatted string.
      */
     public final String format(final double angle) {
         return format(angle, new StringBuffer(), null).toString();
@@ -891,21 +960,18 @@ public class AngleFormat extends Format implements Localized {
      * Formats an angle in the given buffer. The angle will be formatted according
      * the pattern given to the last call of {@link #applyPattern(String)}.
      *
-     * @param angle
-     *          Angle to format, in decimal degrees.
-     * @param toAppendTo
-     *          The buffer where to append the formatted angle.
-     * @param pos
-     *          An optional object where to store the position of the field in the formatted
-     *          text, or {@code null} if this information is not wanted. This field position
-     *          shall be created with one of the {@link Field} constants.
-     *
-     * @return The {@code toAppendTo} buffer, returned for method calls chaining.
+     * @param  angle       angle to format, in decimal degrees.
+     * @param  toAppendTo  the buffer where to append the formatted angle.
+     * @param  pos         an optional object where to store the position of the field in the formatted text,
+     *                     or {@code null} if this information is not wanted. This field position shall be
+     *                     created with one of the {@link Field} constants.
+     * @return the {@code toAppendTo} buffer, returned for method calls chaining.
      */
+    @SuppressWarnings("PointlessBitwiseExpression")  // We rely on the compiler for simplifying the expression.
     public StringBuffer format(final double angle, StringBuffer toAppendTo, final FieldPosition pos) {
         final int offset = toAppendTo.length();
         final int fieldPos = getField(pos);
-        if (isNaN(angle) || isInfinite(angle)) {
+        if (!JDK8.isFinite(angle)) {
             toAppendTo = numberFormat().format(angle, toAppendTo, dummyFieldPosition());
             if (fieldPos >= DEGREES_FIELD && fieldPos <= SECONDS_FIELD) {
                 pos.setBeginIndex(offset);
@@ -921,8 +987,11 @@ public class AngleFormat extends Format implements Localized {
         double minutes = NaN;
         double seconds = NaN;
         int maximumFractionDigits = fractionFieldWidth;
-        if (minutesFieldWidth != 0 && !isNaN(angle)) {
-            minutes = abs(degrees - (degrees = truncate(degrees))) * 60;
+        if (minutesFieldWidth == 0) {
+            final double p = pow10(maximumFractionDigits);
+            degrees = round(angle, degrees * p) / p;
+        } else {
+            minutes = Math.abs(degrees - (degrees = truncate(degrees))) * 60;
             /*
              * Limit the maximal number of fraction digits to the amount of significant digits for a 'double' value.
              * The intend is to avoid non-significant garbage that are pure artifacts from the conversion from base
@@ -934,21 +1003,23 @@ public class AngleFormat extends Format implements Localized {
             final double p = pow10(maximumFractionDigits);
             if (secondsFieldWidth != 0) {
                 seconds = (minutes - (minutes = truncate(minutes))) * 60;
-                seconds = rint(seconds * p) / p; // Correction for rounding errors.
-                if (seconds >= 60) { // We do not expect > 60 (only == 60), but let be safe.
+                seconds = round(angle, seconds * p) / p;                     // Correction for rounding errors.
+                if (seconds >= 60) {                    // We do not expect > 60 (only == 60), but let be safe.
                     seconds = 0;
                     minutes++;
                 }
             } else {
-                minutes = rint(minutes * p) / p; // Correction for rounding errors.
+                minutes = round(angle, minutes * p) / p;                     // Correction for rounding errors.
             }
-            if (minutes >= 60) { // We do not expect > 60 (only == 60), but let be safe.
+            if (minutes >= 60) {                        // We do not expect > 60 (only == 60), but let be safe.
                 minutes = 0;
                 degrees += Math.signum(angle);
             }
-            // Note: a previous version was doing a unconditional addition to the 'degrees' variable,
-            // in the form 'degrees += correction'. However -0.0 + 0 == +0.0, while we really need to
-            // preserve the sign of negative zero. See [SIS-120].
+            /*
+             * Note: a previous version was doing a unconditional addition to the 'degrees' variable,
+             * in the form 'degrees += correction'. However -0.0 + 0 == +0.0, while we really need to
+             * preserve the sign of negative zero. See [SIS-120].
+             */
         }
         /*
          * Avoid formatting values like 12.01°N as 12°36″N because of the risk of confusion.
@@ -1035,19 +1106,21 @@ public class AngleFormat extends Format implements Localized {
              */
             final int startPosition = toAppendTo.length();
             if (characterIterator != null) {
-                final FormattedCharacterIterator it = (FormattedCharacterIterator) characterIterator;
+                final FormattedCharacterIterator it = characterIterator;
                 it.append(numberFormat.formatToCharacterIterator(value), toAppendTo);
                 if (suffix != null) {
                     toAppendTo.append(suffix);
                 }
                 final Number userObject;
                 if (hasMore) {
-                    userObject = Integer.valueOf((int) Math.round(value));
+                    userObject = JDK8.toIntExact(Math.round(value));
                 } else {
-                    // Use Float instead of Double because we don't want to give a false impression of accuracy
-                    // (when formatting the seconds field, at least the 10 last bits of the 'double' value are
-                    // non-significant).
-                    userObject = Float.valueOf((float) value);
+                    /*
+                     * Use Float instead of Double because we don't want to give a false impression of accuracy
+                     * (when formatting the seconds field, at least the 10 last bits of the 'double' value are
+                     * non-significant).
+                     */
+                    userObject = (float) value;
                 }
                 it.addFieldLimit(Field.forCode(field), userObject, startPosition);
             } else {
@@ -1080,16 +1153,12 @@ public class AngleFormat extends Format implements Localized {
      *       method.</li>
      * </ul>
      *
-     * @param value
-     *          {@link Angle} object to format.
-     * @param toAppendTo
-     *          The buffer where to append the formatted angle.
-     * @param pos
-     *          An optional object where to store the position of the field in the formatted
-     *          text, or {@code null} if this information is not wanted. This field position
-     *          shall be created with one of the {@link Field} constants.
-     *
-     * @return The {@code toAppendTo} buffer, returned for method calls chaining.
+     * @param  value       {@link Angle} object to format.
+     * @param  toAppendTo  the buffer where to append the formatted angle.
+     * @param  pos         an optional object where to store the position of the field in the formatted text,
+     *                     or {@code null} if this information is not wanted. This field position shall be
+     *                     created with one of the {@link Field} constants.
+     * @return the {@code toAppendTo} buffer, returned for method calls chaining.
      * @throws IllegalArgumentException if {@code value} if not an instance of {@link Angle}.
      */
     @Override
@@ -1121,7 +1190,7 @@ public class AngleFormat extends Format implements Localized {
     {
         try {
             showLeadingFields = true;
-            toAppendTo = format(abs(angle), toAppendTo, pos);
+            toAppendTo = format(Math.abs(angle), toAppendTo, pos);
         } finally {
             showLeadingFields = false;
         }
@@ -1133,8 +1202,7 @@ public class AngleFormat extends Format implements Localized {
             pos.setEndIndex(toAppendTo.length());
         }
         if (characterIterator != null) {
-            ((FormattedCharacterIterator) characterIterator).addFieldLimit(
-                    Field.HEMISPHERE, suffix, startPosition);
+            characterIterator.addFieldLimit(Field.HEMISPHERE, suffix, startPosition);
         }
         return toAppendTo;
     }
@@ -1178,8 +1246,8 @@ public class AngleFormat extends Format implements Localized {
      * In Apache SIS implementation, the returned character iterator also implements the
      * {@link CharSequence} interface for convenience.
      *
-     * @param  value {@link Angle} object to format.
-     * @return A character iterator together with the attributes describing the formatted value.
+     * @param  value  the {@link Angle} object to format.
+     * @return a character iterator together with the attributes describing the formatted value.
      * @throws IllegalArgumentException if {@code value} if not an instance of {@link Angle}.
      */
     @Override
@@ -1206,16 +1274,13 @@ public class AngleFormat extends Format implements Localized {
      * been recognized, then this method will compares against the standard ', ° and "
      * ASCII symbols.</p>
      *
-     * @param source
-     *          The string being parsed.
-     * @param pos
-     *          On input, index of the first {@code source} character to read.
-     *          On output, index after the last suffix character.
-     * @param expectedField
-     *          First field to verify. For example a value of {@link #MINUTES_FIELD} means that
-     *          the suffix for minute and seconds shall be verified before degrees.
-     * @return The {@code *_FIELD} constant for the suffix which has been found, or a value
-     *         outside those constants if no suffix matched.
+     * @param source         the string being parsed.
+     * @param pos            on input, index of the first {@code source} character to read.
+     *                       On output, index after the last suffix character.
+     * @param expectedField  first field to verify. For example a value of {@link #MINUTES_FIELD} means that
+     *                       the suffix for minute and seconds shall be verified before degrees.
+     * @return the {@code *_FIELD} constant for the suffix which has been found,
+     *         or a value outside those constants if no suffix matched.
      */
     private int skipSuffix(final String source, final ParsePosition pos, final int expectedField) {
         int field = expectedField;
@@ -1243,7 +1308,7 @@ public class AngleFormat extends Format implements Localized {
                     c = source.codePointAt(index);
                     index += Character.charCount(c);
                 }
-                while (Character.isSpaceChar(c)); // Method shall be consistent with skipSpaces(…)
+                while (Character.isSpaceChar(c));       // Method shall be consistent with skipSpaces(…)
             }
             if (++field > SECONDS_FIELD) {
                 field = PREFIX_FIELD;
@@ -1262,7 +1327,7 @@ public class AngleFormat extends Format implements Localized {
                 c = source.codePointAt(start);
                 start += Character.charCount(c);
             }
-            while (Character.isSpaceChar(c)); // Method shall be consistent with skipSpaces(…)
+            while (Character.isSpaceChar(c));           // Method shall be consistent with skipSpaces(…)
             switch (c) {
                 case '°' :            pos.setIndex(start); return DEGREES_FIELD;
                 case '′' : case '\'': pos.setIndex(start); return MINUTES_FIELD;
@@ -1282,10 +1347,10 @@ public class AngleFormat extends Format implements Localized {
      * not want to skip tabulations or line feeds, since they are unlikely to be part of
      * the angle to parse.
      *
-     * @param  source The string being parsed.
-     * @param  index  Index of the first {@code source} character to read.
-     * @param  length The length of {@code source}.
-     * @return Index of the first non-space character, or the end of string if none.
+     * @param  source  the string being parsed.
+     * @param  index   index of the first {@code source} character to read.
+     * @param  length  the length of {@code source}.
+     * @return index of the first non-space character, or the end of string if none.
      */
     private static int skipSpaces(final String source, int index, final int length) {
         while (index < length) {
@@ -1312,10 +1377,10 @@ public class AngleFormat extends Format implements Localized {
      * used as a separator for other kinds of values. If the string is known to contain only
      * an angle value, use {@code parse(String)} instead.</p>
      *
-     * @param  source The string to parse.
-     * @param  pos    On input, index of the first {@code source} character to read.
-     *                On output, index after the last parsed character.
-     * @return The parsed string as an {@link Angle}, {@link Latitude} or {@link Longitude} object.
+     * @param  source  the string to parse.
+     * @param  pos     on input, index of the first {@code source} character to read.
+     *                 On output, index after the last parsed character.
+     * @return the parsed string as an {@link Angle}, {@link Latitude} or {@link Longitude} object.
      *
      * @see #isFallbackAllowed()
      */
@@ -1328,7 +1393,7 @@ public class AngleFormat extends Format implements Localized {
      * specifies if spaces can be accepted as a field separator. For example if {@code true},
      * then "45 30" will be parsed as "45°30".
      */
-    @SuppressWarnings("fallthrough")
+    @SuppressWarnings({"fallthrough", "UnnecessaryLabelOnBreakStatement"})
     private Angle parse(final String source, final ParsePosition pos, final boolean spaceAsSeparator) {
         double degrees;
         double minutes   = NaN;
@@ -1607,7 +1672,7 @@ BigBoss:    switch (skipSuffix(source, pos, DEGREES_FIELD)) {
             double facteur = pow10(secondsFieldWidth);
             if (degreesSuffix == null && minutesFieldWidth != 0 && isNaN(minutes)) {
                 ///////////////////
-                //// DDDMMSS.s ////
+                //   DDDMMSS.s   //
                 ///////////////////
                 seconds  = degrees;
                 minutes  = truncate(degrees / facteur);
@@ -1617,7 +1682,7 @@ BigBoss:    switch (skipSuffix(source, pos, DEGREES_FIELD)) {
                 minutes  -= degrees * facteur;
             } else {
                 ////////////////////
-                //// DDD°MMSS.s ////
+                //   DDD°MMSS.s   //
                 ////////////////////
                 seconds  = minutes;
                 minutes  = truncate(minutes / facteur);
@@ -1625,7 +1690,7 @@ BigBoss:    switch (skipSuffix(source, pos, DEGREES_FIELD)) {
             }
         } else if (degreesSuffix == null && minutesFieldWidth != 0 && isNaN(minutes)) {
             /////////////////
-            //// DDDMM.m ////
+            //   DDDMM.m   //
             /////////////////
             final double facteur = pow10(minutesFieldWidth);
             minutes  = degrees;
@@ -1649,7 +1714,7 @@ BigBoss:    switch (skipSuffix(source, pos, DEGREES_FIELD)) {
                 case EAST : pos.setIndex(index); return new Longitude( degrees);
                 case WEST : pos.setIndex(index); return new Longitude(-degrees);
             }
-            if (!Character.isSpaceChar(c)) { // Method shall be consistent with skipSpaces(…)
+            if (!Character.isSpaceChar(c)) {                // Method shall be consistent with skipSpaces(…)
                 break;
             }
         }
@@ -1662,9 +1727,9 @@ BigBoss:    switch (skipSuffix(source, pos, DEGREES_FIELD)) {
      * {@link #parse(String, ParsePosition)} regarding white spaces between degrees, minutes
      * and seconds fields.
      *
-     * @param  source The string to parse.
-     * @return The parsed string as an {@link Angle}, {@link Latitude} or {@link Longitude} object.
-     * @throws ParseException If the string can not be fully parsed.
+     * @param  source  the string to parse.
+     * @return the parsed string as an {@link Angle}, {@link Latitude} or {@link Longitude} object.
+     * @throws ParseException if the string can not be fully parsed.
      *
      * @see #isFallbackAllowed()
      */
@@ -1683,9 +1748,9 @@ BigBoss:    switch (skipSuffix(source, pos, DEGREES_FIELD)) {
      * Parses a substring as an object.
      * The default implementation delegates to {@link #parse(String, ParsePosition)}.
      *
-     * @param  source The string to parse.
-     * @param  pos The position where to start parsing.
-     * @return The parsed string as an {@link Angle}, {@link Latitude} or {@link Longitude} object.
+     * @param  source  the string to parse.
+     * @param  pos     the position where to start parsing.
+     * @return the parsed string as an {@link Angle}, {@link Latitude} or {@link Longitude} object.
      */
     @Override
     public Object parseObject(final String source, final ParsePosition pos) {
@@ -1696,9 +1761,9 @@ BigBoss:    switch (skipSuffix(source, pos, DEGREES_FIELD)) {
      * Parses the given string as an object.
      * The default implementation delegates to {@link #parse(String)}.
      *
-     * @param  source The string to parse.
-     * @return The parsed string as an {@link Angle}, {@link Latitude} or {@link Longitude} object.
-     * @throws ParseException If the string can not been fully parsed.
+     * @param  source  the string to parse.
+     * @return the parsed string as an {@link Angle}, {@link Latitude} or {@link Longitude} object.
+     * @throws ParseException if the string can not been fully parsed.
      */
     @Override
     public Object parseObject(final String source) throws ParseException {
@@ -1742,7 +1807,7 @@ BigBoss:    switch (skipSuffix(source, pos, DEGREES_FIELD)) {
      * Returns this formatter locale. This is the locale specified at construction time if any,
      * or the {@linkplain Locale#getDefault() default locale} at construction time otherwise.
      *
-     * @return This formatter locale (never {@code null}).
+     * @return this formatter locale (never {@code null}).
      */
     @Override
     public Locale getLocale() {
@@ -1752,7 +1817,7 @@ BigBoss:    switch (skipSuffix(source, pos, DEGREES_FIELD)) {
     /**
      * Returns a clone of this {@code AngleFormat}.
      *
-     * @return A clone of this format.
+     * @return a clone of this format.
      */
     @Override
     public AngleFormat clone() {
@@ -1768,14 +1833,14 @@ BigBoss:    switch (skipSuffix(source, pos, DEGREES_FIELD)) {
     @Override
     public int hashCode() {
         return Objects.hash(degreesFieldWidth, minutesFieldWidth, secondsFieldWidth, fractionFieldWidth,
-                minimumFractionDigits, useDecimalSeparator, isFallbackAllowed, optionalFields, locale,
-                prefix, degreesSuffix, minutesSuffix, secondsSuffix) ^ (int) serialVersionUID;
+                minimumFractionDigits, useDecimalSeparator, isFallbackAllowed, optionalFields, roundingMode,
+                locale, prefix, degreesSuffix, minutesSuffix, secondsSuffix) ^ (int) serialVersionUID;
     }
 
     /**
      * Compares this format with the specified object for equality.
      *
-     * @param object The object to compare with this angle format for equality.
+     * @param  object  the object to compare with this angle format for equality.
      */
     @Override
     public boolean equals(final Object object) {
@@ -1792,6 +1857,7 @@ BigBoss:    switch (skipSuffix(source, pos, DEGREES_FIELD)) {
                    useDecimalSeparator   == cast.useDecimalSeparator   &&
                    isFallbackAllowed     == cast.isFallbackAllowed     &&
                    optionalFields        == cast.optionalFields        &&
+                   roundingMode          == cast.roundingMode          &&
                    Objects.equals(locale,        cast.locale)          &&
                    Objects.equals(prefix,        cast.prefix)          &&
                    Objects.equals(degreesSuffix, cast.degreesSuffix)   &&

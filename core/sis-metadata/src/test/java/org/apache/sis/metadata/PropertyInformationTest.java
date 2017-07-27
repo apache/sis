@@ -34,7 +34,7 @@ import org.apache.sis.test.TestCase;
 import org.apache.sis.test.DependsOnMethod;
 import org.junit.Test;
 
-import static org.apache.sis.test.Assert.*;
+import static org.apache.sis.test.MetadataAssert.*;
 import static org.apache.sis.test.TestUtilities.getSingleton;
 
 
@@ -42,23 +42,23 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
  * Tests the {@link PropertyInformation} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.3
+ * @since   0.3
  * @module
  */
 public final strictfp class PropertyInformationTest extends TestCase {
     /**
      * Creates a property information instance for the given method of the {@link Citation} interface.
      *
-     * @param  elementType The type of elements returned by the given method.
-     * @param  method      The name of the method.
-     * @param  property    The ISO 19115 name of the property.
-     * @throws NoSuchMethodException If the {@code method} name is invalid.
+     * @param  elementType  the type of elements returned by the given method.
+     * @param  method       the name of the method.
+     * @param  property     the ISO 19115 name of the property.
+     * @throws NoSuchMethodException if the {@code method} name is invalid.
      */
     private static <T> PropertyInformation<T> create(final Class<T> elementType, final String method,
             final String property) throws NoSuchMethodException
     {
-        return new PropertyInformation<T>(HardCodedCitations.ISO_19115, property,
+        return new PropertyInformation<>(HardCodedCitations.ISO_19115, property,
                 Citation.class.getMethod(method), elementType, null);
     }
 
@@ -68,7 +68,7 @@ public final strictfp class PropertyInformationTest extends TestCase {
      */
     private static void assertParentIsCitation(final ExtendedElementInformation information) {
         assertInstanceOf("Specific to SIS implementation.", Identifier.class, information);
-        assertEquals("ISO 19115",   ((Identifier) information).getAuthority().getTitle().toString());
+        assertTitleEquals("authority", "ISO 19115", ((Identifier) information).getAuthority());
         assertEquals("CI_Citation", getSingleton(information.getParentEntity()));
     }
 
@@ -76,7 +76,7 @@ public final strictfp class PropertyInformationTest extends TestCase {
      * Tests the properties of {@link Citation#getTitle()}.
      * The element type is an {@link InternationalString} singleton, which is mandatory.
      *
-     * @throws NoSuchMethodException Should never happen.
+     * @throws NoSuchMethodException if the {@code getTitle()} method has not been found.
      */
     @Test
     public void testTitle() throws NoSuchMethodException {
@@ -106,7 +106,7 @@ public final strictfp class PropertyInformationTest extends TestCase {
      * Tests the properties of {@link Citation#getPresentationForms()}.
      * The element type is {@link PresentationForm} in a collection.
      *
-     * @throws NoSuchMethodException Should never happen.
+     * @throws NoSuchMethodException if the {@code getPresentationForms()} method has not been found.
      */
     @Test
     public void testPresentationForm() throws NoSuchMethodException {
@@ -135,11 +135,12 @@ public final strictfp class PropertyInformationTest extends TestCase {
     /**
      * Tests {@link PropertyInformation#getDomainValue()} with a non-null range.
      *
-     * @throws NoSuchMethodException Should never happen.
+     * @throws NoSuchMethodException if the {@code getMaxRelativeHumidity()} or other method has not been found.
      */
     @Test
+    @SuppressWarnings("UnnecessaryBoxing")
     public void testGetDomainValue() throws NoSuchMethodException {
-        final ExtendedElementInformation information = new PropertyInformation<Double>(HardCodedCitations.ISO_19115,
+        final ExtendedElementInformation information = new PropertyInformation<>(HardCodedCitations.ISO_19115,
                 "maxRelativeHumidity", EnvironmentalRecord.class.getMethod("getMaxRelativeHumidity"), Double.class,
                 DefaultEnvironmentalRecord.class.getMethod("getMaxRelativeHumidity").getAnnotation(ValueRange.class));
 
@@ -157,7 +158,7 @@ public final strictfp class PropertyInformationTest extends TestCase {
      * Tests the {@link PropertyInformation#toString()} method.
      * All information in the expected strings have been validated by previous tests in this class.
      *
-     * @throws NoSuchMethodException Should never happen.
+     * @throws NoSuchMethodException if the {@code getTitle()} or other method has not been found.
      */
     @Test
     @DependsOnMethod({"testTitle", "testPresentationForm"})
@@ -172,7 +173,7 @@ public final strictfp class PropertyInformationTest extends TestCase {
     /**
      * Tests serialization.
      *
-     * @throws NoSuchMethodException Should never happen.
+     * @throws NoSuchMethodException if the {@code getTitle()} method has not been found.
      */
     @Test
     public void testSerialization() throws NoSuchMethodException {

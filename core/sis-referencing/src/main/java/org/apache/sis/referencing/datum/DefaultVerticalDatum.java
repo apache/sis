@@ -17,6 +17,7 @@
 package org.apache.sis.referencing.datum;
 
 import java.util.Map;
+import java.util.Objects;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -29,13 +30,11 @@ import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.internal.jaxb.Context;
 import org.apache.sis.internal.jaxb.LegacyNamespaces;
-import org.apache.sis.internal.referencing.VerticalDatumTypes;
+import org.apache.sis.internal.metadata.WKTKeywords;
+import org.apache.sis.internal.metadata.VerticalDatumTypes;
+import org.apache.sis.internal.metadata.MetadataUtilities;
 
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
-import static org.apache.sis.internal.referencing.ReferencingUtilities.canSetProperty;
-
-// Branch-dependent imports
-import org.apache.sis.internal.jdk7.Objects;
 
 
 /**
@@ -55,8 +54,8 @@ import org.apache.sis.internal.jdk7.Objects;
  *       {@link org.apache.sis.referencing.CommonCRS.Vertical#datum()}.</li>
  *   <li>Create a {@code VerticalDatum} from an identifier in a database by invoking
  *       {@link org.opengis.referencing.datum.DatumAuthorityFactory#createVerticalDatum(String)}.</li>
- *   <li>Create a {@code VerticalDatum} by invoking the {@code createVerticalDatum(…)}
- *       method defined in the {@link org.opengis.referencing.datum.DatumFactory} interface.</li>
+ *   <li>Create a {@code VerticalDatum} by invoking the {@code DatumFactory.createVerticalDatum(…)} method
+ *       (implemented for example by {@link org.apache.sis.referencing.factory.GeodeticObjectFactory}).</li>
  *   <li>Create a {@code DefaultVerticalDatum} by invoking the
  *       {@linkplain #DefaultVerticalDatum(Map, VerticalDatumType) constructor}.</li>
  * </ol>
@@ -73,13 +72,15 @@ import org.apache.sis.internal.jdk7.Objects;
  * all components were created using only SIS factories and static constants.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.4
  * @version 0.4
- * @module
  *
  * @see org.apache.sis.referencing.CommonCRS.Vertical#datum()
  * @see org.apache.sis.referencing.cs.DefaultVerticalCS
  * @see org.apache.sis.referencing.crs.DefaultVerticalCRS
+ * @see org.apache.sis.referencing.factory.GeodeticAuthorityFactory#createVerticalDatum(String)
+ *
+ * @since 0.4
+ * @module
  */
 @XmlType(name = "VerticalDatumType")
 @XmlRootElement(name = "VerticalDatum")
@@ -97,14 +98,6 @@ public class DefaultVerticalDatum extends AbstractDatum implements VerticalDatum
      * @see #getVerticalDatumType()
      */
     private VerticalDatumType type;
-
-    /**
-     * Constructs a new datum in which every attributes are set to a null value.
-     * <strong>This is not a valid object.</strong> This constructor is strictly
-     * reserved to JAXB, which will assign values to the fields using reflexion.
-     */
-    private DefaultVerticalDatum() {
-    }
 
     /**
      * Creates a vertical datum from the given properties. The properties map is given
@@ -160,8 +153,10 @@ public class DefaultVerticalDatum extends AbstractDatum implements VerticalDatum
      *   </tr>
      * </table>
      *
-     * @param properties The properties to be given to the identified object.
-     * @param type       The type of this vertical datum.
+     * @param  properties  the properties to be given to the identified object.
+     * @param  type        the type of this vertical datum.
+     *
+     * @see org.apache.sis.referencing.factory.GeodeticObjectFactory#createVerticalDatum(Map, VerticalDatumType)
      */
     public DefaultVerticalDatum(final Map<String,?> properties, final VerticalDatumType type) {
         super(properties);
@@ -176,7 +171,7 @@ public class DefaultVerticalDatum extends AbstractDatum implements VerticalDatum
      *
      * <p>This constructor performs a shallow copy, i.e. the properties are not cloned.</p>
      *
-     * @param datum The datum to copy.
+     * @param  datum  the datum to copy.
      *
      * @see #castOrCopy(VerticalDatum)
      */
@@ -191,8 +186,8 @@ public class DefaultVerticalDatum extends AbstractDatum implements VerticalDatum
      * Otherwise if the given object is already a SIS implementation, then the given object is returned unchanged.
      * Otherwise a new SIS implementation is created and initialized to the attribute values of the given object.
      *
-     * @param  object The object to get as a SIS implementation, or {@code null} if none.
-     * @return A SIS implementation containing the values of the given object (may be the
+     * @param  object  the object to get as a SIS implementation, or {@code null} if none.
+     * @return a SIS implementation containing the values of the given object (may be the
      *         given object itself), or {@code null} if the argument was null.
      */
     public static DefaultVerticalDatum castOrCopy(final VerticalDatum object) {
@@ -233,7 +228,8 @@ public class DefaultVerticalDatum extends AbstractDatum implements VerticalDatum
     private VerticalDatumType type() {
         VerticalDatumType t = type;
         if (t == null) {
-            type = t = VerticalDatumTypes.guess(this);
+            final ReferenceIdentifier name = super.getName();
+            type = t = VerticalDatumTypes.guess(name != null ? name.getCode() : null, super.getAlias(), null);
         }
         return t;
     }
@@ -241,11 +237,110 @@ public class DefaultVerticalDatum extends AbstractDatum implements VerticalDatum
     /**
      * Returns the type of this vertical datum.
      *
-     * @return The type of this vertical datum.
+     * <div class="note"><b>Historical note:</b>
+     * this property was defined in the ISO 19111 specification published in 2003,
+     * but removed from the revision published 2007.
+     * This property provides an information similar to the {@linkplain #getAnchorPoint() anchor definition},
+     * but in a programmatic way more suitable to coordinate transformation engines.</div>
+     *
+     * @return the type of this vertical datum.
      */
     @Override
     public VerticalDatumType getVerticalDatumType() {
         return type();
+    }
+
+    /**
+     * Compare this vertical datum with the specified object for equality.
+     *
+     * @param  object  the object to compare to {@code this}.
+     * @param  mode    {@link ComparisonMode#STRICT STRICT} for performing a strict comparison, or
+     *                 {@link ComparisonMode#IGNORE_METADATA IGNORE_METADATA} for comparing only
+     *                 properties relevant to coordinate transformations.
+     * @return {@code true} if both objects are equal.
+     */
+    @Override
+    public boolean equals(final Object object, final ComparisonMode mode) {
+        if (object == this) {
+            return true;                                                    // Slight optimization.
+        }
+        if (!super.equals(object, mode)) {
+            return false;
+        }
+        switch (mode) {
+            case STRICT: {
+                return type().equals(((DefaultVerticalDatum) object).type());
+            }
+            case BY_CONTRACT: {
+                return Objects.equals(getVerticalDatumType(), ((VerticalDatum) object).getVerticalDatumType());
+            }
+            default: {
+                /*
+                 * VerticalDatumType is considered as metadata because it is related to the anchor definition,
+                 * which is itself considered as metadata. Furthermore GeodeticObjectParser and EPSGDataAccess
+                 * do not always set this property to the same value: the former uses the information provided
+                 * by the coordinate system axis while the other does not.
+                 */
+                return true;
+            }
+        }
+    }
+
+    /**
+     * Invoked by {@code hashCode()} for computing the hash code when first needed.
+     * See {@link org.apache.sis.referencing.AbstractIdentifiedObject#computeHashCode()}
+     * for more information.
+     *
+     * @return the hash code value. This value may change in any future Apache SIS version.
+     */
+    @Override
+    protected long computeHashCode() {
+        return super.computeHashCode() + type().hashCode();
+    }
+
+    /**
+     * Formats this datum as a <cite>Well Known Text</cite> {@code VerticalDatum[…]} element.
+     *
+     * <div class="note"><b>Compatibility note:</b>
+     * OGC 01-009 defined numerical codes for various vertical datum types, for example 2005 for geoidal height
+     * and 2002 for ellipsoidal height. Such codes were formatted for all {@code Datum} subtypes in WKT 1.
+     * Datum types became provided only for vertical datum in the ISO 19111:2003 specification, then removed
+     * completely in ISO 19111:2007.</div>
+     *
+     * @return {@code "VerticalDatum"} (WKT 2) or {@code "Vert_Datum"} (WKT 1).
+     *
+     * @see <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html#71">WKT 2 specification §10.2</a>
+     */
+    @Override
+    protected String formatTo(final Formatter formatter) {
+        super.formatTo(formatter);
+        if (formatter.getConvention().majorVersion() == 1) {
+            formatter.append(VerticalDatumTypes.toLegacy(type()));
+            return WKTKeywords.Vert_Datum;
+        }
+        return formatter.shortOrLong(WKTKeywords.VDatum, WKTKeywords.VerticalDatum);
+    }
+
+
+
+
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+    ////////                                                                                  ////////
+    ////////                               XML support with JAXB                              ////////
+    ////////                                                                                  ////////
+    ////////        The following methods are invoked by JAXB using reflection (even if       ////////
+    ////////        they are private) or are helpers for other methods invoked by JAXB.       ////////
+    ////////        Those methods can be safely removed if Geographic Markup Language         ////////
+    ////////        (GML) support is not needed.                                              ////////
+    ////////                                                                                  ////////
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Constructs a new datum in which every attributes are set to a null value.
+     * <strong>This is not a valid object.</strong> This constructor is strictly
+     * reserved to JAXB, which will assign values to the fields using reflexion.
+     */
+    private DefaultVerticalDatum() {
     }
 
     /**
@@ -263,68 +358,10 @@ public class DefaultVerticalDatum extends AbstractDatum implements VerticalDatum
      * Invoked by JAXB only. The vertical datum type is set only if it has not already been specified.
      */
     private void setTypeElement(final VerticalDatumType t) {
-        if (t != null && canSetProperty(DefaultVerticalDatum.class, "setTypeElement", "verticalDatumType", type != null)) {
+        if (type == null) {
             type = t;
+        } else {
+            MetadataUtilities.propertyAlreadySet(DefaultVerticalDatum.class, "setTypeElement", "verticalDatumType");
         }
-    }
-
-    /**
-     * Compare this vertical datum with the specified object for equality.
-     *
-     * @param  object The object to compare to {@code this}.
-     * @param  mode {@link ComparisonMode#STRICT STRICT} for performing a strict comparison, or
-     *         {@link ComparisonMode#IGNORE_METADATA IGNORE_METADATA} for comparing only properties
-     *         relevant to coordinate transformations.
-     * @return {@code true} if both objects are equal.
-     */
-    @Override
-    public boolean equals(final Object object, final ComparisonMode mode) {
-        if (object == this) {
-            return true; // Slight optimization.
-        }
-        if (!super.equals(object, mode)) {
-            return false;
-        }
-        switch (mode) {
-            case STRICT: {
-                return type().equals(((DefaultVerticalDatum) object).type());
-            }
-            default: {
-                return Objects.equals(getVerticalDatumType(), ((VerticalDatum) object).getVerticalDatumType());
-            }
-        }
-    }
-
-    /**
-     * Invoked by {@code hashCode()} for computing the hash code when first needed.
-     * See {@link org.apache.sis.referencing.AbstractIdentifiedObject#computeHashCode()}
-     * for more information.
-     *
-     * @return The hash code value. This value may change in any future Apache SIS version.
-     */
-    @Override
-    protected long computeHashCode() {
-        return super.computeHashCode() + type().hashCode();
-    }
-
-    /**
-     * Formats this datum as a <cite>Well Known Text</cite> {@code VerticalDatum[…]} element.
-     *
-     * <div class="note"><b>Compatibility note:</b>
-     * OGC 01-009 defined numerical codes for various vertical datum types, for example 2005 for geoidal height
-     * and 2002 for ellipsoidal height. Such codes were formatted for all {@code Datum} subtypes in WKT 1.
-     * Datum types became provided only for vertical datum in the ISO 19111:2003 specification, then removed
-     * completely in ISO 19111:2007.</div>
-     *
-     * @return {@code "VerticalDatum"} (WKT 2) or {@code "Vert_Datum"} (WKT 1).
-     */
-    @Override
-    protected String formatTo(final Formatter formatter) {
-        super.formatTo(formatter);
-        if (formatter.getConvention().majorVersion() == 1) {
-            formatter.append(VerticalDatumTypes.toLegacy(type().ordinal()));
-            return "Vert_Datum";
-        }
-        return "VerticalDatum";
     }
 }

@@ -35,8 +35,8 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
  * Tests {@link SingletonAttribute}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.5
  * @version 0.5
+ * @since   0.5
  * @module
  */
 @DependsOn({
@@ -49,7 +49,7 @@ public final strictfp class SingletonAttributeTest extends TestCase {
      * This attribute has a default value.
      */
     static SingletonAttribute<String> city() {
-        return new SingletonAttribute<String>(DefaultAttributeTypeTest.city());
+        return new SingletonAttribute<>(DefaultAttributeTypeTest.city());
     }
 
     /**
@@ -57,7 +57,7 @@ public final strictfp class SingletonAttributeTest extends TestCase {
      * This attribute has no default value.
      */
     static SingletonAttribute<Integer> population() {
-        return new SingletonAttribute<Integer>(DefaultAttributeTypeTest.population(new HashMap<String,Object>(4)));
+        return new SingletonAttribute<>(DefaultAttributeTypeTest.population(new HashMap<String,Object>(4)));
     }
 
     /**
@@ -65,7 +65,7 @@ public final strictfp class SingletonAttributeTest extends TestCase {
      * This applies only to features of type "Capital".
      */
     static SingletonAttribute<String> parliament() {
-        return new SingletonAttribute<String>(DefaultAttributeTypeTest.parliament());
+        return new SingletonAttribute<>(DefaultAttributeTypeTest.parliament());
     }
 
     /**
@@ -105,16 +105,16 @@ public final strictfp class SingletonAttributeTest extends TestCase {
         ((AbstractAttribute) attribute).setValue(4.5f);
         quality = attribute.quality();
         assertEquals("scope.level", ScopeCode.ATTRIBUTE, quality.getScope().getLevel());
-        assertDomainConsistencyEquals("population", "Property “population” does not accept instances of ‘Float’.",
+        assertDomainConsistencyEquals("population", "Expected an instance of ‘Integer’ for the “population” property, but got an instance of ‘Float’.",
                 (DomainConsistency) getSingleton(quality.getReports()));
     }
 
     /**
      * Verifies that the given element reports a validation failure with the given explanation.
      *
-     * @param propertyName The name of the property that failed validation.
-     * @param explanation  The expected explanation.
-     * @param consistency  The report element to test.
+     * @param  propertyName  the name of the property that failed validation.
+     * @param  explanation   the expected explanation.
+     * @param  consistency   the report element to test.
      */
     private static void assertDomainConsistencyEquals(final String propertyName, final String explanation,
             final DomainConsistency consistency)
@@ -130,6 +130,7 @@ public final strictfp class SingletonAttributeTest extends TestCase {
      */
     @Test
     @DependsOnMethod("testValue")
+    @SuppressWarnings("ObjectEqualsNull")
     public void testEquals() {
         final AbstractAttribute<Integer> a1 = population();
         final AbstractAttribute<Integer> a2 = population();
@@ -151,7 +152,7 @@ public final strictfp class SingletonAttributeTest extends TestCase {
     /**
      * Tests {@link SingletonAttribute#clone()}.
      *
-     * @throws CloneNotSupportedException Should never happen.
+     * @throws CloneNotSupportedException should never happen.
      */
     @Test
     @DependsOnMethod("testEquals")

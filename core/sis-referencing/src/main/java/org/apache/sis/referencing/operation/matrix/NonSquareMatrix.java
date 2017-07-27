@@ -17,18 +17,19 @@
 package org.apache.sis.referencing.operation.matrix;
 
 import org.opengis.referencing.operation.Matrix;
-import org.apache.sis.util.resources.Errors;
+import org.apache.sis.internal.referencing.Resources;
 
 
 /**
  * A matrix which is not square.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.4
  * @version 0.4
- * @module
  *
  * @see Matrices#createDiagonal(int, int)
+ *
+ * @since 0.4
+ * @module
  */
 final class NonSquareMatrix extends GeneralMatrix {
     /**
@@ -41,11 +42,11 @@ final class NonSquareMatrix extends GeneralMatrix {
      * If {@code setToIdentity} is {@code true}, then the elements
      * on the diagonal (<var>j</var> == <var>i</var>) are set to 1.
      *
-     * @param numRow Number of rows.
-     * @param numCol Number of columns.
-     * @param setToIdentity {@code true} for initializing the matrix to the identity matrix,
-     *        or {@code false} for leaving it initialized to zero.
-     * @param precision 1 for normal precision, or 2 for extended precision.
+     * @param numRow         number of rows.
+     * @param numCol         number of columns.
+     * @param setToIdentity  {@code true} for initializing the matrix to the identity matrix,
+     *                       or {@code false} for leaving it initialized to zero.
+     * @param precision      1 for normal precision, or 2 for extended precision.
      */
     NonSquareMatrix(final int numRow, final int numCol, final boolean setToIdentity, final int precision) {
         super(numRow, numCol, setToIdentity, precision);
@@ -56,9 +57,9 @@ final class NonSquareMatrix extends GeneralMatrix {
      * The array values are copied in one row at a time in row major fashion.
      * The array shall be exactly {@code numRow*numCol} in length.
      *
-     * @param numRow Number of rows.
-     * @param numCol Number of columns.
-     * @param elements Initial values.
+     * @param numRow    number of rows.
+     * @param numCol    number of columns.
+     * @param elements  initial values.
      */
     NonSquareMatrix(final int numRow, final int numCol, final double[] elements) {
         super(numRow, numCol, elements);
@@ -67,7 +68,7 @@ final class NonSquareMatrix extends GeneralMatrix {
     /**
      * Constructs a new matrix and copies the initial values from the given matrix.
      *
-     * @param matrix The matrix to copy.
+     * @param matrix  the matrix to copy.
      */
     NonSquareMatrix(final Matrix matrix) {
         super(matrix);
@@ -85,9 +86,9 @@ final class NonSquareMatrix extends GeneralMatrix {
      */
     @Override
     public void transpose() {
-        final short numRow = this.numRow; // Protection against accidental changes before we are done.
+        final short numRow = this.numRow;                 // Protection against accidental changes before we are done.
         final short numCol = this.numCol;
-        final int   errors = indexOfErrors(numRow, numCol, elements); // Where error values start, or 0 if none.
+        final int   errors = indexOfErrors(numRow, numCol, elements);       // Where error values start, or 0 if none.
         final double[] copy = elements.clone();
         int k = 0;
         for (int j=0; j<numRow; j++) {
@@ -178,22 +179,22 @@ final class NonSquareMatrix extends GeneralMatrix {
      * like time.
      */
     private MatrixSIS inverseDimensionReduction() throws NoninvertibleMatrixException {
-        final int numRow = this.numRow; // Protection against accidental changes.
+        final int numRow = this.numRow;                         // Protection against accidental changes.
         final int numCol = this.numCol;
         final int length = numRow * numCol;
         int i  = numCol;
-        int oi = numCol - numRow; // Initialized to the maximal amount of columns that we may omit.
+        int oi = numCol - numRow;       // Initialized to the maximal amount of columns that we may omit.
         final int[] omitted = new int[oi];
 next:   do {
             if (--i < 0) {
-                throw nonInvertible(); // Not enough columns that we can omit.
+                throw nonInvertible();                            // Not enough columns that we can omit.
             }
             for (int j=length + i; (j -= numCol) >= 0;) {
                 if (elements[j] != 0) {
                     continue next;
                 }
             }
-            omitted[--oi] = i; // Found a column which contains only 0 elements.
+            omitted[--oi] = i;                          // Found a column which contains only 0 elements.
         } while (oi != 0);
         /*
          * Found enough columns containing only zero elements. Create a square matrix omitting those columns,
@@ -203,7 +204,7 @@ next:   do {
         int j = 0;
         for (i=0; i<numCol; i++) {
             if (oi != omitted.length && i == omitted[oi]) oi++;
-            else copyColumn(this, i, squareMatrix, j++); // Copy only if not skipped.
+            else copyColumn(this, i, squareMatrix, j++);                     // Copy only if not skipped.
         }
         // If the source matrix does not use double-double arithmetic, infer the error terms.
         if (indexOfErrors(numRow, numCol, elements) == 0) {
@@ -217,7 +218,7 @@ next:   do {
         final NonSquareMatrix inverse = new NonSquareMatrix(numCol, numRow, false, 2);
         for (oi=0, j=0, i=0; i<numCol; i++) {
             if (oi != omitted.length && i == omitted[oi]) {
-                inverse.setElement(i, numRow-1, Double.NaN); // Translation term to NaN, remaining to 0.
+                inverse.setElement(i, numRow-1, Double.NaN);  // Translation term to NaN, remaining to 0.
                 oi++;
             } else {
                 copyRow(squareMatrix, j++, inverse, i);
@@ -227,28 +228,39 @@ next:   do {
     }
 
     /**
-     * Inverse a matrix for a transform where target points has more ordinates than source points.
+     * Inverses a matrix for a transform where target points has more ordinates than source points.
      * In other words, the target matrices will be a transform that discard some ordinate values.
      * We will discard the ones for which the row contains only 0 or NaN elements.
+     *
+     * <p>In the special case where the last row is of the form [0 0 … 0 1] as in affine transforms,
+     * this method also omits rows that contain only a translation term. We allow that because if we
+     * do not omit those rows, then the matrix will be non-invertible anyway. This is true only when
+     * the last row contains only zero except in the last column ([0 0 … 0 n] where <var>n</var> can
+     * be any value). We restrict <var>n</var> to 1 for now because a different value may indicate a
+     * matrix created for another purpose than coordinate conversions.</p>
      */
     private MatrixSIS inverseDimensionIncrease() throws NoninvertibleMatrixException {
-        final int numRow = this.numRow; // Protection against accidental changes.
+        final int numRow = this.numRow;                     // Protection against accidental changes.
         final int numCol = this.numCol;
         int j  = numRow;
-        int oi = numRow - numCol; // Initialized to the maximal amount of rows that we may discard.
+        int oi = numRow - numCol;   // Initialized to the maximal amount of rows that we may discard.
         final int[] omitted = new int[oi];
+        final boolean ignoreTranslation = isAffine(false);
+        if (ignoreTranslation) j--;                         // Last row already verified by isAffine().
 next:   do {
             if (--j < 0) {
-                throw nonInvertible(); // Not enough rows that we can omit.
+                throw nonInvertible();                      // Not enough rows that we can omit.
             }
             final int offset = j * numCol;
-            for (int i=offset + numCol; --i >= offset;) {
+            int i = offset + numCol;
+            if (ignoreTranslation) i--;
+            while (--i >= offset) {
                 final double element = elements[i];
                 if (element != 0 && !Double.isNaN(element)) {
                     continue next;
                 }
             }
-            omitted[--oi] = j; // Found a row which contains only 0 or NaN elements.
+            omitted[--oi] = j;                  // Found a row which contains only 0 or NaN elements.
         } while (oi != 0);
         /*
          * Found enough rows containing only zero elements. Create a square matrix omitting those rows,
@@ -258,7 +270,7 @@ next:   do {
         int i = 0;
         for (j=0; j<numRow; j++) {
             if (oi != omitted.length && j == omitted[oi]) oi++;
-            else copyRow(this, j, squareMatrix, i++); // Copy only if not skipped.
+            else copyRow(this, j, squareMatrix, i++);                   // Copy only if not skipped.
         }
         if (indexOfErrors(numRow, numCol, elements) == 0) {
             inferErrors(squareMatrix.elements);
@@ -281,10 +293,10 @@ next:   do {
      * The target matrix must have the same number of rows than the source matrix, and must have enough
      * room for error terms (this is not verified).
      *
-     * @param source    The matrix from which to copy a column.
-     * @param srcIndex  Index of the column to copy from the source matrix.
-     * @param target    The matrix where to copy the column.
-     * @param dstIndex  Index of the column where to copy in the target matrix.
+     * @param  source     the matrix from which to copy a column.
+     * @param  srcIndex   index of the column to copy from the source matrix.
+     * @param  target     the matrix where to copy the column.
+     * @param  dstIndex   index of the column where to copy in the target matrix.
      */
     private static void copyColumn(final GeneralMatrix source, int srcIndex, final GeneralMatrix target, int dstIndex) {
         assert target.numRow == source.numRow;
@@ -300,10 +312,10 @@ next:   do {
      * The target matrix must have the same number of columns than the source matrix, and must have
      * enough room for error terms (this is not verified).
      *
-     * @param source    The matrix from which to copy a row.
-     * @param srcIndex  Index of the row to copy from the source matrix.
-     * @param target    The matrix where to copy the row.
-     * @param dstIndex  Index of the row where to copy in the target matrix.
+     * @param  source     the matrix from which to copy a row.
+     * @param  srcIndex   index of the row to copy from the source matrix.
+     * @param  target     the matrix where to copy the row.
+     * @param  dstIndex   index of the row where to copy in the target matrix.
      */
     private static void copyRow(final GeneralMatrix source, int srcIndex, final GeneralMatrix target, int dstIndex) {
         final int numCol = target.numCol;
@@ -322,13 +334,14 @@ next:   do {
      * Returns the exception for a non-invertible transform.
      */
     private NoninvertibleMatrixException nonInvertible() {
-        return new NoninvertibleMatrixException(Errors.format(Errors.Keys.NonInvertibleMatrix_2, numRow, numCol));
+        return new NoninvertibleMatrixException(Resources.format(Resources.Keys.NonInvertibleMatrix_2, numRow, numCol));
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
+    @SuppressWarnings("CloneDoesntCallSuperClone")
     public MatrixSIS clone() {
         return new NonSquareMatrix(this);
     }

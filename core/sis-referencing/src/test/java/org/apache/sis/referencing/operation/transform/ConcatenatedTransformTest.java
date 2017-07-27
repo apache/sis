@@ -16,6 +16,7 @@
  */
 package org.apache.sis.referencing.operation.transform;
 
+import org.opengis.util.FactoryException;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.internal.referencing.j2d.AffineTransform2D;
@@ -30,8 +31,8 @@ import static org.opengis.test.Assert.*;
  * Tests the {@link ConcatenatedTransform} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
+ * @version 0.7
  * @since   0.5
- * @version 0.5
  * @module
  */
 @DependsOn(ProjectiveTransformTest.class)
@@ -40,17 +41,12 @@ public final strictfp class ConcatenatedTransformTest extends MathTransformTestC
      * Tests the concatenation of two affine transforms than can be represented
      * as a {@link ConcatenatedTransformDirect2D}.
      *
-     * @throws TransformException Should never happen.
+     * @throws TransformException if an error occurred while transforming the test coordinate.
      */
     @Test
     public void testDirect2D() throws TransformException {
-        final AffineTransform2D first = new AffineTransform2D();
-        first.translate(2,4);
-        first.freeze();
-
-        final AffineTransform2D second = new AffineTransform2D();
-        second.translate(0.25, 0.75);
-        second.freeze();
+        final AffineTransform2D first  = new AffineTransform2D(1, 0, 0, 1, 2.00, 4.00);    // translate(2, 4)
+        final AffineTransform2D second = new AffineTransform2D(1, 0, 0, 1, 0.25, 0.75);    // translate(0.25, 0.75);
 
         // Direct for 2D case.
         tolerance = 1E-10;
@@ -86,28 +82,27 @@ public final strictfp class ConcatenatedTransformTest extends MathTransformTestC
      * Tests the concatenation of two affine transforms than can not be represented as a
      * {@link ConcatenatedTransformDirect}. The slower {@link ConcatenatedTransform} shall be used.
      *
-     * @throws TransformException Should never happen.
+     * @throws FactoryException if an error occurred while creating the math transform to test.
+     * @throws TransformException if an error occurred while transforming the test coordinate.
      */
     @Test
     @org.junit.Ignore("Missing implementation of DimensionFilter.")
-    public void testGeneric() throws TransformException {
+    public void testGeneric() throws FactoryException, TransformException {
         final MathTransform first = null; //MathTransforms.dimensionFilter(4, new int[] {1,3});
 
-        final AffineTransform2D second = new AffineTransform2D();
-        second.scale(0.5, 0.25);
-        second.freeze();
+        final AffineTransform2D second = new AffineTransform2D(0.5, 0, 0, 0.25, 0, 0);  // scale(0.5, 0.25);
 
         transform = new ConcatenatedTransform(first, second);
         isInverseTransformSupported = false;
         validate();
         final double[] source = generateRandomCoordinates(CoordinateDomain.PROJECTED, 0);
-        final double[] target = new double[source.length / 2]; // Going from 4 to 2 dimensions.
+        final double[] target = new double[source.length / 2];                  // Going from 4 to 2 dimensions.
         first .transform(source, 0, target, 0, target.length/2);
         second.transform(target, 0, target, 0, target.length/2);
         verifyTransform(source, target);
 
         // Optimized case.
-        transform = ConcatenatedTransform.create(first, second);
+        transform = ConcatenatedTransform.create(first, second, null);
         assertInstanceOf("Expected optimized concatenation through matrix multiplication.", ProjectiveTransform.class, transform);
         validate();
         verifyTransform(source, target);
@@ -115,15 +110,17 @@ public final strictfp class ConcatenatedTransformTest extends MathTransformTestC
 
     /**
      * Tests the concatenation of a 3D affine transform with a pass-through transform.
-     * The {@link ConcatenatedTransform#create(MathTransform, MathTransform)} method
-     * should optimize this case.
+     * The {@link ConcatenatedTransform#create(MathTransform, MathTransform, MathTransformFactory)}
+     * method should optimize this case.
+     *
+     * @throws FactoryException if an error occurred while creating the math transform to test.
      */
     @Test
-    public void testPassthrough() {
-        final MathTransform kernel = new PseudoTransform(2, 3); // Any non-linear transform.
+    public void testPassthrough() throws FactoryException {
+        final MathTransform kernel = new PseudoTransform(2, 3);                     // Any non-linear transform.
         final MathTransform passth = PassThroughTransform.create(0, kernel, 1);
         final Matrix4 matrix = new Matrix4();
-        transform = ConcatenatedTransform.create(MathTransforms.linear(matrix), passth);
+        transform = ConcatenatedTransform.create(MathTransforms.linear(matrix), passth, null);
         assertSame("Identity transform should be ignored.", passth, transform);
         assertEquals("Source dimensions", 3, transform.getSourceDimensions());
         assertEquals("Target dimensions", 4, transform.getTargetDimensions());
@@ -134,7 +131,7 @@ public final strictfp class ConcatenatedTransformTest extends MathTransformTestC
          */
         matrix.m00 = 3;
         matrix.m13 = 2;
-        transform = ConcatenatedTransform.create(MathTransforms.linear(matrix), passth);
+        transform = ConcatenatedTransform.create(MathTransforms.linear(matrix), passth, null);
         assertInstanceOf("Expected a new passthrough transform.", PassThroughTransform.class, transform);
         final MathTransform subTransform = ((PassThroughTransform) transform).subTransform;
         assertInstanceOf("Expected a new concatenated transform.", ConcatenatedTransform.class, subTransform);
@@ -146,7 +143,7 @@ public final strictfp class ConcatenatedTransformTest extends MathTransformTestC
          * can not anymore be concatenated with the sub-transform.
          */
         matrix.m22 = 4;
-        transform = ConcatenatedTransform.create(MathTransforms.linear(matrix), passth);
+        transform = ConcatenatedTransform.create(MathTransforms.linear(matrix), passth, null);
         assertInstanceOf("Expected a new concatenated transform.", ConcatenatedTransform.class, transform);
         assertSame(passth, ((ConcatenatedTransform) transform).transform2);
         assertEquals("Source dimensions", 3, transform.getSourceDimensions());

@@ -30,8 +30,8 @@ import org.apache.sis.util.collection.BackingStoreException;
  * {@link Latitude} instances instead of {@link Double}.
  *
  * @author  Martin Desruisseaux (Geomatys)
+ * @version 0.8
  * @since   0.4
- * @version 0.4
  * @module
  */
 final class SpecialCases extends PropertyAccessor {
@@ -43,13 +43,15 @@ final class SpecialCases extends PropertyAccessor {
     /**
      * Creates a new property accessor for the specified metadata implementation.
      *
-     * @param  standard The standard which define the {@code type} interface.
-     * @param  type The interface implemented by the metadata, which must be
-     *         the value returned by {@link #getStandardType(Class, String)}.
-     * @param  implementation The class of metadata implementations, or {@code type} if none.
+     * @param  standard        the standard which define the {@code type} interface.
+     * @param  type            the interface implemented by the metadata, which must be
+     *                         the value returned by {@link MetadataStandard#findInterface(CacheKey)}.
+     * @param  implementation  the class of metadata implementations, or {@code type} if none.
+     * @param  standardImpl    the implementation specified by the {@link MetadataStandard}, or {@code null} if none.
+     *                         This is the same than {@code implementation} unless a custom implementation is used.
      */
-    SpecialCases(final Citation standard, final Class<?> type, final Class<?> implementation) {
-        super(standard, type, implementation);
+    SpecialCases(final Citation standard, final Class<?> type, final Class<?> implementation, final Class<?> standardImpl) {
+        super(standard, type, implementation, standardImpl);
         assert isSpecialCase(type) : type;
         westBoundLongitude = indexOf("westBoundLongitude", true);
         eastBoundLongitude = indexOf("eastBoundLongitude", true);
@@ -60,7 +62,7 @@ final class SpecialCases extends PropertyAccessor {
     /**
      * Returns {@code true} if the given class is a special case handled by the {@link SpecialCases} class.
      *
-     * @param  type The interface implemented by the metadata.
+     * @param  type  the interface implemented by the metadata.
      * @return {@code true} if the given type is a special case.
      */
     static boolean isSpecialCase(final Class<?> type) {
@@ -68,8 +70,8 @@ final class SpecialCases extends PropertyAccessor {
     }
 
     /**
-     * Delegates to {@link PropertyAccessor#type(int)}, then substitutes the type for the properties
-     * handled in a special way.
+     * Delegates to {@link PropertyAccessor#type(int, TypeValuePolicy)},
+     * then substitutes the type for the properties handled in a special way.
      */
     @Override
     Class<?> type(final int index, final TypeValuePolicy policy) {

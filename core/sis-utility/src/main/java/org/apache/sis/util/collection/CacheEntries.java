@@ -35,12 +35,13 @@ import java.lang.ref.Reference;
  * <div class="section">Thread safety</div>
  * This class is thread-safe if and only if the {@code Set} given to the constructor is thread-safe.
  *
- * @param <K> The type of key objects.
- * @param <V> The type of value objects.
- *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.3
+ *
+ * @param <K>  the type of key objects.
+ * @param <V>  the type of value objects.
+ *
+ * @since 0.3
  * @module
  */
 final class CacheEntries<K,V> extends AbstractSet<Map.Entry<K,V>> {
@@ -52,7 +53,7 @@ final class CacheEntries<K,V> extends AbstractSet<Map.Entry<K,V>> {
     /**
      * Wraps the given set of entries of a {@link Cache#map}.
      *
-     * @param entries The set of entries. Implementation shall support concurrency.
+     * @param  entries  the set of entries. Implementation shall support concurrency.
      */
     CacheEntries(final Set<Map.Entry<K,Object>> entries) {
         this.entries = entries;
@@ -80,12 +81,12 @@ final class CacheEntries<K,V> extends AbstractSet<Map.Entry<K,V>> {
      */
     @Override
     public Iterator<Map.Entry<K,V>> iterator() {
-        return new Iter<K,V>(entries.iterator());
+        return new Iter<>(entries.iterator());
     }
 
     /**
-     * An iterator over the entries in the {@link Cache#map}. Handlers will be skipped and the
-     * values of weak references are returned instead of the {@link Reference} object.
+     * An iterator over the entries in the {@link Cache#map}. Handlers will be skipped and
+     * the values of weak references are returned instead of the {@link Reference} object.
      */
     private static final class Iter<K,V> implements Iterator<Map.Entry<K,V>> {
         /**
@@ -123,7 +124,7 @@ final class CacheEntries<K,V> extends AbstractSet<Map.Entry<K,V>> {
                         continue;
                     }
                 }
-                next = new SimpleEntry<K,V>(entry.getKey(), (V) value);
+                next = new SimpleEntry<>(entry.getKey(), (V) value);
                 return;
             }
             next = null;

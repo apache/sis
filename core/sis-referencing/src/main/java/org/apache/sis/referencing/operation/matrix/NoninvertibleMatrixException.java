@@ -29,8 +29,8 @@ import org.opengis.referencing.operation.NoninvertibleTransformException;
  * operation is not invertible.</div>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.4
  * @version 0.4
+ * @since   0.4
  * @module
  */
 public class NoninvertibleMatrixException extends NoninvertibleTransformException {
@@ -49,7 +49,7 @@ public class NoninvertibleMatrixException extends NoninvertibleTransformExceptio
     /**
      * Constructs a new exception with the specified detail message.
      *
-     * @param message The detail message, or {@code null} if none.
+     * @param message  the detail message, or {@code null} if none.
      */
     public NoninvertibleMatrixException(final String message) {
         super(message);
@@ -58,8 +58,8 @@ public class NoninvertibleMatrixException extends NoninvertibleTransformExceptio
     /**
      * Constructs a new exception with the specified detail message and cause.
      *
-     * @param message The detail message, or {@code null} if none.
-     * @param cause The cause, or {@code null} if none.
+     * @param message  the detail message, or {@code null} if none.
+     * @param cause    the cause, or {@code null} if none.
      */
     public NoninvertibleMatrixException(final String message, final Throwable cause) {
         super(message, cause);

@@ -18,17 +18,14 @@ package org.apache.sis.internal.util;
 
 import java.util.Map;
 import java.util.Set;
+import java.util.Objects;
 import java.util.Iterator;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.AbstractSet;
 import java.util.AbstractCollection;
 import java.util.NoSuchElementException;
 import org.apache.sis.io.TableAppender;
 import org.apache.sis.util.resources.Errors;
-
-// Branch-dependent imports
-import org.apache.sis.internal.jdk7.Objects;
 
 
 /**
@@ -50,7 +47,7 @@ import org.apache.sis.internal.jdk7.Objects;
  *
  * <p>Read-only subclasses need to implement the following methods:</p>
  * <ul>
- *   <li>{@link #size()}</li>
+ *   <li>{@link #size()} (not mandatory but recommended)</li>
  *   <li>{@link #get(Object)}</li>
  *   <li>{@link #entryIterator()} (non-standard method)</li>
  * </ul>
@@ -64,12 +61,13 @@ import org.apache.sis.internal.jdk7.Objects;
  *   <li>{@link #addValue(Object)} (non-standard, optional method)</li>
  * </ul>
  *
- * @param <K> The type of keys maintained by the map.
- * @param <V> The type of mapped values.
- *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.5
- * @version 0.5
+ * @version 0.8
+ *
+ * @param <K>  the type of keys maintained by the map.
+ * @param <V>  the type of mapped values.
+ *
+ * @since 0.5
  * @module
  */
 public abstract class AbstractMap<K,V> implements Map<K,V> {
@@ -83,12 +81,12 @@ public abstract class AbstractMap<K,V> implements Map<K,V> {
      *       instead than creating new {@code Map.Element} on each iterator.</li>
      * </ul>
      *
-     * @param <K> The type of keys maintained by the map.
-     * @param <V> The type of mapped values.
+     * @param <K> the type of keys maintained by the map.
+     * @param <V> the type of mapped values.
      *
      * @see AbstractMap#entryIterator()
      */
-    protected static abstract class EntryIterator<K,V> {
+    protected abstract static class EntryIterator<K,V> {
         /**
          * Moves the iterator to the next position, and returns {@code true} if there is at least one remaining element.
          *
@@ -100,7 +98,7 @@ public abstract class AbstractMap<K,V> implements Map<K,V> {
          * Returns the key at the current iterator position.
          * This method is invoked only after {@link #next()}.
          *
-         * @return The key at the current iterator position.
+         * @return the key at the current iterator position.
          */
         protected abstract K getKey();
 
@@ -108,7 +106,7 @@ public abstract class AbstractMap<K,V> implements Map<K,V> {
          * Returns the value at the current iterator position.
          * This method is invoked only after {@link #next()}.
          *
-         * @return The value at the current iterator position.
+         * @return the value at the current iterator position.
          */
         protected abstract V getValue();
 
@@ -117,10 +115,10 @@ public abstract class AbstractMap<K,V> implements Map<K,V> {
          * This method is invoked only after {@link #next()}.
          * The default implementation creates an immutable entry with {@link #getKey()} and {@link #getValue()}.
          *
-         * @return The entry at the current iterator position.
+         * @return the entry at the current iterator position.
          */
         protected Entry<K,V> getEntry() {
-            return new java.util.AbstractMap.SimpleImmutableEntry<K,V>(getKey(), getValue());
+            return new java.util.AbstractMap.SimpleImmutableEntry<>(getKey(), getValue());
         }
 
         /**
@@ -133,9 +131,146 @@ public abstract class AbstractMap<K,V> implements Map<K,V> {
     }
 
     /**
+     * Convenience {@code EntryIterator} implementation which iterates over a list of key candidates.
+     * All keys associated to a null value will be skipped.
+     *
+     * @see AbstractMap#entryIterator()
+     *
+     * @since 0.8
+     */
+    protected final class KeyIterator extends EntryIterator<K,V> {
+        /** The key candidates.              */ private final K[] keys;
+        /** Index of current key.            */ private int index = -1;
+        /** Value associated to current key. */ private V value;
+
+        /**
+         * Creates a new iterator over the given key candidates.
+         * The given array is not cloned; do not modify.
+         *
+         * @param  keys  all keys that the map may possibly contain.
+         */
+        @SafeVarargs
+        public KeyIterator(final K... keys) {this.keys = keys;}
+
+        /**
+         * Moves to the next key associated to a non-null value.
+         *
+         * @return {@code false} if this method reached iteration end.
+         */
+        @Override
+        protected boolean next() {
+            while (++index < keys.length) {
+                value = get(keys[index]);
+                if (value != null) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        @Override protected K getKey()   {return keys[index];}
+        @Override protected V getValue() {return value;}
+    }
+
+    /**
+     * An implementation of {@link EntryIterator} which delegates its work to a standard iterator.
+     * Subclasses can modify the {@link #value} or other properties during iteration.
+     *
+     * <p>This method does not implement the {@link #remove()} method, thus assuming an unmodifiable map
+     * (which is consistent with the default implementation of {@link AbstractMap} methods).
+     * Modifiable maps should override {@code remove()} themselves.</p>
+     *
+     * @param <K> the type of keys maintained by the map.
+     * @param <V> the type of mapped values.
+     *
+     * @see AbstractMap#entryIterator()
+     */
+    protected static class IteratorAdapter<K,V> extends EntryIterator<K,V> {
+        /**
+         * The standard iterator on which to delegate the work.
+         * It is safe to change this value before to invoke {@link #next()}.
+         */
+        protected Iterator<Entry<K,V>> it;
+
+        /**
+         * The entry found by the last call to {@link #next()}.
+         */
+        protected Entry<K,V> entry;
+
+        /**
+         * The value of <code>{@linkplain #entry}.getValue()}</code>.
+         * It is safe to change this value after {@link #next()} invocation.
+         */
+        protected V value;
+
+        /**
+         * Creates a new adapter initialized to the entry iterator of the given map.
+         *
+         * @param map the map from which to return entries.
+         */
+        public IteratorAdapter(final Map<K,V> map) {
+            it = map.entrySet().iterator();
+        }
+
+        /**
+         * Moves to the next entry having a non-null value. If this method returns {@code true}, then the
+         * {@link #entry} and {@link #value} fields are set to the properties of the new current entry.
+         * Otherwise (if this method returns {@code false}) the {@link #entry} and {@link #value} fields
+         * are undetermined.
+         *
+         * @return {@inheritDoc}
+         */
+        @Override
+        protected boolean next() {
+            do {
+                if (!it.hasNext()) {
+                    return false;
+                }
+                entry = it.next();
+                value = entry.getValue();
+            } while (value == null);
+            return true;
+        }
+
+        /**
+         * Returns <code>{@linkplain #entry}.getKey()}</code>.
+         *
+         * @return {@inheritDoc}
+         */
+        @Override
+        protected K getKey() {
+            return entry.getKey();
+        }
+
+        /**
+         * Returns {@link #value}, which was itself initialized to <code>{@linkplain #entry}.getValue()}</code>.
+         *
+         * @return {@inheritDoc}
+         */
+        @Override
+        protected V getValue() {
+            return value;
+        }
+    }
+
+    /**
      * For subclass constructors.
      */
     protected AbstractMap() {
+    }
+
+    /**
+     * Returns the number of key-value mappings in this map.
+     * The default implementation count the number of values returned by {@link #entryIterator()}.
+     * Subclasses should implement a more efficient method.
+     */
+    @Override
+    public int size() {
+        int count = 0;
+        for (final EntryIterator<K,V> it = entryIterator(); it.next();) {
+            if (++count == Integer.MAX_VALUE) break;
+        }
+        return count;
     }
 
     /**
@@ -145,14 +280,14 @@ public abstract class AbstractMap<K,V> implements Map<K,V> {
      */
     @Override
     public boolean isEmpty() {
-        return size() == 0;
+        return !entryIterator().next();
     }
 
     /**
      * Returns {@code true} if this map contains a value for the given name.
      * The default implementation assumes that the map can not contain {@code null} values.
      *
-     * @param  key The key for which to test the presence of a value.
+     * @param  key  the key for which to test the presence of a value.
      * @return {@code true} if the map contains a non-null value for the given key.
      */
     @Override
@@ -164,7 +299,7 @@ public abstract class AbstractMap<K,V> implements Map<K,V> {
      * Returns {@code true} if this map contains the given value.
      * The default implementation iterates over all values using the {@link #entryIterator()}.
      *
-     * @param  value The value for which to test the presence.
+     * @param  value  the value for which to test the presence.
      * @return {@code true} if the map contains the given value.
      */
     @Override
@@ -201,8 +336,8 @@ public abstract class AbstractMap<K,V> implements Map<K,V> {
      * Removes the entry for the given key in this map.
      * The default operation throws {@link UnsupportedOperationException}.
      *
-     * @param  key The key of the entry to remove.
-     * @return The previous value, or {@code null} if none.
+     * @param  key  the key of the entry to remove.
+     * @return the previous value, or {@code null} if none.
      */
     @Override
     public V remove(Object key) throws UnsupportedOperationException {
@@ -213,9 +348,9 @@ public abstract class AbstractMap<K,V> implements Map<K,V> {
      * Adds an entry for the given key in this map.
      * The default operation throws {@link UnsupportedOperationException}.
      *
-     * @param  key The key of the entry to remove.
-     * @param  value The value to associate to the given key.
-     * @return The previous value, or {@code null} if none.
+     * @param  key    the key of the entry to remove.
+     * @param  value  the value to associate to the given key.
+     * @return the previous value, or {@code null} if none.
      */
     @Override
     public V put(K key, V value) throws UnsupportedOperationException {
@@ -225,7 +360,7 @@ public abstract class AbstractMap<K,V> implements Map<K,V> {
     /**
      * Puts all entries of the given map in this map.
      *
-     * @param map The other map from which to copy the entries.
+     * @param map  the other map from which to copy the entries.
      */
     @Override
     public void putAll(final Map<? extends K, ? extends V> map) throws UnsupportedOperationException {
@@ -238,7 +373,7 @@ public abstract class AbstractMap<K,V> implements Map<K,V> {
      * Adds the given key in this map. Implementation of this method shall generate a corresponding value.
      * The default operation throws {@link UnsupportedOperationException}.
      *
-     * @param  key The key to add.
+     * @param  key  the key to add.
      * @return {@code true} if this map changed as a result of this operation.
      */
     protected boolean addKey(final K key) throws UnsupportedOperationException {
@@ -249,7 +384,7 @@ public abstract class AbstractMap<K,V> implements Map<K,V> {
      * Adds the given value in this map. Implementation of this method shall generate a corresponding key.
      * The default operation throws {@link UnsupportedOperationException}.
      *
-     * @param  value The value to add.
+     * @param  value  the value to add.
      * @return {@code true} if this map changed as a result of this operation.
      */
     protected boolean addValue(final V value) throws UnsupportedOperationException {
@@ -264,11 +399,11 @@ public abstract class AbstractMap<K,V> implements Map<K,V> {
      * and usually not retained for a long time (we often want only its iterator). Caching the set would require
      * a {@code volatile} field for thread safety, which also has cost.</p>
      *
-     * @return A view of the keys in this map.
+     * @return a view of the keys in this map.
      */
     @Override
     public Set<K> keySet() {
-        return new AbstractSet<K>() {
+        return new SetOfUnknownSize<K>() {
             @Override public void        clear()            {       AbstractMap.this.clear();}
             @Override public boolean     isEmpty()          {return AbstractMap.this.isEmpty();}
             @Override public int         size()             {return AbstractMap.this.size();}
@@ -277,7 +412,30 @@ public abstract class AbstractMap<K,V> implements Map<K,V> {
             @Override public boolean     add(K e)           {return AbstractMap.this.addKey(e);}
             @Override public Iterator<K> iterator() {
                 final EntryIterator<K,V> it = entryIterator();
-                return (it != null) ? new Keys<K,V>(it) : Collections.<K>emptySet().iterator();
+                return (it != null) ? new Keys<>(it) : Collections.<K>emptyIterator();
+            }
+
+            /** Overridden for the same reason than {@link AbstractMap#equals(Object). */
+            @Override public boolean equals(final Object object) {
+                if (object == this) {
+                    return true;
+                }
+                if (!(object instanceof Set<?>)) {
+                    return false;
+                }
+                final Set<?> that = (Set<?>) object;
+                final EntryIterator<K,V> it = entryIterator();
+                if (it == null) {
+                    return that.isEmpty();
+                }
+                int size = 0;
+                while (it.next()) {
+                    if (!that.contains(it.getKey())) {
+                        return false;
+                    }
+                    size++;
+                }
+                return size == that.size();
             }
         };
     }
@@ -289,7 +447,7 @@ public abstract class AbstractMap<K,V> implements Map<K,V> {
      * <p>The default implementation does not cache the collection on the assumption that it is very quick to create
      * and usually not retained for a long time.</p>
      *
-     * @return A view of the values in this map.
+     * @return a view of the values in this map.
      */
     @Override
     public Collection<V> values() {
@@ -301,7 +459,7 @@ public abstract class AbstractMap<K,V> implements Map<K,V> {
             @Override public boolean     add(V e)           {return AbstractMap.this.addValue(e);}
             @Override public Iterator<V> iterator() {
                 final EntryIterator<K,V> it = entryIterator();
-                return (it != null) ? new Values<K,V>(it) : Collections.<V>emptySet().iterator();
+                return (it != null) ? new Values<>(it) : Collections.<V>emptyIterator();
             }
         };
     }
@@ -312,11 +470,11 @@ public abstract class AbstractMap<K,V> implements Map<K,V> {
      * <p>The default implementation does not cache the set on the assumption that it is very quick to create
      * and usually not retained for a long time.</p>
      *
-     * @return A view of the entries in this map.
+     * @return a view of the entries in this map.
      */
     @Override
     public Set<Entry<K,V>> entrySet() {
-        return new AbstractSet<Entry<K,V>>() {
+        return new SetOfUnknownSize<Entry<K,V>>() {
             @Override public void    clear()   {       AbstractMap.this.clear();}
             @Override public boolean isEmpty() {return AbstractMap.this.isEmpty();}
             @Override public int     size()    {return AbstractMap.this.size();}
@@ -336,7 +494,30 @@ public abstract class AbstractMap<K,V> implements Map<K,V> {
             /** Returns an iterator compliant to the Map contract. */
             @Override public Iterator<Entry<K,V>> iterator() {
                 final EntryIterator<K,V> it = entryIterator();
-                return (it != null) ? new Entries<K,V>(it) : Collections.<Entry<K,V>>emptySet().iterator();
+                return (it != null) ? new Entries<>(it) : Collections.<Entry<K,V>>emptyIterator();
+            }
+
+            /** Overridden for the same reason than {@link AbstractMap#equals(Object). */
+            @Override public boolean equals(final Object object) {
+                if (object == this) {
+                    return true;
+                }
+                if (!(object instanceof Set<?>)) {
+                    return false;
+                }
+                final Set<?> that = (Set<?>) object;
+                final EntryIterator<K,V> it = entryIterator();
+                if (it == null) {
+                    return that.isEmpty();
+                }
+                int size = 0;
+                while (it.next()) {
+                    if (!that.contains(it.getEntry())) {
+                        return false;
+                    }
+                    size++;
+                }
+                return size == that.size();
             }
         };
     }
@@ -345,7 +526,10 @@ public abstract class AbstractMap<K,V> implements Map<K,V> {
      * Returns an iterator over the entries in this map.
      * It is okay (but not required) to return {@code null} if the map is empty.
      *
-     * @return An iterator over the entries in this map, or {@code null}.
+     * <div class="note"><b>Tip:</b>
+     * {@link KeyIterator} provides a convenient implementation for simple cases.</div>
+     *
+     * @return an iterator over the entries in this map, or {@code null}.
      */
     protected abstract EntryIterator<K,V> entryIterator();
 
@@ -353,7 +537,7 @@ public abstract class AbstractMap<K,V> implements Map<K,V> {
      * Base class of iterators overs keys, values or entries.
      * Those iterators wrap an {@link EntryIterator} instance.
      */
-    private static abstract class Iter<K,V> {
+    private abstract static class Iter<K,V> {
         /** The wrapped entry iterator. */
         private final EntryIterator<K,V> iterator;
 
@@ -440,7 +624,7 @@ public abstract class AbstractMap<K,V> implements Map<K,V> {
     /**
      * Compares this map with the given object for equality.
      *
-     * @param  object The other object to compare with this map.
+     * @param  object  the other object to compare with this map.
      * @return {@code true} if both objects are equal.
      */
     @Override
@@ -448,33 +632,33 @@ public abstract class AbstractMap<K,V> implements Map<K,V> {
         if (object == this) {
             return true;
         }
-        if (object instanceof Map) {
-            final Map<?,?> map = (Map<?,?>) object;
-            final EntryIterator<K,V> it = entryIterator();
-            if (it == null) {
-                return map.isEmpty();
-            }
-            /*
-             * We do not check if map.size() == size() because in some Apache SIS implementations,
-             * the size() method have to scan through all map entries. We presume that if the maps
-             * are not equal, we will find a mismatched entry soon anyway.
-             */
-            int size = 0;
-            while (it.next()) {
-                if (!it.getValue().equals(map.get(it.getKey()))) {
-                    return false;
-                }
-                size++;
-            }
-            return size == map.size();
+        if (!(object instanceof Map<?,?>)) {
+            return false;
         }
-        return false;
+        final Map<?,?> that = (Map<?,?>) object;
+        final EntryIterator<K,V> it = entryIterator();
+        if (it == null) {
+            return that.isEmpty();
+        }
+        /*
+         * We do not check if map.size() == size() because in some Apache SIS implementations,
+         * the size() method have to scan through all map entries. We presume that if the maps
+         * are not equal, we will find a mismatched entry soon anyway.
+         */
+        int size = 0;
+        while (it.next()) {
+            if (!it.getValue().equals(that.get(it.getKey()))) {
+                return false;
+            }
+            size++;
+        }
+        return size == that.size();
     }
 
     /**
      * Computes a hash code value for this map.
      *
-     * @return A hash code value.
+     * @return a hash code value.
      */
     @Override
     public int hashCode() {
@@ -491,7 +675,7 @@ public abstract class AbstractMap<K,V> implements Map<K,V> {
      * {@code java.util.AbstractMap} one, as it uses a tabular format rather than formatting all entries
      * on a single line.
      *
-     * @return A string representation of this map.
+     * @return a string representation of this map.
      */
     @Override
     public String toString() {

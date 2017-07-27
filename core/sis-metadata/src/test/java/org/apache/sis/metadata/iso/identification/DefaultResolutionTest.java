@@ -20,10 +20,12 @@ import javax.xml.bind.JAXBException;
 import org.opengis.metadata.identification.RepresentativeFraction;
 import org.apache.sis.xml.XML;
 import org.apache.sis.xml.Namespaces;
-import org.apache.sis.metadata.iso.LoggingWatcher;
+import org.apache.sis.internal.jaxb.Context;
 import org.apache.sis.internal.jaxb.Schemas;
+import org.apache.sis.test.LoggingWatcher;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
+import org.junit.After;
 import org.junit.Rule;
 import org.junit.Test;
 
@@ -34,28 +36,26 @@ import static org.apache.sis.test.Assert.*;
  * Tests {@link DefaultResolution}.
  *
  * @author  Martin Desruisseaux (Geomatys)
+ * @version 0.7
  * @since   0.3
- * @version 0.6
  * @module
  */
 @DependsOn(DefaultRepresentativeFractionTest.class)
 public final strictfp class DefaultResolutionTest extends TestCase {
     /**
-     * A JUnit {@linkplain Rule rule} for listening to log events. This field is public
-     * because JUnit requires us to do so, but should be considered as an implementation
-     * details (it should have been a private field).
+     * A JUnit {@link Rule} for listening to log events. This field is public because JUnit requires us to
+     * do so, but should be considered as an implementation details (it should have been a private field).
      */
     @Rule
-    public final LoggingWatcher listener = new LoggingWatcher() {
-        /**
-         * Ensures that the logging message contains the name of the exclusive properties.
-         */
-        @Override
-        protected void verifyMessage(final String message) {
-            assertTrue(message.contains("distance"));
-            assertTrue(message.contains("equivalentScale"));
-        }
-    };
+    public final LoggingWatcher loggings = new LoggingWatcher(Context.LOGGER);
+
+    /**
+     * Verifies that no unexpected warning has been emitted in any test defined in this class.
+     */
+    @After
+    public void assertNoUnexpectedLog() {
+        loggings.assertNoUnexpectedLog();
+    }
 
     /**
      * Tests the {@link DefaultResolution#DefaultResolution(RepresentativeFraction)} constructor.
@@ -85,11 +85,13 @@ public final strictfp class DefaultResolutionTest extends TestCase {
         metadata.setDistance(2.0);
         assertEquals("distance", Double.valueOf(2.0), metadata.getDistance());
         assertNull("equivalentScale", metadata.getEquivalentScale());
+        loggings.assertNoUnexpectedLog();
 
-        listener.maximumLogCount = 1;
         metadata.setEquivalentScale(scale);
         assertSame("equivalentScale", scale, metadata.getEquivalentScale());
         assertNull("distance", metadata.getDistance());
+        loggings.assertNextLogContains("distance", "equivalentScale");
+        loggings.assertNoUnexpectedLog();
 
         metadata.setDistance(null); // Expected to be a no-op.
         assertSame("equivalentScale", scale, metadata.getEquivalentScale());
@@ -101,14 +103,8 @@ public final strictfp class DefaultResolutionTest extends TestCase {
     }
 
     /**
-     * Tests XML (un)marshalling of a resolution element. The main purpose of this method is to test our
-     * workaround for a strange JAXB behavior (bug?).  For an unknown reason, we are unable to annotate the
-     * {@link DefaultResolution#getDistance()} method directly. Doing so cause JAXB to randomly ignores the
-     * {@code <gmd:distance>} property. Annotating a separated method which in turn invokes the real method
-     * seems to work.
-     *
-     * <p>This test creates a {@link DefaultResolution} instance which is expected to be marshalled as below
-     * (ignoring namespace declarations):</p>
+     * Tests XML (un)marshalling of a resolution element. This test creates a {@link DefaultResolution}
+     * instance which is expected to be marshalled as below (ignoring namespace declarations):
      *
      * {@preformat xml
      *   <gmd:MD_Resolution>
@@ -118,23 +114,7 @@ public final strictfp class DefaultResolutionTest extends TestCase {
      *   </gmd:MD_Resolution>
      * }
      *
-     * If we annotate the public {@code getDistance()} directly, JAXB will sometime marshals the resolution as
-     * expected, or sometime marshals an empty element as below:
-     *
-     * {@preformat xml
-     *   <gmd:MD_Resolution/>
-     * }
-     *
-     * In the later case, debugging shows that the {@code getDistance()} method is simply never invoked.
-     * Whether the distance is marshaled or not seems totally random: just executing this test many time
-     * make both cases to occur (however failures occur more often the successes).
-     *
-     * <p>Annotating an other method as a workaround seems to always work. See the {@link DefaultResolution#getValue()}
-     * javadoc for instructions about how to check if this workaround is still needed with more recent JAXB versions.</p>
-     *
-     * @throws JAXBException If an error occurred while marshalling the element.
-     *
-     * @see DefaultResolution#getValue()
+     * @throws JAXBException if an error occurred while marshalling the element.
      */
     @Test
     public void testXML() throws JAXBException {

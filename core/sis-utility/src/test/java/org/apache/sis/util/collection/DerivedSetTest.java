@@ -35,39 +35,39 @@ import static org.junit.Assert.*;
  * converted set).
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.3
+ * @since   0.3
  * @module
  */
 public final strictfp class DerivedSetTest extends TestCase implements ObjectConverter<Integer,Integer> {
     /**
      * The value to replace by {@code null}.
      */
-    protected static final int EXCLUDED = 19; // non-private for javadoc purpose.
+    protected static final int EXCLUDED = 19;                   // non-private for javadoc purpose.
 
     /**
      * Tests {@link DerivedSet} without excluded value.
      */
     @Test
     public void testNoExclusion() {
-        final Set<Integer> source = new HashSet<Integer>(Arrays.asList(2,  7,  12,  17,  20 ));
-        final Set<Integer> target = new HashSet<Integer>(Arrays.asList(20, 70, 120, 170, 200));
+        final Set<Integer> source = new HashSet<>(Arrays.asList(2,  7,  12,  17,  20 ));
+        final Set<Integer> target = new HashSet<>(Arrays.asList(20, 70, 120, 170, 200));
         final Set<Integer> tested = DerivedSet.create(source, this);
         assertEquals(target.size(), tested.size());
         assertEquals(target, tested);
 
-        assertFalse("contains(2)",       tested.contains(2 )); // Original value
-        assertTrue ("contains(20)",      tested.contains(20)); // Derived value
+        assertFalse("contains(2)",       tested.contains(2 ));              // Original value
+        assertTrue ("contains(20)",      tested.contains(20));              // Derived value
         assertTrue ("before remove(70)", source.contains(7 ));
         assertTrue (       "remove(70)", tested.remove  (70));
         assertFalse( "after remove(70)", source.contains(7 ));
-        assertTrue (       "remove(70)", target.remove(70)); // For comparison purpose.
+        assertTrue (       "remove(70)", target.remove  (70));              // For comparison purpose.
         assertEquals(target, tested);
 
         assertFalse("before add(30)", source.contains(3 ));
         assertTrue (       "add(30)", tested.add     (30));
         assertTrue ( "after add(30)", source.contains(3 ));
-        assertTrue (       "add(30)", target.add     (30)); // For comparison purpose.
+        assertTrue (       "add(30)", target.add     (30));                 // For comparison purpose.
         assertEquals(target, tested);
     }
 
@@ -76,8 +76,8 @@ public final strictfp class DerivedSetTest extends TestCase implements ObjectCon
      */
     @Test
     public void testWithExclusion() {
-        final Set<Integer> source = new HashSet<Integer>(Arrays.asList(2,  7,  12,  EXCLUDED, 20));
-        final Set<Integer> target = new HashSet<Integer>(Arrays.asList(20, 70, 120, 200));
+        final Set<Integer> source = new HashSet<>(Arrays.asList(2,  7,  12,  EXCLUDED, 20));
+        final Set<Integer> target = new HashSet<>(Arrays.asList(20, 70, 120, 200));
         final Set<Integer> tested = DerivedSet.create(source, this);
         assertEquals(target.size(), tested.size());
         assertEquals(target, tested);
@@ -97,12 +97,12 @@ public final strictfp class DerivedSetTest extends TestCase implements ObjectCon
     /**
      * Multiply the given value by 10, except value {@value #EXCLUDED}.
      *
-     * @param  value The value to multiply.
-     * @return The multiplied value, or {@code null}.
+     * @param  value  the value to multiply.
+     * @return the multiplied value, or {@code null}.
      */
     @Override
     public Integer apply(final Integer value) {
-        if (value.intValue() == EXCLUDED) {
+        if (value == EXCLUDED) {
             return null;
         }
         return value * 10;

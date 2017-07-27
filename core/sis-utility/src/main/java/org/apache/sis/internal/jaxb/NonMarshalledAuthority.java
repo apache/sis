@@ -17,20 +17,19 @@
 package org.apache.sis.internal.jaxb;
 
 import java.util.Iterator;
+import java.util.List;
 import java.util.ArrayList;
+import java.util.Map;
+import java.util.IdentityHashMap;
 import java.util.Collection;
-import java.util.Locale;
-import java.util.logging.Level;
-import java.util.logging.LogRecord;
-import java.io.Serializable;
-import java.lang.reflect.Field;
+import java.util.Collections;
+import java.io.ObjectStreamException;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
-import org.apache.sis.internal.simple.SimpleCitation;
+import org.apache.sis.internal.simple.CitationConstant;
+import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
-import org.apache.sis.util.Debug;
-import org.apache.sis.util.logging.Logging;
-import org.apache.sis.util.resources.Errors;
+import org.apache.sis.util.collection.Containers;
 import org.apache.sis.xml.IdentifierSpace;
 
 
@@ -61,33 +60,29 @@ import org.apache.sis.xml.IdentifierSpace;
  *     }
  * }
  *
- * @param <T> The type of object used as identifier values.
- *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
- * @version 0.3
- * @module
+ * @version 0.7
+ *
+ * @param <T>  the type of object used as identifier values.
  *
  * @see IdentifierSpace
+ *
+ * @since 0.3
+ * @module
  */
-public final class NonMarshalledAuthority<T> extends SimpleCitation implements IdentifierSpace<T>, Serializable {
+public final class NonMarshalledAuthority<T> extends CitationConstant.Authority<T> {
     /**
      * For cross-version compatibility.
      */
     private static final long serialVersionUID = 6299502270649111201L;
 
     /**
-     * Sets to {@code true} if {@link #getCitation(String)} has already logged a warning.
-     * This is used in order to avoid flooding the logs with the same message.
-     */
-    private static volatile boolean warningLogged;
-
-    /**
      * Ordinal values for switch statements. The constant defined here shall
      * mirror the constants defined in the {@link IdentifierSpace} interface
      * and {@link org.apache.sis.metadata.iso.citation.DefaultCitation} class.
      */
-    public static final int ID=0, UUID=1, HREF=2, XLINK=3, ISSN=4, ISBN=5;
+    @SuppressWarnings("FieldNameHidesFieldInSuperclass")
+    public static final byte ID=0, UUID=1, HREF=2, XLINK=3, ISSN=4, ISBN=5;
     // If more codes are added, please update readResolve() below.
 
     /**
@@ -98,36 +93,18 @@ public final class NonMarshalledAuthority<T> extends SimpleCitation implements I
      * versions of the SIS library (the attribute name is more reliable). This instance should
      * be replaced by one of the exiting constants at deserialization time anyway.</p>
      */
-    final transient int ordinal;
+    final transient byte ordinal;
 
     /**
-     * Creates a new enum for the given attribute.
+     * Creates a new citation for the given XML attribute name.
      *
-     * @param attribute The XML attribute name, to be returned by {@link #getName()}.
-     * @param ordinal   Ordinal value for switch statement, as one of the {@link #ID},
-     *                  {@link #UUID}, <i>etc.</i> constants.
+     * @param attribute  the XML attribute name, to be returned by {@link #getName()}.
+     * @param ordinal    ordinal value for switch statement, as one of the {@link #ID},
+     *                   {@link #UUID}, <i>etc.</i> constants.
      */
-    public NonMarshalledAuthority(final String attribute, final int ordinal) {
+    public NonMarshalledAuthority(final String attribute, final byte ordinal) {
         super(attribute);
         this.ordinal = ordinal;
-    }
-
-    /**
-     * Returns the XML attribute name with its prefix. Attribute names can be {@code "gml:id"},
-     * {@code "gco:uuid"} or {@code "xlink:href"}.
-     */
-    @Override
-    public String getName() {
-        return title;
-    }
-
-    /**
-     * Returns a string representation of this identifier space.
-     */
-    @Debug
-    @Override
-    public String toString() {
-        return "IdentifierSpace[" + title + ']';
     }
 
     /**
@@ -135,9 +112,12 @@ public final class NonMarshalledAuthority<T> extends SimpleCitation implements I
      * "special" identifiers (ISO 19139 attributes, ISBN codes...), which are recognized by
      * the implementation class of their authority.
      *
-     * @param  <T> The type of object used as identifier values.
-     * @param  identifiers The collection from which to get identifiers, or {@code null}.
-     * @return The first identifier, or {@code null} if none.
+     * <p>This method is used for implementation of {@code getIdentifier()} methods (singular form)
+     * in public metadata objects.</p>
+     *
+     * @param  <T>          the type of object used as identifier values.
+     * @param  identifiers  the collection from which to get identifiers, or {@code null}.
+     * @return the first identifier, or {@code null} if none.
      */
     public static <T extends Identifier> T getMarshallable(final Collection<? extends T> identifiers) {
         if (identifiers != null) {
@@ -156,23 +136,26 @@ public final class NonMarshalledAuthority<T> extends SimpleCitation implements I
      * method is used when the given collection is expected to contains only one ISO 19115
      * identifier.
      *
-     * @param <T> The type of object used as identifier values.
-     * @param identifiers The collection in which to add the identifier.
-     * @param id The identifier to add, or {@code null}.
+     * <p>This method is used for implementation of {@code setIdentifier(Identifier)} methods
+     * in public metadata objects.</p>
+     *
+     * @param <T>          the type of object used as identifier values.
+     * @param identifiers  the collection in which to add the identifier.
+     * @param newValue     the identifier to add, or {@code null}.
+     *
+     * @see #setMarshallables(Collection, Collection)
      */
-    public static <T extends Identifier> void setMarshallable(final Collection<T> identifiers, final T id) {
+    public static <T extends Identifier> void setMarshallable(final Collection<T> identifiers, final T newValue) {
         final Iterator<T> it = identifiers.iterator();
         while (it.hasNext()) {
             final T old = it.next();
-            if (old != null) {
-                if (old.getAuthority() instanceof NonMarshalledAuthority<?>) {
-                    continue; // Don't touch this identifier.
-                }
+            if (old != null && old.getAuthority() instanceof NonMarshalledAuthority<?>) {
+                continue;                   // Leave the identifier as-is.
             }
             it.remove();
         }
-        if (id != null) {
-            identifiers.add(id);
+        if (newValue != null) {
+            identifiers.add(newValue);
         }
     }
 
@@ -181,10 +164,15 @@ public final class NonMarshalledAuthority<T> extends SimpleCitation implements I
      * for which the authority is an instance of {@code NonMarshalledAuthority}. This should exclude
      * all {@link org.apache.sis.xml.IdentifierSpace} constants.
      *
-     * @param  identifiers The identifiers to filter, or {@code null}.
-     * @return The identifiers to marshal, or {@code null} if none.
+     * <p>This method is used for implementation of {@code getIdentifiers()} methods (plural form)
+     * in public metadata objects. Note that those methods override
+     * {@link org.apache.sis.xml.IdentifiedObject#getIdentifiers()}, which is expected to return
+     * all identifiers in normal (non-marshalling) usage.</p>
+     *
+     * @param  identifiers  the identifiers to filter, or {@code null}.
+     * @return the identifiers to marshal, or {@code null} if none.
      */
-    public static Collection<Identifier> excludeOnMarshalling(Collection<Identifier> identifiers) {
+    public static Collection<Identifier> filterOnMarshalling(Collection<Identifier> identifiers) {
         if (identifiers != null && Context.isFlagSet(Context.current(), Context.MARSHALLING)) {
             int count = identifiers.size();
             if (count != 0) {
@@ -202,121 +190,96 @@ public final class NonMarshalledAuthority<T> extends SimpleCitation implements I
     }
 
     /**
-     * Returns a collection containing only the identifiers having a {@code NonMarshalledAuthority}.
-     * This method is invoked for saving the identifiers that are conceptually stored in distinct fields
-     * (XML identifier, UUID, ISBN, ISSN) before to overwrite the collection of all identifiers in
-     * a metadata object.
+     * Returns a collection containing all marshallable values of {@code newValues}, together with unmarshallable
+     * values of {@code identifiers}. This method is invoked for preserving the identifiers that are conceptually
+     * stored in distinct fields (XML identifier, UUID, ISBN, ISSN) when setting the collection of all identifiers
+     * in a metadata object.
      *
-     * <p>This method is invoked from {@code setIdentifiers(Collection<Identifier>)} implementation
-     * in {@link org.apache.sis.metadata.iso.ISOMetadata} subclasses as below:</p>
+     * <p>This method is used for implementation of {@code setIdentifiers(Collection)} methods
+     * in public metadata objects.</p>
      *
-     * {@preformat java
-     *     final Collection<Identifier> oldIds = NonMarshalledAuthority.filteredCopy(identifiers);
-     *     identifiers = writeCollection(newValues, identifiers, Identifier.class);
-     *     NonMarshalledAuthority.replace(identifiers, oldIds);
-     * }
+     * @param  identifiers  the metadata internal identifiers collection, or {@code null} if none.
+     * @param  newValues    the identifiers to add, or {@code null}.
+     * @return the collection to set (may be {@code newValues}.
      *
-     * @param  <T> The type of object used as identifier values.
-     * @param  identifiers The metadata internal identifiers collection, or {@code null} if none.
-     * @return The new list containing the filtered identifiers, or {@code null} if none.
+     * @see #setMarshallable(Collection, Identifier)
      */
-    public static <T extends Identifier> Collection<T> filteredCopy(final Collection<T> identifiers) {
-        Collection<T> filtered = null;
-        if (identifiers != null) {
-            int remaining = identifiers.size();
-            for (final T candidate : identifiers) {
-                if (candidate != null && candidate.getAuthority() instanceof NonMarshalledAuthority<?>) {
-                    if (filtered == null) {
-                        filtered = new ArrayList<T>(remaining);
-                    }
-                    filtered.add(candidate);
-                }
-                remaining--;
-            }
+    @SuppressWarnings("null")
+    public static Collection<? extends Identifier> setMarshallables(
+            final Collection<Identifier> identifiers, final Collection<? extends Identifier> newValues)
+    {
+        int remaining;
+        if (identifiers == null || (remaining = identifiers.size()) == 0) {
+            return newValues;
         }
-        return filtered;
-    }
-
-    /**
-     * Replaces all identifiers in the {@code identifiers} collection having the same
-     * {@linkplain Identifier#getAuthority() authority} than the ones in {@code oldIds}.
-     * More specifically:
-     *
-     * <ul>
-     *   <li>First, remove all {@code identifiers} elements having the same authority
-     *       than one of the elements in {@code oldIds}.</li>
-     *   <li>Next, add all {@code oldIds} elements to {@code identifiers}.</li>
-     * </ul>
-     *
-     * @param <T> The type of object used as identifier values.
-     * @param identifiers The metadata internal identifiers collection, or {@code null} if none.
-     * @param oldIds The previous filtered identifiers returned by {@link #filteredCopy(Collection)},
-     *               or {@code null} if none.
-     */
-    public static <T extends Identifier> void replace(final Collection<T> identifiers, final Collection<T> oldIds) {
-        if (oldIds != null && identifiers != null) {
-            for (final T old : oldIds) {
-                final Citation authority = old.getAuthority();
-                for (final Iterator<T> it=identifiers.iterator(); it.hasNext();) {
-                    final T id = it.next();
-                    if (id == null || id.getAuthority() == authority) {
-                        it.remove();
-                    }
+        /*
+         * If there is any identifiers that need to be preserved (XML identifier, UUID, ISBN, etc.),
+         * remember them. Otherwise there is nothing special to do and we can return the new values directly.
+         */
+        List<Identifier> toPreserve = null;
+        for (final Identifier id : identifiers) {
+            if (id != null && id.getAuthority() instanceof NonMarshalledAuthority<?>) {
+                if (toPreserve == null) {
+                    toPreserve = new ArrayList<>(remaining);
+                }
+                toPreserve.add(id);
+            }
+            remaining--;
+        }
+        if (toPreserve == null) {
+            return newValues;
+        }
+        /*
+         * We find at least one identifier that may need to be preserved.
+         * We need to create a combination of the two collections.
+         */
+        final Map<Citation,Identifier> authorities = new IdentityHashMap<>(4);
+        final List<Identifier> merged = new ArrayList<>(newValues.size());
+        for (final Identifier id : newValues) {
+            merged.add(id);
+            if (id != null) {
+                final Citation authority = id.getAuthority();
+                if (authority instanceof NonMarshalledAuthority<?>) {
+                    authorities.put(authority, id);
                 }
             }
-            identifiers.addAll(oldIds);
         }
-    }
-
-    /**
-     * Returns one of the constants in the {@link org.apache.sis.metadata.iso.citation.DefaultCitation} class,
-     * or {@code null} if none. We need to use Java reflection because the {@code sis-metadata} module may not
-     * be in the classpath.
-     */
-    private static IdentifierSpace<?> getCitation(final String name) {
-        try {
-            final Field field = Class.forName("org.apache.sis.metadata.iso.citation.DefaultCitation").getDeclaredField(name);
-            field.setAccessible(true);
-            return (IdentifierSpace<?>) field.get(null);
-        } catch (Exception e) {
-            if (!warningLogged) {
-                warningLogged = true;
-                final LogRecord record = Errors.getResources((Locale) null).getLogRecord(Level.WARNING,
-                        Errors.Keys.MissingRequiredModule_1, "sis-metadata");
-                /*
-                 * Log directly the the logger rather than invoking the Context.warningOccured(…) method because
-                 * this warning does not occur during XML (un)marshalling. It may occurs only during serialization.
-                 */
-                record.setThrown(e);
-                Logging.log(NonMarshalledAuthority.class, "readResolve", record);
+        for (final Identifier id : toPreserve) {
+            if (!authorities.containsKey(id.getAuthority())) {
+                merged.add(id);
             }
         }
-        return null;
+        /*
+         * Wraps in an unmodifiable list in case the caller is creating an unmodifiable metadata.
+         */
+        switch (merged.size()) {
+            case 0:  return Collections.emptyList();
+            case 1:  return Collections.singletonList(merged.get(0));
+            default: return Containers.unmodifiableList(CollectionsExt.toArray(merged, Identifier.class));
+        }
     }
 
     /**
      * Invoked at deserialization time in order to replace the deserialized instance
      * by the appropriate instance defined in the {@link IdentifierSpace} interface.
+     *
+     * @return the instance to use, as an unique instance if possible.
+     * @throws ObjectStreamException never thrown.
      */
-    private Object readResolve() {
+    @Override
+    protected Object readResolve() throws ObjectStreamException {
+        final String name = getName();
+        IdentifierSpace<?> candidate;
         int code = 0;
-        while (true) {
-            final IdentifierSpace<?> candidate;
-            switch (code) {
+        do {
+            switch (code++) {
                 case ID:    candidate = IdentifierSpace.ID;    break;
                 case UUID:  candidate = IdentifierSpace.UUID;  break;
                 case HREF:  candidate = IdentifierSpace.HREF;  break;
                 case XLINK: candidate = IdentifierSpace.XLINK; break;
-                case ISBN:  candidate = getCitation("ISBN");   break;
-                case ISSN:  candidate = getCitation("ISSN");   break;
-                default: return this;
+                default: return super.readResolve();
             }
-            if (candidate instanceof NonMarshalledAuthority<?> &&
-                    ((NonMarshalledAuthority<?>) candidate).title.equals(title))
-            {
-                return candidate;
-            }
-            code++;
-        }
+        } while (!((NonMarshalledAuthority<?>) candidate).getName().equals(name));
+        return candidate;
     }
 }

@@ -34,15 +34,15 @@ import static org.apache.sis.internal.maven.Filenames.*;
  * or listed in the {@code target/binaries/content.txt} file.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.4
+ * @since   0.3
  * @module
  */
 final class Packer implements FilenameFilter {
     /**
-     * The project name, URL and version to declare in the manifest file, or {@code null} if none.
+     * The project name and version to declare in the manifest file, or {@code null} if none.
      */
-    private final String projectName, projectURL, version;
+    private final String projectName, version;
 
     /**
      * The Maven target directory. Shall contain the {@code "binaries"} sub-directory,
@@ -58,17 +58,13 @@ final class Packer implements FilenameFilter {
     /**
      * Creates a packer.
      *
-     * @param  projectName     The project name to declare in the manifest file, or {@code null} if none.
-     * @param  projectURL      The project URL to declare in the manifest file, or {@code null} if none.
-     * @param  version         The project version to declare in the manifest file, or {@code null} if none.
-     * @param  targetDirectory The Maven target directory.
+     * @param  projectName      the project name to declare in the manifest file, or {@code null} if none.
+     * @param  version          the project version to declare in the manifest file, or {@code null} if none.
+     * @param  targetDirectory  the Maven target directory.
      * @throws FileNotFoundException if the {@code target/binaries} directory is not found.
      */
-    Packer(final String projectName, final String projectURL, final String version,
-           final File targetDirectory) throws FileNotFoundException
-    {
+    Packer(final String projectName, final String version, final File targetDirectory) throws FileNotFoundException {
         this.projectName = projectName;
-        this.projectURL  = projectURL;
         this.version     = version;
         this.targetDirectory = targetDirectory;
         this.binariesDirectory = new File(targetDirectory, BINARIES_DIRECTORY);
@@ -80,8 +76,8 @@ final class Packer implements FilenameFilter {
     /**
      * Filter the input JAR files. This is for internal usage by {@link #createOutputJAR(String)} only.
      *
-     * @param  directory The directory (ignored).
-     * @param  name The filename.
+     * @param  directory  the directory (ignored).
+     * @param  name       the filename.
      * @return {@code true} if the given filename ends with {@code ".jar"}.
      */
     @Override
@@ -96,7 +92,7 @@ final class Packer implements FilenameFilter {
     private Map<File,PackInput> getInputJARs() throws IOException {
         final Set<String> filenames = JarCollector.loadDependencyList(new File(binariesDirectory, CONTENT_FILE));
         filenames.addAll(Arrays.asList(binariesDirectory.list(this)));
-        final Map<File,PackInput> inputJARs = new LinkedHashMap<File,PackInput>(filenames.size() * 4/3);
+        final Map<File,PackInput> inputJARs = new LinkedHashMap<>(filenames.size() * 4/3);
         for (final String filename : filenames) {
             File file = new File(filename);
             if (!file.isAbsolute()) {
@@ -119,8 +115,8 @@ final class Packer implements FilenameFilter {
      *
      * <p>Callers needs to invoke one of the {@code PackOutput.pack(…)} methods on the returned object.</p>
      *
-     * @param  outputJAR The name of the JAR file to create before the Pack200 creation.
-     * @throws IOException If an error occurred while collecting the target directory content.
+     * @param  outputJAR  the name of the JAR file to create before the Pack200 creation.
+     * @throws IOException if an error occurred while collecting the target directory content.
      */
     PackOutput preparePack200(final String outputJAR) throws IOException {
         /*
@@ -130,7 +126,7 @@ final class Packer implements FilenameFilter {
         final File outDirectory = distributionDirectory(targetDirectory);
         final PackOutput output = new PackOutput(getInputJARs(), new File(outDirectory, outputJAR));
         try {
-            output.open(projectName, projectURL, version);
+            output.open(projectName, version);
             output.writeContent();
         } finally {
             output.close();

@@ -41,8 +41,8 @@ import org.apache.sis.util.CharSequences;
  * It is rather designed for explicit execution from an IDE or the command line for visual inspection.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.5
  * @version 0.5
+ * @since   0.5
  * @module
  */
 @SuppressWarnings("serial")
@@ -50,7 +50,7 @@ final strictfp class ShapeUtilitiesViewer extends JPanel {
     /**
      * The {@link ShapeUtilities} methods to test.
      */
-    private static enum Method {
+    private enum Method {
         INTERSECTION_POINT,
         NEAREAST_COLINEAR_POINT,
         COLINEAR_POINT,
@@ -194,7 +194,7 @@ final strictfp class ShapeUtilitiesViewer extends JPanel {
     /**
      * Paints the visual test.
      *
-     * @param graphics Where to paint the test.
+     * @param  graphics  where to paint the test.
      */
     @Override
     protected void paintComponent(final Graphics graphics) {
@@ -229,7 +229,7 @@ final strictfp class ShapeUtilitiesViewer extends JPanel {
     /**
      * Shows the viewer.
      *
-     * @param args Ignored.
+     * @param  args  ignored.
      */
     public static void main(final String[] args) {
         final ShapeUtilitiesViewer viewer = new ShapeUtilitiesViewer();

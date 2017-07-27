@@ -26,13 +26,15 @@ import javax.imageio.ImageIO;
 import javax.imageio.stream.ImageInputStream;
 import java.sql.Connection;
 import org.apache.sis.setup.OptionKey;
-import org.apache.sis.internal.storage.ChannelDataInput;
-import org.apache.sis.internal.storage.ChannelImageInputStream;
+import org.apache.sis.internal.storage.io.ChannelDataInput;
+import org.apache.sis.internal.storage.io.ChannelImageInputStream;
+import org.apache.sis.internal.storage.io.InputStreamAdapter;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
+import static org.junit.Assume.*;
 import static org.opengis.test.Assert.*;
 
 
@@ -40,11 +42,12 @@ import static org.opengis.test.Assert.*;
  * Tests {@link StorageConnector}.
  *
  * @author  Martin Desruisseaux (Geomatys)
+ * @version 0.8
  * @since   0.3
- * @version 0.4
  * @module
  */
-@DependsOn(org.apache.sis.internal.storage.ChannelImageInputStreamTest.class)
+@SuppressWarnings("OverlyStrongTypeCast")
+@DependsOn(org.apache.sis.internal.storage.io.ChannelImageInputStreamTest.class)
 public final strictfp class StorageConnectorTest extends TestCase {
     /**
      * The magic number of Java class files, used for verifying the content of our test file.
@@ -55,7 +58,7 @@ public final strictfp class StorageConnectorTest extends TestCase {
      * Creates the instance to test. This method uses the {@code StorageConnectorTest} compiled
      * class file as the resource to test. The resource can be provided either as a URL or as a stream.
      */
-    private StorageConnector create(final boolean asStream) {
+    private static StorageConnector create(final boolean asStream) {
         final Class<?> c = StorageConnectorTest.class;
         final String name = c.getSimpleName() + ".class";
         final Object storage = asStream ? c.getResourceAsStream(name) : c.getResource(name);
@@ -86,8 +89,8 @@ public final strictfp class StorageConnectorTest extends TestCase {
     /**
      * Tests the {@link StorageConnector#getStorageAs(Class)} method for the {@link String} type.
      *
-     * @throws DataStoreException Should never happen.
-     * @throws IOException Should never happen.
+     * @throws DataStoreException if an error occurred while using the storage connector.
+     * @throws IOException should never happen since we do not open any file.
      */
     @Test
     public void testGetAsString() throws DataStoreException, IOException {
@@ -99,8 +102,8 @@ public final strictfp class StorageConnectorTest extends TestCase {
      * Tests the {@link StorageConnector#getStorageAs(Class)} method for the I/O types.
      * The initial storage object is a {@link java.net.URL}.
      *
-     * @throws DataStoreException Should never happen.
-     * @throws IOException If an error occurred while reading the test file.
+     * @throws DataStoreException if an error occurred while using the storage connector.
+     * @throws IOException if an error occurred while reading the test file.
      */
     @Test
     public void testGetAsDataInputFromURL() throws DataStoreException, IOException {
@@ -111,8 +114,8 @@ public final strictfp class StorageConnectorTest extends TestCase {
      * Tests the {@link StorageConnector#getStorageAs(Class)} method for the I/O types.
      * The initial storage object is an {@link java.io.InputStream}.
      *
-     * @throws DataStoreException Should never happen.
-     * @throws IOException If an error occurred while reading the test file.
+     * @throws DataStoreException if an error occurred while using the storage connector.
+     * @throws IOException if an error occurred while reading the test file.
      */
     @Test
     public void testGetAsDataInputFromStream() throws DataStoreException, IOException {
@@ -143,8 +146,8 @@ public final strictfp class StorageConnectorTest extends TestCase {
      * Tests the {@link StorageConnector#getStorageAs(Class)} method for the {@link ImageInputStream} type.
      * This is basically a synonymous of {@code getStorageAs(DataInput.class)}.
      *
-     * @throws DataStoreException Should never happen.
-     * @throws IOException If an error occurred while reading the test file.
+     * @throws DataStoreException if an error occurred while using the storage connector.
+     * @throws IOException if an error occurred while reading the test file.
      */
     @Test
     public void testGetAsImageInputStream() throws DataStoreException, IOException {
@@ -156,28 +159,60 @@ public final strictfp class StorageConnectorTest extends TestCase {
 
     /**
      * Tests the {@link StorageConnector#getStorageAs(Class)} method for the {@link InputStream} type.
+     * The {@code InputStream} was specified directly to the {@link StorageConnector} constructor.
      *
-     * @throws DataStoreException Should never happen.
-     * @throws IOException If an error occurred while reading the test file.
+     * @throws DataStoreException if an error occurred while using the storage connector.
+     * @throws IOException if an error occurred while reading the test file.
+     */
+    @Test
+    @DependsOnMethod("testGetAsImageInputStream")
+    public void testGetOriginalInputStream() throws DataStoreException, IOException {
+        final StorageConnector connection = create(true);
+        final InputStream in = connection.getStorageAs(InputStream.class);
+        assertSame("The InputStream shall be the one specified to the constructor.", connection.getStorage(), in);
+        /*
+         * Ask a different type and request a few bytes. We do not test the ImageInputStream type here as this is
+         * not the purpose of this method. But we need a different type before to request again the InputStream.
+         */
+        final ImageInputStream data = connection.getStorageAs(ImageInputStream.class);
+        final byte[] sample = new byte[32];
+        data.readFully(sample);
+        /*
+         * Request again the InputStream and read the same amount of bytes than above. The intend of this test
+         * is to verify that StorageConnector has reseted the InputStream position before to return it.
+         * Note that this test requires InputStream implementations supporting mark/reset operations
+         * (which is the case when the resource is an ordinary file, not an entry inside a JAR file),
+         * otherwise the call to connection.getStorageAs(…) throws a DataStoreException.
+         */
+        assumeTrue("Can not use a JAR file entry for this test.", in.markSupported());
+        assertSame(in, connection.getStorageAs(InputStream.class));
+        final byte[] actual = new byte[sample.length];
+        assertEquals("Should read all requested bytes.", actual.length, in.read(actual));
+        assertArrayEquals("InputStream shall be reseted to the beginning of the stream.", sample, actual);
+        connection.closeAllExcept(null);
+    }
+
+    /**
+     * Tests the {@link StorageConnector#getStorageAs(Class)} method for the {@link InputStream} type.
+     * The {@code InputStream} was specified as a URL.
+     *
+     * @throws DataStoreException if an error occurred while using the storage connector.
+     * @throws IOException if an error occurred while reading the test file.
      */
     @Test
     @DependsOnMethod("testGetAsImageInputStream")
     public void testGetAsInputStream() throws DataStoreException, IOException {
-        StorageConnector connection = create(true);
-        InputStream in = connection.getStorageAs(InputStream.class);
-        assertSame(connection.getStorage(), in);
-        connection.closeAllExcept(null);
-
-        connection = create(false);
-        in = connection.getStorageAs(InputStream.class);
+        final StorageConnector connection = create(false);
+        final InputStream in = connection.getStorageAs(InputStream.class);
         assertNotSame(connection.getStorage(), in);
         assertSame("Expected cached value.", in, connection.getStorageAs(InputStream.class));
         assertInstanceOf("Expected Channel backend", InputStreamAdapter.class, in);
-        assertInstanceOf("Expected Channel backend", ChannelImageInputStream.class, ((InputStreamAdapter) in).input);
-        assertSame(((InputStreamAdapter) in).input, connection.getStorageAs(DataInput.class));
-        assertSame(((InputStreamAdapter) in).input, connection.getStorageAs(ImageInputStream.class));
+        final ImageInputStream input = ((InputStreamAdapter) in).input;
+        assertInstanceOf("Expected Channel backend", ChannelImageInputStream.class, input);
+        assertSame(input, connection.getStorageAs(DataInput.class));
+        assertSame(input, connection.getStorageAs(ImageInputStream.class));
 
-        final ReadableByteChannel channel = ((ChannelImageInputStream) ((InputStreamAdapter) in).input).channel;
+        final ReadableByteChannel channel = ((ChannelImageInputStream) input).channel;
         assertTrue(channel.isOpen());
         connection.closeAllExcept(null);
         assertFalse(channel.isOpen());
@@ -186,13 +221,13 @@ public final strictfp class StorageConnectorTest extends TestCase {
     /**
      * Tests the {@link StorageConnector#getStorageAs(Class)} method for the {@link Reader} type.
      *
-     * @throws DataStoreException Should never happen.
-     * @throws IOException If an error occurred while reading the test file.
+     * @throws DataStoreException if an error occurred while using the storage connector.
+     * @throws IOException if an error occurred while reading the test file.
      */
     @Test
     @DependsOnMethod("testGetAsInputStream")
     public void testGetAsReader() throws DataStoreException, IOException {
-        StorageConnector connection = create(true);
+        final StorageConnector connection = create(true);
         final Reader in = connection.getStorageAs(Reader.class);
         assertSame("Expected cached value.", in, connection.getStorageAs(Reader.class));
         connection.closeAllExcept(null);
@@ -204,8 +239,8 @@ public final strictfp class StorageConnectorTest extends TestCase {
      * the Image I/O classes. However after a call to {@code getStorageAt(ChannelImageInputStream.class)}, the type
      * should have been promoted.
      *
-     * @throws DataStoreException Should never happen.
-     * @throws IOException If an error occurred while reading the test file.
+     * @throws DataStoreException if an error occurred while using the storage connector.
+     * @throws IOException if an error occurred while reading the test file.
      */
     @Test
     public void testGetAsChannelDataInput() throws DataStoreException, IOException {
@@ -229,8 +264,8 @@ public final strictfp class StorageConnectorTest extends TestCase {
      * Tests the {@link StorageConnector#getStorageAs(Class)} method for the {@link ByteBuffer} type.
      * This method uses the same test file than {@link #testGetAsDataInputFromURL()}.
      *
-     * @throws DataStoreException Should never happen.
-     * @throws IOException If an error occurred while reading the test file.
+     * @throws DataStoreException if an error occurred while using the storage connector.
+     * @throws IOException if an error occurred while reading the test file.
      */
     @Test
     @DependsOnMethod("testGetAsDataInputFromURL")
@@ -249,15 +284,15 @@ public final strictfp class StorageConnectorTest extends TestCase {
      * that the buffer created in this test will not be used for the "real" reading process in the data store.
      * Consequently, it should be a smaller, only temporary, buffer.
      *
-     * @throws DataStoreException Should never happen.
-     * @throws IOException If an error occurred while reading the test file.
+     * @throws DataStoreException if an error occurred while using the storage connector.
+     * @throws IOException if an error occurred while reading the test file.
      */
     @Test
     @DependsOnMethod("testGetAsDataInputFromStream")
     public void testGetAsTemporaryByteBuffer() throws DataStoreException, IOException {
         StorageConnector connection = create(true);
         final DataInput in = ImageIO.createImageInputStream(connection.getStorage());
-        assertNotNull("ImageIO.createImageInputStream(InputStream)", in); // Sanity check.
+        assertNotNull("ImageIO.createImageInputStream(InputStream)", in);                   // Sanity check.
         connection = new StorageConnector(in);
         assertSame(in, connection.getStorageAs(DataInput.class));
 
@@ -271,8 +306,8 @@ public final strictfp class StorageConnectorTest extends TestCase {
     /**
      * Tests the {@link StorageConnector#getStorageAs(Class)} method for the {@link Connection} type.
      *
-     * @throws DataStoreException Should never happen.
-     * @throws IOException Should never happen.
+     * @throws DataStoreException if an error occurred while using the storage connector.
+     * @throws IOException should never happen since we do not open any file.
      */
     public void testGetAsConnection() throws DataStoreException, IOException {
         final StorageConnector connection = create(false);
@@ -283,8 +318,8 @@ public final strictfp class StorageConnectorTest extends TestCase {
     /**
      * Tests the {@link StorageConnector#closeAllExcept(Object)} method.
      *
-     * @throws DataStoreException Should never happen.
-     * @throws IOException If an error occurred while reading the test file.
+     * @throws DataStoreException if an error occurred while using the storage connector.
+     * @throws IOException if an error occurred while reading the test file.
      */
     @Test
     @DependsOnMethod("testGetAsDataInputFromStream")

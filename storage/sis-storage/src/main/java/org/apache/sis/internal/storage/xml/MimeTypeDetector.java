@@ -17,12 +17,10 @@
 package org.apache.sis.internal.storage.xml;
 
 import java.util.Map;
-import java.util.HashMap;
 import java.util.Arrays;
 import java.io.IOException;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.ProbeResult;
-import org.apache.sis.xml.Namespaces;
 
 
 /**
@@ -37,8 +35,8 @@ import org.apache.sis.xml.Namespaces;
  * it would be way too heavy.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
+ * @version 0.8
  * @since   0.4
- * @version 0.4
  * @module
  */
 abstract class MimeTypeDetector {
@@ -46,18 +44,12 @@ abstract class MimeTypeDetector {
      * The mapping from XML namespace to MIME type.
      * This map shall be read-only, since we do not synchronize it.
      */
-    private static final Map<String,String> TYPES = new HashMap<String,String>();
-    static {
-        TYPES.put(Namespaces.GML, "application/gml+xml");
-        TYPES.put(Namespaces.GMD, "application/vnd.iso.19139+xml");
-        TYPES.put(Namespaces.CSW, "application/vnd.ogc.csw_xml");
-        // More types to be added in future versions.
-    }
+    private final Map<String,String> types;
 
     /**
      * The {@code "xmlns"} string as a sequence of bytes.
      */
-    private static byte[] XMLNS = {'x','m','l','n','s'};
+    private static final byte[] XMLNS = {'x','m','l','n','s'};
 
     /**
      * The maximal US-ASCII value, inclusive.
@@ -86,14 +78,17 @@ abstract class MimeTypeDetector {
 
     /**
      * Creates a new instance.
+     *
+     * @param  types  the mapping from XML namespaces to MIME type.
      */
-    MimeTypeDetector() {
+    MimeTypeDetector(final Map<String,String> types) {
+        this.types = types;
     }
 
     /**
      * Adds the given byte in the {@link #buffer}, increasing its capacity if needed.
      */
-    private void add(final int c) {
+    private void remember(final int c) {
         if (length == buffer.length) {
             buffer = Arrays.copyOf(buffer, length*2);
         }
@@ -105,7 +100,7 @@ abstract class MimeTypeDetector {
      * to read. We are typically not allowed to read the full stream because only a limited amount of bytes is
      * cached.
      *
-     * @return The character, or -1 on EOF.
+     * @return the character, or -1 on EOF.
      * @throws IOException if an error occurred while reading the byte or character.
      */
     abstract int read() throws IOException;
@@ -114,8 +109,8 @@ abstract class MimeTypeDetector {
      * Skips all bytes or characters up to {@code search}, then returns the character after it.
      * Characters inside quotes will be ignored.
      *
-     * @param  search The byte or character to skip.
-     * @return The byte or character after {@code search}, or -1 on EOF.
+     * @param  search  the byte or character to skip.
+     * @return the byte or character after {@code search}, or -1 on EOF.
      * @throws IOException if an error occurred while reading the bytes or characters.
      */
     private int readAfter(final int search) throws IOException {
@@ -137,9 +132,9 @@ abstract class MimeTypeDetector {
      *
      * <p>For the purpose of this method, a "space" is considered to be the {@code ' '} character
      * and all control characters (character below 32, which include tabulations and line feeds).
-     * This is the same criterion than {@link String#trim()}, but is not Unicode spaces.</p>
+     * This is the same criterion than {@link String#trim()}, but does not include Unicode spaces.</p>
      *
-     * @return The first non-space character, or -1 on EOF.
+     * @return the first non-space character, or -1 on EOF.
      * @throws IOException if an error occurred while reading the bytes or characters.
      */
     private int afterSpaces(int c) throws IOException {
@@ -154,22 +149,27 @@ abstract class MimeTypeDetector {
      * After this method class, the stream position is on the first character after the separator if
      * a match has been found, or after the first unknown character otherwise.
      *
-     * @param  word The word to search, as US-ASCII characters.
-     * @param  n Number of valid characters in {@code word}.
-     * @param  separator The {@code ':'} or {@code '='} character.
+     * @param  word       the word to search, as US-ASCII characters.
+     * @param  n          number of valid characters in {@code word}.
+     * @param  c          value of {@code afterSpaces(read())}.
+     * @param  separator  the {@code ':'} or {@code '='} character.
      * @return 1 if a match is found, 0 if no match, or -1 on EOF.
      * @throws IOException if an error occurred while reading the bytes or characters.
      */
-    private int matches(final byte[] word, final int n, final char separator) throws IOException {
-        int c = afterSpaces(read());
-        for (int i=0; i<n; i++) {
-            if (c != word[i]) {
-                return (c >= 0) ? 0 : -1;
+    private int matches(final byte[] word, final int n, int c, final char separator) throws IOException {
+        if (c >= 0) {
+            for (int i=0; i<n; i++) {
+                if (c != word[i]) {
+                    return (c >= 0) ? 0 : -1;
+                }
+                c = read();
             }
-            c = read();
+            c = afterSpaces(c);
+            if (c >= 0) {
+                return (c == separator) ? 1 : 0;
+            }
         }
-        c = afterSpaces(c);
-        return (c == separator) ? 1 : (c >= 0) ? 0 : -1;
+        return -1;
     }
 
     /**
@@ -182,8 +182,13 @@ abstract class MimeTypeDetector {
             return null;
         }
         /*
-         * At this point, we skipped the "<?xml ...?>" header.
-         * Find the first < character, skipping comment (if any).
+         * At this point, we skipped the "<?xml ...?>" header. Skip the "<!-- -->" comments (if any),
+         * then find the first '<' character. For example:
+         *
+         *                          <?xml version="1.0" encoding="UTF-8"?>
+         * (we are here)        →   <!-- Licensed to the Apache Software Foundation (ASF) -->
+         *                          <gmd:MD_Metadata xmlns:gmd = "http://www.isotc211.org/2005/gmd"/>
+         * (we want to go there)     ↑
          */
         int c;
         while ((c = readAfter('<')) == '!') {
@@ -199,42 +204,51 @@ abstract class MimeTypeDetector {
         }
         /*
          * At this point, we are after the opening bracket of root element.
-         * Skip spaces and read the prefix, which is assumed mandatory.
+         * Skip spaces and read the prefix, which may be absent (we will detect that later).
+         * For example if the line is "<gmd:MD_Metadata … >", we will remember "gmd" here.
          */
         c = afterSpaces(c);
         while (c > ' ' && c != ':') {
             if (c == '>' || c > MAX_ASCII) {
                 return null;
             }
-            add(c);
+            remember(c);
             c = read();
         }
         /*
-         * At this point, we got the prefix of the root element. Skip the ':'
-         * character and find the "xmlns" attribute following spaces.
+         * At this point, we got what we think is the prefix of the root element. If we find the ':' character,
+         * we consider that this was indeed the prefix (e.g. "gmd" in "<gmd:MD_Metadata … >"). But if we do not
+         * find the ':' character, then we will consider that the element is in the default namespace, in which
+         * case there is no prefix (length == 0). Exemple: "<MD_Metadata xmlns = … >"
          */
         c = afterSpaces(c);
         if (c != ':') {
-            return null;
+            length = 0;         // XML element in the default namespace: it has no prefix.
+        } else {
+            c = afterSpaces(read());
         }
+        /*
+         * Search for "xmlns" keyword, ignoring anything before it. If we find a prefix in the previous step,
+         * we will require that "xmlns" is followed by ":prefix" where "prefix" is the prefix that we found.
+         */
         while (true) {
-            int m = matches(XMLNS, XMLNS.length, ':');
+            int m = matches(XMLNS, XMLNS.length, c, (length == 0) ? '=' : ':');
             if (m != 0) {
                 if (m < 0) {
-                    return null;
+                    return null;                            // End of file.
                 }
-                m = matches(buffer, length, '=');
+                if (length == 0) break;                     // Found match for default namespace.
+                m = matches(buffer, length, afterSpaces(read()), '=');
                 if (m != 0) {
                     if (m < 0) {
-                        return null;
+                        return null;                        // End of file.
                     }
-                    break;
+                    break;                                  // Found match for prefix.
                 }
             }
             // Skip everything up to the next space, and check again.
-            while ((c = read()) >= ' ');
+            c = afterSpaces(read());
             if (c < 0) return null;
-            continue;
         }
         /*
          * At this point, we found the "xmlns" attribute for the prefix of the root element.
@@ -250,13 +264,13 @@ abstract class MimeTypeDetector {
             if (c < 0 || c > MAX_ASCII) {
                 return null;
             }
-            add(c);
+            remember(c);
             c = read();
         } while (c != '"');
         /*
          * Done reading the "xmlns" attribute value.
          */
-        return TYPES.get(new String(buffer, 0, length, "US-ASCII"));
+        return types.get(new String(buffer, 0, length, "US-ASCII"));
     }
 
     /**
@@ -264,6 +278,7 @@ abstract class MimeTypeDetector {
      * instantiating the {@link ProbeResult}.
      */
     final ProbeResult probeContent() throws DataStoreException {
+        boolean isSupported = true;
         String mimeType;
         try {
             mimeType = getMimeType();
@@ -274,8 +289,9 @@ abstract class MimeTypeDetector {
             if (insufficientBytes) {
                 return ProbeResult.INSUFFICIENT_BYTES;
             }
-            mimeType = XMLStoreProvider.MIME_TYPE;
+            isSupported = false;
+            mimeType = StoreProvider.MIME_TYPE;
         }
-        return new ProbeResult(true, mimeType, null);
+        return new ProbeResult(isSupported, mimeType, null);
     }
 }

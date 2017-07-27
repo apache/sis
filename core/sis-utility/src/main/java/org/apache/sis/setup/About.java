@@ -30,26 +30,39 @@ import java.util.MissingResourceException;
 import java.util.jar.Attributes;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
+import java.util.logging.Level;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
 import java.text.Format;
 import java.text.DateFormat;
 import java.text.FieldPosition;
+import java.nio.file.Path;
 import java.nio.charset.Charset;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.CharSequences;
+import org.apache.sis.util.Exceptions;
 import org.apache.sis.util.Version;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.logging.LoggerFactory;
+import org.apache.sis.util.resources.Messages;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.collection.TreeTable;
 import org.apache.sis.util.collection.TreeTables;
 import org.apache.sis.util.collection.DefaultTreeTable;
+import org.apache.sis.internal.util.MetadataServices;
+import org.apache.sis.internal.util.Constants;
+import org.apache.sis.internal.system.Loggers;
+import org.apache.sis.internal.system.Modules;
+import org.apache.sis.internal.system.Shutdown;
+import org.apache.sis.internal.system.DataDirectory;
 
 import static java.lang.System.getProperty;
 import static org.apache.sis.util.collection.TableColumn.NAME;
 import static org.apache.sis.util.collection.TableColumn.VALUE_AS_TEXT;
+import static org.apache.sis.internal.util.StandardDateFormat.UTC;
 
 
 /**
@@ -68,8 +81,8 @@ import static org.apache.sis.util.collection.TableColumn.VALUE_AS_TEXT;
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
+ * @version 0.8
  * @since   0.3
- * @version 0.3
  * @module
  */
 public enum About {
@@ -81,6 +94,7 @@ public enum About {
      *   <li>Apache SIS version</li>
      *   <li>Java runtime version and vendor</li>
      *   <li>Operation system name and version</li>
+     *   <li>EPSG geodetic dataset in use</li>
      * </ul>
      */
     VERSIONS(Vocabulary.Keys.Versions),
@@ -99,6 +113,18 @@ public enum About {
     LOCALIZATION(Vocabulary.Keys.Localization),
 
     /**
+     * Information about available plugins.
+     * This section includes:
+     *
+     * <ul>
+     *   <li>List of data store implementations</li>
+     * </ul>
+     *
+     * @since 0.8
+     */
+    PLUGINS(Vocabulary.Keys.Plugins),
+
+    /**
      * Information about logging.
      */
     LOGGING(Vocabulary.Keys.Logging),
@@ -110,6 +136,8 @@ public enum About {
      * <ul>
      *   <li>User directory</li>
      *   <li>Default directory</li>
+     *   <li>SIS data directory</li>
+     *   <li>Temporary directory</li>
      *   <li>Java home directory</li>
      * </ul>
      */
@@ -148,7 +176,7 @@ public enum About {
      *     return configuration(EnumSet.allOf(About.class), null, null);
      * }
      *
-     * @return Configuration information, as a tree for grouping some configuration by sections.
+     * @return configuration information, as a tree for grouping some configuration by sections.
      */
     public static TreeTable configuration() {
         return configuration(EnumSet.allOf(About.class), null, null);
@@ -157,10 +185,10 @@ public enum About {
     /**
      * Returns a subset of the information about the current Apache SIS running environment.
      *
-     * @param  sections The section for which information are desired.
-     * @param  locale   The locale to use for formatting the texts in the tree, or {@code null} for the default.
-     * @param  timezone The timezone to use for formatting the dates, or {@code null} for the default.
-     * @return Configuration information, as a tree for grouping some configuration by sections.
+     * @param  sections  the section for which information are desired.
+     * @param  locale    the locale to use for formatting the texts in the tree, or {@code null} for the default.
+     * @param  timezone  the timezone to use for formatting the dates, or {@code null} for the default.
+     * @return configuration information, as a tree for grouping some configuration by sections.
      */
     public static TreeTable configuration(final Set<About> sections, Locale locale, final TimeZone timezone) {
         ArgumentChecks.ensureNonNull("sections", sections);
@@ -168,8 +196,8 @@ public enum About {
         if (locale != null) {
             formatLocale = locale;
         } else {
-            locale       = Locale.getDefault();
-            formatLocale = locale; // On the JDK7 branch, this is not necessarily the same.
+            locale       = Locale.getDefault(Locale.Category.DISPLAY);
+            formatLocale = Locale.getDefault(Locale.Category.FORMAT);
         }
         String userHome = null;
         String javaHome = null;
@@ -187,10 +215,10 @@ public enum About {
         TreeTable.Node section = null;
         About newSection = VERSIONS;
 fill:   for (int i=0; ; i++) {
-            short    nameKey  = 0;    // The Vocabulary.Key for 'name', used only if name is null.
-            String   name     = null; // The value to put in the 'Name' column of the table.
-            Object   value    = null; // The value to put in the 'Value' column of the table.
-            String[] children = null; // Optional children to write below the node.
+            short    nameKey  = 0;          // The Vocabulary.Key for 'name', used only if name is null.
+            String   name     = null;       // The value to put in the 'Name' column of the table.
+            Object   value    = null;       // The value to put in the 'Value' column of the table.
+            String[] children = null;       // Optional children to write below the node.
             switch (i) {
                 case 0: {
                     if (sections.contains(VERSIONS)) {
@@ -215,6 +243,20 @@ fill:   for (int i=0; ; i++) {
                     break;
                 }
                 case 3: {
+                    if (sections.contains(VERSIONS)) {
+                        nameKey = Vocabulary.Keys.Container;
+                        value = Shutdown.getContainer();        // Sometime contains version information.
+                    }
+                    break;
+                }
+                case 4: {
+                    if (sections.contains(VERSIONS)) {
+                        nameKey = Vocabulary.Keys.GeodeticDataset;
+                        value = MetadataServices.getInstance().getInformation(Constants.EPSG, locale);
+                    }
+                    break;
+                }
+                case 5: {
                     newSection = LOCALIZATION;
                     if (sections.contains(LOCALIZATION)) {
                         final Locale current = Locale.getDefault();
@@ -229,7 +271,7 @@ fill:   for (int i=0; ; i++) {
                     }
                     break;
                 }
-                case 4: {
+                case 6: {
                     if (sections.contains(LOCALIZATION)) {
                         final TimeZone current = TimeZone.getDefault();
                         if (current != null) {
@@ -237,7 +279,7 @@ fill:   for (int i=0; ; i++) {
                             final boolean inDaylightTime = current.inDaylightTime(now);
                             value = concatenate(current.getDisplayName(inDaylightTime, TimeZone.LONG, locale), current.getID(), true);
                             final DateFormat df = DateFormat.getTimeInstance(DateFormat.SHORT, formatLocale);
-                            df.setTimeZone(TimeZone.getTimeZone("UTC"));
+                            df.setTimeZone(TimeZone.getTimeZone(UTC));
                             int offset = current.getOffset(now.getTime());
                             StringBuffer buffer = format(df, offset, new StringBuffer("UTC "));
                             offset -= current.getRawOffset();
@@ -250,7 +292,7 @@ fill:   for (int i=0; ; i++) {
                     }
                     break;
                 }
-                case 5: {
+                case 7: {
                     if (sections.contains(LOCALIZATION)) {
                         nameKey = Vocabulary.Keys.CurrentDateTime;
                         final DateFormat df = DateFormat.getDateTimeInstance(DateFormat.LONG, DateFormat.LONG, formatLocale);
@@ -261,7 +303,7 @@ fill:   for (int i=0; ; i++) {
                     }
                     break;
                 }
-                case 6: {
+                case 8: {
                     if (sections.contains(LOCALIZATION)) {
                         final Charset current = Charset.defaultCharset();
                         if (current != null) {
@@ -281,7 +323,21 @@ fill:   for (int i=0; ; i++) {
                     }
                     break;
                 }
-                case 7: {
+                case 9: {
+                    newSection = PLUGINS;
+                    if (sections.contains(PLUGINS)) try {
+                        children = (String[]) Class.forName("org.apache.sis.internal.storage.Capability")
+                                .getMethod("providers", Locale.class, Vocabulary.class).invoke(null, locale, resources);
+                        value = resources.getString(Vocabulary.Keys.EntryCount_1, children.length / 2);
+                    } catch (ClassNotFoundException e) {
+                        recoverableException(Modules.STORAGE, e);       // sis-storage module not in the classpath.
+                    } catch (ReflectiveOperationException e) {
+                        value = Exceptions.unwrap(e).toString();
+                    }
+                    nameKey = Vocabulary.Keys.DataFormats;
+                    break;
+                }
+                case 10: {
                     newSection = LOGGING;
                     if (sections.contains(LOGGING)) {
                         nameKey = Vocabulary.Keys.Implementation;
@@ -290,7 +346,24 @@ fill:   for (int i=0; ; i++) {
                     }
                     break;
                 }
-                case 8: {
+                case 11: {
+                    if (sections.contains(LOGGING)) {
+                        nameKey = Vocabulary.Keys.Level;
+                        final Level level = Logging.getLogger("").getLevel();   // Root logger level.
+                        value = level.getLocalizedName();
+                        final Map<String,Level> levels = Loggers.getEffectiveLevels();
+                        if (levels.size() != 1 || !level.equals(levels.get(Loggers.ROOT))) {
+                            int j = 0;
+                            children = new String[levels.size() * 2];
+                            for (final Map.Entry<String,Level> entry : levels.entrySet()) {
+                                children[j++] = entry.getKey();
+                                children[j++] = entry.getValue().getLocalizedName();
+                            }
+                        }
+                    }
+                    break;
+                }
+                case 12: {
                     newSection = PATHS;
                     if (sections.contains(PATHS)) {
                         nameKey = Vocabulary.Keys.UserHome;
@@ -298,28 +371,60 @@ fill:   for (int i=0; ; i++) {
                     }
                     break;
                 }
-                case 9: {
+                case 13: {
                     if (sections.contains(PATHS)) {
                         nameKey = Vocabulary.Keys.CurrentDirectory;
                         value = getProperty("user.dir");
                     }
                     break;
                 }
-                case 10: {
+                case 14: {
+                    if (sections.contains(PATHS)) {
+                        nameKey = Vocabulary.Keys.DataDirectory;
+                        try {
+                            value = AccessController.doPrivileged(new PrivilegedAction<String>() {
+                                @Override public String run() {
+                                    return System.getenv(DataDirectory.ENV);
+                                }
+                            });
+                        } catch (SecurityException e) {
+                            value = e.toString();
+                        }
+                        if (value == null) {
+                            value = Messages.getResources(locale).getString(Messages.Keys.DataDirectoryNotSpecified_1, DataDirectory.ENV);
+                        } else {
+                            final Path path = DataDirectory.getRootDirectory();
+                            if (path != null) {
+                                value = path.toString();
+                            } else {
+                                value = value + " (" + resources.getString(Vocabulary.Keys.Invalid) + ')';
+                            }
+                        }
+                    }
+                    break;
+                }
+                case 15: {
+                    if (sections.contains(PATHS)) {
+                        nameKey = Vocabulary.Keys.DataBase;
+                        value = MetadataServices.getInstance().getInformation("DataSource", locale);
+                    }
+                    break;
+                }
+                case 16: {
                     if (sections.contains(PATHS)) {
                         nameKey = Vocabulary.Keys.TemporaryFiles;
                         value = getProperty("java.io.tmpdir");
                     }
                     break;
                 }
-                case 11: {
+                case 17: {
                     if (sections.contains(PATHS)) {
                         nameKey = Vocabulary.Keys.JavaHome;
                         value = javaHome = getProperty("java.home");
                     }
                     break;
                 }
-                case 12: {
+                case 18: {
                     newSection = LIBRARIES;
                     if (sections.contains(LIBRARIES)) {
                         nameKey = Vocabulary.Keys.JavaExtensions;
@@ -327,7 +432,7 @@ fill:   for (int i=0; ; i++) {
                     }
                     break;
                 }
-                case 13: {
+                case 19: {
                     if (sections.contains(LIBRARIES)) {
                         nameKey = Vocabulary.Keys.Classpath;
                         value = classpath(getProperty("java.class.path"), false);
@@ -373,8 +478,7 @@ fill:   for (int i=0; ; i++) {
              * Special case for values of kind Map<File,String>.
              * They are extension paths or application class paths.
              */
-            @SuppressWarnings("unchecked")
-            final Map<File,String> paths = (Map<File,String>) value;
+            final Map<?,?> paths = (Map<?,?>) value;
 pathTree:   for (int j=0; ; j++) {
                 TreeTable.Node directory = null;
                 final String home;
@@ -391,9 +495,9 @@ pathTree:   for (int j=0; ; j++) {
                     continue;
                 }
                 final File homeDirectory = home.isEmpty() ? null : new File(home);
-                for (final Iterator<Map.Entry<File,String>> it=paths.entrySet().iterator(); it.hasNext();) {
-                    final Map.Entry<File,String> entry = it.next();
-                    File file = entry.getKey();
+                for (final Iterator<? extends Map.Entry<?,?>> it=paths.entrySet().iterator(); it.hasNext();) {
+                    final Map.Entry<?,?> entry = it.next();
+                    File file = (File) entry.getKey();
                     if (homeDirectory != null) {
                         file = relativize(homeDirectory, file);
                         if (file == null) continue;
@@ -402,9 +506,9 @@ pathTree:   for (int j=0; ; j++) {
                         directory = node.newChild();
                         directory.setValue(NAME, parenthesis(resources.getString(homeKey)));
                     }
-                    CharSequence title = entry.getValue();
+                    CharSequence title = (CharSequence) entry.getValue();
                     if (title == null || title.length() == 0) {
-                        title = parenthesis(resources.getString(entry.getKey().isDirectory() ?
+                        title = parenthesis(resources.getString(file.isDirectory() ?
                                 Vocabulary.Keys.Directory : Vocabulary.Keys.Untitled).toLowerCase(locale));
                     }
                     TreeTables.nodeForPath(directory, NAME, file).setValue(VALUE_AS_TEXT, title);
@@ -424,12 +528,12 @@ pathTree:   for (int j=0; ; j++) {
      * Returns a map of all JAR files or class directories found in the given paths,
      * associated to a description obtained from their {@code META-INF/MANIFEST.MF}.
      *
-     * @param  paths         The paths using the {@link File#pathSeparatorChar} separator.
-     * @param  asDirectories {@code true} if the paths are directories, or {@code false} for JAR files.
-     * @return The paths, or {@code null} if none.
+     * @param  paths          the paths using the {@link File#pathSeparatorChar} separator.
+     * @param  asDirectories  {@code true} if the paths are directories, or {@code false} for JAR files.
+     * @return the paths, or {@code null} if none.
      */
     private static Map<File,CharSequence> classpath(final String paths, final boolean asDirectories) {
-        final Map<File,CharSequence> files = new LinkedHashMap<File,CharSequence>();
+        final Map<File,CharSequence> files = new LinkedHashMap<>();
         return classpath(paths, null, asDirectories, files) ? files : null;
     }
 
@@ -445,10 +549,10 @@ pathTree:   for (int j=0; ; j++) {
      *       a {@code MANIFEST.MF} attribute using space as the path separator.</li>
      * </ul>
      *
-     * @param  paths         The paths using the separator described above.
-     * @param  directory     The directory of {@code MANIFEST.MF} classpath, or {@code null}.
-     * @param  asDirectories {@code true} if the paths are directories, or {@code false} for JAR files.
-     * @param  files         Where to add the paths.
+     * @param  paths          the paths using the separator described above.
+     * @param  directory      the directory of {@code MANIFEST.MF} classpath, or {@code null}.
+     * @param  asDirectories  {@code true} if the paths are directories, or {@code false} for JAR files.
+     * @param  files          where to add the paths.
      * @return {@code true} if the given map has been changed as a result of this method call.
      */
     private static boolean classpath(final String paths, final File directory,
@@ -494,12 +598,11 @@ pathTree:   for (int j=0; ; j++) {
         for (final Map.Entry<File,CharSequence> entry : files.entrySet()) {
             CharSequence title = entry.getValue();
             if (title != null) {
-                continue; // This file has already been processed by a recursive method invocation.
+                continue;               // This file has already been processed by a recursive method invocation.
             }
             final File file = entry.getKey();
             if (file.isFile() && file.canRead()) {
-                try {
-                    final JarFile jar = new JarFile(file);
+                try (JarFile jar = new JarFile(file)) {
                     final Manifest manifest = jar.getManifest();
                     if (manifest != null) {
                         final Attributes attributes = manifest.getMainAttributes();
@@ -519,22 +622,21 @@ pathTree:   for (int j=0; ; j++) {
                             if (classpath(attributes.getValue(Attributes.Name.CLASS_PATH),
                                     file.getParentFile(), false, files))
                             {
-                                break; // Necessary for avoiding ConcurrentModificationException.
+                                break;          // Necessary for avoiding ConcurrentModificationException.
                             }
                         }
                     }
-                    jar.close();
                 } catch (IOException e) {
                     if (error == null) {
                         error = e;
                     } else {
-                        // error.addSuppressed(e) on JDK7 branch.
+                        error.addSuppressed(e);
                     }
                 }
             }
         }
         if (error != null) {
-            Logging.unexpectedException(About.class, "configuration", error);
+            Logging.unexpectedException(Logging.getLogger(Modules.UTILITIES), About.class, "configuration", error);
         }
         return true;
     }
@@ -557,7 +659,7 @@ pathTree:   for (int j=0; ; j++) {
             if (s1 >= 0) {
                 final int s0 = CharSequences.lastIndexOf(name, File.separatorChar, 0, s1) + 1;
                 final StringBuilder buffer = new StringBuilder(s2 - s0).append(name, s0, s2);
-                buffer.setCharAt(s1-s0, '-');
+                buffer.setCharAt(s1 - s0, '-');
                 if (CharSequences.regionMatches(name, s2+1, buffer)) {
                     buffer.setLength(0);
                     node.setValue(NAME, buffer.append(name, 0, s0).append("(…)").append(name, s2, length));
@@ -577,9 +679,9 @@ pathTree:   for (int j=0; ; j++) {
      * In particular, note that this implementation assumes that children collections are {@link List} (this is
      * guaranteed for {@link DefaultTreeTable.Node} implementations).</p>
      *
-     * @param  node The root of the node to simplify.
-     * @param  skip {@code true} for disabling concatenation of root node.
-     * @return The root of the simplified tree. May be the given {@code node} or a child.
+     * @param  node  the root of the node to simplify.
+     * @param  skip  {@code true} for disabling concatenation of root node.
+     * @return the root of the simplified tree. May be the given {@code node} or a child.
      */
     private static TreeTable.Node concatenateSingletons(final TreeTable.Node node, final boolean skip) {
         // DefaultTreeTable.Node instances are known to handle their children in a List.
@@ -606,10 +708,10 @@ pathTree:   for (int j=0; ; j++) {
      * Concatenates the given strings in the format "main (complement)".
      * Any of the given strings can be null.
      *
-     * @param  main        The main string to show first, or {@code null}.
-     * @param  complement  The string to show after the main one, or {@code null}.
-     * @param  parenthesis {@code true} for writing the complement between parenthesis, or {@code null}.
-     * @return The concatenated string, or {@code null} if all components are null.
+     * @param  main         the main string to show first, or {@code null}.
+     * @param  complement   the string to show after the main one, or {@code null}.
+     * @param  parenthesis  {@code true} for writing the complement between parenthesis, or {@code null}.
+     * @return the concatenated string, or {@code null} if all components are null.
      */
     private static CharSequence concatenate(final CharSequence main, final CharSequence complement, final boolean parenthesis) {
         if (main != null && main.length() != 0) {
@@ -643,7 +745,7 @@ pathTree:   for (int j=0; ; j++) {
         try {
             return country ? locale.getCountry() : locale.getISO3Language();
         } catch (MissingResourceException e) {
-            Logging.recoverableException(About.class, "configuration", e);
+            recoverableException(Loggers.LOCALIZATION, e);
             return null;
         }
     }
@@ -652,10 +754,10 @@ pathTree:   for (int j=0; ; j++) {
      * Formats the given value preceded by a plus or minus sign.
      * This method is used for formatting timezone offset.
      *
-     * @param df     The {@link DateFormat} to use for formatting the offset.
-     * @param offset The offset to format, as a positive or negative value.
-     * @param buffer The buffer where to format the offset.
-     * @return       The given buffer, returned for convenience.
+     * @param  df      the {@link DateFormat} to use for formatting the offset.
+     * @param  offset  the offset to format, as a positive or negative value.
+     * @param  buffer  the buffer where to format the offset.
+     * @return the given buffer, returned for convenience.
      */
     private static StringBuffer format(final Format df, final int offset, final StringBuffer buffer) {
         return df.format(Math.abs(offset), buffer.append(offset < 0 ? '-' : '+').append(' '), new FieldPosition(0));
@@ -674,9 +776,9 @@ pathTree:   for (int j=0; ; j++) {
      * Returns the given file relative to the given root, or {@code null} if the root is not
      * a parent of that file.
      *
-     * @param  root The root directory (typically Java home or user home directory).
-     * @param  file The file to make relative to the root.
-     * @return The file relative to the given root, or {@code null} if none.
+     * @param  root  the root directory (typically Java home or user home directory).
+     * @param  file  the file to make relative to the root.
+     * @return the file relative to the given root, or {@code null} if none.
      */
     private static File relativize(final File root, final File file) {
         File parent = file.getParentFile();
@@ -692,5 +794,12 @@ pathTree:   for (int j=0; ; j++) {
             }
         }
         return new File(parent, file.getName());
+    }
+
+    /**
+     * Logs a recoverable exception that happened (directly or indirectly) in the {@link #configuration()} method.
+     */
+    private static void recoverableException(final String logger, final Exception e) {
+        Logging.recoverableException(Logging.getLogger(logger), About.class, "configuration", e);
     }
 }

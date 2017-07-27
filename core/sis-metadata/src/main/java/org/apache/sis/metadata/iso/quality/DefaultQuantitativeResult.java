@@ -17,7 +17,7 @@
 package org.apache.sis.metadata.iso.quality;
 
 import java.util.List;
-import javax.measure.unit.Unit;
+import javax.measure.Unit;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -29,6 +29,11 @@ import org.opengis.util.RecordType;
 
 /**
  * Information about the value (or set of values) obtained from applying a data quality measure.
+ * The following properties are mandatory in a well-formed metadata according ISO 19115:
+ *
+ * <div class="preformat">{@code DQ_QuantitativeResult}
+ * {@code   ├─valueUnit……………………} Value unit for reporting a data quality result.
+ * {@code   └─value………………………………} Quantitative value or values, content determined by the evaluation procedure used.</div>
  *
  * <p><b>Limitations:</b></p>
  * <ul>
@@ -41,10 +46,11 @@ import org.opengis.util.RecordType;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Touraïvane (IRD)
- * @since   0.3
  * @version 0.3
+ * @since   0.3
  * @module
  */
+@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "DQ_QuantitativeResult_Type", propOrder = {
     "valueType",
     "valueUnit",
@@ -88,7 +94,7 @@ public class DefaultQuantitativeResult extends AbstractResult implements Quantit
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
-     * @param object The metadata to copy values from, or {@code null} if none.
+     * @param  object  the metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(QuantitativeResult)
      */
@@ -116,8 +122,8 @@ public class DefaultQuantitativeResult extends AbstractResult implements Quantit
      *       metadata contained in the given object are not recursively copied.</li>
      * </ul>
      *
-     * @param  object The object to get as a SIS implementation, or {@code null} if none.
-     * @return A SIS implementation containing the values of the given object (may be the
+     * @param  object  the object to get as a SIS implementation, or {@code null} if none.
+     * @return a SIS implementation containing the values of the given object (may be the
      *         given object itself), or {@code null} if the argument was null.
      */
     public static DefaultQuantitativeResult castOrCopy(final QuantitativeResult object) {
@@ -141,27 +147,47 @@ public class DefaultQuantitativeResult extends AbstractResult implements Quantit
     /**
      * Sets the quantitative value or values, content determined by the evaluation procedure used.
      *
-     * @param newValues The new values.
+     * @param  newValues  the new values.
      */
-    public void setValues(final List<Record> newValues) {
+    public void setValues(final List<? extends Record> newValues) {
         values = writeList(newValues, values, Record.class);
     }
 
     /**
      * Return the value type for reporting a data quality result.
      *
-     * @return Value type for reporting a data quality result, or {@code null}.
+     * <div class="section">Default value</div>
+     * If no type has been set but all {@linkplain #getValues() values} are of the same type,
+     * then this method defaults to that type. Otherwise this method returns {@code null}.
+     *
+     * @return value type for reporting a data quality result, or {@code null}.
      */
     @Override
     @XmlElement(name = "valueType")
     public RecordType getValueType()  {
-        return valueType;
+        RecordType type = valueType;
+        if (type == null && values != null) {
+            for (final Record value : values) {
+                if (value != null) {
+                    final RecordType t = value.getRecordType();
+                    if (t == null) {
+                        return null;
+                    } else if (type == null) {
+                        type = t;
+                    } else if (type != t) {
+                        return null;
+                    }
+                }
+            }
+        }
+        return type;
     }
 
     /**
      * Sets the value type for reporting a data quality result.
+     * A {@code null} value restores the default value documented in {@link #getValueType()}.
      *
-     * @param newValue The new value type.
+     * @param  newValue  the new value type.
      */
     public void setValueType(final RecordType newValue) {
         checkWritePermission();
@@ -171,7 +197,7 @@ public class DefaultQuantitativeResult extends AbstractResult implements Quantit
     /**
      * Returns the value unit for reporting a data quality result.
      *
-     * @return Value unit for reporting a data quality result, or {@code null}.
+     * @return value unit for reporting a data quality result, or {@code null}.
      */
     @Override
     @XmlElement(name = "valueUnit", required = true)
@@ -182,7 +208,7 @@ public class DefaultQuantitativeResult extends AbstractResult implements Quantit
     /**
      * Sets the value unit for reporting a data quality result.
      *
-     * @param newValue The new value unit.
+     * @param  newValue  the new value unit.
      */
     public void setValueUnit(final Unit<?> newValue) {
         checkWritePermission();
@@ -192,7 +218,7 @@ public class DefaultQuantitativeResult extends AbstractResult implements Quantit
     /**
      * Returns the statistical method used to determine the value.
      *
-     * @return Statistical method used to determine the value, or {@code null}.
+     * @return statistical method used to determine the value, or {@code null}.
      */
     @Override
     @XmlElement(name = "errorStatistic")
@@ -203,7 +229,7 @@ public class DefaultQuantitativeResult extends AbstractResult implements Quantit
     /**
      * Sets the statistical method used to determine the value, or {@code null} if none.
      *
-     * @param newValue The new error statistic.
+     * @param  newValue  the new error statistic.
      */
     public void setErrorStatistic(final InternationalString newValue) {
         checkWritePermission();

@@ -23,9 +23,9 @@ import java.lang.annotation.RetentionPolicy;
 
 
 /**
- * Annotates a static object using the {@linkplain java.util.Locale#getDefault() default locale}
- * and {@linkplain java.util.TimeZone#getDefault() default timezone} values which existed at the
- * object creation time.
+ * Annotates a static object created using the {@linkplain java.util.Locale#getDefault() default locale}
+ * and {@linkplain java.util.TimeZone#getDefault() default timezone} values which existed at the object
+ * creation time.
  *
  * If JDK provided listeners allowing SIS to be notified about locale and timezone changes, we would
  * reset the annotated object to {@code null}. However since those listeners do not exist as of JDK7,
@@ -33,8 +33,8 @@ import java.lang.annotation.RetentionPolicy;
  * if we want to take in account default locale/timezone changes in a future SIS version.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.3
+ * @since   0.3
  * @module
  */
 @Target(ElementType.FIELD)

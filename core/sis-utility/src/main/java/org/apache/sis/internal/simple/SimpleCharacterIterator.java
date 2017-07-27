@@ -26,8 +26,8 @@ import org.apache.sis.util.ArgumentChecks;
  * around a given {@link CharSequence}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.3
+ * @since   0.3
  * @module
  */
 public class SimpleCharacterIterator implements CharacterIterator, CharSequence, Serializable {
@@ -62,7 +62,7 @@ public class SimpleCharacterIterator implements CharacterIterator, CharSequence,
     /**
      * Creates a new character iterator for the given character sequence.
      *
-     * @param text The character sequence to wrap.
+     * @param  text  the character sequence to wrap.
      */
     public SimpleCharacterIterator(final CharSequence text) {
         ArgumentChecks.ensureNonNull("text", text);

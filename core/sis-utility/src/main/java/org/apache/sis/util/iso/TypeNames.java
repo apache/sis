@@ -22,6 +22,7 @@ import java.util.Map;
 import java.util.LinkedHashMap;
 import java.util.Iterator;
 import java.net.URI;
+import java.math.BigDecimal;
 import org.opengis.util.GenericName;
 import org.opengis.util.TypeName;
 import org.opengis.util.NameSpace;
@@ -36,8 +37,8 @@ import org.apache.sis.util.Numbers;
  * Implements the mapping between {@link Class} and {@link TypeName} documented in {@link DefaultTypeName}.
  *
  * @author  Martin Desruisseaux (Geomatys)
+ * @version 0.8
  * @since   0.5
- * @version 0.5
  * @module
  */
 final class TypeNames {
@@ -51,13 +52,14 @@ final class TypeNames {
      *
      * <p>This map shall not be modified after construction.</p>
      */
-    private static final Map<String,Class<?>> MAPPING = new LinkedHashMap<String,Class<?>>(16);
+    private static final Map<String,Class<?>> MAPPING = new LinkedHashMap<>(16);
     static {
         final Map<String,Class<?>> m = MAPPING;
         m.put("URI",       URI.class);
         m.put("DateTime",  Date.class);
         m.put("PT_Locale", Locale.class);
-        m.put("Boolean",   Boolean.class);  // Used as a sentinel value for stopping iteration.
+        m.put("Decimal",   BigDecimal.class);
+        m.put("Boolean",   Boolean.class);              // Used as a sentinel value for stopping iteration.
 
         // Entries below this point are handled in a special way.
         m.put("FreeText",        InternationalString.class);
@@ -88,9 +90,9 @@ final class TypeNames {
     /**
      * Infers the type name from the given class.
      *
-     * @param  factory    The same factory than the one given to the constructor.
-     * @param  valueClass The value class for which to get a type name.
-     * @return A type name for the given class (never {@code null}).
+     * @param  factory     the same factory than the one given to the constructor.
+     * @param  valueClass  the value class for which to get a type name.
+     * @return a type name for the given class (never {@code null}).
      */
     final TypeName toTypeName(final NameFactory factory, final Class<?> valueClass) {
         String name;
@@ -113,7 +115,7 @@ final class TypeNames {
                     name = entry.getKey();
                     return factory.createTypeName(ns, name);
                 }
-            } while (base != Boolean.class); // See MAPPING javadoc for the role of Boolean as a sentinel value.
+            } while (base != Boolean.class);    // See MAPPING javadoc for the role of Boolean as a sentinel value.
             /*
              * Found no special case. Checks for the UML annotation, to be also formatted in the "OGC:" namespace.
              * If no UML identifier is found, then we will format the Java class in the "class:" namespace. We use
@@ -122,7 +124,7 @@ final class TypeNames {
             name = Types.getStandardName(valueClass);
             if (name == null) {
                 ns = classNS;
-                name = valueClass.getName(); // See above comment.
+                name = valueClass.getName();    // See above comment.
             }
         }
         /*
@@ -148,10 +150,10 @@ final class TypeNames {
      *   <li>Otherwise the class for the given name.</li>
      * </ul>
      *
-     * @param  namespace The namespace, case-insensitive. Can be any value, but this method recognizes
+     * @param  namespace  the namespace, case-insensitive. Can be any value, but this method recognizes
      *         only {@code "OGC"}, {@code "class"} and {@code null}. Other namespaces will be ignored.
-     * @param  name The name, case-sensitive.
-     * @return The class, or {@code Void.TYPE} if the given namespace is not recognized,
+     * @param  name  the name, case-sensitive.
+     * @return the class, or {@code Void.TYPE} if the given namespace is not recognized,
      *         or {@code null} if the namespace is recognized but not the name.
      * @throws ClassNotFoundException if {@code namespace} is {@code "class"} but {@code name} is not
      *         the name of a reachable class.
@@ -163,13 +165,13 @@ final class TypeNames {
             if (c == null) {
                 c = Types.forStandardName(name);
                 if (c == null && namespace == null) {
-                    c = Void.TYPE; // Unknown name not considered an error if not in "OGC" namespace.
+                    c = Void.TYPE;          // Unknown name not considered an error if not in "OGC" namespace.
                 }
             }
         } else if (namespace.equalsIgnoreCase("class")) {
             c = Class.forName(name);
         } else {
-            c = Void.TYPE; // Not an "OGC" or "class" namespace.
+            c = Void.TYPE;                  // Not an "OGC" or "class" namespace.
         }
         return c;
     }

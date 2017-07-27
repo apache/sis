@@ -29,8 +29,8 @@ import static org.opengis.test.Validators.*;
  * Tests the {@link DirectPosition2D} class.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.3
  * @version 0.3
+ * @since   0.3
  * @module
  */
 @DependsOn(GeneralDirectPositionTest.class)

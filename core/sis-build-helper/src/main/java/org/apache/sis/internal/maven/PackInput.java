@@ -29,8 +29,8 @@ import java.io.InputStream;
  * Those files will be open in read-only mode.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.3
+ * @since   0.3
  * @module
  */
 final class PackInput implements Closeable {
@@ -83,7 +83,7 @@ final class PackInput implements Closeable {
     /**
      * Opens the given JAR file in read-only mode.
      *
-     * @param  file The file to open.
+     * @param  file  the file to open.
      * @throws IOException if the file can't be open.
      */
     PackInput(final File file) throws IOException {
@@ -104,7 +104,7 @@ final class PackInput implements Closeable {
     /**
      * Returns the entries in the input JAR file.
      *
-     * @return The next entry, or {@code null} if the iteration is finished.
+     * @return the next entry, or {@code null} if the iteration is finished.
      */
     JarEntry nextEntry() {
         if (entries == null) {
@@ -119,7 +119,7 @@ final class PackInput implements Closeable {
                 }
             }
             entry.setMethod(JarEntry.DEFLATED);
-            entry.setCompressedSize(-1); // Change in method has changed the compression size.
+            entry.setCompressedSize(-1);                    // Change in method has changed the compression size.
             return entry;
         }
         return entry = null;
@@ -150,9 +150,9 @@ final class PackInput implements Closeable {
      * Returns the input stream for the entry of the given name. This method must be invoked
      * before the first call to {@link #nextEntry}. Each entry can be requested only once.
      *
-     * @param  name The name of the entry
-     * @return The input stream for the requested entry, or {@code null} if none.
-     * @throws IOException If the entry can not be read.
+     * @param  name  the name of the entry
+     * @return the input stream for the requested entry, or {@code null} if none.
+     * @throws IOException if the entry can not be read.
      * @throws IllegalStateException Programming error (pre-condition violated).
      */
     InputStream getInputStream(final String name) throws IOException {

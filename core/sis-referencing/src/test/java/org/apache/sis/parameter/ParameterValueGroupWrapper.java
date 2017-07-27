@@ -29,11 +29,12 @@ import org.opengis.parameter.ParameterDescriptorGroup;
  * {@code if (x instanceof DefaultParameterValueGroup)}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.4
  * @version 0.4
+ * @since   0.4
  * @module
  */
-final class ParameterValueGroupWrapper implements ParameterValueGroup {
+@SuppressWarnings("CloneInNonCloneableClass")
+final strictfp class ParameterValueGroupWrapper implements ParameterValueGroup {
     /**
      * The implementation to hide.
      */
@@ -46,10 +47,11 @@ final class ParameterValueGroupWrapper implements ParameterValueGroup {
         this.impl = impl;
     }
 
+    @SuppressWarnings("CloneDoesntCallSuperClone")
+    @Override public ParameterValueGroup         clone()                {return impl.clone();}
     @Override public ParameterDescriptorGroup    getDescriptor()        {return impl.getDescriptor();}
     @Override public List<GeneralParameterValue> values()               {return impl.values();}
     @Override public ParameterValue<?>           parameter(String name) {return impl.parameter(name);}
     @Override public List<ParameterValueGroup>   groups(String name)    {return impl.groups(name);}
     @Override public ParameterValueGroup         addGroup(String name)  {return impl.addGroup(name);}
-    @Override public ParameterValueGroup         clone()                {return impl.clone();}
 }

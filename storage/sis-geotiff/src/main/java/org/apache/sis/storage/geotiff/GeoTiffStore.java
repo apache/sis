@@ -1,0 +1,197 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.apache.sis.storage.geotiff;
+
+import java.util.Locale;
+import java.io.IOException;
+import java.nio.charset.Charset;
+import java.util.logging.LogRecord;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.StandardOpenOption;
+import org.opengis.util.FactoryException;
+import org.opengis.metadata.Metadata;
+import org.opengis.metadata.maintenance.ScopeCode;
+import org.apache.sis.setup.OptionKey;
+import org.apache.sis.storage.DataStore;
+import org.apache.sis.storage.StorageConnector;
+import org.apache.sis.storage.DataStoreException;
+import org.apache.sis.storage.DataStoreContentException;
+import org.apache.sis.storage.UnsupportedStorageException;
+import org.apache.sis.internal.storage.io.ChannelDataInput;
+import org.apache.sis.internal.storage.MetadataBuilder;
+import org.apache.sis.internal.util.Constants;
+import org.apache.sis.metadata.sql.MetadataStoreException;
+import org.apache.sis.storage.DataStoreClosedException;
+import org.apache.sis.util.resources.Errors;
+
+
+/**
+ * A data store backed by GeoTIFF files.
+ *
+ * @author  Rémi Maréchal (Geomatys)
+ * @author  Martin Desruisseaux (Geomatys)
+ * @author  Thi Phuong Hao Nguyen (VNSC)
+ * @version 0.8
+ * @since   0.8
+ * @module
+ */
+public class GeoTiffStore extends DataStore {
+    /**
+     * The encoding of strings in the metadata. The string specification said that is shall be US-ASCII,
+     * but Apache SIS nevertheless let the user specifies an alternative encoding if needed.
+     */
+    final Charset encoding;
+
+    /**
+     * The GeoTIFF reader implementation, or {@code null} if the store has been closed.
+     */
+    private Reader reader;
+
+    /**
+     * The metadata, or {@code null} if not yet created.
+     *
+     * @see #getMetadata()
+     */
+    private Metadata metadata;
+
+    /**
+     * Creates a new GeoTIFF store from the given file, URL or stream object.
+     * This constructor invokes {@link StorageConnector#closeAllExcept(Object)},
+     * keeping open only the needed resource.
+     *
+     * @param  provider   the factory that created this {@code DataStore} instance, or {@code null} if unspecified.
+     * @param  connector  information about the storage (URL, stream, <i>etc</i>).
+     * @throws DataStoreException if an error occurred while opening the GeoTIFF file.
+     */
+    public GeoTiffStore(final GeoTiffStoreProvider provider, final StorageConnector connector) throws DataStoreException {
+        super(provider, connector);
+        final Charset encoding = connector.getOption(OptionKey.ENCODING);
+        this.encoding = (encoding != null) ? encoding : StandardCharsets.US_ASCII;
+        final ChannelDataInput input = connector.getStorageAs(ChannelDataInput.class);
+        if (input == null) {
+            throw new UnsupportedStorageException(super.getLocale(), "TIFF",
+                    connector.getStorage(), connector.getOption(OptionKey.OPEN_OPTIONS));
+        }
+        connector.closeAllExcept(input);
+        try {
+            reader = new Reader(this, input);
+        } catch (IOException e) {
+            throw new DataStoreException(e);
+        }
+    }
+
+    /**
+     * Returns information about the dataset as a whole. The returned metadata object can contain information
+     * such as the spatiotemporal extent of the dataset, contact information about the creator or distributor,
+     * data quality, usage constraints and more.
+     *
+     * @return information about the dataset.
+     * @throws DataStoreException if an error occurred while reading the data.
+     */
+    @Override
+    public synchronized Metadata getMetadata() throws DataStoreException {
+        if (metadata == null) {
+            final Reader reader = reader();
+            final MetadataBuilder builder = reader.metadata;
+            try {
+                builder.setFormat(Constants.GEOTIFF);
+            } catch (MetadataStoreException e) {
+                warning(null, e);
+            }
+            builder.addEncoding(encoding, MetadataBuilder.Scope.METADATA);
+            builder.addResourceScope(ScopeCode.valueOf("COVERAGE"), null);
+            final Locale locale = getLocale();
+            int n = 0;
+            try {
+                ImageFileDirectory dir;
+                while ((dir = reader.getImageFileDirectory(n++)) != null) {
+                    dir.completeMetadata(builder, locale);
+                }
+                metadata = builder.build(true);
+            } catch (IOException e) {
+                throw new DataStoreException(errors().getString(Errors.Keys.CanNotRead_1, reader.input.filename), e);
+            } catch (FactoryException | ArithmeticException e) {
+                throw new DataStoreContentException(getLocale(), "TIFF", reader.input.filename, null).initCause(e);
+            }
+        }
+        return metadata;
+    }
+
+    /**
+     * Returns the reader if it is not closed, or thrown an exception otherwise.
+     */
+    private Reader reader() throws DataStoreException {
+        final Reader r = reader;
+        if (r == null) {
+            throw new DataStoreClosedException(getLocale(), Constants.GEOTIFF, StandardOpenOption.READ);
+        }
+        return r;
+    }
+
+    /**
+     * Closes this GeoTIFF store and releases any underlying resources.
+     *
+     * @throws DataStoreException if an error occurred while closing the GeoTIFF file.
+     */
+    @Override
+    public synchronized void close() throws DataStoreException {
+        final Reader r = reader;
+        reader = null;
+        if (r != null) try {
+            r.close();
+        } catch (IOException e) {
+            throw new DataStoreException(e);
+        }
+    }
+
+    /**
+     * Returns the error resources in the current locale.
+     */
+    final Errors errors() {
+        return Errors.getResources(getLocale());
+    }
+
+    /**
+     * Reports a warning represented by the given message and exception.
+     * At least one of {@code message} and {@code exception} shall be non-null.
+     *
+     * @param message    the message to log, or {@code null} if none.
+     * @param exception  the exception to log, or {@code null} if none.
+     */
+    final void warning(final String message, final Exception exception) {
+        listeners.warning(message, exception);
+    }
+
+    /**
+     * Reports a warning contained in the given {@link LogRecord}.
+     * Note that the given record will not necessarily be sent to the logging framework;
+     * if the user as registered at least one listener, then the record will be sent to the listeners instead.
+     *
+     * <p>This method sets the {@linkplain LogRecord#setSourceClassName(String) source class name} and
+     * {@linkplain LogRecord#setSourceMethodName(String) source method name} to hard-coded values.
+     * Those values assume that the warnings occurred indirectly from a call to {@link #getMetadata()}
+     * in this class. We do not report private classes or methods as the source of warnings.</p>
+     *
+     * @param  record  the warning to report.
+     */
+    final void warning(final LogRecord record) {
+        // Logger name will be set by listeners.warning(record).
+        record.setSourceClassName(GeoTiffStore.class.getName());
+        record.setSourceMethodName("getMetadata");
+        listeners.warning(record);
+    }
+}

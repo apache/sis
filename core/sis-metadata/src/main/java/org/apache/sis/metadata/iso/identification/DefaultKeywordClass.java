@@ -23,12 +23,20 @@ import javax.xml.bind.annotation.XmlRootElement;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.citation.Citation;
 import org.apache.sis.metadata.iso.ISOMetadata;
+import org.apache.sis.metadata.TitleProperty;
 import org.apache.sis.util.iso.Types;
 
 
 /**
  * Specification of a class to categorize keywords in a domain-specific vocabulary
  * that has a binding to a formal ontology.
+ * The following properties are mandatory in a well-formed metadata according ISO 19115:
+ *
+ * <div class="preformat">{@code MD_KeywordClass}
+ * {@code   ├─className………………………} Character string to label the keyword category in natural language.
+ * {@code   └─ontology…………………………} Reference that binds the keyword class to a formal conceptualization of a knowledge domain.
+ * {@code       ├─title………………………} Name by which the cited resource is known.
+ * {@code       └─date…………………………} Reference date for the cited resource.</div>
  *
  * <div class="warning"><b>Note on International Standard versions</b><br>
  * This class is derived from a new type defined in the ISO 19115 international standard published in 2014,
@@ -48,10 +56,12 @@ import org.apache.sis.util.iso.Types;
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.5
  * @version 0.5
+ * @since   0.5
  * @module
  */
+@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
+@TitleProperty(name = "className")
 @XmlType(name = "MD_KeywordClass_Type", propOrder = {
     "className",
     "conceptIdentifier",
@@ -89,8 +99,8 @@ public class DefaultKeywordClass extends ISOMetadata {
     /**
      * Creates keyword class initialized to the given key name and ontology.
      *
-     * @param className A character string to label the keyword category in natural language.
-     * @param ontology  Reference that binds the keyword class to a formal conceptualization of a knowledge domain.
+     * @param className  a character string to label the keyword category in natural language.
+     * @param ontology   reference that binds the keyword class to a formal conceptualization of a knowledge domain.
      */
     public DefaultKeywordClass(final CharSequence className, final Citation ontology) {
         this.className = Types.toInternationalString(className);
@@ -102,9 +112,7 @@ public class DefaultKeywordClass extends ISOMetadata {
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
-     * @param object The metadata to copy values from, or {@code null} if none.
-     *
-     * @see #castOrCopy(KeywordClass)
+     * @param  object  the metadata to copy values from, or {@code null} if none.
      */
     public DefaultKeywordClass(final DefaultKeywordClass object) {
         super(object);
@@ -118,7 +126,7 @@ public class DefaultKeywordClass extends ISOMetadata {
     /**
      * Returns a label for the keyword category in natural language.
      *
-     * @return The keyword category in natural language.
+     * @return the keyword category in natural language.
      */
     @XmlElement(name = "className", required = true)
     public InternationalString getClassName() {
@@ -128,7 +136,7 @@ public class DefaultKeywordClass extends ISOMetadata {
     /**
      * Sets a label for the keyword category in natural language.
      *
-     * @param newValue The new keyword category in natural language.
+     * @param  newValue  the new keyword category in natural language.
      */
     public void setClassName(final InternationalString newValue) {
         checkWritePermission();
@@ -148,7 +156,7 @@ public class DefaultKeywordClass extends ISOMetadata {
     /**
      * Sets the URI of concept in the ontology specified by the {@linkplain #getOntology() ontology} citation.
      *
-     * @param newValue The new URI of concept in the ontology.
+     * @param  newValue  the new URI of concept in the ontology.
      */
     public void setConceptIdentifier(final URI newValue) {
         checkWritePermission();
@@ -158,7 +166,7 @@ public class DefaultKeywordClass extends ISOMetadata {
     /**
      * Returns a reference that binds the keyword class to a formal conceptualization of a knowledge domain.
      *
-     * @return A reference that binds the keyword class to a formal conceptualization.
+     * @return a reference that binds the keyword class to a formal conceptualization.
      */
     @XmlElement(name = "ontology", required = true)
     public Citation getOntology() {
@@ -168,7 +176,7 @@ public class DefaultKeywordClass extends ISOMetadata {
     /**
      * Sets a reference that binds the keyword class to a formal conceptualization of a knowledge domain.
      *
-     * @param newValue The new reference that binds the keyword class to a formal conceptualization.
+     * @param  newValue  the new reference that binds the keyword class to a formal conceptualization.
      */
     public void setOntology(final Citation newValue) {
         checkWritePermission();

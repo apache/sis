@@ -28,11 +28,20 @@ import org.opengis.metadata.spatial.Georeferenceable;
 import org.opengis.metadata.spatial.GridSpatialRepresentation;
 import org.apache.sis.measure.ValueRange;
 
-import static org.apache.sis.internal.metadata.MetadataUtilities.warnNonPositiveArgument;
+import static org.apache.sis.internal.metadata.MetadataUtilities.ensurePositive;
 
 
 /**
- * Basic information required to uniquely identify a resource or resources.
+ * Method used to represent geographic information in the dataset.
+ * The following properties are mandatory in a well-formed metadata according ISO 19115:
+ *
+ * <div class="preformat">{@code MD_GridSpatialRepresentation}
+ * {@code   ├─numberOfDimensions…………………………………………………} Number of independent spatial-temporal axes.
+ * {@code   ├─axisDimensionProperties……………………………………} Information about spatial-temporal axis properties.
+ * {@code   │   ├─dimensionName……………………………………………………} Name of the axis.
+ * {@code   │   └─dimensionSize……………………………………………………} Number of elements along the axis.
+ * {@code   ├─cellGeometry…………………………………………………………………} Identification of grid data as point or cell.
+ * {@code   └─transformationParameterAvailability……} Indication of whether or not parameters for transformation exists.</div>
  *
  * <p><b>Limitations:</b></p>
  * <ul>
@@ -46,10 +55,11 @@ import static org.apache.sis.internal.metadata.MetadataUtilities.warnNonPositive
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Touraïvane (IRD)
  * @author  Cédric Briançon (Geomatys)
- * @since   0.3
  * @version 0.5
+ * @since   0.3
  * @module
  */
+@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "MD_GridSpatialRepresentation_Type", propOrder = {
     "numberOfDimensions",
     "axisDimensionProperties",
@@ -122,7 +132,7 @@ public class DefaultGridSpatialRepresentation extends AbstractSpatialRepresentat
      * metadata instances can also be obtained by unmarshalling an invalid XML document.
      * </div>
      *
-     * @param object The metadata to copy values from, or {@code null} if none.
+     * @param  object  the metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(GridSpatialRepresentation)
      */
@@ -157,8 +167,8 @@ public class DefaultGridSpatialRepresentation extends AbstractSpatialRepresentat
      *       metadata contained in the given object are not recursively copied.</li>
      * </ul>
      *
-     * @param  object The object to get as a SIS implementation, or {@code null} if none.
-     * @return A SIS implementation containing the values of the given object (may be the
+     * @param  object  the object to get as a SIS implementation, or {@code null} if none.
+     * @return a SIS implementation containing the values of the given object (may be the
      *         given object itself), or {@code null} if the argument was null.
      */
     public static DefaultGridSpatialRepresentation castOrCopy(final GridSpatialRepresentation object) {
@@ -178,7 +188,7 @@ public class DefaultGridSpatialRepresentation extends AbstractSpatialRepresentat
     /**
      * Returns the number of independent spatial-temporal axes.
      *
-     * @return Number of independent spatial-temporal axes, or {@code null}.
+     * @return number of independent spatial-temporal axes, or {@code null}.
      */
     @Override
     @ValueRange(minimum = 0)
@@ -190,21 +200,20 @@ public class DefaultGridSpatialRepresentation extends AbstractSpatialRepresentat
     /**
      * Sets the number of independent spatial-temporal axes.
      *
-     * @param newValue The new number of dimension, or {@code null}.
+     * @param  newValue  the new number of dimension, or {@code null}.
      * @throws IllegalArgumentException if the given value is negative.
      */
     public void setNumberOfDimensions(final Integer newValue) {
         checkWritePermission();
-        if (newValue != null && newValue < 0) {
-            warnNonPositiveArgument(DefaultGridSpatialRepresentation.class, "numberOfDimensions", false, newValue);
+        if (ensurePositive(DefaultGridSpatialRepresentation.class, "numberOfDimensions", false, newValue)) {
+            numberOfDimensions = newValue;
         }
-        numberOfDimensions = newValue;
     }
 
     /**
      * Returns information about spatial-temporal axis properties.
      *
-     * @return Information about spatial-temporal axis properties.
+     * @return information about spatial-temporal axis properties.
      */
     @Override
     @XmlElement(name = "axisDimensionProperties", required = true)
@@ -215,7 +224,7 @@ public class DefaultGridSpatialRepresentation extends AbstractSpatialRepresentat
     /**
      * Sets the information about spatial-temporal axis properties.
      *
-     * @param newValues The new axis dimension properties.
+     * @param  newValues  the new axis dimension properties.
      */
     public void setAxisDimensionProperties(final List<? extends Dimension> newValues) {
         checkWritePermission();
@@ -226,7 +235,7 @@ public class DefaultGridSpatialRepresentation extends AbstractSpatialRepresentat
     /**
      * Returns the identification of grid data as point or cell.
      *
-     * @return Identification of grid data as point or cell, or {@code null}.
+     * @return identification of grid data as point or cell, or {@code null}.
      */
     @Override
     @XmlElement(name = "cellGeometry", required = true)
@@ -237,7 +246,7 @@ public class DefaultGridSpatialRepresentation extends AbstractSpatialRepresentat
     /**
      * Sets identification of grid data as point or cell.
      *
-     * @param newValue The new cell geometry.
+     * @param  newValue  the new cell geometry.
      */
     public void setCellGeometry(final CellGeometry newValue) {
         checkWritePermission();
@@ -247,7 +256,7 @@ public class DefaultGridSpatialRepresentation extends AbstractSpatialRepresentat
     /**
      * Returns indication of whether or not parameters for transformation exists.
      *
-     * @return Whether or not parameters for transformation exists.
+     * @return whether or not parameters for transformation exists.
      */
     @Override
     @XmlElement(name = "transformationParameterAvailability", required = true)

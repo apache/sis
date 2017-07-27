@@ -19,7 +19,7 @@ package org.apache.sis.internal.jaxb.code;
 import javax.xml.bind.annotation.XmlElement;
 import org.opengis.metadata.citation.OnLineFunction;
 import org.apache.sis.internal.jaxb.gmd.CodeListAdapter;
-import org.apache.sis.internal.jaxb.gmd.CodeListProxy;
+import org.apache.sis.internal.jaxb.gmd.CodeListUID;
 
 
 /**
@@ -28,13 +28,11 @@ import org.apache.sis.internal.jaxb.gmd.CodeListProxy;
  * the handling of {@code CodeList} in ISO-19139.
  *
  * @author  Cédric Briançon (Geomatys)
- * @since   0.3
  * @version 0.3
+ * @since   0.3
  * @module
  */
-public final class CI_OnLineFunctionCode
-        extends CodeListAdapter<CI_OnLineFunctionCode, OnLineFunction>
-{
+public final class CI_OnLineFunctionCode extends CodeListAdapter<CI_OnLineFunctionCode, OnLineFunction> {
     /**
      * Empty constructor for JAXB only.
      */
@@ -42,26 +40,26 @@ public final class CI_OnLineFunctionCode
     }
 
     /**
-     * Creates a new adapter for the given proxy.
+     * Creates a new adapter for the given value.
      */
-    private CI_OnLineFunctionCode(final CodeListProxy proxy) {
-        super(proxy);
+    private CI_OnLineFunctionCode(final CodeListUID value) {
+        super(value);
     }
 
     /**
      * {@inheritDoc}
      *
-     * @return The wrapper for the code list value.
+     * @return the wrapper for the code list value.
      */
     @Override
-    protected CI_OnLineFunctionCode wrap(CodeListProxy proxy) {
-        return new CI_OnLineFunctionCode(proxy);
+    protected CI_OnLineFunctionCode wrap(final CodeListUID value) {
+        return new CI_OnLineFunctionCode(value);
     }
 
     /**
      * {@inheritDoc}
      *
-     * @return The code list class.
+     * @return the code list class.
      */
     @Override
     protected Class<OnLineFunction> getCodeListClass() {
@@ -71,20 +69,20 @@ public final class CI_OnLineFunctionCode
     /**
      * Invoked by JAXB on marshalling.
      *
-     * @return The value to be marshalled.
+     * @return the value to be marshalled.
      */
     @Override
     @XmlElement(name = "CI_OnLineFunctionCode")
-    public CodeListProxy getElement() {
-        return proxy;
+    public CodeListUID getElement() {
+        return identifier;
     }
 
     /**
      * Invoked by JAXB on unmarshalling.
      *
-     * @param proxy The unmarshalled value.
+     * @param  value  the unmarshalled value.
      */
-    public void setElement(final CodeListProxy proxy) {
-        this.proxy = proxy;
+    public void setElement(final CodeListUID value) {
+        identifier = value;
     }
 }

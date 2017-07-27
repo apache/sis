@@ -20,9 +20,15 @@ import java.util.Map;
 import java.util.HashMap;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
+import java.nio.file.OpenOption;
+import java.nio.file.StandardOpenOption;
 import java.io.Serializable;
+import java.io.ObjectStreamException;
+import java.util.Locale;
+import java.util.TimeZone;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.logging.Logging;
+import org.apache.sis.internal.system.Modules;
 
 
 /**
@@ -54,11 +60,12 @@ import org.apache.sis.util.logging.Logging;
  *     }
  * }
  *
- * @param <T> The type of option values.
- *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
- * @version 0.4
+ * @version 0.8
+ *
+ * @param <T>  the type of option values.
+ *
+ * @since 0.3
  * @module
  */
 public class OptionKey<T> implements Serializable {
@@ -68,17 +75,60 @@ public class OptionKey<T> implements Serializable {
     private static final long serialVersionUID = -7580514229639750246L;
 
     /**
+     * The library to use for creating geometric objects at reading time.
+     * Some libraries are the Java Topology Suite (JTS), ESRI geometry API and Java2D.
+     * If this option is not specified, then a library will be selected automatically
+     * among the libraries available in the runtime environment.
+     *
+     * @since 0.8
+     */
+    public static final OptionKey<GeometryLibrary> GEOMETRY_LIBRARY = new OptionKey<>("GEOMETRY_LIBRARY", GeometryLibrary.class);
+
+    /**
+     * The locale to use for locale-sensitive data. This option determines the language to use for writing
+     * {@link org.apache.sis.util.iso.AbstractInternationalString international strings} when the target
+     * storage support only one language. It may also control number and date patterns in some file formats
+     * like Comma Separated Values (CSV). However most data formats will ignore this locale.
+     *
+     * <p>This option is <strong>not</strong> for the locale of logging or warning messages. Messages
+     * locale is rather controlled by {@link org.apache.sis.storage.DataStore#setLocale(Locale)}.</p>
+     *
+     * @see org.apache.sis.xml.XML#LOCALE
+     *
+     * @since 0.8
+     */
+    public static final OptionKey<Locale> LOCALE = new OptionKey<>("LOCALE", Locale.class);
+
+    /**
+     * The timezone to use when parsing or formatting dates and times without explicit timezone.
+     * If this option is not provided, then the default value is format specific.
+     * That default is often, but not necessarily, the {@linkplain TimeZone#getDefault() platform default}.
+     *
+     * <div class="warning"><b>Upcoming API change — Java time API</b><br>
+     * The type may be changed to {@link java.time.ZoneId} when Apache SIS will target Java 8.
+     * This change may be applied in synchronization with GeoAPI 4.0.
+     * </div>
+     *
+     * @see org.apache.sis.xml.XML#TIMEZONE
+     *
+     * @since 0.8
+     */
+    public static final OptionKey<TimeZone> TIMEZONE = new OptionKey<>("TIMEZONE", TimeZone.class);
+
+    /**
      * The character encoding of document content.
      * This option can be used when the file to read does not describe itself its encoding.
      * For example this option can be used when reading plain text files, but is ignored when
      * reading XML files having a {@code <?xml version="1.0" encoding="…"?>} declaration.
      *
-     * <p>If this option is not provided, then the default value is the
-     * {@link Charset#defaultCharset() platform default}.</p>
+     * <p>If this option is not provided, then the default value is format specific.
+     * That default is often, but not necessarily, the {@linkplain Charset#defaultCharset() platform default}.</p>
+     *
+     * @see javax.xml.bind.Marshaller#JAXB_ENCODING
      *
      * @since 0.4
      */
-    public static final OptionKey<Charset> ENCODING = new OptionKey<Charset>("ENCODING", Charset.class);
+    public static final OptionKey<Charset> ENCODING = new OptionKey<>("ENCODING", Charset.class);
 
     /**
      * The encoding of a URL (<strong>not</strong> the encoding of the document content).
@@ -110,7 +160,7 @@ public class OptionKey<T> implements Serializable {
      *
      * @see java.net.URLDecoder
      */
-    public static final OptionKey<String> URL_ENCODING = new OptionKey<String>("URL_ENCODING", String.class);
+    public static final OptionKey<String> URL_ENCODING = new OptionKey<>("URL_ENCODING", String.class);
 
     /**
      * Whether a storage object (e.g. a {@link org.apache.sis.storage.DataStore}) shall be opened in read,
@@ -119,18 +169,13 @@ public class OptionKey<T> implements Serializable {
      * <table class="sis">
      *   <caption>Supported open options</caption>
      *   <tr><th>Value</th>                             <th>Meaning</th></tr>
-     *   <tr><td>{@code "READ"}</td>   <td>Open for reading data from the storage object.</td></tr>
-     *   <tr><td>{@code "WRITE"}</td>  <td>Open for modifying existing data in the storage object.</td></tr>
-     *   <tr><td>{@code "APPEND"}</td> <td>Open for appending new data in the storage object.</td></tr>
-     *   <tr><td>{@code "CREATE"}</td> <td>Creates a new storage object (file or database) if it does not exist.</td></tr>
+     *   <tr><td>{@link StandardOpenOption#READ}</td>   <td>Open for reading data from the storage object.</td></tr>
+     *   <tr><td>{@link StandardOpenOption#WRITE}</td>  <td>Open for modifying existing data in the storage object.</td></tr>
+     *   <tr><td>{@link StandardOpenOption#APPEND}</td> <td>Open for appending new data in the storage object.</td></tr>
+     *   <tr><td>{@link StandardOpenOption#CREATE}</td> <td>Creates a new storage object (file or database) if it does not exist.</td></tr>
      * </table>
-     *
-     * {@section Differences between the JDK6 and JDK7 branches of SIS}
-     * In the JDK7 branch of SIS, the array type for this key is {@code java.nio.file.OpenOption[]} instead than
-     * {@code Object[]} and the constants listed in the above table are {@code java.nio.file.StandardOpenOption}
-     * enumeration values.
      */
-    public static final OptionKey<Object[]> OPEN_OPTIONS = new OptionKey<Object[]>("OPEN_OPTIONS", Object[].class);
+    public static final OptionKey<OpenOption[]> OPEN_OPTIONS = new OptionKey<>("OPEN_OPTIONS", OpenOption[].class);
 
     /**
      * The byte buffer to use for input/output operations. Some {@link org.apache.sis.storage.DataStore}
@@ -144,7 +189,28 @@ public class OptionKey<T> implements Serializable {
      *   <li>The same buffer is not used concurrently by two different {@code DataStore} instances.</li>
      * </ul>
      */
-    public static final OptionKey<ByteBuffer> BYTE_BUFFER = new OptionKey<ByteBuffer>("BYTE_BUFFER", ByteBuffer.class);
+    public static final OptionKey<ByteBuffer> BYTE_BUFFER = new OptionKey<>("BYTE_BUFFER", ByteBuffer.class);
+
+    /**
+     * The number of spaces to use for indentation when formatting text files in WKT or XML formats.
+     * A value of {@value org.apache.sis.io.wkt.WKTFormat#SINGLE_LINE} means to format the whole WKT
+     * or XML document on a single line without line feeds or indentation.
+     *
+     * <p>If this option is not provided, then the most typical default value used in Apache SIS is 2.
+     * Such small indentation value is used because XML documents defined by OGC standards tend to be
+     * verbose.</p>
+     *
+     * @see org.apache.sis.io.wkt.WKTFormat#SINGLE_LINE
+     * @see javax.xml.bind.Marshaller#JAXB_FORMATTED_OUTPUT
+     *
+     * @since 0.8
+     */
+    public static final OptionKey<Integer> INDENTATION = new OptionKey<>("INDENTATION", Integer.class);
+
+    /*
+     * Note: we do not provide a LINE_SEPARATOR option for now because we can not control the line separator
+     * in JDK's JAXB implementation, and Apache SIS provides an org.apache.sis.io.LineAppender alternative.
+     */
 
     /**
      * The name of this key. For {@code OptionKey} instances, it shall be the name of the static constants.
@@ -160,8 +226,8 @@ public class OptionKey<T> implements Serializable {
     /**
      * Creates a new key of the given name for values of the given type.
      *
-     * @param name The key name.
-     * @param type The type of values.
+     * @param name  the key name.
+     * @param type  the type of values.
      */
     protected OptionKey(final String name, final Class<T> type) {
         ArgumentChecks.ensureNonEmpty("name", name);
@@ -173,7 +239,7 @@ public class OptionKey<T> implements Serializable {
     /**
      * Returns the name of this option key.
      *
-     * @return The name of this option key.
+     * @return the name of this option key.
      */
     public String getName() {
         return name;
@@ -182,7 +248,7 @@ public class OptionKey<T> implements Serializable {
     /**
      * Returns the type of values associated to this option key.
      *
-     * @return The type of values.
+     * @return the type of values.
      */
     public final Class<T> getElementType() {
         return type;
@@ -199,8 +265,8 @@ public class OptionKey<T> implements Serializable {
      *     }
      * }
      *
-     * @param  options The map where to search for the value, or {@code null} if not yet created.
-     * @return The current value in the map for the this option, or {@code null} if none.
+     * @param  options  the map where to search for the value, or {@code null} if not yet created.
+     * @return the current value in the map for the this option, or {@code null} if none.
      */
     public T getValueFrom(final Map<OptionKey<?>,?> options) {
         return (options != null) ? type.cast(options.get(this)) : null;
@@ -217,15 +283,15 @@ public class OptionKey<T> implements Serializable {
      *     }
      * }
      *
-     * @param  options The map where to set the value, or {@code null} if not yet created.
-     * @param  value   The new value for the given option, or {@code null} for removing the value.
-     * @return The given map of options, or a new map if the given map was null. The returned value
+     * @param  options  the map where to set the value, or {@code null} if not yet created.
+     * @param  value    the new value for the given option, or {@code null} for removing the value.
+     * @return the given map of options, or a new map if the given map was null. The returned value
      *         may be null if the given map and the given value are both null.
      */
     public Map<OptionKey<?>,Object> setValueInto(Map<OptionKey<?>,Object> options, final T value) {
         if (value != null) {
             if (options == null) {
-                options = new HashMap<OptionKey<?>,Object>();
+                options = new HashMap<>();
             }
             options.put(this, value);
         } else if (options != null) {
@@ -237,7 +303,7 @@ public class OptionKey<T> implements Serializable {
     /**
      * Returns {@code true} if the given object is an instance of the same class having the same name and type.
      *
-     * @param object The object to compare with this {@code OptionKey} for equality.
+     * @param object  the object to compare with this {@code OptionKey} for equality.
      */
     @Override
     public boolean equals(final Object object) {
@@ -272,19 +338,20 @@ public class OptionKey<T> implements Serializable {
      * Resolves this option key on deserialization. This method is invoked
      * only for instance of the exact {@code OptionKey} class, not subclasses.
      *
-     * @return The unique {@code OptionKey} instance.
+     * @return the unique {@code OptionKey} instance.
+     * @throws ObjectStreamException required by specification but should never be thrown.
      */
-    private Object readResolve() {
+    private Object readResolve() throws ObjectStreamException {
         try {
             return OptionKey.class.getField(name).get(null);
-        } catch (Exception e) { // (ReflectiveOperationException) on JDK7 branch.
+        } catch (ReflectiveOperationException e) {
             /*
              * This may happen if we are deserializing a stream produced by a more recent SIS library
              * than the one running in this JVM. This class should be robust to this situation, since
              * we override the 'equals' and 'hashCode' methods. This option is likely to be ignored,
              * but options are expected to be optional...
              */
-            Logging.recoverableException(OptionKey.class, "readResolve", e);
+            Logging.recoverableException(Logging.getLogger(Modules.UTILITIES), OptionKey.class, "readResolve", e);
             return this;
         }
     }

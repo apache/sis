@@ -68,6 +68,7 @@ abstract class AbstractConnection extends AbstractJDBC implements Connection {
     /**
      * Unsupported by default.
      */
+    @Override
     public String getSchema() throws SQLException {
         throw unsupportedOperation("getSchema");
     }
@@ -75,6 +76,7 @@ abstract class AbstractConnection extends AbstractJDBC implements Connection {
     /**
      * Unsupported by default.
      */
+    @Override
     public void setSchema(String schema) throws SQLException {
         throw unsupportedOperation("setSchema");
     }
@@ -147,7 +149,7 @@ abstract class AbstractConnection extends AbstractJDBC implements Connection {
      */
     @Override
     public void setAutoCommit(boolean autoCommit) {
-        format(Level.FINE, "log.auto_commit_ignored", autoCommit);
+        log(Level.FINE, "log.auto_commit_ignored", autoCommit);
     }
 
     /**
@@ -155,7 +157,7 @@ abstract class AbstractConnection extends AbstractJDBC implements Connection {
      */
     @Override
     public void commit() {
-        format(Level.FINE, "log.commit_rollback_ignored");
+        log(Level.FINE, "log.commit_rollback_ignored");
     }
 
     /**
@@ -163,7 +165,7 @@ abstract class AbstractConnection extends AbstractJDBC implements Connection {
      */
     @Override
     public void rollback() {
-        format(Level.FINE, "log.commit_rollback_ignored");
+        log(Level.FINE, "log.commit_rollback_ignored");
     }
 
     /**
@@ -393,6 +395,7 @@ abstract class AbstractConnection extends AbstractJDBC implements Connection {
     /**
      * Defaults to 0, which means there is no limit.
      */
+    @Override
     public int getNetworkTimeout() {
         return 0; // Means there is no limt.
     }
@@ -400,6 +403,7 @@ abstract class AbstractConnection extends AbstractJDBC implements Connection {
     /**
      * Unsupported by default.
      */
+    @Override
     public void setNetworkTimeout(Executor executor, int milliseconds) {
         logUnsupportedOperation("setNetworkTimeout");
     }
@@ -407,6 +411,7 @@ abstract class AbstractConnection extends AbstractJDBC implements Connection {
     /**
      * Unsupported by default.
      */
+    @Override
     public void abort(Executor executor) throws SQLException {
         throw unsupportedOperation("abort");
     }

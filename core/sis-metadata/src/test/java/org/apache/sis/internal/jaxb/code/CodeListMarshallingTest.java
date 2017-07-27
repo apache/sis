@@ -42,17 +42,18 @@ import static org.apache.sis.test.Assert.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Guilhem Legal (Geomatys)
- * @since   0.3
  * @version 0.5
- * @module
  *
  * @see <a href="http://jira.geotoolkit.org/browse/GEOTK-121">GEOTK-121</a>
+ *
+ * @since 0.3
+ * @module
  */
 public final strictfp class CodeListMarshallingTest extends XMLTestCase {
     /**
      * Returns a XML string to use for testing purpose.
      *
-     * @param baseURL The base URL of XML schemas.
+     * @param baseURL  the base URL of XML schemas.
      */
     private static String getResponsiblePartyXML(final String baseURL) {
         return "<gmd:CI_ResponsibleParty xmlns:gmd=\"" + Namespaces.GMD + "\">\n" +
@@ -66,7 +67,7 @@ public final strictfp class CodeListMarshallingTest extends XMLTestCase {
     /**
      * Returns a XML string to use for testing purpose.
      *
-     * @param baseURL The base URL of XML schemas.
+     * @param baseURL  the base URL of XML schemas.
      */
     private static String getCitationXML(final String baseURL, final String language, final String value) {
         return "<gmd:CI_Date xmlns:gmd=\"" + Namespaces.GMD + "\">\n" +
@@ -80,7 +81,7 @@ public final strictfp class CodeListMarshallingTest extends XMLTestCase {
     /**
      * Tests marshaling using the default URL.
      *
-     * @throws JAXBException If an error occurred while marshaling the XML.
+     * @throws JAXBException if an error occurred while marshaling the XML.
      */
     @Test
     public void testDefaultURL() throws JAXBException {
@@ -98,7 +99,7 @@ public final strictfp class CodeListMarshallingTest extends XMLTestCase {
     /**
      * Tests marshaling using the ISO URL.
      *
-     * @throws JAXBException If an error occurred while marshaling the XML.
+     * @throws JAXBException if an error occurred while marshaling the XML.
      */
     @Test
     public void testISO_URL() throws JAXBException {
@@ -118,7 +119,7 @@ public final strictfp class CodeListMarshallingTest extends XMLTestCase {
     /**
      * Tests a code list localization.
      *
-     * @throws JAXBException If an error occurred while marshaling the XML.
+     * @throws JAXBException if an error occurred while marshaling the XML.
      */
     @Test
     public void testLocalization() throws JAXBException {
@@ -149,7 +150,7 @@ public final strictfp class CodeListMarshallingTest extends XMLTestCase {
     /**
      * Tests marshaling of a code list which is not in the list of standard codes.
      *
-     * @throws JAXBException If an error occurred while marshaling the XML.
+     * @throws JAXBException if an error occurred while marshaling the XML.
      */
     @Test
     public void testExtraCodes() throws JAXBException {

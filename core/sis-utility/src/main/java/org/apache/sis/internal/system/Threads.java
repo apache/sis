@@ -16,16 +16,14 @@
  */
 package org.apache.sis.internal.system;
 
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.ExecutorService;
 import org.apache.sis.util.Static;
 import org.apache.sis.util.logging.Logging;
 
 
 /**
- * Utilities methods for threads. This class declares in a single place every {@link ThreadGroup}
- * used in SIS. Their intend is to bring some order in debugger informations, by grouping the
- * threads created by SIS together under the same parent tree node.
+ * Utilities methods for threads. This class declares in a single place every {@link ThreadGroup} used in SIS.
+ * Their intend is to bring some order in debugger informations, by grouping the threads created by SIS together
+ * under the same parent tree node.
  *
  * <div class="section">Note on dependencies</div>
  * This class shall not depend on {@link ReferenceQueueConsumer} or {@link DelayedExecutor},
@@ -33,8 +31,8 @@ import org.apache.sis.util.logging.Logging;
  * dependencies the other way around.
  *
  * @author  Martin Desruisseaux (Geomatys)
+ * @version 0.7
  * @since   0.3
- * @version 0.3
  * @module
  */
 final class Threads extends Static {
@@ -63,7 +61,7 @@ final class Threads extends Static {
      */
     static final ThreadGroup DAEMONS = new ThreadGroup(SIS, "Daemons") {
         @Override public void uncaughtException(final Thread thread, final Throwable exception) {
-            Logging.severeException(Logging.getLogger("org.apache.sis"), thread.getClass(), "run", exception);
+            Logging.severeException(Logging.getLogger(Loggers.SYSTEM), thread.getClass(), "run", exception);
         }
     };
 
@@ -83,19 +81,6 @@ final class Threads extends Static {
     static DaemonThread lastCreatedDaemon;
 
     /**
-     * Executor to shutdown. This is a copy of the {@code <removed class>} executor static final
-     * field, copied here only when the {@code <removed class>} class is loaded and initialized.
-     * We proceed that way for avoiding dependency from {@code Threads} to {@code <removed class>}.
-     *
-     * <p>This field has been temporarily fixed to {@code null} since we removed executor as of
-     * <a href="https://issues.apache.org/jira/browse/SIS-76">SIS-76</a>. However we may revert
-     * to a modifiable field in a future version if we choose to use executor again. In the main
-     * time, we declare this field as {@code final} for allowing the Javac compiler to omit all
-     * compiled code inside {@code if (executor != null)} block.</p>
-     */
-    private static final ExecutorService executor = null;
-
-    /**
      * Do not allows instantiation of this class.
      */
     private Threads() {
@@ -108,26 +93,12 @@ final class Threads extends Static {
      * <p><strong>This method is for internal use by Apache SIS shutdown hooks only.</strong>
      * Users should never invoke this method explicitely.</p>
      *
-     * @param  stopWaitingAt A {@link System#nanoTime()} value telling when to stop waiting.
+     * @param  stopWaitingAt  a {@link System#nanoTime()} value telling when to stop waiting.
      *         This is used for preventing shutdown process to block an indefinite amount of time.
-     * @throws InterruptedException If an other thread invoked {@link Thread#interrupt()} while
+     * @throws InterruptedException if an other thread invoked {@link Thread#interrupt()} while
      *         we were waiting for the daemon threads to die.
      */
     static synchronized void shutdown(final long stopWaitingAt) throws InterruptedException {
-        if (executor != null) {
-            executor.shutdown();
-            /*
-             * Wait for work completion. In theory this is not necessary since the daemon
-             * tasks are only house-cleaning work. We nevertheless wait for their completion
-             * as a safety. There tasks are supposed to be short.
-             */
-            final long delay = stopWaitingAt - System.nanoTime();
-            if (delay > 0) {
-                executor.awaitTermination(delay, TimeUnit.NANOSECONDS);
-                // Even if the tasks didn't completed, continue without waiting for them.
-                // We can not log at this point, since the logging framework may be shutdown.
-            }
-        }
         DaemonThread.killAll(lastCreatedDaemon, stopWaitingAt);
     }
 }

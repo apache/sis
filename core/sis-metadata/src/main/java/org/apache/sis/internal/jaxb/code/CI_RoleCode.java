@@ -19,7 +19,7 @@ package org.apache.sis.internal.jaxb.code;
 import javax.xml.bind.annotation.XmlElement;
 import org.opengis.metadata.citation.Role;
 import org.apache.sis.internal.jaxb.gmd.CodeListAdapter;
-import org.apache.sis.internal.jaxb.gmd.CodeListProxy;
+import org.apache.sis.internal.jaxb.gmd.CodeListUID;
 
 
 /**
@@ -28,8 +28,8 @@ import org.apache.sis.internal.jaxb.gmd.CodeListProxy;
  * of {@code CodeList} in ISO-19139.
  *
  * @author  Cédric Briançon (Geomatys)
- * @since   0.3
  * @version 0.3
+ * @since   0.3
  * @module
  */
 public final class CI_RoleCode extends CodeListAdapter<CI_RoleCode, Role> {
@@ -40,26 +40,26 @@ public final class CI_RoleCode extends CodeListAdapter<CI_RoleCode, Role> {
     }
 
     /**
-     * Creates a new adapter for the given proxy.
+     * Creates a new adapter for the given value.
      */
-    private CI_RoleCode(final CodeListProxy proxy) {
-        super(proxy);
+    private CI_RoleCode(final CodeListUID value) {
+        super(value);
     }
 
     /**
      * {@inheritDoc}
      *
-     * @return The wrapper for the code list value.
+     * @return the wrapper for the code list value.
      */
     @Override
-    protected CI_RoleCode wrap(CodeListProxy proxy) {
-        return new CI_RoleCode(proxy);
+    protected CI_RoleCode wrap(final CodeListUID value) {
+        return new CI_RoleCode(value);
     }
 
     /**
      * {@inheritDoc}
      *
-     * @return The code list class.
+     * @return the code list class.
      */
     @Override
     protected Class<Role> getCodeListClass() {
@@ -69,20 +69,20 @@ public final class CI_RoleCode extends CodeListAdapter<CI_RoleCode, Role> {
     /**
      * Invoked by JAXB on marshalling.
      *
-     * @return The value to be marshalled.
+     * @return the value to be marshalled.
      */
     @Override
     @XmlElement(name = "CI_RoleCode")
-    public CodeListProxy getElement() {
-        return proxy;
+    public CodeListUID getElement() {
+        return identifier;
     }
 
     /**
      * Invoked by JAXB on unmarshalling.
      *
-     * @param proxy The unmarshalled value.
+     * @param  value  the unmarshalled value.
      */
-    public void setElement(final CodeListProxy proxy) {
-        this.proxy = proxy;
+    public void setElement(final CodeListUID value) {
+        identifier = value;
     }
 }

@@ -34,8 +34,8 @@ import static org.apache.sis.test.TestUtilities.waitForGarbageCollection;
  * A standard {@link HashSet} object is used for comparison purpose.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.3
  * @version 0.3
+ * @since   0.3
  * @module
  */
 @DependsOn(org.apache.sis.util.ArraysExtTest.class)
@@ -59,8 +59,8 @@ public final strictfp class WeakHashSetTest extends TestCase {
     public void testStrongReferences() {
         final Random random = new Random();
         for (int pass=0; pass<NUM_RETRY; pass++) {
-            final WeakHashSet<Integer> weakSet = new WeakHashSet<Integer>(Integer.class);
-            final HashSet<Integer> strongSet = new HashSet<Integer>();
+            final WeakHashSet<Integer> weakSet = new WeakHashSet<>(Integer.class);
+            final HashSet<Integer> strongSet = new HashSet<>();
             for (int i=0; i<SAMPLE_SIZE; i++) {
                 final Integer value = random.nextInt(SAMPLE_SIZE);
                 if (random.nextBoolean()) {
@@ -95,17 +95,18 @@ public final strictfp class WeakHashSetTest extends TestCase {
      * Tests the {@link WeakHashSet} using weak references. In this test, we have to keep
      * in mind that some elements in {@code weakSet} may disappear at any time!
      *
-     * @throws InterruptedException If the test has been interrupted.
+     * @throws InterruptedException if the test has been interrupted.
      */
     @Test
     @DependsOnMethod("testStrongReferences")
     public void testWeakReferences() throws InterruptedException {
         final Random random = new Random();
         for (int pass=0; pass<NUM_RETRY; pass++) {
-            final WeakHashSet<Integer> weakSet = new WeakHashSet<Integer>(Integer.class);
-            final HashSet<Integer> strongSet = new HashSet<Integer>();
+            final WeakHashSet<Integer> weakSet = new WeakHashSet<>(Integer.class);
+            final HashSet<Integer> strongSet = new HashSet<>();
             for (int i=0; i<SAMPLE_SIZE; i++) {
-                final Integer value = new Integer(random.nextInt(SAMPLE_SIZE)); // Really need new instances
+                @SuppressWarnings("UnnecessaryBoxing")
+                final Integer value = new Integer(random.nextInt(SAMPLE_SIZE));         // Really need new instances
                 if (random.nextBoolean()) {
                     /*
                      * Tests addition.
@@ -121,7 +122,7 @@ public final strictfp class WeakHashSetTest extends TestCase {
                          */
                         assertTrue("add:", strongModified);
                     } else {
-                        assertTrue(value != weakSet.get(value));
+                        assertNotSame(value, weakSet.get(value));
                         if (strongModified) {
                             /*
                              * The element was not in HashSet but still exist in the WeakHashSet.
@@ -180,7 +181,7 @@ public final strictfp class WeakHashSetTest extends TestCase {
     @Test
     @DependsOnMethod("testStrongReferences")
     public void testWithArrayElements() {
-        final WeakHashSet<int[]> weakSet = new WeakHashSet<int[]>(int[].class);
+        final WeakHashSet<int[]> weakSet = new WeakHashSet<>(int[].class);
         final int[] array = new int[] {2, 5, 3};
         assertTrue (weakSet.add(array));
         assertFalse(weakSet.add(array));

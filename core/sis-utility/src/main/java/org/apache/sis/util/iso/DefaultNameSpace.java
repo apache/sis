@@ -20,7 +20,9 @@ import java.util.Map;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Locale;
+import java.util.Objects;
 import java.io.Serializable;
+import java.io.ObjectStreamException;
 import org.opengis.util.NameSpace;
 import org.opengis.util.LocalName;
 import org.opengis.util.ScopedName;
@@ -31,9 +33,6 @@ import org.apache.sis.util.collection.WeakValueHashMap;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
 
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
-
-// Branch-dependent imports
-import org.apache.sis.internal.jdk7.Objects;
 
 
 /**
@@ -52,15 +51,16 @@ import org.apache.sis.internal.jdk7.Objects;
  * remain safe to call from multiple threads and do not change any public {@code NameSpace} state.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.3
- * @version 0.3
- * @module
+ * @version 0.8
  *
  * @see DefaultScopedName
  * @see DefaultLocalName
  * @see DefaultTypeName
  * @see DefaultMemberName
  * @see DefaultNameFactory
+ *
+ * @since 0.3
+ * @module
  */
 public class DefaultNameSpace implements NameSpace, Serializable {
     /**
@@ -144,46 +144,57 @@ public class DefaultNameSpace implements NameSpace, Serializable {
      * Creates a new namespace with the given separator.
      *
      * @param parent
-     *          The parent namespace, or {@code null} if none.
+     *          the parent namespace, or {@code null} if none.
      * @param name
-     *          The name of the new namespace, usually as a {@link String}
+     *          the name of the new namespace, usually as a {@link String}
      *          or an {@link InternationalString}.
      * @param headSeparator
-     *          The separator to insert between the namespace and the
+     *          the separator to insert between the namespace and the
      *          {@linkplain AbstractName#head() head} of any name in that namespace.
      * @param separator
-     *          The separator to insert between the {@linkplain AbstractName#getParsedNames()
+     *          the separator to insert between the {@linkplain AbstractName#getParsedNames()
      *          parsed names} of any name in that namespace.
      */
-    protected DefaultNameSpace(final DefaultNameSpace parent, CharSequence name,
+    protected DefaultNameSpace(final DefaultNameSpace parent, final CharSequence name,
                                final String headSeparator, final String separator)
     {
         this.parent = (parent != GlobalNameSpace.GLOBAL) ? parent : null;
         ensureNonNull("name",          name);
         ensureNonNull("headSeparator", headSeparator);
         ensureNonNull("separator",     separator);
-        if (!(name instanceof InternationalString)) {
-            name = name.toString();
-        }
-        this.name          = name;
+        this.name          = simplify(name);
         this.headSeparator = headSeparator;
         this.separator     = separator;
         init();
     }
 
     /**
+     * Converts the given name to its {@link String} representation if that name is not an {@link InternationalString}
+     * instance from which this {@code DefaultNameSpace} implementation can extract useful information. For example if
+     * the given name is a {@link SimpleInternationalString}, that international string does not give more information
+     * than the {@code String} that it wraps. Using the {@code String} as the canonical value increase the chances that
+     * {@link #equals(Object)} detect that two {@code GenericName} instances are equal.
+     */
+    private static CharSequence simplify(CharSequence name) {
+        if (!(name instanceof InternationalString) || name.getClass() == SimpleInternationalString.class) {
+            name = name.toString();
+        }
+        return name;
+    }
+
+    /**
      * Initializes the transient fields.
      */
     private void init() {
-        childs = new WeakValueHashMap<String,Object>(String.class);
+        childs = new WeakValueHashMap<>(String.class);
     }
 
     /**
      * Wraps the given namespace in a {@code DefaultNameSpace} implementation.
      * This method returns an existing instance when possible.
      *
-     * @param  ns The namespace to wrap, or {@code null} for the global one.
-     * @return The given namespace as a {@code DefaultNameSpace} implementation.
+     * @param  ns  the namespace to wrap, or {@code null} for the global one.
+     * @return the given namespace as a {@code DefaultNameSpace} implementation.
      */
     static DefaultNameSpace castOrCopy(final NameSpace ns) {
         if (ns == null) {
@@ -200,18 +211,16 @@ public class DefaultNameSpace implements NameSpace, Serializable {
      * This method returns an existing instance when possible.
      *
      * @param name
-     *          The name for the namespace to obtain, or {@code null}.
+     *          the name for the namespace to obtain, or {@code null}.
      * @param headSeparator
-     *          The separator to insert between the namespace and the
+     *          the separator to insert between the namespace and the
      *          {@linkplain AbstractName#head() head} of any name in that namespace.
      * @param separator
-     *          The separator to insert between the {@linkplain AbstractName#getParsedNames()
+     *          the separator to insert between the {@linkplain AbstractName#getParsedNames()
      *          parsed names} of any name in that namespace.
-     * @return A namespace having the given name, or {@code null} if name was null.
+     * @return a namespace having the given name, or {@code null} if name was null.
      */
-    static DefaultNameSpace forName(final GenericName name,
-            final String headSeparator, final String separator)
-    {
+    static DefaultNameSpace forName(final GenericName name, final String headSeparator, final String separator) {
         if (name == null) {
             return null;
         }
@@ -251,7 +260,7 @@ public class DefaultNameSpace implements NameSpace, Serializable {
      */
     @Override
     public boolean isGlobal() {
-        return false; // To be overridden by GlobalNameSpace.
+        return false;               // To be overridden by GlobalNameSpace.
     }
 
     /**
@@ -264,8 +273,8 @@ public class DefaultNameSpace implements NameSpace, Serializable {
     /**
      * Returns the depth of the given namespace.
      *
-     * @param ns The namespace for which to get the depth, or {@code null}.
-     * @return The depth of the given namespace.
+     * @param  ns  the namespace for which to get the depth, or {@code null}.
+     * @return the depth of the given namespace.
      */
     private static int depth(DefaultNameSpace ns) {
         int depth = 0;
@@ -285,7 +294,7 @@ public class DefaultNameSpace implements NameSpace, Serializable {
      *     assert name.scope().isGlobal() == true;
      * }
      *
-     * @return The identifier of this namespace.
+     * @return the identifier of this namespace.
      */
     @Override
     public GenericName name() {
@@ -346,19 +355,20 @@ public class DefaultNameSpace implements NameSpace, Serializable {
      * the head separator is {@code "://"} for {@code "www"} (which is having this namespace),
      * but it is {@code "."} for all children ({@code "opengeospatial"} and {@code "org"}).</p>
      *
-     * @param  name The name of the child namespace.
-     * @return The child namespace. It may be an existing instance.
+     * @param  name  the name of the child namespace.
+     * @param  sep   the separator to use (typically {@link #separator}).
+     * @return the child namespace. It may be an existing instance.
      */
-    final DefaultNameSpace child(final CharSequence name) {
-        return child(key(name), name, separator, separator);
+    final DefaultNameSpace child(final CharSequence name, final String sep) {
+        return child(key(name), name, sep, sep);
     }
 
     /**
      * Returns a key to be used in the {@linkplain #childs} pool from the given name.
      * The key must be the unlocalized version of the given string.
      *
-     * @param name The name.
-     * @return A key from the given name.
+     * @param  name  the name.
+     * @return a key from the given name.
      */
     private static String key(final CharSequence name) {
         return (name instanceof InternationalString) ?
@@ -370,16 +380,16 @@ public class DefaultNameSpace implements NameSpace, Serializable {
      * The returned namespace will have this namespace as its parent.
      *
      * @param key
-     *          The unlocalized name of the child namespace, to be used as a key in the cache.
+     *          the unlocalized name of the child namespace, to be used as a key in the cache.
      * @param name
-     *          The name of the child namespace, or {@code null} if same than key.
+     *          the name of the child namespace, or {@code null} if same than key.
      * @param headSeparator
-     *          The separator to insert between the namespace and the
+     *          the separator to insert between the namespace and the
      *          {@linkplain AbstractName#head() head} of any name in that namespace.
      * @param separator
-     *          The separator to insert between the {@linkplain AbstractName#getParsedNames()
+     *          the separator to insert between the {@linkplain AbstractName#getParsedNames()
      *          parsed names} of any name in that namespace.
-     * @return The child namespace. It may be an existing instance.
+     * @return the child namespace. It may be an existing instance.
      */
     private DefaultNameSpace child(final String key, CharSequence name,
             final String headSeparator, final String separator)
@@ -387,8 +397,10 @@ public class DefaultNameSpace implements NameSpace, Serializable {
         ensureNonNull("key", key);
         if (name == null) {
             name = key;
+        } else {
+            name = simplify(name);
         }
-        final WeakValueHashMap<String,Object> childs = this.childs; // Paranoiac protection against accidental changes.
+        final WeakValueHashMap<String,Object> childs = this.childs;     // Paranoiac protection against accidental changes.
         DefaultNameSpace child;
         synchronized (childs) {
             final Object existing = childs.get(key);
@@ -396,7 +408,7 @@ public class DefaultNameSpace implements NameSpace, Serializable {
                 child = (DefaultNameSpace) existing;
                 if (!child.separator    .equals(separator) ||
                     !child.headSeparator.equals(headSeparator) ||
-                    !child.name         .equals(name)) // Same test than equalsIgnoreParent.
+                    !child.name         .equals(name))                  // Same test than equalsIgnoreParent.
                 {
                     child = new DefaultNameSpace(this, name, headSeparator, separator);
                     /*
@@ -408,7 +420,7 @@ public class DefaultNameSpace implements NameSpace, Serializable {
             } else {
                 child = new DefaultNameSpace(this, name, headSeparator, separator);
                 if (childs.put(key, child) != existing) {
-                    throw new AssertionError(); // Paranoiac check.
+                    throw new AssertionError();                         // Paranoiac check.
                 }
             }
         }
@@ -421,21 +433,20 @@ public class DefaultNameSpace implements NameSpace, Serializable {
      * namespace as its {@linkplain DefaultLocalName#scope() scope}. This method may returns
      * an existing instance on a "best effort" basis, but this is not guaranteed.
      *
-     * @param  name      The name of the instance to create.
-     * @param  candidate The instance to cache if no instance was found for the given name,
-     *                   or {@code null} if none.
-     * @return A name which is local in this namespace.
+     * @param  name       the name of the instance to create.
+     * @param  candidate  the instance to cache if no instance was found for the given name, or {@code null} if none.
+     * @return a name which is local in this namespace.
      */
     final DefaultLocalName local(final CharSequence name, final DefaultLocalName candidate) {
         ensureNonNull("name", name);
         final String key = name.toString();
-        final WeakValueHashMap<String,Object> childs = this.childs; // Paranoiac protection against accidental changes.
+        final WeakValueHashMap<String,Object> childs = this.childs;     // Paranoiac protection against accidental changes.
         DefaultLocalName child;
         synchronized (childs) {
             final Object existing = childs.get(key);
             if (existing instanceof DefaultLocalName) {
                 child = (DefaultLocalName) existing;
-                if (name.equals(child.name)) {
+                if (simplify(name).equals(child.name)) {
                     assert (child.scope != null ? child.scope : GlobalNameSpace.GLOBAL) == this;
                     return child;
                 }
@@ -448,7 +459,7 @@ public class DefaultNameSpace implements NameSpace, Serializable {
             // Cache only if the slot is not already occupied by a NameSpace.
             if (!(existing instanceof DefaultNameSpace)) {
                 if (childs.put(key, child) != existing) {
-                    throw new AssertionError(); // Paranoiac check.
+                    throw new AssertionError();                         // Paranoiac check.
                 }
             }
         }
@@ -476,7 +487,7 @@ public class DefaultNameSpace implements NameSpace, Serializable {
      * {@link NameSpace} contract. This implementation follows the JCR convention for debugging convenience,
      * but applications needing better guarantees should use {@link Names#toExpandedString(GenericName)} instead.
      *
-     * @return A JCR-like lexical form of this namespace.
+     * @return a JCR-like lexical form of this namespace.
      *
      * @see Names#toExpandedString(GenericName)
      */
@@ -489,7 +500,7 @@ public class DefaultNameSpace implements NameSpace, Serializable {
     /**
      * Returns {@code true} if this namespace is equal to the given object.
      *
-     * @param object The object to compare with this namespace.
+     * @param  object  the object to compare with this namespace.
      * @return {@code true} if the given object is equal to this namespace.
      */
     @Override
@@ -504,13 +515,13 @@ public class DefaultNameSpace implements NameSpace, Serializable {
     /**
      * Returns {@code true} if the namespace is equal to the given one, ignoring the parent.
      *
-     * @param that The namespace to compare with this one.
+     * @param  that  the namespace to compare with this one.
      * @return {@code true} if both namespaces are equal, ignoring the parent.
      */
     private boolean equalsIgnoreParent(final DefaultNameSpace that) {
         return Objects.equals(this.headSeparator, that.headSeparator) &&
                Objects.equals(this.separator,     that.separator) &&
-               Objects.equals(this.name,          that.name); // Most expensive test last.
+               Objects.equals(this.name,          that.name);               // Most expensive test last.
     }
 
     /**
@@ -529,9 +540,10 @@ public class DefaultNameSpace implements NameSpace, Serializable {
      * the deserialized class is a subclass defined in an other package. This is the intended
      * behavior since we don't want to replace an instance of a user-defined class.</p>
      *
-     * @return The unique instance.
+     * @return the unique instance.
+     * @throws ObjectStreamException required by specification but should never be thrown.
      */
-    Object readResolve() {
+    Object readResolve() throws ObjectStreamException {
         final DefaultNameSpace p = parent();
         final String key = key(name);
         final WeakValueHashMap<String,Object> pool = p.childs;
@@ -546,7 +558,7 @@ public class DefaultNameSpace implements NameSpace, Serializable {
             } else {
                 init();
                 if (pool.put(key, this) != existing) {
-                    throw new AssertionError(); // Paranoiac check.
+                    throw new AssertionError();             // Paranoiac check.
                 }
                 return this;
             }

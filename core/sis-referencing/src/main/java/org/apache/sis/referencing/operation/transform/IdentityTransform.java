@@ -16,10 +16,8 @@
  */
 package org.apache.sis.referencing.operation.transform;
 
-import java.io.Serializable;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.referencing.operation.Matrix;
-import org.opengis.referencing.operation.MathTransform;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.geometry.GeneralDirectPosition;
 import org.apache.sis.referencing.operation.matrix.Matrices;
@@ -33,11 +31,11 @@ import org.apache.sis.internal.referencing.j2d.AffineTransform2D;
  * optimizations.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.5
  * @version 0.6
+ * @since   0.5
  * @module
  */
-final class IdentityTransform extends AbstractLinearTransform implements Serializable {
+final class IdentityTransform extends AbstractLinearTransform {
     /**
      * Serial number for inter-operability with different versions.
      */
@@ -47,7 +45,7 @@ final class IdentityTransform extends AbstractLinearTransform implements Seriali
      * Identity transforms for dimensions ranging from to 0 to 7.
      * Elements in this array will be created only when first requested.
      *
-     * @see #identity(int)
+     * @see #create(int)
      */
     private static final LinearTransform[] IDENTITIES = new LinearTransform[8];
 
@@ -59,7 +57,7 @@ final class IdentityTransform extends AbstractLinearTransform implements Seriali
     /**
      * Constructs an identity transform of the specified dimension.
      *
-     * @param dimension The dimension of the transform to be created.
+     * @param  dimension  the dimension of the transform to be created.
      *
      * @see MathTransforms#identity(int)
      */
@@ -72,8 +70,8 @@ final class IdentityTransform extends AbstractLinearTransform implements Seriali
      * dimension 1 and 2, this method returns instances of {@link LinearTransform1D} or
      * {@link AffineTransform2D} respectively.
      *
-     * @param dimension The dimension of the transform to be returned.
-     * @return An identity transform of the specified dimension.
+     * @param  dimension  the dimension of the transform to be returned.
+     * @return an identity transform of the specified dimension.
      *
      * @see MathTransforms#identity(int)
      */
@@ -87,11 +85,9 @@ final class IdentityTransform extends AbstractLinearTransform implements Seriali
                 }
             }
             switch (dimension) {
-                default: candidate = new IdentityTransform(dimension); break;
-                case 1:  candidate = IdentityTransform1D.INSTANCE;     break;
-                case 2:  candidate = new AffineTransform2D();
-                         ((AffineTransform2D) candidate).freeze();
-                         break;
+                default: candidate = new IdentityTransform(dimension);        break;
+                case 1:  candidate = IdentityTransform1D.INSTANCE;            break;
+                case 2:  candidate = new AffineTransform2D(1, 0, 0, 1, 0, 0); break;
             }
             if (dimension < IDENTITIES.length) {
                 IDENTITIES[dimension] = candidate;
@@ -231,7 +227,7 @@ final class IdentityTransform extends AbstractLinearTransform implements Seriali
      * Returns the inverse transform of this object, which is this transform itself
      */
     @Override
-    public MathTransform inverse() {
+    public LinearTransform inverse() {
         return this;
     }
 

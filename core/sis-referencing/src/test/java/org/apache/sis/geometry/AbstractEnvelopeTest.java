@@ -36,17 +36,12 @@ import static org.apache.sis.test.ReferencingAssert.*;
  * Various implementations are used for each test.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.3
  * @version 0.4
+ * @since   0.3
  * @module
  */
 @DependsOn(GeneralDirectPositionTest.class)
 public final strictfp class AbstractEnvelopeTest extends TestCase {
-    /**
-     * Tolerance threshold for strict floating point comparisons.
-     */
-    static final double STRICT = 0;
-
     /**
      * Enumeration of implementations to be tested.
      * The {@code LAST} constant is for stopping the loops.
@@ -88,7 +83,7 @@ public final strictfp class AbstractEnvelopeTest extends TestCase {
                 GeneralEnvelope ge = new GeneralEnvelope(5);
                 ge.setRange(1, xmin, xmax);
                 ge.setRange(2, ymin, ymax);
-                ge.setRange(0, 2, 3); // Following values will be verified in verifyInvariants(…)
+                ge.setRange(0, 2, 3);               // Following values will be verified in verifyInvariants(…)
                 ge.setRange(3, 4, 6);
                 ge.setRange(4, 8, 9);
                 ge = ge.subEnvelope(1, 3);
@@ -210,7 +205,7 @@ public final strictfp class AbstractEnvelopeTest extends TestCase {
             assertEquals(label,   -4, upper   .getOrdinate(0), STRICT);
             assertEquals(label, +180, envelope.getMaximum (0), STRICT);
             assertEquals(label, -176, envelope.getMedian  (0), STRICT);
-            assertEquals(label,  344, envelope.getSpan    (0), STRICT); // 360° - testSimpleEnvelope()
+            assertEquals(label,  344, envelope.getSpan    (0), STRICT);         // 360° - testSimpleEnvelope()
             switch (type) {
                 default: {
                     final AbstractEnvelope ext = (AbstractEnvelope) envelope;
@@ -271,8 +266,8 @@ public final strictfp class AbstractEnvelopeTest extends TestCase {
             assertEquals(label, -180, envelope.getMinimum (0), STRICT);
             assertEquals(label, -364, upper   .getOrdinate(0), STRICT);
             assertEquals(label, +180, envelope.getMaximum (0), STRICT);
-            assertEquals(label,    4, envelope.getMedian  (0), STRICT); // Note the alternance with the previous test methods.
-            assertEquals(label,  NaN, envelope.getSpan    (0), STRICT); // testCrossingAntiMeridian() + 360°.
+            assertEquals(label,    4, envelope.getMedian  (0), STRICT);     // Note the alternance with the previous test methods.
+            assertEquals(label,  NaN, envelope.getSpan    (0), STRICT);     // testCrossingAntiMeridian() + 360°.
             if (envelope instanceof AbstractEnvelope) {
                 final AbstractEnvelope ext = (AbstractEnvelope) envelope;
                 assertTrue (label, ext.contains  (inside));
@@ -326,8 +321,8 @@ public final strictfp class AbstractEnvelopeTest extends TestCase {
             assertEquals(label, -180, envelope.getMinimum (0), STRICT);
             assertEquals(label, -364, upper   .getOrdinate(0), STRICT);
             assertEquals(label, +180, envelope.getMaximum (0), STRICT);
-            assertEquals(label, -176, envelope.getMedian  (0), STRICT); // Note the alternance with the previous test methods.
-            assertEquals(label,  NaN, envelope.getSpan    (0), STRICT); // testCrossingAntiMeridianTwice() + 360°.
+            assertEquals(label, -176, envelope.getMedian  (0), STRICT);     // Note the alternance with the previous test methods.
+            assertEquals(label,  NaN, envelope.getSpan    (0), STRICT);     // testCrossingAntiMeridianTwice() + 360°.
             switch (type) {
                 default: {
                     final AbstractEnvelope ext = (AbstractEnvelope) envelope;

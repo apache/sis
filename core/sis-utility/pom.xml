@@ -28,7 +28,7 @@
   <parent>
     <groupId>org.apache.sis</groupId>
     <artifactId>core</artifactId>
-    <version>0.6-android-SNAPSHOT</version>
+    <version>0.8-SNAPSHOT</version>
   </parent>
 
 
@@ -37,7 +37,7 @@
        =========================================================== -->
   <groupId>org.apache.sis.core</groupId>
   <artifactId>sis-utility</artifactId>
-  <packaging>jar</packaging>
+  <packaging>bundle</packaging>
   <name>Apache SIS utilities</name>
   <description>
   <!-- Left alignment because this description will be copied in META-INF/MANIFEST.MF
@@ -114,39 +114,51 @@ Miscellaneous utilities.
   <build>
     <plugins>
 
-      <!-- Delete the "com/sun/xml/..." directory after compilation. -->
+      <!-- Package as OSGi bundle -->
       <plugin>
-       <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-antrun-plugin</artifactId>
-        <executions>
-          <execution>
-            <phase>process-test-classes</phase>
-            <goals>
-              <goal>run</goal>
-            </goals>
-            <configuration>
-              <target>
-                <delete dir="${project.build.outputDirectory}/com"/>
-              </target>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
-
-      <!-- Compile properties files into resources UTF files. -->
-      <plugin>
-        <groupId>org.apache.sis.core</groupId>
-        <artifactId>sis-build-helper</artifactId>
-        <version>${sis.plugin.version}</version>
-        <executions>
-          <execution>
-            <goals>
-              <goal>compile-resources</goal>
-            </goals>
-          </execution>
-        </executions>
+        <groupId>org.apache.felix</groupId>
+        <artifactId>maven-bundle-plugin</artifactId>
+        <configuration>
+          <instructions>
+            <Bundle-SymbolicName>org.apache.sis.util</Bundle-SymbolicName>
+            <Bundle-Activator>org.apache.sis.internal.system.OSGiActivator</Bundle-Activator>
+            <Export-Package>*</Export-Package>
+            <Require-Capability>
+              osgi.extender;
+              filter:="(osgi.extender=osgi.serviceloader.registrar)",
+              osgi.serviceloader;
+              ;cardinality:=multiple,osgi.extender;
+              filter:="(osgi.extender=osgi.serviceloader.processor)"
+            </Require-Capability>
+            <SPI-Producer>*</SPI-Producer>
+          </instructions>
+        </configuration>
       </plugin>
     </plugins>
   </build>
+
+
+  <!-- ===========================================================
+           Dependencies
+       =========================================================== -->
+  <dependencies>
+    <!-- Optional dependencies (provided scope) -->
+    <dependency>
+      <groupId>org.osgi</groupId>
+      <artifactId>org.osgi.core</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>javax</groupId>
+      <artifactId>javaee-api</artifactId>
+    </dependency>
+
+    <!-- Allows compiler to use a JAXB class which should exist on the JVM. -->
+    <dependency>
+      <groupId>com.googlecode.jaxb-namespaceprefixmapper-interfaces</groupId>
+      <artifactId>JAXBNamespacePrefixMapper</artifactId>
+      <version>2.2.4</version>
+      <scope>provided</scope>
+    </dependency>
+  </dependencies>
 
 </project>

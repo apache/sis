@@ -31,12 +31,11 @@ import java.text.AttributedCharacterIterator;
 import java.text.FieldPosition;
 import java.text.ParseException;
 import java.text.ParsePosition;
-import javax.measure.unit.Unit;
-import javax.measure.unit.UnitFormat;
+import javax.measure.Unit;
 import org.apache.sis.util.Numbers;
-import org.apache.sis.util.CharSequences;
-import org.apache.sis.util.UnconvertibleObjectException;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.util.UnconvertibleObjectException;
+import org.apache.sis.internal.util.LocalizedParseException;
 
 
 /**
@@ -90,12 +89,13 @@ import org.apache.sis.util.resources.Errors;
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
- * @version 0.4
- * @module
+ * @version 0.8
  *
  * @see Range#toString()
  * @see <a href="http://en.wikipedia.org/wiki/ISO_31-11">Wikipedia: ISO 31-11</a>
+ *
+ * @since 0.3
+ * @module
  */
 public class RangeFormat extends Format {
     /**
@@ -129,8 +129,8 @@ public class RangeFormat extends Format {
      * {@link RangeFormat#formatToCharacterIterator(Object)}.
      *
      * @author  Martin Desruisseaux (Geomatys)
-     * @since   0.3
      * @version 0.3
+     * @since   0.3
      * @module
      */
     public static final class Field extends FormatField {
@@ -298,18 +298,24 @@ public class RangeFormat extends Format {
     private transient Map<Unit<?>,Boolean> insertSpaceBeforeUnit;
 
     /**
+     * The locale for error message, or {@code null} for the default.
+     */
+    private Locale locale;
+
+    /**
      * Creates a new format for parsing and formatting {@linkplain NumberRange number ranges}
      * using the {@linkplain Locale#getDefault() default locale}.
      */
     public RangeFormat() {
-        this(Locale.getDefault());
+        this(Locale.getDefault(Locale.Category.FORMAT));
+        locale = Locale.getDefault(Locale.Category.DISPLAY);
     }
 
     /**
      * Creates a new format for parsing and formatting {@linkplain NumberRange number ranges}
      * using the given locale.
      *
-     * @param  locale The locale for parsing and formatting range components.
+     * @param  locale  the locale for parsing and formatting range components.
      */
     public RangeFormat(final Locale locale) {
         this(locale, Number.class);
@@ -319,8 +325,8 @@ public class RangeFormat extends Format {
      * Creates a new format for parsing and formatting {@code Range<Date>}
      * using the given locale and timezone.
      *
-     * @param locale   The locale for parsing and formatting range components.
-     * @param timezone The timezone for the date to be formatted.
+     * @param locale    the locale for parsing and formatting range components.
+     * @param timezone  the timezone for the date to be formatted.
      */
     public RangeFormat(final Locale locale, final TimeZone timezone) {
         this(locale, Date.class);
@@ -332,18 +338,19 @@ public class RangeFormat extends Format {
      * the given element type using the given locale. The element type is typically
      * {@code Date.class} or some subclass of {@code Number.class}.
      *
-     * @param  locale The locale for parsing and formatting range components.
-     * @param  elementType The type of range components.
-     * @throws IllegalArgumentException If the given type is not recognized by this constructor.
+     * @param  locale       the locale for parsing and formatting range components.
+     * @param  elementType  the type of range components.
+     * @throws IllegalArgumentException if the given type is not recognized by this constructor.
      */
     public RangeFormat(final Locale locale, final Class<?> elementType) throws IllegalArgumentException {
+        this.locale      = locale;
         this.elementType = elementType;
         if (Angle.class.isAssignableFrom(elementType)) {
             elementFormat = AngleFormat.getInstance(locale);
             unitFormat    = null;
         } else if (Number.class.isAssignableFrom(elementType)) {
             elementFormat = NumberFormat.getNumberInstance(locale);
-            unitFormat    = UnitFormat.getInstance(locale);
+            unitFormat    = new UnitFormat(locale);
         } else if (Date.class.isAssignableFrom(elementType)) {
             elementFormat = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT, locale);
             unitFormat    = null;
@@ -359,8 +366,8 @@ public class RangeFormat extends Format {
         minusSign         = ds.getMinusSign();
         infinity          = ds.getInfinity();
         openSet           = '{';
-        openInclusive     = '['; // Future SIS version may determine those characters from the locale.
-        openExclusive     = '('; // We may also provide an 'applyPattern(String)' method for setting those char.
+        openInclusive     = '[';        // Future SIS version may determine those characters from the locale.
+        openExclusive     = '(';        // We may also provide an 'applyPattern(String)' method for setting those char.
         openExclusiveAlt  = ']';
         closeSet          = '}';
         closeInclusive    = ']';
@@ -387,9 +394,8 @@ public class RangeFormat extends Format {
      * Returns the pattern used by {@link #elementFormat} for formatting the minimum and
      * maximum values. If the element format does not use pattern, returns {@code null}.
      *
-     * @param  localized {@code true} for returning the localized pattern, or {@code false}
-     *         for the unlocalized one.
-     * @return The pattern, or {@code null} if the {@link #elementFormat} doesn't use pattern.
+     * @param  localized {@code true} for returning the localized pattern, or {@code false} for the unlocalized one.
+     * @return the pattern, or {@code null} if the {@link #elementFormat} doesn't use pattern.
      *
      * @see DecimalFormat#toPattern()
      * @see SimpleDateFormat#toPattern()
@@ -415,9 +421,9 @@ public class RangeFormat extends Format {
      * Sets the pattern to be used by {@link #elementFormat} for formatting the minimum and
      * maximum values.
      *
-     * @param  pattern The new pattern.
-     * @param  localized {@code true} if the given pattern is localized.
-     * @throws IllegalStateException If the {@link #elementFormat} does not use pattern.
+     * @param  pattern    the new pattern.
+     * @param  localized  {@code true} if the given pattern is localized.
+     * @throws IllegalStateException if the {@link #elementFormat} does not use pattern.
      *
      * @see DecimalFormat#applyPattern(String)
      * @see SimpleDateFormat#applyPattern(String)
@@ -462,8 +468,7 @@ public class RangeFormat extends Format {
     /**
      * Sets whether this {@code RangeFormat} shall use the alternate form at formatting time.
      *
-     * @param alternateForm {@code true} for using the alternate format, or {@code false} for
-     *        using the default format.
+     * @param alternateForm {@code true} for using the alternate format, or {@code false} for using the default format.
      */
     public void setAlternateForm(final boolean alternateForm) {
         this.alternateForm = alternateForm;
@@ -475,7 +480,7 @@ public class RangeFormat extends Format {
      */
     private boolean insertSpaceBeforeUnit(final Unit<?> unit) {
         if (insertSpaceBeforeUnit == null) {
-            insertSpaceBeforeUnit = new HashMap<Unit<?>,Boolean>();
+            insertSpaceBeforeUnit = new HashMap<>();
         }
         Boolean value = insertSpaceBeforeUnit.get(unit);
         if (value == null) {
@@ -521,11 +526,11 @@ public class RangeFormat extends Format {
      * Formats a {@link Range} and appends the resulting text to a given string buffer.
      * See the <a href="#skip-navbar_top">class javadoc</a> for a description of the format.
      *
-     * @param  range      The {@link Range} object to format.
-     * @param  toAppendTo Where the text is to be appended.
-     * @param  pos        Identifies a field in the formatted text, or {@code null} if none.
-     * @return The string buffer passed in as {@code toAppendTo}, with formatted text appended.
-     * @throws IllegalArgumentException If this formatter can not format the given object.
+     * @param  range       the {@link Range} object to format.
+     * @param  toAppendTo  where the text is to be appended.
+     * @param  pos         identifies a field in the formatted text, or {@code null} if none.
+     * @return the string buffer passed in as {@code toAppendTo}, with formatted text appended.
+     * @throws IllegalArgumentException if this formatter can not format the given object.
      */
     @Override
     public StringBuffer format(final Object range, final StringBuffer toAppendTo, final FieldPosition pos) {
@@ -536,16 +541,14 @@ public class RangeFormat extends Format {
     /**
      * Implementation of the format methods.
      *
-     * @param range      The range to format.
-     * @param toAppendTo Where the text is to be appended.
-     * @param pos        Identifies a field in the formatted text, or {@code null} if none.
-     * @param characterIterator The character iterator for which the attributes need to be set,
-     *        or null if none. This is actually an instance of {@link FormattedCharacterIterator},
-     *        but we use the interface here for avoiding too early class loading.
+     * @param  range              the range to format.
+     * @param  toAppendTo         where the text is to be appended.
+     * @param  pos                identifies a field in the formatted text, or {@code null} if none.
+     * @param  characterIterator  the character iterator for which the attributes need to be set, or null if none.
      */
     @SuppressWarnings("fallthrough")
     private void format(final Range<?> range, final StringBuffer toAppendTo, final FieldPosition pos,
-            final AttributedCharacterIterator characterIterator)
+            final FormattedCharacterIterator characterIterator)
     {
         /*
          * Special case for an empty range. This is typically formatted as "{}". The field
@@ -556,8 +559,8 @@ public class RangeFormat extends Format {
             toAppendTo.appendCodePoint(openSet);
             if (fieldPos >= MIN_VALUE_FIELD && fieldPos <= UNIT_FIELD) {
                 final int p = toAppendTo.length();
-                pos.setBeginIndex(p); // First index, inclusive.
-                pos.setEndIndex  (p); // Last index, exclusive
+                pos.setBeginIndex(p);                                   // First index, inclusive.
+                pos.setEndIndex  (p);                                   // Last index, exclusive
             }
             toAppendTo.appendCodePoint(closeSet);
             return;
@@ -578,7 +581,7 @@ public class RangeFormat extends Format {
             }
             field = MAX_VALUE_FIELD;
         }
-        toAppendTo.appendCodePoint( // Select the char for the first condition to be true below:
+        toAppendTo.appendCodePoint(                     // Select the char for the first condition to be true below:
                 isSingleton           ? openSet :
                 range.isMinIncluded() ? openInclusive :
                 alternateForm         ? openExclusiveAlt :
@@ -594,7 +597,7 @@ public class RangeFormat extends Format {
             int startPosition = toAppendTo.length();
             if (value == null) {
                 switch (field) {
-                    case MIN_VALUE_FIELD: toAppendTo.append(minusSign); // Fall through
+                    case MIN_VALUE_FIELD: toAppendTo.append(minusSign != '-' ? minusSign : '−');    // Fall through
                     case MAX_VALUE_FIELD: toAppendTo.append(infinity); break;
                 }
             } else {
@@ -608,8 +611,7 @@ public class RangeFormat extends Format {
                     format = elementFormat;
                 }
                 if (characterIterator != null) {
-                    ((FormattedCharacterIterator) characterIterator)
-                            .append(format.formatToCharacterIterator(value), toAppendTo);
+                    characterIterator.append(format.formatToCharacterIterator(value), toAppendTo);
                 } else {
                     format.format(value, toAppendTo, new FieldPosition(-1));
                 }
@@ -619,8 +621,7 @@ public class RangeFormat extends Format {
              * then append the separator between this field and the next one.
              */
             if (characterIterator != null) {
-                ((FormattedCharacterIterator) characterIterator)
-                        .addFieldLimit(Field.forCode(field), value, startPosition);
+                characterIterator.addFieldLimit(Field.forCode(field), value, startPosition);
             }
             if (field == fieldPos) {
                 pos.setBeginIndex(startPosition);
@@ -631,7 +632,7 @@ public class RangeFormat extends Format {
                     toAppendTo.append(' ').append(separator).append(' ');
                     break;
                 }
-                case MAX_VALUE_FIELD: { // Select the char for the first condition to be true below:
+                case MAX_VALUE_FIELD: {                 // Select the char for the first condition to be true below:
                     toAppendTo.appendCodePoint(
                             isSingleton           ? closeSet :
                             range.isMaxIncluded() ? closeInclusive :
@@ -672,8 +673,8 @@ public class RangeFormat extends Format {
      * <p>In Apache SIS implementation, the returned character iterator also implements the
      * {@link CharSequence} interface for convenience.</p>
      *
-     * @param  range {@link Range} object to format.
-     * @return A character iterator together with the attributes describing the formatted value.
+     * @param  range  the {@link Range} object to format.
+     * @return a character iterator together with the attributes describing the formatted value.
      * @throws IllegalArgumentException if {@code value} if not an instance of {@link Range}.
      */
     @Override
@@ -688,9 +689,9 @@ public class RangeFormat extends Format {
      * Parses text from a string to produce a range. The default implementation delegates to
      * {@link #parse(String)} with no additional work.
      *
-     * @param  source The text, part of which should be parsed.
-     * @return A range parsed from the string, or {@code null} in case of error.
-     * @throws ParseException If the given string can not be fully parsed.
+     * @param  source  the text, part of which should be parsed.
+     * @return a range parsed from the string.
+     * @throws ParseException if the given string can not be fully parsed.
      */
     @Override
     public Object parseObject(final String source) throws ParseException {
@@ -701,9 +702,9 @@ public class RangeFormat extends Format {
      * Parses text from a string to produce a range. The default implementation delegates to
      * {@link #parse(String, ParsePosition)} with no additional work.
      *
-     * @param  source The text, part of which should be parsed.
-     * @param  pos    Index and error index information as described above.
-     * @return A range parsed from the string, or {@code null} in case of error.
+     * @param  source  the text, part of which should be parsed.
+     * @param  pos     index and error index information as described above.
+     * @return a range parsed from the string, or {@code null} in case of error.
      */
     @Override
     public Object parseObject(final String source, final ParsePosition pos) {
@@ -715,9 +716,9 @@ public class RangeFormat extends Format {
      * If there is some unparsed characters after the parsed range, then this method thrown an
      * exception.
      *
-     * @param  source The text to parse.
-     * @return The parsed range (never {@code null}).
-     * @throws ParseException If the given string can not be fully parsed.
+     * @param  source  the text to parse.
+     * @return the parsed range (never {@code null}).
+     * @throws ParseException if the given string can not be fully parsed.
      */
     public Range<?> parse(final String source) throws ParseException {
         final ParsePosition pos = new ParsePosition(0);
@@ -730,11 +731,7 @@ public class RangeFormat extends Format {
         } catch (UnconvertibleObjectException e) {
             failure = e;
         }
-        final int errorIndex = pos.getErrorIndex();
-        final ParseException e = new ParseException(Errors.format(Errors.Keys.UnparsableStringForClass_3,
-                elementType, source, CharSequences.token(source, errorIndex)), errorIndex);
-        e.initCause(failure);
-        throw e;
+        throw new LocalizedParseException(locale, elementType, source, pos).initCause(failure);
     }
 
     /**
@@ -744,9 +741,9 @@ public class RangeFormat extends Format {
      * an error occurs, then the index of {@code pos} is not changed, the error index of {@code pos}
      * is set to the index of the character where the error occurred, and {@code null} is returned.
      *
-     * @param  source The text, part of which should be parsed.
-     * @param  pos    Index and error index information as described above.
-     * @return A range parsed from the string, or {@code null} in case of error.
+     * @param  source  the text, part of which should be parsed.
+     * @param  pos     index and error index information as described above.
+     * @return a range parsed from the string, or {@code null} in case of error.
      */
     public Range<?> parse(final String source, final ParsePosition pos) {
         final int origin = pos.getIndex();
@@ -777,9 +774,8 @@ public class RangeFormat extends Format {
     {
         final int length = source.length();
         /*
-         * Skip leading whitespace and find the first non-blank character.  It is usually
-         * an opening bracket, except if minimal and maximal values are the same in which
-         * case the brackets may be omitted.
+         * Skip leading whitespace and find the first non-blank character. It is usually an opening bracket,
+         * except if minimal and maximal values are the same in which case the brackets may be omitted.
          */
         int index, c;
         for (index = pos.getIndex(); ; index += Character.charCount(c)) {
@@ -794,9 +790,8 @@ public class RangeFormat extends Format {
         final boolean isMinIncluded, isMaxIncluded;
         if (!isOpen(c)) {
             /*
-             * No bracket, or curly bracket. We have eigher an empty range (as in "{}")
-             * or a single value for the range. The braces are optional for single value.
-             * In other words, this block parses all of the following cases:
+             * No bracket, or curly bracket. We have eigher an empty range (as in "{}") or a single value for the range.
+             * The braces are optional for single value. In other words, this block parses all of the following cases:
              *
              *  - {}
              *  - {value}
@@ -821,7 +816,7 @@ public class RangeFormat extends Format {
                 if (value == null) {
                     return null;
                 }
-                pos.setErrorIndex(index); // In case of failure during the conversion.
+                pos.setErrorIndex(index);                   // In case of failure during the conversion.
                 minValue = maxValue = convert(value);
                 index = pos.getIndex();
                 isMinIncluded = isMaxIncluded = true;
@@ -845,13 +840,12 @@ public class RangeFormat extends Format {
             }
         } else {
             /*
-             * We found an opening bracket. Skip the whitespaces. If the next
-             * character is a closing bracket, then we have an empty range.
-             * The later case is an extension to the standard format, since
-             * empty ranges are usually represented by {} instead than [].
+             * We found an opening bracket. Skip the whitespaces. If the next character is a closing bracket,
+             * then we have an empty range. The later case is an extension to the standard format since empty
+             * ranges are usually represented by {} instead than [].
              */
             isMinIncluded = (c == openInclusive);
-            do { // Skip whitespaces.
+            do {                                            // Skip whitespaces.
                 index += Character.charCount(c);
                 if (index >= length) {
                     pos.setErrorIndex(length);
@@ -860,22 +854,22 @@ public class RangeFormat extends Format {
                 c = source.codePointAt(index);
             } while (Character.isWhitespace(c));
             if (isClose(c)) {
-                pos.setErrorIndex(index);  // In case of failure during the conversion.
+                pos.setErrorIndex(index);                   // In case of failure during the conversion.
                 minValue = maxValue = valueOfNil();
                 isMaxIncluded = false;
                 index += Character.charCount(c);
             } else {
                 /*
-                 * At this point, we have determined that the range is non-empty and there
-                 * is at least one value to parse. First, parse the minimal value. If we
-                 * fail to parse, check if it was the infinity value (note that infinity
-                 * should have been parsed successfully if the format is DecimalFormat).
+                 * At this point, we have determined that the range is non-empty and there is at least one value to parse.
+                 * First, parse the minimal value. If we fail to parse, check if it was the infinity value. Note that "-∞"
+                 * and "∞" should have been parsed successfully if the format is DecimalFormat, but not necessarily "−∞".
+                 * The difference is in the character used for the minus sign (ASCII hyphen versus Unicode minus sign).
                  */
                 pos.setIndex(index);
                 int savedIndex = index;
                 Object value = elementFormat.parseObject(source, pos);
                 if (value == null) {
-                    if (c == minusSign) {
+                    if (c == minusSign || c == '−') {
                         index += Character.charCount(c);
                     }
                     if (!source.regionMatches(index, infinity, 0, infinity.length())) {
@@ -883,14 +877,13 @@ public class RangeFormat extends Format {
                     }
                     pos.setIndex(index += infinity.length());
                 }
-                pos.setErrorIndex(savedIndex); // In case of failure during the conversion.
+                pos.setErrorIndex(savedIndex);              // In case of failure during the conversion.
                 minValue = convert(value);
                 /*
-                 * Parsing of minimal value succeed and its type is valid. Now look for the
-                 * separator. If it is not present, then assume that we have a single value
-                 * for the range. The default RangeFormat implementation does not format
-                 * brackets in such case (see the "No bracket" case above), but we make the
-                 * parser tolerant to the case where the brackets are present.
+                 * Parsing of 'minValue' succeed and its type is valid. Now look for the separator. If it is not present,
+                 * then assume that we have a single value for the range. The default RangeFormat implementation does not
+                 * format brackets in such case (see the "No bracket" case above), but we make the parser tolerant to the
+                 * case where the brackets are present.
                  */
                 for (index = pos.getIndex(); ; index += Character.charCount(c)) {
                     if (index >= length) {
@@ -911,6 +904,10 @@ public class RangeFormat extends Format {
                         c = source.codePointAt(index);
                         if (!Character.isWhitespace(c)) break;
                     }
+                    /*
+                     * Now parse the maximum value. A special case is applied for infinity value
+                     * in a similar way than we did for the minimal value.
+                     */
                     pos.setIndex(index);
                     value = elementFormat.parseObject(source, pos);
                     if (value == null) {
@@ -919,12 +916,11 @@ public class RangeFormat extends Format {
                         }
                         pos.setIndex(index += infinity.length());
                     }
-                    pos.setErrorIndex(index); // In case of failure during the conversion.
+                    pos.setErrorIndex(index);               // In case of failure during the conversion.
                     maxValue = convert(value);
                     /*
-                     * Skip one last time the whitespaces. The check for the closing bracket
-                     * (which is mandatory) is performed outside the "if" block since it is
-                     * common to the two "if ... else" cases.
+                     * Skip one last time the whitespaces. The check for the closing bracket (which is mandatory)
+                     * is performed outside the "if" block since it is common to the two "if ... else" cases.
                      */
                     for (index = pos.getIndex(); ; index += Character.charCount(c)) {
                         if (index >= length) {
@@ -961,8 +957,7 @@ public class RangeFormat extends Format {
                 // At this point we found a character that could be
                 // the beginning of a unit symbol. Try to parse that.
                 pos.setIndex(index);
-// TODO: Uncomment when we have upgrated JSR-275 dependency.
-//              unit = unitFormat.parse(source, pos);
+                unit = unitFormat.parse(source, pos);
                 break;
             }
         }
@@ -980,8 +975,8 @@ public class RangeFormat extends Format {
                 min  = Numbers.cast(min, type);
                 max  = Numbers.cast(max, type);
             }
-            if (min.doubleValue() == Double.NEGATIVE_INFINITY) min = null;
-            if (max.doubleValue() == Double.POSITIVE_INFINITY) max = null;
+            if (min != null && min.doubleValue() == Double.NEGATIVE_INFINITY) min = null;
+            if (max != null && max.doubleValue() == Double.POSITIVE_INFINITY) max = null;
             if (unit != null) {
                 final MeasurementRange<?> range = new MeasurementRange(type, min, isMinIncluded, max, isMaxIncluded, unit);
                 return range;
@@ -1024,5 +1019,34 @@ public class RangeFormat extends Format {
             }
         }
         return convert(value);
+    }
+
+    /**
+     * Returns a clone of this range format.
+     *
+     * @return a clone of this range format.
+     */
+    @Override
+    public RangeFormat clone() {
+        final RangeFormat f = (RangeFormat) super.clone();
+        try {
+            f.setFinal("elementFormat", elementFormat);
+            f.setFinal("unitFormat",    unitFormat);
+        } catch (ReflectiveOperationException e) {
+            throw new AssertionError(e);
+        }
+        return f;
+    }
+
+    /**
+     * Sets final field to a clone of the given format.
+     */
+    private void setFinal(final String name, Format value) throws ReflectiveOperationException {
+        if (value != null) {
+            value = (Format) value.clone();
+            java.lang.reflect.Field f = RangeFormat.class.getDeclaredField(name);
+            f.setAccessible(true);
+            f.set(this, value);
+        }
     }
 }

@@ -16,6 +16,7 @@
  */
 package org.apache.sis.internal.netcdf.impl;
 
+import org.apache.sis.internal.netcdf.NamedElement;
 import org.apache.sis.util.Debug;
 
 
@@ -26,28 +27,45 @@ import org.apache.sis.util.Debug;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
+ * @version 0.8
  * @since   0.3
- * @version 0.3
  * @module
- *
  */
-final class Dimension {
+final class Dimension extends NamedElement {
     /**
      * The dimension name.
      */
     final String name;
 
     /**
-     * The number of grid cell value along that dimension, as an unsigned number.
+     * The number of grid cell value along this dimension, as an unsigned number.
      */
     final int length;
 
     /**
      * Creates a new dimension of the given name and length.
+     *
+     * @param name    the dimension name.
+     * @param length  the number of grid cell value along this dimension, as an unsigned number.
      */
     Dimension(final String name, final int length) {
         this.name   = name;
         this.length = length;
+    }
+
+    /**
+     * Returns the name of this NetCDF dimension.
+     */
+    @Override
+    public String getName() {
+        return name;
+    }
+
+    /**
+     * Returns the number of grid cell value along this dimension.
+     */
+    final long length() {
+        return length & 0xFFFFFFFFL;
     }
 
     /**
@@ -56,6 +74,6 @@ final class Dimension {
     @Debug
     @Override
     public String toString() {
-        return name + '[' + (length & 0xFFFFFFFFL) + ']';
+        return name + '[' + length() + ']';
     }
 }

@@ -16,12 +16,17 @@
  */
 package org.apache.sis.test;
 
-import java.util.Collection;
-import org.opengis.metadata.Identifier;
+import java.util.Locale;
+import org.opengis.util.InternationalString;
+import org.opengis.metadata.citation.Citation;
 import org.opengis.referencing.IdentifiedObject;
 import org.apache.sis.io.wkt.Symbols;
 import org.apache.sis.io.wkt.WKTFormat;
 import org.apache.sis.io.wkt.Convention;
+
+// Branch-specific imports
+import org.apache.sis.metadata.iso.citation.DefaultCitation;
+import org.apache.sis.metadata.iso.citation.DefaultResponsibility;
 
 
 /**
@@ -29,13 +34,13 @@ import org.apache.sis.io.wkt.Convention;
  * from other modules and libraries.
  *
  * @author  Martin Desruisseaux (Geomatys)
+ * @version 0.8
  * @since   0.4
- * @version 0.5
  * @module
  */
 public strictfp class MetadataAssert extends Assert {
     /**
-     * The formatter to be used by {@link #assertWktEquals(Object, String)}.
+     * The formatter to be used by {@link #assertWktEquals(String, Object)}.
      * This formatter uses the {@code “…”} quotation marks instead of {@code "…"}
      * for easier readability of {@link String} constants in Java code.
      */
@@ -53,25 +58,39 @@ public strictfp class MetadataAssert extends Assert {
     }
 
     /**
-     * Asserts that the given collection contains exactly one identifier with the given
-     * {@linkplain Identifier#getCode() code}. The {@linkplain Identifier#getCodeSpace()
-     * code space} and authority are ignored.
+     * Asserts that the English title of the given citation is equals to the expected string.
      *
-     * @param expected The expected identifier code (typically {@code "ISO"} or {@code "EPSG"}).
-     * @param identifiers The collection to validate. Should be a collection of {@link Identifier}.
+     * @param message   the message to report in case of test failure.
+     * @param expected  the expected English title.
+     * @param citation  the citation to test.
      *
-     * @since 0.5
+     * @since 0.6
+     *
+     * @see #assertAnyTitleEquals(String, String, Citation)
      */
-    public static void assertContainsIdentifierCode(final String expected, final Collection<?> identifiers) {
-        assertNotNull("identifiers", identifiers);
-        int count = 0;
-        for (final Object id : identifiers) {
-            assertInstanceOf("identifier", Identifier.class, id);
-            if (((Identifier) id).getCode().equals(expected)) {
-                count++;
-            }
-        }
-        assertEquals("Unexpected amount of identifiers.", 1, count);
+    public static void assertTitleEquals(final String message, final String expected, final Citation citation) {
+        assertNotNull(message, citation);
+        final InternationalString title = citation.getTitle();
+        assertNotNull(message, title);
+        assertEquals(message, expected, title.toString(Locale.US));
+    }
+
+    /**
+     * Asserts that the given citation has only one responsible party,
+     * and its English name is equals to the expected string.
+     *
+     * @param message   the message to report in case of test failure.
+     * @param expected  the expected English responsibly party name.
+     * @param citation  the citation to test.
+     *
+     * @since 0.8
+     */
+    public static void assertPartyNameEquals(final String message, final String expected, final DefaultCitation citation) {
+        assertNotNull(message, citation);
+        final DefaultResponsibility r = (DefaultResponsibility) TestUtilities.getSingleton(citation.getCitedResponsibleParties());
+        final InternationalString name = TestUtilities.getSingleton(r.getParties()).getName();
+        assertNotNull(message, name);
+        assertEquals(message, expected, name.toString(Locale.US));
     }
 
     /**
@@ -79,8 +98,8 @@ public strictfp class MetadataAssert extends Assert {
      * This method expected the {@code “…”} quotation marks instead of {@code "…"}
      * for easier readability of {@link String} constants in Java code.
      *
-     * @param expected The expected text, or {@code null} if {@code object} is expected to be null.
-     * @param object The object to format in <cite>Well Known Text</cite> format, or {@code null}.
+     * @param expected  the expected text, or {@code null} if {@code object} is expected to be null.
+     * @param object    the object to format in <cite>Well Known Text</cite> format, or {@code null}.
      */
     public static void assertWktEquals(final String expected, final Object object) {
         assertWktEquals(Convention.WKT2, expected, object);
@@ -91,9 +110,9 @@ public strictfp class MetadataAssert extends Assert {
      * This method expected the {@code “…”} quotation marks instead of {@code "…"} for easier readability of
      * {@link String} constants in Java code.
      *
-     * @param convention The WKT convention to use.
-     * @param expected   The expected text, or {@code null} if {@code object} is expected to be null.
-     * @param object     The object to format in <cite>Well Known Text</cite> format, or {@code null}.
+     * @param convention  the WKT convention to use.
+     * @param expected    the expected text, or {@code null} if {@code object} is expected to be null.
+     * @param object      the object to format in <cite>Well Known Text</cite> format, or {@code null}.
      */
     public static void assertWktEquals(final Convention convention, final String expected, final Object object) {
         if (expected == null) {
@@ -107,6 +126,33 @@ public strictfp class MetadataAssert extends Assert {
             }
             assertMultilinesEquals((object instanceof IdentifiedObject) ?
                     ((IdentifiedObject) object).getName().getCode() : object.getClass().getSimpleName(), expected, wkt);
+        }
+    }
+
+    /**
+     * Asserts that the WKT of the given object according the given convention is equal to the given regular expression.
+     * This method is like {@link #assertWktEquals(String, Object)}, but the use of regular expression allows some
+     * tolerance for example on numerical parameter values that may be subject to a limited form of rounding errors.
+     *
+     * @param convention  the WKT convention to use.
+     * @param expected    the expected regular expression, or {@code null} if {@code object} is expected to be null.
+     * @param object      the object to format in <cite>Well Known Text</cite> format, or {@code null}.
+     *
+     * @since 0.6
+     */
+    public static void assertWktEqualsRegex(final Convention convention, final String expected, final Object object) {
+        if (expected == null) {
+            assertNull(object);
+        } else {
+            assertNotNull(object);
+            final String wkt;
+            synchronized (WKT_FORMAT) {
+                WKT_FORMAT.setConvention(convention);
+                wkt = WKT_FORMAT.format(object);
+            }
+            if (!wkt.matches(expected.replace("\n", System.lineSeparator()))) {
+                fail("WKT does not match the expected regular expression. The WKT that we got is:\n" + wkt);
+            }
         }
     }
 }

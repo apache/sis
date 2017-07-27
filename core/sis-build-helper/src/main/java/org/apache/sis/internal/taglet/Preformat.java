@@ -16,9 +16,11 @@
  */
 package org.apache.sis.internal.taglet;
 
-import java.util.*;
+import java.util.Map;
+import java.util.StringTokenizer;
 import com.sun.javadoc.Tag;
 import com.sun.tools.doclets.Taglet;
+import org.apache.sis.internal.book.CodeColorizer;
 
 
 /**
@@ -32,8 +34,8 @@ import com.sun.tools.doclets.Taglet;
  * we can't use that character directly inside this taglet.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.3
+ * @since   0.3
  * @module
  */
 public final class Preformat extends InlineTaglet {
@@ -42,7 +44,7 @@ public final class Preformat extends InlineTaglet {
      * conform to the Java convention for enumeration constants, because we will use {@link Enum#name()}
      * for getting the string to look for after {@code preformat}.
      */
-    private static enum Style {
+    private enum Style {
         java, math, wkt, xml, sql, shell, text
     }
 
@@ -76,7 +78,7 @@ public final class Preformat extends InlineTaglet {
     /**
      * Returns the name of this custom tag.
      *
-     * @return The tag name.
+     * @return the tag name.
      */
     @Override
     public String getName() {
@@ -86,7 +88,7 @@ public final class Preformat extends InlineTaglet {
     /**
      * Returns {@code false} since <code>@preformat</code> can not be used in overview.
      *
-     * @return Always {@code false}.
+     * @return always {@code false}.
      */
     @Override
     public boolean inOverview() {
@@ -97,7 +99,7 @@ public final class Preformat extends InlineTaglet {
      * Given the <code>Tag</code> representation of this custom tag, return its string representation.
      *
      * @param tag The tag to format.
-     * @return A string representation of the given tag.
+     * @return a string representation of the given tag.
      */
     @Override
     public String toString(final Tag tag) {
@@ -146,7 +148,7 @@ all:    while (tk.hasMoreTokens()) {
         /*
          * Nows inserts each line.
          */
-        final StringBuilder buffer = new StringBuilder("<blockquote><pre>");
+        final StringBuilder buffer = new StringBuilder("<pre class=\"code-sample\">");
         tk = new StringTokenizer(text, "\r\n", true);
         while (tk.hasMoreTokens()) {
             String line = tk.nextToken();
@@ -164,32 +166,14 @@ all:    while (tk.hasMoreTokens()) {
             }
             buffer.append(line);
         }
-        return buffer.append("</pre></blockquote>").toString();
+        return buffer.append("</pre>").toString();
     }
-
-    /**
-     * Lists of Java keywords.
-     */
-    private static final Set<String> KEYWORDS =
-            Collections.unmodifiableSet(new HashSet<String>(Arrays.asList(
-        "abstract", "continue", "for",        "new",        "switch",
-        "assert",   "default",  "goto",       "package",    "synchronized",
-        "boolean",  "do",       "if",         "private",    "this",
-        "break",    "double",   "implements", "protected",  "throw",
-        "byte",     "else",     "import",     "public",     "throws",
-        "case",     "enum",     "instanceof", "return",     "transient",
-        "catch",    "extends",  "int",        "short",      "try",
-        "char",     "final",    "interface",  "static",     "void",
-        "class",    "finally",  "long",       "strictfp",   "volatile",
-        "const",    "float",    "native",     "super",      "while",
-        /* literals: */ "true", "false", "null"
-    )));
 
     /**
      * Adds syntactic coloration for the given line.
      */
     private static void colorJava(final String line, final StringBuilder buffer) {
-        char quote = 0; // The kind of quoting in progress (" or ').
+        char quote = 0;                             // The kind of quoting in progress (" or ').
         final int length = line.length();
         for (int i=0; i<length; i++) {
             final char c = line.charAt(i);
@@ -198,7 +182,7 @@ all:    while (tk.hasMoreTokens()) {
                     int j = i;
                     while (++j < length && Character.isJavaIdentifierPart(line.charAt(j)));
                     final String word = line.substring(i, j);
-                    final boolean keyword = KEYWORDS.contains(word);
+                    final boolean keyword = CodeColorizer.JAVA_KEYWORDS.contains(word);
                     i = j-1;
                     boolean function = false;
                     if (!keyword || word.equals("this") || word.equals("super")) {
@@ -225,7 +209,7 @@ all:    while (tk.hasMoreTokens()) {
                         }
                         break;
                     }
-                    case '\'': // fall through
+                    case '\'':                                 // fall through
                     case '"': {
                         quote = c;
                         buffer.append("<font color=\"orangered\">").append(c);

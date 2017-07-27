@@ -17,18 +17,20 @@
 package org.apache.sis.referencing.operation.transform;
 
 import org.opengis.referencing.operation.Matrix;
+import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransform1D;
 import org.opengis.referencing.operation.MathTransform2D;
 import org.opengis.referencing.operation.MathTransformFactory;
 import org.apache.sis.referencing.operation.matrix.Matrices;
+import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.internal.referencing.provider.Affine;
 import org.apache.sis.parameter.Parameterized;
 
 // Test imports
 import org.opengis.test.Validators;
+import org.apache.sis.test.TestRunner;
 import org.apache.sis.test.DependsOn;
 import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
 import org.junit.After;
 import static org.opengis.test.Assert.*;
 
@@ -42,17 +44,17 @@ import org.opengis.test.referencing.TransformTestCase;
 
 /**
  * Tests the {@link ProjectiveTransform} class by inheriting the tests defined in GeoAPI conformance module.
- * We use the {@link AffineTransform2D} class as a reference, so we need to avoid NaN values.
+ * We use the {@link java.awt.geom.AffineTransform} class as a reference, so we need to avoid NaN values.
  * Note that {@link CopyTransformTest} will use {@code ProjectiveTransform} as a reference,
  * this time with NaN values.
  *
  * @author  Martin Desruisseaux (Geomatys)
+ * @version 0.7
  * @since   0.5
- * @version 0.5
  * @module
  */
-@RunWith(JUnit4.class)
-@DependsOn(AbstractMathTransformTest.class)
+@RunWith(TestRunner.class)
+@DependsOn({AbstractMathTransformTest.class, ScaleTransformTest.class})
 public strictfp class ProjectiveTransformTest extends TransformTestCase {
     /**
      * The factory to use for creating linear transforms.
@@ -77,12 +79,22 @@ public strictfp class ProjectiveTransformTest extends TransformTestCase {
     public ProjectiveTransformTest() {
         this(new MathTransformFactoryBase() {
             @Override
-            public ProjectiveTransform createAffineTransform(final Matrix matrix) {
+            public MathTransform createAffineTransform(final Matrix matrix) {
+                final ProjectiveTransform pt;
                 if (matrix.getNumRow() == 3 && matrix.getNumCol() == 3) {
-                    return new ProjectiveTransform2D(matrix);
+                    pt = new ProjectiveTransform2D(matrix);
                 } else {
-                    return new ProjectiveTransform(matrix);
+                    pt = new ProjectiveTransform(matrix);
                 }
+                MathTransform tr = pt.optimize();
+                if (tr != pt) {
+                    /*
+                     * Opportunistically tests ScaledTransform together with ProjectiveTransform.
+                     * We takes ScaledTransform as a reference implementation since it is simpler.
+                     */
+                    tr = new TransformResultComparator(tr, pt, 0);
+                }
+                return tr;
             }
         });
     }
@@ -164,6 +176,35 @@ public strictfp class ProjectiveTransformTest extends TransformTestCase {
     }
 
     /**
+     * Tests {@link ProjectiveTransform#optimize()}. In particular this method verifies that a non-square matrix
+     * that looks like diagonal is not confused with a real diagonal matrix.
+     *
+     * @throws TransformException if a coordinate conversion failed.
+     *
+     * @since 0.7
+     */
+    @Test
+    public void testOptimize() throws TransformException {
+        matrix = Matrices.create(5, 4, new double[] {
+            2, 0, 0, 0,
+            0, 3, 0, 0,
+            0, 0, 4, 0,
+            0, 0, 0, 5,
+            0, 0, 0, 1
+        });
+        transform = new ProjectiveTransform(matrix).optimize();
+        assertInstanceOf("Non-diagonal matrix shall not be handled by ScaleTransform.", ProjectiveTransform.class, transform);
+        verifyConsistency(new float[] {1, 2, 3,   -3, -2, -1});
+        /*
+         * Remove the "problematic" row. The new transform should now be optimizable.
+         */
+        matrix = ((MatrixSIS) matrix).removeRows(3, 4);
+        transform = new ProjectiveTransform(matrix).optimize();
+        assertInstanceOf("Diagonal matrix should be handled by a specialized class.", ScaleTransform.class, transform);
+        verifyConsistency(new float[] {1, 2, 3,   -3, -2, -1});
+    }
+
+    /**
      * {@code true} if {@link #ensureImplementRightInterface()} should skip its check for a transform
      * of the given dimension. {@code ProjectiveTransformTest} needs to skip the case for dimension 1
      * because there is no {@code ProjectiveTransform1D} class. However {@link LinearTransformTest}
@@ -181,6 +222,9 @@ public strictfp class ProjectiveTransformTest extends TransformTestCase {
      */
     @After
     public final void ensureImplementRightInterface() {
+        if (transform instanceof TransformResultComparator) {
+            transform = ((TransformResultComparator) transform).tested;
+        }
         /*
          * Below is a copy of MathTransformTestCase.validate(), with minor modifications
          * due to the fact that this class does not extend MathTransformTestCase.

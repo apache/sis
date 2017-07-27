@@ -18,6 +18,7 @@ package org.apache.sis.geometry;
 
 import org.opengis.geometry.Envelope;
 import org.opengis.geometry.DirectPosition;
+import org.apache.sis.internal.metadata.AxisNames;
 import org.apache.sis.math.MathFunctions;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
@@ -28,7 +29,6 @@ import static java.lang.Double.NaN;
 import static org.opengis.test.Validators.*;
 import static org.apache.sis.test.ReferencingAssert.*;
 import static org.apache.sis.geometry.AbstractEnvelopeTest.WGS84;
-import static org.apache.sis.geometry.AbstractEnvelopeTest.STRICT;
 
 
 /**
@@ -39,8 +39,8 @@ import static org.apache.sis.geometry.AbstractEnvelopeTest.STRICT;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Johann Sorel (Geomatys)
- * @since   0.3
  * @version 0.5
+ * @since   0.3
  * @module
  */
 @DependsOn(AbstractEnvelopeTest.class)
@@ -87,11 +87,11 @@ public strictfp class GeneralEnvelopeTest extends TestCase {
      *
      * <p>This method assumes that only the <var>x</var> axis may be a wraparound axis.</p>
      *
-     * @param test   The actual envelope to verify.
-     * @param xLower The expected first   <var>x</var> ordinate value. May  be greater than {@code xUpper}.
-     * @param xUpper The expected last    <var>x</var> ordinate value. May  be less    than {@code xLower}.
-     * @param ymin   The expected minimal <var>y</var> ordinate value. Must be less    than {@code ymax}.
-     * @param ymax   The expected maximal <var>y</var> ordinate value. Must be greater than {@code ymax}.
+     * @param  test    the actual envelope to verify.
+     * @param  xLower  the expected first   <var>x</var> ordinate value. May  be greater than {@code xUpper}.
+     * @param  xUpper  the expected last    <var>x</var> ordinate value. May  be less    than {@code xLower}.
+     * @param  ymin    the expected minimal <var>y</var> ordinate value. Must be less    than {@code ymax}.
+     * @param  ymax    the expected maximal <var>y</var> ordinate value. Must be greater than {@code ymax}.
      */
     private static void assertEnvelopeEquals(final Envelope test,
             final double xLower, final double ymin, final double xUpper, final double ymax)
@@ -131,7 +131,7 @@ public strictfp class GeneralEnvelopeTest extends TestCase {
     private static void assertIntersectEquals(final GeneralEnvelope e1, final GeneralEnvelope e2,
             final double xmin, final double ymin, final double xmax, final double ymax)
     {
-        final boolean isEmpty = !(((xmax - xmin) * (ymax - ymin)) != 0); // Use ! for catching NaN.
+        final boolean isEmpty = !(((xmax - xmin) * (ymax - ymin)) != 0);        // Use ! for catching NaN.
         final Envelope2D r1 = new Envelope2D(e1);
         final Envelope2D r2 = new Envelope2D(e2);
         final Envelope2D ri = r1.createIntersection(r2);
@@ -156,15 +156,13 @@ public strictfp class GeneralEnvelopeTest extends TestCase {
 
     /**
      * Asserts that the union of the two following envelopes is equals to the given rectangle.
-     * First, this method tests using the {@link Envelope2D} implementation. Then, it tests
-     * using the {@link GeneralEnvelope} implementation.
+     * First, this method tests using the {@link Envelope2D} implementation.
+     * Then, it tests using the {@link GeneralEnvelope} implementation.
      *
-     * @param inf {@code true} if the range after union is infinite. The handling of such case
-     *        is different for {@link GeneralEnvelope} than for {@link Envelope2D} because we
-     *        can not store infinite values in a reliable way in a {@link Rectangle2D} object,
-     *        so we use NaN instead.
-     * @param exactlyOneAntiMeridianSpan {@code true} if one envelope spans the anti-meridian
-     *        and the other does not.
+     * @param inf {@code true} if the range after union is infinite. The handling of such case is different for
+     *        {@link GeneralEnvelope} than for {@link Envelope2D} because we can not store infinite values in a
+     *        reliable way in a {@link java.awt.geom.Rectangle2D} object, so we use NaN instead.
+     * @param exactlyOneAntiMeridianSpan {@code true} if one envelope spans the anti-meridian and the other does not.
      */
     private static void assertUnionEquals(final GeneralEnvelope e1, final GeneralEnvelope e2,
             final double xmin, final double ymin, final double xmax, final double ymax,
@@ -350,25 +348,25 @@ public strictfp class GeneralEnvelopeTest extends TestCase {
      */
     @Test
     public void testAddPoint() {
-        final double ymin=-20, ymax=30; // Will not change anymore
+        final double ymin=-20, ymax=30;                             // Will not change anymore
         final GeneralEnvelope  e = create(20, ymin,  80, ymax);
         final DirectPosition2D p = new DirectPosition2D(40, 15);
         assertAddEquals(e, p, 20, ymin, 80, ymax);
 
-        p.x = 100; // Add on the right side.
+        p.x = 100;                                                  // Add on the right side.
         assertAddEquals(e, p, 20, ymin, 100, ymax);
 
-        p.x = -10; // Add on the left side.
+        p.x = -10;                                                  // Add on the left side.
         assertAddEquals(e, p, -10, ymin, 80, ymax);
 
         e.setRange(0,  80, 20);
-        p.x = 100; // No change expected.
+        p.x = 100;                                                  // No change expected.
         assertAddEquals(e, p, 80, ymin, 20, ymax);
 
-        p.x = 70; // Add on the right side.
+        p.x = 70;                                                   // Add on the right side.
         assertAddEquals(e, p, 70, ymin, 20, ymax);
 
-        p.x = 30; // Add on the left side.
+        p.x = 30;                                                   // Add on the left side.
         assertAddEquals(e, p, 80, ymin, 30, ymax);
 
         verifyInvariants(e);
@@ -405,7 +403,7 @@ public strictfp class GeneralEnvelopeTest extends TestCase {
      */
     @Test
     public void testNormalizeWorld() {
-        GeneralEnvelope e = create(-195, -90, +170, +90); // -195° is equivalent to 165°
+        GeneralEnvelope e = create(-195, -90, +170, +90);       // -195° is equivalent to 165°
         assertTrue(e.normalize());
         assertEnvelopeEquals(e, -180, -90, +180, +90);
         verifyInvariants(e);
@@ -447,7 +445,7 @@ public strictfp class GeneralEnvelopeTest extends TestCase {
         } catch (IllegalArgumentException ex) {
             // This is the expected exception.
             final String message = ex.getMessage();
-            assertTrue(message, message.contains("Geodetic latitude"));
+            assertTrue(message, message.contains(AxisNames.GEODETIC_LATITUDE));
         }
         // Verify that the envelope still have the old values.
         assertEnvelopeEquals(e, 3, -5, -8, 2);
@@ -468,7 +466,7 @@ public strictfp class GeneralEnvelopeTest extends TestCase {
         } catch (IllegalArgumentException ex) {
             // This is the expected exception.
             final String message = ex.getMessage();
-            assertTrue(message, message.contains("Geodetic latitude"));
+            assertTrue(message, message.contains(AxisNames.GEODETIC_LATITUDE));
         }
         // Verify that the envelope still have the old values.
         assertEnvelopeEquals(e, 2, -5, 3, 2);
@@ -495,7 +493,7 @@ public strictfp class GeneralEnvelopeTest extends TestCase {
         } catch (IllegalStateException ex) {
             // This is the expected exception.
             final String message = ex.getMessage();
-            assertTrue(message, message.contains("Geodetic latitude"));
+            assertTrue(message, message.contains(AxisNames.GEODETIC_LATITUDE));
         }
         /*
          * Verify that the envelope values are unchanged.
@@ -558,6 +556,7 @@ public strictfp class GeneralEnvelopeTest extends TestCase {
      */
     @Test
     @DependsOnMethod("testToString")
+    @SuppressWarnings("ResultOfObjectAllocationIgnored")
     public void testWktParsing() {
         GeneralEnvelope envelope = new GeneralEnvelope("BOX(-180 -90,180 90)");
         assertEquals(2, envelope.getDimension());

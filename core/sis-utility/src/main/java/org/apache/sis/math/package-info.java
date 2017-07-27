@@ -19,22 +19,29 @@
  * A set of mathematical objects and algebraic utilities.
  * This package provides:
  *
- * <ul>
- *   <li>Static functions in {@link org.apache.sis.math.MathFunctions} and {@link org.apache.sis.math.DecimalFunctions}.</li>
+ * <ul class="verbose">
+ *   <li>Mathematical functions as static methods in {@link org.apache.sis.math.MathFunctions} and
+ *       {@link org.apache.sis.math.DecimalFunctions}.</li>
+ *
  *   <li>{@link org.apache.sis.math.Statistics} accumulator, optionally with statistics on derivatives
  *       and {@linkplain org.apache.sis.math.StatisticsFormat tabular formatting}.</li>
+ *
  *   <li>Simple equations for {@link org.apache.sis.math.Line} and {@link org.apache.sis.math.Plane}
- *       with capability to determine the coefficients from a set of coordinates.</li>
+ *       with capability to determine the coefficients from a set of coordinates.
+ *
+ *       <div class="note"><b>Note:</b>
+ *       {@code Line} and {@code Plane} classes are not geometric objects since they are not bounded in space.
+ *       For example the {@link java.awt.geom.Line2D} geometry have starting and ending points, while the
+ *       {@code Line} class in this package extends to infinite.</div></li>
+ *
+ *   <li>{@link org.apache.sis.math.Vector} of real numbers, typically as views over arrays of primitive types.
+ *       Those views make abstraction of the data type (e.g. {@code float}, {@code double}, {@code int},
+ *       unsigned {@code int}, <i>etc.</i>).</li>
  * </ul>
  *
- * <div class="note"><b>Note:</b>
- * {@code Line} and {@code Plane} classes are not geometric objects since they are not bounded in space.
- * For example the {@link java.awt.geom.Line2D} geometry have starting and ending points, while the
- * {@code Line} class in this package extends to infinite.</div>
- *
  * @author  Martin Desruisseaux (Geomatys)
+ * @version 0.8
  * @since   0.3
- * @version 0.5
  * @module
  */
 package org.apache.sis.math;

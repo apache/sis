@@ -16,6 +16,13 @@
  */
 package org.apache.sis.storage;
 
+import org.opengis.metadata.distribution.Format;
+import org.apache.sis.internal.simple.SimpleFormat;
+import org.apache.sis.metadata.iso.citation.DefaultCitation;
+import org.apache.sis.metadata.iso.distribution.DefaultFormat;
+import org.apache.sis.measure.Range;
+import org.apache.sis.util.Version;
+
 
 /**
  * Provides information about a specific {@link DataStore} implementation.
@@ -45,8 +52,8 @@ package org.apache.sis.storage;
  * However the {@code DataStore} instances created by the providers do not need to be thread-safe.
  *
  * @author  Martin Desruisseaux (Geomatys)
+ * @version 0.8
  * @since   0.3
- * @version 0.4
  * @module
  */
 public abstract class DataStoreProvider {
@@ -54,6 +61,72 @@ public abstract class DataStoreProvider {
      * Creates a new provider.
      */
     protected DataStoreProvider() {
+    }
+
+    /**
+     * Returns a short name or abbreviation for the data format.
+     * This name is used in some warnings or exception messages.
+     * It may contain any characters, including white spaces
+     * (i.e. this short name is <strong>not</strong> a format identifier).
+     *
+     * <div class="note"><b>Examples:</b>
+     * {@code "CSV"}, {@code "GeoTIFF"}, {@code "GML"}, {@code "GPX"}, {@code "JPEG"}, {@code "JPEG 2000"},
+     * {@code "NetCDF"}, {@code "PNG"}, {@code "Shapefile"}.
+     * </div>
+     *
+     * For a more comprehensive format name, see {@link #getFormat()}.
+     *
+     * @return a short name or abbreviation for the data format.
+     *
+     * @see #getFormat()
+     *
+     * @since 0.8
+     */
+    public abstract String getShortName();
+
+    /**
+     * Returns a description of the data format. The description should contain (if available):
+     *
+     * <ul>
+     *   <li>A reference to the {@linkplain DefaultFormat#getFormatSpecificationCitation()
+     *       format specification citation}, including:
+     *     <ul>
+     *       <li>a format specification {@linkplain DefaultCitation#getTitle() title}
+     *           (example: <cite>“PNG (Portable Network Graphics) Specification”</cite>),</li>
+     *       <li>the format {@linkplain #getShortName() short name} as a citation
+     *           {@linkplain DefaultCitation#getAlternateTitles() alternate title}
+     *           (example: <cite>“PNG”</cite>),</li>
+     *       <li>the format version as the citation {@linkplain DefaultCitation#getEdition() edition},</li>
+     *       <li>link to an {@linkplain DefaultCitation#getOnlineResources() online} version of the specification.</li>
+     *     </ul>
+     *   </li>
+     *   <li>The title of the {@linkplain DefaultFormat#getFileDecompressionTechnique() file decompression technique}
+     *       used for reading the data.</li>
+     * </ul>
+     *
+     * The default implementation returns a format containing only the value returned by {@link #getShortName()}.
+     * Subclasses are encouraged to override this method for providing a more complete description, if available.
+     *
+     * @return a description of the data format.
+     *
+     * @see #getShortName()
+     * @see DefaultFormat
+     *
+     * @since 0.8
+     */
+    public Format getFormat() {
+        return new SimpleFormat(getShortName());
+    }
+
+    /**
+     * Returns the range of versions supported by the data store, or {@code null} if unspecified.
+     *
+     * @return the range of supported versions, or {@code null} if unspecified.
+     *
+     * @since 0.8
+     */
+    public Range<Version> getSupportedVersions() {
+        return null;
     }
 
     /**
@@ -104,13 +177,13 @@ public abstract class DataStoreProvider {
      * }
      * </div>
      *
-     * @param  storage Information about the storage (URL, stream, JDBC connection, <i>etc</i>).
+     * @param  connector information about the storage (URL, stream, JDBC connection, <i>etc</i>).
      * @return {@link ProbeResult#SUPPORTED} if the given storage seems to be readable by the {@code DataStore}
      *         instances created by this provider.
      * @throws DataStoreException if an I/O or SQL error occurred. The error shall be unrelated to the logical
      *         structure of the storage.
      */
-    public abstract ProbeResult probeContent(StorageConnector storage) throws DataStoreException;
+    public abstract ProbeResult probeContent(StorageConnector connector) throws DataStoreException;
 
     /**
      * Returns a data store implementation associated with this provider.
@@ -119,11 +192,11 @@ public abstract class DataStoreProvider {
      * Implementors shall invoke {@link StorageConnector#closeAllExcept(Object)} after {@code DataStore}
      * creation, keeping open only the needed resource.
      *
-     * @param  storage Information about the storage (URL, stream, JDBC connection, <i>etc</i>).
-     * @return A data store implementation associated with this provider for the given storage.
-     * @throws DataStoreException If an error occurred while creating the data store instance.
+     * @param  connector  information about the storage (URL, stream, JDBC connection, <i>etc</i>).
+     * @return a data store implementation associated with this provider for the given storage.
+     * @throws DataStoreException if an error occurred while creating the data store instance.
      *
      * @see DataStores#open(Object)
      */
-    public abstract DataStore open(StorageConnector storage) throws DataStoreException;
+    public abstract DataStore open(StorageConnector connector) throws DataStoreException;
 }

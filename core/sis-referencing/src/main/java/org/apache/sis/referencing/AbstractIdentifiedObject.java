@@ -23,12 +23,14 @@ import java.util.Collections;
 import java.util.AbstractCollection;
 import java.util.Iterator;
 import java.util.Locale;
+import java.util.Objects;
 import java.io.Serializable;
 import javax.xml.bind.annotation.XmlID;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlSeeAlso;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlSchemaType;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import javax.xml.bind.annotation.adapters.CollapsedStringAdapter;
 import org.opengis.util.GenericName;
@@ -39,13 +41,13 @@ import org.opengis.metadata.citation.Citation;
 import org.opengis.referencing.ObjectFactory;
 import org.opengis.referencing.AuthorityFactory;
 import org.opengis.referencing.IdentifiedObject;
-import org.opengis.referencing.ReferenceIdentifier;
-import org.apache.sis.internal.metadata.NameMeaning;
+import org.apache.sis.internal.jaxb.Context;
 import org.apache.sis.internal.jaxb.referencing.Code;
 import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
+import org.apache.sis.internal.metadata.NameToIdentifier;
 import org.apache.sis.internal.referencing.WKTUtilities;
-import org.apache.sis.internal.referencing.ReferencingUtilities;
+import org.apache.sis.internal.metadata.MetadataUtilities;
 import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.io.wkt.FormattableObject;
 import org.apache.sis.io.wkt.Formatter;
@@ -56,6 +58,7 @@ import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.LenientComparable;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.iso.Types;
+import org.apache.sis.util.iso.DefaultNameFactory;
 import org.apache.sis.util.resources.Errors;
 
 import static org.apache.sis.util.ArgumentChecks.*;
@@ -63,18 +66,18 @@ import static org.apache.sis.util.Utilities.deepEquals;
 import static org.apache.sis.internal.util.CollectionsExt.nonNull;
 import static org.apache.sis.internal.util.CollectionsExt.nonEmpty;
 import static org.apache.sis.internal.util.CollectionsExt.immutableSet;
-import static org.apache.sis.internal.util.Utilities.appendUnicodeIdentifier;
 
 // Branch-dependent imports
-import org.apache.sis.internal.jdk7.Objects;
-import org.apache.sis.util.iso.DefaultNameFactory;
+import org.opengis.referencing.ReferenceIdentifier;
+import org.apache.sis.metadata.iso.DefaultIdentifier;
+import org.apache.sis.metadata.iso.ImmutableIdentifier;
 
 
 /**
  * Base class for objects identified by a name or a code. Those objects are typically
  * {@linkplain org.apache.sis.referencing.datum.DefaultGeodeticDatum geodetic datum}   (e.g. <cite>"World Geodetic System 1984"</cite>),
  * {@linkplain org.apache.sis.referencing.crs.AbstractCRS Coordinate Reference System} (e.g. <cite>"WGS 84 / World Mercator"</cite>) or
- * {@linkplain org.apache.sis.referencing.operation.DefaultProjection map projection}  (e.g. <cite>"Mercator (variant A)"</cite>).
+ * {@linkplain org.apache.sis.referencing.operation.DefaultConversion map projection}  (e.g. <cite>"Mercator (variant A)"</cite>).
  * Those names, or a code (e.g. {@code "EPSG:3395"}), can be used for fetching an object from a database.
  * However it is not sufficient to know the object name. We also need to know who define that name
  * (the {@linkplain NamedIdentifier#getAuthority() authority}) since the same objects are often named differently
@@ -118,11 +121,12 @@ import org.apache.sis.util.iso.DefaultNameFactory;
  * objects and passed between threads without synchronization.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
+ * @version 0.7
  * @since   0.4
- * @version 0.6
  * @module
  */
-@XmlType(name="IdentifiedObjectType", propOrder={
+@XmlType(name = "IdentifiedObjectType", propOrder = {
+    "description",
     "identifier",
     "names",
     "remarks"
@@ -170,7 +174,7 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      * The name for this object or code. Shall never be {@code null}.
      *
      * <p><b>Consider this field as final!</b>
-     * This field is modified only at unmarshalling time by {@link #addName(ReferenceIdentifier)}.</p>
+     * This field is modified only at unmarshalling time by {@code Names.add(Identifier)}.</p>
      *
      * @see #getName()
      * @see #getNames()
@@ -183,7 +187,7 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      * we may get both on unmarshalling.
      *
      * <p><b>Consider this field as final!</b>
-     * This field is modified only at unmarshalling time by {@link #addName(ReferenceIdentifier)}.</p>
+     * This field is modified only at unmarshalling time by {@code Names.add(Identifier)}.</p>
      */
     private Collection<GenericName> alias;
 
@@ -201,9 +205,13 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
 
     /**
      * Comments on or information about this object, or {@code null} if none.
+     *
+     * <p><b>Consider this field as final!</b>
+     * This field is modified only at unmarshalling time by {@link #setRemarks(InternationalString)}</p>
+     *
+     * @see #getRemarks()
      */
-    @XmlElement
-    private final InternationalString remarks;
+    private InternationalString remarks;
 
     /**
      * {@code true} if this object is deprecated.
@@ -219,16 +227,6 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      * The only possible outdated value is 0, which is okay.
      */
     private transient int hashCode;
-
-    /**
-     * Constructs a new object in which every attributes are set to a null value.
-     * <strong>This is not a valid object.</strong> This constructor is strictly
-     * reserved to JAXB, which will assign values to the fields using reflexion.
-     */
-    AbstractIdentifiedObject() {
-        remarks = null;
-        deprecated = false;
-    }
 
     /**
      * Constructs an object from the given properties. Keys are strings from the table below.
@@ -319,7 +317,7 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      * while information provided in explicit arguments to the sub-class constructors have an impact on coordinate
      * transformation results. See {@link #equals(Object, ComparisonMode)} for more information.
      *
-     * @param  properties The properties to be given to this identified object.
+     * @param  properties  the properties to be given to this identified object.
      * @throws IllegalArgumentException if a property has an invalid value.
      */
     public AbstractIdentifiedObject(final Map<String,?> properties) throws IllegalArgumentException {
@@ -398,7 +396,7 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
             final Map<String,?> properties, final String key, final Object value)
     {
         return new IllegalArgumentException(Errors.getResources(properties)
-                .getString(Errors.Keys.IllegalPropertyClass_2, key, value.getClass()));
+                .getString(Errors.Keys.IllegalPropertyValueClass_2, key, value.getClass()));
     }
 
     /**
@@ -408,7 +406,7 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      *
      * <p>This constructor performs a shallow copy, i.e. the properties are not cloned.</p>
      *
-     * @param object The object to shallow copy.
+     * @param object  the object to shallow copy.
      */
     protected AbstractIdentifiedObject(final IdentifiedObject object) {
         ensureNonNull("object", object);
@@ -447,8 +445,8 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      *       properties contained in the given object are not recursively copied.</li>
      * </ul>
      *
-     * @param  object The object to get as a SIS implementation, or {@code null} if none.
-     * @return A SIS implementation containing the values of the given object (may be the
+     * @param  object  the object to get as a SIS implementation, or {@code null} if none.
+     * @return a SIS implementation containing the values of the given object (may be the
      *         given object itself), or {@code null} if the argument was null.
      */
     public static AbstractIdentifiedObject castOrCopy(final IdentifiedObject object) {
@@ -472,205 +470,16 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      *       Note that the converse does not need to hold.</li>
      * </ul>
      *
-     * @return The GeoAPI interface implemented by this class.
+     * @return the GeoAPI interface implemented by this class.
      */
     public Class<? extends IdentifiedObject> getInterface() {
         return IdentifiedObject.class;
     }
 
     /**
-     * The {@code gml:id}, which is mandatory. The current implementation searches for the first identifier,
-     * regardless its authority. If no identifier is found, then the name is used.
-     * If no name is found (which should not occur for valid objects), then this method returns {@code null}.
-     *
-     * <p>If an identifier has been found, this method returns the concatenation of the following elements
-     * separated by hyphens:</p>
-     * <ul>
-     *   <li>The code space in lower case, retaining only characters that are valid for Unicode identifiers.</li>
-     *   <li>The object type as defined in OGC's URN (see {@link org.apache.sis.internal.util.DefinitionURI})</li>
-     *   <li>The object code, retaining only characters that are valid for Unicode identifiers.</li>
-     * </ul>
-     *
-     * Example: {@code "epsg-crs-4326"}.
-     *
-     * <p>The returned ID needs to be unique only in the XML document being marshalled.
-     * Consecutive invocations of this method do not need to return the same value,
-     * since it may depends on the marshalling context.</p>
-     */
-    @XmlID
-    @XmlAttribute(name = "id", namespace = Namespaces.GML, required = true)
-    @XmlJavaTypeAdapter(CollapsedStringAdapter.class)
-    final String getID() {
-        final StringBuilder id = new StringBuilder();
-        /*
-         * We will iterate over the identifiers first. Only after the iteration is over,
-         * if we found no suitable ID, then we will use the primary name as a last resort.
-         */
-        if (identifiers != null) {
-            for (final ReferenceIdentifier identifier : identifiers) {
-                if (appendUnicodeIdentifier(id, '-', identifier.getCodeSpace(), ":", true) | // Really |, not ||
-                    appendUnicodeIdentifier(id, '-', NameMeaning.toObjectType(getClass()), ":", false) |
-                    appendUnicodeIdentifier(id, '-', identifier.getCode(), ":", true))
-                {
-                    /*
-                     * TODO: If we want to check for ID uniqueness or any other condition before to accept the ID,
-                     * we would do that here. If the ID is rejected, then we just need to clear the buffer and let
-                     * the iteration continue the search for an other ID.
-                     */
-                    return id.toString();
-                }
-                id.setLength(0); // Clear the buffer for an other try.
-            }
-        }
-        // In last ressort, append code without codespace since the name are often verbose.
-        if (name != null && appendUnicodeIdentifier(id, '-', name.getCode(), ":", false)) {
-            return id.toString();
-        }
-        return null;
-    }
-
-    /**
-     * Returns a single element from the {@code Set<Identifier>} collection, or {@code null} if none.
-     * We have to define this method because ISO 19111 defines the {@code identifiers} property as a collection
-     * while GML 3.2 defines it as a singleton.
-     *
-     * <p>This method searches for the following identifiers, in preference order:</p>
-     * <ul>
-     *   <li>The first identifier having a code that begin with {@code "urn:"}.</li>
-     *   <li>The first identifier having a code that begin with {@code "http:"}.</li>
-     *   <li>The first identifier, converted to the {@code "urn:} syntax if possible.</li>
-     * </ul>
-     */
-    @XmlElement(name = "identifier")
-    final Code getIdentifier() {
-        return Code.forIdentifiedObject(getClass(), identifiers);
-    }
-
-    /**
-     * Invoked by JAXB at unmarshalling time for setting the identifier.
-     */
-    private void setIdentifier(final Code identifier) {
-        if (identifier != null) {
-            final ReferenceIdentifier id = identifier.getIdentifier();
-            if (id != null && ReferencingUtilities.canSetProperty(AbstractIdentifiedObject.class,
-                    "setIdentifier", "identifier", identifiers != null))
-            {
-                identifiers = Collections.singleton(id);
-            }
-        }
-    }
-
-    /**
-     * A writable view over the {@linkplain AbstractIdentifiedObject#getName() name} of the enclosing object followed by
-     * all {@linkplain AbstractIdentifiedObject#getAlias() aliases} which are instance of {@link ReferenceIdentifier}.
-     * Used by JAXB only at (un)marshalling time because GML merges the name and aliases in a single {@code <gml:name>}
-     * property.
-     */
-    private final class Names extends AbstractCollection<ReferenceIdentifier> {
-        /**
-         * Invoked by JAXB before to write in the collection at unmarshalling time.
-         * Do nothing since our object is already empty.
-         */
-        @Override
-        public void clear() {
-        }
-
-        /**
-         * Returns the number of name and aliases that are instance of {@link ReferenceIdentifier}.
-         */
-        @Override
-        public int size() {
-            return NameIterator.count(AbstractIdentifiedObject.this);
-        }
-
-        /**
-         * Returns an iterator over the name and aliases that are instance of {@link ReferenceIdentifier}.
-         */
-        @Override
-        public Iterator<ReferenceIdentifier> iterator() {
-            return new NameIterator(AbstractIdentifiedObject.this);
-        }
-
-        /**
-         * Invoked by JAXB at unmarshalling time for each identifier. The first identifier will be taken
-         * as the name and all other identifiers (if any) as aliases.
-         *
-         * <p>Some (but not all) JAXB implementations never invoke setter method for collections.
-         * Instead they invoke {@link AbstractIdentifiedObject#getNames()} and add directly the identifiers
-         * in the returned collection. Consequently this method must writes directly in the enclosing object.
-         * See <a href="https://java.net/jira/browse/JAXB-488">JAXB-488</a> for more information.</p>
-         */
-        @Override
-        public boolean add(final ReferenceIdentifier id) {
-            addName(id);
-            return true;
-        }
-    }
-
-    /**
-     * Implementation of {@link Names#add(ReferenceIdentifier)}, defined in the enclosing class
-     * for access to private fields without compiler-generated bridge methods.
-     */
-    final void addName(final ReferenceIdentifier id) {
-        if (name == null) {
-            name = id;
-        } else {
-            /*
-             * Our Code and RS_Identifier implementations should always create NamedIdentifier instance,
-             * so the 'instanceof' check should not be necessary. But we do a paranoiac check anyway.
-             */
-            final GenericName n = id instanceof GenericName ? (GenericName) id : new NamedIdentifier(id);
-            if (alias == null) {
-                alias = Collections.singleton(n);
-            } else {
-                /*
-                 * This implementation is inefficient since each addition copies the array, but we rarely
-                 * have more than two aliases.  This implementation is okay for a small number of aliases
-                 * and ensures that the enclosing AbstractIdentifiedObject is unmodifiable except by this
-                 * add(…) method.
-                 *
-                 * Note about alternative approaches
-                 * ---------------------------------
-                 * An alternative approach could be to use an ArrayList and replace it by an unmodifiable
-                 * list only after unmarshalling (using an afterUnmarshal(Unmarshaller, Object) method),
-                 * but we want to avoid Unmarshaller dependency (for reducing classes loading for users
-                 * who are not interrested in XML) and it may actually be less efficient for the vast
-                 * majority of cases where there is less than 3 aliases.
-                 */
-                final int size = alias.size();
-                final GenericName[] names = alias.toArray(new GenericName[size + 1]);
-                names[size] = n;
-                alias = UnmodifiableArrayList.wrap(names);
-            }
-        }
-    }
-
-    /**
-     * Returns the {@link #name} and all aliases which are also instance of {@link ReferenceIdentifier}.
-     * The later happen often in SIS implementation since many aliases are instance of {@link NamedIdentifier}.
-     *
-     * <p>The returned collection is <cite>live</cite>: adding elements in that collection will modify this
-     * {@code AbstractIdentifiedObject} instance. This is needed for unmarshalling with JAXB and should not
-     * be used in other context.</p>
-     *
-     * <div class="section">Why there is no <code>setNames(…)</code> method</div>
-     * Some JAXB implementations never invoke setter method for collections. Instead they invoke the getter and
-     * add directly the identifiers in the returned collection. Whether JAXB will perform or not a final call to
-     * {@code setNames(…)} is JAXB-implementation dependent (JDK7 does but JDK6 and JDK8 early access do not).
-     * It seems a more portable approach (at least for JAXB reference implementations) to design our class
-     * without setter method, in order to have the same behavior on all supported JDK versions.
-     *
-     * @see <a href="https://java.net/jira/browse/JAXB-488">JAXB-488</a>
-     */
-    @XmlElement(name = "name", required = true)
-    final Collection<ReferenceIdentifier> getNames() {
-        return new Names();
-    }
-
-    /**
      * Returns the primary name by which this object is identified.
      *
-     * @return The primary name.
+     * @return the primary name.
      *
      * @see IdentifiedObjects#getName(IdentifiedObject, Citation)
      */
@@ -682,26 +491,52 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
     /**
      * Returns alternative names by which this object is identified.
      *
-     * @return The aliases, or an empty collection if there is none.
+     * @return the aliases, or an empty collection if there is none.
      *
      * @see #getName()
      */
     @Override
     public Collection<GenericName> getAlias() {
-        return nonNull(alias); // Needs to be null-safe because we may have a null value on unmarshalling.
+        return nonNull(alias);          // Needs to be null-safe because we may have a null value on unmarshalling.
     }
 
     /**
      * Returns identifiers which references elsewhere the object's defining information.
      * Alternatively identifiers by which this object can be referenced.
      *
-     * @return This object identifiers, or an empty set if there is none.
+     * @return this object identifiers, or an empty set if there is none.
      *
      * @see IdentifiedObjects#getIdentifier(IdentifiedObject, Citation)
      */
     @Override
     public Set<ReferenceIdentifier> getIdentifiers() {
-        return nonNull(identifiers); // Needs to be null-safe because we may have a null value on unmarshalling.
+        return nonNull(identifiers);    // Needs to be null-safe because we may have a null value on unmarshalling.
+    }
+
+    /**
+     * Returns a narrative explanation of the role of this object.
+     *
+     * <div class="section">Default value</div>
+     * The default implementation returns the
+     * {@linkplain org.apache.sis.metadata.iso.ImmutableIdentifier#getDescription() description}
+     * provided by this object's {@linkplain #getName() name}.
+     *
+     * @return a narrative explanation of the role of this object, or {@code null} if none.
+     *
+     * @see org.apache.sis.metadata.iso.ImmutableIdentifier#getDescription()
+     *
+     * @since 0.6
+     */
+    @XmlElement(name = "description")
+    public InternationalString getDescription() {
+        final ReferenceIdentifier name = getName();
+        if (name instanceof ImmutableIdentifier) {
+            return ((ImmutableIdentifier) name).getDescription();
+        }
+        if (name instanceof DefaultIdentifier) {
+            return ((DefaultIdentifier) name).getDescription();
+        }
+        return null;
     }
 
     /**
@@ -709,10 +544,11 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      * If this object {@linkplain #isDeprecated() is deprecated}, then the remarks should give
      * indication about the replacement (e.g. <cite>"superceded by …"</cite>).
      *
-     * @return The remarks, or {@code null} if none.
+     * @return the remarks, or {@code null} if none.
      */
     @Override
-    public InternationalString getRemarks(){
+    @XmlElement(name = "remarks")
+    public InternationalString getRemarks() {
         return remarks;
     }
 
@@ -773,23 +609,29 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      *   <li>{@linkplain org.apache.sis.referencing.cs.DefaultCoordinateSystemAxis#isHeuristicMatchForName(String)
      *       Comparisons of coordinate system axis names} consider {@code "Lat"}, {@code "Latitude"} and
      *       {@code "Geodetic latitude"} as synonymous, and likewise for longitude.</li>
-     *   <li>{@linkplain org.apache.sis.referencing.datum.DefaultGeodeticDatum#isHeuristicMatchForName(String)
-     *       Comparisons of geodetic datum names} ignore the {@code "D_"} prefix, if any.
+     *   <li>{@linkplain org.apache.sis.referencing.datum.AbstractDatum#isHeuristicMatchForName(String)
+     *       Comparisons of datum names} ignore the {@code "D_"} prefix, if any.
      *       This prefix appears in ESRI datum name (e.g. {@code "D_WGS_1984"}).</li>
+     *   <li>{@linkplain org.apache.sis.referencing.datum.DefaultGeodeticDatum#isHeuristicMatchForName(String)
+     *       Comparisons of geodetic datum names} may ignore the prime meridian name, if any.
+     *       Example: <cite>"(Paris)"</cite> in <cite>"Nouvelle Triangulation Française (Paris)"</cite>.</li>
      * </ul>
      *
      * <div class="section">Future evolutions</div>
-     * This method implements heuristic rules learned from experience while trying to provide inter-operability
+     * This method implements recommendations from the
+     * <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html#139">WKT 2 specification §B.5.2</a>,
+     * together with heuristic rules learned from experience while trying to provide inter-operability
      * with different data producers. Those rules may be adjusted in any future SIS version according experience
      * gained while working with more data producers.
      *
-     * @param  name The name to compare with the object name or aliases.
-     * @return {@code true} if the primary name of at least one alias matches the specified {@code name}.
+     * @param  name  the name to compare with the object name or aliases.
+     * @return {@code true} if the primary name or at least one alias matches the specified {@code name}.
      *
      * @see IdentifiedObjects#isHeuristicMatchForName(IdentifiedObject, String)
+     * @see org.apache.sis.util.Characters.Filter#LETTERS_AND_DIGITS
      */
     public boolean isHeuristicMatchForName(final String name) {
-        return IdentifiedObjects.isHeuristicMatchForName(this.name, alias, name);
+        return NameToIdentifier.isHeuristicMatchForName(this.name, alias, name, NameToIdentifier.Simplifier.DEFAULT);
     }
 
     /**
@@ -815,6 +657,8 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      *           <cite>When object name matter</cite> below.</td></tr>
      *   <tr><td>{@link ComparisonMode#APPROXIMATIVE APPROXIMATIVE}:</td>
      *       <td>Same as {@code IGNORE_METADATA}, with some tolerance threshold on numerical values.</td></tr>
+     *   <tr><td>{@link ComparisonMode#ALLOW_VARIANT ALLOW_VARIANT}:</td>
+     *       <td>Same as {@code APPROXIMATIVE}, but ignores coordinate system axes.</td></tr>
      *   <tr><td>{@link ComparisonMode#DEBUG DEBUG}:</td>
      *        <td>Special mode for figuring out why two objects expected to be equal are not.</td></tr>
      * </table>
@@ -840,8 +684,8 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      * <cite>transitive</cite>. See {@link LenientComparable#equals(Object, ComparisonMode) LenientComparable}
      * for more information.
      *
-     * @param  object The object to compare to {@code this}.
-     * @param  mode The strictness level of the comparison.
+     * @param  object  the object to compare to {@code this}.
+     * @param  mode    the strictness level of the comparison.
      * @return {@code true} if both objects are equal according the given comparison mode.
      *
      * @see #computeHashCode()
@@ -889,6 +733,7 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
             }
             case IGNORE_METADATA:
             case APPROXIMATIVE:
+            case ALLOW_VARIANT:
             case DEBUG: {
                 return implementsSameInterface(object);
             }
@@ -929,7 +774,7 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      *
      * Subclasses shall override {@link #equals(Object, ComparisonMode)} instead than this method.
      *
-     * @param  object The other object (may be {@code null}).
+     * @param  object  the other object (may be {@code null}).
      * @return {@code true} if both objects are equal.
      */
     @Override
@@ -951,10 +796,10 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      * This method invokes {@link #computeHashCode()} when first needed, then caches the result.
      * Subclasses shall override {@link #computeHashCode()} instead than this method.
      *
-     * @return The hash code value. This value may change in any future Apache SIS version.
+     * @return the hash code value. This value may change in any future Apache SIS version.
      */
     @Override
-    public final int hashCode() { // No need to synchronize; ok if invoked twice.
+    public final int hashCode() {                       // No need to synchronize; ok if invoked twice.
         int hash = hashCode;
         if (hash == 0) {
             hash = Numerics.hashCode(computeHashCode());
@@ -986,7 +831,7 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      *     }
      * }
      *
-     * @return The hash code value. This value may change in any future Apache SIS version.
+     * @return the hash code value. This value may change in any future Apache SIS version.
      */
     protected long computeHashCode() {
         return Objects.hash(name, nonNull(alias), nonNull(identifiers), remarks) ^ getInterface().hashCode();
@@ -1031,13 +876,233 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      * <p>Alternatively, the implementation may also have no WKT keyword for this object.
      * In such case, this method shall return {@code null}.</p>
      *
-     * @param  formatter The formatter where to format the inner content of this WKT element.
-     * @return The {@linkplain org.apache.sis.io.wkt.KeywordCase#CAMEL_CASE CamelCase} keyword
+     * @param  formatter  the formatter where to format the inner content of this WKT element.
+     * @return the {@linkplain org.apache.sis.io.wkt.KeywordCase#CAMEL_CASE CamelCase} keyword
      *         for the WKT element, or {@code null} if unknown.
+     *
+     * @see <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html#21">WKT 2 specification §7</a>
      */
     @Override
     protected String formatTo(final Formatter formatter) {
         WKTUtilities.appendName(this, formatter, ElementKind.forType(getClass()));
         return null;
+    }
+
+
+
+
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+    ////////                                                                                  ////////
+    ////////                               XML support with JAXB                              ////////
+    ////////                                                                                  ////////
+    ////////        The following methods are invoked by JAXB using reflection (even if       ////////
+    ////////        they are private) or are helpers for other methods invoked by JAXB.       ////////
+    ////////        Those methods can be safely removed if Geographic Markup Language         ////////
+    ////////        (GML) support is not needed.                                              ////////
+    ////////                                                                                  ////////
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Constructs a new object in which every attributes are set to a null value.
+     * <strong>This is not a valid object.</strong> This constructor is strictly
+     * reserved to JAXB, which will assign values to the fields using reflexion.
+     */
+    AbstractIdentifiedObject() {
+        deprecated = false;
+    }
+
+    /**
+     * The {@code gml:id}, which is mandatory. The current implementation searches for the first identifier,
+     * regardless its authority. If no identifier is found, then the name or aliases are used. If none of the
+     * above is found (which should not occur for valid objects), then this method returns {@code null}.
+     *
+     * <p>If an identifier or a name has been found, this method returns the concatenation of the following
+     * elements separated by hyphens:</p>
+     * <ul>
+     *   <li>The code space in lower case, retaining only characters that are valid for Unicode identifiers.</li>
+     *   <li>The object type as defined in OGC's URN (see {@link org.apache.sis.internal.util.DefinitionURI})</li>
+     *   <li>The object code, retaining only characters that are valid for Unicode identifiers.</li>
+     * </ul>
+     *
+     * Example: {@code "epsg-crs-4326"}.
+     *
+     * <p>The returned ID needs to be unique only in the XML document being marshalled.
+     * Consecutive invocations of this method do not need to return the same value,
+     * since it may depends on the marshalling context.</p>
+     */
+    @XmlID
+    @XmlSchemaType(name = "ID")
+    @XmlAttribute(name = "id", namespace = Namespaces.GML, required = true)
+    @XmlJavaTypeAdapter(CollapsedStringAdapter.class)
+    final String getID() {
+        // Implementation is provided in the NameIterator class for reducing the size of
+        // AbstractIdentifiedObject.class file in the common case where XML is not needed.
+        return NameIterator.getID(Context.current(), this, name, alias, identifiers);
+    }
+
+    /**
+     * Invoked by JAXB at unmarhalling time for specifying the value of the {@code gml:id} attribute.
+     * That GML identifier is not actually stored in this {@code AbstractIdentifiedObject}
+     * since we rather generate it dynamically from the ISO 19111 identifiers. But we still
+     * need to declare that identifier to our unmarshaller context, in case it is referenced
+     * from elsewhere in the XML document.
+     */
+    private void setID(final String id) {
+        final Context context = Context.current();
+        if (!Context.setObjectForID(context, this, id)) {
+            Context.warningOccured(context, getClass(), "setID", Errors.class, Errors.Keys.DuplicatedIdentifier_1, id);
+        }
+    }
+
+    /**
+     * Returns a single element from the {@code Set<Identifier>} collection, or {@code null} if none.
+     * We have to define this method because ISO 19111 defines the {@code identifiers} property as a collection
+     * while GML 3.2 defines it as a singleton.
+     *
+     * <p>This method searches for the following identifiers, in preference order:</p>
+     * <ul>
+     *   <li>The first identifier having a code that begin with {@code "urn:"}.</li>
+     *   <li>The first identifier having a code that begin with {@code "http:"}.</li>
+     *   <li>The first identifier, converted to the {@code "urn:} syntax if possible.</li>
+     * </ul>
+     */
+    @XmlElement(required = true)
+    final Code getIdentifier() {
+        return Code.forIdentifiedObject(getClass(), identifiers);
+    }
+
+    /**
+     * Invoked by JAXB at unmarshalling time for setting the identifier.
+     */
+    private void setIdentifier(final Code identifier) {
+        if (identifiers == null) {
+            if (identifier != null) {
+                final ReferenceIdentifier id = identifier.getIdentifier();
+                if (id != null) {
+                    identifiers = Collections.singleton(id);
+                }
+            }
+        } else {
+            MetadataUtilities.propertyAlreadySet(AbstractIdentifiedObject.class, "setIdentifier", "identifier");
+        }
+    }
+
+    /**
+     * Returns the {@link #name} and all aliases which are also instance of {@link Identifier}.
+     * The later happen often in SIS implementation since many aliases are instance of {@link NamedIdentifier}.
+     *
+     * <p>The returned collection is <cite>live</cite>: adding elements in that collection will modify this
+     * {@code AbstractIdentifiedObject} instance. This is needed for unmarshalling with JAXB and should not
+     * be used in other context.</p>
+     *
+     * <div class="section">Why there is no <code>setNames(…)</code> method</div>
+     * Some JAXB implementations never invoke setter method for collections. Instead they invoke the getter and
+     * add directly the identifiers in the returned collection. Whether JAXB will perform or not a final call to
+     * {@code setNames(…)} is JAXB-implementation dependent (JDK7 does but JDK6 and JDK8 early access do not).
+     * It seems a more portable approach (at least for JAXB reference implementations) to design our class
+     * without setter method, in order to have the same behavior on all supported JDK versions.
+     *
+     * @see <a href="https://java.net/jira/browse/JAXB-488">JAXB-488</a>
+     */
+    @XmlElement(name = "name", required = true)
+    final Collection<ReferenceIdentifier> getNames() {
+        return new Names();
+    }
+
+    /**
+     * A writable view over the {@linkplain AbstractIdentifiedObject#getName() name} of the enclosing object followed
+     * by all {@linkplain AbstractIdentifiedObject#getAlias() aliases} which are instance of {@link Identifier}.
+     * Used by JAXB only at (un)marshalling time because GML merges the name and aliases in a single {@code <gml:name>}
+     * property.
+     *
+     * <div class="section">Why we do not use {@code Identifier[]} array instead</div>
+     * It would be easier to define a {@code getNames()} method returning all identifiers in an array, and let JAXB
+     * invoke {@code setNames(Identifier[])} at unmarshalling time.  But methods expecting an array in argument are
+     * invoked by JAXB only after the full element has been unmarshalled. For some {@code AbstractIdentifiedObject}
+     * subclasses, this is too late. For example {@code DefaultOperationMethod} may need to know the operation name
+     * before to parse the parameters.
+     */
+    private final class Names extends AbstractCollection<ReferenceIdentifier> {
+        /**
+         * Invoked by JAXB before to write in the collection at unmarshalling time.
+         * Do nothing since our object is already empty.
+         */
+        @Override
+        public void clear() {
+        }
+
+        /**
+         * Returns the number of name and aliases that are instance of {@link Identifier}.
+         */
+        @Override
+        public int size() {
+            return NameIterator.count(AbstractIdentifiedObject.this);
+        }
+
+        /**
+         * Returns an iterator over the name and aliases that are instance of {@link Identifier}.
+         */
+        @Override
+        public Iterator<ReferenceIdentifier> iterator() {
+            return new NameIterator(AbstractIdentifiedObject.this);
+        }
+
+        /**
+         * Invoked by JAXB at unmarshalling time for each identifier. The first identifier will be taken
+         * as the name and all other identifiers (if any) as aliases.
+         *
+         * <p>Some (but not all) JAXB implementations never invoke setter method for collections.
+         * Instead they invoke {@link AbstractIdentifiedObject#getNames()} and add directly the identifiers
+         * in the returned collection. Consequently this method must writes directly in the enclosing object.
+         * See <a href="https://java.net/jira/browse/JAXB-488">JAXB-488</a> for more information.</p>
+         */
+        @Override
+        public boolean add(final ReferenceIdentifier id) {
+            if (NameIterator.isUnnamed(name)) {
+                name = id;
+            } else {
+                /*
+                 * Our Code and RS_Identifier implementations should always create NamedIdentifier instance,
+                 * so the 'instanceof' check should not be necessary. But we do a paranoiac check anyway.
+                 */
+                final GenericName n = id instanceof GenericName ? (GenericName) id : new NamedIdentifier(id);
+                if (alias == null) {
+                    alias = Collections.singleton(n);
+                } else {
+                    /*
+                     * This implementation is inefficient since each addition copies the array, but we rarely
+                     * have more than two aliases.  This implementation is okay for a small number of aliases
+                     * and ensures that the enclosing AbstractIdentifiedObject is unmodifiable except by this
+                     * add(…) method.
+                     *
+                     * Note about alternative approaches
+                     * ---------------------------------
+                     * An alternative approach could be to use an ArrayList and replace it by an unmodifiable
+                     * list only after unmarshalling (using an afterUnmarshal(Unmarshaller, Object) method),
+                     * but we want to avoid Unmarshaller dependency (for reducing classes loading for users
+                     * who are not interrested in XML) and it may actually be less efficient for the vast
+                     * majority of cases where there is less than 3 aliases.
+                     */
+                    final int size = alias.size();
+                    final GenericName[] names = alias.toArray(new GenericName[size + 1]);
+                    names[size] = n;
+                    alias = UnmodifiableArrayList.wrap(names);
+                }
+            }
+            return true;
+        }
+    }
+
+    /**
+     * Invoked by JAXB for setting the remarks.
+     *
+     * @see #getRemarks()
+     */
+    private void setRemarks(final InternationalString value) {
+        if (remarks == null) {
+            remarks = value;
+        } else {
+            MetadataUtilities.propertyAlreadySet(AbstractIdentifiedObject.class, "setRemarks", "remarks");
+        }
     }
 }

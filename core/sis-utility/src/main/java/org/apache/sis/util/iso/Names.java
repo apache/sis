@@ -20,6 +20,7 @@ import java.util.Collections;
 import org.opengis.util.TypeName;
 import org.opengis.util.LocalName;
 import org.opengis.util.MemberName;
+import org.opengis.util.ScopedName;
 import org.opengis.util.GenericName;
 import org.opengis.util.NameSpace;
 import org.opengis.util.NameFactory;
@@ -71,9 +72,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  * </table></blockquote>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.5
- * @version 0.5
- * @module
+ * @version 0.8
  *
  * @see DefaultNameFactory
  * @see DefaultNameSpace
@@ -81,6 +80,9 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  * @see DefaultLocalName
  * @see DefaultTypeName
  * @see DefaultMemberName
+ *
+ * @since 0.5
+ * @module
  */
 public final class Names extends Static {
     /**
@@ -92,10 +94,10 @@ public final class Names extends Static {
     /**
      * Creates a namespace for the given name.
      *
-     * @param  factory   The factory to use for creating the namespace.
-     * @param  namespace The namespace string, taken as a whole (not parsed).
-     * @param  separator The separator between the namespace and the local part, or {@code null} for the default.
-     * @return The namespace object.
+     * @param  factory    the factory to use for creating the namespace.
+     * @param  namespace  the namespace string, taken as a whole (not parsed).
+     * @param  separator  the separator between the namespace and the local part, or {@code null} for the default.
+     * @return the namespace object.
      */
     private static NameSpace createNameSpace(final NameFactory factory, final CharSequence namespace, final String separator) {
         if (namespace == null || namespace.length() == 0) {
@@ -108,19 +110,39 @@ public final class Names extends Static {
     /**
      * Creates a local or scoped name in the given namespace.
      * The character sequences can be either {@link String} or {@link InternationalString} instances.
-     * The {@code namespace} character sequences is taken verbatim, while {@code scopedName} is parsed
-     * as described in {@linkplain DefaultNameFactory#createGenericName(NameSpace, CharSequence...) name factory}.
+     * The {@code namespace} character sequences is taken verbatim, while {@code scopedName} is splitted
+     * around the {@linkplain DefaultNameSpace#DEFAULT_SEPARATOR default separator}, which is {@code ":"}.
      *
-     * @param  namespace  The namespace, or {@code null} for the global namespace.
-     * @param  separator  The separator between the namespace and the scoped name.
-     * @param  scopedName The name to parse.
-     * @return A local or scoped name in the given namespace.
+     * @param  namespace   the namespace, or {@code null} for the global namespace.
+     * @param  separator   the separator between the namespace and the scoped name, or {@code null}
+     *                     for the {@linkplain DefaultNameSpace#DEFAULT_SEPARATOR default separator}.
+     * @param  scopedName  the name to parse using {@code ':'} as the separator between components.
+     * @return a local or scoped name in the given namespace.
+     *
+     * @see DefaultNameFactory#parseGenericName(NameSpace, CharSequence)
      */
     public static GenericName parseGenericName(final CharSequence namespace, final String separator, final CharSequence scopedName) {
         ensureNonNull("localPart", scopedName);
-        ensureNonNull("separator", separator);
         final NameFactory factory = DefaultFactories.forBuildin(NameFactory.class);
         return factory.parseGenericName(createNameSpace(factory, namespace, separator), scopedName);
+    }
+
+    /**
+     * Constructs a scoped name as the concatenation of the given generic name with a single character sequence.
+     * The scope of the new name will be the scope of the {@code path} argument.
+     * The tail is a local name created from the given character sequence.
+     *
+     * @param  scope      the first part to concatenate.
+     * @param  separator  the separator between the head and the tail,
+     *                    or {@code null} for inheriting the same separator than the given scope.
+     * @param  name       the second part to concatenate.
+     * @return a scoped name in the given namespace.
+     *
+     * @since 0.8
+     */
+    public static ScopedName createScopedName(final GenericName scope, final String separator, final CharSequence name) {
+        // Current version does not perform any caching, but this is something we could add in the future.
+        return new DefaultScopedName(scope, separator, name);
     }
 
     /**
@@ -158,14 +180,16 @@ public final class Names extends Static {
      * to be created in the same namespace, then {@link DefaultNameFactory#createLocalName(NameSpace, CharSequence)}
      * is more efficient since it allows to create the {@code NameSpace} object only once.</div>
      *
-     * @param  namespace The namespace, or {@code null} for the global namespace.
-     * @param  separator The separator between the namespace and the local part.
-     * @param  localPart The name which is locale in the given namespace.
-     * @return A local name in the given namespace.
+     * @param  namespace  the namespace, or {@code null} for the global namespace.
+     * @param  separator  the separator between the namespace and the local part, or {@code null}
+     *                    for the {@linkplain DefaultNameSpace#DEFAULT_SEPARATOR default separator}.
+     * @param  localPart  the name which is locale in the given namespace.
+     * @return a local name in the given namespace.
+     *
+     * @see DefaultNameFactory#createLocalName(NameSpace, CharSequence)
      */
     public static LocalName createLocalName(final CharSequence namespace, final String separator, final CharSequence localPart) {
         ensureNonNull("localPart", localPart);
-        ensureNonNull("separator", separator);
         final NameFactory factory = DefaultFactories.forBuildin(NameFactory.class);
         return factory.createLocalName(createNameSpace(factory, namespace, separator), localPart);
     }
@@ -182,14 +206,16 @@ public final class Names extends Static {
      * to be created in the same namespace, then {@link DefaultNameFactory#createTypeName(NameSpace, CharSequence)}
      * is more efficient since it allows to create the {@code NameSpace} object only once.</div>
      *
-     * @param  namespace The namespace, or {@code null} for the global namespace.
-     * @param  separator The separator between the namespace and the local part.
-     * @param  localPart The name which is locale in the given namespace.
-     * @return A type name in the given namespace.
+     * @param  namespace  the namespace, or {@code null} for the global namespace.
+     * @param  separator  the separator between the namespace and the local part, or {@code null}
+     *                    for the {@linkplain DefaultNameSpace#DEFAULT_SEPARATOR default separator}.
+     * @param  localPart  the name which is locale in the given namespace.
+     * @return a type name in the given namespace.
+     *
+     * @see DefaultNameFactory#createTypeName(NameSpace, CharSequence)
      */
     public static TypeName createTypeName(final CharSequence namespace, final String separator, final CharSequence localPart) {
         ensureNonNull("localPart", localPart);
-        ensureNonNull("separator", separator);
         final NameFactory factory = DefaultFactories.forBuildin(NameFactory.class);
         return factory.createTypeName(createNameSpace(factory, namespace, separator), localPart);
     }
@@ -202,17 +228,19 @@ public final class Names extends Static {
      * need to be created, then {@link DefaultNameFactory#createMemberName(NameSpace, CharSequence, TypeName)}
      * is more efficient since it allows to create the {@code NameSpace} and {@code TypeName} objects only once.</div>
      *
-     * @param  namespace  The namespace, or {@code null} for the global namespace.
-     * @param  separator  The separator between the namespace and the local part.
-     * @param  localPart  The name which is locale in the given namespace.
-     * @param  valueClass The type of values, used for inferring a {@link TypeName} instance.
-     * @return A member name in the given namespace for values of the given type.
+     * @param  namespace  the namespace, or {@code null} for the global namespace.
+     * @param  separator  the separator between the namespace and the local part, or {@code null}
+     *                    for the {@linkplain DefaultNameSpace#DEFAULT_SEPARATOR default separator}.
+     * @param  localPart  the name which is locale in the given namespace.
+     * @param  valueClass the type of values, used for inferring a {@link TypeName} instance.
+     * @return a member name in the given namespace for values of the given type.
+     *
+     * @see DefaultNameFactory#createMemberName(NameSpace, CharSequence, TypeName)
      */
     public static MemberName createMemberName(final CharSequence namespace, final String separator,
             final CharSequence localPart, final Class<?> valueClass)
     {
         ensureNonNull("localPart",  localPart);
-        ensureNonNull("separator",  separator);
         ensureNonNull("valueClass", valueClass);
         final DefaultNameFactory factory = DefaultFactories.forBuildin(NameFactory.class, DefaultNameFactory.class);
         return factory.createMemberName(createNameSpace(factory, namespace, separator), localPart,
@@ -252,8 +280,8 @@ public final class Names extends Static {
      *       namespaces.</li>
      * </ul>
      *
-     * @param  type The type name from which to infer a Java class.
-     * @return The Java class associated to the given {@code TypeName},
+     * @param  type  the type name from which to infer a Java class.
+     * @return the Java class associated to the given {@code TypeName},
      *         or {@code null} if there is no mapping from the given name to a Java class.
      * @throws UnknownNameException if a mapping from the given name to a Java class was expected to exist
      *         (typically because of the {@linkplain DefaultTypeName#scope() scope}) but the operation failed.
@@ -294,8 +322,8 @@ public final class Names extends Static {
      * NameSpace    ::= name.{@linkplain AbstractName#scope() scope()}.{@linkplain DefaultNameSpace#name() name()}.toString()
      * LocalPart    ::= name.{@linkplain AbstractName#toString() toString()}</pre></blockquote>
      *
-     * @param  name The generic name to format in expanded form, or {@code null}.
-     * @return Expanded form of the given generic name, or {@code null} if the given name was null.
+     * @param  name  the generic name to format in expanded form, or {@code null}.
+     * @return expanded form of the given generic name, or {@code null} if the given name was null.
      *
      * @see DefaultNameSpace#toString()
      */

@@ -21,8 +21,7 @@ import java.util.Locale;
 import java.util.Properties;
 import java.util.ResourceBundle;
 import java.util.MissingResourceException;
-
-import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
+import org.apache.sis.util.ArgumentChecks;
 
 
 /**
@@ -36,8 +35,8 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  * See the {@link ResourceBundle#getBundle(String, Locale, ClassLoader) ResourceBundle.getBundle(…)}
  * Javadoc for more information.
  *
- * <div class="section">Example</div>
- * If a file named "{@code MyResources.properties}" exists in {@code org.mypackage}
+ * <div class="note"><b>Example:</b>
+ * if a file named "{@code MyResources.properties}" exists in {@code org.mypackage}
  * and contains the following line:
  *
  * {@preformat text
@@ -51,9 +50,10 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  * }
  *
  * The {@code "some value"} string will be localized if the required properties files exist, for
- * example "{@code MyResources_fr.properties}" for French, or "{@code MyResources_it.properties}"
+ * example "{@code MyResources_fr.properties}" for French or "{@code MyResources_it.properties}"
  * for Italian, <i>etc</i>.
  * If needed, users can gain more control by overriding the {@link #getBundle(Locale)} method.
+ * </div>
  *
  * <div class="section">Class loaders</div>
  * Developers can specify explicitely the {@link ClassLoader} to use be overriding the
@@ -78,11 +78,12 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Johann Sorel (Geomatys)
- * @since   0.3
  * @version 0.3
- * @module
  *
  * @see ResourceBundle#getBundle(String, Locale)
+ *
+ * @since 0.3
+ * @module
  */
 public class ResourceInternationalString extends AbstractInternationalString implements Serializable {
     /**
@@ -107,14 +108,14 @@ public class ResourceInternationalString extends AbstractInternationalString imp
      * The class loader will be the one of the {@link #toString(Locale)} caller,
      * unless the {@link #getBundle(Locale)} method is overridden.
      *
-     * @param resources The name of the resource bundle, as a fully qualified class name.
-     * @param key       The key for the resource to fetch.
+     * @param resources  the name of the resource bundle, as a fully qualified class name.
+     * @param key        the key for the resource to fetch.
      */
     public ResourceInternationalString(final String resources, final String key) {
+        ArgumentChecks.ensureNonNull("resources", resources);
+        ArgumentChecks.ensureNonNull("key",       key);
         this.resources = resources;
         this.key       = key;
-        ensureNonNull("resources", resources);
-        ensureNonNull("key",       key);
     }
 
     /**
@@ -135,12 +136,14 @@ public class ResourceInternationalString extends AbstractInternationalString imp
      *     }
      * }
      *
-     * @param  locale The locale for which to get the resource bundle.
-     * @return The resource bundle for the given locale.
+     * @param  locale  the locale for which to get the resource bundle.
+     * @return the resource bundle for the given locale.
+     * @throws MissingResourceException if no resource bundle can be found for the base name specified
+     *         at {@linkplain #ResourceInternationalString(String, String) construction time}.
      *
      * @see ResourceBundle#getBundle(String, Locale, ClassLoader)
      */
-    protected ResourceBundle getBundle(final Locale locale) {
+    protected ResourceBundle getBundle(final Locale locale) throws MissingResourceException {
         return ResourceBundle.getBundle(resources, locale);
     }
 
@@ -154,14 +157,15 @@ public class ResourceInternationalString extends AbstractInternationalString imp
      * {@code Locale.ROOT}. However subclasses are free to use a different fallback. Client
      * code are encouraged to specify only non-null values for more determinist behavior.
      *
-     * @param  locale The desired locale for the string to be returned.
-     * @return The string in the specified locale, or in a fallback locale.
-     * @throws MissingResourceException is the key given to the constructor is invalid.
+     * @param  locale  the desired locale for the string to be returned.
+     * @return the string in the specified locale, or in a fallback locale.
+     * @throws MissingResourceException if no resource can be found for the base name or for the key
+     *         specified at {@linkplain #ResourceInternationalString(String, String) construction time}.
      */
     @Override
     public String toString(Locale locale) throws MissingResourceException {
         if (locale == null) {
-            locale = Locale.ROOT; // For consistency with DefaultInternationalString.
+            locale = Locale.ROOT;               // For consistency with DefaultInternationalString.
         }
         return getBundle(locale).getString(key);
     }
@@ -169,7 +173,7 @@ public class ResourceInternationalString extends AbstractInternationalString imp
     /**
      * Compares this international string with the specified object for equality.
      *
-     * @param object The object to compare with this international string.
+     * @param  object  the object to compare with this international string.
      * @return {@code true} if the given object is equal to this string.
      */
     @Override
@@ -184,7 +188,7 @@ public class ResourceInternationalString extends AbstractInternationalString imp
     /**
      * Returns a hash code value for this international text.
      *
-     * @return A hash code value for this international text.
+     * @return a hash code value for this international text.
      */
     @Override
     public int hashCode() {

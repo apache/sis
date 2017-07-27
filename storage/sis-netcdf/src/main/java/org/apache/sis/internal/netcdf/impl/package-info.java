@@ -29,8 +29,8 @@
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
+ * @version 0.8
  * @since   0.3
- * @version 0.3
  * @module
  */
 package org.apache.sis.internal.netcdf.impl;

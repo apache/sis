@@ -34,11 +34,12 @@ import javax.xml.bind.annotation.XmlRootElement;
  * }
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.4
  * @version 0.4
- * @module
  *
  * @see <a href="https://issues.apache.org/jira/browse/SIS-119">SIS-119</a>
+ *
+ * @since 0.4
+ * @module
  */
 @XmlType(name = "MimeFileType_PropertyType")
 @XmlRootElement(name = "MimeFileType")
@@ -65,11 +66,11 @@ public final class MimeFileType {
     /**
      * Creates a new {@code <gml:MimeFileType>} for the given type.
      *
-     * @param type The MIME type.
+     * @param type  the MIME type.
      */
     public MimeFileType(final String type) {
         this.type  = type;
-        this.value = type; // May provide a more human-redeable value in a future SIS version.
+        this.value = type;          // May provide a more human-redeable value in a future SIS version.
     }
 
     /**
@@ -79,7 +80,7 @@ public final class MimeFileType {
      * Returning {@code null} is usually not recommended for a {@code toString()} method,
      * but this class is for internal usage only.</div>
      *
-     * @return The MIME type, or {@code null} if none.
+     * @return the MIME type, or {@code null} if none.
      */
     @Override
     public String toString() {

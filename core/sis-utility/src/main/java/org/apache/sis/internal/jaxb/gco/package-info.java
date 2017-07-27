@@ -77,11 +77,12 @@
  *
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
- * @version 0.4
- * @module
+ * @version 0.7
  *
  * @see javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter
+ *
+ * @since 0.3
+ * @module
  */
 @XmlSchema(elementFormDefault = XmlNsForm.QUALIFIED, namespace = Namespaces.GCO, xmlns = {
     @XmlNs(prefix = "gco", namespaceURI = Namespaces.GCO),

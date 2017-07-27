@@ -25,6 +25,7 @@ import org.opengis.metadata.extent.Extent;
 import org.opengis.metadata.quality.Scope;
 import org.opengis.metadata.maintenance.ScopeCode;
 import org.opengis.metadata.maintenance.ScopeDescription;
+import org.apache.sis.internal.metadata.Dependencies;
 import org.apache.sis.internal.metadata.LegacyPropertyAdapter;
 import org.apache.sis.metadata.iso.ISOMetadata;
 
@@ -34,6 +35,18 @@ import static org.opengis.annotation.Specification.ISO_19115;
 
 /**
  * The target resource and physical extent for which information is reported.
+ * The following properties are mandatory or conditional (i.e. mandatory under some circumstances)
+ * in a well-formed metadata according ISO 19115:
+ *
+ * <div class="preformat">{@code MD_Scope}
+ * {@code   ├─level…………………………………………………} Hierarchical level of the data specified by the scope.
+ * {@code   └─levelDescription……………………} Detailed description about the level of the data specified by the scope.
+ * {@code       ├─attributeInstances……} Attribute instances to which the information applies.
+ * {@code       ├─attributes…………………………} Attributes to which the information applies.
+ * {@code       ├─dataset…………………………………} Dataset to which the information applies.
+ * {@code       ├─featureInstances…………} Feature instances to which the information applies.
+ * {@code       ├─features………………………………} Features to which the information applies.
+ * {@code       └─other………………………………………} Class of information that does not fall into the other categories.</div>
  *
  * <p><b>Limitations:</b></p>
  * <ul>
@@ -46,10 +59,11 @@ import static org.opengis.annotation.Specification.ISO_19115;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Touraïvane (IRD)
- * @since   0.3
  * @version 0.5
+ * @since   0.3
  * @module
  */
+@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "DQ_Scope_Type", propOrder = {
    "level",
    "extents",
@@ -86,7 +100,7 @@ public class DefaultScope extends ISOMetadata implements Scope {
     /**
      * Creates a scope initialized to the given level.
      *
-     * @param level The hierarchical level of the data specified by the scope.
+     * @param level  the hierarchical level of the data specified by the scope.
      */
     public DefaultScope(final ScopeCode level) {
         this.level = level;
@@ -97,7 +111,7 @@ public class DefaultScope extends ISOMetadata implements Scope {
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
-     * @param object The metadata to copy values from, or {@code null} if none.
+     * @param  object  the metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(Scope)
      */
@@ -128,8 +142,8 @@ public class DefaultScope extends ISOMetadata implements Scope {
      *       metadata contained in the given object are not recursively copied.</li>
      * </ul>
      *
-     * @param  object The object to get as a SIS implementation, or {@code null} if none.
-     * @return A SIS implementation containing the values of the given object (may be the
+     * @param  object  the object to get as a SIS implementation, or {@code null} if none.
+     * @return a SIS implementation containing the values of the given object (may be the
      *         given object itself), or {@code null} if the argument was null.
      */
     public static DefaultScope castOrCopy(final Scope object) {
@@ -142,7 +156,7 @@ public class DefaultScope extends ISOMetadata implements Scope {
     /**
      * Returns the hierarchical level of the data specified by the scope.
      *
-     * @return Hierarchical level of the data, or {@code null}.
+     * @return hierarchical level of the data, or {@code null}.
      */
     @Override
     @XmlElement(name = "level", required = true)
@@ -153,7 +167,7 @@ public class DefaultScope extends ISOMetadata implements Scope {
     /**
      * Sets the hierarchical level of the data specified by the scope.
      *
-     * @param newValue The new level.
+     * @param  newValue  the new level.
      */
     public void setLevel(final ScopeCode newValue) {
         checkWritePermission();
@@ -163,7 +177,7 @@ public class DefaultScope extends ISOMetadata implements Scope {
     /**
      * Returns information about the spatial, vertical and temporal extents of the resource specified by the scope.
      *
-     * @return Information about the extent of the resource.
+     * @return information about the extent of the resource.
      *
      * @since 0.5
      */
@@ -194,6 +208,7 @@ public class DefaultScope extends ISOMetadata implements Scope {
      */
     @Override
     @Deprecated
+    @Dependencies("getExtents")
     public Extent getExtent() {
         return LegacyPropertyAdapter.getSingleton(getExtents(), Extent.class, null, DefaultScope.class, "getExtent");
     }
@@ -214,7 +229,7 @@ public class DefaultScope extends ISOMetadata implements Scope {
     /**
      * Returns detailed descriptions about the level of the data specified by the scope.
      *
-     * @return Detailed description about the level of the data.
+     * @return detailed description about the level of the data.
      */
     @Override
     @XmlElement(name = "levelDescription")
@@ -225,7 +240,7 @@ public class DefaultScope extends ISOMetadata implements Scope {
     /**
      * Sets detailed descriptions about the level of the data specified by the scope.
      *
-     * @param newValues The new level description.
+     * @param  newValues  the new level description.
      */
     public void setLevelDescription(final Collection<? extends ScopeDescription> newValues) {
         levelDescription = writeCollection(newValues, levelDescription, ScopeDescription.class);

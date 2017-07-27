@@ -18,7 +18,15 @@ package org.apache.sis.parameter;
 
 import java.util.List;
 import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.Map;
+import java.util.IdentityHashMap;
+import java.util.Iterator;
+import java.util.Objects;
 import java.io.Serializable;
+import javax.xml.bind.annotation.XmlType;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlRootElement;
 import org.opengis.parameter.ParameterValue;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptor;
@@ -27,17 +35,14 @@ import org.opengis.parameter.GeneralParameterValue;
 import org.opengis.parameter.GeneralParameterDescriptor;
 import org.opengis.parameter.ParameterNotFoundException;
 import org.opengis.parameter.InvalidParameterCardinalityException;
+import org.apache.sis.internal.metadata.MetadataUtilities;
+import org.apache.sis.internal.referencing.Resources;
+import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.util.LenientComparable;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ArgumentChecks;
-import org.apache.sis.util.Debug;
-
-import static org.apache.sis.util.Utilities.deepEquals;
-import static org.apache.sis.referencing.IdentifiedObjects.isHeuristicMatchForName;
-
-// Branch-dependent imports
-import org.apache.sis.internal.jdk7.Objects;
+import org.apache.sis.util.Utilities;
 
 
 /**
@@ -72,8 +77,8 @@ import org.apache.sis.internal.jdk7.Objects;
  *
  * {@preformat java
  *     ParameterValueGroup mercator = Mercator.PARAMETERS.createValue();
- *     mercator.parameter("Longitude of natural origin").setValue(-60, NonSI.DEGREE_ANGLE);  // 60°W
- *     mercator.parameter("Latitude of natural origin") .setValue( 40, NonSI.DEGREE_ANGLE);  // 40°N
+ *     mercator.parameter("Longitude of natural origin").setValue(-60, Units.DEGREE);  // 60°W
+ *     mercator.parameter("Latitude of natural origin") .setValue( 40, Units.DEGREE);  // 40°N
  *     // Keep default values for other parameters.
  * }
  * </div>
@@ -96,13 +101,19 @@ import org.apache.sis.internal.jdk7.Objects;
  * <p>Calls to {@code values().clear()} restore this {@code DefaultParameterValueGroup} to its initial state.</p>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.4
- * @version 0.6
- * @module
+ * @version 0.8
  *
  * @see DefaultParameterDescriptorGroup
  * @see DefaultParameterValue
+ *
+ * @since 0.4
+ * @module
  */
+@XmlType(name = "ParameterValueGroupType", propOrder = {
+    "values",
+    "descriptor"
+})
+@XmlRootElement(name = "ParameterValueGroup")
 public class DefaultParameterValueGroup extends Parameters implements LenientComparable, Serializable {
     /**
      * Serial number for inter-operability with different versions.
@@ -112,22 +123,43 @@ public class DefaultParameterValueGroup extends Parameters implements LenientCom
     /**
      * Contains the descriptor and the {@linkplain #values() parameter values} for this group.
      *
-     * <p>Consider this field as final. It is not for the purpose of {@link #clone()}.</p>
+     * <p><b>Consider this field as final!</b>
+     * This field is modified only by the {@link #clone()} method and
+     * at unmarshalling time by {@link #setValues(GeneralParameterValue[])}</p>
+     *
+     * @see #values()
      */
     private ParameterValueList values;
 
     /**
-     * Constructs a parameter group from the specified descriptor.
+     * Creates a parameter group from the specified descriptor.
      *
      * <p><b>Usage note:</b> {@code ParameterValueGroup} are usually not instantiated directly. Instead, consider
      * invoking <code>descriptor.{@linkplain DefaultParameterDescriptorGroup#createValue() createValue()}</code>
      * on a descriptor supplied by a map projection or process provider.</p>
      *
-     * @param descriptor The descriptor for this group.
+     * @param  descriptor  the descriptor for this group.
      */
     public DefaultParameterValueGroup(final ParameterDescriptorGroup descriptor) {
         ArgumentChecks.ensureNonNull("descriptor", descriptor);
         values = new ParameterValueList(descriptor);
+    }
+
+    /**
+     * Creates a new instance initialized with all values from the specified parameter group.
+     * This is a <em>shallow</em> copy constructor, since the values contained in the given
+     * group is not cloned.
+     *
+     * @param parameters The parameters to copy values from.
+     *
+     * @see #clone()
+     *
+     * @since 0.6
+     */
+    public DefaultParameterValueGroup(final ParameterValueGroup parameters) {
+        ArgumentChecks.ensureNonNull("parameters", parameters);
+        values = new ParameterValueList(parameters.getDescriptor());
+        values.addAll(parameters.values());
     }
 
     /**
@@ -143,11 +175,14 @@ public class DefaultParameterValueGroup extends Parameters implements LenientCom
     /**
      * Returns the abstract definition of this group of parameters.
      *
-     * @return The abstract definition of this group of parameters.
+     * @return the abstract definition of this group of parameters.
      */
     @Override
+    @XmlElement(name = "group")
     public ParameterDescriptorGroup getDescriptor() {
-        return values.descriptor;
+        // The descriptor is not allowed to be null, but this situation
+        // may exist temporarily during XML unmarshalling.
+        return (values != null) ? values.descriptor : null;
     }
 
     /**
@@ -166,11 +201,12 @@ public class DefaultParameterValueGroup extends Parameters implements LenientCom
      * {@link org.opengis.parameter.InvalidParameterCardinalityException} or other runtime exceptions if a condition
      * is not meet.
      *
-     * @return The values in this group.
+     * @return the values in this group.
      */
     @Override
+    @SuppressWarnings("ReturnOfCollectionOrArrayField")
     public List<GeneralParameterValue> values() {
-        return values;
+        return values;                                          // Intentionally modifiable.
     }
 
     /**
@@ -204,8 +240,8 @@ public class DefaultParameterValueGroup extends Parameters implements LenientCom
      * may exist for the same {@linkplain ParameterDescriptorGroup descriptor}. The user have to
      * {@linkplain #groups(String) query all subgroups} and select explicitly the appropriate one.
      *
-     * @param  name The name of the parameter to search for.
-     * @return The parameter value for the given name.
+     * @param  name  the name of the parameter to search for.
+     * @return the parameter value for the given name.
      * @throws ParameterNotFoundException if there is no parameter value for the given name.
      *
      * @see #getValue(ParameterDescriptor)
@@ -223,8 +259,8 @@ public class DefaultParameterValueGroup extends Parameters implements LenientCom
              */
             final GeneralParameterDescriptor descriptor = values.descriptor.descriptor(name);
             if (!(descriptor instanceof ParameterDescriptor<?>) || descriptor.getMaximumOccurs() == 0) {
-                throw new ParameterNotFoundException(Errors.format(Errors.Keys.ParameterNotFound_2,
-                        values.descriptor.getName(), name), name);
+                throw new ParameterNotFoundException(Resources.format(Resources.Keys.ParameterNotFound_2,
+                        Verifier.getDisplayName(values.descriptor), name), name);
             }
             /*
              * Create the optional parameter and add it to our internal list. Note that this is
@@ -245,47 +281,41 @@ public class DefaultParameterValueGroup extends Parameters implements LenientCom
      */
     @Override
     ParameterValue<?> parameterIfExist(final String name) throws ParameterNotFoundException {
-        final ParameterValueList values = this.values; // Protect against accidental changes.
+        final ParameterValueList values = this.values;          // Protect against accidental changes.
         /*
-         * Quick search for an exact match. By invoking 'descriptor(i)' instead of 'get(i)',
-         * we avoid the creation of mandatory ParameterValue which was deferred. If we find
-         * a matching name, the ParameterValue will be lazily created (if not already done)
-         * by the call to 'get(i)'.
+         * Search for an exact match. By invoking 'descriptor(i)' instead of 'get(i)', we avoid the
+         * creation of mandatory ParameterValue which was deferred. If we find a matching name, the
+         * ParameterValue will be lazily created (if not already done) by the call to 'get(i)'.
          */
+        int index     = -1;
+        int ambiguity = -1;
         final int size = values.size();
         for (int i=0; i<size; i++) {
             final GeneralParameterDescriptor descriptor = values.descriptor(i);
             if (descriptor instanceof ParameterDescriptor<?>) {
-                if (name.equals(descriptor.getName().toString())) {
-                    return (ParameterValue<?>) values.get(i);
-                }
-            }
-        }
-        /*
-         * More costly search, including aliases, before to give up.
-         */
-        int fallback  = -1;
-        int ambiguity = -1;
-        for (int i=0; i<size; i++) {
-            final GeneralParameterDescriptor descriptor = values.descriptor(i);
-            if (descriptor instanceof ParameterDescriptor<?>) {
-                if (isHeuristicMatchForName(descriptor, name)) {
-                    if (fallback < 0) {
-                        fallback = i;
+                if (IdentifiedObjects.isHeuristicMatchForName(descriptor, name)) {
+                    if (index < 0) {
+                        index = i;
                     } else {
                         ambiguity = i;
                     }
                 }
             }
         }
-        if (fallback >= 0) {
-            if (ambiguity < 0) {
-                return (ParameterValue<?>) values.get(fallback);   // May lazily create a ParameterValue.
-            }
-            throw new ParameterNotFoundException(Errors.format(Errors.Keys.AmbiguousName_3,
-                    values.descriptor(fallback).getName(), values.descriptor(ambiguity).getName(), name), name);
+        if (ambiguity < 0) {
+            return (index >= 0) ? (ParameterValue<?>) values.get(index) : null;     // May lazily create a ParameterValue.
         }
-        return null;
+        final GeneralParameterDescriptor d1 = values.descriptor(index);
+        final GeneralParameterDescriptor d2 = values.descriptor(ambiguity);
+        final String message;
+        if (d1 == d2) {
+            message = Errors.format(Errors.Keys.MultiOccurenceValueAtIndices_3, name, index, ambiguity);
+        } else {
+            message = Errors.format(Errors.Keys.AmbiguousName_3,
+                        IdentifiedObjects.toString(d1.getName()),
+                        IdentifiedObjects.toString(d2.getName()), name);
+        }
+        throw new ParameterNotFoundException(message, name);
     }
 
     /**
@@ -295,20 +325,20 @@ public class DefaultParameterValueGroup extends Parameters implements LenientCom
      * <code>{@linkplain DefaultParameterDescriptor#getMinimumOccurs() minimumOccurs} == 0</code>)
      * and no value were defined previously, then this method returns an empty set.</p>
      *
-     * @param  name The name of the parameter to search for.
-     * @return The set of all parameter group for the given name.
-     * @throws ParameterNotFoundException If no descriptor was found for the given name.
+     * @param  name  the name of the parameter to search for.
+     * @return the set of all parameter group for the given name.
+     * @throws ParameterNotFoundException if no descriptor was found for the given name.
      */
     @Override
     public List<ParameterValueGroup> groups(final String name) throws ParameterNotFoundException {
         ArgumentChecks.ensureNonNull("name", name);
         final ParameterValueList values = this.values; // Protect against accidental changes.
-        final List<ParameterValueGroup> groups = new ArrayList<ParameterValueGroup>(4);
+        final List<ParameterValueGroup> groups = new ArrayList<>(4);
         final int size = values.size();
         for (int i=0; i<size; i++) {
             final GeneralParameterDescriptor descriptor = values.descriptor(i);
             if (descriptor instanceof ParameterDescriptorGroup) {
-                if (isHeuristicMatchForName(descriptor, name)) {
+                if (IdentifiedObjects.isHeuristicMatchForName(descriptor, name)) {
                     groups.add((ParameterValueGroup) values.get(i));
                 }
             }
@@ -321,8 +351,8 @@ public class DefaultParameterValueGroup extends Parameters implements LenientCom
         if (groups.isEmpty()) {
             final ParameterDescriptorGroup descriptor = values.descriptor;
             if (!(descriptor.descriptor(name) instanceof ParameterDescriptorGroup)) {
-                throw new ParameterNotFoundException(Errors.format(
-                        Errors.Keys.ParameterNotFound_2, descriptor.getName(), name), name);
+                throw new ParameterNotFoundException(Resources.format(Resources.Keys.ParameterNotFound_2,
+                        Verifier.getDisplayName(descriptor), name), name);
             }
         }
         return groups;
@@ -338,10 +368,10 @@ public class DefaultParameterValueGroup extends Parameters implements LenientCom
      * {@link #values()} list, decide which occurrences to remove if there is many of them for the
      * same name, and whether to iterate recursively into sub-groups or not.</div>
      *
-     * @param  name The name of the parameter group to create.
-     * @return A newly created parameter group for the given name.
-     * @throws ParameterNotFoundException If no descriptor was found for the given name.
-     * @throws InvalidParameterCardinalityException If this parameter group already contains the
+     * @param  name  the name of the parameter group to create.
+     * @return a newly created parameter group for the given name.
+     * @throws ParameterNotFoundException if no descriptor was found for the given name.
+     * @throws InvalidParameterCardinalityException if this parameter group already contains the
      *         {@linkplain ParameterDescriptorGroup#getMaximumOccurs() maximum number of occurrences}
      *         of subgroups of the given name.
      */
@@ -353,8 +383,8 @@ public class DefaultParameterValueGroup extends Parameters implements LenientCom
         final ParameterDescriptorGroup descriptor = values.descriptor;
         final GeneralParameterDescriptor child = descriptor.descriptor(name);
         if (!(child instanceof ParameterDescriptorGroup)) {
-            throw new ParameterNotFoundException(Errors.format(
-                    Errors.Keys.ParameterNotFound_2, descriptor.getName(), name), name);
+            throw new ParameterNotFoundException(Resources.format(
+                    Resources.Keys.ParameterNotFound_2, descriptor.getName(), name), name);
         }
         final ParameterValueGroup value = ((ParameterDescriptorGroup) child).createValue();
         values.add(value);
@@ -363,10 +393,17 @@ public class DefaultParameterValueGroup extends Parameters implements LenientCom
 
     /**
      * Compares the specified object with this parameter for equality.
-     * The strictness level is controlled by the second argument.
+     * The strictness level is controlled by the second argument:
      *
-     * @param  object The object to compare to {@code this}.
-     * @param  mode The strictness level of the comparison.
+     * <ul>
+     *   <li>{@link ComparisonMode#STRICT} and {@link ComparisonMode#BY_CONTRACT BY_CONTRACT}
+     *       take in account the parameter order.</li>
+     *   <li>{@link ComparisonMode#IGNORE_METADATA} and {@link ComparisonMode#APPROXIMATIVE APPROXIMATIVE}
+     *       ignore the order of parameter values (but not necessarily the order of parameter descriptors).</li>
+     * </ul>
+     *
+     * @param  object  the object to compare to {@code this}.
+     * @param  mode  the strictness level of the comparison.
      * @return {@code true} if both objects are equal according the given comparison mode.
      */
     @Override
@@ -383,12 +420,34 @@ public class DefaultParameterValueGroup extends Parameters implements LenientCom
                            Objects.equals(values, that.values);
                 }
             } else if (object instanceof ParameterValueGroup) {
-                final ParameterValueGroup that = (ParameterValueGroup) object;
-                return deepEquals(getDescriptor(), that.getDescriptor(), mode) &&
-                       deepEquals(values(), that.values(), mode);
+                return equals(this, (ParameterValueGroup) object, mode);
             }
         }
         return false;
+    }
+
+    /**
+     * Compares the given objects for equality, ignoring parameter order in "ignore metadata" mode.
+     */
+    static boolean equals(final Parameters expected, final ParameterValueGroup actual, final ComparisonMode mode) {
+        if (!Utilities.deepEquals(expected.getDescriptor(), actual.getDescriptor(), mode)) {
+            return false;
+        }
+        if (!mode.isIgnoringMetadata()) {
+            return Utilities.deepEquals(expected.values(), actual.values(), mode);
+        }
+        final List<GeneralParameterValue> values = new LinkedList<>(expected.values());
+scan:   for (final GeneralParameterValue param : actual.values()) {
+            final Iterator<GeneralParameterValue> it = values.iterator();
+            while (it.hasNext()) {
+                if (Utilities.deepEquals(it.next(), param, mode)) {
+                    it.remove();
+                    continue scan;
+                }
+            }
+            return false;   // A parameter from 'actual' has not been found in 'expected'.
+        }
+        return values.isEmpty();
     }
 
     /**
@@ -401,7 +460,7 @@ public class DefaultParameterValueGroup extends Parameters implements LenientCom
      *
      * Subclasses shall override {@link #equals(Object, ComparisonMode)} instead than this method.
      *
-     * @param  object The object to compare to {@code this}.
+     * @param  object  the object to compare to {@code this}.
      * @return {@code true} if both objects are equal.
      */
     @Override
@@ -412,7 +471,7 @@ public class DefaultParameterValueGroup extends Parameters implements LenientCom
     /**
      * Returns a hash value for this parameter.
      *
-     * @return The hash code value. This value doesn't need to be the same
+     * @return the hash code value. This value does not need to be the same
      *         in past or future versions of this class.
      */
     @Override
@@ -424,7 +483,7 @@ public class DefaultParameterValueGroup extends Parameters implements LenientCom
      * Returns a deep copy of this group of parameter values.
      * Included parameter values and subgroups are cloned recursively.
      *
-     * @return A copy of this group of parameter values.
+     * @return a copy of this group of parameter values.
      *
      * @see #copy(ParameterValueGroup, ParameterValueGroup)
      */
@@ -435,28 +494,106 @@ public class DefaultParameterValueGroup extends Parameters implements LenientCom
         return copy;
     }
 
+
+
+
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+    ////////                                                                                  ////////
+    ////////                               XML support with JAXB                              ////////
+    ////////                                                                                  ////////
+    ////////        The following methods are invoked by JAXB using reflection (even if       ////////
+    ////////        they are private) or are helpers for other methods invoked by JAXB.       ////////
+    ////////        Those methods can be safely removed if Geographic Markup Language         ////////
+    ////////        (GML) support is not needed.                                              ////////
+    ////////                                                                                  ////////
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+
     /**
-     * Returns a string representation of this group.
-     * The default implementation delegates to {@link ParameterFormat}.
-     *
-     * <p>This method is for information purpose only and may change in future SIS version.</p>
+     * Default constructor for JAXB only. The values list is initialized to {@code null},
+     * but will be assigned a value after XML unmarshalling.
      */
-    @Debug
-    @Override
-    public String toString() {
-        return ParameterFormat.sharedFormat(this);
+    private DefaultParameterValueGroup() {
     }
 
     /**
-     * Prints a string representation of this group to the {@linkplain System#out standard output stream}.
-     * If a {@linkplain java.io.Console console} is attached to the running JVM (i.e. if the application
-     * is run from the command-line and the output is not redirected to a file) and if Apache SIS thinks
-     * that the console supports the ANSI escape codes (a.k.a. X3.64), then a syntax coloring will be applied.
+     * Invoked by JAXB for setting the group parameter descriptor. Those parameter are redundant with
+     * the parameters associated to the values given to {@link #setValues(GeneralParameterValue[])},
+     * except the the group identification (name, <i>etc.</i>) and for any optional parameters which
+     * were not present in the above {@code GeneralParameterValue} array.
      *
-     * <p>This is a convenience method for debugging purpose and for console applications.</p>
+     * @see #getDescriptor()
      */
-    @Debug
-    public void print() {
-        ParameterFormat.print(this);
+    private void setDescriptor(final ParameterDescriptorGroup descriptor) {
+        if (values == null) {
+            values = new ParameterValueList(descriptor);
+        } else {
+            MetadataUtilities.propertyAlreadySet(DefaultParameterValue.class, "setDescriptor", "group");
+        }
+    }
+
+    /**
+     * Invoked by JAXB for getting the parameters to marshal.
+     */
+    @XmlElement(name = "parameterValue", required = true)
+    private GeneralParameterValue[] getValues() {
+        final List<GeneralParameterValue> values = values();   // Gives to user a chance to override.
+        return values.toArray(new GeneralParameterValue[values.size()]);
+    }
+
+    /**
+     * Invoked by JAXB for setting the unmarshalled parameters. This method should be invoked last
+     * (after {@link #setDescriptor(ParameterDescriptorGroup)}) even if the {@code parameterValue}
+     * elements were first in the XML document. This is the case at least with the JAXB reference
+     * implementation, because the property type is an array (it would not work with a list).
+     *
+     * <p><b>Maintenance note:</b> the {@code "setValues"} method name is also hard-coded in
+     * {@link org.apache.sis.internal.jaxb.referencing.CC_GeneralOperationParameter} for logging purpose.</p>
+     */
+    private void setValues(final GeneralParameterValue[] parameters) {
+        ParameterValueList addTo = values;
+        if (addTo == null) {
+            // Should never happen, unless the XML document is invalid and does not have a 'group' element.
+            addTo = new ParameterValueList(new DefaultParameterDescriptorGroup());
+        }
+        /*
+         * Merge the descriptors declared in the <gml:group> element with the descriptors given in each
+         * <gml:parameterValue> element. The implementation is known to be DefaultParameterDescriptorGroup
+         * because this is the type declared in the JAXBContext and in adapters.
+         */
+        final Map<GeneralParameterDescriptor,GeneralParameterDescriptor> replacements = new IdentityHashMap<>(4);
+        ((DefaultParameterDescriptorGroup) addTo.descriptor).merge(getDescriptors(parameters), replacements);
+        addTo.clear();  // Because references to parameter descriptors have changed.
+        setValues(parameters, replacements, addTo);
+    }
+
+    /**
+     * Appends all parameter values. In this process, we may need to update the descriptor of some values
+     * if those descriptors changed as a result of the above merge process.
+     *
+     * @param parameters   The parameters to add, or {@code null} for {@link #values}.
+     * @param replacements The replacements to apply in the {@code GeneralParameterValue} instances.
+     * @param addTo        Where to store the new values.
+     */
+    @SuppressWarnings({"unchecked", "AssignmentToCollectionOrArrayFieldFromParameter"})
+    private void setValues(GeneralParameterValue[] parameters,
+            final Map<GeneralParameterDescriptor,GeneralParameterDescriptor> replacements,
+            final ParameterValueList addTo)
+    {
+        if (parameters == null) {
+            parameters = values.toArray();
+        }
+        for (final GeneralParameterValue p : parameters) {
+            final GeneralParameterDescriptor replacement = replacements.get(p.getDescriptor());
+            if (replacement != null) {
+                if (p instanceof DefaultParameterValue<?>) {
+                    ((DefaultParameterValue<?>) p).setDescriptor((ParameterDescriptor) replacement);
+                } else if (p instanceof DefaultParameterValueGroup) {
+                    ((DefaultParameterValueGroup) p).setValues(null, replacements,
+                            new ParameterValueList((ParameterDescriptorGroup) replacement));
+                }
+            }
+            addTo.add(p);
+        }
+        values = addTo;
     }
 }

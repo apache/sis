@@ -16,6 +16,10 @@
  */
 package org.apache.sis.measure;
 
+import static org.apache.sis.measure.Angle.valueOf;
+import org.opengis.geometry.DirectPosition;
+import org.opengis.referencing.cs.AxisDirection;
+
 
 /**
  * A longitude angle in decimal degrees.
@@ -31,12 +35,14 @@ package org.apache.sis.measure;
  * This final class is immutable and thus inherently thread-safe.
  *
  * @author  Martin Desruisseaux (MPO, IRD, Geomatys)
- * @since   0.3
- * @version 0.4
- * @module
+ * @version 0.8
  *
  * @see Latitude
  * @see AngleFormat
+ * @see org.apache.sis.geometry.CoordinateFormat
+ *
+ * @since 0.3
+ * @module
  */
 public final class Longitude extends Angle {
     /**
@@ -62,7 +68,7 @@ public final class Longitude extends Angle {
      * Construct a new longitude with the specified angular value.
      * This constructor does <strong>not</strong> {@linkplain #normalize(double) normalize} the given value.
      *
-     * @param λ Longitude value in decimal degrees.
+     * @param  λ  longitude value in decimal degrees.
      */
     public Longitude(final double λ) {
         super(λ);
@@ -78,7 +84,7 @@ public final class Longitude extends Angle {
      * locale. Developers should consider using {@link AngleFormat} for end-user applications
      * instead than this constructor.</p>
      *
-     * @param  string A string to be converted to a {@code Longitude}.
+     * @param  string  a string to be converted to a {@code Longitude}.
      * @throws NumberFormatException if the string does not contain a parsable angle,
      *         or represents a longitude angle.
      *
@@ -86,6 +92,29 @@ public final class Longitude extends Angle {
      */
     public Longitude(final String string) throws NumberFormatException {
         super(string);
+    }
+
+    /**
+     * Constructs a newly allocated object containing the longitude value of the given position.
+     * For this method, the longitude value is defined as the angular value associated to the first axis
+     * oriented toward {@linkplain AxisDirection#EAST East} or {@linkplain AxisDirection#WEST West}.
+     * Note that this is not necessarily the <cite>geodetic longitudes</cite> used in
+     * {@linkplain org.apache.sis.referencing.crs.DefaultGeographicCRS geographic CRS};
+     * it may also be <cite>geocentric longitudes</cite>.
+     *
+     * <p>If the axis direction is West, then the sign of the ordinate value is inverted.
+     * If the ordinate value uses another angular units than {@linkplain Units#DEGREE degrees},
+     * then a unit conversion is applied.</p>
+     *
+     * @param  position  the coordinate from which to extract the longitude value in degrees.
+     * @throws IllegalArgumentException if the given coordinate it not associated to a CRS,
+     *         or if no axis oriented toward East or West is found, or if that axis does
+     *         not use {@linkplain Units#isAngular angular units}.
+     *
+     * @since 0.8
+     */
+    public Longitude(final DirectPosition position) throws IllegalArgumentException {
+        super(valueOf(position, AxisDirection.EAST, AxisDirection.WEST));
     }
 
     /**
@@ -110,8 +139,10 @@ public final class Longitude extends Angle {
      *   <li>±0 are returned unchanged (i.e. the sign of negative and positive zero is preserved)</li>
      * </ul>
      *
-     * @param  λ The longitude value in decimal degrees.
-     * @return The given value normalized to the [-180 … 180)° range, or NaN if the given value was NaN of infinite.
+     * Note that the given value should not be greater than 4×10⁸ degrees if a centimetric precision is desired.
+     *
+     * @param  λ  the longitude value in decimal degrees.
+     * @return the given value normalized to the [-180 … 180)° range, or NaN if the given value was NaN of infinite.
      *
      * @see Latitude#clamp(double)
      *

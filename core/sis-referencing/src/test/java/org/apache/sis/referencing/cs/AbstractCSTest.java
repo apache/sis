@@ -16,9 +16,9 @@
  */
 package org.apache.sis.referencing.cs;
 
-import javax.measure.unit.SI;
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
+import org.apache.sis.measure.Units;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
@@ -27,7 +27,6 @@ import org.junit.Test;
 
 import static java.util.Collections.singletonMap;
 import static org.opengis.referencing.cs.CoordinateSystem.NAME_KEY;
-import static org.apache.sis.referencing.cs.CoordinateSystemsTest.STRICT;
 import static org.apache.sis.test.Assert.*;
 
 
@@ -35,8 +34,8 @@ import static org.apache.sis.test.Assert.*;
  * Tests the {@link AbstractCS} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.4
  * @version 0.5
+ * @since   0.4
  * @module
  */
 @DependsOn({
@@ -48,9 +47,9 @@ public final strictfp class AbstractCSTest extends TestCase {
     /**
      * Gets a coordinate system for the given axes convention and compare against the expected values.
      *
-     * @param convention The convention to use.
-     * @param cs The coordinate system to test.
-     * @param expected The expected axes, in order.
+     * @param  convention  the convention to use.
+     * @param  cs          the coordinate system to test.
+     * @param  expected    the expected axes, in order.
      */
     private static void verifyAxesConvention(final AxesConvention convention, final AbstractCS cs,
             final CoordinateSystemAxis... expected)
@@ -102,9 +101,9 @@ public final strictfp class AbstractCSTest extends TestCase {
          * if it is not really the purpose of this test.
          */
         final DefaultCoordinateSystemAxis EASTING = new DefaultCoordinateSystemAxis(
-                singletonMap(NAME_KEY, Vocabulary.format(Vocabulary.Keys.Unnamed)), "E", AxisDirection.EAST, SI.METRE);
+                singletonMap(NAME_KEY, Vocabulary.format(Vocabulary.Keys.Unnamed)), "E", AxisDirection.EAST, Units.METRE);
         final DefaultCoordinateSystemAxis HEIGHT = new DefaultCoordinateSystemAxis(
-                singletonMap(NAME_KEY, "Height"), "h", AxisDirection.UP, SI.METRE);
+                singletonMap(NAME_KEY, "Height"), "h", AxisDirection.UP, Units.METRE);
         assertEquals("minimumValue", Double.NEGATIVE_INFINITY, EASTING.getMinimumValue(), STRICT);
         assertEquals("maximumValue", Double.POSITIVE_INFINITY, EASTING.getMaximumValue(), STRICT);
         assertNull  ("rangeMeaning", EASTING.getRangeMeaning());

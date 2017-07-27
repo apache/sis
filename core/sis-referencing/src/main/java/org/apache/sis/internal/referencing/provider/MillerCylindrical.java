@@ -16,14 +16,14 @@
  */
 package org.apache.sis.internal.referencing.provider;
 
+import javax.xml.bind.annotation.XmlTransient;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.apache.sis.internal.util.Constants;
-import org.apache.sis.parameter.ParameterBuilder;
 import org.apache.sis.metadata.iso.citation.Citations;
 
 
 /**
- * The provider for "<cite>Miller Cylindrical</cite>" projection.
+ * The provider for <cite>"Miller Cylindrical"</cite> projection.
  * This is a {@link Mercator1SP} projection with the following modifications:
  *
  * <ol>
@@ -46,11 +46,14 @@ import org.apache.sis.metadata.iso.citation.Citations;
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.6
  * @version 0.6
  *
  * @see <a href="http://www.remotesensing.org/geotiff/proj_list/miller_cylindrical.html">Miller Cylindrical on RemoteSensing.org</a>
+ *
+ * @since 0.6
+ * @module
  */
+@XmlTransient
 public final class MillerCylindrical extends AbstractMercator {
     /**
      * For cross-version compatibility.
@@ -62,14 +65,13 @@ public final class MillerCylindrical extends AbstractMercator {
      */
     private static final ParameterDescriptorGroup PARAMETERS;
     static {
-        final ParameterBuilder builder = builder().setCodeSpace(Citations.OGC, Constants.OGC);
-        PARAMETERS = builder
-            .addName      ("Miller_Cylindrical")
-            .addName      (Citations.GEOTIFF,  "CT_MillerCylindrical")
-            .addIdentifier(Citations.GEOTIFF,  "20")
-            .addName      (Citations.PROJ4,    "mill")
-            .addIdentifier(Citations.MAP_INFO, "11")
-            .createGroupForMapProjection(toArray(MercatorSpherical.PARAMETERS.descriptors()));
+        PARAMETERS = builder().setCodeSpace(Citations.OGC, Constants.OGC)
+                .addName      ("Miller_Cylindrical")
+                .addName      (Citations.GEOTIFF,  "CT_MillerCylindrical")
+                .addIdentifier(Citations.GEOTIFF,  "20")
+                .addName      (Citations.PROJ4,    "mill")
+                .addIdentifier(Citations.MAP_INFO, "11")
+                .createGroupForMapProjection(toArray(MercatorSpherical.PARAMETERS.descriptors()));
     }
 
     /**

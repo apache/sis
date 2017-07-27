@@ -20,6 +20,9 @@ import java.io.File;
 import java.io.IOException;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
+import org.apache.maven.plugins.annotations.Mojo;
+import org.apache.maven.plugins.annotations.Parameter;
+import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.project.MavenProject;
 
 import static org.apache.sis.internal.maven.Filenames.*;
@@ -39,31 +42,30 @@ import static org.apache.sis.internal.maven.Filenames.*;
  * file for more information.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
+ * @version 0.7
  * @since   0.3
- * @version 0.4
  * @module
- *
- * @goal pack
- * @phase install
  */
+@Mojo(name = "pack", defaultPhase = LifecyclePhase.INSTALL)
 public class BundleCreator extends AbstractMojo {
     /**
      * Project information (name, version, URL).
-     *
-     * @parameter property="project"
-     * @required
-     * @readonly
      */
+    @Parameter(property="project", required=true, readonly=true)
     private MavenProject project;
 
     /**
      * The root directory (without the "<code>target/binaries</code>" sub-directory) where JARs
      * are to be copied. It should be the directory of the root <code>pom.xml</code>.
-     *
-     * @parameter property="session.executionRootDirectory"
-     * @required
      */
+    @Parameter(property="session.executionRootDirectory", required=true)
     private String rootDirectory;
+
+    /**
+     * Invoked by reflection for creating the MOJO.
+     */
+    public BundleCreator() {
+    }
 
     /**
      * Creates the Pack200 file from the JAR files collected in the "<code>target/binaries</code>" directory.
@@ -78,7 +80,7 @@ public class BundleCreator extends AbstractMojo {
         }
         final String version = project.getVersion();
         try {
-            final Packer packer = new Packer(project.getName(), project.getUrl(), version, targetDirectory);
+            final Packer packer = new Packer(project.getName(), version, targetDirectory);
             packer.preparePack200(FINALNAME_PREFIX + version + ".jar").pack();
         } catch (IOException e) {
             throw new MojoExecutionException(e.getLocalizedMessage(), e);

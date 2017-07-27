@@ -38,8 +38,8 @@ import static org.opengis.test.Assert.*;
  * Tests {@link NetcdfStoreProvider}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.4
+ * @since   0.3
  * @module
  */
 @DependsOn({
@@ -50,7 +50,7 @@ public final strictfp class NetcdfStoreProviderTest extends IOTestCase {
      * Tests {@link NetcdfStoreProvider#probeContent(StorageConnector)} for an input stream which shall
      * be recognized as a classic NetCDF file.
      *
-     * @throws DataStoreException Should never happen.
+     * @throws DataStoreException if a logical error occurred.
      */
     @Test
     public void testProbeContentFromStream() throws DataStoreException {
@@ -66,48 +66,48 @@ public final strictfp class NetcdfStoreProviderTest extends IOTestCase {
     /**
      * Tests {@link NetcdfStoreProvider#probeContent(StorageConnector)} for a UCAR {@link NetcdfFile} object.
      *
-     * @throws IOException If an error occurred while opening the NetCDF file.
-     * @throws DataStoreException Should never happen.
+     * @throws IOException if an error occurred while opening the NetCDF file.
+     * @throws DataStoreException if a logical error occurred.
      */
     @Test
     public void testProbeContentFromUCAR() throws IOException, DataStoreException {
-        final NetcdfFile file = open(NCEP);
-        final StorageConnector c = new StorageConnector(file);
-        final NetcdfStoreProvider provider = new NetcdfStoreProvider();
-        final ProbeResult probe = provider.probeContent(c);
-        assertTrue  ("isSupported", probe.isSupported());
-        assertEquals("getMimeType", NetcdfStoreProvider.MIME_TYPE, probe.getMimeType());
-        assertNull  ("getVersion",  probe.getVersion());
-        file.close();
+        try (NetcdfFile file = open(NCEP)) {
+            final StorageConnector c = new StorageConnector(file);
+            final NetcdfStoreProvider provider = new NetcdfStoreProvider();
+            final ProbeResult probe = provider.probeContent(c);
+            assertTrue  ("isSupported", probe.isSupported());
+            assertEquals("getMimeType", NetcdfStoreProvider.MIME_TYPE, probe.getMimeType());
+            assertNull  ("getVersion",  probe.getVersion());
+        }
     }
 
     /**
      * Tests {@link NetcdfStoreProvider#decoder(WarningListeners, StorageConnector)} for an input stream which
      * shall be recognized as a classic NetCDF file. The provider shall instantiate a {@link ChannelDecoder}.
      *
-     * @throws IOException If an error occurred while opening the NetCDF file.
-     * @throws DataStoreException Should never happen.
+     * @throws IOException if an error occurred while opening the NetCDF file.
+     * @throws DataStoreException if a logical error occurred.
      */
     @Test
     public void testDecoderFromStream() throws IOException, DataStoreException {
         final StorageConnector c = new StorageConnector(IOTestCase.getResourceAsStream(NCEP));
-        final Decoder decoder = NetcdfStoreProvider.decoder(TestCase.LISTENERS, c);
-        assertInstanceOf(NCEP, ChannelDecoder.class, decoder);
-        decoder.close();
+        try (Decoder decoder = NetcdfStoreProvider.decoder(TestCase.LISTENERS, c)) {
+            assertInstanceOf(NCEP, ChannelDecoder.class, decoder);
+        }
     }
 
     /**
      * Tests {@link NetcdfStoreProvider#decoder(WarningListeners, StorageConnector)} for a UCAR
      * {@link NetcdfFile} object. The provider shall instantiate a {@link DecoderWrapper}.
      *
-     * @throws IOException If an error occurred while opening the NetCDF file.
-     * @throws DataStoreException Should never happen.
+     * @throws IOException if an error occurred while opening the NetCDF file.
+     * @throws DataStoreException if a logical error occurred.
      */
     @Test
     public void testDecoderFromUCAR() throws IOException, DataStoreException {
         final StorageConnector c = new StorageConnector(open(NCEP));
-        final Decoder decoder = NetcdfStoreProvider.decoder(TestCase.LISTENERS, c);
-        assertInstanceOf(NCEP, DecoderWrapper.class, decoder);
-        decoder.close();
+        try (Decoder decoder = NetcdfStoreProvider.decoder(TestCase.LISTENERS, c)) {
+            assertInstanceOf(NCEP, DecoderWrapper.class, decoder);
+        }
     }
 }

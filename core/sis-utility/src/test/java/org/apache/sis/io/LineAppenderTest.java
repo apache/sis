@@ -30,8 +30,8 @@ import static org.junit.Assert.*;
  * which is a problematic involved in every tests. Subclasses will test other aspects.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.4
+ * @since   0.3
  * @module
  */
 @DependsOn({
@@ -57,8 +57,8 @@ public strictfp class LineAppenderTest extends AppenderTestCase {
     /**
      * Runs the test.
      *
-     * @param  lineSeparator The line separator to use in the test strings.
-     * @throws IOException Should never happen, since we are writing in a {@link StringBuilder}.
+     * @param  lineSeparator  the line separator to use in the test strings.
+     * @throws IOException should never happen, since we are writing in a {@link StringBuilder}.
      */
     @Override
     void run(final String lineSeparator) throws IOException {
@@ -79,7 +79,7 @@ public strictfp class LineAppenderTest extends AppenderTestCase {
      * Tests a call to {@link LineAppender#flush()} interleaved between two lines,
      * where the second line begin with a tabulation.
      *
-     * @throws IOException Should never happen, since we are writing in a {@link StringBuilder}.
+     * @throws IOException should never happen, since we are writing in a {@link StringBuilder}.
      *
      * @see <a href="https://issues.apache.org/jira/browse/SIS-140">SIS-140</a>
      */

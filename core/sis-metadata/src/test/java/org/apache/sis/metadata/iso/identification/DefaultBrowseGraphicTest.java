@@ -39,8 +39,8 @@ import static java.util.Collections.singletonMap;
  * Tests {@link DefaultBrowseGraphic}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.4
  * @version 0.4
+ * @since   0.4
  * @module
  */
 public final strictfp class DefaultBrowseGraphicTest extends TestCase {
@@ -255,9 +255,11 @@ public final strictfp class DefaultBrowseGraphicTest extends TestCase {
         @Override
         public void warningOccured(final Object source, final LogRecord warning) {
             assertFalse("No other warning were expected.", receivedWarning);
-            if (verbose) {
-                // In verbose mode, log the warning for allowing the developer to
-                // check the message. In normal mode, the test will be silent.
+            if (VERBOSE) {
+                /*
+                 * In verbose mode, log the warning for allowing the developer to
+                 * check the message. In normal mode, the test will be silent.
+                 */
                 Logging.getLogger(warning.getLoggerName()).log(warning);
             }
             assertArrayEquals("FileName shall have precedence over CharacterString.",

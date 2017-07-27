@@ -16,15 +16,14 @@
  */
 package org.apache.sis.io.wkt;
 
-import javax.measure.unit.SI;
-import javax.measure.unit.NonSI;
-import org.opengis.util.CodeList;
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.metadata.extent.GeographicBoundingBox;
 import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
 import org.apache.sis.metadata.iso.extent.DefaultVerticalExtent;
 import org.apache.sis.measure.Units;
 import org.apache.sis.internal.util.X364;
+
+// Test imports
 import org.apache.sis.test.mock.VerticalCRSMock;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
@@ -37,8 +36,8 @@ import static org.apache.sis.test.MetadataAssert.*;
  * Tests the {@link Formatter} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
+ * @version 0.8
  * @since   0.4
- * @version 0.5
  * @module
  */
 @DependsOn({ConventionTest.class, SymbolsTest.class, ColorsTest.class})
@@ -53,7 +52,7 @@ public final strictfp class FormatterTest extends TestCase {
     }
 
     /**
-     * Tests (indirectly) {@link Formatter#quote(String)}.
+     * Tests (indirectly) {@link Formatter#quote(String, ElementKind)}.
      */
     @Test
     public void testQuote() {
@@ -76,7 +75,7 @@ public final strictfp class FormatterTest extends TestCase {
      */
     @Test
     public void testAppendGeographicBoundingBox() {
-        assertWktEquals(Convention.WKT2, "BBox[51.43, 2.54, 55.77, 6.40]",
+        assertWktEquals(Convention.WKT2_SIMPLIFIED, "BBox[51.43, 2.54, 55.77, 6.40]",
                 new DefaultGeographicBoundingBox(2.54, 6.40, 51.43, 55.77));
         assertWktEquals(Convention.WKT1, "BBOX[51.43, 2.54, 55.77, 6.40]",
                 new DefaultGeographicBoundingBox(2.54, 6.40, 51.43, 55.77));
@@ -88,11 +87,12 @@ public final strictfp class FormatterTest extends TestCase {
     @Test
     public void testAppendVerticalExtent() {
         final DefaultVerticalExtent extent = new DefaultVerticalExtent(102, 108, VerticalCRSMock.HEIGHT_ft);
-        assertWktEquals(Convention.WKT2, "VerticalExtent[102, 108, LengthUnit[“ft”, 0.3048]]", extent);
+        assertWktEquals(Convention.WKT2_SIMPLIFIED, "VerticalExtent[102, 108, Unit[“foot”, 0.3048]]", extent);
+        assertWktEquals(Convention.WKT2, "VERTICALEXTENT[102, 108, LENGTHUNIT[“foot”, 0.3048]]", extent);
 
         extent.setMinimumValue(100.2);
         extent.setMaximumValue(100.8);
-        assertWktEquals(Convention.WKT2, "VerticalExtent[100.2, 100.8, LengthUnit[“ft”, 0.3048]]", extent);
+        assertWktEquals(Convention.WKT2, "VERTICALEXTENT[100.2, 100.8, LENGTHUNIT[“foot”, 0.3048]]", extent);
     }
 
     /**
@@ -100,17 +100,17 @@ public final strictfp class FormatterTest extends TestCase {
      */
     @Test
     public void testAppendUnit() {
-        assertWktEquals("LengthUnit[“metre”, 1]", SI.METRE);
-        assertWktEquals("AngleUnit[“degree”, 0.017453292519943295]", NonSI.DEGREE_ANGLE);
-        assertWktEquals("ScaleUnit[“parts per million”, 1.0E-6]", Units.PPM);
+        assertWktEquals(Convention.WKT2, "LENGTHUNIT[“metre”, 1]", Units.METRE);
+        assertWktEquals(Convention.WKT2, "ANGLEUNIT[“degree”, 0.017453292519943295]", Units.DEGREE);
+        assertWktEquals(Convention.WKT2, "SCALEUNIT[“parts per million”, 1.0E-6]", Units.PPM);
 
-        assertWktEquals(Convention.WKT1, "UNIT[“metre”, 1]", SI.METRE);
-        assertWktEquals(Convention.WKT1, "UNIT[“degree”, 0.017453292519943295]", NonSI.DEGREE_ANGLE);
+        assertWktEquals(Convention.WKT1, "UNIT[“metre”, 1]", Units.METRE);
+        assertWktEquals(Convention.WKT1, "UNIT[“degree”, 0.017453292519943295]", Units.DEGREE);
         assertWktEquals(Convention.WKT1, "UNIT[“parts per million”, 1.0E-6]", Units.PPM);
     }
 
     /**
-     * Tests (indirectly) {@link Formatter#append(CodeList)}.
+     * Tests (indirectly) {@code Formatter.append(ControlledVocabulary)}.
      */
     @Test
     public void testAppendCodeList() {

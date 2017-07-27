@@ -24,6 +24,7 @@ import javax.xml.bind.annotation.XmlSeeAlso;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.citation.Contact;
 import org.apache.sis.metadata.iso.ISOMetadata;
+import org.apache.sis.metadata.TitleProperty;
 import org.apache.sis.util.iso.Types;
 
 // Branch-specific imports
@@ -35,6 +36,11 @@ import static org.opengis.annotation.Specification.ISO_19115;
 
 /**
  * Information about the individual and / or organization of the party.
+ * The following property is conditional (i.e. mandatory under some circumstances)
+ * in a well-formed metadata according ISO 19115:
+ *
+ * <div class="preformat">{@code CI_Party}
+ * {@code   └─name……} Name of the party.</div>
  *
  * <div class="warning"><b>Note on International Standard versions</b><br>
  * This class is derived from a new type defined in the ISO 19115 international standard published in 2014,
@@ -55,10 +61,12 @@ import static org.opengis.annotation.Specification.ISO_19115;
  *
  * @author  Rémi Maréchal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.5
  * @version 0.5
+ * @since   0.5
  * @module
  */
+@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
+@TitleProperty(name = "name")
 @XmlType(name = "AbstractCI_Party_Type", propOrder = {
     "name",
     "contactInfo"
@@ -94,8 +102,8 @@ public class AbstractParty extends ISOMetadata {
     /**
      * Constructs a party initialized with the specified name and contact information.
      *
-     * @param name        Name of the party, or {@code null} if none.
-     * @param contactInfo Contact information for the party, or {@code null} if none.
+     * @param name         name of the party, or {@code null} if none.
+     * @param contactInfo  contact information for the party, or {@code null} if none.
      */
     public AbstractParty(final CharSequence name, final Contact contactInfo) {
         this.name        = Types.toInternationalString(name);
@@ -107,7 +115,7 @@ public class AbstractParty extends ISOMetadata {
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
-     * @param object The metadata to copy values from, or {@code null} if none.
+     * @param  object  the metadata to copy values from, or {@code null} if none.
      */
     public AbstractParty(final AbstractParty object) {
         super(object);
@@ -120,7 +128,7 @@ public class AbstractParty extends ISOMetadata {
     /**
      * Return the name of the party.
      *
-     * @return Name of the party.
+     * @return name of the party.
      */
     @XmlElement(name = "name")
     @UML(identifier="name", obligation=CONDITIONAL, specification=ISO_19115)
@@ -131,7 +139,7 @@ public class AbstractParty extends ISOMetadata {
     /**
      * Sets the name of the party.
      *
-     * @param newValue The new name of the party.
+     * @param  newValue  the new name of the party.
      */
     public void setName(final InternationalString newValue) {
        checkWritePermission();
@@ -141,7 +149,7 @@ public class AbstractParty extends ISOMetadata {
     /**
      * Returns the contact information for the party.
      *
-     * @return Contact information for the party.
+     * @return contact information for the party.
      */
     @XmlElement(name = "contactInfo")
     @UML(identifier="contactInfo", obligation=OPTIONAL, specification=ISO_19115)
@@ -152,7 +160,7 @@ public class AbstractParty extends ISOMetadata {
     /**
      * Sets the contact information for the party.
      *
-     * @param newValues The new contact information for the party.
+     * @param  newValues  the new contact information for the party.
      */
     public void setContactInfo(final Collection<? extends Contact> newValues) {
         contactInfo = writeCollection(newValues, contactInfo, Contact.class);

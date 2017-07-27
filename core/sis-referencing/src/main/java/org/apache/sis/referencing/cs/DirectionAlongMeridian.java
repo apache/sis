@@ -18,14 +18,19 @@ package org.apache.sis.referencing.cs;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import javax.measure.unit.NonSI;
 import org.opengis.referencing.cs.AxisDirection;
 import org.apache.sis.util.iso.Types;
+import org.apache.sis.measure.Units;
 import org.apache.sis.measure.Longitude;
 import org.apache.sis.internal.util.Numerics;
-import org.apache.sis.internal.referencing.AxisDirections;
+import org.apache.sis.internal.metadata.AxisDirections;
+import org.apache.sis.internal.metadata.WKTKeywords;
+import org.apache.sis.internal.system.Modules;
 import org.apache.sis.io.wkt.FormattableObject;
 import org.apache.sis.io.wkt.Formatter;
+import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.logging.Logging;
+import org.apache.sis.util.resources.Errors;
 
 
 /**
@@ -36,14 +41,14 @@ import org.apache.sis.io.wkt.Formatter;
  * This class does not know whether the meridian is relative to Greenwich or any other reference meridian.
  * The reference meridian shall be inferred from the geodetic datum of the {@code GeographicCRS} instance
  * that contains (through its coordinate system) the axes having those directions. This is consistent with
- * ISO 19162 §7.5.4(iv) - WKT 2 formatting.
+ * ISO 19162:2015 §7.5.4(iv) - WKT 2 formatting.
  *
  * <div class="section">Immutability and thread safety</div>
  * This final class is immutable and thus inherently thread-safe.
  *
  * @author  Martin Desruisseaux (IRD)
+ * @version 0.8
  * @since   0.4
- * @version 0.4
  * @module
  */
 final class DirectionAlongMeridian extends FormattableObject implements Comparable<DirectionAlongMeridian> {
@@ -63,12 +68,8 @@ final class DirectionAlongMeridian extends FormattableObject implements Comparab
      * The base directions we are interested in.
      * Any direction not in this group will be rejected by our parser.
      */
-    private static final AxisDirection[] BASE_DIRECTIONS = {
-        AxisDirection.NORTH,
-        AxisDirection.SOUTH,
-        AxisDirection.EAST,
-        AxisDirection.WEST
-    };
+    private static final AxisDirection[] NORTH_SOUTH = {AxisDirection.NORTH, AxisDirection.SOUTH},
+                                         EAST_WEST   = {AxisDirection.EAST,  AxisDirection.WEST};
 
     /**
      * The direction. Will be created only when first needed.
@@ -83,14 +84,25 @@ final class DirectionAlongMeridian extends FormattableObject implements Comparab
     public final AxisDirection baseDirection;
 
     /**
-     * The meridian, in degrees.
+     * The meridian in degrees, relative to a unspecified (usually Greenwich) prime meridian.
+     * Meridians in the East hemisphere are positive and meridians in the West hemisphere are negative.
      */
     public final double meridian;
 
     /**
      * Creates a direction.
+     *
+     * @param  baseDirection  the base direction, which must be {@link AxisDirection#NORTH} or {@link AxisDirection#SOUTH}.
+     * @param  meridian       the meridian in degrees, relative to a unspecified (usually Greenwich) prime meridian.
+     *         Meridians in the East hemisphere are positive and meridians in the West hemisphere are negative.
      */
-    private DirectionAlongMeridian(final AxisDirection baseDirection, final double meridian) {
+    DirectionAlongMeridian(final AxisDirection baseDirection, final double meridian) {
+        ArgumentChecks.ensureNonNull("baseDirection", baseDirection);
+        if (!AxisDirection.NORTH.equals(baseDirection) && !AxisDirection.SOUTH.equals(baseDirection)) {
+            throw new IllegalArgumentException(Errors.format(
+                    Errors.Keys.IllegalArgumentValue_2, "baseDirection", baseDirection));
+        }
+        ArgumentChecks.ensureBetween("meridian", Longitude.MIN_VALUE, Longitude.MAX_VALUE, meridian);
         this.baseDirection = baseDirection;
         this.meridian      = meridian;
     }
@@ -102,7 +114,13 @@ final class DirectionAlongMeridian extends FormattableObject implements Comparab
      * for avoiding {@code DirectionAlongMeridian} initialization in the common case where it is not needed.</p>
      */
     public static DirectionAlongMeridian parse(final AxisDirection direction) {
-        final DirectionAlongMeridian candidate = parse(direction.name());
+        final DirectionAlongMeridian candidate;
+        try {
+            candidate = parse(direction.name());
+        } catch (IllegalArgumentException e) {
+            Logging.recoverableException(Logging.getLogger(Modules.REFERENCING), DirectionAlongMeridian.class, "parse", e);
+            return null;
+        }
         if (candidate != null) {
             candidate.direction = direction;
         }
@@ -112,44 +130,30 @@ final class DirectionAlongMeridian extends FormattableObject implements Comparab
     /**
      * If the specified name is a direction along some specific meridian,
      * returns information about that. Otherwise returns {@code null}.
+     *
+     * @param  name  the name to parse.
+     * @return the parsed name, or {@code null} if it is not a direction along a meridian.
+     * @throws IllegalArgumentException if the given name looks like a direction along a meridian,
+     *         but an error occurred during parsing.
      */
-    public static DirectionAlongMeridian parse(final String name) {
+    public static DirectionAlongMeridian parse(final String name) throws IllegalArgumentException {
         final Matcher m = EPSG.matcher(name);
         if (!m.matches()) {
             // Not the expected pattern.
             return null;
         }
-        String group = m.group(1);
-        final AxisDirection baseDirection = AxisDirections.find(group, BASE_DIRECTIONS);
-        if (baseDirection == null || !AxisDirection.NORTH.equals(AxisDirections.absolute(baseDirection))) {
-            // We expected "North" or "South" direction.
+        final AxisDirection baseDirection = AxisDirections.find(m.group(1), NORTH_SOUTH);
+        if (baseDirection == null) {                        // We require "North" or "South" direction.
             return null;
         }
-        group = m.group(2);
-        double meridian;
-        try {
-            meridian = Double.parseDouble(group);
-        } catch (NumberFormatException exception) {
-            // Not a legal axis direction. Just ignore the exception,
-            // since we are supposed to return 'null' in this situation.
-            return null;
-        }
-        if (!(meridian >= Longitude.MIN_VALUE && meridian <= Longitude.MAX_VALUE)) {
-            // Meridian is NaN or is not in the valid range.
-            return null;
-        }
-        group = m.group(3);
+        double meridian = Double.parseDouble(m.group(2));
+        final String group = m.group(3);
         if (group != null) {
-            final AxisDirection sgn = AxisDirections.find(group, BASE_DIRECTIONS);
-            if (sgn == null) {
+            final AxisDirection sgn = AxisDirections.find(group, EAST_WEST);
+            if (sgn == null) {                              // We require "East" or "West" direction.
                 return null;
             }
-            final AxisDirection abs = AxisDirections.absolute(sgn);
-            if (!AxisDirection.EAST.equals(abs)) {
-                // We expected "East" or "West" direction.
-                return null;
-            }
-            if (sgn != abs) {
+            if (sgn != AxisDirections.absolute(sgn)) {
                 meridian = -meridian;
             }
         }
@@ -220,8 +224,8 @@ final class DirectionAlongMeridian extends FormattableObject implements Comparab
             return c;
         }
         final double angle = angle(that);
-        if (angle < 0) return +1;  // Really the opposite sign.
-        if (angle > 0) return -1;  // Really the opposite sign.
+        if (angle < 0) return +1;               // Really the opposite sign.
+        if (angle > 0) return -1;               // Really the opposite sign.
         return 0;
     }
 
@@ -292,11 +296,13 @@ final class DirectionAlongMeridian extends FormattableObject implements Comparab
      *
      * @param  formatter The formatter where to format the inner content of this WKT element.
      * @return {@code "Meridian"}.
+     *
+     * @see <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html#40">WKT 2 specification §7.5.4</a>
      */
     @Override
     protected String formatTo(final Formatter formatter) {
         formatter.append(meridian);
-        formatter.append(NonSI.DEGREE_ANGLE);
-        return "Meridian";
+        formatter.append(Units.DEGREE);
+        return WKTKeywords.Meridian;
     }
 }

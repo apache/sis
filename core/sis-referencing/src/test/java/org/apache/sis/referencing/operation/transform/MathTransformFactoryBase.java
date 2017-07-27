@@ -39,8 +39,8 @@ import org.apache.sis.metadata.iso.citation.HardCodedCitations;
  * Implementors need to override at least one method.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.5
  * @version 0.5
+ * @since   0.5
  * @module
  */
 strictfp class MathTransformFactoryBase implements MathTransformFactory {
@@ -111,6 +111,7 @@ strictfp class MathTransformFactoryBase implements MathTransformFactory {
 
     /** Default implementation throws an exception. */
     @Override
+    @Deprecated
     public MathTransform createFromXML(String xml) throws FactoryException {
         throw new FactoryException(MESSAGE);
     }

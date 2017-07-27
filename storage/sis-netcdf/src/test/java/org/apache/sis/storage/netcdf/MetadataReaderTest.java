@@ -25,6 +25,7 @@ import org.apache.sis.internal.netcdf.IOTestCase;
 import org.apache.sis.internal.netcdf.ucar.DecoderWrapper;
 import org.apache.sis.internal.netcdf.impl.ChannelDecoderTest;
 import org.apache.sis.metadata.iso.DefaultMetadata;
+import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.test.DependsOn;
 import org.junit.Test;
 
@@ -37,8 +38,8 @@ import static org.apache.sis.test.TestUtilities.formatNameAndValue;
  * for reading NetCDF attributes.
  *
  * @author  Martin Desruisseaux (Geomatys)
+ * @version 0.8
  * @since   0.3
- * @version 0.3
  * @module
  */
 @DependsOn({
@@ -47,19 +48,26 @@ import static org.apache.sis.test.TestUtilities.formatNameAndValue;
 })
 public final strictfp class MetadataReaderTest extends IOTestCase {
     /**
+     * Tests {@link MetadataReader#split(String)}.
+     */
+    @Test
+    public void testSplit() {
+        assertArrayEquals(new String[] {"John Doe", "Foo \" Bar", "Jane Lee", "L J Smith, Jr."},
+                MetadataReader.split("John Doe, \"Foo \" Bar\" ,Jane Lee,\"L J Smith, Jr.\"").toArray());
+    }
+
+    /**
      * Reads the metadata using the NetCDF decoder embedded with SIS,
      * and compares its string representation with the expected one.
      *
-     * @throws IOException Should never happen.
+     * @throws IOException if an I/O error occurred while opening the file.
+     * @throws DataStoreException if a logical error occurred.
      */
     @Test
-    public void testEmbedded() throws IOException {
+    public void testEmbedded() throws IOException, DataStoreException {
         final Metadata metadata;
-        final Decoder input = ChannelDecoderTest.createChannelDecoder(NCEP);
-        try {
+        try (Decoder input = ChannelDecoderTest.createChannelDecoder(NCEP)) {
             metadata = new MetadataReader(input).read();
-        } finally {
-            input.close();
         }
         compareToExpected(metadata);
     }
@@ -68,16 +76,14 @@ public final strictfp class MetadataReaderTest extends IOTestCase {
      * Reads the metadata using the UCAR library and compares
      * its string representation with the expected one.
      *
-     * @throws IOException Should never happen.
+     * @throws IOException if an I/O error occurred.
+     * @throws DataStoreException if a logical error occurred.
      */
     @Test
-    public void testUCAR() throws IOException {
+    public void testUCAR() throws IOException, DataStoreException {
         final Metadata metadata;
-        final Decoder input = new DecoderWrapper(TestCase.LISTENERS, new NetcdfDataset(open(NCEP)));
-        try {
+        try (Decoder input = new DecoderWrapper(TestCase.LISTENERS, new NetcdfDataset(open(NCEP)))) {
             metadata = new MetadataReader(input).read();
-        } finally {
-            input.close();
         }
         compareToExpected(metadata);
     }
@@ -91,46 +97,35 @@ public final strictfp class MetadataReaderTest extends IOTestCase {
         assertMultilinesEquals(
             "Metadata\n" +
             "  ├─Contact\n" +
-            "  │   ├─Party\n" +
-            "  │   │   └─Name………………………………………………………………………………… NOAA/NWS/NCEP\n" +
+            "  │   ├─Individual…………………………………………………………………………… NOAA/NWS/NCEP\n" +     // TODO: actually we can not distinguish individual from organization.
             "  │   └─Role…………………………………………………………………………………………… Point of contact\n" +
             "  ├─Spatial representation info\n" +
             "  │   ├─Number of dimensions………………………………………………… 3\n" +
-            "  │   ├─Axis dimension properties (1 of 3)\n" +
-            "  │   │   ├─Dimension name……………………………………………………… Column\n" +
+            "  │   ├─Axis dimension properties (1 of 3)…………… Column\n" +
             "  │   │   └─Dimension size……………………………………………………… 73\n" +
-            "  │   ├─Axis dimension properties (2 of 3)\n" +
-            "  │   │   ├─Dimension name……………………………………………………… Row\n" +
+            "  │   ├─Axis dimension properties (2 of 3)…………… Row\n" +
             "  │   │   └─Dimension size……………………………………………………… 73\n" +
-            "  │   ├─Axis dimension properties (3 of 3)\n" +
-            "  │   │   ├─Dimension name……………………………………………………… Time\n" +
+            "  │   ├─Axis dimension properties (3 of 3)…………… Time\n" +
             "  │   │   └─Dimension size……………………………………………………… 1\n" +
             "  │   ├─Cell geometry…………………………………………………………………… Area\n" +
             "  │   └─Transformation parameter availability…… false\n" +
             "  ├─Identification info\n" +
-            "  │   ├─Citation\n" +
-            "  │   │   ├─Title……………………………………………………………………………… Sea Surface Temperature Analysis Model\n" +
-            "  │   │   ├─Date\n" +
-            "  │   │   │   ├─Date……………………………………………………………………… 2005-09-22 00:00:00\n" +
+            "  │   ├─Citation………………………………………………………………………………… Sea Surface Temperature Analysis Model\n" +
+            "  │   │   ├─Date………………………………………………………………………………… 2005-09-22 00:00:00\n" +
             "  │   │   │   └─Date type………………………………………………………… Creation\n" +
-            "  │   │   ├─Identifier\n" +
-            "  │   │   │   ├─Code……………………………………………………………………… NCEP/SST/Global_5x2p5deg/SST_Global_5x2p5deg_20050922_0000.nc\n" +
-            "  │   │   │   └─Authority\n" +
-            "  │   │   │       └─Title………………………………………………………… edu.ucar.unidata\n" +
+            "  │   │   ├─Identifier………………………………………………………………… NCEP/SST/Global_5x2p5deg/SST_Global_5x2p5deg_20050922_0000.nc\n" +
+            "  │   │   │   └─Authority………………………………………………………… edu.ucar.unidata\n" +
             "  │   │   └─Cited responsible party\n" +
-            "  │   │       ├─Party\n" +
-            "  │   │       │   └─Name…………………………………………………………… NOAA/NWS/NCEP\n" +
+            "  │   │       ├─Individual……………………………………………………… NOAA/NWS/NCEP\n" +  // TODO: actually we can not distinguish individual from organization.
             "  │   │       └─Role……………………………………………………………………… Originator\n" +
             "  │   ├─Abstract………………………………………………………………………………… NCEP SST Global 5.0 x 2.5 degree model data\n" +
             "  │   ├─Point of contact\n" +
-            "  │   │   ├─Party\n" +
-            "  │   │   │   └─Name……………………………………………………………………… NOAA/NWS/NCEP\n" +
+            "  │   │   ├─Individual………………………………………………………………… NOAA/NWS/NCEP\n" +
             "  │   │   └─Role………………………………………………………………………………… Point of contact\n" +
             "  │   ├─Descriptive keywords\n" +
             "  │   │   ├─Keyword………………………………………………………………………… EARTH SCIENCE > Oceans > Ocean Temperature > Sea Surface Temperature\n" +
             "  │   │   ├─Type………………………………………………………………………………… Theme\n" +
-            "  │   │   └─Thesaurus name\n" +
-            "  │   │       └─Title…………………………………………………………………… GCMD Science Keywords\n" +
+            "  │   │   └─Thesaurus name……………………………………………………… GCMD Science Keywords\n" +
             "  │   ├─Resource constraints\n" +
             "  │   │   └─Use limitation……………………………………………………… Freely available\n" +
             "  │   ├─Spatial representation type……………………………… Grid\n" +
@@ -146,22 +141,37 @@ public final strictfp class MetadataReaderTest extends IOTestCase {
             "  │           └─Maximum value……………………………………………… 0.0\n" +
             "  ├─Content info\n" +
             "  │   └─Attribute group\n" +
-            "  │       └─Attribute\n" +
-            "  │           ├─Sequence identifier……………………………… SST\n" +
-            "  │           ├─Units…………………………………………………………………… K\n" +
-            "  │           └─Description…………………………………………………… Sea temperature\n" +
+            "  │       └─Attribute…………………………………………………………………… SST\n" +
+            "  │           ├─Units…………………………………………………………………… K\n" +
+            "  │           ├─Description…………………………………………………… Sea temperature\n" +
+            "  │           └─Name……………………………………………………………………… sea_water_temperature\n" +
             "  ├─Data quality info\n" +
+            "  │   ├─Scope\n" +
+            "  │   │   └─Level……………………………………………………………………………… Dataset\n" +
             "  │   └─Lineage\n" +
             "  │       └─Statement…………………………………………………………………… 2003-04-07 12:12:50 - created by gribtocdl" +
             "              2005-09-26T21:50:00 - edavis - add attributes for dataset discovery\n" +
             "  ├─Metadata scope\n" +
             "  │   └─Resource scope………………………………………………………………… Dataset\n" +
-            "  ├─Metadata identifier\n" +
-            "  │   ├─Code…………………………………………………………………………………………… NCEP/SST/Global_5x2p5deg/SST_Global_5x2p5deg_20050922_0000.nc\n" +
-            "  │   └─Authority\n" +
-            "  │       └─Title……………………………………………………………………………… edu.ucar.unidata\n" +
-            "  └─Metadata standard\n" +
-            "      ├─Title………………………………………………………………………………………… ISO 19115-2 Geographic Information — Metadata Part 2: Extensions for imagery and gridded data\n" +
-            "      └─Edition…………………………………………………………………………………… ISO 19115-2:2009(E)\n", text);
+            "  ├─Metadata identifier……………………………………………………………… NCEP/SST/Global_5x2p5deg/SST_Global_5x2p5deg_20050922_0000.nc\n" +
+            "  │   └─Authority……………………………………………………………………………… edu.ucar.unidata\n" +
+            "  ├─Metadata standard (1 of 2)…………………………………………… Geographic Information — Metadata Part 1: Fundamentals\n" +
+            "  │   ├─Edition…………………………………………………………………………………… ISO 19115-1:2014(E)\n" +
+            "  │   ├─Identifier…………………………………………………………………………… 19115-1\n" +
+            "  │   │   ├─Code space………………………………………………………………… ISO\n" +
+            "  │   │   └─Version………………………………………………………………………… 2014(E)\n" +
+            "  │   ├─Cited responsible party\n" +
+            "  │   │   ├─Organisation…………………………………………………………… International Organization for Standardization\n" +
+            "  │   │   └─Role………………………………………………………………………………… Principal investigator\n" +
+            "  │   └─Presentation form………………………………………………………… Document digital\n" +
+            "  └─Metadata standard (2 of 2)…………………………………………… Geographic Information — Metadata Part 2: Extensions for imagery and gridded data\n" +
+            "      ├─Edition…………………………………………………………………………………… ISO 19115-2:2009(E)\n" +
+            "      ├─Identifier…………………………………………………………………………… 19115-2\n" +
+            "      │   ├─Code space………………………………………………………………… ISO\n" +
+            "      │   └─Version………………………………………………………………………… 2009(E)\n" +
+            "      ├─Cited responsible party\n" +
+            "      │   ├─Organisation…………………………………………………………… International Organization for Standardization\n" +
+            "      │   └─Role………………………………………………………………………………… Principal investigator\n" +
+            "      └─Presentation form………………………………………………………… Document digital\n", text);
     }
 }

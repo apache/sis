@@ -71,18 +71,19 @@ package org.apache.sis.xml;
  * }
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.3
- * @module
  *
  * @see NilReason#createNilObject(Class)
  * @see org.apache.sis.util.Numbers#valueOfNil(Class)
+ *
+ * @since 0.3
+ * @module
  */
 public interface NilObject {
     /**
      * Returns the reason why this object contains no information.
      *
-     * @return The reason why this object contains no information.
+     * @return the reason why this object contains no information.
      *
      * @see NilReason#forObject(Object)
      */

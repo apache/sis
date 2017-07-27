@@ -21,6 +21,7 @@ import org.opengis.referencing.crs.VerticalCRS;
 import org.apache.sis.internal.jaxb.gco.PropertyType;
 import org.apache.sis.internal.jaxb.Context;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.util.Classes;
 
 
 /**
@@ -60,11 +61,12 @@ import org.apache.sis.util.resources.Errors;
  *
  * @author  Guilhem Legal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
- * @version 0.3
- * @module
+ * @version 0.7
  *
  * @see org.apache.sis.internal.jaxb.AdapterReplacement
+ *
+ * @since 0.3
+ * @module
  */
 public class SC_VerticalCRS extends PropertyType<SC_VerticalCRS, VerticalCRS> {
     /**
@@ -76,7 +78,7 @@ public class SC_VerticalCRS extends PropertyType<SC_VerticalCRS, VerticalCRS> {
     /**
      * Wraps a Vertical CRS value with a {@code <gml:VerticalCRS>} element at marshalling-time.
      *
-     * @param metadata The metadata value to marshal.
+     * @param  metadata  the metadata value to marshal.
      */
     protected SC_VerticalCRS(final VerticalCRS metadata) {
         super(metadata);
@@ -85,8 +87,8 @@ public class SC_VerticalCRS extends PropertyType<SC_VerticalCRS, VerticalCRS> {
     /**
      * Returns the Vertical CRS value wrapped by a {@code <gml:VerticalCRS>} element.
      *
-     * @param value The value to marshal.
-     * @return The adapter which wraps the metadata value.
+     * @param  value  the value to marshal.
+     * @return the adapter which wraps the metadata value.
      */
     @Override
     protected SC_VerticalCRS wrap(final VerticalCRS value) {
@@ -112,11 +114,11 @@ public class SC_VerticalCRS extends PropertyType<SC_VerticalCRS, VerticalCRS> {
      *   return skip() ? null : DefaultVerticalCRS.castOrCopy(metadata);
      * }
      *
-     * @return The metadata to be marshalled.
+     * @return the metadata to be marshalled.
      */
     @XmlAnyElement(lax = true)
     public Object getElement() {
-        Context.warningOccured(Context.current(), Context.LOGGER, SC_VerticalCRS.class, "getElement",
+        Context.warningOccured(Context.current(), SC_VerticalCRS.class, "getElement",
                 Errors.class, Errors.Keys.MissingRequiredModule_1, "sis-referencing");
         return null;
     }
@@ -126,11 +128,16 @@ public class SC_VerticalCRS extends PropertyType<SC_VerticalCRS, VerticalCRS> {
      * of {@link VerticalCRS}, then this method assigns that value to the {@link #metadata} field.
      * Otherwise this method does nothing.
      *
-     * @param metadata The unmarshalled metadata.
+     * @param  crs  the unmarshalled metadata.
      */
-    public final void setElement(final Object metadata) {
-        if (metadata instanceof VerticalCRS) {
-            this.metadata = (VerticalCRS) metadata;
+    public final void setElement(final Object crs) {
+        if (crs instanceof VerticalCRS) {
+            metadata = (VerticalCRS) crs;
+            if (metadata.getCoordinateSystem() == null) incomplete("coordinateSystem");
+            if (metadata.getDatum()            == null) incomplete("verticalDatum");
+        } else {
+            Context.warningOccured(Context.current(), SC_VerticalCRS.class, "setElement", Errors.class,
+                    Errors.Keys.UnexpectedValueInElement_2, "verticalCRS", Classes.getShortClassName(crs));
         }
     }
 }

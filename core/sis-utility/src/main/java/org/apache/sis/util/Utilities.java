@@ -22,18 +22,16 @@ import java.util.Collection;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.Set;
+import java.util.Objects;
 import org.apache.sis.util.collection.CheckedContainer;
-
-// Branch-dependent imports
-import org.apache.sis.internal.jdk7.Objects;
 
 
 /**
  * Static methods for object comparisons in different ways (deeply, approximatively, <i>etc</i>).
  *
- * @author Martin Desruisseaux (IRD, Geomatys)
- * @since   0.3
+ * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 0.3
+ * @since   0.3
  * @module
  */
 public final class Utilities extends Static {
@@ -55,8 +53,8 @@ public final class Utilities extends Static {
      *
      *   <li>If the two given objects are
      *       {@linkplain org.apache.sis.referencing.crs.AbstractCRS Coordinate Reference Systems} (CRS), then a call to
-     *       <code>{@linkplain org.apache.sis.referencing.CRS#findMathTransform findMathTransform}(crs1, crs2)</code>
-     *       will return an identity transform.</li>
+     *       <code>{@linkplain org.apache.sis.referencing.CRS#findOperation findOperation}(crs1, crs2, null)</code>
+     *       will return an identity operation.</li>
      * </ul>
      *
      * If a more lenient comparison allowing slight differences in numerical values is wanted,
@@ -69,8 +67,8 @@ public final class Utilities extends Static {
      *     return deepEquals(object1, object2, ComparisonMode.IGNORE_METADATA);
      * }
      *
-     * @param  object1 The first object to compare (may be null).
-     * @param  object2 The second object to compare (may be null).
+     * @param  object1  the first object to compare (may be null).
+     * @param  object2  the second object to compare (may be null).
      * @return {@code true} if both objects are equal, ignoring metadata.
      *
      * @see #deepEquals(Object, Object, ComparisonMode)
@@ -92,8 +90,8 @@ public final class Utilities extends Static {
      *
      *   <li>If the two given objects are
      *       {@linkplain org.apache.sis.referencing.crs.AbstractCRS Coordinate Reference Systems} (CRS), then a call to
-     *       <code>{@linkplain org.apache.sis.referencing.CRS#findMathTransform findMathTransform}(crs1, crs2)</code>
-     *       will return a transform close to the identity transform.</li>
+     *       <code>{@linkplain org.apache.sis.referencing.CRS#findOperation findOperation}(crs1, crs2, null)</code>
+     *       will return an operation close to identity.</li>
      * </ul>
      *
      * <div class="section">Implementation note</div>
@@ -103,8 +101,8 @@ public final class Utilities extends Static {
      *     return deepEquals(object1, object2, ComparisonMode.APPROXIMATIVE);
      * }
      *
-     * @param  object1 The first object to compare (may be null).
-     * @param  object2 The second object to compare (may be null).
+     * @param  object1  the first object to compare (may be null).
+     * @param  object2  the second object to compare (may be null).
      * @return {@code true} if both objects are approximatively equal.
      *
      * @see #deepEquals(Object, Object, ComparisonMode)
@@ -123,9 +121,9 @@ public final class Utilities extends Static {
      *
      * <p>If both arguments are arrays or collections, then the elements are compared recursively.</p>
      *
-     * @param  object1 The first object to compare, or {@code null}.
-     * @param  object2 The second object to compare, or {@code null}.
-     * @param  mode    The strictness level of the comparison.
+     * @param  object1  the first object to compare, or {@code null}.
+     * @param  object2  the second object to compare, or {@code null}.
+     * @param  mode     the strictness level of the comparison.
      * @return {@code true} if both objects are equal for the given level of strictness.
      *
      * @see #equalsIgnoreMetadata(Object, Object)
@@ -222,8 +220,7 @@ public final class Utilities extends Static {
     }
 
     /**
-     * Compares two collections. Order are significant, unless both collections implement the
-     * {@link Set} interface.
+     * Compares two collections. Order are significant, unless both collections implement the {@link Set} interface.
      */
     private static boolean equals(final Iterable<?> object1, final Iterable<?> object2, final ComparisonMode mode) {
         final Iterator<?> it1 = object1.iterator();
@@ -250,7 +247,7 @@ public final class Utilities extends Static {
              * compared up to this point.
              */
             // Creates a copy of REMAINING elements in the first collection.
-            final LinkedList<Object> copy = new LinkedList<Object>();
+            final LinkedList<Object> copy = new LinkedList<>();
             copy.add(element1);
             while (it1.hasNext()) {
                 copy.add(it1.next());
@@ -285,9 +282,9 @@ public final class Utilities extends Static {
     /**
      * Returns an assertion error message for mismatched types.
      *
-     * @param  expected The expected type.
-     * @param  actual The actual object (not its type).
-     * @return The error message to use in assertions.
+     * @param  expected  the expected type.
+     * @param  actual    the actual object (not its type).
+     * @return the error message to use in assertions.
      */
     private static String mismatchedType(final Class<?> expected, final Object actual) {
         return "Expected " + expected + " but got " + actual.getClass();
@@ -324,8 +321,8 @@ public final class Utilities extends Static {
      * exactly as {@code Object}, not as some subtype like {@code Object[]}, {@code String} or
      * {@code float[]}. In the later cases, use the appropriate {@link Arrays} method instead.
      *
-     * @param object The object to compute hash code. May be {@code null}.
-     * @return The hash code of the given object.
+     * @param  object  the object to compute hash code. May be {@code null}.
+     * @return the hash code of the given object.
      */
     public static int deepHashCode(final Object object) {
         if (object == null) {
@@ -359,8 +356,8 @@ public final class Utilities extends Static {
      * exactly as {@code Object}, not as some subtype like {@code Object[]}, {@code Number} or
      * {@code float[]}. In the later cases, use the appropriate {@link Arrays} method instead.
      *
-     * @param object The object to format as a string. May be {@code null}.
-     * @return A string representation of the given object.
+     * @param  object  the object to format as a string. May be {@code null}.
+     * @return a string representation of the given object.
      */
     public static String deepToString(final Object object) {
         if (object instanceof Object[])  return Arrays.deepToString((Object[]) object);

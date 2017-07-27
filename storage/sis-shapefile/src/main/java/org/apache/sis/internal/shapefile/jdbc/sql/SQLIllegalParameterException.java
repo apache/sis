@@ -49,10 +49,10 @@ public class SQLIllegalParameterException extends SQLException {
      */
     public SQLIllegalParameterException(String message, String sqlStatement, File dbf, String name, String value) {
         super(message);
-        sql = sqlStatement;
-        database = dbf;
-        parameterName = name;
-        parameterValue = value;
+        this.sql = sqlStatement;
+        this.database = dbf;
+        this.parameterName = name;
+        this.parameterValue = value;
     }
 
     /**
@@ -60,7 +60,7 @@ public class SQLIllegalParameterException extends SQLException {
      * @return SQL statement or null.
      */
     public String getSQL() {
-        return sql;
+        return this.sql;
     }
 
     /**
@@ -68,7 +68,7 @@ public class SQLIllegalParameterException extends SQLException {
      * @return Parameter name.
      */
     public String geParameterName() {
-        return parameterName;
+        return this.parameterName;
     }
 
     /**
@@ -76,7 +76,7 @@ public class SQLIllegalParameterException extends SQLException {
      * @return Parameter name.
      */
     public String geParameterValue() {
-        return parameterValue;
+        return this.parameterValue;
     }
 
     /**
@@ -84,6 +84,6 @@ public class SQLIllegalParameterException extends SQLException {
      * @return Database file.
      */
     public File getDatabase() {
-        return database;
+        return this.database;
     }
 }

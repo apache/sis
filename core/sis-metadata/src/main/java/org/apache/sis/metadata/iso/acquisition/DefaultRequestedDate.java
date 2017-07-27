@@ -29,6 +29,11 @@ import static org.apache.sis.internal.metadata.MetadataUtilities.toMilliseconds;
 
 /**
  * Range of date validity.
+ * The following properties are mandatory in a well-formed metadata according ISO 19115:
+ *
+ * <div class="preformat">{@code MI_RequestedDate}
+ * {@code   ├─requestedDateOfCollection……} Preferred date and time of collection.
+ * {@code   └─latestAcceptableDate…………………} Latest date and time collection must be completed.</div>
  *
  * <p><b>Limitations:</b></p>
  * <ul>
@@ -41,10 +46,11 @@ import static org.apache.sis.internal.metadata.MetadataUtilities.toMilliseconds;
  *
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.3
+ * @since   0.3
  * @module
  */
+@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "MI_RequestedDate_Type", propOrder = {
     "requestedDateOfCollection",
     "latestAcceptableDate"
@@ -79,7 +85,7 @@ public class DefaultRequestedDate extends ISOMetadata implements RequestedDate {
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
-     * @param object The metadata to copy values from, or {@code null} if none.
+     * @param  object  the metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(RequestedDate)
      */
@@ -105,8 +111,8 @@ public class DefaultRequestedDate extends ISOMetadata implements RequestedDate {
      *       metadata contained in the given object are not recursively copied.</li>
      * </ul>
      *
-     * @param  object The object to get as a SIS implementation, or {@code null} if none.
-     * @return A SIS implementation containing the values of the given object (may be the
+     * @param  object  the object to get as a SIS implementation, or {@code null} if none.
+     * @return a SIS implementation containing the values of the given object (may be the
      *         given object itself), or {@code null} if the argument was null.
      */
     public static DefaultRequestedDate castOrCopy(final RequestedDate object) {
@@ -119,7 +125,7 @@ public class DefaultRequestedDate extends ISOMetadata implements RequestedDate {
     /**
      * Returns the preferred date and time of collection.
      *
-     * @return Preferred date and time, or {@code null}.
+     * @return preferred date and time, or {@code null}.
      */
     @Override
     @XmlElement(name = "requestedDateOfCollection", required = true)
@@ -130,7 +136,7 @@ public class DefaultRequestedDate extends ISOMetadata implements RequestedDate {
     /**
      * Sets the preferred date and time of collection.
      *
-     * @param newValue The new requested date of collection value.
+     * @param  newValue  the new requested date of collection value.
      */
     public void setRequestedDateOfCollection(final Date newValue) {
         checkWritePermission();
@@ -140,7 +146,7 @@ public class DefaultRequestedDate extends ISOMetadata implements RequestedDate {
     /**
      * Returns the latest date and time collection must be completed.
      *
-     * @return Latest date and time, or {@code null}.
+     * @return latest date and time, or {@code null}.
      */
     @Override
     @XmlElement(name = "latestAcceptableDate", required = true)
@@ -151,7 +157,7 @@ public class DefaultRequestedDate extends ISOMetadata implements RequestedDate {
     /**
      * Sets the latest date and time collection must be completed.
      *
-     * @param newValue The new latest acceptable data value.
+     * @param  newValue  the new latest acceptable data value.
      */
     public void setLatestAcceptableDate(final Date newValue) {
         checkWritePermission();

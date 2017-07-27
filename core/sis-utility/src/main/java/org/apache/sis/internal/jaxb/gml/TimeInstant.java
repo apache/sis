@@ -36,12 +36,12 @@ import org.apache.sis.internal.geoapi.temporal.Position;
  * Note that GML3 does not anymore include {@code TimeInstant} inside {@code TimePeriod}.
  *
  * @author  Guilhem Legal (Geomatys)
- * @since   0.3
  * @version 0.3
+ * @since   0.3
  * @module
  */
+@XmlType(name = "TimeInstantType")
 @XmlRootElement(name="TimeInstant")
-//@XmlType(name = "TimeInstantType") // TODO: Omitted for now for allowing external modules to define their own type.
 public final class TimeInstant extends GMLAdapter {
     /**
      * The date, optionally with its time component. The time component is omitted
@@ -64,7 +64,7 @@ public final class TimeInstant extends GMLAdapter {
     /**
      * Creates a new time instant initialized to the given value.
      *
-     * @param instant The initial instant value.
+     * @param instant  the initial instant value.
      */
     public TimeInstant(final Instant instant) {
         timePosition = toXML(instant);
@@ -101,7 +101,7 @@ public final class TimeInstant extends GMLAdapter {
     /**
      * Returns a string representation for debugging and formatting error message.
      *
-     * @return A string representation of this time instant.
+     * @return a string representation of this time instant.
      */
     @Override
     public String toString() {

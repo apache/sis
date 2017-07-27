@@ -289,6 +289,7 @@ public abstract class AbstractResultSet extends AbstractJDBC implements ResultSe
     /**
      * Unsupported by default.
      */
+    @Override
     public <T> T getObject(int columnIndex, Class<T> type) throws SQLException {
         throw unsupportedOperation("getObject", columnIndex, type);
     }

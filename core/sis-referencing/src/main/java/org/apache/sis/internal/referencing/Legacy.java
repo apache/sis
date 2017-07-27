@@ -16,13 +16,16 @@
  */
 package org.apache.sis.internal.referencing;
 
-import javax.measure.unit.SI;
+import javax.measure.Unit;
+import javax.measure.quantity.Length;
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.CartesianCS;
+import org.apache.sis.measure.Units;
 import org.apache.sis.referencing.CommonCRS;
+import org.apache.sis.referencing.cs.AxisFilter;
+import org.apache.sis.referencing.cs.CoordinateSystems;
 import org.apache.sis.referencing.cs.DefaultCartesianCS;
 import org.apache.sis.referencing.cs.DefaultCoordinateSystemAxis;
-import org.apache.sis.util.Static;
 
 import static java.util.Collections.singletonMap;
 import static org.opengis.referencing.IdentifiedObject.NAME_KEY;
@@ -32,12 +35,15 @@ import static org.opengis.referencing.IdentifiedObject.NAME_KEY;
  * Utilities related to version 1 of Well Known Text format.
  * Defined in a separated classes for reducing classes loading when not necessary.
  *
+ * <p>This class implements the {@link AxisFilter} interface for opportunistic reasons.
+ * Callers should ignore this implementation detail.</p>
+ *
  * @author  Martin Desruisseaux (Geomatys)
+ * @version 0.8
  * @since   0.4
- * @version 0.4
  * @module
  */
-public final class Legacy extends Static {
+public final class Legacy {
     /**
      * A three-dimensional Cartesian CS with the legacy set of geocentric axes.
      * OGC 01-009 defines the default geocentric axes as:
@@ -51,9 +57,9 @@ public final class Legacy extends Static {
      * the invalid names and directions for WKT 1 parsing/formatting purposes.
      */
     private static final CartesianCS LEGACY = new DefaultCartesianCS(singletonMap(NAME_KEY, "Legacy geocentric"),
-            new DefaultCoordinateSystemAxis(singletonMap(NAME_KEY, "X"), "X", AxisDirection.OTHER, SI.METRE),
-            new DefaultCoordinateSystemAxis(singletonMap(NAME_KEY, "Y"), "Y", AxisDirection.EAST,  SI.METRE),
-            new DefaultCoordinateSystemAxis(singletonMap(NAME_KEY, "Z"), "Z", AxisDirection.NORTH, SI.METRE));
+            new DefaultCoordinateSystemAxis(singletonMap(NAME_KEY, "X"), "X", AxisDirection.OTHER, Units.METRE),
+            new DefaultCoordinateSystemAxis(singletonMap(NAME_KEY, "Y"), "Y", AxisDirection.EAST,  Units.METRE),
+            new DefaultCoordinateSystemAxis(singletonMap(NAME_KEY, "Z"), "Z", AxisDirection.NORTH, Units.METRE));
 
     /**
      * Do not allow instantiation of this class.
@@ -63,23 +69,26 @@ public final class Legacy extends Static {
 
     /**
      * The standard three-dimensional Cartesian CS as defined by ISO 19111.
+     *
+     * @param  unit  the linear unit of the desired coordinate system, or {@code null} for metres.
+     * @return the ISO 19111 coordinate system.
      */
-    private static CartesianCS standard() {
-        return (CartesianCS) CommonCRS.WGS84.geocentric().getCoordinateSystem();
+    public static CartesianCS standard(final Unit<?> unit) {
+        return replaceUnit((CartesianCS) CommonCRS.WGS84.geocentric().getCoordinateSystem(), unit);
     }
 
     /**
      * Returns the axes to use instead of the ones in the given coordinate system.
      * If the coordinate system axes should be used as-is, returns {@code cs}.
      *
-     * @param  cs The coordinate system for which to compare the axis directions.
+     * @param  cs  the coordinate system for which to compare the axis directions.
      * @param  toLegacy {@code true} for replacing ISO directions by the legacy ones,
      *         or {@code false} for the other way around.
-     * @return The axes to use instead of the ones in the given CS,
+     * @return the axes to use instead of the ones in the given CS,
      *         or {@code cs} if the CS axes should be used as-is.
      */
     public static CartesianCS forGeocentricCRS(final CartesianCS cs, final boolean toLegacy) {
-        final CartesianCS check = toLegacy ? standard() : LEGACY;
+        final CartesianCS check = toLegacy ? standard(null) : LEGACY;
         final int dimension = check.getDimension();
         if (cs.getDimension() != dimension) {
             return cs;
@@ -89,6 +98,24 @@ public final class Legacy extends Static {
                 return cs;
             }
         }
-        return toLegacy ? LEGACY : standard();
+        final Unit<?> unit = ReferencingUtilities.getUnit(cs);
+        return toLegacy ? replaceUnit(LEGACY, unit) : standard(unit);
+    }
+
+    /**
+     * Returns the coordinate system of a geocentric CRS using axes in the given unit of measurement.
+     * This method presumes that the given {@code cs} uses {@link Units#METRE} (this is not verified).
+     *
+     * @param  cs    the coordinate system for which to perform the unit replacement.
+     * @param  unit  the unit of measurement for the geocentric CRS axes.
+     * @return the coordinate system for a geocentric CRS with axes using the given unit of measurement.
+     *
+     * @since 0.6
+     */
+    public static CartesianCS replaceUnit(CartesianCS cs, final Unit<?> unit) {
+        if (unit != null && !unit.equals(Units.METRE)) {
+            cs = (CartesianCS) CoordinateSystems.replaceLinearUnit(cs, unit.asType(Length.class));
+        }
+        return cs;
     }
 }

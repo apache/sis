@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.sis.index.tree;
 
 //JDK imports
@@ -422,7 +421,7 @@ public class QuadTree {
    *         point
    */
   public List<QuadTreeData> queryByBoundingBox(final Envelope2D searchRegion) {
-    Rectangle2D.Double rectArray[] = searchRegion.toRectangles();
+    Rectangle2D.Double[] rectArray = searchRegion.toRectangles();
     for (final Rectangle2D.Double r : rectArray) {
         r.x += 180;
         r.y += 90;

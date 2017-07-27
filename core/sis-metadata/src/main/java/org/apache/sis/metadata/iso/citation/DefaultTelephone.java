@@ -26,16 +26,24 @@ import org.opengis.util.CodeList;
 import org.opengis.annotation.UML;
 import org.opengis.metadata.citation.Telephone;
 import org.apache.sis.internal.util.CollectionsExt;
-import org.apache.sis.internal.geoapi.evolution.UnsupportedCodeList;
 import org.apache.sis.metadata.iso.ISOMetadata;
+import org.apache.sis.internal.metadata.Dependencies;
 
 import static org.opengis.annotation.Obligation.OPTIONAL;
 import static org.opengis.annotation.Obligation.MANDATORY;
 import static org.opengis.annotation.Specification.ISO_19115;
 
+// Branch-specific imports
+import org.apache.sis.internal.geoapi.evolution.InterimType;
+import org.apache.sis.internal.geoapi.evolution.UnsupportedCodeList;
+
 
 /**
  * Telephone numbers for contacting the responsible individual or organization.
+ * The following property is mandatory in a well-formed metadata according ISO 19115:
+ *
+ * <div class="preformat">{@code CI_Telephone}
+ * {@code   └─number……} Telephone number by which individuals can contact responsible organisation or individual.</div>
  *
  * <div class="section">Differences between versions 2003 and 2014 of ISO 19115</div>
  * For any contact having more than one telephone number, the way to organize the information
@@ -62,12 +70,14 @@ import static org.opengis.annotation.Specification.ISO_19115;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Cédric Briançon (Geomatys)
  * @author  Rémi Maréchal (Geomatys)
- * @since   0.5
  * @version 0.5
- * @module
  *
  * @see DefaultContact#getPhones()
+ *
+ * @since 0.5
+ * @module
  */
+@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "CI_Telephone_Type", propOrder = {
     "voices",
     "facsimiles"
@@ -98,8 +108,8 @@ public class DefaultTelephone extends ISOMetadata implements Telephone {
     /**
      * Constructs a telephone with the given number and type.
      *
-     * @param number     The telephone number, or {@code null}.
-     * @param numberType The type of telephone number, or {@code null}.
+     * @param number      the telephone number, or {@code null}.
+     * @param numberType  the type of telephone number, or {@code null}.
      *
      * @since 0.5
      */
@@ -113,7 +123,7 @@ public class DefaultTelephone extends ISOMetadata implements Telephone {
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
-     * @param object The metadata to copy values from, or {@code null} if none.
+     * @param  object  the metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(Telephone)
      */
@@ -144,8 +154,8 @@ public class DefaultTelephone extends ISOMetadata implements Telephone {
      *       metadata contained in the given object are not recursively copied.</li>
      * </ul>
      *
-     * @param  object The object to get as a SIS implementation, or {@code null} if none.
-     * @return A SIS implementation containing the values of the given object (may be the
+     * @param  object  the object to get as a SIS implementation, or {@code null} if none.
+     * @return a SIS implementation containing the values of the given object (may be the
      *         given object itself), or {@code null} if the argument was null.
      */
     public static DefaultTelephone castOrCopy(final Telephone object) {
@@ -158,7 +168,7 @@ public class DefaultTelephone extends ISOMetadata implements Telephone {
     /**
      * Returns the telephone number by which individuals can contact responsible organization or individual.
      *
-     * @return Telephone number by which individuals can contact responsible organization or individual.
+     * @return telephone number by which individuals can contact responsible organization or individual.
      *
      * @since 0.5
      */
@@ -171,7 +181,7 @@ public class DefaultTelephone extends ISOMetadata implements Telephone {
     /**
      * Sets the telephone number by which individuals can contact responsible organization or individual.
      *
-     * @param newValue The new telephone number by which individuals can contact responsible organization or individual.
+     * @param  newValue  the new telephone number by which individuals can contact responsible organization or individual.
      *
      * @since 0.5
      */
@@ -189,12 +199,13 @@ public class DefaultTelephone extends ISOMetadata implements Telephone {
      * when GeoAPI will provide it (tentatively in GeoAPI 3.1).
      * </div>
      *
-     * @return Type of telephone number, or {@code null} if none.
+     * @return type of telephone number, or {@code null} if none.
      *
      * @since 0.5
      */
 /// @XmlElement(name = "numberType")
     @UML(identifier="numberType", obligation=OPTIONAL, specification=ISO_19115)
+    @InterimType(UnsupportedCodeList.class)
     public CodeList<?> getNumberType() {
         return numberType;
     }
@@ -232,7 +243,7 @@ public class DefaultTelephone extends ISOMetadata implements Telephone {
      * }
      * </div>
      *
-     * @param newValue The new type of telephone number.
+     * @param  newValue  the new type of telephone number.
      *
      * @since 0.5
      */
@@ -262,7 +273,7 @@ public class DefaultTelephone extends ISOMetadata implements Telephone {
      *
      * <p>This method will be removed after we removed the deprecated public methods.</p>
      *
-     * @param  phones The collection which should contains this telephone number.
+     * @param  phones  the collection which should contains this telephone number.
      * @return {@code this}, or a copy of this instance if we conservatively choose to not modify this instance.
      */
     final DefaultTelephone setOwner(final Collection<Telephone> phones) {
@@ -287,7 +298,7 @@ public class DefaultTelephone extends ISOMetadata implements Telephone {
     final Collection<Telephone> getOwner() {
        if (owner == null) {
            if (isModifiable()) {
-               owner = new ArrayList<Telephone>(4);
+               owner = new ArrayList<>(4);
                owner.add(this);
            } else {
                owner = Collections.<Telephone>singletonList(this);
@@ -301,14 +312,15 @@ public class DefaultTelephone extends ISOMetadata implements Telephone {
      * This method searches in the {@linkplain DefaultContact#getPhones() contact phones}, if the contact that own
      * this phone is known.
      *
-     * @return Telephone numbers by which individuals can speak to the responsible organization or individual.
+     * @return telephone numbers by which individuals can speak to the responsible organization or individual.
      *
      * @deprecated As of ISO 19115:2014, replaced by a {@linkplain #getNumber() number}
-     *             with {@link TelephoneType#VOICE}.
+     *             with {@code TelephoneType.VOICE}.
      */
     @Override
     @Deprecated
     @XmlElement(name = "voice")
+    @Dependencies({"getNumber", "getNumberType"})
     public final Collection<String> getVoices() {
         return new LegacyTelephones(getOwner(), UnsupportedCodeList.VOICE);
     }
@@ -318,10 +330,10 @@ public class DefaultTelephone extends ISOMetadata implements Telephone {
      * This method writes in the {@linkplain DefaultContact#getPhones() contact phones}, if the contact that own
      * this phone is known.
      *
-     * @param newValues The new telephone numbers, or {@code null} if none.
+     * @param  newValues  the new telephone numbers, or {@code null} if none.
      *
      * @deprecated As of ISO 19115:2014, replaced by a {@linkplain #setNumber(String) number}
-     *             with {@link TelephoneType#VOICE}.
+     *             code {@code TelephoneType.VOICE}.
      */
     @Deprecated
     public void setVoices(final Collection<? extends String> newValues) {
@@ -333,14 +345,15 @@ public class DefaultTelephone extends ISOMetadata implements Telephone {
      * This method searches in the {@linkplain DefaultContact#getPhones() contact phones}, if the contact
      * that own this phone is known.
      *
-     * @return Telephone numbers of a facsimile machine for the responsible organization or individual.
+     * @return telephone numbers of a facsimile machine for the responsible organization or individual.
      *
      * @deprecated As of ISO 19115:2014, replaced by a {@linkplain #getNumber() number}
-     *             with {@link TelephoneType#FACSIMILE}.
+     *             code {@code TelephoneType.FACSIMILE}.
      */
     @Override
     @Deprecated
     @XmlElement(name = "facsimile")
+    @Dependencies({"getNumber", "getNumberType"})
     public final Collection<String> getFacsimiles() {
         return new LegacyTelephones(getOwner(), UnsupportedCodeList.FACSIMILE);
     }
@@ -350,10 +363,10 @@ public class DefaultTelephone extends ISOMetadata implements Telephone {
      * This method writes in the {@linkplain DefaultContact#getPhones() contact phones}, if the contact
      * that own this phone is known.
      *
-     * @param newValues The new telephone number, or {@code null} if none.
+     * @param  newValues  the new telephone number, or {@code null} if none.
      *
      * @deprecated As of ISO 19115:2014, replaced by a {@linkplain #setNumber(String) number}
-     *             with {@link TelephoneType#FACSIMILE}.
+     *             with {@code TelephoneType.FACSIMILE}.
      */
     @Deprecated
     public void setFacsimiles(final Collection<? extends String> newValues) {

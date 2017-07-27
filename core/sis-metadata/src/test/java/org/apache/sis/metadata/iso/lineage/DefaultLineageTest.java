@@ -33,8 +33,8 @@ import static org.apache.sis.test.Assert.*;
  * {@code "gmi"} namespace that GeoAPI merged with the object of same name in the {@code "gmd"} namespace.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.4
+ * @since   0.3
  * @module
  */
 public final strictfp class DefaultLineageTest extends XMLTestCase {
@@ -42,7 +42,7 @@ public final strictfp class DefaultLineageTest extends XMLTestCase {
      * Tests the marshalling of an {@code "gmd:LI_Source"} element, which shall become
      * {@code "gmi:LE_Source"} when some ISO 19115-2 properties are defined.
      *
-     * @throws JAXBException If an error occurred while marshalling the XML.
+     * @throws JAXBException if an error occurred while marshalling the XML.
      */
     @Test
     public void testSource() throws JAXBException {

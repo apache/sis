@@ -31,8 +31,14 @@ import org.apache.sis.internal.metadata.ReferencingServices;
 
 /**
  * Vertical domain of dataset.
+ * The following properties are mandatory in a well-formed metadata according ISO 19115:
  *
- * <p>In addition to the standard properties, SIS provides the following methods:</p>
+ * <div class="preformat">{@code EX_VerticalExtent}
+ * {@code   ├─minimumValue……} The lowest vertical extent contained in the dataset.
+ * {@code   ├─maximumValue……} The highest vertical extent contained in the dataset.
+ * {@code   └─verticalCRS………} Information about the vertical coordinate reference system to which the maximum and minimum elevation values are measured. The CRS identification includes unit of measure.</div>
+ *
+ * In addition to the standard properties, SIS provides the following methods:
  * <ul>
  *   <li>{@link #setBounds(Envelope)} for setting the extent from the given envelope.</li>
  * </ul>
@@ -49,10 +55,11 @@ import org.apache.sis.internal.metadata.ReferencingServices;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Touraïvane (IRD)
  * @author  Cédric Briançon (Geomatys)
- * @since   0.3
  * @version 0.3
+ * @since   0.3
  * @module
  */
+@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "EX_VerticalExtent_Type", propOrder = {
     "minimumValue",
     "maximumValue",
@@ -91,9 +98,9 @@ public class DefaultVerticalExtent extends ISOMetadata implements VerticalExtent
     /**
      * Creates a vertical extent initialized to the specified values.
      *
-     * @param minimumValue The lowest vertical extent contained in the dataset, or {@link Double#NaN} if none.
-     * @param maximumValue The highest vertical extent contained in the dataset, or {@link Double#NaN} if none.
-     * @param verticalCRS  The information about the vertical coordinate reference system, or {@code null}.
+     * @param minimumValue  the lowest vertical extent contained in the dataset, or {@link Double#NaN} if none.
+     * @param maximumValue  the highest vertical extent contained in the dataset, or {@link Double#NaN} if none.
+     * @param verticalCRS   the information about the vertical coordinate reference system, or {@code null}.
      */
     public DefaultVerticalExtent(final double minimumValue,
                                  final double maximumValue,
@@ -109,7 +116,7 @@ public class DefaultVerticalExtent extends ISOMetadata implements VerticalExtent
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
-     * @param object The metadata to copy values from, or {@code null} if none.
+     * @param  object  the metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(VerticalExtent)
      */
@@ -136,8 +143,8 @@ public class DefaultVerticalExtent extends ISOMetadata implements VerticalExtent
      *       metadata contained in the given object are not recursively copied.</li>
      * </ul>
      *
-     * @param  object The object to get as a SIS implementation, or {@code null} if none.
-     * @return A SIS implementation containing the values of the given object (may be the
+     * @param  object  the object to get as a SIS implementation, or {@code null} if none.
+     * @return a SIS implementation containing the values of the given object (may be the
      *         given object itself), or {@code null} if the argument was null.
      */
     public static DefaultVerticalExtent castOrCopy(final VerticalExtent object) {
@@ -150,7 +157,7 @@ public class DefaultVerticalExtent extends ISOMetadata implements VerticalExtent
     /**
      * Returns the lowest vertical extent contained in the dataset.
      *
-     * @return The lowest vertical extent, or {@code null}.
+     * @return the lowest vertical extent, or {@code null}.
      */
     @Override
     @XmlElement(name = "minimumValue", required = true)
@@ -162,7 +169,7 @@ public class DefaultVerticalExtent extends ISOMetadata implements VerticalExtent
     /**
      * Sets the lowest vertical extent contained in the dataset.
      *
-     * @param newValue The new minimum value.
+     * @param  newValue  the new minimum value.
      */
     public void setMinimumValue(final Double newValue) {
         checkWritePermission();
@@ -172,7 +179,7 @@ public class DefaultVerticalExtent extends ISOMetadata implements VerticalExtent
     /**
      * Returns the highest vertical extent contained in the dataset.
      *
-     * @return The highest vertical extent, or {@code null}.
+     * @return the highest vertical extent, or {@code null}.
      */
     @Override
     @XmlElement(name = "maximumValue", required = true)
@@ -184,7 +191,7 @@ public class DefaultVerticalExtent extends ISOMetadata implements VerticalExtent
     /**
      * Sets the highest vertical extent contained in the dataset.
      *
-     * @param newValue The new maximum value.
+     * @param  newValue  the new maximum value.
      */
     public void setMaximumValue(final Double newValue) {
         checkWritePermission();
@@ -196,7 +203,7 @@ public class DefaultVerticalExtent extends ISOMetadata implements VerticalExtent
      * which the maximum and minimum elevation values are measured.
      * The CRS identification includes unit of measure.
      *
-     * @return The vertical CRS, or {@code null}.
+     * @return the vertical CRS, or {@code null}.
      */
     @Override
     @XmlElement(name = "verticalCRS", required = true)
@@ -208,7 +215,7 @@ public class DefaultVerticalExtent extends ISOMetadata implements VerticalExtent
      * Sets the information about the vertical coordinate reference system to
      * which the maximum and minimum elevation values are measured.
      *
-     * @param newValue The new vertical CRS.
+     * @param  newValue  the new vertical CRS.
      */
     public void setVerticalCRS(final VerticalCRS newValue) {
         checkWritePermission();
@@ -222,7 +229,7 @@ public class DefaultVerticalExtent extends ISOMetadata implements VerticalExtent
      *
      * <p><b>Note:</b> this method is available only if the referencing module is on the classpath.</p>
      *
-     * @param  envelope The envelope to use for setting this vertical extent.
+     * @param  envelope  the envelope to use for setting this vertical extent.
      * @throws UnsupportedOperationException if the referencing module is not on the classpath.
      * @throws TransformException if the envelope can not be transformed to a vertical extent.
      *

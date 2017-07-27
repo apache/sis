@@ -20,6 +20,7 @@ import java.io.IOException;
 import org.apache.sis.internal.netcdf.Decoder;
 import org.apache.sis.internal.netcdf.GridGeometry;
 import org.apache.sis.internal.netcdf.GridGeometryTest;
+import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.test.DependsOn;
 
@@ -30,23 +31,29 @@ import org.apache.sis.test.DependsOn;
  * passed.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.3
+ * @since   0.3
  * @module
  */
 @DependsOn({VariableInfoTest.class, GridGeometryTest.class})
 public final strictfp class GridGeometryInfoTest extends GridGeometryTest {
     /**
      * Creates a new decoder for dataset of the given name.
+     *
+     * @return the decoder for the given name.
+     * @throws IOException if an I/O error occurred while opening the file.
+     * @throws DataStoreException if a logical error occurred.
      */
     @Override
-    protected Decoder createDecoder(final String name) throws IOException {
+    protected Decoder createDecoder(final String name) throws IOException, DataStoreException {
         return ChannelDecoderTest.createChannelDecoder(name);
     }
 
     /**
      * Unconditionally returns {@code false} since {@link ChannelDecoder}
      * supports only the classic and 64 bits NetCDF formats.
+     *
+     * @return {@code false}.
      */
     @Override
     protected boolean isSupplementalFormatSupported(final String format) {
@@ -56,6 +63,8 @@ public final strictfp class GridGeometryInfoTest extends GridGeometryTest {
     /**
      * Filters out the one-dimensional coordinate systems created by {@code GridGeometry}
      * but not by the UCAR library.
+     *
+     * @return the filtered grid geometries to test.
      */
     @Override
     protected GridGeometry[] filter(final GridGeometry[] geometries) {

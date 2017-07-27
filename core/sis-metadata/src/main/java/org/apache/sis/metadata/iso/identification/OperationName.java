@@ -22,7 +22,7 @@ import java.util.Collection;
 
 
 /**
- * An {@code OperationMetadata} placeholder to be replaced later by a reference to an other {@link OperationMetadata}.
+ * An {@code OperationMetadata} placeholder to be replaced later by a reference to an other {@code OperationMetadata}.
  * This temporary place holder is used when the operation name is unmarshalled before the actual operation definition.
  *
  * @author  Martin Desruisseaux (Geomatys)
@@ -62,7 +62,7 @@ final class OperationName extends DefaultOperationMetadata {
      * were identified only by a name in a {@code <srv:operationName>} element.</p>
      */
     static void resolve(final Collection<DefaultOperationMetadata> containsOperations, final Collection<DefaultCoupledResource> coupledResources) {
-        final Map<String,DefaultOperationMetadata> byName = new HashMap<String,DefaultOperationMetadata>();
+        final Map<String,DefaultOperationMetadata> byName = new HashMap<>();
         for (final DefaultOperationMetadata operation : containsOperations) {
             add(byName, operation.getOperationName(), operation);
         }

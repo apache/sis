@@ -17,6 +17,7 @@
 package org.apache.sis.internal.simple;
 
 import java.util.Date;
+import java.util.Objects;
 import java.util.Collection;
 import java.util.Collections;
 import java.io.Serializable;
@@ -30,16 +31,19 @@ import org.opengis.util.InternationalString;
 import org.apache.sis.util.iso.SimpleInternationalString;
 import org.apache.sis.util.Debug;
 
-// Branch-dependent imports
-import org.apache.sis.internal.jdk7.Objects;
-
 
 /**
  * A trivial implementation of {@link Citation} containing only a title.
  *
+ * <div class="note"><b>Design note:</b>
+ * we do not put more field than {@link #title} in this {@code SimpleCitation} in order to keep it simple,
+ * because the title is the only "universal" property (the need for all other fields will be determined in
+ * subclasses on a case-by-case basis) and because {@code SimpleCitation} are sometime only proxy identified
+ * by the {@link #title}.</div>
+ *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.3
+ * @since   0.3
  * @module
  */
 public class SimpleCitation implements Citation, Serializable {
@@ -51,12 +55,12 @@ public class SimpleCitation implements Citation, Serializable {
     /**
      * The title to be returned by {@link #getTitle()}.
      */
-    protected final String title;
+    public final String title;
 
     /**
-     * Creates a new object for the given name.
+     * Creates a new object for the given title.
      *
-     * @param title The title to be returned by {@link #getTitle()}.
+     * @param  title  the title to be returned by {@link #getTitle()}.
      */
     public SimpleCitation(final String title) {
         this.title = title;
@@ -65,7 +69,7 @@ public class SimpleCitation implements Citation, Serializable {
     /**
      * Returns the title as an international string.
      *
-     * @return The title given at construction time.
+     * @return the title given at construction time.
      */
     @Override
     public InternationalString getTitle() {
@@ -73,30 +77,29 @@ public class SimpleCitation implements Citation, Serializable {
     }
 
     /**
-     * Methods inherited from the {@link Citation} interface which are
-     * not of interest to this {@code SimpleCitation} implementation.
-     * Those methods will be removed in the JDK8 branch.
+     * Methods inherited from the {@link Citation} interface which are not of interest to this
+     * {@code SimpleCitation} implementation. Those methods may be removed in the JDK8 branch.
      *
-     * @return An empty list.
+     * @return an empty list.
      */
-    @Override public Collection<InternationalString>  getAlternateTitles()         {return Collections.emptyList();}
-    @Override public Collection<CitationDate>         getDates()                   {return Collections.emptyList();}
-    @Override public InternationalString              getEdition()                 {return null;}
-    @Override public Date                             getEditionDate()             {return null;}
-    @Override public Collection<? extends Identifier> getIdentifiers()             {return Collections.emptyList();}
-    @Override public Collection<ResponsibleParty>     getCitedResponsibleParties() {return Collections.emptyList();}
-    @Override public Collection<PresentationForm>     getPresentationForms()       {return Collections.emptyList();}
-    @Override public Series                           getSeries()                  {return null;}
-    @Override public InternationalString              getOtherCitationDetails()    {return null;}
-    @Override public String                           getISBN()                    {return null;}
-    @Override public String                           getISSN()                    {return null;}
+    @Override public Collection<? extends InternationalString>  getAlternateTitles()         {return Collections.emptyList();}
+    @Override public Collection<? extends CitationDate>         getDates()                   {return Collections.emptyList();}
+    @Override public InternationalString                        getEdition()                 {return null;}
+    @Override public Date                                       getEditionDate()             {return null;}
+    @Override public Collection<? extends Identifier>           getIdentifiers()             {return Collections.emptyList();}
+    @Override public Collection<? extends ResponsibleParty>     getCitedResponsibleParties() {return Collections.emptyList();}
+    @Override public Collection<PresentationForm>               getPresentationForms()       {return Collections.emptyList();}
+    @Override public Series                                     getSeries()                  {return null;}
+    @Override public InternationalString                        getOtherCitationDetails()    {return null;}
+    @Override public String                                     getISBN()                    {return null;}
+    @Override public String                                     getISSN()                    {return null;}
     @Deprecated
-    @Override public InternationalString              getCollectiveTitle()         {return null;}
+    @Override public InternationalString                        getCollectiveTitle()         {return null;}
 
     /**
      * Compares the given object with this citation for equality.
      *
-     * @param  obj The object to compare with this citation.
+     * @param  obj  the object to compare with this citation.
      * @return {@code true} if both objects are equal.
      */
     @Override
@@ -121,6 +124,6 @@ public class SimpleCitation implements Citation, Serializable {
     @Debug
     @Override
     public String toString() {
-        return "Citation[\"" + title + "\"]";
+        return "Citation[“" + title + "”]";
     }
 }

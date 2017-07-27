@@ -22,11 +22,8 @@ import java.nio.charset.UnsupportedCharsetException;
 import java.text.MessageFormat;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Objects;
 import java.util.logging.Level;
-
-// Branch-dependent imports
-import org.apache.sis.internal.jdk7.Objects;
-
 
 /**
  * The Abstract Byte Reader.
@@ -35,12 +32,12 @@ import org.apache.sis.internal.jdk7.Objects;
  * @since   0.5
  * @module
  */
-abstract class AbstractDbase3ByteReader extends CommonByteReader<InvalidDbaseFileFormatException, DbaseFileNotFoundException> implements Dbase3ByteReader {
-    /** Number of bytes in the header. */
-    protected short dbaseHeaderBytes;
+abstract class AbstractDbase3ByteReader extends CommonByteReader<SQLInvalidDbaseFileFormatException, SQLDbaseFileNotFoundException> implements Dbase3ByteReader {
+    /** First data record position, in bytes. */
+    protected short firstRecordPosition;
 
-    /** Number of bytes in the record. */
-    protected short dbaseRecordBytes;
+    /** Size of one record, in bytes. */
+    protected short recordLength;
 
     /** Reserved (dBASE IV) Filled with 00h. */
     protected byte[] reservedFiller1 = new byte[2];
@@ -89,17 +86,14 @@ abstract class AbstractDbase3ByteReader extends CommonByteReader<InvalidDbaseFil
     /** Date of last update; in YYMMDD format. */
     protected byte[] dbaseLastUpdate = new byte[3];
 
-    /** Current row rumber. */
-    protected int rowNum;
-
     /**
      * Map a dbf file.
      * @param file Database file.
-     * @throws DbaseFileNotFoundException if the DBF file has not been found.
-     * @throws InvalidDbaseFileFormatException if the database has an invalid format.
+     * @throws SQLDbaseFileNotFoundException if the DBF file has not been found.
+     * @throws SQLInvalidDbaseFileFormatException if the database has an invalid format.
      */
-    public AbstractDbase3ByteReader(File file) throws DbaseFileNotFoundException, InvalidDbaseFileFormatException {
-        super(file, InvalidDbaseFileFormatException.class, DbaseFileNotFoundException.class);
+    public AbstractDbase3ByteReader(File file) throws SQLDbaseFileNotFoundException, SQLInvalidDbaseFileFormatException {
+        super(file, SQLInvalidDbaseFileFormatException.class, SQLDbaseFileNotFoundException.class);
     }
 
     /**
@@ -107,7 +101,7 @@ abstract class AbstractDbase3ByteReader extends CommonByteReader<InvalidDbaseFil
      * @return Charset.
      */
     @Override public Charset getCharset() {
-        return charset;
+        return this.charset;
     }
 
     /**
@@ -115,34 +109,40 @@ abstract class AbstractDbase3ByteReader extends CommonByteReader<InvalidDbaseFil
      * @return Date of the last update.
      */
     @Override public Date getDateOfLastUpdate() {
-        return toDate(dbaseLastUpdate);
+        return toDate(this.dbaseLastUpdate);
+    }
+    
+    /**
+     * Returns the first record position, in bytes, in the DBase file.
+     * @return First record position.
+     */
+    @Override public short getFirstRecordPosition() {
+        return this.firstRecordPosition;
     }
 
+    /**
+     * Returns the length (in bytes) of one record in this DBase file, including the delete flag. 
+     * @return Record length.
+     */
+    @Override public short getRecordLength() {
+        return this.recordLength;
+    }
+    
     /**
      * Returns the record count.
      * @return Record count.
      */
     @Override public int getRowCount() {
-        return rowCount;
-    }
-
-    /**
-     * Returns the current record number.
-     * @return Current record number.
-     */
-    @Override public int getRowNum() {
-        return rowNum;
+        return this.rowCount;
     }
 
     /**
      * Convert the binary code page value of the Dbase 3 file to a recent Charset.
      * @param codePageBinaryValue page code binary value.
      * @return Charset.
-     * @throws InvalidDbaseFileFormatException if the binary value is not one of the standard values that the DBF file should carry : the Dbase 3
-     * file might be corrupted.
      * @throws UnsupportedCharsetException if the code page as no representation in recents Charset (legacy DOS or macintosh charsets).
      */
-    protected Charset toCharset(byte codePageBinaryValue) throws InvalidDbaseFileFormatException, UnsupportedCharsetException {
+    protected Charset toCharset(byte codePageBinaryValue) throws UnsupportedCharsetException {
         // Attempt to find a known conversion.
         String dbfCodePage = toCodePage(codePageBinaryValue);
 
@@ -156,21 +156,15 @@ abstract class AbstractDbase3ByteReader extends CommonByteReader<InvalidDbaseFil
                 case 0x97: dbfCodePage = "unsupported"; break; // eastern european macintosh
                 case 0x98: dbfCodePage = "unsupported"; break; // greek macintosh
                 case 0xC8: dbfCodePage = "unsupported"; break; // windows ee
-                default: dbfCodePage = "invalid"; break;
+                default: dbfCodePage = "unsupported"; break;
             }
         }
 
         assert dbfCodePage != null;
 
-        // If the code page is invalid, the database itself has chances to be invalid too.
-        if (dbfCodePage.equals("invalid")) {
-            String message = format(Level.WARNING, "excp.illegal_codepage", codePageBinaryValue, getFile().getAbsolutePath());
-            throw new InvalidDbaseFileFormatException(message);
-        }
-
         // If the code page cannot find a match for a more recent Charset, we wont be able to handle this DBF.
         if (dbfCodePage.equals("unsupported")) {
-            String message = format(Level.WARNING, "excp.unsupported_codepage", dbfCodePage, getFile().getAbsolutePath());
+            String message = format(Level.WARNING, "excp.unsupported_codepage", codePageBinaryValue, getFile().getAbsolutePath());
             throw new UnsupportedCharsetException(message);
         }
 
@@ -191,7 +185,7 @@ abstract class AbstractDbase3ByteReader extends CommonByteReader<InvalidDbaseFil
      */
     private String toCodePage(byte pageCodeBinaryValue) {
         // From http://trac.osgeo.org/gdal/ticket/2864
-        HashMap<Integer, String> knownConversions = new HashMap<Integer,String>();
+        HashMap<Integer, String> knownConversions = new HashMap<>();
         knownConversions.put(0x01, "cp437"); //  U.S. MS–DOS
         knownConversions.put(0x02, "cp850"); // International MS–DOS
         knownConversions.put(0x03, "cp1252"); // Windows ANSI
@@ -253,6 +247,14 @@ abstract class AbstractDbase3ByteReader extends CommonByteReader<InvalidDbaseFil
         knownConversions.put(0xcc, "cp1257"); // Baltic Windows
 
         return(knownConversions.get(pageCodeBinaryValue & 0xFF));
+    }
+    
+    /**
+     * Set a charset.
+     * @param cs Charset.
+     */
+    public void setCharset(Charset cs) {
+        this.charset = cs;
     }
 
     /**

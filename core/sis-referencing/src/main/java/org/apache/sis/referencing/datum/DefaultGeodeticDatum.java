@@ -19,6 +19,7 @@ package org.apache.sis.referencing.datum;
 import java.util.Map;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.Objects;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -26,6 +27,7 @@ import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.extent.Extent;
 import org.opengis.referencing.ReferenceIdentifier;
+import org.opengis.referencing.crs.GeodeticCRS;
 import org.opengis.referencing.datum.Ellipsoid;
 import org.opengis.referencing.datum.PrimeMeridian;
 import org.opengis.referencing.datum.GeodeticDatum;
@@ -33,19 +35,22 @@ import org.opengis.referencing.operation.Matrix;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.matrix.NoninvertibleMatrixException;
 import org.apache.sis.metadata.iso.extent.Extents;
+import org.apache.sis.internal.metadata.WKTKeywords;
+import org.apache.sis.internal.metadata.NameToIdentifier;
+import org.apache.sis.internal.metadata.MetadataUtilities;
+import org.apache.sis.internal.metadata.ReferencingServices;
 import org.apache.sis.internal.referencing.ExtentSelector;
 import org.apache.sis.internal.util.CollectionsExt;
+import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.ComparisonMode;
+import org.apache.sis.util.CharSequences;
 import org.apache.sis.io.wkt.Formatter;
 
 import static org.apache.sis.util.Utilities.deepEquals;
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 import static org.apache.sis.util.ArgumentChecks.ensureNonNullElement;
 import static org.apache.sis.internal.referencing.WKTUtilities.toFormattable;
-
-// Branch-dependent imports
-import org.apache.sis.internal.jdk7.Objects;
 
 
 /**
@@ -98,10 +103,10 @@ import org.apache.sis.internal.jdk7.Objects;
  *       {@link org.apache.sis.referencing.CommonCRS#datum()}.</li>
  *   <li>Create a {@code GeodeticDatum} from an identifier in a database by invoking
  *       {@link org.opengis.referencing.datum.DatumAuthorityFactory#createGeodeticDatum(String)}.</li>
- *   <li>Create a {@code GeodeticDatum} by invoking the {@code createGeodeticDatum(…)}
- *       method defined in the {@link org.opengis.referencing.datum.DatumFactory} interface.</li>
+ *   <li>Create a {@code GeodeticDatum} by invoking the {@code DatumFactory.createGeodeticDatum(…)} method
+ *       (implemented for example by {@link org.apache.sis.referencing.factory.GeodeticObjectFactory}).</li>
  *   <li>Create a {@code DefaultGeodeticDatum} by invoking the
- *       {@link #DefaultGeodeticDatum(Map, Ellipsoid, PrimeMeridian) constructor}.</li>
+ *       {@linkplain #DefaultGeodeticDatum(Map, Ellipsoid, PrimeMeridian) constructor}.</li>
  * </ol>
  *
  * <b>Example:</b> the following code gets a <cite>World Geodetic System 1984</cite> datum:
@@ -117,13 +122,15 @@ import org.apache.sis.internal.jdk7.Objects;
  * constants.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.4
- * @version 0.5
- * @module
+ * @version 0.7
  *
  * @see DefaultEllipsoid
  * @see DefaultPrimeMeridian
  * @see org.apache.sis.referencing.CommonCRS#datum()
+ * @see org.apache.sis.referencing.factory.GeodeticAuthorityFactory#createGeodeticDatum(String)
+ *
+ * @since 0.4
+ * @module
  */
 @XmlType(name = "GeodeticDatumType", propOrder = {
     "primeMeridian",
@@ -140,7 +147,7 @@ public class DefaultGeodeticDatum extends AbstractDatum implements GeodeticDatum
      * The <code>{@value #BURSA_WOLF_KEY}</code> property for
      * {@linkplain #getBursaWolfParameters() Bursa-Wolf parameters}.
      */
-    public static final String BURSA_WOLF_KEY = "bursaWolf";
+    public static final String BURSA_WOLF_KEY = ReferencingServices.BURSA_WOLF_KEY;
 
     /**
      * The array to be returned by {@link #getBursaWolfParameters()} when there is no Bursa-Wolf parameters.
@@ -149,31 +156,28 @@ public class DefaultGeodeticDatum extends AbstractDatum implements GeodeticDatum
 
     /**
      * The ellipsoid.
+     *
+     * <p><b>Consider this field as final!</b>
+     * This field is modified only at unmarshalling time by {@link #setEllipsoid(Ellipsoid)}</p>
+     *
+     * @see #getEllipsoid()
      */
-    @XmlElement
-    private final Ellipsoid ellipsoid;
+    private Ellipsoid ellipsoid;
 
     /**
      * The prime meridian.
+     *
+     * <p><b>Consider this field as final!</b>
+     * This field is modified only at unmarshalling time by {@link #setPrimeMeridian(PrimeMeridian)}</p>
+     *
+     * @see #getPrimeMeridian()
      */
-    @XmlElement
-    private final PrimeMeridian primeMeridian;
+    private PrimeMeridian primeMeridian;
 
     /**
      * Bursa-Wolf parameters for datum shifts, or {@code null} if none.
      */
     private final BursaWolfParameters[] bursaWolf;
-
-    /**
-     * Constructs a new datum in which every attributes are set to a null value.
-     * <strong>This is not a valid object.</strong> This constructor is strictly
-     * reserved to JAXB, which will assign values to the fields using reflexion.
-     */
-    private DefaultGeodeticDatum() {
-        ellipsoid     = null;
-        primeMeridian = null;
-        bursaWolf     = null;
-    }
 
     /**
      * Creates a geodetic datum from the given properties. The properties map is given
@@ -238,9 +242,18 @@ public class DefaultGeodeticDatum extends AbstractDatum implements GeodeticDatum
      *   </tr>
      * </table>
      *
-     * @param properties    The properties to be given to the identified object.
-     * @param ellipsoid     The ellipsoid.
-     * @param primeMeridian The prime meridian.
+     * If Bursa-Wolf parameters are specified, then the prime meridian of their
+     * {@linkplain BursaWolfParameters#getTargetDatum() target datum} shall be either the same than the
+     * {@code primeMeridian} given to this constructor, or Greenwich. This restriction is for avoiding
+     * ambiguity about whether the longitude rotation shall be applied before or after the datum shift.
+     * If the target prime meridian is Greenwich, then the datum shift will be applied in a coordinate
+     * system having Greenwich as the prime meridian.
+     *
+     * @param  properties     the properties to be given to the identified object.
+     * @param  ellipsoid      the ellipsoid.
+     * @param  primeMeridian  the prime meridian.
+     *
+     * @see org.apache.sis.referencing.factory.GeodeticObjectFactory#createGeodeticDatum(Map, Ellipsoid, PrimeMeridian)
      */
     public DefaultGeodeticDatum(final Map<String,?> properties,
                                 final Ellipsoid     ellipsoid,
@@ -258,7 +271,7 @@ public class DefaultGeodeticDatum extends AbstractDatum implements GeodeticDatum
                 BursaWolfParameters param = bursaWolf[i];
                 ensureNonNullElement("bursaWolf", i, param);
                 param = param.clone();
-                param.verify();
+                param.verify(primeMeridian);
                 bursaWolf[i] = param;
             }
         }
@@ -271,7 +284,7 @@ public class DefaultGeodeticDatum extends AbstractDatum implements GeodeticDatum
      *
      * <p>This constructor performs a shallow copy, i.e. the properties are not cloned.</p>
      *
-     * @param datum The datum to copy.
+     * @param  datum  the datum to copy.
      *
      * @see #castOrCopy(GeodeticDatum)
      */
@@ -289,8 +302,8 @@ public class DefaultGeodeticDatum extends AbstractDatum implements GeodeticDatum
      * Otherwise if the given object is already a SIS implementation, then the given object is returned unchanged.
      * Otherwise a new SIS implementation is created and initialized to the attribute values of the given object.
      *
-     * @param  object The object to get as a SIS implementation, or {@code null} if none.
-     * @return A SIS implementation containing the values of the given object (may be the
+     * @param  object  the object to get as a SIS implementation, or {@code null} if none.
+     * @return a SIS implementation containing the values of the given object (may be the
      *         given object itself), or {@code null} if the argument was null.
      */
     public static DefaultGeodeticDatum castOrCopy(final GeodeticDatum object) {
@@ -317,9 +330,10 @@ public class DefaultGeodeticDatum extends AbstractDatum implements GeodeticDatum
     /**
      * Returns the ellipsoid given at construction time.
      *
-     * @return The ellipsoid.
+     * @return the ellipsoid.
      */
     @Override
+    @XmlElement(name = "ellipsoid", required = true)
     public Ellipsoid getEllipsoid() {
         return ellipsoid;
     }
@@ -327,9 +341,10 @@ public class DefaultGeodeticDatum extends AbstractDatum implements GeodeticDatum
     /**
      * Returns the prime meridian given at construction time.
      *
-     * @return The prime meridian.
+     * @return the prime meridian.
      */
     @Override
+    @XmlElement(name = "primeMeridian", required = true)
     public PrimeMeridian getPrimeMeridian() {
         return primeMeridian;
     }
@@ -338,8 +353,9 @@ public class DefaultGeodeticDatum extends AbstractDatum implements GeodeticDatum
      * Returns all Bursa-Wolf parameters specified in the {@code properties} map at construction time.
      * See class javadoc for a discussion about Bursa-Wolf parameters.
      *
-     * @return The Bursa-Wolf parameters, or an empty array if none.
+     * @return the Bursa-Wolf parameters, or an empty array if none.
      */
+    @SuppressWarnings("ReturnOfCollectionOrArrayField")
     public BursaWolfParameters[] getBursaWolfParameters() {
         if (bursaWolf == null) {
             return EMPTY_ARRAY;
@@ -358,12 +374,21 @@ public class DefaultGeodeticDatum extends AbstractDatum implements GeodeticDatum
      * 1033 – <cite>Position Vector transformation (geocentric domain)</cite>, or
      * 1053 – <cite>Time-dependent Position Vector transformation</cite>.
      *
-     * <p>If this datum and the given {@code targetDatum} do not use the same
-     * {@linkplain #getPrimeMeridian() prime meridian}, then it is caller's responsibility
-     * to apply longitude rotation before to use the matrix returned by this method.</p>
+     * <p>If this datum and the given {@code targetDatum} do not use the same {@linkplain #getPrimeMeridian() prime meridian},
+     * then it is caller's responsibility to to apply longitude rotation before to use the matrix returned by this method.
+     * The target prime meridian should be Greenwich (see {@linkplain #DefaultGeodeticDatum(Map, Ellipsoid, PrimeMeridian)
+     * constructor javadoc}), in which case the datum shift should be applied in a geocentric coordinate system having
+     * Greenwich as the prime meridian.</p>
      *
-     * <div class="section">Search order</div>
-     * This method performs the search in the following order:
+     * <div class="note"><b>Note:</b>
+     * in EPSG dataset version 8.9, all datum shifts that can be represented by this method use Greenwich as the
+     * prime meridian, both in source and target datum.</div>
+     *
+     * <div class="section">Search criterion</div>
+     * If the given {@code areaOfInterest} is non-null and contains at least one geographic bounding box, then this
+     * method ignores any Bursa-Wolf parameters having a {@linkplain BursaWolfParameters#getDomainOfValidity() domain
+     * of validity} that does not intersect the given geographic extent.
+     * This method performs the search among the remaining parameters in the following order:
      * <ol>
      *   <li>If this {@code GeodeticDatum} contains {@code BursaWolfParameters} having the given
      *       {@linkplain BursaWolfParameters#getTargetDatum() target datum} (ignoring metadata),
@@ -384,15 +409,15 @@ public class DefaultGeodeticDatum extends AbstractDatum implements GeodeticDatum
      * then the instant located midway between start and end time will be taken as the date where to evaluate the
      * Bursa-Wolf parameters. This is relevant only to {@linkplain TimeDependentBWP time-dependent parameters}.
      *
-     * @param  targetDatum The target datum.
-     * @param  areaOfInterest The geographic and temporal extent where the transformation should be valid, or {@code null}.
-     * @return An affine transform from {@code this} to {@code target} in geocentric space, or {@code null} if none.
+     * @param  targetDatum     the target datum.
+     * @param  areaOfInterest  the geographic and temporal extent where the transformation should be valid, or {@code null}.
+     * @return an affine transform from {@code this} to {@code target} in geocentric space, or {@code null} if none.
      *
      * @see BursaWolfParameters#getPositionVectorTransformation(Date)
      */
     public Matrix getPositionVectorTransformation(final GeodeticDatum targetDatum, final Extent areaOfInterest) {
         ensureNonNull("targetDatum", targetDatum);
-        final ExtentSelector<BursaWolfParameters> selector = new ExtentSelector<BursaWolfParameters>(areaOfInterest);
+        final ExtentSelector<BursaWolfParameters> selector = new ExtentSelector<>(areaOfInterest);
         BursaWolfParameters candidate = select(targetDatum, selector);
         if (candidate != null) {
             return createTransformation(candidate, areaOfInterest);
@@ -411,7 +436,8 @@ public class DefaultGeodeticDatum extends AbstractDatum implements GeodeticDatum
                  * is defined in such a way that matrix should always be invertible. If it happen anyway,
                  * returning 'null' is allowed by this method's contract.
                  */
-                Logging.unexpectedException(DefaultGeodeticDatum.class, "getPositionVectorTransformation", e);
+                Logging.unexpectedException(Logging.getLogger(Loggers.COORDINATE_OPERATION),
+                        DefaultGeodeticDatum.class, "getPositionVectorTransformation", e);
             }
         }
         /*
@@ -438,7 +464,7 @@ public class DefaultGeodeticDatum extends AbstractDatum implements GeodeticDatum
          * not a subclass of BursaWolfParameters. This optimisation covers the vast majority of cases.
          */
         return bursaWolf.getPositionVectorTransformation(bursaWolf.getClass() != BursaWolfParameters.class ?
-                Extents.getDate(areaOfInterest, 0.5) : null); // 0.5 is for choosing midway instant.
+                Extents.getDate(areaOfInterest, 0.5) : null);       // 0.5 is for choosing midway instant.
     }
 
     /**
@@ -457,18 +483,69 @@ public class DefaultGeodeticDatum extends AbstractDatum implements GeodeticDatum
     }
 
     /**
+     * Returns {@code true} if either the {@linkplain #getName() primary name} or at least
+     * one {@linkplain #getAlias() alias} matches the given string according heuristic rules.
+     * This method implements the flexibility documented in the
+     * {@linkplain AbstractDatum#isHeuristicMatchForName(String) super-class}. In particular,
+     * this method ignores the prime meridian name if that name is found between parenthesis in the datum name.
+     * The meridian can be safely ignored in the datum name because the {@link PrimeMeridian} object is already
+     * compared by the {@link #equals(Object)} method.
+     *
+     * <div class="note"><b>Example:</b>
+     * if the datum name is <cite>"Nouvelle Triangulation Française (Paris)"</cite> and the prime meridian name is
+     * <cite>"Paris"</cite>, then this method compares only the <cite>"Nouvelle Triangulation Française"</cite> part.
+     * </div>
+     *
+     * <div class="section">Future evolutions</div>
+     * This method implements heuristic rules learned from experience while trying to provide inter-operability
+     * with different data producers. Those rules may be adjusted in any future SIS version according experience
+     * gained while working with more data producers.
+     *
+     * @param  name  the name to compare.
+     * @return {@code true} if the primary name or at least one alias matches the specified {@code name}.
+     *
+     * @since 0.7
+     */
+    @Override
+    public boolean isHeuristicMatchForName(final String name) {
+        final String meridian = primeMeridian.getName().getCode();
+        return NameToIdentifier.isHeuristicMatchForName(super.getName(), super.getAlias(), name, new Simplifier() {
+            @Override protected CharSequence apply(CharSequence name) {
+                name = super.apply(name);
+                int lower = CharSequences.indexOf(name, meridian, 0, name.length()) - 1;
+                if (lower >= 0 && name.charAt(lower) == '(') {
+                    int upper = lower + meridian.length() + 1;
+                    if (upper < name.length() && name.charAt(upper) == ')') {
+                        lower = CharSequences.skipTrailingWhitespaces(name, 0, lower);
+                        while (lower > 0) {
+                            final int c = Character.codePointBefore(name, lower);
+                            if (Character.isLetterOrDigit(c)) {
+                                // Remove the meridian name only if it is not at the beginning of the name.
+                                name = new StringBuilder(name).delete(lower, upper+1).toString();
+                                break;
+                            }
+                            lower -= Character.charCount(c);
+                        }
+                    }
+                }
+                return name;
+            }
+        });
+    }
+
+    /**
      * Compare this datum with the specified object for equality.
      *
-     * @param  object The object to compare to {@code this}.
-     * @param  mode {@link ComparisonMode#STRICT STRICT} for performing a strict comparison, or
-     *         {@link ComparisonMode#IGNORE_METADATA IGNORE_METADATA} for comparing only properties
-     *         relevant to coordinate transformations.
+     * @param  object  the object to compare to {@code this}.
+     * @param  mode    {@link ComparisonMode#STRICT STRICT} for performing a strict comparison, or
+     *                 {@link ComparisonMode#IGNORE_METADATA IGNORE_METADATA} for comparing only
+     *                 properties relevant to coordinate transformations.
      * @return {@code true} if both objects are equal.
      */
     @Override
     public boolean equals(final Object object, final ComparisonMode mode) {
         if (object == this) {
-            return true; // Slight optimization.
+            return true;                                // Slight optimization.
         }
         if (!super.equals(object, mode)) {
             return false;
@@ -485,14 +562,10 @@ public class DefaultGeodeticDatum extends AbstractDatum implements GeodeticDatum
                 return deepEquals(getEllipsoid(),     that.getEllipsoid(),     mode) &&
                        deepEquals(getPrimeMeridian(), that.getPrimeMeridian(), mode);
                 /*
-                 * HACK: We do not consider Bursa-Wolf parameters as a non-metadata field.
-                 *       This is needed in order to get equalsIgnoreMetadata(...) to returns
-                 *       'true' when comparing the WGS84 constant in this class with a WKT
-                 *       DATUM element with a TOWGS84[0,0,0,0,0,0,0] element. Furthermore,
-                 *       the Bursa-Wolf parameters are not part of ISO 19111 specification.
-                 *       We don't want two CRS to be considered as different because one has
-                 *       more of those transformation informations (which is nice, but doesn't
-                 *       change the CRS itself).
+                 * Bursa-Wolf parameters are considered ignorable metadata. This is needed in order to get
+                 * equalsIgnoreMetadata(…) to return true when comparing WGS84 datums with and without the
+                 * WKT 1 "TOWGS84[0,0,0,0,0,0,0]" element. Furthermore those Bursa-Wolf parameters are not
+                 * part of ISO 19111 specification.
                  */
             }
         }
@@ -503,7 +576,7 @@ public class DefaultGeodeticDatum extends AbstractDatum implements GeodeticDatum
      * See {@link org.apache.sis.referencing.AbstractIdentifiedObject#computeHashCode()}
      * for more information.
      *
-     * @return The hash code value. This value may change in any future Apache SIS version.
+     * @return the hash code value. This value may change in any future Apache SIS version.
      */
     @Override
     protected long computeHashCode() {
@@ -533,14 +606,17 @@ public class DefaultGeodeticDatum extends AbstractDatum implements GeodeticDatum
      * Note that the {@linkplain #getPrimeMeridian() prime meridian} shall be formatted by the caller
      * as a separated element after the geodetic datum (for compatibility with WKT 1).
      *
-     * @return {@code "Datum"}.
+     * @return {@code "Datum"} or {@code "GeodeticDatum"}.
+     *
+     * @see <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html#51">WKT 2 specification §8.2</a>
      */
     @Override
     protected String formatTo(final Formatter formatter) {
         super.formatTo(formatter);
         formatter.newLine();
         formatter.append(toFormattable(getEllipsoid()));
-        if (formatter.getConvention().majorVersion() == 1) {
+        final boolean isWKT1 = formatter.getConvention().majorVersion() == 1;
+        if (isWKT1) {
             /*
              * Note that at the different of other datum (in particular vertical datum),
              * WKT of geodetic datum do not have a numerical code for the datum type.
@@ -555,8 +631,76 @@ public class DefaultGeodeticDatum extends AbstractDatum implements GeodeticDatum
                 }
             }
         }
-        // For the WKT 2 case, the ANCHOR[…] element is added by Formatter itself.
-        formatter.newLine(); // For writing the ID[…] element on its own line.
-        return "Datum";
+        /*
+         * For the WKT 2 case, the ANCHOR[…] element is added by Formatter itself.
+         */
+        formatter.newLine();                            // For writing the ID[…] element on its own line.
+        if (!isWKT1) {
+            /*
+             * In WKT 2, both "Datum" and "GeodeticDatum" keywords are permitted. The standard recommends
+             * to use "Datum" for simplicity. We will follow this advice when the Datum element is inside
+             * a GeodeticCRS element since the "Geodetic" aspect is more obvious in such case. But if the
+             * Datum appears in another context, then we will use "GeodeticDatum" for clarity.
+             */
+            if (!(formatter.getEnclosingElement(1) instanceof GeodeticCRS)) {
+                return formatter.shortOrLong(WKTKeywords.Datum, WKTKeywords.GeodeticDatum);
+            }
+        }
+        return WKTKeywords.Datum;
+    }
+
+
+
+
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+    ////////                                                                                  ////////
+    ////////                               XML support with JAXB                              ////////
+    ////////                                                                                  ////////
+    ////////        The following methods are invoked by JAXB using reflection (even if       ////////
+    ////////        they are private) or are helpers for other methods invoked by JAXB.       ////////
+    ////////        Those methods can be safely removed if Geographic Markup Language         ////////
+    ////////        (GML) support is not needed.                                              ////////
+    ////////                                                                                  ////////
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Constructs a new datum in which every attributes are set to a null value.
+     * <strong>This is not a valid object.</strong> This constructor is strictly
+     * reserved to JAXB, which will assign values to the fields using reflexion.
+     */
+    private DefaultGeodeticDatum() {
+        bursaWolf = null;
+        /*
+         * Ellipsoid and PrimeMeridian are mandatory for SIS working. We do not verify their presence here
+         * (because the verification would have to be done in an 'afterMarshal(…)' method and throwing an
+         * exception in that method causes the whole unmarshalling to fail). But the CD_GeodeticDatum
+         * adapter does some verifications.
+         */
+    }
+
+    /**
+     * Invoked by JAXB only at unmarshalling time.
+     *
+     * @see #getEllipsoid()
+     */
+    private void setEllipsoid(final Ellipsoid value) {
+        if (ellipsoid == null) {
+            ellipsoid = value;
+        } else {
+            MetadataUtilities.propertyAlreadySet(DefaultGeodeticDatum.class, "setEllipsoid", "ellipsoid");
+        }
+    }
+
+    /**
+     * Invoked by JAXB only at unmarshalling time.
+     *
+     * @see #getPrimeMeridian()
+     */
+    private void setPrimeMeridian(final PrimeMeridian value) {
+        if (primeMeridian == null) {
+            primeMeridian = value;
+        } else {
+            MetadataUtilities.propertyAlreadySet(DefaultGeodeticDatum.class, "setPrimeMeridian", "primeMeridian");
+        }
     }
 }

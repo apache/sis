@@ -24,6 +24,10 @@ import java.util.List;
 import org.apache.maven.model.Resource;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
+import org.apache.maven.plugins.annotations.Mojo;
+import org.apache.maven.plugins.annotations.Component;
+import org.apache.maven.plugins.annotations.Parameter;
+import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.util.Scanner;
 import org.sonatype.plexus.build.incremental.BuildContext;
@@ -38,13 +42,11 @@ import static org.apache.sis.util.resources.IndexedResourceCompiler.PROPERTIES_E
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Olivier Nouguier (Geomatys)
+ * @version 0.7
  * @since   0.3
- * @version 0.5
  * @module
- *
- * @goal compile-resources
- * @phase generate-resources
  */
+@Mojo(name = "compile-resources", defaultPhase = LifecyclePhase.GENERATE_RESOURCES)
 public class ResourceCompilerMojo extends AbstractMojo implements FilenameFilter {
     /**
      * Pattern to filter properties files that were modified.
@@ -53,11 +55,8 @@ public class ResourceCompilerMojo extends AbstractMojo implements FilenameFilter
 
     /**
      * Project information (name, version, URL).
-     *
-     * @parameter property="project"
-     * @required
-     * @readonly
      */
+    @Parameter(property="project", required=true, readonly=true)
     private MavenProject project;
 
     /**
@@ -65,18 +64,14 @@ public class ResourceCompilerMojo extends AbstractMojo implements FilenameFilter
      * When Maven is run from the command line, this object does nothing.
      *
      * @see <a href="http://wiki.eclipse.org/M2E_compatible_maven_plugins">M2E compatible maven plugins</a>
-     *
-     * @component
      */
+    @Component
     private BuildContext buildContext;
 
     /**
      * The source directories containing the sources to be compiled.
-     *
-     * @parameter property="project.compileSourceRoots"
-     * @required
-     * @readonly
      */
+    @Parameter(property="project.compileSourceRoots", required=true, readonly=true)
     private List<String> compileSourceRoots;
 
     /**
@@ -88,10 +83,8 @@ public class ResourceCompilerMojo extends AbstractMojo implements FilenameFilter
      * (for resources), such separation seems of limited use since the resources are copied verbatim in the JAR
      * file, so preventing clash in the <code>generated-resources</code> directory would not prevent clash in
      * the JAR file anyway.</p>
-     *
-     * @parameter default-value="${project.build.directory}/generated-resources"
-     * @required
      */
+    @Parameter(defaultValue="${project.build.directory}/generated-resources", required=true)
     private File outputDirectory;
 
     /**
@@ -162,7 +155,7 @@ public class ResourceCompilerMojo extends AbstractMojo implements FilenameFilter
     private int processAllResourceDirectories(final File directory) throws ResourceCompilerException {
         int errors = 0;
         final File[] subdirs = directory.listFiles();
-        if (subdirs != null) { // Appears to be sometime null with auto-generated sub-directories.
+        if (subdirs != null) {                  // Appears to be sometime null with auto-generated sub-directories.
             for (final File subdir : subdirs) {
                 if (subdir.isDirectory()) {
                     File[] resourcesToProcess = subdir.listFiles(this);
@@ -184,8 +177,8 @@ public class ResourceCompilerMojo extends AbstractMojo implements FilenameFilter
     /**
      * Accepts all {@code "*.properties"} files.
      *
-     * @param directory The directory.
-     * @param name The file name.
+     * @param  directory  the directory.
+     * @param  name       the file name.
      * @return {@code true} if the given file is a property file.
      */
     @Override
@@ -212,8 +205,8 @@ public class ResourceCompilerMojo extends AbstractMojo implements FilenameFilter
      *   <li>{@code "Messages.properties"}</li>
      * </ul>
      *
-     * @param  resourcesToProcess The files to filter. This array will be overwritten in-place.
-     * @return Number of valid elements in the {@code resourcesToProcess} after this method completion.
+     * @param  resourcesToProcess  the files to filter. This array will be overwritten in-place.
+     * @return number of valid elements in the {@code resourcesToProcess} after this method completion.
      */
     static int filterLanguages(final File[] resourcesToProcess) {
         int count = 0;
@@ -229,8 +222,10 @@ public class ResourceCompilerMojo extends AbstractMojo implements FilenameFilter
                         break;
                     }
                 }
-                // Accepts the property file only if we found at least one language.
-                // Example: "Messages.properties" and "Messages_en.properties".
+                /*
+                 * Accepts the property file only if we found at least one language.
+                 * Example: "Messages.properties" and "Messages_en.properties".
+                 */
                 if (i - fileIndex >= 2) {
                     resourcesToProcess[count++] = file;
                 }
@@ -243,9 +238,9 @@ public class ResourceCompilerMojo extends AbstractMojo implements FilenameFilter
      * Converts the given property files into Java source file, provided that the later exists.
      * The given array is overwritten in place.
      *
-     * @param  resourcesToProcess The filtered resource files, as returned by {@link #filterLanguages(File[])}.
-     * @param  count Number of valid elements in {@code resourcesToProcess}.
-     * @return Number of valid elements after this method completion.
+     * @param  resourcesToProcess  the filtered resource files, as returned by {@link #filterLanguages(File[])}.
+     * @param  count  number of valid elements in {@code resourcesToProcess}.
+     * @return number of valid elements after this method completion.
      */
     private static int toJavaSourceFiles(final File[] resourcesToProcess, final int count) {
         int n = 0;
@@ -266,7 +261,7 @@ public class ResourceCompilerMojo extends AbstractMojo implements FilenameFilter
      * A resource compiler that delegates the messages to the Mojo logger.
      */
     private final class Compiler extends IndexedResourceCompiler {
-        public Compiler(File[] resourcesToProcess) {
+        Compiler(File[] resourcesToProcess) {
             super(javaDirectoryFile, outputDirectory, resourcesToProcess);
         }
 

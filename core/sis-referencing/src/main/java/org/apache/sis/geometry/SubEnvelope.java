@@ -33,8 +33,8 @@ import static org.apache.sis.util.ArgumentChecks.ensureValidIndexRange;
  * only the internal array is shared.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.3
+ * @since   0.3
  * @module
  */
 final class SubEnvelope extends GeneralEnvelope {
@@ -62,9 +62,9 @@ final class SubEnvelope extends GeneralEnvelope {
      * reference directly; it does <strong>not</strong> clone the given array. This is the desired
      * behavior for allowing the {@code SubEnvelope} view to be "live".
      *
-     * @param ordinates  The array of ordinate values to store directly (not cloned).
-     * @param beginIndex The index of the first valid ordinate value of the lower corner in the ordinates array.
-     * @param endIndex   The index after the last valid ordinate value of the lower corner in the ordinates array.
+     * @param ordinates   the array of ordinate values to store directly (not cloned).
+     * @param beginIndex  the index of the first valid ordinate value of the lower corner in the ordinates array.
+     * @param endIndex    the index after the last valid ordinate value of the lower corner in the ordinates array.
      */
     SubEnvelope(final double[] ordinates, final int beginIndex, final int endIndex) {
         super(ordinates);
@@ -207,6 +207,7 @@ final class SubEnvelope extends GeneralEnvelope {
      * If the user wants a clone, copy only the relevant part of the ordinates array.
      */
     @Override
+    @SuppressWarnings("CloneDoesntCallSuperClone")
     public GeneralEnvelope clone() {
         final int d = ordinates.length >>> 1;
         final int dimension = endIndex - beginIndex;

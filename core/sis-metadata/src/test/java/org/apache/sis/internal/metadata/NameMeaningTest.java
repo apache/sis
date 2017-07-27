@@ -20,6 +20,7 @@ import org.opengis.referencing.cs.*;
 import org.opengis.referencing.crs.*;
 import org.opengis.referencing.datum.*;
 import org.opengis.referencing.ReferenceSystem;
+import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
@@ -30,8 +31,8 @@ import static org.junit.Assert.*;
  * Tests {@link NameMeaning}.
  *
  * @author  Martin Desruisseaux (Geomatys)
+ * @version 0.7
  * @since   0.5 (derived from 0.4)
- * @version 0.5
  * @module
  */
 public final strictfp class NameMeaningTest extends TestCase {
@@ -53,5 +54,17 @@ public final strictfp class NameMeaningTest extends TestCase {
         assertEquals("cs",              NameMeaning.toObjectType(CartesianCS         .class));
         assertEquals("axis",            NameMeaning.toObjectType(CoordinateSystemAxis.class));
         assertEquals("referenceSystem", NameMeaning.toObjectType(ReferenceSystem     .class));
+    }
+
+    /**
+     * Tests {@link NameMeaning#toURN(Class, String, String, String)}.
+     *
+     * @since 0.7
+     */
+    @Test
+    @DependsOnMethod("testToObjectType")
+    public void testToURN() {
+        assertEquals("urn:ogc:def:crs:OGC:1.3:CRS84", NameMeaning.toURN(GeographicCRS.class, "CRS",  null,   "84"));
+        assertEquals("urn:ogc:def:datum:EPSG::6326",  NameMeaning.toURN(GeodeticDatum.class, "EPSG", null, "6326"));
     }
 }

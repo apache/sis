@@ -19,19 +19,20 @@ package org.apache.sis.parameter;
 import java.util.Set;
 import java.util.Collection;
 import java.util.Collections;
-import javax.measure.unit.SI;
+import javax.measure.Unit;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterValue;
 import org.opengis.referencing.ReferenceIdentifier;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
-import javax.measure.unit.Unit;
 import org.apache.sis.measure.Range;
 import org.apache.sis.measure.NumberRange;
 import org.apache.sis.measure.MeasurementRange;
+import org.apache.sis.measure.Units;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
+import org.apache.sis.test.TestUtilities;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
@@ -41,8 +42,8 @@ import static org.junit.Assert.*;
  * Tests the static methods in the {@link Parameters} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
+ * @version 0.8
  * @since   0.4
- * @version 0.6
  * @module
  */
 @DependsOn({
@@ -94,8 +95,8 @@ public final strictfp class ParametersTest extends TestCase {
                 DefaultParameterDescriptorTest.createSimpleOptional("No range", String.class));
         verifyValueDomain(NumberRange.create(1, true, 4, true),
                 DefaultParameterDescriptorTest.create("Integers", 1, 4, 2));
-        verifyValueDomain(MeasurementRange.create(1d, true, 4d, true, SI.METRE),
-                DefaultParameterDescriptorTest.create("Doubles", 1d, 4d, 2d, SI.METRE));
+        verifyValueDomain(MeasurementRange.create(1d, true, 4d, true, Units.METRE),
+                DefaultParameterDescriptorTest.create("Doubles", 1d, 4d, 2d, Units.METRE));
     }
 
     /**
@@ -132,28 +133,54 @@ public final strictfp class ParametersTest extends TestCase {
 
     /**
      * Tests {@link Parameters#copy(ParameterValueGroup, ParameterValueGroup)}.
+     *
+     * @see <a href="https://issues.apache.org/jira/browse/SIS-202">SIS-202</a>
      */
     @Test
     public void testCopy() {
-        final ParameterValueGroup source = DefaultParameterDescriptorGroupTest.M1_M1_O1_O2.createValue();
-        final ParameterValue<?> o1 = source.parameter("Optional 4");
-        final ParameterValue<?> o2 = o1.getDescriptor().createValue(); // See ParameterFormatTest.testMultiOccurrence()
-        source.parameter("Mandatory 2").setValue(20);
-        source.values().add(o2);
+        /*
+         * The descriptor to be used for this test. This descriptor contain at least
+         * one subgroup, for testing the Parameters.copy(...) method recursivity.
+         */
+        final String subgroupName = DefaultParameterDescriptorGroupTest.M1_M1_O1_O2.getName().getCode();
+        final DefaultParameterDescriptorGroup descriptor = new DefaultParameterDescriptorGroup(
+                Collections.singletonMap(DefaultParameterDescriptorGroup.NAME_KEY, "parent"), 1, 1,
+                DefaultParameterDescriptorTest.createSimpleOptional("A parent parameter", String.class),
+                DefaultParameterDescriptorGroupTest.M1_M1_O1_O2);
+        /*
+         * Create the parameter value to copy. We set some values, but intentionally not all of them.
+         * The unset values will be used for verifying that they do not overwrite destination values.
+         */
+        final ParameterValueGroup source = descriptor.createValue();
+        final ParameterValueGroup sourceSubgroup = source.addGroup(subgroupName);
+        final ParameterValue<?> o1 = sourceSubgroup.parameter("Optional 4");
+        final ParameterValue<?> o2 = o1.getDescriptor().createValue();      // See ParameterFormatTest.testMultiOccurrence()
+        sourceSubgroup.parameter("Mandatory 2").setValue(20);
+        sourceSubgroup.values().add(o2);
         o1.setValue(40);
         o2.setValue(50);
-
-        final ParameterValueGroup destination = DefaultParameterDescriptorGroupTest.M1_M1_O1_O2.createValue();
-        destination.parameter("Mandatory 1").setValue(-10);  // We expect this value to be overwritten.
-        destination.parameter("Optional 3") .setValue( 30);  // We expect this value to be preserved.
-        Parameters.copy(source, destination);
-
-        assertEquals("Mandatory 1", 10, destination.parameter("Mandatory 1").intValue());
-        assertEquals("Mandatory 2", 20, destination.parameter("Mandatory 2").intValue());
-        assertEquals("Optional 3",  30, destination.parameter("Optional 3") .intValue());
-        assertEquals("Optional 4",  40, destination.parameter("Optional 4") .intValue());
-        assertEquals("Optional 4 (second occurrence)", 50,
-                ((ParameterValue<?>) destination.values().get(4)).intValue());
+        source.parameter("A parent parameter").setValue("A value from the source");
+        /*
+         * Create the parameter to use as the destination. We put some value in those parameters in order to
+         * verify that those values are overwritten (only those for which the value is set in the source).
+         */
+        final ParameterValueGroup target = descriptor.createValue();
+        final ParameterValueGroup targetSubgroup = target.addGroup(subgroupName);
+        targetSubgroup.parameter("Mandatory 1").setValue(-10);      // We expect this value to be overwritten.
+        targetSubgroup.parameter("Optional 3") .setValue( 30);      // We expect this value to be preserved.
+        target.parameter("A parent parameter") .setValue("A value to be overwritten");
+        /*
+         * The actual test.
+         */
+        Parameters.copy(source, target);
+        assertSame(sourceSubgroup, TestUtilities.getSingleton(source.groups(subgroupName)));
+        assertSame(targetSubgroup, TestUtilities.getSingleton(target.groups(subgroupName)));
+        assertEquals("A value from the source", target.parameter("A parent parameter").getValue());
+        assertEquals("Mandatory 1",    10, targetSubgroup.parameter("Mandatory 1").intValue());
+        assertEquals("Mandatory 2",    20, targetSubgroup.parameter("Mandatory 2").intValue());
+        assertEquals("Optional 3",     30, targetSubgroup.parameter("Optional 3") .intValue());
+        assertEquals("Optional 4",     40, ((ParameterValue<?>) targetSubgroup.values().get(3)).intValue());
+        assertEquals("Optional 4 bis", 50, ((ParameterValue<?>) targetSubgroup.values().get(4)).intValue());
     }
 
     /**

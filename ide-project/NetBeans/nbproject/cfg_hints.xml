@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE configuration PUBLIC "-//NetBeans//DTD Tool Configuration 1.0//EN" "http://www.netbeans.org/dtds/ToolConfiguration-1_0.dtd">
+<configuration>
+    <tool kind="hints" type="text/x-java">
+        <node name="org.netbeans.modules.java.hints.perf.Tiny.getClassInsteadOfDotClass">
+            <attribute name="enabled" value="true"/>
+        </node>
+        <node name="Javac_DIVISION_BY_ZERO">
+            <attribute name="enabled" value="true"/>
+        </node>
+        <node name="Braces_DO_WHILE_LOOP">
+            <attribute name="enabled" value="false"/>
+        </node>
+        <node name="Javac_DEPRECATED">
+            <attribute name="enabled" value="true"/>
+        </node>
+        <node name="org.netbeans.modules.java.hints.encapsulation.FieldEncapsulation.protectedField">
+            <attribute name="allow.enums" value="false"/>
+        </node>
+        <node name="Javac_UNCHECKED">
+            <attribute name="enabled" value="true"/>
+        </node>
+        <node name="org.netbeans.modules.java.hints.encapsulation.ReturnEncapsulation.collection">
+            <attribute name="enabled" value="true"/>
+        </node>
+        <node name="Javac_FINALLY">
+            <attribute name="enabled" value="true"/>
+        </node>
+        <node name="Javac_EMPTY_STATEMENT_AFTER_IF">
+            <attribute name="enabled" value="true"/>
+        </node>
+        <node name="org.netbeans.modules.java.hints.AssignmentIssues.assignmentToForLoopParam">
+            <attribute name="enabled" value="false"/>
+        </node>
+        <node name="org.netbeans.modules.java.hints.SystemOut">
+            <attribute name="enabled" value="true"/>
+        </node>
+        <node name="org.netbeans.modules.java.hints.encapsulation.ReturnEncapsulation.date">
+            <attribute name="enabled" value="true"/>
+        </node>
+        <node name="Javac_SERIALIZATION">
+            <attribute name="enabled" value="true"/>
+        </node>
+        <node name="org.netbeans.modules.java.hints.perf.Tiny.lengthOneStringIndexOf">
+            <attribute name="enabled" value="true"/>
+        </node>
+        <node name="org.netbeans.modules.java.hints.ClassStructure.multipleTopLevelClassesInFile">
+            <attribute name="enabled" value="true"/>
+        </node>
+        <node name="org.netbeans.modules.java.hints.encapsulation.ParamEncapsulation.date">
+            <attribute name="enabled" value="true"/>
+        </node>
+        <node name="Javac_OVERRIDES">
+            <attribute name="enabled" value="true"/>
+        </node>
+        <node name="org.netbeans.modules.java.hints.perf.Tiny.constantIntern">
+            <attribute name="enabled" value="true"/>
+        </node>
+        <node name="org.netbeans.modules.java.hints.encapsulation.ClassEncapsulation.packageCls">
+            <attribute name="allow.enums" value="false"/>
+        </node>
+        <node name="org.netbeans.modules.java.hints.perf.Tiny.stringEqualsEmpty">
+            <attribute name="enabled" value="true"/>
+        </node>
+        <node name="org.netbeans.modules.java.hints.bugs.CloneAndCloneable.cloneInNonCloneableClass">
+            <attribute name="enabled" value="true"/>
+        </node>
+        <node name="org.netbeans.modules.java.hints.UtilityClass_2">
+            <attribute name="enabled" value="true"/>
+        </node>
+        <node name="org.netbeans.modules.java.hints.encapsulation.ReturnEncapsulation.array">
+            <attribute name="enabled" value="true"/>
+        </node>
+        <node name="org.netbeans.modules.java.hints.UtilityClass_1">
+            <attribute name="enabled" value="true"/>
+        </node>
+        <node name="org.netbeans.modules.java.hints.encapsulation.ClassEncapsulation.protectedCls">
+            <attribute name="allow.enums" value="false"/>
+        </node>
+        <node name="org.netbeans.modules.java.hints.SuspiciousNamesCombination">
+            <attribute name="groups" value="x, width|y, height"/>
+            <attribute name="enabled" value="true"/>
+            <attribute name="hintSeverity" value="HINT"/>
+        </node>
+        <node name="org.netbeans.modules.java.hints.finalize.FinalizeNotProtected">
+            <attribute name="enabled" value="true"/>
+        </node>
+        <node name="org.netbeans.modules.java.hints.perf.Tiny.collectionsToArray">
+            <attribute name="enabled" value="true"/>
+        </node>
+        <node name="org.netbeans.modules.java.hints.bugs.CloneAndCloneable.cloneableWithoutClone">
+            <attribute name="enabled" value="true"/>
+        </node>
+        <node name="org.netbeans.modules.java.hints.AssignmentIssues.replaceAssignWithOpAssign">
+            <attribute name="enabled" value="true"/>
+        </node>
+        <node name="org.netbeans.modules.java.hints.encapsulation.ParamEncapsulation.collection">
+            <attribute name="enabled" value="true"/>
+        </node>
+        <node name="Javac_FALLTHROUGH">
+            <attribute name="enabled" value="true"/>
+        </node>
+        <node name="org.netbeans.modules.java.hints.AssignmentIssues.assignmentToCatchBlockParameter">
+            <attribute name="enabled" value="false"/>
+        </node>
+        <node name="org.netbeans.modules.java.hints.encapsulation.FieldEncapsulation.packageField">
+            <attribute name="allow.enums" value="false"/>
+        </node>
+        <node name="Javac_UNNECESSARY_CAST">
+            <attribute name="enabled" value="true"/>
+        </node>
+        <node name="org.netbeans.modules.java.hints.encapsulation.ParamEncapsulation.array">
+            <attribute name="enabled" value="true"/>
+        </node>
+        <node name="Javac_RAWTYPES">
+            <attribute name="enabled" value="true"/>
+        </node>
+        <node name="org.netbeans.modules.java.hints.bugs.BroadCatchBlock.broadCatch">
+            <attribute name="catch.umbrella" value="false"/>
+            <attribute name="catch.common" value="true"/>
+            <attribute name="catch.umbrella.types" value="java.io.IOException, java.sql.SqlException"/>
+        </node>
+        <node name="EmptyStatements_IF">
+            <attribute name="enabled" value="true"/>
+        </node>
+        <node name="org.netbeans.modules.java.hints.bugs.CloneAndCloneable.cloneWithoutThrows">
+            <attribute name="enabled" value="false"/>
+        </node>
+        <node name="org.netbeans.modules.java.hints.HideFieldByVar">
+            <attribute name="warn-hidden-static-fields" value="true"/>
+            <attribute name="enabled" value="false"/>
+        </node>
+        <node name="org.netbeans.modules.java.hints.MissingHashCode">
+            <attribute name="enabled" value="false"/>
+        </node>
+        <node name="Wrong_String_Comparison">
+            <attribute name="string-literals-first" value="true"/>
+            <attribute name="ternary-null-check" value="true"/>
+            <attribute name="enabled" value="false"/>
+        </node>
+        <node name="org.netbeans.modules.java.hints.jdk.mapreduce.ForLoopToFunctionalHint">
+            <attribute name="enabled" value="false"/>
+        </node>
+        <node name="org.netbeans.modules.java.hints.jdk.ThrowableInitCause">
+            <attribute name="strict" value="false"/>
+        </node>
+        <node name="org.netbeans.modules.java.hints.suggestions.ConstantNameHint">
+            <attribute name="immutableClasses" value=""/>
+            <attribute name="namePattern" value="[A-Z]([A-Z\d_]*[A-Z\d])?"/>
+            <attribute name="minLength" value="0"/>
+            <attribute name="onlyCheckImmutables" value="true"/>
+            <attribute name="maxLength" value="35"/>
+            <attribute name="enabled" value="false"/>
+        </node>
+        <node name="org.netbeans.modules.java.hints.bugs.CollectionRemove">
+            <attribute name="warn-for-castable" value="true"/>
+            <attribute name="enabled" value="true"/>
+            <attribute name="hintSeverity" value="HINT"/>
+        </node>
+    </tool>
+</configuration>

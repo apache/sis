@@ -45,8 +45,8 @@ import static org.apache.sis.test.Assert.*;
  * <p>This class uses <a href="http://math.nist.gov/javanumerics/jama">JAMA</a> as the reference implementation.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
+ * @version 0.8
  * @since   0.4
- * @version 0.6
  * @module
  */
 public abstract strictfp class MatrixTestCase extends TestCase {
@@ -62,12 +62,6 @@ public abstract strictfp class MatrixTestCase extends TestCase {
      * for any sequence of numbers.</p>
      */
     protected static final boolean DETERMINIST = !DoubleDouble.DISABLED;
-
-    /**
-     * A constant for any test in this class or a subclass which expect
-     * a floating point value to be strictly equals to an other value.
-     */
-    static final double STRICT = 0;
 
     /**
      * Tolerance factor for comparisons of floating point numbers between SIS and JAMA implementation,
@@ -106,7 +100,7 @@ public abstract strictfp class MatrixTestCase extends TestCase {
      *
      * @see NonSquareMatrixTest#printStatistics()
      */
-    static final Statistics statistics = verbose ? new Statistics("|SIS - JAMA|") : null;
+    static final Statistics statistics = VERBOSE ? new Statistics("|SIS - JAMA|") : null;
 
     /**
      * Random number generator, created by {@link #initialize(long)} as the first operation of
@@ -126,7 +120,7 @@ public abstract strictfp class MatrixTestCase extends TestCase {
      * (which happen only when performing some more extensive tests), then the given seed will be replaced
      * by a random one.
      *
-     * @param seed The initial seed.
+     * @param  seed  the initial seed.
      */
     final void initialize(final long seed) {
         random = DETERMINIST ? new Random(seed) : TestUtilities.createRandomNumberGenerator();
@@ -136,7 +130,7 @@ public abstract strictfp class MatrixTestCase extends TestCase {
      * Computes a random size for the next matrix to create. This method is overridden
      * only by subclasses that test matrix implementations supporting arbitrary sizes.
      *
-     * @param random The random number generator to use for computing a random matrix size.
+     * @param  random  the random number generator to use for computing a random matrix size.
      */
     void prepareNewMatrixSize(final Random random) {
     }
@@ -157,9 +151,9 @@ public abstract strictfp class MatrixTestCase extends TestCase {
     /**
      * Verifies that the SIS matrix is equals to the JAMA one, up to the given tolerance value.
      *
-     * @param expected  The JAMA matrix used as a reference implementation.
-     * @param actual    The SIS matrix to compare to JAMA.
-     * @param tolerance The tolerance threshold, usually either {@link #STRICT} or {@link #TOLERANCE}.
+     * @param  expected   the JAMA matrix used as a reference implementation.
+     * @param  actual     the SIS matrix to compare to JAMA.
+     * @param  tolerance  the tolerance threshold, usually either {@link #STRICT} or {@link #TOLERANCE}.
      */
     static void assertEqualsJAMA(final Matrix expected, final MatrixSIS actual, final double tolerance) {
         final int numRow = actual.getNumRow();
@@ -275,7 +269,7 @@ public abstract strictfp class MatrixTestCase extends TestCase {
          * End of initialization - now perform the actual test.
          */
         assertEqualsJAMA(reference, matrix, STRICT);
-        for (int k=0; k<50; k++) {
+        for (int k=0; k<NUMBER_OF_REPETITIONS; k++) {
             final int    j = random.nextInt(numRow);
             final int    i = random.nextInt(numCol);
             final double e = random.nextDouble() * 100;
@@ -341,7 +335,7 @@ public abstract strictfp class MatrixTestCase extends TestCase {
         for (int j=0; j<numRow; j++) {
             for (int i=0; i<numCol; i++) {
                 final double element = clone.getElement(j,i);
-                clone.setElement(j, i, random.nextDouble() - 2); // Negative value is guaranteed to be different.
+                clone.setElement(j, i, random.nextDouble() - 2);    // Negative value is guaranteed to be different.
                 assertFalse(matrix.equals(clone));
                 assertFalse(clone.equals(matrix));
                 clone.setElement(j, i, element);
@@ -397,14 +391,14 @@ public abstract strictfp class MatrixTestCase extends TestCase {
     }
 
     /**
-     * Tests {@link MatrixSIS#convertBefore(int, Number, Number)} using {@link AffineTranform}
+     * Tests {@link MatrixSIS#convertBefore(int, Number, Number)} using {@link AffineTransform}
      * as a reference implementation. This test can be run only with matrices of size 3×3.
      * Consequently it is sub-classes responsibility to add a {@code testConvertBefore()} method
      * which invoke this method.
      *
-     * @param matrix The matrix of size 3×3 to test.
-     * @param withShear {@code true} for including shear in the matrix to test.
-     *        This value can be set to {@code false} if the subclass want to test a simpler case.
+     * @param  matrix     the matrix of size 3×3 to test.
+     * @param  withShear  {@code true} for including shear in the matrix to test.
+     *                    This value can be set to {@code false} if the subclass want to test a simpler case.
      *
      * @since 0.6
      */
@@ -416,7 +410,7 @@ public abstract strictfp class MatrixTestCase extends TestCase {
             matrix.setElement(0, 1, at.getShearX());
             matrix.setElement(1, 0, at.getShearY());
         }
-        for (int i=0; i<100; i++) {
+        for (int i=0; i<NUMBER_OF_REPETITIONS; i++) {
             /*
              * 1) For the first  30 iterations, test the result of applying only a scale.
              * 2) For the next   30 iterations, test the result of applying only a translation.
@@ -467,12 +461,12 @@ public abstract strictfp class MatrixTestCase extends TestCase {
     }
 
     /**
-     * Tests {@link MatrixSIS#convertAfter(int, Number, Number)} using {@link AffineTranform}
+     * Tests {@link MatrixSIS#convertAfter(int, Number, Number)} using {@link AffineTransform}
      * as a reference implementation. This test can be run only with matrices of size 3×3.
      * Consequently it is sub-classes responsibility to add a {@code testConvertAfter()} method
      * which invoke this method.
      *
-     * @param matrix The matrix of size 3×3 to test.
+     * @param  matrix  the matrix of size 3×3 to test.
      *
      * @since 0.6
      */
@@ -482,7 +476,7 @@ public abstract strictfp class MatrixTestCase extends TestCase {
         final AffineTransform at = AffineTransform.getShearInstance(nextNonZeroRandom(), nextNonZeroRandom());
         matrix.setElement(0, 1, at.getShearX());
         matrix.setElement(1, 0, at.getShearY());
-        for (int i=0; i<30; i++) {
+        for (int i=0; i<NUMBER_OF_REPETITIONS; i++) {
             final Number scale  = nextNonZeroRandom();
             final Number offset = nextNonZeroRandom();
             final int tgtDim = (i & 1);
@@ -503,7 +497,43 @@ public abstract strictfp class MatrixTestCase extends TestCase {
     }
 
     /**
-     * Tests {@link MatrixSIS#multiply(Matrix)}.
+     * Tests {@link MatrixSIS#multiply(double[])} using {@link AffineTransform}
+     * as a reference implementation. This test can be run only with matrices of size 3×3.
+     * Consequently it is sub-classes responsibility to add a {@code testMultiplyVector()}
+     * method which invoke this method.
+     *
+     * @param  matrix  the matrix of size 3×3 to test.
+     *
+     * @since 0.8
+     */
+    final void testMultiplyVector(final MatrixSIS matrix) {
+        initialize(8433903323905121506L);
+        final AffineTransform at = new AffineTransform();
+        final double vector[] = new double[3];
+        for (int n=0; n<NUMBER_OF_REPETITIONS; n++) {
+            if ((n % 10) == 0) {
+                at.setToRotation(random.nextDouble() * StrictMath.PI);
+                at.scale(nextNonZeroRandom(), nextNonZeroRandom());
+                at.translate(random.nextDouble() * 100 - 50,
+                             random.nextDouble() * 100 - 50);
+                matrix.setElements(new double[] {
+                    at.getScaleX(), at.getShearX(), at.getTranslateX(),
+                    at.getShearY(), at.getScaleY(), at.getTranslateY(),
+                                 0,              0,                  1
+                });
+            }
+            vector[0] = random.nextDouble() * 50 - 25;
+            vector[1] = random.nextDouble() * 50 - 25;
+            vector[2] = 1;
+            final double[] result = matrix.multiply(vector);        // The result to verify.
+            at.transform(vector, 0, vector, 0, 1);                  // The expected result.
+            assertEquals("x", vector[0], result[0], TOLERANCE);
+            assertEquals("y", vector[1], result[1], TOLERANCE);
+        }
+    }
+
+    /**
+     * Tests {@link MatrixSIS#multiply(org.opengis.referencing.operation.Matrix)}.
      */
     @Test
     @DependsOnMethod("testGetElements")
@@ -538,9 +568,9 @@ public abstract strictfp class MatrixTestCase extends TestCase {
     }
 
     /**
-     * Tests {@link MatrixSIS#solve(Matrix)}.
+     * Tests {@link MatrixSIS#solve(org.opengis.referencing.operation.Matrix)}.
      *
-     * @throws NoninvertibleMatrixException Should never happen.
+     * @throws NoninvertibleMatrixException if the matrix can not be inverted.
      */
     @Test
     @DependsOnMethod("testMultiply")
@@ -581,7 +611,7 @@ public abstract strictfp class MatrixTestCase extends TestCase {
      * Tests {@link MatrixSIS#inverse()}.
      * SIS implements the {@code inverse} operation as a special case of the {@code solve} operation.
      *
-     * @throws NoninvertibleMatrixException Should never happen.
+     * @throws NoninvertibleMatrixException if the matrix can not be inverted.
      */
     @Test
     @DependsOnMethod("testSolve")

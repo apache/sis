@@ -37,23 +37,50 @@
         <include name="class-index.properties"/>
       </fileset>
     </copy>
-    <copy todir="${build.classes.dir}/org/apache/sis/util/resources">
-      <fileset dir="${project.root}/core/sis-utility/target/generated-resources/org/apache/sis/util/resources">
-        <include name="*.utf"/>
-      </fileset>
-    </copy>
-    <!-- Pending discussion about how to handle resources in the Shapefile module.
-    <copy todir="${build.classes.dir}/org/apache/sis/internal/shapefile/jdbc">
-      <fileset dir="${project.root}/storage/sis-shapefile/target/generated-resources/org/apache/sis/internal/shapefile/jdbc">
-        <include name="*.utf"/>
-      </fileset>
-    </copy>
-    -->
-
-    <!-- Following are classical properties resources files. -->
     <copy todir="${build.classes.dir}">
+      <fileset dir="${project.root}/core/sis-utility/target/generated-resources">
+        <include name="**/*.utf"/>
+      </fileset>
+      <fileset dir="${project.root}/core/sis-referencing/target/generated-resources">
+        <include name="**/*.utf"/>
+      </fileset>
+      <fileset dir="${project.root}/core/sis-referencing-by-identifiers/target/generated-resources">
+        <include name="**/*.utf"/>
+      </fileset>
+      <fileset dir="${project.root}/core/sis-feature/target/generated-resources">
+        <include name="**/*.utf"/>
+      </fileset>
+      <fileset dir="${project.root}/storage/sis-storage/target/generated-resources">
+        <include name="**/*.utf"/>
+      </fileset>
+      <fileset dir="${project.root}/storage/sis-netcdf/target/generated-resources">
+        <include name="**/*.utf"/>
+      </fileset>
+      <fileset dir="${project.root}/storage/sis-geotiff/target/generated-resources">
+        <include name="**/*.utf"/>
+      </fileset>
+      <!-- Pending discussion about how to handle resources in the Shapefile module.
+      <fileset dir="${project.root}/storage/sis-shapefile/target/generated-resources">
+        <include name="**/*.utf"/>
+      </fileset>
+      -->
+
+      <!-- Other resources (properties files, SQL scripts, native libraries). -->
       <fileset dir="${project.root}/core/sis-utility/src/main/resources">
         <include name="**/*.properties"/>
+      </fileset>
+      <fileset dir="${project.root}/core/sis-metadata/src/main/resources">
+        <include name="**/*.sql"/>
+      </fileset>
+      <fileset dir="${project.root}/core/sis-referencing/src/main/resources">
+        <include name="**/*.sql"/>
+      </fileset>
+      <fileset dir="${project.root}/storage/sis-xmlstore/src/main/resources">
+        <include name="**/*.properties"/>
+      </fileset>
+      <fileset dir="${project.root}/storage/sis-gdal/src/main/resources">
+        <include name="**/*.dll"/>
+        <include name="**/*.so"/>
       </fileset>
       <fileset dir="${project.root}/application/sis-console/src/main/resources">
         <include name="**/*.properties"/>
@@ -71,6 +98,13 @@
       </fileset>
     </concat>
 
+    <!-- Units of Measurement implementations to be loaded by ServiceLoader. -->
+    <concat destfile="${build.classes.dir}/META-INF/services/javax.measure.spi.ServiceProvider" encoding="UTF-8" fixlastline="yes">
+      <fileset dir="${project.root}">
+        <include name="*/*/src/main/resources/META-INF/services/javax.measure.spi.ServiceProvider"/>
+      </fileset>
+    </concat>
+
 
 
     <!-- ==== GeoAPI service providers ============================================================================= -->
@@ -79,6 +113,34 @@
     <concat destfile="${build.classes.dir}/META-INF/services/org.opengis.util.NameFactory" encoding="UTF-8" fixlastline="yes">
       <fileset dir="${project.root}">
         <include name="*/*/src/main/resources/META-INF/services/org.opengis.util.NameFactory"/>
+      </fileset>
+    </concat>
+
+    <!-- CRSAuthorityFactory implementations to be loaded by ServiceLoader. -->
+    <concat destfile="${build.classes.dir}/META-INF/services/org.opengis.referencing.crs.CRSAuthorityFactory" encoding="UTF-8" fixlastline="yes">
+      <fileset dir="${project.root}">
+        <include name="*/*/src/main/resources/META-INF/services/org.opengis.referencing.crs.CRSAuthorityFactory"/>
+      </fileset>
+    </concat>
+
+    <!-- CRSFactory implementations to be loaded by ServiceLoader. -->
+    <concat destfile="${build.classes.dir}/META-INF/services/org.opengis.referencing.crs.CRSFactory" encoding="UTF-8" fixlastline="yes">
+      <fileset dir="${project.root}">
+        <include name="*/*/src/main/resources/META-INF/services/org.opengis.referencing.crs.CRSFactory"/>
+      </fileset>
+    </concat>
+
+    <!-- CSFactory implementations to be loaded by ServiceLoader. -->
+    <concat destfile="${build.classes.dir}/META-INF/services/org.opengis.referencing.cs.CSFactory" encoding="UTF-8" fixlastline="yes">
+      <fileset dir="${project.root}">
+        <include name="*/*/src/main/resources/META-INF/services/org.opengis.referencing.cs.CSFactory"/>
+      </fileset>
+    </concat>
+
+    <!-- DatumFactory implementations to be loaded by ServiceLoader. -->
+    <concat destfile="${build.classes.dir}/META-INF/services/org.opengis.referencing.datum.DatumFactory" encoding="UTF-8" fixlastline="yes">
+      <fileset dir="${project.root}">
+        <include name="*/*/src/main/resources/META-INF/services/org.opengis.referencing.datum.DatumFactory"/>
       </fileset>
     </concat>
 
@@ -93,6 +155,13 @@
     <concat destfile="${build.classes.dir}/META-INF/services/org.opengis.referencing.operation.OperationMethod" encoding="UTF-8" fixlastline="yes">
       <fileset dir="${project.root}">
         <include name="*/*/src/main/resources/META-INF/services/org.opengis.referencing.operation.OperationMethod"/>
+      </fileset>
+    </concat>
+
+    <!-- CoordinateOperationFactory implementations to be loaded by ServiceLoader. -->
+    <concat destfile="${build.classes.dir}/META-INF/services/org.opengis.referencing.operation.CoordinateOperationFactory" encoding="UTF-8" fixlastline="yes">
+      <fileset dir="${project.root}">
+        <include name="*/*/src/main/resources/META-INF/services/org.opengis.referencing.operation.CoordinateOperationFactory"/>
       </fileset>
     </concat>
 
@@ -121,6 +190,20 @@
       </fileset>
     </concat>
 
+    <!-- Initializer implementations to be loaded by ServiceLoader. -->
+    <concat destfile="${build.classes.dir}/META-INF/services/org.apache.sis.internal.metadata.sql.Initializer" encoding="UTF-8" fixlastline="yes">
+      <fileset dir="${project.root}">
+        <include name="*/*/src/main/resources/META-INF/services/org.apache.sis.internal.metadata.sql.Initializer"/>
+      </fileset>
+    </concat>
+
+    <!-- SpecializedOperationFactory implementations to be loaded by ServiceLoader. -->
+    <concat destfile="${build.classes.dir}/META-INF/services/org.apache.sis.internal.referencing.SpecializedOperationFactory" encoding="UTF-8" fixlastline="yes">
+      <fileset dir="${project.root}">
+        <include name="*/*/src/main/resources/META-INF/services/org.apache.sis.internal.referencing.SpecializedOperationFactory"/>
+      </fileset>
+    </concat>
+
     <!-- DataStoreProvider implementations to be loaded by ServiceLoader. -->
     <concat destfile="${build.classes.dir}/META-INF/services/org.apache.sis.storage.DataStoreProvider" encoding="UTF-8" fixlastline="yes">
       <fileset dir="${project.root}">
@@ -140,20 +223,34 @@
       </fileset>
       <fileset dir="${project.root}/core/sis-referencing/src/test/resources">
         <include name="**/*.xml"/>
+        <include name="**/*.txt"/>
+        <include name="**/*.gsb"/>
+        <include name="**/*.laa"/>
+        <include name="**/*.loa"/>
       </fileset>
-    </copy>
-    <copy todir="${build.test.classes.dir}">
+      <fileset dir="${project.root}/storage/sis-xmlstore/src/test/resources">
+        <include name="**/*.gpx"/>
+        <include name="**/*.xml"/>
+      </fileset>
+      <fileset dir="${project.root}/storage/sis-earth-observation/src/test/resources">
+        <include name="**/*.txt"/>
+      </fileset>
       <fileset dir="${project.root}/storage/sis-shapefile/src/test/resources">
         <include name="**/*.dbf"/>
         <include name="**/*.prj"/>
         <include name="**/*.shp"/>
         <include name="**/*.shx"/>
       </fileset>
-    </copy>
-    <copy todir="${build.test.classes.dir}">
       <fileset dir="${project.root}/profiles/sis-french-profile/src/test/resources">
         <include name="**/*.xml"/>
       </fileset>
     </copy>
+
+    <!-- OperationMethod implementations to be loaded by ServiceLoader. -->
+    <concat destfile="${build.test.classes.dir}/META-INF/services/org.opengis.referencing.operation.OperationMethod" encoding="UTF-8" fixlastline="yes">
+      <fileset dir="${project.root}">
+        <include name="*/*/src/test/resources/META-INF/services/org.opengis.referencing.operation.OperationMethod"/>
+      </fileset>
+    </concat>
   </target>
 </project>

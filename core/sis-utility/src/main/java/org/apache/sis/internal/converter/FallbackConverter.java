@@ -20,9 +20,9 @@ import java.util.Arrays;
 import java.util.Set;
 import java.util.EnumSet;
 import java.util.Iterator;
+import org.apache.sis.math.FunctionProperty;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.ObjectConverter;
-import org.apache.sis.math.FunctionProperty;
 import org.apache.sis.util.UnconvertibleObjectException;
 import org.apache.sis.util.collection.TreeTable;
 import org.apache.sis.util.ArgumentChecks;
@@ -51,12 +51,13 @@ import org.apache.sis.util.Debug;
  * This class is immutable, and thus inherently thread-safe,
  * if the converters given to the static factory method are also immutable.
  *
- * @param <S> The base type of source objects.
- * @param <T> The base type of converted objects.
- *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.3
+ *
+ * @param <S>  the base type of source objects.
+ * @param <T>  the base type of converted objects.
+ *
+ * @since 0.3
  * @module
  */
 final class FallbackConverter<S,T> extends SystemConverter<S,T> {
@@ -83,12 +84,12 @@ final class FallbackConverter<S,T> extends SystemConverter<S,T> {
      * Creates a converter using the given primary and fallback converters. This method may
      * interchange the two converters in order to meet the {@linkplain #fallback} contract.
      *
-     * @param sourceClass The {@linkplain #getSourceClass() source class}.
-     * @param targetClass The {@linkplain #getTargetClass() target class}.
-     * @param primary     A first converter.
-     * @param fallback    A second converter.
+     * @param  sourceClass  the {@linkplain #getSourceClass() source class}.
+     * @param  targetClass  the {@linkplain #getTargetClass() target class}.
+     * @param  primary      a first converter.
+     * @param  fallback     a second converter.
      *
-     * @see #create(ObjectConverter, ObjectConverter)
+     * @see #merge(ObjectConverter, ObjectConverter)
      */
     private FallbackConverter(final Class<S> sourceClass, final Class<T> targetClass,
                               final ObjectConverter<S, ? extends T> primary,
@@ -108,8 +109,8 @@ final class FallbackConverter<S,T> extends SystemConverter<S,T> {
      * Returns {@code true} if the given primary and fallback converters should be interchanged.
      * This method may invoke itself recursively.
      *
-     * @param  primary The primary converter to test.
-     * @param  fallbackClass The target class of the fallback converter to test.
+     * @param  primary        the primary converter to test.
+     * @param  fallbackClass  the target class of the fallback converter to test.
      * @return {@code true} if the given primary and fallback converters should be interchanged.
      */
     private static <S> boolean needSwap(final ObjectConverter<S,?> primary, final Class<?> fallbackClass) {
@@ -145,11 +146,11 @@ final class FallbackConverter<S,T> extends SystemConverter<S,T> {
      * This restriction exists because the tree built in such case would probably not be the
      * desired one. It should be okay if only SIS code deal with {@code FallbackConverter}.
      *
-     * @param  <S> The base type of source objects.
-     * @param  <T> The base type of converted objects.
-     * @param  primary The first converter, which may be a {@code Fallback} tree.
-     * @param  fallback A new fallback to insert in the converters tree.
-     * @return A tree of converters which contains the given {@code converter}. May be either
+     * @param  <S>       the base type of source objects.
+     * @param  <T>       the base type of converted objects.
+     * @param  primary   the first converter, which may be a {@code Fallback} tree.
+     * @param  fallback  a new fallback to insert in the converters tree.
+     * @return a tree of converters which contains the given {@code converter}. May be either
      *         {@code existing}, {@code converter} or a new {@code FallbackConverter} instance.
      */
     public static <S,T> ObjectConverter<S, ? extends T> merge(
@@ -210,12 +211,12 @@ final class FallbackConverter<S,T> extends SystemConverter<S,T> {
      * <strong>not</strong> a {@code FallbackConverter} instance.
      * See {@link #merge(ObjectConverter, ObjectConverter)} javadoc for more information.</p>
      *
-     * @param  <S> The source class of the {@code branch} converter.
-     * @param  <T> The target class of the {@code branch} converter
-     * @param  branch The converter to eventually merge with {@code converter}.
-     * @param  converter The converter to eventually merge with {@code branch}.
-     * @param  parentTarget To be given verbatim to {@link #merge(ObjectConverter, Class)}.
-     * @return The merged converter, or {@code null} if the {@code converter}
+     * @param  <S>           the source class of the {@code branch} converter.
+     * @param  <T>           the target class of the {@code branch} converter
+     * @param  branch        the converter to eventually merge with {@code converter}.
+     * @param  converter     the converter to eventually merge with {@code branch}.
+     * @param  parentTarget  to be given verbatim to {@link #merge(ObjectConverter, Class)}.
+     * @return the merged converter, or {@code null} if the {@code converter}
      *         target class is not a subtype of the {@code branch} target class.
      */
     private static <S,T> ObjectConverter<S, ? extends T> mergeIfSubtype(
@@ -248,7 +249,7 @@ final class FallbackConverter<S,T> extends SystemConverter<S,T> {
             /*
              * Both 'branch' and 'checked' are ordinary converters (not FallbackConverter).
              */
-            return new FallbackConverter<S,T>(branch.getSourceClass(), targetClass, branch, checked);
+            return new FallbackConverter<>(branch.getSourceClass(), targetClass, branch, checked);
         }
     }
 
@@ -258,10 +259,10 @@ final class FallbackConverter<S,T> extends SystemConverter<S,T> {
      * other {@code FallbackConverter} instances, then this method will follow those
      * branches.
      *
-     * @param  converter The converter to merge with {@code this}.
-     * @param  parentTarget If this method is invoked recursively, the target class
+     * @param  converter     the converter to merge with {@code this}.
+     * @param  parentTarget  if this method is invoked recursively, the target class
      *         of the parent {@code FallbackConverter}. Otherwise {@code null}.
-     * @return The merged converter.
+     * @return the merged converter.
      */
     private ObjectConverter<S, ? extends T> merge(final ObjectConverter<S, ? extends T> converter,
             final Class<? super T> parentTarget)
@@ -291,7 +292,7 @@ final class FallbackConverter<S,T> extends SystemConverter<S,T> {
                 return null;
             }
         }
-        return new FallbackConverter<S,T>(sourceClass, targetClass, newPrimary, newFallback);
+        return new FallbackConverter<>(sourceClass, targetClass, newPrimary, newFallback);
     }
 
     /**
@@ -320,7 +321,7 @@ final class FallbackConverter<S,T> extends SystemConverter<S,T> {
             try {
                 return fallback.apply(source);
             } catch (UnconvertibleObjectException failure) {
-                // addSuppressed(failure) on the JDK7 branch.
+                exception.addSuppressed(failure);
                 throw exception;
             }
         }
@@ -330,8 +331,8 @@ final class FallbackConverter<S,T> extends SystemConverter<S,T> {
      * Creates a node for the given converter and adds it to the given tree.
      * This method invokes itself recursively for scanning through fallbacks.
      *
-     * @param converter The converter for which to create a tree.
-     * @param addTo The node in which to add the converter.
+     * @param  converter  the converter for which to create a tree.
+     * @param  addTo      the node in which to add the converter.
      */
     private void toTree(final ObjectConverter<?,?> converter, TreeTable.Node addTo) {
         if (converter instanceof FallbackConverter<?,?>) {
@@ -346,11 +347,10 @@ final class FallbackConverter<S,T> extends SystemConverter<S,T> {
     }
 
     /**
-     * Adds a simplified tree representation of this {@code FallbackConverter}
-     * to the given node.
+     * Adds a simplified tree representation of this {@code FallbackConverter} to the given node.
      *
-     * @param addTo The node in which to add the converter.
-     * @param isNew {@code true} if {@code addTo} is a newly created node.
+     * @param  addTo  the node in which to add the converter.
+     * @param  isNew  {@code true} if {@code addTo} is a newly created node.
      */
     final void toTree(final TreeTable.Node addTo, final boolean isNew) {
         if (isNew) {

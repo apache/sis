@@ -30,8 +30,8 @@ import static org.apache.sis.test.Assert.*;
  * Tests {@link AbstractOperation}.
  *
  * @author  Martin Desruisseaux (Geomatys)
+ * @version 0.8
  * @since   0.6
- * @version 0.6
  * @module
  */
 @DependsOn(SingletonAttributeTest.class)
@@ -44,13 +44,13 @@ public final strictfp class AbstractOperationTest extends TestCase {
         final ParameterDescriptor<?>[] parameters = {
             builder.addName("founder").create(String.class, null)
         };
-        return new NoOperation(singletonMap(AbstractOperation.NAME_KEY, "found city"),
-                builder.addName("found city").createGroup(parameters),
+        return new NoOperation(singletonMap(AbstractOperation.NAME_KEY, "new city"),
+                builder.addName("create").createGroup(parameters),
                 DefaultAttributeTypeTest.city());
     }
 
     /**
-     * Tests serialization of {@link DefaultOperation}.
+     * Tests serialization of {@link AbstractOperation}.
      */
     @Test
     public void testSerialization() {
@@ -58,10 +58,10 @@ public final strictfp class AbstractOperationTest extends TestCase {
     }
 
     /**
-     * Tests {@link DefaultOperation#toString()}.
+     * Tests {@link AbstractOperation#toString()}.
      */
     @Test
     public void testToString() {
-        assertEquals("Operation[“found city” (founder) : city]", foundCity().toString());
+        assertEquals("NoOperation[“new city” : String] = create(founder)", foundCity().toString());
     }
 }

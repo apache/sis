@@ -16,21 +16,19 @@
  */
 package org.apache.sis.internal.referencing.j2d;
 
+import java.util.Objects;
 import java.awt.geom.AffineTransform;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.referencing.operation.MathTransform;
 import org.apache.sis.internal.system.Semaphores;
 
-// Branch-dependent imports
-import org.apache.sis.internal.jdk7.Objects;
-
 
 /**
  * An affine transform that remember the parameters used for its construction.
  * Those parameters may be very different than the usual affine transform parameters.
  *
- * For example an {@link org.apache.sis.referencing.operation.projection.Equirectangular} projection
+ * For example an {@link org.apache.sis.internal.referencing.provider.Equirectangular} projection
  * can be expressed as an affine transform. In such case, the same affine transform can be described
  * by two equivalent set of parameters:
  *
@@ -45,8 +43,8 @@ import org.apache.sis.internal.jdk7.Objects;
  * In such case, we must give a reference to an object able to provide those parameters.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.6
  * @version 0.6
+ * @since   0.6
  * @module
  */
 public final class ParameterizedAffine extends AffineTransform2D {
@@ -71,10 +69,10 @@ public final class ParameterizedAffine extends AffineTransform2D {
     /**
      * Creates a new transform from the given affine and parameters.
      *
-     * @param transform    The affine transform to copy.
-     * @param parameters   The parameters to remember. It is caller's responsibility to provide an immutable instance.
-     * @param isDefinitive {@code true} if {@code parameters} provides an accurate description of {@code transform}, or
-     *                     {@code false} if the transform may be different than the one described by {@code parameters}.
+     * @param transform     the affine transform to copy.
+     * @param parameters    the parameters to remember. It is caller's responsibility to provide an immutable instance.
+     * @param isDefinitive  {@code true} if {@code parameters} provides an accurate description of {@code transform}, or
+     *                      {@code false} if the transform may be different than the one described by {@code parameters}.
      */
     public ParameterizedAffine(final AffineTransform transform, final ParameterValueGroup parameters, final boolean isDefinitive) {
         super(transform);
@@ -86,8 +84,8 @@ public final class ParameterizedAffine extends AffineTransform2D {
      * Returns the given transform associated to the same parameters than this {@code ParameterizedAffine},
      * if possible. If the given transform is not affine, then it is returned unchanged.
      *
-     * @param  transform The transform to be at least partially described by {@link #parameters}.
-     * @return A copy of the given affine transform associated to the parameter of this object,
+     * @param  transform  the transform to be at least partially described by {@link #parameters}.
+     * @return a copy of the given affine transform associated to the parameter of this object,
      *         or the given transform unchanged if it was not affine.
      */
     public MathTransform newTransform(final MathTransform transform) {
@@ -101,12 +99,12 @@ public final class ParameterizedAffine extends AffineTransform2D {
     /**
      * Returns the parameter descriptors for this map projection.
      *
-     * @return The map projection parameters if they are an accurate description of this transform,
+     * @return the map projection parameters if they are an accurate description of this transform,
      *         or the generic affine parameters in case of doubt.
      */
     @Override
     public ParameterDescriptorGroup getParameterDescriptors() {
-        return isDefinitive || Semaphores.query(Semaphores.PROJCS)  // See comment in getParameterValues().
+        return isDefinitive || Semaphores.query(Semaphores.ENCLOSED_IN_OPERATION)  // See comment in getParameterValues().
                ? parameters.getDescriptor() : super.getParameterDescriptors();
     }
 
@@ -114,9 +112,9 @@ public final class ParameterizedAffine extends AffineTransform2D {
      * Returns the parameter values for this map projection.
      *
      * <p><b>Hack:</b> this method normally returns the matrix parameters in case of doubt. However if
-     * {@link Semaphores#PROJCS} is set, then this method returns the map projection parameters even
-     * if they are not a complete description of this math transform. This internal hack shall be used
-     * only by {@link org.apache.sis.referencing.operation.DefaultSingleOperation}.</p>
+     * {@link Semaphores#ENCLOSED_IN_OPERATION} is set, then this method returns the map projection parameters
+     * even if they are not a complete description of this math transform. This internal hack shall be used
+     * only by {@link org.apache.sis.referencing.operation.AbstractCoordinateOperation}.</p>
      *
      * <p><b>Use case of above hack:</b> consider an "Equidistant Cylindrical (Spherical)" map projection
      * from a {@code GeographiCRS} base using (latitude, longitude) axis order. We need to concatenate an
@@ -134,14 +132,16 @@ public final class ParameterizedAffine extends AffineTransform2D {
      *     has been applied.</li>
      * </ul>
      *
-     * The {@code Semaphores.PROJCS} flag is SIS internal mechanism for distinguish the two above-cited cases.
+     * The {@code Semaphores.ENCLOSED_IN_OPERATION} flag is SIS internal mechanism for distinguish the two above-cited
+     * cases.
      *
-     * @return The map projection parameters if they are an accurate description of this transform,
+     * @return the map projection parameters if they are an accurate description of this transform,
      *         or the generic affine parameters in case of doubt.
      */
     @Override
     public ParameterValueGroup getParameterValues() {
-        return isDefinitive || Semaphores.query(Semaphores.PROJCS) ? parameters : super.getParameterValues();
+        return isDefinitive || Semaphores.query(Semaphores.ENCLOSED_IN_OPERATION)
+               ? parameters : super.getParameterValues();
     }
 
     /**
@@ -149,7 +149,7 @@ public final class ParameterizedAffine extends AffineTransform2D {
      * Parameters are compared only if the other object is also an instance of {@code ParameterizedAffine}
      * in order to preserve the {@link AffineTransform#equals(Object)} <cite>symmetricity</cite> contract.
      *
-     * @param  object The object to compare with this transform for equality.
+     * @param  object  the object to compare with this transform for equality.
      * @return {@code true} if the given object is of appropriate class (as explained in the
      *         {@link AffineTransform2D#equals(Object)} documentation) and the coefficients are the same.
      */

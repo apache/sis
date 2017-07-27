@@ -17,6 +17,7 @@
 package org.apache.sis.internal.jaxb.gco;
 
 import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlSchemaType;
 
 
 /**
@@ -26,8 +27,8 @@ import javax.xml.bind.annotation.XmlElement;
  * The role of this class is to add the {@code <gco:…>} wrapper element required by ISO 19139.
  *
  * @author  Cédric Briançon (Geomatys)
- * @since   0.4
  * @version 0.4
+ * @since   0.4
  * @module
  */
 public final class GO_Integer64 extends PropertyType<GO_Integer64, Long> {
@@ -40,10 +41,10 @@ public final class GO_Integer64 extends PropertyType<GO_Integer64, Long> {
     /**
      * Constructs a wrapper for the given value.
      *
-     * @param value The value.
+     * @param  value  the value.
      */
     private GO_Integer64(final Long value) {
-        super(value, value.longValue() == 0);
+        super(value, value == 0L);
     }
 
     /**
@@ -60,8 +61,8 @@ public final class GO_Integer64 extends PropertyType<GO_Integer64, Long> {
      * Allows JAXB to change the result of the marshalling process, according to the
      * ISO-19139 standard and its requirements about primitive types.
      *
-     * @param value The integer value we want to surround by an element representing its type.
-     * @return An adaptation of the integer value, that is to say a integer value surrounded
+     * @param  value  the integer value we want to surround by an element representing its type.
+     * @return an adaptation of the integer value, that is to say a integer value surrounded
      *         by {@code <gco:Integer>} element.
      */
     @Override
@@ -72,9 +73,10 @@ public final class GO_Integer64 extends PropertyType<GO_Integer64, Long> {
     /**
      * Invoked by JAXB at marshalling time for getting the actual value to write.
      *
-     * @return The value to be marshalled.
+     * @return the value to be marshalled.
      */
     @XmlElement(name = "Integer")
+    @XmlSchemaType(name = "integer")
     public Long getElement() {
         return metadata;
     }
@@ -82,7 +84,7 @@ public final class GO_Integer64 extends PropertyType<GO_Integer64, Long> {
     /**
      * Invoked by JAXB at unmarshalling time for storing the result temporarily.
      *
-     * @param metadata The unmarshalled value.
+     * @param  metadata  the unmarshalled value.
      */
     public void setElement(final Long metadata) {
         this.metadata = metadata;

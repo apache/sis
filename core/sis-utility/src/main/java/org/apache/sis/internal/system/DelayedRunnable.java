@@ -30,8 +30,8 @@ import java.util.concurrent.atomic.AtomicLong;
  * for more information.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.3
+ * @since   0.3
  * @module
  */
 public abstract class DelayedRunnable implements Delayed, Runnable {
@@ -39,6 +39,12 @@ public abstract class DelayedRunnable implements Delayed, Runnable {
      * Time of execution of this task, in nanoseconds provided by {@link System#nanoTime()}.
      * In the particular case of the {@link Immediate} subclass, the meaning of this field is
      * modified: it is rather an ordinal value used for preserving task order.
+     *
+     * <div class="note"><b>Note:</b>
+     * we use {@link System#nanoTime()} instead than {@link System#currentTimeMillis()} because
+     * the later is not guaranteed to be monotonic: {@code currentTimeMillis} may change abruptly
+     * for example if the user adjusts the clock of his operating system.
+     * </div>
      */
     final long timestamp;
 
@@ -47,7 +53,7 @@ public abstract class DelayedRunnable implements Delayed, Runnable {
      * It is user's responsibility to add the {@link System#nanoTime()} value
      * to the delay he wants to wait.
      *
-     * @param timestamp Time of execution of this task, in nanoseconds relative to {@link System#nanoTime()}.
+     * @param timestamp  time of execution of this task, in nanoseconds relative to {@link System#nanoTime()}.
      */
     protected DelayedRunnable(final long timestamp) {
         this.timestamp = timestamp;
@@ -68,13 +74,13 @@ public abstract class DelayedRunnable implements Delayed, Runnable {
      * This restriction should be okay since the {@link DelayedExecutor} queue
      * accepts only {@code DelayedRunnable} instances.
      *
-     * @param other The other delayed object to compare with this delayed task.
+     * @param  other  the other delayed object to compare with this delayed task.
      * @return -1 if the other task should happen before this one, +1 if it should happen after, or 0.
      */
     @Override
     public int compareTo(final Delayed other) {
         if (other instanceof Immediate) {
-            return +1; // "Immediate" tasks always have precedence over delayed ones.
+            return +1;                      // "Immediate" tasks always have precedence over delayed ones.
         }
         return Long.signum(timestamp - ((DelayedRunnable) other).timestamp);
     }
@@ -85,11 +91,11 @@ public abstract class DelayedRunnable implements Delayed, Runnable {
      * ordered in a "first created, first executed" basis.
      *
      * @author  Martin Desruisseaux (Geomatys)
-     * @since   0.3
      * @version 0.3
+     * @since   0.3
      * @module
      */
-    public static abstract class Immediate extends DelayedRunnable {
+    public abstract static class Immediate extends DelayedRunnable {
         /**
          * A counter for ordering the tasks in a "first created, first executed" basis.
          */
@@ -105,8 +111,8 @@ public abstract class DelayedRunnable implements Delayed, Runnable {
         /**
          * Returns the delay, which is fixed to 0 in every cases.
          *
-         * @param  unit The unit of the value to return (ignored).
-         * @return The delay, which is fixed to 0.
+         * @param  unit  the unit of the value to return (ignored).
+         * @return the delay, which is fixed to 0.
          */
         @Override
         public final long getDelay(final TimeUnit unit) {
@@ -115,6 +121,8 @@ public abstract class DelayedRunnable implements Delayed, Runnable {
 
         /**
          * {@inheritDoc}
+         *
+         * @return {@inheritDoc}
          */
         @Override
         public final int compareTo(final Delayed other) {

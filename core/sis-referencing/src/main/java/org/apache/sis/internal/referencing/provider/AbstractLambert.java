@@ -16,11 +16,12 @@
  */
 package org.apache.sis.internal.referencing.provider;
 
+import javax.xml.bind.annotation.XmlTransient;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.referencing.operation.ConicProjection;
 import org.apache.sis.parameter.Parameters;
-import org.apache.sis.referencing.operation.projection.LambertConformal;
+import org.apache.sis.referencing.operation.projection.LambertConicConformal;
 import org.apache.sis.referencing.operation.projection.NormalizedProjection;
 
 
@@ -28,10 +29,11 @@ import org.apache.sis.referencing.operation.projection.NormalizedProjection;
  * Base class of providers for all Lambert Conical projections.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.6
  * @version 0.6
+ * @since   0.6
  * @module
  */
+@XmlTransient
 class AbstractLambert extends MapProjection {
     /**
      * For cross-version compatibility.
@@ -70,10 +72,10 @@ class AbstractLambert extends MapProjection {
     /**
      * {@inheritDoc}
      *
-     * @return The map projection created from the given parameter values.
+     * @return the map projection created from the given parameter values.
      */
     @Override
     protected final NormalizedProjection createProjection(final Parameters parameters) {
-        return new LambertConformal(this, parameters);
+        return new LambertConicConformal(this, parameters);
     }
 }

@@ -16,17 +16,21 @@
  */
 package org.apache.sis.feature;
 
+import java.util.Objects;
 import java.util.Iterator;
 import java.util.Collection;
 import java.util.Collections;
 import java.io.Serializable;
+import org.opengis.util.ScopedName;
 import org.opengis.util.GenericName;
 import org.opengis.metadata.quality.DataQuality;
 import org.opengis.metadata.maintenance.ScopeCode;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.util.collection.Containers;
 import org.apache.sis.util.CorruptedObjectException;
 import org.apache.sis.internal.util.CheckedArrayList;
+import org.apache.sis.internal.feature.Resources;
 
 
 /**
@@ -60,11 +64,12 @@ import org.apache.sis.internal.util.CheckedArrayList;
  * @author  Travis L. Pinney
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.5
- * @version 0.6
- * @module
+ * @version 0.8
  *
  * @see DefaultFeatureType#newInstance()
+ *
+ * @since 0.5
+ * @module
  */
 public abstract class AbstractFeature implements Serializable {
     /**
@@ -80,7 +85,7 @@ public abstract class AbstractFeature implements Serializable {
     /**
      * Creates a new feature of the given type.
      *
-     * @param type Information about the feature (name, characteristics, <i>etc.</i>).
+     * @param type  information about the feature (name, characteristics, <i>etc.</i>).
      *
      * @see DefaultFeatureType#newInstance()
      */
@@ -103,7 +108,7 @@ public abstract class AbstractFeature implements Serializable {
      * <div class="warning"><b>Warning:</b> In a future SIS version, the return type may be changed
      * to {@code org.opengis.feature.FeatureType}. This change is pending GeoAPI revision.</div>
      *
-     * @return Information about the feature.
+     * @return information about the feature.
      */
     public DefaultFeatureType getType() {
         return type;
@@ -115,21 +120,34 @@ public abstract class AbstractFeature implements Serializable {
      * method may return the result of {@linkplain AbstractOperation#apply executing} the operation
      * on this feature, at implementation choice.
      *
+     * <p>This method returns the property <em>instance</em>. If only the property <em>value</em> is
+     * desired, then {@link #getPropertyValue(String)} is preferred since it gives to SIS a chance to
+     * avoid the creation of {@link AbstractAttribute} or {@link AbstractAssociation} instances.</p>
+     *
+     * <div class="note"><b>Note for subclass implementors:</b>
+     * the default implementation returns an instance that redirect all read and write operations to
+     * {@link #getPropertyValue(String)} and {@link #setPropertyValue(String, Object)} respectively.
+     * That default implementation is intended to make easier for developers to create their own
+     * customized <code>AbstractFacture</code> implementations, but has drawbacks:
+     * a new {@code Property} instance is created every time that this {@code getProperty(String)} method is invoked,
+     * and the returned {@code Property} implementation is not very efficient
+     * since it has to perform multiple lookups and type checks.
+     * Implementors are encouraged to override this method if they can provide a more efficient implementation.
+     * Note that this is already the case when using implementations created by {@link DefaultFeatureType#newInstance()}.</div>
+     *
      * <div class="warning"><b>Warning:</b> In a future SIS version, the return type may be changed
      * to {@code org.opengis.feature.Property}. This change is pending GeoAPI revision.</div>
      *
-     * <div class="note"><b>Tip:</b> This method returns the property <em>instance</em>. If only the property
-     * <em>value</em> is desired, then {@link #getPropertyValue(String)} is preferred since it gives to SIS a
-     * chance to avoid the creation of {@link AbstractAttribute} or {@link AbstractAssociation} instances.</div>
-     *
-     * @param  name The property name.
-     * @return The property of the given name (never {@code null}).
-     * @throws IllegalArgumentException If the given argument is not a property name of this feature.
+     * @param  name  the property name.
+     * @return the property of the given name (never {@code null}).
+     * @throws IllegalArgumentException if the given argument is not a property name of this feature.
      *
      * @see #getPropertyValue(String)
      * @see DefaultFeatureType#getProperty(String)
      */
-    public abstract Object getProperty(final String name) throws IllegalArgumentException;
+    public Object getProperty(final String name) throws IllegalArgumentException {
+        return PropertyView.create(this, type.getProperty(name));
+    }
 
     /**
      * Sets the property (attribute or feature association).
@@ -147,30 +165,49 @@ public abstract class AbstractFeature implements Serializable {
      *     assert property.getType() == getType().getProperty(property.getName());
      * }
      *
-     * <div class="note"><b>Note:</b> This method is useful for storing non-default {@code Attribute} or
-     * {@code FeatureAssociation} implementations in this feature. When default implementations are sufficient,
-     * the {@link #setPropertyValue(String, Object)} method is preferred.</div>
+     * This method is useful for storing non-default {@code Attribute} or {@code FeatureAssociation} implementations
+     * in this feature. When default implementations are sufficient, the {@link #setPropertyValue(String, Object)}
+     * method is preferred.
+     *
+     * <div class="note"><b>Note for subclass implementors:</b>
+     * the default implementation verifies that the given property has the expected type and a null or empty
+     * {@linkplain AbstractAttribute#characteristics() map of characteristics}, then delegates to
+     * {@link #setPropertyValue(String, Object)}.
+     * That default implementation is intended to make easier for developers to create their own
+     * customized <code>AbstractFacture</code> implementations, but has drawbacks:
+     * the given {@code Property} instance is not stored (only its {@linkplain AbstractAttribute#getValue() value}
+     * is stored), and it can not have custom {@linkplain AbstractAttribute#characteristics() characteristics}.
+     * Implementors are encouraged to override this method if they can provide a better implementation.
+     * Note that this is already the case when using implementations created by {@link DefaultFeatureType#newInstance()}.</div>
      *
      * <div class="warning"><b>Warning:</b> In a future SIS version, the argument may be changed
      * to {@code org.opengis.feature.Property}. This change is pending GeoAPI revision.</div>
      *
-     * @param  property The property to set.
-     * @throws IllegalArgumentException if the type of the given property is not one of the types
-     *         known to this feature, or if the property can not be set of an other reason.
+     * @param  property  the property to set.
+     * @throws IllegalArgumentException if the name of the given property is not a property name of this feature.
+     * @throws IllegalArgumentException if the value of the given property is not valid.
+     * @throws IllegalArgumentException if the property can not be set for another reason.
      *
      * @see #setPropertyValue(String, Object)
      */
-    public abstract void setProperty(final Object property) throws IllegalArgumentException;
+    public void setProperty(final Object property) throws IllegalArgumentException {
+        ArgumentChecks.ensureNonNull("property", property);
+        final String name = ((Property) property).getName().toString();
+        verifyPropertyType(name, (Property) property);
+        if (property instanceof AbstractAttribute<?> && !Containers.isNullOrEmpty(((AbstractAttribute<?>) property).characteristics())) {
+            throw new IllegalArgumentException(Resources.format(Resources.Keys.CanNotAssignCharacteristics_1, name));
+        }
+        setPropertyValue(name, ((Property) property).getValue());
+    }
 
     /**
      * Wraps the given value in a {@link Property} object. This method is invoked only by
      * {@link #getProperty(String)} when it needs to converts its {@code properties} data.
      *
-     * @param  name  The name of the property to create.
-     * @param  value The value to wrap.
-     * @return A {@code Property} wrapping the given value.
+     * @param  name   the name of the property to create.
+     * @param  value  the value to wrap.
+     * @return a {@code Property} wrapping the given value.
      */
-    @SuppressWarnings({"unchecked","rawtypes"})
     final Property createProperty(final String name, final Object value) {
         final AbstractIdentifiedType pt = type.getProperty(name);
         if (pt instanceof DefaultAttributeType<?>) {
@@ -186,12 +223,11 @@ public abstract class AbstractFeature implements Serializable {
     /**
      * Creates a new property initialized to its default value.
      *
-     * @param  name The name of the property to create.
-     * @return A {@code Property} of the given name.
-     * @throws IllegalArgumentException If the given argument is not the name of an attribute or
+     * @param  name  the name of the property to create.
+     * @return a {@code Property} of the given name.
+     * @throws IllegalArgumentException if the given argument is not the name of an attribute or
      *         feature association of this feature.
      */
-    @SuppressWarnings({"unchecked","rawtypes"})
     final Property createProperty(final String name) throws IllegalArgumentException {
         final AbstractIdentifiedType pt = type.getProperty(name);
         if (pt instanceof DefaultAttributeType<?>) {
@@ -199,12 +235,14 @@ public abstract class AbstractFeature implements Serializable {
         } else if (pt instanceof DefaultAssociationRole) {
             return ((DefaultAssociationRole) pt).newInstance();
         } else {
-            throw unsupportedPropertyType(pt.getName());
+            throw new IllegalArgumentException(unsupportedPropertyType(pt.getName()));
         }
     }
 
     /**
      * Executes the parameterless operation of the given name and returns its result.
+     *
+     * @see #getOperationValue(String)
      */
     final Object getOperationResult(final String name) {
         /*
@@ -217,56 +255,22 @@ public abstract class AbstractFeature implements Serializable {
     }
 
     /**
-     * Executes the parameterless operation of the given name and returns the value of its result.
-     */
-    final Object getOperationValue(final String name) {
-        final AbstractOperation operation = (AbstractOperation) type.getProperty(name);
-        if (operation instanceof LinkOperation) {
-            return getPropertyValue(((LinkOperation) operation).propertyName);
-        }
-        final Object result = operation.apply(this, null);
-        if (result instanceof AbstractAttribute<?>) {
-            return getAttributeValue((AbstractAttribute<?>) result);
-        } else if (result instanceof AbstractAssociation) {
-            return getAssociationValue((AbstractAssociation) result);
-        } else {
-            return null;
-        }
-    }
-
-    /**
-     * Executes the parameterless operation of the given name and sets the value of its result.
-     */
-    final void setOperationValue(final String name, final Object value) {
-        final AbstractOperation operation = (AbstractOperation) type.getProperty(name);
-        if (operation instanceof LinkOperation) {
-            setPropertyValue(((LinkOperation) operation).propertyName, value);
-        } else {
-            final Object result = operation.apply(this, null);
-            if (result instanceof Property) {
-                setPropertyValue((Property) result, value);
-            } else {
-                throw new IllegalStateException(Errors.format(Errors.Keys.CanNotSetPropertyValue_1, name));
-            }
-        }
-    }
-
-    /**
      * Returns the default value to be returned by {@link #getPropertyValue(String)}
      * for the property of the given name.
      *
-     * @param  name The name of the property for which to get the default value.
-     * @return The default value for the {@code Property} of the given name.
-     * @throws IllegalArgumentException If the given argument is not an attribute or association name of this feature.
+     * @param  name  the name of the property for which to get the default value.
+     * @return the default value for the {@code Property} of the given name.
+     * @throws IllegalArgumentException if the given argument is not an attribute or association name of this feature.
      */
     final Object getDefaultValue(final String name) throws IllegalArgumentException {
         final AbstractIdentifiedType pt = type.getProperty(name);
         if (pt instanceof DefaultAttributeType<?>) {
             return getDefaultValue((DefaultAttributeType<?>) pt);
         } else if (pt instanceof DefaultAssociationRole) {
-            return null; // No default value for associations.
+            final int maximumOccurs = ((DefaultAssociationRole) pt).getMaximumOccurs();
+            return maximumOccurs > 1 ? Collections.EMPTY_LIST : null;       // No default value for associations.
         } else {
-            throw unsupportedPropertyType(pt.getName());
+            throw new IllegalArgumentException(unsupportedPropertyType(pt.getName()));
         }
     }
 
@@ -291,19 +295,31 @@ public abstract class AbstractFeature implements Serializable {
      * <table class="sis">
      *   <caption>Class of returned value</caption>
      *   <tr><th>Property type</th>                  <th>max. occurs</th> <th>Method invoked</th>                         <th>Return type</th></tr>
-     *   <tr><td>{@link AttributeType}</td>          <td>0 or 1</td>      <td>{@link Attribute#getValue()}</td>           <td>{@link Object}</td></tr>
-     *   <tr><td>{@code AttributeType}</td>          <td>2 or more</td>   <td>{@link Attribute#getValues()}</td>          <td>{@code Collection<?>}</td></tr>
-     *   <tr><td>{@link FeatureAssociationRole}</td> <td>0 or 1</td>      <td>{@link FeatureAssociation#getValue()}</td>  <td>{@link Feature}</td></tr>
-     *   <tr><td>{@code FeatureAssociationRole}</td> <td>2 or more</td>   <td>{@link FeatureAssociation#getValues()}</td> <td>{@code Collection<Feature>}</td></tr>
+     *   <tr><td>{@code AttributeType}</td>          <td>0 or 1</td>      <td>{@code Attribute.getValue()}</td>           <td>{@link Object}</td></tr>
+     *   <tr><td>{@code AttributeType}</td>          <td>2 or more</td>   <td>{@code Attribute.getValues()}</td>          <td>{@code Collection<?>}</td></tr>
+     *   <tr><td>{@code FeatureAssociationRole}</td> <td>0 or 1</td>      <td>{@code FeatureAssociation.getValue()}</td>  <td>{@code Feature}</td></tr>
+     *   <tr><td>{@code FeatureAssociationRole}</td> <td>2 or more</td>   <td>{@code FeatureAssociation.getValues()}</td> <td>{@code Collection<Feature>}</td></tr>
      * </table>
      *
      * <div class="note"><b>Note:</b> “max. occurs” is the {@linkplain DefaultAttributeType#getMaximumOccurs() maximum
      * number of occurrences} and does not depend on the actual number of values. If an attribute allows more than one
      * value, then this method will always return a collection for that attribute even if the collection is empty.</div>
      *
-     * @param  name The property name.
-     * @return The value for the given property, or {@code null} if none.
-     * @throws IllegalArgumentException If the given argument is not an attribute or association name of this feature.
+     * <div class="section">Multi-valued properties and collections</div>
+     * In the case of multi-valued properties (“max. occurs” &gt; 1), the collection returned by this method may
+     * or may not be modifiable, at implementation choice. Generally the caller can not add new elements into the
+     * returned collection anyway since {@code Collection<?>} does not allow such operations, and more specific
+     * casts (e.g. {@code Collection<String>} can not be checked at runtime (at least as of Java 8).
+     * If a type-safe modifiable collection is desired, the following approach can be used instead:
+     *
+     * {@preformat java
+     *   Attribute<String> attribute = Features.cast((Attribute<?>) feature.getProperty(name), String.class);
+     *   Collection<String> values = attribute.getValues();    // This collection is guaranteed to be "live".
+     * }
+     *
+     * @param  name  the property name.
+     * @return the value for the given property, or {@code null} if none.
+     * @throws IllegalArgumentException if the given argument is not an attribute or association name of this feature.
      *
      * @see AbstractAttribute#getValue()
      */
@@ -318,14 +334,82 @@ public abstract class AbstractFeature implements Serializable {
      * and also because some rules may be temporarily broken while constructing a feature.
      * A more exhaustive verification can be performed by invoking the {@link #quality()} method.
      *
-     * @param  name  The attribute name.
-     * @param  value The new value for the given attribute (may be {@code null}).
-     * @throws ClassCastException If the value is not assignable to the expected value class.
-     * @throws IllegalArgumentException If the given value can not be assigned for an other reason.
+     * @param  name   the attribute name.
+     * @param  value  the new value for the given attribute (may be {@code null}).
+     * @throws IllegalArgumentException if the given name is not an attribute or association name of this feature.
+     * @throws ClassCastException if the value is not assignable to the expected value class.
+     * @throws IllegalArgumentException if the given value is not valid for a reason other than its type.
      *
      * @see AbstractAttribute#setValue(Object)
      */
     public abstract void setPropertyValue(final String name, final Object value) throws IllegalArgumentException;
+
+    /**
+     * Executes the parameterless operation of the given name and returns the value of its result.
+     * This is a convenience method for sub-classes where some properties may be operations that
+     * {@linkplain AbstractOperation#getDependencies() depend} on other properties of this {@code Feature} instance
+     * (for example a {@linkplain FeatureOperations#link link} to another property value).
+     * Invoking this method is equivalent to performing the following steps:
+     *
+     * {@preformat java
+     *     Operation operation = (Operation) type.getProperty(name);
+     *     Property result = operation.apply(this, null);
+     *     if (result instanceof Attribute<?>) {
+     *         return ...;                                      // the attribute value.
+     *     } else if (result instanceof FeatureAssociation) {
+     *         return ...;                                      // the associated feature.
+     *     } else {
+     *         return null;
+     *     }
+     * }
+     *
+     * @param  name  the name of the operation to execute. The caller is responsible to ensure that the
+     *               property type for that name is an instance of {@link AbstractOperation}.
+     * @return the result value of the given operation, or {@code null} if none.
+     *
+     * @since 0.8
+     */
+    protected Object getOperationValue(final String name) {
+        final AbstractOperation operation = (AbstractOperation) type.getProperty(name);
+        if (operation instanceof LinkOperation) {
+            return getPropertyValue(((LinkOperation) operation).referentName);
+        }
+        final Object result = operation.apply(this, null);
+        if (result instanceof AbstractAttribute<?>) {
+            return getAttributeValue((AbstractAttribute<?>) result);
+        } else if (result instanceof AbstractAssociation) {
+            return getAssociationValue((AbstractAssociation) result);
+        } else {
+            return null;
+        }
+    }
+
+    /**
+     * Executes the parameterless operation of the given name and sets the value of its result.
+     * This method is the complement of {@link #getOperationValue(String)} for subclasses where
+     * some properties may be operations. Not all operations accept assignments,
+     * but the {@linkplain FeatureOperations#link link} operation for instance does.
+     *
+     * @param  name   the name of the operation to execute. The caller is responsible to ensure that the
+     *                property type for that name is an instance of {@link AbstractOperation}.
+     * @param  value  the value to assign to the result of the named operation.
+     * @throws IllegalStateException if the operation of the given name does not accept assignment.
+     *
+     * @since 0.8
+     */
+    protected void setOperationValue(final String name, final Object value) {
+        final AbstractOperation operation = (AbstractOperation) type.getProperty(name);
+        if (operation instanceof LinkOperation) {
+            setPropertyValue(((LinkOperation) operation).referentName, value);
+        } else {
+            final Object result = operation.apply(this, null);
+            if (result instanceof Property) {
+                setPropertyValue((Property) result, value);
+            } else {
+                throw new IllegalStateException(Resources.format(Resources.Keys.CanNotSetPropertyValue_1, name));
+            }
+        }
+    }
 
     /**
      * Returns the value of the given attribute, as a singleton or as a collection depending
@@ -352,7 +436,7 @@ public abstract class AbstractFeature implements Serializable {
         } else if (property instanceof AbstractAssociation) {
             setAssociationValue((AbstractAssociation) property, value);
         } else {
-            throw unsupportedPropertyType(property.getName());
+            throw new IllegalArgumentException(unsupportedPropertyType(property.getName()));
         }
     }
 
@@ -380,7 +464,7 @@ public abstract class AbstractFeature implements Serializable {
                     } while ((element = it.next()) == null || base.isInstance(element));
                     // Found an illegal value. Exeption is thrown below.
                 }
-                throw illegalValueClass(attribute.getName(), element); // 'element' can not be null here.
+                throw new ClassCastException(illegalValueClass(pt, base, element));         // 'element' can not be null here.
             }
         }
         ((AbstractAttribute) attribute).setValue(value);
@@ -398,14 +482,14 @@ public abstract class AbstractFeature implements Serializable {
             if (value instanceof AbstractFeature) {
                 final DefaultFeatureType actual = ((AbstractFeature) value).getType();
                 if (base != actual && !DefaultFeatureType.maybeAssignableFrom(base, actual)) {
-                    throw illegalPropertyType(role.getName(), actual.getName());
+                    throw new IllegalArgumentException(illegalFeatureType(role, base, actual));
                 }
             } else if (value instanceof Collection<?>) {
                 verifyAssociationValues(role, (Collection<?>) value);
                 association.setValues((Collection<? extends AbstractFeature>) value);
-                return; // Skip the setter at the end of this method.
+                return;                                 // Skip the setter at the end of this method.
             } else {
-                throw illegalValueClass(association.getName(), value);
+                throw new ClassCastException(illegalValueClass(role, AbstractFeature.class, value));
             }
         }
         association.setValue((AbstractFeature) value);
@@ -417,9 +501,9 @@ public abstract class AbstractFeature implements Serializable {
      * the same class. Since the type check has already been done by the previous assignation, we do not
      * need to perform it again.
      *
-     * @param previous The previous value, or {@code null}.
-     * @param value    The new value, or {@code null}.
-     * @return         {@code true} if the caller can skip the verification performed by {@code verifyPropertyValue}.
+     * @param  previous  the previous value, or {@code null}.
+     * @param  value     the new value, or {@code null}.
+     * @return {@code true} if the caller can skip the verification performed by {@code verifyPropertyValue}.
      */
     static boolean canSkipVerification(final Object previous, final Object value) {
         if (previous != null) {
@@ -436,8 +520,8 @@ public abstract class AbstractFeature implements Serializable {
     /**
      * Verifies if the given property can be assigned to this feature.
      *
-     * @param name Shall be {@code property.getName().toString()}.
-     * @param property The property to verify.
+     * @param  name      shall be {@code property.getName().toString()}.
+     * @param  property  the property to verify.
      */
     final void verifyPropertyType(final String name, final Property property) {
         final AbstractIdentifiedType pt, base = type.getProperty(name);
@@ -446,18 +530,20 @@ public abstract class AbstractFeature implements Serializable {
         } else if (property instanceof AbstractAssociation) {
             pt = ((AbstractAssociation) property).getRole();
         } else {
-            throw illegalPropertyType(base.getName(), property.getClass());
+            throw new IllegalArgumentException(Resources.format(Resources.Keys.IllegalPropertyType_2, base.getName(), property.getClass()));
         }
         if (pt != base) {
-            throw new IllegalArgumentException(base == null
-                    ? Errors.format(Errors.Keys.PropertyNotFound_2, getName(), name)
-                    : Errors.format(Errors.Keys.MismatchedPropertyType_1, name));
+            if (base == null) {
+                throw new IllegalArgumentException(Resources.format(Resources.Keys.PropertyNotFound_2, getName(), name));
+            } else {
+                throw new IllegalArgumentException(Resources.format(Resources.Keys.MismatchedPropertyType_1, name));
+            }
         }
     }
 
     /**
-     * Verifies the validity of the given value for the property of the given name, then returns the value
-     * to store. The returned value is usually the same than the given one, except in the case of collections.
+     * Verifies the validity of the given value for the property of the given name, then returns the value to store.
+     * The returned value is usually the same than the given one, except in the case of collections.
      */
     final Object verifyPropertyValue(final String name, final Object value) {
         final AbstractIdentifiedType pt = type.getProperty(name);
@@ -470,7 +556,7 @@ public abstract class AbstractFeature implements Serializable {
                 return verifyAssociationValue((DefaultAssociationRole) pt, value);
             }
         } else {
-            throw unsupportedPropertyType(pt.getName());
+            throw new IllegalArgumentException(unsupportedPropertyType(pt.getName()));
         }
         return value;
     }
@@ -483,7 +569,7 @@ public abstract class AbstractFeature implements Serializable {
      *   <li>May be a collection, in which case the class each elements in the collection is verified.</li>
      * </ul>
      *
-     * @param value The value, which shall be non-null.
+     * @param  value  the value, which shall be non-null.
      */
     private static <T> Object verifyAttributeValue(final DefaultAttributeType<T> type, final Object value) {
         final Class<T> valueClass = type.getValueClass();
@@ -493,7 +579,7 @@ public abstract class AbstractFeature implements Serializable {
         } else if (!isSingleton && value instanceof Collection<?>) {
             return CheckedArrayList.castOrCopy((Collection<?>) value, valueClass);
         } else {
-            throw illegalValueClass(type.getName(), value);
+            throw new ClassCastException(illegalValueClass(type, valueClass, value));
         }
     }
 
@@ -505,7 +591,7 @@ public abstract class AbstractFeature implements Serializable {
      *   <li>May be a collection, in which case the class each elements in the collection is verified.</li>
      * </ul>
      *
-     * @param value The value, which shall be non-null.
+     * @param  value  the value, which shall be non-null.
      */
     private static Object verifyAssociationValue(final DefaultAssociationRole role, final Object value) {
         final boolean isSingleton = Field.isSingleton(role.getMaximumOccurs());
@@ -516,16 +602,16 @@ public abstract class AbstractFeature implements Serializable {
              */
             final DefaultFeatureType valueType = ((AbstractFeature) value).getType();
             final DefaultFeatureType base = role.getValueType();
-            if (base != valueType && DefaultFeatureType.maybeAssignableFrom(base, valueType)) {
+            if (base == valueType || DefaultFeatureType.maybeAssignableFrom(base, valueType)) {
                 return isSingleton ? value : singletonList(AbstractFeature.class, role.getMinimumOccurs(), value);
             } else {
-                throw illegalPropertyType(role.getName(), valueType.getName());
+                throw new IllegalArgumentException(illegalFeatureType(role, base, valueType));
             }
         } else if (!isSingleton && value instanceof Collection<?>) {
             verifyAssociationValues(role, (Collection<?>) value);
             return CheckedArrayList.castOrCopy((Collection<?>) value, AbstractFeature.class);
         } else {
-            throw illegalValueClass(role.getName(), value);
+            throw new ClassCastException(illegalValueClass(role, AbstractFeature.class, value));
         }
     }
 
@@ -538,11 +624,11 @@ public abstract class AbstractFeature implements Serializable {
         for (final Object value : values) {
             ArgumentChecks.ensureNonNullElement("values", index, value);
             if (!(value instanceof AbstractFeature)) {
-                throw illegalValueClass(role.getName(), value);
+                throw new ClassCastException(illegalValueClass(role, AbstractFeature.class, value));
             }
             final DefaultFeatureType type = ((AbstractFeature) value).getType();
             if (base != type && !DefaultFeatureType.maybeAssignableFrom(base, type)) {
-                throw illegalPropertyType(role.getName(), type.getName());
+                throw new IllegalArgumentException(illegalFeatureType(role, base, type));
             }
             index++;
         }
@@ -554,34 +640,63 @@ public abstract class AbstractFeature implements Serializable {
      */
     @SuppressWarnings("unchecked")
     private static <V> Collection<V> singletonList(final Class<V> valueClass, final int minimumOccurs, final Object value) {
-        final CheckedArrayList<V> values = new CheckedArrayList<V>(valueClass, Math.max(minimumOccurs, 4));
-        values.add((V) value); // Type will be checked by CheckedArrayList.
+        final CheckedArrayList<V> values = new CheckedArrayList<>(valueClass, Math.max(minimumOccurs, 4));
+        values.add((V) value);                              // Type will be checked by CheckedArrayList.
         return values;
     }
 
     /**
-     * Returns the exception for a property type which neither an attribute or an association.
-     * This method is invoked after a {@link PropertyType} has been found for the user-supplied name,
-     * but that property can not be stored in a {@link Property} instance.
-     */
-    static IllegalArgumentException unsupportedPropertyType(final GenericName name) {
-        return new IllegalArgumentException(Errors.format(Errors.Keys.CanNotInstantiate_1, name));
-    }
-
-    /**
-     * Returns the exception for a property value of wrong Java class.
+     * Returns the exception message for a property not found. The message will differ depending
+     * on whether the property is not found because ambiguous or because it does not exist.
      *
-     * @param value The value, which shall be non-null.
+     * @param  feature   the name of the feature where a property where searched ({@link String} or {@link GenericName}).
+     * @param  property  the name of the property which has not been found.
      */
-    private static ClassCastException illegalValueClass(final GenericName name, final Object value) {
-        return new ClassCastException(Errors.format(Errors.Keys.IllegalPropertyClass_2, name, value.getClass()));
+    static String propertyNotFound(final FeatureType type, final Object feature, final String property) {
+        GenericName ambiguous = null;
+        for (final AbstractIdentifiedType p : type.getProperties(true)) {
+            final GenericName next = p.getName();
+            GenericName name = next;
+            do {
+                if (property.equalsIgnoreCase(name.toString())) {
+                    if (ambiguous == null) {
+                        ambiguous = next;
+                    } else {
+                        return Errors.format(Errors.Keys.AmbiguousName_3, ambiguous, next, property);
+                    }
+                }
+            } while (name instanceof ScopedName && (name = ((ScopedName) name).tail()) != null);
+        }
+        return Resources.format(Resources.Keys.PropertyNotFound_2, feature, property);
     }
 
     /**
-     * Returns the exception for a property value (usually a feature) of wrong type.
+     * Returns the exception message for a property type which is neither an attribute or an association.
+     * This method is invoked after a {@code PropertyType} has been found for the user-supplied name,
+     * but that property can not be stored in or extracted from a {@link Property} instance.
      */
-    private static IllegalArgumentException illegalPropertyType(final GenericName name, final Object value) {
-        return new IllegalArgumentException(Errors.format(Errors.Keys.IllegalPropertyClass_2, name, value));
+    static String unsupportedPropertyType(final GenericName name) {
+        return Resources.format(Resources.Keys.CanNotInstantiateProperty_1, name);
+    }
+
+    /**
+     * Returns the exception message for a property value of wrong Java class.
+     *
+     * @param  value  the value, which shall be non-null.
+     */
+    private static String illegalValueClass(final AbstractIdentifiedType property, final Class<?> expected, final Object value) {
+        return Resources.format(Resources.Keys.IllegalPropertyValueClass_3,
+                                property.getName(), expected, value.getClass());
+    }
+
+    /**
+     * Returns the exception message for an association value of wrong type.
+     */
+    private static String illegalFeatureType(
+            final DefaultAssociationRole association, final FeatureType expected, final FeatureType actual)
+    {
+        return Resources.format(Resources.Keys.IllegalFeatureType_3,
+                                association.getName(), expected.getName(), actual.getName());
     }
 
     /**
@@ -627,39 +742,104 @@ public abstract class AbstractFeature implements Serializable {
      * }
      * </div>
      *
-     * @return Reports on all constraint violations found.
+     * @return reports on all constraint violations found.
      *
      * @see AbstractAttribute#quality()
      * @see AbstractAssociation#quality()
      */
     public DataQuality quality() {
         final Validator v = new Validator(ScopeCode.FEATURE);
-        for (final AbstractIdentifiedType pt : type.getProperties(true)) {
-            final Property property = (Property) getProperty(pt.getName().toString());
-            final DataQuality quality;
-            if (property instanceof AbstractAttribute<?>) {
-                quality = ((AbstractAttribute<?>) property).quality();
-            } else if (property instanceof AbstractAssociation) {
-                quality = ((AbstractAssociation) property).quality();
-            } else {
-                continue;
-            }
-            if (quality != null) { // Should not be null, but let be safe.
-                v.quality.getReports().addAll(quality.getReports());
-            }
-        }
+        v.validate(type, this);
         return v.quality;
     }
 
     /**
      * Formats this feature in a tabular format.
      *
-     * @return A string representation of this feature in a tabular format.
+     * @return a string representation of this feature in a tabular format.
      *
      * @see FeatureFormat
      */
     @Override
     public String toString() {
         return FeatureFormat.sharedFormat(this);
+    }
+
+    /**
+     * Returns a hash code value for this feature.
+     * The default implementation performs the following algorithm:
+     *
+     * <ul>
+     *   <li>Iterate over all properties returned by {@code type.getProperty(true)} –
+     *       thus including properties inherited from parent types (if any):
+     *   <ul>
+     *     <li>For each property type, get the value with {@link #getPropertyValue(String)}.</li>
+     *     <li>Compute the hash code from the property name and value, ignoring the properties
+     *         having a null value.</li>
+     *   </ul></li>
+     * </ul>
+     *
+     * Subclasses should override this method with a more efficient algorithm for their internal structure.
+     * There is no need to reproduce the same hash code value than the one computed by this default method.
+     *
+     * @return a hash code value.
+     *
+     * @since 0.8
+     */
+    @Override
+    public int hashCode() {
+        int code = type.hashCode() * 37;
+        for (final AbstractIdentifiedType pt : type.getProperties(true)) {
+            final String name = pt.getName().toString();
+            if (name != null) {                                             // Paranoiac check.
+                final Object value = getPropertyValue(name);
+                if (value != null) {
+                    code += name.hashCode() ^ value.hashCode();
+                }
+            }
+        }
+        return code;
+    }
+
+    /**
+     * Compares this feature with the given object for equality.
+     * The default implementation performs the following algorithm:
+     *
+     * <ul>
+     *   <li>Verify that both objects are non-null and of the same class.</li>
+     *   <li>Iterate over all properties returned by {@code type.getProperty(true)} –
+     *       thus including properties inherited from parent types (if any):
+     *   <ul>
+     *     <li>For each property type, get the value from both {@code FeatureType}
+     *         by a call to {@link #getPropertyValue(String)}.</li>
+     *     <li>Verify that the two values are either both null, or equal in the sense of
+     *         {@link Object#equals(Object)}.</li>
+     *   </ul></li>
+     * </ul>
+     *
+     * Subclasses should override this method with a more efficient algorithm for their internal structure.
+     *
+     * @return {@code true} if both objects are equal.
+     *
+     * @since 0.8
+     */
+    @Override
+    public boolean equals(final Object obj) {
+        if (obj != this) {
+            if (obj == null || obj.getClass() != getClass()) {
+                return false;
+            }
+            final AbstractFeature that = (AbstractFeature) obj;
+            if (!type.equals(that.type)) {
+                return false;
+            }
+            for (final AbstractIdentifiedType pt : type.getProperties(true)) {
+                final String name = pt.getName().toString();
+                if (!Objects.equals(getPropertyValue(name), that.getPropertyValue(name))) {
+                    return false;
+                }
+            }
+        }
+        return true;
     }
 }

@@ -28,7 +28,7 @@
   <parent>
     <groupId>org.apache.sis</groupId>
     <artifactId>parent</artifactId>
-    <version>0.6-android-SNAPSHOT</version>
+    <version>0.8-SNAPSHOT</version>
   </parent>
 
 
@@ -49,6 +49,17 @@
        =========================================================== -->
   <developers>
     <developer>
+      <name>Johann Sorel</name>
+      <id>jsorel</id>
+      <email>johann.sorel@geomatys.com</email>
+      <organization>Geomatys</organization>
+      <organizationUrl>http://www.geomatys.com</organizationUrl>
+      <timezone>+1</timezone>
+      <roles>
+        <role>developer</role>
+      </roles>
+    </developer>
+    <developer>
       <name>Martin Desruisseaux</name>
       <id>desruisseaux</id>
       <email>desruisseaux@apache.org</email>
@@ -62,11 +73,21 @@
   </developers>
   <contributors>
     <contributor>
-      <name>Johann Sorel</name>
-      <email>johann.sorel@geomatys.com</email>
-      <organization>Geomatys</organization>
-      <organizationUrl>http://www.geomatys.com/</organizationUrl>
-      <timezone>+1</timezone>
+      <name>Thi Phuong Hao Nguyen</name>
+      <email>nguyenthiphuonghao243@gmail.com</email>
+      <organization>VNSC</organization>
+      <organizationUrl>http://vnsc.org.vn</organizationUrl>
+      <timezone>+7</timezone>
+      <roles>
+        <role>developer</role>
+      </roles>
+    </contributor>
+    <contributor>
+      <name>Minh Chinh Vu</name>
+      <email>chinhvm.uet.1995@gmail.com</email>
+      <organization>VNSC</organization>
+      <organizationUrl>http://vnsc.org.vn</organizationUrl>
+      <timezone>+7</timezone>
       <roles>
         <role>developer</role>
       </roles>
@@ -80,7 +101,8 @@
   <build>
     <plugins>
 
-      <!-- Collect JAR files in <root>/target/binaries directory. -->
+      <!-- Compile properties files into resources UTF files and
+           collect JAR files in <root>/target/binaries directory. -->
       <plugin>
         <groupId>org.apache.sis.core</groupId>
         <artifactId>sis-build-helper</artifactId>
@@ -88,6 +110,7 @@
         <executions>
           <execution>
             <goals>
+              <goal>compile-resources</goal>
               <goal>collect-jars</goal>
             </goals>
           </execution>
@@ -138,6 +161,10 @@
     <module>sis-storage</module>
     <module>sis-shapefile</module>
     <module>sis-netcdf</module>
+    <module>sis-geotiff</module>
+    <module>sis-xmlstore</module>
+    <module>sis-earth-observation</module>
+    <module>sis-gdal</module>
   </modules>
 
 </project>

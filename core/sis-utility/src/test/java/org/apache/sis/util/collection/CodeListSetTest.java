@@ -37,8 +37,8 @@ import static org.opengis.referencing.cs.AxisDirection.*;
  * Tests the {@link CodeListSet} implementation.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.3
+ * @since   0.3
  * @module
  */
 public final strictfp class CodeListSetTest extends TestCase {
@@ -50,11 +50,11 @@ public final strictfp class CodeListSetTest extends TestCase {
      */
     @SuppressWarnings("fallthrough")
     private CodeListSet<AxisDirection> create(final int n) {
-        final CodeListSet<AxisDirection> c = new CodeListSet<AxisDirection>(AxisDirection.class);
+        final CodeListSet<AxisDirection> c = new CodeListSet<>(AxisDirection.class);
         assertTrue(c.isEmpty());
         switch (n) {
             default: throw new AssertionError(n);
-            case 4: assertTrue(c.add(FUTURE)); // Fallthrough everywhere.
+            case 4: assertTrue(c.add(FUTURE));              // Fallthrough everywhere.
             case 3: assertTrue(c.add(UP));
             case 2: assertTrue(c.add(EAST));
             case 1: assertTrue(c.add(NORTH));
@@ -72,7 +72,7 @@ public final strictfp class CodeListSetTest extends TestCase {
     private CodeListSet<OnLineFunction> createOtherKind() {
         // For the validity of the tests, ordinal value must be the same.
         assertEquals(NORTH.ordinal(), OnLineFunction.INFORMATION.ordinal());
-        final CodeListSet<OnLineFunction> c = new CodeListSet<OnLineFunction>(OnLineFunction.class);
+        final CodeListSet<OnLineFunction> c = new CodeListSet<>(OnLineFunction.class);
         assertTrue(c.add(OnLineFunction.INFORMATION));
         return c;
     }
@@ -217,7 +217,7 @@ public final strictfp class CodeListSetTest extends TestCase {
     @Test
     @DependsOnMethod("testContains")
     public void testFill() {
-        final CodeListSet<AxisDirection> c = new CodeListSet<AxisDirection>(AxisDirection.class, true);
+        final CodeListSet<AxisDirection> c = new CodeListSet<>(AxisDirection.class, true);
         assertTrue("Expect at least 32 elements as of GeoAPI 3.0.0.", c.size() >= 32);
         assertTrue(c.toString().startsWith("[AxisDirection[OTHER], AxisDirection[NORTH], "));
         /*
@@ -233,9 +233,9 @@ public final strictfp class CodeListSetTest extends TestCase {
      */
     @Test
     public void testLargeCodeList() {
-        final Set<LargeCodeList> master = new HashSet<LargeCodeList>(Arrays.asList(LargeCodeList.values()));
+        final Set<LargeCodeList> master = new HashSet<>(Arrays.asList(LargeCodeList.values()));
         assertTrue("This test requires more than 64 elements.", master.size() > Long.SIZE);
-        final CodeListSet<LargeCodeList> c = new CodeListSet<LargeCodeList>(LargeCodeList.class);
+        final CodeListSet<LargeCodeList> c = new CodeListSet<>(LargeCodeList.class);
         /*
          * Copy all content from the master to the CodeListSet. This will indirectly
          * test CodeListSet.add(E), through the AbstractSet.addAll(Collection) method.
@@ -250,7 +250,7 @@ public final strictfp class CodeListSetTest extends TestCase {
         final CodeListSet<LargeCodeList> clone = c.clone();
         assertNotSame("Clone shall be a new instance.", c, clone);
         assertEquals("Clone shall be equal to the original.", master, clone);
-        assertEquals(clone, new CodeListSet<LargeCodeList>(LargeCodeList.class, true));
+        assertEquals(clone, new CodeListSet<>(LargeCodeList.class, true));
         /*
          * Tests contains(Object) and remove(Object). We also remove elements
          * from the master set, then we verify that the result is the same.

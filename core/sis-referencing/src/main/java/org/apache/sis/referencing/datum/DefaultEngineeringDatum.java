@@ -23,6 +23,7 @@ import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
 import org.opengis.referencing.ReferenceIdentifier;
 import org.opengis.referencing.datum.EngineeringDatum;
+import org.apache.sis.internal.metadata.WKTKeywords;
 import org.apache.sis.io.wkt.Formatter;
 
 
@@ -38,8 +39,12 @@ import org.apache.sis.io.wkt.Formatter;
  * components were created using only SIS factories and static constants.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.4
  * @version 0.4
+ *
+ * @see org.apache.sis.referencing.crs.DefaultEngineeringCRS
+ * @see org.apache.sis.referencing.factory.GeodeticAuthorityFactory#createEngineeringDatum(String)
+ *
+ * @since 0.4
  * @module
  */
 @XmlType(name = "EngineeringDatumType")
@@ -49,14 +54,6 @@ public class DefaultEngineeringDatum extends AbstractDatum implements Engineerin
      * Serial number for inter-operability with different versions.
      */
     private static final long serialVersionUID = 1498304918725248637L;
-
-    /**
-     * Constructs a new datum in which every attributes are set to a null value.
-     * <strong>This is not a valid object.</strong> This constructor is strictly
-     * reserved to JAXB, which will assign values to the fields using reflexion.
-     */
-    private DefaultEngineeringDatum() {
-    }
 
     /**
      * Creates an engineering datum from the given properties. The properties map is given
@@ -112,7 +109,9 @@ public class DefaultEngineeringDatum extends AbstractDatum implements Engineerin
      *   </tr>
      * </table>
      *
-     * @param properties The properties to be given to the identified object.
+     * @param  properties  the properties to be given to the identified object.
+     *
+     * @see org.apache.sis.referencing.factory.GeodeticObjectFactory#createEngineeringDatum(Map)
      */
     public DefaultEngineeringDatum(final Map<String,?> properties) {
         super(properties);
@@ -125,7 +124,7 @@ public class DefaultEngineeringDatum extends AbstractDatum implements Engineerin
      *
      * <p>This constructor performs a shallow copy, i.e. the properties are not cloned.</p>
      *
-     * @param datum The datum to copy.
+     * @param  datum  the datum to copy.
      *
      * @see #castOrCopy(EngineeringDatum)
      */
@@ -139,8 +138,8 @@ public class DefaultEngineeringDatum extends AbstractDatum implements Engineerin
      * Otherwise if the given object is already a SIS implementation, then the given object is returned unchanged.
      * Otherwise a new SIS implementation is created and initialized to the attribute values of the given object.
      *
-     * @param  object The object to get as a SIS implementation, or {@code null} if none.
-     * @return A SIS implementation containing the values of the given object (may be the
+     * @param  object  the object to get as a SIS implementation, or {@code null} if none.
+     * @return a SIS implementation containing the values of the given object (may be the
      *         given object itself), or {@code null} if the argument was null.
      */
     public static DefaultEngineeringDatum castOrCopy(final EngineeringDatum object) {
@@ -168,6 +167,8 @@ public class DefaultEngineeringDatum extends AbstractDatum implements Engineerin
      * Formats this datum as a <cite>Well Known Text</cite> {@code EngineeringDatum[…]} element.
      *
      * @return {@code "EngineeringDatum"} (WKT 2) or {@code "Local_Datum"} (WKT 1).
+     *
+     * @see <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html#76">WKT 2 specification §11.2</a>
      */
     @Override
     protected String formatTo(final Formatter formatter) {
@@ -180,8 +181,30 @@ public class DefaultEngineeringDatum extends AbstractDatum implements Engineerin
              * in WKT 1, but do not have any indication about what the values should be.
              */
             formatter.append(0);
-            return "Local_Datum";
+            return WKTKeywords.Local_Datum;
         }
-        return "EngineeringDatum";
+        return formatter.shortOrLong(WKTKeywords.EDatum, WKTKeywords.EngineeringDatum);
+    }
+
+
+
+
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+    ////////                                                                                  ////////
+    ////////                               XML support with JAXB                              ////////
+    ////////                                                                                  ////////
+    ////////        The following methods are invoked by JAXB using reflection (even if       ////////
+    ////////        they are private) or are helpers for other methods invoked by JAXB.       ////////
+    ////////        Those methods can be safely removed if Geographic Markup Language         ////////
+    ////////        (GML) support is not needed.                                              ////////
+    ////////                                                                                  ////////
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Constructs a new datum in which every attributes are set to a null value.
+     * <strong>This is not a valid object.</strong> This constructor is strictly
+     * reserved to JAXB, which will assign values to the fields using reflexion.
+     */
+    private DefaultEngineeringDatum() {
     }
 }

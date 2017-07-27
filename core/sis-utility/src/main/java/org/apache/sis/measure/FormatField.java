@@ -24,8 +24,8 @@ import java.text.Format;
  * Base class of format fields.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.3
+ * @since   0.3
  * @module
  */
 class FormatField extends Format.Field {
@@ -50,8 +50,8 @@ class FormatField extends Format.Field {
     /**
      * Creates a new field of the given name.
      *
-     * @param name  The name, which shall be identical to the name of the public static constant.
-     * @param field The numeric identifier of this field.
+     * @param name   the name, which shall be identical to the name of the public static constant.
+     * @param field  the numeric identifier of this field.
      */
     FormatField(final String name, final int field) {
         super(name);
@@ -61,18 +61,16 @@ class FormatField extends Format.Field {
     /**
      * Invoked on deserialization for resolving this instance to one of the predefined constants.
      *
-     * @return One of the predefined constants.
-     * @throws InvalidObjectException If this instance can not be resolved.
+     * @return one of the predefined constants.
+     * @throws InvalidObjectException if this instance can not be resolved.
      */
     @Override
     protected final Object readResolve() throws InvalidObjectException {
         final Class<?> type = getClass();
         try {
             return type.cast(type.getField(getName()).get(null));
-        } catch (Exception cause) { // Many exceptions, including unchecked ones.
-            InvalidObjectException e = new InvalidObjectException(cause.toString());
-            e.initCause(cause);
-            throw e;
+        } catch (Exception cause) {                                 // Many exceptions, including unchecked ones.
+            throw (InvalidObjectException) new InvalidObjectException(cause.toString()).initCause(cause);
         }
     }
 }

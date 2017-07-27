@@ -36,7 +36,7 @@
  * More on this convention is explained below.</p>
  *
  * <p>Users wanting to know more about the available projections and their parameters should look at the
- * <a href="http://sis.apache.org/content/CoordinateOperationMethods.html">list of coordinate operation methods</a>.
+ * <a href="http://sis.apache.org/tables/CoordinateOperationMethods.html">list of coordinate operation methods</a>.
  * Only users interested in the <em>implementation</em> of those projections should look at this package.</p>
  *
  *
@@ -159,11 +159,12 @@
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Rémi Maréchal (Geomatys)
  * @author  Adrian Custer (Geomatys)
- * @since   0.6
- * @version 0.6
- * @module
+ * @version 0.8
  *
  * @see <a href="http://www.remotesensing.org/geotiff/proj_list">Projections list on RemoteSensing.org</a>
  * @see <a href="http://mathworld.wolfram.com/MapProjection.html">Map projections on MathWorld</a>
+ *
+ * @since 0.6
+ * @module
  */
 package org.apache.sis.referencing.operation.projection;

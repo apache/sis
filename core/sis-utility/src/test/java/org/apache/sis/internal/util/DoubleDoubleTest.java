@@ -37,8 +37,8 @@ import static java.lang.StrictMath.*;
  * Those tests need {@link DoubleDouble#DISABLED} to be set to {@code false}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.4
  * @version 0.4
+ * @since   0.4
  * @module
  */
 @DependsOn(org.apache.sis.math.DecimalFunctionsTest.class)
@@ -61,11 +61,6 @@ public final strictfp class DoubleDoubleTest extends TestCase {
      * than 1 ULP of {@link DoubleDouble#error} will be clamped.
      */
     private static final double PRODUCT_TOLERANCE_FACTOR = 1E-15;
-
-    /**
-     * Tolerance threshold for strict comparisons of floating point values.
-     */
-    private static final double STRICT = 0;
 
     /**
      * The random number generator to use for the test.
@@ -112,9 +107,9 @@ public final strictfp class DoubleDoubleTest extends TestCase {
      * Asserts that the result of some operation is equals to the expected value,
      * up to a tolerance value determined by the extended arithmetic precision.
      *
-     * @param expected The expected value, computed using {@code BigInteger} arithmetic.
-     * @param actual The actual value.
-     * @param ef Multiplication factor for the tolerance threshold.
+     * @param expected  the expected value, computed using {@code BigInteger} arithmetic.
+     * @param actual    the actual value.
+     * @param ef        multiplication factor for the tolerance threshold.
      */
     private static void assertExtendedEquals(final BigDecimal expected, final DoubleDouble actual, final double ef) {
         final BigDecimal value = toBigDecimal(actual);
@@ -255,6 +250,17 @@ public final strictfp class DoubleDoubleTest extends TestCase {
     }
 
     /**
+     * Tests {@link DoubleDouble#ratio_1m_1p()}.
+     */
+    @Test
+    @DependsOnMethod("testDivide")
+    public void testRatio_1m_1p() {
+        final DoubleDouble t = new DoubleDouble(0.25, 0);
+        t.ratio_1m_1p();
+        assertEquals((1 - 0.25) / (1 + 0.25), t.doubleValue(), STRICT);
+    }
+
+    /**
      * Tests {@link DoubleDouble#sqrt()} first with the square root of 2, then with random values.
      * In the {@code sqrt(2)} case:
      *
@@ -283,11 +289,25 @@ public final strictfp class DoubleDoubleTest extends TestCase {
             }
             final double value = dd.value;
             final double error = dd.error;
-            dd.multiply(dd);
+            dd.square();
             dd.sqrt();
             dd.subtract(value, error);
             assertEquals(0, dd.doubleValue(), 1E-29);
         }
+        dd.clear();
+        dd.sqrt();
+        assertTrue(dd.isZero());
+    }
+
+    /**
+     * Tests the {@link DoubleDouble#series(double...)} method.
+     */
+    @Test
+    @DependsOnMethod({"testMultiply", "testAdd"})
+    public void testSeries() {
+        final DoubleDouble t = new DoubleDouble(2);
+        t.series(1, 1./3, 1./9, 1./7, 1./13);  // Random coefficient.
+        assertEquals(1 + 2./3 + 4./9 + 8./7 + 16./13, t.doubleValue(), STRICT);
     }
 
     /**
@@ -332,10 +352,10 @@ public final strictfp class DoubleDoubleTest extends TestCase {
      *   <li>The arrays do not contains an entry for a value that could be omitted.</li>
      * </ul>
      *
-     * @throws Exception If a reflective operation failed (should never happen).
+     * @throws ReflectiveOperationException if this test uses wrong field names.
      */
     @Test
-    public void testArraysConsistency() throws Exception {
+    public void testArraysConsistency() throws ReflectiveOperationException {
         Field field = DoubleDouble.class.getDeclaredField("VALUES");
         field.setAccessible(true);
         final double[] values = (double[]) field.get(null);
@@ -412,7 +432,7 @@ public final strictfp class DoubleDoubleTest extends TestCase {
                 case 0:  dd = DoubleDouble.createRadiansToDegrees(); break;
                 case 1:  dd = DoubleDouble.createDegreesToRadians(); break;
                 case 2:  dd = DoubleDouble.createSecondsToRadians(); break;
-                default: return; // Test done.
+                default: return;                                             // Test done.
             }
             assertEquals(DoubleDouble.errorForWellKnownValue(dd.value), dd.error, STRICT);
         }

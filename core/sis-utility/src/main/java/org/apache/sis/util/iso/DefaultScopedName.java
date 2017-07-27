@@ -49,12 +49,13 @@ import org.apache.sis.internal.util.UnmodifiableArrayList;
  * state.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.3
- * @version 0.3
- * @module
+ * @version 0.8
  *
  * @see DefaultNameSpace
  * @see DefaultLocalName
+ *
+ * @since 0.3
+ * @module
  */
 
 /*
@@ -83,7 +84,7 @@ public class DefaultScopedName extends AbstractName implements ScopedName {
      * Creates a new scoped names from the given list of local names. This constructor is
      * not public because we do not check if the given local names have the proper scope.
      *
-     * @param names The names to gives to the new scoped name.
+     * @param names  the names to gives to the new scoped name.
      */
     static AbstractName create(final UnmodifiableArrayList<? extends DefaultLocalName> names) {
         ArgumentChecks.ensureNonNull("names", names);
@@ -98,7 +99,7 @@ public class DefaultScopedName extends AbstractName implements ScopedName {
      * Creates a new scoped names from the given list of local names. This constructor is
      * not public because it does not check if the given local names have the proper scope.
      *
-     * @param names The names to gives to the new scoped name.
+     * @param names  the names to gives to the new scoped name.
      */
     private DefaultScopedName(final UnmodifiableArrayList<? extends LocalName> names) {
         parsedNames = names;
@@ -111,8 +112,8 @@ public class DefaultScopedName extends AbstractName implements ScopedName {
      * method will be invoked for fetching an unlocalized name.
      * Otherwise the {@link CharSequence#toString()} method will be used.
      *
-     * @param scope The scope of this name, or {@code null} for the global scope.
-     * @param names The local names. This list must have at least two elements.
+     * @param scope  the scope of this name, or {@code null} for the global scope.
+     * @param names  the local names. This list must have at least two elements.
      */
     protected DefaultScopedName(final NameSpace scope, final List<? extends CharSequence> names) {
         ArgumentChecks.ensureNonNull("names", names);
@@ -132,7 +133,7 @@ public class DefaultScopedName extends AbstractName implements ScopedName {
         do {
             ArgumentChecks.ensureNonNullElement("names", i, name);
             locals[i++] = new DefaultLocalName(ns, name);
-            ns = ns.child(name);
+            ns = ns.child(name, ns.separator);
             name = it.next();
         } while (it.hasNext());
         /*
@@ -147,7 +148,7 @@ public class DefaultScopedName extends AbstractName implements ScopedName {
             tip.fullyQualified = fullyQualified = this;
         }
         locals[i++] = tip;
-        if (i != size) { // Paranoiac check.
+        if (i != size) {                                        // Paranoiac check.
             throw new ConcurrentModificationException(Errors.format(Errors.Keys.UnexpectedChange_1, "names"));
         }
         // Following line is safe because 'parsedNames' type is <? extends LocalName>.
@@ -158,8 +159,8 @@ public class DefaultScopedName extends AbstractName implements ScopedName {
      * Constructs a scoped name as the concatenation of the given generic names.
      * The scope of the new name will be the scope of the {@code path} argument.
      *
-     * @param path The first part to concatenate.
-     * @param tail The second part to concatenate.
+     * @param path  the first part to concatenate.
+     * @param tail  the second part to concatenate.
      */
     protected DefaultScopedName(final GenericName path, final GenericName tail) {
         ArgumentChecks.ensureNonNull("path", path);
@@ -167,8 +168,7 @@ public class DefaultScopedName extends AbstractName implements ScopedName {
         final List<? extends LocalName> parsedPath = path.getParsedNames();
         final List<? extends LocalName> parsedTail = tail.getParsedNames();
         int index = parsedPath.size();
-        LocalName[] locals = new LocalName[index + parsedTail.size()];
-        locals = parsedPath.toArray(locals);
+        final LocalName[] locals = parsedPath.toArray(new LocalName[index + parsedTail.size()]);
         /*
          * We have copied the LocalNames from the path unconditionally.  Now we need to process the
          * LocalNames from the tail. If the tail scope follows the path scope, we can just copy the
@@ -191,7 +191,7 @@ public class DefaultScopedName extends AbstractName implements ScopedName {
             if (path instanceof LocalName) {
                 this.tail = tail;
             }
-            while (true) {
+            for (;;) {
                 locals[index++] = name;
                 if (!it.hasNext()) break;
                 name = it.next();
@@ -203,8 +203,8 @@ public class DefaultScopedName extends AbstractName implements ScopedName {
              */
             DefaultNameSpace scope = DefaultNameSpace.castOrCopy(lastScope);
             CharSequence label = name(lastName);
-            while (true) {
-                scope = scope.child(label);
+            for (;;) {
+                scope = scope.child(label, scope.separator);
                 label = name(name);
                 name  = new DefaultLocalName(scope, label);
                 locals[index++] = name;
@@ -212,7 +212,7 @@ public class DefaultScopedName extends AbstractName implements ScopedName {
                 name = it.next();
             }
         }
-        if (index != locals.length) { // Paranoiac check.
+        if (index != locals.length) {               // Paranoiac check.
             throw new ConcurrentModificationException(Errors.format(Errors.Keys.UnexpectedChange_1, "tail"));
         }
         // Following line is safe because 'parsedNames' type is <? extends LocalName>.
@@ -220,6 +220,38 @@ public class DefaultScopedName extends AbstractName implements ScopedName {
         if (tail instanceof LocalName) {
             this.path = path;
         }
+    }
+
+    /**
+     * Constructs a scoped name as the concatenation of the given generic name with a single character sequence.
+     * The scope of the new name will be the scope of the {@code path} argument.
+     * The tail is a local name created from the given character sequence.
+     *
+     * @param path       the first part to concatenate.
+     * @param separator  the separator between the head and the tail,
+     *                   or {@code null} for inheriting the same separator than the given path.
+     * @param tail       the second part to concatenate.
+     *
+     * @see Names#createScopedName(GenericName, String, CharSequence)
+     *
+     * @since 0.8
+     */
+    protected DefaultScopedName(final GenericName path, final String separator, final CharSequence tail) {
+        /*
+         * Following is the same code than DefaultScopedName(GenericName, GenericName)
+         * after simplification we can do because we create the LocalName ourselves.
+         */
+        ArgumentChecks.ensureNonNull("path", path);
+        ArgumentChecks.ensureNonNull("tail", tail);
+        final List<? extends LocalName> parsedPath = path.getParsedNames();
+        final int index = parsedPath.size();
+        final LocalName[] locals = parsedPath.toArray(new LocalName[index + 1]);
+        final LocalName lastName = locals[index - 1];
+        DefaultNameSpace scope = DefaultNameSpace.castOrCopy(lastName.scope());
+        scope = scope.child(name(lastName), separator != null ? separator : scope.separator);
+        locals[index] = new DefaultLocalName(scope, tail);
+        parsedNames = UnmodifiableArrayList.wrap(locals);
+        this.path = path;
     }
 
     /**
@@ -234,8 +266,8 @@ public class DefaultScopedName extends AbstractName implements ScopedName {
     }
 
     /**
-     * Returns the size of the backing array. This is used only has a hint for optimizations
-     * in attempts to share internal arrays.
+     * Returns the size of the backing array.
+     * This is used only has a hint for optimizations in attempts to share internal arrays.
      */
     @Override
     final int arraySize() {
@@ -254,7 +286,7 @@ public class DefaultScopedName extends AbstractName implements ScopedName {
      * Returns every elements in the sequence of {@linkplain #getParsedNames() parsed names}
      * except for the {@linkplain #head() head}.
      *
-     * @return All elements except the first one in the in the list of {@linkplain #getParsedNames() parsed names}.
+     * @return all elements except the first one in the in the list of {@linkplain #getParsedNames() parsed names}.
      */
     @Override
     public synchronized GenericName tail() {
@@ -274,7 +306,7 @@ public class DefaultScopedName extends AbstractName implements ScopedName {
      * Returns every element in the sequence of {@linkplain #getParsedNames() parsed names}
      * except for the {@linkplain #tip() tip}.
      *
-     * @return All elements except the last one in the in the list of {@linkplain #getParsedNames() parsed names}.
+     * @return all elements except the last one in the in the list of {@linkplain #getParsedNames() parsed names}.
      */
     @Override
     public synchronized GenericName path() {
@@ -294,6 +326,7 @@ public class DefaultScopedName extends AbstractName implements ScopedName {
      * Returns the sequence of local name for this generic name.
      */
     @Override
+    @SuppressWarnings("ReturnOfCollectionOrArrayField")                 // Safe because unmodifiable.
     public List<? extends LocalName> getParsedNames() {
         return parsedNames;
     }

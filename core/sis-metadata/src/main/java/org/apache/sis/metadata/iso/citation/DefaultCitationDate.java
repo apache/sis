@@ -23,6 +23,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 import org.opengis.metadata.citation.CitationDate;
 import org.opengis.metadata.citation.DateType;
 import org.apache.sis.metadata.iso.ISOMetadata;
+import org.apache.sis.metadata.TitleProperty;
 
 import static org.apache.sis.internal.metadata.MetadataUtilities.toDate;
 import static org.apache.sis.internal.metadata.MetadataUtilities.toMilliseconds;
@@ -30,6 +31,11 @@ import static org.apache.sis.internal.metadata.MetadataUtilities.toMilliseconds;
 
 /**
  * Reference date and event used to describe it.
+ * The following properties are mandatory in a well-formed metadata according ISO 19115:
+ *
+ * <div class="preformat">{@code CI_Date}
+ * {@code   ├─date………………} Reference date for the cited resource.
+ * {@code   └─dateType……} Event used for reference date.</div>
  *
  * <p><b>Limitations:</b></p>
  * <ul>
@@ -42,10 +48,12 @@ import static org.apache.sis.internal.metadata.MetadataUtilities.toMilliseconds;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Cédric Briançon (Geomatys)
- * @since   0.3
  * @version 0.3
+ * @since   0.3
  * @module
  */
+@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
+@TitleProperty(name = "date")
 @XmlType(name = "CI_Date_Type", propOrder = {
     "date",
     "dateType"
@@ -77,8 +85,8 @@ public class DefaultCitationDate extends ISOMetadata implements CitationDate {
     /**
      * Constructs a citation date initialized to the given date.
      *
-     * @param date     The reference date for the cited resource.
-     * @param dateType The event used for reference date.
+     * @param date      the reference date for the cited resource.
+     * @param dateType  the event used for reference date.
      */
     public DefaultCitationDate(final Date date, final DateType dateType) {
         this.date = toMilliseconds(date);
@@ -90,7 +98,7 @@ public class DefaultCitationDate extends ISOMetadata implements CitationDate {
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
-     * @param object The metadata to copy values from, or {@code null} if none.
+     * @param  object  the metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(CitationDate)
      */
@@ -116,8 +124,8 @@ public class DefaultCitationDate extends ISOMetadata implements CitationDate {
      *       metadata contained in the given object are not recursively copied.</li>
      * </ul>
      *
-     * @param  object The object to get as a SIS implementation, or {@code null} if none.
-     * @return A SIS implementation containing the values of the given object (may be the
+     * @param  object  the object to get as a SIS implementation, or {@code null} if none.
+     * @return a SIS implementation containing the values of the given object (may be the
      *         given object itself), or {@code null} if the argument was null.
      */
     public static DefaultCitationDate castOrCopy(final CitationDate object) {
@@ -130,7 +138,7 @@ public class DefaultCitationDate extends ISOMetadata implements CitationDate {
     /**
      * Returns the reference date for the cited resource.
      *
-     * @return Reference date for the cited resource, or {@code null}.
+     * @return reference date for the cited resource, or {@code null}.
      */
     @Override
     @XmlElement(name = "date", required = true)
@@ -141,7 +149,7 @@ public class DefaultCitationDate extends ISOMetadata implements CitationDate {
     /**
      * Sets the reference date for the cited resource.
      *
-     * @param newValue The new date.
+     * @param  newValue  the new date.
      */
     public void setDate(final Date newValue) {
         checkWritePermission();
@@ -151,7 +159,7 @@ public class DefaultCitationDate extends ISOMetadata implements CitationDate {
     /**
      * Returns the event used for reference date.
      *
-     * @return Event used for reference date, or {@code null}.
+     * @return event used for reference date, or {@code null}.
      */
     @Override
     @XmlElement(name = "dateType", required = true)
@@ -162,7 +170,7 @@ public class DefaultCitationDate extends ISOMetadata implements CitationDate {
     /**
      * Sets the event used for reference date.
      *
-     * @param newValue The new event.
+     * @param  newValue  the new event.
      */
     public void setDateType(final DateType newValue) {
         checkWritePermission();

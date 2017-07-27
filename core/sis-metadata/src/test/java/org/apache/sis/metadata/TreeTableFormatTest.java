@@ -17,21 +17,20 @@
 package org.apache.sis.metadata;
 
 import java.util.Arrays;
-import javax.measure.unit.SI;
 import org.opengis.metadata.citation.Role;
 import org.opengis.metadata.citation.PresentationForm;
-import org.opengis.util.InternationalString;
 import org.apache.sis.util.collection.TableColumn;
 import org.apache.sis.util.collection.TreeTableFormat;
 import org.apache.sis.util.iso.SimpleInternationalString;
 import org.apache.sis.metadata.iso.content.DefaultBand;
 import org.apache.sis.metadata.iso.content.DefaultImageDescription;
 import org.apache.sis.metadata.iso.citation.DefaultCitation;
-import org.apache.sis.metadata.iso.citation.DefaultIndividual;
+import org.apache.sis.metadata.iso.citation.DefaultCitationTest;
 import org.apache.sis.metadata.iso.citation.DefaultResponsibleParty;
 import org.apache.sis.metadata.iso.content.DefaultAttributeGroup;
 import org.apache.sis.metadata.iso.identification.DefaultDataIdentification;
 import org.apache.sis.metadata.iso.lineage.DefaultProcessing;
+import org.apache.sis.measure.Units;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
@@ -45,8 +44,8 @@ import static org.apache.sis.test.Assert.*;
  * Tests the {@link TreeTableFormat} applied to the formatting of metadata tree.
  *
  * @author  Martin Desruisseaux (Geomatys)
+ * @version 0.8
  * @since   0.3
- * @version 0.5
  * @module
  */
 @DependsOn(TreeTableViewTest.class)
@@ -71,62 +70,41 @@ public final strictfp class TreeTableFormatTest extends TestCase {
         final DefaultBand band = new DefaultBand();
         band.setMinValue(min);
         band.setMaxValue(max);
-        band.setUnits(SI.CENTIMETRE);
+        band.setUnits(Units.CENTIMETRE);
         return band;
     }
 
     /**
-     * Creates the citation to use for testing purpose.
-     */
-    private static DefaultCitation createCitation() {
-        final DefaultCitation citation = new DefaultCitation();
-        final InternationalString title = new SimpleInternationalString("Undercurrent");
-        citation.setTitle(title);
-        citation.setISBN("9782505004509");
-        citation.setPresentationForms(asList(
-                PresentationForm.DOCUMENT_HARDCOPY,
-                PresentationForm.IMAGE_HARDCOPY));
-        citation.setAlternateTitles(asList(
-                new SimpleInternationalString("Alt A"),
-                new SimpleInternationalString("Alt B")));
-
-        final DefaultResponsibleParty author = new DefaultResponsibleParty(Role.AUTHOR);
-        author.setParties(singleton(new DefaultIndividual("Testsuya Toyoda", null, null)));
-        citation.getCitedResponsibleParties().add(author);
-        final DefaultResponsibleParty duplicated = new DefaultResponsibleParty();
-        duplicated.setParties(singleton(new DefaultIndividual("A japanese author", null, null)));
-        citation.getCitedResponsibleParties().add(duplicated);
-        citation.setCitedResponsibleParties(asList(
-                author, duplicated));
-        return citation;
-    }
-
-    /**
      * Tests the formatting of a {@link DefaultCitation} object.
+     *
+     * @see <a href="https://issues.apache.org/jira/browse/SIS-298">SIS-298</a>
      */
     @Test
     public void testCitation() {
-        final DefaultCitation citation = createCitation();
+        final DefaultCitation citation = DefaultCitationTest.create();
         final String text = format.format(citation.asTreeTable());
         assertMultilinesEquals(
-            "Citation\n" +
-            "  ├─Title……………………………………………………………………… Undercurrent\n" +
-            "  ├─Alternate title (1 of 2)…………………… Alt A\n" +
-            "  ├─Alternate title (2 of 2)…………………… Alt B\n" +
-            "  ├─Identifier\n" +
-            "  │   ├─Code……………………………………………………………… 9782505004509\n" +
-            "  │   └─Authority\n" +
-            "  │       └─Title………………………………………………… ISBN\n" +
+            "Citation……………………………………………………………………………… Undercurrent\n" +
+            "  ├─Alternate title………………………………………………… Andākarento\n" +
+            "  ├─Identifier……………………………………………………………… 9782505004509\n" +
+            "  │   └─Authority……………………………………………………… International Standard Book Number\n" +
+            "  │       └─Alternate title…………………………… ISBN\n" +
             "  ├─Cited responsible party (1 of 2)\n" +
-            "  │   ├─Role……………………………………………………………… Author\n" +
-            "  │   └─Party\n" +
-            "  │       └─Name…………………………………………………… Testsuya Toyoda\n" +
+            "  │   ├─Role…………………………………………………………………… Author\n" +
+            "  │   └─Party………………………………………………………………… Testsuya Toyoda\n" +
             "  ├─Cited responsible party (2 of 2)\n" +
-            "  │   └─Party\n" +
-            "  │       └─Name…………………………………………………… A japanese author\n" +
-            "  ├─Presentation form (1 of 2)……………… Document hardcopy\n" +
-            "  ├─Presentation form (2 of 2)……………… Image hardcopy\n" +
-            "  └─ISBN………………………………………………………………………… 9782505004509\n", text);
+            "  │   ├─Role…………………………………………………………………… EDITOR\n" +
+            "  │   ├─Party………………………………………………………………… Kōdansha\n" +
+            "  │   └─Extent……………………………………………………………… World\n" +
+            "  │       └─Geographic element\n" +
+            "  │           ├─West bound longitude…… 180°W\n" +
+            "  │           ├─East bound longitude…… 180°E\n" +
+            "  │           ├─South bound latitude…… 90°S\n" +
+            "  │           ├─North bound latitude…… 90°N\n" +
+            "  │           └─Extent type code……………… true\n" +
+            "  ├─Presentation form (1 of 2)…………………… Document digital\n" +
+            "  ├─Presentation form (2 of 2)…………………… Document hardcopy\n" +
+            "  └─ISBN……………………………………………………………………………… 9782505004509\n", text);
     }
 
     /**
@@ -145,8 +123,7 @@ public final strictfp class TreeTableFormatTest extends TestCase {
         final String text = format.format(processing.asTreeTable());
         assertMultilinesEquals(
             "Processing\n" +
-            "  ├─Documentation (1 of 3)\n" +
-            "  │   ├─Title……………………………………………… Some specification\n" +
+            "  ├─Documentation (1 of 3)…………… Some specification\n" +
             "  │   └─Presentation form……………… Document hardcopy\n" +
             "  ├─Documentation (2 of 3)\n" +
             "  │   └─Presentation form……………… Image hardcopy\n" +

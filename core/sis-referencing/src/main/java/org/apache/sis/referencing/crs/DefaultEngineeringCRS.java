@@ -19,33 +19,32 @@ package org.apache.sis.referencing.crs;
 import java.util.Map;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlElements;
 import javax.xml.bind.annotation.XmlRootElement;
-import org.opengis.referencing.cs.AffineCS;
-import org.opengis.referencing.cs.CartesianCS;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.crs.EngineeringCRS;
-import org.opengis.referencing.cs.CylindricalCS;
-import org.opengis.referencing.cs.LinearCS;
-import org.opengis.referencing.cs.PolarCS;
-import org.opengis.referencing.cs.SphericalCS;
-import org.opengis.referencing.cs.UserDefinedCS;
 import org.opengis.referencing.datum.EngineeringDatum;
-import org.apache.sis.referencing.cs.AxesConvention;
+import org.apache.sis.referencing.cs.*;
 import org.apache.sis.referencing.AbstractReferenceSystem;
+import org.apache.sis.internal.metadata.MetadataUtilities;
+import org.apache.sis.internal.metadata.WKTKeywords;
 import org.apache.sis.io.wkt.Formatter;
 
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 
 
 /**
- * A contextually local coordinate reference system. It can be divided into two broad categories:
+ * A 1-, 2- or 3-dimensional contextually local coordinate reference system.
+ * It can be divided into two broad categories:
  *
  * <ul>
  *   <li>earth-fixed systems applied to engineering activities on or near the surface of the earth;</li>
  *   <li>CRSs on moving platforms such as road vehicles, vessels, aircraft, or spacecraft.</li>
  * </ul>
  *
- * <p><b>Used with coordinate system types:</b>
+ * <p><b>Used with datum type:</b>
+ *   {@linkplain org.apache.sis.referencing.datum.DefaultEngineeringDatum Engineering}.<br>
+ * <b>Used with coordinate system types:</b>
  *   {@linkplain org.apache.sis.referencing.cs.DefaultAffineCS Affine},
  *   {@linkplain org.apache.sis.referencing.cs.DefaultCartesianCS Cartesian},
  *   {@linkplain org.apache.sis.referencing.cs.DefaultCylindricalCS Cylindrical},
@@ -61,18 +60,16 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  * in the javadoc, this condition holds if all components were created using only SIS factories and static constants.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.4
- * @version 0.6
+ * @version 0.7
+ *
+ * @see org.apache.sis.referencing.datum.DefaultEngineeringDatum
+ * @see org.apache.sis.referencing.factory.GeodeticAuthorityFactory#createEngineeringCRS(String)
+ *
+ * @since 0.4
  * @module
  */
 @XmlType(name = "EngineeringCRSType", propOrder = {
-    "affineCS",
-    "cartesianCS",
-    "cylindricalCS",
-    "linearCS",
-    "polarCS",
-    "sphericalCS",
-    "userDefinedCS",
+    "coordinateSystem",
     "datum"
 })
 @XmlRootElement(name = "EngineeringCRS")
@@ -84,18 +81,13 @@ public class DefaultEngineeringCRS extends AbstractCRS implements EngineeringCRS
 
     /**
      * The datum.
+     *
+     * <p><b>Consider this field as final!</b>
+     * This field is modified only at unmarshalling time by {@link #setDatum(EngineeringDatum)}</p>
+     *
+     * @see #getDatum()
      */
-    @XmlElement(name = "engineeringDatum", required = true)
-    private final EngineeringDatum datum;
-
-    /**
-     * Constructs a new object in which every attributes are set to a null value.
-     * <strong>This is not a valid object.</strong> This constructor is strictly
-     * reserved to JAXB, which will assign values to the fields using reflexion.
-     */
-    private DefaultEngineeringCRS() {
-        datum = null;
-    }
+    private EngineeringDatum datum;
 
     /**
      * Creates a coordinate reference system from the given properties, datum and coordinate system.
@@ -131,20 +123,22 @@ public class DefaultEngineeringCRS extends AbstractCRS implements EngineeringCRS
      *     <td>{@link #getRemarks()}</td>
      *   </tr>
      *   <tr>
-     *     <td>{@value org.opengis.referencing.datum.Datum#DOMAIN_OF_VALIDITY_KEY}</td>
+     *     <td>{@value org.opengis.referencing.ReferenceSystem#DOMAIN_OF_VALIDITY_KEY}</td>
      *     <td>{@link org.opengis.metadata.extent.Extent}</td>
      *     <td>{@link #getDomainOfValidity()}</td>
      *   </tr>
      *   <tr>
-     *     <td>{@value org.opengis.referencing.datum.Datum#SCOPE_KEY}</td>
+     *     <td>{@value org.opengis.referencing.ReferenceSystem#SCOPE_KEY}</td>
      *     <td>{@link org.opengis.util.InternationalString} or {@link String}</td>
      *     <td>{@link #getScope()}</td>
      *   </tr>
      * </table>
      *
-     * @param properties The properties to be given to the coordinate reference system.
-     * @param datum The datum.
-     * @param cs The coordinate system.
+     * @param  properties  the properties to be given to the coordinate reference system.
+     * @param  datum       the datum.
+     * @param  cs          the coordinate system.
+     *
+     * @see org.apache.sis.referencing.factory.GeodeticObjectFactory#createEngineeringCRS(Map, EngineeringDatum, CoordinateSystem)
      */
     public DefaultEngineeringCRS(final Map<String,?> properties,
                                  final EngineeringDatum   datum,
@@ -162,7 +156,7 @@ public class DefaultEngineeringCRS extends AbstractCRS implements EngineeringCRS
      *
      * <p>This constructor performs a shallow copy, i.e. the properties are not cloned.</p>
      *
-     * @param crs The coordinate reference system to copy.
+     * @param  crs  the coordinate reference system to copy.
      *
      * @see #castOrCopy(EngineeringCRS)
      */
@@ -177,8 +171,8 @@ public class DefaultEngineeringCRS extends AbstractCRS implements EngineeringCRS
      * Otherwise if the given object is already a SIS implementation, then the given object is returned unchanged.
      * Otherwise a new SIS implementation is created and initialized to the attribute values of the given object.
      *
-     * @param  object The object to get as a SIS implementation, or {@code null} if none.
-     * @return A SIS implementation containing the values of the given object (may be the
+     * @param  object  the object to get as a SIS implementation, or {@code null} if none.
+     * @return a SIS implementation containing the values of the given object (may be the
      *         given object itself), or {@code null} if the argument was null.
      */
     public static DefaultEngineeringCRS castOrCopy(final EngineeringCRS object) {
@@ -205,34 +199,32 @@ public class DefaultEngineeringCRS extends AbstractCRS implements EngineeringCRS
     /**
      * Returns the datum.
      *
-     * @return The datum.
+     * @return the datum.
      */
     @Override
-    public final EngineeringDatum getDatum() {
+    @XmlElement(name = "engineeringDatum", required = true)
+    public EngineeringDatum getDatum() {
         return datum;
     }
 
     /**
-     * Invoked by JAXB at marshalling time.
+     * Returns the coordinate system.
+     *
+     * @return the coordinate system.
      */
-    @XmlElement(name="affineCS")      private AffineCS      getAffineCS()      {return getCoordinateSystem(AffineCS     .class);}
-    @XmlElement(name="cartesianCS")   private CartesianCS   getCartesianCS()   {return getCoordinateSystem(CartesianCS  .class);}
-    @XmlElement(name="cylindricalCS") private CylindricalCS getCylindricalCS() {return getCoordinateSystem(CylindricalCS.class);}
-    @XmlElement(name="linearCS")      private LinearCS      getLinearCS()      {return getCoordinateSystem(LinearCS     .class);}
-    @XmlElement(name="polarCS")       private PolarCS       getPolarCS()       {return getCoordinateSystem(PolarCS      .class);}
-    @XmlElement(name="sphericalCS")   private SphericalCS   getSphericalCS()   {return getCoordinateSystem(SphericalCS  .class);}
-    @XmlElement(name="userDefinedCS") private UserDefinedCS getUserDefinedCS() {return getCoordinateSystem(UserDefinedCS.class);}
-
-    /**
-     * Invoked by JAXB at unmarshalling time.
-     */
-    private void setAffineCS     (final AffineCS      cs) {super.setCoordinateSystem("affineCS",      cs);}
-    private void setCartesianCS  (final CartesianCS   cs) {super.setCoordinateSystem("cartesianCS",   cs);}
-    private void setCylindricalCS(final CylindricalCS cs) {super.setCoordinateSystem("cylindricalCS", cs);}
-    private void setLinearCS     (final LinearCS      cs) {super.setCoordinateSystem("linearCS",      cs);}
-    private void setPolarCS      (final PolarCS       cs) {super.setCoordinateSystem("polarCS",       cs);}
-    private void setSphericalCS  (final SphericalCS   cs) {super.setCoordinateSystem("sphericalCS",   cs);}
-    private void setUserDefinedCS(final UserDefinedCS cs) {super.setCoordinateSystem("userDefinedCS", cs);}
+    @Override
+    @XmlElements({
+        @XmlElement(name = "cartesianCS",   type = DefaultCartesianCS.class),
+        @XmlElement(name = "affineCS",      type = DefaultAffineCS.class),
+        @XmlElement(name = "cylindricalCS", type = DefaultCylindricalCS.class),
+        @XmlElement(name = "linearCS",      type = DefaultLinearCS.class),
+        @XmlElement(name = "polarCS",       type = DefaultPolarCS.class),
+        @XmlElement(name = "sphericalCS",   type = DefaultSphericalCS.class),
+        @XmlElement(name = "userDefinedCS", type = DefaultUserDefinedCS.class)
+    })
+    public CoordinateSystem getCoordinateSystem() {
+        return super.getCoordinateSystem();
+    }
 
     /**
      * {@inheritDoc}
@@ -256,11 +248,64 @@ public class DefaultEngineeringCRS extends AbstractCRS implements EngineeringCRS
      * Formats this CRS as a <cite>Well Known Text</cite> {@code EngineeringCRS[…]} element.
      *
      * @return {@code "EngineeringCRS"} (WKT 2) or {@code "Local_CS"} (WKT 1).
+     *
+     * @see <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html#74">WKT 2 specification §11</a>
      */
     @Override
     protected String formatTo(final Formatter formatter) {
         super.formatTo(formatter);
-        return (formatter.getConvention().majorVersion() == 1) ? "Local_CS"
-               : isBaseCRS(formatter) ? "BaseEngCRS" : "EngineeringCRS";
+        return (formatter.getConvention().majorVersion() == 1) ? WKTKeywords.Local_CS
+               : isBaseCRS(formatter) ? WKTKeywords.BaseEngCRS
+                 : formatter.shortOrLong(WKTKeywords.EngCRS, WKTKeywords.EngineeringCRS);
+    }
+
+
+
+
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+    ////////                                                                                  ////////
+    ////////                               XML support with JAXB                              ////////
+    ////////                                                                                  ////////
+    ////////        The following methods are invoked by JAXB using reflection (even if       ////////
+    ////////        they are private) or are helpers for other methods invoked by JAXB.       ////////
+    ////////        Those methods can be safely removed if Geographic Markup Language         ////////
+    ////////        (GML) support is not needed.                                              ////////
+    ////////                                                                                  ////////
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Constructs a new object in which every attributes are set to a null value.
+     * <strong>This is not a valid object.</strong> This constructor is strictly
+     * reserved to JAXB, which will assign values to the fields using reflexion.
+     */
+    private DefaultEngineeringCRS() {
+        /*
+         * The datum and the coordinate system are mandatory for SIS working. We do not verify their presence
+         * here because the verification would have to be done in an 'afterMarshal(…)' method and throwing an
+         * exception in that method causes the whole unmarshalling to fail.  But the SC_CRS adapter does some
+         * verifications.
+         */
+    }
+
+    /**
+     * Invoked by JAXB at unmarshalling time.
+     *
+     * @see #getDatum()
+     */
+    private void setDatum(final EngineeringDatum value) {
+        if (datum == null) {
+            datum = value;
+        } else {
+            MetadataUtilities.propertyAlreadySet(DefaultEngineeringCRS.class, "setDatum", "engineeringDatum");
+        }
+    }
+
+    /**
+     * Used by JAXB only (invoked by reflection).
+     *
+     * @see #getCoordinateSystem()
+     */
+    private void setCoordinateSystem(final CoordinateSystem cs) {
+        setCoordinateSystem(null, cs);  // 'null' here means to infer the XML property name from the cs type.
     }
 }

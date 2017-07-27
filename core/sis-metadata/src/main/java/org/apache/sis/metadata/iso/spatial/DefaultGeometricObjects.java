@@ -24,11 +24,15 @@ import org.opengis.metadata.spatial.GeometricObjectType;
 import org.apache.sis.measure.ValueRange;
 import org.apache.sis.metadata.iso.ISOMetadata;
 
-import static org.apache.sis.internal.metadata.MetadataUtilities.warnNonPositiveArgument;
+import static org.apache.sis.internal.metadata.MetadataUtilities.ensurePositive;
 
 
 /**
  * Number of objects, listed by geometric object type, used in the dataset.
+ * The following property is mandatory in a well-formed metadata according ISO 19115:
+ *
+ * <div class="preformat">{@code MD_GeometricObjects}
+ * {@code   └─geometricObjectType……} Name of point and vector spatial objects used to locate zero-, one-, and two-dimensional spatial locations in the dataset.</div>
  *
  * <p><b>Limitations:</b></p>
  * <ul>
@@ -42,10 +46,11 @@ import static org.apache.sis.internal.metadata.MetadataUtilities.warnNonPositive
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Touraïvane (IRD)
  * @author  Cédric Briançon (Geomatys)
- * @since   0.3
  * @version 0.5
+ * @since   0.3
  * @module
  */
+@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "MD_GeometricObjects_Type", propOrder = {
     "geometricObjectType",
     "geometricObjectCount"
@@ -76,8 +81,7 @@ public class DefaultGeometricObjects extends ISOMetadata implements GeometricObj
     /**
      * Creates a geometric object initialized to the given type.
      *
-     * @param geometricObjectType Total number of the point or vector
-     *          object type occurring in the dataset.
+     * @param geometricObjectType  total number of the point or vector object type occurring in the dataset.
      */
     public DefaultGeometricObjects(final GeometricObjectType geometricObjectType) {
         this.geometricObjectType = geometricObjectType;
@@ -95,7 +99,7 @@ public class DefaultGeometricObjects extends ISOMetadata implements GeometricObj
      * metadata instances can also be obtained by unmarshalling an invalid XML document.
      * </div>
      *
-     * @param object The metadata to copy values from, or {@code null} if none.
+     * @param  object  the metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(GeometricObjects)
      */
@@ -121,8 +125,8 @@ public class DefaultGeometricObjects extends ISOMetadata implements GeometricObj
      *       metadata contained in the given object are not recursively copied.</li>
      * </ul>
      *
-     * @param  object The object to get as a SIS implementation, or {@code null} if none.
-     * @return A SIS implementation containing the values of the given object (may be the
+     * @param  object  the object to get as a SIS implementation, or {@code null} if none.
+     * @return a SIS implementation containing the values of the given object (may be the
      *         given object itself), or {@code null} if the argument was null.
      */
     public static DefaultGeometricObjects castOrCopy(final GeometricObjects object) {
@@ -135,7 +139,7 @@ public class DefaultGeometricObjects extends ISOMetadata implements GeometricObj
     /**
      * Returns the total number of the point or vector object type occurring in the dataset.
      *
-     * @return Name of spatial objects used to locate spatial locations in the dataset, or {@code null}.
+     * @return name of spatial objects used to locate spatial locations in the dataset, or {@code null}.
      */
     @Override
     @XmlElement(name = "geometricObjectType", required = true)
@@ -146,7 +150,7 @@ public class DefaultGeometricObjects extends ISOMetadata implements GeometricObj
     /**
      * Sets the total number of the point or vector object type occurring in the dataset.
      *
-     * @param newValue The new geometric object type.
+     * @param  newValue  the new geometric object type.
      */
     public void setGeometricObjectType(final GeometricObjectType newValue) {
         checkWritePermission();
@@ -156,7 +160,7 @@ public class DefaultGeometricObjects extends ISOMetadata implements GeometricObj
     /**
      * Returns the total number of the point or vector object type occurring in the dataset.
      *
-     * @return Total number of the point or vector object type, or {@code null}.
+     * @return total number of the point or vector object type, or {@code null}.
      */
     @Override
     @ValueRange(minimum = 1)
@@ -168,14 +172,13 @@ public class DefaultGeometricObjects extends ISOMetadata implements GeometricObj
     /**
      * Sets the total number of the point or vector object type occurring in the dataset.
      *
-     * @param newValue The geometric object count, or {@code null}.
+     * @param  newValue  the geometric object count, or {@code null}.
      * @throws IllegalArgumentException if the given value is zero or negative.
      */
     public void setGeometricObjectCount(final Integer newValue) {
         checkWritePermission();
-        if (newValue != null && newValue <= 0) {
-            warnNonPositiveArgument(DefaultGeometricObjects.class, "geometricObjectCount", true, newValue);
+        if (ensurePositive(DefaultGeometricObjects.class, "geometricObjectCount", true, newValue)) {
+            geometricObjectCount = newValue;
         }
-        geometricObjectCount = newValue;
     }
 }

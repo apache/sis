@@ -20,15 +20,12 @@ import java.util.AbstractCollection;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
-import java.util.NoSuchElementException;
+import java.util.Objects;
 import org.apache.sis.metadata.AbstractMetadata;
-import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.internal.jaxb.Context;
+import org.apache.sis.internal.util.AbstractIterator;
 import org.apache.sis.util.resources.Messages;
 import org.apache.sis.util.ArgumentChecks;
-
-// Branch-dependent imports
-import org.apache.sis.internal.jdk7.Objects;
 
 
 /**
@@ -36,12 +33,13 @@ import org.apache.sis.internal.jdk7.Objects;
  * This adapter is used for implementation of deprecated methods in the {@link org.apache.sis.metadata.iso}
  * sub-packages, usually when the deprecation is the result of upgrading from an older to a newer ISO standard.
  *
- * @param <L> The legacy type.
- * @param <N> The new type.
- *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.5
  * @version 0.5
+ *
+ * @param <L>  the legacy type.
+ * @param <N>  the new type.
+ *
+ * @since 0.5
  * @module
  */
 public abstract class LegacyPropertyAdapter<L,N> extends AbstractCollection<L> {
@@ -58,7 +56,7 @@ public abstract class LegacyPropertyAdapter<L,N> extends AbstractCollection<L> {
     /**
      * Creates a new adapter.
      *
-     * @param elements The collection where to store the elements (may be {@code null}).
+     * @param elements  the collection where to store the elements (may be {@code null}).
      */
     protected LegacyPropertyAdapter(final Collection<N> elements) {
         this.elements = elements;
@@ -67,25 +65,25 @@ public abstract class LegacyPropertyAdapter<L,N> extends AbstractCollection<L> {
     /**
      * Wraps a legacy value in its new type.
      *
-     * @param  value The legacy value.
-     * @return The new type.
+     * @param  value  the legacy value.
+     * @return the new type.
      */
     protected abstract N wrap(final L value);
 
     /**
      * Extracts a legacy value from the new type.
      *
-     * @param  container The new type.
-     * @return The legacy value, or {@code null}.
+     * @param  container  the new type.
+     * @return the legacy value, or {@code null}.
      */
     protected abstract L unwrap(final N container);
 
     /**
      * Update a new value with the given legacy value.
      *
-     * @param  container The new value to be used as a container for the old value.
-     * @param  value     The value to update in the container.
-     * @return Whether this method has been able to perform the update.
+     * @param  container  the new value to be used as a container for the old value.
+     * @param  value      the value to update in the container.
+     * @return whether this method has been able to perform the update.
      */
     protected abstract boolean update(final N container, final L value);
 
@@ -110,7 +108,7 @@ public abstract class LegacyPropertyAdapter<L,N> extends AbstractCollection<L> {
     /**
      * Sets the values from the given collection.
      *
-     * @param newValues The values to set (may be {@code null}).
+     * @param  newValues  the values to set (may be {@code null}).
      */
     public final void setValues(Collection<? extends L> newValues) {
         if (newValues == null) {
@@ -142,13 +140,13 @@ public abstract class LegacyPropertyAdapter<L,N> extends AbstractCollection<L> {
      * Returns the singleton value of the given collection, or {@code null} if the given collection is null or empty.
      * If the given collection contains more than one element, then a warning is emitted.
      *
-     * @param  <L>           The kind of legacy values to be returned.
-     * @param  values        The collection from which to get the value.
-     * @param  valueClass    The value class, used in case of warning only.
-     * @param  caller        Either {@code this} or {@code null}.
-     * @param  callerClass   The caller class, used in case of warning only.
-     * @param  callerMethod  The caller method, used in case of warning only.
-     * @return The first value, or {@code null} if none.
+     * @param  <L>           the kind of legacy values to be returned.
+     * @param  values        the collection from which to get the value.
+     * @param  valueClass    the value class, used in case of warning only.
+     * @param  caller        either {@code this} or {@code null}.
+     * @param  callerClass   the caller class, used in case of warning only.
+     * @param  callerMethod  the caller method, used in case of warning only.
+     * @return the first value, or {@code null} if none.
      */
     public static <L> L getSingleton(final Collection<? extends L> values, final Class<L> valueClass,
             final LegacyPropertyAdapter<L,?> caller, final Class<?> callerClass, final String callerMethod)
@@ -175,23 +173,23 @@ public abstract class LegacyPropertyAdapter<L,N> extends AbstractCollection<L> {
     /**
      * Emit a warning about extraneous ignored values.
      *
-     * @param  valueClass    The value class (usually a GeoAPI interface).
-     * @param  callerClass   The caller class (usually an Apache SIS implementation of a GeoAPI interface).
-     * @param  callerMethod  The caller method (usually the name of a getter method).
+     * @param  valueClass    the value class (usually a GeoAPI interface).
+     * @param  callerClass   the caller class (usually an Apache SIS implementation of a GeoAPI interface).
+     * @param  callerMethod  the caller method (usually the name of a getter method).
      */
     public static void warnIgnoredExtraneous(final Class<?> valueClass,
             final Class<?> callerClass, final String callerMethod)
     {
-        Context.warningOccured(Context.current(), ISOMetadata.LOGGER, callerClass, callerMethod,
+        Context.warningOccured(Context.current(), callerClass, callerMethod,
                 Messages.class, Messages.Keys.IgnoredPropertiesAfterFirst_1, valueClass);
     }
 
     /**
      * Returns the given value as an empty or singleton collection.
      *
-     * @param  <L>   The type of the old value.
-     * @param  value The value, or {@code null} if none.
-     * @return The given value as a collection.
+     * @param  <L>    the type of the old value.
+     * @param  value  the value, or {@code null} if none.
+     * @return the given value as a collection.
      */
     public static <L> Collection<L> asCollection(final L value) {
         return (value != null) ? Collections.singleton(value) : Collections.<L>emptySet();
@@ -225,7 +223,7 @@ public abstract class LegacyPropertyAdapter<L,N> extends AbstractCollection<L> {
     /**
      * Counts the number of non-null elements.
      *
-     * @return Number of non-null elements.
+     * @return number of non-null elements.
      */
     @Override
     public final int size() {
@@ -241,7 +239,7 @@ public abstract class LegacyPropertyAdapter<L,N> extends AbstractCollection<L> {
     /**
      * Adds a new element.
      *
-     * @param  value The element to add.
+     * @param  value  the element to add.
      * @return {@code true} if the element has been added.
      */
     @Override
@@ -253,21 +251,16 @@ public abstract class LegacyPropertyAdapter<L,N> extends AbstractCollection<L> {
     /**
      * Returns an iterator over the legacy elements.
      *
-     * @return Iterator over the legacy elements.
+     * @return iterator over the legacy elements.
      */
     @Override
     public final Iterator<L> iterator() {
         final Iterator<N> it = elements.iterator();
-        return new Iterator<L>() {
+        return new AbstractIterator<L>() {
             /**
              * The container of the next value to return.
              */
             private N container;
-
-            /**
-             * The next value to return, or {@code null} if not yet verified.
-             */
-            private L next;
 
             /**
              * Returns {@code true} if there is more elements to iterate.
@@ -287,22 +280,6 @@ public abstract class LegacyPropertyAdapter<L,N> extends AbstractCollection<L> {
                 }
                 container = null;
                 return false;
-            }
-
-            /**
-             * Returns the next element.
-             */
-            @Override
-            public final L next() {
-                L value = next;
-                if (value == null) {
-                    if (!hasNext()) {
-                        throw new NoSuchElementException();
-                    }
-                    value = next;
-                }
-                next = null;
-                return value;
             }
 
             /**
@@ -333,7 +310,7 @@ public abstract class LegacyPropertyAdapter<L,N> extends AbstractCollection<L> {
      * other kind of {@code Collection} implementations: we can not enforce {@code Collection.equals(Object)}
      * to be symmetric in such cases.</p>
      *
-     * @param  other The other object to compare with this collection, or {@code null}.
+     * @param  other  the other object to compare with this collection, or {@code null}.
      * @return {@code true} if the objects are equal, or {@code false} otherwise.
      */
     @Override
@@ -354,7 +331,7 @@ public abstract class LegacyPropertyAdapter<L,N> extends AbstractCollection<L> {
     /**
      * Returns a hash code value for this collection.
      *
-     * @return A hash code value calculated from the content of this collection.
+     * @return a hash code value calculated from the content of this collection.
      */
     @Override
     public final int hashCode() {

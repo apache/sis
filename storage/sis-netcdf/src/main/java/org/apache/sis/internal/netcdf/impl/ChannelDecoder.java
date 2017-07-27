@@ -18,38 +18,49 @@ package org.apache.sis.internal.netcdf.impl;
 
 import java.util.Set;
 import java.util.Map;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.AbstractMap;
 import java.util.LinkedHashSet;
 import java.util.LinkedHashMap;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.Locale;
 import java.util.regex.Pattern;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.ReadableByteChannel;
-import java.lang.reflect.Array;
-import javax.measure.converter.UnitConverter;
-import javax.measure.converter.ConversionException;
+import javax.measure.UnitConverter;
+import javax.measure.IncommensurableException;
+import javax.measure.format.ParserException;
 import org.opengis.parameter.InvalidParameterCardinalityException;
+import org.apache.sis.internal.netcdf.DataType;
 import org.apache.sis.internal.netcdf.Decoder;
 import org.apache.sis.internal.netcdf.Variable;
 import org.apache.sis.internal.netcdf.GridGeometry;
-import org.apache.sis.internal.storage.ChannelDataInput;
+import org.apache.sis.internal.netcdf.NamedElement;
+import org.apache.sis.internal.netcdf.DiscreteSampling;
+import org.apache.sis.internal.netcdf.Resources;
+import org.apache.sis.internal.storage.io.ChannelDataInput;
 import org.apache.sis.internal.util.CollectionsExt;
+import org.apache.sis.internal.util.StandardDateFormat;
+import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreException;
+import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.util.iso.DefaultNameSpace;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.logging.WarningListeners;
-import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.Debug;
 import org.apache.sis.measure.Units;
+import ucar.nc2.constants.CF;
 
 // Branch-dependent imports
 import org.apache.sis.internal.jdk8.JDK8;
-import org.apache.sis.internal.jdk8.Function;
+import org.apache.sis.internal.jdk8.DateTimeException;
 
 
 /**
@@ -59,11 +70,12 @@ import org.apache.sis.internal.jdk8.Function;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
- * @version 0.3
- * @module
+ * @version 0.8
  *
  * @see <a href="http://portal.opengeospatial.org/files/?artifact_id=43734">NetCDF Classic and 64-bit Offset Format (1.0)</a>
+ *
+ * @since 0.3
+ * @module
  */
 public final class ChannelDecoder extends Decoder {
     /**
@@ -97,7 +109,7 @@ public final class ChannelDecoder extends Decoder {
      *
      * @see #findAttribute(String)
      */
-    private static final Locale NAME_LOCALE = Locale.US;
+    static final Locale NAME_LOCALE = Locale.US;
 
     /**
      * The pattern to use for separating the component of a time unit.
@@ -105,7 +117,7 @@ public final class ChannelDecoder extends Decoder {
      *
      * @see #numberToDate(String, Number[])
      */
-    private static final Pattern TIME_UNIT_PATTERN = Pattern.compile("(?i)\\bsince\\b");
+    private static final Pattern TIME_UNIT_PATTERN = Pattern.compile("\\s+since\\s+", Pattern.CASE_INSENSITIVE);
 
     /*
      * NOTE: the names of the static constants below this point match the names used in the Backus-Naur Form (BNF)
@@ -157,7 +169,7 @@ public final class ChannelDecoder extends Decoder {
      * @todo Fixed to ISO-LATIN-1 for now, needs to be determined in a better way.
      *
      * @see #NAME_ENCODING
-     * @see #readString(String)
+     * @see #readValues(DataType, int)
      */
     private final String encoding = "ISO-8859-1";
 
@@ -166,14 +178,28 @@ public final class ChannelDecoder extends Decoder {
      *
      * @see #getVariables()
      */
-    private final VariableInfo[] variables;
+    final VariableInfo[] variables;
+
+    /**
+     * Same as {@link #variables}, but as a map for faster search.
+     */
+    private final Map<String,VariableInfo> variableMap;
 
     /**
      * The attributes found in the NetCDF file.
+     * Values in this map give directly the attribute value (there is no {@code Attribute} object).
      *
      * @see #findAttribute(String)
      */
-    private final Map<String,Attribute> attributeMap;
+    private final Map<String,Object> attributeMap;
+
+    /**
+     * All dimensions in the NetCDF files.
+     *
+     * @see #readDimensions(int)
+     * @see #findDimension(String)
+     */
+    private Map<String,Dimension> dimensionMap;
 
     /**
      * The grid geometries, created when first needed.
@@ -184,14 +210,23 @@ public final class ChannelDecoder extends Decoder {
 
     /**
      * Creates a new decoder for the given file.
-     * This constructor parses immediately the header.
+     * This constructor parses immediately the header, which shall have the following structure:
      *
-     * @param  listeners Where to send the warnings.
-     * @param  input     The channel and the buffer from where data are read.
-     * @throws IOException If an error occurred while reading the channel.
-     * @throws DataStoreException If the content of the given channel is not a NetCDF file.
+     * <ul>
+     *   <li>Magic number:   'C','D','F'</li>
+     *   <li>Version number: 1 or 2</li>
+     *   <li>Number of records</li>
+     *   <li>List of NetCDF dimensions  (see {@link #readDimensions(int)})</li>
+     *   <li>List of global attributes  (see {@link #readAttributes(int)})</li>
+     *   <li>List of variables          (see {@link #readVariables(int, Dimension[])})</li>
+     * </ul>
+     *
+     * @param  listeners  where to send the warnings.
+     * @param  input      the channel and the buffer from where data are read.
+     * @throws IOException if an error occurred while reading the channel.
+     * @throws DataStoreException if the content of the given channel is not a NetCDF file.
      */
-    public ChannelDecoder(final WarningListeners<?> listeners, final ChannelDataInput input)
+    public ChannelDecoder(final WarningListeners<DataStore> listeners, final ChannelDataInput input)
             throws IOException, DataStoreException
     {
         super(listeners);
@@ -202,7 +237,7 @@ public final class ChannelDecoder extends Decoder {
          */
         int version = input.readInt();
         if ((version & 0xFFFFFF00) != MAGIC_NUMBER) {
-            throw new DataStoreException(errors().getString(Errors.Keys.UnexpectedFileFormat_2, "NetCDF", input.filename));
+            throw new DataStoreContentException(errors().getString(Errors.Keys.UnexpectedFileFormat_2, "NetCDF", getFilename()));
         }
         /*
          * Check the version number.
@@ -211,7 +246,7 @@ public final class ChannelDecoder extends Decoder {
         switch (version) {
             case 1:  is64bits = false; break;
             case 2:  is64bits = true;  break;
-            default: throw new DataStoreException(errors().getString(Errors.Keys.UnsupportedVersion_1, version));
+            default: throw new DataStoreContentException(errors().getString(Errors.Keys.UnsupportedFormatVersion_2, "NetCDF", version));
             // If more cases are added, remember to increment the MAX_VERSION constant.
         }
         numrecs = input.readInt();
@@ -219,33 +254,38 @@ public final class ChannelDecoder extends Decoder {
          * Read the dimension, attribute and variable declarations. We expect exactly 3 lists,
          * where any of them can be flagged as absent by a long (64 bits) 0.
          */
-        Dimension[]    dimensions = null;
-        VariableInfo[] variables  = null;
-        Attribute[]    attributes = null;
+        Dimension[]        dimensions = null;
+        VariableInfo[]     variables  = null;
+        Map<String,Object> attributes = null;
         for (int i=0; i<3; i++) {
-            final long tn = input.readLong(); // Combination of tag and nelems
+            final long tn = input.readLong();                   // Combination of tag and nelems
             if (tn != 0) {
                 final int tag = (int) (tn >>> Integer.SIZE);
                 final int nelems = (int) tn;
                 ensureNonNegative(nelems, tag);
-                switch (tag) {
-                    case DIMENSION: dimensions = readDimensions(nelems); break;
-                    case VARIABLE:  variables  = readVariables (nelems, dimensions); break;
-                    case ATTRIBUTE: attributes = readAttributes(nelems); break;
-                    default:        throw malformedHeader();
+                try {
+                    switch (tag) {
+                        case DIMENSION: dimensions = readDimensions(nelems); break;
+                        case VARIABLE:  variables  = readVariables (nelems, dimensions); break;
+                        case ATTRIBUTE: attributes = readAttributes(nelems); break;
+                        default:        throw malformedHeader();
+                    }
+                } catch (InvalidParameterCardinalityException e) {
+                    throw new DataStoreContentException(e.getLocalizedMessage(), e);
                 }
             }
         }
-        attributeMap = toMap(attributes, Attribute.NAME_FUNCTION);
+        attributeMap = attributes;
         this.variables = variables;
+        variableMap = NamedElement.toCaseInsensitiveNameMap(variables, NAME_LOCALE);
     }
 
     /**
      * Return the localized name of the given tag.
      *
-     * @param  tag One of {@link #DIMENSION}, {@link #VARIABLE} or {@link #ATTRIBUTE} constants.
-     * @return The localized name of the given tag, or its hexadecimal number if the given value is not
-     *         one of the expected constants.
+     * @param  tag  one of {@link #DIMENSION}, {@link #VARIABLE} or {@link #ATTRIBUTE} constants.
+     * @return the localized name of the given tag, or its hexadecimal number if the given value
+     *         is not one of the expected constants.
      */
     private static String tagName(final int tag) {
         final short key;
@@ -259,12 +299,21 @@ public final class ChannelDecoder extends Decoder {
     }
 
     /**
-     * Returns the localized error resource bundle for the locale given by {@link #getLocale()}.
+     * Returns the localized error resource bundle for the locale given by {@link WarningListeners#getLocale()}.
      *
-     * @return The localized error resource bundle.
+     * @return the localized error resource bundle.
      */
-    private Errors errors() {
+    final Errors errors() {
         return Errors.getResources(listeners.getLocale());
+    }
+
+    /**
+     * Returns the NetCDF-specific resource bundle for the locale given by {@link WarningListeners#getLocale()}.
+     *
+     * @return the localized error resource bundle.
+     */
+    final Resources resources() {
+        return Resources.forLocale(listeners.getLocale());
     }
 
     /**
@@ -272,7 +321,7 @@ public final class ChannelDecoder extends Decoder {
      * that the file should be a NetCDF one, but we found some inconsistency or unknown tags.
      */
     private DataStoreException malformedHeader() {
-        return new DataStoreException(errors().getString(Errors.Keys.CanNotParseFile_2, "NetCDF", input.filename));
+        return new DataStoreContentException(listeners.getLocale(), "NetCDF", getFilename(), null);
     }
 
     /**
@@ -280,37 +329,28 @@ public final class ChannelDecoder extends Decoder {
      */
     private void ensureNonNegative(final int nelems, final int tag) throws DataStoreException {
         if (nelems < 0) {
-            throw new DataStoreException(errors().getString(Errors.Keys.NegativeArrayLength_1,
-                    input.filename + DefaultNameSpace.DEFAULT_SEPARATOR + tagName(tag)));
+            throw new DataStoreContentException(errors().getString(Errors.Keys.NegativeArrayLength_1,
+                    getFilename() + DefaultNameSpace.DEFAULT_SEPARATOR + tagName(tag)));
         }
     }
 
     /**
-     * Makes sure that the buffer contains at least <var>n</var> remaining elements of the given size.
-     * If the buffer does not have enough bytes available, more bytes will be read from the channel.
-     * If the buffer capacity is not sufficient for reading the given amount of data, an exception
-     * is thrown.
+     * Aligns position in the stream after reading the given amount of bytes.
+     * This method should be invoked only for {@link DataType#BYTE} and {@link DataType#CHAR}.
      *
-     * <p>The NetCDF format add padding after bytes, characters and short integers in order to align
-     * the data on multiple of 4 bytes. This method adds such padding to the number of bytes to read.</p>
+     * <p>The NetCDF format adds padding after bytes, characters and short integers in order to align the data
+     * on multiple of 4 bytes. This method is used for adding such padding to the number of bytes to read.</p>
      *
-     * @param  n        The number of elements to read.
-     * @param  dataSize The size of each element, in bytes.
-     * @param  name     The name of the element to read, used only in case of error for formatting the message.
-     * @return The number of bytes to read, rounded to the next multiple of 4.
+     * @param  length   number of byte reads.
+     * @throws IOException if an error occurred while skipping bytes.
      */
-    private int ensureBufferContains(final int n, final int dataSize, String name) throws IOException, DataStoreException {
-        // (n+3) & ~3  is a trick for rounding 'n' to the next multiple of 4.
-        final long size = ((n & 0xFFFFFFFFL) * dataSize + 3) & ~3;
-        if (size > input.buffer.capacity()) {
-            name = input.filename + DefaultNameSpace.DEFAULT_SEPARATOR + name;
-            final Errors errors = errors();
-            throw new DataStoreException(n < 0 ?
-                    errors.getString(Errors.Keys.NegativeArrayLength_1, name) :
-                    errors.getString(Errors.Keys.ExcessiveListSize_2, name, n));
+    private void align(int length) throws IOException {
+        length &= 3;
+        if (length != 0) {
+            length = 4 - length;
+            input.ensureBufferContains(length);
+            input.buffer.position(input.buffer.position() + length);
         }
-        input.ensureBufferContains((int) size);
-        return (int) size;
     }
 
     /**
@@ -321,7 +361,7 @@ public final class ChannelDecoder extends Decoder {
     }
 
     /**
-     * Reads a string from the buffer in the {@value #NAME_ENCODING}. This is suitable for the dimension,
+     * Reads a string from the channel in the {@value #NAME_ENCODING}. This is suitable for the dimension,
      * variable and attribute names in the header. Note that attribute value may have a different encoding.
      */
     private String readName() throws IOException, DataStoreException {
@@ -329,9 +369,8 @@ public final class ChannelDecoder extends Decoder {
         if (length < 0) {
             throw malformedHeader();
         }
-        final int size = ensureBufferContains(length, 1, "<name>");
         final String text = input.readString(length, NAME_ENCODING);
-        input.buffer.position(input.buffer.position() + (size - length));
+        align(length);
         return text;
     }
 
@@ -343,58 +382,74 @@ public final class ChannelDecoder extends Decoder {
      * <p>If the value is a {@code String}, then leading and trailing spaces and control characters have been trimmed
      * by {@link String#trim()}.</p>
      *
-     * @return The value, or {@code null} if it was an empty string or an empty array.
+     * @return the value, or {@code null} if it was an empty string or an empty array.
      */
-    private Object readValues(final String name, final int type, final int length) throws IOException, DataStoreException {
+    private Object readValues(final DataType type, final int length) throws IOException, DataStoreException {
         if (length == 0) {
             return null;
         }
-        final ByteBuffer buffer = input.buffer;
-        final int size = ensureBufferContains(length, VariableInfo.sizeOf(type), name);
-        final int position = buffer.position(); // Must be after 'ensureBufferContains'
-        final Object result;
+        if (length < 0) {
+            throw malformedHeader();
+        }
+        if (length == 1) {
+            switch (type) {
+                case BYTE:   {final byte  v =         input.readByte();          align(1); return v;}
+                case UBYTE:  {final short v = (short) input.readUnsignedByte();  align(1); return v;}
+                case SHORT:  {final short v =         input.readShort();         align(2); return v;}
+                case USHORT: {final int   v =         input.readUnsignedShort(); align(2); return v;}
+                case INT:    return input.readInt();
+                case INT64:  return input.readLong();
+                case UINT:   return input.readUnsignedInt();
+                case FLOAT:  return input.readFloat();
+                case DOUBLE: return input.readDouble();
+            }
+        }
         switch (type) {
-            case VariableInfo.CHAR: {
-                final String text = input.readString(length, encoding).trim();
-                result = text.isEmpty() ? null : text;
-                break;
+            case CHAR: {
+                final String text = input.readString(length, encoding);
+                align(length);
+                return text.isEmpty() ? null : text;
             }
-            case VariableInfo.BYTE: {
+            case BYTE:
+            case UBYTE: {
                 final byte[] array = new byte[length];
-                buffer.get(array);
-                result = array;
-                break;
+                input.readFully(array);
+                align(length);
+                return array;
             }
-            case VariableInfo.SHORT: {
+            case SHORT:
+            case USHORT: {
                 final short[] array = new short[length];
-                buffer.asShortBuffer().get(array);
-                result = array;
-                break;
+                input.readFully(array, 0, length);
+                align(length << 1);
+                return array;
             }
-            case VariableInfo.INT: {
+            case INT:
+            case UINT: {
                 final int[] array = new int[length];
-                buffer.asIntBuffer().get(array);
-                result = array;
-                break;
+                input.readFully(array, 0, length);
+                return array;
             }
-            case VariableInfo.FLOAT: {
+            case INT64:
+            case UINT64: {
+                final long[] array = new long[length];
+                input.readFully(array, 0, length);
+                return array;
+            }
+            case FLOAT: {
                 final float[] array = new float[length];
-                buffer.asFloatBuffer().get(array);
-                result = array;
-                break;
+                input.readFully(array, 0, length);
+                return array;
             }
-            case VariableInfo.DOUBLE: {
+            case DOUBLE: {
                 final double[] array = new double[length];
-                buffer.asDoubleBuffer().get(array);
-                result = array;
-                break;
+                input.readFully(array, 0, length);
+                return array;
             }
             default: {
                 throw malformedHeader();
             }
         }
-        buffer.position(position + size);
-        return result;
     }
 
     /**
@@ -402,11 +457,11 @@ public final class ChannelDecoder extends Decoder {
      *
      * <ul>
      *   <li>The dimension name     (use {@link #readName()})</li>
-     *   <li>The dimension length   (use {@link #readInt()})</li>
+     *   <li>The dimension length   (use {@link ChannelDataInput#readInt()})</li>
      * </ul>
      *
-     * @param nelems The number of dimensions to read.
-     * @return The dimensions in the order they are declared in the NetCDF file.
+     * @param  nelems  the number of dimensions to read.
+     * @return the dimensions in the order they are declared in the NetCDF file.
      */
     private Dimension[] readDimensions(final int nelems) throws IOException, DataStoreException {
         final Dimension[] dimensions = new Dimension[nelems];
@@ -416,11 +471,12 @@ public final class ChannelDecoder extends Decoder {
             if (length == 0) {
                 length = numrecs;
                 if (length == STREAMING) {
-                    throw new DataStoreException(errors().getString(Errors.Keys.MissingValueForProperty_1, "numrecs"));
+                    throw new DataStoreContentException(errors().getString(Errors.Keys.MissingValueForProperty_1, "numrecs"));
                 }
             }
             dimensions[i] = new Dimension(name, length);
         }
+        dimensionMap = Dimension.toCaseInsensitiveNameMap(dimensions, NAME_LOCALE);
         return dimensions;
     }
 
@@ -430,27 +486,26 @@ public final class ChannelDecoder extends Decoder {
      *
      * <ul>
      *   <li>The attribute name                             (use {@link #readName()})</li>
-     *   <li>The attribute type (BYTE, SHORT, …)            (use {@link #readInt()})</li>
-     *   <li>The number of values of the above type         (use {@link #readInt()})</li>
-     *   <li>The actual values as a variable length list    (use {@link #readValues(String,int,int)})</li>
+     *   <li>The attribute type (BYTE, SHORT, …)            (use {@link ChannelDataInput#readInt()})</li>
+     *   <li>The number of values of the above type         (use {@link ChannelDataInput#readInt()})</li>
+     *   <li>The actual values as a variable length list    (use {@link #readValues(DataType,int)})</li>
      * </ul>
      *
      * If the value is a {@code String}, then leading and trailing spaces and control characters
      * have been trimmed by {@link String#trim()}.
      *
-     * @param nelems The number of attributes to read.
+     * @param  nelems  the number of attributes to read.
      */
-    private Attribute[] readAttributes(final int nelems) throws IOException, DataStoreException {
-        final Attribute[] attributes = new Attribute[nelems];
-        int count = 0;
-        for (int i=0; i<nelems; i++) {
+    private Map<String,Object> readAttributes(int nelems) throws IOException, DataStoreException {
+        final List<Map.Entry<String,Object>> attributes = new ArrayList<>(nelems);
+        while (--nelems >= 0) {
             final String name = readName();
-            final Object value = readValues(name, input.readInt(), input.readInt());
+            final Object value = readValues(DataType.valueOf(input.readInt()), input.readInt());
             if (value != null) {
-                attributes[count++] = new Attribute(name, value);
+                attributes.add(new AbstractMap.SimpleEntry<>(name, value));
             }
         }
-        return ArraysExt.resize(attributes, count);
+        return CollectionsExt.toCaseInsensitiveNameMap(attributes, NAME_LOCALE);
     }
 
     /**
@@ -460,24 +515,24 @@ public final class ChannelDecoder extends Decoder {
      *
      * <ul>
      *   <li>The variable name          (use {@link #readName()})</li>
-     *   <li>The number of dimensions   (use {@link #readInt()})</li>
-     *   <li>Index of all dimensions    (use {@link #readInt()} <var>n</var> time)</li>
-     *   <li>The {@link #ATTRIBUTE} tag (use {@link #readInt()} - actually combined as a long with next item)</li>
-     *   <li>Number of attributes       (use {@link #readInt()} - actually combined as a long with above item)</li>
+     *   <li>The number of dimensions   (use {@link ChannelDataInput#readInt()})</li>
+     *   <li>Index of all dimensions    (use {@link ChannelDataInput#readInt()} <var>n</var> time)</li>
+     *   <li>The {@link #ATTRIBUTE} tag (use {@link ChannelDataInput#readInt()} - actually combined as a long with next item)</li>
+     *   <li>Number of attributes       (use {@link ChannelDataInput#readInt()} - actually combined as a long with above item)</li>
      *   <li>The attribute values       (use {@link #readAttributes(int)})</li>
-     *   <li>The data type (BYTE, …)    (use {@link #readInt()})</li>
-     *   <li>The variable size          (use {@link #readInt()})</li>
+     *   <li>The data type (BYTE, …)    (use {@link ChannelDataInput#readInt()})</li>
+     *   <li>The variable size          (use {@link ChannelDataInput#readInt()})</li>
      *   <li>Offset where data begins   (use {@link #readOffset()})</li>
      * </ul>
      *
-     * @param nelems     The number of variables to read.
-     * @param dimensions The dimensions previously read by {@link #readDimensions(int)}.
+     * @param  nelems         the number of variables to read.
+     * @param  allDimensions  the dimensions previously read by {@link #readDimensions(int)}.
      */
-    private VariableInfo[] readVariables(final int nelems, final Dimension[] dimensions)
+    private VariableInfo[] readVariables(final int nelems, final Dimension[] allDimensions)
             throws IOException, DataStoreException
     {
-        if (dimensions == null) {
-            throw malformedHeader();
+        if (allDimensions == null) {
+            throw malformedHeader();        // May happen if readDimensions(…) has not been invoked.
         }
         final VariableInfo[] variables = new VariableInfo[nelems];
         for (int j=0; j<nelems; j++) {
@@ -486,18 +541,16 @@ public final class ChannelDecoder extends Decoder {
             final Dimension[] varDims = new Dimension[n];
             try {
                 for (int i=0; i<n; i++) {
-                    varDims[i] = dimensions[input.readInt()];
+                    varDims[i] = allDimensions[input.readInt()];
                 }
             } catch (IndexOutOfBoundsException cause) {
-                final DataStoreException e = malformedHeader();
-                e.initCause(cause);
-                throw e;
+                throw malformedHeader().initCause(cause);
             }
             /*
              * Following block is almost a copy-and-paste of similar block in the contructor,
              * but with less cases in the "switch" statements.
              */
-            Attribute[] attributes = null;
+            Map<String,Object> attributes = null;
             final long tn = input.readLong();
             if (tn != 0) {
                 final int tag = (int) (tn >>> Integer.SIZE);
@@ -509,34 +562,10 @@ public final class ChannelDecoder extends Decoder {
                     default:        throw malformedHeader();
                 }
             }
-            variables[j] = new VariableInfo(input, name, varDims, dimensions,
-                    toMap(attributes, Attribute.NAME_FUNCTION), input.readInt(), input.readInt(), readOffset());
+            variables[j] = new VariableInfo(input, name, varDims, attributes,
+                    DataType.valueOf(input.readInt()), input.readInt(), readOffset());
         }
         return variables;
-    }
-
-    /**
-     * Creates a (<cite>name</cite>, <cite>element</cite>) mapping for the given array of elements.
-     * If the name of an element is not all lower cases, then this method also adds an entry for the
-     * lower cases version of that name in order to allow case-insensitive searches.
-     *
-     * <p>Code searching in the returned map shall ask for the original (non lower-case) name
-     * <strong>before</strong> to ask for the lower-cases version of that name.</p>
-     *
-     * @param  <E>          The type of elements.
-     * @param  elements     The elements to store in the map, or {@code null} if none.
-     * @param  nameFunction The function for computing a name from an element.
-     * @return A (<cite>name</cite>, <cite>element</cite>) mapping with lower cases entries where possible.
-     * @throws DataStoreException If the same name is used for more than one element.
-     *
-     * @see #findAttribute(String)
-     */
-    private <E> Map<String,E> toMap(final E[] elements, final Function<E,String> nameFunction) throws DataStoreException {
-        try {
-            return CollectionsExt.toCaseInsensitiveNameMap(Arrays.asList(elements), nameFunction, NAME_LOCALE);
-        } catch (InvalidParameterCardinalityException e) {
-            throw new DataStoreException(errors().getString(Errors.Keys.ValueAlreadyDefined_1, e.getParameterName()));
-        }
     }
 
 
@@ -546,17 +575,25 @@ public final class ChannelDecoder extends Decoder {
     // --------------------------------------------------------------------------------------------
 
     /**
+     * Returns a filename for information purpose only. This is used for formatting error messages.
+     *
+     * @return a filename to report in warning or error messages.
+     */
+    @Override
+    public final String getFilename() {
+        return input.filename;
+    }
+
+    /**
      * Defines the groups where to search for named attributes, in preference order.
      * The {@code null} group name stands for the global attributes.
      *
      * <p>Current implementation does nothing, since the NetCDF binary files that {@code ChannelDecoder}
      * can read do not have groups anyway. Future SIS implementations may honor the given group names if
      * groups support is added.</p>
-     *
-     * @throws IOException {@inheritDoc}
      */
     @Override
-    public void setSearchPath(final String... groupNames) throws IOException {
+    public void setSearchPath(final String... groupNames) {
     }
 
     /**
@@ -565,46 +602,91 @@ public final class ChannelDecoder extends Decoder {
      * groups which have been found in the NetCDF file are returned by this method.
      *
      * @return {@inheritDoc}
-     * @throws IOException {@inheritDoc}
      */
     @Override
-    public String[] getSearchPath() throws IOException {
+    public String[] getSearchPath() {
         return new String[1];
     }
 
     /**
-     * Returns the NetCDF attribute of the given name, or {@code null} if none.
-     * The {@code name} argument is typically (but is not restricted too) one of
-     * the constants defined in the {@link AttributeNames} class.
+     * Returns the dimension of the given name (eventually ignoring case), or {@code null} if none.
+     * This method searches in all dimensions found in the NetCDF file, regardless of variables.
+     * The search will ignore case only if no exact match is found for the given name.
      *
-     * @param  name The name of the attribute to search, or {@code null}.
-     * @return The attribute, or {@code null} if none.
+     * @param  dimName  the name of the dimension to search.
+     * @return dimension of the given name, or {@code null} if none.
      */
-    private Attribute findAttribute(final String name) {
-        Attribute attribute = attributeMap.get(name);
-        if (attribute == null && name != null) {
-            final String lower = name.toLowerCase(NAME_LOCALE);
-            if (lower != name) { // Identity comparison is ok since this check is only an optimization for a common case.
-                attribute = attributeMap.get(lower);
+    final Dimension findDimension(final String dimName) {
+        Dimension dim = dimensionMap.get(dimName);         // Give precedence to exact match before to ignore case.
+        if (dim == null) {
+            final String lower = dimName.toLowerCase(ChannelDecoder.NAME_LOCALE);
+            if (lower != dimName) {                         // Identity comparison is okay here.
+                dim = dimensionMap.get(lower);
             }
         }
-        return attribute;
+        return dim;
+    }
+
+    /**
+     * Returns the NetCDF variable of the given name, or {@code null} if none.
+     *
+     * @param  name  the name of the variable to search, or {@code null}.
+     * @return the attribute value, or {@code null} if none.
+     */
+    final VariableInfo findVariable(final String name) {
+        VariableInfo v = variableMap.get(name);
+        if (v == null && name != null) {
+            final String lower = name.toLowerCase(NAME_LOCALE);
+            // Identity comparison is ok since following check is only an optimization for a common case.
+            if (lower != name) {
+                v = variableMap.get(lower);
+            }
+        }
+        return v;
+    }
+
+    /**
+     * Returns the NetCDF attribute of the given name, or {@code null} if none.
+     * The {@code name} argument is typically (but is not restricted to) one of the constants
+     * defined in the {@link org.apache.sis.storage.netcdf.AttributeNames} class.
+     *
+     * @param  name  the name of the attribute to search, or {@code null}.
+     * @return the attribute value, or {@code null} if none.
+     *
+     * @see #getAttributeNames()
+     */
+    private Object findAttribute(final String name) {
+        Object value = attributeMap.get(name);
+        if (value == null && name != null) {
+            final String lower = name.toLowerCase(NAME_LOCALE);
+            // Identity comparison is ok since following check is only an optimization for a common case.
+            if (lower != name) {
+                value = attributeMap.get(lower);
+            }
+        }
+        return value;
+    }
+
+    /**
+     * Returns the names of all global attributes found in the file.
+     *
+     * @return names of all global attributes in the file.
+     */
+    @Override
+    public Collection<String> getAttributeNames() {
+        return Collections.unmodifiableSet(attributeMap.keySet());
     }
 
     /**
      * Returns the value for the attribute of the given name, or {@code null} if none.
      *
-     * @param  name The name of the attribute to search, or {@code null}.
-     * @return The attribute value, or {@code null} if none or empty or if the given name was null.
-     * @throws IOException {@inheritDoc}
+     * @param  name  the name of the attribute to search, or {@code null}.
+     * @return the attribute value, or {@code null} if none or empty or if the given name was null.
      */
     @Override
-    public String stringValue(final String name) throws IOException {
-        final Attribute attribute = findAttribute(name);
-        if (attribute != null) {
-            return attribute.value.toString();
-        }
-        return null;
+    public String stringValue(final String name) {
+        final Object value = findAttribute(name);
+        return (value != null) ? value.toString() : null;
     }
 
     /**
@@ -612,18 +694,15 @@ public final class ChannelDecoder extends Decoder {
      * If there is more than one numeric value, only the first one is returned.
      *
      * @return {@inheritDoc}
-     * @throws IOException {@inheritDoc}
      */
     @Override
-    public Number numericValue(final String name) throws IOException {
-        final Attribute attribute = findAttribute(name);
-        if (attribute != null && attribute.value != null) {
-            if (attribute.value instanceof String) {
-                return parseNumber((String) attribute.value);
-            }
-            return (Number) Array.get(attribute.value, 0);
+    public Number numericValue(final String name) {
+        final Object value = findAttribute(name);
+        if (value instanceof String) {
+            return parseNumber((String) value);
         }
-        return null;
+        final Number[] v = VariableInfo.numberValues(value);
+        return (v.length != 0) ? v[0] : null;
     }
 
     /**
@@ -631,17 +710,14 @@ public final class ChannelDecoder extends Decoder {
      * If there is more than one numeric value, only the first one is returned.
      *
      * @return {@inheritDoc}
-     * @throws IOException {@inheritDoc}
      */
     @Override
-    public Date dateValue(final String name) throws IOException {
-        final Attribute attribute = findAttribute(name);
-        if (attribute != null) {
-            if (attribute.value instanceof String) try {
-                return JDK8.parseDateTime(Attribute.dateToISO((String) attribute.value));
-            } catch (IllegalArgumentException e) {
-                listeners.warning(null, e);
-            }
+    public Date dateValue(final String name) {
+        final Object value = findAttribute(name);
+        if (value instanceof CharSequence) try {
+            return JDK8.parseDateTime(StandardDateFormat.dateToISO((CharSequence) value, 0, false));
+        } catch (IllegalArgumentException e) {
+            listeners.warning(null, e);
         }
         return null;
     }
@@ -650,26 +726,23 @@ public final class ChannelDecoder extends Decoder {
      * Converts the given numerical values to date, using the information provided in the given unit symbol.
      * The unit symbol is typically a string like <cite>"days since 1970-01-01T00:00:00Z"</cite>.
      *
-     * @param  values The values to convert. May contains {@code null} elements.
-     * @return The converted values. May contains {@code null} elements.
-     * @throws IOException {@inheritDoc}
+     * @param  values  the values to convert. May contain {@code null} elements.
+     * @return the converted values. May contain {@code null} elements.
      */
     @Override
-    public Date[] numberToDate(final String symbol, final Number... values) throws IOException {
+    public Date[] numberToDate(final String symbol, final Number... values) {
         final Date[] dates = new Date[values.length];
         final String[] parts = TIME_UNIT_PATTERN.split(symbol);
         if (parts.length == 2) try {
             final UnitConverter converter = Units.valueOf(parts[0]).getConverterToAny(Units.MILLISECOND);
-            final long epoch = JDK8.parseDateTime(Attribute.dateToISO(parts[1])).getTime();
+            final long epoch = JDK8.parseDateTime(StandardDateFormat.dateToISO(parts[1], 0, false)).getTime();
             for (int i=0; i<values.length; i++) {
                 final Number value = values[i];
                 if (value != null) {
                     dates[i] = new Date(epoch + Math.round(converter.convert(value.doubleValue())));
                 }
             }
-        } catch (ConversionException e) {
-            listeners.warning(null, e);
-        } catch (IllegalArgumentException e) {
+        } catch (IncommensurableException | ParserException | DateTimeException | ArithmeticException e) {
             listeners.warning(null, e);
         }
         return dates;
@@ -680,11 +753,26 @@ public final class ChannelDecoder extends Decoder {
      * This method returns a direct reference to an internal array - do not modify.
      *
      * @return {@inheritDoc}
-     * @throws IOException {@inheritDoc}
      */
     @Override
-    public Variable[] getVariables() throws IOException {
+    @SuppressWarnings("ReturnOfCollectionOrArrayField")
+    public Variable[] getVariables() {
         return variables;
+    }
+
+    /**
+     * If this decoder can handle the file content as features, returns handlers for them.
+     *
+     * @return {@inheritDoc}
+     * @throws IOException if an I/O operation was necessary but failed.
+     * @throws DataStoreException if a logical error occurred.
+     */
+    @Override
+    public DiscreteSampling[] getDiscreteSampling() throws IOException, DataStoreException {
+        if ("trajectory".equalsIgnoreCase(stringValue(CF.FEATURE_TYPE))) {
+            return FeaturesInfo.create(this);
+        }
+        return new FeaturesInfo[0];
     }
 
     /**
@@ -692,17 +780,18 @@ public final class ChannelDecoder extends Decoder {
      * This method returns a direct reference to an internal array - do not modify.
      *
      * @return {@inheritDoc}
-     * @throws IOException {@inheritDoc}
      */
     @Override
-    public GridGeometry[] getGridGeometries() throws IOException {
+    @SuppressWarnings("ReturnOfCollectionOrArrayField")
+    public GridGeometry[] getGridGeometries() {
         if (gridGeometries == null) {
             /*
-             * First, find all variables which are used as coordinate system axis. The keys are the
-             * grid dimensions which are the domain of the variable (i.e. the sources of the conversion
-             * from grid coordinates to CRS coordinates).
+             * First, find all variables which are used as coordinate system axis. The keys in the map are
+             * the grid dimensions which are the domain of the variable (i.e. the sources of the conversion
+             * from grid coordinates to CRS coordinates). For each key there is usually only one value, but
+             * we try to make this code robust to unusual NetCDF files.
              */
-            final Map<Dimension, List<VariableInfo>> dimToAxes = new IdentityHashMap<Dimension, List<VariableInfo>>();
+            final Map<Dimension, List<VariableInfo>> dimToAxes = new IdentityHashMap<>();
             for (final VariableInfo variable : variables) {
                 if (variable.isCoordinateSystemAxis()) {
                     for (final Dimension dimension : variable.dimensions) {
@@ -711,13 +800,13 @@ public final class ChannelDecoder extends Decoder {
                 }
             }
             /*
-             * For each variables, gets the list of all axes associated to their dimensions. The association
+             * For each variables, get the list of all axes associated to their dimensions. The association
              * is given by the above 'dimToVars' map. More than one variable may have the same dimensions,
              * and consequently the same axes, so we will remember the previously created instances in order
              * to share them.
              */
-            final Set<VariableInfo> axes = new LinkedHashSet<VariableInfo>(4);
-            final Map<List<Dimension>, GridGeometryInfo> dimsToGG = new LinkedHashMap<List<Dimension>, GridGeometryInfo>();
+            final Set<VariableInfo> axes = new LinkedHashSet<>(4);
+            final Map<List<Dimension>, GridGeometryInfo> dimsToGG = new LinkedHashMap<>();
 nextVar:    for (final VariableInfo variable : variables) {
                 if (variable.isCoordinateSystemAxis()) {
                     continue;
@@ -731,7 +820,7 @@ nextVar:    for (final VariableInfo variable : variables) {
                      * This is a "all or nothing" operation.
                      */
                     for (final Dimension dimension : variable.dimensions) {
-                        final List<VariableInfo> axis = dimToAxes.get(dimension);
+                        final List<VariableInfo> axis = dimToAxes.get(dimension);       // Should have only 1 element.
                         if (axis == null) {
                             axes.clear();
                             continue nextVar;
@@ -752,7 +841,7 @@ nextVar:    for (final VariableInfo variable : variables) {
     /**
      * Closes the channel.
      *
-     * @throws IOException If an error occurred while closing the channel.
+     * @throws IOException if an error occurred while closing the channel.
      */
     @Override
     public void close() throws IOException {
@@ -769,7 +858,7 @@ nextVar:    for (final VariableInfo variable : variables) {
     @Override
     public String toString() {
         final StringBuilder buffer = new StringBuilder();
-        buffer.append("SIS driver: “").append(input.filename).append('”');
+        buffer.append("SIS driver: “").append(getFilename()).append('”');
         if (!input.channel.isOpen()) {
             buffer.append(" (closed)");
         }

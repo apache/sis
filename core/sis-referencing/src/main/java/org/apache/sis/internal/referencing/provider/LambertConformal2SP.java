@@ -16,6 +16,7 @@
  */
 package org.apache.sis.internal.referencing.provider;
 
+import javax.xml.bind.annotation.XmlTransient;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.apache.sis.internal.util.Constants;
@@ -28,12 +29,14 @@ import org.apache.sis.metadata.iso.citation.Citations;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Rueben Schulz (UBC)
- * @since   0.6
- * @version 0.6
- * @module
+ * @version 0.8
  *
  * @see <a href="http://www.remotesensing.org/geotiff/proj_list/lambert_conic_conformal_2sp.html">Lambert Conic Conformal 2SP on RemoteSensing.org</a>
+ *
+ * @since 0.6
+ * @module
  */
+@XmlTransient
 public final class LambertConformal2SP extends AbstractLambert {
     /**
      * For cross-version compatibility.
@@ -86,7 +89,7 @@ public final class LambertConformal2SP extends AbstractLambert {
     /**
      * The group of all parameters expected by this coordinate operation.
      */
-    static final ParameterDescriptorGroup PARAMETERS;
+    private static final ParameterDescriptorGroup PARAMETERS;
     static {
         final ParameterBuilder builder = builder();
         /*
@@ -105,11 +108,13 @@ public final class LambertConformal2SP extends AbstractLambert {
          * NetCDF:  longitude_of_central_meridian
          * GeoTIFF: FalseOriginLong
          */
-        LONGITUDE_OF_FALSE_ORIGIN = createLongitude(exceptEPSG(LambertConformal1SP.CENTRAL_MERIDIAN, builder
-                .addIdentifier("8822")
-                .addName("Longitude of false origin"))
+        LONGITUDE_OF_FALSE_ORIGIN = createLongitude(builder
+                .addNamesAndIdentifiers(LambertConformal1SP.LONGITUDE_OF_ORIGIN)
+                .rename(Citations.EPSG, "Longitude of false origin")
                 .rename(Citations.NETCDF, "longitude_of_central_meridian")
-                .rename(Citations.GEOTIFF, "FalseOriginLong"));
+                .rename(Citations.GEOTIFF, "FalseOriginLong")
+                .reidentify(Citations.EPSG, "8822")
+                .reidentify(Citations.GEOTIFF, "3084"));
         /*
          * EPSG:    Latitude of 1st standard parallel
          * OGC:     standard_parallel_1
@@ -120,7 +125,8 @@ public final class LambertConformal2SP extends AbstractLambert {
          * Special case: default value shall be the value of LATITUDE_OF_FALSE_ORIGIN.
          */
         STANDARD_PARALLEL_1 = createMandatoryLatitude(builder
-                .addNamesAndIdentifiers(Mercator2SP.STANDARD_PARALLEL));
+                .addNamesAndIdentifiers(Mercator2SP.STANDARD_PARALLEL)
+                .rename(Citations.PROJ4, "lat_1"));
         /*
          * EPSG:    Latitude of 2nd standard parallel
          * OGC:     standard_parallel_2
@@ -132,6 +138,7 @@ public final class LambertConformal2SP extends AbstractLambert {
          */
         STANDARD_PARALLEL_2 = createMandatoryLatitude(builder
                 .addIdentifier("8824")
+                .addIdentifier(Citations.GEOTIFF, "3079")
                 .addName("Latitude of 2nd standard parallel")
                 .addName(Citations.OGC,     Constants.STANDARD_PARALLEL_2)
                 .addName(Citations.ESRI,    "Standard_Parallel_2")
@@ -150,25 +157,25 @@ public final class LambertConformal2SP extends AbstractLambert {
                 .setRequired(false).setDeprecated(true));
 
         PARAMETERS = builder
-            .addIdentifier(IDENTIFIER)
-            .addName(                    "Lambert Conic Conformal (2SP)")
-            .addName(Citations.OGC,      "Lambert_Conformal_Conic_2SP")
-            .addName(Citations.ESRI,     "Lambert_Conformal_Conic")
-            .addName(Citations.NETCDF,   "LambertConformal")
-            .addName(Citations.GEOTIFF,  "CT_LambertConfConic_2SP")
-            .addName(Citations.GEOTIFF,  "CT_LambertConfConic")
-            .addName(Citations.PROJ4,    "lcc")
-            .addIdentifier(Citations.GEOTIFF,  "8")
-            .addIdentifier(Citations.MAP_INFO, "3")
-            .addIdentifier(Citations.S57,      "6")
-            .createGroupForMapProjection(
-                    LATITUDE_OF_FALSE_ORIGIN,
-                    LONGITUDE_OF_FALSE_ORIGIN,
-                    STANDARD_PARALLEL_1,
-                    STANDARD_PARALLEL_2,
-                    scaleFactor,           // Not formally a LambertConformal2SP parameter.
-                    EASTING_AT_FALSE_ORIGIN,
-                    NORTHING_AT_FALSE_ORIGIN);
+                .addIdentifier(IDENTIFIER)
+                .addName(                    "Lambert Conic Conformal (2SP)")
+                .addName(Citations.OGC,      "Lambert_Conformal_Conic_2SP")
+                .addName(Citations.ESRI,     "Lambert_Conformal_Conic")
+                .addName(Citations.NETCDF,   "LambertConformal")
+                .addName(Citations.GEOTIFF,  "CT_LambertConfConic_2SP")
+                .addName(Citations.GEOTIFF,  "CT_LambertConfConic")
+                .addName(Citations.PROJ4,    "lcc")
+                .addIdentifier(Citations.GEOTIFF,  "8")
+                .addIdentifier(Citations.MAP_INFO, "3")
+                .addIdentifier(Citations.S57,      "6")
+                .createGroupForMapProjection(
+                        LATITUDE_OF_FALSE_ORIGIN,
+                        LONGITUDE_OF_FALSE_ORIGIN,
+                        STANDARD_PARALLEL_1,
+                        STANDARD_PARALLEL_2,
+                        scaleFactor,           // Not formally a LambertConformal2SP parameter.
+                        EASTING_AT_FALSE_ORIGIN,
+                        NORTHING_AT_FALSE_ORIGIN);
     }
 
     /**

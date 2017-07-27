@@ -18,7 +18,9 @@ package org.apache.sis.metadata.iso;
 
 import java.util.Map;
 import java.util.Locale;
+import java.util.Objects;
 import java.io.Serializable;
+import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import org.opengis.metadata.citation.Citation;
@@ -27,9 +29,10 @@ import org.opengis.referencing.ReferenceIdentifier;
 import org.opengis.util.InternationalString;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.iso.Types;
+import org.apache.sis.metadata.TitleProperty;
 import org.apache.sis.metadata.iso.citation.Citations;
-import org.apache.sis.internal.util.DefinitionURI;
 import org.apache.sis.internal.metadata.NameMeaning;
+import org.apache.sis.internal.metadata.WKTKeywords;
 import org.apache.sis.io.wkt.FormattableObject;
 import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.io.wkt.Convention;
@@ -38,9 +41,6 @@ import org.apache.sis.io.wkt.ElementKind;
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 import static org.apache.sis.util.CharSequences.trimWhitespaces;
 import static org.apache.sis.util.collection.Containers.property;
-
-// Branch-dependent imports
-import org.apache.sis.internal.jdk7.Objects;
 
 
 /**
@@ -105,9 +105,6 @@ import org.apache.sis.internal.jdk7.Objects;
  *
  * {@preformat xml
  *   <gmd:RS_Identifier>
- *     <gmd:code>
- *       <gco:CharacterString>4326</gco:CharacterString>
- *     </gmd:code>
  *     <gmd:authority>
  *       <gmd:CI_Citation>
  *         <gmd:title>
@@ -115,17 +112,29 @@ import org.apache.sis.internal.jdk7.Objects;
  *         </gmd:title>
  *       </gmd:CI_Citation>
  *     </gmd:authority>
+ *     <gmd:code>
+ *       <gco:CharacterString>4326</gco:CharacterString>
+ *     </gmd:code>
  *   </gmd:RS_Identifier>
  * }
  * </li></ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
- * @version 0.6
- * @module
+ * @version 0.7
  *
  * @see DefaultIdentifier
+ * @see org.apache.sis.referencing.IdentifiedObjects#toURN(Class, Identifier)
+ *
+ * @since 0.3
+ * @module
  */
+@TitleProperty(name = "code")
+@XmlType(name = "RS_Identifier_Type", propOrder = {
+    "authority",
+    "code",
+    "codeSpace",
+    "version"
+})
 @XmlRootElement(name = "RS_Identifier")
 public class ImmutableIdentifier extends FormattableObject implements ReferenceIdentifier, Serializable {
     /**
@@ -140,25 +149,7 @@ public class ImmutableIdentifier extends FormattableObject implements ReferenceI
     public static final String DESCRIPTION_KEY = "description";
 
     /**
-     * Identifier code or name, optionally from a controlled list or pattern defined by a code space.
-     *
-     * @see #getCode()
-     */
-    @XmlElement(required = true)
-    private final String code;
-
-    /**
-     * Name or identifier of the person or organization responsible for namespace, or
-     * {@code null} if not available. This is often an abbreviation of the authority name.
-     *
-     * @see #getCodeSpace()
-     */
-    @XmlElement(required = true)
-    private final String codeSpace;
-
-    /**
-     * Organization or party responsible for definition and maintenance of the code space or code,
-     * or {@code null} if not available.
+     * The person or party responsible for maintenance of the namespace, or {@code null} if not available.
      *
      * @see #getAuthority()
      */
@@ -166,11 +157,26 @@ public class ImmutableIdentifier extends FormattableObject implements ReferenceI
     private final Citation authority;
 
     /**
-     * Identifier of the version of the associated code space or code as specified
-     * by the code space or code authority, or {@code null} if not available. This
-     * version is included only when the {@linkplain #getCode() code} uses versions.
-     * When appropriate, the edition is identified by the effective date, coded using
-     * ISO 8601 date format.
+     * Alphanumeric value identifying an instance in the namespace.
+     *
+     * @see #getCode()
+     */
+    @XmlElement(required = true)
+    private final String code;
+
+    /**
+     * Identifier or namespace in which the code is valid, or {@code null} if not available.
+     * This is often an abbreviation of the authority name.
+     *
+     * @see #getCodeSpace()
+     */
+    @XmlElement(required = true)
+    private final String codeSpace;
+
+    /**
+     * Version identifier for the namespace, as specified by the code authority.
+     * This version is included only when the {@linkplain #getCode code} uses versions.
+     * When appropriate, the edition is identified by the effective date, coded using ISO 8601 date format.
      *
      * @see #getVersion()
      */
@@ -183,21 +189,10 @@ public class ImmutableIdentifier extends FormattableObject implements ReferenceI
     private final InternationalString description;
 
     /**
-     * Empty constructor for JAXB.
-     */
-    private ImmutableIdentifier() {
-        code        = null;
-        codeSpace   = null;
-        authority   = null;
-        version     = null;
-        description = null;
-    }
-
-    /**
      * Creates a new identifier from the specified one. This is a copy constructor which
      * get the code, codespace, authority and version from the given identifier.
      *
-     * @param identifier The identifier to copy.
+     * @param identifier  the identifier to copy.
      */
     public ImmutableIdentifier(final ReferenceIdentifier identifier) {
         ensureNonNull("identifier", identifier);
@@ -216,15 +211,10 @@ public class ImmutableIdentifier extends FormattableObject implements ReferenceI
     /**
      * Creates a new identifier from the specified code and authority.
      *
-     * @param authority
-     *          Organization or party responsible for definition and maintenance of the code
-     *          space or code, or {@code null} if not available.
-     * @param codeSpace
-     *          Name or identifier of the person or organization responsible for namespace, or
-     *          {@code null} if not available. This is often an abbreviation of the authority name.
-     * @param code
-     *          Identifier code or name, optionally from a controlled list or pattern defined by
-     *          a code space. The code can not be null.
+     * @param authority  the person or party responsible for maintenance of the namespace, or {@code null} if not available.
+     * @param codeSpace  identifier or namespace in which the code is valid, or {@code null} if not available.
+     *                   This is often an abbreviation of the authority name.
+     * @param code       alphanumeric value identifying an instance in the namespace. The code can not be null.
      */
     public ImmutableIdentifier(final Citation authority, final String codeSpace, final String code) {
         this(authority, codeSpace, code, null, null);
@@ -234,20 +224,12 @@ public class ImmutableIdentifier extends FormattableObject implements ReferenceI
      * Creates a new identifier from the specified code and authority,
      * with an optional version number and description.
      *
-     * @param authority
-     *          Organization or party responsible for definition and maintenance of the code
-     *          space or code, or {@code null} if not available.
-     * @param codeSpace
-     *          Name or identifier of the person or organization responsible for namespace, or
-     *          {@code null} if not available. This is often an abbreviation of the authority name.
-     * @param code
-     *          Identifier code or name, optionally from a controlled list or pattern defined by
-     *          a code space. The code can not be null.
-     * @param version
-     *          The version of the associated code space or code as specified by the code authority,
-     *          or {@code null} if none.
-     * @param description
-     *          Natural language description of the meaning of the code value, or {@code null} if none.
+     * @param authority    the person or party responsible for maintenance of the namespace, or {@code null} if not available.
+     * @param codeSpace    identifier or namespace in which the code is valid, or {@code null} if not available.
+     *                     This is often an abbreviation of the authority name.
+     * @param code         alphanumeric value identifying an instance in the namespace. The code can not be null.
+     * @param version      the version identifier for the namespace as specified by the code authority, or {@code null} if none.
+     * @param description  natural language description of the meaning of the code value, or {@code null} if none.
      */
     public ImmutableIdentifier(final Citation authority, final String codeSpace,
             final String code, final String version, final InternationalString description)
@@ -315,7 +297,7 @@ public class ImmutableIdentifier extends FormattableObject implements ReferenceI
      * After successful construction, {@code ImmutableIdentifier} instances do not keep the locale
      * since localizations are deferred to the {@link InternationalString#toString(Locale)} method.</p>
      *
-     * @param  properties The properties to be given to this identifier.
+     * @param  properties  the properties to be given to this identifier.
      * @throws IllegalArgumentException if a property has an illegal value.
      */
     public ImmutableIdentifier(final Map<String,?> properties) throws IllegalArgumentException {
@@ -341,7 +323,7 @@ public class ImmutableIdentifier extends FormattableObject implements ReferenceI
          * risk of false code space.
          */
         value = properties.get(CODESPACE_KEY);
-        if (value == null && !properties.containsKey(CODESPACE_KEY)) {
+        if (value == null) {
             codeSpace = org.apache.sis.internal.util.Citations.getCodeSpace(authority);
         } else if (value instanceof String) {
             codeSpace = trimWhitespaces((String) value);
@@ -369,7 +351,7 @@ public class ImmutableIdentifier extends FormattableObject implements ReferenceI
             final Map<String,?> properties, final String key, final Object value)
     {
         return new IllegalArgumentException(Errors.getResources(properties)
-                .getString(Errors.Keys.IllegalPropertyClass_2, key, value.getClass()));
+                .getString(Errors.Keys.IllegalPropertyValueClass_2, key, value.getClass()));
     }
 
     /**
@@ -386,8 +368,8 @@ public class ImmutableIdentifier extends FormattableObject implements ReferenceI
      *       metadata contained in the given object are not recursively copied.</li>
      * </ul>
      *
-     * @param  object The object to get as a SIS implementation, or {@code null} if none.
-     * @return A SIS implementation containing the values of the given object (may be the
+     * @param  object  the object to get as a SIS implementation, or {@code null} if none.
+     * @return a SIS implementation containing the values of the given object (may be the
      *         given object itself), or {@code null} if the argument was null.
      */
     public static ImmutableIdentifier castOrCopy(final ReferenceIdentifier object) {
@@ -398,11 +380,23 @@ public class ImmutableIdentifier extends FormattableObject implements ReferenceI
     }
 
     /**
-     * Identifier code or name, optionally from a controlled list or pattern.
+     * The person or party responsible for maintenance of the namespace.
+     * The organization's abbreviation is often the same than this identifier {@linkplain #getCodeSpace() code space},
+     * but not necessarily.
+     *
+     * @return the authority, or {@code null} if not available.
+     */
+    @Override
+    public Citation getAuthority() {
+        return authority;
+    }
+
+    /**
+     * Alphanumeric value identifying an instance in the namespace.
      *
      * <div class="note"><b>Example:</b> {@code "4326"}.</div>
      *
-     * @return The code, never {@code null}.
+     * @return value identifying an instance in the namespace (never {@code null}).
      *
      * @see org.apache.sis.referencing.NamedIdentifier#tip()
      */
@@ -412,12 +406,12 @@ public class ImmutableIdentifier extends FormattableObject implements ReferenceI
     }
 
     /**
-     * Name or identifier of the person or organization responsible for namespace.
+     * Identifier or namespace in which the code is valid.
      * This is often the {@linkplain #getAuthority() authority}'s abbreviation, but not necessarily.
      *
      * <div class="note"><b>Example:</b> {@code "EPSG"}.</div>
      *
-     * @return The code space, or {@code null} if not available.
+     * @return identifier or namespace in which the code is valid, or {@code null} if not available.
      *
      * @see org.apache.sis.referencing.NamedIdentifier#head()
      * @see org.apache.sis.referencing.NamedIdentifier#scope()
@@ -428,29 +422,13 @@ public class ImmutableIdentifier extends FormattableObject implements ReferenceI
     }
 
     /**
-     * Organization or party responsible for definition and maintenance of the {@linkplain #getCode() code}.
-     * The organization's abbreviation is often the same than this identifier {@linkplain #getCodeSpace()
-     * code space}, but not necessarily.
-     *
-     * <div class="note"><b>Example:</b> Coordinate Reference System (CRS) identified by an EPSG code will return
-     * contact information for the <cite>International Association of Oil &amp; Gas producers</cite> (IOGP), since
-     * IOGP is the organization maintaining the EPSG geodetic database.</div>
-     *
-     * @return The authority, or {@code null} if not available.
-     */
-    @Override
-    public Citation getAuthority() {
-        return authority;
-    }
-
-    /**
-     * Identifier of the version of the associated code space or code, as specified by the code authority.
-     * This version is included only when the {@linkplain #getCode() code} uses versions. When appropriate,
-     * the edition is identified by the effective date, coded using ISO 8601 date format.
+     * The version identifier for the namespace, as specified by the code authority.
+     * This version is included only when the {@linkplain #getCode() code} uses versions.
+     * When appropriate, the edition is identified by the effective date, coded using ISO 8601 date format.
      *
      * <div class="note"><b>Example:</b> the version of the underlying EPSG database.</div>
      *
-     * @return The version, or {@code null} if not available.
+     * @return the version identifier for the namespace, or {@code null} if none.
      */
     @Override
     public String getVersion() {
@@ -462,45 +440,12 @@ public class ImmutableIdentifier extends FormattableObject implements ReferenceI
      *
      * <div class="note"><b>Example:</b> "World Geodetic System 1984".</div>
      *
-     * @return The natural language description, or {@code null} if none.
+     * @return the natural language description, or {@code null} if none.
      *
      * @since 0.5
      */
     public InternationalString getDescription() {
         return description;
-    }
-
-    /**
-     * Comments on or information about this identifier, or {@code null} if none.
-     *
-     * <div class="note"><b>Example:</b> "superseded by code XYZ".</div>
-     *
-     * @return Optional comments about this identifier, or {@code null} if none.
-     *
-     * @deprecated Replaced by {@link #getDescription()} for non-deprecated identifiers, or by
-     *             {@link org.apache.sis.util.Deprecable#getRemarks()} for identifiers that may be deprecated.
-     */
-    @Deprecated
-    public InternationalString getRemarks() {
-        return description;
-    }
-
-    /**
-     * Returns {@code true} if the object represented by this identifier is deprecated. In such
-     * case, the {@linkplain #getRemarks() remarks} may contains the new identifier to use.
-     *
-     * <p>The default implementation returns {@code false} in all cases.</p>
-     *
-     * @see org.apache.sis.referencing.AbstractIdentifiedObject#isDeprecated()
-     *
-     * @return {@code true} if this code is deprecated.
-     *
-     * @deprecated Moved to {@link org.apache.sis.util.Deprecable#isDeprecated()} if this
-     *             {@code ImmutableIdentifier} instance implements {@code Deprecable}.
-     */
-    @Deprecated
-    public boolean isDeprecated() {
-        return false;
     }
 
     /**
@@ -521,7 +466,7 @@ public class ImmutableIdentifier extends FormattableObject implements ReferenceI
     /**
      * Compares this object with the given one for equality.
      *
-     * @param object The object to compare with this identifier.
+     * @param  object  the object to compare with this identifier.
      * @return {@code true} if both objects are equal.
      */
     @Override
@@ -544,8 +489,10 @@ public class ImmutableIdentifier extends FormattableObject implements ReferenceI
      * Formats this identifier as a <cite>Well Known Text</cite> {@code Id[…]} element.
      * See class javadoc for more information on the WKT format.
      *
-     * @param  formatter The formatter where to format the inner content of this WKT element.
+     * @param  formatter  the formatter where to format the inner content of this WKT element.
      * @return {@code "Id"} (WKT 2) or {@code "Authority"} (WKT 1).
+     *
+     * @see <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html#33">WKT 2 specification §7.3.4</a>
      */
     @Override
     protected String formatTo(final Formatter formatter) {
@@ -566,11 +513,11 @@ public class ImmutableIdentifier extends FormattableObject implements ReferenceI
             if (cs != null) {
                 final Convention convention = formatter.getConvention();
                 if (convention.majorVersion() == 1) {
-                    keyword = "Authority";
+                    keyword = WKTKeywords.Authority;
                     formatter.append(cs,   ElementKind.IDENTIFIER);
                     formatter.append(code, ElementKind.IDENTIFIER);
                 } else {
-                    keyword = "Id";
+                    keyword = WKTKeywords.Id;
                     formatter.append(cs, ElementKind.IDENTIFIER);
                     appendCode(formatter, code);
                     final String version = getVersion();
@@ -604,11 +551,14 @@ public class ImmutableIdentifier extends FormattableObject implements ReferenceI
                      * Other conventions format only for the ID[…] of root element.
                      */
                     if (isRoot && enclosing != null && convention != Convention.INTERNAL) {
-                        if (NameMeaning.usesURN(cs)) {
-                            final String type = NameMeaning.toObjectType(enclosing.getClass());
-                            if (type != null) {
-                                formatter.append(new URI(type, cs, version, code));
-                            }
+                        final String urn = NameMeaning.toURN(enclosing.getClass(), cs, version, code);
+                        if (urn != null) {
+                            formatter.append(new FormattableObject() {
+                                @Override protected String formatTo(final Formatter formatter) {
+                                    formatter.append(urn, null);
+                                    return WKTKeywords.URI;
+                                }
+                            });
                         }
                     }
                 }
@@ -653,38 +603,32 @@ public class ImmutableIdentifier extends FormattableObject implements ReferenceI
         @Override
         protected String formatTo(final Formatter formatter) {
             formatter.append(identifier, ElementKind.CITATION);
-            return "Citation";
+            return WKTKeywords.Citation;
         }
     }
 
+
+
+
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+    ////////                                                                                  ////////
+    ////////                               XML support with JAXB                              ////////
+    ////////                                                                                  ////////
+    ////////        The following methods are invoked by JAXB using reflection (even if       ////////
+    ////////        they are private) or are helpers for other methods invoked by JAXB.       ////////
+    ////////        Those methods can be safely removed if Geographic Markup Language         ////////
+    ////////        (GML) support is not needed.                                              ////////
+    ////////                                                                                  ////////
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+
     /**
-     * The {@code URI[…]} element inside an {@code ID[…]}.
+     * Empty constructor for JAXB.
      */
-    private static final class URI extends FormattableObject {
-        /** The components of the URI to format. */
-        private final String type, codeSpace, version, code;
-
-        /** Creates a new URI with the given components. */
-        URI(final String type, final String codeSpace, final String version, final String code) {
-            this.type      = type;
-            this.codeSpace = codeSpace;
-            this.version   = version;
-            this.code      = code;
-        }
-
-        /** Formats the URI. */
-        @Override
-        protected String formatTo(final Formatter formatter) {
-            final StringBuilder buffer = new StringBuilder(DefinitionURI.PREFIX)
-                    .append(DefinitionURI.SEPARATOR).append(type)
-                    .append(DefinitionURI.SEPARATOR).append(codeSpace)
-                    .append(DefinitionURI.SEPARATOR);
-            if (version != null) {
-                buffer.append(version);
-            }
-            buffer.append(DefinitionURI.SEPARATOR).append(code);
-            formatter.append(buffer.toString(), null);
-            return "URI";
-        }
+    private ImmutableIdentifier() {
+        code        = null;
+        codeSpace   = null;
+        authority   = null;
+        version     = null;
+        description = null;
     }
 }

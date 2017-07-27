@@ -44,7 +44,7 @@ import org.apache.sis.util.ArgumentChecks;
  *   <tr><td>srv</td>    <td>{@value #SRV}</td>   <td></td></tr>
  *   <tr><td>gts</td>    <td>{@value #GTS}</td>   <td></td></tr>
  *   <tr><td>gmx</td>    <td>{@value #GMX}</td>   <td></td></tr>
- *   <tr><td>gml</td>    <td>{@value #GML}</td>   <td>0.4</td></tr>
+ *   <tr><td>gml</td>    <td>{@value #GML}</td>   <td>SIS 0.4</td></tr>
  *   <tr><td>csw</td>    <td>{@value #CSW}</td>   <td></td></tr>
  *   <tr><td>xsi</td>    <td>{@value #XSI}</td>   <td></td></tr>
  *   <tr><td>xlink</td>  <td>{@value #XLINK}</td> <td></td></tr>
@@ -62,8 +62,8 @@ import org.apache.sis.util.ArgumentChecks;
  * @author  Cédric Briançon (Geomatys)
  * @author  Quentin Boileau (Geomatys)
  * @author  Guilhem Legal (Geomatys)
- * @since   0.3
  * @version 0.4
+ * @since   0.3
  * @module
  */
 public final class Namespaces extends Static {
@@ -188,7 +188,7 @@ public final class Namespaces extends Static {
      */
     private static final Map<String,String> SPECIFIC_URLS;
     static {
-        final Map<String,String> p = new HashMap<String,String>(40);
+        final Map<String,String> p = new HashMap<>(40);
         p.put(XMLConstants.W3C_XML_SCHEMA_NS_URI,                         "xsd");
         p.put(XMLConstants.W3C_XML_SCHEMA_INSTANCE_NS_URI,                "xsi");
         p.put("http://www.w3.org/2004/02/skos/core#",                    "skos");
@@ -222,12 +222,11 @@ public final class Namespaces extends Static {
     /**
      * Returns the preferred prefix for the given namespace URI.
      *
-     * @param  namespace    The namespace URI for which the prefix needs to be found.
-     *                      Can not be {@code null}.
-     * @param  defaultValue The default prefix to returned if the given {@code namespace}
-     *                      is not recognized, or {@code null}.
-     * @return The prefix inferred from the namespace URI, or {@code null} if the given namespace
-     *         is unrecognized and the {@code defaultValue} is null.
+     * @param  namespace     the namespace URI for which the prefix needs to be found. Can not be {@code null}.
+     * @param  defaultValue  the default prefix to returned if the given {@code namespace} is not recognized,
+     *                       or {@code null}.
+     * @return the prefix inferred from the namespace URI, or {@code null} if the given namespace is unrecognized
+     *         and the {@code defaultValue} is null.
      */
     public static String getPreferredPrefix(String namespace, final String defaultValue) {
         ArgumentChecks.ensureNonNull("namespace", namespace);

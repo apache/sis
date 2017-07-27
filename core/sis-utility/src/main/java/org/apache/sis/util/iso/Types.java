@@ -23,6 +23,7 @@ import java.util.Locale;
 import java.util.Properties;
 import java.util.ResourceBundle;
 import java.util.MissingResourceException;
+import java.util.IllformedLocaleException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Array;
@@ -38,6 +39,10 @@ import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.collection.BackingStoreException;
+import org.apache.sis.internal.system.Loggers;
+
+// Branch-dependent imports
+import org.apache.sis.internal.jdk8.JDK8;
 
 
 /**
@@ -45,17 +50,53 @@ import org.apache.sis.util.collection.BackingStoreException;
  * This class provides:
  *
  * <ul>
- *   <li>{@link #getStandardName(Class)}, {@link #getListName(CodeList)} and {@link #getCodeName(CodeList)}
- *       for fetching ISO names if possible.</li>
- *   <li>{@link #getCodeTitle(CodeList)}, {@link #getDescription(CodeList)} and
- *       {@link #getDescription(Class)} for fetching human-readable descriptions.</li>
- *   <li>{@link #forStandardName(String)} and {@link #forCodeName(Class, String, boolean)} for
- *       fetching an instance from a name (converse of above {@code get} methods).</li>
+ *   <li>Methods for fetching the ISO name or description of a code list:<ul>
+ *     <li>{@link #getStandardName(Class)}   for ISO name</li>
+ *     <li>{@link #getListName(CodeList)}    for ISO name</li>
+ *     <li>{@link #getDescription(Class)}    for a description</li>
+ *   </ul></li>
+ *   <li>Methods for fetching the ISO name or description of a code value:<ul>
+ *     <li>{@link #getCodeName(CodeList)}    for ISO name,</li>
+ *     <li>{@link #getCodeTitle(CodeList)}   for a label or title</li>
+ *     <li>{@link #getDescription(CodeList)} for a more verbose description</li>
+ *   </ul></li>
+ *   <li>Methods for fetching an instance from a name (converse of above {@code get} methods):<ul>
+ *     <li>{@link #forCodeName(Class, String, boolean)}</li>
+ *     <li>{@link #forEnumName(Class, String)}</li>
+ *   </ul></li>
+ * </ul>
+ *
+ * <div class="section">Substituting a free text by a code list</div>
+ * The ISO standard allows to substitute some character strings in the <cite>"free text"</cite> domain
+ * by a {@link CodeList} value.
+ *
+ * <div class="note"><b>Example:</b>
+ * in the following XML fragment, the {@code <gmi:type>} value is normally a {@code <gco:CharacterString>}
+ * but has been replaced by a {@code SensorType} code below:
+ *
+ * {@preformat xml
+ *   <gmi:MI_Instrument>
+ *     <gmi:type>
+ *       <gmi:MI_SensorTypeCode
+ *           codeList="http://navigator.eumetsat.int/metadata_schema/eum/resources/Codelist/eum_gmxCodelists.xml#CI_SensorTypeCode"
+ *           codeListValue="RADIOMETER">Radiometer</gmi:MI_SensorTypeCode>
+ *     </gmi:type>
+ *   </gmi:MI_Instrument>
+ * }
+ * </div>
+ *
+ * Such substitution can be done with:
+ *
+ * <ul>
+ *   <li>{@link #getCodeTitle(CodeList)} for getting the {@link InternationalString} instance
+ *       to store in a metadata property.</li>
+ *   <li>{@link #forCodeTitle(CharSequence)} for retrieving the {@link CodeList} previously stored as an
+ *       {@code InternationalString}.</li>
  * </ul>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
+ * @version 0.8
  * @since   0.3
- * @version 0.5
  * @module
  */
 public final class Types extends Static {
@@ -97,8 +138,8 @@ public final class Types extends Static {
      * annotations are not inherited). If no annotation is found, then this method does not fallback
      * on the Java name since, as the name implies, this method is about standard names.
      *
-     * @param  type The GeoAPI interface or code list from which to get the ISO name, or {@code null}.
-     * @return The ISO name for the given type, or {@code null} if none or if the given type is {@code null}.
+     * @param  type  the GeoAPI interface or code list from which to get the ISO name, or {@code null}.
+     * @return the ISO name for the given type, or {@code null} if none or if the given type is {@code null}.
      *
      * @see #forStandardName(String)
      */
@@ -135,8 +176,8 @@ public final class Types extends Static {
      * </ul>
      * </div>
      *
-     * @param  code The code for which to get the class name, or {@code null}.
-     * @return The ISO (preferred) or Java (fallback) class name, or {@code null} if the given code is null.
+     * @param  code  the code for which to get the class name, or {@code null}.
+     * @return the ISO (preferred) or Java (fallback) class name, or {@code null} if the given code is null.
      */
     public static String getListName(final CodeList<?> code) {
         if (code == null) {
@@ -160,9 +201,8 @@ public final class Types extends Static {
      * </ul>
      * </div>
      *
-     * @param  code The code for which to get the name, or {@code null}.
-     * @return The UML identifiers or programmatic name for the given code,
-     *         or {@code null} if the given code is null.
+     * @param  code  the code for which to get the name, or {@code null}.
+     * @return the UML identifiers or programmatic name for the given code, or {@code null} if the given code is null.
      *
      * @see #getCodeLabel(CodeList)
      * @see #getCodeTitle(CodeList)
@@ -195,8 +235,8 @@ public final class Types extends Static {
      * </ul>
      * </div>
      *
-     * @param  code The code from which to get a title, or {@code null}.
-     * @return A unlocalized title for the given code, or {@code null} if the given code is null.
+     * @param  code  the code from which to get a title, or {@code null}.
+     * @return a unlocalized title for the given code, or {@code null} if the given code is null.
      *
      * @see #getCodeName(CodeList)
      * @see #getCodeTitle(CodeList)
@@ -223,10 +263,15 @@ public final class Types extends Static {
      * Returns the title of the given enumeration or code list value. Title are usually much shorter than descriptions.
      * English titles are often the same than the {@linkplain #getCodeLabel(CodeList) code labels}.
      *
-     * @param  code The code for which to get the title, or {@code null}.
-     * @return The title, or {@code null} if the given code is null.
+     * <p>The code or enumeration value given in argument to this method can be retrieved from the returned title
+     * with the {@link #forCodeTitle(CharSequence)} method. See <cite>Substituting a free text by a code list</cite>
+     * in this class javadoc for more information.</p>
+     *
+     * @param  code  the code for which to get the title, or {@code null}.
+     * @return the title, or {@code null} if the given code is null.
      *
      * @see #getDescription(CodeList)
+     * @see #forCodeTitle(CharSequence)
      */
     public static InternationalString getCodeTitle(final CodeList<?> code) {
         return (code != null) ? new CodeTitle(code) : null;
@@ -237,8 +282,8 @@ public final class Types extends Static {
      * For a description of the code list as a whole instead than a particular code,
      * see {@link Types#getDescription(Class)}.
      *
-     * @param  code The code for which to get the localized description, or {@code null}.
-     * @return The description, or {@code null} if none or if the given code is null.
+     * @param  code  the code for which to get the localized description, or {@code null}.
+     * @return the description, or {@code null} if none or if the given code is null.
      *
      * @see #getCodeTitle(CodeList)
      * @see #getDescription(Class)
@@ -247,7 +292,7 @@ public final class Types extends Static {
         if (code != null) {
             final String resources = getResources(code.getClass().getName());
             if (resources != null) {
-                return new Description(resources, resourceKey(code));
+                return new Description(resources, Description.resourceKey(code));
             }
         }
         return null;
@@ -257,8 +302,8 @@ public final class Types extends Static {
      * Returns a description for the given class, or {@code null} if none.
      * This method can be used for GeoAPI interfaces or {@link CodeList}.
      *
-     * @param  type The GeoAPI interface or code list from which to get the description, or {@code null}.
-     * @return The description, or {@code null} if none or if the given type is {@code null}.
+     * @param  type  the GeoAPI interface or code list from which to get the description, or {@code null}.
+     * @return the description, or {@code null} if none or if the given type is {@code null}.
      *
      * @see #getDescription(CodeList)
      */
@@ -279,9 +324,9 @@ public final class Types extends Static {
      * be a UML identifier. If any of the input argument is {@code null}, then
      * this method returns {@code null}.
      *
-     * @param  type     The GeoAPI interface from which to get the description of a property, or {@code null}.
-     * @param  property The ISO name of the property for which to get the description, or {@code null}.
-     * @return The description, or {@code null} if none or if the given type or property name is {@code null}.
+     * @param  type      the GeoAPI interface from which to get the description of a property, or {@code null}.
+     * @param  property  the ISO name of the property for which to get the description, or {@code null}.
+     * @return the description, or {@code null} if none or if the given type or property name is {@code null}.
      */
     public static InternationalString getDescription(final Class<?> type, final String property) {
         if (property != null) {
@@ -300,8 +345,8 @@ public final class Types extends Static {
      * The {@link InternationalString} returned by the {@code Types.getDescription(…)} methods.
      *
      * @author  Martin Desruisseaux (Geomatys)
-     * @since   0.3
      * @version 0.3
+     * @since   0.3
      * @module
      */
     private static class Description extends ResourceInternationalString {
@@ -320,8 +365,8 @@ public final class Types extends Static {
         /**
          * Creates a new international string from the specified resource bundle and key.
          *
-         * @param resources The name of the resource bundle, as a fully qualified class name.
-         * @param key       The key for the resource to fetch.
+         * @param resources  the name of the resource bundle, as a fully qualified class name.
+         * @param key        the key for the resource to fetch.
          */
         Description(final String resources, final String key) {
             super(resources, key);
@@ -344,7 +389,7 @@ public final class Types extends Static {
             try {
                 return super.toString(locale);
             } catch (MissingResourceException e) {
-                Logging.recoverableException(ResourceInternationalString.class, "toString", e);
+                Logging.recoverableException(Logging.getLogger(Loggers.LOCALIZATION), ResourceInternationalString.class, "toString", e);
                 return fallback();
             }
         }
@@ -355,18 +400,29 @@ public final class Types extends Static {
         String fallback() {
             return CharSequences.camelCaseToSentence(key.substring(key.lastIndexOf(SEPARATOR) + 1)).toString();
         }
+
+        /**
+         * Returns the resource key for the given code list.
+         */
+        static String resourceKey(final CodeList<?> code) {
+            String key = getCodeName(code);
+            if (key.indexOf(SEPARATOR) < 0) {
+                key = getListName(code) + SEPARATOR + key;
+            }
+            return key;
+        }
     }
 
     /**
      * The {@link InternationalString} returned by the {@code Types.getCodeTitle(…)} method.
-     * The code below is a duplicated - in a different way - of {@code CodeListProxy(CodeList)}
+     * The code below is a duplicated - in a different way - of {@code CodeListUID(CodeList)}
      * constructor ({@link org.apache.sis.internal.jaxb.code package}). This duplication exists
-     * because {@code CodeListProxy} constructor stores more information in an opportunist way.
-     * If this method is updated, please update {@code CodeListProxy(CodeList)} accordingly.
+     * because {@code CodeListUID} constructor stores more information in an opportunist way.
+     * If this method is updated, please update {@code CodeListUID(CodeList)} accordingly.
      *
      * @author  Martin Desruisseaux (Geomatys)
-     * @since   0.3
      * @version 0.3
+     * @since   0.3
      * @module
      */
     private static final class CodeTitle extends Description {
@@ -378,12 +434,12 @@ public final class Types extends Static {
         /**
          * The code list for which to create a title.
          */
-        private final CodeList<?> code;
+        final CodeList<?> code;
 
         /**
          * Creates a new international string for the given code list element.
          *
-         * @param code The code list for which to create a title.
+         * @param  code  the code list for which to create a title.
          */
         CodeTitle(final CodeList<?> code) {
             super("org.opengis.metadata.CodeLists", resourceKey(code));
@@ -402,8 +458,8 @@ public final class Types extends Static {
     /**
      * Returns the resource name for the given GeoAPI type, or {@code null} if none.
      *
-     * @param  classname The fully qualified name of the GeoAPI type.
-     * @return The resource bundle to load, or {@code null} if none.
+     * @param  classname  the fully qualified name of the GeoAPI type.
+     * @return the resource bundle to load, or {@code null} if none.
      */
     static String getResources(final String classname) {
         String resources = "org.opengis.metadata.Descriptions";
@@ -415,24 +471,13 @@ public final class Types extends Static {
     }
 
     /**
-     * Returns the resource key for the given code list.
-     */
-    static String resourceKey(final CodeList<?> code) {
-        String key = getCodeName(code);
-        if (key.indexOf(SEPARATOR) < 0) {
-            key = getListName(code) + SEPARATOR + key;
-        }
-        return key;
-    }
-
-    /**
      * Returns all known values for the given type of code list.
      * Note that the size of the returned array may growth between different invocations of this method,
      * since users can add their own codes to an existing list.
      *
-     * @param <T> The compile-time type given as the {@code codeType} parameter.
-     * @param codeType The type of code list.
-     * @return The list of values for the given code list, or an empty array if none.
+     * @param  <T>       the compile-time type given as the {@code codeType} parameter.
+     * @param  codeType  the type of code list.
+     * @return the list of values for the given code list, or an empty array if none.
      *
      * @see Class#getEnumConstants()
      */
@@ -450,18 +495,16 @@ public final class Types extends Static {
                 throw (Error) cause;
             }
             throw new UndeclaredThrowableException(cause);
-        } catch (NoSuchMethodException e) {
-            values = Array.newInstance(codeType, 0);
-        } catch (IllegalAccessException e) {
+        } catch (NoSuchMethodException | IllegalAccessException e) {
             values = Array.newInstance(codeType, 0);
         }
         return (T[]) values;
     }
 
     /**
-     * Returns the GeoAPI interface for the given ISO name, or {@code null} if none.
-     * The identifier argument shall be the value documented in the {@link UML#identifier()}
-     * annotation associated with the GeoAPI interface.
+     * Returns the Java type (usually a GeoAPI interface) for the given ISO name, or {@code null} if none.
+     * The identifier argument shall be the value documented in the {@link UML#identifier()} annotation on
+     * the Java type.
      *
      * <div class="note"><b>Examples:</b>
      * <ul>
@@ -470,11 +513,19 @@ public final class Types extends Static {
      * </ul>
      * </div>
      *
-     * Only identifiers for the stable part of GeoAPI are recognized. This method does not handle
-     * the identifiers for the {@code geoapi-pending} module.
+     * Only identifiers for the stable part of GeoAPI or for some Apache SIS classes are recognized.
+     * This method does not handle the identifiers for interfaces in the {@code geoapi-pending} module.
      *
-     * @param  identifier The ISO {@linkplain UML} identifier, or {@code null}.
-     * @return The GeoAPI interface, or {@code null} if the given identifier is {@code null} or unknown.
+     * <div class="note"><b>Future evolution:</b>
+     * when a new ISO type does not yet have a corresponding GeoAPI interface,
+     * this method may temporarily return an Apache SIS class instead until a future version can use the interface.
+     * For example {@code forStandardName("CI_Individual")} returns
+     * <code>{@linkplain org.apache.sis.metadata.iso.citation.DefaultIndividual}.class</code> in Apache SIS versions
+     * that depend on GeoAPI 3.0, but the return type may be changed to {@code Individual.class} when Apache SIS will
+     * be upgraded to GeoAPI 3.1.</div>
+     *
+     * @param  identifier  the ISO {@linkplain UML} identifier, or {@code null}.
+     * @return the GeoAPI interface, or {@code null} if the given identifier is {@code null} or unknown.
      */
     public static synchronized Class<?> forStandardName(final String identifier) {
         if (identifier == null) {
@@ -490,12 +541,11 @@ public final class Types extends Static {
             try {
                 props.load(in);
                 in.close();
-            } catch (IOException e) {
-                throw new BackingStoreException(e);
-            } catch (IllegalArgumentException e) {
+            } catch (IOException | IllegalArgumentException e) {
                 throw new BackingStoreException(e);
             }
-            typeForNames = new HashMap<Object,Object>(props);
+            typeForNames = new HashMap<>(props);
+            JDK8.putIfAbsent(typeForNames, "MI_SensorTypeCode", "org.apache.sis.internal.metadata.SensorType");
         }
         final Object value = typeForNames.get(identifier);
         if (value == null || value instanceof Class<?>) {
@@ -525,10 +575,10 @@ public final class Types extends Static {
      * If there is no match, this method returns {@code null} — it does not thrown an exception,
      * unless the given class is not an enumeration.
      *
-     * @param <T>      The compile-time type given as the {@code enumType} parameter.
-     * @param enumType The type of enumeration.
-     * @param name     The name of the enumeration value to obtain, or {@code null}.
-     * @return A value matching the given name, or {@code null} if the name is null
+     * @param  <T>       the compile-time type given as the {@code enumType} parameter.
+     * @param  enumType  the type of enumeration.
+     * @param  name      the name of the enumeration value to obtain, or {@code null}.
+     * @return a value matching the given name, or {@code null} if the name is null
      *         or if no matching enumeration is found.
      *
      * @see Enum#valueOf(Class, String)
@@ -567,13 +617,14 @@ public final class Types extends Static {
      * If no match is found, then a new code is created only if the {@code canCreate} argument is {@code true}.
      * Otherwise this method returns {@code null}.
      *
-     * @param <T>        The compile-time type given as the {@code codeType} parameter.
-     * @param codeType   The type of code list.
-     * @param name       The name of the code to obtain, or {@code null}.
-     * @param canCreate  {@code true} if this method is allowed to create new code.
-     * @return A code matching the given name, or {@code null} if the name is null
+     * @param  <T>        the compile-time type given as the {@code codeType} parameter.
+     * @param  codeType   the type of code list.
+     * @param  name       the name of the code to obtain, or {@code null}.
+     * @param  canCreate  {@code true} if this method is allowed to create new code.
+     * @return a code matching the given name, or {@code null} if the name is null
      *         or if no matching code is found and {@code canCreate} is {@code false}.
      *
+     * @see #getCodeName(CodeList)
      * @see CodeList#valueOf(Class, String)
      */
     public static <T extends CodeList<T>> T forCodeName(final Class<T> codeType, String name, final boolean canCreate) {
@@ -581,17 +632,28 @@ public final class Types extends Static {
         if (name == null || name.isEmpty()) {
             return null;
         }
-        // -------- Begin workaround for GeoAPI 3.0 (TODO: remove after upgrade to GeoAPI 3.1) ------------
-        final String typeName = codeType.getName();
-        try {
-            // Forces initialization of the given class in order
-            // to register its list of static final constants.
-            Class.forName(typeName, true, codeType.getClassLoader());
-        } catch (ClassNotFoundException e) {
-            throw new TypeNotPresentException(typeName, e); // Should never happen.
-        }
-        // -------- End workaround ------------------------------------------------------------------------
         return CodeList.valueOf(codeType, new CodeListFilter(name, canCreate));
+    }
+
+    /**
+     * Returns the code list or enumeration value for the given title, or {@code null} if none.
+     * The current implementation performs the following choice:
+     *
+     * <ul>
+     *   <li>If the given title is a value returned by a previous call to {@link #getCodeTitle(CodeList)},
+     *       returns the code or enumeration value used for creating that title.</li>
+     *   <li>Otherwise returns {@code null}.</li>
+     * </ul>
+     *
+     * @param  title  the title for which to get a code or enumeration value, or {@code null}.
+     * @return the code or enumeration value associated with the given title, or {@code null}.
+     *
+     * @see #getCodeTitle(CodeList)
+     *
+     * @since 0.7
+     */
+    public static CodeList<?> forCodeTitle(final CharSequence title) {
+        return (title instanceof CodeTitle) ? ((CodeTitle) title).code : null;
     }
 
     /**
@@ -612,11 +674,11 @@ public final class Types extends Static {
      *   <li>The value for the decoded locale is added in the international string to be returned.</li>
      * </ul>
      *
-     * @param  properties The map from which to get the string values for an international string, or {@code null}.
-     * @param  prefix     The prefix of keys to use for creating the international string.
-     * @return The international string, or {@code null} if the given map is null or does not contain values
+     * @param  properties  the map from which to get the string values for an international string, or {@code null}.
+     * @param  prefix      the prefix of keys to use for creating the international string.
+     * @return the international string, or {@code null} if the given map is null or does not contain values
      *         associated to keys starting with the given prefix.
-     * @throws IllegalArgumentException If a key starts by the given prefix and:
+     * @throws IllegalArgumentException if a key starts by the given prefix and:
      *         <ul>
      *           <li>The key suffix is an illegal {@link Locale} code,</li>
      *           <li>or the value associated to that key is a not a {@link CharSequence}.</li>
@@ -641,7 +703,7 @@ public final class Types extends Static {
         boolean isSorted = false;
         if (properties instanceof SortedMap<?,?>) {
             final SortedMap<String,?> sorted = (SortedMap<String,?>) properties;
-            if (sorted.comparator() == null) { // We want natural ordering.
+            if (sorted.comparator() == null) {                                      // We want natural ordering.
                 properties = sorted.tailMap(prefix);
                 isSorted = true;
             }
@@ -657,10 +719,10 @@ public final class Types extends Static {
         for (final Map.Entry<String,?> entry : properties.entrySet()) {
             final String key = entry.getKey();
             if (key == null) {
-                continue; // Tolerance for Map that accept null keys.
+                continue;                       // Tolerance for Map that accept null keys.
             }
             if (!key.startsWith(prefix)) {
-                if (isSorted) break; // If the map is sorted, there is no need to check next entries.
+                if (isSorted) break;            // If the map is sorted, there is no need to check next entries.
                 continue;
             }
             final Locale locale;
@@ -675,7 +737,7 @@ public final class Types extends Static {
                 final int s = offset + 1;
                 try {
                     locale = Locales.parse(key, s);
-                } catch (RuntimeException e) { // IllformedLocaleException on the JDK7 branch.
+                } catch (IllformedLocaleException e) {
                     throw new IllegalArgumentException(Errors.getResources(properties).getString(
                             Errors.Keys.IllegalLanguageCode_1, '(' + key.substring(0, s) + '）' + key.substring(s), e));
                 }
@@ -684,7 +746,7 @@ public final class Types extends Static {
             if (value != null) {
                 if (!(value instanceof CharSequence)) {
                     throw new IllegalArgumentException(Errors.getResources(properties)
-                            .getString(Errors.Keys.IllegalPropertyClass_2, key, value.getClass()));
+                            .getString(Errors.Keys.IllegalPropertyValueClass_2, key, value.getClass()));
                 }
                 if (i18n == null) {
                     i18n = (CharSequence) value;
@@ -704,13 +766,12 @@ public final class Types extends Static {
 
     /**
      * Returns the given characters sequence as an international string. If the given sequence is
-     * null or an instance of {@link InternationalString}, this this method returns it unchanged.
+     * null or an instance of {@link InternationalString}, then this method returns it unchanged.
      * Otherwise, this method copies the {@link InternationalString#toString()} value in a new
      * {@link SimpleInternationalString} instance and returns it.
      *
-     * @param  string The characters sequence to convert, or {@code null}.
-     * @return The given sequence as an international string,
-     *         or {@code null} if the given sequence was null.
+     * @param  string  the characters sequence to convert, or {@code null}.
+     * @return the given sequence as an international string, or {@code null} if the given sequence was null.
      *
      * @see DefaultNameFactory#createInternationalString(Map)
      */
@@ -731,8 +792,8 @@ public final class Types extends Static {
      * <p>If a defensive copy of the {@code strings} array is wanted, then the caller needs to check
      * if the returned array is the same instance than the one given in argument to this method.</p>
      *
-     * @param  strings The characters sequences to convert, or {@code null}.
-     * @return The given array as an array of type {@code InternationalString[]},
+     * @param  strings  the characters sequences to convert, or {@code null}.
+     * @return the given array as an array of type {@code InternationalString[]},
      *         or {@code null} if the given array was null.
      */
     public static InternationalString[] toInternationalStrings(final CharSequence... strings) {
@@ -744,5 +805,19 @@ public final class Types extends Static {
             copy[i] = toInternationalString(strings[i]);
         }
         return copy;
+    }
+
+    /**
+     * Returns the given international string in the given locale, or {@code null} if the given string is null.
+     * If the given locale is {@code null}, then the {@code i18n} default locale is used.
+     *
+     * @param  i18n    the international string to get as a localized string, or {@code null} if none.
+     * @param  locale  the desired locale, or {@code null} for the {@code i18n} default locale.
+     * @return the localized string, or {@code null} if {@code i18n} is {@code null}.
+     *
+     * @since 0.8
+     */
+    public static String toString(final InternationalString i18n, final Locale locale) {
+        return (i18n == null) ? null : (locale == null) ? i18n.toString() : i18n.toString(locale);
     }
 }

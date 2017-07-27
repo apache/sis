@@ -17,21 +17,23 @@
 package org.apache.sis.referencing;
 
 import java.util.Map;
+import java.util.Objects;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlTransient;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
 import org.opengis.referencing.ReferenceSystem;
 import org.opengis.referencing.ReferenceIdentifier;
 import org.opengis.metadata.extent.Extent;
+import org.apache.sis.util.Workaround;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.iso.Types;
+import org.apache.sis.internal.jaxb.metadata.EX_Extent;
+import org.apache.sis.internal.metadata.MetadataUtilities;
 
 import static org.apache.sis.util.Utilities.deepEquals;
 import static org.apache.sis.util.collection.Containers.property;
-
-// Branch-dependent imports
-import org.apache.sis.internal.jdk7.Objects;
 
 
 /**
@@ -61,8 +63,8 @@ import org.apache.sis.internal.jdk7.Objects;
  * synchronization.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
+ * @version 0.7
  * @since   0.4
- * @version 0.4
  * @module
  */
 @XmlTransient
@@ -75,28 +77,23 @@ public class AbstractReferenceSystem extends AbstractIdentifiedObject implements
     /**
      * Area for which the (coordinate) reference system is valid.
      *
+     * <p><b>Consider this field as final!</b>
+     * This field is modified only at unmarshalling time by {@link #setDomainOfValidity(Extent)}</p>
+     *
      * @see #getDomainOfValidity()
      */
-    private final Extent domainOfValidity;
+    private Extent domainOfValidity;
 
     /**
      * Description of domain of usage, or limitations of usage,
      * for which this (coordinate) reference system object is valid.
      *
+     * <p><b>Consider this field as final!</b>
+     * This field is modified only at unmarshalling time by {@link #setScope(InternationalString)}</p>
+     *
      * @see #getScope()
      */
-    @XmlElement(required = true)
-    private final InternationalString scope;
-
-    /**
-     * Constructs a new object in which every attributes are set to a null value.
-     * <strong>This is not a valid object.</strong> This constructor is strictly
-     * reserved to JAXB, which will assign values to the fields using reflexion.
-     */
-    AbstractReferenceSystem() {
-        domainOfValidity = null;
-        scope = null;
-    }
+    private InternationalString scope;
 
     /**
      * Constructs a reference system from the given properties.
@@ -119,7 +116,7 @@ public class AbstractReferenceSystem extends AbstractIdentifiedObject implements
      *   <tr>
      *     <td>{@value org.opengis.referencing.ReferenceSystem#SCOPE_KEY}</td>
      *     <td>{@link String} or {@link InternationalString}</td>
-     *     <td>{@link #getScope}</td>
+     *     <td>{@link #getScope()}</td>
      *   </tr>
      *   <tr>
      *     <th colspan="3" class="hsep">Defined in parent class (reminder)</th>
@@ -146,7 +143,7 @@ public class AbstractReferenceSystem extends AbstractIdentifiedObject implements
      *   </tr>
      * </table>
      *
-     * @param properties The properties to be given to this object.
+     * @param properties  the properties to be given to this object.
      */
     public AbstractReferenceSystem(final Map<String,?> properties) {
         super(properties);
@@ -161,7 +158,7 @@ public class AbstractReferenceSystem extends AbstractIdentifiedObject implements
      *
      * <p>This constructor performs a shallow copy, i.e. the properties are not cloned.</p>
      *
-     * @param object The reference system to copy.
+     * @param object  the reference system to copy.
      */
     protected AbstractReferenceSystem(final ReferenceSystem object) {
         super(object);
@@ -174,7 +171,7 @@ public class AbstractReferenceSystem extends AbstractIdentifiedObject implements
      * The default implementation returns {@code ReferenceSystem.class}.
      * Subclasses implementing a more specific GeoAPI interface shall override this method.
      *
-     * @return The GeoAPI interface implemented by this class.
+     * @return the GeoAPI interface implemented by this class.
      */
     @Override
     public Class<? extends ReferenceSystem> getInterface() {
@@ -182,14 +179,17 @@ public class AbstractReferenceSystem extends AbstractIdentifiedObject implements
     }
 
     /**
-     * Returns the region or timeframe in which this reference system is valid,
-     * or {@code null} if unspecified.
+     * Returns the region or timeframe in which this reference system is valid, or {@code null} if unspecified.
      *
-     * @return Area or region or timeframe in which this (coordinate) reference system is valid, or {@code null}.
+     * @return area or region or timeframe in which this (coordinate) reference system is valid, or {@code null}.
      *
      * @see org.apache.sis.metadata.iso.extent.DefaultExtent
      */
     @Override
+    @XmlElement(name = "domainOfValidity")
+    // For an unknown reason, JAXB does not take the adapter declared in package-info for this particular property.
+    @Workaround(library = "JDK", version = "1.8")
+    @XmlJavaTypeAdapter(EX_Extent.class)
     public Extent getDomainOfValidity() {
         return domainOfValidity;
     }
@@ -197,10 +197,11 @@ public class AbstractReferenceSystem extends AbstractIdentifiedObject implements
     /**
      * Returns the domain or limitations of usage, or {@code null} if unspecified.
      *
-     * @return Description of domain of usage, or limitations of usage, for which this
+     * @return description of domain of usage, or limitations of usage, for which this
      *         (coordinate) reference system object is valid, or {@code null}.
      */
     @Override
+    @XmlElement(name ="scope", required = true)
     public InternationalString getScope() {
         return scope;
     }
@@ -212,10 +213,10 @@ public class AbstractReferenceSystem extends AbstractIdentifiedObject implements
      * compared including the {@linkplain #getDomainOfValidity() domain of validity} and
      * the {@linkplain #getScope() scope}.
      *
-     * @param  object The object to compare to {@code this}.
-     * @param  mode {@link ComparisonMode#STRICT STRICT} for performing a strict comparison, or
-     *         {@link ComparisonMode#IGNORE_METADATA IGNORE_METADATA} for comparing only properties
-     *         relevant to coordinate transformations.
+     * @param  object  the object to compare to {@code this}.
+     * @param  mode    {@link ComparisonMode#STRICT STRICT} for performing a strict comparison, or
+     *                 {@link ComparisonMode#IGNORE_METADATA IGNORE_METADATA} for comparing only
+     *                 properties relevant to coordinate transformations.
      * @return {@code true} if both objects are equal.
      */
     @Override
@@ -246,10 +247,58 @@ public class AbstractReferenceSystem extends AbstractIdentifiedObject implements
      * See {@link org.apache.sis.referencing.AbstractIdentifiedObject#computeHashCode()}
      * for more information.
      *
-     * @return The hash code value. This value may change in any future Apache SIS version.
+     * @return the hash code value. This value may change in any future Apache SIS version.
      */
     @Override
     protected long computeHashCode() {
         return super.computeHashCode() + Objects.hash(domainOfValidity, scope);
+    }
+
+
+
+
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+    ////////                                                                                  ////////
+    ////////                               XML support with JAXB                              ////////
+    ////////                                                                                  ////////
+    ////////        The following methods are invoked by JAXB using reflection (even if       ////////
+    ////////        they are private) or are helpers for other methods invoked by JAXB.       ////////
+    ////////        Those methods can be safely removed if Geographic Markup Language         ////////
+    ////////        (GML) support is not needed.                                              ////////
+    ////////                                                                                  ////////
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Constructs a new object in which every attributes are set to a null value.
+     * <strong>This is not a valid object.</strong> This constructor is strictly
+     * reserved to JAXB, which will assign values to the fields using reflexion.
+     */
+    AbstractReferenceSystem() {
+    }
+
+    /**
+     * Invoked by JAXB only at unmarshalling time.
+     *
+     * @see #getDomainOfValidity()
+     */
+    private void setDomainOfValidity(final Extent value) {
+        if (domainOfValidity == null) {
+            domainOfValidity = value;
+        } else {
+            MetadataUtilities.propertyAlreadySet(AbstractReferenceSystem.class, "setDomainOfValidity", "domainOfValidity");
+        }
+    }
+
+    /**
+     * Invoked by JAXB only at unmarshalling time.
+     *
+     * @see #getScope()
+     */
+    private void setScope(final InternationalString value) {
+        if (scope == null) {
+            scope = value;
+        } else {
+            MetadataUtilities.propertyAlreadySet(AbstractReferenceSystem.class, "setScope", "scope");
+        }
     }
 }

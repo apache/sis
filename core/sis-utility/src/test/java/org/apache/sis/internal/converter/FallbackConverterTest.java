@@ -34,8 +34,8 @@ import static org.apache.sis.test.Assert.*;
  * {@code ConverterRegistry}, so those tests shall be avoided.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.3
+ * @since   0.3
  * @module
  */
 @DependsOn({StringConverterTest.class,
@@ -154,9 +154,9 @@ public final strictfp class FallbackConverterTest extends TestCase {
     /**
      * Converts the given value and compares the result with the expected one.
      *
-     * @param  converter The converter to use.
-     * @param  expected  The expected result, or {@code null} if the conversion is expected to fail.
-     * @param  value     The value to convert.
+     * @param  converter  the converter to use.
+     * @param  expected   the expected result, or {@code null} if the conversion is expected to fail.
+     * @param  value      the value to convert.
      * @throws UnconvertibleObjectException if an exception was not expected but occurred.
      */
     private static void assertConvertedEquals(final ObjectConverter<String,?> converter,

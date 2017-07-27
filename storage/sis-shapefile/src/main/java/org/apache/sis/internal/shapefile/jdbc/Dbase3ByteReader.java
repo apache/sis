@@ -85,7 +85,19 @@ public interface Dbase3ByteReader {
      * @return Date of the last update.
      */
     public Date getDateOfLastUpdate();
+    
+    /**
+     * Returns the first record position, in bytes, in the DBase file.
+     * @return First record position.
+     */
+    public short getFirstRecordPosition();
 
+    /**
+     * Returns the length (in bytes) of one record in this DBase file, including the delete flag. 
+     * @return Record length.
+     */
+    public short getRecordLength();
+    
     /**
      * Returns the record count.
      * @return Record count.
@@ -114,5 +126,5 @@ public interface Dbase3ByteReader {
      * Read the next row as a set of objects.
      * @return Map of field name / object value.
      */
-    public Map<String, Object> readNextRowAsObjects();
+    public Map<String, byte[]> readNextRowAsObjects();
 }

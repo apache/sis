@@ -28,14 +28,15 @@ import org.apache.sis.util.resources.Errors;
  * method. This set is used only for mutually exclusive properties, when a collection can not have
  * elements because the other property is set.
  *
- * @param  <E> The type of elements that the collection would have if it was non-empty.
- *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.3
- * @module
+ *
+ * @param <E>  the type of elements that the collection would have if it was non-empty.
  *
  * @see Collections#emptySet()
+ *
+ * @since 0.3
+ * @module
  */
 public final class ExcludedSet<E> extends AbstractSet<E> implements Serializable {
     /**
@@ -51,8 +52,8 @@ public final class ExcludedSet<E> extends AbstractSet<E> implements Serializable
     /**
      * Creates a new empty set.
      *
-     * @param name1 The name of the first mutually exclusive property.
-     * @param name2 The name of the second mutually exclusive property.
+     * @param name1  the name of the first mutually exclusive property.
+     * @param name2  the name of the second mutually exclusive property.
      */
     public ExcludedSet(final String name1, final String name2) {
         this.name1 = name1;
@@ -82,19 +83,19 @@ public final class ExcludedSet<E> extends AbstractSet<E> implements Serializable
     /**
      * Returns the empty iterator.
      *
-     * @return Empty iterator.
+     * @return empty iterator.
      */
     @Override
     public Iterator<E> iterator() {
-        return Collections.<E>emptySet().iterator();
+        return Collections.emptyIterator();
     }
 
     /**
      * Unconditionally throws a {@link UnsupportedOperationException} with a message
      * saying which properties are mutually exclusive.
      *
-     * @param  e Ignored.
-     * @return Never return.
+     * @param  e  ignored.
+     * @return never return.
      */
     @Override
     public boolean add(final E e) {

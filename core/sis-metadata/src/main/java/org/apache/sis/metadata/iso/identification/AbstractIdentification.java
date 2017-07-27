@@ -43,6 +43,7 @@ import org.opengis.metadata.identification.ServiceIdentification;
 import org.opengis.metadata.maintenance.MaintenanceInformation;
 import org.opengis.metadata.spatial.SpatialRepresentationType;
 import org.opengis.util.InternationalString;
+import org.apache.sis.internal.metadata.Dependencies;
 import org.apache.sis.internal.metadata.LegacyPropertyAdapter;
 import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.util.iso.Types;
@@ -54,6 +55,20 @@ import static org.opengis.annotation.Specification.ISO_19115;
 
 /**
  * Basic information required to uniquely identify a resource or resources.
+ * The following properties are mandatory or conditional (i.e. mandatory under some circumstances)
+ * in a well-formed metadata according ISO 19115:
+ *
+ * <div class="preformat">{@code MD_Identification}
+ * {@code   ├─citation………………………………………} Citation data for the resource(s).
+ * {@code   │   ├─title……………………………………} Name by which the cited resource is known.
+ * {@code   │   └─date………………………………………} Reference date for the cited resource.
+ * {@code   ├─abstract………………………………………} Brief narrative summary of the content of the resource(s).
+ * {@code   ├─extent……………………………………………} Bounding polygon, vertical, and temporal extent of the dataset.
+ * {@code   │   ├─description……………………} The spatial and temporal extent for the referring object.
+ * {@code   │   ├─geographicElement……} Geographic component of the extent of the referring object.
+ * {@code   │   ├─temporalElement…………} Temporal component of the extent of the referring object.
+ * {@code   │   └─verticalElement…………} Vertical component of the extent of the referring object.
+ * {@code   └─topicCategory…………………………} Main theme(s) of the dataset.</div>
  *
  * <p><b>Limitations:</b></p>
  * <ul>
@@ -67,10 +82,11 @@ import static org.opengis.annotation.Specification.ISO_19115;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Touraïvane (IRD)
  * @author  Cédric Briançon (Geomatys)
- * @since   0.3
  * @version 0.5
+ * @since   0.3
  * @module
  */
+@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "AbstractMD_Identification_Type", propOrder = {
     "citation",
     "abstract",
@@ -205,8 +221,8 @@ public class AbstractIdentification extends ISOMetadata implements Identificatio
     /**
      * Creates an identification initialized to the specified values.
      *
-     * @param citation  The citation data for the resource(s), or {@code null} if none.
-     * @param abstracts A brief narrative summary of the content of the resource(s), or {@code null} if none.
+     * @param citation   the citation data for the resource(s), or {@code null} if none.
+     * @param abstracts  a brief narrative summary of the content of the resource(s), or {@code null} if none.
      */
     public AbstractIdentification(final Citation citation, final CharSequence abstracts) {
         this.citation = citation;
@@ -218,7 +234,7 @@ public class AbstractIdentification extends ISOMetadata implements Identificatio
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
-     * @param object The metadata to copy values from, or {@code null} if none.
+     * @param  object  the metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(Identification)
      */
@@ -271,8 +287,8 @@ public class AbstractIdentification extends ISOMetadata implements Identificatio
      *       metadata contained in the given object are not recursively copied.</li>
      * </ul>
      *
-     * @param  object The object to get as a SIS implementation, or {@code null} if none.
-     * @return A SIS implementation containing the values of the given object (may be the
+     * @param  object  the object to get as a SIS implementation, or {@code null} if none.
+     * @return a SIS implementation containing the values of the given object (may be the
      *         given object itself), or {@code null} if the argument was null.
      */
     public static AbstractIdentification castOrCopy(final Identification object) {
@@ -292,7 +308,7 @@ public class AbstractIdentification extends ISOMetadata implements Identificatio
     /**
      * Returns the citation for the resource(s).
      *
-     * @return Citation for the resource(s).
+     * @return citation for the resource(s).
      */
     @Override
     @XmlElement(name = "citation", required = true)
@@ -303,7 +319,7 @@ public class AbstractIdentification extends ISOMetadata implements Identificatio
     /**
      * Sets the citation for the resource(s).
      *
-     * @param newValue The new citation.
+     * @param  newValue  the new citation.
      */
     public void setCitation(final Citation newValue) {
         checkWritePermission();
@@ -313,7 +329,7 @@ public class AbstractIdentification extends ISOMetadata implements Identificatio
     /**
      * Returns a brief narrative summary of the resource(s).
      *
-     * @return Brief narrative summary of the resource(s).
+     * @return brief narrative summary of the resource(s).
      */
     @Override
     @XmlElement(name = "abstract", required = true)
@@ -324,7 +340,7 @@ public class AbstractIdentification extends ISOMetadata implements Identificatio
     /**
      * Sets a brief narrative summary of the resource(s).
      *
-     * @param newValue The new summary of resource(s).
+     * @param  newValue  the new summary of resource(s).
      */
     public void setAbstract(final InternationalString newValue) {
         checkWritePermission();
@@ -334,7 +350,7 @@ public class AbstractIdentification extends ISOMetadata implements Identificatio
     /**
      * Returns a summary of the intentions with which the resource(s) was developed.
      *
-     * @return The intentions with which the resource(s) was developed, or {@code null}.
+     * @return the intentions with which the resource(s) was developed, or {@code null}.
      */
     @Override
     @XmlElement(name = "purpose")
@@ -345,7 +361,7 @@ public class AbstractIdentification extends ISOMetadata implements Identificatio
     /**
      * Sets a summary of the intentions with which the resource(s) was developed.
      *
-     * @param newValue The new summary of intention.
+     * @param  newValue  the new summary of intention.
      */
     public void setPurpose(final InternationalString newValue) {
         checkWritePermission();
@@ -359,7 +375,7 @@ public class AbstractIdentification extends ISOMetadata implements Identificatio
      * The element type may be changed to the {@code InternationalString} interface in GeoAPI 4.0.
      * </div>
      *
-     * @return Recognition of those who contributed to the resource(s).
+     * @return recognition of those who contributed to the resource(s).
      */
     @Override
     @XmlElement(name = "credit")
@@ -374,7 +390,7 @@ public class AbstractIdentification extends ISOMetadata implements Identificatio
      * The element type may be changed to the {@code InternationalString} interface in GeoAPI 4.0.
      * </div>
      *
-     * @param newValues The new credits.
+     * @param  newValues  the new credits.
      */
     public void setCredits(final Collection<? extends String> newValues) {
         credits = writeCollection(newValues, credits, String.class);
@@ -383,7 +399,7 @@ public class AbstractIdentification extends ISOMetadata implements Identificatio
     /**
      * Returns the status of the resource(s).
      *
-     * @return Status of the resource(s), or {@code null}.
+     * @return status of the resource(s), or {@code null}.
      */
     @Override
     @XmlElement(name = "status")
@@ -394,7 +410,7 @@ public class AbstractIdentification extends ISOMetadata implements Identificatio
     /**
      * Sets the status of the resource(s).
      *
-     * @param newValues The new status.
+     * @param  newValues  the new status.
      */
     public void setStatus(final Collection<? extends Progress> newValues) {
         status = writeCollection(newValues, status, Progress.class);
@@ -405,11 +421,11 @@ public class AbstractIdentification extends ISOMetadata implements Identificatio
      * associated with the resource(s).
      *
      * <div class="warning"><b>Upcoming API change — generalization</b><br>
-     * As of ISO 19115:2014, {@code ResponsibleParty} is replaced by the {@link Responsibility} parent interface.
+     * As of ISO 19115:2014, {@code ResponsibleParty} is replaced by the {@code Responsibility} parent interface.
      * This change may be applied in GeoAPI 4.0.
      * </div>
      *
-     * @return Means of communication with person(s) and organizations(s) associated with the resource(s).
+     * @return means of communication with person(s) and organizations(s) associated with the resource(s).
      *
      * @see org.apache.sis.metadata.iso.DefaultMetadata#getContacts()
      */
@@ -423,11 +439,11 @@ public class AbstractIdentification extends ISOMetadata implements Identificatio
      * Sets the means of communication with persons(s) and organizations(s) associated with the resource(s).
      *
      * <div class="warning"><b>Upcoming API change — generalization</b><br>
-     * As of ISO 19115:2014, {@code ResponsibleParty} is replaced by the {@link Responsibility} parent interface.
+     * As of ISO 19115:2014, {@code ResponsibleParty} is replaced by the {@code Responsibility} parent interface.
      * This change may be applied in GeoAPI 4.0.
      * </div>
      *
-     * @param newValues The new points of contacts.
+     * @param  newValues  the new points of contacts.
      */
     public void setPointOfContacts(final Collection<? extends ResponsibleParty> newValues) {
         pointOfContacts = writeCollection(newValues, pointOfContacts, ResponsibleParty.class);
@@ -436,7 +452,7 @@ public class AbstractIdentification extends ISOMetadata implements Identificatio
     /**
      * Returns the methods used to spatially represent geographic information.
      *
-     * @return Methods used to spatially represent geographic information.
+     * @return methods used to spatially represent geographic information.
      *
      * @since 0.5
      */
@@ -449,7 +465,7 @@ public class AbstractIdentification extends ISOMetadata implements Identificatio
     /**
      * Sets the method used to spatially represent geographic information.
      *
-     * @param newValues The new spatial representation types.
+     * @param  newValues  the new spatial representation types.
      *
      * @since 0.5
      */
@@ -461,7 +477,7 @@ public class AbstractIdentification extends ISOMetadata implements Identificatio
      * Returns the factor which provides a general understanding of the density of spatial data in the resource(s).
      * This element should be repeated when describing upper and lower range.
      *
-     * @return Factor which provides a general understanding of the density of spatial data.
+     * @return factor which provides a general understanding of the density of spatial data.
      *
      * @since 0.5
      */
@@ -474,7 +490,7 @@ public class AbstractIdentification extends ISOMetadata implements Identificatio
     /**
      * Sets the factor which provides a general understanding of the density of spatial data in the resource(s).
      *
-     * @param newValues The new spatial resolutions.
+     * @param  newValues  the new spatial resolutions.
      *
      * @since 0.5
      */
@@ -485,7 +501,7 @@ public class AbstractIdentification extends ISOMetadata implements Identificatio
     /**
      * Returns the main theme(s) of the resource.
      *
-     * @return Main theme(s).
+     * @return main theme(s).
      *
      * @since 0.5
      */
@@ -498,7 +514,7 @@ public class AbstractIdentification extends ISOMetadata implements Identificatio
     /**
      * Sets the main theme(s) of the resource.
      *
-     * @param newValues The new topic categories.
+     * @param  newValues  the new topic categories.
      *
      * @since 0.5
      */
@@ -509,7 +525,7 @@ public class AbstractIdentification extends ISOMetadata implements Identificatio
     /**
      * Returns the spatial and temporal extent of the resource.
      *
-     * @return Spatial and temporal extent of the resource.
+     * @return spatial and temporal extent of the resource.
      *
      * @since 0.5
      */
@@ -522,7 +538,7 @@ public class AbstractIdentification extends ISOMetadata implements Identificatio
     /**
      * Sets the spatial and temporal extent of the resource.
      *
-     * @param newValues The new extents
+     * @param  newValues  the new extents
      *
      * @since 0.5
      */
@@ -533,7 +549,7 @@ public class AbstractIdentification extends ISOMetadata implements Identificatio
     /**
      * Returns other documentation associated with the resource.
      *
-     * @return Other documentation associated with the resource.
+     * @return other documentation associated with the resource.
      *
      * @since 0.5
      */
@@ -546,7 +562,7 @@ public class AbstractIdentification extends ISOMetadata implements Identificatio
     /**
      * Sets other documentation associated with the resource.
      *
-     * @param newValues The documentation to associate with the resource.
+     * @param  newValues  the documentation to associate with the resource.
      *
      * @since 0.5
      */
@@ -557,7 +573,7 @@ public class AbstractIdentification extends ISOMetadata implements Identificatio
     /**
      * Returns code(s) that identifies the level of processing in the producers coding system of a resource.
      *
-     * @return Code(s) that identifies the level of processing in the producers coding system of a resource.
+     * @return code(s) that identifies the level of processing in the producers coding system of a resource.
      *
      * @since 0.5
      */
@@ -582,7 +598,7 @@ public class AbstractIdentification extends ISOMetadata implements Identificatio
     /**
      * Provides information about the frequency of resource updates, and the scope of those updates.
      *
-     * @return Frequency and scope of resource updates.
+     * @return frequency and scope of resource updates.
      */
     @Override
     @XmlElement(name = "resourceMaintenance")
@@ -593,7 +609,7 @@ public class AbstractIdentification extends ISOMetadata implements Identificatio
     /**
      * Sets information about the frequency of resource updates, and the scope of those updates.
      *
-     * @param newValues The new resource maintenance info.
+     * @param  newValues  the new resource maintenance info.
      */
     public void setResourceMaintenances(final Collection<? extends MaintenanceInformation> newValues) {
         resourceMaintenances = writeCollection(newValues, resourceMaintenances, MaintenanceInformation.class);
@@ -602,7 +618,7 @@ public class AbstractIdentification extends ISOMetadata implements Identificatio
     /**
      * Provides a graphic that illustrates the resource(s) (should include a legend for the graphic).
      *
-     * @return A graphic that illustrates the resource(s).
+     * @return a graphic that illustrates the resource(s).
      */
     @Override
     @XmlElement(name = "graphicOverview")
@@ -613,7 +629,7 @@ public class AbstractIdentification extends ISOMetadata implements Identificatio
     /**
      * Sets a graphic that illustrates the resource(s).
      *
-     * @param newValues The new graphics overviews.
+     * @param  newValues  the new graphics overviews.
      */
     public void setGraphicOverviews(final Collection<? extends BrowseGraphic> newValues) {
         graphicOverviews = writeCollection(newValues, graphicOverviews, BrowseGraphic.class);
@@ -622,7 +638,9 @@ public class AbstractIdentification extends ISOMetadata implements Identificatio
     /**
      * Provides a description of the format of the resource(s).
      *
-     * @return Description of the format.
+     * @return description of the format.
+     *
+     * @see org.apache.sis.metadata.iso.distribution.DefaultDistribution#getDistributionFormats()
      */
     @Override
     @XmlElement(name = "resourceFormat")
@@ -633,7 +651,9 @@ public class AbstractIdentification extends ISOMetadata implements Identificatio
     /**
      * Sets a description of the format of the resource(s).
      *
-     * @param newValues The new resource format.
+     * @param  newValues  the new resource format.
+     *
+     * @see org.apache.sis.metadata.iso.distribution.DefaultDistribution#setDistributionFormats(Collection)
      */
     public void setResourceFormats(final Collection<? extends Format> newValues) {
         resourceFormats = writeCollection(newValues, resourceFormats, Format.class);
@@ -642,7 +662,7 @@ public class AbstractIdentification extends ISOMetadata implements Identificatio
     /**
      * Provides category keywords, their type, and reference source.
      *
-     * @return Category keywords, their type, and reference source.
+     * @return category keywords, their type, and reference source.
      */
     @Override
     @XmlElement(name = "descriptiveKeywords")
@@ -653,7 +673,7 @@ public class AbstractIdentification extends ISOMetadata implements Identificatio
     /**
      * Sets category keywords, their type, and reference source.
      *
-     * @param newValues The new descriptive keywords.
+     * @param  newValues  the new descriptive keywords.
      */
     public void setDescriptiveKeywords(final Collection<? extends Keywords> newValues) {
         descriptiveKeywords = writeCollection(newValues, descriptiveKeywords, Keywords.class);
@@ -663,7 +683,7 @@ public class AbstractIdentification extends ISOMetadata implements Identificatio
      * Provides basic information about specific application(s) for which the resource(s)
      * has/have been or is being used by different users.
      *
-     * @return Information about specific application(s) for which the resource(s)
+     * @return information about specific application(s) for which the resource(s)
      *         has/have been or is being used.
      */
     @Override
@@ -675,7 +695,7 @@ public class AbstractIdentification extends ISOMetadata implements Identificatio
     /**
      * Sets basic information about specific application(s).
      *
-     * @param newValues The new resource specific usages.
+     * @param  newValues  the new resource specific usages.
      */
     public void setResourceSpecificUsages(final Collection<? extends Usage> newValues) {
         resourceSpecificUsages = writeCollection(newValues, resourceSpecificUsages, Usage.class);
@@ -684,7 +704,7 @@ public class AbstractIdentification extends ISOMetadata implements Identificatio
     /**
      * Provides information about constraints which apply to the resource(s).
      *
-     * @return Constraints which apply to the resource(s).
+     * @return constraints which apply to the resource(s).
      */
     @Override
     @XmlElement(name = "resourceConstraints")
@@ -695,7 +715,7 @@ public class AbstractIdentification extends ISOMetadata implements Identificatio
     /**
      * Sets information about constraints which apply to the resource(s).
      *
-     * @param newValues The new resource constraints.
+     * @param  newValues  the new resource constraints.
      */
     public void setResourceConstraints(final Collection<? extends Constraints> newValues) {
         resourceConstraints = writeCollection(newValues, resourceConstraints, Constraints.class);
@@ -709,7 +729,7 @@ public class AbstractIdentification extends ISOMetadata implements Identificatio
      * when GeoAPI will provide it (tentatively in GeoAPI 3.1).
      * </div>
      *
-     * @return Associated resource information.
+     * @return associated resource information.
      *
      * @since 0.5
      */
@@ -727,7 +747,7 @@ public class AbstractIdentification extends ISOMetadata implements Identificatio
      * when GeoAPI will provide it (tentatively in GeoAPI 3.1).
      * </div>
      *
-     * @param newValues The new associated resources.
+     * @param  newValues  the new associated resources.
      *
      * @since 0.5
      */
@@ -738,13 +758,14 @@ public class AbstractIdentification extends ISOMetadata implements Identificatio
     /**
      * Provides aggregate dataset information.
      *
-     * @return Aggregate dataset information.
+     * @return aggregate dataset information.
      *
      * @deprecated As of ISO 19115:2014, replaced by {@link #getAssociatedResources()}.
      */
     @Override
     @Deprecated
     @XmlElement(name = "aggregationInfo")
+    @Dependencies("getAssociatedResources")
     public Collection<AggregateInformation> getAggregationInfo() {
         return new LegacyPropertyAdapter<AggregateInformation,DefaultAssociatedResource>(getAssociatedResources()) {
             @Override protected DefaultAssociatedResource wrap(final AggregateInformation value) {
@@ -768,7 +789,7 @@ public class AbstractIdentification extends ISOMetadata implements Identificatio
     /**
      * Sets aggregate dataset information.
      *
-     * @param newValues The new aggregation info.
+     * @param  newValues  the new aggregation info.
      *
      * @deprecated As of ISO 19115:2014, replaced by {@link #setAssociatedResources(Collection)}.
      */

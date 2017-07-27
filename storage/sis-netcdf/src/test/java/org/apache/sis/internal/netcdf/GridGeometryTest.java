@@ -17,6 +17,7 @@
 package org.apache.sis.internal.netcdf;
 
 import java.io.IOException;
+import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.netcdf.AttributeNames;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.DependsOnMethod;
@@ -28,13 +29,13 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
 
 /**
  * Tests the {@link GridGeometry} implementation. The default implementation tests
- * {@link org.apache.sis.internal.netcdf.ucar.GridGeometryWrapper} since the UCAR
+ * {@code org.apache.sis.internal.netcdf.ucar.GridGeometryWrapper} since the UCAR
  * library is our reference implementation. However subclasses can override the
  * {@link #createDecoder(String)} method in order to test a different implementation.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.3
+ * @since   0.3
  * @module
  */
 @DependsOn(VariableTest.class)
@@ -45,8 +46,8 @@ public strictfp class GridGeometryTest extends TestCase {
      * {@code GridGeometryInfoTest} in order to ignore one-dimensional coordinate systems created
      * by {@code GridGeometry} but not by the UCAR library.
      *
-     * @param  geometries The grid geometries created by {@link Decoder}.
-     * @return The grid geometries to test.
+     * @param  geometries  the grid geometries created by {@link Decoder}.
+     * @return the grid geometries to test.
      */
     protected GridGeometry[] filter(final GridGeometry[] geometries) {
         return geometries;
@@ -55,10 +56,11 @@ public strictfp class GridGeometryTest extends TestCase {
     /**
      * Tests {@link GridGeometry#getSourceDimensions()} and {@link GridGeometry#getTargetDimensions()}.
      *
-     * @throws IOException If an error occurred while reading the NetCDF file.
+     * @throws IOException if an I/O error occurred while opening the file.
+     * @throws DataStoreException if a logical error occurred.
      */
     @Test
-    public void testDimensions() throws IOException {
+    public void testDimensions() throws IOException, DataStoreException {
         final GridGeometry geometry = getSingleton(filter(selectDataset(NCEP).getGridGeometries()));
         assertEquals("getSourceDimensions()", 3, geometry.getSourceDimensions());
         assertEquals("getTargetDimensions()", 3, geometry.getTargetDimensions());
@@ -67,11 +69,12 @@ public strictfp class GridGeometryTest extends TestCase {
     /**
      * Tests {@link GridGeometry#getAxes()}.
      *
-     * @throws IOException If an error occurred while reading the NetCDF file.
+     * @throws IOException if an I/O error occurred while opening the file.
+     * @throws DataStoreException if a logical error occurred.
      */
     @Test
     @DependsOnMethod("testDimensions")
-    public void testAxes() throws IOException {
+    public void testAxes() throws IOException, DataStoreException {
         final Axis[] axes = getSingleton(filter(selectDataset(NCEP).getGridGeometries())).getAxes();
         assertEquals(3, axes.length);
         final Axis x = axes[2];

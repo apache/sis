@@ -24,6 +24,8 @@ import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.referencing.ReferenceIdentifier;
 import org.opengis.util.InternationalString;
+import org.apache.sis.metadata.TitleProperty;
+import org.apache.sis.internal.util.Citations;
 
 import static org.opengis.annotation.Obligation.OPTIONAL;
 import static org.opengis.annotation.Specification.ISO_19115;
@@ -31,6 +33,11 @@ import static org.opengis.annotation.Specification.ISO_19115;
 
 /**
  * Value uniquely identifying an object within a namespace.
+ * The following property is mandatory in a well-formed metadata according ISO 19115:
+ *
+ * <div class="preformat">{@code MD_Identifier}
+ * {@code   └─code……………} Alphanumeric value identifying an instance in the namespace.</div>
+ *
  * One or more {@code Identifier} instances can be associated to some metadata objects like
  * {@linkplain org.apache.sis.metadata.iso.acquisition.DefaultOperation operation},
  * {@linkplain org.apache.sis.metadata.iso.acquisition.DefaultPlatform platform},
@@ -54,7 +61,7 @@ import static org.opengis.annotation.Specification.ISO_19115;
  * one except for the {@code "MD_"} prefix. Example:
  *
  * {@preformat xml
- *   <gmd:MD_Identifier>
+ *   <gmd:MD_Identifier
  *     <gmd:code>
  *       <gco:CharacterString>4326</gco:CharacterString>
  *     </gmd:code>
@@ -80,15 +87,19 @@ import static org.opengis.annotation.Specification.ISO_19115;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Touraïvane (IRD)
  * @author  Cédric Briançon (Geomatys)
- * @since   0.3
- * @version 0.5
- * @module
+ * @version 0.7
  *
  * @see ImmutableIdentifier
+ * @see org.apache.sis.referencing.IdentifiedObjects#toURN(Class, Identifier)
+ *
+ * @since 0.3
+ * @module
  */
+@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
+@TitleProperty(name = "code")
 @XmlType(name = "MD_Identifier_Type", propOrder = {
-    "code",
-    "authority"
+    "authority",
+    "code"
 })
 @XmlRootElement(name = "MD_Identifier")
 public class DefaultIdentifier extends ISOMetadata implements Identifier {
@@ -98,33 +109,41 @@ public class DefaultIdentifier extends ISOMetadata implements Identifier {
     private static final long serialVersionUID = -23375776954553866L;
 
     /**
+     * Person or party responsible for maintenance of the namespace.
+     *
+     * @see #getAuthority()
+     */
+    private Citation authority;
+
+    /**
      * Alphanumeric value identifying an instance in the namespace.
+     *
+     * @see #getCode()
      */
     private String code;
 
     /**
      * Identifier or namespace in which the code is valid.
+     *
+     * @see #getCodeSpace()
      */
     private String codeSpace;
 
     /**
-     * Identifier of the version of the associated code space or code, as specified
-     * by the code space or code authority. This version is included only when the
-     * {@linkplain #getCode code} uses versions. When appropriate, the edition is
-     * identified by the effective date, coded using ISO 8601 date format.
+     * Version identifier for the namespace, as specified by the code authority.
+     * This version is included only when the {@linkplain #getCode code} uses versions.
+     * When appropriate, the edition is identified by the effective date, coded using ISO 8601 date format.
+     *
+     * @see #getVersion()
      */
     private String version;
 
     /**
      * Natural language description of the meaning of the code value.
+     *
+     * @see #getDescription()
      */
     private InternationalString description;
-
-    /**
-     * Organization or party responsible for definition and maintenance of the
-     * {@linkplain #getCode code}.
-     */
-    private Citation authority;
 
     /**
      * Construct an initially empty identifier.
@@ -135,8 +154,7 @@ public class DefaultIdentifier extends ISOMetadata implements Identifier {
     /**
      * Creates an identifier initialized to the given code.
      *
-     * @param code The alphanumeric value identifying an instance in the namespace,
-     *             or {@code null} if none.
+     * @param  code  the alphanumeric value identifying an instance in the namespace, or {@code null} if none.
      */
     public DefaultIdentifier(final String code) {
         this.code = code;
@@ -144,15 +162,30 @@ public class DefaultIdentifier extends ISOMetadata implements Identifier {
 
     /**
      * Creates an identifier initialized to the given authority and code.
+     * This constructor automatically initializes the {@linkplain #getCodeSpace() code space} to a value inferred
+     * from the given {@code authority}, if a suitable value can be found. This constructor proceeds by searching
+     * for the first suitable property in the following list:
      *
-     * @param authority The organization or party responsible for definition and maintenance
-     *                  of the code, or {@code null} if none.
-     * @param code      The alphanumeric value identifying an instance in the namespace,
-     *                  or {@code null} if none.
+     * <ol>
+     *   <li>The value of {@link org.apache.sis.xml.IdentifierSpace#getName()}.</li>
+     *   <li>A {@linkplain org.apache.sis.metadata.iso.citation.DefaultCitation#getIdentifiers() citation identifier}
+     *       which is a valid
+     *       {@linkplain org.apache.sis.util.CharSequences#isUnicodeIdentifier(CharSequence) unicode identifier}.</li>
+     *   <li>Only if the citation has no identifier, a citation title or
+     *       {@linkplain org.apache.sis.metadata.iso.citation.DefaultCitation#getAlternateTitles() alternate title}
+     *       which is a valid
+     *       {@linkplain org.apache.sis.util.CharSequences#isUnicodeIdentifier(CharSequence) unicode identifier}.</li>
+     * </ol>
+     *
+     * @param authority  the the person or party responsible for maintenance of the namespace, or {@code null} if none.
+     * @param code       the alphanumeric value identifying an instance in the namespace, or {@code null} if none.
+     *
+     * @see org.apache.sis.metadata.iso.citation.Citations#getUnicodeIdentifier(Citation)
      */
     public DefaultIdentifier(final Citation authority, final String code) {
         this.authority = authority;
         this.code = code;
+        codeSpace = Citations.getCodeSpace(authority);
     }
 
     /**
@@ -160,7 +193,7 @@ public class DefaultIdentifier extends ISOMetadata implements Identifier {
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
-     * @param object The metadata to copy values from, or {@code null} if none.
+     * @param  object  the metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(Identifier)
      */
@@ -196,8 +229,8 @@ public class DefaultIdentifier extends ISOMetadata implements Identifier {
      *       metadata contained in the given object are not recursively copied.</li>
      * </ul>
      *
-     * @param  object The object to get as a SIS implementation, or {@code null} if none.
-     * @return A SIS implementation containing the values of the given object (may be the
+     * @param  object  the object to get as a SIS implementation, or {@code null} if none.
+     * @return a SIS implementation containing the values of the given object (may be the
      *         given object itself), or {@code null} if the argument was null.
      */
     public static DefaultIdentifier castOrCopy(final Identifier object) {
@@ -208,9 +241,38 @@ public class DefaultIdentifier extends ISOMetadata implements Identifier {
     }
 
     /**
-     * Returns the alphanumeric value identifying an instance in the namespace.
+     * Returns the person or party responsible for maintenance of the namespace.
+     * The organization's abbreviation is often the same than this identifier
+     * {@linkplain #getCodeSpace() code space}, but not necessarily.
      *
-     * @return Value identifying an instance in the namespace.
+     * @return person or party responsible for maintenance of the namespace, or {@code null} if not available.
+     */
+    @Override
+    @XmlElement(name = "authority")
+    public Citation getAuthority() {
+        return authority;
+    }
+
+    /**
+     * Sets the person or party responsible for maintenance of the namespace.
+     *
+     * @param  newValue  the new authority.
+     */
+    public void setAuthority(final Citation newValue) {
+        checkWritePermission();
+        authority = newValue;
+    }
+
+    /**
+     * Returns the alphanumeric value identifying an instance in the namespace.
+     * The code is optionally from a controlled list or pattern.
+     *
+     * <div class="note"><b>Example:</b> {@code "4326"}.</div>
+     *
+     * The code is mandatory according ISO specification, but this {@code DefaultIdentifier}
+     * implementation does not enforce this restriction.
+     *
+     * @return value identifying an instance in the namespace.
      */
     @Override
     @XmlElement(name = "code", required = true)
@@ -220,8 +282,9 @@ public class DefaultIdentifier extends ISOMetadata implements Identifier {
 
     /**
      * Sets the alphanumeric value identifying an instance in the namespace.
+     * Should avoid characters that are not legal in URLs.
      *
-     * @param newValue The new code, or {@code null}.
+     * @param  newValue  the new code, or {@code null}.
      */
     public void setCode(final String newValue) {
         checkWritePermission();
@@ -230,8 +293,11 @@ public class DefaultIdentifier extends ISOMetadata implements Identifier {
 
     /**
      * Returns the identifier or namespace in which the code is valid.
+     * This is often the {@linkplain #getAuthority() authority}'s abbreviation, but not necessarily.
      *
-     * @return The identifier code space, or {@code null} if none.
+     * <div class="note"><b>Example:</b> {@code "EPSG"}.</div>
+     *
+     * @return the identifier or namespace in which the code is valid, or {@code null} if none.
      *
      * @since 0.5
      */
@@ -243,7 +309,7 @@ public class DefaultIdentifier extends ISOMetadata implements Identifier {
     /**
      * Sets the identifier or namespace in which the code is valid.
      *
-     * @param newValue The new code space, or {@code null} if none.
+     * @param  newValue  the new code space, or {@code null} if none.
      *
      * @since 0.5
      */
@@ -253,12 +319,13 @@ public class DefaultIdentifier extends ISOMetadata implements Identifier {
     }
 
     /**
-     * Identifier of the version of the associated code, as specified by the code space or
-     * code authority. This version is included only when the {@linkplain #getCode() code}
-     * uses versions. When appropriate, the edition is identified by the effective date,
-     * coded using ISO 8601 date format.
+     * Returns the version identifier for the namespace, as specified by the code authority.
+     * This version is included only when the {@linkplain #getCode() code} uses versions.
+     * When appropriate, the edition is identified by the effective date, coded using ISO 8601 date format.
      *
-     * @return The version, or {@code null} if not available.
+     * <div class="note"><b>Example:</b> the version of the underlying EPSG database.</div>
+     *
+     * @return the version identifier for the namespace, or {@code null} if none.
      */
     @UML(identifier="version", obligation=OPTIONAL, specification=ISO_19115)
     public String getVersion() {
@@ -266,9 +333,9 @@ public class DefaultIdentifier extends ISOMetadata implements Identifier {
     }
 
     /**
-     * Sets an identifier of the version of the associated code.
+     * Sets the version identifier for the namespace.
      *
-     * @param newValue The new version.
+     * @param  newValue  the new version, or {@code null} if none.
      */
     public void setVersion(final String newValue) {
         checkWritePermission();
@@ -278,7 +345,9 @@ public class DefaultIdentifier extends ISOMetadata implements Identifier {
     /**
      * Returns the natural language description of the meaning of the code value.
      *
-     * @return The natural language description, or {@code null} if none.
+     * <div class="note"><b>Example:</b> "World Geodetic System 1984".</div>
+     *
+     * @return the natural language description, or {@code null} if none.
      *
      * @since 0.5
      */
@@ -290,35 +359,12 @@ public class DefaultIdentifier extends ISOMetadata implements Identifier {
     /**
      * Sets the natural language description of the meaning of the code value.
      *
-     * @param newValue The new natural language description, or {@code null} if none.
+     * @param  newValue  the new natural language description, or {@code null} if none.
      *
      * @since 0.5
      */
     public void setDescription(final InternationalString newValue) {
         checkWritePermission();
         description = newValue;
-    }
-
-    /**
-     * Organization or party responsible for definition and maintenance of the
-     * {@linkplain #getCode() code}.
-     *
-     * @return The authority, or {@code null} if not available.
-     */
-    @Override
-    @XmlElement(name = "authority")
-    public Citation getAuthority() {
-        return authority;
-    }
-
-    /**
-     * Sets the organization or party responsible for definition and maintenance of the
-     * {@linkplain #getCode code}.
-     *
-     * @param newValue The new authority.
-     */
-    public void setAuthority(final Citation newValue) {
-        checkWritePermission();
-        authority = newValue;
     }
 }

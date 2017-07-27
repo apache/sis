@@ -29,7 +29,6 @@ import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.CoordinateOperation;
-import org.opengis.referencing.operation.CoordinateOperationFactory;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
@@ -42,9 +41,10 @@ import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.operation.transform.AbstractMathTransform;
+import org.apache.sis.internal.referencing.CoordinateOperations;
 import org.apache.sis.internal.referencing.DirectPositionView;
 import org.apache.sis.internal.referencing.Formulas;
-import org.apache.sis.internal.system.DefaultFactories;
+import org.apache.sis.internal.system.Loggers;
 
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 import static org.apache.sis.util.StringBuilders.trimFractionalPart;
@@ -86,12 +86,13 @@ import static org.apache.sis.util.StringBuilders.trimFractionalPart;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Johann Sorel (Geomatys)
- * @since   0.3
  * @version 0.5
- * @module
  *
  * @see org.apache.sis.metadata.iso.extent.Extents
  * @see CRS
+ *
+ * @since 0.3
+ * @module
  */
 public final class Envelopes extends Static {
     /**
@@ -101,20 +102,9 @@ public final class Envelopes extends Static {
     }
 
     /**
-     * Returns the coordinate operation factory to be used for transforming the envelope.
-     */
-    private static CoordinateOperationFactory getFactory() throws TransformException {
-        final CoordinateOperationFactory factory = DefaultFactories.forClass(CoordinateOperationFactory.class);
-        if (factory != null) {
-            return factory;
-        }
-        throw new TransformException(Errors.format(Errors.Keys.MissingRequiredModule_1, "geotk-referencing")); // This is temporary.
-    }
-
-    /**
      * Returns {@code true} if the given axis is of kind "Wrap Around".
      */
-    private static boolean isWrapAround(final CoordinateSystemAxis axis) {
+    static boolean isWrapAround(final CoordinateSystemAxis axis) {
         return RangeMeaning.WRAPAROUND.equals(axis.getRangeMeaning());
     }
 
@@ -122,25 +112,25 @@ public final class Envelopes extends Static {
      * Invoked when a recoverable exception occurred. Those exceptions must be minor enough
      * that they can be silently ignored in most cases.
      */
-    private static void recoverableException(final TransformException exception) {
-        Logging.recoverableException(Envelopes.class, "transform", exception);
+    static void recoverableException(final Class<? extends Static> caller, final TransformException exception) {
+        Logging.recoverableException(Logging.getLogger(Loggers.GEOMETRY), caller, "transform", exception);
     }
 
     /**
      * A buckle method for calculating derivative and coordinate transformation in a single step,
      * if the given {@code derivative} argument is {@code true}.
      *
-     * @param transform The transform to use.
-     * @param srcPts    The array containing the source coordinate at offset 0.
-     * @param dstPts    the array into which the transformed coordinate is returned.
-     * @param dstOff    The offset to the location of the transformed point that is stored in the destination array.
-     * @param derivate  {@code true} for computing the derivative, or {@code false} if not needed.
-     * @return The matrix of the transform derivative at the given source position,
+     * @param  transform  the transform to use.
+     * @param  srcPts     the array containing the source coordinate at offset 0.
+     * @param  dstPts     the array into which the transformed coordinate is returned.
+     * @param  dstOff     the offset to the location of the transformed point that is stored in the destination array.
+     * @param  derivate   {@code true} for computing the derivative, or {@code false} if not needed.
+     * @return the matrix of the transform derivative at the given source position,
      *         or {@code null} if the {@code derivate} argument is {@code false}.
-     * @throws TransformException If the point can not be transformed
+     * @throws TransformException if the point can not be transformed
      *         or if a problem occurred while calculating the derivative.
      */
-    private static Matrix derivativeAndTransform(final MathTransform transform, final double[] srcPts,
+    static Matrix derivativeAndTransform(final MathTransform transform, final double[] srcPts,
             final double[] dstPts, final int dstOff, final boolean derivate) throws TransformException
     {
         if (transform instanceof AbstractMathTransform) {
@@ -163,10 +153,10 @@ public final class Envelopes extends Static {
      * to get the {@link CoordinateOperation} or {@link MathTransform} instance once and invoke one of the
      * others {@code transform(…)} methods.
      *
-     * @param  envelope The envelope to transform (may be {@code null}).
-     * @param  targetCRS The target CRS (may be {@code null}).
-     * @return A new transformed envelope, or directly {@code envelope} if no change was required.
-     * @throws TransformException If a transformation was required and failed.
+     * @param  envelope   the envelope to transform (may be {@code null}).
+     * @param  targetCRS  the target CRS (may be {@code null}).
+     * @return a new transformed envelope, or directly {@code envelope} if no change was required.
+     * @throws TransformException if a transformation was required and failed.
      *
      * @since 0.5
      */
@@ -183,7 +173,7 @@ public final class Envelopes extends Static {
                 } else {
                     final CoordinateOperation operation;
                     try {
-                        operation = getFactory().createOperation(sourceCRS, targetCRS);
+                        operation = CoordinateOperations.factory().createOperation(sourceCRS, targetCRS);
                     } catch (FactoryException exception) {
                         throw new TransformException(Errors.format(Errors.Keys.CanNotTransformEnvelope), exception);
                     }
@@ -205,9 +195,9 @@ public final class Envelopes extends Static {
      * or when it crosses the ±180° longitude, because {@link MathTransform} does not carry sufficient information.
      * For a more robust envelope transformation, use {@link #transform(CoordinateOperation, Envelope)} instead.
      *
-     * @param  transform The transform to use.
-     * @param  envelope Envelope to transform, or {@code null}. This envelope will not be modified.
-     * @return The transformed envelope, or {@code null} if {@code envelope} was null.
+     * @param  transform  the transform to use.
+     * @param  envelope   envelope to transform, or {@code null}. This envelope will not be modified.
+     * @return the transformed envelope, or {@code null} if {@code envelope} was null.
      * @throws TransformException if a transform failed.
      *
      * @see #transform(CoordinateOperation, Envelope)
@@ -225,9 +215,9 @@ public final class Envelopes extends Static {
      * Implementation of {@link #transform(MathTransform, Envelope)} with the opportunity to
      * save the projected center coordinate.
      *
-     * @param targetPt After this method call, the center of the source envelope projected to
-     *        the target CRS. The length of this array must be the number of target dimensions.
-     *        May be {@code null} if this information is not needed.
+     * @param  targetPt  after this method call, the center of the source envelope projected to the target CRS.
+     *                   The length of this array must be the number of target dimensions.
+     *                   May be {@code null} if this information is not needed.
      */
     @SuppressWarnings("null")
     private static GeneralEnvelope transform(final MathTransform transform,
@@ -268,7 +258,7 @@ public final class Envelopes extends Static {
          * ordinate values. This coordinate will be updated in the 'switch' statement inside
          * the 'while' loop.
          */
-        if (sourceDim >= 20) { // Maximal value supported by Formulas.pow3(int) is 19.
+        if (sourceDim >= 20) {          // Maximal value supported by Formulas.pow3(int) is 19.
             throw new IllegalArgumentException(Errors.format(Errors.Keys.ExcessiveNumberOfDimensions_1));
         }
         int             pointIndex            = 0;
@@ -303,11 +293,11 @@ public final class Envelopes extends Static {
                         sourcePt, ordinates, offset, isDerivativeSupported);
             } catch (TransformException e) {
                 if (!isDerivativeSupported) {
-                    throw e; // Derivative were already disabled, so something went wrong.
+                    throw e;                    // Derivative were already disabled, so something went wrong.
                 }
                 isDerivativeSupported = false;
                 transform.transform(sourcePt, 0, ordinates, offset, 1);
-                recoverableException(e); // Log only if the above call was successful.
+                recoverableException(Envelopes.class, e);       // Log only if the above call was successful.
             }
             /*
              * The transformed point has been saved for future reuse after the enclosing
@@ -335,10 +325,10 @@ public final class Envelopes extends Static {
             int indexBase3 = ++pointIndex;
             for (int dim=sourceDim; --dim>=0; indexBase3 /= 3) {
                 switch (indexBase3 % 3) {
-                    case 0:  sourcePt[dim] = envelope.getMinimum(dim); break; // Continue the loop.
+                    case 0:  sourcePt[dim] = envelope.getMinimum(dim); break;   // Continue the loop.
                     case 1:  sourcePt[dim] = envelope.getMaximum(dim); continue transformPoint;
                     case 2:  sourcePt[dim] = envelope.getMedian (dim); continue transformPoint;
-                    default: throw new AssertionError(indexBase3); // Should never happen
+                    default: throw new AssertionError(indexBase3);     // Should never happen
                 }
             }
             break;
@@ -394,12 +384,12 @@ public final class Envelopes extends Static {
                                             for (int ib3 = pointIndex, dim = sourceDim; --dim >= 0; ib3 /= 3) {
                                                 final double ordinate;
                                                 if (dim == i) {
-                                                    ordinate = x; // Position of the extremum.
+                                                    ordinate = x;                         // Position of the extremum.
                                                 } else switch (ib3 % 3) {
                                                     case 0:  ordinate = envelope.getMinimum(dim); break;
                                                     case 1:  ordinate = envelope.getMaximum(dim); break;
                                                     case 2:  ordinate = envelope.getMedian (dim); break;
-                                                    default: throw new AssertionError(ib3); // Should never happen
+                                                    default: throw new AssertionError(ib3);     // Should never happen
                                                 }
                                                 sourcePt[dim] = ordinate;
                                             }
@@ -412,7 +402,7 @@ public final class Envelopes extends Static {
                         }
                     }
                 }
-                derivatives[pointIndex] = null; // Let GC do its job earlier.
+                derivatives[pointIndex] = null;                 // Let GC do its job earlier.
             }
         }
         if (targetPt != null) {
@@ -437,9 +427,9 @@ public final class Envelopes extends Static {
      * of accuracy. In order to prevent this method from performing such pre-transformation (if not desired),
      * callers can ensure that the envelope CRS is {@code null} before to call this method.</div>
      *
-     * @param  operation The operation to use.
-     * @param  envelope Envelope to transform, or {@code null}. This envelope will not be modified.
-     * @return The transformed envelope, or {@code null} if {@code envelope} was null.
+     * @param  operation  the operation to use.
+     * @param  envelope   envelope to transform, or {@code null}. This envelope will not be modified.
+     * @return the transformed envelope, or {@code null} if {@code envelope} was null.
      * @throws TransformException if a transform failed.
      *
      * @see #transform(MathTransform, Envelope)
@@ -468,7 +458,7 @@ public final class Envelopes extends Static {
                  */
                 final MathTransform mt;
                 try {
-                    mt = getFactory().createOperation(crs, sourceCRS).getMathTransform();
+                    mt = CoordinateOperations.factory().createOperation(crs, sourceCRS).getMathTransform();
                 } catch (FactoryException e) {
                     throw new TransformException(Errors.format(Errors.Keys.CanNotTransformEnvelope), e);
                 }
@@ -490,13 +480,13 @@ public final class Envelopes extends Static {
          */
         if (sourceCRS != null) {
             final CoordinateSystem cs = sourceCRS.getCoordinateSystem();
-            if (cs != null) { // Should never be null, but check as a paranoiac safety.
+            if (cs != null) {                           // Should never be null, but check as a paranoiac safety.
                 DirectPosition sourcePt = null;
                 DirectPosition targetPt = null;
                 final int dimension = cs.getDimension();
                 for (int i=0; i<dimension; i++) {
                     final CoordinateSystemAxis axis = cs.getAxis(i);
-                    if (axis == null) { // Should never be null, but check as a paranoiac safety.
+                    if (axis == null) {                 // Should never be null, but check as a paranoiac safety.
                         continue;
                     }
                     final double min = envelope.getMinimum(i);
@@ -565,7 +555,7 @@ public final class Envelopes extends Static {
          *    step. That ordinate is set to the minimal and maximal values of that axis.
          *
          *    Example: If the above steps found that the point (90°S, 30°W) need to be included,
-         *             then this step #3 will also test phe points (90°S, 180°W) and (90°S, 180°E).
+         *             then this step #3 will also test the points (90°S, 180°W) and (90°S, 180°E).
          *
          * NOTE: we test (-180°, centerY), (180°, centerY), (centerX, -90°) and (centerX, 90°)
          * at step #1 before to test (-180°, -90°), (180°, -90°), (-180°, 90°) and (180°, 90°)
@@ -578,17 +568,17 @@ public final class Envelopes extends Static {
         AbstractEnvelope generalEnvelope = null;
         DirectPosition sourcePt = null;
         DirectPosition targetPt = null;
-        long includedMinValue = 0; // A bitmask for each dimension.
+        long includedMinValue = 0;              // A bitmask for each dimension.
         long includedMaxValue = 0;
         long isWrapAroundAxis = 0;
         long dimensionBitMask = 1;
         final int dimension = targetCS.getDimension();
         for (int i=0; i<dimension; i++, dimensionBitMask <<= 1) {
             final CoordinateSystemAxis axis = targetCS.getAxis(i);
-            if (axis == null) { // Should never be null, but check as a paranoiac safety.
+            if (axis == null) {                 // Should never be null, but check as a paranoiac safety.
                 continue;
             }
-            boolean testMax = false; // Tells if we are testing the minimal or maximal value.
+            boolean testMax = false;            // Tells if we are testing the minimal or maximal value.
             do {
                 final double extremum = testMax ? axis.getMaximumValue() : axis.getMinimumValue();
                 if (Double.isInfinite(extremum) || Double.isNaN(extremum)) {
@@ -615,7 +605,7 @@ public final class Envelopes extends Static {
                          * lost dimensions. So we don't log any warning in this case.
                          */
                         if (dimension >= mt.getSourceDimensions()) {
-                            recoverableException(exception);
+                            recoverableException(Envelopes.class, exception);
                         }
                         return transformed;
                     }
@@ -639,7 +629,7 @@ public final class Envelopes extends Static {
                     if (warning == null) {
                         warning = exception;
                     } else {
-                        // warning.addSuppressed(exception) on the JDK7 branch.
+                        warning.addSuppressed(exception);
                     }
                     continue;
                 }
@@ -702,9 +692,9 @@ public final class Envelopes extends Static {
                          * or skip c={2,3}.
                          */
                         double value = max;
-                        if ((c & 1) == 0) { // 'true' if we are testing "wrapAroundMin".
+                        if ((c & 1) == 0) {         // 'true' if we are testing "wrapAroundMin".
                             if (((c == 0 ? includedMinValue : includedMaxValue) & bm) == 0) {
-                                c++; // Skip also the case for "wrapAroundMax".
+                                c++;                // Skip also the case for "wrapAroundMax".
                                 continue;
                             }
                             targetPt.setOrdinate(axisIndex, (c == 0) ? axis.getMinimumValue() : axis.getMaximumValue());
@@ -717,7 +707,7 @@ public final class Envelopes extends Static {
                             if (warning == null) {
                                 warning = exception;
                             } else {
-                                // warning.addSuppressed(exception) on the JDK7 branch.
+                                warning.addSuppressed(exception);
                             }
                             continue;
                         }
@@ -731,7 +721,7 @@ public final class Envelopes extends Static {
             }
         }
         if (warning != null) {
-            recoverableException(warning);
+            recoverableException(Envelopes.class, warning);
         }
         return transformed;
     }
@@ -753,9 +743,9 @@ public final class Envelopes extends Static {
      * See {@link GeneralEnvelope#GeneralEnvelope(CharSequence)} for more information about the
      * parsing rules.
      *
-     * @param  wkt The {@code BOX}, {@code POLYGON} or other kind of element to parse.
-     * @return The envelope of the given geometry.
-     * @throws FactoryException If the given WKT can not be parsed.
+     * @param  wkt  the {@code BOX}, {@code POLYGON} or other kind of element to parse.
+     * @return the envelope of the given geometry.
+     * @throws FactoryException if the given WKT can not be parsed.
      *
      * @see #toString(Envelope)
      * @see CRS#fromWKT(String)
@@ -786,8 +776,8 @@ public final class Envelopes extends Static {
      * The string returned by this method can be {@linkplain GeneralEnvelope#GeneralEnvelope(CharSequence)
      * parsed} by the {@code GeneralEnvelope} constructor.
      *
-     * @param  envelope The envelope to format.
-     * @return This envelope as a {@code BOX} or {@code BOX3D} (most typical dimensions) element.
+     * @param  envelope  the envelope to format.
+     * @return this envelope as a {@code BOX} or {@code BOX3D} (most typical dimensions) element.
      *
      * @see #fromWKT(CharSequence)
      * @see org.apache.sis.io.wkt
@@ -804,8 +794,8 @@ public final class Envelopes extends Static {
      * <p>The string returned by this method can be {@linkplain GeneralEnvelope#GeneralEnvelope(CharSequence)
      * parsed} by the {@code GeneralEnvelope} constructor.</p>
      *
-     * @param  envelope The envelope to format.
-     * @return The envelope as a {@code POLYGON} in WKT format.
+     * @param  envelope  the envelope to format.
+     * @return the envelope as a {@code POLYGON} in WKT format.
      * @throws IllegalArgumentException if the given envelope can not be formatted.
      *
      * @see org.apache.sis.io.wkt

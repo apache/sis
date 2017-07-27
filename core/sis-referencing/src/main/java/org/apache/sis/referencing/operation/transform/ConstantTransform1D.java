@@ -26,8 +26,8 @@ import java.util.Arrays;
  * faster.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.5
  * @version 0.5
+ * @since   0.5
  * @module
  */
 final class ConstantTransform1D extends LinearTransform1D {
@@ -49,7 +49,7 @@ final class ConstantTransform1D extends LinearTransform1D {
     /**
      * Constructs a new constant transform.
      *
-     * @param offset The {@code offset} term in the linear equation.
+     * @param offset  the {@code offset} term in the linear equation.
      */
     ConstantTransform1D(final double offset) {
         super(0, offset);

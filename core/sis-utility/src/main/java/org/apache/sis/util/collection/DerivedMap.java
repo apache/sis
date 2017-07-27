@@ -55,14 +55,15 @@ import org.apache.sis.math.FunctionProperty;
  * If the storage map is known to be immutable, then sub-classes may consider to cache some values,
  * especially the result of the {@link #size()} method.
  *
- * @param <SK> The type of keys in the storage map.
- * @param <SV> The type of values in the storage map.
- * @param <K>  The type of keys in this map.
- * @param <V>  The type of values in this map.
- *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.3
  * @version 0.3
+ *
+ * @param <SK>  the type of keys in the storage map.
+ * @param <SV>  the type of values in the storage map.
+ * @param <K>   the type of keys in this map.
+ * @param <V>   the type of values in this map.
+ *
+ * @since 0.3
  * @module
  */
 class DerivedMap<SK,SV,K,V> extends AbstractMap<K,V> implements
@@ -105,9 +106,9 @@ class DerivedMap<SK,SV,K,V> extends AbstractMap<K,V> implements
     /**
      * Creates a new derived map from the specified storage map.
      *
-     * @param storage        The map which actually store the entries.
-     * @param keyConverter   The converter for the keys.
-     * @param valueConverter The converter for the values.
+     * @param storage         the map which actually store the entries.
+     * @param keyConverter    the converter for the keys.
+     * @param valueConverter  the converter for the values.
      */
     static <SK,SV,K,V> Map<K,V> create(final Map<SK,SV> storage,
                                        final ObjectConverter<SK,K> keyConverter,
@@ -117,22 +118,22 @@ class DerivedMap<SK,SV,K,V> extends AbstractMap<K,V> implements
         final Set<FunctionProperty> vp = valueConverter.properties();
         if (kp.contains(FunctionProperty.INVERTIBLE)) {
             if (vp.contains(FunctionProperty.INVERTIBLE)) {
-                return new Invertible<SK,SV,K,V>(storage, keyConverter, valueConverter);
+                return new Invertible<>(storage, keyConverter, valueConverter);
             }
-            return new InvertibleKey<SK,SV,K,V>(storage, keyConverter, valueConverter);
+            return new InvertibleKey<>(storage, keyConverter, valueConverter);
         }
         if (vp.contains(FunctionProperty.INVERTIBLE)) {
-            return new InvertibleValue<SK,SV,K,V>(storage, keyConverter, valueConverter);
+            return new InvertibleValue<>(storage, keyConverter, valueConverter);
         }
-        return new DerivedMap<SK,SV,K,V>(storage, keyConverter, valueConverter);
+        return new DerivedMap<>(storage, keyConverter, valueConverter);
     }
 
     /**
      * Creates a new derived map from the specified storage map.
      *
-     * @param storage        The map which actually store the entries.
-     * @param keyConverter   The converter for the keys.
-     * @param valueConverter The converter for the values.
+     * @param storage         the map which actually store the entries.
+     * @param keyConverter    the converter for the keys.
+     * @param valueConverter  the converter for the values.
      */
     private DerivedMap(final Map<SK,SV> storage,
                        final ObjectConverter<SK,K> keyConverter,
@@ -146,7 +147,7 @@ class DerivedMap<SK,SV,K,V> extends AbstractMap<K,V> implements
     /**
      * Returns the number of entries in this map.
      *
-     * @return The number of entries in this map.
+     * @return the number of entries in this map.
      */
     @Override
     public int size() {
@@ -166,8 +167,8 @@ class DerivedMap<SK,SV,K,V> extends AbstractMap<K,V> implements
     /**
      * Associates the specified value with the specified key in this map.
      *
-     * @param  key key with which the specified value is to be associated.
-     * @param  value value to be associated with the specified key.
+     * @param  key    key with which the specified value is to be associated.
+     * @param  value  value to be associated with the specified key.
      * @return previous value associated with specified key, or {@code null}
      *         if there was no mapping for key.
      * @throws UnsupportedOperationException if the converters are not invertible,
@@ -293,7 +294,7 @@ class DerivedMap<SK,SV,K,V> extends AbstractMap<K,V> implements
         @Override
         public ObjectConverter<Entry<K,V>, Entry<SK,SV>> inverse() {
             if (inverse == null) {
-                inverse = new DerivedMap<K,V,SK,SV>(null, keyInverse, valueInverse);
+                inverse = new DerivedMap<>(null, keyInverse, valueInverse);
             }
             return inverse;
         }
@@ -303,6 +304,7 @@ class DerivedMap<SK,SV,K,V> extends AbstractMap<K,V> implements
      * Returns a set view of the keys contained in this map.
      */
     @Override
+    @SuppressWarnings("ReturnOfCollectionOrArrayField")     // Safe because immutable.
     public final Set<K> keySet() {
         if (keySet == null) {
             keySet = DerivedSet.create(storage.keySet(), keyConverter);
@@ -314,6 +316,7 @@ class DerivedMap<SK,SV,K,V> extends AbstractMap<K,V> implements
      * Returns a set view of the mappings contained in this map.
      */
     @Override
+    @SuppressWarnings("ReturnOfCollectionOrArrayField")     // Safe because immutable.
     public final Set<Map.Entry<K,V>> entrySet() {
         if (entrySet == null) {
             entrySet = DerivedSet.create(storage.entrySet(), this);
@@ -363,7 +366,7 @@ class DerivedMap<SK,SV,K,V> extends AbstractMap<K,V> implements
     public final Entry<K,V> apply(final Entry<SK,SV> entry) {
         final K key   =   keyConverter.apply(entry.getKey());
         final V value = valueConverter.apply(entry.getValue());
-        return (key != null) ? new SimpleEntry<K,V>(key, value) : null;
+        return (key != null) ? new SimpleEntry<>(key, value) : null;
     }
 
     /**

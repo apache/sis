@@ -19,7 +19,7 @@ package org.apache.sis.internal.jaxb.code;
 import javax.xml.bind.annotation.XmlElement;
 import org.opengis.metadata.spatial.SpatialRepresentationType;
 import org.apache.sis.internal.jaxb.gmd.CodeListAdapter;
-import org.apache.sis.internal.jaxb.gmd.CodeListProxy;
+import org.apache.sis.internal.jaxb.gmd.CodeListUID;
 
 
 /**
@@ -28,8 +28,8 @@ import org.apache.sis.internal.jaxb.gmd.CodeListProxy;
  * about the handling of {@code CodeList} in ISO-19139.
  *
  * @author  Cédric Briançon (Geomatys)
- * @since   0.3
  * @version 0.3
+ * @since   0.3
  * @module
  */
 public final class MD_SpatialRepresentationTypeCode
@@ -42,26 +42,26 @@ public final class MD_SpatialRepresentationTypeCode
     }
 
     /**
-     * Creates a new adapter for the given proxy.
+     * Creates a new adapter for the given value.
      */
-    private MD_SpatialRepresentationTypeCode(final CodeListProxy proxy) {
-        super(proxy);
+    private MD_SpatialRepresentationTypeCode(final CodeListUID value) {
+        super(value);
     }
 
     /**
      * {@inheritDoc}
      *
-     * @return The wrapper for the code list value.
+     * @return the wrapper for the code list value.
      */
     @Override
-    protected MD_SpatialRepresentationTypeCode wrap(CodeListProxy proxy) {
-        return new MD_SpatialRepresentationTypeCode(proxy);
+    protected MD_SpatialRepresentationTypeCode wrap(final CodeListUID value) {
+        return new MD_SpatialRepresentationTypeCode(value);
     }
 
     /**
      * {@inheritDoc}
      *
-     * @return The code list class.
+     * @return the code list class.
      */
     @Override
     protected Class<SpatialRepresentationType> getCodeListClass() {
@@ -71,20 +71,20 @@ public final class MD_SpatialRepresentationTypeCode
     /**
      * Invoked by JAXB on marshalling.
      *
-     * @return The value to be marshalled.
+     * @return the value to be marshalled.
      */
     @Override
     @XmlElement(name = "MD_SpatialRepresentationTypeCode")
-    public CodeListProxy getElement() {
-        return proxy;
+    public CodeListUID getElement() {
+        return identifier;
     }
 
     /**
      * Invoked by JAXB on unmarshalling.
      *
-     * @param proxy The unmarshalled value.
+     * @param  value  the unmarshalled value.
      */
-    public void setElement(final CodeListProxy proxy) {
-        this.proxy = proxy;
+    public void setElement(final CodeListUID value) {
+        identifier = value;
     }
 }

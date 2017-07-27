@@ -31,6 +31,13 @@ import org.apache.sis.metadata.iso.ISOMetadata;
 
 /**
  * Designations for the planning information related to meeting the data acquisition requirements.
+ * The following properties are mandatory in a well-formed metadata according ISO 19115:
+ *
+ * <div class="preformat">{@code MI_Plan}
+ * {@code   ├─status………………………………} Current status of the plan (pending, completed, etc.)
+ * {@code   └─citation…………………………} Identification of authority requesting target collection.
+ * {@code       ├─title………………………} Name by which the cited resource is known.
+ * {@code       └─date…………………………} Reference date for the cited resource.</div>
  *
  * <p><b>Limitations:</b></p>
  * <ul>
@@ -43,10 +50,11 @@ import org.apache.sis.metadata.iso.ISOMetadata;
  *
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.3
+ * @since   0.3
  * @module
  */
+@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "MI_Plan_Type", propOrder = {
     "type",
     "status",
@@ -97,7 +105,7 @@ public class DefaultPlan extends ISOMetadata implements Plan {
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
-     * @param object The metadata to copy values from, or {@code null} if none.
+     * @param  object  the metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(Plan)
      */
@@ -126,8 +134,8 @@ public class DefaultPlan extends ISOMetadata implements Plan {
      *       metadata contained in the given object are not recursively copied.</li>
      * </ul>
      *
-     * @param  object The object to get as a SIS implementation, or {@code null} if none.
-     * @return A SIS implementation containing the values of the given object (may be the
+     * @param  object  the object to get as a SIS implementation, or {@code null} if none.
+     * @return a SIS implementation containing the values of the given object (may be the
      *         given object itself), or {@code null} if the argument was null.
      */
     public static DefaultPlan castOrCopy(final Plan object) {
@@ -141,7 +149,7 @@ public class DefaultPlan extends ISOMetadata implements Plan {
      * Returns the manner of sampling geometry that the planner expects for collection of
      * objective data. {@code null} if unspecified.
      *
-     * @return Manner of sampling geometry, or {@code null}.
+     * @return manner of sampling geometry, or {@code null}.
      */
     @Override
     @XmlElement(name = "type")
@@ -153,7 +161,7 @@ public class DefaultPlan extends ISOMetadata implements Plan {
      * Sets the manner of sampling geometry that the planner expects for collection of
      * objective data.
      *
-     * @param newValue The new type value.
+     * @param  newValue  the new type value.
      */
     public void setType(final GeometryType newValue) {
         checkWritePermission();
@@ -163,7 +171,7 @@ public class DefaultPlan extends ISOMetadata implements Plan {
     /**
      * Returns the current status of the plan (pending, completed, etc.)
      *
-     * @return Current status of the plan, or {@code null}.
+     * @return current status of the plan, or {@code null}.
      */
     @Override
     @XmlElement(name = "status", required = true)
@@ -174,7 +182,7 @@ public class DefaultPlan extends ISOMetadata implements Plan {
     /**
      * Sets the current status of the plan (pending, completed, etc.)
      *
-     * @param newValue The new status value.
+     * @param  newValue  the new status value.
      */
     public void setStatus(final Progress newValue) {
         checkWritePermission();
@@ -184,7 +192,7 @@ public class DefaultPlan extends ISOMetadata implements Plan {
     /**
      * Returns the identification of authority requesting target collection.
      *
-     * @return Identification of authority requesting target collection, or {@code null}.
+     * @return identification of authority requesting target collection, or {@code null}.
      */
     @Override
     @XmlElement(name = "citation", required = true)
@@ -195,7 +203,7 @@ public class DefaultPlan extends ISOMetadata implements Plan {
     /**
      * Sets the identification of authority requesting target collection.
      *
-     * @param newValue The new citation value.
+     * @param  newValue  the new citation value.
      */
     public void setCitation(final Citation newValue) {
         checkWritePermission();
@@ -205,7 +213,7 @@ public class DefaultPlan extends ISOMetadata implements Plan {
     /**
      * Returns the identification of the activity or activities that satisfy a plan.
      *
-     * @return Identification of the activity or activities.
+     * @return identification of the activity or activities.
      */
     @Override
     @XmlElement(name = "operation")
@@ -216,7 +224,7 @@ public class DefaultPlan extends ISOMetadata implements Plan {
     /**
      * Sets the identification of the activity or activities that satisfy a plan.
      *
-     * @param newValues The new identifications of the activity.
+     * @param  newValues  the new identifications of the activity.
      */
     public void setOperations(final Collection<? extends Operation> newValues) {
         operations = writeCollection(newValues, operations, Operation.class);
@@ -225,7 +233,7 @@ public class DefaultPlan extends ISOMetadata implements Plan {
     /**
      * Returns the requirement satisfied by the plan.
      *
-     * @return Requirement satisfied by the plan.
+     * @return requirement satisfied by the plan.
      */
     @Override
     @XmlElement(name = "satisfiedRequirement")
@@ -236,7 +244,7 @@ public class DefaultPlan extends ISOMetadata implements Plan {
     /**
      * Sets the requirement satisfied by the plan.
      *
-     * @param newValues The new satisfied requirements.
+     * @param  newValues  the new satisfied requirements.
      */
     public void setSatisfiedRequirements(final Collection<? extends Requirement> newValues) {
         satisfiedRequirements = writeCollection(newValues, satisfiedRequirements, Requirement.class);

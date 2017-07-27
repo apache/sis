@@ -27,8 +27,8 @@ import static org.junit.Assert.*;
  * Tests {@link ReferenceQueueConsumer}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.3
+ * @since   0.3
  * @module
  */
 public final strictfp class ReferenceQueueConsumerTest extends TestCase {
@@ -41,11 +41,11 @@ public final strictfp class ReferenceQueueConsumerTest extends TestCase {
      * <p>This method is not a test of the SIS library, but rather a verification of our JDK
      * library interpretation.</p>
      *
-     * @throws InterruptedException This is the excepted exception.
+     * @throws InterruptedException this is the excepted exception.
      */
     @Test(expected=InterruptedException.class)
     public void verifyInterruptAssumption() throws InterruptedException {
-        final ReferenceQueue<Object> queue = new ReferenceQueue<Object>();
+        final ReferenceQueue<Object> queue = new ReferenceQueue<>();
         Thread.currentThread().interrupt();
         assertNull(queue.remove(1000));
     }

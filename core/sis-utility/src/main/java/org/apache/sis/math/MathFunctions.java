@@ -56,12 +56,14 @@ import static org.apache.sis.internal.util.Numerics.SIGNIFICAND_SIZE;
  * {@link #nextPrimeNumber(int) nextPrimeNumber}.
  *
  * @author  Martin Desruisseaux (MPO, IRD, Geomatys)
- * @since   0.3
- * @version 0.4
- * @module
+ * @author  Johann Sorel (Geomatys)
+ * @version 0.7
  *
  * @see DecimalFunctions
  * @see org.apache.sis.util.Numbers
+ *
+ * @since 0.3
+ * @module
  */
 public final class MathFunctions extends Static {
     /**
@@ -132,6 +134,7 @@ public final class MathFunctions extends Static {
      *
      * @see #primeNumberAt(int)
      */
+    @SuppressWarnings("VolatileArrayField")     // Because we will not modify array content.
     private static volatile short[] primes = new short[] {2, 3};
 
     /**
@@ -145,8 +148,8 @@ public final class MathFunctions extends Static {
      * {@link Math#floor(double)} if the value is positive, or {@link Math#ceil(double)} if
      * the value is negative.
      *
-     * @param  value The value to truncate.
-     * @return The largest in magnitude (further from zero) integer value which is equals
+     * @param  value  the value to truncate.
+     * @return the largest in magnitude (further from zero) integer value which is equals
      *         or less in magnitude than the given value.
      */
     public static double truncate(final double value) {
@@ -165,12 +168,12 @@ public final class MathFunctions extends Static {
      * returns directly the {@linkplain Math#abs(double) absolute value} of that element
      * without computing {@code sqrt(v²)}, in order to avoid rounding error. This special case
      * has been implemented because this method is often invoked for computing the length of
-     * {@linkplain org.opengis.coverage.grid.RectifiedGrid#getOffsetVectors() offset vectors},
+     * offset vectors,
      * typically aligned with the axes of a {@linkplain org.opengis.referencing.cs.CartesianCS
      * Cartesian coordinate system}.
      *
-     * @param  vector The vector for which to compute the magnitude.
-     * @return The magnitude of the given vector.
+     * @param  vector  the vector for which to compute the magnitude.
+     * @return the magnitude of the given vector.
      *
      * @see Math#hypot(double, double)
      */
@@ -236,8 +239,8 @@ public final class MathFunctions extends Static {
      *   <li><code>Math.floor({@linkplain #LOG10_2} * getExponent(value)) == Math.floor(Math.log10(value))</code></li>
      * </ul>
      *
-     * @param  value The value for which to get the exponent.
-     * @return The unbiased exponent, corrected for sub-normal numbers if needed.
+     * @param  value  the value for which to get the exponent.
+     * @return the unbiased exponent, corrected for sub-normal numbers if needed.
      *         Values will be in the [-1075 … 1024] range, inclusive.
      *
      * @see Math#getExponent(double)
@@ -266,7 +269,7 @@ public final class MathFunctions extends Static {
      * <code>{@linkplain Math#pow(double, double) Math.pow}(10, x)</code>, but is slightly more accurate
      * in the special case where the given argument is an integer.
      *
-     * @param x The exponent.
+     * @param  x  the exponent.
      * @return 10 raised to the given exponent.
      *
      * @see #pow10(int)
@@ -300,7 +303,7 @@ public final class MathFunctions extends Static {
      *   <li>For all other <var>x</var> values, the result is the closest IEEE 754 approximation.</li>
      * </ul>
      *
-     * @param x The exponent.
+     * @param  x  the exponent.
      * @return 10 raised to the given exponent.
      *
      * @see #pow10(double)
@@ -312,8 +315,38 @@ public final class MathFunctions extends Static {
     }
 
     /**
+     * Returns the inverse hyperbolic sine of the given value.
+     * This is the inverse of the {@link Math#sinh(double)} method.
+     *
+     * @param  x  the value for which to compute the inverse hyperbolic sine.
+     * @return the inverse hyperbolic sine of the given value.
+     *
+     * @see Math#sinh(double)
+     *
+     * @since 0.6
+     */
+    public static double asinh(final double x) {
+        return Math.log(x + Math.sqrt(x*x + 1));
+    }
+
+    /**
+     * Returns the inverse hyperbolic cosine of the given value.
+     * This is the inverse of the {@link Math#cosh(double)} method.
+     *
+     * @param  x  the value for which to compute the inverse hyperbolic cosine.
+     * @return the inverse hyperbolic cosine of the given value.
+     *
+     * @see Math#cosh(double)
+     *
+     * @since 0.6
+     */
+    public static double acosh(final double x) {
+        return Math.log(x + Math.sqrt(x*x - 1));
+    }
+
+    /**
      * Returns the inverse hyperbolic tangent of the given value.
-     * This is the inverse of the {@linkplain Math#tanh(double) tanh} method.
+     * This is the inverse of the {@link Math#tanh(double)} method.
      * The range of input values shall be in the [-1 … 1].
      * Special cases:
      *
@@ -323,8 +356,8 @@ public final class MathFunctions extends Static {
      *   <li>For <var>x</var> = +1, this method returns {@linkplain Double#POSITIVE_INFINITY positive infinity}.</li>
      * </ul>
      *
-     * @param  x The value for which to compute the inverse hyperbolic tangent.
-     * @return The inverse hyperbolic tangent of the given value.
+     * @param  x  the value for which to compute the inverse hyperbolic tangent.
+     * @return the inverse hyperbolic tangent of the given value.
      *
      * @see Math#tanh(double)
      */
@@ -332,6 +365,8 @@ public final class MathFunctions extends Static {
         /*
          * The classical formulas is log((1+x)/(1-x))/2, but the following is more
          * accurate if the (1+x)/(1-x) ratio is close to 1, i.e. if x is close to 0.
+         * This is often the case in Apache SIS since x is often a value close to the
+         * Earth excentricity, which is a small value (0 would be a perfect sphere).
          */
         return 0.5 * Math.log1p(2*x / (1-x));
     }
@@ -350,7 +385,7 @@ public final class MathFunctions extends Static {
      * The handling of zero values is the difference between invoking {@code isPositive(double)}
      * and testing if (<var>value</var> {@literal >= 0}).
      *
-     * @param  value The value to test.
+     * @param  value  the value to test.
      * @return {@code true} if the given value is positive, excluding negative zero.
      *
      * @see #isPositiveZero(double)
@@ -369,7 +404,7 @@ public final class MathFunctions extends Static {
      *   return (value == 0) && isPositive(value);
      * }
      *
-     * @param  value The value to test.
+     * @param  value  the value to test.
      * @return {@code true} if the given value is +0.0 (not -0.0).
      *
      * @see #isPositive(double)
@@ -395,7 +430,7 @@ public final class MathFunctions extends Static {
      * The handling of zero values is the difference between invoking {@code isNegative(double)}
      * and testing if (<var>value</var> {@literal < 0}).
      *
-     * @param  value The value to test.
+     * @param  value  the value to test.
      * @return {@code true} if the given value is negative, including negative zero.
      *
      * @see #isNegativeZero(double)
@@ -414,7 +449,7 @@ public final class MathFunctions extends Static {
      *   return (value == 0) && isNegative(value);
      * }
      *
-     * @param  value The value to test.
+     * @param  value  the value to test.
      * @return {@code true} if the given value is -0.0 (not +0.0).
      *
      * @see #isNegative(double)
@@ -436,8 +471,8 @@ public final class MathFunctions extends Static {
      *   <li>If any value is {@link Double#isNaN(double) NaN}, returns {@code false}</li>
      * </ul>
      *
-     * @param  v1 The first value.
-     * @param  v2 The second value, to compare the sign with the first value.
+     * @param  v1  the first value.
+     * @param  v2  the second value, to compare the sign with the first value.
      * @return {@code true} if the given values are not NaN and have the same sign.
      *
      * @see Math#signum(double)
@@ -456,9 +491,9 @@ public final class MathFunctions extends Static {
      * <p>This method makes no guarantee about whether {@code NaN} values are handled as positive
      * or negative numbers. This is the same policy than {@link Math#copySign(double, double)}.</p>
      *
-     * @param  value The parameter providing the value that may need a sign change.
-     * @param  sign The parameter providing the sign to <cite>xor</cite> with the value.
-     * @return The provided value with its sign reversed if the {@code sign} parameter is negative.
+     * @param  value  the parameter providing the value that may need a sign change.
+     * @param  sign   the parameter providing the sign to <cite>xor</cite> with the value.
+     * @return the provided value with its sign reversed if the {@code sign} parameter is negative.
      *
      * @see Math#copySign(double, double)
      */
@@ -480,10 +515,10 @@ public final class MathFunctions extends Static {
      *   <li>Otherwise, this method returns the result of the {@code abs(v1 - v2) <= ε} comparison.</li>
      * </ul>
      *
-     * @param  v1 The first value to compare.
-     * @param  v2 The second value to compare.
-     * @param  ε  The tolerance threshold, which must be positive.
-     * @return {@code true} If both values are equal given the tolerance threshold.
+     * @param  v1  the first value to compare.
+     * @param  v2  the second value to compare.
+     * @param  ε   the tolerance threshold, which must be positive.
+     * @return {@code true} if both values are equal given the tolerance threshold.
      */
     public static boolean epsilonEqual(final float v1, final float v2, final float ε) {
         return (Math.abs(v1 - v2) <= ε) || Float.floatToIntBits(v1) == Float.floatToIntBits(v2);
@@ -502,10 +537,10 @@ public final class MathFunctions extends Static {
      *   <li>Otherwise, this method returns the result of the {@code abs(v1 - v2) <= ε} comparison.</li>
      * </ul>
      *
-     * @param  v1 The first value to compare.
-     * @param  v2 The second value to compare.
-     * @param  ε  The tolerance threshold, which must be positive.
-     * @return {@code true} If both values are equal given the tolerance threshold.
+     * @param  v1  the first value to compare.
+     * @param  v2  the second value to compare.
+     * @param  ε   the tolerance threshold, which must be positive.
+     * @return {@code true} if both values are equal given the tolerance threshold.
      */
     public static boolean epsilonEqual(final double v1, final double v2, final double ε) {
         return (Math.abs(v1 - v2) <= ε) || Double.doubleToLongBits(v1) == Double.doubleToLongBits(v2);
@@ -513,8 +548,7 @@ public final class MathFunctions extends Static {
 
     /**
      * Returns a {@linkplain Float#isNaN(float) NaN} number for the specified ordinal value.
-     * Valid NaN numbers in Java can have bit fields in the ranges listed below.
-     * This method allocates one of valid NaN bit fields to each ordinal value.
+     * Valid NaN numbers in Java can have bit fields in the ranges listed below:
      *
      * <ul>
      *   <li>[{@code 0x7F800001} … {@code 0x7FFFFFFF}], with
@@ -522,12 +556,16 @@ public final class MathFunctions extends Static {
      *   <li>[{@code 0xFF800001} … {@code 0xFFFFFFFF}]</li>
      * </ul>
      *
-     * The relationship between bit fields and ordinal values is implementation dependent and may
-     * change in any future version of the SIS library. The current implementation restricts the
-     * range of allowed ordinal values to a smaller one than the range of all possible NaN values.
+     * Some of those bits, named the <cite>payload</cite>, can be used for storing custom information.
+     * This method maps some of the payload values to each ordinal value.
      *
-     * @param  ordinal The NaN ordinal value, from {@code -0x200000} to {@code 0x1FFFFF} inclusive.
-     * @return One of the legal {@linkplain Float#isNaN(float) NaN} values as a float.
+     * <p>This method guarantees that {@code toNanFloat(0)} returns the standard {@link Float#NaN} value.
+     * For all other {@code ordinal} values, the relationship to the payload values is implementation dependent
+     * and may change in any future version of the SIS library. The current implementation restricts the
+     * range of allowed ordinal values to a smaller one than the range of all possible values.</p>
+     *
+     * @param  ordinal  the NaN ordinal value, from {@code -0x200000} to {@code 0x1FFFFF} inclusive.
+     * @return one of the legal {@linkplain Float#isNaN(float) NaN} values as a float.
      * @throws IllegalArgumentException if the specified ordinal is out of range.
      *
      * @see Float#intBitsToFloat(int)
@@ -543,9 +581,13 @@ public final class MathFunctions extends Static {
      * Returns the ordinal value of the given NaN number.
      * This method is the converse of {@link #toNanFloat(int)}.
      *
-     * @param  value The value from which to get the NaN ordinal value.
-     * @return The NaN ordinal value of the given floating point value.
-     * @throws IllegalArgumentException If the given value is not a NaN value,
+     * <p>If the given float is the standard {@link Float#NaN} value, then this method returns 0.
+     * For all other values, the relationship between the float payload and the returned ordinal
+     * is implementation dependent and may change in any future Apache SIS version.</p>
+     *
+     * @param  value  the value from which to get the NaN ordinal value.
+     * @return the NaN ordinal value of the given floating point value.
+     * @throws IllegalArgumentException if the given value is not a NaN value,
      *         or does not use a supported bits pattern.
      */
     public static int toNanOrdinal(final float value) throws IllegalArgumentException {
@@ -566,11 +608,73 @@ public final class MathFunctions extends Static {
     }
 
     /**
+     * Converts two long bits values containing a IEEE 754 quadruple precision floating point number
+     * to a double precision floating point number. About 17 decimal digits of precision may be lost
+     * due to the {@code double} type having only half the capacity of quadruple precision type.
+     *
+     * <p>Some quadruple precision values can not be represented in double precision and are mapped
+     * to {@code double} values as below:</p>
+     * <ul>
+     *   <li>Values having a magnitude less than {@link Double#MIN_VALUE} are mapped to
+     *       positive or negative zero.</li>
+     *   <li>Values having a magnitude greater than {@link Double#MAX_VALUE} are mapped to
+     *       {@link Double#POSITIVE_INFINITY} or {@link Double#NEGATIVE_INFINITY}.</li>
+     *   <li>All NaN values are currently collapsed to the single "canonical" {@link Double#NaN} value
+     *       (this policy may be revisited in future SIS version).</li>
+     * </ul>
+     *
+     * @param  l0  upper part of the quadruple precision floating point number.
+     * @param  l1  lower part of the quadruple precision floating point number.
+     * @return double precision approximation.
+     *
+     * @see <a href="https://en.wikipedia.org/wiki/Quadruple-precision_floating-point_format">Quadruple-precision floating-point format on Wikipedia</a>
+     *
+     * @since 0.7
+     */
+    public static double quadrupleToDouble(long l0, long l1) {
+        // Build double
+        long sig = (l0 & 0x8000000000000000L);
+        long exp = (l0 & 0x7FFF000000000000L) >> 48;
+        l0       = (l0 & 0x0000FFFFFFFFFFFFL);
+        if (exp == 0) {
+            /*
+             * Subnormal number.
+             * Since we convert them to double precision, subnormal numbers can not be represented
+             * as they are smaller than Double.MIN_VALUE. We map them to zero preserving the sign.
+             */
+            return Double.longBitsToDouble(sig);
+        }
+        if (exp == 0x7FFF) {
+            /*
+             * NaN of infinite number.
+             * Mantissa with all bits at 0 is used for infinite.
+             * This is the only special number that we can preserve.
+             */
+            if (l0 == 0 && l1 == 0) {
+                return Double.longBitsToDouble(sig | 0x7FF0000000000000L);
+            }
+            /*
+             * Other NaN values might have a meaning (e.g. NaN(1) = forest, NaN(2) = lake, etc.)
+             * See above toNanFloat(int) and toNaNOrdinal(float) methods. When truncating the value we
+             * might change the meaning, which could cause several issues later. Therefor we conservatively
+             * collapse all NaNs to the default NaN for now (this may be revisited in a future SIS version).
+             */
+            return Double.NaN;
+        }
+        exp -= (16383 - 1023);      //change from 15 bias to 11 bias
+        // Check cases where mantissa excess what double can support
+        if (exp < 0)    return Double.NEGATIVE_INFINITY;
+        if (exp > 2046) return Double.POSITIVE_INFINITY;
+
+        return Double.longBitsToDouble(sig | (exp << 52) | (l0 << 4) | (l1 >>> 60));
+    }
+
+    /**
      * Returns the <var>i</var><sup>th</sup> prime number.
      * This method returns (2, 3, 5, 7, 11, …) for index (0, 1, 2, 3, 4, …).
      *
-     * @param  index The prime number index, starting at index 0 for prime number 2.
-     * @return The prime number at the specified index.
+     * @param  index  the prime number index, starting at index 0 for prime number 2.
+     * @return the prime number at the specified index.
      * @throws IndexOutOfBoundsException if the specified index is too large.
      *
      * @see java.math.BigInteger#isProbablePrime(int)
@@ -587,7 +691,7 @@ public final class MathFunctions extends Static {
                     // Compute by block of 16 values, for reducing the amount of array resize.
                     primes = Arrays.copyOf(primes, Math.min((index | 0xF) + 1, PRIMES_LENGTH_16_BITS));
                     do {
-testNextNumber:         while (true) { // Simulate a "goto" statement (usually not recommanded...)
+testNextNumber:         while (true) {      // Simulate a "goto" statement (usually not recommanded...)
                             final int stopAt = (int) Math.sqrt(n += 2);
                             int prime;
                             int j = 0;
@@ -613,9 +717,9 @@ testNextNumber:         while (true) { // Simulate a "goto" statement (usually n
      * Current implementation accepts only values in the
      * [2 … {@value #HIGHEST_SUPPORTED_PRIME_NUMBER}] range.
      *
-     * @param  number The number for which to find the next prime.
-     * @return The given number if it is a prime number, or the next prime number otherwise.
-     * @throws IllegalArgumentException If the given value is outside the supported range.
+     * @param  number  the number for which to find the next prime.
+     * @return the given number if it is a prime number, or the next prime number otherwise.
+     * @throws IllegalArgumentException if the given value is outside the supported range.
      *
      * @see java.math.BigInteger#isProbablePrime(int)
      */
@@ -646,8 +750,8 @@ testNextNumber:         while (true) { // Simulate a "goto" statement (usually n
      * than {@code O} (which returns an empty array), the first element in the returned array
      * is always {@code 1} and the last element is always the absolute value of {@code number}.
      *
-     * @param number The number for which to compute the divisors.
-     * @return The divisors in strictly increasing order.
+     * @param  number  the number for which to compute the divisors.
+     * @return the divisors in strictly increasing order.
      */
     public static int[] divisors(int number) {
         if (number == 0) {
@@ -663,7 +767,7 @@ testNextNumber:         while (true) { // Simulate a "goto" statement (usually n
          * values before that point, i.e. if n=p1*p2 and p2 is greater than 'sqrt', than p1
          * most be lower than 'sqrt'.
          */
-        final int sqrt = (int) Math.sqrt(number); // Really wants rounding toward 0.
+        final int sqrt = (int) Math.sqrt(number);               // Really want rounding toward 0.
         for (int p,i=0; (p=primeNumberAt(i)) <= sqrt; i++) {
             if (number % p == 0) {
                 if (count == divisors.length) {
@@ -701,7 +805,7 @@ testNextNumber:         while (true) { // Simulate a "goto" statement (usually n
                 if (number % d2 == 0) {
                     int p = Arrays.binarySearch(divisors, j, count, d2);
                     if (p < 0) {
-                        p = ~p; // ~ operator, not minus
+                        p = ~p;                                 // tild (~) operator, not minus
                         if (count == divisors.length) {
                             divisors = Arrays.copyOf(divisors, count*2);
                         }
@@ -720,8 +824,8 @@ testNextNumber:         while (true) { // Simulate a "goto" statement (usually n
     /**
      * Returns the divisors which are common to all the specified numbers.
      *
-     * @param  numbers The numbers for which to compute the divisors.
-     * @return The divisors common to all the given numbers, in strictly increasing order.
+     * @param  numbers  the numbers for which to compute the divisors.
+     * @return the divisors common to all the given numbers, in strictly increasing order.
      */
     public static int[] commonDivisors(final int... numbers) {
         if (numbers.length == 0) {
@@ -748,7 +852,7 @@ testNextNumber:         while (true) { // Simulate a "goto" statement (usually n
         for (int i=0; i<numbers.length; i++) {
             final int n = Math.abs(numbers[i]);
             if (n != minValue) {
-                for (int j=count; --j>0;) { // Do not test j==0, since divisors[0] ==  1.
+                for (int j=count; --j>0;) {         // Do not test j==0, since divisors[0] ==  1.
                     if (n % divisors[j] != 0) {
                         System.arraycopy(divisors, j+1, divisors, j, --count - j);
                     }

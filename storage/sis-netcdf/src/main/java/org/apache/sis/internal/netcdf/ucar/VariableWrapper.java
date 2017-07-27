@@ -18,19 +18,28 @@ package org.apache.sis.internal.netcdf.ucar;
 
 import java.util.List;
 import java.io.IOException;
+import java.util.Collection;
 import ucar.ma2.Array;
+import ucar.ma2.Section;
+import ucar.ma2.InvalidRangeException;
 import ucar.nc2.Attribute;
 import ucar.nc2.Dimension;
 import ucar.nc2.VariableIF;
+import org.apache.sis.math.Vector;
+import org.apache.sis.internal.netcdf.DataType;
 import org.apache.sis.internal.netcdf.Variable;
+import org.apache.sis.internal.util.UnmodifiableArrayList;
+import org.apache.sis.storage.DataStoreException;
+import org.apache.sis.storage.DataStoreContentException;
 
 
 /**
  * A {@link Variable} backed by the UCAR NetCDF library.
  *
  * @author  Martin Desruisseaux (Geomatys)
+ * @author  Johann Sorel (Geomatys)
+ * @version 0.8
  * @since   0.3
- * @version 0.5
  * @module
  */
 final class VariableWrapper extends Variable {
@@ -40,16 +49,10 @@ final class VariableWrapper extends Variable {
     private final VariableIF variable;
 
     /**
-     * The list of all dimensions in the NetCDF file.
-     */
-    private final List<? extends Dimension> all;
-
-    /**
      * Creates a new variable wrapping the given NetCDF interface.
      */
-    VariableWrapper(final VariableIF variable, List<? extends Dimension> all) {
+    VariableWrapper(final VariableIF variable) {
         this.variable = variable;
-        this.all = all;
     }
 
     /**
@@ -77,43 +80,32 @@ final class VariableWrapper extends Variable {
     }
 
     /**
-     * Returns the variable data type, as a primitive type if possible.
-     * This method may return {@code null} (UCAR code seems to allow that).
+     * Returns the variable data type.
+     * This method may return {@code UNKNOWN} if the datatype is unknown.
      */
     @Override
-    public Class<?> getDataType() {
-        return variable.getDataType().getPrimitiveClassType();
+    public DataType getDataType() {
+        final DataType type;
+        switch (variable.getDataType()) {
+            case STRING: return DataType.STRING;
+            case CHAR:   return DataType.CHAR;
+            case BYTE:   type = DataType.BYTE;   break;
+            case SHORT:  type = DataType.SHORT;  break;
+            case INT:    type = DataType.INT;    break;
+            case LONG:   type = DataType.INT64;  break;
+            case FLOAT:  return DataType.FLOAT;
+            case DOUBLE: return DataType.DOUBLE;
+            default:     return DataType.UNKNOWN;
+        }
+        return type.unsigned(variable.isUnsigned());
     }
 
     /**
-     * Returns {@code true} if the integer values shall be considered as unsigned.
-     */
-    @Override
-    public boolean isUnsigned() {
-        return variable.isUnsigned();
-    }
-
-    /**
-     * Returns {@code true} if this variable seems to be a coordinate system axis,
-     * determined by comparing its name with the name of all dimensions in the NetCDF file.
+     * Returns {@code true} if this variable seems to be a coordinate system axis.
      */
     @Override
     public boolean isCoordinateSystemAxis() {
-        String name = null;
-        final Attribute attribute = variable.findAttributeIgnoreCase(_CoordinateVariableAlias);
-        if (attribute != null) {
-            name = attribute.getStringValue();
-        }
-        if (name == null) {
-            name = getName();
-        }
-        for (final Dimension dimension : all) {
-            if (name.equals(dimension.getShortName())) {
-                // This variable is a dimension of another variable.
-                return true;
-            }
-        }
-        return false;
+        return variable.isCoordinateVariable();
     }
 
     /**
@@ -137,6 +129,16 @@ final class VariableWrapper extends Variable {
     @Override
     public int[] getGridEnvelope() {
         return variable.getShape();
+    }
+
+    /**
+     * Returns the names of all attributes associated to this variable.
+     *
+     * @return names of all attributes associated to this variable.
+     */
+    @Override
+    public Collection<String> getAttributeNames() {
+        return toNames(variable.getAttributes());
     }
 
     /**
@@ -174,11 +176,49 @@ final class VariableWrapper extends Variable {
     }
 
     /**
+     * Returns the names of all attributes in the given list.
+     */
+    static List<String> toNames(final List<Attribute> attributes) {
+        final String[] names = new String[attributes.size()];
+        for (int i=0; i<names.length; i++) {
+            names[i] = attributes.get(i).getShortName();
+        }
+        return UnmodifiableArrayList.wrap(names);
+    }
+
+    /**
      * Reads all the data for this variable and returns them as an array of a Java primitive type.
+     * Multi-dimensional variables are flattened as a one-dimensional array (wrapped in a vector).
+     * This method may cache the returned vector, at UCAR library choice.
      */
     @Override
-    public Object read() throws IOException {
-        final Array array = variable.read();
-        return array.get1DJavaArray(array.getElementType());
+    public Vector read() throws IOException {
+        final Array array = variable.read();                // May be cached by the UCAR library.
+        return Vector.create(array.get1DJavaArray(array.getElementType()), variable.isUnsigned());
+    }
+
+    /**
+     * Reads a sub-sampled sub-area of the variable.
+     *
+     * @param  areaLower    index of the first value to read along each dimension.
+     * @param  areaUpper    index after the last value to read along each dimension.
+     * @param  subsampling  sub-sampling along each dimension. 1 means no sub-sampling.
+     * @return the data as an array of a Java primitive type.
+     */
+    @Override
+    public Vector read(final int[] areaLower, final int[] areaUpper, final int[] subsampling)
+            throws IOException, DataStoreException
+    {
+        final int[] size = new int[areaUpper.length];
+        for (int i=0; i<size.length; i++) {
+            size[i] = areaUpper[i] - areaLower[i];
+        }
+        final Array array;
+        try {
+            array = variable.read(new Section(areaLower, size, subsampling));
+        } catch (InvalidRangeException e) {
+            throw new DataStoreContentException(e);
+        }
+        return Vector.create(array.get1DJavaArray(array.getElementType()), variable.isUnsigned());
     }
 }

@@ -17,11 +17,11 @@
 package org.apache.sis.internal.converter;
 
 import java.util.Date;
-import java.util.ServiceLoader;
 import org.opengis.util.CodeList;
 import org.apache.sis.util.Numbers;
 import org.apache.sis.util.ObjectConverter;
 import org.apache.sis.util.UnconvertibleObjectException;
+import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.internal.system.SystemListener;
 import org.apache.sis.internal.system.Modules;
 
@@ -32,7 +32,7 @@ import org.apache.sis.internal.system.Modules;
  *
  * <ul>
  *   <li>Fetch the list of converters from the content of all
- *       {@code META-INF/services/org.apache.sis.util.converter.ObjectConverter} files found on the classpath.
+ *       {@code META-INF/services/org.apache.sis.util.ObjectConverter} files found on the classpath.
  *       The intend is to allow other modules to register their own converters.</li>
  *
  *   <li>Apply heuristic rules in addition to the explicitly registered converters.
@@ -49,8 +49,8 @@ import org.apache.sis.internal.system.Modules;
  * The same {@link #INSTANCE} can be safely used by many threads without synchronization on the part of the caller.
  *
  * @author  Martin Desruisseaux (Geomatys)
+ * @version 0.8
  * @since   0.3
- * @version 0.3
  * @module
  */
 public final class SystemRegistry extends ConverterRegistry {
@@ -105,7 +105,7 @@ public final class SystemRegistry extends ConverterRegistry {
      */
     @Override
     protected void initialize() {
-        for (ObjectConverter<?,?> converter : ServiceLoader.load(ObjectConverter.class, getClass().getClassLoader())) {
+        for (ObjectConverter<?,?> converter : DefaultFactories.createServiceLoader(ObjectConverter.class)) {
             if (converter instanceof SystemConverter<?,?>) {
                 converter = ((SystemConverter<?,?>) converter).unique();
             }
@@ -126,7 +126,7 @@ public final class SystemRegistry extends ConverterRegistry {
     }
 
     /**
-     * Create dynamically the converters for a few special cases.
+     * Creates dynamically the converters for a few special cases.
      * This method is invoked only the first time that a new pair of source and target classes is
      * requested. Then, the value returned by this method will be cached for future invocations.
      *
@@ -141,7 +141,7 @@ public final class SystemRegistry extends ConverterRegistry {
      *       many of them, and a generic code is available for all of them.</li>
      * </ul>
      *
-     * @return A newly generated converter from the specified source class to the target class,
+     * @return a newly generated converter from the specified source class to the target class,
      *         or {@code null} if none.
      */
     @Override
@@ -158,7 +158,7 @@ public final class SystemRegistry extends ConverterRegistry {
          * to java.util.Date was created by the super class, that conversion would not contain
          * an inverse conversion from java.util.Date to java.sql.Date.
          */
-        if (tryInverse(targetClass) && !tryInverse(sourceClass)) { // The ! is for preventing infinite recursivity.
+        if (tryInverse(targetClass) && !tryInverse(sourceClass)) {     // The ! is for preventing infinite recursivity.
             try {
                 return findExact(targetClass, sourceClass).inverse();
             } catch (UnconvertibleObjectException e) {
@@ -180,7 +180,7 @@ public final class SystemRegistry extends ConverterRegistry {
          * CharSequence or Object), otherwise this converter would apply useless toString().
          */
         if (sourceClass == CharSequence.class) {
-            return (ObjectConverter<S,T>) new CharSequenceConverter<T>( // More checks in JDK7 branch.
+            return (ObjectConverter<S,T>) new CharSequenceConverter<>(
                     targetClass, find(String.class, targetClass));
         }
         /*
@@ -188,11 +188,11 @@ public final class SystemRegistry extends ConverterRegistry {
          */
         if (sourceClass == String.class) {
             if (CodeList.class.isAssignableFrom(targetClass)) {
-                return (ObjectConverter<S,T>) new StringConverter.CodeList( // More checks in JDK7 branch.
+                return (ObjectConverter<S,T>) new StringConverter.CodeList<>(
                         targetClass.asSubclass(CodeList.class));
             }
             if (targetClass.isEnum()) {
-                return (ObjectConverter<S,T>) new StringConverter.Enum( // More checks in JDK7 branch.
+                return (ObjectConverter<S,T>) new StringConverter.Enum<>(
                         targetClass.asSubclass(Enum.class));
             }
         }
@@ -201,12 +201,12 @@ public final class SystemRegistry extends ConverterRegistry {
          */
         if (sourceClass == Number.class || isSupportedNumber(sourceClass)) {
             if (isSupportedNumber(targetClass)) {
-                return (ObjectConverter<S,T>) new NumberConverter( // More checks in JDK7 branch.
+                return (ObjectConverter<S,T>) new NumberConverter<>(
                         sourceClass.asSubclass(Number.class),
                         targetClass.asSubclass(Number.class));
             }
             if (targetClass == Comparable.class) {
-                return (ObjectConverter<S,T>) new NumberConverter.Comparable( // More checks in JDK7 branch.
+                return (ObjectConverter<S,T>) new NumberConverter.Comparable<>(
                         sourceClass.asSubclass(Number.class));
             }
         }
@@ -214,7 +214,7 @@ public final class SystemRegistry extends ConverterRegistry {
          * From various objects to String.
          */
         if (targetClass == String.class) {
-            return (ObjectConverter<S,T>) new ObjectToString<S>(sourceClass, null);
+            return (ObjectConverter<S,T>) new ObjectToString<>(sourceClass, null);
         }
         return null;
     }

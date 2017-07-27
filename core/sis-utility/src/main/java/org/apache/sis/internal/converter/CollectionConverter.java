@@ -33,8 +33,8 @@ import org.apache.sis.math.FunctionProperty;
  * and thread-safe too if they are intended to be cached in {@link ConverterRegistry}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.3
+ * @since   0.3
  * @module
  */
 abstract class CollectionConverter<T> extends SystemConverter<Collection<?>,T> {
@@ -66,12 +66,11 @@ abstract class CollectionConverter<T> extends SystemConverter<Collection<?>,T> {
         private static final long serialVersionUID = -8680976097058177832L;
 
         @SuppressWarnings("unchecked")
-        public List() { // Instantiated by ServiceLoader.
+        public List() {                                 // Instantiated by ServiceLoader.
             super((Class) java.util.List.class);
         }
 
         @Override
-        @SuppressWarnings({"unchecked","rawtypes"})
         public java.util.List<?> apply(final Collection<?> source) {
             if (source == null) {
                 return null;
@@ -79,7 +78,7 @@ abstract class CollectionConverter<T> extends SystemConverter<Collection<?>,T> {
             if (source instanceof java.util.List<?>) {
                 return (java.util.List<?>) source;
             }
-            return new ArrayList(source); // Checked in JDK7 branch.
+            return new ArrayList<>(source);
         }
     }
 
@@ -91,12 +90,11 @@ abstract class CollectionConverter<T> extends SystemConverter<Collection<?>,T> {
         private static final long serialVersionUID = -1065360595793529078L;
 
         @SuppressWarnings("unchecked")
-        public Set() { // Instantiated by ServiceLoader.
+        public Set() {                                  // Instantiated by ServiceLoader.
             super((Class) java.util.Set.class);
         }
 
         @Override
-        @SuppressWarnings({"unchecked","rawtypes"})
         public java.util.Set<?> apply(final Collection<?> source) {
             if (source == null) {
                 return null;
@@ -104,7 +102,7 @@ abstract class CollectionConverter<T> extends SystemConverter<Collection<?>,T> {
             if (source instanceof java.util.Set<?>) {
                 return (java.util.Set<?>) source;
             }
-            return new LinkedHashSet(source); // Checked in JDK7 branch.
+            return new LinkedHashSet<>(source);
         }
     }
 }

@@ -16,7 +16,7 @@
  */
 package org.apache.sis.util;
 
-import java.util.Map; // For javadoc
+import java.util.Map;                                               // For javadoc
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.geometry.Envelope;
@@ -80,8 +80,8 @@ import org.apache.sis.util.resources.Errors;
  * in the {@linkplain java.util.Locale#getDefault() default locale} if the check failed.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.6
+ * @since   0.3
  * @module
  */
 public final class ArgumentChecks extends Static {
@@ -95,8 +95,8 @@ public final class ArgumentChecks extends Static {
      * Makes sure that an argument is non-null. If the given {@code object} is null, then a
      * {@link NullArgumentException} is thrown with a localized message containing the given name.
      *
-     * @param  name The name of the argument to be checked. Used only if an exception is thrown.
-     * @param  object The user argument to check against null value.
+     * @param  name    the name of the argument to be checked. Used only if an exception is thrown.
+     * @param  object  the user argument to check against null value.
      * @throws NullArgumentException if {@code object} is null.
      */
     public static void ensureNonNull(final String name, final Object object)
@@ -121,9 +121,9 @@ public final class ArgumentChecks extends Static {
      *       then the formatted message will contain {@code "axes[2]"}.</li>
      * </ul>
      *
-     * @param  name    The name of the argument to be checked. Used only if an exception is thrown.
-     * @param  index   The Index of the element to check in an array or a list. Used only if an exception is thrown.
-     * @param  element The array or list element to check against null value.
+     * @param  name     the name of the argument to be checked. Used only if an exception is thrown.
+     * @param  index    the Index of the element to check in an array or a list. Used only if an exception is thrown.
+     * @param  element  the array or list element to check against null value.
      * @throws NullArgumentException if {@code element} is null.
      */
     public static void ensureNonNullElement(final String name, final int index, final Object element)
@@ -148,8 +148,8 @@ public final class ArgumentChecks extends Static {
      * a {@linkplain CharSequence#length() length} equals to 0, then an {@link IllegalArgumentException}
      * is thrown.
      *
-     * @param  name The name of the argument to be checked. Used only if an exception is thrown.
-     * @param  text The user argument to check against null value and empty sequences.
+     * @param  name  the name of the argument to be checked. Used only if an exception is thrown.
+     * @param  text  the user argument to check against null value and empty sequences.
      * @throws NullArgumentException if {@code text} is null.
      * @throws IllegalArgumentException if {@code text} is empty.
      */
@@ -169,10 +169,10 @@ public final class ArgumentChecks extends Static {
      * If this method does not thrown an exception, then the value can be casted to the class
      * represented by {@code expectedType} without throwing a {@link ClassCastException}.
      *
-     * @param  name The name of the argument to be checked, used only if an exception is thrown.
-     *         Can be {@code null} if the name is unknown.
-     * @param  expectedType the expected type (class or interface).
-     * @param  value The value to check, or {@code null}.
+     * @param  name          the name of the argument to be checked, used only if an exception is thrown.
+     *                       Can be {@code null} if the name is unknown.
+     * @param  expectedType  the expected type (class or interface).
+     * @param  value         the value to check, or {@code null}.
      * @throws IllegalArgumentException if {@code value} is non-null and is not assignable to the given type.
      *
      * @see org.apache.sis.util.collection.Containers#property(Map, Object, Class)
@@ -202,10 +202,9 @@ public final class ArgumentChecks extends Static {
      * upper value. This method is designed for methods that expect an index value as the only
      * argument. For this reason, this method does not take the argument name.
      *
-     * @param  upper The maximal index value, exclusive.
-     * @param  index The index to check.
-     * @throws IndexOutOfBoundsException If the given index is negative or not lower than the
-     *         given upper value.
+     * @param  upper  the maximal index value, exclusive.
+     * @param  index  the index to check.
+     * @throws IndexOutOfBoundsException if the given index is negative or not lower than the given upper value.
      *
      * @see #ensurePositive(String, int)
      */
@@ -225,10 +224,10 @@ public final class ArgumentChecks extends Static {
      * because this information is assumed to be provided by the implementation rather than
      * the user.</p>
      *
-     * @param  length The length of the sequence (array, {@link CharSequence}, <i>etc.</i>).
-     * @param  lower  The user-specified lower index, inclusive.
-     * @param  upper  The user-specified upper index, exclusive.
-     * @throws IndexOutOfBoundsException If the given [{@code lower} … {@code upper}]
+     * @param  length  the length of the sequence (array, {@link CharSequence}, <i>etc.</i>).
+     * @param  lower   the user-specified lower index, inclusive.
+     * @param  upper   the user-specified upper index, exclusive.
+     * @throws IndexOutOfBoundsException if the given [{@code lower} … {@code upper}]
      *         range is out of the sequence index range.
      *
      * @see #ensureSizeBetween(String, int, int, int)
@@ -244,8 +243,8 @@ public final class ArgumentChecks extends Static {
      * This method is used for checking values that are <strong>not</strong> index.
      * For checking index values, use {@link #ensureValidIndex(int, int)} instead.
      *
-     * @param  name   The name of the argument to be checked, used only if an exception is thrown.
-     * @param  value  The user argument to check.
+     * @param  name   the name of the argument to be checked, used only if an exception is thrown.
+     * @param  value  the user argument to check.
      * @throws IllegalArgumentException if the given value is negative.
      *
      * @see #ensureValidIndex(int, int)
@@ -263,8 +262,8 @@ public final class ArgumentChecks extends Static {
     /**
      * Ensures that the given long value is greater than or equals to zero.
      *
-     * @param  name   The name of the argument to be checked, used only if an exception is thrown.
-     * @param  value  The user argument to check.
+     * @param  name   the name of the argument to be checked, used only if an exception is thrown.
+     * @param  value  the user argument to check.
      * @throws IllegalArgumentException if the given value is negative.
      *
      * @see #ensureStrictlyPositive(String, long)
@@ -283,8 +282,8 @@ public final class ArgumentChecks extends Static {
      * {@linkplain Float#isNaN(float) NaN} and is greater than or equals to zero. Note that
      * {@linkplain Float#POSITIVE_INFINITY positive infinity} is considered a valid value.
      *
-     * @param  name   The name of the argument to be checked, used only if an exception is thrown.
-     * @param  value  The user argument to check.
+     * @param  name   the name of the argument to be checked, used only if an exception is thrown.
+     * @param  value  the user argument to check.
      * @throws IllegalArgumentException if the given value is NaN or negative.
      *
      * @see #ensureStrictlyPositive(String, float)
@@ -292,7 +291,7 @@ public final class ArgumentChecks extends Static {
     public static void ensurePositive(final String name, final float value)
             throws IllegalArgumentException
     {
-        if (!(value >= 0)) { // Use '!' for catching NaN.
+        if (!(value >= 0)) {                                                // Use '!' for catching NaN.
             throw new IllegalArgumentException(Float.isNaN(value) ?
                     Errors.format(Errors.Keys.NotANumber_1, name) :
                     Errors.format(Errors.Keys.NegativeArgument_2, name, value));
@@ -304,8 +303,8 @@ public final class ArgumentChecks extends Static {
      * {@linkplain Double#isNaN(double) NaN} and is greater than or equals to zero. Note that
      * {@linkplain Double#POSITIVE_INFINITY positive infinity} is considered a valid value.
      *
-     * @param  name   The name of the argument to be checked, used only if an exception is thrown.
-     * @param  value  The user argument to check.
+     * @param  name   the name of the argument to be checked, used only if an exception is thrown.
+     * @param  value  the user argument to check.
      * @throws IllegalArgumentException if the given value is NaN or negative.
      *
      * @see #ensureStrictlyPositive(String, double)
@@ -313,7 +312,7 @@ public final class ArgumentChecks extends Static {
     public static void ensurePositive(final String name, final double value)
             throws IllegalArgumentException
     {
-        if (!(value >= 0)) { // Use '!' for catching NaN.
+        if (!(value >= 0)) {                                                // Use '!' for catching NaN.
             throw new IllegalArgumentException(Double.isNaN(value) ?
                     Errors.format(Errors.Keys.NotANumber_1, name)  :
                     Errors.format(Errors.Keys.NegativeArgument_2, name, value));
@@ -323,8 +322,8 @@ public final class ArgumentChecks extends Static {
     /**
      * Ensures that the given integer value is greater than zero.
      *
-     * @param  name   The name of the argument to be checked, used only if an exception is thrown.
-     * @param  value  The user argument to check.
+     * @param  name   the name of the argument to be checked, used only if an exception is thrown.
+     * @param  value  the user argument to check.
      * @throws IllegalArgumentException if the given value is negative or equals to zero.
      *
      * @see #ensurePositive(String, int)
@@ -341,8 +340,8 @@ public final class ArgumentChecks extends Static {
     /**
      * Ensures that the given long value is greater than zero.
      *
-     * @param  name   The name of the argument to be checked, used only if an exception is thrown.
-     * @param  value  The user argument to check.
+     * @param  name   the name of the argument to be checked, used only if an exception is thrown.
+     * @param  value  the user argument to check.
      * @throws IllegalArgumentException if the given value is negative or equals to zero.
      *
      * @see #ensurePositive(String, long)
@@ -361,8 +360,8 @@ public final class ArgumentChecks extends Static {
      * {@linkplain Float#isNaN(float) NaN} and is greater than zero. Note that
      * {@linkplain Float#POSITIVE_INFINITY positive infinity} is considered a valid value.
      *
-     * @param  name   The name of the argument to be checked, used only if an exception is thrown.
-     * @param  value  The user argument to check.
+     * @param  name   the name of the argument to be checked, used only if an exception is thrown.
+     * @param  value  the user argument to check.
      * @throws IllegalArgumentException if the given value is NaN, zero or negative.
      *
      * @see #ensurePositive(String, float)
@@ -370,7 +369,7 @@ public final class ArgumentChecks extends Static {
     public static void ensureStrictlyPositive(final String name, final float value)
             throws IllegalArgumentException
     {
-        if (!(value > 0)) { // Use '!' for catching NaN.
+        if (!(value > 0)) {                                                 // Use '!' for catching NaN.
             throw new IllegalArgumentException(Float.isNaN(value) ?
                     Errors.format(Errors.Keys.NotANumber_1, name) :
                     Errors.format(Errors.Keys.ValueNotGreaterThanZero_2, name, value));
@@ -382,8 +381,8 @@ public final class ArgumentChecks extends Static {
      * {@linkplain Double#isNaN(double) NaN} and is greater than zero. Note that
      * {@linkplain Double#POSITIVE_INFINITY positive infinity} is considered a valid value.
      *
-     * @param  name   The name of the argument to be checked, used only if an exception is thrown.
-     * @param  value  The user argument to check.
+     * @param  name   the name of the argument to be checked, used only if an exception is thrown.
+     * @param  value  the user argument to check.
      * @throws IllegalArgumentException if the given value is NaN, zero or negative.
      *
      * @see #ensurePositive(String, double)
@@ -391,7 +390,7 @@ public final class ArgumentChecks extends Static {
     public static void ensureStrictlyPositive(final String name, final double value)
             throws IllegalArgumentException
     {
-        if (!(value > 0)) { // Use '!' for catching NaN.
+        if (!(value > 0)) {                                                 // Use '!' for catching NaN.
             throw new IllegalArgumentException(Double.isNaN(value) ?
                     Errors.format(Errors.Keys.NotANumber_1, name)  :
                     Errors.format(Errors.Keys.ValueNotGreaterThanZero_2, name, value));
@@ -403,8 +402,8 @@ public final class ArgumentChecks extends Static {
      * {@linkplain Float#isNaN(float) NaN} neither {@linkplain Float#isInfinite(float)}.
      * The value can be negative, zero or positive.
      *
-     * @param  name   The name of the argument to be checked, used only if an exception is thrown.
-     * @param  value  The user argument to check.
+     * @param  name   the name of the argument to be checked, used only if an exception is thrown.
+     * @param  value  the user argument to check.
      * @throws IllegalArgumentException if the given value is NaN or infinite.
      */
     public static void ensureFinite(final String name, final float value) {
@@ -420,8 +419,8 @@ public final class ArgumentChecks extends Static {
      * {@linkplain Double#isNaN(double) NaN} neither {@linkplain Double#isInfinite(double)}.
      * The value can be negative, zero or positive.
      *
-     * @param  name   The name of the argument to be checked, used only if an exception is thrown.
-     * @param  value  The user argument to check.
+     * @param  name   the name of the argument to be checked, used only if an exception is thrown.
+     * @param  value  the user argument to check.
      * @throws IllegalArgumentException if the given value is NaN or infinite.
      */
     public static void ensureFinite(final String name, final double value) {
@@ -445,10 +444,10 @@ public final class ArgumentChecks extends Static {
      *       argument is an index in a list or an array.</li>
      * </ul>
      *
-     * @param  name  The name of the argument to be checked. Used only if an exception is thrown.
-     * @param  min   The minimal value, inclusive.
-     * @param  max   The maximal value, inclusive.
-     * @param  value The user argument to check.
+     * @param  name   the name of the argument to be checked. Used only if an exception is thrown.
+     * @param  min    the minimal value, inclusive.
+     * @param  max    the maximal value, inclusive.
+     * @param  value  the user argument to check.
      * @throws IllegalArgumentException if the given value is not in the given range.
      *
      * @see #ensureSizeBetween(String, int, int, int)
@@ -467,10 +466,10 @@ public final class ArgumentChecks extends Static {
     /**
      * Ensures that the given long value is between the given bounds, inclusive.
      *
-     * @param  name  The name of the argument to be checked. Used only if an exception is thrown.
-     * @param  min   The minimal value, inclusive.
-     * @param  max   The maximal value, inclusive.
-     * @param  value The user argument to check.
+     * @param  name   the name of the argument to be checked. Used only if an exception is thrown.
+     * @param  min    the minimal value, inclusive.
+     * @param  max    the maximal value, inclusive.
+     * @param  value  the user argument to check.
      * @throws IllegalArgumentException if the given value is not in the given range.
      */
     public static void ensureBetween(final String name, final long min, final long max, final long value)
@@ -485,10 +484,10 @@ public final class ArgumentChecks extends Static {
     /**
      * Ensures that the given floating point value is between the given bounds, inclusive.
      *
-     * @param  name  The name of the argument to be checked. Used only if an exception is thrown.
-     * @param  min   The minimal value, inclusive.
-     * @param  max   The maximal value, inclusive.
-     * @param  value The user argument to check.
+     * @param  name   the name of the argument to be checked. Used only if an exception is thrown.
+     * @param  min    the minimal value, inclusive.
+     * @param  max    the maximal value, inclusive.
+     * @param  value  the user argument to check.
      * @throws IllegalArgumentException if the given value is NaN or not in the given range.
      */
     public static void ensureBetween(final String name, final float min, final float max, final float value)
@@ -504,10 +503,10 @@ public final class ArgumentChecks extends Static {
     /**
      * Ensures that the given floating point value is between the given bounds, inclusive.
      *
-     * @param  name  The name of the argument to be checked. Used only if an exception is thrown.
-     * @param  min   The minimal value, inclusive.
-     * @param  max   The maximal value, inclusive.
-     * @param  value The user argument to check.
+     * @param  name   the name of the argument to be checked. Used only if an exception is thrown.
+     * @param  min    the minimal value, inclusive.
+     * @param  max    the maximal value, inclusive.
+     * @param  value  the user argument to check.
      * @throws IllegalArgumentException if the given value is NaN or not in the given range.
      */
     public static void ensureBetween(final String name, final double min, final double max, final double value)
@@ -525,10 +524,10 @@ public final class ArgumentChecks extends Static {
      * This method performs the same check than {@link #ensureBetween(String, int, int, int)
      * ensureBetween(…)}, but the error message is different in case of failure.
      *
-     * @param  name  The name of the argument to be checked. Used only if an exception is thrown.
-     * @param  min   The minimal size (inclusive), or 0 if none.
-     * @param  max   The maximal size (inclusive), or {@link Integer#MAX_VALUE} if none.
-     * @param  size  The user collection size or array length to be checked.
+     * @param  name  the name of the argument to be checked. Used only if an exception is thrown.
+     * @param  min   the minimal size (inclusive), or 0 if none.
+     * @param  max   the maximal size (inclusive), or {@link Integer#MAX_VALUE} if none.
+     * @param  size  the user collection size or array length to be checked.
      * @throws IllegalArgumentException if the given value is not in the given range.
      *
      * @see #ensureBetween(String, int, int, int)
@@ -556,8 +555,8 @@ public final class ArgumentChecks extends Static {
      * Ensures that the given integer is a valid Unicode code point. The range of valid code points goes
      * from {@link Character#MIN_CODE_POINT U+0000} to {@link Character#MAX_CODE_POINT U+10FFFF} inclusive.
      *
-     * @param  name The name of the argument to be checked. Used only if an exception is thrown.
-     * @param  code The Unicode code point to verify.
+     * @param  name  the name of the argument to be checked. Used only if an exception is thrown.
+     * @param  code  the Unicode code point to verify.
      * @throws IllegalArgumentException if the given value is not a valid Unicode code point.
      *
      * @since 0.4
@@ -573,9 +572,9 @@ public final class ArgumentChecks extends Static {
      * Ensures that the given CRS, if non-null, has the expected number of dimensions.
      * This method does nothing if the given coordinate reference system is null.
      *
-     * @param  name     The name of the argument to be checked. Used only if an exception is thrown.
-     * @param  expected The expected number of dimensions.
-     * @param  crs      The coordinate reference system to check for its dimension, or {@code null}.
+     * @param  name      the name of the argument to be checked. Used only if an exception is thrown.
+     * @param  expected  the expected number of dimensions.
+     * @param  crs       the coordinate reference system to check for its dimension, or {@code null}.
      * @throws MismatchedDimensionException if the given coordinate reference system is non-null
      *         and does not have the expected number of dimensions.
      */
@@ -598,9 +597,9 @@ public final class ArgumentChecks extends Static {
      * Ensures that the given coordinate system, if non-null, has the expected number of dimensions.
      * This method does nothing if the given coordinate system is null.
      *
-     * @param  name     The name of the argument to be checked. Used only if an exception is thrown.
-     * @param  expected The expected number of dimensions.
-     * @param  cs       The coordinate system to check for its dimension, or {@code null}.
+     * @param  name      the name of the argument to be checked. Used only if an exception is thrown.
+     * @param  expected  the expected number of dimensions.
+     * @param  cs        the coordinate system to check for its dimension, or {@code null}.
      * @throws MismatchedDimensionException if the given coordinate system is non-null
      *         and does not have the expected number of dimensions.
      *
@@ -622,10 +621,10 @@ public final class ArgumentChecks extends Static {
      * Ensures that the given vector, if non-null, has the expected number of dimensions
      * (taken as its length). This method does nothing if the given vector is null.
      *
-     * @param  name     The name of the argument to be checked. Used only if an exception is thrown.
-     * @param  expected The expected number of dimensions.
-     * @param  vector   The vector to check for its number of dimensions, or {@code null}.
-     * @throws MismatchedDimensionException If the given vector is non-null and does not have the
+     * @param  name      the name of the argument to be checked. Used only if an exception is thrown.
+     * @param  expected  the expected number of dimensions.
+     * @param  vector    the vector to check for its number of dimensions, or {@code null}.
+     * @throws MismatchedDimensionException if the given vector is non-null and does not have the
      *         expected number of dimensions (taken as its length).
      */
     public static void ensureDimensionMatches(final String name, final int expected, final double[] vector)
@@ -644,10 +643,10 @@ public final class ArgumentChecks extends Static {
      * Ensures that the given direct position, if non-null, has the expected number of dimensions.
      * This method does nothing if the given direct position is null.
      *
-     * @param  name     The name of the argument to be checked. Used only if an exception is thrown.
-     * @param  expected The expected number of dimensions.
-     * @param  position The direct position to check for its dimension, or {@code null}.
-     * @throws MismatchedDimensionException If the given direct position is non-null and does
+     * @param  name      the name of the argument to be checked. Used only if an exception is thrown.
+     * @param  expected  the expected number of dimensions.
+     * @param  position  the direct position to check for its dimension, or {@code null}.
+     * @throws MismatchedDimensionException if the given direct position is non-null and does
      *         not have the expected number of dimensions.
      */
     public static void ensureDimensionMatches(final String name, final int expected, final DirectPosition position)
@@ -666,10 +665,10 @@ public final class ArgumentChecks extends Static {
      * Ensures that the given envelope, if non-null, has the expected number of dimensions.
      * This method does nothing if the given envelope is null.
      *
-     * @param  name     The name of the argument to be checked. Used only if an exception is thrown.
-     * @param  expected The expected number of dimensions.
-     * @param  envelope The envelope to check for its dimension, or {@code null}.
-     * @throws MismatchedDimensionException If the given envelope is non-null and does
+     * @param  name      the name of the argument to be checked. Used only if an exception is thrown.
+     * @param  expected  the expected number of dimensions.
+     * @param  envelope  the envelope to check for its dimension, or {@code null}.
+     * @throws MismatchedDimensionException if the given envelope is non-null and does
      *         not have the expected number of dimensions.
      */
     public static void ensureDimensionMatches(final String name, final int expected, final Envelope envelope)

@@ -21,11 +21,17 @@ import java.util.Set;
 import java.util.List;
 import java.util.HashSet;
 import java.util.Collections;
+import javax.xml.bind.annotation.XmlType;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlRootElement;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.parameter.GeneralParameterDescriptor;
 import org.opengis.parameter.ParameterNotFoundException;
 import org.opengis.parameter.InvalidParameterNameException;
+import org.apache.sis.internal.jaxb.referencing.CC_OperationParameterGroup;
+import org.apache.sis.internal.metadata.MetadataUtilities;
+import org.apache.sis.internal.referencing.Resources;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
 import org.apache.sis.util.resources.Errors;
@@ -38,29 +44,33 @@ import static org.apache.sis.util.Utilities.deepEquals;
 /**
  * The definition of a group of related parameters used by an operation method.
  * {@code DefaultParameterDescriptorGroup} instances are immutable and thus thread-safe.
- * Each map projection or process will typically defines a single static {@code ParameterDescriptorGroup},
- * to be shared by all users of that projection or process.
  *
  * <div class="section">Instantiation</div>
- * Coordinate operation or process <em>implementors</em> may use the {@link ParameterBuilder} class for making
- * their task easier.
+ * Parameter descriptors are usually pre-defined by the SIS library and available through the following methods:
+ *
+ * <ul>
+ *   <li>{@link org.apache.sis.referencing.operation.DefaultOperationMethod#getParameters()}</li>
+ * </ul>
+ *
+ * If nevertheless a {@code ParameterDescriptorGroup} needs to be instantiated directly,
+ * then the {@link ParameterBuilder} class may make the task easier.
  *
  * <div class="note"><b>Example:</b>
  * The following example declares the parameters for a <cite>Mercator (variant A)</cite> projection method
  * valid from 80°S to 84°N on all the longitude range (±180°).
  *
  * {@preformat java
- *     public class Mercator {
+ *     class Mercator {
  *         static final ParameterDescriptorGroup PARAMETERS;
  *         static {
  *             ParameterBuilder builder = new ParameterBuilder();
  *             builder.setCodeSpace(Citations.EPSG, "EPSG").setRequired(true);
  *             ParameterDescriptor<?>[] parameters = {
- *                 builder.addName("Latitude of natural origin")    .createBounded( -80,  +84, 0, NonSI.DEGREE_ANGLE),
- *                 builder.addName("Longitude of natural origin")   .createBounded(-180, +180, 0, NonSI.DEGREE_ANGLE),
- *                 builder.addName("Scale factor at natural origin").createStrictlyPositive(1, Unit.ONE),
- *                 builder.addName("False easting")                 .create(0, SI.METRE),
- *                 builder.addName("False northing")                .create(0, SI.METRE)
+ *                 builder.addName("Latitude of natural origin")    .createBounded( -80,  +84, 0, Units.DEGREE),
+ *                 builder.addName("Longitude of natural origin")   .createBounded(-180, +180, 0, Units.DEGREE),
+ *                 builder.addName("Scale factor at natural origin").createStrictlyPositive(1, Units.UNITY),
+ *                 builder.addName("False easting")                 .create(0, Units.METRE),
+ *                 builder.addName("False northing")                .create(0, Units.METRE)
  *             };
  *             builder.addIdentifier("9804")                    // Primary key in EPSG database.
  *                    .addName("Mercator (variant A)")          // EPSG name since October 2010.
@@ -72,23 +82,18 @@ import static org.apache.sis.util.Utilities.deepEquals;
  * }
  * </div>
  *
- * <div class="section">Usage</div>
- * Users can simply reference the descriptor provided par a coordinate operation or process providers like below:
- *
- * {@preformat java
- *     ParameterValueGroup parameters = Mercator.PARAMETERS.createValue();
- *     // See DefaultParameterValueGroup for examples on 'parameters' usage.
- * }
- *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Johann Sorel (Geomatys)
- * @since   0.4
- * @version 0.5
- * @module
+ * @version 0.6
  *
  * @see DefaultParameterValueGroup
  * @see DefaultParameterDescriptor
+ *
+ * @since 0.4
+ * @module
  */
+@XmlType(name = "OperationParameterGroupType")
+@XmlRootElement(name = "OperationParameterGroup")
 public class DefaultParameterDescriptorGroup extends AbstractParameterDescriptor implements ParameterDescriptorGroup {
     /**
      * Serial number for inter-operability with different versions.
@@ -97,8 +102,13 @@ public class DefaultParameterDescriptorGroup extends AbstractParameterDescriptor
 
     /**
      * The {@linkplain #descriptors() parameter descriptors} for this group.
+     *
+     * <p><b>Consider this field as final!</b>
+     * This field is modified only at unmarshalling time by {@link #setDescriptors(GeneralParameterDescriptor[])}</p>
+     *
+     * @see #descriptors()
      */
-    private final List<GeneralParameterDescriptor> descriptors;
+    private List<GeneralParameterDescriptor> descriptors;
 
     /**
      * Constructs a parameter group from a set of properties. The properties map is given unchanged to the
@@ -128,7 +138,7 @@ public class DefaultParameterDescriptorGroup extends AbstractParameterDescriptor
      *     <td>{@link #getIdentifiers()}</td>
      *   </tr>
      *   <tr>
-     *     <td>{@value org.opengis.metadata.Identifier#DESCRIPTION_KEY}</td>
+     *     <td>"description"</td>
      *     <td>{@link org.opengis.util.InternationalString} or {@link String}</td>
      *     <td>{@link #getDescription()}</td>
      *   </tr>
@@ -139,14 +149,14 @@ public class DefaultParameterDescriptorGroup extends AbstractParameterDescriptor
      *   </tr>
      * </table>
      *
-     * @param properties    The properties to be given to the identified object.
-     * @param minimumOccurs The {@linkplain #getMinimumOccurs() minimum number of times} that values
-     *                      for this parameter group are required, or 0 if no restriction.
-     * @param maximumOccurs The {@linkplain #getMaximumOccurs() maximum number of times} that values
-     *                      for this parameter group are required, or {@link Integer#MAX_VALUE} if no restriction.
-     * @param parameters    The {@linkplain #descriptors() parameter descriptors} for this group.
+     * @param properties     the properties to be given to the new parameter group.
+     * @param minimumOccurs  the {@linkplain #getMinimumOccurs() minimum number of times} that values
+     *                       for this parameter group are required, or 0 if no restriction.
+     * @param maximumOccurs  the {@linkplain #getMaximumOccurs() maximum number of times} that values
+     *                       for this parameter group are required, or {@link Integer#MAX_VALUE} if no restriction.
+     * @param parameters     the {@linkplain #descriptors() parameter descriptors} for this group.
      *
-     * @throws InvalidParameterNameException If a parameter name is duplicated.
+     * @throws InvalidParameterNameException if a parameter name is duplicated.
      */
     public DefaultParameterDescriptorGroup(final Map<String,?> properties,
             final int minimumOccurs, final int maximumOccurs, GeneralParameterDescriptor... parameters)
@@ -158,26 +168,56 @@ public class DefaultParameterDescriptorGroup extends AbstractParameterDescriptor
     }
 
     /**
+     * Constructs a group with the same parameters than another group. This is a convenience constructor for
+     * operations that expect the same parameters than another operation, but perform a different process.
+     *
+     * <div class="note"><b>Example:</b>
+     * the various <cite>"Coordinate Frame Rotation"</cite> variants (EPSG codes 1032, 1038 and 9607)
+     * expect the same parameters than their <cite>"Position Vector transformation"</cite> counterpart
+     * (EPSG codes 1033, 1037 and 9606) but perform the rotation in the opposite direction.</div>
+     *
+     * @param properties  the properties to be given to the new parameter group.
+     * @param parameters  the existing group from which to copy the {@linkplain #descriptors() parameter descriptors}.
+     *
+     * @since 0.7
+     */
+    public DefaultParameterDescriptorGroup(final Map<String,?> properties, final ParameterDescriptorGroup parameters) {
+        super(properties, parameters.getMinimumOccurs(), parameters.getMaximumOccurs());
+        descriptors = parameters.descriptors();    // We will share the same instance if it is safe.
+        if (!(parameters instanceof DefaultParameterDescriptorGroup)
+            || ((DefaultParameterDescriptorGroup) parameters).descriptors != descriptors)
+        {
+            // Note sure where the list come from, we are better to copy its content.
+            final GeneralParameterDescriptor[] p = descriptors.toArray(new GeneralParameterDescriptor[descriptors.size()]);
+            verifyNames(properties, p);
+            descriptors = asList(p);
+        }
+    }
+
+    /**
      * Creates a mandatory parameter group without cloning the given array. This constructor shall
      * be used only when we know that the given array is already a copy of the user-provided array.
      */
     DefaultParameterDescriptorGroup(final Map<String,?> properties, final GeneralParameterDescriptor[] parameters) {
         super(properties, 1, 1);
-        verifyNames(properties, parameters.clone());
+        verifyNames(properties, parameters);
         descriptors = asList(parameters);
     }
 
     /**
      * Ensures that the given name array does not contain duplicate values.
+     *
+     * @param  properties  the properties given to the constructor, or {@code null} if unknown.
      */
     private static void verifyNames(final Map<String,?> properties, final GeneralParameterDescriptor[] parameters) {
         for (int i=0; i<parameters.length; i++) {
-            ArgumentChecks.ensureNonNullElement("parameters", i, parameters);
-            final String name = parameters[i].getName().getCode();
+            final GeneralParameterDescriptor parameter = parameters[i];
+            ArgumentChecks.ensureNonNullElement("parameters", i, parameter);
+            final String name = parameter.getName().getCode();
             for (int j=0; j<i; j++) {
                 if (IdentifiedObjects.isHeuristicMatchForName(parameters[j], name)) {
-                    throw new InvalidParameterNameException(Errors.getResources(properties).getString(
-                            Errors.Keys.DuplicatedParameterName_4, parameters[j].getName().getCode(), j, name, i),
+                    throw new InvalidParameterNameException(Resources.forProperties(properties).getString(
+                            Resources.Keys.DuplicatedParameterName_4, Verifier.getDisplayName(parameters[j]), j, name, i),
                             name);
                 }
             }
@@ -191,7 +231,7 @@ public class DefaultParameterDescriptorGroup extends AbstractParameterDescriptor
      *
      * <p>This constructor performs a shallow copy, i.e. the properties are not cloned.</p>
      *
-     * @param descriptor The descriptor to shallow copy.
+     * @param  descriptor  the descriptor to shallow copy.
      *
      * @see #castOrCopy(ParameterDescriptorGroup)
      */
@@ -241,7 +281,7 @@ public class DefaultParameterDescriptorGroup extends AbstractParameterDescriptor
         @Override public boolean contains(final Object object) {
             Set<GeneralParameterDescriptor> s = asSet;
             if (s == null) {
-                asSet = s = new HashSet<GeneralParameterDescriptor>(this); // No synchronization: not a big problem if created twice.
+                asSet = s = new HashSet<>(this);        // No synchronization: not a big problem if created twice.
             }
             return s.contains(object);
         }
@@ -253,8 +293,8 @@ public class DefaultParameterDescriptorGroup extends AbstractParameterDescriptor
      * Otherwise if the given object is already a SIS implementation, then the given object is returned unchanged.
      * Otherwise a new SIS implementation is created and initialized to the values of the given object.
      *
-     * @param  object The object to get as a SIS implementation, or {@code null} if none.
-     * @return A SIS implementation containing the values of the given object (may be the
+     * @param  object  the object to get as a SIS implementation, or {@code null} if none.
+     * @return a SIS implementation containing the values of the given object (may be the
      *         given object itself), or {@code null} if the argument was null.
      */
     public static DefaultParameterDescriptorGroup castOrCopy(final ParameterDescriptorGroup object) {
@@ -281,19 +321,20 @@ public class DefaultParameterDescriptorGroup extends AbstractParameterDescriptor
     /**
      * Returns all parameters in this group.
      *
-     * @return The parameter descriptors in this group.
+     * @return the parameter descriptors in this group.
      */
     @Override
+    @SuppressWarnings("ReturnOfCollectionOrArrayField")
     public List<GeneralParameterDescriptor> descriptors() {
-        return descriptors;
+        return descriptors;     // Unmodifiable.
     }
 
     /**
      * Returns the first parameter in this group for the specified name.
      * This method does not search in sub-groups.
      *
-     * @param  name The name of the parameter to search for.
-     * @return The parameter for the given identifier name.
+     * @param  name  the name of the parameter to search for.
+     * @return the parameter for the given identifier name.
      * @throws ParameterNotFoundException if there is no parameter for the given name.
      */
     @Override
@@ -321,8 +362,10 @@ public class DefaultParameterDescriptorGroup extends AbstractParameterDescriptor
             return fallback;
         }
         throw new ParameterNotFoundException(ambiguity != null
-                ? Errors.format(Errors.Keys.AmbiguousName_3, fallback.getName(), ambiguity.getName(), name)
-                : Errors.format(Errors.Keys.ParameterNotFound_2, getName(), name), name);
+                ? Errors.format(Errors.Keys.AmbiguousName_3,
+                        IdentifiedObjects.toString(fallback.getName()),
+                        IdentifiedObjects.toString(ambiguity.getName()), name)
+                : Resources.format(Resources.Keys.ParameterNotFound_2, Verifier.getDisplayName(this), name), name);
     }
 
     /**
@@ -331,7 +374,7 @@ public class DefaultParameterDescriptorGroup extends AbstractParameterDescriptor
      * The {@linkplain DefaultParameterValueGroup#getDescriptor() parameter descriptor} for the
      * created group will be {@code this} object.
      *
-     * @return A new parameter instance initialized to the default value.
+     * @return a new parameter instance initialized to the default value.
      */
     @Override
     public ParameterValueGroup createValue() {
@@ -345,8 +388,8 @@ public class DefaultParameterDescriptorGroup extends AbstractParameterDescriptor
      */
     @Override
     public boolean equals(final Object object, final ComparisonMode mode) {
-        if (object == this) { // Optimization for a common case.
-            return true;
+        if (object == this) {
+            return true;                                    // Optimization for a common case.
         }
         if (super.equals(object, mode)) {
             switch (mode) {
@@ -369,5 +412,76 @@ public class DefaultParameterDescriptorGroup extends AbstractParameterDescriptor
     @Override
     protected long computeHashCode() {
         return super.computeHashCode() + descriptors.hashCode();
+    }
+
+
+
+
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+    ////////                                                                                  ////////
+    ////////                               XML support with JAXB                              ////////
+    ////////                                                                                  ////////
+    ////////        The following methods are invoked by JAXB using reflection (even if       ////////
+    ////////        they are private) or are helpers for other methods invoked by JAXB.       ////////
+    ////////        Those methods can be safely removed if Geographic Markup Language         ////////
+    ////////        (GML) support is not needed.                                              ////////
+    ////////                                                                                  ////////
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Constructs a new object in which every attributes are set to a null value or an empty list.
+     * <strong>This is not a valid object.</strong> This constructor is strictly reserved to JAXB
+     * and to {@link DefaultParameterValueGroup}, which will assign values later.
+     *
+     * @see #setDescriptors(GeneralParameterDescriptor[])
+     */
+    DefaultParameterDescriptorGroup() {
+        descriptors = Collections.emptyList();
+    }
+
+    /**
+     * Invoked by JAXB for getting the parameters to marshal.
+     */
+    @XmlElement(name = "parameter", required = true)
+    private GeneralParameterDescriptor[] getDescriptors() {
+        final List<GeneralParameterDescriptor> descriptors = descriptors();     // Give to user a chance to override.
+        return descriptors.toArray(new GeneralParameterDescriptor[descriptors.size()]);
+    }
+
+    /**
+     * Invoked by JAXB for setting the unmarshalled parameter descriptors.
+     */
+    private void setDescriptors(final GeneralParameterDescriptor[] parameters) {
+        if (descriptors.isEmpty()) {
+            verifyNames(null, parameters);
+            descriptors = asList(parameters);
+        } else {
+            MetadataUtilities.propertyAlreadySet(DefaultParameterValue.class, "setDescriptors", "parameter");
+        }
+    }
+
+    /**
+     * Merges the given parameter descriptors with the descriptors currently in this group.
+     * The descriptors are set twice during {@link DefaultParameterValueGroup} unmarshalling:
+     *
+     * <ol>
+     *   <li>First, the descriptors are set during unmarshalling of this {@code DefaultParameterDescriptorGroup}.
+     *       But the value class of {@code ParameterDescriptor} components are unknown because this information
+     *       is not part of GML.</li>
+     *   <li>Next, this method is invoked during unmarshalling of the {@code DefaultParameterValueGroup} enclosing
+     *       element with the descriptors found inside the {@code ParameterValue} components. The later do have the
+     *       {@code valueClass} information, so we want to use them in replacement of descriptors of step 1.</li>
+     * </ol>
+     *
+     * @param fromValues    descriptors declared in the {@code ParameterValue} instances of a {@code ParameterValueGroup}.
+     * @param replacements  an {@code IdentityHashMap} where to store the replacements that the caller needs to apply in
+     *                      the {@code GeneralParameterValue} instances.
+     */
+    final void merge(GeneralParameterDescriptor[] fromValues,
+            final Map<GeneralParameterDescriptor,GeneralParameterDescriptor> replacements)
+    {
+        fromValues = CC_OperationParameterGroup.merge(descriptors, fromValues, replacements);
+        verifyNames(null, fromValues);
+        descriptors = asList(fromValues);
     }
 }

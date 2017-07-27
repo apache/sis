@@ -19,6 +19,7 @@ package org.apache.sis.referencing.operation.transform;
 import java.util.List;
 import java.util.Collections;
 import java.awt.geom.AffineTransform;
+import org.opengis.util.FactoryException;
 import org.opengis.geometry.MismatchedDimensionException;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
@@ -31,9 +32,8 @@ import org.apache.sis.internal.referencing.ExtendedPrecisionMatrix;
 import org.apache.sis.internal.referencing.j2d.AffineTransform2D;
 import org.apache.sis.referencing.operation.matrix.AffineTransforms2D;
 import org.apache.sis.referencing.operation.matrix.Matrices;
+import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Static;
-
-import static org.apache.sis.util.ArgumentChecks.*;
 
 
 /**
@@ -51,11 +51,12 @@ import static org.apache.sis.util.ArgumentChecks.*;
  * GeoAPI factory interfaces instead.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.5
- * @version 0.5
- * @module
+ * @version 0.7
  *
  * @see MathTransformFactory
+ *
+ * @since 0.5
+ * @module
  */
 public final class MathTransforms extends Static {
     /**
@@ -73,11 +74,11 @@ public final class MathTransforms extends Static {
      *   <li>If {@code dimension == 2}, then the returned transform implements {@link MathTransform2D}.</li>
      * </ul>
      *
-     * @param dimension The dimension of the transform to be returned.
-     * @return An identity transform of the specified dimension.
+     * @param  dimension  the dimension of the transform to be returned.
+     * @return an identity transform of the specified dimension.
      */
     public static LinearTransform identity(final int dimension) {
-        ensureStrictlyPositive("dimension", dimension);
+        ArgumentChecks.ensureStrictlyPositive("dimension", dimension);
         return IdentityTransform.create(dimension);
     }
 
@@ -87,9 +88,9 @@ public final class MathTransforms extends Static {
      *
      * <blockquote><var>y</var>  =  <var>x</var> ⋅ {@code scale} + {@code offset}</blockquote>
      *
-     * @param  scale  The {@code scale}  term in the linear equation.
-     * @param  offset The {@code offset} term in the linear equation.
-     * @return The linear transform for the given scale and offset.
+     * @param  scale   the {@code scale}  term in the linear equation.
+     * @param  offset  the {@code offset} term in the linear equation.
+     * @return the linear transform for the given scale and offset.
      */
     public static LinearTransform linear(final double scale, final double offset) {
         return LinearTransform1D.create(scale, offset);
@@ -105,14 +106,14 @@ public final class MathTransforms extends Static {
      * The +1 in the matrix dimensions allows the matrix to do a shift, as well as a rotation.
      * The {@code [M][j]} element of the matrix will be the <var>j</var>'th ordinate of the moved origin.</p>
      *
-     * @param  matrix The matrix used to define the linear transform.
-     * @return The linear (usually affine) transform.
+     * @param  matrix  the matrix used to define the linear transform.
+     * @return the linear (usually affine) transform.
      *
      * @see #getMatrix(MathTransform)
      * @see DefaultMathTransformFactory#createAffineTransform(Matrix)
      */
     public static LinearTransform linear(final Matrix matrix) {
-        ensureNonNull("matrix", matrix);
+        ArgumentChecks.ensureNonNull("matrix", matrix);
         final int sourceDimension = matrix.getNumCol() - 1;
         final int targetDimension = matrix.getNumRow() - 1;
         if (sourceDimension == targetDimension) {
@@ -143,7 +144,82 @@ public final class MathTransforms extends Static {
         if (candidate != null) {
             return candidate;
         }
-        return new ProjectiveTransform(matrix);
+        return new ProjectiveTransform(matrix).optimize();
+    }
+
+    /**
+     * Creates a transform for the <i>y=f(x)</i> function where <var>y</var> are computed by a linear interpolation.
+     * Both {@code preimage} (the <var>x</var>) and {@code values} (the <var>y</var>) arguments can be null:
+     *
+     * <ul>
+     *   <li>If both {@code preimage} and {@code values} arrays are non-null, then the must have the same length.</li>
+     *   <li>If both {@code preimage} and {@code values} arrays are null, then this method returns the identity transform.</li>
+     *   <li>If only {@code preimage} is null, then the <var>x</var> values are taken as {0, 1, 2, …, {@code values.length} - 1}.</li>
+     *   <li>If only {@code values} is null, then the <var>y</var> values are taken as {0, 1, 2, …, {@code preimage.length} - 1}.</li>
+     * </ul>
+     *
+     * All {@code preimage} elements shall be real numbers (not NaN) sorted in increasing or decreasing order.
+     * Elements in the {@code values} array do not need to be ordered, but the returned transform will be invertible
+     * only if all values are real numbers sorted in increasing or decreasing order.
+     * Furthermore the returned transform is affine (i.e. implement the {@link LinearTransform} interface)
+     * if the interval between each {@code preimage} and {@code values} element is constant.
+     *
+     * <p>The current implementation uses linear interpolation. This may be changed in a future SIS version.</p>
+     *
+     * @param  preimage  the input values (<var>x</var>) in the function domain, or {@code null}.
+     * @param  values    the output values (<var>y</var>) in the function range, or {@code null}.
+     * @return the <i>y=f(x)</i> function.
+     *
+     * @since 0.7
+     */
+    public static MathTransform1D interpolate(final double[] preimage, final double[] values) {
+        return LinearInterpolator1D.create(preimage, values);
+    }
+
+    /**
+     * Puts together a list of independent math transforms, each of them operating on a subset of ordinate values.
+     * This method is often used for defining 4-dimensional (<var>x</var>,<var>y</var>,<var>z</var>,<var>t</var>)
+     * transform as an aggregation of 3 simpler transforms operating on (<var>x</var>,<var>y</var>), (<var>z</var>)
+     * and (<var>t</var>) values respectively.
+     *
+     * <p>Invariants:</p>
+     * <ul>
+     *   <li>The {@linkplain AbstractMathTransform#getSourceDimensions() source dimensions} of the returned transform
+     *       is equals to the sum of the source dimensions of all given transforms.</li>
+     *   <li>The {@linkplain AbstractMathTransform#getTargetDimensions() target dimensions} of the returned transform
+     *       is equals to the sum of the target dimensions of all given transforms.</li>
+     * </ul>
+     *
+     * @param  transforms  the transforms to aggregate in a single transform, in the given order.
+     * @return the aggregation of all given transforms, or {@code null} if the given {@code transforms} array was empty.
+     *
+     * @see PassThroughTransform
+     * @see org.apache.sis.referencing.crs.DefaultCompoundCRS
+     *
+     * @since 0.6
+     */
+    public static MathTransform compound(final MathTransform... transforms) {
+        ArgumentChecks.ensureNonNull("transforms", transforms);
+        int sum = 0;
+        final int[] dimensions = new int[transforms.length];
+        for (int i=0; i<transforms.length; i++) {
+            final MathTransform tr = transforms[i];
+            ArgumentChecks.ensureNonNullElement("transforms", i, tr);
+            sum += (dimensions[i] = tr.getSourceDimensions());
+        }
+        MathTransform compound = null;
+        int firstAffectedOrdinate = 0;
+        for (int i=0; i<transforms.length; i++) {
+            MathTransform tr = transforms[i];
+            tr = PassThroughTransform.create(firstAffectedOrdinate, tr, sum - (firstAffectedOrdinate += dimensions[i]));
+            if (compound == null) {
+                compound = tr;
+            } else {
+                compound = concatenate(compound, tr);
+            }
+        }
+        assert isValid(getSteps(compound)) : compound;
+        return compound;
     }
 
     /**
@@ -151,9 +227,9 @@ public final class MathTransforms extends Static {
      * {@link MathTransform1D} or {@link MathTransform2D} if the dimensions of the
      * concatenated transform are equal to 1 or 2 respectively.
      *
-     * @param tr1 The first math transform.
-     * @param tr2 The second math transform.
-     * @return    The concatenated transform.
+     * @param  tr1  the first math transform.
+     * @param  tr2  the second math transform.
+     * @return the concatenated transform.
      * @throws MismatchedDimensionException if the output dimension of the first transform
      *         does not match the input dimension of the second transform.
      *
@@ -162,9 +238,16 @@ public final class MathTransforms extends Static {
     public static MathTransform concatenate(final MathTransform tr1, final MathTransform tr2)
             throws MismatchedDimensionException
     {
-        ensureNonNull("tr1", tr1);
-        ensureNonNull("tr2", tr2);
-        return ConcatenatedTransform.create(tr1, tr2);
+        ArgumentChecks.ensureNonNull("tr1", tr1);
+        ArgumentChecks.ensureNonNull("tr2", tr2);
+        final MathTransform tr;
+        try {
+            tr = ConcatenatedTransform.create(tr1, tr2, null);
+        } catch (FactoryException e) {
+            throw new IllegalArgumentException(e);              // Should never happen actually.
+        }
+        assert isValid(getSteps(tr)) : tr;
+        return tr;
     }
 
     /**
@@ -172,9 +255,9 @@ public final class MathTransforms extends Static {
      * delegating to {@link #concatenate(MathTransform, MathTransform)} and casting the
      * result to a {@link MathTransform1D} instance.
      *
-     * @param tr1 The first math transform.
-     * @param tr2 The second math transform.
-     * @return    The concatenated transform.
+     * @param  tr1  the first math transform.
+     * @param  tr2  the second math transform.
+     * @return the concatenated transform.
      * @throws MismatchedDimensionException if the output dimension of the first transform
      *         does not match the input dimension of the second transform.
      */
@@ -189,9 +272,9 @@ public final class MathTransforms extends Static {
      * delegating to {@link #concatenate(MathTransform, MathTransform)} and casting the
      * result to a {@link MathTransform2D} instance.
      *
-     * @param tr1 The first math transform.
-     * @param tr2 The second math transform.
-     * @return    The concatenated transform.
+     * @param  tr1  the first math transform.
+     * @param  tr2  the second math transform.
+     * @return the concatenated transform.
      * @throws MismatchedDimensionException if the output dimension of the first transform
      *         does not match the input dimension of the second transform.
      */
@@ -205,19 +288,19 @@ public final class MathTransforms extends Static {
      * Concatenates the three given transforms. This is a convenience methods doing its job
      * as two consecutive concatenations.
      *
-     * @param tr1 The first math transform.
-     * @param tr2 The second math transform.
-     * @param tr3 The third math transform.
-     * @return    The concatenated transform.
+     * @param  tr1  the first math transform.
+     * @param  tr2  the second math transform.
+     * @param  tr3  the third math transform.
+     * @return the concatenated transform.
      * @throws MismatchedDimensionException if the output dimension of a transform
      *         does not match the input dimension of next transform.
      */
     public static MathTransform concatenate(MathTransform tr1, MathTransform tr2, MathTransform tr3)
             throws MismatchedDimensionException
     {
-        ensureNonNull("tr1", tr1);
-        ensureNonNull("tr2", tr2);
-        ensureNonNull("tr3", tr3);
+        ArgumentChecks.ensureNonNull("tr1", tr1);
+        ArgumentChecks.ensureNonNull("tr2", tr2);
+        ArgumentChecks.ensureNonNull("tr3", tr3);
         return concatenate(concatenate(tr1, tr2), tr3);
     }
 
@@ -226,10 +309,10 @@ public final class MathTransforms extends Static {
      * delegating to {@link #concatenate(MathTransform, MathTransform, MathTransform)} and
      * casting the result to a {@link MathTransform1D} instance.
      *
-     * @param tr1 The first math transform.
-     * @param tr2 The second math transform.
-     * @param tr3 The third math transform.
-     * @return    The concatenated transform.
+     * @param  tr1  the first math transform.
+     * @param  tr2  the second math transform.
+     * @param  tr3  the third math transform.
+     * @return the concatenated transform.
      * @throws MismatchedDimensionException if the output dimension of a transform
      *         does not match the input dimension of next transform.
      */
@@ -244,10 +327,10 @@ public final class MathTransforms extends Static {
      * delegating to {@link #concatenate(MathTransform, MathTransform, MathTransform)} and
      * casting the result to a {@link MathTransform2D} instance.
      *
-     * @param tr1 The first math transform.
-     * @param tr2 The second math transform.
-     * @param tr3 The third math transform.
-     * @return    The concatenated transform.
+     * @param  tr1  the first math transform.
+     * @param  tr2  the second math transform.
+     * @param  tr3  the third math transform.
+     * @return the concatenated transform.
      * @throws MismatchedDimensionException if the output dimension of a transform
      *         does not match the input dimension of next transform.
      */
@@ -258,18 +341,36 @@ public final class MathTransforms extends Static {
     }
 
     /**
+     * Makes sure that the given list does not contains two consecutive linear transforms
+     * (because their matrices should have been multiplied together).
+     * This is used for assertion purposes only.
+     */
+    static boolean isValid(final List<MathTransform> steps) {
+        boolean wasLinear = false;
+        for (final MathTransform step : steps) {
+            if (step instanceof LinearTransform) {
+                if (wasLinear) return false;
+                wasLinear = true;
+            } else {
+                wasLinear = false;
+            }
+        }
+        return true;
+    }
+
+    /**
      * Returns all single components of the given (potentially concatenated) transform.
      * This method makes the following choice:
      *
      * <ul>
      *   <li>If {@code transform} is {@code null}, returns an empty list.</li>
      *   <li>Otherwise if {@code transform} is the result of a call to a {@code concatenate(…)} method,
-     *       returns all components. All nested concatenated transforms (if any) will be expanded.</li>
+     *       returns all components. All nested concatenated transforms (if any) will be flattened.</li>
      *   <li>Otherwise returns the given transform in a list of size 1.</li>
      * </ul>
      *
-     * @param  transform The transform for which to get the components, or {@code null}.
-     * @return All single math transforms performed by this concatenated transform.
+     * @param  transform  the transform for which to get the components, or {@code null}.
+     * @return all single math transforms performed by this concatenated transform.
      */
     public static List<MathTransform> getSteps(final MathTransform transform) {
         if (transform != null) {
@@ -295,8 +396,8 @@ public final class MathTransforms extends Static {
      *   <li>Otherwise returns {@code null}.</li>
      * </ul>
      *
-     * @param  transform The transform for which to get the matrix, or {@code null}.
-     * @return The matrix of the given transform, or {@code null} if none.
+     * @param  transform  the transform for which to get the matrix, or {@code null}.
+     * @return the matrix of the given transform, or {@code null} if none.
      *
      * @see #linear(Matrix)
      * @see LinearTransform#getMatrix()
@@ -324,13 +425,13 @@ public final class MathTransforms extends Static {
      *     ptDst = transform(ptSrc, ptDst);
      * }
      *
-     * @param transform The transform to use.
-     * @param srcPts The array containing the source coordinate.
-     * @param srcOff The offset to the point to be transformed in the source array.
-     * @param dstPts the array into which the transformed coordinate is returned.
-     * @param dstOff The offset to the location of the transformed point that is stored in the destination array.
-     * @return The matrix of the transform derivative at the given source position.
-     * @throws TransformException If the point can't be transformed or if a problem occurred
+     * @param  transform  the transform to use.
+     * @param  srcPts     the array containing the source coordinate.
+     * @param  srcOff     the offset to the point to be transformed in the source array.
+     * @param  dstPts     the array into which the transformed coordinate is returned.
+     * @param  dstOff     the offset to the location of the transformed point that is stored in the destination array.
+     * @return the matrix of the transform derivative at the given source position.
+     * @throws TransformException if the point can't be transformed or if a problem occurred
      *         while calculating the derivative.
      */
     public static Matrix derivativeAndTransform(final MathTransform transform,

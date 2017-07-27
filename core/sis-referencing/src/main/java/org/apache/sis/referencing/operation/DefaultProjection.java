@@ -16,9 +16,14 @@
  */
 package org.apache.sis.referencing.operation;
 
+import java.util.Map;
 import javax.xml.bind.annotation.XmlTransient;
+import org.opengis.util.FactoryException;
 import org.opengis.referencing.operation.Conversion;
 import org.opengis.referencing.operation.Projection;
+import org.opengis.referencing.operation.OperationMethod;
+import org.opengis.referencing.operation.MathTransform;
+import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.crs.ProjectedCRS;
 import org.opengis.referencing.crs.GeographicCRS;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
@@ -42,11 +47,12 @@ import org.apache.sis.util.ArgumentChecks;
  * </ul>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.6
  * @version 0.6
- * @module
  *
  * @see org.apache.sis.referencing.crs.DefaultProjectedCRS
+ *
+ * @since 0.6
+ * @module
  */
 @XmlTransient
 class DefaultProjection extends DefaultConversion implements Projection {
@@ -56,19 +62,41 @@ class DefaultProjection extends DefaultConversion implements Projection {
     private static final long serialVersionUID = -7176751851369816864L;
 
     /**
+     * Creates a projection from the given properties.
+     *
+     * @param  properties  the properties to be given to the identified object.
+     * @param  sourceCRS   the source CRS.
+     * @param  targetCRS   the target CRS.
+     * @param  method      the coordinate operation method.
+     * @param  transform   transform from positions in the source CRS to positions in the target CRS.
+     */
+    public DefaultProjection(final Map<String,?>   properties,
+                             final GeographicCRS   sourceCRS,
+                             final ProjectedCRS    targetCRS,
+                             final OperationMethod method,
+                             final MathTransform   transform)
+    {
+        super(properties, sourceCRS, targetCRS, null, method, transform);
+    }
+
+    /**
      * Creates a new projection with the same values than the specified one, together with the
      * specified source and target CRS. While the source conversion can be an arbitrary one, it
      * is typically a defining conversion.
      *
-     * @param definition The defining conversion.
-     * @param sourceCRS  The source CRS.
-     * @param targetCRS  The target CRS.
+     * @param  definition  the defining conversion.
+     * @param  sourceCRS   the source CRS.
+     * @param  targetCRS   the target CRS.
+     * @param  factory     the factory to use for creating a transform from the parameters or for performing axis changes.
+     * @param  actual      an array of length 1 where to store the actual operation method used by the math transform factory.
      */
-    DefaultProjection(final Conversion                definition,
+    DefaultProjection(final Conversion definition,
                       final CoordinateReferenceSystem sourceCRS,
-                      final CoordinateReferenceSystem targetCRS)
+                      final CoordinateReferenceSystem targetCRS,
+                      final MathTransformFactory factory,
+                      final OperationMethod[] actual) throws FactoryException
     {
-        super(definition, sourceCRS, targetCRS);
+        super(definition, sourceCRS, targetCRS, factory, actual);
         ArgumentChecks.ensureCanCast("sourceCRS", GeographicCRS.class, sourceCRS);
         ArgumentChecks.ensureCanCast("targetCRS", ProjectedCRS .class, targetCRS);
     }
@@ -80,7 +108,7 @@ class DefaultProjection extends DefaultConversion implements Projection {
      *
      * <p>This constructor performs a shallow copy, i.e. the properties are not cloned.</p>
      *
-     * @param operation The coordinate operation to copy.
+     * @param  operation  the coordinate operation to copy.
      */
     protected DefaultProjection(final Projection operation) {
         super(operation);
@@ -91,7 +119,7 @@ class DefaultProjection extends DefaultConversion implements Projection {
      * The default implementation returns {@code Projection.class}.
      * Subclasses implementing a more specific GeoAPI interface shall override this method.
      *
-     * @return The conversion interface implemented by this class.
+     * @return the conversion interface implemented by this class.
      */
     @Override
     public Class<? extends Projection> getInterface() {

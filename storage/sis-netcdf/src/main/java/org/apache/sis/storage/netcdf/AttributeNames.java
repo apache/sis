@@ -17,14 +17,16 @@
 package org.apache.sis.storage.netcdf;
 
 /*
- * All imports below except "CF" are for javadoc only. The "CF" import is used only
- * for its static final String constants, which are inlined by javac. Consequently
- * the compiled file of this class should have no dependency to the UCAR packages.
+ * All imports below except "CF" and "ACDD" are for javadoc only.
+ * The "CF" and "ACDD" imports are used only for its static final String constants,
+ * which are inlined by javac. Consequently the compiled file of this class should
+ * have no dependency to the UCAR packages.
  */
 import java.io.Serializable;
 import ucar.nc2.NetcdfFile;
 import ucar.nc2.VariableSimpleIF;
 import ucar.nc2.constants.CF;
+import ucar.nc2.constants.ACDD;
 import org.opengis.metadata.Metadata;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.*;
@@ -56,7 +58,7 @@ import org.opengis.metadata.extent.GeographicDescription;
  * <blockquote><table class="compact" summary="List of all NetCDF attributes.">
  * <tr valign="top"><td style="width: 25%">
  * {@value     #ACCESS_CONSTRAINT}<br>
- * {@value     #ACKNOWLEDGMENT}<br>
+ * {@value     #ACKNOWLEDGEMENT}<br>
  * {@value     #COMMENT}<br>
  * {@linkplain #CONTRIBUTOR "contributor_email"}<br>
  * {@linkplain #CONTRIBUTOR "contributor_name"}<br>
@@ -121,14 +123,14 @@ import org.opengis.metadata.extent.GeographicDescription;
  *
  * <p><b>References:</b></p>
  * <ul>
- *   <li><a href="https://geo-ide.noaa.gov/wiki/index.php?title=NetCDF_Attribute_Convention_for_Dataset_Discovery">NetCDF
+ *   <li><a href="http://wiki.esipfed.org/index.php/Category:Attribute_Conventions_Dataset_Discovery">NetCDF
  *       Attribute Convention for Dataset Discovery</a> wiki</li>
- *   <li><a href="http://ngdc.noaa.gov/metadata/published/xsl/nciso2.0/UnidataDD2MI.xsl">UnidataDD2MI.xsl</a> file</li>
+ *   <li><a href="https://github.com/Unidata/threddsIso/blob/master/src/main/resources/xsl/nciso/UnidataDD2MI.xsl">UnidataDD2MI.xsl</a> file</li>
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
+ * @version 0.8
  * @since   0.3
- * @version 0.3
  * @module
  */
 public class AttributeNames {
@@ -143,9 +145,9 @@ public class AttributeNames {
      * {@link Citation#getTitle() title}</li></ul>
      *
      * @see NetcdfFile#getTitle()
-     * @see <a href="http://www.unidata.ucar.edu/software/netcdf-java/formats/DataDiscoveryAttConvention.html#title_Attribute">UCAR reference</a>
+     * @see <a href="http://wiki.esipfed.org/index.php/Attribute_Convention_for_Data_Discovery#title">ESIP reference</a>
      */
-    public static final String TITLE = "title";
+    public static final String TITLE = ACDD.title;
 
     /**
      * The {@value} attribute name for a paragraph describing the dataset
@@ -155,9 +157,9 @@ public class AttributeNames {
      * {@link Metadata#getIdentificationInfo() identificationInfo} /
      * {@link DataIdentification#getAbstract() abstract}</li></ul>
      *
-     * @see <a href="http://www.unidata.ucar.edu/software/netcdf-java/formats/DataDiscoveryAttConvention.html#summary_Attribute">UCAR reference</a>
+     * @see <a href="http://wiki.esipfed.org/index.php/Attribute_Convention_for_Data_Discovery#summary">ESIP reference</a>
      */
-    public static final String SUMMARY = "summary";
+    public static final String SUMMARY = ACDD.summary;
 
     /**
      * The {@value} attribute name for an identifier (<em>Recommended</em>).
@@ -172,11 +174,10 @@ public class AttributeNames {
      * {@link Citation#getIdentifiers() identifier} /
      * {@link Identifier#getCode() code}</li></ul>
      *
-     * @see MetadataReader#getFileIdentifier()
      * @see NetcdfFile#getId()
-     * @see <a href="http://www.unidata.ucar.edu/software/netcdf-java/formats/DataDiscoveryAttConvention.html#id_Attribute">UCAR reference</a>
+     * @see <a href="http://wiki.esipfed.org/index.php/Attribute_Convention_for_Data_Discovery#id">ESIP reference</a>
      */
-    public static final String IDENTIFIER = "id";
+    public static final String IDENTIFIER = ACDD.id;
 
     /**
      * The {@value} attribute name for the identifier authority (<em>Recommended</em>).
@@ -192,10 +193,9 @@ public class AttributeNames {
      * {@link Identifier#getAuthority() authority}</li></ul>
      *
      * @see #IDENTIFIER
-     * @see MetadataReader#getFileIdentifier()
-     * @see <a href="http://www.unidata.ucar.edu/software/netcdf-java/formats/DataDiscoveryAttConvention.html#id_Attribute">UCAR reference</a>
+     * @see <a href="http://wiki.esipfed.org/index.php/Attribute_Convention_for_Data_Discovery#naming_authority">ESIP reference</a>
      */
-    public static final String NAMING_AUTHORITY = "naming_authority";
+    public static final String NAMING_AUTHORITY = ACDD.naming_authority;
 
     /**
      * The {@value} attribute name for a long descriptive name for the variable taken from a controlled
@@ -209,7 +209,7 @@ public class AttributeNames {
      *
      * @see #STANDARD_NAME_VOCABULARY
      * @see #KEYWORDS
-     * @see <a href="http://www.unidata.ucar.edu/software/netcdf-java/formats/DataDiscoveryAttConvention.html#standard_name_Attribute">UCAR reference</a>
+     * @see <a href="http://wiki.esipfed.org/index.php/Attribute_Convention_for_Data_Discovery#standard_name">ESIP reference</a>
      */
     public static final String STANDARD_NAME = CF.STANDARD_NAME;
 
@@ -225,9 +225,9 @@ public class AttributeNames {
      *
      * @see #STANDARD_NAME
      * @see #VOCABULARY
-     * @see <a href="http://www.unidata.ucar.edu/software/netcdf-java/formats/DataDiscoveryAttConvention.html#standard_name_vocabulary_Attribute">UCAR reference</a>
+     * @see <a href="http://wiki.esipfed.org/index.php/Attribute_Convention_for_Data_Discovery#standard_name_vocabulary">ESIP reference</a>
      */
-    public static final String STANDARD_NAME_VOCABULARY = "standard_name_vocabulary";
+    public static final String STANDARD_NAME_VOCABULARY = ACDD.standard_name_vocabulary;
 
     /**
      * The {@value} attribute name for a comma separated list of key words and phrases
@@ -240,9 +240,9 @@ public class AttributeNames {
      *
      * @see #VOCABULARY
      * @see #STANDARD_NAME
-     * @see <a href="http://www.unidata.ucar.edu/software/netcdf-java/formats/DataDiscoveryAttConvention.html#keywords_Attribute">UCAR reference</a>
+     * @see <a href="http://wiki.esipfed.org/index.php/Attribute_Convention_for_Data_Discovery#keywords">ESIP reference</a>
      */
-    public static final String KEYWORDS = "keywords";
+    public static final String KEYWORDS = ACDD.keywords;
 
     /**
      * The {@value} attribute name for the guideline for the words/phrases in the
@@ -256,9 +256,9 @@ public class AttributeNames {
      *
      * @see #KEYWORDS
      * @see #STANDARD_NAME_VOCABULARY
-     * @see <a href="http://www.unidata.ucar.edu/software/netcdf-java/formats/DataDiscoveryAttConvention.html#keywords_vocabulary_Attribute">UCAR reference</a>
+     * @see <a href="http://wiki.esipfed.org/index.php/Attribute_Convention_for_Data_Discovery#keywords_vocabulary">ESIP reference</a>
      */
-    public static final String VOCABULARY = "keywords_vocabulary";
+    public static final String VOCABULARY = ACDD.keywords_vocabulary;
 
     /**
      * The {@value} attribute name for a high-level geographic data thematic classification.
@@ -289,9 +289,9 @@ public class AttributeNames {
      * {@link DataIdentification#getSpatialRepresentationTypes() spatialRepresentationType}</li></ul>
      *
      * @see SpatialRepresentationType
-     * @see <a href="http://www.unidata.ucar.edu/software/netcdf-java/formats/DataDiscoveryAttConvention.html#cdm_data_type_Attribute">UCAR reference</a>
+     * @see <a href="http://wiki.esipfed.org/index.php/Attribute_Convention_for_Data_Discovery#cdm_data_type">ESIP reference</a>
      */
-    public static final String DATA_TYPE = "cdm_data_type";
+    public static final String DATA_TYPE = ACDD.cdm_data_type;
 
     /**
      * The {@value} attribute name for providing an audit trail for modifications to the
@@ -302,9 +302,9 @@ public class AttributeNames {
      * {@link DataQuality#getLineage() lineage} /
      * {@link Lineage#getStatement() statement}</li></ul>
      *
-     * @see <a href="http://www.unidata.ucar.edu/software/netcdf-java/formats/DataDiscoveryAttConvention.html#history_Attribute">UCAR reference</a>
+     * @see <a href="http://wiki.esipfed.org/index.php/Attribute_Convention_for_Data_Discovery#history">ESIP reference</a>
      */
-    public static final String HISTORY = "history";
+    public static final String HISTORY = ACDD.history;
 
     /**
      * The {@value} attribute name for miscellaneous information about the data
@@ -314,9 +314,9 @@ public class AttributeNames {
      * {@link Metadata#getIdentificationInfo() identificationInfo} /
      * {@link DataIdentification#getSupplementalInformation() supplementalInformation}</li></ul>
      *
-     * @see <a href="http://www.unidata.ucar.edu/software/netcdf-java/formats/DataDiscoveryAttConvention.html#comment_Attribute">UCAR reference</a>
+     * @see <a href="http://wiki.esipfed.org/index.php/Attribute_Convention_for_Data_Discovery#comment">ESIP reference</a>
      */
-    public static final String COMMENT = "comment";
+    public static final String COMMENT = ACDD.comment;
 
     /**
      * The {@value} attribute name for the date on which the metadata was created
@@ -338,9 +338,9 @@ public class AttributeNames {
      * {@link Citation#getDates() date} /
      * {@link CitationDate#getDate() date} with {@link DateType#CREATION}</li></ul>
      *
-     * @see <a href="http://www.unidata.ucar.edu/software/netcdf-java/formats/DataDiscoveryAttConvention.html#date_created_Attribute">UCAR reference</a>
+     * @see <a href="http://wiki.esipfed.org/index.php/Attribute_Convention_for_Data_Discovery#date_created">ESIP reference</a>
      */
-    public static final String DATE_CREATED = "date_created";
+    public static final String DATE_CREATED = ACDD.date_created;
 
     /**
      * The {@value} attribute name for the date on which this data was last modified
@@ -352,9 +352,9 @@ public class AttributeNames {
      * {@link Citation#getDates() date} /
      * {@link CitationDate#getDate() date} with {@link DateType#REVISION}</li></ul>
      *
-     * @see <a href="http://www.unidata.ucar.edu/software/netcdf-java/formats/DataDiscoveryAttConvention.html#date_modified_Attribute">UCAR reference</a>
+     * @see <a href="http://wiki.esipfed.org/index.php/Attribute_Convention_for_Data_Discovery#date_modified">ESIP reference</a>
      */
-    public static final String DATE_MODIFIED = "date_modified";
+    public static final String DATE_MODIFIED = ACDD.date_modified;
 
     /**
      * The {@value} attribute name for a date on which this data was formally issued
@@ -366,7 +366,7 @@ public class AttributeNames {
      * {@link Citation#getDates() date} /
      * {@link CitationDate#getDate() date} with {@link DateType#PUBLICATION}</li></ul>
      *
-     * @see <a href="http://www.unidata.ucar.edu/software/netcdf-java/formats/DataDiscoveryAttConvention.html#date_issued_Attribute">UCAR reference</a>
+     * @see <a href="http://wiki.esipfed.org/index.php/Attribute_Convention_for_Data_Discovery#date_issued">ESIP reference</a>
      */
     public static final String DATE_ISSUED = "date_issued";
 
@@ -422,11 +422,12 @@ public class AttributeNames {
      * in a NetCDF file.</div>
      *
      * @author  Martin Desruisseaux (Geomatys)
-     * @since   0.3
      * @version 0.3
-     * @module
      *
      * @see org.apache.sis.storage.netcdf.AttributeNames.Dimension
+     *
+     * @since 0.3
+     * @module
      */
     public static class Responsible implements Serializable {
         /**
@@ -493,13 +494,12 @@ public class AttributeNames {
         /**
          * Creates a new set of attribute names. Any argument can be {@code null} if not applicable.
          *
-         * @param name        The attribute name for the responsible's name.
-         * @param institution The attribute name for the responsible's institution.
-         * @param url         The attribute name for the responsible's URL.
-         * @param email       The attribute name for the responsible's email address.
-         * @param role        The attribute name for the responsible's role.
-         * @param defaultRole The role to use as a fallback if no attribute value is associated to the
-         *                    {@code role} key.
+         * @param name         the attribute name for the responsible's name.
+         * @param institution  the attribute name for the responsible's institution.
+         * @param url          the attribute name for the responsible's URL.
+         * @param email        the attribute name for the responsible's email address.
+         * @param role         the attribute name for the responsible's role.
+         * @param defaultRole  the role to use as a fallback if no attribute value is associated to the {@code role} key.
          */
         public Responsible(final String name, final String institution, final String url, final String email,
                 final String role, final Role defaultRole)
@@ -522,10 +522,10 @@ public class AttributeNames {
      *
      * @see #CONTRIBUTOR
      * @see #PUBLISHER
-     * @see <a href="http://www.unidata.ucar.edu/software/netcdf-java/formats/DataDiscoveryAttConvention.html#creator_name_Attribute">UCAR reference</a>
+     * @see <a href="http://wiki.esipfed.org/index.php/Attribute_Convention_for_Data_Discovery#creator_name">ESIP reference</a>
      */
-    public static final Responsible CREATOR = new Responsible("creator_name",
-            "institution", "creator_url", "creator_email", null, Role.ORIGINATOR);
+    public static final Responsible CREATOR = new Responsible(ACDD.creator_name,
+            "institution", ACDD.creator_url, ACDD.creator_email, null, Role.ORIGINATOR);
 
     /**
      * The set of attribute names for the contributor (<em>Suggested</em>).
@@ -536,7 +536,7 @@ public class AttributeNames {
      *
      * @see #CREATOR
      * @see #PUBLISHER
-     * @see <a href="http://www.unidata.ucar.edu/software/netcdf-java/formats/DataDiscoveryAttConvention.html#contributor_name_Attribute">UCAR reference</a>
+     * @see <a href="http://wiki.esipfed.org/index.php/Attribute_Convention_for_Data_Discovery#contributor_name">ESIP reference</a>
      */
     public static final Responsible CONTRIBUTOR = new Responsible("contributor_name",
             null, "contributor_url", "contributor_email", "contributor_role", null);
@@ -555,10 +555,10 @@ public class AttributeNames {
      *
      * @see #CREATOR
      * @see #CONTRIBUTOR
-     * @see <a href="http://www.unidata.ucar.edu/software/netcdf-java/formats/DataDiscoveryAttConvention.html#publisher_name_Attribute">UCAR reference</a>
+     * @see <a href="http://wiki.esipfed.org/index.php/Attribute_Convention_for_Data_Discovery#publisher_name">ESIP reference</a>
      */
-    public static final Responsible PUBLISHER = new Responsible("publisher_name",
-            null, "publisher_url", "publisher_email", null, Role.PUBLISHER);
+    public static final Responsible PUBLISHER = new Responsible(ACDD.publisher_name,
+            null, ACDD.publisher_url, ACDD.publisher_email, null, Role.PUBLISHER);
 
     /**
      * The {@value} attribute name for the scientific project that produced the data
@@ -569,7 +569,7 @@ public class AttributeNames {
      * {@link DataIdentification#getDescriptiveKeywords() descriptiveKeywords} /
      * {@link Keywords#getKeywords() keyword} with the {@code "project"} {@link KeywordType}</li></ul>
      *
-     * @see <a href="http://www.unidata.ucar.edu/software/netcdf-java/formats/DataDiscoveryAttConvention.html#project_Attribute">UCAR reference</a>
+     * @see <a href="http://wiki.esipfed.org/index.php/Attribute_Convention_for_Data_Discovery#project">ESIP reference</a>
      */
     public static final String PROJECT = "project";
 
@@ -601,9 +601,9 @@ public class AttributeNames {
      * {@link Metadata#getContentInfo() contentInfo} /
      * {@link ImageDescription#getProcessingLevelCode() processingLevelCode}</li></ul>
      *
-     * @see <a href="http://www.unidata.ucar.edu/software/netcdf-java/formats/DataDiscoveryAttConvention.html#processing_level_Attribute">UCAR reference</a>
+     * @see <a href="http://wiki.esipfed.org/index.php/Attribute_Convention_for_Data_Discovery#processing_level">ESIP reference</a>
      */
-    public static final String PROCESSING_LEVEL = "processing_level";
+    public static final String PROCESSING_LEVEL = ACDD.processing_level;
 
     /**
      * The {@value} attribute name for a place to acknowledge various type of support for
@@ -613,7 +613,14 @@ public class AttributeNames {
      * {@link Metadata#getIdentificationInfo() identificationInfo} /
      * {@link DataIdentification#getCredits() credit}</li></ul>
      *
-     * @see <a href="http://www.unidata.ucar.edu/software/netcdf-java/formats/DataDiscoveryAttConvention.html#acknowledgement_Attribute">UCAR reference</a>
+     * @see <a href="http://wiki.esipfed.org/index.php/Attribute_Convention_for_Data_Discovery#acknowledgement">ESIP reference</a>
+     *
+     * @since 0.8
+     */
+    public static final String ACKNOWLEDGEMENT = ACDD.acknowledgement;
+
+    /**
+     * @deprecated Renamed {@link #ACKNOWLEDGEMENT}.
      */
     public static final String ACKNOWLEDGMENT = "acknowledgment";
 
@@ -626,9 +633,9 @@ public class AttributeNames {
      * {@link DataIdentification#getResourceConstraints() resourceConstraints} /
      * {@link LegalConstraints#getUseLimitations() useLimitation}</li></ul>
      *
-     * @see <a href="http://www.unidata.ucar.edu/software/netcdf-java/formats/DataDiscoveryAttConvention.html#license_Attribute">UCAR reference</a>
+     * @see <a href="http://wiki.esipfed.org/index.php/Attribute_Convention_for_Data_Discovery#license">ESIP reference</a>
      */
-    public static final String LICENSE = "license";
+    public static final String LICENSE = ACDD.license;
 
     /**
      * The {@value} attribute name for the access constraints applied to assure the protection of
@@ -721,11 +728,12 @@ public class AttributeNames {
      * identified in a NetCDF file.</div>
      *
      * @author  Martin Desruisseaux (Geomatys)
-     * @since   0.3
      * @version 0.3
-     * @module
      *
      * @see org.apache.sis.storage.netcdf.AttributeNames.Responsible
+     *
+     * @since 0.3
+     * @module
      */
     public static class Dimension implements Serializable {
         /**
@@ -789,13 +797,13 @@ public class AttributeNames {
         /**
          * Creates a new set of attribute names.
          *
-         * @param type       The default ISO-19115 dimension name type, or {@code null} if none.
-         * @param min        The attribute name for the minimal value of the bounding box.
-         * @param max        The attribute name for the maximal value of the bounding box.
-         * @param span       The attribute name for the difference between the minimal and maximal values.
-         * @param resolution The attribute name for a further refinement of the geospatial bounding box.
-         * @param units      The attribute name for the bounding box units of measurement.
-         * @param positive   The attribute name for indicating which direction is positive.
+         * @param type        the default ISO-19115 dimension name type, or {@code null} if none.
+         * @param min         the attribute name for the minimal value of the bounding box.
+         * @param max         the attribute name for the maximal value of the bounding box.
+         * @param span        the attribute name for the difference between the minimal and maximal values.
+         * @param resolution  the attribute name for a further refinement of the geospatial bounding box.
+         * @param units       the attribute name for the bounding box units of measurement.
+         * @param positive    the attribute name for indicating which direction is positive.
          */
         public Dimension(final DimensionNameType type, final String min, final String max, final String span,
                 final String resolution,final String units, final String positive)
@@ -829,11 +837,10 @@ public class AttributeNames {
      * @see #LONGITUDE
      * @see #VERTICAL
      * @see #TIME
-     * @see <a href="http://www.unidata.ucar.edu/software/netcdf-java/formats/DataDiscoveryAttConvention.html#geospatial_lat_min_Attribute">UCAR reference</a>
+     * @see <a href="http://wiki.esipfed.org/index.php/Attribute_Convention_for_Data_Discovery#geospatial_lat_min">ESIP reference</a>
      */
     public static final Dimension LATITUDE = new Dimension(DimensionNameType.ROW,
-            "geospatial_lat_min", "geospatial_lat_max", null,
-            "geospatial_lat_resolution", "geospatial_lat_units", null);
+            ACDD.LAT_MIN, ACDD.LAT_MAX, null, ACDD.LAT_RESOLUTION, ACDD.LAT_UNITS, null);
 
     /**
      * The set of attribute names for the minimal and maximal longitudes of the bounding box,
@@ -854,11 +861,10 @@ public class AttributeNames {
      * @see #LATITUDE
      * @see #VERTICAL
      * @see #TIME
-     * @see <a href="http://www.unidata.ucar.edu/software/netcdf-java/formats/DataDiscoveryAttConvention.html#geospatial_lon_min_Attribute">UCAR reference</a>
+     * @see <a href="http://wiki.esipfed.org/index.php/Attribute_Convention_for_Data_Discovery#geospatial_lon_min">ESIP reference</a>
      */
     public static final Dimension LONGITUDE = new Dimension(DimensionNameType.COLUMN,
-            "geospatial_lon_min", "geospatial_lon_max", null,
-            "geospatial_lon_resolution", "geospatial_lon_units", null);
+            ACDD.LON_MIN, ACDD.LON_MAX, null, ACDD.LON_RESOLUTION, ACDD.LON_UNITS, null);
 
     /**
      * The set of attribute names for the minimal and maximal elevations of the bounding box,
@@ -879,11 +885,10 @@ public class AttributeNames {
      * @see #LATITUDE
      * @see #LONGITUDE
      * @see #TIME
-     * @see <a href="http://www.unidata.ucar.edu/software/netcdf-java/formats/DataDiscoveryAttConvention.html#geospatial_vertical_min_Attribute">UCAR reference</a>
+     * @see <a href="http://wiki.esipfed.org/index.php/Attribute_Convention_for_Data_Discovery#geospatial_vertical_min">ESIP reference</a>
      */
     public static final Dimension VERTICAL = new Dimension(DimensionNameType.VERTICAL,
-            "geospatial_vertical_min", "geospatial_vertical_max", null,
-            "geospatial_vertical_resolution", "geospatial_vertical_units", "geospatial_vertical_positive");
+            ACDD.VERT_MIN, ACDD.VERT_MAX, null, ACDD.VERT_RESOLUTION, ACDD.VERT_UNITS, ACDD.VERT_IS_POSITIVE);
 
     /**
      * The set of attribute names for the start and end times of the bounding box, resolution and
@@ -902,11 +907,10 @@ public class AttributeNames {
      * @see #LATITUDE
      * @see #LONGITUDE
      * @see #VERTICAL
-     * @see <a href="http://www.unidata.ucar.edu/software/netcdf-java/formats/DataDiscoveryAttConvention.html#time_coverage_start_Attribute">UCAR reference</a>
+     * @see <a href="http://wiki.esipfed.org/index.php/Attribute_Convention_for_Data_Discovery#time_coverage_start">ESIP reference</a>
      */
     public static final Dimension TIME = new Dimension(DimensionNameType.TIME,
-            "time_coverage_start", "time_coverage_end", "time_coverage_duration",
-            "time_coverage_resolution", "time_coverage_units", null);
+            ACDD.TIME_START, ACDD.TIME_END, ACDD.TIME_DURATION, ACDD.TIME_RESOLUTION, "time_coverage_units", null);
 
     /**
      * The {@value} attribute name for the designation associated with a range element.
@@ -933,9 +937,9 @@ public class AttributeNames {
     public static final String FLAG_MASKS = "flag_masks";
 
     /**
-     * The {@value} attribute name for sample values to be flagged. The {@linkplain #FLAG_MASKS
-     * flag masks}, flag values and {@linkplain #FLAG_MEANINGS flag meaning} attributes, used
-     * together, describe a blend of independent boolean conditions and enumerated status codes.
+     * The {@value} attribute name for sample values to be flagged. The {@linkplain #FLAG_MASKS flag masks},
+     * flag values and {@linkplain #FLAG_MEANINGS flag meaning} attributes, used together, describe a blend
+     * of independent boolean conditions and enumerated status codes.
      * A flagged condition is identified by a bitwise AND of the variable value and each flag masks
      * value; a result that matches the flag values value indicates a true condition.
      *

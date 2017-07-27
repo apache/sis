@@ -30,9 +30,10 @@ import org.apache.sis.referencing.operation.matrix.Matrix2;
 import org.apache.sis.internal.referencing.provider.Affine;
 import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.util.ComparisonMode;
-
-// We really want to use doubleToRawLongBits, not doubleToLongBits, because the
-// coverage module needs the raw bits for differentiating various NaN values.
+/*
+ * We really want to use doubleToRawLongBits, not doubleToLongBits, because the
+ * coverage module needs the raw bits for differentiating various NaN values.
+ */
 import static java.lang.Double.doubleToRawLongBits;
 
 
@@ -43,21 +44,27 @@ import static java.lang.Double.doubleToRawLongBits;
  * <blockquote><var>y</var>  =  <var>x</var> × {@linkplain #scale} + {@linkplain #offset}</blockquote>
  *
  * This class is the same as a 2×2 affine transform. However, this specialized {@code LinearTransform1D} class
- * is faster. This kind of transform is extensively used by {@link org.apache.sis.coverage.grid.GridCoverage2D}.
+ * is faster. This kind of transform is extensively used by {@code org.apache.sis.coverage.grid.GridCoverage2D}.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.5
- * @version 0.6
- * @module
+ * @version 0.7
  *
  * @see LogarithmicTransform1D
  * @see ExponentialTransform1D
+ *
+ * @since 0.5
+ * @module
  */
 class LinearTransform1D extends AbstractMathTransform1D implements LinearTransform, Serializable {
     /**
      * Serial number for inter-operability with different versions.
      */
     private static final long serialVersionUID = -7595037195668813000L;
+
+    /**
+     * A transform that just reverse the sign of input values.
+     */
+    static final LinearTransform1D NEGATE = new LinearTransform1D(-1, 0);
 
     /**
      * The value which is multiplied to input values.
@@ -79,8 +86,8 @@ class LinearTransform1D extends AbstractMathTransform1D implements LinearTransfo
      * Instances should be created using the {@linkplain #create(double, double) factory method},
      * which may returns optimized implementations for some particular argument values.
      *
-     * @param scale  The {@code scale}  term in the linear equation.
-     * @param offset The {@code offset} term in the linear equation.
+     * @param scale   the {@code scale}  term in the linear equation.
+     * @param offset  the {@code offset} term in the linear equation.
      *
      * @see #create(double, double)
      */
@@ -92,15 +99,16 @@ class LinearTransform1D extends AbstractMathTransform1D implements LinearTransfo
     /**
      * Constructs a new linear transform.
      *
-     * @param  scale  The {@code scale}  term in the linear equation.
-     * @param  offset The {@code offset} term in the linear equation.
-     * @return The linear transform for the given scale and offset.
+     * @param  scale   the {@code scale}  term in the linear equation.
+     * @param  offset  the {@code offset} term in the linear equation.
+     * @return the linear transform for the given scale and offset.
      *
      * @see MathTransforms#linear(double, double)
      */
     public static LinearTransform1D create(final double scale, final double offset) {
-        if (offset == 0 && scale == 1) {
-            return IdentityTransform1D.INSTANCE;
+        if (offset == 0) {
+            if (scale == +1) return IdentityTransform1D.INSTANCE;
+            if (scale == -1) return NEGATE;
         }
         if (scale == 0) {
             if (offset == 0) return ConstantTransform1D.ZERO;
@@ -108,6 +116,19 @@ class LinearTransform1D extends AbstractMathTransform1D implements LinearTransfo
             return new ConstantTransform1D(offset);
         }
         return new LinearTransform1D(scale, offset);
+    }
+
+    /**
+     * Creates a constant function having value <var>y</var>, and for which the inverse is <var>x</var>.
+     *
+     * @since 0.7
+     */
+    static LinearTransform1D constant(final double x, final double y) {
+        final LinearTransform1D tr = create(0, y);
+        if (!Double.isNaN(x)) {
+            tr.inverse = create(0, x);
+        }
+        return tr;
     }
 
     /**
@@ -123,7 +144,7 @@ class LinearTransform1D extends AbstractMathTransform1D implements LinearTransfo
      * depends on the matrix size. Only matrix elements different from their default value
      * will be included in this group.
      *
-     * @return The parameter values for this math transform.
+     * @return the parameter values for this math transform.
      */
     @Override
     public ParameterValueGroup getParameterValues() {
@@ -142,7 +163,7 @@ class LinearTransform1D extends AbstractMathTransform1D implements LinearTransfo
      * Creates the inverse transform of this object.
      */
     @Override
-    public MathTransform1D inverse() throws NoninvertibleTransformException {
+    public LinearTransform1D inverse() throws NoninvertibleTransformException {
         if (inverse == null) {
             /*
              * Note: we do not perform the following optimization, because MathTransforms.linear(…)
@@ -158,10 +179,10 @@ class LinearTransform1D extends AbstractMathTransform1D implements LinearTransfo
                 inverse.inverse = this;
                 this.inverse = inverse;
             } else {
-                inverse = super.inverse();
+                inverse = super.inverse();              // Throws NoninvertibleTransformException
             }
         }
-        return inverse;
+        return (LinearTransform1D) inverse;
     }
 
     /**
@@ -188,8 +209,8 @@ class LinearTransform1D extends AbstractMathTransform1D implements LinearTransfo
     /**
      * Gets the derivative of this transform at a point.
      *
-     * @param point Ignored for a linear transform. Can be null.
-     * @return The derivative at the given point.
+     * @param  point  ignored for a linear transform. Can be null.
+     * @return the derivative at the given point.
      */
     @Override
     public Matrix derivative(final DirectPosition point) throws TransformException {
@@ -199,8 +220,8 @@ class LinearTransform1D extends AbstractMathTransform1D implements LinearTransfo
     /**
      * Gets the derivative of this function at a value.
      *
-     * @param  value Ignored for a linear transform. Can be {@link Double#NaN NaN}.
-     * @return The derivative at the given point.
+     * @param  value  ignored for a linear transform. Can be {@link Double#NaN NaN}.
+     * @return the derivative at the given point.
      */
     @Override
     public double derivative(final double value) {
@@ -239,7 +260,7 @@ class LinearTransform1D extends AbstractMathTransform1D implements LinearTransfo
     public void transform(final double[] srcPts, int srcOff,
                           final double[] dstPts, int dstOff, int numPts)
     {
-        if (srcPts!=dstPts || srcOff>=dstOff) {
+        if (srcPts != dstPts || srcOff >= dstOff) {
             while (--numPts >= 0) {
                 dstPts[dstOff++] = offset + scale * srcPts[srcOff++];
             }
@@ -261,7 +282,7 @@ class LinearTransform1D extends AbstractMathTransform1D implements LinearTransfo
     public void transform(final float[] srcPts, int srcOff,
                           final float[] dstPts, int dstOff, int numPts)
     {
-        if (srcPts!=dstPts || srcOff>=dstOff) {
+        if (srcPts != dstPts || srcOff >= dstOff) {
             while (--numPts >= 0) {
                 dstPts[dstOff++] = (float) (offset + scale * srcPts[srcOff++]);
             }
@@ -302,6 +323,29 @@ class LinearTransform1D extends AbstractMathTransform1D implements LinearTransfo
     }
 
     /**
+     * Transforms many distance vectors in a list of ordinal values.
+     * The default implementation computes the values from the {@link #scale} coefficient only.
+     *
+     * @since 0.7
+     */
+    @Override
+    public void deltaTransform(final double[] srcPts, int srcOff,
+                               final double[] dstPts, int dstOff, int numPts)
+    {
+        if (srcPts != dstPts || srcOff >= dstOff) {
+            while (--numPts >= 0) {
+                dstPts[dstOff++] = scale * srcPts[srcOff++];
+            }
+        } else {
+            srcOff += numPts;
+            dstOff += numPts;
+            while (--numPts >= 0) {
+                dstPts[--dstOff] = scale * srcPts[--srcOff];
+            }
+        }
+    }
+
+    /**
      * {@inheritDoc}
      */
     @Override
@@ -314,7 +358,7 @@ class LinearTransform1D extends AbstractMathTransform1D implements LinearTransfo
      */
     @Override
     public boolean equals(final Object object, final ComparisonMode mode) {
-        if (object == this) { // Slight optimization
+        if (object == this) {                                               // Slight optimization
             return true;
         }
         if (mode != ComparisonMode.STRICT) {

@@ -16,9 +16,7 @@
  */
 package org.apache.sis.measure;
 
-import javax.measure.unit.SI;
-import javax.measure.unit.NonSI;
-import javax.measure.converter.ConversionException;
+import javax.measure.IncommensurableException;
 import org.junit.Test;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.DependsOn;
@@ -30,8 +28,8 @@ import static org.apache.sis.test.Assert.*;
  * Tests the {@link MeasurementRange} class.
  *
  * @author  Martin Desruisseaux (IRD)
+ * @version 0.8
  * @since   0.3
- * @version 0.4
  * @module
  */
 @DependsOn(NumberRangeTest.class)
@@ -39,13 +37,13 @@ public final strictfp class MeasurementRangeTest extends TestCase {
     /**
      * Tests unit conversions by the {@link MeasurementRange#convertTo(Unit)} method.
      *
-     * @throws ConversionException Should not happen.
+     * @throws IncommensurableException if a conversion between incompatible units were attempted.
      */
     @Test
-    public void testConvertTo() throws ConversionException {
-        final MeasurementRange<Float> range = MeasurementRange.create(1000f, true, 2000f, true, SI.METRE);
-        assertSame(range, range.convertTo(SI.METRE));
-        assertEquals(MeasurementRange.create(1f, true, 2f, true, SI.KILOMETRE), range.convertTo(SI.KILOMETRE));
+    public void testConvertTo() throws IncommensurableException {
+        final MeasurementRange<Float> range = MeasurementRange.create(1000f, true, 2000f, true, Units.METRE);
+        assertSame(range, range.convertTo(Units.METRE));
+        assertEquals(MeasurementRange.create(1f, true, 2f, true, Units.KILOMETRE), range.convertTo(Units.KILOMETRE));
     }
 
     /**
@@ -53,14 +51,14 @@ public final strictfp class MeasurementRangeTest extends TestCase {
      */
     @Test
     public void testAutoConversions() {
-        final MeasurementRange<Float> r1 = MeasurementRange.create(1000f, true, 2000f, true, SI.METRE);
-        final MeasurementRange<Float> r2 = MeasurementRange.create(1.5f, true, 3f, true, SI.KILOMETRE);
+        final MeasurementRange<Float> r1 = MeasurementRange.create(1000f, true, 2000f, true, Units.METRE);
+        final MeasurementRange<Float> r2 = MeasurementRange.create(1.5f, true, 3f, true, Units.KILOMETRE);
         assertEquals(Float.class, r1.getElementType());
         assertEquals(Float.class, r2.getElementType());
-        assertEquals(MeasurementRange.create(1000f, true, 3000f, true, SI.METRE ),    r1.union    (r2));
-        assertEquals(MeasurementRange.create(   1f, true,    3f, true, SI.KILOMETRE), r2.union    (r1));
-        assertEquals(MeasurementRange.create(1500f, true, 2000f, true, SI.METRE ),    r1.intersect(r2));
-        assertEquals(MeasurementRange.create( 1.5f, true,    2f, true, SI.KILOMETRE), r2.intersect(r1));
+        assertEquals(MeasurementRange.create(1000f, true, 3000f, true, Units.METRE ),    r1.union    (r2));
+        assertEquals(MeasurementRange.create(   1f, true,    3f, true, Units.KILOMETRE), r2.union    (r1));
+        assertEquals(MeasurementRange.create(1500f, true, 2000f, true, Units.METRE ),    r1.intersect(r2));
+        assertEquals(MeasurementRange.create( 1.5f, true,    2f, true, Units.KILOMETRE), r2.intersect(r1));
     }
 
     /**
@@ -68,12 +66,12 @@ public final strictfp class MeasurementRangeTest extends TestCase {
      */
     @Test
     public void testAutoConversionsOfAny() {
-        final MeasurementRange<?> r1 = MeasurementRange.create(1000f, true, 2000f, true, SI.METRE);
-        final MeasurementRange<?> r2 = MeasurementRange.create(1.5f, true, 3f, true, SI.KILOMETRE);
-        assertEquals(MeasurementRange.create(1000f, true, 3000f, true, SI.METRE ),    r1.unionAny    (r2));
-        assertEquals(MeasurementRange.create(   1f, true,    3f, true, SI.KILOMETRE), r2.unionAny    (r1));
-        assertEquals(MeasurementRange.create(1500f, true, 2000f, true, SI.METRE ),    r1.intersectAny(r2));
-        assertEquals(MeasurementRange.create( 1.5f, true,    2f, true, SI.KILOMETRE), r2.intersectAny(r1));
+        final MeasurementRange<?> r1 = MeasurementRange.create(1000f, true, 2000f, true, Units.METRE);
+        final MeasurementRange<?> r2 = MeasurementRange.create(1.5f, true, 3f, true, Units.KILOMETRE);
+        assertEquals(MeasurementRange.create(1000f, true, 3000f, true, Units.METRE ),    r1.unionAny    (r2));
+        assertEquals(MeasurementRange.create(   1f, true,    3f, true, Units.KILOMETRE), r2.unionAny    (r1));
+        assertEquals(MeasurementRange.create(1500f, true, 2000f, true, Units.METRE ),    r1.intersectAny(r2));
+        assertEquals(MeasurementRange.create( 1.5f, true,    2f, true, Units.KILOMETRE), r2.intersectAny(r1));
     }
 
     /**
@@ -81,10 +79,10 @@ public final strictfp class MeasurementRangeTest extends TestCase {
      */
     @Test
     public void testToString() {
-        MeasurementRange<Float> range = MeasurementRange.create(10f, true, 20f, true, SI.KILOMETRE);
+        MeasurementRange<Float> range = MeasurementRange.create(10f, true, 20f, true, Units.KILOMETRE);
         assertEquals("[10.0 … 20.0] km", range.toString());
-        range = MeasurementRange.create(10f, true, 20f, true, NonSI.DEGREE_ANGLE);
-        assertEquals("[10.0 … 20.0] deg", range.toString());
+        range = MeasurementRange.create(10f, true, 20f, true, Units.DEGREE);
+        assertEquals("[10.0 … 20.0]°", range.toString());
     }
 
     /**
@@ -92,8 +90,8 @@ public final strictfp class MeasurementRangeTest extends TestCase {
      */
     @Test
     public void testSerialization() {
-        NumberRange<Float> r1 = MeasurementRange.create(1000f, true, 2000f, true, SI.METRE);
-        NumberRange<Float> r2 = MeasurementRange.create(1.5f, true, 3f, true, SI.KILOMETRE);
+        NumberRange<Float> r1 = MeasurementRange.create(1000f, true, 2000f, true, Units.METRE);
+        NumberRange<Float> r2 = MeasurementRange.create(1.5f, true, 3f, true, Units.KILOMETRE);
         assertNotSame(r1, assertSerializedEquals(r1));
         assertNotSame(r2, assertSerializedEquals(r2));
     }

@@ -46,8 +46,8 @@ import static org.apache.sis.internal.util.CollectionsExt.first;
  * like "Alphanumeric matrix parameters"
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.6
  * @version 0.6
+ * @since   0.6
  * @module
  */
 final class MatrixParametersAlphaNum extends MatrixParameters {
@@ -59,8 +59,8 @@ final class MatrixParametersAlphaNum extends MatrixParameters {
     /**
      * Constructs a descriptors provider.
      *
-     * @param numRow The parameter for the number of rows.
-     * @param numCol The parameter for the number of columns.
+     * @param numRow  the parameter for the number of rows.
+     * @param numCol  the parameter for the number of columns.
      */
     MatrixParametersAlphaNum(final ParameterDescriptor<Integer> numRow, final ParameterDescriptor<Integer> numCol) {
         super(numRow, numCol);
@@ -90,8 +90,10 @@ final class MatrixParametersAlphaNum extends MatrixParameters {
          * while the EPSG parameters are (officially) restricted to 3×3 matrices.
          */
         if (WKT1 == this) {
-            // Should never happen, but still unconditionally tested
-            // (no 'assert' keyword) for preventing stack overflow.
+            /*
+             * Should never happen, but still unconditionally tested
+             * (no 'assert' keyword) for preventing stack overflow.
+             */
             throw new AssertionError();
         }
         final ParameterDescriptor<Double> wkt = WKT1.getElementDescriptor(indices);   // Really 'WKT1', not 'super'.
@@ -103,18 +105,18 @@ final class MatrixParametersAlphaNum extends MatrixParameters {
              */
             return wkt;
         }
-        final Map<String,Object> properties = new HashMap<String,Object>(6);
+        final Map<String,Object> properties = new HashMap<>(6);
         /*
          * Declare the EPSG identifier only for A0, A1, A2, B0, B1 and B2.
          */
         if (isEPSG(indices)) {
             name = EPSGName.create(name.tip().toString()); // Put the name in EPSG namespace.
-            final int code = (indices[0] == 0 ? Constants.A0 : Constants.B0) + indices[1];
+            final int code = (indices[0] == 0 ? Constants.EPSG_A0 : Constants.EPSG_B0) + indices[1];
             properties.put(ParameterDescriptor.IDENTIFIERS_KEY, EPSGName.identifier(code));
         }
         properties.put(ParameterDescriptor.NAME_KEY, name);
         properties.put(ParameterDescriptor.ALIAS_KEY, wkt.getName());
-        return new DefaultParameterDescriptor<Double>(properties, 0, 1, Double.class, null, null, wkt.getDefaultValue());
+        return new DefaultParameterDescriptor<>(properties, 0, 1, Double.class, null, null, wkt.getDefaultValue());
     }
 
     /**

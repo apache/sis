@@ -36,6 +36,10 @@ import static org.opengis.annotation.Specification.ISO_19115;
 
 /**
  * Graphic that provides an illustration of the dataset (should include a legend for the graphic).
+ * The following property is mandatory in a well-formed metadata according ISO 19115:
+ *
+ * <div class="preformat">{@code MD_BrowseGraphic}
+ * {@code   └─fileName…………} Name of the file that contains a graphic that provides an illustration of the dataset.</div>
  *
  * <p><b>Limitations:</b></p>
  * <ul>
@@ -50,10 +54,11 @@ import static org.opengis.annotation.Specification.ISO_19115;
  * @author  Touraïvane (IRD)
  * @author  Cédric Briançon (Geomatys)
  * @author  Rémi Maréchal (Geomatys)
- * @since   0.3
  * @version 0.5
+ * @since   0.3
  * @module
  */
+@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "MD_BrowseGraphic_Type", propOrder = {
     "fileName",
     "fileDescription",
@@ -101,7 +106,7 @@ public class DefaultBrowseGraphic extends ISOMetadata implements BrowseGraphic {
     /**
      * Creates a browse graphics initialized to the specified URI.
      *
-     * @param fileName The name of the file that contains a graphic.
+     * @param fileName  the name of the file that contains a graphic.
      */
     public DefaultBrowseGraphic(final URI fileName) {
         this.fileName = fileName;
@@ -112,7 +117,7 @@ public class DefaultBrowseGraphic extends ISOMetadata implements BrowseGraphic {
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
-     * @param object The metadata to copy values from, or {@code null} if none.
+     * @param  object  the metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(BrowseGraphic)
      */
@@ -143,8 +148,8 @@ public class DefaultBrowseGraphic extends ISOMetadata implements BrowseGraphic {
      *       metadata contained in the given object are not recursively copied.</li>
      * </ul>
      *
-     * @param  object The object to get as a SIS implementation, or {@code null} if none.
-     * @return A SIS implementation containing the values of the given object (may be the
+     * @param  object  the object to get as a SIS implementation, or {@code null} if none.
+     * @return a SIS implementation containing the values of the given object (may be the
      *         given object itself), or {@code null} if the argument was null.
      */
     public static DefaultBrowseGraphic castOrCopy(final BrowseGraphic object) {
@@ -157,7 +162,7 @@ public class DefaultBrowseGraphic extends ISOMetadata implements BrowseGraphic {
     /**
      * Returns the name of the file that contains a graphic that provides an illustration of the dataset.
      *
-     * @return File that contains a graphic that provides an illustration of the dataset, or {@code null}.
+     * @return file that contains a graphic that provides an illustration of the dataset, or {@code null}.
      */
     @Override
     @XmlElement(name = "fileName", required = true)
@@ -168,7 +173,7 @@ public class DefaultBrowseGraphic extends ISOMetadata implements BrowseGraphic {
     /**
      * Sets the name of the file that contains a graphic that provides an illustration of the dataset.
      *
-     * @param newValue The new filename.
+     * @param  newValue  the new filename.
      */
     public void setFileName(final URI newValue) {
         checkWritePermission();
@@ -178,7 +183,7 @@ public class DefaultBrowseGraphic extends ISOMetadata implements BrowseGraphic {
     /**
      * Returns the text description of the illustration.
      *
-     * @return Text description of the illustration, or {@code null}.
+     * @return text description of the illustration, or {@code null}.
      */
     @Override
     @XmlElement(name = "fileDescription")
@@ -189,7 +194,7 @@ public class DefaultBrowseGraphic extends ISOMetadata implements BrowseGraphic {
     /**
      * Sets the text description of the illustration.
      *
-     * @param newValue The new file description.
+     * @param  newValue  the new file description.
      */
     public void setFileDescription(final InternationalString newValue)  {
         checkWritePermission();
@@ -203,7 +208,7 @@ public class DefaultBrowseGraphic extends ISOMetadata implements BrowseGraphic {
      * CGM, EPS, GIF, JPEG, PBM, PS, TIFF, XWD.
      * </div>
      *
-     * @return Format in which the illustration is encoded, or {@code null}.
+     * @return format in which the illustration is encoded, or {@code null}.
      */
     @Override
     @XmlElement(name = "fileType")
@@ -217,7 +222,7 @@ public class DefaultBrowseGraphic extends ISOMetadata implements BrowseGraphic {
      * Raster formats are encouraged to use one of the names returned by
      * {@link javax.imageio.ImageIO#getReaderFormatNames()}.
      *
-     * @param newValue The new file type.
+     * @param  newValue  the new file type.
      */
     public void setFileType(final String newValue)  {
         checkWritePermission();
@@ -227,7 +232,7 @@ public class DefaultBrowseGraphic extends ISOMetadata implements BrowseGraphic {
     /**
      * Returns the restrictions on access and / or use of browse graphic.
      *
-     * @return Restrictions on access and / or use of browse graphic.
+     * @return restrictions on access and / or use of browse graphic.
      *
      * @since 0.5
      */
@@ -240,7 +245,7 @@ public class DefaultBrowseGraphic extends ISOMetadata implements BrowseGraphic {
     /**
      * Sets the restrictions on access and / or use of browse graphic.
      *
-     * @param newValues The new restrictions on access and / or use of browse graphic.
+     * @param  newValues  the new restrictions on access and / or use of browse graphic.
      *
      * @since 0.5
      */
@@ -251,7 +256,7 @@ public class DefaultBrowseGraphic extends ISOMetadata implements BrowseGraphic {
     /**
      * Return the links to browse graphic.
      *
-     * @return The links to browse graphic.
+     * @return the links to browse graphic.
      *
      * @since 0.5
      */
@@ -264,7 +269,7 @@ public class DefaultBrowseGraphic extends ISOMetadata implements BrowseGraphic {
     /**
      * Sets the links to browse graphic.
      *
-     * @param newValues The new links to browse graphic.
+     * @param  newValues  the new links to browse graphic.
      *
      * @since 0.5
      */

@@ -36,8 +36,8 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
  * Tests {@link DefaultLegalConstraints}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.4
  * @version 0.5
+ * @since   0.4
  * @module
  */
 public final strictfp class DefaultLegalConstraintsTest extends XMLTestCase implements WarningListener<Object> {
@@ -67,8 +67,8 @@ public final strictfp class DefaultLegalConstraintsTest extends XMLTestCase impl
      * warning occurred before this method call (i.e. each test is allowed to cause at most one warning), then
      * remember the warning parameters for verification by the test method.
      *
-     * @param source  Ignored.
-     * @param warning The warning.
+     * @param source   ignored.
+     * @param warning  the warning.
      */
     @Override
     public void warningOccured(final Object source, final LogRecord warning) {
@@ -94,7 +94,7 @@ public final strictfp class DefaultLegalConstraintsTest extends XMLTestCase impl
      * Tests unmarshalling of an element containing an empty {@code codeListValue} attribute.
      * This was used to cause a {@code NullPointerException} prior SIS-157 fix.
      *
-     * @throws JAXBException If an error occurred during the during unmarshalling processes.
+     * @throws JAXBException if an error occurred during the during unmarshalling processes.
      *
      * @see <a href="https://issues.apache.org/jira/browse/SIS-157">SIS-157</a>
      */
@@ -126,7 +126,7 @@ public final strictfp class DefaultLegalConstraintsTest extends XMLTestCase impl
      * The spelling changed between ISO 19115:2003 and 19115:2014, from "license" to "licence".
      * We need to ensure that XML marshalling use the old spelling, until the XML schema is updated.
      *
-     * @throws JAXBException If an error occurred during the during unmarshalling processes.
+     * @throws JAXBException if an error occurred during the during unmarshalling processes.
      */
     @Test
     public void testLicenceCode() throws JAXBException {

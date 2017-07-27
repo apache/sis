@@ -56,11 +56,12 @@ import org.apache.sis.util.ArraysExt;
  *
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
- * @version 0.3
- * @module
+ * @version 0.6
  *
  * @see <a href="http://jira.geotoolkit.org/browse/GEOTK-152">GEOTK-152</a>
+ *
+ * @since 0.3
+ * @module
  */
 @XmlType(name = "PT_FreeText_PropertyType")
 public final class PT_FreeText extends GO_CharacterString {
@@ -91,8 +92,8 @@ public final class PT_FreeText extends GO_CharacterString {
      * duplicate the {@code <gco:CharacterString>} element, or the unlocalized string normally
      * written in {@code <gco:CharacterString>} may be missing.</p>
      *
-     * @param text The text to write in the {@code <gco:CharacterString>} element.
-     * @param textGroup The text group elements.
+     * @param  text       the text to write in the {@code <gco:CharacterString>} element.
+     * @param  textGroup  the text group elements.
      *
      * @see org.apache.sis.xml.XML#LOCALE
      */
@@ -106,14 +107,10 @@ public final class PT_FreeText extends GO_CharacterString {
      * if it contains at least one non-root locale. Otherwise returns {@code null}, meaning that
      * the simpler {@link GO_CharacterString} construct should be used instead.
      *
-     * @param context The current (un)marshalling context, or {@code null} if none.
-     * @param text    An international string which could have several translations
-     *                embedded for the same text.
-     * @return A {@code PT_FreeText} instance if the given text has several translations,
-     *         or {@code null} otherwise.
+     * @param  text  an international string which could have several translations embedded for the same text.
+     * @return a {@code PT_FreeText} instance if the given text has several translations, or {@code null} otherwise.
      */
-    @SuppressWarnings("fallthrough")
-    public static PT_FreeText create(final Context context, final InternationalString text) {
+    public static PT_FreeText create(final InternationalString text) {
         if (text instanceof DefaultInternationalString) {
             final DefaultInternationalString df = (DefaultInternationalString) text;
             final Set<Locale> locales = df.getLocales();
@@ -131,6 +128,7 @@ public final class PT_FreeText extends GO_CharacterString {
                  * default. It is usually safer to avoid null value, but in this particular case
                  * the implementation (DefaultInternationalString) is known to support null.
                  */
+                final Context context = Context.current();
                 return new PT_FreeText(df.toString(context != null ? context.getLocale() : null),
                         ArraysExt.resize(textGroup, n));
             }
@@ -144,7 +142,7 @@ public final class PT_FreeText extends GO_CharacterString {
      * field is intentionally omitted since it is usually the text we are searching for!
      * (this method is used for detecting duplicated values).
      *
-     * @param  search The text to search (usually the {@link #text} value).
+     * @param  search  the text to search (usually the {@link #text} value).
      * @return {@code true} if the given text has been found.
      */
     private boolean contains(final String search) {
@@ -168,9 +166,11 @@ public final class PT_FreeText extends GO_CharacterString {
 
     /**
      * Returns the content of this {@code <gco:CharacterString>} as an {@code InternationalString}.
+     *
+     * @return the character sequence for this {@code <gco:CharacterString>}.
      */
     @Override
-    public CharSequence toCharSequence() {
+    protected CharSequence toCharSequence() {
         String defaultValue = toString(); // May be null.
         if (defaultValue != null && contains(defaultValue)) {
             /*

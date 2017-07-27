@@ -23,7 +23,6 @@ import static java.lang.Double.NaN;
 import static org.junit.Assert.*;
 import static org.opengis.test.Validators.validate;
 import static org.apache.sis.geometry.AbstractEnvelopeTest.WGS84;
-import static org.apache.sis.geometry.AbstractEnvelopeTest.STRICT;
 
 
 /**
@@ -32,8 +31,8 @@ import static org.apache.sis.geometry.AbstractEnvelopeTest.STRICT;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Johann Sorel (Geomatys)
- * @since   0.3
  * @version 0.3
+ * @since   0.3
  * @module
  */
 @DependsOn(GeneralEnvelopeTest.class)

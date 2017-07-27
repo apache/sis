@@ -27,12 +27,13 @@ import org.apache.sis.metadata.iso.content.DefaultBand;
  *
  * @author  Guilhem Legal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.3
+ * @since   0.3
  * @module
  */
 @XmlType(name = "MI_Band_Type")
 @XmlRootElement(name = "MI_Band")
+@SuppressWarnings("CloneableClassWithoutClone")
 public class MI_Band extends DefaultBand {
     /**
      * For cross-version compatibility.
@@ -50,7 +51,7 @@ public class MI_Band extends DefaultBand {
      * Creates a new metadata as a copy of the given one.
      * This is a shallow copy constructor.
      *
-     * @param original The original metadata to copy.
+     * @param original  the original metadata to copy.
      */
     public MI_Band(final Band original) {
         super(original);
@@ -60,8 +61,8 @@ public class MI_Band extends DefaultBand {
      * Wraps the given metadata into a SIS implementation that can be marshalled,
      * using the {@code "gmi"} namespace if necessary.
      *
-     * @param  original The original metadata provided by the user.
-     * @return The metadata to marshall.
+     * @param  original  the original metadata provided by the user.
+     * @return the metadata to marshall.
      */
     public static DefaultBand castOrCopy(final Band original) {
         if (original != null && !(original instanceof MI_Band)) {

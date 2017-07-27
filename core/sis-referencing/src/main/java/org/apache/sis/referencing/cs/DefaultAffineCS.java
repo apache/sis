@@ -17,14 +17,14 @@
 package org.apache.sis.referencing.cs;
 
 import java.util.Map;
-import javax.measure.unit.Unit;
+import javax.measure.Unit;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlRootElement;
 import org.opengis.referencing.cs.AffineCS;
 import org.opengis.referencing.cs.CartesianCS;
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
-import org.apache.sis.internal.referencing.AxisDirections;
+import org.apache.sis.internal.metadata.AxisDirections;
 import org.apache.sis.measure.Units;
 
 
@@ -51,8 +51,8 @@ import org.apache.sis.measure.Units;
  * constants.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
+ * @version 0.8
  * @since   0.4
- * @version 0.4
  * @module
  */
 @XmlType(name = "AffineCSType")
@@ -62,14 +62,6 @@ public class DefaultAffineCS extends AbstractCS implements AffineCS {
      * Serial number for inter-operability with different versions.
      */
     private static final long serialVersionUID = 7977674229369042440L;
-
-    /**
-     * Constructs a new coordinate system in which every attributes are set to a null or empty value.
-     * <strong>This is not a valid object.</strong> This constructor is strictly reserved to JAXB,
-     * which will assign values to the fields using reflexion.
-     */
-    DefaultAffineCS() {
-    }
 
     /**
      * Constructs a coordinate system of arbitrary dimension. This constructor is
@@ -114,9 +106,11 @@ public class DefaultAffineCS extends AbstractCS implements AffineCS {
      *   </tr>
      * </table>
      *
-     * @param properties The properties to be given to the identified object.
-     * @param axis0 The first axis.
-     * @param axis1 The second axis.
+     * @param properties  the properties to be given to the identified object.
+     * @param axis0       the first axis.
+     * @param axis1       the second axis.
+     *
+     * @see org.apache.sis.referencing.factory.GeodeticObjectFactory#createAffineCS(Map, CoordinateSystemAxis, CoordinateSystemAxis)
      */
     public DefaultAffineCS(final Map<String,?>   properties,
                            final CoordinateSystemAxis axis0,
@@ -129,10 +123,12 @@ public class DefaultAffineCS extends AbstractCS implements AffineCS {
      * Constructs a three-dimensional coordinate system from a set of properties.
      * The properties map is given unchanged to the superclass constructor.
      *
-     * @param properties The properties to be given to the identified object.
-     * @param axis0 The first axis.
-     * @param axis1 The second axis.
-     * @param axis2 The third axis.
+     * @param properties  the properties to be given to the identified object.
+     * @param axis0       the first axis.
+     * @param axis1       the second axis.
+     * @param axis2       the third axis.
+     *
+     * @see org.apache.sis.referencing.factory.GeodeticObjectFactory#createAffineCS(Map, CoordinateSystemAxis, CoordinateSystemAxis, CoordinateSystemAxis)
      */
     public DefaultAffineCS(final Map<String,?>   properties,
                            final CoordinateSystemAxis axis0,
@@ -149,7 +145,7 @@ public class DefaultAffineCS extends AbstractCS implements AffineCS {
      *
      * <p>This constructor performs a shallow copy, i.e. the properties are not cloned.</p>
      *
-     * @param cs The coordinate system to copy.
+     * @param  cs  the coordinate system to copy.
      *
      * @see #castOrCopy(AffineCS)
      */
@@ -166,8 +162,8 @@ public class DefaultAffineCS extends AbstractCS implements AffineCS {
      * <p>This method checks for the {@link CartesianCS} sub-interface. If that interface is found,
      * then this method delegates to the corresponding {@code castOrCopy} static method.</p>
      *
-     * @param  object The object to get as a SIS implementation, or {@code null} if none.
-     * @return A SIS implementation containing the values of the given object (may be the
+     * @param  object  the object to get as a SIS implementation, or {@code null} if none.
+     * @return a SIS implementation containing the values of the given object (may be the
      *         given object itself), or {@code null} if the argument was null.
      */
     public static DefaultAffineCS castOrCopy(final AffineCS object) {
@@ -194,7 +190,7 @@ public class DefaultAffineCS extends AbstractCS implements AffineCS {
         if (!AxisDirections.isSpatialOrUserDefined(direction, true)) {
             return INVALID_DIRECTION;
         }
-        if (!Units.isLinear(unit) && !Unit.ONE.equals(unit)) {
+        if (!Units.isLinear(unit) && !Units.UNITY.equals(unit) && !Units.PIXEL.equals(unit)) {
             return INVALID_UNIT;
         }
         return VALID;
@@ -205,7 +201,7 @@ public class DefaultAffineCS extends AbstractCS implements AffineCS {
      * The default implementation returns {@code AffineCS.class}.
      * Subclasses implementing a more specific GeoAPI interface shall override this method.
      *
-     * @return The affine coordinate system interface implemented by this class.
+     * @return the affine coordinate system interface implemented by this class.
      */
     @Override
     public Class<? extends AffineCS> getInterface() {
@@ -223,11 +219,37 @@ public class DefaultAffineCS extends AbstractCS implements AffineCS {
     }
 
     /**
-     * Returns a coordinate system of the same class than this CS but with different axes.
+     * Returns a coordinate system with different axes.
      * This method shall be overridden by all {@code AffineCS} subclasses in this package.
      */
     @Override
-    AbstractCS createSameType(final Map<String,?> properties, final CoordinateSystemAxis[] axes) {
-        return new DefaultAffineCS(properties, axes);
+    AbstractCS createForAxes(final Map<String,?> properties, final CoordinateSystemAxis[] axes) {
+        switch (axes.length) {
+            case 2: // Fall through
+            case 3: return new DefaultAffineCS(properties, axes);
+            default: throw unexpectedDimension(properties, axes, 2);
+        }
+    }
+
+
+
+
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+    ////////                                                                                  ////////
+    ////////                               XML support with JAXB                              ////////
+    ////////                                                                                  ////////
+    ////////        The following methods are invoked by JAXB using reflection (even if       ////////
+    ////////        they are private) or are helpers for other methods invoked by JAXB.       ////////
+    ////////        Those methods can be safely removed if Geographic Markup Language         ////////
+    ////////        (GML) support is not needed.                                              ////////
+    ////////                                                                                  ////////
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Constructs a new coordinate system in which every attributes are set to a null or empty value.
+     * <strong>This is not a valid object.</strong> This constructor is strictly reserved to JAXB,
+     * which will assign values to the fields using reflexion.
+     */
+    DefaultAffineCS() {
     }
 }

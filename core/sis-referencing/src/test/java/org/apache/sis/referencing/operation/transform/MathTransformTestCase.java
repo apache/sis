@@ -48,7 +48,6 @@ import static org.opengis.test.Assert.*;
  * <p>Various assertion methods:</p>
  * <ul>
  *   <li>{@link #assertCoordinateEquals assertCoordinateEquals(…)}  — from GeoAPI</li>
- *   <li>{@link #assertMatrixEquals     assertMatrixEquals(…)}      — from GeoAPI</li>
  *   <li>{@link #assertParameterEquals  assertParameterEquals(…)}   — from Apache SIS</li>
  *   <li>{@link #assertWktEquals        assertWktEquals(…)}         — from Apache SIS</li>
  * </ul>
@@ -63,8 +62,8 @@ import static org.opengis.test.Assert.*;
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.5
  * @version 0.6
+ * @since   0.5
  * @module
  */
 public abstract strictfp class MathTransformTestCase extends TransformTestCase {
@@ -111,7 +110,7 @@ public abstract strictfp class MathTransformTestCase extends TransformTestCase {
      * Returns a name for the current math transform. This method is used only for reporting errors.
      * This information is not reliable for the actual tests as the names may not be stable.
      *
-     * @return A name for the current math transform.
+     * @return a name for the current math transform.
      */
     @Debug
     private String getName() {
@@ -163,8 +162,8 @@ public abstract strictfp class MathTransformTestCase extends TransformTestCase {
      *
      * <p>This method verifies also the consistency of {@code MathTransform.transform(…)} method variants.</p>
      *
-     * @param  coordinates The coordinate points to transform.
-     * @param  expected The expect result of the transformation, or
+     * @param  coordinates  the coordinate points to transform.
+     * @param  expected     the expect result of the transformation, or
      *         {@code null} if {@code coordinates} is expected to be null.
      * @throws TransformException if the transformation failed.
      */
@@ -181,7 +180,7 @@ public abstract strictfp class MathTransformTestCase extends TransformTestCase {
         final float[] asFloats = Numerics.copyAsFloats(coordinates);
         final float[] result   = verifyConsistency(asFloats);
         for (int i=0; i<coordinates.length; i++) {
-            assertEquals("Detected change in source coordinates.", (float) coordinates[i], asFloats[i], 0f); // Paranoiac check.
+            assertEquals("Detected change in source coordinates.", (float) coordinates[i], asFloats[i], 0f);    // Paranoiac check.
         }
         /*
          * The comparison below needs a higher tolerance threshold, because we converted the source
@@ -195,7 +194,7 @@ public abstract strictfp class MathTransformTestCase extends TransformTestCase {
             for (int i=0; i<expected.length; i++) {
                 final double e = expected[i];
                 double tol = 1E-6 * abs(e);
-                if (!(tol > tolerance)) {   // Use '!' for replacing NaN by 'tolerance'.
+                if (!(tol > tolerance)) {               // Use '!' for replacing NaN by 'tolerance'.
                     tol = tolerance;
                 }
                 assertEquals(e, result[i], tol);
@@ -218,9 +217,9 @@ public abstract strictfp class MathTransformTestCase extends TransformTestCase {
      * This method does not {@linkplain #validate() validate} the transform; it is caller responsibility
      * to validate if desired.
      *
-     * @param  domain The domain of the numbers to be generated.
-     * @param  randomSeed The seed for the random number generator, or 0 for choosing a random seed.
-     * @throws TransformException If a conversion, transformation or derivative failed.
+     * @param  domain      the domain of the numbers to be generated.
+     * @param  randomSeed  the seed for the random number generator, or 0 for choosing a random seed.
+     * @throws TransformException if a conversion, transformation or derivative failed.
      *
      * @since 0.6
      */
@@ -247,9 +246,9 @@ public abstract strictfp class MathTransformTestCase extends TransformTestCase {
     /**
      * Generates random numbers that can be used for the current transform.
      *
-     * @param  domain  The domain of the numbers to be generated.
-     * @param  propNaN Approximative percentage of NaN values as a fraction between 0 and 1, or 0 if none.
-     * @return Random  coordinates in the given domain.
+     * @param  domain   the domain of the numbers to be generated.
+     * @param  propNaN  approximative percentage of NaN values as a fraction between 0 and 1, or 0 if none.
+     * @return random coordinates in the given domain.
      */
     final double[] generateRandomCoordinates(final CoordinateDomain domain, final float propNaN) {
         assertNotNull("The 'transform' field shall be assigned a value.", transform);
@@ -268,11 +267,11 @@ public abstract strictfp class MathTransformTestCase extends TransformTestCase {
      * This method can check the descriptor separately, for easier isolation of mismatch in case of failure.
      *
      * @param descriptor
-     *          The expected parameter descriptor, or {@code null} for bypassing this check.
+     *          the expected parameter descriptor, or {@code null} for bypassing this check.
      *          The descriptor is required to be strictly the same instance, since Apache SIS
      *          implementation returns constant values.
      * @param values
-     *          The expected parameter values, or {@code null} for bypassing this check.
+     *          the expected parameter values, or {@code null} for bypassing this check.
      *          Floating points values are compared in the units of the expected value,
      *          tolerating a difference up to the {@linkplain #tolerance(double) tolerance threshold}.
      */
@@ -291,8 +290,9 @@ public abstract strictfp class MathTransformTestCase extends TransformTestCase {
 
     /**
      * Asserts that the current {@linkplain #transform transform} produces the given WKT.
+     * This method uses the WKT 1 format, since {@code MathTransform}s are not defined in WKT 2.
      *
-     * @param expected The expected WKT.
+     * @param  expected  the expected WKT.
      *
      * @see #printInternalWKT()
      */
@@ -302,13 +302,52 @@ public abstract strictfp class MathTransformTestCase extends TransformTestCase {
     }
 
     /**
+     * Asserts that the current {@linkplain #transform transform} produces a WKT matching the given regular expression.
+     * This method uses the WKT 1 format, since {@code MathTransform}s are not defined in WKT 2.
+     *
+     * @param  expected  a regular expression for the expected WKT.
+     *
+     * @see #printInternalWKT()
+     *
+     * @since 0.6
+     */
+    protected final void assertWktEqualsRegex(final String expected) {
+        assertNotNull("The 'transform' field shall be assigned a value.", transform);
+        ReferencingAssert.assertWktEqualsRegex(Convention.WKT1, expected, transform);
+    }
+
+    /**
+     * Asserts that the current {@linkplain #transform transform} produces the given internal WKT.
+     *
+     * @param  expected  the expected internal WKT.
+     *
+     * @since 0.7
+     */
+    protected final void assertInternalWktEquals(final String expected) {
+        assertNotNull("The 'transform' field shall be assigned a value.", transform);
+        ReferencingAssert.assertWktEquals(Convention.INTERNAL, expected, transform);
+    }
+
+    /**
+     * Asserts that the current {@linkplain #transform transform} produces an internal WKT
+     * matching the given regular expression.
+     *
+     * @param  expected  a regular expression for the expected internal WKT.
+     *
+     * @since 0.7
+     */
+    protected final void assertInternalWktEqualsRegex(final String expected) {
+        assertNotNull("The 'transform' field shall be assigned a value.", transform);
+        ReferencingAssert.assertWktEqualsRegex(Convention.INTERNAL, expected, transform);
+    }
+
+    /**
      * Prints the current {@linkplain #transform transform} as normal and internal WKT.
      * This method is for debugging purpose only.
-     *
-     * @see #verifyWKT(String)
      */
     @Debug
     protected final void printInternalWKT() {
+        @SuppressWarnings("UseOfSystemOutOrSystemErr")
         final TableAppender table = new TableAppender(System.out);
         table.setMultiLinesCells(true);
         table.appendHorizontalSeparator();

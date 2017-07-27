@@ -52,15 +52,15 @@ import static org.junit.Assert.*;
  *
  * @author  Damiano Albani (for code snippet on the mailing list)
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.5
+ * @since   0.3
  * @module
  */
 public final strictfp class CustomMetadataTest extends XMLTestCase {
     /**
      * Tests the marshalling of a metadata implemented by {@link Proxy}.
      *
-     * @throws JAXBException Should never happen.
+     * @throws JAXBException if an error occurred during (un)marshalling.
      */
     @Test
     public void testProxy() throws JAXBException {
@@ -94,7 +94,7 @@ public final strictfp class CustomMetadataTest extends XMLTestCase {
     /**
      * Tests that the attributes defined in subtypes are also marshalled.
      *
-     * @throws JAXBException Should never happen.
+     * @throws JAXBException if an error occurred during (un)marshalling.
      *
      * @see <a href="http://jira.geotoolkit.org/browse/GEOTK-108">GEOTK-108</a>
      */
@@ -103,13 +103,13 @@ public final strictfp class CustomMetadataTest extends XMLTestCase {
         final NameFactory factory = DefaultFactories.forBuildin(NameFactory.class);
         final DataIdentification identification = new DataIdentification() {
             @Override public InternationalString getAbstract() {
-                Map<Locale, String> names = new HashMap<Locale, String>();
+                Map<Locale, String> names = new HashMap<>();
                 names.put(Locale.ENGLISH, "Description");
                 return factory.createInternationalString(names);
             }
 
             @Override public InternationalString getEnvironmentDescription() {
-                Map<Locale, String> names = new HashMap<Locale, String>();
+                Map<Locale, String> names = new HashMap<>();
                 names.put(Locale.ENGLISH, "Environment");
                 return factory.createInternationalString(names);
             }

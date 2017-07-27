@@ -28,8 +28,8 @@ import org.apache.sis.internal.jaxb.gco.PropertyType;
  *
  * @author  Guilhem Legal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
+ * @version 0.7
  * @since   0.4
- * @version 0.4
  * @module
  */
 public final class CS_CoordinateSystemAxis extends PropertyType<CS_CoordinateSystemAxis, CoordinateSystemAxis> {
@@ -62,8 +62,8 @@ public final class CS_CoordinateSystemAxis extends PropertyType<CS_CoordinateSys
      * Invoked by {@link PropertyType} at marshalling time for wrapping the given value
      * in a {@code <gml:CoordinateSystemAxis>} XML element.
      *
-     * @param  axis The element to marshall.
-     * @return A {@code PropertyType} wrapping the given the element.
+     * @param  axis  the element to marshall.
+     * @return a {@code PropertyType} wrapping the given the element.
      */
     @Override
     protected CS_CoordinateSystemAxis wrap(final CoordinateSystemAxis axis) {
@@ -75,7 +75,7 @@ public final class CS_CoordinateSystemAxis extends PropertyType<CS_CoordinateSys
      * inside the {@code <gml:CoordinateSystemAxis>} XML element.
      * This is the value or a copy of the value given in argument to the {@code wrap} method.
      *
-     * @return The element to be marshalled.
+     * @return the element to be marshalled.
      */
     @XmlElement(name = "CoordinateSystemAxis")
     public DefaultCoordinateSystemAxis getElement() {
@@ -85,9 +85,11 @@ public final class CS_CoordinateSystemAxis extends PropertyType<CS_CoordinateSys
     /**
      * Invoked by JAXB at unmarshalling time for storing the result temporarily.
      *
-     * @param axis The unmarshalled element.
+     * @param  axis  the unmarshalled element.
      */
     public void setElement(final DefaultCoordinateSystemAxis axis) {
         metadata = axis;
+        if (axis.getDirection() == null) incomplete("axisDirection");
+        if (axis.getUnit()      == null) incomplete("unit");
     }
 }

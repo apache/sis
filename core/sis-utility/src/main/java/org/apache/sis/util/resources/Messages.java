@@ -19,6 +19,7 @@ package org.apache.sis.util.resources;
 import java.net.URL;
 import java.util.Locale;
 import java.util.MissingResourceException;
+import javax.annotation.Generated;
 import org.opengis.util.InternationalString;
 
 
@@ -26,8 +27,8 @@ import org.opengis.util.InternationalString;
  * Locale-dependent resources for miscellaneous (often logging) messages.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
+ * @version 0.8
  * @since   0.3
- * @version 0.4
  * @module
  */
 public final class Messages extends IndexedResourceBundle {
@@ -41,6 +42,7 @@ public final class Messages extends IndexedResourceBundle {
      * @since   0.3
      * @module
      */
+    @Generated("org.apache.sis.util.resources.IndexedResourceCompiler")
     public static final class Keys extends KeyConstants {
         /**
          * The unique instance of key constants handler.
@@ -56,73 +58,172 @@ public final class Messages extends IndexedResourceBundle {
         /**
          * {0} “{1}” is already registered. The second instance will be ignored.
          */
-        public static final short AlreadyRegistered_2 = 0;
+        public static final short AlreadyRegistered_2 = 1;
+
+        /**
+         * Can not create the {0} schema in database.
+         */
+        public static final short CanNotCreateSchema_1 = 2;
+
+        /**
+         * Can not instantiate the object of type ‘{0}’ identified by “{1}”. Reason is:{2}
+         */
+        public static final short CanNotInstantiateForIdentifier_3 = 3;
 
         /**
          * Changed the container capacity from {0} to {1} elements.
          */
-        public static final short ChangedContainerCapacity_2 = 1;
+        public static final short ChangedContainerCapacity_2 = 4;
 
         /**
-         * This result indicates if a datum shift method has been applied.
+         * Configuration of “{0}” received on {1} in {2} seconds.
          */
-        public static final short ConformanceMeansDatumShift = 8;
+        public static final short ConfigurationOf_3 = 5;
 
         /**
-         * This parameter is shown for completeness, but should never have a value different than {0}
-         * for this projection.
+         * Connected to geospatial database on “{0}”.
          */
-        public static final short ConstantProjParameterValue_1 = 11;
+        public static final short ConnectedToGeospatialDatabase_1 = 6;
+
+        /**
+         * Created an instance of ‘{0}’ from the “{1}” identifier in {2} seconds.
+         */
+        public static final short CreateDurationFromIdentifier_3 = 7;
+
+        /**
+         * Created an instance of ‘{0}’ in {1} seconds.
+         */
+        public static final short CreateDuration_2 = 8;
+
+        /**
+         * Created an instance of ‘{0}’ named “{1}” with the “{2}” identifier.
+         */
+        public static final short CreatedIdentifiedObject_3 = 9;
+
+        /**
+         * Created an instance of ‘{0}’ named “{1}”.
+         */
+        public static final short CreatedNamedObject_2 = 10;
+
+        /**
+         * Creating {0} schema in the “{1}” database.
+         */
+        public static final short CreatingSchema_2 = 11;
+
+        /**
+         * The {0} environment variable is defined, but the given “{1}” value is not an existing
+         * directory.
+         */
+        public static final short DataDirectoryDoesNotExist_2 = 12;
+
+        /**
+         * Apache SIS is not authorized to access the “{1}” sub-directory in the directory given by the
+         * {0} environment variable.
+         */
+        public static final short DataDirectoryNotAccessible_2 = 13;
+
+        /**
+         * Apache SIS is not authorized to read information given by the “{0}” environment variable.
+         */
+        public static final short DataDirectoryNotAuthorized_1 = 14;
+
+        /**
+         * The “{1}” directory specified by the {0} environment variable exists but is not readable.
+         */
+        public static final short DataDirectoryNotReadable_2 = 15;
+
+        /**
+         * The “{0}” environment variable is not set.
+         */
+        public static final short DataDirectoryNotSpecified_1 = 16;
+
+        /**
+         * Apache SIS can not write in the “{1}” directory given by the {0} environment variable.
+         */
+        public static final short DataDirectoryNotWritable_2 = 17;
+
+        /**
+         * Environment variable {0} specifies the “{1}” data directory.
+         */
+        public static final short DataDirectory_2 = 18;
 
         /**
          * Property “{0}” has been discarded in favor of “{1}”, because those two properties are
          * mutually exclusive.
          */
-        public static final short DiscardedExclusiveProperty_2 = 2;
+        public static final short DiscardedExclusiveProperty_2 = 19;
+
+        /**
+         * Dropped the “{0}” foreigner key constraint.
+         */
+        public static final short DroppedForeignerKey_1 = 32;
 
         /**
          * Ignored properties after the first occurrence of ‘{0}’.
          */
-        public static final short IgnoredPropertiesAfterFirst_1 = 6;
+        public static final short IgnoredPropertiesAfterFirst_1 = 20;
 
         /**
          * Ignored property associated to ‘{0}’.
          */
-        public static final short IgnoredPropertyAssociatedTo_1 = 7;
+        public static final short IgnoredPropertyAssociatedTo_1 = 21;
+
+        /**
+         * Parsing of “{0}” done, but some elements were ignored.
+         */
+        public static final short IncompleteParsing_1 = 22;
+
+        /**
+         * Inserted {0} records in {1} seconds.
+         */
+        public static final short InsertDuration_2 = 23;
+
+        /**
+         * No object associated to the “{0}” JNDI name.
+         */
+        public static final short JNDINotSpecified_1 = 24;
 
         /**
          * Text were discarded for some locales.
          */
-        public static final short LocalesDiscarded = 3;
+        public static final short LocalesDiscarded = 25;
 
         /**
-         * The “{1}” parameter could have been omitted. But it has been given a value of {2} which does
-         * not match the definition of the “{0}” ellipsoid.
+         * This “{0}” formatting is a departure from standard format.
          */
-        public static final short MismatchedEllipsoidAxisLength_3 = 9;
+        public static final short NonConformFormatting_1 = 26;
 
         /**
-         * This parameter borrowed from the “{0}” projection is not formally a parameter of this
-         * projection.
+         * Optional module “{0}” requested but not found.
          */
-        public static final short NotFormalProjectionParameter_1 = 10;
+        public static final short OptionalModuleNotFound_1 = 27;
 
         /**
          * Property “{0}” is hidden by “{1}”.
          */
-        public static final short PropertyHiddenBy_2 = 4;
+        public static final short PropertyHiddenBy_2 = 28;
+
+        /**
+         * The text contains unknown elements:
+         */
+        public static final short UnknownElementsInText = 29;
+
+        /**
+         * Loading of “{0}” done, but some records were ignored because of unrecognized keywords: {1}
+         */
+        public static final short UnknownKeywordInRecord_2 = 30;
 
         /**
          * Can not parse “{1}” as an instance of ‘{0}’. The value is stored as plain text instead, but
          * will be ignored by some processing.
          */
-        public static final short UnparsableValueStoredAsText_2 = 5;
+        public static final short UnparsableValueStoredAsText_2 = 31;
     }
 
     /**
      * Constructs a new resource bundle loading data from the given UTF file.
      *
-     * @param resources The path of the binary file containing resources, or {@code null} if
+     * @param resources  the path of the binary file containing resources, or {@code null} if
      *        there is no resources. The resources may be a file or an entry in a JAR file.
      */
     Messages(final URL resources) {
@@ -131,17 +232,19 @@ public final class Messages extends IndexedResourceBundle {
 
     /**
      * Returns the handle for the {@code Keys} constants.
+     *
+     * @return a handler for the constants declared in the inner {@code Keys} class.
      */
     @Override
-    final KeyConstants getKeyConstants() {
+    protected KeyConstants getKeyConstants() {
         return Keys.INSTANCE;
     }
 
     /**
      * Returns resources in the given locale.
      *
-     * @param  locale The locale, or {@code null} for the default locale.
-     * @return Resources in the given locale.
+     * @param  locale  the locale, or {@code null} for the default locale.
+     * @return resources in the given locale.
      * @throws MissingResourceException if resources can't be found.
      */
     public static Messages getResources(final Locale locale) throws MissingResourceException {
@@ -151,9 +254,9 @@ public final class Messages extends IndexedResourceBundle {
     /**
      * Gets a string for the given key from this resource bundle or one of its parents.
      *
-     * @param  key The key for the desired string.
-     * @return The string for the given key.
-     * @throws MissingResourceException If no object for the given key can be found.
+     * @param  key  the key for the desired string.
+     * @return the string for the given key.
+     * @throws MissingResourceException if no object for the given key can be found.
      */
     public static String format(final short key) throws MissingResourceException {
         return getResources(null).getString(key);
@@ -163,10 +266,10 @@ public final class Messages extends IndexedResourceBundle {
      * Gets a string for the given key are replace all occurrence of "{0}"
      * with values of {@code arg0}.
      *
-     * @param  key The key for the desired string.
-     * @param  arg0 Value to substitute to "{0}".
-     * @return The formatted string for the given key.
-     * @throws MissingResourceException If no object for the given key can be found.
+     * @param  key   the key for the desired string.
+     * @param  arg0  value to substitute to "{0}".
+     * @return the formatted string for the given key.
+     * @throws MissingResourceException if no object for the given key can be found.
      */
     public static String format(final short  key,
                                 final Object arg0) throws MissingResourceException
@@ -178,11 +281,11 @@ public final class Messages extends IndexedResourceBundle {
      * Gets a string for the given key are replace all occurrence of "{0}",
      * "{1}", with values of {@code arg0}, {@code arg1}.
      *
-     * @param  key The key for the desired string.
-     * @param  arg0 Value to substitute to "{0}".
-     * @param  arg1 Value to substitute to "{1}".
-     * @return The formatted string for the given key.
-     * @throws MissingResourceException If no object for the given key can be found.
+     * @param  key   the key for the desired string.
+     * @param  arg0  value to substitute to "{0}".
+     * @param  arg1  value to substitute to "{1}".
+     * @return the formatted string for the given key.
+     * @throws MissingResourceException if no object for the given key can be found.
      */
     public static String format(final short  key,
                                 final Object arg0,
@@ -195,12 +298,12 @@ public final class Messages extends IndexedResourceBundle {
      * Gets a string for the given key are replace all occurrence of "{0}",
      * "{1}", with values of {@code arg0}, {@code arg1}, etc.
      *
-     * @param  key The key for the desired string.
-     * @param  arg0 Value to substitute to "{0}".
-     * @param  arg1 Value to substitute to "{1}".
-     * @param  arg2 Value to substitute to "{2}".
-     * @return The formatted string for the given key.
-     * @throws MissingResourceException If no object for the given key can be found.
+     * @param  key   the key for the desired string.
+     * @param  arg0  value to substitute to "{0}".
+     * @param  arg1  value to substitute to "{1}".
+     * @param  arg2  value to substitute to "{2}".
+     * @return the formatted string for the given key.
+     * @throws MissingResourceException if no object for the given key can be found.
      */
     public static String format(final short  key,
                                 final Object arg0,
@@ -214,13 +317,13 @@ public final class Messages extends IndexedResourceBundle {
      * Gets a string for the given key are replace all occurrence of "{0}",
      * "{1}", with values of {@code arg0}, {@code arg1}, etc.
      *
-     * @param  key The key for the desired string.
-     * @param  arg0 Value to substitute to "{0}".
-     * @param  arg1 Value to substitute to "{1}".
-     * @param  arg2 Value to substitute to "{2}".
-     * @param  arg3 Value to substitute to "{3}".
-     * @return The formatted string for the given key.
-     * @throws MissingResourceException If no object for the given key can be found.
+     * @param  key   the key for the desired string.
+     * @param  arg0  value to substitute to "{0}".
+     * @param  arg1  value to substitute to "{1}".
+     * @param  arg2  value to substitute to "{2}".
+     * @param  arg3  value to substitute to "{3}".
+     * @return the formatted string for the given key.
+     * @throws MissingResourceException if no object for the given key can be found.
      */
     public static String format(final short  key,
                                 final Object arg0,
@@ -237,10 +340,10 @@ public final class Messages extends IndexedResourceBundle {
     private static final class International extends ResourceInternationalString {
         private static final long serialVersionUID = 4553487496835099424L;
 
-        International(short key)                 {super(key);}
-        International(short key, Object args)    {super(key, args);}
-        @Override KeyConstants getKeyConstants() {return Keys.INSTANCE;}
-        @Override IndexedResourceBundle getBundle(final Locale locale) {
+        International(short key)                           {super(key);}
+        International(short key, Object args)              {super(key, args);}
+        @Override protected KeyConstants getKeyConstants() {return Keys.INSTANCE;}
+        @Override protected IndexedResourceBundle getBundle(final Locale locale) {
             return getResources(locale);
         }
     }
@@ -250,8 +353,8 @@ public final class Messages extends IndexedResourceBundle {
      * validity. If the key is invalid, then a {@link MissingResourceException} may be thrown
      * when a {@link InternationalString#toString(Locale)} method is invoked.
      *
-     * @param  key The key for the desired string.
-     * @return An international string for the given key.
+     * @param  key  the key for the desired string.
+     * @return an international string for the given key.
      */
     public static InternationalString formatInternational(final short key) {
         return new International(key);
@@ -267,9 +370,9 @@ public final class Messages extends IndexedResourceBundle {
      * of a temporary array. There is no risk of confusion since the two methods delegate their
      * work to the same {@code format} method anyway.</div>
      *
-     * @param  key The key for the desired string.
-     * @param  arg Values to substitute to "{0}".
-     * @return An international string for the given key.
+     * @param  key  the key for the desired string.
+     * @param  arg  values to substitute to "{0}".
+     * @return an international string for the given key.
      */
     public static InternationalString formatInternational(final short key, final Object arg) {
         return new International(key, arg);
@@ -280,9 +383,9 @@ public final class Messages extends IndexedResourceBundle {
      * validity. If the key is invalid, then a {@link MissingResourceException} may be thrown
      * when a {@link InternationalString#toString(Locale)} method is invoked.
      *
-     * @param  key  The key for the desired string.
-     * @param  args Values to substitute to "{0}", "{1}", <i>etc</i>.
-     * @return An international string for the given key.
+     * @param  key   the key for the desired string.
+     * @param  args  values to substitute to "{0}", "{1}", <i>etc</i>.
+     * @return an international string for the given key.
      */
     public static InternationalString formatInternational(final short key, final Object... args) {
         return new International(key, args);

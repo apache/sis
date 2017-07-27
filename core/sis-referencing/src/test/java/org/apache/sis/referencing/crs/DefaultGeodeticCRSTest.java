@@ -32,8 +32,8 @@ import static org.apache.sis.test.Assert.*;
  * @author  Cédric Briançon (Geomatys)
  * @author  Guilhem Legal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.4
  * @version 0.4
+ * @since   0.4
  * @module
  */
 @DependsOn({
@@ -45,12 +45,12 @@ public final strictfp class DefaultGeodeticCRSTest extends XMLTestCase {
     /**
      * An XML file in this package containing a geodetic CRS definition.
      */
-    private static final String XML_FILE = "WGS 84.xml";
+    private static final String XML_FILE = "GeographicCRS.xml";
 
     /**
      * Tests (un)marshalling of a geodetic coordinate reference system.
      *
-     * @throws JAXBException If an error occurred during unmarshalling.
+     * @throws JAXBException if an error occurred during unmarshalling.
      */
     @Test
     public void testXML() throws JAXBException {

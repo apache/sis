@@ -16,6 +16,7 @@
  */
 package org.apache.sis.internal.referencing.provider;
 
+import javax.xml.bind.annotation.XmlTransient;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.apache.sis.internal.util.Constants;
@@ -29,12 +30,14 @@ import org.apache.sis.metadata.iso.citation.Citations;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Rueben Schulz (UBC)
- * @since   0.6
  * @version 0.6
- * @module
  *
  * @see <a href="http://www.remotesensing.org/geotiff/proj_list/mercator_1sp.html">Mercator 1SP on RemoteSensing.org</a>
+ *
+ * @since 0.6
+ * @module
  */
+@XmlTransient
 public final class Mercator1SP extends AbstractMercator {
     /**
      * For cross-version compatibility.
@@ -52,7 +55,7 @@ public final class Mercator1SP extends AbstractMercator {
      * The operation parameter descriptor for the <cite>Longitude of natural origin</cite> (λ₀) parameter value.
      * Valid values range is [-180 … 180]° and default value is 0°.
      */
-    public static final ParameterDescriptor<Double> CENTRAL_MERIDIAN;
+    public static final ParameterDescriptor<Double> LONGITUDE_OF_ORIGIN;
 
     /**
      * The operation parameter descriptor for the <cite>Scale factor at natural origin</cite> (k₀) parameter value.
@@ -66,15 +69,18 @@ public final class Mercator1SP extends AbstractMercator {
     static final ParameterDescriptorGroup PARAMETERS;
     static {
         final ParameterBuilder builder = builder();
-        LATITUDE_OF_ORIGIN = createConstant(builder.addNamesAndIdentifiers(Equirectangular.LATITUDE_OF_ORIGIN)
+        LATITUDE_OF_ORIGIN = createZeroConstant(builder.addNamesAndIdentifiers(Equirectangular.LATITUDE_OF_ORIGIN)
+                .reidentify(Citations.GEOTIFF, "3081")
                 .rename(Citations.GEOTIFF, "NatOriginLat")
-                .setRemarks(Equirectangular.LATITUDE_OF_ORIGIN.getRemarks()), 0.0);
+                .setRemarks(Equirectangular.LATITUDE_OF_ORIGIN.getRemarks()));
 
-        CENTRAL_MERIDIAN = createLongitude(builder.addNamesAndIdentifiers(Equirectangular.CENTRAL_MERIDIAN)
+        LONGITUDE_OF_ORIGIN = createLongitude(builder.addNamesAndIdentifiers(Equirectangular.LONGITUDE_OF_ORIGIN)
+                .reidentify(Citations.GEOTIFF, "3080")
                 .rename(Citations.GEOTIFF, "NatOriginLong"));
 
         SCALE_FACTOR = createScale(builder
                 .addIdentifier("8805")
+                .addIdentifier(Citations.GEOTIFF, "3092")
                 .addName("Scale factor at natural origin")
                 .addName(Citations.OGC,     Constants.SCALE_FACTOR)
                 .addName(Citations.ESRI,    "Scale_Factor")
@@ -83,20 +89,20 @@ public final class Mercator1SP extends AbstractMercator {
                 .addName(Citations.PROJ4,   "k"));
 
         PARAMETERS = builder
-            .addIdentifier(              "9804")                        // The ellipsoidal case
-            .addName(                    "Mercator (variant A)")        // Starting from EPSG version 7.6
-            .addName(                    "Mercator (1SP)")              // Prior to EPSG version 7.6
-            .addName(Citations.OGC,      "Mercator_1SP")
-            .addName(Citations.GEOTIFF,  "CT_Mercator")
-            .addName(Citations.PROJ4,    "merc")
-            .addIdentifier(Citations.GEOTIFF,   "7")
-            .addIdentifier(Citations.MAP_INFO, "10")    // MapInfo names this projection "Mercator".
-            .createGroupForMapProjection(
-                    LATITUDE_OF_ORIGIN,
-                    CENTRAL_MERIDIAN,
-                    SCALE_FACTOR,
-                    FALSE_EASTING,
-                    FALSE_NORTHING);
+                .addIdentifier(              "9804")                        // The ellipsoidal case
+                .addName(                    "Mercator (variant A)")        // Starting from EPSG version 7.6
+                .addName(                    "Mercator (1SP)")              // Prior to EPSG version 7.6
+                .addName(Citations.OGC,      "Mercator_1SP")
+                .addName(Citations.GEOTIFF,  "CT_Mercator")
+                .addName(Citations.PROJ4,    "merc")
+                .addIdentifier(Citations.GEOTIFF,   "7")
+                .addIdentifier(Citations.MAP_INFO, "10")    // MapInfo names this projection "Mercator".
+                .createGroupForMapProjection(
+                        LATITUDE_OF_ORIGIN,
+                        LONGITUDE_OF_ORIGIN,
+                        SCALE_FACTOR,
+                        FALSE_EASTING,
+                        FALSE_NORTHING);
     }
 
     /**

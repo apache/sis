@@ -19,15 +19,12 @@ package org.apache.sis.internal.shapefile.jdbc.metadata;
 import java.io.File;
 import java.sql.*;
 import java.util.Arrays;
+import java.util.Objects;
 
 import org.apache.sis.internal.shapefile.jdbc.SQLConnectionClosedException;
 import org.apache.sis.internal.shapefile.jdbc.connection.DBFConnection;
 import org.apache.sis.internal.shapefile.jdbc.resultset.*;
 import org.apache.sis.internal.shapefile.jdbc.statement.DBFStatement;
-
-// Branch-dependent imports
-import org.apache.sis.internal.jdk7.Objects;
-
 
 /**
  * Database Metadata.
@@ -43,7 +40,7 @@ public class DBFDatabaseMetaData extends AbstractDatabaseMetaData {
      */
     public DBFDatabaseMetaData(DBFConnection cnt) {
         Objects.requireNonNull(cnt, "The database connection used to create Database metadata cannot be null.");
-        connection = cnt;
+        this.connection = cnt;
     }
 
     /**
@@ -76,11 +73,8 @@ public class DBFDatabaseMetaData extends AbstractDatabaseMetaData {
      */
     @Override
     public ResultSet getColumns(@SuppressWarnings("unused") String catalog, @SuppressWarnings("unused") String schemaPattern, @SuppressWarnings("unused") String tableNamePattern, @SuppressWarnings("unused") String columnNamePattern) throws SQLConnectionClosedException {
-        DBFStatement stmt = (DBFStatement)connection.createStatement();
-        try {
-            return new DBFBuiltInMemoryResultSetForColumnsListing(stmt, connection.getFieldsDescriptors());
-        } finally {
-            stmt.close();
+        try(DBFStatement stmt = (DBFStatement)this.connection.createStatement()) {
+            return new DBFBuiltInMemoryResultSetForColumnsListing(stmt, this.connection.getFieldsDescriptors());
         }
     }
 
@@ -90,7 +84,7 @@ public class DBFDatabaseMetaData extends AbstractDatabaseMetaData {
      */
     @Override
     public File getFile() {
-        return connection.getFile();
+        return this.connection.getFile();
     }
 
     /**
@@ -1019,7 +1013,7 @@ public class DBFDatabaseMetaData extends AbstractDatabaseMetaData {
     @Override public ResultSet getTables(String catalog, String schemaPattern, String tableNamePattern, String[] types) {
         logStep("getTables", catalog, schemaPattern, tableNamePattern, types != null ? Arrays.asList(types) : null);
 
-        DBFStatement stmt = new DBFStatement(connection);
+        DBFStatement stmt = new DBFStatement(this.connection);
         DBFBuiltInMemoryResultSetForTablesListing tables = new DBFBuiltInMemoryResultSetForTablesListing(stmt);
         stmt.registerResultSet(tables);
         return tables;
@@ -1032,7 +1026,7 @@ public class DBFDatabaseMetaData extends AbstractDatabaseMetaData {
     @Override public ResultSet getSchemas() {
         logStep("getSchemas");
 
-        DBFStatement stmt = new DBFStatement(connection);
+        DBFStatement stmt = new DBFStatement(this.connection);
         DBFBuiltInMemoryResultSetForSchemaListing schemas = new DBFBuiltInMemoryResultSetForSchemaListing(stmt);
         stmt.registerResultSet(schemas);
         return schemas;
@@ -1045,7 +1039,7 @@ public class DBFDatabaseMetaData extends AbstractDatabaseMetaData {
     @Override public ResultSet getCatalogs() {
         logStep("getCatalogs");
 
-        DBFStatement stmt = new DBFStatement(connection);
+        DBFStatement stmt = new DBFStatement(this.connection);
         DBFBuiltInMemoryResultSetForCatalogNamesListing catalogNames = new DBFBuiltInMemoryResultSetForCatalogNamesListing(stmt);
         stmt.registerResultSet(catalogNames);
         return catalogNames;
@@ -1058,7 +1052,7 @@ public class DBFDatabaseMetaData extends AbstractDatabaseMetaData {
     @Override public ResultSet getTableTypes() {
         logStep("getTableTypes");
 
-        DBFStatement stmt = new DBFStatement(connection);
+        DBFStatement stmt = new DBFStatement(this.connection);
         DBFBuiltInMemoryResultSetForTablesTypesListing tablesTypes = new DBFBuiltInMemoryResultSetForTablesTypesListing(stmt);
         stmt.registerResultSet(tablesTypes);
         return tablesTypes;
@@ -1174,7 +1168,7 @@ public class DBFDatabaseMetaData extends AbstractDatabaseMetaData {
      */
     @Override public Connection getConnection() {
         logStep("getConnection");
-        return connection;
+        return this.connection;
     }
 
     /**
@@ -1292,7 +1286,7 @@ public class DBFDatabaseMetaData extends AbstractDatabaseMetaData {
     /**
      * @see java.sql.DatabaseMetaData#generatedKeyAlwaysReturned()
      */
-    public boolean generatedKeyAlwaysReturned() {
+    @Override public boolean generatedKeyAlwaysReturned() {
         logStep("generatedKeyAlwaysReturned");
         return false;
     }

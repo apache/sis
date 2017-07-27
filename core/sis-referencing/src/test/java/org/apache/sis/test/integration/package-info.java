@@ -17,11 +17,14 @@
 
 
 /**
- * Tests the integration between two ore more SIS modules.
+ * Tests the integration between two ore more SIS modules or integration with larger data.
+ * The larger data (e.g. datum shift grids) are not distributed with SIS. If desired, they
+ * must be downloaded by the user and stored in the directory identified by the {@code SIS_DATA}
+ * environment variable.
  *
  * @author  Martin Desruisseaux (Geomatys)
+ * @version 0.7
  * @since   0.4
- * @version 0.4
  * @module
  */
 package org.apache.sis.test.integration;

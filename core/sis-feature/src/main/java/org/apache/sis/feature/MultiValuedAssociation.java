@@ -19,7 +19,7 @@ package org.apache.sis.feature;
 import java.util.Collection;
 import org.apache.sis.internal.util.CheckedArrayList;
 import org.apache.sis.util.ArgumentChecks;
-import org.apache.sis.util.resources.Errors;
+import org.apache.sis.internal.feature.Resources;
 
 
 /**
@@ -38,11 +38,12 @@ import org.apache.sis.util.resources.Errors;
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.5
- * @version 0.5
- * @module
+ * @version 0.6
  *
  * @see DefaultAssociationRole
+ *
+ * @since 0.5
+ * @module
  */
 final class MultiValuedAssociation extends AbstractAssociation {
     /**
@@ -62,7 +63,7 @@ final class MultiValuedAssociation extends AbstractAssociation {
      */
     public MultiValuedAssociation(final DefaultAssociationRole role) {
         super(role);
-        values = new CheckedArrayList<AbstractFeature>(AbstractFeature.class);
+        values = new CheckedArrayList<>(AbstractFeature.class);
     }
 
     /**
@@ -74,7 +75,7 @@ final class MultiValuedAssociation extends AbstractAssociation {
     MultiValuedAssociation(final DefaultAssociationRole role, final Object values) {
         super(role);
         if (values == null) {
-            this.values = new CheckedArrayList<AbstractFeature>(AbstractFeature.class);
+            this.values = new CheckedArrayList<>(AbstractFeature.class);
         } else {
             this.values = CheckedArrayList.castOrCopy((CheckedArrayList<?>) values, AbstractFeature.class);
         }
@@ -83,7 +84,7 @@ final class MultiValuedAssociation extends AbstractAssociation {
     /**
      * Returns the feature, or {@code null} if none.
      *
-     * @return The feature (may be {@code null}).
+     * @return the feature (may be {@code null}).
      * @throws IllegalStateException if this association contains more than one value.
      */
     @Override
@@ -91,7 +92,7 @@ final class MultiValuedAssociation extends AbstractAssociation {
         switch (values.size()) {
             case 0:  return null;
             case 1:  return values.get(0);
-            default: throw new IllegalStateException(Errors.format(Errors.Keys.NotASingleton_1, getName()));
+            default: throw new IllegalStateException(Resources.format(Resources.Keys.NotASingleton_1, getName()));
         }
     }
 
@@ -100,9 +101,10 @@ final class MultiValuedAssociation extends AbstractAssociation {
      * The returned collection is <cite>live</cite>: changes in the returned collection
      * will be reflected immediately in this {@code Association} instance, and conversely.
      *
-     * @return The features in a <cite>live</cite> collection.
+     * @return the features in a <cite>live</cite> collection.
      */
     @Override
+    @SuppressWarnings("ReturnOfCollectionOrArrayField")
     public Collection<AbstractFeature> getValues() {
         return values;
     }
@@ -110,7 +112,7 @@ final class MultiValuedAssociation extends AbstractAssociation {
     /**
      * Sets the feature.
      *
-     * @param value The new value, or {@code null} for removing all values from this association.
+     * @param  value  the new value, or {@code null} for removing all values from this association.
      */
     @Override
     public void setValue(final AbstractFeature value) {
@@ -124,7 +126,7 @@ final class MultiValuedAssociation extends AbstractAssociation {
     /**
      * Sets the feature values. All previous values are replaced by the given collection.
      *
-     * @param newValues The new values.
+     * @param  newValues  the new values.
      */
     @Override
     public void setValues(final Collection<? extends AbstractFeature> newValues) {
@@ -144,7 +146,7 @@ final class MultiValuedAssociation extends AbstractAssociation {
      * This implementation returns a <em>shallow</em> copy:
      * the association {@linkplain #getValues() values} are <strong>not</strong> cloned.
      *
-     * @return A clone of this association.
+     * @return a clone of this association.
      * @throws CloneNotSupportedException if this association can not be cloned.
      */
     @Override
@@ -158,7 +160,7 @@ final class MultiValuedAssociation extends AbstractAssociation {
     /**
      * Returns a hash code value for this association.
      *
-     * @return A hash code value.
+     * @return a hash code value.
      */
     @Override
     public int hashCode() {

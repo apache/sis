@@ -19,7 +19,7 @@ package org.apache.sis.internal.jaxb.code;
 import javax.xml.bind.annotation.XmlElement;
 import org.opengis.metadata.identification.TopicCategory;
 import org.apache.sis.internal.jaxb.gmd.CodeListAdapter;
-import org.apache.sis.internal.jaxb.gmd.CodeListProxy;
+import org.apache.sis.internal.jaxb.gmd.CodeListUID;
 
 
 /**
@@ -30,8 +30,8 @@ import org.apache.sis.internal.jaxb.gmd.CodeListProxy;
  * @author  Cédric Briançon (Geomatys)
  * @author  Guihem Legal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
+ * @version 0.5
  * @since   0.3
- * @version 0.3
  * @module
  */
 public final class MD_TopicCategoryCode extends CodeListAdapter<MD_TopicCategoryCode, TopicCategory> {
@@ -44,24 +44,24 @@ public final class MD_TopicCategoryCode extends CodeListAdapter<MD_TopicCategory
     /**
      * Creates a new adapter for the given proxy.
      */
-    private MD_TopicCategoryCode(final CodeListProxy proxy) {
-        super(proxy);
+    private MD_TopicCategoryCode(final CodeListUID value) {
+        super(value);
     }
 
     /**
      * {@inheritDoc}
      *
-     * @return The wrapper for the code list value.
+     * @return the wrapper for the code list value.
      */
     @Override
-    protected MD_TopicCategoryCode wrap(CodeListProxy proxy) {
-        return new MD_TopicCategoryCode(proxy);
+    protected MD_TopicCategoryCode wrap(final CodeListUID value) {
+        return new MD_TopicCategoryCode(value);
     }
 
     /**
      * {@inheritDoc}
      *
-     * @return The code list class.
+     * @return the code list class.
      */
     @Override
     protected Class<TopicCategory> getCodeListClass() {
@@ -83,16 +83,16 @@ public final class MD_TopicCategoryCode extends CodeListAdapter<MD_TopicCategory
      */
     @Override
     @XmlElement(name = "MD_TopicCategoryCode")
-    public CodeListProxy getElement() {
-        return proxy;
+    public CodeListUID getElement() {
+        return identifier;
     }
 
     /**
      * Invoked by JAXB on unmarshalling.
      *
-     * @param proxy The unmarshalled value.
+     * @param value The unmarshalled value.
      */
-    public void setElement(final CodeListProxy proxy) {
-        this.proxy = proxy;
+    public void setElement(final CodeListUID value) {
+        identifier = value;
     }
 }

@@ -36,8 +36,8 @@ import org.apache.sis.internal.geoapi.temporal.Instant;
  *
  * @author  Guilhem Legal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.4
+ * @since   0.3
  * @module
  */
 public final class TM_Primitive extends PropertyType<TM_Primitive, TemporalPrimitive> {
@@ -50,7 +50,7 @@ public final class TM_Primitive extends PropertyType<TM_Primitive, TemporalPrimi
     /**
      * Wraps a Temporal Primitive value at marshalling-time.
      *
-     * @param metadata The metadata value to marshal.
+     * @param metadata  the metadata value to marshal.
      */
     private TM_Primitive(final TemporalPrimitive metadata) {
         super(metadata);
@@ -59,8 +59,8 @@ public final class TM_Primitive extends PropertyType<TM_Primitive, TemporalPrimi
     /**
      * Returns the Vertical CRS value wrapped by a temporal primitive element.
      *
-     * @param  value The value to marshal.
-     * @return The adapter which wraps the metadata value.
+     * @param  value  the value to marshal.
+     * @return the adapter which wraps the metadata value.
      */
     @Override
     protected TM_Primitive wrap(final TemporalPrimitive value) {
@@ -81,7 +81,7 @@ public final class TM_Primitive extends PropertyType<TM_Primitive, TemporalPrimi
      * Returns the {@code TimePeriod} generated from the metadata value.
      * This method is systematically called at marshalling-time by JAXB.
      *
-     * @return The time period, or {@code null}.
+     * @return the time period, or {@code null}.
      */
     @XmlElement(name = "TimePeriod")
     public TimePeriod getTimePeriod() {
@@ -93,7 +93,7 @@ public final class TM_Primitive extends PropertyType<TM_Primitive, TemporalPrimi
      * Returns the {@link TimeInstant} generated from the metadata value.
      * This method is systematically called at marshalling-time by JAXB.
      *
-     * @return The time instant, or {@code null}.
+     * @return the time instant, or {@code null}.
      */
     @XmlElement(name = "TimeInstant")
     public TimeInstant getTimeInstant() {
@@ -105,10 +105,10 @@ public final class TM_Primitive extends PropertyType<TM_Primitive, TemporalPrimi
      * Sets the value from the {@link TimePeriod}.
      * This method is called at unmarshalling-time by JAXB.
      *
-     * @param period The wrapper to set.
+     * @param  period  the wrapper to set.
      */
     public void setTimePeriod(final TimePeriod period) {
-        metadata = null; // Cleaned first in case of failure.
+        metadata = null;                                        // Cleaned first in case of failure.
         if (period != null) {
             final Context context = Context.current();
             final Date begin = toDate(context, period.begin);
@@ -121,7 +121,7 @@ public final class TM_Primitive extends PropertyType<TM_Primitive, TemporalPrimi
                      * TemporalPrimitive as the source class, since it is the closest we can get
                      * to a public API.
                      */
-                    Context.warningOccured(context, Context.LOGGER, TemporalPrimitive.class,
+                    Context.warningOccured(context, TemporalPrimitive.class,
                             "setTimePeriod", Errors.class, Errors.Keys.IllegalRange_2, begin, end);
                 } else try {
                     metadata = TemporalUtilities.createPeriod(begin, end);
@@ -137,10 +137,10 @@ public final class TM_Primitive extends PropertyType<TM_Primitive, TemporalPrimi
      * Sets the value from the {@link TimeInstant}.
      * This method is called at unmarshalling-time by JAXB.
      *
-     * @param instant The wrapper to set.
+     * @param  instant  the wrapper to set.
      */
     public void setTimeInstant(final TimeInstant instant) {
-        metadata = null; // Cleaned first in case of failure.
+        metadata = null;                                        // Cleaned first in case of failure.
         if (instant != null) {
             final Date position = XmlUtilities.toDate(Context.current(), instant.timePosition);
             if (position != null) try {
@@ -162,7 +162,7 @@ public final class TM_Primitive extends PropertyType<TM_Primitive, TemporalPrimi
     /**
      * Reports a warning for the given exception.
      *
-     * @param method The name of the method to declare in the log record.
+     * @param method  the name of the method to declare in the log record.
      * @param e the exception.
      */
     private static void warningOccured(final String method, final Exception e) {

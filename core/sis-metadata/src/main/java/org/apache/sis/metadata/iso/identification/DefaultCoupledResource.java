@@ -63,6 +63,7 @@ import static org.opengis.annotation.Specification.ISO_19115;
  * @since   0.5
  * @module
  */
+@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "SV_CoupledResource_Type", namespace = Namespaces.SRV, propOrder = {
     "operationName",
     "identifier",
@@ -108,10 +109,10 @@ public class DefaultCoupledResource extends ISOMetadata {
     /**
      * Constructs a new coupled resource initialized to the specified values.
      *
-     * @param name       Scoped identifier of the resource in the context of the given service instance.
-     * @param reference  Reference to the reference to the resource on which the services operates.
-     * @param resource   The tightly coupled resource.
-     * @param operation  The service operation.
+     * @param name        scoped identifier of the resource in the context of the given service instance.
+     * @param reference   reference to the reference to the resource on which the services operates.
+     * @param resource    the tightly coupled resource.
+     * @param operation   the service operation.
      */
     public DefaultCoupledResource(final ScopedName name,
                                   final Citation reference,
@@ -129,9 +130,7 @@ public class DefaultCoupledResource extends ISOMetadata {
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
-     * @param object The metadata to copy values from, or {@code null} if none.
-     *
-     * @see #castOrCopy(CoupledResource)
+     * @param  object  the metadata to copy values from, or {@code null} if none.
      */
     public DefaultCoupledResource(final DefaultCoupledResource object) {
         super(object);
@@ -158,7 +157,7 @@ public class DefaultCoupledResource extends ISOMetadata {
     /**
      * Sets the identifier of the resource in the context of the given service instance.
      *
-     * @param newValue The new identifier of the resource.
+     * @param  newValue  the new identifier of the resource.
      */
     public void setScopedName(final ScopedName newValue) {
         checkWritePermission();
@@ -168,7 +167,7 @@ public class DefaultCoupledResource extends ISOMetadata {
     /**
      * Returns references to the resource on which the services operates.
      *
-     * @return References to the resource on which the services operates.
+     * @return references to the resource on which the services operates.
      */
 /// @XmlElement(name = "resourceReference", namespace = Namespaces.SRV)
     @UML(identifier="resourceReference", obligation=OPTIONAL, specification=ISO_19115)
@@ -179,7 +178,7 @@ public class DefaultCoupledResource extends ISOMetadata {
     /**
      * Sets references to the resource on which the services operates.
      *
-     * @param newValues The new references to the resource on which the services operates.
+     * @param  newValues  the new references to the resource on which the services operates.
      */
     public void setResourceReferences(final Collection<? extends Citation> newValues) {
         resourceReferences = writeCollection(newValues, resourceReferences, Citation.class);
@@ -199,7 +198,7 @@ public class DefaultCoupledResource extends ISOMetadata {
     /**
      * Sets the tightly coupled resources.
      *
-     * @param newValues The new tightly coupled resources.
+     * @param  newValues  the new tightly coupled resources.
      */
     public void setResources(final Collection<? extends DataIdentification> newValues) {
         resources = writeCollection(newValues, resources, DataIdentification.class);
@@ -213,7 +212,7 @@ public class DefaultCoupledResource extends ISOMetadata {
      * when GeoAPI will provide it (tentatively in GeoAPI 3.1).
      * </div>
      *
-     * @return The service operation, or {@code null} if none.
+     * @return the service operation, or {@code null} if none.
      */
 /// @XmlElement(name = "operation", namespace = Namespaces.SRV)
     @UML(identifier="operation", obligation=OPTIONAL, specification=ISO_19115)
@@ -229,7 +228,7 @@ public class DefaultCoupledResource extends ISOMetadata {
      * when GeoAPI will provide it (tentatively in GeoAPI 3.1).
      * </div>
      *
-     * @param newValue The new service operation.
+     * @param  newValue  the new service operation.
      */
     public void setOperation(final DefaultOperationMetadata newValue) {
         checkWritePermission();
@@ -238,13 +237,23 @@ public class DefaultCoupledResource extends ISOMetadata {
 
 
 
-    // Bridges for elements from legacy ISO 19119
+
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+    ////////                                                                                  ////////
+    ////////                               XML support with JAXB                              ////////
+    ////////                                                                                  ////////
+    ////////        The following methods are invoked by JAXB using reflection (even if       ////////
+    ////////        they are private) or are helpers for other methods invoked by JAXB.       ////////
+    ////////        Those methods can be safely removed if Geographic Markup Language         ////////
+    ////////        (GML) support is not needed.                                              ////////
+    ////////                                                                                  ////////
+    //////////////////////////////////////////////////////////////////////////////////////////////////
 
     /**
      * For JAXB marhalling of ISO 19119 document only.
      */
     @XmlElement(name = "operationName", namespace = Namespaces.SRV)
-    final String getOperationName() {
+    private String getOperationName() {
         if (LEGACY_XML) {
             final DefaultOperationMetadata operation = getOperation();
             if (operation != null) {
@@ -259,7 +268,7 @@ public class DefaultCoupledResource extends ISOMetadata {
      * {@link OperationName} placeholder. That temporary instance will be replaced by the real
      * one when the enclosing {@link DefaultServiceIdentification} is unmarshalled.
      */
-    final void setOperationName(final String name) {
+    private void setOperationName(final String name) {
         if (operation == null) {
             operation = new OperationName(name);
         }
@@ -269,7 +278,7 @@ public class DefaultCoupledResource extends ISOMetadata {
      * Returns the resource identifier, which is assumed to be the name as a string.
      */
     @XmlElement(name = "identifier", namespace = Namespaces.SRV)
-    final String getIdentifier() {
+    private String getIdentifier() {
         if (LEGACY_XML) {
             final ScopedName name = getScopedName();
             if (name != null) {

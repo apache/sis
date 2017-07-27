@@ -18,19 +18,23 @@ package org.apache.sis.internal.util;
 
 import java.util.Map;
 import java.util.HashMap;
+import org.apache.sis.util.Debug;
 import org.apache.sis.util.Static;
 import org.apache.sis.util.ComparisonMode;
 
 import static java.lang.Math.max;
 import static java.lang.Math.abs;
 
+// Branch-dependent imports
+import org.apache.sis.internal.jdk8.JDK8;
+
 
 /**
  * Miscellaneous utilities methods working on floating point numbers.
  *
  * @author  Martin Desruisseaux (Geomatys)
+ * @version 0.8
  * @since   0.3
- * @version 0.4
  * @module
  */
 public final class Numerics extends Static {
@@ -38,7 +42,7 @@ public final class Numerics extends Static {
      * Some frequently used {@link Double} values. As of Java 7, those values do not
      * seem to be cached by {@link Double#valueOf(double)} like JDK does for integers.
      */
-    private static final Map<Object,Object> CACHE = new HashMap<Object,Object>(32);
+    private static final Map<Object,Object> CACHE = new HashMap<>(32);
     static {
         cache(   0);
         cache(   1);
@@ -58,9 +62,9 @@ public final class Numerics extends Static {
      * Helper method for the construction of the {@link #CACHE} map.
      */
     private static void cache(final double value) {
-        Double key;
-        key = Double.valueOf( value); CACHE.put(key, key);
-        key = Double.valueOf(-value); CACHE.put(key, key);
+        Double boxed;
+        boxed =  value; CACHE.put(boxed, boxed);
+        boxed = -value; CACHE.put(boxed, boxed);
     }
 
     /**
@@ -83,10 +87,13 @@ public final class Numerics extends Static {
      *
      * By extension, the same threshold value is used for comparing other floating point values.
      *
+     * <p>The current value is set to the smallest power of 10 which allow the
+     * {@code org.apache.sis.test.integration.ConsistencyTest} to pass.</p>
+     *
      * @see org.apache.sis.internal.referencing.Formulas#LINEAR_TOLERANCE
      * @see org.apache.sis.internal.referencing.Formulas#ANGULAR_TOLERANCE
      */
-    public static final double COMPARISON_THRESHOLD = 1E-14;
+    public static final double COMPARISON_THRESHOLD = 1E-13;
 
     /**
      * Bit mask to isolate the sign bit of non-{@linkplain Double#isNaN(double) NaN} values in a
@@ -129,9 +136,9 @@ public final class Numerics extends Static {
      * If the given value is presents in the cache, returns the cached value.
      * Otherwise returns the given value as-is.
      *
-     * @param  <T> The type of the given value.
-     * @param  value The given value for which to get a cached instance, if one exists.
-     * @return An object equals to the given value (may be the given instance itself).
+     * @param  <T>    the type of the given value.
+     * @param  value  the given value for which to get a cached instance, if one exists.
+     * @return an object equals to the given value (may be the given instance itself).
      */
     @SuppressWarnings("unchecked")
     public static <T> T cached(final T value) {
@@ -142,21 +149,21 @@ public final class Numerics extends Static {
     /**
      * Wraps the given {@code value} in a {@link Double} wrapper, using one of the cached instance if possible.
      *
-     * @param  value The value to get as a {@code Double}.
-     * @return The given value as a {@code Double}.
+     * @param  value  the value to get as a {@code Double}.
+     * @return the given value as a {@code Double}.
      */
     public static Double valueOf(final double value) {
-        final Double n = Double.valueOf(value);
-        final Object candidate = CACHE.get(value);
-        return (candidate != null) ? (Double) candidate : n;
+        final Double boxed = value;
+        final Object candidate = CACHE.get(boxed);
+        return (candidate != null) ? (Double) candidate : boxed;
     }
 
     /**
      * Returns a copy of the given array where each value has been casted to the {@code float} type.
      *
-     * @param  data The array to copy, or {@code null}.
-     * @return A copy of the given array with values casted to the {@code float} type, or
-     *         {@code null} if the given array was null.
+     * @param  data  the array to copy, or {@code null}.
+     * @return a copy of the given array with values casted to the {@code float} type,
+     *         or {@code null} if the given array was null.
      */
     public static float[] copyAsFloats(final double[] data) {
         if (data == null) return null;
@@ -171,15 +178,15 @@ public final class Numerics extends Static {
      * Returns a copy of the given array where each value has been
      * {@linkplain Math#round(double) rounded} to the {@code int} type.
      *
-     * @param  data The array to copy, or {@code null}.
-     * @return A copy of the given array with values rounded to the {@code int} type, or
-     *         {@code null} if the given array was null.
+     * @param  data  the array to copy, or {@code null}.
+     * @return a copy of the given array with values rounded to the {@code int} type,
+     *         or {@code null} if the given array was null.
      */
     public static int[] copyAsInts(final double[] data) {
         if (data == null) return null;
         final int[] result = new int[data.length];
         for (int i=0; i<data.length; i++) {
-            result[i] = (int) Math.round(data[i]);
+            result[i] = JDK8.toIntExact(Math.round(data[i]));
         }
         return result;
     }
@@ -188,14 +195,14 @@ public final class Numerics extends Static {
      * Returns {@code true} if the given floats are equals. Positive and negative zero are
      * considered different, while a NaN value is considered equal to all other NaN values.
      *
-     * @param  o1 The first value to compare.
-     * @param  o2 The second value to compare.
+     * @param  v1  the first value to compare.
+     * @param  v2  the second value to compare.
      * @return {@code true} if both values are equal.
      *
      * @see Float#equals(Object)
      */
-    public static boolean equals(final float o1, final float o2) {
-        return Float.floatToIntBits(o1) == Float.floatToIntBits(o2);
+    public static boolean equals(final float v1, final float v2) {
+        return Float.floatToIntBits(v1) == Float.floatToIntBits(v2);
     }
 
     /**
@@ -203,88 +210,130 @@ public final class Numerics extends Static {
      * Positive and negative zeros are considered different.
      * NaN values are considered equal to all other NaN values.
      *
-     * @param  o1 The first value to compare.
-     * @param  o2 The second value to compare.
+     * @param  v1  the first value to compare.
+     * @param  v2  the second value to compare.
      * @return {@code true} if both values are equal.
      *
      * @see Double#equals(Object)
      */
-    public static boolean equals(final double o1, final double o2) {
-        return Double.doubleToLongBits(o1) == Double.doubleToLongBits(o2);
+    public static boolean equals(final double v1, final double v2) {
+        return Double.doubleToLongBits(v1) == Double.doubleToLongBits(v2);
     }
 
     /**
      * Returns {@code true} if the given doubles are equal, ignoring the sign of zero values.
      * NaN values are considered equal to all other NaN values.
      *
-     * @param  o1 The first value to compare.
-     * @param  o2 The second value to compare.
+     * @param  v1  the first value to compare.
+     * @param  v2  the second value to compare.
      * @return {@code true} if both values are equal.
      */
-    public static boolean equalsIgnoreZeroSign(final double o1, final double o2) {
-        return (o1 == o2) || Double.doubleToLongBits(o1) == Double.doubleToLongBits(o2);
+    public static boolean equalsIgnoreZeroSign(final double v1, final double v2) {
+        return (v1 == v2) || Double.doubleToLongBits(v1) == Double.doubleToLongBits(v2);
     }
 
     /**
-     * Returns {@code true} if the given values are approximatively equal,
-     * up to the {@linkplain #COMPARISON_THRESHOLD comparison threshold}.
+     * Returns {@code true} if the given values are approximatively equal, up to the given comparison threshold.
      *
-     * @param  v1 The first value to compare.
-     * @param  v2 The second value to compare.
-     * @return {@code true} If both values are approximatively equal.
+     * @param  v1  the first value to compare.
+     * @param  v2  the second value to compare.
+     * @param  threshold  the comparison threshold.
+     * @return {@code true} if both values are approximatively equal.
      */
-    public static boolean epsilonEqual(final double v1, final double v2) {
-        final double threshold = COMPARISON_THRESHOLD * max(abs(v1), abs(v2));
-        if (threshold == Double.POSITIVE_INFINITY || Double.isNaN(threshold)) {
-            return Double.doubleToLongBits(v1) == Double.doubleToLongBits(v2);
-        }
-        return abs(v1 - v2) <= threshold;
+    public static boolean epsilonEqual(final double v1, final double v2, final double threshold) {
+        return (abs(v1 - v2) <= threshold) || equals(v1, v2);
     }
 
     /**
      * Returns {@code true} if the given values are approximatively equal given the comparison mode.
+     * In mode {@code APPROXIMATIVE} or {@code DEBUG}, this method will compute a relative comparison
+     * threshold from the {@link #COMPARISON_THRESHOLD} constant.
      *
-     * @param  v1 The first value to compare.
-     * @param  v2 The second value to compare.
-     * @param  mode The comparison mode to use for comparing the numbers.
-     * @return {@code true} If both values are approximatively equal.
+     * <p>This method does not thrown {@link AssertionError} in {@link ComparisonMode#DEBUG}.
+     * It is caller responsibility to handle the {@code DEBUG} case.</p>
+     *
+     * @param  v1    the first value to compare.
+     * @param  v2    the second value to compare.
+     * @param  mode  the comparison mode to use for comparing the numbers.
+     * @return {@code true} if both values are considered equal for the given comparison mode.
      */
     public static boolean epsilonEqual(final double v1, final double v2, final ComparisonMode mode) {
-        switch (mode) {
-            default: return equals(v1, v2);
-            case APPROXIMATIVE: return epsilonEqual(v1, v2);
-            case DEBUG: {
-                final boolean equal = epsilonEqual(v1, v2);
-                assert equal : "v1=" + v1 + " v2=" + v2 + " Δv=" + abs(v1-v2);
-                return equal;
+        if (mode.isApproximative()) {
+            final double mg = max(abs(v1), abs(v2));
+            if (mg != Double.POSITIVE_INFINITY) {
+                return epsilonEqual(v1, v2, COMPARISON_THRESHOLD * mg);
             }
         }
+        return equals(v1, v2);
     }
 
     /**
-     * Returns {@code true} if the following objects are floating point numbers ({@link Float} or
-     * {@link Double} types) and approximatively equal. If the given object are not floating point
-     * numbers, then this method returns {@code false} unconditionally on the assumption that
-     * strict equality has already been checked before this method call.
+     * Creates a messages to put in {@link AssertionError} when two values differ in an unexpected way.
+     * This is a helper method for debugging purpose only, typically used with {@code assert} statements.
      *
-     * @param  v1 The first value to compare.
-     * @param  v2 The second value to compare.
-     * @return {@code true} If both values are real number and approximatively equal.
+     * @param  name  the name of the property which differ, or {@code null} if unknown.
+     * @param  v1    the first value.
+     * @param  v2    the second value.
+     * @return the message to put in {@code AssertionError}.
+     *
+     * @since 0.6
      */
-    public static boolean floatEpsilonEqual(final Object v1, final Object v2) {
-        return (v1 instanceof Float || v1 instanceof Double) &&
-               (v2 instanceof Float || v2 instanceof Double) &&
-               epsilonEqual(((Number) v1).doubleValue(), ((Number) v2).doubleValue());
+    @Debug
+    public static String messageForDifference(final String name, final double v1, final double v2) {
+        final StringBuilder builder = new StringBuilder();
+        if (name != null) {
+            builder.append(name).append(": ");
+        }
+        builder.append("values ").append(v1).append(" and ").append(v2).append(" differ");
+        final float delta = (float) abs(v1 - v2);
+        if (delta < Float.POSITIVE_INFINITY) {
+            builder.append(" by ").append(delta);
+        }
+        return builder.toString();
     }
 
     /**
      * Returns a hash code value for the given long.
      *
-     * @param  c The value to hash.
-     * @return Hash code value for the given long.
+     * @param  c  the value to hash.
+     * @return hash code value for the given long.
      */
     public static int hashCode(final long c) {
         return ((int) c) ^ (int) (c >>> Integer.SIZE);
+    }
+
+    /**
+     * Converts an unsigned {@code long} to a {@code float} value.
+     *
+     * @param  value  the unsigned {@code long} value.
+     * @return the given unsigned {@code long} as a {@code float} value.
+     *
+     * @since 0.8
+     */
+    public static float toUnsignedFloat(final long value) {
+        if (value >= 0) {
+            return value;
+        } else {
+            // Following hack is inefficient, but should rarely be needed.
+            return Float.parseFloat(JDK8.toUnsignedString(value));
+        }
+    }
+
+    /**
+     * Converts an unsigned {@code long} to a {@code double} value.
+     *
+     * @param  value  the unsigned {@code long} value.
+     * @return the given unsigned {@code long} as a {@code double} value.
+     *
+     * @since 0.8
+     */
+    public static double toUnsignedDouble(final long value) {
+        if (value >= 0) {
+            return value;
+        } else {
+            // Following hack is inefficient, but should rarely be needed.
+            return Double.parseDouble(JDK8.toUnsignedString(value));
+        }
     }
 
     /**
@@ -305,8 +354,8 @@ public final class Numerics extends Static {
      * which must be compensated by a smaller {@code exp2} value such as {@code toExp10(exp2) < n}. Note that if the
      * {@code getExponent(…)} argument is not a power of 10, then the result can be either <var>n</var> or <var>n</var>-1.
      *
-     * @param  exp2 The power of 2 to convert Must be in the [-2620 … 2620] range.
-     * @return The power of 10, rounded toward negative infinity.
+     * @param  exp2  the power of 2 to convert Must be in the [-2620 … 2620] range.
+     * @return the power of 10, rounded toward negative infinity.
      *
      * @see org.apache.sis.math.MathFunctions#LOG10_2
      * @see org.apache.sis.math.MathFunctions#getExponent(double)
@@ -338,8 +387,8 @@ public final class Numerics extends Static {
      *
      * For negative values, this method behaves as if the value was positive.
      *
-     * @param  value The value for which to get the significand.
-     * @return The significand of the given value.
+     * @param  value  the value for which to get the significand.
+     * @return the significand of the given value.
      */
     public static long getSignificand(final double value) {
         long bits = Double.doubleToRawLongBits(value);
@@ -368,8 +417,8 @@ public final class Numerics extends Static {
      *
      * For negative values, this method behaves as if the value was positive.
      *
-     * @param  value The value for which to get the significand.
-     * @return The significand of the given value.
+     * @param  value  the value for which to get the significand.
+     * @return the significand of the given value.
      */
     public static int getSignificand(final float value) {
         int bits = Float.floatToRawIntBits(value);

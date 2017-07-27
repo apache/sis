@@ -16,6 +16,7 @@
  */
 package org.apache.sis.referencing.operation;
 
+import org.opengis.util.FactoryException;
 import org.opengis.referencing.operation.*;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.referencing.AbstractIdentifiedObject;
@@ -30,12 +31,12 @@ import org.apache.sis.referencing.AbstractIdentifiedObject;
  * <ul>
  *   <li>{@link AbstractCoordinateOperation#castOrCopy(CoordinateOperation)}</li>
  *   <li>{@link DefaultConversion#castOrCopy(Conversion)}</li>
- *   <li>{@link DefaultConversion#specialize(Class, CoordinateReferenceSystem, CoordinateReferenceSystem)}</li>
+ *   <li>{@link DefaultConversion#specialize(Class, CoordinateReferenceSystem, CoordinateReferenceSystem, MathTransformFactory)}</li>
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
+ * @version 0.7
  * @since   0.6
- * @version 0.6
  * @module
  */
 final class SubTypes {
@@ -43,6 +44,17 @@ final class SubTypes {
      * Do not allow instantiation of this class.
      */
     private SubTypes() {
+    }
+
+    /**
+     * Returns {@code true} if the given operation is a single operation but not a pass-through operation.
+     * In an older ISO 19111 model, {@link PassThroughOperation} extended {@link SingleOperation}, which
+     * was a problem for providing a value to the inherited {@link SingleOperation#getMethod()} method.
+     * This has been fixed in newer ISO 19111 model, but for safety with objects following the older model
+     * (e.g. GeoAPI 3.0) we are better to perform an explicit exclusion of {@link PassThroughOperation}.
+     */
+    static boolean isSingleOperation(final CoordinateOperation operation) {
+        return (operation instanceof SingleOperation) && !(operation instanceof PassThroughOperation);
     }
 
     /**
@@ -63,7 +75,7 @@ final class SubTypes {
         if (object instanceof ConcatenatedOperation) {
             return DefaultConcatenatedOperation.castOrCopy((ConcatenatedOperation) object);
         }
-        if (object instanceof SingleOperation) {
+        if (isSingleOperation(object)) {
             return (object instanceof AbstractSingleOperation) ? (AbstractSingleOperation) object
                    : new AbstractSingleOperation((SingleOperation) object);
         }
@@ -115,43 +127,72 @@ final class SubTypes {
      * a more specific GeoAPI interface if this method has been able to infer the type from the
      * {@code conversion} argument.
      *
-     * @param  baseType   The base GeoAPI interface to be implemented by the conversion to return.
-     * @param  definition The defining conversion.
-     * @param  sourceCRS  The source CRS.
-     * @param  targetCRS  The target CRS.
-     * @return The conversion of the given type between the given CRS.
+     * @param  baseType    the base GeoAPI interface to be implemented by the conversion to return.
+     * @param  definition  the defining conversion.
+     * @param  sourceCRS   the source CRS.
+     * @param  targetCRS   the target CRS.
+     * @param  factory     the factory to use for creating a transform from the parameters or for performing axis changes.
+     * @return the conversion of the given type between the given CRS.
      * @throws ClassCastException if a contradiction is found between the given {@code baseType},
      *         the defining {@linkplain DefaultConversion#getInterface() conversion type} and
      *         the {@linkplain DefaultOperationMethod#getOperationType() method operation type}.
      */
-    static <T extends Conversion> T create(final Class<T> baseType, final Conversion definition,
-            final CoordinateReferenceSystem sourceCRS, final CoordinateReferenceSystem targetCRS)
+    static <T extends Conversion> T create(final Class<T> baseType, Conversion definition,
+            final CoordinateReferenceSystem sourceCRS, final CoordinateReferenceSystem targetCRS,
+            final MathTransformFactory factory) throws FactoryException
     {
         Class<? extends T> type = baseType;
         if (definition instanceof AbstractIdentifiedObject) {
             final Class<?> c = ((AbstractIdentifiedObject) definition).getInterface();
-            if (!c.isAssignableFrom(baseType)) {  // Do nothing if c is a parent type.
+            if (!c.isAssignableFrom(baseType)) {                        // Do nothing if c is a parent type.
                 type = c.asSubclass(type);
             }
         }
         final OperationMethod method = definition.getMethod();
         if (method instanceof DefaultOperationMethod) {
             final Class<? extends SingleOperation> c = ((DefaultOperationMethod) method).getOperationType();
-            if (!c.isAssignableFrom(baseType)) {  // Do nothing if c is a parent type.
+            if (!c.isAssignableFrom(baseType)) {                        // Do nothing if c is a parent type.
                 type = c.asSubclass(type);
             }
         }
-        final Conversion conversion;
-        if (CylindricalProjection.class.isAssignableFrom(type)) {
-            conversion = new DefaultCylindricalProjection(definition, sourceCRS, targetCRS);
-        } else if (ConicProjection.class.isAssignableFrom(type)) {
-            conversion = new DefaultConicProjection(definition, sourceCRS, targetCRS);
-        } else if (PlanarProjection.class.isAssignableFrom(type)) {
-            conversion = new DefaultPlanarProjection(definition, sourceCRS, targetCRS);
-        } else if (Projection.class.isAssignableFrom(type)) {
-            conversion = new DefaultProjection(definition, sourceCRS, targetCRS);
+        Conversion conversion;
+        if (type.isInstance(definition)
+                && definition.getSourceCRS() == sourceCRS
+                && definition.getTargetCRS() == targetCRS
+                && definition.getMathTransform() != null)
+        {
+            conversion = definition;
         } else {
-            conversion = new DefaultConversion(definition, sourceCRS, targetCRS);
+            final OperationMethod[] actual = new OperationMethod[1];
+            boolean tryAgain;
+            do {
+                tryAgain = false;
+                if (CylindricalProjection.class.isAssignableFrom(type)) {
+                    conversion = new DefaultCylindricalProjection(definition, sourceCRS, targetCRS, factory, actual);
+                } else if (ConicProjection.class.isAssignableFrom(type)) {
+                    conversion = new DefaultConicProjection(definition, sourceCRS, targetCRS, factory, actual);
+                } else if (PlanarProjection.class.isAssignableFrom(type)) {
+                    conversion = new DefaultPlanarProjection(definition, sourceCRS, targetCRS, factory, actual);
+                } else if (Projection.class.isAssignableFrom(type)) {
+                    conversion = new DefaultProjection(definition, sourceCRS, targetCRS, factory, actual);
+                } else {
+                    conversion = new DefaultConversion(definition, sourceCRS, targetCRS, factory, actual);
+                }
+                /*
+                 * The DefaultConversion constructor may have used by MathTransformFactory for creating the actual
+                 * MathTransform object. In such case, we can use the knownledge that the factory has about the
+                 * coordinate operation for refining again the type of the object to be returned.
+                 */
+                final OperationMethod m = actual[0];
+                if (m instanceof DefaultOperationMethod) {
+                    final Class<?> t = ((DefaultOperationMethod) m).getOperationType();
+                    if (t != null && t != type && type.isAssignableFrom(t)) {
+                        type = t.asSubclass(type);
+                        definition = conversion;
+                        tryAgain = true;
+                    }
+                }
+            } while (tryAgain);
         }
         return type.cast(conversion);
     }

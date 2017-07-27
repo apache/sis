@@ -24,12 +24,15 @@
          xsi:schemaLocation = "http://maven.apache.org/POM/4.0.0
                                http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
+  <prerequisites>
+    <maven>3.1.1</maven>
+  </prerequisites>
 
   <!-- Do not inherit from core/pom.xml because doing so would create a cyclic dependency. -->
   <parent>
     <groupId>org.apache.sis</groupId>
     <artifactId>parent</artifactId>
-    <version>0.6-android-SNAPSHOT</version>
+    <version>0.8-SNAPSHOT</version>
     <relativePath>../../pom.xml</relativePath>
   </parent>
 
@@ -45,9 +48,9 @@
   <!-- Left alignment because this description will be copied in META-INF/MANIFEST.MF
        The leading space after the first line is necessary for proper formatting. -->
 Define Maven Mojos and Javadoc taglets for generating resource files
- or formatting the Javadoc. While any project could use it, this module
- is primarily for internal use by Apache SIS and may change in any
- future version.
+ formatting the Javadoc or creating ".oxt" files for OpenOffice.org.
+ While any project could use it, this module is primarily for internal
+ use by Apache SIS and may change in any future version.
   </description>
 
 
@@ -82,20 +85,46 @@ Define Maven Mojos and Javadoc taglets for generating resource files
 
 
   <!-- ===========================================================
+           Build configuration for annotation processing
+       =========================================================== -->
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-plugin-plugin</artifactId>
+        <version>3.5</version>
+        <executions>
+          <execution>
+            <id>default-descriptor</id>
+            <phase>process-classes</phase>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+
+
+  <!-- ===========================================================
            Dependencies
        =========================================================== -->
   <dependencies>
     <dependency>
       <groupId>org.apache.maven</groupId>
       <artifactId>maven-core</artifactId>
-      <version>3.1.1</version>
+      <version>3.5.0</version>
     </dependency>
     <dependency>
       <groupId>org.apache.maven</groupId>
       <artifactId>maven-plugin-api</artifactId>
-      <version>3.1.1</version>
+      <version>3.5.0</version>
     </dependency>
-     <dependency>
+    <dependency>
+      <groupId>org.apache.maven.plugin-tools</groupId>
+      <artifactId>maven-plugin-annotations</artifactId>
+      <version>3.5</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
       <groupId>org.sonatype.plexus</groupId>
       <artifactId>plexus-build-api</artifactId>
       <version>0.0.7</version>
@@ -134,7 +163,7 @@ Define Maven Mojos and Javadoc taglets for generating resource files
          This copy will not be needed anymore if http://jira.codehaus.org/browse/MNG-3328
          get fixed. -->
     <profile>
-      <id>jdk6-tools.jar</id>
+      <id>jdk7-tools.jar</id>
       <activation>
         <property>
           <name>java.vendor</name>

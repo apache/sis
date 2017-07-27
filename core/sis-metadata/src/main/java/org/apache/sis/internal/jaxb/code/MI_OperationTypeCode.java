@@ -19,7 +19,7 @@ package org.apache.sis.internal.jaxb.code;
 import javax.xml.bind.annotation.XmlElement;
 import org.opengis.metadata.acquisition.OperationType;
 import org.apache.sis.internal.jaxb.gmd.CodeListAdapter;
-import org.apache.sis.internal.jaxb.gmd.CodeListProxy;
+import org.apache.sis.internal.jaxb.gmd.CodeListUID;
 import org.apache.sis.xml.Namespaces;
 
 
@@ -29,8 +29,8 @@ import org.apache.sis.xml.Namespaces;
  * of {@code CodeList} in ISO-19139.
  *
  * @author  Cédric Briançon (Geomatys)
- * @since   0.3
  * @version 0.3
+ * @since   0.3
  * @module
  */
 public final class MI_OperationTypeCode extends CodeListAdapter<MI_OperationTypeCode, OperationType> {
@@ -41,26 +41,26 @@ public final class MI_OperationTypeCode extends CodeListAdapter<MI_OperationType
     }
 
     /**
-     * Creates a new adapter for the given proxy.
+     * Creates a new adapter for the given value.
      */
-    private MI_OperationTypeCode(final CodeListProxy proxy) {
-        super(proxy);
+    private MI_OperationTypeCode(final CodeListUID value) {
+        super(value);
     }
 
     /**
      * {@inheritDoc}
      *
-     * @return The wrapper for the code list value.
+     * @return the wrapper for the code list value.
      */
     @Override
-    protected MI_OperationTypeCode wrap(CodeListProxy proxy) {
-        return new MI_OperationTypeCode(proxy);
+    protected MI_OperationTypeCode wrap(final CodeListUID value) {
+        return new MI_OperationTypeCode(value);
     }
 
     /**
      * {@inheritDoc}
      *
-     * @return The code list class.
+     * @return the code list class.
      */
     @Override
     protected Class<OperationType> getCodeListClass() {
@@ -70,20 +70,20 @@ public final class MI_OperationTypeCode extends CodeListAdapter<MI_OperationType
     /**
      * Invoked by JAXB on marshalling.
      *
-     * @return The value to be marshalled.
+     * @return the value to be marshalled.
      */
     @Override
     @XmlElement(name = "MI_OperationTypeCode", namespace = Namespaces.GMI)
-    public CodeListProxy getElement() {
-        return proxy;
+    public CodeListUID getElement() {
+        return identifier;
     }
 
     /**
      * Invoked by JAXB on unmarshalling.
      *
-     * @param proxy The unmarshalled value.
+     * @param  value  the unmarshalled value.
      */
-    public void setElement(final CodeListProxy proxy) {
-        this.proxy = proxy;
+    public void setElement(final CodeListUID value) {
+        identifier = value;
     }
 }

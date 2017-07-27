@@ -19,6 +19,7 @@ package org.apache.sis.referencing.operation.transform;
 import java.util.List;
 import java.util.ArrayList;
 import java.io.Serializable;
+import org.opengis.util.FactoryException;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.geometry.MismatchedDimensionException;
 import org.opengis.parameter.ParameterValueGroup;
@@ -27,10 +28,14 @@ import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransform1D;
 import org.opengis.referencing.operation.MathTransform2D;
+import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.apache.sis.parameter.Parameterized;
 import org.apache.sis.referencing.operation.matrix.Matrices;
+import org.apache.sis.internal.referencing.provider.GeocentricAffine;
+import org.apache.sis.internal.metadata.WKTKeywords;
+import org.apache.sis.internal.referencing.Resources;
 import org.apache.sis.internal.system.Semaphores;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.LenientComparable;
@@ -44,18 +49,19 @@ import org.apache.sis.util.resources.Errors;
 
 /**
  * Base class for concatenated transforms. Instances can be created by calls to the
- * {@link #create(MathTransform, MathTransform)} method. When possible, the above-cited
- * method concatenates {@linkplain ProjectiveTransform projective transforms} before to
- * fallback on the creation of new {@code ConcatenatedTransform} instances.
+ * {@link #create(MathTransform, MathTransform, MathTransformFactory)} method.
+ * When possible, the above-cited method concatenates {@linkplain ProjectiveTransform projective transforms}
+ * before to fallback on the creation of new {@code ConcatenatedTransform} instances.
  *
  * <p>Concatenated transforms are serializable if all their step transforms are serializable.</p>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.5
- * @version 0.5
- * @module
+ * @version 0.7
  *
  * @see org.opengis.referencing.operation.MathTransformFactory#createConcatenatedTransform(MathTransform, MathTransform)
+ *
+ * @since 0.5
+ * @module
  */
 class ConcatenatedTransform extends AbstractMathTransform implements Serializable {
     /**
@@ -65,11 +71,8 @@ class ConcatenatedTransform extends AbstractMathTransform implements Serializabl
 
     /**
      * Tolerance threshold for considering a matrix as identity. Since the value used here is smaller
-     * than 1 ULP (about 2.22E-16), it applies only the the zero terms in the matrix. The terms on the
+     * than 1 ULP (about 2.22E-16), it applies only to the zero terms in the matrix. The terms on the
      * diagonal are still expected to be exactly 1.
-     *
-     * @deprecated Try to remove completely this tolerance threshold after we applied double-double arithmetic
-     *             to all matrices.
      */
     private static final double IDENTITY_TOLERANCE = 1E-16;
 
@@ -88,30 +91,31 @@ class ConcatenatedTransform extends AbstractMathTransform implements Serializabl
      * But it is serialized in order to avoid rounding errors if the inverse
      * transform is serialized instead of the original one.
      */
-    private ConcatenatedTransform inverse;
+    private MathTransform inverse;
 
     /**
      * Constructs a concatenated transform. This constructor is for subclasses only.
-     * To create a concatenated transform, use the {@link #create(MathTransform, MathTransform)}
+     * To create a concatenated transform, use the {@link #create(MathTransform, MathTransform, MathTransformFactory)}
      * factory method instead.
      *
-     * @param transform1 The first math transform.
-     * @param transform2 The second math transform.
+     * @param  transform1  the first math transform.
+     * @param  transform2  the second math transform.
      */
+    @SuppressWarnings("OverridableMethodCallDuringObjectConstruction")
     protected ConcatenatedTransform(final MathTransform transform1,
                                     final MathTransform transform2)
     {
         this.transform1 = transform1;
         this.transform2 = transform2;
         if (!isValid()) {
-            throw new IllegalArgumentException(Errors.format(Errors.Keys.CanNotConcatenateTransforms_2,
+            throw new IllegalArgumentException(Resources.format(Resources.Keys.CanNotConcatenateTransforms_2,
                     getName(transform1), getName(transform2)));
         }
     }
 
     /**
      * Tests if one math transform is the inverse of the other, or approximatively the inverse.
-     * Used for {@link #createOptimized(MathTransform, MathTransform)} implementation.
+     * Used for {@link #createOptimized(MathTransform, MathTransform, MathTransformFactory)} implementation.
      */
     private static boolean areInverse(final MathTransform tr1, MathTransform tr2) {
         try {
@@ -143,20 +147,23 @@ class ConcatenatedTransform extends AbstractMathTransform implements Serializabl
      * The "non-direct" versions use an intermediate buffer when performing transformations; they are slower
      * and consume more memory. They are used only as a fallback when a "direct" version can not be created.</div>
      *
-     * @param tr1 The first math transform.
-     * @param tr2 The second math transform.
-     * @return    The concatenated transform.
+     * @param  tr1      the first math transform.
+     * @param  tr2      the second math transform.
+     * @param  factory  the factory which is (indirectly) invoking this method, or {@code null} if none.
+     * @return the concatenated transform.
      *
      * @see MathTransforms#concatenate(MathTransform, MathTransform)
      */
-    public static MathTransform create(MathTransform tr1, MathTransform tr2) throws MismatchedDimensionException {
+    public static MathTransform create(MathTransform tr1, MathTransform tr2, final MathTransformFactory factory)
+            throws FactoryException, MismatchedDimensionException
+    {
         final int dim1 = tr1.getTargetDimensions();
         final int dim2 = tr2.getSourceDimensions();
         if (dim1 != dim2) {
-            throw new MismatchedDimensionException(Errors.format(Errors.Keys.CanNotConcatenateTransforms_2, getName(tr1),
+            throw new MismatchedDimensionException(Resources.format(Resources.Keys.CanNotConcatenateTransforms_2, getName(tr1),
                     getName(tr2)) + ' ' + Errors.format(Errors.Keys.MismatchedDimension_2, dim1, dim2));
         }
-        MathTransform mt = createOptimized(tr1, tr2);
+        MathTransform mt = createOptimized(tr1, tr2, factory);
         if (mt != null) {
             return mt;
         }
@@ -179,7 +186,7 @@ class ConcatenatedTransform extends AbstractMathTransform implements Serializabl
          *       already computed. The map would be local to a "create" method execution.
          */
         int stepCount = getStepCount(tr1) + getStepCount(tr2);
-        boolean tryAgain = true; // Really 'true' because we want at least 2 iterations.
+        boolean tryAgain = true;                                // Really 'true' because we want at least 2 iterations.
         for (int k=0; ; k++) {
             MathTransform c1 = tr1;
             MathTransform c2 = tr2;
@@ -189,9 +196,9 @@ class ConcatenatedTransform extends AbstractMathTransform implements Serializabl
                 final ConcatenatedTransform ctr = (ConcatenatedTransform) candidate;
                 if (first) {
                     c1 = candidate = ctr.transform1;
-                    c2 = create(ctr.transform2, c2);
+                    c2 = create(ctr.transform2, c2, factory);
                 } else {
-                    c1 = create(c1, ctr.transform1);
+                    c1 = create(c1, ctr.transform1, factory);
                     c2 = candidate = ctr.transform2;
                 }
                 final int c = getStepCount(c1) + getStepCount(c2);
@@ -209,7 +216,7 @@ class ConcatenatedTransform extends AbstractMathTransform implements Serializabl
          * Tries again the check for optimized cases (identity, etc.), because a
          * transform may have been simplified to identity as a result of the above.
          */
-        mt = createOptimized(tr1, tr2);
+        mt = createOptimized(tr1, tr2, factory);
         if (mt != null) {
             return mt;
         }
@@ -217,15 +224,47 @@ class ConcatenatedTransform extends AbstractMathTransform implements Serializabl
          * Can not avoid the creation of a ConcatenatedTransform object.
          * Check for the type to create (1D, 2D, general case...)
          */
-        return createConcatenatedTransform(tr1, tr2);
+        final int dimSource = tr1.getSourceDimensions();
+        final int dimTarget = tr2.getTargetDimensions();
+        if (dimSource == 1 && dimTarget == 1) {
+            /*
+             * Result needs to be a MathTransform1D.
+             */
+            if (tr1 instanceof MathTransform1D && tr2 instanceof MathTransform1D) {
+                return new ConcatenatedTransformDirect1D((MathTransform1D) tr1,
+                                                         (MathTransform1D) tr2);
+            } else {
+                return new ConcatenatedTransform1D(tr1, tr2);
+            }
+        } else if (dimSource == 2 && dimTarget == 2) {
+            /*
+             * Result needs to be a MathTransform2D.
+             */
+            if (tr1 instanceof MathTransform2D && tr2 instanceof MathTransform2D) {
+                return new ConcatenatedTransformDirect2D((MathTransform2D) tr1,
+                                                         (MathTransform2D) tr2);
+            } else {
+                return new ConcatenatedTransform2D(tr1, tr2);
+            }
+        } else if (dimSource == tr1.getTargetDimensions()   // dim1 = tr1.getTargetDimensions() and
+                && dimTarget == tr2.getSourceDimensions())  // dim2 = tr2.getSourceDimensions() may not be true anymore.
+        {
+            return new ConcatenatedTransformDirect(tr1, tr2);
+        } else {
+            return new ConcatenatedTransform(tr1, tr2);
+        }
     }
 
     /**
      * Tries to returns an optimized concatenation, for example by merging two affine transforms
      * into a single one. If no optimized cases has been found, returns {@code null}. In the later
      * case, the caller will need to create a more heavy {@link ConcatenatedTransform} instance.
+     *
+     * @param  factory  the factory which is (indirectly) invoking this method, or {@code null} if none.
      */
-    private static MathTransform createOptimized(final MathTransform tr1, final MathTransform tr2) {
+    private static MathTransform createOptimized(final MathTransform tr1, final MathTransform tr2,
+            final MathTransformFactory factory) throws FactoryException
+    {
         /*
          * Trivial - but actually essential!! - check for the identity cases.
          */
@@ -241,7 +280,7 @@ class ConcatenatedTransform extends AbstractMathTransform implements Serializabl
             if (matrix2 != null) {
                 final Matrix matrix = Matrices.multiply(matrix2, matrix1);
                 if (Matrices.isIdentity(matrix, IDENTITY_TOLERANCE)) {
-                    return MathTransforms.identity(matrix.getNumRow() - 1);
+                    return MathTransforms.identity(matrix.getNumRow() - 1);         // Returns a cached instance.
                 }
                 /*
                  * NOTE: It is quite tempting to "fix rounding errors" in the matrix before to create the transform.
@@ -250,7 +289,11 @@ class ConcatenatedTransform extends AbstractMathTransform implements Serializabl
                  * Apache SIS performs matrix operations using double-double arithmetic in the hope to get exact
                  * results at the 'double' accuracy, which avoid the need for a tolerance threshold.
                  */
-                return MathTransforms.linear(matrix);
+                if (factory != null) {
+                    return factory.createAffineTransform(matrix);
+                } else {
+                    return MathTransforms.linear(matrix);
+                }
             }
             /*
              * If the second transform is a passthrough transform and all passthrough ordinates
@@ -260,33 +303,40 @@ class ConcatenatedTransform extends AbstractMathTransform implements Serializabl
                 final PassThroughTransform candidate = (PassThroughTransform) tr2;
                 final Matrix sub = candidate.toSubMatrix(matrix1);
                 if (sub != null) {
-                    return PassThroughTransform.create(candidate.firstAffectedOrdinate,
-                            create(MathTransforms.linear(sub), candidate.subTransform),
-                            candidate.numTrailingOrdinates);
+                    if (factory != null) {
+                        return factory.createPassThroughTransform(
+                                candidate.firstAffectedOrdinate,
+                                factory.createConcatenatedTransform(factory.createAffineTransform(sub), candidate.subTransform),
+                                candidate.numTrailingOrdinates);
+                    } else {
+                        return PassThroughTransform.create(
+                                candidate.firstAffectedOrdinate,
+                                create(MathTransforms.linear(sub), candidate.subTransform, factory),
+                                candidate.numTrailingOrdinates);
+                    }
                 }
             }
         }
         /*
-         * If one transform is the inverse of the
-         * other, returns the identity transform.
+         * If one transform is the inverse of the other, return the identity transform.
          */
         if (areInverse(tr1, tr2) || areInverse(tr2, tr1)) {
             assert tr1.getSourceDimensions() == tr2.getTargetDimensions();
             assert tr1.getTargetDimensions() == tr2.getSourceDimensions();
-            return MathTransforms.identity(tr1.getSourceDimensions());
+            return MathTransforms.identity(tr1.getSourceDimensions());          // Returns a cached instance.
         }
         /*
-         * Gives a chance to AbstractMathTransform to returns an optimized object.
+         * Give a chance to AbstractMathTransform to returns an optimized object.
          * The main use case is Logarithmic vs Exponential transforms.
          */
         if (tr1 instanceof AbstractMathTransform) {
-            final MathTransform optimized = ((AbstractMathTransform) tr1).concatenate(tr2, false);
+            final MathTransform optimized = ((AbstractMathTransform) tr1).tryConcatenate(false, tr2, factory);
             if (optimized != null) {
                 return optimized;
             }
         }
         if (tr2 instanceof AbstractMathTransform) {
-            final MathTransform optimized = ((AbstractMathTransform) tr2).concatenate(tr1, true);
+            final MathTransform optimized = ((AbstractMathTransform) tr2).tryConcatenate(true, tr1, factory);
             if (optimized != null) {
                 return optimized;
             }
@@ -296,54 +346,20 @@ class ConcatenatedTransform extends AbstractMathTransform implements Serializabl
     }
 
     /**
-     * Continue the construction started by the {@link #create(MathTransform, MathTransform)} method.
-     * The construction step is available separately for testing purpose (in a JUnit test), and for
-     * {@link #inverse()} implementation.
-     */
-    static ConcatenatedTransform createConcatenatedTransform(
-            final MathTransform tr1, final MathTransform tr2)
-    {
-        final int dimSource = tr1.getSourceDimensions();
-        final int dimTarget = tr2.getTargetDimensions();
-        /*
-         * Checks if the result need to be a MathTransform1D.
-         */
-        if (dimSource == 1 && dimTarget == 1) {
-            if (tr1 instanceof MathTransform1D && tr2 instanceof MathTransform1D) {
-                return new ConcatenatedTransformDirect1D((MathTransform1D) tr1,
-                                                         (MathTransform1D) tr2);
-            } else {
-                return new ConcatenatedTransform1D(tr1, tr2);
-            }
-        } else
-        /*
-         * Checks if the result need to be a MathTransform2D.
-         */
-        if (dimSource == 2 && dimTarget == 2) {
-            if (tr1 instanceof MathTransform2D && tr2 instanceof MathTransform2D) {
-                return new ConcatenatedTransformDirect2D((MathTransform2D) tr1,
-                                                         (MathTransform2D) tr2);
-            } else {
-                return new ConcatenatedTransform2D(tr1, tr2);
-            }
-        } else if (dimSource == tr1.getTargetDimensions() && tr2.getSourceDimensions() == dimTarget) {
-            return new ConcatenatedTransformDirect(tr1, tr2);
-        } else {
-            return new ConcatenatedTransform(tr1, tr2);
-        }
-    }
-
-    /**
      * Returns a name for the specified math transform.
      */
     private static String getName(final MathTransform transform) {
+        ParameterValueGroup params = null;
         if (transform instanceof AbstractMathTransform) {
-            ParameterValueGroup params = ((AbstractMathTransform) transform).getParameterValues();
-            if (params != null) {
-                String name = params.getDescriptor().getName().getCode();
-                if (name != null && !(name = name.trim()).isEmpty()) {
-                    return name;
-                }
+            params = ((AbstractMathTransform) transform).getContextualParameters();
+        }
+        if (params == null && (transform instanceof Parameterized)) {
+            params = ((Parameterized) transform).getParameterValues();
+        }
+        if (params != null) {
+            String name = params.getDescriptor().getName().getCode();
+            if (name != null && !(name = name.trim()).isEmpty()) {
+                return name;
             }
         }
         return Classes.getShortClassName(transform);
@@ -382,7 +398,7 @@ class ConcatenatedTransform extends AbstractMathTransform implements Serializabl
      * Nested concatenated transforms (if any) are explored recursively in order to
      * get the count of single (non-nested) transforms.
      *
-     * @return The number of single transform steps.
+     * @return the number of single transform steps.
      */
     private int getStepCount() {
         return getStepCount(transform1) + getStepCount(transform2);
@@ -404,15 +420,15 @@ class ConcatenatedTransform extends AbstractMathTransform implements Serializabl
     }
 
     /**
-     * Returns all concatenated transforms. The returned list contains only <cite>single</cite>
-     * transforms, i.e. all nested concatenated transforms (if any) have been expanded.
+     * Returns all concatenated transforms. The returned list contains only <cite>single</cite> transforms,
+     * i.e. all nested concatenated transforms (if any) have been flattened.
      *
-     * @return All single math transforms performed by this concatenated transform.
+     * @return all single math transforms performed by this concatenated transform.
      *
      * @see MathTransforms#getSteps(MathTransform)
      */
     public final List<MathTransform> getSteps() {
-        final List<MathTransform> transforms = new ArrayList<MathTransform>(5);
+        final List<MathTransform> transforms = new ArrayList<>(5);
         getSteps(transforms);
         return transforms;
     }
@@ -424,7 +440,7 @@ class ConcatenatedTransform extends AbstractMathTransform implements Serializabl
      * (<var>projection</var>) elements, which does not need to be instances of {@link MathTransform}.
      */
     private List<Object> getPseudoSteps() {
-        final List<Object> transforms = new ArrayList<Object>();
+        final List<Object> transforms = new ArrayList<>();
         getSteps(transforms);
         /*
          * Pre-process the transforms before to format. Some steps may be merged, or new
@@ -436,13 +452,47 @@ class ConcatenatedTransform extends AbstractMathTransform implements Serializabl
                 i = ((AbstractMathTransform) step).beforeFormat(transforms, i, false);
             }
         }
+        /*
+         * Merge consecutive affine transforms. The transforms list should never contain consecutive instances
+         * of LinearTransform because the ConcatenatedTransform.create(…) method already merged them  (this is
+         * verified by assertions in MathTransforms). However the above loop may have created synthetic affine
+         * transforms for WKT formatting purpose. Those synthetic affine transforms are actually represented by
+         * Matrix objects (rather than full MathTransform objects), and two matrices may have been generated
+         * consecutively.
+         */
+        Matrix after = null;
+        for (int i=transforms.size(); --i >= 0;) {
+            final Object step = transforms.get(i);
+            if (step instanceof Matrix) {
+                if (after != null) {
+                    final Matrix merged = Matrices.multiply(after, (Matrix) step);
+                    if (merged.isIdentity()) {
+                        transforms.subList(i, i+2).clear();
+                        after = null;
+                    } else {
+                        transforms.set(i, MathTransforms.linear(merged));
+                        transforms.remove(i+1);
+                        after = merged;
+                    }
+                } else {
+                    after = (Matrix) step;
+                }
+            } else {
+                after = null;
+            }
+        }
+        /*
+         * Special case for datum shifts. Need to be done only after we processed
+         * 'beforeFormat(…)' for all objects and concatenated the affine transforms.
+         */
+        GeocentricAffine.asDatumShift(transforms);
         return transforms;
     }
 
     /**
      * Adds all concatenated transforms in the given list.
      *
-     * @param transforms The list where to add concatenated transforms.
+     * @param  transforms  the list where to add concatenated transforms.
      */
     private void getSteps(final List<? super MathTransform> transforms) {
         if (transform1 instanceof ConcatenatedTransform) {
@@ -468,22 +518,20 @@ class ConcatenatedTransform extends AbstractMathTransform implements Serializabl
      * is more than one remaining step, even if all other transform steps are not parameterizable,
      * would be a contract violation.</p>
      *
-     * <p>However in the special case where we are formatting {@code PROJCS} element, the above rule
-     * is slightly relaxed. More specifically we ignore affine transforms in order to accept axis
-     * swapping or unit conversions. This special case is internal to SIS implementation of WKT
-     * formatter and should be unknown to users.</p>
+     * <p>However in the special case where we are getting the parameters of a {@code CoordinateOperation} instance
+     * through {@link org.apache.sis.referencing.operation.AbstractCoordinateOperation#getParameterValues()} method
+     * (often indirectly trough WKT formatting of a {@code "ProjectedCRS"} element), then the above rule is slightly
+     * relaxed: we ignore affine transforms in order to accept axis swapping or unit conversions. We do that in that
+     * particular case only because the coordinate systems given with the enclosing {@code CoordinateOperation} or
+     * {@code GeneralDerivedCRS} specify the axis swapping and unit conversions.
+     * This special case is internal to SIS implementation and should be unknown to users.</p>
      *
-     * <p>See {@link org.apache.sis.referencing.operation.DefaultSingleOperation#getParameterValues()}
-     * for the code where the above-cited special case is applied.</p>
-     *
-     * @return The parameterizable transform step, or {@code null} if none.
-     *
-     * @see org.apache.sis.referencing.operation.DefaultSingleOperation#simplify(MathTransform)
+     * @return the parameterizable transform step, or {@code null} if none.
      */
     private Parameterized getParameterised() {
         Parameterized param = null;
         final List<Object> transforms = getPseudoSteps();
-        if (transforms.size() == 1 || Semaphores.query(Semaphores.PROJCS)) {
+        if (transforms.size() == 1 || Semaphores.query(Semaphores.ENCLOSED_IN_OPERATION)) {
             for (final Object candidate : transforms) {
                 /*
                  * Search for non-linear parameters only, ignoring affine transforms and the matrices
@@ -535,16 +583,18 @@ class ConcatenatedTransform extends AbstractMathTransform implements Serializabl
     /**
      * Transforms the specified {@code ptSrc} and stores the result in {@code ptDst}.
      *
-     * @throws TransformException If {@link #transform1} or {@link #transform2} failed.
+     * @throws TransformException if {@link #transform1} or {@link #transform2} failed.
      */
     @Override
     public DirectPosition transform(final DirectPosition ptSrc, final DirectPosition ptDst)
             throws TransformException
     {
         assert isValid();
-        //  Note: If we know that the transfer dimension is the same than source
-        //        and target dimension, then we don't need to use an intermediate
-        //        point. This optimization is done in ConcatenatedTransformDirect.
+        /*
+         * Note: If we know that the transfer dimension is the same than source
+         *       and target dimension, then we don't need to use an intermediate
+         *       point. This optimization is done in ConcatenatedTransformDirect.
+         */
         return transform2.transform(transform1.transform(ptSrc, null), ptDst);
     }
 
@@ -552,7 +602,7 @@ class ConcatenatedTransform extends AbstractMathTransform implements Serializabl
      * Transforms a single coordinate in a list of ordinal values,
      * and optionally returns the derivative at that location.
      *
-     * @throws TransformException If {@link #transform1} or {@link #transform2} failed.
+     * @throws TransformException if {@link #transform1} or {@link #transform2} failed.
      */
     @Override
     public Matrix transform(final double[] srcPts, final int srcOff,
@@ -588,7 +638,7 @@ class ConcatenatedTransform extends AbstractMathTransform implements Serializabl
      * {@link #transform2}. The transformations are performed without intermediate buffer
      * if it can be avoided.
      *
-     * @throws TransformException If {@link #transform1} or {@link #transform2} failed.
+     * @throws TransformException if {@link #transform1} or {@link #transform2} failed.
      */
     @Override
     public void transform(final double[] srcPts, int srcOff,
@@ -671,7 +721,7 @@ class ConcatenatedTransform extends AbstractMathTransform implements Serializabl
      * {@link #transform2}. An intermediate buffer of type {@code double[]} for intermediate
      * results is used for reducing rounding errors.
      *
-     * @throws TransformException If {@link #transform1} or {@link #transform2} failed.
+     * @throws TransformException if {@link #transform1} or {@link #transform2} failed.
      */
     @Override
     public void transform(final float[] srcPts, int srcOff,
@@ -733,7 +783,7 @@ class ConcatenatedTransform extends AbstractMathTransform implements Serializabl
      * {@link #transform2}. An intermediate buffer of type {@code double[]} for intermediate
      * results is used for reducing rounding errors.
      *
-     * @throws TransformException If {@link #transform1} or {@link #transform2} failed.
+     * @throws TransformException if {@link #transform1} or {@link #transform2} failed.
      */
     @Override
     public void transform(final double[] srcPts, int srcOff,
@@ -775,15 +825,17 @@ class ConcatenatedTransform extends AbstractMathTransform implements Serializabl
      * {@link #transform2}. The transformations are performed without intermediate buffer
      * if it can be avoided.
      *
-     * @throws TransformException If {@link #transform1} or {@link #transform2} failed.
+     * @throws TransformException if {@link #transform1} or {@link #transform2} failed.
      */
     @Override
     public void transform(final float [] srcPts, int srcOff,
                           final double[] dstPts, int dstOff, int numPts)
             throws TransformException
     {
-        // Same code than transform(double[], ..., double[], ...) but the method calls
-        // are actually different because of overloading of the "transform" methods.
+        /*
+         * Same code than transform(double[], ..., double[], ...) but the method calls
+         * are actually different because of overloading of the "transform" methods.
+         */
         assert isValid();
         final int bufferDim = transform2.getSourceDimensions();
         final int targetDim = transform2.getTargetDimensions();
@@ -821,9 +873,13 @@ class ConcatenatedTransform extends AbstractMathTransform implements Serializabl
     @Override
     public synchronized MathTransform inverse() throws NoninvertibleTransformException {
         assert isValid();
-        if (inverse == null) {
-            inverse = createConcatenatedTransform(transform2.inverse(), transform1.inverse());
-            inverse.inverse = this;
+        if (inverse == null) try {
+            inverse = create(transform2.inverse(), transform1.inverse(), null);
+            if (inverse instanceof ConcatenatedTransform) {
+                ((ConcatenatedTransform) inverse).inverse = this;
+            }
+        } catch (FactoryException e) {
+            throw new NoninvertibleTransformException(Resources.format(Resources.Keys.NonInvertibleTransform), e);
         }
         return inverse;
     }
@@ -831,8 +887,8 @@ class ConcatenatedTransform extends AbstractMathTransform implements Serializabl
     /**
      * Gets the derivative of this transform at a point.
      *
-     * @param  point The coordinate point where to evaluate the derivative.
-     * @return The derivative at the specified point (never {@code null}).
+     * @param  point  the coordinate point where to evaluate the derivative.
+     * @return the derivative at the specified point (never {@code null}).
      * @throws TransformException if the derivative can't be evaluated at the specified point.
      */
     @Override
@@ -870,7 +926,7 @@ class ConcatenatedTransform extends AbstractMathTransform implements Serializabl
      */
     @Override
     public boolean equals(final Object object, final ComparisonMode mode) {
-        if (object == this) { // Slight optimization
+        if (object == this) {                                                   // Slight optimization
             return true;
         }
         /*
@@ -891,8 +947,8 @@ class ConcatenatedTransform extends AbstractMathTransform implements Serializabl
      * <div class="note"><b>Compatibility note:</b>
      * {@code Concat_MT} is defined in the WKT 1 specification only.</div>
      *
-     * @param  formatter The formatter to use.
-     * @return The WKT element name, which is {@code "Concat_MT"}.
+     * @param  formatter  the formatter to use.
+     * @return the WKT element name, which is {@code "Concat_MT"}.
      */
     @Override
     protected String formatTo(final Formatter formatter) {
@@ -913,11 +969,18 @@ class ConcatenatedTransform extends AbstractMathTransform implements Serializabl
         for (final Object step : transforms) {
             formatter.newLine();
             if (step instanceof FormattableObject) {
-                formatter.append((FormattableObject) step); // May not implement MathTransform.
-            } else {
+                formatter.append((FormattableObject) step);         // May not implement MathTransform.
+            } else if (step instanceof MathTransform) {
                 formatter.append((MathTransform) step);
+            } else {
+                /*
+                 * Matrices may happen in a chain of pseudo-steps. For now wrap in a MathTransform.
+                 * We could define a Formatter.append(Matrix) method instead, but it is probably not
+                 * worth the cost.
+                 */
+                formatter.append(MathTransforms.linear((Matrix) step));
             }
         }
-        return "Concat_MT";
+        return WKTKeywords.Concat_MT;
     }
 }

@@ -23,7 +23,7 @@ import java.nio.channels.Channels;
 import org.apache.sis.internal.netcdf.IOTestCase;
 import org.apache.sis.internal.netcdf.Decoder;
 import org.apache.sis.internal.netcdf.DecoderTest;
-import org.apache.sis.internal.storage.ChannelDataInput;
+import org.apache.sis.internal.storage.io.ChannelDataInput;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.test.DependsOn;
 
@@ -36,17 +36,21 @@ import static org.junit.Assume.*;
  * passed.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.3
+ * @since   0.3
  * @module
  */
 @DependsOn(DecoderTest.class)
 public final strictfp class ChannelDecoderTest extends DecoderTest {
     /**
      * Creates a new decoder for dataset of the given name.
+     *
+     * @return the decoder for the given name.
+     * @throws IOException if an I/O error occurred while opening the file.
+     * @throws DataStoreException if a logical error occurred.
      */
     @Override
-    protected Decoder createDecoder(final String name) throws IOException {
+    protected Decoder createDecoder(final String name) throws IOException, DataStoreException {
         return createChannelDecoder(name);
     }
 
@@ -55,31 +59,28 @@ public final strictfp class ChannelDecoderTest extends DecoderTest {
      * The {@code name} parameter can be one of the following values:
      *
      * <ul>
-     *   <li>{@link #THREDDS} for a NcML file.</li>
      *   <li>{@link #NCEP}    for a NetCDF binary file.</li>
      *   <li>{@link #CIP}     for a NetCDF binary file.</li>
-     *   <li>{@link #LANDSAT} for a NetCDF binary file.</li>
      * </ul>
      *
-     * @param  name The file name as one of the above-cited constants.
-     * @return The decoder for the given name.
-     * @throws IOException If an error occurred while opening the file.
+     * @param  name  the file name as one of the above-cited constants.
+     * @return the decoder for the given name.
+     * @throws IOException if an I/O error occurred while opening the file.
+     * @throws DataStoreException if a logical error occurred.
      */
-    public static Decoder createChannelDecoder(final String name) throws IOException {
+    public static Decoder createChannelDecoder(final String name) throws IOException, DataStoreException {
         final InputStream in = IOTestCase.class.getResourceAsStream(name);
         assumeNotNull(name, in);
         final ChannelDataInput input = new ChannelDataInput(name,
                 Channels.newChannel(in), ByteBuffer.allocate(4096), false);
-        try {
-            return new ChannelDecoder(LISTENERS, input);
-        } catch (DataStoreException e) {
-            throw new AssertionError(e);
-        }
+        return new ChannelDecoder(LISTENERS, input);
     }
 
     /**
      * Unconditionally returns {@code false} since {@link ChannelDecoder}
      * supports only the classic and 64 bits NetCDF formats.
+     *
+     * @return {@code false}.
      */
     @Override
     protected boolean isSupplementalFormatSupported(final String format) {

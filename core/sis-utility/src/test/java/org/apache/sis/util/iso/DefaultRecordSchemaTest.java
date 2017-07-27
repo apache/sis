@@ -35,8 +35,8 @@ import static org.junit.Assert.*;
  * Tests the {@link DefaultRecordSchema} implementation.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.5
  * @version 0.5
+ * @since   0.5
  * @module
  */
 @DependsOn({
@@ -50,7 +50,7 @@ public final strictfp class DefaultRecordSchemaTest extends TestCase {
     @Test
     public void testCreateRecordType() {
         final DefaultRecordSchema schema = new DefaultRecordSchema(null, null, "MySchema");
-        final Map<CharSequence,Class<?>> members = new LinkedHashMap<CharSequence,Class<?>>(8);
+        final Map<CharSequence,Class<?>> members = new LinkedHashMap<>(8);
         assertNull(members.put("city",       String.class));
         assertNull(members.put("latitude",   Double.class));
         assertNull(members.put("longitude",  Double.class));

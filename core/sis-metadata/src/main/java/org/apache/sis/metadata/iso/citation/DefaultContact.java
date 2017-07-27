@@ -32,6 +32,7 @@ import org.opengis.metadata.citation.OnlineResource;
 import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.util.resources.Messages;
 import org.apache.sis.internal.jaxb.Context;
+import org.apache.sis.internal.metadata.Dependencies;
 import org.apache.sis.internal.metadata.LegacyPropertyAdapter;
 import org.apache.sis.internal.geoapi.evolution.UnsupportedCodeList;
 
@@ -55,10 +56,11 @@ import static org.opengis.annotation.Specification.ISO_19115;
  * @author  Touraïvane (IRD)
  * @author  Cédric Briançon (Geomatys)
  * @author  Rémi Maréchal (Geomatys)
- * @since   0.3
  * @version 0.5
+ * @since   0.3
  * @module
  */
+@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "CI_Contact_Type", propOrder = {
     "phone",
     "address",
@@ -112,8 +114,8 @@ public class DefaultContact extends ISOMetadata implements Contact {
     /**
      * Constructs a contact initialized to the specified online resource.
      *
-     * @param resource The on-line information that can be used to contact the individual or
-     *        organization, or {@code null} if none.
+     * @param resource  the on-line information that can be used to contact the individual or organization,
+     *                  or {@code null} if none.
      */
     public DefaultContact(final OnlineResource resource) {
         this.onlineResources = singleton(resource, OnlineResource.class);
@@ -124,7 +126,7 @@ public class DefaultContact extends ISOMetadata implements Contact {
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
-     * @param object The metadata to copy values from, or {@code null} if none.
+     * @param  object  the metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(Contact)
      */
@@ -161,8 +163,8 @@ public class DefaultContact extends ISOMetadata implements Contact {
      *       metadata contained in the given object are not recursively copied.</li>
      * </ul>
      *
-     * @param  object The object to get as a SIS implementation, or {@code null} if none.
-     * @return A SIS implementation containing the values of the given object (may be the
+     * @param  object  the object to get as a SIS implementation, or {@code null} if none.
+     * @return a SIS implementation containing the values of the given object (may be the
      *         given object itself), or {@code null} if the argument was null.
      */
     public static DefaultContact castOrCopy(final Contact object) {
@@ -175,7 +177,7 @@ public class DefaultContact extends ISOMetadata implements Contact {
     /**
      * Returns telephone numbers at which the organization or individual may be contacted.
      *
-     * @return Telephone numbers at which the organization or individual may be contacted.
+     * @return telephone numbers at which the organization or individual may be contacted.
      *
      * @since 0.5
      */
@@ -187,7 +189,7 @@ public class DefaultContact extends ISOMetadata implements Contact {
     /**
      * Sets telephone numbers at which the organization or individual may be contacted.
      *
-     * @param newValues The new telephones.
+     * @param  newValues  the new telephones.
      *
      * @since 0.5
      */
@@ -218,16 +220,17 @@ public class DefaultContact extends ISOMetadata implements Contact {
 
     /**
      * Returns telephone numbers at which the organization or individual may be contacted.
-     * This method returns the first telephone number associated to {@link TelephoneType#VOICE}
-     * or {@link TelephoneType#FACSIMILE FACSIMILE}.
+     * This method returns the first telephone number associated to {@code TelephoneType.VOICE}
+     * or {@code TelephoneType.FACSIMILE FACSIMILE}.
      *
-     * @return Telephone numbers at which the organization or individual may be contacted, or {@code null}.
+     * @return telephone numbers at which the organization or individual may be contacted, or {@code null}.
      *
      * @deprecated As of ISO 19115:2014, replaced by {@link #getPhones()}.
      */
     @Override
     @Deprecated
     @XmlElement(name = "phone")
+    @Dependencies("getPhones")
     public Telephone getPhone() {
         Telephone phone = null;
         final Collection<Telephone> phones = getPhones();
@@ -247,7 +250,7 @@ public class DefaultContact extends ISOMetadata implements Contact {
                 }
             }
             if (ignored != null) {
-                Context.warningOccured(Context.current(), LOGGER, DefaultContact.class, "getPhone",
+                Context.warningOccured(Context.current(), DefaultContact.class, "getPhone",
                         Messages.class, Messages.Keys.IgnoredPropertyAssociatedTo_1, ignored);
             }
         }
@@ -258,7 +261,7 @@ public class DefaultContact extends ISOMetadata implements Contact {
      * Sets telephone numbers at which the organization or individual may be contacted.
      * This method delegates to {@link #setPhones(Collection)}.
      *
-     * @param newValue The new telephone, or {@code null} if none.
+     * @param  newValue  the new telephone, or {@code null} if none.
      *
      * @deprecated As of ISO 19115:2014, replaced by {@link #setPhones(Collection)}.
      */
@@ -269,7 +272,7 @@ public class DefaultContact extends ISOMetadata implements Contact {
             if (newValue instanceof DefaultTelephone) {
                 newValues = ((DefaultTelephone) newValue).getOwner();
             } else {
-                newValues = new ArrayList<Telephone>(4);
+                newValues = new ArrayList<>(4);
                 for (String number : newValue.getVoices()) {
                     newValues.add(new DefaultTelephone(number, UnsupportedCodeList.VOICE));
                 }
@@ -284,7 +287,7 @@ public class DefaultContact extends ISOMetadata implements Contact {
     /**
      * Returns the physical and email addresses at which the organization or individual may be contacted.
      *
-     * @return Physical and email addresses at which the organization or individual may be contacted, or {@code null}.
+     * @return physical and email addresses at which the organization or individual may be contacted, or {@code null}.
      *
      * @since 0.5
      */
@@ -296,7 +299,7 @@ public class DefaultContact extends ISOMetadata implements Contact {
     /**
      * Sets the physical and email addresses at which the organization or individual may be contacted.
      *
-     * @param newValues The new addresses.
+     * @param  newValues  the new addresses.
      *
      * @since 0.5
      */
@@ -308,13 +311,14 @@ public class DefaultContact extends ISOMetadata implements Contact {
      * Returns the physical and email address at which the organization or individual may be contacted.
      * This method returns the first {@link #getAddresses() adress} element, or null if none.
      *
-     * @return Physical and email address at which the organization or individual may be contacted, or {@code null}.
+     * @return physical and email address at which the organization or individual may be contacted, or {@code null}.
      *
      * @deprecated As of ISO 19115:2014, replaced by {@link #getAddresses()}.
      */
     @Override
     @Deprecated
     @XmlElement(name = "address")
+    @Dependencies("getAddresses")
     public Address getAddress() {
         return LegacyPropertyAdapter.getSingleton(getAddresses(), Address.class, null, DefaultContact.class, "getAddress");
     }
@@ -323,7 +327,7 @@ public class DefaultContact extends ISOMetadata implements Contact {
      * Sets the physical and email address at which the organization or individual may be contacted.
      * This method delegates to {@link #setAddresses(Collection)}.
      *
-     * @param newValue The new address, or {@code null} if none.
+     * @param  newValue  the new address, or {@code null} if none.
      *
      * @deprecated As of ISO 19115:2014, replaced by {@link #setAddresses(Collection)}.
      */
@@ -335,7 +339,7 @@ public class DefaultContact extends ISOMetadata implements Contact {
     /**
      * Returns on-line information that can be used to contact the individual or organization.
      *
-     * @return On-line information that can be used to contact the individual or organization.
+     * @return on-line information that can be used to contact the individual or organization.
      *
      * @since 0.5
      */
@@ -347,7 +351,7 @@ public class DefaultContact extends ISOMetadata implements Contact {
     /**
      * Sets on-line information that can be used to contact the individual or organization.
      *
-     * @param newValues The new online resources.
+     * @param  newValues  the new online resources.
      *
      * @since 0.5
      */
@@ -359,13 +363,14 @@ public class DefaultContact extends ISOMetadata implements Contact {
      * Returns on-line information that can be used to contact the individual or organization.
      * This method returns the first {@link #getOnlineResources() online resource} element, or null if none.
      *
-     * @return On-line information that can be used to contact the individual or organization, or {@code null}.
+     * @return on-line information that can be used to contact the individual or organization, or {@code null}.
      *
      * @deprecated As of ISO 19115:2014, replaced by {@link #getOnlineResources()}.
      */
     @Override
     @Deprecated
     @XmlElement(name = "onlineResource")
+    @Dependencies("getOnlineResources")
     public OnlineResource getOnlineResource() {
         return LegacyPropertyAdapter.getSingleton(getOnlineResources(), OnlineResource.class, null, DefaultContact.class, "getOnlineResource");
     }
@@ -374,7 +379,7 @@ public class DefaultContact extends ISOMetadata implements Contact {
      * Sets on-line information that can be used to contact the individual or organization.
      * This method delegates to {@link #setOnlineResources(Collection)}.
      *
-     * @param newValue The new online resource, or {@code null} if none.
+     * @param  newValue  the new online resource, or {@code null} if none.
      *
      * @deprecated As of ISO 19115:2014, replaced by {@link #setOnlineResources(Collection)}.
      */
@@ -391,7 +396,7 @@ public class DefaultContact extends ISOMetadata implements Contact {
      * This change will tentatively be applied in GeoAPI 4.0.
      * </div>
      *
-     * @return Time period when individuals can contact the organization or individual, or {@code null}.
+     * @return time period when individuals can contact the organization or individual.
      */
     @Override
     @XmlElement(name = "hoursOfService")
@@ -407,7 +412,7 @@ public class DefaultContact extends ISOMetadata implements Contact {
      * This change will tentatively be applied in GeoAPI 4.0.
      * </div>
      *
-     * @param newValue The new hours of service, or {@code null} if none.
+     * @param  newValue  the new hours of service.
      */
     public void setHoursOfService(final InternationalString newValue) {
         checkWritePermission();
@@ -417,7 +422,7 @@ public class DefaultContact extends ISOMetadata implements Contact {
     /**
      * Returns supplemental instructions on how or when to contact the individual or organization.
      *
-     * @return Supplemental instructions on how or when to contact the individual or organization, or {@code null}.
+     * @return supplemental instructions on how or when to contact the individual or organization, or {@code null}.
      */
     @Override
     @XmlElement(name = "contactInstructions")
@@ -428,7 +433,7 @@ public class DefaultContact extends ISOMetadata implements Contact {
     /**
      * Sets supplemental instructions on how or when to contact the individual or organization.
      *
-     * @param newValue The new contact instructions, or {@code null} if none.
+     * @param  newValue  the new contact instructions, or {@code null} if none.
      */
     public void setContactInstructions(final InternationalString newValue) {
         checkWritePermission();
@@ -439,7 +444,7 @@ public class DefaultContact extends ISOMetadata implements Contact {
      * Type of the contact.
      * Returns {@code null} if none.
      *
-     * @return Type of the contact, or {@code null} if none.
+     * @return type of the contact, or {@code null} if none.
      *
      * @since 0.5
      */
@@ -452,7 +457,7 @@ public class DefaultContact extends ISOMetadata implements Contact {
     /**
      * Sets new type of the contact.
      *
-     * @param newValue The new type of the contact.
+     * @param  newValue  the new type of the contact.
      *
      * @since 0.5
      */

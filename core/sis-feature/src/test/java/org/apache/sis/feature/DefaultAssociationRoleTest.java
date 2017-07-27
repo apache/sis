@@ -35,8 +35,8 @@ import static org.apache.sis.test.Assert.*;
  * Tests {@link DefaultAssociationRole}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.5
  * @version 0.5
+ * @since   0.5
  * @module
  */
 @DependsOn(DefaultFeatureTypeTest.class)
@@ -45,9 +45,9 @@ public final strictfp class DefaultAssociationRoleTest extends TestCase {
      * Creates an association to a twin town. We arbitrarily fix the maximum number
      * of occurrences to 1, even if in reality some cities have many twin towns.
      *
-     * @param cyclic {@code true} if in addition to the association from <var>A</var> to <var>B</var>,
-     *        we also want an association from <var>B</var> to <var>A</var>, thus creating a cycle.
-     * @return The association to use for testing purpose.
+     * @param  cyclic  {@code true} if in addition to the association from <var>A</var> to <var>B</var>,
+     *                 we also want an association from <var>B</var> to <var>A</var>, thus creating a cycle.
+     * @return the association to use for testing purpose.
      */
     static DefaultAssociationRole twinTown(final boolean cyclic) {
         final Map<String,?> properties = singletonMap(NAME_KEY, "twin town");
@@ -64,9 +64,9 @@ public final strictfp class DefaultAssociationRoleTest extends TestCase {
     /**
      * Returns a City feature type which may have a twin town.
      *
-     * @param cyclic {@code true} if in addition to the association from <var>A</var> to <var>B</var>,
-     *        we also want an association from <var>B</var> to <var>A</var>, thus creating a cycle.
-     * @return The association to use for testing purpose.
+     * @param  cyclic  {@code true} if in addition to the association from <var>A</var> to <var>B</var>,
+     *                 we also want an association from <var>B</var> to <var>A</var>, thus creating a cycle.
+     * @return the association to use for testing purpose.
      */
     static DefaultFeatureType twinTownCity(final boolean cyclic) {
         final DefaultAssociationRole twinTown = twinTown(cyclic);
@@ -77,10 +77,10 @@ public final strictfp class DefaultAssociationRoleTest extends TestCase {
     /**
      * Convenience method creating a feature type of the given name, parent and property.
      *
-     * @param name     The name as either a {@link String} or a {@link GenericName}.
-     * @param parent   A feature type created by {@link DefaultFeatureTypeTest#city()}, or {@code null}.
-     * @param property The association to an other feature.
-     * @return The feature type to use for testing purpose.
+     * @param  name      the name as either a {@link String} or a {@link GenericName}.
+     * @param  parent    a feature type created by {@link DefaultFeatureTypeTest#city()}, or {@code null}.
+     * @param  property  the association to an other feature.
+     * @return the feature type to use for testing purpose.
      */
     private static DefaultFeatureType createType(final Object name,
             final DefaultFeatureType parent, final DefaultAssociationRole... property)
@@ -99,7 +99,7 @@ public final strictfp class DefaultAssociationRoleTest extends TestCase {
     }
 
     /**
-     * Tests {@link DefaultAssociationRole#getTitleProperty(FeatureAssociationRole)}.
+     * Tests {@code DefaultAssociationRole.getTitleProperty(FeatureAssociationRole)}.
      */
     @Test
     public void testGetTitleProperty() {
@@ -137,7 +137,7 @@ public final strictfp class DefaultAssociationRoleTest extends TestCase {
     }
 
     /**
-     * Tests {@link DefaultFeatureType#isAssignableFrom(FeatureType)} and {@link DefaultFeatureType#equals(Object)}
+     * Tests {@code DefaultFeatureType.isAssignableFrom(FeatureType)} and {@code DefaultFeatureType.equals(Object)}
      * on a feature type having a bidirectional association to an other feature. This test will fall in an infinite
      * loop if the implementation does not have proper guard against infinite recursivity.
      */

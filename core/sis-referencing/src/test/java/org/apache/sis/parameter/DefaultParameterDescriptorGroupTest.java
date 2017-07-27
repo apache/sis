@@ -23,6 +23,7 @@ import java.util.Collections;
 import org.opengis.parameter.GeneralParameterDescriptor;
 import org.opengis.parameter.ParameterNotFoundException;
 import org.apache.sis.internal.util.Constants;
+import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestCase;
@@ -39,8 +40,8 @@ import static org.opengis.referencing.IdentifiedObject.*;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Johann Sorel (Geomatys)
- * @since   0.4
  * @version 0.6
+ * @since   0.4
  * @module
  */
 @DependsOn(DefaultParameterDescriptorTest.class)
@@ -59,12 +60,12 @@ public final strictfp class DefaultParameterDescriptorGroupTest extends TestCase
     public static final DefaultParameterDescriptorGroup M1_M1_O1_O2;
     static {
         final Class<Integer> type = Integer.class;
-        final Map<String,Object> properties = new HashMap<String,Object>(4);
+        final Map<String,Object> properties = new HashMap<>(4);
         M1_M1_O1_O2 = new DefaultParameterDescriptorGroup(singletonMap(NAME_KEY, "Test group"), 0, 1,
-            new DefaultParameterDescriptor<Integer>(name(properties, "Mandatory 1", "Ambiguity"), 1, 1, type, null, null, DEFAULT_VALUE),
-            new DefaultParameterDescriptor<Integer>(name(properties, "Mandatory 2", "Alias 2"),   1, 1, type, null, null, DEFAULT_VALUE),
-            new DefaultParameterDescriptor<Integer>(name(properties, "Optional 3",  "Alias 3"),   0, 1, type, null, null, DEFAULT_VALUE),
-            new DefaultParameterDescriptor<Integer>(name(properties, "Optional 4",  "Ambiguity"), 0, 2, type, null, null, DEFAULT_VALUE)
+            new DefaultParameterDescriptor<>(name(properties, "Mandatory 1", "Ambiguity"), 1, 1, type, null, null, DEFAULT_VALUE),
+            new DefaultParameterDescriptor<>(name(properties, "Mandatory 2", "Alias 2"),   1, 1, type, null, null, DEFAULT_VALUE),
+            new DefaultParameterDescriptor<>(name(properties, "Optional 3",  "Alias 3"),   0, 1, type, null, null, DEFAULT_VALUE),
+            new DefaultParameterDescriptor<>(name(properties, "Optional 4",  "Ambiguity"), 0, 2, type, null, null, DEFAULT_VALUE)
         );
     }
 
@@ -81,12 +82,13 @@ public final strictfp class DefaultParameterDescriptorGroupTest extends TestCase
      * Ensures that the constructor detects duplicated names.
      */
     @Test
+    @SuppressWarnings("ResultOfObjectAllocationIgnored")
     public void testConstruction() {
         final Class<Integer> type = Integer.class;
-        final Map<String,Object> properties = new HashMap<String,Object>(4);
+        final Map<String,Object> properties = new HashMap<>(4);
         final DefaultParameterDescriptor<Integer> p1, p2;
-        p1 = new DefaultParameterDescriptor<Integer>(name(properties,   "Name",  null), 1, 1, type, null, null, null);
-        p2 = new DefaultParameterDescriptor<Integer>(name(properties, "  NAME ", null), 1, 1, type, null, null, null);
+        p1 = new DefaultParameterDescriptor<>(name(properties,   "Name",  null), 1, 1, type, null, null, null);
+        p2 = new DefaultParameterDescriptor<>(name(properties, "  NAME ", null), 1, 1, type, null, null, null);
         try {
             new DefaultParameterDescriptorGroup(singletonMap(NAME_KEY, "Test group"), 0, 1, p1, p2);
             fail("Constructor should have detected the duplicated names.");
@@ -178,7 +180,14 @@ public final strictfp class DefaultParameterDescriptorGroupTest extends TestCase
      */
     @Test
     public void testWKT() {
-        assertWktEquals(
+        assertWktEquals(Convention.WKT2,
+                "PARAMETERGROUP[“Test group”,\n" +
+                "  PARAMETER[“Mandatory 1”, 10],\n" +
+                "  PARAMETER[“Mandatory 2”, 10],\n" +
+                "  PARAMETER[“Optional 3”, 10],\n" +
+                "  PARAMETER[“Optional 4”, 10]]", M1_M1_O1_O2);
+
+        assertWktEquals(Convention.WKT2_SIMPLIFIED,
                 "ParameterGroup[“Test group”,\n" +
                 "  Parameter[“Mandatory 1”, 10],\n" +
                 "  Parameter[“Mandatory 2”, 10],\n" +
@@ -200,8 +209,8 @@ public final strictfp class DefaultParameterDescriptorGroupTest extends TestCase
          * Test below is identical to DefaultParameterDescriptorTest.testIdentifiedParameterWKT(),
          * but is reproduced here for easier comparison with the test following it.
          */
-        final DefaultParameterDescriptor<Double> descriptor = DefaultParameterDescriptorTest.createEPSG("A0", Constants.A0);
-        assertWktEquals("Parameter[“A0”, Id[“EPSG”, 8623, Citation[“IOGP”], URI[“urn:ogc:def:parameter:EPSG::8623”]]]", descriptor);
+        final DefaultParameterDescriptor<Double> descriptor = DefaultParameterDescriptorTest.createEPSG("A0", Constants.EPSG_A0);
+        assertWktEquals("PARAMETER[“A0”, ID[“EPSG”, 8623, URI[“urn:ogc:def:parameter:EPSG::8623”]]]", descriptor);
         /*
          * When the parameter is part of a larger element, we expect a simplification.
          * Here, the URI should be omitted because it is a long value which does not
@@ -209,8 +218,8 @@ public final strictfp class DefaultParameterDescriptorGroupTest extends TestCase
          */
         final DefaultParameterDescriptorGroup group = new DefaultParameterDescriptorGroup(
                 Collections.singletonMap(NAME_KEY, "Affine"), 1, 1, descriptor);
-        assertWktEquals("ParameterGroup[“Affine”,\n" +
-                        "  Parameter[“A0”, Id[“EPSG”, 8623, Citation[“IOGP”]]]]", group);
+        assertWktEquals("PARAMETERGROUP[“Affine”,\n" +
+                        "  PARAMETER[“A0”, ID[“EPSG”, 8623]]]", group);
     }
 
     /**

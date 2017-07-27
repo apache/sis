@@ -28,8 +28,8 @@ import org.apache.sis.referencing.datum.DefaultEngineeringDatum;
  *
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.4
  * @version 0.4
+ * @since   0.4
  * @module
  */
 public final class CD_EngineeringDatum extends PropertyType<CD_EngineeringDatum, EngineeringDatum> {
@@ -62,8 +62,8 @@ public final class CD_EngineeringDatum extends PropertyType<CD_EngineeringDatum,
      * Invoked by {@link PropertyType} at marshalling time for wrapping the given value
      * in a {@code <gml:EngineeringDatum>} XML element.
      *
-     * @param  datum The element to marshall.
-     * @return A {@code PropertyType} wrapping the given the element.
+     * @param  datum  the element to marshall.
+     * @return a {@code PropertyType} wrapping the given the element.
      */
     @Override
     protected CD_EngineeringDatum wrap(final EngineeringDatum datum) {
@@ -75,7 +75,7 @@ public final class CD_EngineeringDatum extends PropertyType<CD_EngineeringDatum,
      * inside the {@code <gml:EngineeringDatum>} XML element.
      * This is the value or a copy of the value given in argument to the {@code wrap} method.
      *
-     * @return The element to be marshalled.
+     * @return the element to be marshalled.
      */
     @XmlElement(name = "EngineeringDatum")
     public DefaultEngineeringDatum getElement() {
@@ -85,7 +85,7 @@ public final class CD_EngineeringDatum extends PropertyType<CD_EngineeringDatum,
     /**
      * Invoked by JAXB at unmarshalling time for storing the result temporarily.
      *
-     * @param datum The unmarshalled element.
+     * @param  datum  the unmarshalled element.
      */
     public void setElement(final DefaultEngineeringDatum datum) {
         metadata = datum;

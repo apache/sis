@@ -17,18 +17,25 @@ package org.apache.sis.internal.geoapi.evolution;
 
 import java.util.List;
 import java.util.ArrayList;
+import org.opengis.annotation.UML;
 import org.opengis.util.CodeList;
+
+import static org.opengis.annotation.Obligation.CONDITIONAL;
+import static org.opengis.annotation.Specification.ISO_19115;
 
 
 /**
  * Placeholder for code list not yet available in GeoAPI.
- * Example: {@code org.opengis.metadata.citation.TelephoneType}.
+ * Currently only for {@code org.opengis.metadata.citation.TelephoneType}, but we use the
+ * {@code UnsupportedCodeList} class name for making clear that this class will disappear
+ * in a future Apache SIS version.
  *
  * @author  Martin Desruisseaux (Geomatys)
+ * @version 0.8
  * @since   0.5
- * @version 0.5
  * @module
  */
+@UML(identifier="CI_TelephoneTypeCode", specification=ISO_19115)
 public final class UnsupportedCodeList extends CodeList<UnsupportedCodeList> {
     /**
      * For cross-version compatibility.
@@ -38,16 +45,18 @@ public final class UnsupportedCodeList extends CodeList<UnsupportedCodeList> {
     /**
      * The list of constants defined in this code list.
      */
-    private static final List<UnsupportedCodeList> VALUES = new ArrayList<UnsupportedCodeList>();
+    private static final List<UnsupportedCodeList> VALUES = new ArrayList<UnsupportedCodeList>(3);
 
     /**
      * A frequently used code list element.
      */
+    @UML(identifier="voice", obligation=CONDITIONAL, specification=ISO_19115)
     public static final CodeList<?> VOICE = new UnsupportedCodeList("VOICE");
 
     /**
      * A frequently used code list element.
      */
+    @UML(identifier="facsimile", obligation=CONDITIONAL, specification=ISO_19115)
     public static final CodeList<?> FACSIMILE = new UnsupportedCodeList("FACSIMILE");
 
     /**

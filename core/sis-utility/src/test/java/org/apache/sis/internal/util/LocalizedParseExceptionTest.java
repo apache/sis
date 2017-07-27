@@ -33,8 +33,8 @@ import static org.junit.Assert.*;
  * Tests the {@link LocalizedParseException} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.3
+ * @since   0.3
  * @module
  */
 @DependsOn(org.apache.sis.util.resources.IndexedResourceBundleTest.class)
@@ -69,7 +69,7 @@ public final strictfp class LocalizedParseExceptionTest extends TestCase {
     @Test
     public void testResourceKeyForText() {
         final ParseException e = new LocalizedParseException(
-                Locale.CANADA, Errors.Keys.NodeHasNoParent_1, "Some text to parse", 5);
+                Locale.CANADA, Errors.Keys.NodeHasNoParent_1, new Object[] {"text"}, 5);
         String message = e.getLocalizedMessage();
         assertTrue(message, message.contains("Node “text” has no parent."));
     }

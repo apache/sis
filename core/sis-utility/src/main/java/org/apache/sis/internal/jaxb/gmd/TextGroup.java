@@ -20,9 +20,6 @@ import java.util.Locale;
 import javax.xml.bind.annotation.XmlElement;
 import org.apache.sis.util.Debug;
 
-// Related to JDK7
-import org.apache.sis.internal.jdk7.JDK7;
-
 
 /**
  * A set of strings localized in different languages. This adapter represents the
@@ -71,12 +68,13 @@ import org.apache.sis.internal.jdk7.JDK7;
  *
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.3
- * @module
  *
  * @see LocalisedCharacterString
  * @see <a href="http://jira.geotoolkit.org/browse/GEOTK-152">GEOTK-152</a>
+ *
+ * @since 0.3
+ * @module
  */
 final class TextGroup {
     /**
@@ -103,8 +101,8 @@ final class TextGroup {
      * it would be possible to declare an other constructor allowing the more compact form
      * (the smaller ) if there is a need for that in the future.
      *
-     * @param locale The string language.
-     * @param text The string.
+     * @param  locale  the string language.
+     * @param  text    the string.
      */
     TextGroup(final Locale locale, final String text) {
         localized = new LocalisedCharacterString[] {
@@ -127,7 +125,7 @@ final class TextGroup {
     @Debug
     @Override
     public String toString() {
-        final String lineSeparator = JDK7.lineSeparator();
+        final String lineSeparator = System.lineSeparator();
         final StringBuilder buffer = new StringBuilder(160).append(getClass().getSimpleName()).append(lineSeparator);
         if (localized != null) {
             int corner = 0;

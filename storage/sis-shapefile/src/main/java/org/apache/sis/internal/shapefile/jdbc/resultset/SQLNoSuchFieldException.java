@@ -45,9 +45,9 @@ public class SQLNoSuchFieldException extends SQLException {
      */
     public SQLNoSuchFieldException(String message, String sqlStatement, File dbf, String colName) {
         super(message);
-        sql = sqlStatement;
-        database = dbf;
-        columnName = colName;
+        this.sql = sqlStatement;
+        this.database = dbf;
+        this.columnName = colName;
     }
 
     /**
@@ -55,7 +55,7 @@ public class SQLNoSuchFieldException extends SQLException {
      * @return SQL statement or null.
      */
     public String getSQL() {
-        return sql;
+        return this.sql;
     }
 
     /**
@@ -63,7 +63,7 @@ public class SQLNoSuchFieldException extends SQLException {
      * @return Column name.
      */
     public String getColumnName() {
-        return columnName;
+        return this.columnName;
     }
 
     /**
@@ -71,6 +71,6 @@ public class SQLNoSuchFieldException extends SQLException {
      * @return Database file.
      */
     public File getDatabase() {
-        return database;
+        return this.database;
     }
 }

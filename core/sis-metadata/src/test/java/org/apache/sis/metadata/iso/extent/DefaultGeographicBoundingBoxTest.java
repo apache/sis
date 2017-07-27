@@ -21,27 +21,23 @@ import org.opengis.metadata.extent.GeographicBoundingBox;
 import org.apache.sis.measure.Latitude;
 import org.apache.sis.measure.Longitude;
 import org.apache.sis.test.DependsOnMethod;
+import org.apache.sis.test.TestUtilities;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
 import static java.lang.Double.NaN;
-import static org.junit.Assert.*;
+import static org.apache.sis.test.Assert.*;
 
 
 /**
  * Tests {@link DefaultGeographicBoundingBox}.
  *
  * @author  Martin Desruisseaux (Geomatys)
+ * @version 0.8
  * @since   0.4
- * @version 0.5
  * @module
  */
 public final strictfp class DefaultGeographicBoundingBoxTest extends TestCase {
-    /**
-     * The tolerance factor for strict comparisons of floating point values.
-     */
-    private static final double STRICT = 0.0;
-
     /**
      * Asserts that the given geographic bounding box is strictly equals to the given values.
      * The {@link GeographicBoundingBox#getInclusion()} is expected to be {@code true}.
@@ -67,6 +63,7 @@ public final strictfp class DefaultGeographicBoundingBoxTest extends TestCase {
     /**
      * Tests construction with an invalid range of latitudes.
      */
+    @SuppressWarnings("ResultOfObjectAllocationIgnored")
     @Test(expected = IllegalArgumentException.class)
     public void testInvalidLatitudeRange() {
         new DefaultGeographicBoundingBox(-1, +1, 12, 10);
@@ -421,5 +418,32 @@ public final strictfp class DefaultGeographicBoundingBoxTest extends TestCase {
             new Latitude (+45),
             Boolean.TRUE
         }, map.values().toArray());
+    }
+
+    /**
+     * Tests the {@code toString()} implementation of a custom geographic bounding box inside a {@link DefaultExtent}.
+     * In a previous Apache SIS version, those properties were not properly sorted.
+     *
+     * @since 0.8
+     */
+    @Test
+    public void testToString() {
+        final GeographicBoundingBox bbox = new GeographicBoundingBox() {
+            @Override public double getWestBoundLongitude() {return -40;}
+            @Override public double getEastBoundLongitude() {return  50;}
+            @Override public double getSouthBoundLatitude() {return -20;}
+            @Override public double getNorthBoundLatitude() {return  45;}
+            @Override public Boolean getInclusion() {return Boolean.TRUE;}
+        };
+        final DefaultExtent extent = new DefaultExtent(null, bbox, null, null);
+        assertSame(bbox, TestUtilities.getSingleton(extent.getGeographicElements()));
+        assertMultilinesEquals(
+                "Extent\n" +
+                "  └─Geographic element\n" +
+                "      ├─West bound longitude…… 40°W\n" +
+                "      ├─East bound longitude…… 50°E\n" +
+                "      ├─South bound latitude…… 20°S\n" +
+                "      ├─North bound latitude…… 45°N\n" +
+                "      └─Extent type code……………… true\n", extent.toString());
     }
 }

@@ -18,6 +18,7 @@ package org.apache.sis.io.wkt;
 
 import java.util.EnumMap;
 import java.io.Serializable;
+import java.io.ObjectStreamException;
 import org.apache.sis.internal.util.X364;
 import org.apache.sis.util.resources.Errors;
 
@@ -35,12 +36,13 @@ import org.apache.sis.util.resources.Errors;
  * The above list may be expanded in any future SIS version.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.4
  * @version 0.4
- * @module
  *
  * @see WKTFormat#getColors()
  * @see WKTFormat#setColors(Colors)
+ *
+ * @since 0.4
+ * @module
  */
 public class Colors implements Cloneable, Serializable {
     /**
@@ -65,7 +67,8 @@ public class Colors implements Cloneable, Serializable {
         map.put(ElementKind.CODE_LIST,  X364.FOREGROUND_CYAN);
         map.put(ElementKind.PARAMETER,  X364.FOREGROUND_GREEN);
         map.put(ElementKind.METHOD,     X364.FOREGROUND_GREEN);
-        map.put(ElementKind.DATUM,      X364.FOREGROUND_GREEN);
+        map.put(ElementKind.DATUM,      X364.FOREGROUND_GREEN);     // Note: datum names in SIS are like identifiers.
+        map.put(ElementKind.IDENTIFIER, X364.FOREGROUND_RED);
         map.put(ElementKind.SCOPE,      X364.FOREGROUND_GRAY);
         map.put(ElementKind.EXTENT,     X364.FOREGROUND_GRAY);
         map.put(ElementKind.CITATION,   X364.FOREGROUND_GRAY);
@@ -103,16 +106,16 @@ public class Colors implements Cloneable, Serializable {
      * Creates a new, initially empty, set of colors.
      */
     public Colors() {
-        map = new EnumMap<ElementKind,X364>(ElementKind.class);
+        map = new EnumMap<>(ElementKind.class);
     }
 
     /**
      * Creates a new set of colors initialized to a copy of the given one.
      *
-     * @param colors The set of colors to copy.
+     * @param colors  the set of colors to copy.
      */
     public Colors(final Colors colors) {
-        map = new EnumMap<ElementKind,X364>(colors.map);
+        map = new EnumMap<>(colors.map);
     }
 
     /**
@@ -121,9 +124,9 @@ public class Colors implements Cloneable, Serializable {
      * {@code "red"}, {@code "green"}, {@code "yellow"}, {@code "blue"}, {@code "magenta"}, {@code "cyan"}
      * and {@code "gray"}, case-insensitive.
      *
-     * @param  key   The syntactic element for which to set the color.
-     * @param  color The color to give to the specified element, or {@code null} if none.
-     * @throws IllegalArgumentException If the given color name is not recognized.
+     * @param  key    the syntactic element for which to set the color.
+     * @param  color  the color to give to the specified element, or {@code null} if none.
+     * @throws IllegalArgumentException if the given color name is not recognized.
      */
     public void setName(final ElementKind key, final String color) throws IllegalArgumentException {
         if (isImmutable) {
@@ -139,10 +142,10 @@ public class Colors implements Cloneable, Serializable {
     /**
      * Returns the color for the given syntactic element.
      *
-     * @param key The syntactic element for which to get the color.
-     * @return The color of the specified element, or {@code null} if none.
+     * @param  key  the syntactic element for which to get the color.
+     * @return the color of the specified element, or {@code null} if none.
      */
-    public final String getName(final ElementKind key) { // Declared final for consistency with getAnsiSequence(…)
+    public final String getName(final ElementKind key) {      // Declared final for consistency with getAnsiSequence(…)
         final X364 color = map.get(key);
         return (color != null) ? color.color : null;
     }
@@ -170,7 +173,7 @@ public class Colors implements Cloneable, Serializable {
     /**
      * Returns a clone of this {@code Colors}.
      *
-     * @return A clone of this {@code Colors}.
+     * @return a clone of this {@code Colors}.
      */
     @Override
     public Colors clone() {
@@ -188,7 +191,7 @@ public class Colors implements Cloneable, Serializable {
     /**
      * Compares this {@code Colors} with the given object for equality.
      *
-     * @param  other The object to compare with this {@code Colors}.
+     * @param  other  the object to compare with this {@code Colors}.
      * @return {@code true} if both objects are equal.
      */
     @Override
@@ -203,7 +206,7 @@ public class Colors implements Cloneable, Serializable {
     /**
      * Returns a hash code value for this object.
      *
-     * @return A hash code value.
+     * @return a hash code value.
      */
     @Override
     public int hashCode() {
@@ -213,9 +216,10 @@ public class Colors implements Cloneable, Serializable {
     /**
      * Replaces the deserialized instance by {@link #DEFAULT} one if possible.
      *
-     * @return The object to use after deserialization.
+     * @return the object to use after deserialization.
+     * @throws ObjectStreamException required by specification but should never be thrown.
      */
-    final Object readResolve() {
+    final Object readResolve() throws ObjectStreamException {
         return isImmutable && map.equals(DEFAULT.map) ? DEFAULT : this;
     }
 }

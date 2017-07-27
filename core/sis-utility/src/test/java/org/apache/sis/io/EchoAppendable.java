@@ -28,8 +28,8 @@ import static org.junit.Assert.*;
  * This writer is useful for debugging purpose.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.3
+ * @since   0.3
  * @module
  */
 public class EchoAppendable extends Appender {
@@ -41,8 +41,8 @@ public class EchoAppendable extends Appender {
     /**
      * Creates a copy writer for the specified streams or buffers.
      *
-     * @param main The main stream or buffer.
-     * @param echo The echo stream or buffer.
+     * @param main  the main stream or buffer.
+     * @param echo  the echo stream or buffer.
      */
     public EchoAppendable(final Appendable main, final Appendable echo) {
         super(main);
@@ -52,9 +52,9 @@ public class EchoAppendable extends Appender {
     /**
      * Writes a single character.
      *
-     * @param  c The character to append.
+     * @param  c  the character to append.
      * @return {@code this}.
-     * @throws IOException If an I/O error occurs.
+     * @throws IOException if an I/O error occurs.
      */
     @Override
     public Appendable append(final char c) throws IOException {
@@ -66,9 +66,9 @@ public class EchoAppendable extends Appender {
     /**
      * Writes a character sequence.
      *
-     * @param  sequence The character sequence to be written.
+     * @param  sequence  the character sequence to be written.
      * @return {@code this}.
-     * @throws IOException If an I/O error occurs.
+     * @throws IOException if an I/O error occurs.
      */
     @Override
     public Appendable append(final CharSequence sequence) throws IOException {
@@ -80,11 +80,11 @@ public class EchoAppendable extends Appender {
     /**
      * Writes a portion of a character sequence.
      *
-     * @param  sequence The character sequence to be written.
-     * @param  start    Index from which to start reading characters.
-     * @param  end      Index of the character following the last character to read.
+     * @param  sequence  the character sequence to be written.
+     * @param  start     index from which to start reading characters.
+     * @param  end       index of the character following the last character to read.
      * @return {@code this}.
-     * @throws IOException If an I/O error occurs.
+     * @throws IOException if an I/O error occurs.
      */
     @Override
     public Appendable append(final CharSequence sequence, final int start, final int end) throws IOException {

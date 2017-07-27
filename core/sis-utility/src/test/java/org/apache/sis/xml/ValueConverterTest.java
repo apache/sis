@@ -17,22 +17,20 @@
 package org.apache.sis.xml;
 
 import java.util.Locale;
+import java.nio.charset.StandardCharsets;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
 
-// Branch-dependent imports
-import org.apache.sis.internal.jdk7.StandardCharsets;
-
 
 /**
  * Tests the {@link ValueConverter} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.4
  * @version 0.5
+ * @since   0.4
  * @module
  */
 @DependsOn(LegacyCodesTest.class)

@@ -25,7 +25,6 @@ import org.junit.Test;
 import static org.opengis.test.Validators.*;
 import static org.apache.sis.test.ReferencingAssert.*;
 import static org.apache.sis.geometry.AbstractEnvelopeTest.WGS84;
-import static org.apache.sis.geometry.AbstractEnvelopeTest.STRICT;
 
 
 /**
@@ -36,8 +35,8 @@ import static org.apache.sis.geometry.AbstractEnvelopeTest.STRICT;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Ross Laidlaw
- * @since   0.3
  * @version 0.4
+ * @since   0.3
  * @module
  */
 @DependsOn(AbstractEnvelopeTest.class)

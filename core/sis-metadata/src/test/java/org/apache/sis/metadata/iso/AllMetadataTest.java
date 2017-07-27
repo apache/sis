@@ -21,8 +21,10 @@ import java.lang.reflect.Modifier;
 import org.opengis.util.CodeList;
 import org.opengis.annotation.UML;
 import org.opengis.annotation.Specification;
+import org.apache.sis.internal.jaxb.Context;
 import org.apache.sis.metadata.MetadataStandard;
 import org.apache.sis.metadata.MetadataTestCase;
+import org.apache.sis.test.LoggingWatcher;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.xml.Namespaces;
 import org.junit.Rule;
@@ -35,19 +37,18 @@ import static org.junit.Assert.*;
  * Tests all known {@link ISOMetadata} subclasses for JAXB annotations and getter/setter methods.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.5
+ * @since   0.3
  * @module
  */
 @DependsOn(org.apache.sis.metadata.PropertyAccessorTest.class)
 public final strictfp class AllMetadataTest extends MetadataTestCase {
     /**
-     * A JUnit {@linkplain Rule rule} for listening to log events. This field is public
-     * because JUnit requires us to do so, but should be considered as an implementation
-     * details (it should have been a private field).
+     * A JUnit {@link Rule} for listening to log events. This field is public because JUnit requires us to
+     * do so, but should be considered as an implementation details (it should have been a private field).
      */
     @Rule
-    public final LoggingWatcher listener = new LoggingWatcher();
+    public final LoggingWatcher loggings = new LoggingWatcher(Context.LOGGER);
 
     /**
      * Creates a new test case with all GeoAPI interfaces and code lists to test.
@@ -205,8 +206,12 @@ public final strictfp class AllMetadataTest extends MetadataTestCase {
     @Test
     @Override
     public void testPropertyValues() {
-        listener.maximumLogCount = 4;
         super.testPropertyValues();
+        loggings.assertNextLogContains("angularDistance", "distance");
+        loggings.assertNextLogContains("distance", "equivalentScale");
+        loggings.assertNextLogContains("equivalentScale", "levelOfDetail");
+        loggings.assertNextLogContains("levelOfDetail", "vertical");
+        loggings.assertNoUnexpectedLog();
     }
 
     /**
@@ -218,17 +223,24 @@ public final strictfp class AllMetadataTest extends MetadataTestCase {
     @Override
     protected String getExpectedXmlElementName(final Class<?> enclosing, final UML uml) {
         String name = super.getExpectedXmlElementName(enclosing, uml);
-        /*switch (name)*/ {
-            if (name.equals("MD_Scope")) {      // ISO 19115:2014
-                name = "DQ_Scope";  // ISO 19115:2003
-            } else if (name.equals("distributedComputingPlatform")) {
+        switch (name) {
+            case "MD_Scope": {                  // ISO 19115:2014
+                name = "DQ_Scope";              // ISO 19115:2003
+                break;
+            }
+            case "distributedComputingPlatform": {
                 name = "DCP";
-            } else if (name.equals("stepDateTime")) {
+                break;
+            }
+            case "stepDateTime": {
                 name = "dateTime";
-            } else if (name.equals("locale")) {
+                break;
+            }
+            case "locale": {
                 if (enclosing == org.opengis.metadata.content.FeatureCatalogueDescription.class) {
                     name = "language";
                 }
+                break;
             }
         }
         return name;
@@ -263,19 +275,19 @@ public final strictfp class AllMetadataTest extends MetadataTestCase {
     @Override
     protected String getExpectedXmlTypeForElement(final Class<?> type, final Class<?> impl) {
         final String rootName = type.getAnnotation(UML.class).identifier();
-        /* switch (rootName) */ { // "String in switch" on the JDK7 branch.
+        switch (rootName) {
             // We don't know yet what is the type of this one.
-            if (rootName.equals("MD_FeatureTypeList")) {
+            case "MD_FeatureTypeList": {
                 return null;
             }
             // Following prefix was changed in ISO 19115 corrigendum,
             // but ISO 19139 still use the old prefix.
-            if (rootName.equals("SV_ServiceIdentification")) {
+            case "SV_ServiceIdentification": {
                 return "MD_ServiceIdentification_Type";
             }
             // Following prefix was changed in ISO 19115:2014,
             // but ISO 19139 still use the old prefix.
-            if (rootName.equals("MD_Scope")) {
+            case "MD_Scope": {
                 return "DQ_Scope_Type";
             }
         }
@@ -318,7 +330,7 @@ public final strictfp class AllMetadataTest extends MetadataTestCase {
      * Returns {@code true} if the given method is a non-standard extension.
      * If {@code true}, then {@code method} does not need to have UML annotation.
      *
-     * @param method The method to verify.
+     * @param  method  the method to verify.
      * @return {@code true} if the given method is an extension, or {@code false} otherwise.
      *
      * @since 0.5

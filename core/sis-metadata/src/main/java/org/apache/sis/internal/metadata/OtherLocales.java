@@ -36,8 +36,8 @@ import org.apache.sis.util.collection.Containers;
  * are for those remaining elements and are created by the {@link #filter(Collection)} method.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.5
  * @version 0.5
+ * @since   0.5
  * @module
  */
 public final class OtherLocales extends AbstractCollection<Locale> {
@@ -64,8 +64,8 @@ public final class OtherLocales extends AbstractCollection<Locale> {
      *
      * <p>The converse of this {@code filter} method is {@link #merge(Locale, Collection)}.</p>
      *
-     * @param  languages The collection containing the default locale followed by the other ones.
-     * @return A collection containing all {@code languages} elements except the first one.
+     * @param  languages  the collection containing the default locale followed by the other ones.
+     * @return a collection containing all {@code languages} elements except the first one.
      */
     public static Collection<Locale> filter(final Collection<Locale> languages) {
         return (languages != null) ? new OtherLocales(languages) : null;
@@ -74,7 +74,7 @@ public final class OtherLocales extends AbstractCollection<Locale> {
     /**
      * Returns the number of elements in this collection.
      *
-     * @return Number of other locales.
+     * @return number of other locales.
      */
     @Override
     public int size() {
@@ -86,7 +86,7 @@ public final class OtherLocales extends AbstractCollection<Locale> {
     /**
      * Returns an iterator over all elements in this collection except the first one.
      *
-     * @return Iterator over all other locales.
+     * @return iterator over all other locales.
      */
     @Override
     public Iterator<Locale> iterator() {
@@ -105,7 +105,7 @@ public final class OtherLocales extends AbstractCollection<Locale> {
      * when unmarshalling a XML document having a {@code otherLocale} property without {@code defaultLocale} property,
      * which is probably invalid.</p>
      *
-     * @param  locale The element to add.
+     * @param  locale  the element to add.
      * @return {@code true} if the "other locales" collection has been modified as a result of this method call.
      */
     @Override
@@ -124,48 +124,26 @@ public final class OtherLocales extends AbstractCollection<Locale> {
     /**
      * Returns a collection containing the given {@code defaultLocale} followed by the {@code otherLocales}.
      *
-     * @param  defaultLocale The first element in the collection to be returned, or {@code null} if unspecified.
-     * @param  otherLocales  All remaining elements in the collection to be returned, or {@code null} if none.
-     * @return A collection containing the default locale followed by all other ones.
+     * @param  defaultLocale  the first element in the collection to be returned, or {@code null} if unspecified.
+     * @param  otherLocales   all remaining elements in the collection to be returned, or {@code null} if none.
+     * @return a collection containing the default locale followed by all other ones.
      */
     public static Collection<Locale> merge(Locale defaultLocale, final Collection<? extends Locale> otherLocales) {
         final Collection<Locale> merged;
         if (Containers.isNullOrEmpty(otherLocales)) {
             merged = LegacyPropertyAdapter.asCollection(defaultLocale);
         } else {
-            merged = new ArrayList<Locale>(otherLocales.size() + 1);
+            merged = new ArrayList<>(otherLocales.size() + 1);
             if (defaultLocale == null) {
                 defaultLocale = Locale.getDefault();
                 if (otherLocales.contains(defaultLocale)) {
-                    defaultLocale = Locale.ROOT;  // Same default than add(Locale).
+                    defaultLocale = Locale.ROOT;                            // Same default than add(Locale).
                 }
             }
             merged.add(defaultLocale);
             merged.addAll(otherLocales);
         }
         return merged;
-    }
-
-    /**
-     * Returns the first element of the given collection, or {@code null} if none.
-     * This method does not emit warning if more than one element is found.
-     * Consequently, this method should be used only when multi-occurrence is not ambiguous.
-     *
-     * <p><b>Note:</b> while defined in {@code OtherLocales} because the primary use for this method is to
-     * get the default locale, this method is also opportunistically used for other legacy properties.</p>
-     *
-     * @param  <T>    The type of elements in the collection.
-     * @param  values The collection from which to get the first element, or {@code null}.
-     * @return The first element found in the given collection, or {@code null}.
-     */
-    public static <T> T getFirst(final Collection<T> values) {
-        if (values != null) {
-            final Iterator<T> it = values.iterator();
-            if (it.hasNext()) {
-                return it.next();
-            }
-        }
-        return null;
     }
 
     /**
@@ -181,10 +159,12 @@ public final class OtherLocales extends AbstractCollection<Locale> {
      * <p><b>Note:</b> while defined in {@code OtherLocales} because the primary use for this method is to
      * get the default locale, this method is also opportunistically used for other legacy properties.</p>
      *
-     * @param  <T>      The type of elements in the collection.
-     * @param  values   The collection where to add the new value, or {@code null}.
-     * @param  newValue The new value to set, or {@code null} for instead removing the first element.
-     * @return The collection (may or may not be the given {@code values} collection).
+     * @param  <T>       the type of elements in the collection.
+     * @param  values    the collection where to add the new value, or {@code null}.
+     * @param  newValue  the new value to set, or {@code null} for instead removing the first element.
+     * @return the collection (may or may not be the given {@code values} collection).
+     *
+     * @see org.apache.sis.internal.util.CollectionsExt#first(Iterable)
      */
     public static <T> Collection<T> setFirst(Collection<T> values, final T newValue) {
         if (values == null) {
@@ -200,7 +180,7 @@ public final class OtherLocales extends AbstractCollection<Locale> {
             values.add(newValue);
         } else {
             if (!(values instanceof List<?>)) {
-                values = new ArrayList<T>(values);
+                values = new ArrayList<>(values);
             }
             ((List<T>) values).set(0, newValue);
         }

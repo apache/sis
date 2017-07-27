@@ -19,6 +19,7 @@ package org.apache.sis.metadata.iso.identification;
 import java.util.Collection;
 import javax.xml.bind.annotation.XmlID;
 import javax.xml.bind.annotation.XmlType;
+import javax.xml.bind.annotation.XmlSchemaType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -26,27 +27,33 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import javax.xml.bind.annotation.adapters.CollapsedStringAdapter;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.identification.RepresentativeFraction;
-import org.apache.sis.internal.jaxb.IdentifierMapWithSpecialCases;
+import org.apache.sis.metadata.UnmodifiableMetadataException;
+import org.apache.sis.internal.jaxb.ModifiableIdentifierMap;
+import org.apache.sis.internal.jaxb.IdentifierMapAdapter;
 import org.apache.sis.internal.jaxb.gco.GO_Integer64;
+import org.apache.sis.internal.metadata.MetadataUtilities;
 import org.apache.sis.internal.util.CheckedArrayList;
 import org.apache.sis.measure.ValueRange;
 import org.apache.sis.xml.IdentifierMap;
 import org.apache.sis.xml.IdentifierSpace;
 import org.apache.sis.xml.IdentifiedObject;
-import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Emptiable;
 import org.apache.sis.util.resources.Errors;
 
 import static org.apache.sis.util.collection.Containers.isNullOrEmpty;
-import static org.apache.sis.internal.metadata.MetadataUtilities.warnNonPositiveArgument;
+import static org.apache.sis.internal.metadata.MetadataUtilities.ensurePositive;
 
 
 /**
  * A scale defined as the inverse of a denominator.
  * Scale is defined as a kind of {@link Number}.
+ * The following property is mandatory in a well-formed metadata according ISO 19115:
  *
- * <p>In addition to the standard properties, SIS provides the following methods:</p>
+ * <div class="preformat">{@code MD_RepresentativeFraction}
+ * {@code   └─denominator…………………………} The number below the line in a vulgar fraction.</div>
+ *
+ * In addition to the standard properties, SIS provides the following methods:
  * <ul>
  *   <li>{@link #setScale(double)} for computing the denominator from a scale value.</li>
  * </ul>
@@ -62,15 +69,16 @@ import static org.apache.sis.internal.metadata.MetadataUtilities.warnNonPositive
  *
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
- * @version 0.6
- * @module
+ * @version 0.7
  *
  * @see DefaultResolution#getEquivalentScale()
+ *
+ * @since 0.3
+ * @module
  */
 @XmlType(name = "MD_RepresentativeFraction_Type")
 @XmlRootElement(name = "MD_RepresentativeFraction")
-public class DefaultRepresentativeFraction extends Number implements RepresentativeFraction, IdentifiedObject, Emptiable {
+public class DefaultRepresentativeFraction extends Number implements RepresentativeFraction, IdentifiedObject, Emptiable, Cloneable {
     /**
      * Serial number for compatibility with different versions.
      */
@@ -88,6 +96,11 @@ public class DefaultRepresentativeFraction extends Number implements Representat
     private Collection<Identifier> identifiers;
 
     /**
+     * {@code true} if this representative fraction has been made unmodifiable.
+     */
+    private transient boolean isUnmodifiable;
+
+    /**
      * Creates a uninitialized representative fraction.
      * The {@linkplain #getDenominator() denominator} is initially zero
      * and the {@linkplain #doubleValue() double value} is NaN.
@@ -98,8 +111,8 @@ public class DefaultRepresentativeFraction extends Number implements Representat
     /**
      * Creates a new representative fraction from the specified denominator.
      *
-     * @param  denominator The denominator as a positive number, or 0 if unspecified.
-     * @throws IllegalArgumentException If the given value is negative.
+     * @param  denominator  the denominator as a positive number, or 0 if unspecified.
+     * @throws IllegalArgumentException if the given value is negative.
      */
     public DefaultRepresentativeFraction(final long denominator) {
         ArgumentChecks.ensurePositive("denominator", denominator);
@@ -116,7 +129,7 @@ public class DefaultRepresentativeFraction extends Number implements Representat
      * metadata instances can also be obtained by unmarshalling an invalid XML document.
      * </div>
      *
-     * @param object The metadata to copy values from, or {@code null} if none.
+     * @param  object  the metadata to copy values from, or {@code null} if none.
      */
     public DefaultRepresentativeFraction(final RepresentativeFraction object) {
         if (object != null) {
@@ -132,8 +145,8 @@ public class DefaultRepresentativeFraction extends Number implements Representat
      * property values of the given object, using a <cite>shallow</cite> copy operation
      * (i.e. properties are not cloned).
      *
-     * @param  object The object to get as a SIS implementation, or {@code null} if none.
-     * @return A SIS implementation containing the values of the given object (may be the
+     * @param  object  the object to get as a SIS implementation, or {@code null} if none.
+     * @return a SIS implementation containing the values of the given object (may be the
      *         given object itself), or {@code null} if the argument was null.
      */
     public static DefaultRepresentativeFraction castOrCopy(final RepresentativeFraction object) {
@@ -144,7 +157,7 @@ public class DefaultRepresentativeFraction extends Number implements Representat
     /**
      * Returns the denominator of this representative fraction.
      *
-     * @return The denominator.
+     * @return the denominator.
      */
     @Override
     @ValueRange(minimum = 0)
@@ -157,14 +170,16 @@ public class DefaultRepresentativeFraction extends Number implements Representat
     /**
      * Sets the denominator value.
      *
-     * @param  denominator The new denominator value, or 0 if none.
+     * @param  denominator  the new denominator value, or 0 if none.
      * @throws IllegalArgumentException if the given value is negative.
      */
     public void setDenominator(final long denominator) {
-        if (denominator < 0) {
-            warnNonPositiveArgument(DefaultRepresentativeFraction.class, "denominator", false, denominator);
+        if (isUnmodifiable) {
+            throw new UnmodifiableMetadataException(Errors.format(Errors.Keys.UnmodifiableMetadata));
         }
-        this.denominator = denominator;
+        if (ensurePositive(DefaultRepresentativeFraction.class, "denominator", false, denominator)) {
+            this.denominator = denominator;
+        }
     }
 
     /**
@@ -173,10 +188,13 @@ public class DefaultRepresentativeFraction extends Number implements Representat
      *
      * <p>The equivalent of a {@code getScale()} method is {@link #doubleValue()}.</p>
      *
-     * @param  scale The scale as a number between 0 exclusive and 1 inclusive, or NaN.
+     * @param  scale  the scale as a number between 0 exclusive and 1 inclusive, or NaN.
      * @throws IllegalArgumentException if the given scale is our of range.
      */
     public void setScale(final double scale) {
+        if (isUnmodifiable) {
+            throw new UnmodifiableMetadataException(Errors.format(Errors.Keys.UnmodifiableMetadata));
+        }
         /*
          * For the following argument check, we do not need to use a Metadatautility method because
          * 'setScale' is never invoked at (un)marshalling time. Note also that we accept NaN values
@@ -194,7 +212,7 @@ public class DefaultRepresentativeFraction extends Number implements Representat
      * Returns the scale value of this representative fraction.
      * This method is the converse of {@link #setScale(double)}.
      *
-     * @return The scale value of this representative fraction, or NaN if none.
+     * @return the scale value of this representative fraction, or NaN if none.
      */
     @Override
     public double doubleValue() {
@@ -204,7 +222,7 @@ public class DefaultRepresentativeFraction extends Number implements Representat
     /**
      * Returns the scale as a {@code float} type.
      *
-     * @return The scale.
+     * @return the scale.
      */
     @Override
     public float floatValue() {
@@ -260,9 +278,38 @@ public class DefaultRepresentativeFraction extends Number implements Representat
     }
 
     /**
+     * Makes this representative fraction unmodifiable. After invocation to this method,
+     * any call to a setter method will throw an {@link UnmodifiableMetadataException}.
+     *
+     * @see org.apache.sis.metadata.ModifiableMetadata#freeze()
+     *
+     * @since 0.7
+     */
+    public void freeze() {
+        isUnmodifiable = true;
+    }
+
+    /**
+     * Returns a modifiable copy of this representative fraction.
+     *
+     * @return a modifiable copy of this representative fraction.
+     */
+    @Override
+    public DefaultRepresentativeFraction clone() {
+        final DefaultRepresentativeFraction c;
+        try {
+            c = (DefaultRepresentativeFraction) super.clone();
+        } catch (CloneNotSupportedException e) {
+            throw new AssertionError(e);                        // Should never happen since we are cloneable.
+        }
+        c.isUnmodifiable = false;
+        return c;
+    }
+
+    /**
      * Compares this object with the specified value for equality.
      *
-     * @param object The object to compare with.
+     * @param  object  the object to compare with.
      * @return {@code true} if both objects are equal.
      */
     @Override
@@ -292,7 +339,7 @@ public class DefaultRepresentativeFraction extends Number implements Representat
      * Returns a string representation of this scale, or {@code NaN} if undefined.
      * If defined, the string representation uses the colon as in "1:20000".
      *
-     * @return A string representation of this scale.
+     * @return a string representation of this scale.
      */
     @Override
     public String toString() {
@@ -312,9 +359,10 @@ public class DefaultRepresentativeFraction extends Number implements Representat
      * Those identifiers are marshalled in XML as {@code id} or {@code uuid} attributes.
      */
     @Override
+    @SuppressWarnings("ReturnOfCollectionOrArrayField")
     public Collection<Identifier> getIdentifiers() {
         if (identifiers == null) {
-            identifiers = new CheckedArrayList<Identifier>(Identifier.class);
+            identifiers = new CheckedArrayList<>(Identifier.class);
         }
         return identifiers;
     }
@@ -326,8 +374,24 @@ public class DefaultRepresentativeFraction extends Number implements Representat
      */
     @Override
     public IdentifierMap getIdentifierMap() {
-        return new IdentifierMapWithSpecialCases(getIdentifiers());
+        final Collection<Identifier> identifiers = getIdentifiers();
+        return isUnmodifiable ? new IdentifierMapAdapter(identifiers)
+                              : new ModifiableIdentifierMap(identifiers);
     }
+
+
+
+
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+    ////////                                                                                  ////////
+    ////////                               XML support with JAXB                              ////////
+    ////////                                                                                  ////////
+    ////////        The following methods are invoked by JAXB using reflection (even if       ////////
+    ////////        they are private) or are helpers for other methods invoked by JAXB.       ////////
+    ////////        Those methods can be safely removed if Geographic Markup Language         ////////
+    ////////        (GML) support is not needed.                                              ////////
+    ////////                                                                                  ////////
+    //////////////////////////////////////////////////////////////////////////////////////////////////
 
     /**
      * Invoked by JAXB for fetching the unique identifier unique for the XML document.
@@ -336,9 +400,10 @@ public class DefaultRepresentativeFraction extends Number implements Representat
      */
     @XmlID
     @XmlAttribute  // Defined in "gco" as unqualified attribute.
+    @XmlSchemaType(name = "ID")
     @XmlJavaTypeAdapter(CollapsedStringAdapter.class)
     private String getID() {
-        return isNullOrEmpty(identifiers) ? null : getIdentifierMap().getSpecialized(IdentifierSpace.ID);
+        return isNullOrEmpty(identifiers) ? null : MetadataUtilities.getObjectID(this);
     }
 
     /**
@@ -347,10 +412,7 @@ public class DefaultRepresentativeFraction extends Number implements Representat
      * @see org.apache.sis.metadata.iso.ISOMetadata#setID(String)
      */
     private void setID(String id) {
-        id = CharSequences.trimWhitespaces(id);
-        if (id != null && !id.isEmpty()) {
-            getIdentifierMap().putSpecialized(IdentifierSpace.ID, id);
-        }
+        MetadataUtilities.setObjectID(this, id);
     }
 
     /**

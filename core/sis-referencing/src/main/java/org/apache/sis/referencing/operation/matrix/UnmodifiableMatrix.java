@@ -17,6 +17,7 @@
 package org.apache.sis.referencing.operation.matrix;
 
 import org.opengis.referencing.operation.Matrix;
+import org.apache.sis.internal.referencing.ExtendedPrecisionMatrix;
 import org.apache.sis.util.resources.Errors;
 
 
@@ -25,11 +26,11 @@ import org.apache.sis.util.resources.Errors;
  * is not modified anymore after {@code UnmodifiableMatrix} construction.
  *
  * @author  Martin Desruisseaux (Geomatys)
+ * @version 0.7
  * @since   0.6
- * @version 0.6
  * @module
  */
-final class UnmodifiableMatrix extends MatrixSIS {
+final class UnmodifiableMatrix extends MatrixSIS implements ExtendedPrecisionMatrix {
     /**
      * For cross-version compatibility.
      */
@@ -92,6 +93,18 @@ final class UnmodifiableMatrix extends MatrixSIS {
     }
 
     /**
+     * Returns elements together with their error terms if available, or just the elements otherwise.
+     */
+    @Override
+    public double[] getExtendedElements() {
+        if (matrix instanceof ExtendedPrecisionMatrix) {
+            return ((ExtendedPrecisionMatrix) matrix).getExtendedElements();
+        } else {
+            return getElements();
+        }
+    }
+
+    /**
      * Returns the exception to throw when a setter method is invoked.
      */
     private UnsupportedOperationException canNotModify() {
@@ -126,6 +139,7 @@ final class UnmodifiableMatrix extends MatrixSIS {
      * Returns a copy of this matrix that users can modify.
      */
     @Override
+    @SuppressWarnings("CloneDoesntCallSuperClone")
     public MatrixSIS clone() {
         return castOrCopy(matrix.clone());
     }

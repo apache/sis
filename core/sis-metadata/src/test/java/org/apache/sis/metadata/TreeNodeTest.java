@@ -16,6 +16,7 @@
  */
 package org.apache.sis.metadata;
 
+import java.util.Arrays;
 import java.util.Locale;
 import org.opengis.metadata.citation.Address;
 import org.opengis.metadata.citation.Contact;
@@ -38,7 +39,7 @@ import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
-import static org.junit.Assert.*;
+import static org.apache.sis.test.MetadataAssert.*;
 import static java.util.Collections.singleton;
 
 
@@ -47,8 +48,8 @@ import static java.util.Collections.singleton;
  * Unless otherwise specified, all tests use the {@link MetadataStandard#ISO_19115} constant.
  *
  * @author  Martin Desruisseaux (Geomatys)
+ * @version 0.8
  * @since   0.3
- * @version 0.5
  * @module
  */
 @DependsOn(TreeNodeChildrenTest.class)
@@ -64,11 +65,11 @@ public final strictfp class TreeNodeTest extends TestCase {
      *     ├─Alternate title (2 of 2)………………………………………… Second alternate title
      *     ├─Edition……………………………………………………………………………………… Some edition
      *     ├─Cited responsible party (1 of 2)
-     *     │   └─Party (Organisation)
+     *     │   └─Organisation
      *     │      ├─Name…………………………………………………………………………… Some organisation
      *     │      └─Role…………………………………………………………………………… Distributor
      *     ├─Cited responsible party (2 of 2)
-     *     │   └─Party (Individual)
+     *     │   └─Individual
      *     │      ├─Name…………………………………………………………………………… Some person of contact
      *     │      ├─Contact info
      *     │      │   └─Address
@@ -99,11 +100,16 @@ public final strictfp class TreeNodeTest extends TestCase {
     }
 
     /**
+     * The policy to be given to {@link TreeTableView} constructor.
+     */
+    private ValueExistencePolicy valuePolicy = ValueExistencePolicy.NON_EMPTY;
+
+    /**
      * Creates a node to be tested for the given metadata object and value policy.
      */
-    private static TreeNode create(final AbstractMetadata metadata, final ValueExistencePolicy valuePolicy) {
+    private <T extends AbstractMetadata> TreeNode create(final T metadata, final Class<? super T> baseType) {
         final MetadataStandard  standard = MetadataStandard.ISO_19115;
-        final TreeTableView table = new TreeTableView(standard, metadata, valuePolicy);
+        final TreeTableView table = new TreeTableView(standard, metadata, baseType, valuePolicy);
         return (TreeNode) table.getRoot();
     }
 
@@ -113,19 +119,20 @@ public final strictfp class TreeNodeTest extends TestCase {
     @Test
     public void testRootNode() {
         final DefaultCitation citation = TreeNodeChildrenTest.metadataWithoutCollections();
-        final TreeNode node = create(citation, ValueExistencePolicy.NON_EMPTY);
+        final TreeNode node = create(citation, Citation.class);
         assertEquals("getName()",        "Citation",     node.getName());
         assertEquals("getIdentifier()",  "CI_Citation",  node.getIdentifier());
-        assertEquals("getElementType()", Citation.class, node.getElementType());
+        assertEquals("baseType",         Citation.class, node.baseType);
         assertSame  ("getUserObject()",  citation,       node.getUserObject());
         assertFalse ("isWritable()",                     node.isWritable());
         assertNull  ("getParent()",                      node.getParent());
         assertFalse ("isLeaf()",                         node.isLeaf());
 
         final TreeNodeChildren children = (TreeNodeChildren) node.getChildren();
-        assertSame ("children.metadata", citation, children.metadata);
-        assertFalse("children.isEmpty()", node.getChildren().isEmpty());
-        assertSame ("children.parent", node, children.iterator().next().getParent());
+        assertEquals("children.titleProperty", -1, children.titleProperty);
+        assertSame  ("children.metadata", citation, children.metadata);
+        assertFalse ("children.isEmpty()", node.getChildren().isEmpty());
+        assertSame  ("children.parent", node, children.iterator().next().getParent());
     }
 
     /**
@@ -133,10 +140,10 @@ public final strictfp class TreeNodeTest extends TestCase {
      * Those names shall <em>not</em> contain numbering like <cite>"(1 of 2)"</cite>.
      */
     @Test
-    @DependsOnMethod("testRootNode") // Because tested more basic methods than 'getValue(TableColumn)'.
+    @DependsOnMethod("testRootNode")            // Because tested more basic methods than 'getValue(TableColumn)'.
     public void testGetNameForSingleton() {
         final DefaultCitation citation = TreeNodeChildrenTest.metadataWithSingletonInCollections();
-        assertColumnContentEquals(create(citation, ValueExistencePolicy.NON_EMPTY), TableColumn.NAME,
+        assertColumnContentEquals(create(citation, Citation.class), TableColumn.NAME,
             "Citation",
               "Title",
               "Alternate title",
@@ -153,7 +160,7 @@ public final strictfp class TreeNodeTest extends TestCase {
     @DependsOnMethod("testGetNameForSingleton")
     public void testGetNameForMultiOccurrences() {
         final DefaultCitation citation = TreeNodeChildrenTest.metadataWithMultiOccurrences();
-        assertColumnContentEquals(create(citation, ValueExistencePolicy.NON_EMPTY), TableColumn.NAME,
+        assertColumnContentEquals(create(citation, Citation.class), TableColumn.NAME,
             "Citation",
               "Title",
               "Alternate title (1 of 2)",
@@ -165,13 +172,38 @@ public final strictfp class TreeNodeTest extends TestCase {
     }
 
     /**
+     * Compares the result of the given getter method invoked on all nodes of {@link #metadataWithHierarchy()}.
+     * In the particular case of the {@link TableColumn#NAME}, international strings are replaced by unlocalized
+     * strings before comparisons.
+     *
+     * <p>If {@link #valuePolicy} is {@link ValueExistencePolicy#COMPACT}, then this method removes the elements at
+     * indices 0, 6 and 10 (if {@code offset} = 0) or 1, 7 and 11 (if {@code offset} = 1) from the {@code expected}
+     * array before to perform the comparison.</p>
+     *
+     * @param  offset    0 if compact mode excludes the parent, or 1 if compact mode exclude the first child.
+     * @param  column    the column from which to get a value.
+     * @param  expected  the expected values. The first value is the result of the getter method
+     *                   applied on the given node, and all other values are the result of the
+     *                   getter method applied on the children, in iteration order.
+     */
+    private void assertCitationContentEquals(final int offset, final TableColumn<?> column, final Object... expected) {
+        if (valuePolicy == ValueExistencePolicy.COMPACT) {
+            assertEquals(19, expected.length);
+            System.arraycopy(expected, 12+offset, expected, 11+offset,  7-offset);    // Compact the "Individual" element.
+            System.arraycopy(expected,  8+offset, expected,  7+offset, 10-offset);    // Compact the "Organisation" element.
+            System.arraycopy(expected,  1+offset, expected,    offset, 16-offset);    // Compact the "Title" element.
+            Arrays.fill(expected, 16, 19, null);
+        }
+        assertColumnContentEquals(create(metadataWithHierarchy(), Citation.class), column, expected);
+    }
+
+    /**
      * Tests {@link TreeNode#getName()} on a metadata with a deeper hierarchy.
      */
     @Test
     @DependsOnMethod("testGetNameForMultiOccurrences")
     public void testGetNameForHierarchy() {
-        final DefaultCitation citation = metadataWithHierarchy();
-        assertColumnContentEquals(create(citation, ValueExistencePolicy.NON_EMPTY), TableColumn.NAME,
+        assertCitationContentEquals(1, TableColumn.NAME,
             "Citation",
               "Title",
               "Alternate title (1 of 2)",
@@ -180,11 +212,11 @@ public final strictfp class TreeNodeTest extends TestCase {
               "Cited responsible party (1 of 2)",
                 "Role",
                 "Party",
-                  "Name",
+                  "Name",                               // In COMPACT mode, this value is associated to "Organisation" node.
               "Cited responsible party (2 of 2)",
                 "Role",
                 "Party",
-                  "Name",
+                  "Name",                               // In COMPACT mode, this value is associated to "Individual" node.
                   "Contact info",
                     "Address",
                       "Electronic mail address",
@@ -200,10 +232,9 @@ public final strictfp class TreeNodeTest extends TestCase {
      * The repetition of the same identifier means that they shall be part of a collection.
      */
     @Test
-    @DependsOnMethod("testGetNameForMultiOccurrences") // Because similar to names, which were tested progressively.
+    @DependsOnMethod("testGetNameForMultiOccurrences")     // Because similar to names, which were tested progressively.
     public void testGetIdentifier() {
-        final DefaultCitation citation = metadataWithHierarchy();
-        assertColumnContentEquals(create(citation, ValueExistencePolicy.NON_EMPTY), TableColumn.IDENTIFIER,
+        assertCitationContentEquals(1, TableColumn.IDENTIFIER,
             "CI_Citation",
               "title",
               "alternateTitle",
@@ -212,11 +243,11 @@ public final strictfp class TreeNodeTest extends TestCase {
               "citedResponsibleParty",
                 "role",
                 "party",
-                  "name",
+                  "name",                               // In COMPACT mode, this value is associated to "party" node.
               "citedResponsibleParty",
                 "role",
                 "party",
-                  "name",
+                  "name",                               // In COMPACT mode, this value is associated to "party" node.
                   "contactInfo",
                     "address",
                       "electronicMailAddress",
@@ -231,10 +262,10 @@ public final strictfp class TreeNodeTest extends TestCase {
     @Test
     @DependsOnMethod("testGetIdentifier")
     public void testGetIndex() {
-        final Integer ZERO = Integer.valueOf(0);
-        final Integer ONE  = Integer.valueOf(1);
-        final DefaultCitation citation = metadataWithHierarchy();
-        assertColumnContentEquals(create(citation, ValueExistencePolicy.NON_EMPTY), TableColumn.INDEX,
+        final Integer ZERO = 0;
+        final Integer ONE  = 1;
+        skipCountCheck = true;                              // Because of the null value at the end of following array.
+        assertCitationContentEquals(1, TableColumn.INDEX,
             null,           // CI_Citation
               null,         // title
               ZERO,         // alternateTitle
@@ -243,11 +274,11 @@ public final strictfp class TreeNodeTest extends TestCase {
               ZERO,         // citedResponsibleParty
                 null,       // role
                 ZERO,       // party (organisation)
-                  null,     // name
+                  null,     // name                         — in COMPACT mode, this value is associated to "party" node.
               ONE,          // citedResponsibleParty
                 null,       // role
                 ZERO,       // party (individual)
-                  null,     // name
+                  null,     // name                         — in COMPACT mode, this value is associated to "party" node.
                   ZERO,     // contactInfo
                     ZERO,   // address
                       ZERO, // electronicMailAddress
@@ -257,13 +288,12 @@ public final strictfp class TreeNodeTest extends TestCase {
     }
 
     /**
-     * Tests {@link TreeNode#getElementType()} on a metadata with a hierarchy.
+     * Tests getting the value of {@link TableColumn#TYPE} on a metadata with a hierarchy.
      */
     @Test
-    @DependsOnMethod("testGetIdentifier") // Because if identifiers are wrong, we are looking at wrong properties.
+    @DependsOnMethod("testGetIdentifier")       // Because if identifiers are wrong, we are looking at wrong properties.
     public void testGetElementType() {
-        final DefaultCitation citation = metadataWithHierarchy();
-        assertColumnContentEquals(create(citation, ValueExistencePolicy.NON_EMPTY), TableColumn.TYPE,
+        assertCitationContentEquals(0, TableColumn.TYPE,
             Citation.class,
               InternationalString.class,
               InternationalString.class,
@@ -271,12 +301,12 @@ public final strictfp class TreeNodeTest extends TestCase {
               InternationalString.class,
               ResponsibleParty.class,
                 Role.class,
-                AbstractParty.class,
-                  InternationalString.class,
+                AbstractParty.class,                    // In COMPACT mode, value with be the one of "name" node instead.
+                  InternationalString.class,            // Name
               ResponsibleParty.class,
                 Role.class,
-                AbstractParty.class,
-                  InternationalString.class,
+                AbstractParty.class,                    // In COMPACT mode, value with be the one of "name" node instead.
+                  InternationalString.class,            // Name
                   Contact.class,
                     Address.class,
                       String.class,
@@ -289,25 +319,24 @@ public final strictfp class TreeNodeTest extends TestCase {
      * Tests {@link TreeNode#getValue(TableColumn)} for the value column.
      */
     @Test
-    @DependsOnMethod("testGetIdentifier") // Because if identifiers are wrong, we are looking at wrong properties.
+    @DependsOnMethod("testGetIdentifier")       // Because if identifiers are wrong, we are looking at wrong properties.
     public void testGetValue() {
-        final DefaultCitation citation = metadataWithHierarchy();
-        assertColumnContentEquals(create(citation, ValueExistencePolicy.NON_EMPTY), TableColumn.VALUE,
-            null, // Citation
+        assertCitationContentEquals(0, TableColumn.VALUE,
+            null,                               // Citation
               "Some title",
               "First alternate title",
               "Second alternate title",
               "Some edition",
-              null, // ResponsibleParty
+              null,                             // ResponsibleParty
                 Role.DISTRIBUTOR,
-                null, // Party (organisation)
+                null,                           // Party (organisation)
                   "Some organisation",
-              null, // ResponsibleParty
+              null,                             // ResponsibleParty
                 Role.POINT_OF_CONTACT,
-                null, // Party (individual)
+                null,                           // Party (individual)
                   "Some person of contact",
-                  null, // Contact
-                    null, // Address
+                  null,                         // Contact
+                    null,                       // Address
                       "Some email",
               PresentationForm.MAP_DIGITAL,
               PresentationForm.MAP_HARDCOPY,
@@ -321,7 +350,7 @@ public final strictfp class TreeNodeTest extends TestCase {
     @DependsOnMethod("testGetValue")
     public void testNewChild() {
         final DefaultCitation citation = metadataWithHierarchy();
-        final TreeNode node = create(citation, ValueExistencePolicy.NON_EMPTY);
+        final TreeNode node = create(citation, Citation.class);
         /*
          * Ensure that we can not overwrite existing nodes.
          */
@@ -340,7 +369,7 @@ public final strictfp class TreeNodeTest extends TestCase {
         child = node.newChild();
         child.setValue(TableColumn.IDENTIFIER, "title");
         child.setValue(TableColumn.VALUE, "A new title");
-        assertEquals("A new title", citation.getTitle().toString());
+        assertTitleEquals("citation", "A new title", citation);
         assertSame(citation.getTitle(), child.getValue(TableColumn.VALUE));
         /*
          * Try adding a new element in a collection.
@@ -354,39 +383,68 @@ public final strictfp class TreeNodeTest extends TestCase {
     }
 
     /**
+     * For disabling the check of child nodes count.
+     * This hack is specific to the branch using GeoAPI 3.0 (not needed on the branch using GeoAPI 4.0).
+     */
+    private boolean skipCountCheck;
+
+    /**
      * Compares the result of the given getter method invoked on the given node, then invoked
-     * on all children of that given. In the particular case of the {@link #NAME} method,
+     * on all children of that given. In the particular case of the {@link TableColumn#NAME},
      * international strings are replaced by unlocalized strings before comparisons.
      *
-     * @param node     The node for which to test the children.
-     * @param column   The column from which to get a value.
-     * @param values   The expected values. The first value is the result of the getter method
-     *                 applied on the given node, and all other values are the result of the
-     *                 getter method applied on the children, in iteration order.
+     * @param  node      the node for which to test the children.
+     * @param  column    the column from which to get a value.
+     * @param  expected  the expected values. The first value is the result of the getter method
+     *                   applied on the given node, and all other values are the result of the
+     *                   getter method applied on the children, in iteration order.
      */
-    private static void assertColumnContentEquals(final TreeNode node,
-            final TableColumn<?> column, final Object... values)
+    private void assertColumnContentEquals(final TreeNode node,
+            final TableColumn<?> column, final Object... expected)
     {
-        assertEquals("Missing values in the tested metadata.", values.length,
-                assertColumnContentEquals(node, column, values, 0));
+        int count = expected.length;
+        if (valuePolicy == ValueExistencePolicy.COMPACT) {
+            while (expected[count-1] == null) count--;
+        }
+        if (skipCountCheck) return;
+        assertEquals("Missing values in the tested metadata.", count,
+                assertColumnContentEquals(node, column, expected, 0));
     }
 
     /**
      * Implementation of the above {@code assertGetterReturns}, to be invoked recursively.
+     *
+     * @return number of nodes found in the given metadata tree.
      */
     private static int assertColumnContentEquals(final TreeTable.Node node, final TableColumn<?> column,
-            final Object[] values, int index)
+            final Object[] expected, int index)
     {
         final Object actual = node.getValue(column);
         Object unlocalized = actual;
         if (unlocalized instanceof InternationalString) {
             unlocalized = ((InternationalString) unlocalized).toString(Locale.ROOT);
         }
-        assertEquals("values[" + index + ']', values[index++], unlocalized);
+        assertEquals("values[" + index + ']', expected[index++], unlocalized);
         for (final TreeTable.Node child : node.getChildren()) {
-            index = assertColumnContentEquals(child, column, values, index);
+            index = assertColumnContentEquals(child, column, expected, index);
         }
         assertSame("Value shall be stable.", actual, node.getValue(column));
         return index;
+    }
+
+    /**
+     * Same tests but using {@link ValueExistencePolicy#COMPACT}.
+     *
+     * @see <a href="https://issues.apache.org/jira/browse/SIS-298">SIS-298</a>
+     */
+    @Test
+    @DependsOnMethod({"testGetNameForHierarchy", "testGetIdentifier", "testGetIndex", "testGetElementType", "testGetValue"})
+    public void testCompactPolicy() {
+        valuePolicy = ValueExistencePolicy.COMPACT;
+        testGetNameForHierarchy();
+        testGetIdentifier();
+        testGetIndex();
+        testGetElementType();
+        testGetValue();
     }
 }

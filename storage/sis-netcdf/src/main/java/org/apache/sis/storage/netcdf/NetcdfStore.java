@@ -19,12 +19,16 @@ package org.apache.sis.storage.netcdf;
 import java.io.IOException;
 import org.opengis.metadata.Metadata;
 import org.apache.sis.util.Debug;
-import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreException;
+import org.apache.sis.storage.UnsupportedStorageException;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.internal.netcdf.Decoder;
 import org.apache.sis.metadata.ModifiableMetadata;
+import org.apache.sis.setup.OptionKey;
+import org.apache.sis.util.CharSequences;
+import org.apache.sis.util.Version;
+import ucar.nc2.constants.CDM;
 
 
 /**
@@ -32,11 +36,12 @@ import org.apache.sis.metadata.ModifiableMetadata;
  * Instances of this data store are created by {@link NetcdfStoreProvider#open(StorageConnector)}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
- * @version 0.3
- * @module
+ * @version 0.8
  *
  * @see NetcdfStoreProvider
+ *
+ * @since 0.3
+ * @module
  */
 public class NetcdfStore extends DataStore {
     /**
@@ -55,15 +60,37 @@ public class NetcdfStore extends DataStore {
      * This constructor invokes {@link StorageConnector#closeAllExcept(Object)}, keeping open only the
      * needed resource.
      *
-     * @param  storage Information about the storage (URL, stream, {@link ucar.nc2.NetcdfFile} instance, <i>etc</i>).
-     * @throws DataStoreException If an error occurred while opening the NetCDF file.
+     * @param  connector information about the storage (URL, stream, {@link ucar.nc2.NetcdfFile} instance, <i>etc</i>).
+     * @throws DataStoreException if an error occurred while opening the NetCDF file.
+     *
+     * @deprecated Replaced by {@link #NetcdfStore(NetcdfStoreProvider, StorageConnector)}.
      */
-    public NetcdfStore(final StorageConnector storage) throws DataStoreException {
-        ArgumentChecks.ensureNonNull("storage", storage);
+    @Deprecated
+    public NetcdfStore(final StorageConnector connector) throws DataStoreException {
+        this(null, connector);
+    }
+
+    /**
+     * Creates a new NetCDF store from the given file, URL, stream or {@link ucar.nc2.NetcdfFile} object.
+     * This constructor invokes {@link StorageConnector#closeAllExcept(Object)}, keeping open only the
+     * needed resource.
+     *
+     * @param  provider   the factory that created this {@code DataStore} instance, or {@code null} if unspecified.
+     * @param  connector  information about the storage (URL, stream, {@link ucar.nc2.NetcdfFile} instance, <i>etc</i>).
+     * @throws DataStoreException if an error occurred while opening the NetCDF file.
+     *
+     * @since 0.8
+     */
+    public NetcdfStore(final NetcdfStoreProvider provider, final StorageConnector connector) throws DataStoreException {
+        super(provider, connector);
         try {
-            decoder = NetcdfStoreProvider.decoder(listeners, storage);
+            decoder = NetcdfStoreProvider.decoder(listeners, connector);
         } catch (IOException e) {
             throw new DataStoreException(e);
+        }
+        if (decoder == null) {
+            throw new UnsupportedStorageException(super.getLocale(), "NetCDF",
+                    connector.getStorage(), connector.getOption(OptionKey.OPEN_OPTIONS));
         }
     }
 
@@ -72,11 +99,11 @@ public class NetcdfStore extends DataStore {
      * such as the spatiotemporal extent of the dataset, contact information about the creator or distributor,
      * data quality, usage constraints and more.
      *
-     * @return Information about the dataset.
-     * @throws DataStoreException If an error occurred while reading the data.
+     * @return information about the dataset.
+     * @throws DataStoreException if an error occurred while reading the data.
      */
     @Override
-    public Metadata getMetadata() throws DataStoreException {
+    public synchronized Metadata getMetadata() throws DataStoreException {
         if (metadata == null) try {
             final MetadataReader reader = new MetadataReader(decoder);
             metadata = reader.read();
@@ -90,12 +117,31 @@ public class NetcdfStore extends DataStore {
     }
 
     /**
+     * Returns the version number of the Climate and Forecast (CF) conventions used in the NetCDF file.
+     * The use of CF convention is mandated by the OGC 11-165r2 standard
+     * (<cite>CF-netCDF3 Data Model Extension standard</cite>).
+     *
+     * @return CF-convention version, or {@code null} if no information about CF convention has been found.
+     * @throws DataStoreException if an error occurred while reading the data.
+     *
+     * @since 0.8
+     */
+    public synchronized Version getConventionVersion() throws DataStoreException {
+        for (final CharSequence value : CharSequences.split(decoder.stringValue(CDM.CONVENTIONS), ',')) {
+            if (CharSequences.regionMatches(value, 0, "CF-", true)) {
+                return new Version(value.subSequence(3, value.length()).toString());
+            }
+        }
+        return null;
+    }
+
+    /**
      * Closes this NetCDF store and releases any underlying resources.
      *
-     * @throws DataStoreException If an error occurred while closing the NetCDF file.
+     * @throws DataStoreException if an error occurred while closing the NetCDF file.
      */
     @Override
-    public void close() throws DataStoreException {
+    public synchronized void close() throws DataStoreException {
         metadata = null;
         try {
             decoder.close();
@@ -108,7 +154,7 @@ public class NetcdfStore extends DataStore {
      * Returns a string representation of this NetCDF store for debugging purpose.
      * The content of the string returned by this method may change in any future SIS version.
      *
-     * @return A string representation of this datastore for debugging purpose.
+     * @return a string representation of this datastore for debugging purpose.
      */
     @Debug
     @Override

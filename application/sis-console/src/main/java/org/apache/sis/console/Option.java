@@ -24,11 +24,21 @@ import org.apache.sis.util.resources.Errors;
  * A command-line option.
  *
  * @author  Martin Desruisseaux (Geomatys)
+ * @version 0.7
  * @since   0.3
- * @version 0.3
  * @module
  */
 enum Option {
+    /**
+     * The Coordinate Reference System of input data.
+     */
+    SOURCE_CRS(true),
+
+    /**
+     * The Coordinate Reference System of input data.
+     */
+    TARGET_CRS(true),
+
     /**
      * The output format. Examples: {@code "xml"}, {@code "text"}.
      */
@@ -67,6 +77,12 @@ enum Option {
     VERBOSE(false),
 
     /**
+     * Whether to print the full stack trace in case of error.
+     * This option expects no value.
+     */
+    DEBUG(false),
+
+    /**
      * Lists the options accepted by a command.
      */
     HELP(false);
@@ -85,8 +101,16 @@ enum Option {
     private static final String[] BOOLEAN_VALUES = {
         "false", "true",
         "off",   "on",
-        "yes",   "no"
+        "no",    "yes"
     };
+
+    /**
+     * The string representation of this option, as used on the command line.
+     * This is usually the lower-case version of {@link #name()}.
+     *
+     * @see #label()
+     */
+    private String label;
 
     /**
      * Whether this option expects a value.
@@ -96,18 +120,48 @@ enum Option {
     /**
      * Creates a new option.
      *
-     * @param hasValue Whether this option expects a value.
+     * @param hasValue  whether this option expects a value.
      */
     private Option(final boolean hasValue) {
         this.hasValue = hasValue;
     }
 
     /**
+     * Special case for which {@code label()} should not be only the lower-case of enum name.
+     */
+    static {
+        SOURCE_CRS.label = "sourceCRS";
+        TARGET_CRS.label = "targetCRS";
+    }
+
+    /**
+     * Return the string representation as used on the command line.
+     */
+    String label() {
+        if (label == null) {
+            label = name().toLowerCase(Locale.US);
+        }
+        return label;
+    }
+
+    /**
+     * Returns the option for the given string.
+     */
+    static Option forLabel(final String label) throws InvalidOptionException {
+        for (final Option option : values()) {
+            if (label.equalsIgnoreCase(option.name().replace("_", ""))) {
+                return option;
+            }
+        }
+        throw new InvalidOptionException(Errors.format(Errors.Keys.UnknownOption_1, label), label);
+    }
+
+    /**
      * Parses the given value as a boolean.
      *
-     * @param  value The value to parse.
-     * @return The value as a boolean.
-     * @throws InvalidOptionException If the given value is not recognized as a boolean.
+     * @param  value  the value to parse.
+     * @return the value as a boolean.
+     * @throws InvalidOptionException if the given value is not recognized as a boolean.
      */
     boolean parseBoolean(final String value) throws InvalidOptionException {
         for (int i=0; i<BOOLEAN_VALUES.length; i++) {

@@ -35,7 +35,7 @@ import org.junit.Test;
 
 import static java.util.Arrays.asList;
 import static java.util.Collections.singleton;
-import static org.apache.sis.test.Assert.*;
+import static org.apache.sis.test.MetadataAssert.*;
 
 // Branch-specific imports
 import org.opengis.metadata.identification.CharacterSet;
@@ -45,8 +45,8 @@ import org.opengis.metadata.identification.CharacterSet;
  * Tests {@link DefaultDataIdentification}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.5
+ * @since   0.3
  * @module
  */
 @DependsOn({
@@ -137,27 +137,22 @@ public final strictfp class DefaultDataIdentificationTest extends TestCase {
     public void testToString() {
         assertMultilinesEquals(
                 "Data identification\n" +
-                "  ├─Citation\n" +
-                "  │   ├─Title……………………………………………………… Sea Surface Temperature Analysis Model\n" +
-                "  │   ├─Date\n" +
-                "  │   │   ├─Date……………………………………………… 2005-09-22 00:00:00\n" +
+                "  ├─Citation………………………………………………………… Sea Surface Temperature Analysis Model\n" +
+                "  │   ├─Date………………………………………………………… 2005-09-22 00:00:00\n" +
                 "  │   │   └─Date type………………………………… Creation\n" +
-                "  │   └─Identifier\n" +
-                "  │       └─Code……………………………………………… SST_Global.nc\n" +
+                "  │   └─Identifier………………………………………… SST_Global.nc\n" +
                 "  ├─Abstract………………………………………………………… NCEP SST Global 5.0 x 2.5 degree model data\n" +
                 "  ├─Descriptive keywords\n" +
                 "  │   ├─Keyword………………………………………………… EARTH SCIENCE > Oceans > Ocean Temperature > Sea Surface Temperature\n" +
                 "  │   ├─Type………………………………………………………… Theme\n" +
-                "  │   └─Thesaurus name\n" +
-                "  │       └─Title…………………………………………… GCMD Science Keywords\n" +
+                "  │   └─Thesaurus name……………………………… GCMD Science Keywords\n" +
                 "  ├─Resource constraints\n" +
                 "  │   └─Use limitation……………………………… Freely available\n" +
                 "  ├─Spatial representation type……… Grid\n" +
                 "  ├─Language (1 of 2)………………………………… en_US\n" +
                 "  ├─Language (2 of 2)………………………………… en\n" +
                 "  ├─Character set…………………………………………… US-ASCII\n" +
-                "  └─Extent\n" +
-                "      ├─Description……………………………………… World\n" +
+                "  └─Extent……………………………………………………………… World\n" +
                 "      └─Geographic element\n" +
                 "          ├─West bound longitude…… 180°W\n" +
                 "          ├─East bound longitude…… 180°E\n" +
@@ -176,7 +171,7 @@ public final strictfp class DefaultDataIdentificationTest extends TestCase {
         final DefaultDataIdentification info = create();
         final Map<String,Object> map = info.asMap();
         assertEquals("abstract", "NCEP SST Global 5.0 x 2.5 degree model data", map.get("abstract").toString());
-        assertEquals("title", "Sea Surface Temperature Analysis Model", ((Citation) map.get("citation")).getTitle().toString());
+        assertTitleEquals("title", "Sea Surface Temperature Analysis Model", (Citation) map.get("citation"));
         assertEquals("spatialRepresentationType", singleton(SpatialRepresentationType.GRID), map.get("spatialRepresentationType"));
         assertArrayEquals("language",     LOCALES, ((Collection<?>) map.get("language")).toArray());
         assertArrayEquals("languages",    LOCALES, ((Collection<?>) map.get("languages")).toArray());

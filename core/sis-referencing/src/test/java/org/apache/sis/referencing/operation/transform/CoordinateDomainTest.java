@@ -30,11 +30,11 @@ import static org.junit.Assert.*;
  * The main intend of this class is to allow visual inspection (by looking in source code) of sampled data.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.5
  * @version 0.6
+ * @since   0.5
  * @module
  */
-public class CoordinateDomainTest extends TestCase {
+public strictfp class CoordinateDomainTest extends TestCase {
     /**
      * The tolerance threshold used in this test suite.
      */
@@ -107,12 +107,42 @@ public class CoordinateDomainTest extends TestCase {
     public void testGeographicPole() {
         assertArrayEquals(new double[] {
             // ……λ   …………φ   ………………H
-            -136.6,  -74.3,   2467.5,
-             -17.9,   74.7,   2338.4,
-              98.2,   66.9,   2078.0,
-             151.9,   73.8,   2799.3,
-             -90.5,  -86.4,    585.3
+            -136.6,  -74.3,   -130.1,
+             -17.9,   74.7,   -646.5,
+              98.2,   66.9,  -1687.9,
+             151.9,   73.8,   1197.0,
+             -90.5,  -86.4,  -7658.8
         }, CoordinateDomain.GEOGRAPHIC_POLES.generateRandomInput(new Random(6784869539382621964L), 3, 5), TOLERANCE);
+    }
+
+    /**
+     * Tests {@link CoordinateDomain#GEOGRAPHIC_NORTH_POLE}.
+     */
+    @Test
+    public void testGeographicNorthPole() {
+        assertArrayEquals(new double[] {
+            // ……λ   …………φ   ………………H
+             -41.7,   72.6,   9605.3,
+            -107.7,   68.2,    388.5,
+              32.9,   69.3,   2553.6,
+             106.5,   81.0,  -7334.3,
+             135.2,   87.6,  -3518.9
+        }, CoordinateDomain.GEOGRAPHIC_NORTH_POLE.generateRandomInput(new Random(2141713460614422218L), 3, 5), TOLERANCE);
+    }
+
+    /**
+     * Tests {@link CoordinateDomain#GEOGRAPHIC_SOUTH_POLE}.
+     */
+    @Test
+    public void testGeographicSouthPole() {
+        assertArrayEquals(new double[] {
+            // ……λ   …………φ   ………………H
+            -106.2,  -71.9, -2202.6,
+            -172.6,  -89.5,  2428.1,
+              33.2,  -84.3,  6068.1,
+             -64.3,  -76.3, -3436.7,
+             -97.6,  -72.5,  8702.2
+        }, CoordinateDomain.GEOGRAPHIC_SOUTH_POLE.generateRandomInput(new Random(5769644852151897296L), 3, 5), TOLERANCE);
     }
 
     /**

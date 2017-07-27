@@ -22,6 +22,7 @@ package org.apache.sis.geometry;
  * to force installation of the Java2D module (e.g. JavaFX/SWT).
  */
 import java.util.Arrays;
+import java.util.Objects;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.geometry.MismatchedDimensionException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
@@ -38,12 +39,9 @@ import static java.lang.Double.doubleToLongBits;
 import static org.apache.sis.util.StringBuilders.trimFractionalPart;
 import static org.apache.sis.util.ArgumentChecks.ensureDimensionMatches;
 
-// Branch-dependent imports
-import org.apache.sis.internal.jdk7.Objects;
-
 
 /**
- * Base class for {@link DirectPosition} implementations.
+ * Default implementations of some {@code DirectPosition} methods, leaving the data storage to subclasses.
  * A direct position holds the coordinates for a position within some
  * {@linkplain org.apache.sis.referencing.crs.AbstractCRS coordinate reference system}.
  * This base class provides default implementations for {@link #toString()},
@@ -54,8 +52,8 @@ import org.apache.sis.internal.jdk7.Objects;
  * serializable, is left to subclasses.</p>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.3
  * @version 0.3
+ * @since   0.3
  * @module
  */
 public abstract class AbstractDirectPosition implements DirectPosition {
@@ -80,7 +78,7 @@ public abstract class AbstractDirectPosition implements DirectPosition {
      * Returns a sequence of numbers that hold the coordinate of this position in its
      * reference system.
      *
-     * @return The coordinates.
+     * @return the coordinates.
      */
     @Override
     public double[] getCoordinate() {
@@ -100,9 +98,9 @@ public abstract class AbstractDirectPosition implements DirectPosition {
      * otherwise a {@code MismatchedReferenceSystemException} is thrown. However subclass may choose
      * to assign the CRS of this position to the CRS of the given position.</p>
      *
-     * @param  position The new position, or {@code null}.
-     * @throws MismatchedDimensionException If the given position doesn't have the expected dimension.
-     * @throws MismatchedReferenceSystemException If the given position doesn't use the expected CRS.
+     * @param  position  the new position, or {@code null}.
+     * @throws MismatchedDimensionException if the given position doesn't have the expected dimension.
+     * @throws MismatchedReferenceSystemException if the given position doesn't use the expected CRS.
      */
     public void setLocation(final DirectPosition position)
             throws MismatchedDimensionException, MismatchedReferenceSystemException
@@ -186,7 +184,7 @@ public abstract class AbstractDirectPosition implements DirectPosition {
      * to the {@code float} type without precision lost. This method treats all {@code NaN} values
      * as equal.
      *
-     * @param  values The value to test for their precision.
+     * @param  values  the value to test for their precision.
      * @return {@code true} if every values can be casted to the {@code float} type without precision lost.
      *
      * @see #toString(DirectPosition, boolean)
@@ -224,9 +222,9 @@ public abstract class AbstractDirectPosition implements DirectPosition {
      * for formatting a {@code POINT} element from a direct position in <cite>Well Known Text</cite>
      * (WKT) format.
      *
-     * @param  position The position to format.
-     * @param  isSimplePrecision {@code true} if every ordinate values can be casted to {@code float}.
-     * @return The point as a {@code POINT} in WKT format.
+     * @param  position           the position to format.
+     * @param  isSimplePrecision  {@code true} if every ordinate values can be casted to {@code float}.
+     * @return the point as a {@code POINT} in WKT format.
      *
      * @see #isSimplePrecision(double[])
      */
@@ -256,10 +254,10 @@ public abstract class AbstractDirectPosition implements DirectPosition {
     /**
      * Parses the given WKT.
      *
-     * @param  wkt The WKT to parse.
-     * @return The ordinates, or {@code null} if none.
-     * @throws NumberFormatException If a number can not be parsed.
-     * @throws IllegalArgumentException If the parenthesis are not balanced.
+     * @param  wkt  the WKT to parse.
+     * @return the ordinates, or {@code null} if none.
+     * @throws NumberFormatException if a number can not be parsed.
+     * @throws IllegalArgumentException if the parenthesis are not balanced.
      */
     static double[] parse(final CharSequence wkt) throws NumberFormatException, IllegalArgumentException {
         /*
@@ -357,7 +355,7 @@ parse:  while (i < length) {
      * Consequently, it should be possible to mix different {@code DirectPosition}
      * implementations in the same hash map.
      *
-     * @return A hash code value for this position.
+     * @return a hash code value for this position.
      */
     @Override
     public int hashCode() {
@@ -378,7 +376,7 @@ parse:  while (i < length) {
      * Consequently, it should be possible to mix different {@code DirectPosition} implementations in
      * the same hash map.
      *
-     * @param object The object to compare with this position.
+     * @param  object  the object to compare with this position.
      * @return {@code true} if the given object is equal to this position.
      */
     @Override

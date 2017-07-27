@@ -30,8 +30,8 @@ import java.lang.annotation.Target;
  * skipped) then the annotated test will be skipped.
  *
  * @author  Stephen Connolly
- * @since   0.3 (derived from <a href="http://github.com/junit-team/junit.contrib/tree/master/assumes">junit-team</a>)
  * @version 0.3
+ * @since   0.3 (derived from <a href="http://github.com/junit-team/junit.contrib/tree/master/assumes">junit-team</a>)
  * @module
  */
 @Inherited
@@ -42,7 +42,7 @@ public @interface DependsOnMethod {
     /**
      * The names of test methods on which the annotated method depends.
      *
-     * @return The names of test methods on which the annotated method depends.
+     * @return the names of test methods on which the annotated method depends.
      */
     String[] value();
 }

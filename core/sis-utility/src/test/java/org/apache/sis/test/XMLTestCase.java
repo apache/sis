@@ -52,11 +52,12 @@ import static org.apache.sis.test.Assert.*;
  * after each test for clearing the SIS internal {@link ThreadLocal} which was holding that context.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
- * @version 0.4
- * @module
+ * @version 0.7
  *
  * @see XMLComparator
+ *
+ * @since 0.3
+ * @module
  */
 public abstract strictfp class XMLTestCase extends TestCase {
     /**
@@ -118,12 +119,12 @@ public abstract strictfp class XMLTestCase extends TestCase {
      * We intentionally use a timezone different than UTC in order to have an error of one or two hours
      * if a code fails to take timezone offset in account.</div>
      *
-     * @return The shared (un)marshaller pool.
-     * @throws JAXBException If an error occurred while creating the JAXB marshaller.
+     * @return the shared (un)marshaller pool.
+     * @throws JAXBException if an error occurred while creating the JAXB marshaller.
      */
     protected static synchronized MarshallerPool getMarshallerPool() throws JAXBException {
         if (defaultPool == null) {
-            final Map<String,Object> properties = new HashMap<String,Object>(4);
+            final Map<String,Object> properties = new HashMap<>(4);
             assertNull(properties.put(XML.LOCALE, Locale.UK));
             assertNull(properties.put(XML.TIMEZONE, TIMEZONE));
             defaultPool = new MarshallerPool(properties);
@@ -134,9 +135,9 @@ public abstract strictfp class XMLTestCase extends TestCase {
     /**
      * Initializes the {@link #context} to the given locale and timezone.
      *
-     * @param marshal  {@code true} for setting the {@link Context#MARSHALLING} flag.
-     * @param locale   The locale, or {@code null} for the default.
-     * @param timezone The timezone, or {@code null} for the default.
+     * @param marshal   {@code true} for setting the {@link Context#MARSHALLING} flag.
+     * @param locale    the locale, or {@code null} for the default.
+     * @param timezone  the timezone, or {@code null} for the default.
      *
      * @see #clearContext()
      */
@@ -161,53 +162,69 @@ public abstract strictfp class XMLTestCase extends TestCase {
 
     /**
      * Returns the URL to the XML file of the given name.
-     * The file shall be in the same package than the final subclass of {@code this}.
+     * The file shall be in the same package than a subclass of {@code this}.
+     * This method begins the search in the package of {@link #getClass()}.
+     * If the resource is not found in that package, then this method searches in the parent classes.
+     * The intend is to allow some test classes to be overridden in different modules.
      *
-     * @param  filename The name of the XML file.
-     * @return The URL to the given XML file.
+     * @param  filename  the name of the XML file.
+     * @return the URL to the given XML file.
      */
     private URL getResource(final String filename) {
-        final URL resource = getClass().getResource(filename);
-        assertNotNull(filename, resource);
-        return resource;
-    }
-
-    /**
-     * Appends explicitely {@code "xmlns:xsi"} to the list of attributes to ignore.
-     * This is not needed on JDK7 if the {@code "xmlns:*"} property has been defined,
-     * but required on JDK6. Not sure why...
-     */
-    @org.apache.sis.util.Workaround(library = "JDK", version = "1.6")
-    private static String[] addIgnoreXSI(String[] ignoredAttributes) {
-        final int length = ignoredAttributes.length;
-        ignoredAttributes = java.util.Arrays.copyOf(ignoredAttributes, length + 1);
-        ignoredAttributes[length] = "xmlns:xsi";
-        return ignoredAttributes;
+        Class<?> c = getClass();
+        do {
+            final URL resource = c.getResource(filename);
+            if (resource != null) return resource;
+            c = c.getSuperclass();
+        } while (!c.equals(XMLTestCase.class));
+        throw new AssertionError("Test resource not found: " + filename);
     }
 
     /**
      * Marshals the given object and ensure that the result is equals to the content of the given file.
      *
-     * @param  filename The name of the XML file in the package of the final subclass of {@code this}.
-     * @param  object The object to marshal.
-     * @param  ignoredAttributes The fully-qualified names of attributes to ignore
-     *         (typically {@code "xmlns:*"} and {@code "xsi:schemaLocation"}).
-     * @throws JAXBException If an error occurred during marshalling.
+     * @param  filename           the name of the XML file in the package of the final subclass of {@code this}.
+     * @param  object             the object to marshal.
+     * @param  ignoredAttributes  the fully-qualified names of attributes to ignore
+     *                            (typically {@code "xmlns:*"} and {@code "xsi:schemaLocation"}).
+     * @throws JAXBException if an error occurred during marshalling.
      *
      * @see #unmarshalFile(Class, String)
      */
     protected final void assertMarshalEqualsFile(final String filename, final Object object,
             final String... ignoredAttributes) throws JAXBException
     {
-        assertXmlEquals(getResource(filename), marshal(object), addIgnoreXSI(ignoredAttributes));
+        assertXmlEquals(getResource(filename), marshal(object), ignoredAttributes);
+    }
+
+    /**
+     * Marshals the given object and ensure that the result is equals to the content of the given file,
+     * within a tolerance threshold for numerical values.
+     *
+     * @param  filename           the name of the XML file in the package of the final subclass of {@code this}.
+     * @param  object             the object to marshal.
+     * @param  tolerance          the tolerance threshold for comparison of numerical values.
+     * @param  ignoredNodes       the fully-qualified names of the nodes to ignore, or {@code null} if none.
+     * @param  ignoredAttributes  the fully-qualified names of attributes to ignore
+     *                            (typically {@code "xmlns:*"} and {@code "xsi:schemaLocation"}).
+     * @throws JAXBException if an error occurred during marshalling.
+     *
+     * @see #unmarshalFile(Class, String)
+     *
+     * @since 0.7
+     */
+    protected final void assertMarshalEqualsFile(final String filename, final Object object,
+            final double tolerance, final String[] ignoredNodes, final String[] ignoredAttributes) throws JAXBException
+    {
+        assertXmlEquals(getResource(filename), marshal(object), tolerance, ignoredNodes, ignoredAttributes);
     }
 
     /**
      * Marshals the given object using the {@linkplain #getMarshallerPool() test marshaller pool}.
      *
-     * @param  object The object to marshal.
-     * @return The marshalled object.
-     * @throws JAXBException If an error occurred while marshalling the object.
+     * @param  object  the object to marshal.
+     * @return the marshalled object.
+     * @throws JAXBException if an error occurred while marshalling the object.
      *
      * @see #unmarshal(Class, String)
      */
@@ -222,10 +239,10 @@ public abstract strictfp class XMLTestCase extends TestCase {
     /**
      * Marshals the given object using the given marshaler.
      *
-     * @param  marshaller The marshaller to use.
-     * @param  object The object to marshal.
-     * @return The marshalled object.
-     * @throws JAXBException If an error occurred while marshalling the object.
+     * @param  marshaller  the marshaller to use.
+     * @param  object      the object to marshal.
+     * @return the marshalled object.
+     * @throws JAXBException if an error occurred while marshalling the object.
      *
      * @see #unmarshal(Unmarshaller, String)
      */
@@ -245,11 +262,11 @@ public abstract strictfp class XMLTestCase extends TestCase {
      * The resource is obtained by a call to {@code getClass().getResource(filename)}, which implies that the file
      * shall be in the same package than the subclass of {@code this}.
      *
-     * @param  <T>  Compile-time type of {@code type} argument.
-     * @param  type The expected type of the unmarshalled object.
-     * @param  filename The name of the XML file in the package of the final subclass of {@code this}.
-     * @return The object unmarshalled from the given file.
-     * @throws JAXBException If an error occurred during unmarshalling.
+     * @param  <T>       compile-time type of {@code type} argument.
+     * @param  type      the expected type of the unmarshalled object.
+     * @param  filename  the name of the XML file in the package of the final subclass of {@code this}.
+     * @return the object unmarshalled from the given file.
+     * @throws JAXBException if an error occurred during unmarshalling.
      *
      * @see #assertMarshalEqualsFile(String, Object, String...)
      */
@@ -265,11 +282,11 @@ public abstract strictfp class XMLTestCase extends TestCase {
     /**
      * Unmarshals the given object using the {@linkplain #getMarshallerPool() test marshaller pool}.
      *
-     * @param  <T>  Compile-time type of {@code type} argument.
-     * @param  type The expected type of the unmarshalled object.
-     * @param  xml  The XML representation of the object to unmarshal.
-     * @return The unmarshalled object.
-     * @throws JAXBException If an error occurred while unmarshalling the XML.
+     * @param  <T>   compile-time type of {@code type} argument.
+     * @param  type  the expected type of the unmarshalled object.
+     * @param  xml   the XML representation of the object to unmarshal.
+     * @return the unmarshalled object.
+     * @throws JAXBException if an error occurred while unmarshalling the XML.
      *
      * @see #marshal(Object)
      */
@@ -285,10 +302,10 @@ public abstract strictfp class XMLTestCase extends TestCase {
     /**
      * Unmarshals the given XML using the given unmarshaler.
      *
-     * @param  unmarshaller The unmarshaller to use.
-     * @param  xml The XML representation of the object to unmarshal.
-     * @return The unmarshalled object.
-     * @throws JAXBException If an error occurred while unmarshalling the XML.
+     * @param  unmarshaller  the unmarshaller to use.
+     * @param  xml           the XML representation of the object to unmarshal.
+     * @return the unmarshalled object.
+     * @throws JAXBException if an error occurred while unmarshalling the XML.
      *
      * @see #marshal(Marshaller, Object)
      */
@@ -302,8 +319,8 @@ public abstract strictfp class XMLTestCase extends TestCase {
      * Parses the date for the given string using the {@code "yyyy-MM-dd HH:mm:ss"} pattern
      * and the time zone of the XML (un)marshallers used for the tests.
      *
-     * @param  date The date as a {@link String}.
-     * @return The date as a {@link Date}.
+     * @param  date  the date as a {@link String}.
+     * @return the date as a {@link Date}.
      */
     protected static Date xmlDate(final String date) {
         ArgumentChecks.ensureNonNull("date", date);

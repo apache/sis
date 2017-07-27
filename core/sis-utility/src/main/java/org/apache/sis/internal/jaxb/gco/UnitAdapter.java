@@ -16,10 +16,10 @@
  */
 package org.apache.sis.internal.jaxb.gco;
 
-import javax.measure.unit.Unit;
+import javax.measure.Unit;
 import javax.xml.bind.annotation.adapters.XmlAdapter;
 import org.apache.sis.internal.jaxb.Context;
-import org.apache.sis.internal.util.Utilities;
+import org.apache.sis.internal.jaxb.gml.Measure;
 
 
 /**
@@ -27,18 +27,25 @@ import org.apache.sis.internal.util.Utilities;
  *
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
- * @version 0.4
- * @module
+ * @version 0.8
  *
  * @see Measure
+ *
+ * @since 0.3
+ * @module
  */
 public class UnitAdapter extends XmlAdapter<String, Unit<?>> {
     /**
+     * Invoked by reflection by JAXB.
+     */
+    public UnitAdapter() {
+    }
+
+    /**
      * Returns a unit for the given string.
      *
-     * @param  value The unit symbol.
-     * @return The unit for the given symbol.
+     * @param  value  the unit symbol.
+     * @return the unit for the given symbol.
      * @throws IllegalArgumentException if the given symbol is unknown.
      */
     @Override
@@ -50,12 +57,12 @@ public class UnitAdapter extends XmlAdapter<String, Unit<?>> {
     /**
      * Returns the symbol of the given unit.
      *
-     * @param  value The unit.
-     * @return The unit symbol.
+     * @param  value  the unit.
+     * @return the unit symbol.
      */
     @Override
     public String marshal(final Unit<?> value) {
-        return Utilities.toString(value);
+        return (value != null) ? value.toString() : null;
     }
 
     /**

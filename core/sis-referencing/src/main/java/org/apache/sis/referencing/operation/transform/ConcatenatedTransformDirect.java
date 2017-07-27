@@ -27,8 +27,8 @@ import org.opengis.referencing.operation.TransformException;
  * of an intermediate buffer in some case.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.5
  * @version 0.5
+ * @since   0.5
  * @module
  */
 class ConcatenatedTransformDirect extends ConcatenatedTransform {
@@ -94,7 +94,9 @@ class ConcatenatedTransformDirect extends ConcatenatedTransform {
         transform2.transform(dstPts, dstOff, dstPts, dstOff, numPts);
     }
 
-    // Do NOT override the transform(..., float[]...) version because we really need to use
-    // an intermediate buffer of type double[] for reducing rounding error.  Otherwise some
-    // map projection degrades image quality in an unacceptable way.
+    /*
+     * Do NOT override the transform(..., float[]...) version because we really need to use
+     * an intermediate buffer of type double[] for reducing rounding error.  Otherwise some
+     * map projection degrades image quality in an unacceptable way.
+     */
 }

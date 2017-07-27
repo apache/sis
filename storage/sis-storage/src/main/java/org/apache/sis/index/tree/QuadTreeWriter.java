@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.sis.index.tree;
 
 //JDK imports
@@ -27,7 +26,9 @@ import java.io.IOException;
  * Class to save the quad tree index from file.
  *
  */
-public class QuadTreeWriter {
+public final class QuadTreeWriter {
+  private QuadTreeWriter() {
+  }
 
   /**
    * Writes the entire quad tree index to file with each node in saved in a

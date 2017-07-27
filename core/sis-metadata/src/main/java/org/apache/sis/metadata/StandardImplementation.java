@@ -18,17 +18,19 @@ package org.apache.sis.metadata;
 
 import java.util.Map;
 import java.util.IdentityHashMap;
+import java.io.ObjectStreamException;
 import org.opengis.annotation.UML;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.logging.Logging;
+import org.apache.sis.internal.system.Modules;
 
 
 /**
  * Information about an Apache SIS metadata standard implementation.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.3
+ * @since   0.3
  * @module
  */
 final class StandardImplementation extends MetadataStandard {
@@ -68,18 +70,18 @@ final class StandardImplementation extends MetadataStandard {
      * But maybe the most interesting property is that it allocates less objects since {@code IdentityHashMap}
      * implementation doesn't need the chain of objects created by {@code HashMap}.</div>
      */
-    private final transient Map<Class<?>,Class<?>> implementations; // written by reflection on deserialization.
+    private final transient Map<Class<?>,Class<?>> implementations;     // written by reflection on deserialization.
 
     /**
      * Creates a new instance working on implementation of interfaces defined in the
      * specified package. This constructor is used only for the pre-defined constants.
      *
-     * @param citation              The title of the standard.
-     * @param interfacePackage      The root package for metadata interfaces, with a trailing {@code '.'}.
-     * @param implementationPackage The root package for metadata implementations. with a trailing {@code '.'}.
-     * @param prefix                The prefix of implementation class. This array is not cloned.
-     * @param acronyms              An array of (full text, acronyms) pairs. This array is not cloned.
-     * @param dependencies          The dependencies to other metadata standards, or {@code null} if none.
+     * @param citation               the title of the standard.
+     * @param interfacePackage       the root package for metadata interfaces, with a trailing {@code '.'}.
+     * @param implementationPackage  the root package for metadata implementations. with a trailing {@code '.'}.
+     * @param prefix                 the prefix of implementation class. This array is not cloned.
+     * @param acronyms               an array of (full text, acronyms) pairs. This array is not cloned.
+     * @param dependencies           the dependencies to other metadata standards, or {@code null} if none.
      */
     StandardImplementation(final String citation, final String interfacePackage, final String implementationPackage,
             final String[] prefix, final String[] acronyms, final MetadataStandard[] dependencies)
@@ -88,7 +90,7 @@ final class StandardImplementation extends MetadataStandard {
         this.implementationPackage = implementationPackage;
         this.prefix                = prefix;
         this.acronyms              = acronyms;
-        this.implementations       = new IdentityHashMap<Class<?>,Class<?>>();
+        this.implementations       = new IdentityHashMap<>();
     }
 
     /**
@@ -105,9 +107,9 @@ final class StandardImplementation extends MetadataStandard {
      * Returns the implementation class for the given interface, or {@code null} if none.
      * This class uses heuristic rules based on naming conventions.
      *
-     * @param  <T>  The compile-time {@code type}.
-     * @param  type The interface, typically from the {@code org.opengis.metadata} package.
-     * @return The implementation class, or {@code null} if none.
+     * @param  <T>   the compile-time {@code type}.
+     * @param  type  the interface, typically from the {@code org.opengis.metadata} package.
+     * @return the implementation class, or {@code null} if none.
      */
     @Override
     public <T> Class<? extends T> getImplementation(final Class<T> type) {
@@ -150,7 +152,8 @@ final class StandardImplementation extends MetadataStandard {
                         try {
                             candidate = Class.forName(classname);
                         } catch (ClassNotFoundException e) {
-                            Logging.recoverableException(MetadataStandard.class, "getImplementation", e);
+                            Logging.recoverableException(Logging.getLogger(Modules.METADATA),
+                                    MetadataStandard.class, "getImplementation", e);
                             length = p.length();
                             continue;
                         }
@@ -165,7 +168,7 @@ final class StandardImplementation extends MetadataStandard {
                         implementations.put(type, candidate);
                         return candidate.asSubclass(type);
                     }
-                    implementations.put(type, Void.TYPE); // Marker for "class not found".
+                    implementations.put(type, Void.TYPE);                       // Marker for "class not found".
                 }
             }
         }
@@ -175,7 +178,7 @@ final class StandardImplementation extends MetadataStandard {
     /**
      * Invoked on deserialization. Returns one of the pre-existing constants if possible.
      */
-    Object readResolve() {
+    Object readResolve() throws ObjectStreamException {
         if (ISO_19111.citation.equals(citation)) return ISO_19111;
         if (ISO_19115.citation.equals(citation)) return ISO_19115;
         /*

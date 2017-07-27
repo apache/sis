@@ -17,6 +17,7 @@
 package org.apache.sis.internal.referencing.provider;
 
 import java.awt.geom.AffineTransform;
+import javax.xml.bind.annotation.XmlTransient;
 import org.opengis.util.FactoryException;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
@@ -31,9 +32,9 @@ import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.referencing.operation.transform.ContextualParameters;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.internal.referencing.j2d.ParameterizedAffine;
+import org.apache.sis.internal.referencing.Resources;
 import org.apache.sis.internal.util.DoubleDouble;
 import org.apache.sis.internal.util.Constants;
-import org.apache.sis.util.resources.Messages;
 
 import static java.lang.Math.*;
 
@@ -64,12 +65,14 @@ import static java.lang.Math.*;
  *
  * @author  John Grange
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.6
- * @version 0.6
- * @module
+ * @version 0.8
  *
  * @see <a href="http://www.remotesensing.org/geotiff/proj_list/equirectangular.html">Equirectangular on RemoteSensing.org</a>
+ *
+ * @since 0.6
+ * @module
  */
+@XmlTransient
 public final class Equirectangular extends AbstractProvider {
     /**
      * For cross-version compatibility.
@@ -100,7 +103,7 @@ public final class Equirectangular extends AbstractProvider {
      * The operation parameter descriptor for the <cite>Longitude of natural origin</cite> (λ₀) parameter value.
      * Valid values range is [-180 … 180]° and default value is 0°.
      */
-    public static final ParameterDescriptor<Double> CENTRAL_MERIDIAN;
+    public static final ParameterDescriptor<Double> LONGITUDE_OF_ORIGIN;
 
     /**
      * The operation parameter descriptor for the <cite>False easting</cite> (FE) parameter value.
@@ -123,37 +126,41 @@ public final class Equirectangular extends AbstractProvider {
 
         STANDARD_PARALLEL = createLatitude(builder
                 .addIdentifier("8823")
+                .addIdentifier(Citations.GEOTIFF, "3078")
                 .addName("Latitude of 1st standard parallel")
                 .addName(Citations.OGC,     Constants.STANDARD_PARALLEL_1)
                 .addName(Citations.ESRI,    "Standard_Parallel_1")
-                .addName(Citations.NETCDF,  "standard_parallel")
-                .addName(Citations.GEOTIFF, "ProjStdParallel1")
+                .addName(Citations.NETCDF,  Constants.STANDARD_PARALLEL)
+                .addName(Citations.GEOTIFF, "StdParallel1")
                 .addName(Citations.PROJ4,   "lat_ts"), false);
 
-        CENTRAL_MERIDIAN = createLongitude(builder
+        LONGITUDE_OF_ORIGIN = createLongitude(builder
                 .addIdentifier("8802")
+                .addIdentifier(Citations.GEOTIFF, "3088")
                 .addName("Longitude of natural origin")
                 .addName(Citations.OGC,     Constants.CENTRAL_MERIDIAN)
                 .addName(Citations.ESRI,    "Central_Meridian")
                 .addName(Citations.NETCDF,  "longitude_of_projection_origin")
-                .addName(Citations.GEOTIFF, "ProjCenterLong")
+                .addName(Citations.GEOTIFF, "CenterLong")
                 .addName(Citations.PROJ4,   "lon_0"));
 
         FALSE_EASTING = createShift(builder
                 .addIdentifier("8806")
+                .addIdentifier(Citations.GEOTIFF, "3082")
                 .addName("False easting")
                 .addName(Citations.OGC,     Constants.FALSE_EASTING)
                 .addName(Citations.ESRI,    "False_Easting")
-                .addName(Citations.NETCDF,  "false_easting")
+                .addName(Citations.NETCDF,  Constants.FALSE_EASTING)
                 .addName(Citations.GEOTIFF, "FalseEasting")
                 .addName(Citations.PROJ4,   "x_0"));
 
         FALSE_NORTHING = createShift(builder
                 .addIdentifier("8807")
+                .addIdentifier(Citations.GEOTIFF, "3083")
                 .addName("False northing")
                 .addName(Citations.OGC,     Constants.FALSE_NORTHING)
                 .addName(Citations.ESRI,    "False_Northing")
-                .addName(Citations.NETCDF,  "false_northing")
+                .addName(Citations.NETCDF,  Constants.FALSE_NORTHING)
                 .addName(Citations.GEOTIFF, "FalseNorthing")
                 .addName(Citations.PROJ4,   "y_0"));
         /*
@@ -163,35 +170,34 @@ public final class Equirectangular extends AbstractProvider {
          * still see it in use sometime. However, taking inspiration from the practice done in "Mercator (1SP)"
          * projection, we require that the parameter value must be zero.
          */
-        LATITUDE_OF_ORIGIN = createConstant(builder     // Was used by EPSG:9823 (also EPSG:9842).
+        LATITUDE_OF_ORIGIN = createZeroConstant(builder     // Was used by EPSG:9823 (also EPSG:9842).
                 .addIdentifier("8801")
+                .addIdentifier(Citations.GEOTIFF, "3089")
                 .addName("Latitude of natural origin")
-                .addName(Citations.OGC,     "latitude_of_origin")
+                .addName(Citations.OGC,     Constants.LATITUDE_OF_ORIGIN)
                 .addName(Citations.ESRI,    "Latitude_Of_Origin")
                 .addName(Citations.NETCDF,  "latitude_of_projection_origin")
-                .addName(Citations.GEOTIFF, "ProjCenterLat")
+                .addName(Citations.GEOTIFF, "CenterLat")
                 .addName(Citations.PROJ4,   "lat_0")
-                .setRemarks(Messages.formatInternational(Messages.Keys.ConstantProjParameterValue_1, 0))
-                .setRequired(false), 0.0);
+                .setRemarks(Resources.formatInternational(Resources.Keys.ConstantProjParameterValue_1, 0))
+                .setRequired(false));
 
         // Do not declare the ESRI "Equidistant_Cylindrical" projection name below,
         // for avoiding confusion with EPSG "Equidistant Cylindrical" ellipsoidal projection.
-        PARAMETERS = builder
-            .addIdentifier(             "1029")
-            .addDeprecatedIdentifier(   "9823", "1029")  // Using deprecated parameter names
-            .addName(                   "Equidistant Cylindrical (Spherical)")
-            .addName(                   "Plate Carrée")  // Not formally defined by EPSG, but cited in documentation.
-            .addName(Citations.OGC,     "Equirectangular")
-            .addName(Citations.ESRI,    "Plate_Carree")
-            .addName(Citations.GEOTIFF, "CT_Equirectangular")
-            .addName(Citations.PROJ4,   "eqc")
-            .addIdentifier(Citations.GEOTIFF, "17")
-            .createGroupForMapProjection(
-                    STANDARD_PARALLEL,
-                    LATITUDE_OF_ORIGIN,     // Not formally an Equirectangular parameter.
-                    CENTRAL_MERIDIAN,
-                    FALSE_EASTING,
-                    FALSE_NORTHING);
+        PARAMETERS = addIdentifierAndLegacy(builder, "1029", "9823")  // 9823 uses deprecated parameter names
+                .addName(                   "Equidistant Cylindrical (Spherical)")
+                .addName(                   "Plate Carrée")  // Not formally defined by EPSG, but cited in documentation.
+                .addName(Citations.OGC,     "Equirectangular")
+                .addName(Citations.ESRI,    "Plate_Carree")
+                .addName(Citations.GEOTIFF, "CT_Equirectangular")
+                .addName(Citations.PROJ4,   "eqc")
+                .addIdentifier(Citations.GEOTIFF, "17")
+                .createGroupForMapProjection(
+                        STANDARD_PARALLEL,
+                        LATITUDE_OF_ORIGIN,     // Not formally an Equirectangular parameter.
+                        LONGITUDE_OF_ORIGIN,
+                        FALSE_EASTING,
+                        FALSE_NORTHING);
     }
 
     /**
@@ -212,19 +218,32 @@ public final class Equirectangular extends AbstractProvider {
     }
 
     /**
-     * Gets a parameter value identified by the given descriptor and stores it only if different than zero.
+     * Notifies {@code DefaultMathTransformFactory} that map projections require
+     * values for the {@code "semi_major"} and {@code "semi_minor"} parameters.
      *
-     * @param  source     The parameters from which to read the value.
-     * @param  target     Where to store the parameter values.
-     * @param  descriptor The descriptor that specify the parameter names and desired units.
-     * @return The parameter value in the units given by the descriptor.
+     * @return 1, meaning that the operation requires a source ellipsoid.
+     */
+    @Override
+    public final int getEllipsoidsMask() {
+        return 1;
+    }
+
+    /**
+     * Gets a parameter value identified by the given descriptor and stores it only if different than zero.
+     * This method performs the same work than {@code Initializer.getAndStore(ParameterDescriptor)} in the
+     * {@link org.apache.sis.referencing.operation.projection} package.
+     *
+     * @param  source      the parameters from which to read the value.
+     * @param  target      where to store the parameter values.
+     * @param  descriptor  the descriptor that specify the parameter names and desired units.
+     * @return the parameter value in the units given by the descriptor.
      * @throws IllegalArgumentException if the given value is out of bounds.
      */
     private static double getAndStore(final Parameters source, final ParameterValueGroup target,
             final ParameterDescriptor<Double> descriptor) throws IllegalArgumentException
     {
         final double value = source.doubleValue(descriptor);    // Apply a unit conversion if needed.
-        MapProjection.validate(descriptor, value);              // Unconditional validation for semi-axes.
+        MapProjection.validate(descriptor, value);              // Unconditional validation for all parameters.
         if (value != 0) {                                       // All default values in this class are zero.
             target.parameter(descriptor.getName().getCode()).setValue(value);
         }
@@ -237,9 +256,9 @@ public final class Equirectangular extends AbstractProvider {
      * reproduced in this method because we will create an affine transform instead than the usual projection
      * classes.
      *
-     * @param  factory The factory to use if this constructor needs to create other math transforms.
-     * @param  parameters The parameter values that define the transform to create.
-     * @return The map projection created from the given parameter values.
+     * @param  factory     the factory to use if this constructor needs to create other math transforms.
+     * @param  parameters  the parameter values that define the transform to create.
+     * @return the map projection created from the given parameter values.
      * @throws FactoryException if an error occurred while creating the math transform.
      */
     @Override
@@ -250,7 +269,7 @@ public final class Equirectangular extends AbstractProvider {
         final ContextualParameters context = new ContextualParameters(this);
         double a  = getAndStore(p, context, MapProjection.SEMI_MAJOR);
         double b  = getAndStore(p, context, MapProjection.SEMI_MINOR);
-        double λ0 = getAndStore(p, context, CENTRAL_MERIDIAN);
+        double λ0 = getAndStore(p, context, LONGITUDE_OF_ORIGIN);
         double φ0 = getAndStore(p, context, LATITUDE_OF_ORIGIN);
         double φ1 = getAndStore(p, context, STANDARD_PARALLEL);
         double fe = getAndStore(p, context, FALSE_EASTING);
@@ -265,7 +284,8 @@ public final class Equirectangular extends AbstractProvider {
          *   4) Scale longitude by cos(φ1).
          */
         φ1 = toRadians(φ1);
-        context.getMatrix(true).convertBefore(0, cos(φ1), null);
+        final MatrixSIS normalize = context.getMatrix(ContextualParameters.MatrixRole.NORMALIZATION);
+        normalize.convertBefore(0, cos(φ1), null);
         context.normalizeGeographicInputs(λ0)
                .convertBefore(1, null, -φ0);
         /*
@@ -280,7 +300,7 @@ public final class Equirectangular extends AbstractProvider {
             a = b / (1 - (1 - rs*rs) * (sinφ1*sinφ1));
         }
         final DoubleDouble k = new DoubleDouble(a);
-        final MatrixSIS denormalize = context.getMatrix(false);
+        final MatrixSIS denormalize = context.getMatrix(ContextualParameters.MatrixRole.DENORMALIZATION);
         denormalize.convertAfter(0, k, new DoubleDouble(fe));
         denormalize.convertAfter(1, k, new DoubleDouble(fn));
         /*

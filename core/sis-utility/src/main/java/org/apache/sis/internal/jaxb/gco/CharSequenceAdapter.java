@@ -31,7 +31,7 @@ import org.apache.sis.internal.jaxb.gmd.PT_FreeText;
  * for ISO-19139 compliance. A {@link CharSequenceAdapter} can handle the following types:
  *
  * <ul>
- *   <li>{@link InternationalString}, which will be mapped to {@link PT_FreeText} elements.</li>
+ *   <li>{@link InternationalString}, which may be mapped to {@link PT_FreeText} elements.</li>
  *   <li>{@link String} (actually any character sequences other than {@code InternationalString}).</li>
  *   <li>{@link Anchor}, which can be substituted to any of the above if the {@link ReferenceResolver}
  *       in the current marshalling context maps the given text to a {@code xlink}.</li>
@@ -40,12 +40,13 @@ import org.apache.sis.internal.jaxb.gmd.PT_FreeText;
  * @author  Cédric Briançon (Geomatys)
  * @author  Guilhem Legal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
- * @version 0.4
- * @module
+ * @version 0.6
  *
  * @see StringAdapter
  * @see InternationalStringAdapter
+ *
+ * @since 0.3
+ * @module
  */
 public final class CharSequenceAdapter extends XmlAdapter<GO_CharacterString, CharSequence> {
     /**
@@ -58,8 +59,8 @@ public final class CharSequenceAdapter extends XmlAdapter<GO_CharacterString, Ch
      * Converts a string read from a XML stream to the object containing the value.
      * JAXB calls automatically this method at unmarshalling time.
      *
-     * @param value The adapter for this metadata value.
-     * @return A {@link CharSequence} which represents the metadata value.
+     * @param  value  the adapter for this metadata value.
+     * @return a {@link CharSequence} which represents the metadata value.
      */
     @Override
     public CharSequence unmarshal(final GO_CharacterString value) {
@@ -70,8 +71,8 @@ public final class CharSequenceAdapter extends XmlAdapter<GO_CharacterString, Ch
      * Converts a {@linkplain CharSequence character sequence} to the object to be marshalled
      * in a XML file or stream. JAXB calls automatically this method at marshalling time.
      *
-     * @param  value The string value.
-     * @return The wrapper for the given character sequence, or {@code null}.
+     * @param  value  the string value.
+     * @return the wrapper for the given character sequence, or {@code null}.
      */
     @Override
     public GO_CharacterString marshal(final CharSequence value) {
@@ -82,12 +83,12 @@ public final class CharSequenceAdapter extends XmlAdapter<GO_CharacterString, Ch
      * Converts a {@linkplain CharSequence character sequence} to the object to be marshalled
      * in a XML file or stream.
      *
-     * @param  value The character representation of the object being marshalled.
-     * @return The wrapper for the given character sequence, or {@code null}.
+     * @param  value  the character representation of the object being marshalled.
+     * @return the wrapper for the given character sequence, or {@code null}.
      */
-    public static GO_CharacterString wrap(CharSequence value) {
+    static GO_CharacterString wrap(CharSequence value) {
         if (value instanceof String) {
-            return wrap(Context.current(), value, (String) value); // Slightly more efficient variant of this method.
+            return wrap(Context.current(), value, (String) value);  // Slightly more efficient variant of this method.
         }
         /*
          * <gmd:someElement xsi:type="gmd:PT_FreeText_PropertyType">
@@ -98,7 +99,7 @@ public final class CharSequenceAdapter extends XmlAdapter<GO_CharacterString, Ch
          * </gmd:someElement>
          */
         if (value instanceof InternationalString) {
-            final PT_FreeText ft = PT_FreeText.create(Context.current(), (InternationalString) value);
+            final PT_FreeText ft = PT_FreeText.create((InternationalString) value);
             if (ft != null) {
                 return ft;
             }
@@ -147,10 +148,10 @@ public final class CharSequenceAdapter extends XmlAdapter<GO_CharacterString, Ch
      * This method is a copy of {@link #wrap(CharSequence)} simplified for the case when we know
      * that the character sequence being marshalled is a string.
      *
-     * @param  context The current (un)marshalling context, or {@code null} if none.
-     * @param  object  The object being marshalled (e.g. {@code URI} or {@code Locale}).
-     * @param  string  The string representation of the object being marshalled.
-     * @return The wrapper for the given character sequence, or {@code null}.
+     * @param  context  the current (un)marshalling context, or {@code null} if none.
+     * @param  object   the object being marshalled (e.g. {@code URI} or {@code Locale}).
+     * @param  string   the string representation of the object being marshalled.
+     * @return the wrapper for the given character sequence, or {@code null}.
      */
     public static GO_CharacterString wrap(final Context context, final Object object, final String string) {
         final CharSequence text = value(context, object, string);
@@ -161,10 +162,10 @@ public final class CharSequenceAdapter extends XmlAdapter<GO_CharacterString, Ch
      * Same as {@link #wrap(Context, Object, String)}, but returns directly the {@link GO_CharacterString#text}
      * value without wrapping in a {@code GO_CharacterString} instance.
      *
-     * @param  context The current (un)marshalling context, or {@code null} if none.
-     * @param  object  The object being marshalled (e.g. {@code URI} or {@code Locale}).
-     * @param  string  The string representation of the object being marshalled.
-     * @return The text value for the given character sequence, or {@code null}.
+     * @param  context  the current (un)marshalling context, or {@code null} if none.
+     * @param  object   the object being marshalled (e.g. {@code URI} or {@code Locale}).
+     * @param  string   the string representation of the object being marshalled.
+     * @return the text value for the given character sequence, or {@code null}.
      */
     public static CharSequence value(final Context context, final Object object, String string) {
         string = CharSequences.trimWhitespaces(string);

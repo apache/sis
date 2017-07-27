@@ -44,8 +44,8 @@ import static org.apache.sis.internal.util.Constants.NUM_COL;
  * Tests the {@link TensorValues} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.4
  * @version 0.6
+ * @since   0.4
  * @module
  */
 @DependsOn(MatrixParametersTest.class)
@@ -73,9 +73,9 @@ public final strictfp class TensorValuesTest extends TestCase {
      * Asserts that the given descriptor has the given name and default value.
      * Aliases and identifiers are ignored - testing them is the purpose of {@link MatrixParametersTest}.
      *
-     * @param name         The expected parameter name.
-     * @param defaultValue The expected parameter default value.
-     * @param actual       The actual parameter to verify.
+     * @param  name          the expected parameter name.
+     * @param  defaultValue  the expected parameter default value.
+     * @param  actual        the actual parameter to verify.
      */
     private static void assertDescriptorEquals(final String name, final Number defaultValue,
             final GeneralParameterDescriptor actual)
@@ -87,9 +87,9 @@ public final strictfp class TensorValuesTest extends TestCase {
     /**
      * Asserts that the given parameter has the given name and value.
      *
-     * @param name   The expected parameter name.
-     * @param value  The expected parameter value.
-     * @param actual The actual parameter to verify.
+     * @param  name    the expected parameter name.
+     * @param  value   the expected parameter value.
+     * @param  actual  the actual parameter to verify.
      */
     private static void assertValueEquals(final String name, final Number value, final GeneralParameterValue actual) {
         assertEquals(name, actual.getDescriptor().getName().getCode());
@@ -321,12 +321,12 @@ public final strictfp class TensorValuesTest extends TestCase {
                 singletonMap(TensorValues.NAME_KEY, Constants.AFFINE), matrix);
         validate(group);
         assertWktEquals(
-                "ParameterGroup[“Affine”,\n"      +
-                "  Parameter[“num_row”, 3],\n"    +   // Shall be shown even if equals to the default value.
-                "  Parameter[“num_col”, 3],\n"    +
-                "  Parameter[“elt_0_2”, 4.0],\n"  +
-                "  Parameter[“elt_1_0”, -2.0],\n" +
-                "  Parameter[“elt_2_2”, 7.0]]", group);
+                "PARAMETERGROUP[“Affine”,\n"      +
+                "  PARAMETER[“num_row”, 3],\n"    +   // Shall be shown even if equals to the default value.
+                "  PARAMETER[“num_col”, 3],\n"    +
+                "  PARAMETER[“elt_0_2”, 4.0],\n"  +
+                "  PARAMETER[“elt_1_0”, -2.0],\n" +
+                "  PARAMETER[“elt_2_2”, 7.0]]", group);
     }
 
     /**
@@ -348,10 +348,10 @@ public final strictfp class TensorValuesTest extends TestCase {
                 singletonMap(TensorValues.NAME_KEY, Affine.NAME), matrix);
         validate(group);
         assertWktEquals(
-                "ParameterGroup[“Affine parametric transformation”,\n" +
-                "  Parameter[“A2”, 4.0, Id[“EPSG”, 8625]],\n"  +
-                "  Parameter[“B0”, -2.0, Id[“EPSG”, 8639]],\n" +
-                "  Parameter[“C2”, 7.0]]", group);
+                "PARAMETERGROUP[“Affine parametric transformation”,\n" +
+                "  PARAMETER[“A2”, 4.0, ID[“EPSG”, 8625]],\n"  +
+                "  PARAMETER[“B0”, -2.0, ID[“EPSG”, 8639]],\n" +
+                "  PARAMETER[“C2”, 7.0]]", group);
     }
 
     /**

@@ -25,13 +25,16 @@ import org.junit.BeforeClass;
  * All tests from the {@code sis-metadata} module, in approximative dependency order.
  *
  * @author  Martin Desruisseaux (Geomatys)
+ * @version 0.8
  * @since   0.3
- * @version 0.5
  * @module
  */
 @Suite.SuiteClasses({
+    org.apache.sis.internal.metadata.AxisNamesTest.class,
+    org.apache.sis.internal.metadata.WKTKeywordsTest.class,
     org.apache.sis.internal.metadata.NameMeaningTest.class,
     org.apache.sis.internal.metadata.MetadataUtilitiesTest.class,
+    org.apache.sis.internal.metadata.VerticalDatumTypesTest.class,
     org.apache.sis.internal.metadata.OtherLocalesTest.class,
 
     // Classes using Java reflection.
@@ -49,6 +52,8 @@ import org.junit.BeforeClass;
     org.apache.sis.metadata.MetadataStandardTest.class,
     org.apache.sis.metadata.PrunerTest.class,
     org.apache.sis.metadata.AbstractMetadataTest.class,
+    org.apache.sis.metadata.MetadataCopierTest.class,
+    org.apache.sis.internal.metadata.MergerTest.class,
 
     // XML marshalling.
     org.apache.sis.internal.jaxb.code.EnumMarshallingTest.class,
@@ -56,7 +61,7 @@ import org.junit.BeforeClass;
     org.apache.sis.internal.jaxb.code.PT_LocaleTest.class,
     org.apache.sis.xml.FreeTextMarshallingTest.class,
     org.apache.sis.xml.NilReasonMarshallingTest.class,
-    org.apache.sis.xml.AnchorMarshallingTest.class,
+    org.apache.sis.xml.CharSequenceSubstitutionTest.class,
     org.apache.sis.xml.UUIDMarshallingTest.class,
     org.apache.sis.xml.XLinkMarshallingTest.class,
 
@@ -93,10 +98,17 @@ import org.junit.BeforeClass;
 
     org.apache.sis.io.wkt.ConventionTest.class,
     org.apache.sis.io.wkt.SymbolsTest.class,
-    org.apache.sis.io.wkt.CharEncodingTest.class,
+    org.apache.sis.io.wkt.TransliteratorTest.class,
     org.apache.sis.io.wkt.ColorsTest.class,
     org.apache.sis.io.wkt.FormatterTest.class,
-    org.apache.sis.io.wkt.WKTFormatTest.class
+    org.apache.sis.io.wkt.ElementTest.class,
+
+    org.apache.sis.internal.metadata.sql.SQLUtilitiesTest.class,
+    org.apache.sis.internal.metadata.sql.TypeMapperTest.class,
+    org.apache.sis.internal.metadata.sql.ScriptRunnerTest.class,
+    org.apache.sis.metadata.sql.IdentifierGeneratorTest.class,
+    org.apache.sis.metadata.sql.MetadataSourceTest.class,
+    org.apache.sis.metadata.sql.MetadataWriterTest.class
 })
 public final strictfp class MetadataTestSuite extends TestSuite {
     /**

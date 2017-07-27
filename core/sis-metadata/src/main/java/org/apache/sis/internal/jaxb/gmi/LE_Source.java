@@ -27,12 +27,13 @@ import org.apache.sis.metadata.iso.lineage.DefaultSource;
  *
  * @author  Guilhem Legal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.3
+ * @since   0.3
  * @module
  */
 @XmlType(name = "LE_Source_Type")
 @XmlRootElement(name = "LE_Source")
+@SuppressWarnings("CloneableClassWithoutClone")
 public class LE_Source extends DefaultSource {
     /**
      * For cross-version compatibility.
@@ -50,7 +51,7 @@ public class LE_Source extends DefaultSource {
      * Creates a new metadata as a copy of the given one.
      * This is a shallow copy constructor.
      *
-     * @param original The original metadata to copy.
+     * @param original  the original metadata to copy.
      */
     public LE_Source(final Source original) {
         super(original);
@@ -60,8 +61,8 @@ public class LE_Source extends DefaultSource {
      * Wraps the given metadata into a SIS implementation that can be marshalled,
      * using the {@code "gmi"} namespace if necessary.
      *
-     * @param  original The original metadata provided by the user.
-     * @return The metadata to marshall.
+     * @param  original  the original metadata provided by the user.
+     * @return the metadata to marshall.
      */
     public static DefaultSource castOrCopy(final Source original) {
         if (original != null && !(original instanceof LE_Source)) {

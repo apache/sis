@@ -21,7 +21,7 @@ import org.apache.sis.xml.XML;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
-import static org.apache.sis.test.Assert.*;
+import static org.apache.sis.test.MetadataAssert.*;
 import static org.apache.sis.test.TestUtilities.getSingleton;
 
 
@@ -34,6 +34,11 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
  * @module
  */
 public final strictfp class DataIdentificationTest extends TestCase {
+    /**
+     * Tests marshalling and unmarshalling of a XML fragment.
+     *
+     * @throws JAXBException if an error occurred during (un)marshalling.
+     */
     @Test
     public void testMarshalling() throws JAXBException {
         final String xml =
@@ -58,8 +63,8 @@ public final strictfp class DataIdentificationTest extends TestCase {
 
         final Object id = XML.unmarshal(xml);
         assertInstanceOf("Expected an AFNOR instance.", DataIdentification.class, id);
-        assertEquals("citation", "Main documentation.", ((DataIdentification) id).getCitation().getTitle().toString());
-        assertEquals("relatedCitations", "Related documentation.", getSingleton(((DataIdentification) id).getRelatedCitations()).getTitle().toString());
+        assertTitleEquals("citation", "Main documentation.", ((DataIdentification) id).getCitation());
+        assertTitleEquals("relatedCitations", "Related documentation.", getSingleton(((DataIdentification) id).getRelatedCitations()));
 
         final String actual = XML.marshal(id);
         assertXmlEquals(xml, actual, "xmlns:*");

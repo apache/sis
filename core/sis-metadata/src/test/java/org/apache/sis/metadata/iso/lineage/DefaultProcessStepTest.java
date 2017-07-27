@@ -18,10 +18,11 @@ package org.apache.sis.metadata.iso.lineage;
 
 import javax.xml.bind.JAXBException;
 import org.apache.sis.util.iso.SimpleInternationalString;
+import org.apache.sis.internal.jaxb.gmi.LE_ProcessStep;
 import org.apache.sis.test.XMLTestCase;
 import org.junit.Test;
 
-import static org.junit.Assert.*;
+import static org.opengis.test.Assert.*;
 
 
 /**
@@ -29,8 +30,8 @@ import static org.junit.Assert.*;
  *
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
+ * @version 0.8
  * @since   0.3
- * @version 0.4
  * @module
  */
 public final strictfp class DefaultProcessStepTest extends XMLTestCase {
@@ -45,7 +46,7 @@ public final strictfp class DefaultProcessStepTest extends XMLTestCase {
      * <p><b>XML test file:</b>
      * {@code "core/sis-metadata/src/test/resources/org/apache/sis/metadata/iso/lineage/ProcessStep.xml"}</p>
      *
-     * @throws JAXBException If an error occurred during the during marshalling / unmarshalling processes.
+     * @throws JAXBException if an error occurred during the during marshalling / unmarshalling processes.
      */
     @Test
     public void testXML() throws JAXBException {
@@ -59,7 +60,13 @@ public final strictfp class DefaultProcessStepTest extends XMLTestCase {
         assertMarshalEqualsFile(XML_FILE, processStep, "xlmns:*", "xsi:schemaLocation");
         /*
          * XML unmarshalling: ensure that we didn't lost any information.
+         * Note that since the XML uses the <gmi:…> namespace, we got an instance of LE_ProcessStep, which
+         * in SIS implementation does not carry any useful information; it is just a consequence of the way
+         * namespaces are managed. We will convert to the parent DefaultProcessStep type before comparison.
          */
-        assertEquals(processStep, unmarshalFile(DefaultProcessStep.class, XML_FILE));
+        DefaultProcessStep step = unmarshalFile(DefaultProcessStep.class, XML_FILE);
+        assertInstanceOf("The unmarshalled object is expected to be in GMI namespace.", LE_ProcessStep.class, step);
+        step = new DefaultProcessStep(step);
+        assertEquals(processStep, step);
     }
 }

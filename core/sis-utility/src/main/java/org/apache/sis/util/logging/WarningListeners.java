@@ -16,6 +16,8 @@
  */
 package org.apache.sis.util.logging;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.Locale;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -25,19 +27,27 @@ import org.apache.sis.util.Localized;
 import org.apache.sis.util.Exceptions;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.internal.util.UnmodifiableArrayList;
 
 
 /**
  * Holds a list of {@link WarningListener} instances and provides convenience methods for emitting warnings.
- * The convenience {@code warning(…)} methods can build {@code LogRecord} from an exception or from a string.
- *
- * <p>In the default implementation, all {@code warning(…)} methods delegate to {@link #warning(LogRecord)},
- * thus providing a single point that subclasses can override for intercepting all warnings.
- * The default behavior is:</p>
+ * This is a helper class for {@link org.apache.sis.storage.DataStore} implementations or for other services
+ * susceptible to emit warnings.
+ * Observers can {@linkplain #addWarningListener can add listeners} for being notified about warnings, and
+ * processes can invoke one of the {@code warning(…)} methods for emitting warnings. All warnings are given
+ * to the listeners as {@link LogRecord} instances (this allows localizable messages and additional information
+ * like {@linkplain LogRecord#getMillis() timestamp} and {@linkplain LogRecord#getThrown() stack trace}).
+ * This {@code WarningListeners} class provides convenience methods like {@link #warning(String, Exception)},
+ * which builds {@code LogRecord} from an exception or from a string, but all those {@code warning(…)} methods
+ * ultimately delegate to {@link #warning(LogRecord)}, thus providing a single point that subclasses can override.
+ * When a warning is emitted, the default behavior is:
  *
  * <ul>
  *   <li>If at least one {@link WarningListener} is registered,
  *       then all listeners are notified and the warning is <strong>not</strong> logged.
+ *   <li>Otherwise if the value returned by {@link LogRecord#getLoggerName()} is non-null,
+ *       then the warning will be logged to that named logger.</li>
  *   <li>Otherwise the warning is logged to the logger returned by {@link #getLogger()}.</li>
  * </ul>
  *
@@ -46,15 +56,16 @@ import org.apache.sis.util.resources.Errors;
  * on the part of the caller. Subclasses should make sure that any overridden methods remain safe to call
  * from multiple threads.
  *
- * @param <S> The type of the source of warnings.
- *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
- * @version 0.4
- * @module
+ * @version 0.8
+ *
+ * @param <S>  the type of the source of warnings.
  *
  * @see WarningListener
  * @see org.apache.sis.storage.DataStore#listeners
+ *
+ * @since 0.3
+ * @module
  */
 public class WarningListeners<S> implements Localized {
     /**
@@ -70,7 +81,7 @@ public class WarningListeners<S> implements Localized {
     private WarningListener<? super S>[] listeners;
 
     /**
-     * Creates a new instance without source. This constructor is for {@link EmptyWarningListeners}
+     * Creates a new instance without source. This constructor is for {@code EmptyWarningListeners}
      * usage only, because it requires some method to be overloaded.
      */
     WarningListeners() {
@@ -79,14 +90,33 @@ public class WarningListeners<S> implements Localized {
 
     /**
      * Creates a new instance with initially no listener.
-     * Warnings will be logger to the given logger, unless at least one listener is registered.
+     * Warnings will be logger to the destination given by {@link #getLogger()},
+     * unless at least one listener is {@linkplain #addWarningListener registered}.
      *
-     * @param source The declared source of warnings. This is not necessarily the real source,
-     *               but this is the source that the implementor wants to declare as public API.
+     * @param source  the declared source of warnings. This is not necessarily the real source,
+     *                but this is the source that the implementor wants to declare as public API.
      */
     public WarningListeners(final S source) {
         ArgumentChecks.ensureNonNull("source", source);
         this.source = source;
+    }
+
+    /**
+     * Creates a new instance initialized with the same listeners than the given instance.
+     * This constructor is useful when a {@code DataStore} or other data producer needs to
+     * be duplicated for concurrency reasons.
+     *
+     * @param source  the declared source of warnings. This is not necessarily the real source,
+     *                but this is the source that the implementor wants to declare as public API.
+     * @param other   the existing instance from which to copy the listeners, or {@code null} if none.
+     *
+     * @since 0.8
+     */
+    public WarningListeners(final S source, final WarningListeners<? super S> other) {
+        this(source);
+        if (other != null) {
+            listeners = other.listeners;
+        }
     }
 
     /**
@@ -100,21 +130,37 @@ public class WarningListeners<S> implements Localized {
     }
 
     /**
-     * Returns the logger where to send the warnings. The default implementation returns a logger for
-     * the package name of the {@code source} object. Subclasses should override this method if they
-     * can provide a fixed logger instance (typically a static final constant).
+     * Returns the logger where to send the warnings when no other destination is specified.
+     * This logger is used when:
      *
-     * @return The logger where to send the warnings when there is no registered listeners.
+     * <ul>
+     *   <li>no listener has been {@linkplain #addWarningListener registered}, and</li>
+     *   <li>the {@code LogRecord} does not {@linkplain LogRecord#getLoggerName() specify a logger}.</li>
+     * </ul>
+     *
+     * The default implementation infers a logger name from the package name of the {@code source} object.
+     * Subclasses should override this method if they can provide a more determinist logger instance,
+     * typically from a static final constant.
+     *
+     * @return the logger where to send the warnings when there is no other destination.
      */
     public Logger getLogger() {
         return Logging.getLogger(source.getClass());
     }
 
     /**
-     * Reports a warning represented by the given log record. The default implementation notifies the listeners
-     * if any, or logs the message to the logger returned by {@link #getLogger()} otherwise.
+     * Reports a warning represented by the given log record. The default implementation forwards
+     * the given record to <strong>one</strong> of the following destinations, in preference order:
      *
-     * @param record The warning as a log record.
+     * <ol>
+     *   <li><code>{@linkplain WarningListener#warningOccured WarningListener.warningOccured}(source, record)</code>
+     *       on all {@linkplain #addWarningListener registered listeners} it at least one such listener exists.</li>
+     *   <li><code>{@linkplain Logging#getLogger(String) Logging.getLogger}(record.{@linkplain LogRecord#getLoggerName
+     *       getLoggerName()}).{@linkplain Logger#log(LogRecord) log}(record)</code> if the logger name is non-null.</li>
+     *   <li><code>{@linkplain #getLogger()}.{@linkplain Logger#log(LogRecord) log}(record)</code> otherwise.</li>
+     * </ol>
+     *
+     * @param record  the warning as a log record.
      */
     public void warning(final LogRecord record) {
         final WarningListener<?>[] current;
@@ -126,8 +172,14 @@ public class WarningListeners<S> implements Localized {
                 listener.warningOccured(source, record);
             }
         } else {
-            final Logger logger = getLogger();
-            record.setLoggerName(logger.getName());
+            final String name = record.getLoggerName();
+            final Logger logger;
+            if (name != null) {
+                logger = Logging.getLogger(name);
+            } else {
+                logger = getLogger();
+                record.setLoggerName(logger.getName());
+            }
             if (record instanceof QuietLogRecord) {
                 ((QuietLogRecord) record).clearThrown();
             }
@@ -138,6 +190,7 @@ public class WarningListeners<S> implements Localized {
     /**
      * Reports a warning represented by the given message and exception.
      * At least one of {@code message} and {@code exception} shall be non-null.
+     * If both are non-null, then the exception message will be concatenated after the given message.
      *
      * <div class="section">Stack trace omission</div>
      * If there is no registered listener, then the {@link #warning(LogRecord)} method will send the record to the
@@ -151,8 +204,8 @@ public class WarningListeners<S> implements Localized {
      *   <li>register a listener which will log the record itself.</li>
      * </ul>
      *
-     * @param message    The message to log, or {@code null} if none.
-     * @param exception  The exception to log, or {@code null} if none.
+     * @param message    the message to log, or {@code null} if none.
+     * @param exception  the exception to log, or {@code null} if none.
      */
     public void warning(String message, final Exception exception) {
         final LogRecord record;
@@ -186,7 +239,7 @@ public class WarningListeners<S> implements Localized {
      * <p>The current implementation compares the class name against a hard-coded list of classes to hide.
      * This implementation may change in any future SIS version.</p>
      *
-     * @param  e A stack trace element.
+     * @param  e  a stack trace element.
      * @return {@code true} if the class and method specified by the given element can be considered public API.
      */
     private static boolean isPublic(final StackTraceElement e) {
@@ -207,8 +260,8 @@ public class WarningListeners<S> implements Localized {
      *       and the warning is <strong>not</strong> logged by this object.</li>
      * </ul>
      *
-     * @param  listener The listener to add.
-     * @throws IllegalArgumentException If the given listener is already registered.
+     * @param  listener  the listener to add.
+     * @throws IllegalArgumentException if the given listener is already registered.
      */
     public synchronized void addWarningListener(final WarningListener<? super S> listener)
             throws IllegalArgumentException
@@ -233,8 +286,8 @@ public class WarningListeners<S> implements Localized {
     /**
      * Removes a previously registered listener.
      *
-     * @param  listener The listener to remove.
-     * @throws NoSuchElementException If the given listener is not registered.
+     * @param  listener  the listener to remove.
+     * @throws NoSuchElementException if the given listener is not registered.
      */
     public synchronized void removeWarningListener(final WarningListener<? super S> listener)
             throws NoSuchElementException
@@ -258,6 +311,22 @@ public class WarningListeners<S> implements Localized {
             }
         }
         throw new NoSuchElementException(Errors.format(Errors.Keys.ElementNotFound_1, listener));
+    }
+
+    /**
+     * Returns all registered warning listeners, or an empty list if none.
+     * This method returns an unmodifiable snapshot of the listener list at the time this method is invoked.
+     *
+     * @return immutable list of all registered warning listeners.
+     *
+     * @since 0.8
+     */
+    public List<WarningListener<? super S>> getListeners() {
+        final WarningListener<? super S>[] current;
+        synchronized (this) {
+            current = listeners;
+        }
+        return (current != null) ? UnmodifiableArrayList.wrap(current) : Collections.<WarningListener<? super S>>emptyList();
     }
 
     /**

@@ -38,8 +38,8 @@ import static org.apache.sis.internal.maven.Filenames.*;
  * A JAR file to be created for output by {@link Packer}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.4
+ * @since   0.3
  * @module
  */
 final class PackOutput implements Closeable {
@@ -83,7 +83,7 @@ final class PackOutput implements Closeable {
      *
      * @see #isMergeAllowed(String)
      */
-    private final Set<String> entriesDone = new HashSet<String>();
+    private final Set<String> entriesDone = new HashSet<>();
 
     /**
      * Returns {@code true} if entries of the given name are allowed to be concatenated
@@ -98,8 +98,8 @@ final class PackOutput implements Closeable {
     /**
      * Creates an output jar.
      *
-     * @param inputJARs The input JAR filenames together with their {@code PackInput} helpers.
-     * @param outputJAR The output JAR filename.
+     * @param  inputJARs  the input JAR filenames together with their {@code PackInput} helpers.
+     * @param  outputJAR  the output JAR filename.
      */
     PackOutput(final Map<File,PackInput> inputJARs, final File outputJAR) {
         this.inputJARs = inputJARs;
@@ -117,12 +117,11 @@ final class PackOutput implements Closeable {
     /**
      * Opens the given JAR file for writing and creates its manifest.
      *
-     * @param  projectName The project name, or {@code null} if none.
-     * @param  projectURL  The project URL, or {@code null} if none.
-     * @param  version     The project version, or {@code null} if none.
+     * @param  projectName  the project name, or {@code null} if none.
+     * @param  version      the project version, or {@code null} if none.
      * @throws IOException if the file can't be open.
      */
-    void open(final String projectName, final String projectURL, final String version) throws IOException {
+    void open(final String projectName, final String version) throws IOException {
         final Manifest manifest = new Manifest();
         Attributes attributes = manifest.getMainAttributes();
         attributes.put(Attributes.Name.MANIFEST_VERSION, "1.0");
@@ -131,9 +130,6 @@ final class PackOutput implements Closeable {
             attributes.put(Attributes.Name.SPECIFICATION_VENDOR,   projectName);
             attributes.put(Attributes.Name.IMPLEMENTATION_TITLE,   projectName);
             attributes.put(Attributes.Name.IMPLEMENTATION_VENDOR,  projectName);
-        }
-        if (projectURL != null) {
-            attributes.put(Attributes.Name.IMPLEMENTATION_URL, projectURL);
         }
         if (version != null) {
             attributes.put(Attributes.Name.SPECIFICATION_VERSION,  version);
@@ -151,8 +147,7 @@ final class PackOutput implements Closeable {
         for (final File input : inputJARs.keySet()) {
             if (!input.getName().startsWith("sis-")) {
                 String packageName = null;
-                final JarFile jar = new JarFile(input, false);
-                try {
+                try (JarFile jar = new JarFile(input, false)) {
                     final Enumeration<JarEntry> entries = jar.entries();
                     while (entries.hasMoreElements()) {
                         final JarEntry entry = entries.nextElement();
@@ -182,14 +177,11 @@ final class PackOutput implements Closeable {
                             copy(src, attributes, Attributes.Name.SPECIFICATION_VERSION)  |
                             copy(src, attributes, Attributes.Name.IMPLEMENTATION_TITLE)   |
                             copy(src, attributes, Attributes.Name.IMPLEMENTATION_VENDOR)  |
-                            copy(src, attributes, Attributes.Name.IMPLEMENTATION_VERSION) |
-                            copy(src, attributes, Attributes.Name.IMPLEMENTATION_URL))
+                            copy(src, attributes, Attributes.Name.IMPLEMENTATION_VERSION))
                         {
                             manifest.getEntries().put(packageName, attributes);
                         }
                     }
-                } finally {
-                    jar.close();
                 }
             }
         }
@@ -224,8 +216,7 @@ final class PackOutput implements Closeable {
         for (final Iterator<Map.Entry<File,PackInput>> it = inputJARs.entrySet().iterator(); it.hasNext();) {
             final Map.Entry<File,PackInput> inputJAR = it.next();
             it.remove(); // Needs to be removed before the inner loop below.
-            final PackInput input = inputJAR.getValue();
-            try {
+            try (PackInput input = inputJAR.getValue()) {
                 for (JarEntry entry; (entry = input.nextEntry()) != null;) {
                     final String name = entry.getName();
                     boolean isMergeAllowed = false;
@@ -250,8 +241,6 @@ final class PackOutput implements Closeable {
                     }
                     outputStream.closeEntry();
                 }
-            } finally {
-                input.close();
             }
         }
     }
@@ -260,9 +249,9 @@ final class PackOutput implements Closeable {
      * Copies fully the given input stream to the given destination.
      * The given input stream is closed after the copy.
      *
-     * @param  in     The input stream from which to get the the content to copy.
-     * @param  buffer Temporary buffer to reuse at each method call.
-     * @throws IOException If an error occurred during the copy.
+     * @param  in      the input stream from which to get the the content to copy.
+     * @param  buffer  temporary buffer to reuse at each method call.
+     * @throws IOException if an error occurred during the copy.
      */
     void copy(final InputStream in, final byte[] buffer) throws IOException {
         int n;
@@ -320,7 +309,7 @@ final class PackOutput implements Closeable {
     /**
      * Creates a Pack200 file from the output JAR, then delete the JAR.
      *
-     * @param  out Where to write the Pack200. This stream will be closed by this method.
+     * @param  out  where to write the Pack200. This stream will be closed by this method.
      * @throws IOException if an error occurred while packing the JAR.
      */
     void pack(final OutputStream out) throws IOException {
@@ -330,21 +319,17 @@ final class PackOutput implements Closeable {
         final File inputFile = outputJAR;
         final Pack200.Packer packer = Pack200.newPacker();
         final Map<String,String> p = packer.properties();
-        p.put(EFFORT, String.valueOf(9));  // Maximum compression level.
-        p.put(KEEP_FILE_ORDER,    FALSE);  // Reorder files for better compression.
-        p.put(MODIFICATION_TIME,  LATEST); // Smear modification times to a single value.
-        p.put(DEFLATE_HINT,       TRUE);   // Ignore all JAR deflation requests.
-        p.put(UNKNOWN_ATTRIBUTE,  ERROR);  // Throw an error if an attribute is unrecognized
-        final JarFile jarFile = new JarFile(inputFile);
-        try {
-            final OutputStream deflater = new GZIPOutputStream(out);
-            try {
+        p.put(EFFORT, String.valueOf(9));           // Maximum compression level.
+        p.put(SEGMENT_LIMIT,     "-1");             // use largest-possible archive segments (>10% better compression).
+        p.put(KEEP_FILE_ORDER,    FALSE);           // Reorder files for better compression.
+        p.put(MODIFICATION_TIME,  LATEST);          // Smear modification times to a single value.
+        p.put(DEFLATE_HINT,       TRUE);            // Ignore all JAR deflation requests.
+        p.put(UNKNOWN_ATTRIBUTE,  ERROR);           // Throw an error if an attribute is unrecognized
+        p.put(CODE_ATTRIBUTE_PFX+"LocalVariableTable", STRIP);        // discard debug attributes.
+        try (JarFile jarFile = new JarFile(inputFile)) {
+            try (OutputStream deflater = new GZIPOutputStream(out)) {
                 packer.pack(jarFile, deflater);
-            } finally {
-                deflater.close();
             }
-        } finally {
-            jarFile.close();
         }
         if (!inputFile.delete()) {
             throw new IOException("Can't delete temporary file: " + inputFile);

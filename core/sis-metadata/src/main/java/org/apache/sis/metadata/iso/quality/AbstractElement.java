@@ -47,6 +47,10 @@ import static org.apache.sis.util.collection.Containers.isNullOrEmpty;
 
 /**
  * Type of test applied to the data specified by a data quality scope.
+ * The following property is mandatory in a well-formed metadata according ISO 19115:
+ *
+ * <div class="preformat">{@code DQ_Element}
+ * {@code   └─result……………} Value obtained from applying a data quality measure.</div>
  *
  * <p><b>Limitations:</b></p>
  * <ul>
@@ -60,10 +64,11 @@ import static org.apache.sis.util.collection.Containers.isNullOrEmpty;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Touraïvane (IRD)
  * @author  Guilhem Legal (Geomatys)
- * @since   0.3
  * @version 0.3
+ * @since   0.3
  * @module
  */
+@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "AbstractDQ_Element_Type", propOrder = {
     "namesOfMeasure",
     "measureIdentification",
@@ -183,8 +188,8 @@ public class AbstractElement extends ISOMetadata implements Element {
         public Date get(final int index) {
             long date = date1;
             switch (index) {
-                case 1:  date = date2; // Fall through
-                case 0:  if (date != Long.MIN_VALUE) return new Date(date); // else fallthrough.
+                case 1:  date = date2;                                          // Fall through
+                case 0:  if (date != Long.MIN_VALUE) return new Date(date);     // else fallthrough.
                 default: throw new IndexOutOfBoundsException(Errors.format(Errors.Keys.IndexOutOfBounds_1, index));
             }
         }
@@ -213,7 +218,7 @@ public class AbstractElement extends ISOMetadata implements Element {
         public Date remove(final int index) {
             final Date previous = get(index);
             switch (index) {
-                case 0: date1 = date2; // Fallthrough
+                case 0: date1 = date2;                      // Fallthrough
                 case 1: date2 = Long.MIN_VALUE; break;
             }
             modCount++;
@@ -301,8 +306,8 @@ public class AbstractElement extends ISOMetadata implements Element {
     /**
      * Creates an element initialized to the given result.
      *
-     * @param result The value obtained from applying a data quality measure against a specified
-     *               acceptable conformance quality level.
+     * @param result  the value obtained from applying a data quality measure against a specified
+     *                acceptable conformance quality level.
      */
     public AbstractElement(final Result result) {
         results = singleton(result, Result.class);
@@ -313,7 +318,7 @@ public class AbstractElement extends ISOMetadata implements Element {
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
-     * @param object The metadata to copy values from, or {@code null} if none.
+     * @param object  the metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(Element)
      */
@@ -351,8 +356,8 @@ public class AbstractElement extends ISOMetadata implements Element {
      *       metadata contained in the given object are not recursively copied.</li>
      * </ul>
      *
-     * @param  object The object to get as a SIS implementation, or {@code null} if none.
-     * @return A SIS implementation containing the values of the given object (may be the
+     * @param  object  the object to get as a SIS implementation, or {@code null} if none.
+     * @return a SIS implementation containing the values of the given object (may be the
      *         given object itself), or {@code null} if the argument was null.
      */
     public static AbstractElement castOrCopy(final Element object) {
@@ -384,7 +389,7 @@ public class AbstractElement extends ISOMetadata implements Element {
     /**
      * Returns the name of the test applied to the data.
      *
-     * @return Name of the test applied to the data.
+     * @return name of the test applied to the data.
      */
     @Override
     @XmlElement(name = "nameOfMeasure")
@@ -395,7 +400,7 @@ public class AbstractElement extends ISOMetadata implements Element {
     /**
      * Sets the name of the test applied to the data.
      *
-     * @param newValues The new name of measures.
+     * @param  newValues  the new name of measures.
      */
     public void setNamesOfMeasure(final Collection<? extends InternationalString> newValues) {
         namesOfMeasure = writeCollection(newValues, namesOfMeasure, InternationalString.class);
@@ -404,7 +409,7 @@ public class AbstractElement extends ISOMetadata implements Element {
     /**
      * Returns the code identifying a registered standard procedure, or {@code null} if none.
      *
-     * @return Code identifying a registered standard procedure, or {@code null}.
+     * @return code identifying a registered standard procedure, or {@code null}.
      */
     @Override
     @XmlElement(name = "measureIdentification")
@@ -415,7 +420,7 @@ public class AbstractElement extends ISOMetadata implements Element {
     /**
      * Sets the code identifying a registered standard procedure.
      *
-     * @param newValue The new measure identification.
+     * @param  newValue  the new measure identification.
      */
     public void setMeasureIdentification(final Identifier newValue)  {
         checkWritePermission();
@@ -425,7 +430,7 @@ public class AbstractElement extends ISOMetadata implements Element {
     /**
      * Returns the description of the measure being determined.
      *
-     * @return Description of the measure being determined, or {@code null}.
+     * @return description of the measure being determined, or {@code null}.
      */
     @Override
     @XmlElement(name = "measureDescription")
@@ -436,7 +441,7 @@ public class AbstractElement extends ISOMetadata implements Element {
     /**
      * Sets the description of the measure being determined.
      *
-     * @param newValue The new measure description.
+     * @param  newValue  the new measure description.
      */
     public void setMeasureDescription(final InternationalString newValue)  {
         checkWritePermission();
@@ -446,7 +451,7 @@ public class AbstractElement extends ISOMetadata implements Element {
     /**
      * Returns the type of method used to evaluate quality of the dataset.
      *
-     * @return Type of method used to evaluate quality, or {@code null}.
+     * @return type of method used to evaluate quality, or {@code null}.
      */
     @Override
     @XmlElement(name = "evaluationMethodType")
@@ -457,7 +462,7 @@ public class AbstractElement extends ISOMetadata implements Element {
     /**
      * Sets the type of method used to evaluate quality of the dataset.
      *
-     * @param newValue The new evaluation method type.
+     * @param  newValue  the new evaluation method type.
      */
     public void setEvaluationMethodType(final EvaluationMethodType newValue)  {
         checkWritePermission();
@@ -467,7 +472,7 @@ public class AbstractElement extends ISOMetadata implements Element {
     /**
      * Returns the description of the evaluation method.
      *
-     * @return Description of the evaluation method, or {@code null}.
+     * @return description of the evaluation method, or {@code null}.
      */
     @Override
     @XmlElement(name = "evaluationMethodDescription")
@@ -478,7 +483,7 @@ public class AbstractElement extends ISOMetadata implements Element {
     /**
      * Sets the description of the evaluation method.
      *
-     * @param newValue The new evaluation method description.
+     * @param  newValue  the new evaluation method description.
      */
     public void setEvaluationMethodDescription(final InternationalString newValue)  {
         checkWritePermission();
@@ -488,7 +493,7 @@ public class AbstractElement extends ISOMetadata implements Element {
     /**
      * Returns the reference to the procedure information, or {@code null} if none.
      *
-     * @return Reference to the procedure information, or {@code null}.
+     * @return reference to the procedure information, or {@code null}.
      */
     @Override
     @XmlElement(name = "evaluationProcedure")
@@ -499,7 +504,7 @@ public class AbstractElement extends ISOMetadata implements Element {
     /**
      * Sets the reference to the procedure information.
      *
-     * @param newValue The new evaluation procedure.
+     * @param  newValue  the new evaluation procedure.
      */
     public void setEvaluationProcedure(final Citation newValue) {
         checkWritePermission();
@@ -511,10 +516,11 @@ public class AbstractElement extends ISOMetadata implements Element {
      * The collection size is 1 for a single date, or 2 for a range.
      * Returns an empty collection if this information is not available.
      *
-     * @return Date or range of dates on which a data quality measure was applied.
+     * @return date or range of dates on which a data quality measure was applied.
      */
     @Override
     @XmlElement(name = "dateTime")
+    @SuppressWarnings("ReturnOfCollectionOrArrayField")
     public Collection<Date> getDates() {
         if (Semaphores.query(Semaphores.NULL_COLLECTION)) {
             return isNullOrEmpty(dates) ? null : dates;
@@ -529,11 +535,11 @@ public class AbstractElement extends ISOMetadata implements Element {
      * Sets the date or range of dates on which a data quality measure was applied.
      * The collection size is 1 for a single date, or 2 for a range.
      *
-     * @param newValues The new dates, or {@code null}.
+     * @param  newValues  the new dates, or {@code null}.
      */
     public void setDates(final Collection<? extends Date> newValues) {
         checkWritePermission();
-        if (newValues != dates) { // Mandatory check for avoiding the call to 'dates.clear()'.
+        if (newValues != dates) {               // Mandatory check for avoiding the call to 'dates.clear()'.
             writeDates(newValues);
         }
     }
@@ -558,7 +564,7 @@ public class AbstractElement extends ISOMetadata implements Element {
      * the out come of evaluating the obtained value (or set of values) against a specified
      * acceptable conformance quality level.
      *
-     * @return Set of values obtained from applying a data quality measure.
+     * @return set of values obtained from applying a data quality measure.
      */
     @Override
     @XmlElement(name = "result", required = true)
@@ -571,7 +577,7 @@ public class AbstractElement extends ISOMetadata implements Element {
      * the out come of evaluating the obtained value (or set of values) against a specified
      * acceptable conformance quality level.
      *
-     * @param newValues The new results.
+     * @param  newValues  the new results.
      */
     public void setResults(final Collection<? extends Result> newValues) {
         results = writeCollection(newValues, results, Result.class);

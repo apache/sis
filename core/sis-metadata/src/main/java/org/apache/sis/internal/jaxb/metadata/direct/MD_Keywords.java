@@ -25,16 +25,16 @@ import org.apache.sis.metadata.iso.identification.DefaultKeywords;
  * package documentation for more information about JAXB and interface.
  *
  * @author  Guilhem Legal (Geomatys)
- * @since   0.3
  * @version 0.3
+ * @since   0.3
  * @module
  */
 public final class MD_Keywords extends MetadataAdapter<Keywords, DefaultKeywords> {
     /**
      * Converts a GeoAPI interface to the SIS implementation for XML marshalling.
      *
-     * @param  value The bound type value, here the GeoAPI interface.
-     * @return The adapter for the given value, here the SIS implementation.
+     * @param  value  the bound type value, here the GeoAPI interface.
+     * @return the adapter for the given value, here the SIS implementation.
      */
     @Override
     public DefaultKeywords marshal(final Keywords value) {

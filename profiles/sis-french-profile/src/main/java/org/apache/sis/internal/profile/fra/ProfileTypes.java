@@ -25,8 +25,8 @@ import org.apache.sis.internal.jaxb.TypeRegistration;
  * This class is declared in the {@code META-INF/services/org.apache.sis.internal.jaxb.TypeRegistration} file.
  *
  * @author  Martin Desruisseaux (Geomatys)
+ * @version 0.8
  * @since   0.4
- * @version 0.4
  * @module
  */
 public final class ProfileTypes extends TypeRegistration {
@@ -34,7 +34,7 @@ public final class ProfileTypes extends TypeRegistration {
      * Adds to the given collection the metadata types that should be given to the initial JAXB context.
      */
     @Override
-    public void getTypes(final Collection<Class<?>> addTo) {
+    protected void getTypes(final Collection<Class<?>> addTo) {
         addTo.add(DataIdentification.class);
         addTo.add(DirectReferenceSystem.class);
         addTo.add(IndirectReferenceSystem.class);

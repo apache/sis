@@ -26,11 +26,24 @@ import org.opengis.util.GenericName;
  * only for testing the content of {@link Builder#properties} map.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.4
  * @version 0.6
+ * @since   0.4
  * @module
  */
 final strictfp class BuilderMock extends Builder<BuilderMock> {
+    /**
+     * Creates a new builder.
+     */
+    BuilderMock() {
+    }
+
+    /**
+     * Creates a new builder initialized to the given object.
+     */
+    BuilderMock(final IdentifiedObject object) {
+        super(object);
+    }
+
     /**
      * Convenience accessor for the property value assigned to {@link IdentifiedObject#NAME_KEY}.
      */
@@ -55,7 +68,7 @@ final strictfp class BuilderMock extends Builder<BuilderMock> {
     /**
      * Convenience accessor for aliases or identifiers as strings.
      *
-     * @param kind 0 for identifiers, or 1 for names.
+     * @param  kind  0 for identifiers, or 1 for names.
      */
     String[] getAsStrings(final int kind) {
         final Object[] values = (kind == 0) ? getIdentifiers() : getAliases();

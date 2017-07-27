@@ -36,17 +36,19 @@ import static org.apache.sis.internal.jaxb.XmlUtilities.getDatatypeFactory;
  * The milliseconds are omitted if not different than zero.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.4
  * @version 0.4
- * @module
  *
  * @see DateAdapter
+ * @see org.apache.sis.internal.jaxb.gco.GO_DateTime
+ *
+ * @since 0.4
+ * @module
  */
 public final class UniversalTimeAdapter extends XmlAdapter<XMLGregorianCalendar, Date> {
     /**
      * The timezone of the date to marshal with this adapter.
      */
-    private static final TimeZone UTC = TimeZone.getTimeZone("UTC");
+    private static final TimeZone UTC = TimeZone.getTimeZone(org.apache.sis.internal.util.StandardDateFormat.UTC);
 
     /**
      * Empty constructor for JAXB only.
@@ -58,8 +60,8 @@ public final class UniversalTimeAdapter extends XmlAdapter<XMLGregorianCalendar,
      * Converts a date read from a XML stream to the object which will contains
      * the value. JAXB calls automatically this method at unmarshalling time.
      *
-     * @param  value The XML date, or {@code null}.
-     * @return The {@code java.util} date, or {@code null}.
+     * @param  value  the XML date, or {@code null}.
+     * @return the {@code java.util} date, or {@code null}.
      */
     @Override
     public Date unmarshal(final XMLGregorianCalendar value) {
@@ -70,8 +72,8 @@ public final class UniversalTimeAdapter extends XmlAdapter<XMLGregorianCalendar,
      * Converts the date to the object to be marshalled in a XML file or stream.
      * JAXB calls automatically this method at marshalling time.
      *
-     * @param  value The {@code java.util} date value, or {@code null}.
-     * @return The XML date, or {@code null}.
+     * @param  value  the {@code java.util} date value, or {@code null}.
+     * @return the XML date, or {@code null}.
      */
     @Override
     public XMLGregorianCalendar marshal(final Date value) {

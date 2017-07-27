@@ -20,6 +20,7 @@ import java.util.Map;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Objects;
 import java.lang.reflect.Proxy;
 import java.lang.reflect.Method;
 import java.lang.reflect.InvocationHandler;
@@ -31,10 +32,7 @@ import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.LenientComparable;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.internal.jaxb.IdentifierMapAdapter;
-import org.apache.sis.internal.jaxb.IdentifierMapWithSpecialCases;
-
-// Branch-dependent imports
-import org.apache.sis.internal.jdk7.Objects;
+import org.apache.sis.internal.jaxb.ModifiableIdentifierMap;
 
 
 /**
@@ -48,8 +46,8 @@ import org.apache.sis.internal.jdk7.Objects;
  * For now, it doesn't seem worth to cache the handlers.</div>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.3
+ * @since   0.3
  * @module
  */
 final class NilObjectHandler implements InvocationHandler {
@@ -67,13 +65,13 @@ final class NilObjectHandler implements InvocationHandler {
      * or modify identifiers.
      */
     NilObjectHandler(final Identifier[] identifiers) {
-        final List<Identifier> asList = new ArrayList<Identifier>(identifiers.length);
+        final List<Identifier> asList = new ArrayList<>(identifiers.length);
         for (final Identifier identifier : identifiers) {
             if (identifier != null) {
                 asList.add(identifier);
             }
         }
-        attribute = new IdentifierMapWithSpecialCases(asList);
+        attribute = new ModifiableIdentifierMap(asList);
     }
 
     /**
@@ -102,7 +100,7 @@ final class NilObjectHandler implements InvocationHandler {
                 return type;
             }
         }
-        throw new AssertionError(proxy); // Should not happen.
+        throw new AssertionError(proxy);                                // Should not happen.
     }
 
     /**
@@ -119,29 +117,28 @@ final class NilObjectHandler implements InvocationHandler {
      *           type is returned.</li></ul></li>
      *   <li>If the invoked method is a setter method, throw a {@link UnsupportedOperationException}
      *       since the proxy instance is assumed unmodifiable.</li>
-     *   <li>If the invoked method is one of the {@link Object} method, delegate to the
-     *       {@link #reference}.</li>
+     *   <li>If the invoked method is one of the {@link Object} method, delegate to the {@link #attribute}.</li>
      * </ul>
      */
     @Override
     public Object invoke(final Object proxy, final Method method, final Object[] args) throws Throwable {
         final String name = method.getName();
         if (args == null) {
-            /*switch (name)*/ {
-                if ("getNilReason".equals(name)) {
+            switch (name) {
+                case "getNilReason": {
                     return (attribute instanceof NilReason) ? (NilReason) attribute : null;
                 }
-                if ("getIdentifierMap".equals(name)) {
+                case "getIdentifierMap": {
                     return (attribute instanceof IdentifierMap) ? (IdentifierMap) attribute : null;
                 }
-                if ("getIdentifiers".equals(name)) {
+                case "getIdentifiers": {
                     return (attribute instanceof IdentifierMapAdapter) ?
                             ((IdentifierMapAdapter) attribute).identifiers : null;
                 }
-                if ("toString".equals(name)) {
+                case "toString": {
                     return getInterface(proxy).getSimpleName() + '[' + attribute + ']';
                 }
-                if ("hashCode".equals(name)) {
+                case "hashCode": {
                     return ~attribute.hashCode();
                 }
             }
@@ -179,14 +176,14 @@ final class NilObjectHandler implements InvocationHandler {
         if (other == proxy) return true;
         if (other == null) return false;
         if (proxy.getClass() == other.getClass()) {
-            if (mode.ordinal() >= ComparisonMode.IGNORE_METADATA.ordinal()) {
+            if (mode.isIgnoringMetadata()) {
                 return true;
             }
             final NilObjectHandler h = (NilObjectHandler) Proxy.getInvocationHandler(other);
             return attribute.equals(h.attribute);
         }
         switch (mode) {
-            case STRICT: return false; // The above test is the only relevant one for this mode.
+            case STRICT: return false;              // The above test is the only relevant one for this mode.
             case BY_CONTRACT: {
                 Object tx = attribute, ox = null;
                 if (tx instanceof IdentifierMapAdapter) {
@@ -223,10 +220,10 @@ final class NilObjectHandler implements InvocationHandler {
                 }
                 if (value != null) {
                     if ((value instanceof Collection<?>) && ((Collection<?>) value).isEmpty()) {
-                        continue; // Empty collection, which is consistent with this proxy behavior.
+                        continue;           // Empty collection, which is consistent with this proxy behavior.
                     }
                     if ((value instanceof Map<?,?>) && ((Map<?,?>) value).isEmpty()) {
-                        continue; // Empty collection, which is consistent with this proxy behavior.
+                        continue;           // Empty collection, which is consistent with this proxy behavior.
                     }
                     return false;
                 }

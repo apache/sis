@@ -39,8 +39,8 @@ import static org.junit.Assert.*;
  * Unless otherwise specified, all tests use the {@link MetadataStandard#ISO_19115} constant.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.5
+ * @since   0.3
  * @module
  */
 @DependsOn({PropertyAccessorTest.class, PropertyInformationTest.class})
@@ -68,7 +68,7 @@ public final strictfp class InformationMapTest extends TestCase {
         final Map<String,ExtendedElementInformation> descriptions = MetadataStandard.ISO_19115.asInformationMap(
                 EnvironmentalRecord.class, KeyNamePolicy.UML_IDENTIFIER);
 
-        final Set<String> expected = new HashSet<String>(Arrays.asList(
+        final Set<String> expected = new HashSet<>(Arrays.asList(
             "averageAirTemperature", "maxAltitude", "maxRelativeHumidity", "meteorologicalConditions"
         ));
         assertEquals(expected, descriptions.keySet());

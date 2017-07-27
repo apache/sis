@@ -29,8 +29,8 @@ import org.apache.sis.geometry.UnmodifiableGeometryException;
  * This class shall be used for temporary objects only (it is not serializable for this reason).
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.5
  * @version 0.5
+ * @since   0.5
  * @module
  */
 public final class DirectPositionView implements DirectPosition {
@@ -54,9 +54,9 @@ public final class DirectPositionView implements DirectPosition {
     /**
      * Creates a new direct position wrapping the given array.
      *
-     * @param ordinates The ordinate values.
-     * @param offset    The first value index in the ordinates array.
-     * @param dimension The number of valid ordinate values.
+     * @param  ordinates  the ordinate values.
+     * @param  offset     the first value index in the ordinates array.
+     * @param  dimension  the number of valid ordinate values.
      */
     public DirectPositionView(final double[] ordinates, final int offset, final int dimension) {
         this.ordinates = ordinates;
@@ -92,7 +92,7 @@ public final class DirectPositionView implements DirectPosition {
      * Returns the ordinate at the given index.
      * <strong>This implementation does not check index validity</strong>, unless assertions are enabled.
      *
-     * @param dim The dimension of the ordinate to get fetch.
+     * @param  dim  the dimension of the ordinate to get fetch.
      */
     @Override
     public double getOrdinate(final int dim) {

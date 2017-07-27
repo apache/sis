@@ -16,7 +16,7 @@
  */
 package org.apache.sis.metadata.iso.content;
 
-import javax.measure.unit.Unit;
+import javax.measure.Unit;
 import javax.measure.quantity.Length;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -30,7 +30,7 @@ import org.opengis.metadata.content.TransferFunctionType;
 import org.apache.sis.xml.Namespaces;
 import org.apache.sis.measure.ValueRange;
 
-import static org.apache.sis.internal.metadata.MetadataUtilities.warnNonPositiveArgument;
+import static org.apache.sis.internal.metadata.MetadataUtilities.ensurePositive;
 
 // Branch-specific imports
 import static org.opengis.annotation.Obligation.OPTIONAL;
@@ -39,6 +39,11 @@ import static org.opengis.annotation.Specification.ISO_19115;
 
 /**
  * Range of wavelengths in the electromagnetic spectrum.
+ * The following property is conditional (i.e. mandatory under some circumstances)
+ * in a well-formed metadata according ISO 19115:
+ *
+ * <div class="preformat">{@code MD_Band}
+ * {@code   └─units……} Units of data in each dimension included in the resource.</div>
  *
  * <p><b>Limitations:</b></p>
  * <ul>
@@ -53,10 +58,11 @@ import static org.opengis.annotation.Specification.ISO_19115;
  * @author  Touraïvane (IRD)
  * @author  Cédric Briançon (Geomatys)
  * @author  Rémi Maréchal (Geomatys)
- * @since   0.3
  * @version 0.5
+ * @since   0.3
  * @module
  */
+@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "MD_Band_Type", propOrder = {
     "peakResponse",
     "bitsPerValue",
@@ -135,7 +141,7 @@ public class DefaultBand extends DefaultSampleDimension implements Band {
      * metadata instances can also be obtained by unmarshalling an invalid XML document.
      * </div>
      *
-     * @param object The metadata to copy values from, or {@code null} if none.
+     * @param  object  the metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(Band)
      */
@@ -170,8 +176,8 @@ public class DefaultBand extends DefaultSampleDimension implements Band {
      *       metadata contained in the given object are not recursively copied.</li>
      * </ul>
      *
-     * @param  object The object to get as a SIS implementation, or {@code null} if none.
-     * @return A SIS implementation containing the values of the given object (may be the
+     * @param  object  the object to get as a SIS implementation, or {@code null} if none.
+     * @return a SIS implementation containing the values of the given object (may be the
      *         given object itself), or {@code null} if the argument was null.
      */
     public static DefaultBand castOrCopy(final Band object) {
@@ -200,22 +206,23 @@ public class DefaultBand extends DefaultSampleDimension implements Band {
     /**
      * Sets the shortest wavelength that the sensor is capable of collecting within a designated band.
      *
-     * @param newValue The new shortest wavelength, or {@code null}.
+     * @param  newValue  the new shortest wavelength, or {@code null}.
      * @throws IllegalArgumentException if the given value is negative.
      *
      * @since 0.5
      */
     public void setBoundMin(final Double newValue) {
         checkWritePermission();
-        ensurePositive("boundMin", false, newValue);
-        boundMin = newValue;
+        if (ensurePositive(DefaultBand.class, "boundMin", false, newValue)) {
+            boundMin = newValue;
+        }
     }
 
     /**
      * Returns the longest wavelength that the sensor is capable of collecting within a designated band.
      * The units of measurement is given by {@link #getUnits()}.
      *
-     * @return Longest wavelength that the sensor is capable of collecting within a designated band,
+     * @return longest wavelength that the sensor is capable of collecting within a designated band,
      *         or {@code null} if unspecified.
      *
      * @since 0.5
@@ -230,23 +237,26 @@ public class DefaultBand extends DefaultSampleDimension implements Band {
     /**
      * Sets the longest wavelength that the sensor is capable of collecting within a designated band.
      *
-     * @param newValue The new longest wavelength, or {@code null}.
+     * @param  newValue  the new longest wavelength, or {@code null}.
      * @throws IllegalArgumentException if the given value is negative.
      *
      * @since 0.5
      */
     public void setBoundMax(final Double newValue) {
         checkWritePermission();
-        ensurePositive("boundMax", false, newValue);
-        boundMax = newValue;
+        if (ensurePositive(DefaultBand.class, "boundMax", false, newValue)) {
+            boundMax = newValue;
+        }
     }
 
     /**
      * Returns units in which sensor wavelengths are expressed.
      *
-     * @return Units in which sensor wavelengths are expressed.
+     * @return units in which sensor wavelengths are expressed.
      *
      * @since 0.5
+     *
+     * @see org.apache.sis.measure.Units#NANOMETRE
      */
 /// @XmlElement(name = "boundUnits")
     @UML(identifier="boundUnits", obligation=OPTIONAL, specification=ISO_19115)
@@ -269,7 +279,7 @@ public class DefaultBand extends DefaultSampleDimension implements Band {
     /**
      * Returns the designation of criterion for defining maximum and minimum wavelengths for a spectral band.
      *
-     * @return Criterion for defining maximum and minimum wavelengths, or {@code null}.
+     * @return criterion for defining maximum and minimum wavelengths, or {@code null}.
      */
     @Override
     @XmlElement(name = "bandBoundaryDefinition", namespace = Namespaces.GMI)
@@ -280,7 +290,7 @@ public class DefaultBand extends DefaultSampleDimension implements Band {
     /**
      * Sets designation of criterion for defining maximum and minimum wavelengths for a spectral band.
      *
-     * @param newValue The new band definition.
+     * @param  newValue  the new band definition.
      */
     public void setBandBoundaryDefinition(final BandDefinition newValue) {
         checkWritePermission();
@@ -322,9 +332,9 @@ public class DefaultBand extends DefaultSampleDimension implements Band {
 
     /**
      * Returns the wavelength at which the response is the highest.
-     * The units of measurement is given by {@link #getUnits()}.
+     * The units of measurement is given by {@link #getBoundUnits()}.
      *
-     * @return Wavelength at which the response is the highest, or {@code null} if unspecified.
+     * @return wavelength at which the response is the highest, or {@code null} if unspecified.
      */
     @Override
     @ValueRange(minimum = 0)
@@ -336,13 +346,14 @@ public class DefaultBand extends DefaultSampleDimension implements Band {
     /**
      * Sets the wavelength at which the response is the highest.
      *
-     * @param newValue The new peak response, or {@code null}.
+     * @param  newValue  the new peak response, or {@code null}.
      * @throws IllegalArgumentException if the given value is negative.
      */
     public void setPeakResponse(final Double newValue) {
         checkWritePermission();
-        ensurePositive("peakResponse", false, newValue);
-        peakResponse = newValue;
+        if (ensurePositive(DefaultBand.class, "peakResponse", false, newValue)) {
+            peakResponse = newValue;
+        }
     }
 
     /**
@@ -366,7 +377,7 @@ public class DefaultBand extends DefaultSampleDimension implements Band {
     /**
      * Returns the number of discrete numerical values in the grid data.
      *
-     * @return Number of discrete numerical values in the grid data, or {@code null} if none.
+     * @return number of discrete numerical values in the grid data, or {@code null} if none.
      */
     @Override
     @ValueRange(minimum = 0)
@@ -378,14 +389,13 @@ public class DefaultBand extends DefaultSampleDimension implements Band {
     /**
      * Sets the number of discrete numerical values in the grid data.
      *
-     * @param newValue The new tone gradation.
+     * @param  newValue  the new tone gradation.
      */
     public void setToneGradation(final Integer newValue) {
         checkWritePermission();
-        if (newValue != null && newValue < 0) {
-            warnNonPositiveArgument(DefaultBand.class, "toneGradation", false, newValue);
+        if (ensurePositive(DefaultBand.class, "toneGradation", false, newValue)) {
+            toneGradation = newValue;
         }
-        toneGradation = newValue;
     }
 
     /**
@@ -460,7 +470,7 @@ public class DefaultBand extends DefaultSampleDimension implements Band {
     /**
      * Returns the polarization of the radiation transmitted.
      *
-     * @return Polarization of the radiation transmitted, or {@code null}.
+     * @return polarization of the radiation transmitted, or {@code null}.
      */
     @Override
     @XmlElement(name = "transmittedPolarization", namespace = Namespaces.GMI)
@@ -471,7 +481,7 @@ public class DefaultBand extends DefaultSampleDimension implements Band {
     /**
      * Sets the polarization of the radiation transmitted.
      *
-     * @param newValue The new transmitted polarization.
+     * @param  newValue  the new transmitted polarization.
      */
     public void setTransmittedPolarization(final PolarizationOrientation newValue) {
         checkWritePermission();
@@ -481,7 +491,7 @@ public class DefaultBand extends DefaultSampleDimension implements Band {
     /**
      * Returns polarization of the radiation detected.
      *
-     * @return Polarization of the radiation detected, or {@code null}.
+     * @return polarization of the radiation detected, or {@code null}.
      */
     @Override
     @XmlElement(name = "detectedPolarization", namespace = Namespaces.GMI)
@@ -492,7 +502,7 @@ public class DefaultBand extends DefaultSampleDimension implements Band {
     /**
      * Sets the polarization of the radiation detected.
      *
-     * @param newValue The new detected polarization.
+     * @param  newValue  the new detected polarization.
      */
     public void setDetectedPolarization(final PolarizationOrientation newValue) {
         checkWritePermission();

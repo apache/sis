@@ -23,10 +23,17 @@ import java.io.FileWriter;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Files;
+import java.nio.file.FileSystemException;
 import java.util.Set;
 import java.util.LinkedHashSet;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
+import org.apache.maven.plugins.annotations.Mojo;
+import org.apache.maven.plugins.annotations.Parameter;
+import org.apache.maven.plugins.annotations.LifecyclePhase;
+import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.artifact.Artifact;
 
@@ -40,32 +47,32 @@ import static org.apache.sis.internal.maven.Filenames.*;
  * creates a "{@code target/binaries/content.txt}" file listing the dependencies.
  *
  * @author  Martin Desruisseaux (Geomatys)
+ * @version 0.7
  * @since   0.3
- * @version 0.3
  * @module
- *
- * @goal collect-jars
- * @phase package
- * @requiresDependencyResolution runtime
  */
+@Mojo(name = "collect-jars",
+      defaultPhase = LifecyclePhase.PACKAGE,
+      requiresDependencyResolution = ResolutionScope.RUNTIME)
 public final class JarCollector extends AbstractMojo implements FileFilter {
     /**
      * The Maven project running this plugin.
-     *
-     * @parameter property="project"
-     * @required
-     * @readonly
      */
+    @Parameter(property="project", required=true, readonly=true)
     private MavenProject project;
 
     /**
      * The root directory (without the "<code>target/binaries</code>" sub-directory) where JARs
      * are to be copied. It should be the directory of the root <code>pom.xml</code>.
-     *
-     * @parameter property="session.executionRootDirectory"
-     * @required
      */
+    @Parameter(property="session.executionRootDirectory", required=true)
     private String rootDirectory;
+
+    /**
+     * Invoked by reflection for creating the MOJO.
+     */
+    public JarCollector() {
+    }
 
     /**
      * Copies the {@code *.jar} files to the collect directory.
@@ -195,9 +202,9 @@ public final class JarCollector extends AbstractMojo implements FileFilter {
      * Returns the name of the given file. If the given file is a snapshot, then the
      * {@code "SNAPSHOT"} will be replaced by the timestamp if possible.
      *
-     * @param  file     The file from which to get the filename.
-     * @param  artifact The artifact that produced the given file.
-     * @return The filename to use.
+     * @param  file      the file from which to get the filename.
+     * @param  artifact  the artifact that produced the given file.
+     * @return the filename to use.
      */
     private static String getFinalName(final File file, final Artifact artifact) {
         String filename = file.getName();
@@ -219,10 +226,23 @@ public final class JarCollector extends AbstractMojo implements FileFilter {
      * On JDK6 or on platform that do not support links, this method rather
      * updates the <code>content.txt</code> file.
      *
-     * @param file The source file to read.
-     * @param copy The destination file to create.
+     * @param  file  the source file to read.
+     * @param  copy  the destination file to create.
      */
     private static void linkFileToDirectory(final File file, final File copy) throws IOException {
+        final Path source = file.toPath();
+        final Path target = copy.toPath();
+        try {
+            Files.createLink(target, source);
+            return;
+        } catch (UnsupportedOperationException | FileSystemException e) {
+            /*
+             * If hard links are not supported, edit the "content.txt" file instead.
+             * Note that a hard link may be unsupported because the source and target
+             * are on different Windows drives or mount points, in which case we get
+             * a FileSystemException instead than UnsupportedOperationException.
+             */
+        }
         /*
          * If we can not use hard links, creates or updates a "target/content.txt" file instead.
          * This file will contains the list of all dependencies, without duplicated values.
@@ -231,14 +251,11 @@ public final class JarCollector extends AbstractMojo implements FileFilter {
         final Set<String> dependencies = loadDependencyList(dependenciesFile);
         if (dependencies.add(file.getPath())) {
             // Save the dependencies list only if it has been modified.
-            final BufferedWriter out = new BufferedWriter(new FileWriter(dependenciesFile));
-            try {
+            try (BufferedWriter out = new BufferedWriter(new FileWriter(dependenciesFile))) {
                 for (final String dependency : dependencies) {
                     out.write(dependency);
                     out.newLine();
                 }
-            } finally {
-                out.close();
             }
         }
     }
@@ -249,10 +266,9 @@ public final class JarCollector extends AbstractMojo implements FileFilter {
      * platforms that do not support hard links.
      */
     static Set<String> loadDependencyList(final File dependenciesFile) throws IOException {
-        final Set<String> dependencies = new LinkedHashSet<String>();
+        final Set<String> dependencies = new LinkedHashSet<>();
         if (dependenciesFile.exists()) {
-            final BufferedReader in = new BufferedReader(new FileReader(dependenciesFile));
-            try {
+            try (BufferedReader in = new BufferedReader(new FileReader(dependenciesFile))) {
                 String line;
                 while ((line = in.readLine()) != null) {
                     line = line.trim();
@@ -260,8 +276,6 @@ public final class JarCollector extends AbstractMojo implements FileFilter {
                         dependencies.add(line);
                     }
                 }
-            } finally {
-                in.close();
             }
         }
         return dependencies;

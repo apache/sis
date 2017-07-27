@@ -18,13 +18,13 @@ package org.apache.sis.referencing.cs;
 
 import java.util.Map;
 import java.util.List;
+import javax.xml.bind.annotation.XmlTransient;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
+import org.apache.sis.internal.metadata.AxisDirections;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
-import org.apache.sis.internal.util.Utilities;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.Workaround;
-import org.apache.sis.util.iso.Types;
 
 import static java.util.Collections.singletonMap;
 import static org.apache.sis.util.ArgumentChecks.*;
@@ -51,10 +51,11 @@ import static org.apache.sis.util.Utilities.deepEquals;
  * constants.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
+ * @version 0.6
  * @since   0.4
- * @version 0.4
  * @module
  */
+@XmlTransient
 public class DefaultCompoundCS extends AbstractCS {
     /**
      * Serial number for inter-operability with different versions.
@@ -101,8 +102,8 @@ public class DefaultCompoundCS extends AbstractCS {
      *   </tr>
      * </table>
      *
-     * @param properties The properties to be given to the identified object.
-     * @param components The set of coordinate system.
+     * @param  properties  the properties to be given to the identified object.
+     * @param  components  the set of coordinate system.
      */
     public DefaultCompoundCS(final Map<String,?> properties, CoordinateSystem... components) {
         super(properties, getAxes(components = clone(components)));
@@ -113,7 +114,7 @@ public class DefaultCompoundCS extends AbstractCS {
      * Constructs a compound coordinate system from a sequence of coordinate systems.
      * A default name for this CS will be inferred from the names of all specified CS.
      *
-     * @param components The set of coordinate system.
+     * @param  components  the set of coordinate system.
      */
     public DefaultCompoundCS(CoordinateSystem... components) {
         this(components = clone(components), getAxes(components));
@@ -123,39 +124,12 @@ public class DefaultCompoundCS extends AbstractCS {
      * This is a work around for RFE #4093999 in Sun's bug database
      * ("Relax constraint on placement of this()/super() call in constructors").
      *
-     * @param components The coordinate systems.
+     * @param  components  the coordinate systems.
      */
     @Workaround(library="JDK", version="1.7")
     private DefaultCompoundCS(final CoordinateSystem[] components, final CoordinateSystemAxis[] axes) {
-        super(singletonMap(NAME_KEY, createName(new StringBuilder(60).append("Compound CS"), axes)), axes);
+        super(singletonMap(NAME_KEY, AxisDirections.appendTo(new StringBuilder(60).append("Compound CS"), axes)), axes);
         this.components = UnmodifiableArrayList.wrap(components);
-    }
-
-    /**
-     * Returns a name for a coordinate system.
-     * Examples:
-     *
-     * <ul>
-     *   <li>Ellipsoidal CS: North (°), East (°).</li>
-     *   <li>Cartesian CS: East (km), North (km).</li>
-     *   <li>Compound CS: East (km), North (km), Up (m).</li>
-     * </ul>
-     *
-     * @param  buffer A buffer filled with the name header.
-     * @param  axes The axes.
-     * @return A name for the given coordinate system type and axes.
-     */
-    static String createName(final StringBuilder buffer, final CoordinateSystemAxis[] axes) {
-        String separator = ": ";
-        for (final CoordinateSystemAxis axis : axes) {
-            buffer.append(separator).append(Types.getCodeLabel(axis.getDirection()));
-            separator = ", ";
-            final String symbol = Utilities.toString(axis.getUnit());
-            if (symbol != null && !symbol.isEmpty()) {
-                buffer.append(" (").append(symbol).append(')');
-            }
-        }
-        return buffer.append('.').toString();
     }
 
     /**
@@ -165,7 +139,7 @@ public class DefaultCompoundCS extends AbstractCS {
         ensureNonNull("components", components);
         components = components.clone();
         for (int i=0; i<components.length; i++) {
-            ensureNonNullElement("components", i, components);
+            ensureNonNullElement("components", i, components[i]);
         }
         return components;
     }
@@ -173,6 +147,7 @@ public class DefaultCompoundCS extends AbstractCS {
     /**
      * Returns all axes in the given sequence of components.
      */
+    @SuppressWarnings("ForLoopReplaceableByForEach")
     private static CoordinateSystemAxis[] getAxes(final CoordinateSystem[] components) {
         int count = 0;
         for (int i=0; i<components.length; i++) {
@@ -193,14 +168,15 @@ public class DefaultCompoundCS extends AbstractCS {
     /**
      * Returns all coordinate systems in this compound CS.
      *
-     * @return All coordinate systems in this compound CS.
+     * @return all coordinate systems in this compound CS.
      */
+    @SuppressWarnings("ReturnOfCollectionOrArrayField")
     public List<CoordinateSystem> getComponents() {
-        return components;
+        return components;  // Unmodifiable.
     }
 
     /*
-     * Do not override createSameType(…) and forConvention(…) because we can not create a new DefaultCompoundCS
+     * Do not override createForAxes(…) and forConvention(…) because we can not create a new DefaultCompoundCS
      * without knownledge of the CoordinateSystem components to give to it. It would be possible to recursively
      * invoke components[i].forConvention(…), but it would be useless to perform such decomposition here because
      * DefaultCompoundCRS will need to perform its own decomposition anyway.
@@ -212,10 +188,10 @@ public class DefaultCompoundCS extends AbstractCS {
     /**
      * Compares this coordinate system with the specified object for equality.
      *
-     * @param  object The object to compare to {@code this}.
-     * @param  mode {@link ComparisonMode#STRICT STRICT} for performing a strict comparison, or
-     *         {@link ComparisonMode#IGNORE_METADATA IGNORE_METADATA} for comparing only properties
-     *         relevant to coordinate transformations.
+     * @param  object  the object to compare to {@code this}.
+     * @param  mode    {@link ComparisonMode#STRICT STRICT} for performing a strict comparison, or
+     *                 {@link ComparisonMode#IGNORE_METADATA IGNORE_METADATA} for comparing only
+     *                 properties relevant to coordinate transformations.
      * @return {@code true} if both objects are equal.
      */
     @Override

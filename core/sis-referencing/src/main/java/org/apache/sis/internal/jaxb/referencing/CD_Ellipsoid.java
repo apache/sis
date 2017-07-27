@@ -28,8 +28,8 @@ import org.apache.sis.referencing.datum.DefaultEllipsoid;
  *
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
+ * @version 0.7
  * @since   0.4
- * @version 0.4
  * @module
  */
 public final class CD_Ellipsoid extends PropertyType<CD_Ellipsoid, Ellipsoid> {
@@ -62,8 +62,8 @@ public final class CD_Ellipsoid extends PropertyType<CD_Ellipsoid, Ellipsoid> {
      * Invoked by {@link PropertyType} at marshalling time for wrapping the given value
      * in a {@code <gml:Ellipsoid>} XML element.
      *
-     * @param  ellipsoid The element to marshall.
-     * @return A {@code PropertyType} wrapping the given the element.
+     * @param  ellipsoid  the element to marshall.
+     * @return a {@code PropertyType} wrapping the given the element.
      */
     @Override
     protected CD_Ellipsoid wrap(final Ellipsoid ellipsoid) {
@@ -75,7 +75,7 @@ public final class CD_Ellipsoid extends PropertyType<CD_Ellipsoid, Ellipsoid> {
      * inside the {@code <gml:Ellipsoid>} XML element.
      * This is the value or a copy of the value given in argument to the {@code wrap} method.
      *
-     * @return The element to be marshalled.
+     * @return the element to be marshalled.
      */
     @XmlElement(name = "Ellipsoid")
     public DefaultEllipsoid getElement() {
@@ -85,9 +85,11 @@ public final class CD_Ellipsoid extends PropertyType<CD_Ellipsoid, Ellipsoid> {
     /**
      * Invoked by JAXB at unmarshalling time for storing the result temporarily.
      *
-     * @param ellipsoid The unmarshalled element.
+     * @param  ellipsoid  the unmarshalled element.
      */
     public void setElement(final DefaultEllipsoid ellipsoid) {
         metadata = ellipsoid;
+        if (!(ellipsoid.getSemiMajorAxis() > 0)) incomplete("semiMajorAxis");   // Use '!' for catching NaN.
+        if (!(ellipsoid.getSemiMinorAxis() > 0)) incomplete("semiMinorAxis");
     }
 }

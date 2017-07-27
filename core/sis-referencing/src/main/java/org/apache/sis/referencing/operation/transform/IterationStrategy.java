@@ -77,8 +77,8 @@ package org.apache.sis.referencing.operation.transform;
  * }
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.5
  * @version 0.5
+ * @since   0.5
  * @module
  */
 public enum IterationStrategy {
@@ -139,12 +139,12 @@ public enum IterationStrategy {
      *       (<var>x</var>,<var>y</var>,<var>z</var>) tuple.</li>
      * </ul>
      *
-     * @param  srcOff The offset in the source coordinate array.
-     * @param  srcDim The dimension of input points.
-     * @param  dstOff The offset in the destination coordinate array.
-     * @param  dstDim The dimension of output points.
-     * @param  numPts The number of points to transform.
-     * @return A strategy for iterating over the points during the transformation process.
+     * @param  srcOff  the offset in the source coordinate array.
+     * @param  srcDim  the dimension of input points.
+     * @param  dstOff  the offset in the destination coordinate array.
+     * @param  dstDim  the dimension of output points.
+     * @param  numPts  the number of points to transform.
+     * @return a strategy for iterating over the points during the transformation process.
      */
     public static IterationStrategy suggest(final int srcOff, final int srcDim,
                                             final int dstOff, final int dstDim, final int numPts)
@@ -176,7 +176,7 @@ public enum IterationStrategy {
              *
              * Rearanging gives: (srcOff - dstOff) >= (1-numPts)*(srcDim - dstDim)
              */
-            d = srcDim - dstDim; // Must be computed in the same way than below.
+            d = srcDim - dstDim;                    // Must be computed in the same way than below.
             if (d >= 0 || delta >= (1-numPts)*d) {
                 return ASCENDING;
             }

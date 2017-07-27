@@ -49,8 +49,8 @@ import org.apache.sis.util.resources.Errors;
  * from multiple threads.
  *
  * @author  Martin Desruisseaux (Geomatys)
+ * @version 0.8
  * @since   0.3
- * @version 0.3
  * @module
  */
 public class ConverterRegistry {
@@ -84,7 +84,7 @@ public class ConverterRegistry {
      * Creates an initially empty set of object converters.
      */
     public ConverterRegistry() {
-        converters = new LinkedHashMap<ClassPair<?,?>, ObjectConverter<?,?>>();
+        converters = new LinkedHashMap<>();
     }
 
     /**
@@ -132,7 +132,7 @@ public class ConverterRegistry {
      */
     @SuppressWarnings("unchecked")
     private <S,T> void put(ClassPair<S,T> key, final ObjectConverter<? super S, ? extends T> converter) {
-        assert key.getClass() == ClassPair.class; // See SystemConverter.equals(Object)
+        assert key.getClass() == ClassPair.class;                   // See SystemConverter.equals(Object)
         assert key.cast(converter) != null : converter;
         assert Thread.holdsLock(converters);
         if (converter instanceof SystemConverter<?,?> &&
@@ -155,11 +155,11 @@ public class ConverterRegistry {
      * If {@code existing} or one of its children is equals to the given {@code converter},
      * returns it. Otherwise returns {@code null}.
      *
-     * @param  <S> The {@code converter} source class.
-     * @param  <T> The {@code converter} target class.
-     * @param  converter The converter to replace by an existing converter, if possible.
-     * @param  existing Existing converter to test.
-     * @return A converter equals to {@code converter}, or {@code null} if none.
+     * @param  <S>        the {@code converter} source class.
+     * @param  <T>        the {@code converter} target class.
+     * @param  converter  the converter to replace by an existing converter, if possible.
+     * @param  existing   existing converter to test.
+     * @return a converter equals to {@code converter}, or {@code null} if none.
      */
     @SuppressWarnings("unchecked")
     private static <S,T> ObjectConverter<S,T> findEquals(ObjectConverter<S,T> converter,
@@ -182,10 +182,10 @@ public class ConverterRegistry {
     /**
      * Returns a converter equals to the given {@code converter}, or {@code null} if none.
      *
-     * @param  <S> The {@code converter} source class.
-     * @param  <T> The {@code converter} target class.
-     * @param  converter The converter to replace by an existing converter, if possible.
-     * @return A converter equals to {@code converter}, or {@code null} if none.
+     * @param  <S>        the {@code converter} source class.
+     * @param  <T>        the {@code converter} target class.
+     * @param  converter  the converter to replace by an existing converter, if possible.
+     * @return a converter equals to {@code converter}, or {@code null} if none.
      */
     @SuppressWarnings("unchecked")
     final <S,T> ObjectConverter<S,T> findEquals(final SystemConverter<S,T> converter) {
@@ -239,11 +239,10 @@ public class ConverterRegistry {
      * {@link #find(Class, Class)} is invoked, because we can not know the set of all
      * sub-classes in advance (and would not necessarily want to register all of them anyway).
      *
-     * @param <S> The class of source value.
-     * @param <T> The class of target (converted) values.
-     * @param converter The converter to register.
+     * @param  <S>        the class of source value.
+     * @param  <T>        the class of target (converted) values.
+     * @param  converter  the converter to register.
      */
-    @SuppressWarnings({"unchecked","rawtypes"})
     public <S,T> void register(final ObjectConverter<S,T> converter) {
         ArgumentChecks.ensureNonNull("converter", converter);
         /*
@@ -270,11 +269,11 @@ public class ConverterRegistry {
              * for the place where to put the given converter in the hierarchy of converters.
              */
             if (!isInitialized) {
-                isInitialized = true; // Before 'initialize()' for preventing infinite recursivity.
+                isInitialized = true;           // Before 'initialize()' for preventing infinite recursivity.
                 initialize();
             }
             for (Class<? super T> i=targetClass; i!=null && i!=stopAt; i=i.getSuperclass()) {
-                register(new ClassPair(sourceClass, i), converter); // Checked in the JDK7 branch.
+                register(new ClassPair<>(sourceClass, i), converter);
             }
             /*
              * At this point, the given class and parent classes have been registered.
@@ -318,7 +317,7 @@ public class ConverterRegistry {
                     continue;
                 }
                 if (!i.isAssignableFrom(sourceClass)) {
-                    register(new ClassPair(sourceClass, i), converter); // Checked in the JDK7 branch.
+                    register(new ClassPair<>(sourceClass, i), converter);
                 }
             }
         }
@@ -335,8 +334,8 @@ public class ConverterRegistry {
      *       chain of fallbacks.</li>
      * </ul>
      *
-     * @param key The key under which to register the converter.
-     * @param converter The converter to register.
+     * @param  key        the key under which to register the converter.
+     * @param  converter  the converter to register.
      */
     @SuppressWarnings("unchecked")
     private <S,T> void register(final ClassPair<S,T> key, ObjectConverter<S, ? extends T> converter) {
@@ -355,7 +354,7 @@ public class ConverterRegistry {
              * its source is more specific:  the source of 'converter' is of type <S> while the
              * source of 'existing' is of type <? super S>.
              */
-            assert converter.getSourceClass() == key.sourceClass; // Enforced by parameterized type.
+            assert converter.getSourceClass() == key.sourceClass;       // Enforced by parameterized type.
             if (existing.getSourceClass() == key.sourceClass) {
                 final boolean oldIsExact = isExactlyFor(existing,  key.targetClass);
                 final boolean newIsExact = isExactlyFor(converter, key.targetClass);
@@ -375,7 +374,7 @@ public class ConverterRegistry {
                      * checked the source class in the above 'if' statement.
                      */
                     converter = FallbackConverter.merge((ObjectConverter<S, ? extends T>) existing, converter);
-                    assert key.targetClass.isAssignableFrom(converter.getTargetClass()) : converter; // See FallbackConverter.merge javadoc.
+                    assert key.targetClass.isAssignableFrom(converter.getTargetClass()) : converter;    // See FallbackConverter.merge javadoc.
                 }
             }
         }
@@ -404,11 +403,11 @@ public class ConverterRegistry {
      * ensures that the converter source and target classes are the same ones
      * than the classes given in argument to this method.
      *
-     * @param  <S> The source class.
-     * @param  <T> The target class.
-     * @param  sourceClass The source class.
-     * @param  targetClass The target class, or {@code Object.class} for any.
-     * @return The converter from the specified source class to the target class.
+     * @param  <S>          the source class.
+     * @param  <T>          the target class.
+     * @param  sourceClass  the source class.
+     * @param  targetClass  the target class, or {@code Object.class} for any.
+     * @return the converter from the specified source class to the target class.
      * @throws UnconvertibleObjectException if no converter is found for the given classes.
      */
     @SuppressWarnings("unchecked")
@@ -429,17 +428,17 @@ public class ConverterRegistry {
      * This method may return a converter accepting more generic sources or
      * converting to more specific targets.
      *
-     * @param  <S> The source class.
-     * @param  <T> The target class.
-     * @param  sourceClass The source class.
-     * @param  targetClass The target class, or {@code Object.class} for any.
-     * @return The converter from the specified source class to the target class.
+     * @param  <S>          the source class.
+     * @param  <T>          the target class.
+     * @param  sourceClass  the source class.
+     * @param  targetClass  the target class, or {@code Object.class} for any.
+     * @return the converter from the specified source class to the target class.
      * @throws UnconvertibleObjectException if no converter is found for the given classes.
      */
     public <S,T> ObjectConverter<? super S, ? extends T> find(final Class<S> sourceClass, final Class<T> targetClass)
             throws UnconvertibleObjectException
     {
-        final ClassPair<S,T> key = new ClassPair<S,T>(sourceClass, targetClass);
+        final ClassPair<S,T> key = new ClassPair<>(sourceClass, targetClass);
         synchronized (converters) {
             ObjectConverter<? super S, ? extends T> converter = get(key);
             if (converter != null) {
@@ -451,7 +450,7 @@ public class ConverterRegistry {
              * found on the classpath and try again.
              */
             if (!isInitialized) {
-                isInitialized = true; // Before 'initialize()' for preventing infinite recursivity.
+                isInitialized = true;       // Before 'initialize()' for preventing infinite recursivity.
                 initialize();
                 converter = get(key);
                 if (converter != null) {
@@ -474,8 +473,37 @@ public class ConverterRegistry {
                 }
             }
             /*
+             * If the source type is a class (not an interface), verify if a converter has been
+             * explicitely registered for that interface. We do not perform this check if the given
+             * sourceClass is already an interface because this case was handled by previous block.
+             * If we find more than one converter for different interface, select the most specific.
+             */
+            if (!sourceClass.isInterface()) {
+                for (final Class<? super S> source : Classes.getAllInterfaces(sourceClass)) {
+                    final ObjectConverter<? super S, ? extends T> c = get(new ClassPair<>(source, targetClass));
+                    if (c != null) {
+                        if (converter != null) {
+                            final Class<? super S> previous = converter.getSourceClass();
+                            if (source.isAssignableFrom(previous)) {
+                                continue;               // Previous type was more specific – keep it.
+                            } else if (!previous.isAssignableFrom(source)) {
+                                converter = null;
+                                break;                  // No relationship between the two types – abort.
+                            }
+                            // This type is more specific – take it instead than the previous type.
+                        }
+                        converter = c;
+                    }
+                }
+                if (converter != null) {
+                    put(key, converter);
+                    return converter;
+                }
+            }
+            /*
              * No converter found. Gives a chance to subclasses to provide dynamically-generated
-             * converter.
+             * converter. The SystemRegistry subclass provides special cases, including from any
+             * object to String.
              */
             converter = createConverter(sourceClass, targetClass);
             if (converter != null) {
@@ -490,7 +518,7 @@ public class ConverterRegistry {
             if (sourceComponent != null) {
                 final Class<?> targetComponent = targetClass.getComponentType();
                 if (targetComponent != null) {
-                    converter = new ArrayConverter<S,T>(sourceClass, targetClass, find(
+                    converter = new ArrayConverter<>(sourceClass, targetClass, find(
                             Numbers.primitiveToWrapper(sourceComponent),
                             Numbers.primitiveToWrapper(targetComponent)));
                     put(key, converter);
@@ -510,11 +538,11 @@ public class ConverterRegistry {
      * would fit, and returns {@code null} in all other cases.
      * Subclasses can override this method in order to generate some converters dynamically.</p>
      *
-     * @param  <S> The source class.
-     * @param  <T> The target class.
-     * @param  sourceClass The source class.
-     * @param  targetClass The target class, or {@code Object.class} for any.
-     * @return A newly generated converter from the specified source class to the target class,
+     * @param  <S>          the source class.
+     * @param  <T>          the target class.
+     * @param  sourceClass  the source class.
+     * @param  targetClass  the target class, or {@code Object.class} for any.
+     * @return a newly generated converter from the specified source class to the target class,
      *         or {@code null} if none.
      */
     @SuppressWarnings({"unchecked", "rawtypes"})
@@ -531,7 +559,7 @@ public class ConverterRegistry {
      * of those leafs are {@link FallbackConverter}s which delegate their work to the
      * leafs.
      *
-     * @return A string representation of registered converters.
+     * @return a string representation of registered converters.
      */
     @Debug
     @Override

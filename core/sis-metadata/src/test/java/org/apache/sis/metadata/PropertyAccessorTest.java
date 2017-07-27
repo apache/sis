@@ -82,17 +82,18 @@ import static org.apache.sis.metadata.PropertyAccessor.RETURN_PREVIOUS;
  * to be updated.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.5
+ * @since   0.3
  * @module
  */
+@SuppressWarnings("OverlyStrongTypeCast")
 @DependsOn(PropertyInformationTest.class)
 public final strictfp class PropertyAccessorTest extends TestCase {
     /**
      * Creates a new property accessor for the {@link DefaultCitation} class.
      */
     private static PropertyAccessor createPropertyAccessor() {
-        return new PropertyAccessor(HardCodedCitations.ISO_19115, Citation.class, DefaultCitation.class);
+        return new PropertyAccessor(HardCodedCitations.ISO_19115, Citation.class, DefaultCitation.class, DefaultCitation.class);
     }
 
     /**
@@ -111,8 +112,8 @@ public final strictfp class PropertyAccessorTest extends TestCase {
      *
      * The tuples shall be ordered according the {@link PropertyComparator}.
      *
-     * @param accessor The accessor to test.
-     * @param expected The expected names and types as described above.
+     * @param  accessor  the accessor to test.
+     * @param  expected  the expected names and types as described above.
      *
      * @see PropertyAccessor#mapping
      */
@@ -200,7 +201,7 @@ public final strictfp class PropertyAccessorTest extends TestCase {
     @Test
     @DependsOnMethod("testConstructor")
     public void testConstructorWithInheritance() {
-        assertMappingEquals(new PropertyAccessor(HardCodedCitations.ISO_19115, DataIdentification.class, DefaultDataIdentification.class),
+        assertMappingEquals(new PropertyAccessor(HardCodedCitations.ISO_19115, DataIdentification.class, DefaultDataIdentification.class, DefaultDataIdentification.class),
         //……Declaring type………………………Method………………………………………………………………………JavaBeans………………………………………………………UML identifier………………………………………Sentence……………………………………………………………Type………………………………………………………………
             Identification.class, "getCitation",                   "citation",                   "citation",                  "Citation",                     Citation.class,
             Identification.class, "getAbstract",                   "abstract",                   "abstract",                  "Abstract",                     InternationalString.class,
@@ -228,9 +229,8 @@ public final strictfp class PropertyAccessorTest extends TestCase {
     }
 
     /**
-     * Tests the constructor with a method which override an other method with covariant
-     * return type. This test may need to be updated if a future GeoAPI release modifies
-     * the {@link GeographicCRS} interface.
+     * Tests the constructor with a method which override an other method with covariant return type.
+     * This test may need to be updated if a future GeoAPI release modifies the {@link GeographicCRS} interface.
      *
      * @see <a href="http://jira.geotoolkit.org/browse/GEOTK-205">GEOTK-205</a>
      */
@@ -238,7 +238,7 @@ public final strictfp class PropertyAccessorTest extends TestCase {
     @DependsOnMethod("testConstructorWithInheritance")
     public void testConstructorWithCovariantReturnType() {
         final Class<?> type = GeographicCRS.class;
-        assertMappingEquals(new PropertyAccessor(HardCodedCitations.ISO, type, type),
+        assertMappingEquals(new PropertyAccessor(HardCodedCitations.ISO_19111, type, type, type),
         //……Declaring type……………………………Method……………………………………………JavaBeans……………………………UML identifier………………Sentence…………………………………Type…………………………………………………………
             GeographicCRS.class,    "getCoordinateSystem", "coordinateSystem", "coordinateSystem", "Coordinate system",  EllipsoidalCS.class,       // Covariant return type
             GeodeticCRS.class,      "getDatum",            "datum",            "datum",            "Datum",              GeodeticDatum.class,       // Covariant return type
@@ -263,38 +263,38 @@ public final strictfp class PropertyAccessorTest extends TestCase {
     }
 
     /**
-     * Tests the {@link PropertyAccessor#get(int, Object)} method on the {@link HardCodedCitations#ISO}
-     * constant. The metadata object read by this test is:
+     * Tests the {@link PropertyAccessor#get(int, Object)} method on the {@link HardCodedCitations#ISO_19111} constant.
+     * The metadata object read by this test is:
      *
      * {@preformat text
      *   DefaultCitation
      *     ├─Title…………………………………… International Organization for Standardization
-     *     ├─Alternate title………… ISO
+     *     ├─Alternate title………… ISO 19111
      *     ├─Identifier
-     *     │   └─Code…………………………… ISO
+     *     │   ├─Code…………………………… 19111
+     *     │   └─Code space…………… ISO
      *     └─Presentation form…… Document digital
      * }
      */
     @Test
     @DependsOnMethod("testConstructor")
     public void testGet() {
-        final DefaultCitation  instance = HardCodedCitations.ISO;
+        final DefaultCitation  instance = HardCodedCitations.ISO_19111;
         final PropertyAccessor accessor = createPropertyAccessor();
 
         // Singleton value (not a collection)
         final Object title = accessor.get(accessor.indexOf("title", true), instance);
         assertInstanceOf("title", InternationalString.class, title);
-        assertEquals("title", "International Organization for Standardization", title.toString());
+        assertEquals("title", "Spatial referencing by coordinates", title.toString());
 
         // Collection of InternationalStrings
         final Object alternateTitles = accessor.get(accessor.indexOf("alternateTitles", true), instance);
         assertInstanceOf("alternateTitles", Collection.class, alternateTitles);
-        assertEquals("alternateTitles", "ISO", getSingleton((Collection<?>) alternateTitles).toString());
+        assertEquals("alternateTitles", "ISO 19111", getSingleton((Collection<?>) alternateTitles).toString());
 
         // Collection of Identifiers
         final Object identifiers = accessor.get(accessor.indexOf("identifiers", true), instance);
-        assertInstanceOf("identifiers", Collection.class, identifiers);
-        assertContainsIdentifierCode("ISO", (Collection<?>) identifiers);
+        assertEquals("19111", getSingletonCode(identifiers));
     }
 
     /**
@@ -368,7 +368,7 @@ public final strictfp class PropertyAccessorTest extends TestCase {
     @DependsOnMethod("testSet")
     public void testSetDeprecated() {
         final PropertyAccessor accessor = new PropertyAccessor(HardCodedCitations.ISO_19115,
-                CoverageDescription.class, DefaultCoverageDescription.class);
+                CoverageDescription.class, DefaultCoverageDescription.class, DefaultCoverageDescription.class);
         final int indexOfDeprecated  = accessor.indexOf("contentType", true);
         final int indexOfReplacement = accessor.indexOf("attributeGroup", true);
         assertTrue("Deprecated elements shall be sorted after non-deprecated ones.",
@@ -456,7 +456,7 @@ public final strictfp class PropertyAccessorTest extends TestCase {
         assertEquals("set(…, RETURN_PREVIOUS)", oldTitles, oldValue);
         assertEquals("get(…)",                  newTitles, newValue);
         assertSame  ("alternateTitles",         newValue, instance.getAlternateTitles());
-        assertEquals("title",                   "Ignored title", instance.getTitle().toString());
+        assertTitleEquals("title", "Ignored title", instance);
     }
 
     /**
@@ -525,7 +525,7 @@ public final strictfp class PropertyAccessorTest extends TestCase {
         // Check final collection content.
         final List<InternationalString> expected = Arrays.asList(title1, title2);
         assertEquals("alternateTitles", expected, accessor.get(index, instance));
-        assertEquals("title", "Ignored title", instance.getTitle().toString());
+        assertTitleEquals("title", "Ignored title", instance);
     }
 
     /**
@@ -553,7 +553,7 @@ public final strictfp class PropertyAccessorTest extends TestCase {
         final List<InternationalString> newTitles = Arrays.<InternationalString>asList(
                 new SimpleInternationalString("New title 1"),
                 new SimpleInternationalString("New title 2"));
-        final List<InternationalString> merged = new ArrayList<InternationalString>(oldTitles);
+        final List<InternationalString> merged = new ArrayList<>(oldTitles);
         assertTrue(merged.addAll(newTitles));
 
         // Set the title.
@@ -572,17 +572,17 @@ public final strictfp class PropertyAccessorTest extends TestCase {
         assertEquals("set(…, APPEND)",  Boolean.TRUE, changed);
         assertEquals("get(…)",          merged, newValue);
         assertSame  ("alternateTitles", newValue, instance.getAlternateTitles());
-        assertEquals("title", "Added title", instance.getTitle().toString());
+        assertTitleEquals("title", "Added title", instance);
 
         // Test setting again the title to the same value.
         titleChanged = accessor.set(titleIndex, instance, "Added title", APPEND);
         assertEquals("set(…, APPEND)", Boolean.FALSE, titleChanged);
-        assertEquals("title", "Added title", instance.getTitle().toString());
+        assertTitleEquals("title", "Added title", instance);
 
         // Test setting the title to a different value.
         titleChanged = accessor.set(titleIndex, instance, "Different title", APPEND);
         assertNull("set(…, APPEND)", titleChanged); // Operation shall be refused.
-        assertEquals("title", "Added title", instance.getTitle().toString());
+        assertTitleEquals("title", "Added title", instance);
     }
 
     /**
@@ -592,13 +592,13 @@ public final strictfp class PropertyAccessorTest extends TestCase {
     public void testEquals() {
         DefaultCitation citation = HardCodedCitations.EPSG;
         final PropertyAccessor accessor = createPropertyAccessor();
-        assertFalse(accessor.equals(citation, HardCodedCitations.GEOTIFF, ComparisonMode.STRICT));
-        assertTrue (accessor.equals(citation, HardCodedCitations.EPSG,    ComparisonMode.STRICT));
+        assertFalse(accessor.equals(citation, HardCodedCitations.SIS,  ComparisonMode.STRICT));
+        assertTrue (accessor.equals(citation, HardCodedCitations.EPSG, ComparisonMode.STRICT));
 
         // Same test than above, but on a copy of the EPSG constant.
         citation = new DefaultCitation(HardCodedCitations.EPSG);
-        assertFalse(accessor.equals(citation, HardCodedCitations.GEOTIFF, ComparisonMode.STRICT));
-        assertTrue (accessor.equals(citation, HardCodedCitations.EPSG,    ComparisonMode.STRICT));
+        assertFalse(accessor.equals(citation, HardCodedCitations.SIS,  ComparisonMode.STRICT));
+        assertTrue (accessor.equals(citation, HardCodedCitations.EPSG, ComparisonMode.STRICT));
 
         // Identifiers shall be stored in different collection instances with equal content.
         final int    index  = accessor.indexOf("identifiers", true);
@@ -608,7 +608,7 @@ public final strictfp class PropertyAccessorTest extends TestCase {
         assertInstanceOf("identifiers", Collection.class, target);
         assertNotSame("Distinct objects shall have distinct collections.", source, target);
         assertEquals ("The two collections shall have the same content.",  source, target);
-        assertContainsIdentifierCode("EPSG", (Collection<?>) target);
+        assertEquals ("EPSG", getSingletonCode(target));
 
         // Set the identifiers to null, which should clear the collection.
         assertEquals("Expected the previous value.", source, accessor.set(index, citation, null, RETURN_PREVIOUS));
@@ -647,5 +647,19 @@ public final strictfp class PropertyAccessorTest extends TestCase {
     public void testToString() {
         final PropertyAccessor accessor = createPropertyAccessor();
         assertEquals("PropertyAccessor[14 getters (+1 ext.) & 15 setters in DefaultCitation:Citation from “ISO 19115”]", accessor.toString());
+    }
+
+    /**
+     * Returns the code of the singleton identifier found in the given collection.
+     * This method verifies that the object is of the expected type.
+     *
+     * @param  identifiers  a singleton {@code Collection<Identifier>}.
+     * @return {@link Identifier#getCode()}.
+     */
+    static String getSingletonCode(final Object identifiers) {
+        assertInstanceOf("identifiers", Collection.class, identifiers);
+        final Object identifier = getSingleton((Collection<?>) identifiers);
+        assertInstanceOf("identifier", Identifier.class, identifier);
+        return ((Identifier) identifier).getCode();
     }
 }

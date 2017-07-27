@@ -28,7 +28,7 @@
   <parent>
     <groupId>org.apache.sis</groupId>
     <artifactId>parent</artifactId>
-    <version>0.6-android-SNAPSHOT</version>
+    <version>0.8-SNAPSHOT</version>
   </parent>
 
 
@@ -115,6 +115,8 @@
        =========================================================== -->
   <modules>
     <module>sis-console</module>
+    <module>sis-webapp</module>
+<!--<module>sis-openoffice</module>     Omitted for now because of the numerous warnings emitted by Pack200. -->
   </modules>
 
 </project>

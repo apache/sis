@@ -21,11 +21,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.Locale;
-
-import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
-
-// Branch-dependent imports
-import org.apache.sis.internal.jdk7.Objects;
+import org.apache.sis.util.ArgumentChecks;
 
 
 /**
@@ -44,8 +40,8 @@ import org.apache.sis.internal.jdk7.Objects;
  * encouraged to make sure that subclasses remain immutable for more predictable behavior.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.3
  * @version 0.3
+ * @since   0.3
  * @module
  */
 public class SimpleInternationalString extends AbstractInternationalString implements Serializable {
@@ -59,10 +55,10 @@ public class SimpleInternationalString extends AbstractInternationalString imple
      * to wrap is the more generic {@code CharSequence} interface, then use
      * the {@link Types#toInternationalString(CharSequence)} method instead.
      *
-     * @param text The string for all locales.
+     * @param text the string for all locales.
      */
     public SimpleInternationalString(final String text) {
-        ensureNonNull("text", text);
+        ArgumentChecks.ensureNonNull("text", text);
         defaultValue = text;
     }
 
@@ -77,8 +73,8 @@ public class SimpleInternationalString extends AbstractInternationalString imple
     /**
      * Returns the same string for all locales. This is the string given to the constructor.
      *
-     * @param  locale Ignored in the {@code SimpleInternationalString} implementation.
-     * @return The international string as a {@code String}.
+     * @param  locale  ignored in the {@code SimpleInternationalString} implementation.
+     * @return the international string as a {@code String}.
      */
     @Override
     public String toString(final Locale locale) {
@@ -88,14 +84,14 @@ public class SimpleInternationalString extends AbstractInternationalString imple
     /**
      * Compares this international string with the specified object for equality.
      *
-     * @param object The object to compare with this international string.
+     * @param  object  the object to compare with this international string.
      * @return {@code true} if the given object is equal to this string.
      */
     @Override
+    @SuppressWarnings("OverlyStrongTypeCast")
     public boolean equals(final Object object) {
         if (object != null && object.getClass() == getClass()) {
-            final SimpleInternationalString that = (SimpleInternationalString) object;
-            return Objects.equals(this.defaultValue, that.defaultValue);
+            return defaultValue.equals(((SimpleInternationalString) object).defaultValue);
         }
         return false;
     }
@@ -103,7 +99,7 @@ public class SimpleInternationalString extends AbstractInternationalString imple
     /**
      * Returns a hash code value for this international text.
      *
-     * @return The hash code value.
+     * @return the hash code value.
      */
     @Override
     public int hashCode() {
@@ -113,8 +109,8 @@ public class SimpleInternationalString extends AbstractInternationalString imple
     /**
      * Writes the string. This is required since {@link #defaultValue} is not serialized.
      *
-     * @param  out The output stream where to serialize this international string.
-     * @throws IOException If an I/O error occurred while writing.
+     * @param  out  the output stream where to serialize this international string.
+     * @throws IOException if an I/O error occurred while writing.
      */
     private void writeObject(final ObjectOutputStream out) throws IOException {
         out.defaultWriteObject();
@@ -124,9 +120,9 @@ public class SimpleInternationalString extends AbstractInternationalString imple
     /**
      * Reads the string. This is required since {@link #defaultValue} is not serialized.
      *
-     * @param  in The input stream from which to deserialize an international string.
-     * @throws IOException If an I/O error occurred while reading or if the stream contains invalid data.
-     * @throws ClassNotFoundException If the class serialized on the stream is not on the classpath.
+     * @param  in  the input stream from which to deserialize an international string.
+     * @throws IOException if an I/O error occurred while reading or if the stream contains invalid data.
+     * @throws ClassNotFoundException if the class serialized on the stream is not on the classpath.
      */
     private void readObject(final ObjectInputStream in) throws IOException, ClassNotFoundException {
         in.defaultReadObject();

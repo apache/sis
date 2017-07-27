@@ -31,11 +31,24 @@ import org.apache.sis.util.Static;
  * creates itself the instance to be tested.
  *
  * @author  Martin Desruisseaux (Geomatys)
+ * @version 0.8
  * @since   0.5
- * @version 0.6
  * @module
  */
 public final class Constants extends Static {
+    /**
+     * The default indentation value to use in various text formats (both WKT and XML).
+     * We use a small value (2 instead of 4) because OGC's XML are very verbose.
+     *
+     * @see org.apache.sis.setup.OptionKey#INDENTATION
+     */
+    public static final byte DEFAULT_INDENTATION = 2;
+
+    /**
+     * The {@value} code space.
+     */
+    public static final String GEOTIFF = "GeoTIFF";
+
     /**
      * The {@value} code space.
      */
@@ -58,6 +71,12 @@ public final class Constants extends Static {
     public static final String SIS = "SIS";
 
     /**
+     * The {@value} code space. The project name is {@code "Proj.4"}, but this constant omits
+     * the dot because this name is used as a codes pace and we want to avoid risk of confusion.
+     */
+    public static final String PROJ4 = "Proj4";
+
+    /**
      * The {@value} code space.
      */
     public static final String CRS = "CRS";
@@ -78,15 +97,47 @@ public final class Constants extends Static {
     public static final byte CRS84 = 84;
 
     /**
+     * The {@code CRS:88} identifier for a coordinate reference system.
+     */
+    public static final byte CRS88 = 88;
+
+    /**
+     * The {@code CRS:1} identifier for a coordinate reference system.
+     */
+    public static final byte CRS1 = 1;
+
+    /**
+     * The NetCDF parameter name for the Earth radius.
+     */
+    public static final String EARTH_RADIUS = "earth_radius";
+
+    /**
      * Name of the {@value} projection parameter, which is handled specially during WKT formatting.
      */
     public static final String SEMI_MAJOR = "semi_major",
                                SEMI_MINOR = "semi_minor";
 
     /**
+     * The NetCDF parameter name for inverse flattening, and whether that parameter is definitive.
+     * The later is specific to SIS.
+     */
+    public static final String INVERSE_FLATTENING = "inverse_flattening",
+                               IS_IVF_DEFINITIVE  = "is_ivf_definitive";
+
+    /**
      * The OGC parameter name for the central meridian.
      */
     public static final String CENTRAL_MERIDIAN = "central_meridian";
+
+    /**
+     * The OGC parameter name for the latitude of origin.
+     */
+    public static final String LATITUDE_OF_ORIGIN = "latitude_of_origin";
+
+    /**
+     * The NetCDF parameter name for the standard parallels.
+     */
+    public static final String STANDARD_PARALLEL = "standard_parallel";
 
     /**
      * The OGC parameter name for the standard parallels.
@@ -125,6 +176,7 @@ public final class Constants extends Static {
      */
     public static final String FALSE_EASTING  = "false_easting",
                                FALSE_NORTHING = "false_northing";
+
     /**
      * Name of the {@value} matrix parameters.
      */
@@ -142,13 +194,51 @@ public final class Constants extends Static {
      * EPSG code of the {@code A0} coefficient used in affine (general parametric) and polynomial transformations.
      * Codes for parameters {@code A1} to {@code A8} inclusive follow, but the affine coefficients stop at {@code A2}.
      */
-    public static final short A0 = 8623;
+    public static final short EPSG_A0 = 8623;
 
     /**
      * EPSG code of the {@code B0} coefficient used in affine (general parametric) and polynomial transformations.
      * Codes for parameters {@code B1} to {@code B3} inclusive follow, but the affine coefficients stop at {@code B2}.
      */
-    public static final short B0 = 8639;
+    public static final short EPSG_B0 = 8639;
+
+    /**
+     * The EPSG code for metres.
+     */
+    public static final short EPSG_METRE = 9001;
+
+    /**
+     * The EPSG code for degrees when used in parameters.
+     */
+    public static final short EPSG_PARAM_DEGREES = 9102;
+
+    /**
+     * The EPSG code for degrees when used in axes.
+     */
+    public static final short EPSG_AXIS_DEGREES = 9122;
+
+    /**
+     * The EPSG code for the Greenwich prime meridian.
+     */
+    public static final short EPSG_GREENWICH = 8901;
+
+    /**
+     * The EPSG code for the two-dimensional Cartesian coordinate system with axes in metres.
+     * Cartesian 2D CS. Axes: easting, northing (E,N). Orientations: east, north. UoM: m.
+     */
+    public static final short EPSG_PROJECTED_CS = 4400;
+
+    /**
+     * EPSG code of "WGS 84 / Arctic Polar Stereographic" projection.
+     * Latitude of standard parallel is 71°N. All other parameters are zero.
+     */
+    public static final short EPSG_ARCTIC_POLAR_STEREOGRAPHIC = 3995;
+
+    /**
+     * EPSG code of "WGS 84 / Antarctic Polar Stereographic" projection.
+     * Latitude of standard parallel is 71°S. All other parameters are zero.
+     */
+    public static final short EPSG_ANTARCTIC_POLAR_STEREOGRAPHIC = 3031;
 
     /**
      * Do not allow instantiation of this class.

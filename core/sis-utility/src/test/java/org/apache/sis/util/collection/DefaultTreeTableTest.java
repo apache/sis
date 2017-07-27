@@ -33,8 +33,8 @@ import static org.apache.sis.util.collection.TableColumn.*;
  * This will also test indirectly the {@link TreeNodeList} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.3
+ * @since   0.3
  * @module
  */
 @DependsOn(TableColumnTest.class)
@@ -46,8 +46,7 @@ public final strictfp class DefaultTreeTableTest extends TestCase {
      * <p>This method is part of a chain.
      * The next method is {@link #testNodeCreation(DefaultTreeTable)}.</p>
      *
-     * @return The created table, for chaining with methods testing the next step
-     *         after this one.
+     * @return the created table, for chaining with methods testing the next step after this one.
      */
     @TestStep
     public static DefaultTreeTable testTableCreation() {
@@ -67,8 +66,8 @@ public final strictfp class DefaultTreeTableTest extends TestCase {
      * The previous method is {@link #testTableCreation()} and
      * the next method is {@link #testNodeDisplacement(TreeTable.Node)}.</p>
      *
-     * @param  table An initially empty table where to set the root.
-     * @return The root node produced by this method.
+     * @param  table  an initially empty table where to set the root.
+     * @return the root node produced by this method.
      */
     @TestStep
     public static DefaultTreeTable.Node testNodeCreation(final DefaultTreeTable table) {
@@ -111,7 +110,7 @@ public final strictfp class DefaultTreeTableTest extends TestCase {
      * The previous method is {@link #testNodeCreation(DefaultTreeTable)} and
      * the next method is {@link #testSerialization(TreeTable)}.</p>
      *
-     * @param root The root node where to move children.
+     * @param  root  the root node where to move children.
      */
     @TestStep
     public static void testNodeDisplacement(final TreeTable.Node root) {
@@ -142,8 +141,8 @@ public final strictfp class DefaultTreeTableTest extends TestCase {
      * <p>This method is part of a chain.
      * The previous method is {@link #testNodeDisplacement(TreeTable.Node)}.</p>
      *
-     * @param  table The table to clone.
-     * @throws CloneNotSupportedException Should never happen.
+     * @param  table  the table to clone.
+     * @throws CloneNotSupportedException if the table can not be cloned.
      */
     @TestStep
     public static void testClone(final DefaultTreeTable table) throws CloneNotSupportedException {
@@ -161,7 +160,7 @@ public final strictfp class DefaultTreeTableTest extends TestCase {
      * <p>This method is part of a chain.
      * The previous method is {@link #testNodeDisplacement(TreeTable.Node)}.</p>
      *
-     * @param table The table to serialize.
+     * @param  table  the table to serialize.
      */
     @TestStep
     public static void testSerialization(final TreeTable table) {
@@ -188,7 +187,7 @@ public final strictfp class DefaultTreeTableTest extends TestCase {
      *
      * <p>This test is actually a chain of {@link TestStep} methods.</p>
      *
-     * @throws CloneNotSupportedException If the {@link DefaultTreeTable#clone()} method failed.
+     * @throws CloneNotSupportedException if the {@link DefaultTreeTable#clone()} method failed.
      */
     @Test
     public void testTreeTableCreation() throws CloneNotSupportedException {

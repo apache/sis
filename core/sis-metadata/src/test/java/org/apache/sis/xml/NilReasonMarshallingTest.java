@@ -26,24 +26,25 @@ import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.XMLTestCase;
 import org.junit.Test;
 
-import static org.apache.sis.test.Assert.*;
+import static org.apache.sis.test.MetadataAssert.*;
 
 
 /**
  * Tests the XML marshalling of object having {@code nilReason} attribute.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.4
- * @module
  *
  * @see <a href="http://jira.geotoolkit.org/browse/GEOTK-149">GEOTK-149</a>
+ *
+ * @since 0.3
+ * @module
  */
 public final strictfp class NilReasonMarshallingTest extends XMLTestCase {
     /**
      * Tests a simple case for a missing data.
      *
-     * @throws JAXBException Should never happen.
+     * @throws JAXBException if an error occurred during (un)marshalling.
      */
     @Test
     public void testMissing() throws JAXBException {
@@ -57,7 +58,7 @@ public final strictfp class NilReasonMarshallingTest extends XMLTestCase {
                 "</gmd:CI_Citation>";
 
         final Citation citation = (Citation) XML.unmarshal(expected);
-        assertEquals("title", "A title", citation.getTitle().toString());
+        assertTitleEquals("citation", "A title", citation);
 
         final Series series = citation.getSeries();
         assertInstanceOf("Should have instantiated a proxy.", NilObject.class, series);
@@ -80,7 +81,7 @@ public final strictfp class NilReasonMarshallingTest extends XMLTestCase {
      * values are implemented as special cases in {@link NilReason}, because they are final classes on which
      * we have no control.
      *
-     * @throws JAXBException Should never happen.
+     * @throws JAXBException if an error occurred during (un)marshalling.
      */
     @Test
     @DependsOnMethod("testMissing")
@@ -113,10 +114,11 @@ public final strictfp class NilReasonMarshallingTest extends XMLTestCase {
      * values are implemented as special cases in {@link NilReason}, because they are final classes on which
      * we have no control.
      *
-     * @throws JAXBException Should never happen.
+     * @throws JAXBException if an error occurred during (un)marshalling.
      */
     @Test
     @DependsOnMethod("testMissing")
+    @SuppressWarnings("UnnecessaryBoxing")
     public void testMissingInteger() throws JAXBException {
         final String expected =
                 "<gmd:MD_Dimension xmlns:gmd=\"" + Namespaces.GMD + '"' +
@@ -140,7 +142,7 @@ public final strictfp class NilReasonMarshallingTest extends XMLTestCase {
     /**
      * Tests a missing double value.
      *
-     * @throws JAXBException Should never happen.
+     * @throws JAXBException if an error occurred during (un)marshalling.
      */
     @Test
     @DependsOnMethod("testMissing")
@@ -172,7 +174,7 @@ public final strictfp class NilReasonMarshallingTest extends XMLTestCase {
     /**
      * Tests a case where the nil reason is specified by an other reason.
      *
-     * @throws JAXBException Should never happen.
+     * @throws JAXBException if an error occurred during (un)marshalling.
      */
     @Test
     @DependsOnMethod("testMissing")
@@ -187,7 +189,7 @@ public final strictfp class NilReasonMarshallingTest extends XMLTestCase {
                 "</gmd:CI_Citation>";
 
         final Citation citation = (Citation) XML.unmarshal(expected);
-        assertEquals("title", "A title", citation.getTitle().toString());
+        assertTitleEquals("citation", "A title", citation);
 
         final Series series = citation.getSeries();
         assertInstanceOf("Should have instantiated a proxy.", NilObject.class, series);
@@ -207,7 +209,7 @@ public final strictfp class NilReasonMarshallingTest extends XMLTestCase {
     /**
      * Tests a case where the nil reason is specified by a URI.
      *
-     * @throws JAXBException Should never happen.
+     * @throws JAXBException if an error occurred during (un)marshalling.
      */
     @Test
     @DependsOnMethod("testMissing")
@@ -222,7 +224,7 @@ public final strictfp class NilReasonMarshallingTest extends XMLTestCase {
                 "</gmd:CI_Citation>";
 
         final Citation citation = (Citation) XML.unmarshal(expected);
-        assertEquals("title", "A title", citation.getTitle().toString());
+        assertTitleEquals("citation", "A title", citation);
 
         final Series series = citation.getSeries();
         assertInstanceOf("Should have instantiated a proxy.", NilObject.class, series);

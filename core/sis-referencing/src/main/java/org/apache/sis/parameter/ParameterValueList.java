@@ -34,9 +34,8 @@ import org.opengis.metadata.Identifier;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
-
-// Related to JDK7
-import org.apache.sis.internal.jdk7.JDK7;
+import org.apache.sis.referencing.IdentifiedObjects;
+import org.apache.sis.internal.referencing.Resources;
 
 
 /**
@@ -50,8 +49,8 @@ import org.apache.sis.internal.jdk7.JDK7;
  * are not suitable here.</p>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.4
  * @version 0.4
+ * @since   0.4
  * @module
  */
 final class ParameterValueList extends AbstractList<GeneralParameterValue> implements RandomAccess, Serializable {
@@ -82,7 +81,7 @@ final class ParameterValueList extends AbstractList<GeneralParameterValue> imple
     /**
      * Constructs an initially empty parameter list.
      *
-     * @param descriptor The descriptor for this list.
+     * @param  descriptor  the descriptor for this list.
      */
     ParameterValueList(final ParameterDescriptorGroup descriptor) {
         this.descriptor = descriptor;
@@ -180,8 +179,8 @@ final class ParameterValueList extends AbstractList<GeneralParameterValue> imple
      * parameter would increase the number past what is allowable by {@code maximumOccurs},
      * then an {@link InvalidParameterCardinalityException} will be thrown.
      *
-     * @param  parameter New parameter to be added to this group.
-     * @return Always {@code true} since this object changes as a result of this call.
+     * @param  parameter  new parameter to be added to this group.
+     * @return always {@code true} since this object changes as a result of this call.
      * @throws IllegalArgumentException if the specified parameter is not allowable by the groups descriptor.
      * @throws InvalidParameterCardinalityException if adding this parameter would result in more parameters
      *         than allowed by {@code maximumOccurs}.
@@ -241,14 +240,15 @@ final class ParameterValueList extends AbstractList<GeneralParameterValue> imple
              * parameter name was not found, or the parameter descriptor does not matches.
              */
             final Identifier name = desc.getName();
+            final String code = name.getCode();
             for (final GeneralParameterDescriptor descriptor : descriptors) {
-                if (name.equals(descriptor.getName())) {
-                    throw new IllegalArgumentException(Errors.format(
-                            Errors.Keys.MismatchedParameterDescriptor_1, name));
+                if (IdentifiedObjects.isHeuristicMatchForName(descriptor, code)) {
+                    throw new IllegalArgumentException(Resources.format(
+                            Resources.Keys.MismatchedParameterDescriptor_1, name));
                 }
             }
-            throw new InvalidParameterNameException(Errors.format(
-                    Errors.Keys.ParameterNotFound_2, descriptor.getName(), name), name.getCode());
+            throw new InvalidParameterNameException(Resources.format(Resources.Keys.ParameterNotFound_2,
+                    Verifier.getDisplayName(descriptor), name), code);
         }
     }
 
@@ -298,8 +298,8 @@ final class ParameterValueList extends AbstractList<GeneralParameterValue> imple
      * Removes the value at the specified index, provided that this removal is allowed by the
      * parameter cardinality.
      *
-     * @param  index The index of the value to remove.
-     * @return The value removed at the given index.
+     * @param  index  the index of the value to remove.
+     * @return the value removed at the given index.
      */
     @Override
     public GeneralParameterValue remove(final int index) {
@@ -313,6 +313,14 @@ final class ParameterValueList extends AbstractList<GeneralParameterValue> imple
     }
 
     /**
+     * Returns the parameters in an array.
+     */
+    @Override
+    public GeneralParameterValue[] toArray() {
+        return Arrays.copyOf(values, size);
+    }
+
+    /**
      * Returns a string representation of this list.
      */
     @Override
@@ -320,7 +328,7 @@ final class ParameterValueList extends AbstractList<GeneralParameterValue> imple
         if (size == 0) {
             return "[]";
         }
-        final String lineSeparator = JDK7.lineSeparator();
+        final String lineSeparator = System.lineSeparator();
         final StringBuilder buffer = new StringBuilder();
         for (int i=0; i<size; i++) {
             buffer.append(values[i]).append(lineSeparator);
@@ -331,8 +339,8 @@ final class ParameterValueList extends AbstractList<GeneralParameterValue> imple
     /**
      * Trims the array to its capacity before to serialize.
      *
-     * @param  out The output stream where to serialize this object.
-     * @throws IOException If an I/O error occurred while writing.
+     * @param  out  the output stream where to serialize this object.
+     * @throws IOException if an I/O error occurred while writing.
      */
     private void writeObject(final ObjectOutputStream out) throws IOException {
         values = ArraysExt.resize(values, size);

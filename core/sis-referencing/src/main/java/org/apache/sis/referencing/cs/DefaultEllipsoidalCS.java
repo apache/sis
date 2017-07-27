@@ -17,14 +17,14 @@
 package org.apache.sis.referencing.cs;
 
 import java.util.Map;
-import javax.measure.unit.Unit;
+import javax.measure.Unit;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlRootElement;
 import org.opengis.referencing.cs.EllipsoidalCS;
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
-import org.apache.sis.internal.referencing.AxisDirections;
-import org.apache.sis.util.resources.Errors;
+import org.apache.sis.internal.metadata.AxisDirections;
+import org.apache.sis.internal.referencing.Resources;
 import org.apache.sis.measure.Units;
 
 
@@ -48,8 +48,11 @@ import org.apache.sis.measure.Units;
  * constants.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.4
  * @version 0.4
+ *
+ * @see org.apache.sis.referencing.factory.GeodeticAuthorityFactory#createEllipsoidalCS(String)
+ *
+ * @since 0.4
  * @module
  */
 @XmlType(name = "EllipsoidalCSType")
@@ -61,20 +64,13 @@ public class DefaultEllipsoidalCS extends AbstractCS implements EllipsoidalCS {
     private static final long serialVersionUID = -1452492488902329211L;
 
     /**
-     * Constructs a new coordinate system in which every attributes are set to a null or empty value.
-     * <strong>This is not a valid object.</strong> This constructor is strictly reserved to JAXB,
-     * which will assign values to the fields using reflexion.
-     */
-    private DefaultEllipsoidalCS() {
-    }
-
-    /**
      * Creates a new coordinate system from an arbitrary number of axes. This constructor is for
-     * implementations of the {@link #createSameType(Map, CoordinateSystemAxis[])} method only,
+     * implementations of the {@link #createForAxes(Map, CoordinateSystemAxis[])} method only,
      * because it does not verify the number of axes.
      */
     private DefaultEllipsoidalCS(final Map<String,?> properties, final CoordinateSystemAxis[] axes) {
         super(properties, axes);
+        validateAxes(properties);
     }
 
     /**
@@ -112,22 +108,18 @@ public class DefaultEllipsoidalCS extends AbstractCS implements EllipsoidalCS {
      *   </tr>
      * </table>
      *
-     * @param properties The properties to be given to the identified object.
-     * @param axis0 The first axis.
-     * @param axis1 The second axis.
+     * @param  properties  the properties to be given to the identified object.
+     * @param  axis0       the first  axis (e.g. “Geodetic latitude”).
+     * @param  axis1       the second axis (e.g. “Geodetic longitude”).
+     *
+     * @see org.apache.sis.referencing.factory.GeodeticObjectFactory#createEllipsoidalCS(Map, CoordinateSystemAxis, CoordinateSystemAxis)
      */
     public DefaultEllipsoidalCS(final Map<String,?>   properties,
                                 final CoordinateSystemAxis axis0,
                                 final CoordinateSystemAxis axis1)
     {
         super(properties, axis0, axis1);
-        for (int i=0; i<2; i++) {
-            final AxisDirection direction = super.getAxis(i).getDirection();
-            if (AxisDirections.isVertical(direction)) {
-                throw new IllegalArgumentException(Errors.format(
-                        Errors.Keys.IllegalAxisDirection_2, "EllipdoicalCS (2D)", direction));
-            }
-        }
+        validateAxes(properties);
     }
 
     /**
@@ -135,10 +127,12 @@ public class DefaultEllipsoidalCS extends AbstractCS implements EllipsoidalCS {
      * The properties map is given unchanged to the
      * {@linkplain AbstractCS#AbstractCS(Map,CoordinateSystemAxis[]) super-class constructor}.
      *
-     * @param properties The properties to be given to the identified object.
-     * @param axis0 The first axis.
-     * @param axis1 The second axis.
-     * @param axis2 The third axis.
+     * @param  properties  the properties to be given to the identified object.
+     * @param  axis0       the first  axis (e.g. “Geodetic latitude”).
+     * @param  axis1       the second axis (e.g. “Geodetic longitude”).
+     * @param  axis2       the third  axis (e.g. “Ellipsoidal height”).
+     *
+     * @see org.apache.sis.referencing.factory.GeodeticObjectFactory#createEllipsoidalCS(Map, CoordinateSystemAxis, CoordinateSystemAxis, CoordinateSystemAxis)
      */
     public DefaultEllipsoidalCS(final Map<String,?>   properties,
                                 final CoordinateSystemAxis axis0,
@@ -146,6 +140,7 @@ public class DefaultEllipsoidalCS extends AbstractCS implements EllipsoidalCS {
                                 final CoordinateSystemAxis axis2)
     {
         super(properties, axis0, axis1, axis2);
+        validateAxes(properties);
     }
 
     /**
@@ -155,7 +150,7 @@ public class DefaultEllipsoidalCS extends AbstractCS implements EllipsoidalCS {
      *
      * <p>This constructor performs a shallow copy, i.e. the properties are not cloned.</p>
      *
-     * @param cs The coordinate system to copy.
+     * @param  cs  the coordinate system to copy.
      *
      * @see #castOrCopy(EllipsoidalCS)
      */
@@ -169,8 +164,8 @@ public class DefaultEllipsoidalCS extends AbstractCS implements EllipsoidalCS {
      * Otherwise if the given object is already a SIS implementation, then the given object is returned unchanged.
      * Otherwise a new SIS implementation is created and initialized to the attribute values of the given object.
      *
-     * @param  object The object to get as a SIS implementation, or {@code null} if none.
-     * @return A SIS implementation containing the values of the given object (may be the
+     * @param  object  the object to get as a SIS implementation, or {@code null} if none.
+     * @return a SIS implementation containing the values of the given object (may be the
      *         given object itself), or {@code null} if the argument was null.
      */
     public static DefaultEllipsoidalCS castOrCopy(final EllipsoidalCS object) {
@@ -202,6 +197,23 @@ public class DefaultEllipsoidalCS extends AbstractCS implements EllipsoidalCS {
     }
 
     /**
+     * Validates the set of axes after the validation of each individual axis.
+     *
+     * @param  properties  the properties given at construction time.
+     */
+    private void validateAxes(final Map<String,?> properties) {
+        int i = super.getDimension();
+        int n = i - 2; // Number of vertical axes allowed.
+        while (--i >= 0) {
+            final AxisDirection direction = super.getAxis(i).getDirection();
+            if (AxisDirections.isVertical(direction) && --n < 0) {
+                throw new IllegalArgumentException(Resources.forProperties(properties).getString(
+                        Resources.Keys.IllegalAxisDirection_2, EllipsoidalCS.class, direction));
+            }
+        }
+    }
+
+    /**
      * Returns the GeoAPI interface implemented by this class.
      * The SIS implementation returns {@code EllipsoidalCS.class}.
      *
@@ -228,10 +240,37 @@ public class DefaultEllipsoidalCS extends AbstractCS implements EllipsoidalCS {
     }
 
     /**
-     * Returns a coordinate system of the same class than this CS but with different axes.
+     * Returns a coordinate system with different axes.
      */
     @Override
-    final AbstractCS createSameType(final Map<String,?> properties, final CoordinateSystemAxis[] axes) {
-        return new DefaultEllipsoidalCS(properties, axes);
+    final AbstractCS createForAxes(final Map<String,?> properties, final CoordinateSystemAxis[] axes) {
+        switch (axes.length) {
+            case 1: return new DefaultVerticalCS(properties, axes);
+            case 2: // Fall through
+            case 3: return new DefaultEllipsoidalCS(properties, axes);
+            default: throw unexpectedDimension(properties, axes, 1);
+        }
+    }
+
+
+
+
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+    ////////                                                                                  ////////
+    ////////                               XML support with JAXB                              ////////
+    ////////                                                                                  ////////
+    ////////        The following methods are invoked by JAXB using reflection (even if       ////////
+    ////////        they are private) or are helpers for other methods invoked by JAXB.       ////////
+    ////////        Those methods can be safely removed if Geographic Markup Language         ////////
+    ////////        (GML) support is not needed.                                              ////////
+    ////////                                                                                  ////////
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Constructs a new coordinate system in which every attributes are set to a null or empty value.
+     * <strong>This is not a valid object.</strong> This constructor is strictly reserved to JAXB,
+     * which will assign values to the fields using reflexion.
+     */
+    private DefaultEllipsoidalCS() {
     }
 }

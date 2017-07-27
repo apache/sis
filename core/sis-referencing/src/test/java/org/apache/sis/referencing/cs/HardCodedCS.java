@@ -17,7 +17,6 @@
 package org.apache.sis.referencing.cs;
 
 import java.util.Map;
-import javax.measure.unit.SI;
 import org.opengis.referencing.cs.AxisDirection;
 import org.apache.sis.measure.Units;
 
@@ -30,8 +29,8 @@ import static org.apache.sis.referencing.IdentifiedObjects.getProperties;
  * Collection of coordinate systems for testing purpose.
  *
  * @author  Martin Desruisseaux (Geomatys)
+ * @version 0.8
  * @since   0.4
- * @version 0.4
  * @module
  */
 public final strictfp class HardCodedCS {
@@ -75,6 +74,8 @@ public final strictfp class HardCodedCS {
      * <var>{@linkplain HardCodedAxes#LONGITUDE_gon longitude}</var>,
      * <var>{@linkplain HardCodedAxes#LATITUDE_gon latitude}</var>
      * axes (without "Geodetic" prefix) in gradians.
+     *
+     * <p>This coordinate system is used for testing unit conversions without axes swapping.</p>
      */
     public static final DefaultEllipsoidalCS ELLIPSOIDAL_gon = new DefaultEllipsoidalCS(
             singletonMap(NAME_KEY, "Ellipsoidal (gon)"),
@@ -82,19 +83,32 @@ public final strictfp class HardCodedCS {
             HardCodedAxes.LATITUDE_gon);
 
     /**
-     * A three-dimensional spherical CS with
+     * A three-dimensional spherical CS for geodetic use with
      * <var>{@linkplain HardCodedAxes#SPHERICAL_LATITUDE latitude}</var>,
      * <var>{@linkplain HardCodedAxes#SPHERICAL_LONGITUDE longitude}</var>,
-     * <var>{@linkplain HardCodedAxes#GEOCENTRIC_RADIUS radius}</var>
-     * axes.
+     * <var>{@linkplain HardCodedAxes#GEOCENTRIC_RADIUS radius}</var> axes.
      * This axis order is the one of EPSG:6404.
      * Note that this is not a right-handed system.
+     *
+     * @see #SPHERICAL_ENGINEERING
      */
     public static final DefaultSphericalCS SPHERICAL = new DefaultSphericalCS(
             singletonMap(NAME_KEY, "Spherical"),
             HardCodedAxes.SPHERICAL_LATITUDE,
             HardCodedAxes.SPHERICAL_LONGITUDE,
             HardCodedAxes.GEOCENTRIC_RADIUS);
+
+    /**
+     * A three-dimensional spherical CS for geodetic use with
+     * <var>{@linkplain HardCodedAxes#DISTANCE distance}</var>,
+     * <var>{@linkplain HardCodedAxes#BEARING bearing}</var>,
+     * <var>{@linkplain HardCodedAxes#ELEVATION elevation}</var> axes.
+     */
+    public static final DefaultSphericalCS SPHERICAL_ENGINEERING = new DefaultSphericalCS(
+            singletonMap(NAME_KEY, SPHERICAL.getName()),
+            HardCodedAxes.DISTANCE,
+            HardCodedAxes.BEARING,
+            HardCodedAxes.ELEVATION);
 
     /**
      * A three-dimensional Cartesian CS with geocentric
@@ -108,6 +122,34 @@ public final strictfp class HardCodedCS {
             HardCodedAxes.GEOCENTRIC_X,
             HardCodedAxes.GEOCENTRIC_Y,
             HardCodedAxes.GEOCENTRIC_Z);
+
+    /**
+     * A three-dimensional cylindrical CS with
+     * <var>{@linkplain HardCodedAxes#DISTANCE distance}</var>,
+     * <var>{@link HardCodedAxes#BEARING bearing}</var>,
+     * <var>{@linkplain HardCodedAxes#Z z}</var> axes.
+     * Note that this is not a right-handed system.
+     *
+     * @since 0.7
+     */
+    public static final DefaultCylindricalCS CYLINDRICAL = new DefaultCylindricalCS(
+            singletonMap(NAME_KEY, "Cylindrical"),
+            HardCodedAxes.DISTANCE,
+            HardCodedAxes.BEARING,
+            HardCodedAxes.Z);
+
+    /**
+     * A three-dimensional polar CS with
+     * <var>{@linkplain HardCodedAxes#DISTANCE distance}</var>,
+     * <var>{@link HardCodedAxes#BEARING bearing}</var> axes.
+     * Note that this is not a right-handed system.
+     *
+     * @since 0.7
+     */
+    public static final DefaultPolarCS POLAR = new DefaultPolarCS(
+            singletonMap(NAME_KEY, "Polar"),
+            HardCodedAxes.DISTANCE,
+            HardCodedAxes.BEARING);
 
     /**
      * A two-dimensional Cartesian CS with
@@ -168,16 +210,26 @@ public final strictfp class HardCodedCS {
 
     /**
      * A one-dimensional vertical CS with
-     * <var>{@linkplain HardCodedAxes#ELLIPSOIDAL_HEIGHT
-     * ellipsoidal height}</var> axis in metres.
+     * <var>{@linkplain HardCodedAxes#ELLIPSOIDAL_HEIGHT ellipsoidal height}</var>
+     * axis in metres.
      */
     public static final DefaultVerticalCS ELLIPSOIDAL_HEIGHT = new DefaultVerticalCS(
             getProperties(HardCodedAxes.ELLIPSOIDAL_HEIGHT), HardCodedAxes.ELLIPSOIDAL_HEIGHT);
 
     /**
      * A one-dimensional vertical CS with
-     * <var>{@linkplain HardCodedAxes#GRAVITY_RELATED_HEIGHT
-     * gravity-related height}</var> axis in metres.
+     * <var>{@linkplain HardCodedAxes#ELLIPSOIDAL_HEIGHT ellipsoidal height}</var>
+     * axis in centimetres.
+     *
+     * @since 0.7
+     */
+    public static final DefaultVerticalCS ELLIPSOIDAL_HEIGHT_cm = new DefaultVerticalCS(
+            getProperties(HardCodedAxes.ELLIPSOIDAL_HEIGHT_cm), HardCodedAxes.ELLIPSOIDAL_HEIGHT_cm);
+
+    /**
+     * A one-dimensional vertical CS with
+     * <var>{@linkplain HardCodedAxes#GRAVITY_RELATED_HEIGHT gravity-related height}</var>
+     * axis in metres.
      */
     public static final DefaultVerticalCS GRAVITY_RELATED_HEIGHT = new DefaultVerticalCS(
             getProperties(HardCodedAxes.GRAVITY_RELATED_HEIGHT), HardCodedAxes.GRAVITY_RELATED_HEIGHT);
@@ -193,14 +245,14 @@ public final strictfp class HardCodedCS {
     /**
      * A one-dimensional temporal CS with
      * <var>{@linkplain HardCodedAxes#TIME time}</var>,
-     * axis in {@linkplain javax.measure.unit.NonSI#DAY day} units.
+     * axis in {@linkplain Units#DAY day} units.
      */
     public static final DefaultTimeCS DAYS;
 
     /**
      * A one-dimensional temporal CS with
      * <var>{@linkplain HardCodedAxes#TIME time}</var>,
-     * axis in {@linkplain javax.measure.unit.SI#SECOND second} units.
+     * axis in {@linkplain Units#SECOND second} units.
      */
     public static final DefaultTimeCS SECONDS;
 
@@ -213,7 +265,7 @@ public final strictfp class HardCodedCS {
     static {
         final Map<String,?> properties = getProperties(HardCodedAxes.TIME);
         DAYS         = new DefaultTimeCS(properties, HardCodedAxes.TIME);
-        SECONDS      = new DefaultTimeCS(properties, new DefaultCoordinateSystemAxis(properties, "t", AxisDirection.FUTURE, SI.SECOND));
+        SECONDS      = new DefaultTimeCS(properties, new DefaultCoordinateSystemAxis(properties, "t", AxisDirection.FUTURE, Units.SECOND));
         MILLISECONDS = new DefaultTimeCS(properties, new DefaultCoordinateSystemAxis(properties, "t", AxisDirection.FUTURE, Units.MILLISECOND));
     }
 

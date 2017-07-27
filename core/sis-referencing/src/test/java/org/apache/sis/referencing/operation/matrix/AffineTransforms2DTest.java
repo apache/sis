@@ -28,8 +28,8 @@ import static java.lang.StrictMath.*;
  * Tests the {@link AffineTransforms2D} static methods.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.4
  * @version 0.4
+ * @since   0.4
  * @module
  */
 public final strictfp class AffineTransforms2DTest extends TestCase {
@@ -64,7 +64,7 @@ public final strictfp class AffineTransforms2DTest extends TestCase {
     /**
      * Run the test in the flipped or unflipped case.
      *
-     * @param f -1 for the flipped case, or +1 for the unflipped case.
+     * @param  f  -1 for the flipped case, or +1 for the unflipped case.
      */
     private static void runTest(final int f) {
         // Test identity
@@ -113,7 +113,7 @@ public final strictfp class AffineTransforms2DTest extends TestCase {
         assertEquals( r, AffineTransforms2D.getRotation(tr), EPS);
         assertEquals(-1, AffineTransforms2D.getSwapXY  (tr));
         assertEquals( f, AffineTransforms2D.getFlip    (tr));
-        assertEquals( 1, getFlipFromType(tr)); // Always unflipped according Java 1.5.0_09...
+        assertEquals( 1, getFlipFromType(tr));                      // Always unflipped according Java 1.5.0_09
 
         // Tests axis swapping
         r = toRadians(-90 * f);

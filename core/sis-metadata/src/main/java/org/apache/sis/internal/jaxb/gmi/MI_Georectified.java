@@ -29,12 +29,13 @@ import static org.apache.sis.util.collection.Containers.isNullOrEmpty;
  *
  * @author  Guilhem Legal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.3
+ * @since   0.3
  * @module
  */
 @XmlType(name = "MI_Georectified_Type")
 @XmlRootElement(name = "MI_Georectified")
+@SuppressWarnings("CloneableClassWithoutClone")
 public class MI_Georectified extends DefaultGeorectified {
     /**
      * For cross-version compatibility.
@@ -52,7 +53,7 @@ public class MI_Georectified extends DefaultGeorectified {
      * Creates a new metadata as a copy of the given one.
      * This is a shallow copy constructor.
      *
-     * @param original The original metadata to copy.
+     * @param original  the original metadata to copy.
      */
     public MI_Georectified(final Georectified original) {
         super(original);
@@ -62,8 +63,8 @@ public class MI_Georectified extends DefaultGeorectified {
      * Wraps the given metadata into a SIS implementation that can be marshalled,
      * using the {@code "gmi"} namespace if necessary.
      *
-     * @param  original The original metadata provided by the user.
-     * @return The metadata to marshall.
+     * @param  original  the original metadata provided by the user.
+     * @return the metadata to marshall.
      */
     public static DefaultGeorectified castOrCopy(final Georectified original) {
         if (original != null && !(original instanceof MI_Georectified)) {

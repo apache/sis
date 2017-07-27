@@ -30,8 +30,8 @@ import static org.junit.Assert.*;
  * This is used for testing robustness to transformation failures.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.5
  * @version 0.5
+ * @since   0.5
  * @module
  */
 final strictfp class RandomFailureTransform extends PseudoTransform {
@@ -71,13 +71,13 @@ final strictfp class RandomFailureTransform extends PseudoTransform {
         super(4,3);
         this.denominator = denominator;
         random = new Random(891914828L * denominator);
-        failures = new HashSet<Integer>();
+        failures = new HashSet<>();
     }
 
     /**
      * Fills the given array with random number.
      *
-     * @param array The array to fill.
+     * @param  array  the array to fill.
      */
     public void fill(final double[] array) {
         for (int i=0; i<array.length; i++) {
@@ -88,7 +88,7 @@ final strictfp class RandomFailureTransform extends PseudoTransform {
     /**
      * Fills the given array with random number.
      *
-     * @param array The array to fill.
+     * @param  array  the array to fill.
      */
     public void fill(final float[] array) {
         for (int i=0; i<array.length; i++) {
@@ -99,7 +99,7 @@ final strictfp class RandomFailureTransform extends PseudoTransform {
     /**
      * Pseudo-transform a point in the given array, with intentional random failures.
      *
-     * @throws TransformException Throws randomly at the frequency given at construction time.
+     * @throws TransformException thrown randomly at the frequency given at construction time.
      */
     @Override
     public Matrix transform(final double[] srcPts, final int srcOff,

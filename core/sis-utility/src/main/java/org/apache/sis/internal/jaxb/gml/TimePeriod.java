@@ -36,8 +36,8 @@ import org.apache.sis.internal.geoapi.temporal.Period;
  *
  * @author  Guilhem Legal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.3
+ * @since   0.3
  * @module
  */
 @XmlRootElement(name="TimePeriod")
@@ -51,8 +51,8 @@ public final class TimePeriod extends GMLAdapter {
      * The GML2 way is more verbose.
      */
     @XmlElements({
-        @XmlElement(type=TimePeriodBound.GML3.class, name="beginPosition"),
-        @XmlElement(type=TimePeriodBound.GML2.class, name="begin")
+        @XmlElement(type = TimePeriodBound.GML3.class, name = "beginPosition"),
+        @XmlElement(type = TimePeriodBound.GML2.class, name = "begin")
     })
     TimePeriodBound begin;
 
@@ -61,8 +61,8 @@ public final class TimePeriod extends GMLAdapter {
      * The GML2 way is more verbose.
      */
     @XmlElements({
-        @XmlElement(type=TimePeriodBound.GML3.class, name="endPosition"),
-        @XmlElement(type=TimePeriodBound.GML2.class, name="end")
+        @XmlElement(type = TimePeriodBound.GML3.class, name = "endPosition"),
+        @XmlElement(type = TimePeriodBound.GML2.class, name = "end")
     })
     TimePeriodBound end;
 
@@ -75,7 +75,7 @@ public final class TimePeriod extends GMLAdapter {
     /**
      * Creates a new Time Period bounded by the begin and end time specified in the given object.
      *
-     * @param period The period to use for initializing this object.
+     * @param period  the period to use for initializing this object.
      */
     public TimePeriod(final Period period) {
         super(period);
@@ -93,7 +93,7 @@ public final class TimePeriod extends GMLAdapter {
     /**
      * Returns a string representation for debugging and formatting error message.
      *
-     * @return A string representation of this time period.
+     * @return a string representation of this time period.
      */
     @Override
     public String toString() {

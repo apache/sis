@@ -17,7 +17,9 @@
 package org.apache.sis.internal.jaxb.referencing;
 
 import javax.xml.bind.annotation.XmlElement;
+import org.opengis.referencing.crs.SingleCRS;
 import org.opengis.referencing.operation.Conversion;
+import org.apache.sis.internal.jaxb.Context;
 import org.apache.sis.internal.jaxb.gco.PropertyType;
 import org.apache.sis.referencing.operation.DefaultConversion;
 
@@ -27,11 +29,20 @@ import org.apache.sis.referencing.operation.DefaultConversion;
  * package documentation for more information about JAXB and interface.
  *
  * @author  Martin Desruisseaux (Geomatys)
+ * @version 0.7
  * @since   0.6
- * @version 0.6
  * @module
  */
 public final class CC_Conversion extends PropertyType<CC_Conversion, Conversion> {
+    /**
+     * Temporary storage for the {@code baseCRS} during {@code org.apache.sis.referencing.crs.AbstractDerivedCRS}
+     * unmarshalling. A temporary location is needed because {@code AbstractDerivedCRS} does not have any explicit
+     * field for {@code baseCRS}.
+     *
+     * @see #setBaseCRS(Conversion, SingleCRS)
+     */
+    private SingleCRS baseCRS;
+
     /**
      * Empty constructor for JAXB only.
      */
@@ -61,8 +72,8 @@ public final class CC_Conversion extends PropertyType<CC_Conversion, Conversion>
      * Invoked by {@link PropertyType} at marshalling time for wrapping the given value
      * in a {@code <gml:Conversion>} XML element.
      *
-     * @param  conversion The element to marshall.
-     * @return A {@code PropertyType} wrapping the given the element.
+     * @param  conversion  the element to marshall.
+     * @return a {@code PropertyType} wrapping the given the element.
      */
     @Override
     protected CC_Conversion wrap(final Conversion conversion) {
@@ -74,7 +85,7 @@ public final class CC_Conversion extends PropertyType<CC_Conversion, Conversion>
      * inside the {@code <gml:Conversion>} XML element.
      * This is the value or a copy of the value given in argument to the {@code wrap} method.
      *
-     * @return The element to be marshalled.
+     * @return the element to be marshalled.
      */
     @XmlElement(name = "Conversion")
     public DefaultConversion getElement() {
@@ -84,9 +95,43 @@ public final class CC_Conversion extends PropertyType<CC_Conversion, Conversion>
     /**
      * Invoked by JAXB at unmarshalling time for storing the result temporarily.
      *
-     * @param conversion The unmarshalled element.
+     * @param  conversion  the unmarshalled element.
      */
     public void setElement(final DefaultConversion conversion) {
         metadata = conversion;
+        Context.setWrapper(Context.current(), this);
+        if (conversion.getMethod() == null) incomplete("method");
+    }
+
+    /**
+     * Temporarily stores the {@code baseCRS} associated to the given {@code Conversion}.  This temporary storage is
+     * needed because {@code org.apache.sis.referencing.crs.AbstractDerivedCRS} does not have any explicit field for
+     * {@code baseCRS}. Instead the base CRS is stored in {@link Conversion#getSourceCRS()}, but we can set this
+     * property only after the {@code DerivedCRS} coordinate system has been unmarshalled.
+     *
+     * See {@code AbstractDerivedCRS.afterUnmarshal(Unmarshaller, Object parent)} for more information.
+     *
+     * @param  conversion  the conversion to which to associate a base CRS.
+     * @param  crs         the base CRS to associate to the given conversion.
+     * @return the previous base CRS, or {@code null} if none.
+     */
+    public static SingleCRS setBaseCRS(final Conversion conversion, final SingleCRS crs) {
+        /*
+         * Implementation note: we store the base CRS in the marshalling context because:
+         *
+         *   - we want to keep each thread isolated (using ThreadLocal), and
+         *   - we want to make sure that the reference is disposed even if the unmarshaller throws an exception.
+         *     This is guaranteed because the Context is disposed by Apache SIS in "try … finally" constructs.
+         */
+        final PropertyType<?,?> wrapper = Context.getWrapper(Context.current());
+        if (wrapper instanceof CC_Conversion) {
+            final CC_Conversion c = (CC_Conversion) wrapper;
+            if (c.getElement() == conversion) {  // For making sure that we do not confuse with another conversion.
+                final SingleCRS previous = c.baseCRS;
+                c.baseCRS = crs;
+                return previous;
+            }
+        }
+        return null;
     }
 }

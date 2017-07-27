@@ -19,7 +19,8 @@ package org.apache.sis.internal.referencing.provider;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.NoSuchElementException;
-import javax.measure.unit.SI;
+import javax.xml.bind.annotation.XmlTransient;
+import javax.measure.Unit;
 import org.opengis.util.FactoryException;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.Identifier;
@@ -34,21 +35,22 @@ import org.opengis.referencing.ReferenceIdentifier;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.operation.Projection;
+import org.apache.sis.internal.referencing.Resources;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.measure.MeasurementRange;
+import org.apache.sis.measure.Units;
 import org.apache.sis.referencing.NamedIdentifier;
+import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.operation.projection.NormalizedProjection;
+import org.apache.sis.metadata.iso.ImmutableIdentifier;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.parameter.DefaultParameterDescriptor;
 import org.apache.sis.parameter.ParameterBuilder;
 import org.apache.sis.parameter.Parameters;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.util.resources.Messages;
+import org.apache.sis.util.Debug;
 
 import static org.opengis.metadata.Identifier.AUTHORITY_KEY;
-
-// Branch-dependent imports
-import org.apache.sis.internal.jdk7.Objects;
 
 
 /**
@@ -57,10 +59,11 @@ import org.apache.sis.internal.jdk7.Objects;
  * {@linkplain ParameterDescriptorGroup descriptor group} named {@code PARAMETERS}.
  *
  * @author  Martin Desruisseaux (Geomatys)
+ * @version 0.8
  * @since   0.6
- * @version 0.6
  * @module
  */
+@XmlTransient
 public abstract class MapProjection extends AbstractProvider {
     /**
      * Serial number for inter-operability with different versions.
@@ -71,7 +74,7 @@ public abstract class MapProjection extends AbstractProvider {
      * All names known to Apache SIS for the <cite>semi-major</cite> parameter.
      * This parameter is mandatory and has no default value. The range of valid values is (0 … ∞).
      *
-     * <p>Some names for this parameter are {@code "semi_major"}, {@code "SemiMajor"} and {@code "a"}.</p>
+     * <p>Some names for this parameter are {@code "semi_major"}, {@code "SemiMajorAxis"} and {@code "a"}.</p>
      */
     public static final DefaultParameterDescriptor<Double> SEMI_MAJOR;
 
@@ -79,22 +82,30 @@ public abstract class MapProjection extends AbstractProvider {
      * All names known to Apache SIS for the <cite>semi-minor</cite> parameter.
      * This parameter is mandatory and has no default value. The range of valid values is (0 … ∞).
      *
-     * <p>Some names for this parameter are {@code "semi_minor"}, {@code "SemiMinor"} and {@code "b"}.</p>
+     * <p>Some names for this parameter are {@code "semi_minor"}, {@code "SemiMinorAxis"} and {@code "b"}.</p>
      */
     public static final DefaultParameterDescriptor<Double> SEMI_MINOR;
+
+    /**
+     * The ellipsoid eccentricity, computed from the semi-major and semi-minor axis lengths.
+     * This a SIS-specific parameter used mostly for debugging purpose.
+     */
+    @Debug
+    public static final DefaultParameterDescriptor<Double> ECCENTRICITY;
     static {
-        final MeasurementRange<Double> valueDomain = MeasurementRange.createGreaterThan(0, SI.METRE);
+        final MeasurementRange<Double> valueDomain = MeasurementRange.createGreaterThan(0, Units.METRE);
         final GenericName[] aliases = {
             new NamedIdentifier(Citations.ESRI,    "Semi_Major"),
             new NamedIdentifier(Citations.NETCDF,  "semi_major_axis"),
-            new NamedIdentifier(Citations.GEOTIFF, "SemiMajor"),
+            new NamedIdentifier(Citations.GEOTIFF, "SemiMajorAxis"),
             new NamedIdentifier(Citations.PROJ4,   "a")
         };
-        final Map<String,Object> properties = new HashMap<String,Object>(4);
-        properties.put(AUTHORITY_KEY, Citations.OGC);
-        properties.put(NAME_KEY,      Constants.SEMI_MAJOR);
-        properties.put(ALIAS_KEY,     aliases);
-        SEMI_MAJOR = new DefaultParameterDescriptor<Double>(properties, 1, 1, Double.class, valueDomain, null, null);
+        final Map<String,Object> properties = new HashMap<>(4);
+        properties.put(AUTHORITY_KEY,  Citations.OGC);
+        properties.put(NAME_KEY,       Constants.SEMI_MAJOR);
+        properties.put(ALIAS_KEY,      aliases);
+        properties.put(IDENTIFIERS_KEY, new ImmutableIdentifier(Citations.GEOTIFF, null, "2057"));
+        SEMI_MAJOR = new DefaultParameterDescriptor<>(properties, 1, 1, Double.class, valueDomain, null, null);
         /*
          * Change in-place the name and aliases (we do not need to create new objects)
          * before to create the SEMI_MINOR descriptor.
@@ -102,9 +113,18 @@ public abstract class MapProjection extends AbstractProvider {
         properties.put(NAME_KEY, Constants.SEMI_MINOR);
         aliases[0] = new NamedIdentifier(Citations.ESRI,    "Semi_Minor");
         aliases[1] = new NamedIdentifier(Citations.NETCDF,  "semi_minor_axis");
-        aliases[2] = new NamedIdentifier(Citations.GEOTIFF, "SemiMinor");
+        aliases[2] = new NamedIdentifier(Citations.GEOTIFF, "SemiMinorAxis");
         aliases[3] = new NamedIdentifier(Citations.PROJ4,   "b");
-        SEMI_MINOR = new DefaultParameterDescriptor<Double>(properties, 1, 1, Double.class, valueDomain, null, null);
+        properties.put(IDENTIFIERS_KEY, new ImmutableIdentifier(Citations.GEOTIFF, null, "2058"));
+        SEMI_MINOR = new DefaultParameterDescriptor<>(properties, 1, 1, Double.class, valueDomain, null, null);
+        /*
+         * SIS-specific parameter for debugging purpose only.
+         */
+        properties.clear();
+        properties.put(AUTHORITY_KEY, Citations.SIS);
+        properties.put(NAME_KEY, "eccentricity");
+        ECCENTRICITY = new DefaultParameterDescriptor<>(properties, 1, 1, Double.class,
+                MeasurementRange.create(0d, true, 1d, true, null), null, null);
     }
 
     /**
@@ -128,24 +148,30 @@ public abstract class MapProjection extends AbstractProvider {
     }
 
     /**
-     * Validates the given parameter value.
+     * Validates the given parameter value. This method duplicates the verification already
+     * done by {@link org.apache.sis.parameter.DefaultParameterValue#setValue(Object, Unit)}.
+     * But we check again because we have no guarantee that the parameters given by the user
+     * were instances of {@code DefaultParameterValue}, or that the descriptor associated to
+     * the user-specified {@code ParameterValue} has sufficient information.
      *
-     * @param  descriptor The descriptor that specify the parameter to validate.
-     * @param  value The parameter value in the units given by the descriptor.
+     * @param  descriptor  the descriptor that specify the parameter to validate.
+     * @param  value       the parameter value in the units given by the descriptor.
      * @throws IllegalArgumentException if the given value is out of bounds.
      *
-     * @see #createConstant(ParameterBuilder, Double)
+     * @see #createZeroConstant(ParameterBuilder)
      */
-    public static void validate(final ParameterDescriptor<Double> descriptor, final double value)
+    public static void validate(final ParameterDescriptor<? extends Number> descriptor, final double value)
             throws IllegalArgumentException
     {
         if (Double.isNaN(value) || Double.isInfinite(value)) {
-            throw new IllegalArgumentException(Errors.format(Errors.Keys.IllegalParameterValue_2,
+            throw new IllegalArgumentException(Resources.format(Resources.Keys.IllegalParameterValue_2,
                     descriptor.getName(), value));
         }
-        final Comparable<Double> min = descriptor.getMinimumValue();
-        final Comparable<Double> max = descriptor.getMaximumValue();
-        if (!Objects.equals(min, max)) {
+        final Comparable<? extends Number> min = descriptor.getMinimumValue();
+        final Comparable<? extends Number> max = descriptor.getMaximumValue();
+        final double minValue = (min instanceof Number) ? ((Number) min).doubleValue() : Double.NaN;
+        final double maxValue = (max instanceof Number) ? ((Number) max).doubleValue() : Double.NaN;
+        if (value < minValue || value > maxValue) {
             /*
              * RATIONAL: why we do not check the bounds if (min == max):
              * The only case when our descriptor have (min == max) is when a parameter can only be zero,
@@ -153,11 +179,9 @@ public abstract class MapProjection extends AbstractProvider {
              * But in some cases, it would be possible to deal with non-zero values, even if in principle
              * we should not. In such case we let the caller decides.
              *
-             * Above check should be revisited if createConstant(ParameterBuilder, Double) is modified.
+             * Above check should be revisited if createZeroConstant(ParameterBuilder) is modified.
              */
-            if ((min instanceof Number && !(value >= ((Number) min).doubleValue())) ||
-                (max instanceof Number && !(value <= ((Number) max).doubleValue())))
-            {
+            if (minValue != maxValue) {   // Compare as 'double' because we want (-0 == +0) to be true.
                 throw new IllegalArgumentException(Errors.format(Errors.Keys.ValueOutOfRange_4,
                         descriptor.getName(), min, max, value));
             }
@@ -167,9 +191,9 @@ public abstract class MapProjection extends AbstractProvider {
     /**
      * Creates a map projection from the specified group of parameter values.
      *
-     * @param  factory The factory to use for creating and concatenating the (de)normalization transforms.
-     * @param  parameters The group of parameter values.
-     * @return The map projection created from the given parameter values.
+     * @param  factory     the factory to use for creating and concatenating the (de)normalization transforms.
+     * @param  parameters  the group of parameter values.
+     * @return the map projection created from the given parameter values.
      * @throws ParameterNotFoundException if a required parameter was not found.
      * @throws FactoryException if the map projection can not be created.
      */
@@ -183,11 +207,22 @@ public abstract class MapProjection extends AbstractProvider {
     /**
      * Creates a map projection on an ellipsoid having a semi-major axis length of 1.
      *
-     * @param  parameters The group of parameter values.
-     * @return The map projection created from the given parameter values.
+     * @param  parameters  the group of parameter values.
+     * @return the map projection created from the given parameter values.
      * @throws ParameterNotFoundException if a required parameter was not found.
      */
     protected abstract NormalizedProjection createProjection(final Parameters parameters) throws ParameterNotFoundException;
+
+    /**
+     * Notifies {@code DefaultMathTransformFactory} that map projections require
+     * values for the {@code "semi_major"} and {@code "semi_minor"} parameters.
+     *
+     * @return 1, meaning that the operation requires a source ellipsoid.
+     */
+    @Override
+    public final int getEllipsoidsMask() {
+        return 1;
+    }
 
 
 
@@ -214,22 +249,87 @@ public abstract class MapProjection extends AbstractProvider {
     }
 
     /**
-     * Copies all names except the EPSG one from the given parameter into the builder.
-     * The EPSG name is presumed the first name and identifier (this is not verified).
+     * Copies name, aliases and identifiers of the given {@code template}, except the alias and identifiers of the
+     * given authority which are replaced by the alias and identifiers of the same authority in {@code replacement}.
+     *
+     * @param  template     the parameter from which to copy names and identifiers.
+     * @param  toRename     authority of the alias to rename.
+     * @param  replacement  the parameter from which to get the new name for the alias to rename.
+     * @param  builder      an initially clean builder where to add the names and identifiers.
+     * @return the given {@code builder}, for method call chaining.
+     *
+     * @since 0.8
      */
-    static ParameterBuilder exceptEPSG(final ParameterDescriptor<?> source, final ParameterBuilder builder) {
-        for (final GenericName alias : source.getAlias()) {
+    static ParameterBuilder renameAlias(final ParameterDescriptor<Double> template, final Citation toRename,
+            final ParameterDescriptor<Double> replacement, final ParameterBuilder builder)
+    {
+        return copyAliases(template, toRename, sameNameAs(toRename, replacement),
+                (ReferenceIdentifier) IdentifiedObjects.getIdentifier(replacement, toRename),
+                builder.addName(template.getName()));
+    }
+
+    /**
+     * Copies all aliases except the ones for the given authority. If the given replacement is non-null,
+     * then it will be used instead of the first occurrence of the omitted name.
+     *
+     * <p>This method does not copy the primary name. It is caller's responsibility to add it first.</p>
+     *
+     * @param  template     the parameter from which to copy the aliases.
+     * @param  exclude      the authority of the alias to omit. Can not be EPSG.
+     * @param  replacement  the alias to use instead of the omitted one, or {@code null} if none.
+     * @param  newCode      the identifier to use instead of the omitted one, or {@code null} if none.
+     * @param  builder      where to add the aliases.
+     * @return the given {@code builder}, for method call chaining.
+     */
+    private static ParameterBuilder copyAliases(final ParameterDescriptor<Double> template, final Citation exclude,
+            GenericName replacement, ReferenceIdentifier newCode, final ParameterBuilder builder)
+    {
+        for (GenericName alias : template.getAlias()) {
+            if (((Identifier) alias).getAuthority() == exclude) {
+                if (replacement == null) continue;
+                alias = replacement;
+                replacement = null;
+            }
             builder.addName(alias);
+        }
+        for (ReferenceIdentifier id : template.getIdentifiers()) {
+            if (id.getAuthority() == exclude) {
+                if (newCode == null) continue;
+                id = newCode;
+                newCode = null;
+            }
+            builder.addIdentifier(id);
         }
         return builder;
     }
 
     /**
+     * Copies all aliases and all identifiers except EPSG, but using the alias specified by the given authority
+     * as the primary name. The old primary name (usually the EPSG name) is discarded.
+     *
+     * <p>This is a convenience method for defining the parameters of an ESRI-specific (or any other authority)
+     * projection using the EPSG parameters as template.</p>
+     *
+     * @param  template    the parameter from which to copy the names.
+     * @param  authority   the authority to use for the primary name.
+     * @param  builder     an initially clean builder where to add the names.
+     * @return the given {@code builder}, for method call chaining.
+     *
+     * @since 0.8
+     */
+    static ParameterBuilder alternativeAuthority(final ParameterDescriptor<Double> template,
+            final Citation authority, final ParameterBuilder builder)
+    {
+        return copyAliases(template, authority, null, null, builder.addName(sameNameAs(authority, template)));
+    }
+
+    /**
      * Creates a remarks for parameters that are not formally EPSG parameter.
      *
-     * @param origin The name of the projection for where the parameter is formally used.
+     * @param  origin  the name of the projection for where the parameter is formally used.
+     * @return a remarks saying that the parameter is actually defined in {@code origin}.
      */
     static InternationalString notFormalParameter(final String origin) {
-        return Messages.formatInternational(Messages.Keys.NotFormalProjectionParameter_1, origin);
+        return Resources.formatInternational(Resources.Keys.NotFormalProjectionParameter_1, origin);
     }
 }

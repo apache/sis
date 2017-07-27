@@ -19,11 +19,12 @@ package org.apache.sis.referencing.operation.transform;
 import java.util.Random;
 import org.apache.sis.measure.Latitude;
 import org.apache.sis.measure.Longitude;
+
 import static java.lang.StrictMath.*;
 import static org.apache.sis.internal.metadata.ReferencingServices.AUTHALIC_RADIUS;
 
 // Test imports
-import org.apache.sis.test.mock.GeodeticDatumMock;
+import org.apache.sis.referencing.datum.GeodeticDatumMock;
 
 
 /**
@@ -31,11 +32,17 @@ import org.apache.sis.test.mock.GeodeticDatumMock;
  * This class can generate random number suitable for their domain.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.5
  * @version 0.6
+ * @since   0.5
  * @module
  */
 public strictfp class CoordinateDomain {
+    /*
+     * Note: this class is not declared as an enum yet because moving ARTICLE_CIRCLE and HEIGHT constants
+     *       after the enum declarations causes an "illegal forward reference" compiler error with JDK 8.
+     */
+
+
     /**
      * Latitude of the Article circle, which is 66°33′45.7″ as of March 30, 2015
      * Note that this value fluctuate by 2° over 40,000-year periods.
@@ -100,7 +107,7 @@ public strictfp class CoordinateDomain {
     public static final CoordinateDomain GEOGRAPHIC_POLES = new CoordinateDomain(
             Longitude.MIN_VALUE, Longitude.MAX_VALUE,
             Latitude .MIN_VALUE, Latitude .MAX_VALUE,
-                  -0*5 * HEIGHT,        0.5 * HEIGHT)
+                        -HEIGHT,              HEIGHT)
     {
         @Override
         public double[] generateRandomInput(final Random random, final int dimension, final int numPts) {
@@ -117,6 +124,24 @@ public strictfp class CoordinateDomain {
             return ordinates;
         }
     };
+
+    /**
+     * Geographic input coordinates close to the north pole.
+     * Ordinates are in (<var>longitude</var>, <var>latitude</var>, <var>height</var>) order.
+     */
+    public static final CoordinateDomain GEOGRAPHIC_NORTH_POLE = new CoordinateDomain(
+            Longitude.MIN_VALUE, Longitude.MAX_VALUE,
+                 ARTICLE_CIRCLE, Latitude .MAX_VALUE,
+                        -HEIGHT,              HEIGHT);
+
+    /**
+     * Geographic input coordinates close to the south pole.
+     * Ordinates are in (<var>longitude</var>, <var>latitude</var>, <var>height</var>) order.
+     */
+    public static final CoordinateDomain GEOGRAPHIC_SOUTH_POLE = new CoordinateDomain(
+            Longitude.MIN_VALUE, Longitude.MAX_VALUE,
+            Latitude .MIN_VALUE,     -ARTICLE_CIRCLE,
+                        -HEIGHT,              HEIGHT);
 
     /**
      * Geographic input coordinates with angles in radians.
@@ -212,10 +237,10 @@ public strictfp class CoordinateDomain {
     /**
      * Generates random input coordinates.
      *
-     * @param  random    The random number generator to use.
-     * @param  dimension The number of dimension of the points to generate.
-     * @param  numPts    The number of points to generate.
-     * @return An array of length {@code numPts*dimension} filled with random input ordinate values.
+     * @param  random     the random number generator to use.
+     * @param  dimension  the number of dimension of the points to generate.
+     * @param  numPts     the number of points to generate.
+     * @return an array of length {@code numPts*dimension} filled with random input ordinate values.
      */
     public double[] generateRandomInput(final Random random, final int dimension, final int numPts) {
         final double[] ordinates = new double[numPts * dimension];

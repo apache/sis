@@ -19,8 +19,9 @@ package org.apache.sis.internal.jaxb.gco;
 import java.util.UUID;
 import org.apache.sis.util.iso.SimpleInternationalString;
 import org.apache.sis.xml.XLink;
+import org.apache.sis.xml.MarshalContext;
 import org.apache.sis.xml.IdentifierSpace;
-import org.apache.sis.test.mock.ReferenceResolverMock;
+import org.apache.sis.xml.ReferenceResolverMock;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.XMLTestCase;
@@ -33,8 +34,8 @@ import static org.junit.Assert.*;
  * Test {@link PropertyType}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.3
+ * @since   0.3
  * @module
  */
 @DependsOn(org.apache.sis.internal.jaxb.IdentifierMapAdapterTest.class)
@@ -73,7 +74,7 @@ public final strictfp class PropertyTypeTest extends XMLTestCase {
     /**
      * Tests the construction of a plain property (no identifier).
      *
-     * @throws Exception Should never happen.
+     * @throws Exception if an error occurred during (un)marshalling.
      */
     @Test
     public void testWithNoReference() throws Exception {
@@ -86,7 +87,7 @@ public final strictfp class PropertyTypeTest extends XMLTestCase {
      * Tests the construction of an object containing {@code UUID} reference,
      * but in a context where the user didn't gave us the authorization to use it.
      *
-     * @throws Exception Should never happen.
+     * @throws Exception if an error occurred during (un)marshalling.
      */
     @Test
     @DependsOnMethod("testWithUUID")
@@ -98,7 +99,7 @@ public final strictfp class PropertyTypeTest extends XMLTestCase {
      * Tests the construction of an object containing a {@link UUID}.
      * The {@code UUID} is allowed to replace the object definition in the XML to be marshalled.
      *
-     * @throws Exception Should never happen.
+     * @throws Exception if an error occurred during (un)marshalling.
      */
     @Test
     @DependsOnMethod("testWithNoReference")
@@ -142,7 +143,7 @@ public final strictfp class PropertyTypeTest extends XMLTestCase {
      * Tests the construction of an object containing a {@link XLink} while keeping the metadata.
      * The {@code XLink} is provided for information purpose.
      *
-     * @throws Exception Should never happen.
+     * @throws Exception if an error occurred during (un)marshalling.
      */
     @Test
     @DependsOnMethod("testWithXLink")
@@ -154,7 +155,7 @@ public final strictfp class PropertyTypeTest extends XMLTestCase {
      * Tests the construction of an object containing a {@link XLink} replacing the metadata.
      * The {@code XLink} is allowed to replace the object definition in the XML to be marshalled.
      *
-     * @throws Exception Should never happen.
+     * @throws Exception if an error occurred during (un)marshalling.
      */
     @Test
     @DependsOnMethod("testWithNoReference")
@@ -171,7 +172,7 @@ public final strictfp class PropertyTypeTest extends XMLTestCase {
      *
      *   <li>If {@code useReferenceResolverMock} is {@code true}, then the metadata object shall be replaced
      *       by the XLink because the {@link ReferenceResolverMock#canSubstituteByReference(MarshalContext,
-     *       Class, Object, Xlink)} method returns {@code true}.</li>
+     *       Class, Object, XLink)} method returns {@code true}.</li>
      * </ul>
      */
     private void testWithXLink(final boolean useReferenceResolverMock) {

@@ -39,8 +39,8 @@ import static org.apache.sis.internal.util.Constants.NUM_COL;
  * Tests the {@link TensorParameters} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.4
  * @version 0.6
+ * @since   0.4
  * @module
  */
 @DependsOn({
@@ -59,7 +59,7 @@ public strictfp class TensorParametersTest extends TestCase {
     /**
      * The expected parameter names according the WKT 1 convention for the matrix elements.
      *
-     * @see MatrixParametersTest#NAMES
+     * @see MatrixParametersTest#ALPHANUM_NAMES
      */
     static final String[][] ELEMENT_NAMES = {
         {"elt_0_0", "elt_0_1", "elt_0_2", "elt_0_3"},
@@ -87,7 +87,7 @@ public strictfp class TensorParametersTest extends TestCase {
 
     /**
      * The expected parameter identifiers for all matrix elements, or {@code null} for no identifier.
-     * Example: {@link MatrixParametersAlphaNum#IDENTIFIERS}.
+     * Example: {@link MatrixParametersAlphaNumTest#IDENTIFIERS}.
      */
     private final short[][] identifiers;
 
@@ -97,7 +97,7 @@ public strictfp class TensorParametersTest extends TestCase {
     @SuppressWarnings("unchecked")
     public TensorParametersTest() {
         if (WKT1 == null) {
-            WKT1 = new TensorParameters<Double>(Double.class, "elt_", "_",
+            WKT1 = new TensorParameters<>(Double.class, "elt_", "_",
                     TensorParameters.WKT1.getDimensionDescriptor(0),
                     TensorParameters.WKT1.getDimensionDescriptor(1));
         }
@@ -110,10 +110,10 @@ public strictfp class TensorParametersTest extends TestCase {
     /**
      * Creates a new test case for a {@link MatrixParameters} defined by the subclass.
      *
-     * @param param       The instance tested by this class.
-     * @param names       The expected parameter names for all matrix elements.
-     * @param aliases     The expected parameter aliases for all matrix elements, or {@code null} for no alias.
-     * @param identifiers The expected parameter identifiers for all matrix elements, or {@code null} for no identifier.
+     * @param  param        the instance tested by this class.
+     * @param  names        the expected parameter names for all matrix elements.
+     * @param  aliases      the expected parameter aliases for all matrix elements, or {@code null} for no alias.
+     * @param  identifiers  the expected parameter identifiers for all matrix elements, or {@code null} for no identifier.
      */
     TensorParametersTest(final TensorParameters<Double> param, final String[][] names, final String[][] aliases,
             final short[][] identifiers)
@@ -136,9 +136,9 @@ public strictfp class TensorParametersTest extends TestCase {
     /**
      * Asserts that the given descriptor has the given name.
      *
-     * @param names        The expected parameter name.
-     * @param defaultValue The expected parameter default value.
-     * @param actual       The actual parameter to verify.
+     * @param  name          the expected parameter name.
+     * @param  defaultValue  the expected parameter default value.
+     * @param  actual        the actual parameter to verify.
      */
     private static void verifyDescriptor(final String name, final Number defaultValue,
             final ParameterDescriptor<?> actual)
@@ -150,18 +150,25 @@ public strictfp class TensorParametersTest extends TestCase {
     /**
      * Asserts that the given descriptor has the given name, alias, identifier and default value.
      *
-     * @param defaultValue The expected parameter default value.
-     * @param actual       The actual parameter to verify.
-     * @param row          Row index of the matrix element to test.
-     * @param column       Column index of the matrix element to test.
+     * @param  defaultValue  the expected parameter default value.
+     * @param  actual        the actual parameter to verify.
+     * @param  row           row index of the matrix element to test.
+     * @param  column        column index of the matrix element to test.
      */
     private void verifyDescriptor(final Number defaultValue, final ParameterDescriptor<?> actual,
             final int row, final int column)
     {
         assertEquals("name", names[row][column], actual.getName().getCode());
         assertAliasTipEquals((aliases != null) ? aliases[row][column] : null, actual);
-        assertEpsgIdentifierEquals((identifiers != null) ? identifiers[row][column] : 0, actual.getIdentifiers());
         assertEquals("defaultValue", defaultValue, actual.getDefaultValue());
+        if (identifiers != null) {
+            final short expected = identifiers[row][column];
+            if (expected != 0) {
+                assertEpsgIdentifierEquals(String.valueOf(expected), TestUtilities.getSingleton(actual.getIdentifiers()));
+                return;
+            }
+        }
+        assertTrue(actual.getIdentifiers().isEmpty());
     }
 
     /**
@@ -190,7 +197,7 @@ public strictfp class TensorParametersTest extends TestCase {
         verifyDescriptor(N0, e01, 0, 1);
         verifyDescriptor(N0, e10, 1, 0);
         verifyDescriptor(N1, e11, 1, 1);
-        assertSame(e00, param.getElementDescriptor(0, 0)); // Test caching.
+        assertSame(e00, param.getElementDescriptor(0, 0));      // Test caching.
         assertSame(e01, param.getElementDescriptor(0, 1));
         assertSame(e10, param.getElementDescriptor(1, 0));
         assertSame(e11, param.getElementDescriptor(1, 1));

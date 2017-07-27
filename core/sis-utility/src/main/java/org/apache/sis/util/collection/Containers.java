@@ -33,8 +33,8 @@ import org.apache.sis.internal.util.UnmodifiableArrayList;
  * in this class implement the {@code CheckedContainer} interface.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.3
  * @version 0.4
+ * @since   0.3
  * @module
  */
 public final class Containers extends Static {
@@ -54,7 +54,7 @@ public final class Containers extends Static {
      * pattern. In such cases, null collections (i.e. collections not yet instantiated) are typically
      * considered as {@linkplain Collection#isEmpty() empty}.</p>
      *
-     * @param collection The collection to test, or {@code null}.
+     * @param  collection  the collection to test, or {@code null}.
      * @return {@code true} if the given collection is null or empty, or {@code false} otherwise.
      */
     public static boolean isNullOrEmpty(final Collection<?> collection) {
@@ -70,7 +70,7 @@ public final class Containers extends Static {
      * pattern. In such cases, null maps (i.e. maps not yet instantiated) are typically considered
      * as {@linkplain Map#isEmpty() empty}.</p>
      *
-     * @param map The map to test, or {@code null}.
+     * @param  map  the map to test, or {@code null}.
      * @return {@code true} if the given map is null or empty, or {@code false} otherwise.
      */
     public static boolean isNullOrEmpty(final Map<?,?> map) {
@@ -87,13 +87,13 @@ public final class Containers extends Static {
      * Because arrays in the Java language are covariant (at the contrary of collections),
      * the list type have to be {@code <? extends E>} instead than {@code <E>}.</p>
      *
-     * @param  <E> The base type of elements in the list.
-     * @param  array The array to wrap, or {@code null} if none.
-     * @return The given array wrapped in an unmodifiable list, or {@code null} if the given
-     *         array was null.
+     * @param  <E>    the base type of elements in the list.
+     * @param  array  the array to wrap, or {@code null} if none.
+     * @return the given array wrapped in an unmodifiable list, or {@code null} if the given array was null.
      *
      * @see java.util.Arrays#asList(Object[])
      */
+    @SafeVarargs
     public static <E> List<? extends E> unmodifiableList(final E... array) {
         return UnmodifiableArrayList.wrap(array);
     }
@@ -109,12 +109,12 @@ public final class Containers extends Static {
      * Because arrays in the Java language are covariant (at the contrary of collections),
      * the list type have to be {@code <? extends E>} instead than {@code <E>}.</p>
      *
-     * @param  <E>   The type of elements in the list.
-     * @param  array The array to wrap (can not be null).
-     * @param  lower Low endpoint (inclusive) of the sublist.
-     * @param  upper High endpoint (exclusive) of the sublist.
-     * @return The given array wrapped in an unmodifiable list.
-     * @throws IndexOutOfBoundsException If the lower or upper value are out of bounds.
+     * @param  <E>    the type of elements in the list.
+     * @param  array  the array to wrap (can not be null).
+     * @param  lower  low endpoint (inclusive) of the sublist.
+     * @param  upper  high endpoint (exclusive) of the sublist.
+     * @return the given array wrapped in an unmodifiable list.
+     * @throws IndexOutOfBoundsException if the lower or upper value are out of bounds.
      */
     public static <E> List<? extends E> unmodifiableList(final E[] array, final int lower, final int upper) {
         ArgumentChecks.ensureNonNull("array", array);
@@ -145,13 +145,12 @@ public final class Containers extends Static {
      * The returned set is not synchronized by itself, but is nevertheless thread-safe if the
      * given set (including its iterator) and converter are thread-safe.</p>
      *
-     * @param  <S>       The type of elements in the storage (original) set.
-     * @param  <E>       The type of elements in the derived set.
-     * @param  storage   The storage set containing the original elements, or {@code null}.
-     * @param  converter The converter from the elements in the storage set to the elements
-     *                   in the derived set.
-     * @return A view over the {@code storage} set containing all elements converted by the given
-     *         converter, or {@code null} if {@code storage} was null.
+     * @param  <S>        the type of elements in the storage (original) set.
+     * @param  <E>        the type of elements in the derived set.
+     * @param  storage    the storage set containing the original elements, or {@code null}.
+     * @param  converter  the converter from the elements in the storage set to the elements in the derived set.
+     * @return a view over the {@code storage} set containing all elements converted by the given converter,
+     *         or {@code null} if {@code storage} was null.
      *
      * @see org.apache.sis.util.ObjectConverters#derivedSet(Set, ObjectConverter)
      */
@@ -164,7 +163,7 @@ public final class Containers extends Static {
     }
 
     /**
-     * Returns a map whose whose keys and values are derived <cite>on-the-fly</cite> from the given map.
+     * Returns a map whose keys and values are derived <cite>on-the-fly</cite> from the given map.
      * Conversions from the original entries to the derived entries are performed when needed
      * by invoking the {@link ObjectConverter#apply(Object)} method on the given converters.
      * Those conversions are repeated every time a {@code Map} method is invoked; there is no cache.
@@ -173,31 +172,30 @@ public final class Containers extends Static {
      *
      * <p>The {@link Map#put(Object,Object) Map.put(K,V)} method is supported only if the given
      * converters are {@linkplain org.apache.sis.math.FunctionProperty#INVERTIBLE invertible}.
-     * An invertible converter is not mandatory for other {@code Map} operations.
-     * However some of them are likely to be faster if the inverse converters are available.</p>
+     * An invertible converter is not mandatory for other {@code Map} operations like {@link Map#get(Object)},
+     * but some of them may be faster if the inverse converters are available.</p>
      *
-     * <p>The derived map may contain fewer entries than the original map if some keys
-     * are not convertible. Non-convertible keys are <var>K</var> values for which
-     * {@code keyConverter.apply(K)} returns {@code null}. As a consequence of this sentinel
-     * value usage, the derived map can not contain {@code null} keys.
+     * <p>The derived map may contain fewer entries than the original map if some keys are not convertible.
+     * A key <var>K</var> is non-convertible if {@code keyConverter.apply(K)} returns {@code null}.
+     * As a consequence of this sentinel key usage, the derived map can not contain {@code null} keys.
      * It may contain {@code null} values however.</p>
      *
      * <p>The returned map can be serialized if the given map and converters are serializable.
      * The returned map is <strong>not</strong> thread-safe.</p>
      *
      * <p>The returned map does not implement the {@link CheckedContainer} interface since {@code Map}
-     * is not {@code Collection} sub-type, but the derived map {@linkplain Map#keySet() key set} and
+     * is not a {@code Collection} sub-type, but the derived map {@linkplain Map#keySet() key set} and
      * {@linkplain Map#entrySet() entry set} do.</p>
      *
-     * @param <SK>         The type of keys   in the storage map.
-     * @param <SV>         The type of values in the storage map.
-     * @param <K>          The type of keys   in the derived map.
-     * @param <V>          The type of values in the derived map.
-     * @param storage      The storage map containing the original entries, or {@code null}.
-     * @param keyConverter The converter from the keys in the storage map to the keys in the derived map.
-     * @param valueConverter The converter from the values in the storage map to the values in the derived map.
-     * @return A view over the {@code storage} map containing all entries converted by the given
-     *         converters, or {@code null} if {@code storage} was null.
+     * @param  <SK>            the type of keys   in the storage map.
+     * @param  <SV>            the type of values in the storage map.
+     * @param  <K>             the type of keys   in the derived map.
+     * @param  <V>             the type of values in the derived map.
+     * @param  storage         the storage map containing the original entries, or {@code null}.
+     * @param  keyConverter    the converter from the keys in the storage map to the keys in the derived map.
+     * @param  valueConverter  the converter from the values in the storage map to the values in the derived map.
+     * @return a view over the {@code storage} map containing all entries converted by the given converters,
+     *         or {@code null} if {@code storage} was null.
      *
      * @see org.apache.sis.util.ObjectConverters#derivedMap(Map, ObjectConverter, ObjectConverter)
      * @see org.apache.sis.util.ObjectConverters#derivedKeys(Map, ObjectConverter, Class)
@@ -226,12 +224,12 @@ public final class Containers extends Static {
      * kinds, as in the {@link org.apache.sis.referencing.AbstractIdentifiedObject#AbstractIdentifiedObject(Map)
      * AbstractIdentifiedObject} constructor.</p>
      *
-     * @param  <T>        The compile-time value of the {@code type} argument.
-     * @param  properties The map of properties from which to get a value, or {@code null} if none.
-     * @param  key        The key of the property value to return. Can be {@code null} if the map supports null key.
-     * @param  type       The expected type of the property value. Can not be null.
-     * @return The property value for the given key casted to the given type, or {@code null} if none.
-     * @throws IllegalArgumentException If a non-null property value exists for the given key but can
+     * @param  <T>         the compile-time value of the {@code type} argument.
+     * @param  properties  the map of properties from which to get a value, or {@code null} if none.
+     * @param  key         the key of the property value to return. Can be {@code null} if the map supports null key.
+     * @param  type        the expected type of the property value. Can not be null.
+     * @return the property value for the given key casted to the given type, or {@code null} if none.
+     * @throws IllegalArgumentException if a non-null property value exists for the given key but can
      *         not be casted to the given type.
      *
      * @see ArgumentChecks#ensureCanCast(String, Class, Object)
@@ -246,7 +244,7 @@ public final class Containers extends Static {
         final Object value = properties.get(key);
         if (value != null && !type.isInstance(value)) {
             throw new IllegalArgumentException(Errors.getResources(properties)
-                    .getString(Errors.Keys.IllegalPropertyClass_2, key, value.getClass()));
+                    .getString(Errors.Keys.IllegalPropertyValueClass_3, key, type, value.getClass()));
         }
         return (T) value;
     }
@@ -260,8 +258,8 @@ public final class Containers extends Static {
      * {@link java.util.HashSet} as well, which are built on top of {@code HashMap}.
      * However it is not needed for {@link java.util.IdentityHashMap}.</p>
      *
-     * @param count The number of elements to be put into the hash map or hash set.
-     * @return The minimal initial capacity to be given to the hash map constructor.
+     * @param  count  the number of elements to be put into the hash map or hash set.
+     * @return the minimal initial capacity to be given to the hash map constructor.
      */
     public static int hashMapCapacity(final int count) {
         int r = count >>> 2;

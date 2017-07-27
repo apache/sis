@@ -33,8 +33,8 @@ import org.opengis.util.LocalName;
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Guilhem Legal (Geomatys)
- * @since   0.3
  * @version 0.3
+ * @since   0.3
  * @module
  */
 public final class GO_LocalName extends NameAdapter<GO_LocalName, LocalName> {
@@ -52,11 +52,11 @@ public final class GO_LocalName extends NameAdapter<GO_LocalName, LocalName> {
     }
 
     /**
-     * Does the link between an {@link AbstractName} and the adapter associated.
+     * Does the link between an {@link org.apache.sis.util.iso.AbstractName} and the adapter associated.
      * JAXB calls automatically this method at marshalling-time.
      *
-     * @param  value The implementing class for this metadata value.
-     * @return An wrapper which contains the metadata value.
+     * @param  value  the implementing class for this metadata value.
+     * @return an wrapper which contains the metadata value.
      */
     @Override
     public GO_LocalName marshal(final LocalName value) {
@@ -67,8 +67,8 @@ public final class GO_LocalName extends NameAdapter<GO_LocalName, LocalName> {
      * Does the link between adapters and the way they will be unmarshalled.
      * JAXB calls automatically this method at unmarshalling-time.
      *
-     * @param  value The wrapper, or {@code null} if none.
-     * @return The implementing class.
+     * @param  value  the wrapper, or {@code null} if none.
+     * @return the implementing class.
      */
     @Override
     public LocalName unmarshal(final GO_LocalName value) {

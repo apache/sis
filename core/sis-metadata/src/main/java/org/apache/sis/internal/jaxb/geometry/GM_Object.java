@@ -32,8 +32,8 @@ import org.apache.sis.xml.Namespaces;
  * specialized subclasses in GML modules.</p>
  *
  * @author  Guilhem Legal (Geomatys)
- * @since   0.3
  * @version 0.3
+ * @since   0.3
  * @module
  */
 public class GM_Object extends XmlAdapter<GM_Object, Geometry> {
@@ -53,8 +53,8 @@ public class GM_Object extends XmlAdapter<GM_Object, Geometry> {
      * Converts an adapter read from an XML stream to the GeoAPI interface which will
      * contains this value. JAXB calls automatically this method at unmarshalling time.
      *
-     * @param value The adapter for a geometry value.
-     * @return An instance of the GeoAPI interface which represents the geometry value.
+     * @param  value  the adapter for a geometry value.
+     * @return an instance of the GeoAPI interface which represents the geometry value.
      */
     @Override
     public final Geometry unmarshal(final GM_Object value) {
@@ -72,8 +72,8 @@ public class GM_Object extends XmlAdapter<GM_Object, Geometry> {
      * marshalled into an XML file or stream. JAXB calls automatically this method at
      * marshalling time.
      *
-     * @param value The geometry value, here the interface.
-     * @return The adapter for the given value.
+     * @param  value  the geometry value, here the interface.
+     * @return the adapter for the given value.
      */
     @Override
     public final GM_Object marshal(final Geometry value) {
@@ -88,8 +88,8 @@ public class GM_Object extends XmlAdapter<GM_Object, Geometry> {
      * The default implementation returns {@code null} if all cases. Subclasses
      * must override this method in order to provide useful marshalling.
      *
-     * @param value The value to marshal.
-     * @return The adapter which covers the geometry value.
+     * @param  value  the value to marshal.
+     * @return the adapter which covers the geometry value.
      */
     protected GM_Object wrap(Geometry value) {
         return null;

@@ -26,6 +26,7 @@ import java.io.PrintWriter;
 
 import org.apache.sis.math.Statistics;
 import org.apache.sis.math.StatisticsFormat;
+import org.apache.sis.internal.util.StandardDateFormat;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.test.TestUtilities;
 import org.apache.sis.test.TestCase;
@@ -43,8 +44,8 @@ import static org.apache.sis.test.Assert.*;
  * Tests the {@link Cache} with simple tests and a {@linkplain #stress() stress} test.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.3
+ * @since   0.3
  * @module
  */
 @DependsOn(WeakValueHashMapTest.class)
@@ -66,7 +67,7 @@ public final strictfp class CacheTest extends TestCase {
      * Tests {@link Cache} as a {@link java.util.Map} using weak references. In this test, we
      * have to keep in mind than some elements in {@code weakMap} may disappear at any time.
      *
-     * @throws InterruptedException If the test has been interrupted.
+     * @throws InterruptedException if the test has been interrupted.
      *
      * @see WeakValueHashMapTest#testWeakReferences()
      */
@@ -85,7 +86,7 @@ public final strictfp class CacheTest extends TestCase {
     public void testPutAndUnlock() {
         final String key   = "The key";
         final String value = "The value";
-        final Cache<String,String> cache = new Cache<String,String>();
+        final Cache<String,String> cache = new Cache<>();
         assertTrue("No initial value expected.", cache.isEmpty());
         assertNull("No initial value expected.", cache.peek(key));
 
@@ -96,14 +97,14 @@ public final strictfp class CacheTest extends TestCase {
         assertEquals(1,              cache.size());
         assertEquals(value,          cache.peek(key));
         assertEquals(singleton(key), cache.keySet());
-        assertEquals(singleton(new SimpleEntry<String,String>(key, value)), cache.entrySet());
+        assertEquals(singleton(new SimpleEntry<>(key, value)), cache.entrySet());
     }
 
     /**
      * Tests the cache when a thread is blocking a second one.
      * The second thread tries to write a value while the first thread holds the lock.
      *
-     * @throws InterruptedException If the test has been interrupted.
+     * @throws InterruptedException if the test has been interrupted.
      */
     @Test
     @DependsOnMethod("testPutAndUnlock")
@@ -112,7 +113,7 @@ public final strictfp class CacheTest extends TestCase {
         final String  valueByMainThread =  "valueByMainThread";
         final String   keyByOtherThread =   "keyByOtherThread";
         final String valueByOtherThread = "valueByOtherThread";
-        final Cache<String,String> cache = new Cache<String,String>();
+        final Cache<String,String> cache = new Cache<>();
         final class OtherThread extends Thread {
             /**
              * If an error occurred, the cause. It may be an {@link AssertionError}.
@@ -150,7 +151,7 @@ public final strictfp class CacheTest extends TestCase {
                     if (failure == null) {
                         failure = e;
                     } else {
-                        // The JDK7 branch invokes Throwable.addSuppressed(…) here.
+                        failure.addSuppressed(e);
                     }
                 }
             }
@@ -174,7 +175,7 @@ public final strictfp class CacheTest extends TestCase {
         /*
          * Checks the map content.
          */
-        final Map<String,String> expected = new HashMap<String,String>(4);
+        final Map<String,String> expected = new HashMap<>(4);
         assertNull(expected.put( keyByMainThread,  valueByMainThread));
         assertNull(expected.put(keyByOtherThread, valueByOtherThread));
         assertMapEquals(expected, cache);
@@ -184,8 +185,8 @@ public final strictfp class CacheTest extends TestCase {
      * Validates the entries created by the {@link #stress()} test. The check performed in
      * this method shall obviously be consistent with the values created by {@code stress()}.
      *
-     * @param  name  The name of the value being measured.
-     * @param  cache The cache to validate.
+     * @param  name   the name of the value being measured.
+     * @param  cache  the cache to validate.
      * @return Statistics on the key values of the given map.
      */
     private static Statistics validateStressEntries(final String name, final Map<Integer,Integer> cache) {
@@ -203,15 +204,15 @@ public final strictfp class CacheTest extends TestCase {
      * Starts many threads writing in the same cache, with a high probability that two threads
      * ask for the same key in some occasions.
      *
-     * @throws InterruptedException If the test has been interrupted.
+     * @throws InterruptedException if the test has been interrupted.
      */
     @Test
     @Performance
     @DependsOnMethod("testThreadBlocking")
     public void stress() throws InterruptedException {
         final int count = 5000;
-        final Cache<Integer,Integer> cache = new Cache<Integer,Integer>();
-        final AtomicReference<Throwable> failures = new AtomicReference<Throwable>();
+        final Cache<Integer,Integer> cache = new Cache<>();
+        final AtomicReference<Throwable> failures = new AtomicReference<>();
         final class WriterThread extends Thread {
             /**
              * Incremented every time a value has been added. This is not the number of time the
@@ -228,12 +229,13 @@ public final strictfp class CacheTest extends TestCase {
             }
 
             /**
-             * Put random values in the map.
+             * Puts random values in the map.
              */
+            @SuppressWarnings({"UnnecessaryBoxing", "CallToThreadYield", "NumberEquality"})
             @Override public void run() {
                 for (int i=0; i<count; i++) {
                     final Integer key = i;
-                    final Integer expected = new Integer(i * i); // We really want new instance.
+                    final Integer expected = new Integer(i * i);        // We really want new instance.
                     final Integer value;
                     try {
                         value = cache.getOrCreate(key, new Callable<Integer>() {
@@ -244,13 +246,13 @@ public final strictfp class CacheTest extends TestCase {
                         assertEquals(expected, value);
                     } catch (Throwable e) {
                         if (!failures.compareAndSet(null, e)) {
-                            // The JDK7 branch invokes Throwable.addSuppressed(…) here.
+                            failures.get().addSuppressed(e);
                         }
                         continue;
                     }
-                    if (expected == value) { // Identity comparison (not value comparison).
+                    if (expected == value) {                            // Identity comparison (not value comparison).
                         addCount++;
-                        yield(); // Gives a chance to other threads.
+                        yield();                                        // Gives a chance to other threads.
                     }
                 }
             }
@@ -290,7 +292,8 @@ public final strictfp class CacheTest extends TestCase {
         long time = System.nanoTime();
         for (int i=0; i<10; i++) {
             final long t = System.nanoTime();
-            out.printf("Cache size: %4d (after %3d ms)%n", cache.size(), round((t - time) / 1E+6));
+            out.printf("Cache size: %4d (after %3d ms)%n", cache.size(),
+                       round((t - time) / (double) StandardDateFormat.NANOS_PER_MILLISECOND));
             time = t;
             Thread.sleep(250);
             if (i >= 2) {

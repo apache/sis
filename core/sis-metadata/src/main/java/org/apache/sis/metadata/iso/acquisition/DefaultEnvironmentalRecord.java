@@ -24,11 +24,18 @@ import org.opengis.util.InternationalString;
 import org.apache.sis.measure.ValueRange;
 import org.apache.sis.metadata.iso.ISOMetadata;
 
-import static org.apache.sis.internal.metadata.MetadataUtilities.warnOutOfRangeArgument;
+import static org.apache.sis.internal.metadata.MetadataUtilities.ensureInRange;
 
 
 /**
  * Information about the environmental conditions during the acquisition.
+ * The following properties are mandatory in a well-formed metadata according ISO 19115:
+ *
+ * <div class="preformat">{@code MI_EnvironmentalRecord}
+ * {@code   ├─averageAirTemperature……………} Average air temperature along the flight pass during the photo flight.
+ * {@code   ├─maxRelativeHumidity…………………} Maximum relative humidity along the flight pass during the photo flight.
+ * {@code   ├─maxAltitude………………………………………} Maximum altitude during the photo flight.
+ * {@code   └─meteorologicalConditions……} Meteorological conditions in the photo flight area, in particular clouds, snow and wind.</div>
  *
  * <p><b>Limitations:</b></p>
  * <ul>
@@ -41,10 +48,11 @@ import static org.apache.sis.internal.metadata.MetadataUtilities.warnOutOfRangeA
  *
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.5
+ * @since   0.3
  * @module
  */
+@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "MI_EnvironmentalRecord_Type", propOrder = {
     "averageAirTemperature",
     "maxRelativeHumidity",
@@ -96,7 +104,7 @@ public class DefaultEnvironmentalRecord extends ISOMetadata implements Environme
      * metadata instances can also be obtained by unmarshalling an invalid XML document.
      * </div>
      *
-     * @param object The metadata to copy values from, or {@code null} if none.
+     * @param  object  the metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(EnvironmentalRecord)
      */
@@ -124,8 +132,8 @@ public class DefaultEnvironmentalRecord extends ISOMetadata implements Environme
      *       metadata contained in the given object are not recursively copied.</li>
      * </ul>
      *
-     * @param  object The object to get as a SIS implementation, or {@code null} if none.
-     * @return A SIS implementation containing the values of the given object (may be the
+     * @param  object  the object to get as a SIS implementation, or {@code null} if none.
+     * @return a SIS implementation containing the values of the given object (may be the
      *         given object itself), or {@code null} if the argument was null.
      */
     public static DefaultEnvironmentalRecord castOrCopy(final EnvironmentalRecord object) {
@@ -138,7 +146,7 @@ public class DefaultEnvironmentalRecord extends ISOMetadata implements Environme
     /**
      * Returns the average air temperature along the flight pass during the photo flight.
      *
-     * @return Average air temperature along the flight pass during the photo flight, or {@code null}.
+     * @return average air temperature along the flight pass during the photo flight, or {@code null}.
      */
     @Override
     @XmlElement(name = "averageAirTemperature", required = true)
@@ -149,7 +157,7 @@ public class DefaultEnvironmentalRecord extends ISOMetadata implements Environme
     /**
      * Sets the average air temperature along the flight pass during the photo flight.
      *
-     * @param newValue The new average air temperature value.
+     * @param  newValue  the new average air temperature value.
      */
     public void setAverageAirTemperature(final Double newValue) {
         checkWritePermission();
@@ -159,7 +167,7 @@ public class DefaultEnvironmentalRecord extends ISOMetadata implements Environme
     /**
      * Returns the maximum relative humidity along the flight pass during the photo flight.
      *
-     * @return Maximum relative humidity along the flight pass during the photo flight, or {@code null}.
+     * @return maximum relative humidity along the flight pass during the photo flight, or {@code null}.
      */
     @Override
     @ValueRange(minimum = 0, maximum = 100)
@@ -171,21 +179,20 @@ public class DefaultEnvironmentalRecord extends ISOMetadata implements Environme
     /**
      * Sets the maximum relative humidity along the flight pass during the photo flight.
      *
-     * @param newValue The new maximum relative humidity, or {@code null}.
+     * @param  newValue  the new maximum relative humidity, or {@code null}.
      * @throws IllegalArgumentException if the given value is out of range.
      */
     public void setMaxRelativeHumidity(final Double newValue) {
         checkWritePermission();
-        if (newValue != null && !(newValue >= 0 && newValue <= 100)) { // Use '!' for catching NaN.
-            warnOutOfRangeArgument(DefaultEnvironmentalRecord.class, "maxRelativeHumidity", 0, 100, newValue);
+        if (ensureInRange(DefaultEnvironmentalRecord.class, "maxRelativeHumidity", 0, 100, newValue)) {
+            maxRelativeHumidity = newValue;
         }
-        maxRelativeHumidity = newValue;
     }
 
     /**
      * Returns the maximum altitude during the photo flight.
      *
-     * @return Maximum altitude during the photo flight, or {@code null}.
+     * @return maximum altitude during the photo flight, or {@code null}.
      */
     @Override
     @XmlElement(name = "maxAltitude", required = true)
@@ -196,7 +203,7 @@ public class DefaultEnvironmentalRecord extends ISOMetadata implements Environme
     /**
      * Sets the maximum altitude value.
      *
-     * @param newValue The new maximum altitude value.
+     * @param  newValue  the new maximum altitude value.
      */
     public void setMaxAltitude(final Double newValue) {
         checkWritePermission();
@@ -206,7 +213,7 @@ public class DefaultEnvironmentalRecord extends ISOMetadata implements Environme
     /**
      * Returns the meteorological conditions in the photo flight area, in particular clouds, snow and wind.
      *
-     * @return Meteorological conditions in the photo flight area, or {@code null}.
+     * @return meteorological conditions in the photo flight area, or {@code null}.
      */
     @Override
     @XmlElement(name = "meteorologicalConditions", required = true)
@@ -217,7 +224,7 @@ public class DefaultEnvironmentalRecord extends ISOMetadata implements Environme
     /**
      * Sets the meteorological conditions in the photo flight area, in particular clouds, snow and wind.
      *
-     * @param newValue The meteorological conditions value.
+     * @param  newValue  the meteorological conditions value.
      */
     public void setMeteorologicalConditions(final InternationalString newValue) {
         checkWritePermission();

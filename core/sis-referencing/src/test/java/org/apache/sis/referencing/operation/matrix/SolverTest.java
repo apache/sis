@@ -47,8 +47,8 @@ import static org.apache.sis.referencing.operation.matrix.MatrixTestCase.assertE
  * the above-cited simple operations anyway.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.4
  * @version 0.4
+ * @since   0.4
  * @module
  */
 @DependsOn(GeneralMatrixTest.class) // See class javadoc
@@ -91,7 +91,7 @@ public final strictfp class SolverTest extends TestCase {
     /**
      * Tests the {@code Solver.solve(MatrixSIS, Matrix, int)} method.
      *
-     * @throws NoninvertibleMatrixException Should never happen.
+     * @throws NoninvertibleMatrixException if an unexpected error occurred while inverting the matrix.
      */
     @Test
     public void testSolve() throws NoninvertibleMatrixException {
@@ -111,7 +111,7 @@ public final strictfp class SolverTest extends TestCase {
             try {
                 jama = reference.solve(referenceArg);
             } catch (RuntimeException e) {
-                out.println(e); // "Matrix is singular."
+                out.println(e);                                         // "Matrix is singular."
                 continue;
             }
             final MatrixSIS U = Solver.solve(matrix, matrixArg);
@@ -120,9 +120,10 @@ public final strictfp class SolverTest extends TestCase {
     }
 
     /**
-     * Tests {@link Solver#inverse(MatrixSIS, boolean)} with a square matrix that contains a {@link Double#NaN} value.
+     * Tests {@link Solver#inverse(org.opengis.referencing.operation.Matrix, boolean)}
+     * with a square matrix that contains a {@link Double#NaN} value.
      *
-     * @throws NoninvertibleMatrixException Should not happen.
+     * @throws NoninvertibleMatrixException if an unexpected error occurred while inverting the matrix.
      */
     @Test
     @DependsOnMethod("testSolve")

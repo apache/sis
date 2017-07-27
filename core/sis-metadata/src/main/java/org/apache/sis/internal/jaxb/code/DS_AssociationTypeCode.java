@@ -19,7 +19,7 @@ package org.apache.sis.internal.jaxb.code;
 import javax.xml.bind.annotation.XmlElement;
 import org.opengis.metadata.identification.AssociationType;
 import org.apache.sis.internal.jaxb.gmd.CodeListAdapter;
-import org.apache.sis.internal.jaxb.gmd.CodeListProxy;
+import org.apache.sis.internal.jaxb.gmd.CodeListUID;
 
 
 /**
@@ -28,8 +28,8 @@ import org.apache.sis.internal.jaxb.gmd.CodeListProxy;
  * about the handling of CodeList in ISO-19139.
  *
  * @author  Guilhem Legal (Geomatys)
- * @since   0.3
  * @version 0.3
+ * @since   0.3
  * @module
  */
 public final class DS_AssociationTypeCode extends CodeListAdapter<DS_AssociationTypeCode, AssociationType> {
@@ -40,26 +40,26 @@ public final class DS_AssociationTypeCode extends CodeListAdapter<DS_Association
     }
 
     /**
-     * Creates a new adapter for the given proxy.
+     * Creates a new adapter for the given value.
      */
-    private DS_AssociationTypeCode(final CodeListProxy proxy) {
-        super(proxy);
+    private DS_AssociationTypeCode(final CodeListUID value) {
+        super(value);
     }
 
     /**
      * {@inheritDoc}
      *
-     * @return The wrapper for the code list value.
+     * @return the wrapper for the code list value.
      */
     @Override
-    protected DS_AssociationTypeCode wrap(CodeListProxy proxy) {
-        return new DS_AssociationTypeCode(proxy);
+    protected DS_AssociationTypeCode wrap(final CodeListUID value) {
+        return new DS_AssociationTypeCode(value);
     }
 
     /**
      * {@inheritDoc}
      *
-     * @return The code list class.
+     * @return the code list class.
      */
     @Override
     protected Class<AssociationType> getCodeListClass() {
@@ -69,20 +69,20 @@ public final class DS_AssociationTypeCode extends CodeListAdapter<DS_Association
     /**
      * Invoked by JAXB on marshalling.
      *
-     * @return The value to be marshalled.
+     * @return the value to be marshalled.
      */
     @Override
     @XmlElement(name = "DS_AssociationTypeCode")
-    public CodeListProxy getElement() {
-        return proxy;
+    public CodeListUID getElement() {
+        return identifier;
     }
 
     /**
      * Invoked by JAXB on unmarshalling.
      *
-     * @param proxy The unmarshalled value.
+     * @param  value  the unmarshalled value.
      */
-    public void setElement(final CodeListProxy proxy) {
-        this.proxy = proxy;
+    public void setElement(final CodeListUID value) {
+        identifier = value;
     }
 }

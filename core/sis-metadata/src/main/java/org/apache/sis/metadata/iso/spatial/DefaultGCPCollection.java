@@ -24,11 +24,20 @@ import org.opengis.metadata.spatial.GCP;
 import org.opengis.metadata.spatial.GCPCollection;
 import org.opengis.referencing.ReferenceSystem;
 import org.opengis.util.InternationalString;
+import org.apache.sis.metadata.TitleProperty;
 import org.apache.sis.xml.Namespaces;
 
 
 /**
  * Information about a control point collection.
+ * The following properties are mandatory in a well-formed metadata according ISO 19115:
+ *
+ * <div class="preformat">{@code MI_GCPCollection}
+ * {@code   ├─collectionIdentification………} Identifier of the GCP collection.
+ * {@code   ├─collectionName…………………………………} Name of the GCP collection.
+ * {@code   ├─coordinateReferenceSystem……} Coordinate system in which the ground control points are defined.
+ * {@code   └─gcp………………………………………………………………} Ground control point(s) used in the collection.
+ * {@code       └─geographicCoordinates……} Geographic or map position of the control point, in either two or three dimensions.</div>
  *
  * <p><b>Limitations:</b></p>
  * <ul>
@@ -41,10 +50,15 @@ import org.apache.sis.xml.Namespaces;
  *
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.3
+ *
+ * @see DefaultGCP
+ *
+ * @since 0.3
  * @module
  */
+@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
+@TitleProperty(name = "collectionName")
 @XmlType(name = "MI_GCPCollection_Type", propOrder = {
     "collectionIdentification",
     "collectionName",
@@ -89,7 +103,7 @@ public class DefaultGCPCollection extends AbstractGeolocationInformation impleme
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
-     * @param object The metadata to copy values from, or {@code null} if none.
+     * @param  object  the metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(GCPCollection)
      */
@@ -117,8 +131,8 @@ public class DefaultGCPCollection extends AbstractGeolocationInformation impleme
      *       metadata contained in the given object are not recursively copied.</li>
      * </ul>
      *
-     * @param  object The object to get as a SIS implementation, or {@code null} if none.
-     * @return A SIS implementation containing the values of the given object (may be the
+     * @param  object  the object to get as a SIS implementation, or {@code null} if none.
+     * @return a SIS implementation containing the values of the given object (may be the
      *         given object itself), or {@code null} if the argument was null.
      */
     public static DefaultGCPCollection castOrCopy(final GCPCollection object) {
@@ -131,7 +145,7 @@ public class DefaultGCPCollection extends AbstractGeolocationInformation impleme
     /**
      * Returns the identifier of the GCP collection.
      *
-     * @return The identifier, or {@code null}.
+     * @return the identifier, or {@code null}.
      */
     @Override
     @XmlElement(name = "collectionIdentification", namespace = Namespaces.GMI, required = true)
@@ -142,7 +156,7 @@ public class DefaultGCPCollection extends AbstractGeolocationInformation impleme
     /**
      * Sets the identifier of the GCP collection.
      *
-     * @param newValue The new collection identifier value.
+     * @param  newValue  the new collection identifier value.
      */
     public void setCollectionIdentification(final Integer newValue) {
         checkWritePermission();
@@ -152,7 +166,7 @@ public class DefaultGCPCollection extends AbstractGeolocationInformation impleme
     /**
      * Returns the name of the GCP collection.
      *
-     * @return Name of the GCP collection, or {@code null}.
+     * @return name of the GCP collection, or {@code null}.
      */
     @Override
     @XmlElement(name = "collectionName", namespace = Namespaces.GMI, required = true)
@@ -163,7 +177,7 @@ public class DefaultGCPCollection extends AbstractGeolocationInformation impleme
     /**
      * Sets the name of the GCP collection.
      *
-     * @param newValue The new collection name.
+     * @param  newValue  the new collection name.
      */
     public void setCollectionName(final InternationalString newValue) {
         checkWritePermission();
@@ -171,9 +185,9 @@ public class DefaultGCPCollection extends AbstractGeolocationInformation impleme
     }
 
     /**
-     * Returns the coordinate system in which the ground control points are defined.
+     * Returns the coordinate reference system in which the ground control points are defined.
      *
-     * @return Coordinate system in which the ground control points are defined, or {@code null}.
+     * @return coordinate reference system in which the ground control points are defined, or {@code null}.
      */
     @Override
     @XmlElement(name = "coordinateReferenceSystem", namespace = Namespaces.GMI, required = true)
@@ -182,9 +196,9 @@ public class DefaultGCPCollection extends AbstractGeolocationInformation impleme
     }
 
     /**
-     * Sets the coordinate system in which the ground control points are defined.
+     * Sets the coordinate reference system in which the ground control points are defined.
      *
-     * @param newValue The new coordinate reference system value.
+     * @param  newValue  the new coordinate reference system value.
      */
     public void setCoordinateReferenceSystem(final ReferenceSystem newValue) {
         checkWritePermission();
@@ -194,7 +208,7 @@ public class DefaultGCPCollection extends AbstractGeolocationInformation impleme
     /**
      * Returns the ground control point(s) used in the collection.
      *
-     * @return Ground control point(s).
+     * @return ground control point(s).
      */
     @Override
     @XmlElement(name = "gcp", namespace = Namespaces.GMI, required = true)
@@ -205,7 +219,7 @@ public class DefaultGCPCollection extends AbstractGeolocationInformation impleme
     /**
      * Sets the ground control point(s) used in the collection.
      *
-     * @param newValues The new ground control points values.
+     * @param  newValues  the new ground control points values.
      */
     public void setGCPs(final Collection<? extends GCP> newValues) {
         GCPs = writeCollection(newValues, GCPs, GCP.class);

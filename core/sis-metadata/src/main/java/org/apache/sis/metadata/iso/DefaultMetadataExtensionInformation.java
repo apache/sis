@@ -40,18 +40,17 @@ import org.opengis.metadata.MetadataExtensionInformation;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Touraïvane (IRD)
  * @author  Cédric Briançon (Geomatys)
- * @since   0.3
  * @version 0.3
+ * @since   0.3
  * @module
  */
+@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "MD_MetadataExtensionInformation_Type", propOrder = {
     "extensionOnLineResource",
     "extendedElementInformation"
 })
 @XmlRootElement(name = "MD_MetadataExtensionInformation")
-public class DefaultMetadataExtensionInformation extends ISOMetadata
-        implements MetadataExtensionInformation
-{
+public class DefaultMetadataExtensionInformation extends ISOMetadata implements MetadataExtensionInformation {
     /**
      * Serial number for compatibility with different versions.
      */
@@ -80,7 +79,7 @@ public class DefaultMetadataExtensionInformation extends ISOMetadata
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
-     * @param object The metadata to copy values from, or {@code null} if none.
+     * @param  object  the metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(MetadataExtensionInformation)
      */
@@ -106,8 +105,8 @@ public class DefaultMetadataExtensionInformation extends ISOMetadata
      *       metadata contained in the given object are not recursively copied.</li>
      * </ul>
      *
-     * @param  object The object to get as a SIS implementation, or {@code null} if none.
-     * @return A SIS implementation containing the values of the given object (may be the
+     * @param  object  the object to get as a SIS implementation, or {@code null} if none.
+     * @return a SIS implementation containing the values of the given object (may be the
      *         given object itself), or {@code null} if the argument was null.
      */
     public static DefaultMetadataExtensionInformation castOrCopy(final MetadataExtensionInformation object) {
@@ -121,7 +120,7 @@ public class DefaultMetadataExtensionInformation extends ISOMetadata
      * Information about on-line sources containing the community profile name and
      * the extended metadata elements and information for all new metadata elements.
      *
-     * @return Online sources to community profile name and extended metadata elements, or {@code null}.
+     * @return online sources to community profile name and extended metadata elements, or {@code null}.
      */
     @Override
     @XmlElement(name = "extensionOnLineResource")
@@ -132,7 +131,7 @@ public class DefaultMetadataExtensionInformation extends ISOMetadata
     /**
      * Sets information about on-line sources.
      *
-     * @param newValue The new extension online resource.
+     * @param  newValue  the new extension online resource.
      */
     public void setExtensionOnLineResource(final OnlineResource newValue) {
         checkWritePermission();
@@ -143,7 +142,7 @@ public class DefaultMetadataExtensionInformation extends ISOMetadata
      * Provides information about a new metadata element, not found in ISO 19115,
      * which is required to describe resource.
      *
-     * @return New metadata elements not found in ISO 19115.
+     * @return new metadata elements not found in ISO 19115.
      */
     @Override
     @XmlElement(name = "extendedElementInformation")
@@ -154,7 +153,7 @@ public class DefaultMetadataExtensionInformation extends ISOMetadata
     /**
      * Sets information about a new metadata element.
      *
-     * @param newValues The new extended element information.
+     * @param  newValues  the new extended element information.
      */
     public void setExtendedElementInformation(final Collection<? extends ExtendedElementInformation> newValues) {
         extendedElementInformation = writeCollection(newValues, extendedElementInformation, ExtendedElementInformation.class);

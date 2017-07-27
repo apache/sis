@@ -18,12 +18,12 @@ package org.apache.sis.util.collection;
 
 import java.util.Set;
 import java.util.Iterator;
-import java.util.AbstractSet;
 import java.io.Serializable;
-import org.apache.sis.util.ObjectConverter;
 import org.apache.sis.math.FunctionProperty;
+import org.apache.sis.util.ObjectConverter;
 import org.apache.sis.util.UnconvertibleObjectException;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.internal.util.SetOfUnknownSize;
 
 
 /**
@@ -53,15 +53,16 @@ import org.apache.sis.util.resources.Errors;
  * If the storage set is known to be immutable, then sub-classes may consider to cache some values,
  * especially the result of the {@link #size()} method.
  *
- * @param <S> The type of elements in the storage set.
- * @param <E> The type of elements in this set.
- *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.3
- * @version 0.3
+ * @version 0.8
+ *
+ * @param <S>  the type of elements in the storage set.
+ * @param <E>  the type of elements in this set.
+ *
+ * @since 0.3
  * @module
  */
-class DerivedSet<S,E> extends AbstractSet<E> implements CheckedContainer<E>, Serializable {
+class DerivedSet<S,E> extends SetOfUnknownSize<E> implements CheckedContainer<E>, Serializable {
     /**
      * Serial number for inter-operability with different versions.
      */
@@ -80,25 +81,25 @@ class DerivedSet<S,E> extends AbstractSet<E> implements CheckedContainer<E>, Ser
     /**
      * Creates a new derived set from the specified storage set.
      *
-     * @param storage   The set which actually store the elements.
-     * @param converter The converter from the type in the storage set to the type in the derived set.
+     * @param  storage    the set which actually store the elements.
+     * @param  converter  the converter from the type in the storage set to the type in the derived set.
      */
     static <S,E> Set<E> create(final Set<S> storage, final ObjectConverter<S,E> converter) {
         final Set<FunctionProperty> properties = converter.properties();
         if (properties.contains(FunctionProperty.INVERTIBLE)) {
             if (FunctionProperty.isBijective(properties)) {
-                return new Bijective<S,E>(storage, converter);
+                return new Bijective<>(storage, converter);
             }
-            return new Invertible<S,E>(storage, converter);
+            return new Invertible<>(storage, converter);
         }
-        return new DerivedSet<S,E>(storage, converter);
+        return new DerivedSet<>(storage, converter);
     }
 
     /**
      * Creates a new derived set from the specified storage set.
      *
-     * @param storage   The set which actually store the elements.
-     * @param converter The type of elements in this derived set.
+     * @param  storage    the set which actually store the elements.
+     * @param  converter  the type of elements in this derived set.
      */
     private DerivedSet(final Set<S> storage, final ObjectConverter<S,E> converter) {
         this.storage   = storage;
@@ -115,31 +116,13 @@ class DerivedSet<S,E> extends AbstractSet<E> implements CheckedContainer<E>, Ser
 
     /**
      * Returns an iterator over the elements contained in this set.
-     * The iterator will invokes the {@link #baseToDerived(Object)} method for each element.
+     * The iterator will invoke the {@link ObjectConverter#apply(Object)} method for each element.
      *
      * @return an iterator over the elements contained in this set.
      */
     @Override
     public final Iterator<E> iterator() {
-        return new DerivedIterator<S,E>(storage.iterator(), converter);
-    }
-
-    /**
-     * Returns the number of elements in this set. The default implementation counts
-     * the number of elements returned by the {@link #iterator() iterator}.
-     * Subclasses are encouraged to cache this value if they know that the
-     * {@linkplain #storage} set is immutable.
-     *
-     * @return the number of elements in this set.
-     */
-    @Override
-    public int size() {
-        int count = 0;
-        for (final Iterator<E> it=iterator(); it.hasNext();) {
-            it.next();
-            count++;
-        }
-        return count;
+        return new DerivedIterator<>(storage.iterator(), converter);
     }
 
     /**
@@ -189,8 +172,8 @@ class DerivedSet<S,E> extends AbstractSet<E> implements CheckedContainer<E>, Ser
      * allows us to delegate the {@link #contains(Object)} and {@linkplain #remove(Object)}
      * operations to the {@linkplain #storage} set instead than iterating over all elements.
      *
-     * @param <S> The type of elements in the storage set.
-     * @param <E> The type of elements in this set.
+     * @param <S>  the type of elements in the storage set.
+     * @param <E>  the type of elements in this set.
      */
     private static class Invertible<S,E> extends DerivedSet<S,E> {
         /**
@@ -206,8 +189,8 @@ class DerivedSet<S,E> extends AbstractSet<E> implements CheckedContainer<E>, Ser
         /**
          * Creates a new derived set from the specified storage set.
          *
-         * @param storage   The set which actually store the elements.
-         * @param converter The type of elements in this derived set.
+         * @param storage    the set which actually store the elements.
+         * @param converter  the type of elements in this derived set.
          */
         Invertible(final Set<S> storage, final ObjectConverter<S,E> converter) {
             super(storage, converter);
@@ -231,7 +214,7 @@ class DerivedSet<S,E> extends AbstractSet<E> implements CheckedContainer<E>, Ser
          *     return storage.contains(inverse.apply(element));
          * }
          *
-         * @param  element object to be checked for containment in this set.
+         * @param  element  object to be checked for containment in this set.
          * @return {@code true} if this set contains the specified element.
          */
         @Override
@@ -249,7 +232,7 @@ class DerivedSet<S,E> extends AbstractSet<E> implements CheckedContainer<E>, Ser
          *     return storage.remove(inverse.apply(element));
          * }
          *
-         * @param  element element to be removed from this set, if present.
+         * @param  element  element to be removed from this set, if present.
          * @return {@code true} if the set contained the specified element.
          * @throws UnsupportedOperationException if the {@linkplain #storage} set doesn't
          *         supports the {@code remove} operation.
@@ -266,8 +249,8 @@ class DerivedSet<S,E> extends AbstractSet<E> implements CheckedContainer<E>, Ser
      * The bijection allows us to query the {@linkplain #storage} set size directly
      * instead than iterating over all elements.
      *
-     * @param <S> The type of elements in the storage set.
-     * @param <E> The type of elements in this set.
+     * @param <S>  the type of elements in the storage set.
+     * @param <E>  the type of elements in this set.
      */
     private static final class Bijective<S,E> extends Invertible<S,E> {
         /**
@@ -278,8 +261,8 @@ class DerivedSet<S,E> extends AbstractSet<E> implements CheckedContainer<E>, Ser
         /**
          * Creates a new derived set from the specified storage set.
          *
-         * @param storage   The set which actually store the elements.
-         * @param converter The type of elements in this derived set.
+         * @param storage    the set which actually store the elements.
+         * @param converter  the type of elements in this derived set.
          */
         Bijective(final Set<S> storage, final ObjectConverter<S,E> converter) {
             super(storage, converter);

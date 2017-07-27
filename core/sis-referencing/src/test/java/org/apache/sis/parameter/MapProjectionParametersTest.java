@@ -28,20 +28,21 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 import static org.apache.sis.internal.util.Constants.SEMI_MAJOR;
 import static org.apache.sis.internal.util.Constants.SEMI_MINOR;
+import static org.apache.sis.internal.util.Constants.EARTH_RADIUS;
+import static org.apache.sis.internal.util.Constants.INVERSE_FLATTENING;
+import static org.apache.sis.internal.util.Constants.IS_IVF_DEFINITIVE;
 import static org.apache.sis.internal.util.Constants.CENTRAL_MERIDIAN;
+import static org.apache.sis.internal.util.Constants.STANDARD_PARALLEL;
 import static org.apache.sis.internal.util.Constants.STANDARD_PARALLEL_1;
 import static org.apache.sis.internal.util.Constants.STANDARD_PARALLEL_2;
-import static org.apache.sis.parameter.MapProjectionDescriptor.EARTH_RADIUS;
-import static org.apache.sis.parameter.MapProjectionDescriptor.INVERSE_FLATTENING;
-import static org.apache.sis.parameter.MapProjectionDescriptor.STANDARD_PARALLEL;
 
 
 /**
  * Tests the {@link MapProjectionParameters} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.6
  * @version 0.6
+ * @since   0.6
  * @module
  */
 @DependsOn(ParametersTest.class)
@@ -50,7 +51,7 @@ public final strictfp class MapProjectionParametersTest extends TestCase {
      * Creates a map projection descriptor with semi-major/minor axis lengths
      * and the given amount of standard parallels.
      *
-     * @param numStandardParallels 1 or 2 for including the standard parallels.
+     * @param  numStandardParallels  1 or 2 for including the standard parallels.
      */
     @SuppressWarnings("fallthrough")
     private static MapProjectionDescriptor createDescriptor(final int numStandardParallels) {
@@ -67,7 +68,7 @@ public final strictfp class MapProjectionParametersTest extends TestCase {
 
     /** Creates a parameter of the given name. */
     private static DefaultParameterDescriptor<?> parameter(final String name) {
-        return new DefaultParameterDescriptor<Double>(name(name), 1, 1, Double.class, null, null, null);
+        return new DefaultParameterDescriptor<>(name(name), 1, 1, Double.class, null, null, null);
     }
 
     /** Returns properties map for an object of the given name. */
@@ -103,17 +104,24 @@ public final strictfp class MapProjectionParametersTest extends TestCase {
         final MapProjectionDescriptor descriptor = createDescriptor(0);
         final ParameterValueGroup parameters = descriptor.createValue();
 
-        parameters.parameter(SEMI_MAJOR).setValue(6378206.4); // Clarke 1866
+        parameters.parameter(SEMI_MAJOR).setValue(6378206.4);  // Clarke 1866
         parameters.parameter(SEMI_MINOR).setValue(6356583.8);
         assertEquals(294.97870, parameters.parameter(INVERSE_FLATTENING).doubleValue(), 0.00001);
         assertEquals(6378206.4, parameters.parameter(SEMI_MAJOR)        .doubleValue(), 0.5);
         assertEquals(6356583.8, parameters.parameter(SEMI_MINOR)        .doubleValue(), 0.5);
+        assertFalse("isIvfDefinitive", parameters.parameter(IS_IVF_DEFINITIVE).booleanValue());
 
-        parameters.parameter(SEMI_MAJOR).setValue(6378137.000); // WGS84
+        parameters.parameter(SEMI_MAJOR).setValue(6378137.0);  // WGS84
         parameters.parameter(INVERSE_FLATTENING).setValue(298.257223563);
         assertEquals(298.257, parameters.parameter(INVERSE_FLATTENING).doubleValue(), 0.001);
         assertEquals(6378137, parameters.parameter(SEMI_MAJOR)        .doubleValue(), 0.5);
         assertEquals(6356752, parameters.parameter(SEMI_MINOR)        .doubleValue(), 0.5);
+        assertTrue("isIvfDefinitive", parameters.parameter(IS_IVF_DEFINITIVE).booleanValue());
+
+        parameters.parameter(SEMI_MAJOR).setValue(6378350.9);  // Clarke 1858 (approximative)
+        parameters.parameter(SEMI_MINOR).setValue(6356675.0);
+        assertEquals(294.26, parameters.parameter(INVERSE_FLATTENING).doubleValue(), 0.001);
+        assertFalse("isIvfDefinitive", parameters.parameter(IS_IVF_DEFINITIVE).booleanValue());
     }
 
     /**

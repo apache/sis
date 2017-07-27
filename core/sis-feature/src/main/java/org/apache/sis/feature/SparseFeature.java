@@ -18,13 +18,13 @@ package org.apache.sis.feature;
 
 import java.util.Map;
 import java.util.HashMap;
+import java.util.Objects;
 import java.util.ConcurrentModificationException;
 import org.opengis.metadata.maintenance.ScopeCode;
 import org.opengis.metadata.quality.DataQuality;
 import org.apache.sis.internal.util.Cloner;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.CorruptedObjectException;
-import org.apache.sis.util.resources.Errors;
 
 
 /**
@@ -35,12 +35,13 @@ import org.apache.sis.util.resources.Errors;
  * @author  Travis L. Pinney
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.5
- * @version 0.6
- * @module
+ * @version 0.8
  *
  * @see DenseFeature
  * @see DefaultFeatureType
+ *
+ * @since 0.5
+ * @module
  */
 final class SparseFeature extends AbstractFeature implements Cloneable {
     /**
@@ -51,7 +52,7 @@ final class SparseFeature extends AbstractFeature implements Cloneable {
     /**
      * A {@link #valuesKind} flag meaning that the {@link #properties} map contains raw values.
      */
-    private static final byte VALUES = 0; // Must be zero, because we want it to be 'valuesKind' default value.
+    private static final byte VALUES = 0;   // Must be zero, because we want it to be 'valuesKind' default value.
 
     /**
      * A {@link #valuesKind} flag meaning that the {@link #properties} map contains {@link Property} instances.
@@ -98,29 +99,29 @@ final class SparseFeature extends AbstractFeature implements Cloneable {
     /**
      * Creates a new feature of the given type.
      *
-     * @param type Information about the feature (name, characteristics, <i>etc.</i>).
+     * @param type  information about the feature (name, characteristics, <i>etc.</i>).
      */
     public SparseFeature(final DefaultFeatureType type) {
         super(type);
         indices = type.indices();
-        properties = new HashMap<Integer, Object>();
+        properties = new HashMap<>();
     }
 
     /**
      * Returns the index for the property of the given name, or {@link DefaultFeatureType#OPERATION_INDEX}
      * if the property is a parameterless operation.
      *
-     * @param  name The property name.
-     * @return The index for the property of the given name,
+     * @param  name  the property name.
+     * @return the index for the property of the given name,
      *         or a negative value if the property is a parameterless operation.
-     * @throws IllegalArgumentException If the given argument is not a property name of this feature.
+     * @throws IllegalArgumentException if the given argument is not a property name of this feature.
      */
     private int getIndex(final String name) throws IllegalArgumentException {
         final Integer index = indices.get(name);
         if (index != null) {
             return index;
         }
-        throw new IllegalArgumentException(Errors.format(Errors.Keys.PropertyNotFound_2, getName(), name));
+        throw new IllegalArgumentException(propertyNotFound(type, getName(), name));
     }
 
     /**
@@ -143,7 +144,7 @@ final class SparseFeature extends AbstractFeature implements Cloneable {
      */
     private void requireMapOfProperties() {
         if (valuesKind != PROPERTIES) {
-            if (!properties.isEmpty()) { // The map is typically empty when this method is first invoked.
+            if (!properties.isEmpty()) {        // The map is typically empty when this method is first invoked.
                 if (valuesKind != VALUES) {
                     throw new CorruptedObjectException(getName());
                 }
@@ -156,16 +157,16 @@ final class SparseFeature extends AbstractFeature implements Cloneable {
                     }
                 }
             }
-            valuesKind = PROPERTIES; // Set only on success.
+            valuesKind = PROPERTIES;            // Set only on success.
         }
     }
 
     /**
      * Returns the property (attribute, operation or association) of the given name.
      *
-     * @param  name The property name.
-     * @return The property of the given name.
-     * @throws IllegalArgumentException If the given argument is not a property name of this feature.
+     * @param  name  the property name.
+     * @return the property of the given name.
+     * @throws IllegalArgumentException if the given argument is not a property name of this feature.
      */
     @Override
     public Object getProperty(final String name) throws IllegalArgumentException {
@@ -195,9 +196,9 @@ final class SparseFeature extends AbstractFeature implements Cloneable {
     /**
      * Sets the property (attribute, operation or association).
      *
-     * @param  property The property to set.
+     * @param  property  the property to set.
      * @throws IllegalArgumentException if the type of the given property is not one of the types
-     *         known to this feature.
+     *         known to this feature, or if the property can not be set for another reason.
      */
     @Override
     public void setProperty(final Object property) throws IllegalArgumentException {
@@ -215,9 +216,9 @@ final class SparseFeature extends AbstractFeature implements Cloneable {
     /**
      * Returns the value for the property of the given name.
      *
-     * @param  name The property name.
-     * @return The value for the given property, or {@code null} if none.
-     * @throws IllegalArgumentException If the given argument is not an attribute or association name of this feature.
+     * @param  name  the property name.
+     * @return the value for the given property, or {@code null} if none.
+     * @throws IllegalArgumentException if the given argument is not an attribute or association name of this feature.
      */
     @Override
     public Object getPropertyValue(final String name) throws IllegalArgumentException {
@@ -235,12 +236,12 @@ final class SparseFeature extends AbstractFeature implements Cloneable {
             } else if (element instanceof AbstractAssociation) {
                 return getAssociationValue((AbstractAssociation) element);
             } else if (valuesKind == PROPERTIES) {
-                throw unsupportedPropertyType(((Property) element).getName());
+                throw new IllegalArgumentException(unsupportedPropertyType(((Property) element).getName()));
             } else {
                 throw new CorruptedObjectException(getName());
             }
         } else if (properties.containsKey(index)) {
-            return null; // Null has been explicitely set.
+            return null;                                                // Null has been explicitely set.
         } else {
             return getDefaultValue(name);
         }
@@ -249,10 +250,10 @@ final class SparseFeature extends AbstractFeature implements Cloneable {
     /**
      * Sets the value for the property of the given name.
      *
-     * @param  name  The attribute name.
-     * @param  value The new value for the given attribute (may be {@code null}).
-     * @throws ClassCastException If the value is not assignable to the expected value class.
-     * @throws IllegalArgumentException If the given value can not be assigned for an other reason.
+     * @param  name   the attribute name.
+     * @param  value  the new value for the given attribute (may be {@code null}).
+     * @throws ClassCastException if the value is not assignable to the expected value class.
+     * @throws IllegalArgumentException if the given value can not be assigned for another reason.
      */
     @Override
     public void setPropertyValue(final String name, final Object value) throws IllegalArgumentException {
@@ -270,7 +271,7 @@ final class SparseFeature extends AbstractFeature implements Cloneable {
              * a new value or a value of a different type, then we need to check the name and type validity.
              */
             if (!canSkipVerification(previous, value)) {
-                Object toStore = previous; // This initial value will restore the previous value if the check fail.
+                Object toStore = previous;  // This initial value will restore the previous value if the check fail.
                 try {
                     toStore = verifyPropertyValue(name, value);
                 } finally {
@@ -289,9 +290,9 @@ final class SparseFeature extends AbstractFeature implements Cloneable {
     /**
      * Sets a value in the {@link #properties} map.
      *
-     * @param index    The key of the property to set.
-     * @param oldValue The old value, used for verification purpose.
-     * @param newValue The new value.
+     * @param index     the key of the property to set.
+     * @param oldValue  the old value, used for verification purpose.
+     * @param newValue  the new value.
      */
     private void replace(final Integer index, final Object oldValue, final Object newValue) {
         if (properties.put(index, newValue) != oldValue) {
@@ -313,9 +314,7 @@ final class SparseFeature extends AbstractFeature implements Cloneable {
             }
             return v.quality;
         }
-        /*
-         * Slower path when there is a possibility that user overridden the Property.quality() methods.
-         */
+        // Slower path when there is a possibility that user overridden the Property.quality() methods.
         return super.quality();
     }
 
@@ -326,7 +325,7 @@ final class SparseFeature extends AbstractFeature implements Cloneable {
      * the clone operation is <cite>deep</cite> or <cite>shallow</cite>) depends on the behavior or
      * property {@code clone()} methods.
      *
-     * @return A clone of this attribute.
+     * @return a clone of this attribute.
      * @throws CloneNotSupportedException if this feature can not be cloned, typically because
      *         {@code clone()} on a property instance failed.
      */
@@ -338,7 +337,7 @@ final class SparseFeature extends AbstractFeature implements Cloneable {
         switch (clone.valuesKind) {
             default:        throw new AssertionError(clone.valuesKind);
             case CORRUPTED: throw new CorruptedObjectException(clone.getName());
-            case VALUES:    break; // Nothing to do.
+            case VALUES:    break;                             // Nothing to do.
             case PROPERTIES: {
                 final Cloner cloner = new Cloner();
                 for (final Map.Entry<Integer,Object> entry : clone.properties.entrySet()) {
@@ -355,12 +354,32 @@ final class SparseFeature extends AbstractFeature implements Cloneable {
 
     /**
      * Returns a hash code value for this feature.
+     * This implementation computes the hash code using only the property values, not the {@code Property} instances,
+     * in order to keep the hash code value stable before and after the {@code properties} map is (conceptually)
+     * promoted from the {@code Map<Integer,Object>} type to the {@code Map<Integer,Property>} type.
      *
-     * @return A hash code value.
+     * @return a hash code value.
      */
     @Override
     public int hashCode() {
-        return type.hashCode() + 37 * properties.hashCode();
+        int code = type.hashCode() * 37;
+        if (valuesKind == PROPERTIES) {
+            for (final Map.Entry<Integer,Object> entry : properties.entrySet()) {
+                final Object p = entry.getValue();
+                final Object value;
+                if (p instanceof AbstractAttribute<?>) {
+                    value = getAttributeValue((AbstractAttribute<?>) p);
+                } else if (p instanceof AbstractAssociation) {
+                    value = getAssociationValue((AbstractAssociation) p);
+                } else {
+                    value = null;
+                }
+                code += Objects.hashCode(entry.getKey()) ^ Objects.hashCode(value);
+            }
+        } else {
+            code += properties.hashCode();
+        }
+        return code;
     }
 
     /**
@@ -375,7 +394,17 @@ final class SparseFeature extends AbstractFeature implements Cloneable {
         }
         if (obj instanceof SparseFeature) {
             final SparseFeature that = (SparseFeature) obj;
-            return type.equals(that.type) && properties.equals(that.properties);
+            if (type.equals(that.type)) {
+                final boolean asProperties = (valuesKind == PROPERTIES);
+                if (asProperties != (that.valuesKind == PROPERTIES)) {
+                    if (asProperties) {
+                        that.requireMapOfProperties();
+                    } else {
+                        requireMapOfProperties();
+                    }
+                }
+                return properties.equals(that.properties);
+            }
         }
         return false;
     }

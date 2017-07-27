@@ -30,8 +30,8 @@ import org.apache.sis.util.Workaround;
  * in the GML module.
  *
  * @author  Guilhem Legal (Geomatys)
- * @since   0.3
  * @version 0.4
+ * @since   0.3
  * @module
  */
 @XmlRegistry
@@ -54,12 +54,12 @@ public class ObjectFactory {
     /**
      * Creates an instance of {@code JAXBElement<Object>}}.
      *
-     * @param  value The {@code Object} value to wrap.
-     * @return The wrapped value.
+     * @param  value  the {@code Object} value to wrap.
+     * @return the wrapped value.
      */
     @XmlElementDecl(name = "AbstractObject", namespace = Namespaces.GML)
     public JAXBElement<Object> createObject(final Object value) {
-        return new JAXBElement<Object>(AbstractObject_QNAME, Object.class, null, value);
+        return new JAXBElement<>(AbstractObject_QNAME, Object.class, null, value);
     }
 
     /**
@@ -68,8 +68,8 @@ public class ObjectFactory {
      * However it is declared here as {@code Object} in order to avoid a dependency
      * toward the GML module.
      *
-     * @param  value The GML {@code AbstractGMLType} value to wrap.
-     * @return The wrapped value.
+     * @param  value  the GML {@code AbstractGMLType} value to wrap.
+     * @return the wrapped value.
      */
     @Workaround(library = "JAXB", version = "2.1")
     @XmlElementDecl(name = "AbstractGML",
@@ -77,7 +77,7 @@ public class ObjectFactory {
             substitutionHeadName = "AbstractObject",
             substitutionHeadNamespace = Namespaces.GML) // Not necessary according javadoc, but appears to be in practice (JAXB 2.1 bug?)
     public JAXBElement<Object> createAbstractGML(final Object value) {
-        return new JAXBElement<Object>(AbstractGML_QNAME, Object.class, null, value);
+        return new JAXBElement<>(AbstractGML_QNAME, Object.class, null, value);
     }
 
     /**
@@ -86,8 +86,8 @@ public class ObjectFactory {
      * However it is declared here as {@code Object} in order to avoid a dependency
      * toward the GML module.
      *
-     * @param  value The {@code AbstractGeometryType} value to wrap.
-     * @return The wrapped value.
+     * @param  value  the {@code AbstractGeometryType} value to wrap.
+     * @return the wrapped value.
      */
     @Workaround(library = "JAXB", version = "2.1")
     @XmlElementDecl(name = "AbstractGeometry",
@@ -95,6 +95,6 @@ public class ObjectFactory {
             substitutionHeadName = "AbstractGML",
             substitutionHeadNamespace = Namespaces.GML) // Not necessary according javadoc, but appears to be in practice (JAXB 2.1 bug?)
     public JAXBElement<Object> createAbstractGeometry(final Object value) {
-        return new JAXBElement<Object>(AbstractGeometry_QNAME, Object.class, null, value);
+        return new JAXBElement<>(AbstractGeometry_QNAME, Object.class, null, value);
     }
 }

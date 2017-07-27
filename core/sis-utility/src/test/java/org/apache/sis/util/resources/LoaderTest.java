@@ -28,8 +28,8 @@ import static org.apache.sis.test.Assert.*;
  * Tests the {@link Loader} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.3
+ * @since   0.3
  */
 public final strictfp class LoaderTest extends TestCase {
     /**

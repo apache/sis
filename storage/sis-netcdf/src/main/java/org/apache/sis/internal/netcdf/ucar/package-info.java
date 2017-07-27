@@ -20,8 +20,8 @@
  * as wrappers around the UCAR NetCDF library.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
+ * @version 0.8
  * @since   0.3
- * @version 0.3
  * @module
  */
 package org.apache.sis.internal.netcdf.ucar;

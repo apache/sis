@@ -22,6 +22,7 @@ import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.lang.reflect.Array;
+import javax.xml.bind.annotation.XmlTransient;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.parameter.ParameterValue;
 import org.opengis.parameter.ParameterValueGroup;
@@ -32,7 +33,9 @@ import org.opengis.parameter.GeneralParameterDescriptor;
 import org.opengis.parameter.ParameterNotFoundException;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.operation.matrix.Matrices;
+import org.apache.sis.internal.referencing.Resources;
 import org.apache.sis.internal.referencing.WKTUtilities;
+import org.apache.sis.internal.metadata.WKTKeywords;
 import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
 import org.apache.sis.io.wkt.Formatter;
@@ -50,13 +53,15 @@ import org.apache.sis.util.resources.Errors;
  * {@code "num_col"} parameter values. Consequently, this {@code ParameterValueGroup} is also its own
  * mutable {@code ParameterDescriptorGroup}.
  *
- * @param <E> The type of tensor element values.
- *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.4
  * @version 0.6
+ *
+ * @param <E>  the type of tensor element values.
+ *
+ * @since 0.4
  * @module
  */
+@XmlTransient
 final class TensorValues<E> extends AbstractParameterDescriptor
         implements ParameterDescriptorGroup, ParameterValueGroup, Cloneable
 {
@@ -143,8 +148,9 @@ final class TensorValues<E> extends AbstractParameterDescriptor
      * Returns a clone of this group.
      */
     @Override
+    @SuppressWarnings("CloneDoesntCallSuperClone")
     public ParameterValueGroup clone() {
-        return new TensorValues<E>(this, true);
+        return new TensorValues<>(this, true);
     }
 
     /**
@@ -152,7 +158,7 @@ final class TensorValues<E> extends AbstractParameterDescriptor
      */
     @Override
     public ParameterValueGroup createValue() {
-        return new TensorValues<E>(this, false);
+        return new TensorValues<>(this, false);
     }
 
     /**
@@ -187,8 +193,8 @@ final class TensorValues<E> extends AbstractParameterDescriptor
     /**
      * Returns the parameter descriptor in this group for the specified name.
      *
-     * @param  name The name of the parameter to search for.
-     * @return The parameter descriptor for the given name.
+     * @param  name  the name of the parameter to search for.
+     * @return the parameter descriptor for the given name.
      * @throws ParameterNotFoundException if there is no parameter for the given name.
      */
     @Override
@@ -201,8 +207,8 @@ final class TensorValues<E> extends AbstractParameterDescriptor
     /**
      * Returns the parameter value in this group for the specified name.
      *
-     * @param  name The name of the parameter to search for.
-     * @return The parameter value for the given name.
+     * @param  name  the name of the parameter to search for.
+     * @return the parameter value for the given name.
      * @throws ParameterNotFoundException if there is no parameter for the given name.
      */
     @Override
@@ -234,8 +240,8 @@ final class TensorValues<E> extends AbstractParameterDescriptor
                 return dimensions[i];
             }
         }
-        throw (ParameterNotFoundException) new ParameterNotFoundException(Errors.format(
-                Errors.Keys.ParameterNotFound_2, getName(), name), name).initCause(cause);
+        throw (ParameterNotFoundException) new ParameterNotFoundException(Resources.format(
+                Resources.Keys.ParameterNotFound_2, getName(), name), name).initCause(cause);
     }
 
     /**
@@ -302,7 +308,7 @@ final class TensorValues<E> extends AbstractParameterDescriptor
      */
     @Override
     public List<GeneralParameterValue> values() {
-        final List<GeneralParameterValue> addTo = new ArrayList<GeneralParameterValue>();
+        final List<GeneralParameterValue> addTo = new ArrayList<>();
         for (final ParameterValue<Integer> dimension : dimensions) {
             if (!isOmitted(dimension)) {
                 addTo.add(dimension);
@@ -342,7 +348,7 @@ final class TensorValues<E> extends AbstractParameterDescriptor
      */
     private static boolean isOmitted(final ParameterValue<?> parameter) {
         final Object value = parameter.getValue();
-        if (value == null) { // Implies that the default value is also null.
+        if (value == null) {                        // Implies that the default value is also null.
             return true;
         }
         final ParameterDescriptor<?> descriptor = parameter.getDescriptor();
@@ -354,7 +360,7 @@ final class TensorValues<E> extends AbstractParameterDescriptor
      */
     @Override
     public List<ParameterValueGroup> groups(final String name) throws ParameterNotFoundException {
-        throw new ParameterNotFoundException(Errors.format(Errors.Keys.ParameterNotFound_2, getName(), name), name);
+        throw new ParameterNotFoundException(Resources.format(Resources.Keys.ParameterNotFound_2, getName(), name), name);
     }
 
     /**
@@ -362,14 +368,14 @@ final class TensorValues<E> extends AbstractParameterDescriptor
      */
     @Override
     public ParameterValueGroup addGroup(String name) throws ParameterNotFoundException, IllegalStateException {
-        throw new ParameterNotFoundException(Errors.format(Errors.Keys.ParameterNotFound_2, getName(), name), name);
+        throw new ParameterNotFoundException(Resources.format(Resources.Keys.ParameterNotFound_2, getName(), name), name);
     }
 
     /**
      * Creates a matrix from this group of parameters.
-     * This operation is allowed only for tensors of {@linkplain #rank() rank} 2.
+     * This operation is allowed only for tensors of {@linkplain TensorParameters#rank() rank} 2.
      *
-     * @return A matrix created from this group of parameters.
+     * @return a matrix created from this group of parameters.
      */
     final Matrix toMatrix() {
         final int numRow = dimensions[0].intValue();
@@ -396,7 +402,7 @@ final class TensorValues<E> extends AbstractParameterDescriptor
      * After this method call, {@link #values} will returns only the elements
      * different from the default value.
      *
-     * @param matrix The matrix to copy in this group of parameters.
+     * @param  matrix  the matrix to copy in this group of parameters.
      */
     final void setMatrix(final Matrix matrix) {
         final int numRow = matrix.getNumRow();
@@ -435,7 +441,7 @@ final class TensorValues<E> extends AbstractParameterDescriptor
     @Override
     public boolean equals(final Object object, final ComparisonMode mode) {
         if (object == this) {
-            return true; // Slight optimization.
+            return true;                            // Slight optimization.
         }
         if (super.equals(object, mode)) {
             final TensorValues<?> that = (TensorValues<?>) object;
@@ -459,12 +465,12 @@ final class TensorValues<E> extends AbstractParameterDescriptor
     /**
      * Formats this group as a pseudo-<cite>Well Known Text</cite> element.
      *
-     * @param  formatter The formatter where to format the inner content of this WKT element.
+     * @param  formatter  the formatter where to format the inner content of this WKT element.
      * @return {@code "ParameterGroup"}.
      */
     @Override
     protected String formatTo(final Formatter formatter) {
         WKTUtilities.appendParamMT(this, formatter);
-        return "ParameterGroup";
+        return WKTKeywords.ParameterGroup;
     }
 }

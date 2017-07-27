@@ -34,6 +34,20 @@ import org.apache.sis.xml.Namespaces;
  * Individual cells can be geolocated using geolocation information supplied with the data but cannot be
  * geolocated from the grid properties alone.
  *
+ * <p>The following properties are mandatory in a well-formed metadata according ISO 19115:</p>
+ *
+ * <div class="preformat">{@code MD_Georeferenceable}
+ * {@code   ├─numberOfDimensions…………………………………………………} Number of independent spatial-temporal axes.
+ * {@code   ├─axisDimensionProperties……………………………………} Information about spatial-temporal axis properties.
+ * {@code   │   ├─dimensionName……………………………………………………} Name of the axis.
+ * {@code   │   └─dimensionSize……………………………………………………} Number of elements along the axis.
+ * {@code   ├─cellGeometry…………………………………………………………………} Identification of grid data as point or cell.
+ * {@code   ├─transformationParameterAvailability……} Indication of whether or not parameters for transformation exists.
+ * {@code   ├─controlPointAvailability…………………………………} Indication of whether or not control point(s) exists.
+ * {@code   ├─orientationParameterAvailability……………} Indication of whether or not orientation parameters are available.
+ * {@code   ├─geolocationInformation………………………………………} Information that can be used to geolocate the data.
+ * {@code   └─georeferencedParameters……………………………………} Terms which support grid data georeferencing.</div>
+ *
  * <p><b>Limitations:</b></p>
  * <ul>
  *   <li>Instances of this class are not synchronized for multi-threading.
@@ -46,10 +60,11 @@ import org.apache.sis.xml.Namespaces;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Touraïvane (IRD)
  * @author  Cédric Briançon (Geomatys)
- * @since   0.3
  * @version 0.3
+ * @since   0.3
  * @module
  */
+@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "MD_Georeferenceable_Type", propOrder = {
     "controlPointAvailable",
     "orientationParameterAvailable",
@@ -110,7 +125,7 @@ public class DefaultGeoreferenceable extends DefaultGridSpatialRepresentation im
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
-     * @param object The metadata to copy values from, or {@code null} if none.
+     * @param  object  the metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(Georeferenceable)
      */
@@ -144,8 +159,8 @@ public class DefaultGeoreferenceable extends DefaultGridSpatialRepresentation im
      *       metadata contained in the given object are not recursively copied.</li>
      * </ul>
      *
-     * @param  object The object to get as a SIS implementation, or {@code null} if none.
-     * @return A SIS implementation containing the values of the given object (may be the
+     * @param  object  the object to get as a SIS implementation, or {@code null} if none.
+     * @return a SIS implementation containing the values of the given object (may be the
      *         given object itself), or {@code null} if the argument was null.
      */
     public static DefaultGeoreferenceable castOrCopy(final Georeferenceable object) {
@@ -158,7 +173,7 @@ public class DefaultGeoreferenceable extends DefaultGridSpatialRepresentation im
     /**
      * Returns an indication of whether or not control point(s) exists.
      *
-     * @return Whether or not control point(s) exists.
+     * @return whether or not control point(s) exists.
      */
     @Override
     @XmlElement(name = "controlPointAvailability", required = true)
@@ -183,7 +198,7 @@ public class DefaultGeoreferenceable extends DefaultGridSpatialRepresentation im
     /**
      * Returns an indication of whether or not orientation parameters are available.
      *
-     * @return Whether or not orientation parameters are available.
+     * @return whether or not orientation parameters are available.
      */
     @Override
     @XmlElement(name = "orientationParameterAvailability", required = true)
@@ -208,7 +223,7 @@ public class DefaultGeoreferenceable extends DefaultGridSpatialRepresentation im
     /**
      * Returns a description of parameters used to describe sensor orientation.
      *
-     * @return Description of parameters used to describe sensor orientation, or {@code null}.
+     * @return description of parameters used to describe sensor orientation, or {@code null}.
      */
     @Override
     @XmlElement(name = "orientationParameterDescription")
@@ -219,7 +234,7 @@ public class DefaultGeoreferenceable extends DefaultGridSpatialRepresentation im
     /**
      * Sets a description of parameters used to describe sensor orientation.
      *
-     * @param newValue The new orientation parameter description.
+     * @param  newValue  the new orientation parameter description.
      */
     public void setOrientationParameterDescription(final InternationalString newValue) {
         checkWritePermission();
@@ -229,7 +244,7 @@ public class DefaultGeoreferenceable extends DefaultGridSpatialRepresentation im
     /**
      * Returns the terms which support grid data georeferencing.
      *
-     * @return Terms which support grid data georeferencing, or {@code null}.
+     * @return terms which support grid data georeferencing, or {@code null}.
      */
     @Override
 /// @XmlElement(name = "georeferencedParameters", required = true)
@@ -240,7 +255,7 @@ public class DefaultGeoreferenceable extends DefaultGridSpatialRepresentation im
     /**
      * Sets the terms which support grid data georeferencing.
      *
-     * @param newValue The new georeferenced parameters.
+     * @param  newValue  the new georeferenced parameters.
      */
     public void setGeoreferencedParameters(final Record newValue) {
         checkWritePermission();
@@ -250,7 +265,7 @@ public class DefaultGeoreferenceable extends DefaultGridSpatialRepresentation im
     /**
      * Returns a reference providing description of the parameters.
      *
-     * @return Reference providing description of the parameters.
+     * @return reference providing description of the parameters.
      */
     @Override
     @XmlElement(name = "parameterCitation")
@@ -261,7 +276,7 @@ public class DefaultGeoreferenceable extends DefaultGridSpatialRepresentation im
     /**
      * Sets a reference providing description of the parameters.
      *
-     * @param newValues The new parameter citations.
+     * @param  newValues  the new parameter citations.
      */
     public void setParameterCitations(final Collection<? extends Citation> newValues) {
         parameterCitations = writeCollection(newValues, parameterCitations, Citation.class);
@@ -270,7 +285,7 @@ public class DefaultGeoreferenceable extends DefaultGridSpatialRepresentation im
     /**
      * Returns the information that can be used to geolocate the data.
      *
-     * @return A geolocalisation of the data.
+     * @return a geolocalisation of the data.
      */
     @Override
     @XmlElement(name = "geolocationInformation", namespace = Namespaces.GMI, required = true)
@@ -281,7 +296,7 @@ public class DefaultGeoreferenceable extends DefaultGridSpatialRepresentation im
     /**
      * Sets the information that can be used to geolocate the data.
      *
-     * @param newValues The new geolocation information values.
+     * @param  newValues  the new geolocation information values.
      */
     public void setGeolocationInformation(final Collection<? extends GeolocationInformation> newValues) {
         geolocationInformation = writeCollection(newValues, geolocationInformation, GeolocationInformation.class);

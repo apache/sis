@@ -37,11 +37,12 @@ import org.apache.sis.math.FunctionProperty;
  * <div class="section">Immutability and thread safety</div>
  * This base class and all inner classes are immutable, and thus inherently thread-safe.
  *
- * @param <S> The source type.
- *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.3
+ *
+ * @param <S>  the source type.
+ *
+ * @since 0.3
  * @module
  */
 class ObjectToString<S> extends SystemConverter<S,String> {
@@ -94,7 +95,7 @@ class ObjectToString<S> extends SystemConverter<S,String> {
     @Override
     public final ObjectConverter<S, String> unique() {
         if (inverse != null) {
-            return inverse.unique().inverse(); // Will typically delegate to StringConverter.
+            return inverse.unique().inverse();              // Will typically delegate to StringConverter.
         }
         return this;
     }

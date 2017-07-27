@@ -29,8 +29,8 @@ import static org.apache.sis.internal.util.X364.*;
  * Tests the {@link X364} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.3
+ * @since   0.3
  * @module
  */
 @DependsOn(org.apache.sis.util.CharSequencesTest.class)
@@ -48,7 +48,7 @@ public final strictfp class X364Test extends TestCase {
     }
 
     /**
-     * Tests the {@link X364#plain(String)} method.
+     * Tests the {@link X364#plain(CharSequence, int, int)} method.
      */
     @Test
     public void testPlain() {

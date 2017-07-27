@@ -25,6 +25,8 @@ import org.opengis.referencing.cs.AffineCS;
 import org.opengis.referencing.crs.ImageCRS;
 import org.opengis.referencing.cs.CartesianCS;
 import org.opengis.referencing.datum.ImageDatum;
+import org.apache.sis.internal.metadata.WKTKeywords;
+import org.apache.sis.internal.metadata.MetadataUtilities;
 import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.referencing.AbstractReferenceSystem;
 import org.apache.sis.io.wkt.Formatter;
@@ -33,11 +35,13 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 
 
 /**
- * An engineering coordinate reference system applied to locations in images. Image coordinate
- * reference systems are treated as a separate sub-type because a separate user community exists
- * for images with its own terms of reference.
+ * A 2-dimensional engineering coordinate reference system applied to locations in images.
+ * Image coordinate reference systems are treated as a separate sub-type because a separate
+ * user community exists for images with its own terms of reference.
  *
- * <p><b>Used with coordinate system types:</b>
+ * <p><b>Used with datum type:</b>
+ *   {@linkplain org.apache.sis.referencing.datum.DefaultImageDatum Image}.<br>
+ * <b>Used with coordinate system types:</b>
  *   {@linkplain org.apache.sis.referencing.cs.DefaultCartesianCS Cartesian} or
  *   {@linkplain org.apache.sis.referencing.cs.DefaultAffineCS Affine}.
  * </p>
@@ -48,8 +52,12 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  * in the javadoc, this condition holds if all components were created using only SIS factories and static constants.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.4
- * @version 0.4
+ * @version 0.7
+ *
+ * @see org.apache.sis.referencing.datum.DefaultImageDatum
+ * @see org.apache.sis.referencing.factory.GeodeticAuthorityFactory#createImageCRS(String)
+ *
+ * @since 0.4
  * @module
  */
 @XmlType(name = "ImageCRSType", propOrder = {
@@ -66,18 +74,13 @@ public class DefaultImageCRS extends AbstractCRS implements ImageCRS {
 
     /**
      * The datum.
+     *
+     * <p><b>Consider this field as final!</b>
+     * This field is modified only at unmarshalling time by {@link #setDatum(ImageDatum)}</p>
+     *
+     * @see #getDatum()
      */
-    @XmlElement(name = "imageDatum", required = true)
-    private final ImageDatum datum;
-
-    /**
-     * Constructs a new object in which every attributes are set to a null value.
-     * <strong>This is not a valid object.</strong> This constructor is strictly
-     * reserved to JAXB, which will assign values to the fields using reflexion.
-     */
-    private DefaultImageCRS() {
-        datum = null;
-    }
+    private ImageDatum datum;
 
     /**
      * Creates a coordinate reference system from the given properties, datum and coordinate system.
@@ -113,20 +116,22 @@ public class DefaultImageCRS extends AbstractCRS implements ImageCRS {
      *     <td>{@link #getRemarks()}</td>
      *   </tr>
      *   <tr>
-     *     <td>{@value org.opengis.referencing.datum.Datum#DOMAIN_OF_VALIDITY_KEY}</td>
+     *     <td>{@value org.opengis.referencing.ReferenceSystem#DOMAIN_OF_VALIDITY_KEY}</td>
      *     <td>{@link org.opengis.metadata.extent.Extent}</td>
      *     <td>{@link #getDomainOfValidity()}</td>
      *   </tr>
      *   <tr>
-     *     <td>{@value org.opengis.referencing.datum.Datum#SCOPE_KEY}</td>
+     *     <td>{@value org.opengis.referencing.ReferenceSystem#SCOPE_KEY}</td>
      *     <td>{@link org.opengis.util.InternationalString} or {@link String}</td>
      *     <td>{@link #getScope()}</td>
      *   </tr>
      * </table>
      *
-     * @param properties The properties to be given to the coordinate reference system.
-     * @param datum The datum.
-     * @param cs The coordinate system.
+     * @param  properties  the properties to be given to the coordinate reference system.
+     * @param  datum       the datum.
+     * @param  cs          the coordinate system.
+     *
+     * @see org.apache.sis.referencing.factory.GeodeticObjectFactory#createImageCRS(Map, ImageDatum, AffineCS)
      */
     public DefaultImageCRS(final Map<String,?> properties,
                            final ImageDatum    datum,
@@ -144,7 +149,7 @@ public class DefaultImageCRS extends AbstractCRS implements ImageCRS {
      *
      * <p>This constructor performs a shallow copy, i.e. the properties are not cloned.</p>
      *
-     * @param crs The coordinate reference system to copy.
+     * @param  crs  the coordinate reference system to copy.
      *
      * @see #castOrCopy(ImageCRS)
      */
@@ -159,8 +164,8 @@ public class DefaultImageCRS extends AbstractCRS implements ImageCRS {
      * Otherwise if the given object is already a SIS implementation, then the given object is returned unchanged.
      * Otherwise a new SIS implementation is created and initialized to the attribute values of the given object.
      *
-     * @param  object The object to get as a SIS implementation, or {@code null} if none.
-     * @return A SIS implementation containing the values of the given object (may be the
+     * @param  object  the object to get as a SIS implementation, or {@code null} if none.
+     * @return a SIS implementation containing the values of the given object (may be the
      *         given object itself), or {@code null} if the argument was null.
      */
     public static DefaultImageCRS castOrCopy(final ImageCRS object) {
@@ -187,53 +192,22 @@ public class DefaultImageCRS extends AbstractCRS implements ImageCRS {
     /**
      * Returns the datum.
      *
-     * @return The datum.
+     * @return the datum.
      */
     @Override
-    public final ImageDatum getDatum() {
+    @XmlElement(name = "imageDatum", required = true)
+    public ImageDatum getDatum() {
         return datum;
     }
 
     /**
      * Returns the coordinate system.
      *
-     * @return The coordinate system.
+     * @return the coordinate system.
      */
     @Override
     public AffineCS getCoordinateSystem() {
         return (AffineCS) super.getCoordinateSystem();
-    }
-
-    /**
-     * Used by JAXB only (invoked by reflection).
-     * Only one of {@code getAffineCS()} and {@link #getCartesianCS()} can return a non-null value.
-     */
-    @XmlElement(name = "affineCS")
-    private AffineCS getAffineCS() {
-        return getCoordinateSystem(AffineCS.class);
-    }
-
-    /**
-     * Used by JAXB only (invoked by reflection).
-     * Only one of {@link #getAffineCS()} and {@code getCartesianCS()} can return a non-null value.
-     */
-    @XmlElement(name = "cartesianCS")
-    private CartesianCS getCartesianCS() {
-        return getCoordinateSystem(CartesianCS.class);
-    }
-
-    /**
-     * Used by JAXB only (invoked by reflection).
-     */
-    private void setAffineCS(final AffineCS cs) {
-        setCoordinateSystem("affineCS", cs);
-    }
-
-    /**
-     * Used by JAXB only (invoked by reflection).
-     */
-    private void setCartesianCS(final CartesianCS cs) {
-        setCoordinateSystem("cartesianCS", cs);
     }
 
     /**
@@ -261,6 +235,8 @@ public class DefaultImageCRS extends AbstractCRS implements ImageCRS {
      * {@code ImageCRS} are defined in the WKT 2 specification only.</div>
      *
      * @return {@code "ImageCRS"}.
+     *
+     * @see <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html#79">WKT 2 specification §12</a>
      */
     @Override
     protected String formatTo(final Formatter formatter) {
@@ -268,6 +244,82 @@ public class DefaultImageCRS extends AbstractCRS implements ImageCRS {
         if (formatter.getConvention().majorVersion() == 1) {
             formatter.setInvalidWKT(this, null);
         }
-        return "ImageCRS";
+        return WKTKeywords.ImageCRS;
     }
+
+
+
+
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+    ////////                                                                                  ////////
+    ////////                               XML support with JAXB                              ////////
+    ////////                                                                                  ////////
+    ////////        The following methods are invoked by JAXB using reflection (even if       ////////
+    ////////        they are private) or are helpers for other methods invoked by JAXB.       ////////
+    ////////        Those methods can be safely removed if Geographic Markup Language         ////////
+    ////////        (GML) support is not needed.                                              ////////
+    ////////                                                                                  ////////
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Constructs a new object in which every attributes are set to a null value.
+     * <strong>This is not a valid object.</strong> This constructor is strictly
+     * reserved to JAXB, which will assign values to the fields using reflexion.
+     */
+    private DefaultImageCRS() {
+        /*
+         * The datum and the coordinate system are mandatory for SIS working. We do not verify their presence
+         * here because the verification would have to be done in an 'afterMarshal(…)' method and throwing an
+         * exception in that method causes the whole unmarshalling to fail.  But the SC_CRS adapter does some
+         * verifications.
+         */
+    }
+
+    /**
+     * Invoked by JAXB at unmarshalling time.
+     *
+     * @see #getDatum()
+     */
+    private void setDatum(final ImageDatum value) {
+        if (datum == null) {
+            datum = value;
+        } else {
+            MetadataUtilities.propertyAlreadySet(DefaultImageCRS.class, "setDatum", "imageDatum");
+        }
+    }
+
+    /**
+     * Used by JAXB only (invoked by reflection).
+     * Only one of {@code getCartesianCS()} and {@link #getAffineCS()} can return a non-null value.
+     *
+     * <div class="note"><b>Implementation note:</b>
+     * The usual way to handle {@code <xs:choice>} with JAXB is to annotate a single method like below:
+     *
+     * {@preformat java
+     *     &#64;Override
+     *     &#64;XmlElements({
+     *       &#64;XmlElement(name = "cartesianCS", type = DefaultCartesianCS.class),
+     *       &#64;XmlElement(name = "affineCS",    type = DefaultAffineCS.class)
+     *     })
+     *     public AffineCS getCoordinateSystem() {
+     *         return super.getCoordinateSystem();
+     *     }
+     * }
+     *
+     * However our attempts to apply this approach worked for {@link DefaultEngineeringCRS} but not for this class:
+     * for an unknown reason, the unmarshalled CS object is empty. Maybe this is because the covariant return type
+     * ({@code AffineCS} instead than {@code CoordinateSystem} in above code) is causing confusion.</div>
+     *
+     * @see <a href="http://issues.apache.org/jira/browse/SIS-166">SIS-166</a>
+     */
+    @XmlElement(name = "cartesianCS") private CartesianCS getCartesianCS() {return getCoordinateSystem(CartesianCS.class);}
+    @XmlElement(name = "affineCS")    private AffineCS    getAffineCS()    {return getCoordinateSystem(AffineCS.class);}
+
+    /**
+     * Used by JAXB only (invoked by reflection).
+     *
+     * @see #getCartesianCS()
+     */
+    private void setCartesianCS(final CartesianCS cs) {setCoordinateSystem("cartesianCS", cs);}
+    private void setAffineCS   (final AffineCS    cs) {setCoordinateSystem("affineCS",    cs);}
 }

@@ -16,46 +16,45 @@
  */
 package org.apache.sis.referencing.operation.projection;
 
-import java.util.List;
-import java.util.ArrayList;
 import java.util.Map;
+import java.util.HashMap;
+import java.util.Objects;
 import java.io.Serializable;
-import org.opengis.parameter.ParameterValue;
+import java.lang.reflect.Modifier;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
-import org.opengis.parameter.GeneralParameterDescriptor;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransform2D;
+import org.opengis.referencing.operation.SingleOperation;
 import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.util.FactoryException;
 import org.apache.sis.util.Debug;
+import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ComparisonMode;
-import org.apache.sis.util.resources.Errors;
 import org.apache.sis.parameter.Parameters;
-import org.apache.sis.parameter.DefaultParameterDescriptorGroup;
-import org.apache.sis.referencing.IdentifiedObjects;
+import org.apache.sis.parameter.ParameterBuilder;
+import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.referencing.operation.transform.AbstractMathTransform2D;
 import org.apache.sis.referencing.operation.transform.ContextualParameters;
+import org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory;
+import org.apache.sis.referencing.operation.transform.MathTransformProvider;
 import org.apache.sis.internal.referencing.provider.MapProjection;
+import org.apache.sis.internal.metadata.ReferencingServices;
 import org.apache.sis.internal.referencing.Formulas;
-import org.apache.sis.internal.util.DoubleDouble;
+import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.internal.util.Numerics;
+import org.apache.sis.util.resources.Errors;
 
 import static java.lang.Math.*;
-import static java.lang.Double.*;
-import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 
-// Branch-dependent imports
-import org.apache.sis.internal.jdk7.Objects;
 import org.opengis.referencing.ReferenceIdentifier;
-
 
 /**
  * Base class for conversion services between ellipsoidal and cartographic projections.
@@ -71,7 +70,7 @@ import org.opengis.referencing.ReferenceIdentifier;
  *
  *   <li>On output, the {@link #transform(double[],int,double[],int,boolean) transform(…)} method returns
  *   (<var>x</var>, <var>y</var>) values on a sphere or ellipse having a semi-major axis length (<var>a</var>) of 1.
- *   The multiplication by the scale factor (<var>k</var>₀) and the translation by false easting (FE) and false
+ *   The multiplication by the scale factor (<var>k₀</var>) and the translation by false easting (FE) and false
  *   northing (FN) are applied by the {@linkplain ContextualParameters#getMatrix denormalization} affine transform.</li>
  * </ul>
  *
@@ -97,9 +96,8 @@ import org.opengis.referencing.ReferenceIdentifier;
  * The first matrix on the left side is for {@linkplain org.apache.sis.referencing.cs.CoordinateSystems#swapAndScaleAxes
  * swapping axes} from (<var>latitude</var>, <var>longitude</var>) to (<var>longitude</var>, <var>latitude</var>) order.
  * This matrix is shown here for completeness, but is not managed by this projection package. Axes swapping is managed
- * at a {@linkplain org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory#createBaseToDerived(
- * org.opengis.referencing.cs.CoordinateSystem, org.opengis.referencing.operation.MathTransform,
- * org.opengis.referencing.cs.CoordinateSystem) higher level}.</div>
+ * at a {@linkplain org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory#createParameterizedTransform
+ * higher level}.</div>
  *
  * {@code NormalizedProjection} does not store the above cited parameters (central meridian, scale factor, <i>etc.</i>)
  * on intend (except indirectly), in order to make clear that those parameters are not used by subclasses.
@@ -119,44 +117,64 @@ import org.opengis.referencing.ReferenceIdentifier;
  * @author  André Gosselin (MPO)
  * @author  Rueben Schulz (UBC)
  * @author  Rémi Maréchal (Geomatys)
- * @since   0.6
- * @version 0.6
- * @module
+ * @version 0.7
  *
  * @see ContextualParameters
  * @see <a href="http://mathworld.wolfram.com/MapProjection.html">Map projections on MathWorld</a>
+ *
+ * @since 0.6
+ * @module
  */
 public abstract class NormalizedProjection extends AbstractMathTransform2D implements Serializable {
     /**
      * For cross-version compatibility.
      */
-    private static final long serialVersionUID = 1969740225939106310L;
+    private static final long serialVersionUID = -4010883312927645853L;
 
     /**
      * Maximum difference allowed when comparing longitudes or latitudes in radians.
-     * The current value take the system-wide angular tolerance value (equivalent to
+     * The current value takes the system-wide angular tolerance value (equivalent to
      * about 1 cm on Earth) converted to radians.
      *
      * <p>Some formulas use this tolerance value for testing sines or cosines of an angle.
      * In the sine case, this is justified because sin(θ) ≅ θ when θ is small.
      * Similar reasoning applies to cosine with cos(θ) ≅ θ + π/2 when θ is small.</p>
+     *
+     * <p>Some formulas may use this tolerance value as a <em>linear</em> tolerance on the unit sphere.
+     * This is okay because the arc length for an angular tolerance θ is r⋅θ, but in this class r=1.</p>
      */
     static final double ANGULAR_TOLERANCE = Formulas.ANGULAR_TOLERANCE * (PI/180);
+    // Note: an alternative way to compute this value could be Formulas.LINEAR_TOLERANCE / AUTHALIC_RADIUS.
+    // But the later is only 0.07% lower than the current value.
 
     /**
      * Desired accuracy for the result of iterative computations, in radians.
-     * This constant defines the desired accuracy of methods like {@link #φ(double)}.
+     * This constant defines the desired accuracy of methods like {@link ConformalProjection#φ(double)}.
      *
      * <p>The current value is 0.25 time the accuracy derived from {@link Formulas#LINEAR_TOLERANCE}.
      * So if the linear tolerance is 1 cm, then the accuracy that we will seek for is 0.25 cm (about
      * 4E-10 radians). The 0.25 factor is a safety margin for meeting the 1 cm accuracy.</p>
      */
-    static final double ITERATION_TOLERANCE = Formulas.ANGULAR_TOLERANCE * (PI/180) * 0.25;
+    static final double ITERATION_TOLERANCE = ANGULAR_TOLERANCE * 0.25;
 
     /**
      * Maximum number of iterations for iterative computations.
+     * The iterative methods used in subclasses should converge quickly (in 3 or 4 iterations)
+     * when used for a planet with an eccentricity similar to Earth. But we allow a high limit
+     * in case someone uses SIS for some planet with higher eccentricity.
      */
-    static final int MAXIMUM_ITERATIONS = 15;
+    static final int MAXIMUM_ITERATIONS = Formulas.MAXIMUM_ITERATIONS;
+
+    /**
+     * The internal parameter descriptors. Keys are implementation classes.  Values are parameter descriptor groups
+     * containing at least a parameter for the {@link #eccentricity} value, and optionally other internal parameter
+     * added by some subclasses.
+     *
+     * <p>Entries are created only when first needed. Those descriptors are usually never created since they are
+     * used only by {@link #getParameterDescriptors()}, which is itself invoked mostly for debugging purpose.</p>
+     */
+    @Debug
+    private static final Map<Class<?>,ParameterDescriptorGroup> DESCRIPTORS = new HashMap<>();
 
     /**
      * The parameters used for creating this projection. They are used for formatting <cite>Well Known Text</cite> (WKT)
@@ -168,27 +186,33 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
     final ContextualParameters context;
 
     /**
-     * Ellipsoid excentricity, equal to <code>sqrt({@linkplain #excentricitySquared})</code>.
+     * Ellipsoid eccentricity, equals to <code>sqrt({@linkplain #eccentricitySquared})</code>.
      * Value 0 means that the ellipsoid is spherical.
      */
-    protected final double excentricity;
+    protected final double eccentricity;
 
     /**
-     * The square of excentricity: ℯ² = (a²-b²)/a² where
-     * <var>ℯ</var> is the {@linkplain #excentricity excentricity},
+     * The square of eccentricity: ℯ² = (a²-b²)/a² where
+     * <var>ℯ</var> is the {@linkplain #eccentricity eccentricity},
      * <var>a</var> is the <cite>semi-major</cite> axis length and
      * <var>b</var> is the <cite>semi-minor</cite> axis length.
      */
-    protected final double excentricitySquared;
+    protected final double eccentricitySquared;
 
     /**
      * The inverse of this map projection.
+     *
+     * <div class="note"><b>Note:</b>
+     * creation of this object is not deferred to the first call to the {@link #inverse()} method because this
+     * object is lightweight and typically needed soon anyway (may be as soon as {@code ConcatenatedTransform}
+     * construction time). In addition this field is part of serialization form in order to preserve the
+     * references graph.</div>
      */
     private final MathTransform2D inverse;
 
     /**
      * Maps the parameters to be used for initializing {@link NormalizedProjection} and its
-     * {@linkplain ContextualParameters#getMatrix(boolean) normalization / denormalization} matrices.
+     * {@linkplain ContextualParameters#getMatrix normalization / denormalization} matrices.
      * This is an enumeration of parameters found in almost every map projections, but under different names.
      * This enumeration allows {@code NormalizedProjection} subclasses to specify which parameter names, ranges
      * and default values should be used by the
@@ -198,16 +222,17 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
      * {@link #CENTRAL_MERIDIAN}, {@link #SCALE_FACTOR}, {@link #FALSE_EASTING} and {@link #FALSE_NORTHING}.</p>
      *
      * @author  Martin Desruisseaux (Geomatys)
-     * @since   0.6
      * @version 0.6
-     * @module
      *
      * @see NormalizedProjection#NormalizedProjection(OperationMethod, Parameters, Map)
+     *
+     * @since 0.6
+     * @module
      */
-    protected static enum ParameterRole {
+    protected enum ParameterRole {
         /**
          * Maps the <cite>semi-major axis length</cite> parameter (symbol: <var>a</var>).
-         * This value is used for computing {@link NormalizedProjection#excentricity},
+         * This value is used for computing {@link NormalizedProjection#eccentricity},
          * and is also a multiplication factor for the denormalization matrix.
          *
          * <p>Unless specified otherwise, this is always mapped to a parameter named {@code "semi_major"}.
@@ -217,7 +242,7 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
 
         /**
          * Maps the <cite>semi-minor axis length</cite> parameter (symbol: <var>b</var>).
-         * This value is used for computing {@link NormalizedProjection#excentricity}.
+         * This value is used for computing {@link NormalizedProjection#eccentricity}.
          *
          * <p>Unless specified otherwise, this is always mapped to a parameter named {@code "semi_minor"}.
          * {@code NormalizedProjection} subclasses typically do not need to provide a value for this key.</p>
@@ -255,7 +280,7 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
         CENTRAL_MERIDIAN,
 
         /**
-         * Maps the <cite>scale factor</cite> parameter (symbol: <var>k</var>₀).
+         * Maps the <cite>scale factor</cite> parameter (symbol: <var>k₀</var>).
          * This is a multiplication factor for the (<var>x</var>,<var>y</var>) values obtained after map projections.
          *
          * <p>Some common names for this parameter are:</p>
@@ -281,6 +306,17 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
         FALSE_EASTING,
 
         /**
+         * Maps the <cite>false westing</cite> parameter (symbol: <var>FW</var>).
+         * This is the same <var>x</var> translation than {@link #FALSE_EASTING}, but of opposite sign.
+         *
+         * <p>Actually, there is usually no parameter named "false westing" in a map projection.
+         * But some projections like <cite>"Lambert Conic Conformal (West Orientated)"</cite> are
+         * defined in such a way that their "false easting" parameter is effectively a "false westing".
+         * This enumeration value can be used for informing {@link NormalizedProjection} about that fact.</p>
+         */
+        FALSE_WESTING,
+
+        /**
          * Maps the <cite>false northing</cite> parameter (symbol: <var>FN</var>).
          * This is a translation term for the <var>y</var> values obtained after map projections.
          *
@@ -291,12 +327,24 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
          *   <li>Northing at projection centre</li>
          * </ul>
          */
-        FALSE_NORTHING
+        FALSE_NORTHING,
+
+        /**
+         * Maps the <cite>false southing</cite> parameter (symbol: <var>FS</var>).
+         * This is the same <var>y</var> translation than {@link #FALSE_NORTHING}, but of opposite sign.
+         *
+         * <p>Actually, there is usually no parameter named "false southing" in a map projection.
+         * But some projections like <cite>"Transverse Mercator (South Orientated)"</cite> are
+         * defined in such a way that their "false northing" parameter is effectively a "false southing".
+         * This enumeration value can be used for informing {@link NormalizedProjection} about that fact.</p>
+         */
+        FALSE_SOUTHING
     }
 
     /**
      * Constructs a new map projection from the supplied parameters.
-     * This constructor applies the following operations on the {@link ContextualParameter}:
+     * This constructor applies the following operations on the
+     * {@linkplain #getContextualParameters() contextual parameters}:
      *
      * <ul>
      *   <li>On the <b>normalization</b> matrix (to be applied before {@code this} transform):
@@ -354,64 +402,27 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
      * this constructor. But those values will be converted to the units of measurement specified by the parameter
      * descriptors in the {@code roles} map, which must be the above-cited units.
      *
-     * @param method     Description of the map projection parameters.
-     * @param parameters The parameters of the projection to be created.
-     * @param roles Parameters to look for <cite>central meridian</cite>, <cite>scale factor</cite>,
-     *        <cite>false easting</cite>, <cite>false northing</cite> and other values.
+     * @param method      description of the map projection parameters.
+     * @param parameters  the parameters of the projection to be created.
+     * @param roles       parameters to look for <cite>central meridian</cite>, <cite>scale factor</cite>,
+     *                    <cite>false easting</cite>, <cite>false northing</cite> and other values.
      */
     protected NormalizedProjection(final OperationMethod method, final Parameters parameters,
-            final Map<ParameterRole, ? extends ParameterDescriptor<Double>> roles)
+            final Map<ParameterRole, ? extends ParameterDescriptor<? extends Number>> roles)
     {
-        ensureNonNull("method",     method);
-        ensureNonNull("parameters", parameters);
-        ensureNonNull("roles",      roles);
-        context = new ContextualParameters(method);
-        /*
-         * Note: we do not use Map.getOrDefault(K,V) below because the user could have explicitly associated
-         * a null value to keys (we are paranoiac...) and because it conflicts with the "? extends" part of
-         * in this constructor signature.
-         */
-        ParameterDescriptor<Double> semiMajor = roles.get(ParameterRole.SEMI_MAJOR);
-        ParameterDescriptor<Double> semiMinor = roles.get(ParameterRole.SEMI_MINOR);
-        if (semiMajor == null) semiMajor = MapProjection.SEMI_MAJOR;
-        if (semiMinor == null) semiMinor = MapProjection.SEMI_MINOR;
+        this(new Initializer(method, parameters, roles, (byte) 0));
+    }
 
-              double a  = getAndStore(parameters, semiMajor);
-        final double b  = getAndStore(parameters, semiMinor);
-        final double λ0 = getAndStore(parameters, roles.get(ParameterRole.CENTRAL_MERIDIAN));
-        final double fe = getAndStore(parameters, roles.get(ParameterRole.FALSE_EASTING));
-        final double fn = getAndStore(parameters, roles.get(ParameterRole.FALSE_NORTHING));
-        final double rs = b / a;
-        excentricitySquared = 1 - (rs * rs);
-        excentricity = sqrt(excentricitySquared);
-        if (excentricitySquared != 0) {
-            final ParameterDescriptor<Double> radius = roles.get(ParameterRole.LATITUDE_OF_CONFORMAL_SPHERE_RADIUS);
-            if (radius != null) {
-                /*
-                 * EPSG said: R is the radius of the sphere and will normally be one of the CRS parameters.
-                 * If the figure of the earth used is an ellipsoid rather than a sphere then R should be calculated
-                 * as the radius of the conformal sphere at the projection origin at latitude φ₀ using the formula
-                 * for Rc given in section 1.2, table 3.
-                 *
-                 * Table 3 gives:
-                 * Radius of conformal sphere Rc = a √(1 – ℯ²) / (1 – ℯ²⋅sin²φ)
-                 *
-                 * Using √(1 – ℯ²) = b/a we rewrite as: Rc = b / (1 – ℯ²⋅sin²φ)
-                 */
-                final double sinφ = sin(toRadians(parameters.doubleValue(radius)));
-                a = b / (1 - excentricitySquared * (sinφ*sinφ));
-            }
-        }
-        context.normalizeGeographicInputs(λ0);
-        final DoubleDouble k = new DoubleDouble(a);
-        final ParameterDescriptor<Double> scaleFactor = roles.get(ParameterRole.SCALE_FACTOR);
-        if (scaleFactor != null) {
-            k.multiply(getAndStore(parameters, scaleFactor));
-        }
-        final MatrixSIS denormalize = context.getMatrix(false);
-        denormalize.convertAfter(0, k, new DoubleDouble(fe));
-        denormalize.convertAfter(1, k, new DoubleDouble(fn));
-        inverse = new Inverse();
+    /**
+     * Creates a new normalized projection from the parameters computed by the given initializer.
+     *
+     * @param initializer  the initializer for computing map projection internal parameters.
+     */
+    NormalizedProjection(final Initializer initializer) {
+        context             = initializer.context;
+        eccentricitySquared = initializer.eccentricitySquared.value;
+        eccentricity        = sqrt(eccentricitySquared);    // DoubleDouble.sqrt() does not make any difference here.
+        inverse             = new Inverse();
     }
 
     /**
@@ -422,13 +433,13 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
      */
     NormalizedProjection(final NormalizedProjection other) {
         context             = other.context;
-        excentricity        = other.excentricity;
-        excentricitySquared = other.excentricitySquared;
+        eccentricity        = other.eccentricity;
+        eccentricitySquared = other.eccentricitySquared;
         inverse             = new Inverse();
     }
 
     /**
-     * Returns {@code true} if the projection specified by the given parameters has the given keyword or identifier.
+     * Returns {@code true} if the projection specified by the given method has the given keyword or identifier.
      * If non-null, the given identifier is presumed in the EPSG namespace and has precedence over the keyword.
      *
      * <div class="note"><b>Implementation note:</b>
@@ -437,70 +448,26 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
      * fallback if the descriptor does not contain EPSG identifier, which should be rare. Usually, the regular
      * expression will never be compiled.</div>
      *
-     * @param  parameters The user-specified parameters.
-     * @param  regex      The regular expression to use when using the operation name as the criterion.
-     * @param  identifier The identifier to compare against the parameter group name.
-     * @return {@code true} if the given parameter group name contains the given keyword
+     * @param  method      the user-specified projection method.
+     * @param  regex       the regular expression to use when using the operation name as the criterion.
+     * @param  identifier  the identifier to compare against the operation method name.
+     * @return {@code true} if the name of the given operation method contains the given keyword
      *         or has an EPSG identifier equals to the given identifier.
      */
-    static boolean identMatch(final ParameterDescriptorGroup parameters, final String regex, final String identifier) {
+    static boolean identMatch(final OperationMethod method, final String regex, final String identifier) {
         if (identifier != null) {
-            for (final ReferenceIdentifier id : parameters.getIdentifiers()) {
+            for (final ReferenceIdentifier id : method.getIdentifiers()) {
                 if (Constants.EPSG.equals(id.getCodeSpace())) {
                     return identifier.equals(id.getCode());
                 }
             }
         }
-        return parameters.getName().getCode().matches(regex);
-    }
-
-    /**
-     * Gets a parameter value identified by the given descriptor and stores it in the {@link #context}.
-     * A "contextual parameter" is a parameter that apply to the normalize → {@code this} → denormalize
-     * chain as a whole. It does not really apply to this {@code NormalizedProjection} instance when taken alone.
-     *
-     * <p>This method performs the following actions:</p>
-     * <ul>
-     *   <li>Convert the value to the units specified by the descriptor.</li>
-     *   <li>Ensure that the value is contained in the range specified by the descriptor.</li>
-     *   <li>Store the value only if different than the default value.</li>
-     * </ul>
-     *
-     * This method shall be invoked at construction time only.
-     */
-    final double getAndStore(final Parameters parameters, final ParameterDescriptor<Double> descriptor) {
-        if (descriptor == null) {
-            return 0;   // Default value for all parameters except scale factor.
-        }
-        final double value = parameters.doubleValue(descriptor);    // Apply a unit conversion if needed.
-        final Double defaultValue = descriptor.getDefaultValue();
-        if (defaultValue == null || !defaultValue.equals(value)) {
-            MapProjection.validate(descriptor, value);
-            context.parameter(descriptor.getName().getCode()).setValue(value);
-        }
-        return value;
-    }
-
-    /**
-     * Same as {@link #getAndStore(Parameters, ParameterDescriptor)}, but returns the given default value
-     * if the parameter is not specified.  This method shall be used only for parameters having a default
-     * value more complex than what we can represent in {@link ParameterDescriptor#getDefaultValue()}.
-     */
-    final double getAndStore(final Parameters parameters, final ParameterDescriptor<Double> descriptor,
-            final double defaultValue)
-    {
-        final Double value = parameters.getValue(descriptor);   // Apply a unit conversion if needed.
-        if (value == null) {
-            return defaultValue;
-        }
-        MapProjection.validate(descriptor, value);
-        context.parameter(descriptor.getName().getCode()).setValue(value);
-        return value;
+        return method.getName().getCode().replace('_',' ').matches(regex);
     }
 
     /**
      * Returns the sequence of <cite>normalization</cite> → {@code this} → <cite>denormalization</cite> transforms
-     * as a whole. The transform returned by this method except (<var>longitude</var>, <var>latitude</var>)
+     * as a whole. The transform returned by this method expects (<var>longitude</var>, <var>latitude</var>)
      * coordinates in <em>degrees</em> and returns (<var>x</var>,<var>y</var>) coordinates in <em>metres</em>.
      * Conversion to other units and {@linkplain org.apache.sis.referencing.cs.CoordinateSystems#swapAndScaleAxes
      * changes in axis order} are <strong>not</strong> managed by the returned transform.
@@ -514,14 +481,51 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
      * For example many subclasses will replace {@code this} by a specialized implementation if they detect that the
      * ellipsoid is actually spherical.
      *
-     * @param  factory The factory to use for creating the transform.
-     * @return The map projection from (λ,φ) to (<var>x</var>,<var>y</var>) coordinates.
+     * @param  factory  the factory to use for creating the transform.
+     * @return the map projection from (λ,φ) to (<var>x</var>,<var>y</var>) coordinates.
      * @throws FactoryException if an error occurred while creating a transform.
      *
      * @see ContextualParameters#completeTransform(MathTransformFactory, MathTransform)
      */
     public MathTransform createMapProjection(final MathTransformFactory factory) throws FactoryException {
         return context.completeTransform(factory, this);
+    }
+
+    /**
+     * If this map projection can not handle the parameters given by the user but an other projection could, delegates
+     * to the other projection. This method can be invoked by some {@link #createMapProjection(MathTransformFactory)}
+     * implementations when the other projection can be seen as a special case.
+     *
+     * <div class="note"><b>Example:</b>
+     * the {@link ObliqueStereographic} formulas do not work anymore when the latitude of origin is 90°N or 90°S,
+     * because some internal coefficients become infinite. However the {@link PolarStereographic} implementation
+     * is designed especially for those special cases. So the {@code ObliqueStereographic.createMapProjection(…)}
+     * method can redirect to {@code PolarStereographic.createMapProjection(…)} when it detects such cases.</div>
+     *
+     * It is caller's responsibility to choose an alternative method that can understand the parameters which were
+     * given to this original projection.
+     *
+     * @param  factory  the factory given to {@link #createMapProjection(MathTransformFactory)}.
+     * @param  name     the name of the alternative map projection to use.
+     * @return the alternative projection.
+     * @throws FactoryException if an error occurred while creating the alternative projection.
+     *
+     * @since 0.7
+     */
+    final MathTransform delegate(final MathTransformFactory factory, final String name) throws FactoryException {
+        final OperationMethod method;
+        if (factory instanceof DefaultMathTransformFactory) {
+            method = ((DefaultMathTransformFactory) factory).getOperationMethod(name);
+        } else {
+            method = ReferencingServices.getInstance().getOperationMethod(
+                    factory.getAvailableMethods(SingleOperation.class), name);
+        }
+        if (method instanceof MathTransformProvider) {
+            return ((MathTransformProvider) method).createMathTransform(factory, context);
+        } else {
+            throw new FactoryException(Errors.format(Errors.Keys.UnsupportedImplementation_1,
+                    (method != null ? method : factory).getClass()));
+        }
     }
 
     /**
@@ -532,7 +536,7 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
      * Subclasses shall not use the values defined in the returned object for computation purpose,
      * except at construction time.
      *
-     * @return The parameters values for the sequence of <cite>normalize</cite> → {@code this} → <cite>denormalize</cite>
+     * @return the parameters values for the sequence of <cite>normalize</cite> → {@code this} → <cite>denormalize</cite>
      *         transforms, or {@code null} if unspecified.
      */
     @Override
@@ -541,18 +545,11 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
     }
 
     /**
-     * Returns a copy of the parameter values for this projection.
-     * This base class supplies a value only for the following parameters:
-     *
-     * <ul>
-     *   <li>Semi-major axis length, which is set to 1.</li>
-     *   <li>Semi-minor axis length, which is set to
-     *       <code>sqrt(1 - {@linkplain #excentricitySquared ℯ²})</code>.</li>
-     * </ul>
-     *
-     * Subclasses must complete if needed. Many projections will not need to complete,
-     * because most parameters like the scale factor or the false easting/northing can
-     * be handled by the (de)normalization affine transforms.
+     * Returns a copy of non-linear internal parameter values of this {@code NormalizedProjection}.
+     * The returned group contains at least the {@link #eccentricity} parameter value.
+     * Some subclasses add more non-linear parameters, but most of them do not because many parameters
+     * like the <cite>scale factor</cite> or the <cite>false easting/northing</cite> are handled by the
+     * {@linkplain ContextualParameters#getMatrix (de)normalization affine transforms} instead.
      *
      * <div class="note"><b>Note:</b>
      * This method is mostly for {@linkplain org.apache.sis.io.wkt.Convention#INTERNAL debugging purposes}
@@ -560,59 +557,76 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
      * Most GIS applications will instead be interested in the {@linkplain #getContextualParameters()
      * contextual parameters}.</div>
      *
-     * @return A copy of the parameter values for this normalized projection.
+     * @return a copy of the internal parameter values for this normalized projection.
      */
     @Debug
     @Override
     public ParameterValueGroup getParameterValues() {
-        return getParameterValues(new String[] {
-            Constants.SEMI_MAJOR,
-            Constants.SEMI_MINOR
-        });
+        final ParameterValueGroup group = getParameterDescriptors().createValue();
+        group.parameter("eccentricity").setValue(eccentricity);
+        final String[] names  = getInternalParameterNames();
+        final double[] values = getInternalParameterValues();
+        for (int i=0; i<names.length; i++) {
+            group.parameter(names[i]).setValue(values[i]);
+        }
+        return group;
     }
 
     /**
-     * Filters the parameter descriptor in order to retain only the parameters of the given names, and
-     * sets the semi-major and semi-minor axis lengths. The specified parameters list should contains at
-     * least the {@code "semi_major"} and {@code "semi_minor"} strings.
+     * Returns a description of the non-linear internal parameters of this {@code NormalizedProjection}.
+     * The returned group contains at least a descriptor for the {@link #eccentricity} parameter.
+     * Subclasses may add more parameters.
      *
-     * <p>This filtered descriptor is used for displaying the parameter values of this non-linear kernel only,
-     * not for displaying the {@linkplain #getContextualParameters() contextual parameters}. Since displaying
-     * the kernel parameter values is for debugging purpose only, it is not worth to cache this descriptor.</p>
+     * <p>This method is for inspecting the parameter values of this non-linear kernel only,
+     * not for inspecting the {@linkplain #getContextualParameters() contextual parameters}.
+     * Inspecting the kernel parameter values is usually for debugging purpose only.</p>
+     *
+     * @return a description of the internal parameters.
      */
     @Debug
-    final ParameterValueGroup getParameterValues(final String[] nonLinearParameters) {
-        ParameterDescriptorGroup descriptor = getParameterDescriptors();
-        final List<GeneralParameterDescriptor> filtered =
-                new ArrayList<GeneralParameterDescriptor>(nonLinearParameters.length);
-        for (final GeneralParameterDescriptor p : descriptor.descriptors()) {
-            for (final String name : nonLinearParameters) {
-                if (IdentifiedObjects.isHeuristicMatchForName(p, name)) {
-                    filtered.add(p);
-                    break;
+    @Override
+    public ParameterDescriptorGroup getParameterDescriptors() {
+        Class<?> type = getClass();
+        while (!Modifier.isPublic(type.getModifiers())) {
+            type = type.getSuperclass();
+        }
+        ParameterDescriptorGroup group;
+        synchronized (DESCRIPTORS) {
+            group = DESCRIPTORS.get(type);
+            if (group == null) {
+                final ParameterBuilder builder = new ParameterBuilder().setRequired(true);
+                if (type.getName().startsWith(Modules.CLASSNAME_PREFIX)) {
+                    builder.setCodeSpace(Citations.SIS, Constants.SIS);
                 }
+                final String[] names = getInternalParameterNames();
+                final ParameterDescriptor<?>[] parameters = new ParameterDescriptor<?>[names.length + 1];
+                parameters[0] = MapProjection.ECCENTRICITY;
+                for (int i=1; i<parameters.length; i++) {
+                    parameters[i] = builder.addName(names[i-1]).create(Double.class, null);
+                }
+                group = builder.addName(CharSequences.camelCaseToSentence(
+                        type.getSimpleName()) + " (radians domain)").createGroup(1, 1, parameters);
+                DESCRIPTORS.put(type, group);
             }
         }
-        descriptor = new DefaultParameterDescriptorGroup(IdentifiedObjects.getProperties(descriptor),
-                1, 1, filtered.toArray(new GeneralParameterDescriptor[filtered.size()]));
-        /*
-         * Parameter values for the ellipsoid semi-major and semi-minor axis lengths are 1 and <= 1
-         * respectively because the denormalization (e.g. multiplication by a scale factor) will be
-         * applied by an affine transform after this NormalizedProjection.
-         */
-        final ParameterValueGroup values = descriptor.createValue();
-        for (final GeneralParameterDescriptor desc : filtered) {
-            final String name = desc.getName().getCode();
-            final ParameterValue<?> p = values.parameter(name);
-            if (name.equals(Constants.SEMI_MAJOR)) {
-                p.setValue(1.0);
-            } else if (name.equals(Constants.SEMI_MINOR)) {
-                p.setValue(sqrt(1 - excentricitySquared));
-            } else {
-                p.setValue(context.parameter(name).getValue());
-            }
-        }
-        return values;
+        return group;
+    }
+
+    /**
+     * Returns the names of any additional internal parameters (other than {@link #eccentricity})
+     * that this projection has. The length of this array must be the same than the length of the
+     * {@link #getInternalParameterValues()} array, if the later is non-null.
+     */
+    String[] getInternalParameterNames() {
+        return CharSequences.EMPTY_ARRAY;
+    }
+
+    /**
+     * Returns the values of any additional internal parameters (other than {@link #eccentricity}) that
+     * this projection has. Those values are also compared by {@link #equals(Object, ComparisonMode)}.
+     */
+    double[] getInternalParameterValues() {
+        return null;
     }
 
     /**
@@ -640,14 +654,14 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
      * If this assumption is not applicable to a particular subclass, then it is implementor's responsibility to check
      * the range.
      *
-     * @param srcPts   The array containing the source point coordinate, as (<var>longitude</var>, <var>latitude</var>)
-     *                 angles in <strong>radians</strong>.
-     * @param srcOff   The offset of the single coordinate to be converted in the source array.
-     * @param dstPts   The array into which the converted coordinate is returned (may be the same than {@code srcPts}).
-     *                 Ordinates will be expressed in a dimensionless unit, as a linear distance on a unit sphere or ellipse.
-     * @param dstOff   The offset of the location of the converted coordinate that is stored in the destination array.
-     * @param derivate {@code true} for computing the derivative, or {@code false} if not needed.
-     * @return The matrix of the projection derivative at the given source position,
+     * @param  srcPts    the array containing the source point coordinate, as (<var>longitude</var>, <var>latitude</var>)
+     *                   angles in <strong>radians</strong>.
+     * @param  srcOff    the offset of the single coordinate to be converted in the source array.
+     * @param  dstPts    the array into which the converted coordinate is returned (may be the same than {@code srcPts}).
+     *                   Ordinates will be expressed in a dimensionless unit, as a linear distance on a unit sphere or ellipse.
+     * @param  dstOff    the offset of the location of the converted coordinate that is stored in the destination array.
+     * @param  derivate  {@code true} for computing the derivative, or {@code false} if not needed.
+     * @return the matrix of the projection derivative at the given source position,
      *         or {@code null} if the {@code derivate} argument is {@code false}.
      * @throws ProjectionException if the coordinate can not be converted.
      */
@@ -670,11 +684,11 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
      * <div class="note"><b>Note:</b> in <a href="http://trac.osgeo.org/proj/">Proj.4</a>, the same standardization,
      * described above, is handled by {@code pj_inv.c}.</div>
      *
-     * @param srcPts The array containing the source point coordinate, as linear distance on a unit sphere or ellipse.
-     * @param srcOff The offset of the point to be converted in the source array.
-     * @param dstPts The array into which the converted point coordinate is returned (may be the same than {@code srcPts}).
-     *               Ordinates will be (<var>longitude</var>, <var>latitude</var>) angles in <strong>radians</strong>.
-     * @param dstOff The offset of the location of the converted point that is stored in the destination array.
+     * @param  srcPts  the array containing the source point coordinate, as linear distance on a unit sphere or ellipse.
+     * @param  srcOff  the offset of the point to be converted in the source array.
+     * @param  dstPts  the array into which the converted point coordinate is returned (may be the same than {@code srcPts}).
+     *                 Ordinates will be (<var>longitude</var>, <var>latitude</var>) angles in <strong>radians</strong>.
+     * @param  dstOff  the offset of the location of the converted point that is stored in the destination array.
      * @throws ProjectionException if the point can not be converted.
      */
     protected abstract void inverseTransform(double[] srcPts, int srcOff, double[] dstPts, int dstOff)
@@ -685,7 +699,7 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
      * Subclasses do not need to override this method, as they should override
      * {@link #inverseTransform(double[], int, double[], int) inverseTransform(…)} instead.
      *
-     * @return The inverse of this map projection.
+     * @return the inverse of this map projection.
      */
     @Override
     public MathTransform2D inverse() {
@@ -696,8 +710,8 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
      * Inverse of a normalized map projection.
      *
      * @author  Martin Desruisseaux (Geomatys)
-     * @since   0.6
      * @version 0.6
+     * @since   0.6
      * @module
      */
     private final class Inverse extends AbstractMathTransform2D.Inverse {
@@ -709,8 +723,7 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
         /**
          * Default constructor.
          */
-        public Inverse() {
-            NormalizedProjection.this.super();
+        Inverse() {
         }
 
         /**
@@ -738,19 +751,25 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
     }
 
     /**
-     * Computes a hash code value for this map projection.
-     * The default implementation computes a value from the parameters given at construction time.
+     * Computes a hash code value for this {@code NormalizedProjection}.
      *
-     * @return The hash code value.
+     * @return the hash code value.
      */
     @Override
     protected int computeHashCode() {
-        return context.hashCode() + 31 * super.computeHashCode();
+        long c = Double.doubleToLongBits(eccentricity);
+        final double[] parameters = getInternalParameterValues();
+        if (parameters != null) {
+            for (int i=0; i<parameters.length; i++) {
+                c = c*31 + Double.doubleToLongBits(parameters[i]);
+            }
+        }
+        return super.computeHashCode() ^ Numerics.hashCode(c);
     }
 
     /**
      * Compares the given object with this transform for equivalence. The default implementation checks if
-     * {@code object} is an instance of the same class than {@code this}, then compares the excentricity.
+     * {@code object} is an instance of the same class than {@code this}, then compares the eccentricity.
      *
      * <p>If this method returns {@code true}, then for any given identical source position, the two compared map
      * projections shall compute the same target position. Many of the {@linkplain #getContextualParameters()
@@ -765,194 +784,87 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
      * equivalent allows the referencing module to transform coordinates between those two projections more efficiently.
      * </div>
      *
-     * @param object The object to compare with this map projection for equivalence.
-     * @param mode The strictness level of the comparison. Default to {@link ComparisonMode#STRICT}.
+     * @param  object  the object to compare with this map projection for equivalence.
+     * @param  mode    the strictness level of the comparison. Default to {@link ComparisonMode#STRICT}.
      * @return {@code true} if the given object is equivalent to this map projection.
      */
     @Override
+    @SuppressWarnings("fallthrough")
     public boolean equals(final Object object, final ComparisonMode mode) {
         if (object == this) {
             return true;
         }
-        if (super.equals(object, mode)) {
-            final double e1, e2;
-            final NormalizedProjection that = (NormalizedProjection) object;
-            if (mode.ordinal() < ComparisonMode.IGNORE_METADATA.ordinal()) {
+        if (!super.equals(object, mode)) {
+            return false;
+        }
+        final NormalizedProjection that = (NormalizedProjection) object;
+        switch (mode) {
+            case STRICT:
+            case BY_CONTRACT: {
                 if (!Objects.equals(context, that.context)) {
                     return false;
                 }
-                e1 = this.excentricitySquared;
-                e2 = that.excentricitySquared;
-            } else {
-                e1 = this.excentricity;
-                e2 = that.excentricity;
+                // Fall through for comparing the eccentricity.
             }
+            case IGNORE_METADATA: {
+                /*
+                 * There is no need to compare both 'eccentricity' and 'eccentricitySquared' since the former
+                 * is computed from the later. We are better to compare 'eccentricitySquared' since it is the
+                 * original value from which the other value is derived.
+                 */
+                if (!Numerics.equals(eccentricitySquared, that.eccentricitySquared)) {
+                    return false;
+                }
+                break;
+            }
+            default: {
+                /*
+                 * We want to compare the eccentricity with a tolerance threshold corresponding approximatively
+                 * to an error of 1 cm on Earth. The eccentricity for an ellipsoid of semi-major axis a=1 is:
+                 *
+                 *     ℯ² = 1 - b²
+                 *
+                 * If we add a slight ε error to the semi-minor axis length (where ε will be our linear tolerance
+                 * threshold), we get:
+                 *
+                 *     (ℯ + ε′)²    =    1 - (b + ε)²    ≈    1 - (b² + 2⋅b⋅ε)    assuming ε ≪ b
+                 *
+                 * Replacing  1 - b²  by  ℯ²:
+                 *
+                 *     ℯ² + 2⋅ℯ⋅ε′  ≈   ℯ² - 2⋅b⋅ε
+                 *
+                 * After a few rearrangements:
+                 *
+                 *     ε′  ≈   ε⋅(ℯ - 1/ℯ)
+                 *
+                 * Note that  ε′  is negative for  ℯ < 1  so we actually need to compute  ε⋅(1/ℯ - ℯ)  instead.
+                 * The result is less than 2E-8 for the eccentricity of the Earth.
+                 */
+                final double e = max(eccentricity, that.eccentricity);
+                if (!Numerics.epsilonEqual(eccentricity, that.eccentricity, ANGULAR_TOLERANCE * (1/e - e))) {
+                    assert (mode != ComparisonMode.DEBUG) : Numerics.messageForDifference(
+                            "eccentricity", eccentricity, that.eccentricity);
+                    return false;
+                }
+                break;
+            }
+        }
+        final double[] parameters = getInternalParameterValues();
+        if (parameters != null) {
             /*
-             * There is no need to compare both 'excentricity' and 'excentricitySquared' since
-             * the former is computed from the later. In strict comparison mode, we are better
-             * to compare the 'excentricitySquared' since it is the original value from which
-             * the other value is derived. However in approximative comparison mode, we need
-             * to use the 'excentricity', otherwise we would need to take the square of the
-             * tolerance factor before comparing 'excentricitySquared'.
+             * super.equals(…) guarantees that the two objects are of the same class.
+             * So in SIS implementation, this implies that the arrays have the same length.
              */
-            return Numerics.epsilonEqual(e1, e2, mode);
-        }
-        return false;
-    }
-
-
-
-
-    //////////////////////////////////////////////////////////////////////////////////////////
-    ////////                                                                          ////////
-    ////////                       FORMULAS FROM EPSG or SNYDER                       ////////
-    ////////                                                                          ////////
-    //////////////////////////////////////////////////////////////////////////////////////////
-
-    /**
-     * Computes the reciprocal of the radius of curvature of the ellipsoid perpendicular to the meridian at latitude φ.
-     * That radius of curvature is:
-     *
-     * <blockquote>ν = 1 / √(1 - ℯ²⋅sin²φ)</blockquote>
-     *
-     * This method returns 1/ν.
-     *
-     * <div class="section">Relationship with Snyder</div>
-     * This is related to functions (14-15) from Snyder (used for computation of scale factors
-     * at the true scale latitude) as below:
-     *
-     * <blockquote>m = cosφ / rν</blockquote>
-     *
-     * Special cases:
-     * <ul>
-     *   <li>If φ is 0°, then <var>m</var> is 1.</li>
-     *   <li>If φ is ±90°, then <var>m</var> is 0 provided that we are not in the spherical case
-     *       (otherwise we get {@link Double#NaN}).</li>
-     * </ul>
-     *
-     * @param  sinφ The sine of the φ latitude in radians.
-     * @return Reciprocal of the radius of curvature of the ellipsoid perpendicular to the meridian at latitude φ.
-     */
-    final double rν(final double sinφ) {
-        return sqrt(1 - excentricitySquared * (sinφ*sinφ));
-    }
-
-    /**
-     * Computes part of the Mercator projection for the given latitude. This formula is also part of
-     * Lambert Conic Conformal projection, since Mercator can be considered as a special case of that
-     * Lambert projection with the equator as the single standard parallel.
-     *
-     * <p>The Mercator projection is given by the {@linkplain Math#log(double) natural logarithm} of the
-     * value returned by this method. This function is <em>almost</em> the converse of {@link #φ(double)}.
-     *
-     *
-     * <div class="section">Properties</div>
-     * This function is used with φ values in the [-π/2 … π/2] range and has a periodicity of 2π.
-     * The result is always a positive number when the φ argument is inside the above-cited range.
-     * If, after removal of any 2π periodicity, φ is still outside the [-π/2 … π/2] range, then the
-     * result is a negative number. In a Mercator projection, such negative number will result in NaN.
-     *
-     * <p>Some values are:</p>
-     * <ul>
-     *   <li>expOfNorthing(NaN)    =  NaN</li>
-     *   <li>expOfNorthing(±∞)     =  NaN</li>
-     *   <li>expOfNorthing(-π/2)   =   0</li>
-     *   <li>expOfNorthing( 0  )   =   1</li>
-     *   <li>expOfNorthing(+π/2)   →   ∞  (actually some large value like 1.633E+16)</li>
-     *   <li>expOfNorthing(-φ)     =  1 / expOfNorthing(φ)</li>
-     * </ul>
-     *
-     *
-     * <div class="section">The π/2 special case</div>
-     * The value at {@code Math.PI/2} is not exactly infinity because there is no exact representation of π/2.
-     * However since the conversion of 90° to radians gives {@code Math.PI/2}, we can presume that the user was
-     * expecting infinity. The caller should check for the PI/2 special case himself if desired, as this method
-     * does nothing special about it.
-     *
-     * <p>Note that the result for the φ value after {@code Math.PI/2} (as given by {@link Math#nextUp(double)})
-     * is still positive, maybe because {@literal PI/2 < π/2 < nextUp(PI/2)}. Only the {@code nextUp(nextUp(PI/2))}
-     * value become negative. Callers may need to take this behavior in account: special check for {@code Math.PI/2}
-     * is not sufficient, the check needs to include at least the {@code nextUp(Math.PI/2)} case.</p>
-     *
-     *
-     * <div class="section">Relationship with Snyder</div>
-     * This function is related to the following functions from Snyder:
-     *
-     * <ul>
-     *   <li>(7-7) in the <cite>Mercator projection</cite> chapter.</li>
-     *   <li>Reciprocal of (9-13) in the <cite>Oblique Mercator projection</cite> chapter.</li>
-     *   <li>Reciprocal of (15-9) in the <cite>Lambert Conformal Conic projection</cite> chapter.</li>
-     * </ul>
-     *
-     * @param  φ     The latitude in radians.
-     * @param  ℯsinφ The sine of the φ argument multiplied by {@link #excentricity}.
-     * @return {@code Math.exp} of the Mercator projection of the given latitude.
-     *
-     * @see #φ(double)
-     * @see #dy_dφ(double, double)
-     */
-    final double expOfNorthing(final double φ, final double ℯsinφ) {
-        /*
-         * Note:   tan(π/4 - φ/2)  =  1 / tan(π/4 + φ/2)
-         */
-        return tan(PI/4 + 0.5*φ) * pow((1 - ℯsinφ) / (1 + ℯsinφ), 0.5*excentricity);
-    }
-
-    /**
-     * Computes the latitude for a value closely related to the <var>y</var> value of a Mercator projection.
-     * This formula is also part of other projections, since Mercator can be considered as a special case of
-     * Lambert Conic Conformal for instance.
-     *
-     * <p>This function is <em>almost</em> the converse of the above {@link #expOfNorthing(double, double)} function.
-     * In a Mercator inverse projection, the value of the {@code expOfSouthing} argument is {@code exp(-y)}.</p>
-     *
-     * <p>The input should be a positive number, otherwise the result will be either outside
-     * the [-π/2 … π/2] range, or will be NaN. Its behavior at some particular points is:</p>
-     *
-     * <ul>
-     *   <li>φ(0)   =   π/2</li>
-     *   <li>φ(1)   =   0</li>
-     *   <li>φ(∞)   =  -π/2.</li>
-     * </ul>
-     *
-     * @param  expOfSouthing The <em>reciprocal</em> of the value returned by {@link #expOfNorthing}.
-     * @return The latitude in radians.
-     * @throws ProjectionException if the iteration does not converge.
-     *
-     * @see #expOfNorthing(double, double)
-     * @see #dy_dφ(double, double)
-     */
-    final double φ(final double expOfSouthing) throws ProjectionException {
-        final double hℯ = 0.5 * excentricity;
-        double φ = (PI/2) - 2*atan(expOfSouthing);          // Snyder (7-11)
-        for (int i=0; i<MAXIMUM_ITERATIONS; i++) {          // Iteratively solve equation (7-9) from Snyder
-            final double ℯsinφ = excentricity * sin(φ);
-            final double Δφ = abs(φ - (φ = PI/2 - 2*atan(expOfSouthing * pow((1 - ℯsinφ)/(1 + ℯsinφ), hℯ))));
-            if (Δφ <= ITERATION_TOLERANCE) {
-                return φ;
+            final double[] others = that.getInternalParameterValues();
+            assert others.length == parameters.length;
+            for (int i=0; i<parameters.length; i++) {
+                if (!Numerics.epsilonEqual(parameters[i], others[i], mode)) {
+                    assert (mode != ComparisonMode.DEBUG) : Numerics.messageForDifference(
+                            getInternalParameterNames()[i], parameters[i], others[i]);
+                    return false;
+                }
             }
         }
-        if (isNaN(expOfSouthing)) {
-            return NaN;
-        }
-        throw new ProjectionException(Errors.Keys.NoConvergence);
-    }
-
-    /**
-     * Computes the partial derivative of a Mercator projection at the given latitude. This formula is also part of
-     * other projections, since Mercator can be considered as a special case of Lambert Conic Conformal for instance.
-     *
-     * <p>In order to get the derivative of the {@link #expOfNorthing(double, double)} function, call can multiply
-     * the returned value by by {@code expOfNorthing}.</p>
-     *
-     * @param  sinφ the sine of latitude.
-     * @param  cosφ The cosine of latitude.
-     * @return The partial derivative of a Mercator projection at the given latitude.
-     *
-     * @see #expOfNorthing(double, double)
-     * @see #φ(double)
-     */
-    final double dy_dφ(final double sinφ, final double cosφ) {
-        return (1 / cosφ)  -  excentricitySquared * cosφ / (1 - excentricitySquared * (sinφ*sinφ));
+        return true;
     }
 }

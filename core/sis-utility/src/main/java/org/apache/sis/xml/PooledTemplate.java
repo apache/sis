@@ -31,24 +31,27 @@ import org.apache.sis.util.resources.Errors;
  * redoing the conversion every time a new (un)marshaller is requested.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.3
+ * @since   0.3
  * @module
  */
 final class PooledTemplate extends Pooled {
     /**
      * Creates a new template.
      *
-     * @param properties The properties to be given to JAXB (un)marshallers, or {@code null} if none.
-     * @param internal {@code true} if the JAXB implementation is the one bundled in JDK 6,
-     *        or {@code false} if this is the external implementation provided as a JAR file
-     *        in the endorsed directory.
+     * @param properties      the properties to be given to JAXB (un)marshallers, or {@code null} if none.
+     * @param implementation  {@link Implementation#INTERNAL} if the JAXB implementation is the one bundled in JDK 6, or
+     *                        {@link Implementation#ENDORSED} if this is the external implementation provided as a JAR
+     *                        file in the endorsed directory.
      */
-    PooledTemplate(final Map<String,?> properties, final boolean internal) throws PropertyException {
-        super(internal);
+    PooledTemplate(final Map<String,?> properties, final Implementation implementation) throws PropertyException {
+        super(implementation == Implementation.INTERNAL);
         if (properties != null) {
             for (final Map.Entry<String,?> entry : properties.entrySet()) {
-                setProperty(entry.getKey(), entry.getValue());
+                final String key = entry.getKey();
+                if (implementation.filterProperty(key)) {
+                    setProperty(key, entry.getValue());
+                }
             }
         }
     }
@@ -62,7 +65,7 @@ final class PooledTemplate extends Pooled {
     @Override
     void setStandardProperty(final String name, final Object value) {
         if (initialProperties.put(name, value) != null) {
-            throw new AssertionError(name); // If non-null, some code has done unexpected changes in the map.
+            throw new AssertionError(name);         // If non-null, some code has done unexpected changes in the map.
         }
     }
 
@@ -83,10 +86,10 @@ final class PooledTemplate extends Pooled {
      * <p>Current implementation expects values of type {@code String}, but this may be generalized
      * in a future SIS version if there is a need for that.</p>
      *
-     * @param  name The name of the property to remove.
-     * @param  defaultValue The default value to return if the given property is not defined in the map.
-     * @return The old value of that property, or {@code defaultValue} if the given property was not defined.
-     * @throws PropertyException If the given property is not of the expected type.
+     * @param  name          the name of the property to remove.
+     * @param  defaultValue  the default value to return if the given property is not defined in the map.
+     * @return the old value of that property, or {@code defaultValue} if the given property was not defined.
+     * @throws PropertyException if the given property is not of the expected type.
      */
     String remove(final String name, final String defaultValue) throws PropertyException {
         final Object value = initialProperties.remove(name);
@@ -96,7 +99,7 @@ final class PooledTemplate extends Pooled {
         if (value == null) {
             return defaultValue;
         }
-        throw new PropertyException(Errors.format(Errors.Keys.IllegalPropertyClass_2, name, value.getClass()));
+        throw new PropertyException(Errors.format(Errors.Keys.IllegalPropertyValueClass_2, name, value.getClass()));
     }
 
     /**

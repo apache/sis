@@ -41,8 +41,8 @@ import static org.junit.Assert.*;
  * Tests {@link OperationMethodSet}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.6
  * @version 0.6
+ * @since   0.6
  * @module
  */
 @DependsOn({
@@ -52,9 +52,9 @@ public final strictfp class OperationMethodSetTest extends TestCase {
     /**
      * Creates a new two-dimensional operation method for an operation of the given name.
      *
-     * @param  type The value to be returned by {@link DefaultOperationMethod#getOperationType()}.
-     * @param  method The operation name (example: "Mercator (variant A)").
-     * @return The operation method.
+     * @param  type    the value to be returned by {@link DefaultOperationMethod#getOperationType()}.
+     * @param  method  the operation name (example: "Mercator (variant A)").
+     * @return the operation method.
      */
     @SuppressWarnings("serial")
     private static DefaultOperationMethod createMethod(final Class<? extends Projection> type, final String method) {
@@ -76,8 +76,8 @@ public final strictfp class OperationMethodSetTest extends TestCase {
      * Creates an {@code OperationMethodSet} from the given methods, using an iterable
      * which will guarantee that the iteration is performed at most once.
      *
-     * @param type The type of coordinate operation for which to retain methods.
-     * @param methods The {@link DefaultMathTransformFactory#methods} used for fetching the initial methods.
+     * @param  type     the type of coordinate operation for which to retain methods.
+     * @param  methods  the {@link DefaultMathTransformFactory#methods} used for fetching the initial methods.
      */
     private static OperationMethodSet create(final Class<? extends Projection> type, final DefaultOperationMethod... methods) {
         @SuppressWarnings("serial")
@@ -91,7 +91,7 @@ public final strictfp class OperationMethodSetTest extends TestCase {
                 return super.iterator();
             }
         };
-        synchronized (asList) { // Needed for avoiding assertion error in OperationMethodSet.
+        synchronized (asList) {                           // Needed for avoiding assertion error in OperationMethodSet.
             return new OperationMethodSet(type, asList);
         }
     }

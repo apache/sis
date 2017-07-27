@@ -22,9 +22,9 @@ import org.apache.maven.plugin.MojoExecutionException;
 /**
  * Thrown when the {@link ResourceCompilerMojo} exit abnormally.
  *
- * @author Martin Desruisseaux (Geomatys)
- * @since   0.3
+ * @author  Martin Desruisseaux (Geomatys)
  * @version 0.3
+ * @since   0.3
  * @module
  */
 @SuppressWarnings("serial")
@@ -32,7 +32,7 @@ final class ResourceCompilerException extends MojoExecutionException {
     /**
      * Creates an exception with the given detail message.
      *
-     * @param message The detail message.
+     * @param message  the detail message.
      */
     ResourceCompilerException(final String message) {
         super(message);
@@ -41,7 +41,7 @@ final class ResourceCompilerException extends MojoExecutionException {
     /**
      * Creates an exception with the given cause.
      *
-     * @param cause The cause of this exception.
+     * @param cause  the cause of this exception.
      */
     ResourceCompilerException(final Throwable cause) {
         super(cause.getLocalizedMessage(), cause);

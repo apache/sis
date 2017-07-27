@@ -16,29 +16,33 @@
  */
 package org.apache.sis.referencing.crs;
 
+import java.util.List;
+import javax.xml.bind.JAXBException;
 import org.opengis.test.Validators;
+import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.referencing.cs.DefaultCompoundCS;
 import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.referencing.cs.HardCodedAxes;
 import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
-import org.apache.sis.test.TestCase;
+import org.apache.sis.test.XMLTestCase;
 import org.junit.Test;
 
 import static java.util.Collections.singletonMap;
 import static org.opengis.referencing.cs.CoordinateSystem.NAME_KEY;
-import static org.apache.sis.test.MetadataAssert.*;
+import static org.apache.sis.test.ReferencingAssert.*;
 
 
 /**
  * Tests the {@link DefaultCompoundCRS} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
+ * @version 0.7
  * @since   0.4
- * @version 0.4
  * @module
  */
 @DependsOn({
@@ -46,7 +50,7 @@ import static org.apache.sis.test.MetadataAssert.*;
     DefaultGeographicCRSTest.class,
     DefaultVerticalCRSTest.class
 })
-public final strictfp class DefaultCompoundCRSTest extends TestCase {
+public final strictfp class DefaultCompoundCRSTest extends XMLTestCase {
     /**
      * The vertical CRS arbitrarily chosen in this class for the tests.
      */
@@ -58,9 +62,9 @@ public final strictfp class DefaultCompoundCRSTest extends TestCase {
     private static final DefaultTemporalCRS TIME = HardCodedCRS.TIME;
 
     /**
-     * Tolerance threshold for strict floating point comparisons.
+     * An XML file in this package containing a projected CRS definition.
      */
-    private static final double STRICT = 0;
+    private static final String XML_FILE = "CompoundCRS.xml";
 
     /**
      * Tests construction and serialization of a {@link DefaultCompoundCRS}.
@@ -92,9 +96,9 @@ public final strictfp class DefaultCompoundCRSTest extends TestCase {
     /**
      * Verifies the components of the CRS created by {@link #testConstructionAndSerialization()}.
      *
-     * @param crs2 The expected two-dimensional component (for the 2 first axes).
-     * @param crs3 The expected three-dimensional component.
-     * @param crs4 The four-dimensional compound CRS to test.
+     * @param  crs2  the expected two-dimensional component (for the 2 first axes).
+     * @param  crs3  the expected three-dimensional component.
+     * @param  crs4  the four-dimensional compound CRS to test.
      */
     private static void verifyComponents(final DefaultGeographicCRS crs2,
                                          final DefaultCompoundCRS   crs3,
@@ -144,6 +148,29 @@ public final strictfp class DefaultCompoundCRSTest extends TestCase {
     }
 
     /**
+     * Tests {@link DefaultCompoundCRS#isStandardCompliant(List)}.
+     *
+     * @since 0.6
+     */
+    @Test
+    public void testIsStandardCompliant() {
+        final DefaultCompoundCRS crs3 = new DefaultCompoundCRS(singletonMap(NAME_KEY, "3D"), HardCodedCRS.WGS84,  HEIGHT);
+        final DefaultCompoundCRS crs4 = new DefaultCompoundCRS(singletonMap(NAME_KEY, "4D"), HardCodedCRS.WGS84_3D, TIME);
+        assertTrue (isStandardCompliant(crs3));
+        assertTrue (isStandardCompliant(crs4));
+        assertTrue (isStandardCompliant(new DefaultCompoundCRS(singletonMap(NAME_KEY, "4D"), crs3, TIME)));
+        assertFalse(isStandardCompliant(new DefaultCompoundCRS(singletonMap(NAME_KEY, "5D"), crs4, TIME)));
+        assertFalse(isStandardCompliant(new DefaultCompoundCRS(singletonMap(NAME_KEY, "4D"), TIME, crs3)));
+    }
+
+    /**
+     * Returns {@code true} if the given CRS is compliant with ISO 19162 restrictions.
+     */
+    private static boolean isStandardCompliant(final DefaultCompoundCRS crs) {
+        return DefaultCompoundCRS.isStandardCompliant(crs.getSingleComponents());
+    }
+
+    /**
      * Tests WKT 1 formatting.
      */
     @Test
@@ -157,13 +184,14 @@ public final strictfp class DefaultCompoundCRSTest extends TestCase {
                 "    UNIT[“degree”, 0.017453292519943295],\n" +
                 "    AXIS[“Longitude”, EAST],\n" +
                 "    AXIS[“Latitude”, NORTH]],\n" +
-                "  VERT_CS[“Gravity-related height”,\n" +
+                "  VERT_CS[“MSL height”,\n" +
                 "    VERT_DATUM[“Mean Sea Level”, 2005],\n" +
                 "    UNIT[“metre”, 1],\n" +
-                "    AXIS[“Gravity-related height”, UP]],\n" +
+                "    AXIS[“Gravity-related height”, UP],\n" +
+                "    AUTHORITY[“EPSG”, “5714”]],\n" +   // SIS includes Identifier for component of CompoundCRS.
                 "  TIMECRS[“Time”,\n" +
-                "    TIMEDATUM[“Modified Julian”, TIMEORIGIN[1858-11-17T00:00:00.0Z]],\n" +
-                "    UNIT[“day”, 86400],\n" +
+                "    TDATUM[“Modified Julian”, TIMEORIGIN[1858-11-17]],\n" +
+                "    TIMEUNIT[“day”, 86400],\n" +
                 "    AXIS[“Time”, FUTURE]]]",
                 HardCodedCRS.GEOID_4D);
     }
@@ -175,27 +203,86 @@ public final strictfp class DefaultCompoundCRSTest extends TestCase {
     @DependsOnMethod("testWKT1")
     public void testWKT2() {
         assertWktEquals(Convention.WKT2,
+                "COMPOUNDCRS[“WGS 84 + height + time”,\n" +
+                "  GEODCRS[“WGS 84”,\n" +
+                "    DATUM[“World Geodetic System 1984”,\n" +
+                "      ELLIPSOID[“WGS84”, 6378137.0, 298.257223563, LENGTHUNIT[“metre”, 1]]],\n" +
+                "      PRIMEM[“Greenwich”, 0.0, ANGLEUNIT[“degree”, 0.017453292519943295]],\n" +
+                "    CS[ellipsoidal, 2],\n" +
+                "      AXIS[“Longitude (L)”, east, ORDER[1]],\n" +
+                "      AXIS[“Latitude (B)”, north, ORDER[2]],\n" +
+                "      ANGLEUNIT[“degree”, 0.017453292519943295]],\n" +
+                "  VERTCRS[“MSL height”,\n" +
+                "    VDATUM[“Mean Sea Level”],\n" +
+                "    CS[vertical, 1],\n" +
+                "      AXIS[“Gravity-related height (H)”, up, ORDER[1]],\n" +
+                "      LENGTHUNIT[“metre”, 1],\n" +
+                "    ID[“EPSG”, 5714]],\n" +            // SIS includes Identifier for component of CompoundCRS.
+                "  TIMECRS[“Time”,\n" +
+                "    TDATUM[“Modified Julian”, TIMEORIGIN[1858-11-17]],\n" +
+                "    CS[temporal, 1],\n" +
+                "      AXIS[“Time (t)”, future, ORDER[1]],\n" +
+                "      TIMEUNIT[“day”, 86400]],\n" +
+                "  AREA[“World”],\n" +
+                "  BBOX[-90.00, -180.00, 90.00, 180.00]]",
+                HardCodedCRS.GEOID_4D);
+    }
+
+    /**
+     * Tests WKT 2 "simplified" formatting.
+     */
+    @Test
+    @DependsOnMethod("testWKT2")
+    public void testWKT2_Simplified() {
+        assertWktEquals(Convention.WKT2_SIMPLIFIED,
                 "CompoundCRS[“WGS 84 + height + time”,\n" +
                 "  GeodeticCRS[“WGS 84”,\n" +
                 "    Datum[“World Geodetic System 1984”,\n" +
-                "      Ellipsoid[“WGS84”, 6378137.0, 298.257223563, LengthUnit[“metre”, 1]]],\n" +
-                "      PrimeMeridian[“Greenwich”, 0.0, AngleUnit[“degree”, 0.017453292519943295]],\n" +
-                "    CS[“ellipsoidal”, 2],\n" +
-                "      Axis[“Longitude (L)”, east, Order[1]],\n" +
-                "      Axis[“Latitude (B)”, north, Order[2]],\n" +
-                "      AngleUnit[“degree”, 0.017453292519943295]],\n" +
-                "  VerticalCRS[“Gravity-related height”,\n" +
+                "      Ellipsoid[“WGS84”, 6378137.0, 298.257223563]],\n" +
+                "    CS[ellipsoidal, 2],\n" +
+                "      Axis[“Longitude (L)”, east],\n" +
+                "      Axis[“Latitude (B)”, north],\n" +
+                "      Unit[“degree”, 0.017453292519943295]],\n" +
+                "  VerticalCRS[“MSL height”,\n" +
                 "    VerticalDatum[“Mean Sea Level”],\n" +
-                "    CS[“vertical”, 1],\n" +
-                "      Axis[“Gravity-related height (H)”, up, Order[1]],\n" +
-                "      LengthUnit[“metre”, 1]],\n" +
+                "    CS[vertical, 1],\n" +
+                "      Axis[“Gravity-related height (H)”, up],\n" +
+                "      Unit[“metre”, 1],\n" +
+                "    Id[“EPSG”, 5714]],\n" +            // SIS includes Identifier for component of CompoundCRS.
                 "  TimeCRS[“Time”,\n" +
-                "    TimeDatum[“Modified Julian”, TimeOrigin[1858-11-17T00:00:00.0Z]],\n" +
-                "    CS[“temporal”, 1],\n" +
-                "      Axis[“Time (t)”, future, Order[1]],\n" +
+                "    TimeDatum[“Modified Julian”, TimeOrigin[1858-11-17]],\n" +
+                "    CS[temporal, 1],\n" +
+                "      Axis[“Time (t)”, future],\n" +
                 "      TimeUnit[“day”, 86400]],\n" +
                 "  Area[“World”],\n" +
                 "  BBox[-90.00, -180.00, 90.00, 180.00]]",
                 HardCodedCRS.GEOID_4D);
+    }
+
+    /**
+     * Tests (un)marshalling of a derived coordinate reference system.
+     *
+     * @throws JAXBException if an error occurred during (un)marshalling.
+     *
+     * @since 0.7
+     */
+    @Test
+    public void testXML() throws JAXBException {
+        final DefaultCompoundCRS crs = unmarshalFile(DefaultCompoundCRS.class, XML_FILE);
+        Validators.validate(crs);
+        assertEpsgNameAndIdentifierEqual("JGD2011 + JGD2011 (vertical) height", 6697, crs);
+        assertAxisDirectionsEqual("coordinateSystem", crs.getCoordinateSystem(), AxisDirection.NORTH, AxisDirection.EAST, AxisDirection.UP);
+        /*
+         * Shallow verification of the components.
+         */
+        final List<CoordinateReferenceSystem> components = crs.getComponents();
+        assertSame("singleComponents", components, crs.getSingleComponents());
+        assertEquals("components.size", 2, components.size());
+        assertEpsgNameAndIdentifierEqual("JGD2011",                   6668, components.get(0));
+        assertEpsgNameAndIdentifierEqual("JGD2011 (vertical) height", 6695, components.get(1));
+        /*
+         * Test marshalling and compare with the original file.
+         */
+        assertMarshalEqualsFile(XML_FILE, crs, "xmlns:*", "xsi:schemaLocation", "gml:id");
     }
 }

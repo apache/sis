@@ -51,8 +51,8 @@ import org.apache.sis.metadata.iso.citation.Citations;
  * but they are for polynomial transformations, not affine transformations.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.6
  * @version 0.6
+ * @since   0.6
  * @module
  */
 class MatrixParameters extends TensorParameters<Double> {
@@ -64,10 +64,9 @@ class MatrixParameters extends TensorParameters<Double> {
     /**
      * Constructs a descriptors provider.
      *
-     * @param numRow The parameter for the number of rows.
-     * @param numCol The parameter for the number of columns.
+     * @param numRow  the parameter for the number of rows.
+     * @param numCol  the parameter for the number of columns.
      */
-    @SuppressWarnings("unchecked")
     MatrixParameters(final ParameterDescriptor<Integer> numRow, final ParameterDescriptor<Integer> numCol) {
         super(Double.class, "elt_", "_", numRow, numCol);
     }
@@ -94,8 +93,8 @@ class MatrixParameters extends TensorParameters<Double> {
      * used by the EPSG database. For other row and column indices, the same pattern is still used but the
      * result is not an official EPSG parameter name.
      *
-     * @param  indices The indices of the tensor element for which to create a parameter alias.
-     * @return The parameter descriptor alias for the tensor element at the given indices, or {@code null} if none.
+     * @param  indices  the indices of the tensor element for which to create a parameter alias.
+     * @return the parameter descriptor alias for the tensor element at the given indices, or {@code null} if none.
      */
     static String indicesToAlias(final int[] indices) {
         final int row = indices[0];
@@ -155,7 +154,7 @@ class MatrixParameters extends TensorParameters<Double> {
      */
     @Override
     protected ParameterDescriptor<Double> createElementDescriptor(final int[] indices) throws IllegalArgumentException {
-        final Map<String,Object> properties = new HashMap<String,Object>(4);
+        final Map<String,Object> properties = new HashMap<>(4);
         properties.put(ParameterDescriptor.NAME_KEY,
                 new NamedIdentifier(Citations.OGC, Constants.OGC, indicesToName(indices), null, null));
         final String c = indicesToAlias(indices);
@@ -163,7 +162,7 @@ class MatrixParameters extends TensorParameters<Double> {
             properties.put(ParameterDescriptor.ALIAS_KEY,
                     new NamedIdentifier(Citations.SIS, Constants.SIS, c, null, null));
         }
-        return new DefaultParameterDescriptor<Double>(properties, 0, 1, Double.class, null, null, getDefaultValue(indices));
+        return new DefaultParameterDescriptor<>(properties, 0, 1, Double.class, null, null, getDefaultValue(indices));
     }
 
     /**

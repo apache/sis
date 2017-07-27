@@ -17,6 +17,8 @@
 package org.apache.sis.internal.jaxb.gco;
 
 import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlSchemaType;
+import javax.xml.bind.annotation.XmlType;
 
 
 /**
@@ -33,13 +35,15 @@ import javax.xml.bind.annotation.XmlElement;
  *
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.3
- * @module
  *
  * @see GO_Real
  * @see GO_Decimal32
+ *
+ * @since 0.3
+ * @module
  */
+@XmlType(name = "Decimal_PropertyType")
 public final class GO_Decimal extends PropertyType<GO_Decimal, Double> {
     /**
      * Empty constructor used only by JAXB.
@@ -50,7 +54,7 @@ public final class GO_Decimal extends PropertyType<GO_Decimal, Double> {
     /**
      * Constructs a wrapper for the given value.
      *
-     * @param value The value.
+     * @param  value  the value.
      */
     private GO_Decimal(final Double value) {
         super(value, value.isNaN());
@@ -70,8 +74,8 @@ public final class GO_Decimal extends PropertyType<GO_Decimal, Double> {
      * Allows JAXB to change the result of the marshalling process, according to the
      * ISO-19139 standard and its requirements about primitive types.
      *
-     * @param value The double value we want to surround by an element representing its type.
-     * @return An adaptation of the double value, that is to say a double value surrounded
+     * @param  value  the double value we want to surround by an element representing its type.
+     * @return an adaptation of the double value, that is to say a double value surrounded
      *         by {@code <gco:Decimal>} element.
      */
     @Override
@@ -82,9 +86,10 @@ public final class GO_Decimal extends PropertyType<GO_Decimal, Double> {
     /**
      * Invoked by JAXB at marshalling time for getting the actual value to write.
      *
-     * @return The value to be marshalled.
+     * @return the value to be marshalled.
      */
     @XmlElement(name = "Decimal")
+    @XmlSchemaType(name = "decimal")
     public Double getElement() {
         return metadata;
     }
@@ -92,7 +97,7 @@ public final class GO_Decimal extends PropertyType<GO_Decimal, Double> {
     /**
      * Invoked by JAXB at unmarshalling time for storing the result temporarily.
      *
-     * @param metadata The unmarshalled value.
+     * @param  metadata  the unmarshalled value.
      */
     public void setElement(final Double metadata) {
         this.metadata = metadata;

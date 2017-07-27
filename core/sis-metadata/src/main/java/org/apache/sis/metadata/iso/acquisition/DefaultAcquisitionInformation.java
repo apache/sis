@@ -46,10 +46,11 @@ import org.apache.sis.metadata.iso.ISOMetadata;
  *
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.3
+ * @since   0.3
  * @module
  */
+@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "MI_AcquisitionInformation_Type", propOrder = {
     "acquisitionPlans",
     "acquisitionRequirements",
@@ -112,7 +113,7 @@ public class DefaultAcquisitionInformation extends ISOMetadata implements Acquis
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
-     * @param object The metadata to copy values from, or {@code null} if none.
+     * @param  object  the metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(AcquisitionInformation)
      */
@@ -143,8 +144,8 @@ public class DefaultAcquisitionInformation extends ISOMetadata implements Acquis
      *       metadata contained in the given object are not recursively copied.</li>
      * </ul>
      *
-     * @param  object The object to get as a SIS implementation, or {@code null} if none.
-     * @return A SIS implementation containing the values of the given object (may be the
+     * @param  object  the object to get as a SIS implementation, or {@code null} if none.
+     * @return a SIS implementation containing the values of the given object (may be the
      *         given object itself), or {@code null} if the argument was null.
      */
     public static DefaultAcquisitionInformation castOrCopy(final AcquisitionInformation object) {
@@ -157,7 +158,7 @@ public class DefaultAcquisitionInformation extends ISOMetadata implements Acquis
     /**
      * Returns the plan as implemented by the acquisition.
      *
-     * @return Plan as implemented by the acquisition.
+     * @return plan as implemented by the acquisition.
      */
     @Override
     @XmlElement(name = "acquisitionPlan")
@@ -168,7 +169,7 @@ public class DefaultAcquisitionInformation extends ISOMetadata implements Acquis
     /**
      * Sets the plan as implemented by the acquisition.
      *
-     * @param newValues The new plan values.
+     * @param  newValues  the new plan values.
      */
     public void setAcquisitionPlans(final Collection<? extends Plan> newValues) {
         acquisitionPlans = writeCollection(newValues, acquisitionPlans, Plan.class);
@@ -177,7 +178,7 @@ public class DefaultAcquisitionInformation extends ISOMetadata implements Acquis
     /**
      * Returns the requirement the data acquisition intends to satisfy.
      *
-     * @return Requirement the data acquisition intends to satisfy.
+     * @return requirement the data acquisition intends to satisfy.
      */
     @Override
     @XmlElement(name = "acquisitionRequirement")
@@ -188,7 +189,7 @@ public class DefaultAcquisitionInformation extends ISOMetadata implements Acquis
     /**
      * Sets the requirement the data acquisition intends to satisfy.
      *
-     * @param newValues The new acquisition requirements values.
+     * @param  newValues  the new acquisition requirements values.
      */
     public void setAcquisitionRequirements(final Collection<? extends Requirement> newValues) {
         acquisitionRequirements = writeCollection(newValues, acquisitionRequirements, Requirement.class);
@@ -198,7 +199,7 @@ public class DefaultAcquisitionInformation extends ISOMetadata implements Acquis
      * Returns a record of the environmental circumstances during the data acquisition.
      * {@code null} if unspecified.
      *
-     * @return Record of the environmental circumstances, or {@code null}.
+     * @return record of the environmental circumstances, or {@code null}.
      */
     @Override
     @XmlElement(name = "environmentalConditions")
@@ -209,7 +210,7 @@ public class DefaultAcquisitionInformation extends ISOMetadata implements Acquis
     /**
      * Sets the record of the environmental circumstances during the data acquisition.
      *
-     * @param newValue The new environmental record value.
+     * @param  newValue  the new environmental record value.
      */
     public void setEnvironmentalConditions(final EnvironmentalRecord newValue) {
         checkWritePermission();
@@ -219,7 +220,7 @@ public class DefaultAcquisitionInformation extends ISOMetadata implements Acquis
     /**
      * Returns the general information about the instrument used in data acquisition.
      *
-     * @return Instrument used in data acquisition.
+     * @return instrument used in data acquisition.
      */
     @Override
     @XmlElement(name = "instrument")
@@ -230,7 +231,7 @@ public class DefaultAcquisitionInformation extends ISOMetadata implements Acquis
     /**
      * Sets the general information about the instrument used in data acquisition.
      *
-     * @param newValues The new instruments values.
+     * @param  newValues  the new instruments values.
      */
     public void setInstruments(final Collection<? extends Instrument> newValues) {
         instruments = writeCollection(newValues, instruments, Instrument.class);
@@ -239,7 +240,7 @@ public class DefaultAcquisitionInformation extends ISOMetadata implements Acquis
     /**
      * Returns the area or object to be sensed.
      *
-     * @return Area or object to be sensed.
+     * @return area or object to be sensed.
      */
     @Override
     @XmlElement(name = "objective")
@@ -250,7 +251,7 @@ public class DefaultAcquisitionInformation extends ISOMetadata implements Acquis
     /**
      * Sets the area or object to be sensed.
      *
-     * @param newValues The new objectives values.
+     * @param  newValues  the new objectives values.
      */
     public void setObjectives(final Collection<? extends Objective> newValues) {
         objectives = writeCollection(newValues, objectives, Objective.class);
@@ -259,7 +260,7 @@ public class DefaultAcquisitionInformation extends ISOMetadata implements Acquis
     /**
      * Returns the general information about an identifiable activity which provided the data.
      *
-     * @return Identifiable activity which provided the data.
+     * @return identifiable activity which provided the data.
      */
     @Override
     @XmlElement(name = "operation")
@@ -270,7 +271,7 @@ public class DefaultAcquisitionInformation extends ISOMetadata implements Acquis
     /**
      * Sets the general information about an identifiable activity which provided the data.
      *
-     * @param newValues The new operations values.
+     * @param  newValues  the new operations values.
      */
     public void setOperations(final Collection<? extends Operation> newValues) {
         operations = writeCollection(newValues, operations, Operation.class);
@@ -279,7 +280,7 @@ public class DefaultAcquisitionInformation extends ISOMetadata implements Acquis
     /**
      * Returns the general information about the platform from which the data were taken.
      *
-     * @return Platform from which the data were taken.
+     * @return platform from which the data were taken.
      */
     @Override
     @XmlElement(name = "platform")
@@ -290,7 +291,7 @@ public class DefaultAcquisitionInformation extends ISOMetadata implements Acquis
     /**
      * Sets the general information about the platform from which the data were taken.
      *
-     * @param newValues The new platforms values.
+     * @param  newValues  the new platforms values.
      */
     public void setPlatforms(final Collection<? extends Platform> newValues) {
         platforms = writeCollection(newValues, platforms, Platform.class);

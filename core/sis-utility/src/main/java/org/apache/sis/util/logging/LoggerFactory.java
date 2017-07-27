@@ -41,16 +41,17 @@ import org.apache.sis.util.collection.WeakValueHashMap;
  * This base class is safe for multi-threads usage. Subclasses registered in {@code META-INF/services/}
  * shall make sure that any overridden methods remain safe to call from multiple threads.
  *
- * @param <L> The type of loggers used for the implementation backend.
- *            This is the type used by external frameworks like Log4J.
- *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.3
  * @version 0.3
- * @module
+ *
+ * @param <L>  the type of loggers used for the implementation backend.
+ *             This is the type used by external frameworks like Log4J.
  *
  * @see Logging
  * @see LoggerAdapter
+ *
+ * @since 0.3
+ * @module
  */
 public abstract class LoggerFactory<L> {
     /**
@@ -72,13 +73,13 @@ public abstract class LoggerFactory<L> {
      */
     protected LoggerFactory(final Class<L> loggerClass) {
         this.loggerClass = loggerClass;
-        loggers = new WeakValueHashMap<String,Logger>(String.class);
+        loggers = new WeakValueHashMap<>(String.class);
     }
 
     /**
      * Returns the name of the logging framework.
      *
-     * @return The logging framework name.
+     * @return the logging framework name.
      */
     public abstract String getName();
 
@@ -86,8 +87,8 @@ public abstract class LoggerFactory<L> {
      * Returns the logger of the specified name, or {@code null} if the JDK logging framework
      * should be used.
      *
-     * @param  name The name of the logger.
-     * @return The logger, or {@code null} if the JDK logging framework should be used.
+     * @param  name  the name of the logger.
+     * @return the logger, or {@code null} if the JDK logging framework should be used.
      */
     public Logger getLogger(final String name) {
         final L target = getImplementation(name);
@@ -108,7 +109,7 @@ public abstract class LoggerFactory<L> {
      * Returns the base class of objects to be returned by {@link #getImplementation(String)}.
      * The class depends on the underlying logging framework (Log4J, SLF4J, <i>etc.</i>).
      *
-     * @return The type of loggers used for the implementation backend.
+     * @return the type of loggers used for the implementation backend.
      */
     public Class<L> getImplementationClass() {
         return loggerClass;
@@ -120,8 +121,8 @@ public abstract class LoggerFactory<L> {
      * framework redirects logging events to JDK logging, then this method shall return
      * {@code null} since we should not use wrapper at all.
      *
-     * @param  name The name of the logger.
-     * @return The logger as an object of the target logging framework (Log4J, SLF4J,
+     * @param  name  the name of the logger.
+     * @return the logger as an object of the target logging framework (Log4J, SLF4J,
      *         <i>etc.</i>), or {@code null} if the target framework would redirect
      *         to the JDK logging framework.
      */
@@ -130,9 +131,9 @@ public abstract class LoggerFactory<L> {
     /**
      * Wraps the specified {@linkplain #getImplementation(String) implementation} in a JDK logger.
      *
-     * @param  name The name of the logger.
-     * @param  implementation An implementation returned by {@link #getImplementation(String)}.
-     * @return A new logger wrapping the specified implementation.
+     * @param  name  the name of the logger.
+     * @param  implementation  an implementation returned by {@link #getImplementation(String)}.
+     * @return a new logger wrapping the specified implementation.
      */
     protected abstract Logger wrap(String name, L implementation);
 
@@ -141,8 +142,8 @@ public abstract class LoggerFactory<L> {
      * logger, or {@code null} if none. If the specified logger is not an instance of the expected
      * class, then this method should returns {@code null}.
      *
-     * @param  logger The logger to test.
-     * @return The implementation wrapped by the specified logger, or {@code null} if none.
+     * @param  logger  the logger to test.
+     * @return the implementation wrapped by the specified logger, or {@code null} if none.
      */
     protected abstract L unwrap(Logger logger);
 }

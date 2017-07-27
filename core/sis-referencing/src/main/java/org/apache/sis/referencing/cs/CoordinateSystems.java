@@ -17,12 +17,13 @@
 package org.apache.sis.referencing.cs;
 
 import java.util.Arrays;
-import javax.measure.unit.Unit;
-import javax.measure.converter.UnitConverter;
-import javax.measure.converter.LinearConverter;
-import javax.measure.converter.ConversionException;
+import java.util.Objects;
+import javax.measure.Unit;
+import javax.measure.quantity.Length;
+import javax.measure.IncommensurableException;
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.CoordinateSystem;
+import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.opengis.referencing.operation.Matrix;
 import org.apache.sis.measure.Angle;
 import org.apache.sis.measure.ElevationAngle;
@@ -30,23 +31,26 @@ import org.apache.sis.measure.Units;
 import org.apache.sis.util.Static;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.CharSequences;
-import org.apache.sis.util.resources.Errors;
-import org.apache.sis.internal.referencing.AxisDirections;
+import org.apache.sis.util.NullArgumentException;
+import org.apache.sis.internal.util.DoubleDouble;
+import org.apache.sis.internal.metadata.AxisDirections;
+import org.apache.sis.internal.referencing.Resources;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
-
-// Branch-dependent imports
-import org.apache.sis.internal.jdk7.Objects;
+import static org.apache.sis.util.ArgumentChecks.ensureNonNullElement;
 
 
 /**
  * Utility methods working on {@link CoordinateSystem} objects and their axes.
+ * Those methods allow for example to {@linkplain #angle estimate an angle between two axes}
+ * or {@linkplain #swapAndScaleAxes determining the change of axis directions and units}
+ * between two coordinate systems.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
+ * @version 0.8
  * @since   0.4
- * @version 0.6
  * @module
  */
 public final class CoordinateSystems extends Static {
@@ -65,11 +69,12 @@ public final class CoordinateSystems extends Static {
      *   <li>Inter-cardinal directions <cite>"north-east"</cite> and <cite>"south-south-east"</cite>,
      *       using either {@code '-'}, {@code '_'} or spaces as separator between the cardinal points.</li>
      *   <li>Directions from a pole like <cite>"South along 180 deg"</cite> and <cite>"South along 90° East"</cite>,
-     *       using either the {@code "deg"} or {@code "°"} symbol.</li>
+     *       using either the {@code "deg"} or {@code "°"} symbol. Note that the meridian is not necessarily relative
+     *       to Greenwich (see {@link #directionAlongMeridian directionAlongMeridian(…)} for more information).</li>
      * </ul>
      *
-     * @param  name The direction name (e.g. "north", "north-east", <i>etc.</i>).
-     * @return The axis direction for the given name.
+     * @param  name  the direction name (e.g. "north", "north-east", <i>etc.</i>).
+     * @return the axis direction for the given name.
      * @throws IllegalArgumentException if the given name is not a known axis direction.
      */
     public static AxisDirection parseAxisDirection(String name) throws IllegalArgumentException {
@@ -94,7 +99,34 @@ public final class CoordinateSystems extends Static {
             assert candidate == AxisDirections.valueOf(meridian.toString());
             return candidate;
         }
-        throw new IllegalArgumentException(Errors.format(Errors.Keys.UnknownAxisDirection_1, name));
+        throw new IllegalArgumentException(Resources.format(Resources.Keys.UnknownAxisDirection_1, name));
+    }
+
+    /**
+     * Returns an axis direction from a pole along a meridian.
+     * The given meridian is usually, but not necessarily, relative to the Greenwich meridian.
+     *
+     * <div class="note"><b>Example:</b>
+     * {@code directionAlongMeridian(AxisDirection.SOUTH, -90)} returns an axis direction for
+     * <cite>“South along 90°W”</cite>.</div>
+     *
+     * <div class="section">Reference meridian</div>
+     * The reference meridian depends on the context. It is usually the prime meridian of the
+     * {@linkplain org.apache.sis.referencing.datum.DefaultGeodeticDatum geodetic datum} of the
+     * {@linkplain org.apache.sis.referencing.crs.DefaultGeographicCRS geographic CRS} instance
+     * that contains (through its coordinate system) the axes having those directions.
+     * This policy is consistent with
+     * <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html#40">WKT 2 specification §7.5.4(iv)</a>.
+     *
+     * @param  baseDirection  the base direction, which must be {@link AxisDirection#NORTH} or {@link AxisDirection#SOUTH}.
+     * @param  meridian       the meridian in degrees, relative to a unspecified (usually Greenwich) prime meridian.
+     *         Meridians in the East hemisphere are positive and meridians in the West hemisphere are negative.
+     * @return the axis direction along the given meridian.
+     *
+     * @since 0.6
+     */
+    public static AxisDirection directionAlongMeridian(final AxisDirection baseDirection, final double meridian) {
+        return new DirectionAlongMeridian(baseDirection, meridian).getDirection();
     }
 
     /**
@@ -110,6 +142,11 @@ public final class CoordinateSystems extends Static {
      *   <li>The angle from {@link AxisDirection#SOUTH SOUTH} to {@link AxisDirection#WEST WEST} is -90°</li>
      *   <li>The angle from <cite>"North along 90° East"</cite> to <cite>"North along 0°"</cite> is 90°.</li>
      * </ul>
+     *
+     * <div class="note"><b>Note:</b>
+     * in the case of directions like <cite>“South along 90°W”</cite>, the caller is responsible to make sure
+     * that the meridians are relative to the same prime meridian. This is the case if the axes are part of
+     * the same {@code CoordinateSystem} instance.</div>
      *
      * <div class="section">Horizontal and vertical directions</div>
      * By convention this method defines the angle from any compass direction to the {@link AxisDirection#UP UP}
@@ -128,9 +165,9 @@ public final class CoordinateSystems extends Static {
      *   <li>{@code angle(A, B) = -angle(B, A)}</li>
      * </ul>
      *
-     * @param  source The source axis direction.
-     * @param  target The target axis direction.
-     * @return The arithmetic angle (in degrees) of the rotation to apply on a line pointing toward
+     * @param  source  the source axis direction.
+     * @param  target  the target axis direction.
+     * @return the arithmetic angle (in degrees) of the rotation to apply on a line pointing toward
      *         the source direction in order to make it point toward the target direction, or
      *         {@code null} if this value can not be computed.
      */
@@ -194,28 +231,16 @@ public final class CoordinateSystems extends Static {
     }
 
     /**
-     * Returns the axis direction for the specified coordinate system.
-     *
-     * @param  cs The coordinate system.
-     * @return The axis directions for the specified coordinate system.
-     */
-    private static AxisDirection[] getAxisDirections(final CoordinateSystem cs) {
-        final AxisDirection[] directions = new AxisDirection[cs.getDimension()];
-        for (int i=0; i<directions.length; i++) {
-            directions[i] = cs.getAxis(i).getDirection();
-        }
-        return directions;
-    }
-
-    /**
      * Returns an affine transform between two coordinate systems.
-     * The two coordinate systems must implement the same GeoAPI coordinate system interface.
-     * For example if {@code sourceCRS} is a {@link org.opengis.referencing.cs.CartesianCS},
-     * then {@code targetCRS} must be a {@code CartesianCS} too.
      * Only units and axes order (e.g. transforming from
      * ({@linkplain AxisDirection#NORTH North}, {@linkplain AxisDirection#WEST West}) to
      * ({@linkplain AxisDirection#EAST East}, {@linkplain AxisDirection#NORTH North})
      * are taken in account by this method.
+     *
+     * <div class="section">Conditions</div>
+     * The two coordinate systems must implement the same GeoAPI coordinate system interface.
+     * For example if {@code sourceCS} is a {@link org.opengis.referencing.cs.CartesianCS},
+     * then {@code targetCS} must be a {@code CartesianCS} too.
      *
      * <div class="note"><b>Example:</b>
      * If coordinates in {@code sourceCS} are (<var>x</var>,<var>y</var>) tuples in metres
@@ -231,26 +256,29 @@ public final class CoordinateSystems extends Static {
      * }
      * </div>
      *
-     * @param  sourceCS The source coordinate system.
-     * @param  targetCS The target coordinate system.
-     * @return The conversion from {@code sourceCS} to {@code targetCS} as an affine transform.
+     * @param  sourceCS  the source coordinate system.
+     * @param  targetCS  the target coordinate system.
+     * @return the conversion from {@code sourceCS} to {@code targetCS} as an affine transform.
      *         Only axis direction and units are taken in account.
      * @throws IllegalArgumentException if the CS are not of the same type, or axes do not match.
-     * @throws ConversionException if the units are not compatible, or the conversion is non-linear.
+     * @throws IncommensurableException if the units are not compatible, or the conversion is non-linear.
      *
      * @see Matrices#createTransform(AxisDirection[], AxisDirection[])
      */
+    @SuppressWarnings("fallthrough")
     public static Matrix swapAndScaleAxes(final CoordinateSystem sourceCS,
                                           final CoordinateSystem targetCS)
-            throws IllegalArgumentException, ConversionException
+            throws IllegalArgumentException, IncommensurableException
     {
+        ensureNonNull("sourceCS", sourceCS);
+        ensureNonNull("targetCS", targetCS);
         if (!Classes.implementSameInterfaces(sourceCS.getClass(), targetCS.getClass(), CoordinateSystem.class)) {
-            throw new IllegalArgumentException(Errors.format(Errors.Keys.IncompatibleCoordinateSystemTypes));
+            throw new IllegalArgumentException(Resources.format(Resources.Keys.IncompatibleCoordinateSystemTypes));
         }
-        final AxisDirection[] sourceAxis = getAxisDirections(sourceCS);
-        final AxisDirection[] targetAxis = getAxisDirections(targetCS);
-        final MatrixSIS matrix = Matrices.createTransform(sourceAxis, targetAxis);
-        assert Arrays.equals(sourceAxis, targetAxis) == matrix.isIdentity() : matrix;
+        final AxisDirection[] srcAxes = getAxisDirections(sourceCS);
+        final AxisDirection[] dstAxes = getAxisDirections(targetCS);
+        final MatrixSIS matrix = Matrices.createTransform(srcAxes, dstAxes);
+        assert Arrays.equals(srcAxes, dstAxes) == matrix.isIdentity() : matrix;
         /*
          * The previous code computed a matrix for swapping axes. Usually, this
          * matrix contains only 0 and 1 values with only one "1" value by row.
@@ -266,13 +294,12 @@ public final class CoordinateSystems extends Static {
          * not a matrix multiplication. The last column is processed in a special
          * way, since it contains the offset values.
          */
-        final int sourceDim = matrix.getNumCol() - 1;  // == sourceCS.getDimension()
-        final int targetDim = matrix.getNumRow() - 1;  // == targetCS.getDimension()
+        final int sourceDim = matrix.getNumCol() - 1;                       // == sourceCS.getDimension()
+        final int targetDim = matrix.getNumRow() - 1;                       // == targetCS.getDimension()
         for (int j=0; j<targetDim; j++) {
             final Unit<?> targetUnit = targetCS.getAxis(j).getUnit();
             for (int i=0; i<sourceDim; i++) {
-                final double element = matrix.getElement(j,i);
-                if (element == 0) {
+                if (matrix.getElement(j,i) == 0) {
                     // There is no dependency between source[i] and target[j]
                     // (i.e. axes are orthogonal).
                     continue;
@@ -283,53 +310,247 @@ public final class CoordinateSystems extends Static {
                     // between source[i] and target[j].
                     continue;
                 }
-                final UnitConverter converter = sourceUnit.getConverterToAny(targetUnit);
-                if (!(converter instanceof LinearConverter)) {
-                    throw new ConversionException(Errors.format(
-                              Errors.Keys.NonLinearUnitConversion_2, sourceUnit, targetUnit));
+                Number scale  = 1;
+                Number offset = 0;
+                final Number[] coefficients = Units.coefficients(sourceUnit.getConverterToAny(targetUnit));
+                switch (coefficients != null ? coefficients.length : -1) {
+                    case 2:  scale  = coefficients[1];       // Fall through
+                    case 1:  offset = coefficients[0];       // Fall through
+                    case 0:  break;
+                    default: throw new IncommensurableException(Resources.format(
+                                Resources.Keys.NonLinearUnitConversion_2, sourceUnit, targetUnit));
                 }
-                final double offset = converter.convert(0);
-                final double scale  = Units.derivative(converter, 0);
-                matrix.setElement(j, i, element*scale);
-                matrix.setElement(j, sourceDim, matrix.getElement(j, sourceDim) + element*offset);
+                final DoubleDouble element = DoubleDouble.castOrCopy(matrix.getNumber(j,i));
+                final DoubleDouble r = new DoubleDouble(element);
+                r.multiply(scale);
+                matrix.setNumber(j, i, r);
+                r.setFrom(element);
+                r.multiply(offset);
+                r.add(matrix.getNumber(j, sourceDim));
+                matrix.setNumber(j, sourceDim, r);
             }
         }
         return matrix;
     }
 
     /**
-     * Returns a coordinate system with {@linkplain AxesConvention#NORMALIZED normalized} axis order and units.
-     * This method is typically used together with {@link #swapAndScaleAxes swapAndScaleAxes} for the creation
-     * of a transformation step before some
-     * {@linkplain org.apache.sis.referencing.operation.transform.AbstractMathTransform math transform}.
-     * Example:
+     * Returns a coordinate system derived from the given one but with a modified list of axes.
+     * The axes may be filtered (excluding some axes), reordered or have their unit and direction modified.
+     *
+     * <div class="note"><b>Example:</b>
+     * for replacing all angular units of a coordinate system to degrees (regardless what the original
+     * angular units were) while leaving other kinds of units unchanged, one can write:
      *
      * {@preformat java
-     *     Matrix step1 = swapAndScaleAxes(sourceCS, normalize(sourceCS));
-     *     Matrix step2 = ... some transform operating on standard axis ...
-     *     Matrix step3 = swapAndScaleAxes(normalize(targetCS), targetCS);
-     * }
+     *     CoordinateSystem cs = ...;
+     *     cs = CoordinateSystems.replaceAxes(cs, new AxisFilter() {
+     *         &#64;Override
+     *         public Unit<?> getUnitReplacement(CoordinateSystemAxis axis, Unit<?> unit) {
+     *             if (Units.isAngular(unit)) {
+     *                 unit = Units.DEGREE;
+     *             }
+     *             return unit;
+     *         }
+     *     });
+     * }</div>
      *
-     * A rational for normalized axis order and units is explained in the <cite>Axis units and
-     * direction</cite> section in the {@linkplain org.apache.sis.referencing.operation.projection
-     * description of map projection package}.
+     * <div class="section">Coordinate system normalization</div>
+     * This method is often used together with {@link #swapAndScaleAxes swapAndScaleAxes(…)} for normalizing the
+     * coordinate values given to a {@linkplain org.apache.sis.referencing.operation.transform.AbstractMathTransform
+     * math transform}.
      *
-     * @param  cs The coordinate system.
-     * @return A constant similar to the specified {@code cs} with normalized axes.
+     * <div class="note"><b>Example:</b>
+     * {@preformat java
+     *     CoordinateSystem sourceCS = ...;
+     *     CoordinateSystem targetCS = ...;
+     *     Matrix step1 = swapAndScaleAxes(sourceCS, replaceAxes(sourceCS, AxisConvention.NORMALIZED));
+     *     Matrix step2 = ...; // some transform working on coordinates with standard axis order and unit.
+     *     Matrix step3 = swapAndScaleAxes(replaceAxes(targetCS, AxisConvention.NORMALIZED), targetCS);
+     * }</div>
+     *
+     * A rational for normalized axis order and units is explained in the <cite>Axis units and direction</cite> section
+     * in the description of the {@linkplain org.apache.sis.referencing.operation.projection map projection package}.
+     *
+     * @param  cs      the coordinate system, or {@code null}.
+     * @param  filter  the modifications to apply on coordinate system axes.
+     * @return the modified coordinate system as a new instance,
+     *         or {@code cs} if the given coordinate system was null or does not need any change.
      * @throws IllegalArgumentException if the specified coordinate system can not be normalized.
      *
      * @see AxesConvention#NORMALIZED
      *
      * @since 0.6
      */
-    public static CoordinateSystem normalize(final CoordinateSystem cs) throws IllegalArgumentException {
-        if (cs == null) {
-            return null;
-        } else if (cs instanceof AbstractCS) {
-            // User may have overridden the 'forConvention' method.
-            return ((AbstractCS) cs).forConvention(AxesConvention.NORMALIZED);
-        } else {
-            return Normalizer.normalize(cs);
+    public static CoordinateSystem replaceAxes(final CoordinateSystem cs, final AxisFilter filter) {
+        ensureNonNull("filter", filter);
+        if (cs != null) {
+            final CoordinateSystem newCS;
+            if (filter instanceof AxesConvention) {
+                if (cs instanceof AbstractCS) {
+                    // User may have overridden the 'forConvention' method.
+                    return ((AbstractCS) cs).forConvention((AxesConvention) filter);
+                } else {
+                    newCS = Normalizer.forConvention(cs, (AxesConvention) filter);
+                }
+            } else {
+                newCS = Normalizer.normalize(cs, filter, false);
+            }
+            if (newCS != null) {
+                return newCS;
+            }
         }
+        return cs;
+    }
+
+    /**
+     * Returns a coordinate system derived from the given one but with all linear units replaced by the given unit.
+     * Non-linear units (e.g. angular or scale units) are left unchanged.
+     *
+     * <p>This convenience method is equivalent to the following code:</p>
+     * {@preformat java
+     *     return CoordinateSystems.replaceAxes(cs, new AxisFilter() {
+     *         &#64;Override public Unit<?> getUnitReplacement(CoordinateSystemAxis axis, Unit<?> unit) {
+     *             return Units.isLinear(unit) ? newUnit : unit;
+     *         }
+     *     });
+     * }
+     *
+     * @param  cs       the coordinate system in which to replace linear units, or {@code null}.
+     * @param  newUnit  the new linear unit.
+     * @return the modified coordinate system as a new instance, or {@code null} if the given {@code cs} was null,
+     *         or {@code cs} if all linear units were already equal to the given one.
+     *
+     * @see Units#isLinear(Unit)
+     *
+     * @since 0.7
+     */
+    public static CoordinateSystem replaceLinearUnit(final CoordinateSystem cs, final Unit<Length> newUnit) {
+        ensureNonNull("newUnit", newUnit);
+        return CoordinateSystems.replaceAxes(cs, new AxisFilter() {
+            @Override public Unit<?> getUnitReplacement(CoordinateSystemAxis axis, Unit<?> unit) {
+                return Units.isLinear(unit) ? newUnit : unit;
+            }
+
+            @Override
+            public boolean accept(CoordinateSystemAxis axis) {
+                return true;
+            }
+
+            @Override
+            public AxisDirection getDirectionReplacement(CoordinateSystemAxis axis, AxisDirection direction) {
+                return direction;
+            }
+        });
+    }
+
+    /**
+     * Returns a coordinate system derived from the given one but with all angular units replaced by the given unit.
+     * Non-angular units (e.g. linear or scale units) are left unchanged.
+     *
+     * <p>This convenience method is equivalent to the following code:</p>
+     * {@preformat java
+     *     return CoordinateSystems.replaceAxes(cs, new AxisFilter() {
+     *         &#64;Override public Unit<?> getUnitReplacement(CoordinateSystemAxis axis, Unit<?> unit) {
+     *             return Units.isAngular(unit) ? newUnit : unit;
+     *         }
+     *     });
+     * }
+     *
+     * @param  cs       the coordinate system in which to replace angular units, or {@code null}.
+     * @param  newUnit  the new angular unit.
+     * @return the modified coordinate system as a new instance, or {@code null} if the given {@code cs} was null,
+     *         or {@code cs} if all angular units were already equal to the given one.
+     *
+     * @see Units#isAngular(Unit)
+     *
+     * @since 0.7
+     */
+    public static CoordinateSystem replaceAngularUnit(final CoordinateSystem cs, final Unit<javax.measure.quantity.Angle> newUnit) {
+        ensureNonNull("newUnit", newUnit);
+        return CoordinateSystems.replaceAxes(cs, new AxisFilter() {
+            @Override public Unit<?> getUnitReplacement(CoordinateSystemAxis axis, Unit<?> unit) {
+                return Units.isAngular(unit) ? newUnit : unit;
+            }
+
+            @Override
+            public boolean accept(CoordinateSystemAxis axis) {
+                return true;
+            }
+
+            @Override
+            public AxisDirection getDirectionReplacement(CoordinateSystemAxis axis, AxisDirection direction) {
+                return direction;
+            }
+        });
+    }
+
+    /**
+     * Returns the axis directions for the specified coordinate system.
+     * This method guarantees that the returned array is non-null and does not contain any null direction.
+     *
+     * @param  cs  the coordinate system.
+     * @return the axis directions for the specified coordinate system.
+     * @throws NullArgumentException if {@code cs} is null, or one of its axes is null,
+     *         or a value returned by {@link CoordinateSystemAxis#getDirection()} is null.
+     *
+     * @since 0.8
+     */
+    public static AxisDirection[] getAxisDirections(final CoordinateSystem cs) {
+        ensureNonNull("cs", cs);
+        final AxisDirection[] directions = new AxisDirection[cs.getDimension()];
+        for (int i=0; i<directions.length; i++) {
+            final CoordinateSystemAxis axis = cs.getAxis(i);
+            ensureNonNullElement("cs", i, cs);
+            ensureNonNullElement("cs[#].direction", i, directions[i] = axis.getDirection());
+        }
+        return directions;
+    }
+
+    /**
+     * Returns the EPSG code of a coordinate system using the given unit and axis directions.
+     * If no suitable coordinate system is known to Apache SIS, then this method returns {@code null}.
+     *
+     * <p>Current implementation uses a hard-coded list of known coordinate systems;
+     * it does not yet scan the EPSG database (this may change in future Apache SIS version).
+     * The current list of known coordinate systems is given below.</p>
+     *
+     * <table>
+     *   <caption>Known coordinate systems (CS)</caption>
+     *   <tr><th>EPSG</th> <th>CS type</th> <th colspan="2">Axis directions</th> <th>Unit</th></tr>
+     *   <tr><td>6424</td> <td>Ellipsoidal</td> <td>east</td>  <td>north</td> <td>degree</td></tr>
+     *   <tr><td>6422</td> <td>Ellipsoidal</td> <td>north</td> <td>east</td>  <td>degree</td></tr>
+     *   <tr><td>6425</td> <td>Ellipsoidal</td> <td>east</td>  <td>north</td> <td>grads</td></tr>
+     *   <tr><td>6403</td> <td>Ellipsoidal</td> <td>north</td> <td>east</td>  <td>grads</td></tr>
+     *   <tr><td>6429</td> <td>Ellipsoidal</td> <td>east</td>  <td>north</td> <td>radian</td></tr>
+     *   <tr><td>6428</td> <td>Ellipsoidal</td> <td>north</td> <td>east</td>  <td>radian</td></tr>
+     *   <tr><td>4400</td> <td>Cartesian</td>   <td>east</td>  <td>north</td> <td>metre</td></tr>
+     *   <tr><td>4500</td> <td>Cartesian</td>   <td>north</td> <td>east</td>  <td>metre</td></tr>
+     *   <tr><td>4491</td> <td>Cartesian</td>   <td>west</td>  <td>north</td> <td>metre</td></tr>
+     *   <tr><td>4501</td> <td>Cartesian</td>   <td>north</td> <td>west</td>  <td>metre</td></tr>
+     *   <tr><td>6503</td> <td>Cartesian</td>   <td>west</td>  <td>south</td> <td>metre</td></tr>
+     *   <tr><td>6501</td> <td>Cartesian</td>   <td>south</td> <td>west</td>  <td>metre</td></tr>
+     *   <tr><td>1039</td> <td>Cartesian</td>   <td>east</td>  <td>north</td> <td>foot</td></tr>
+     *   <tr><td>1029</td> <td>Cartesian</td>   <td>north</td> <td>east</td>  <td>foot</td></tr>
+     *   <tr><td>4403</td> <td>Cartesian</td>   <td>east</td>  <td>north</td> <td>Clarke’s foot</td></tr>
+     *   <tr><td>4502</td> <td>Cartesian</td>   <td>north</td> <td>east</td>  <td>Clarke’s foot</td></tr>
+     *   <tr><td>4497</td> <td>Cartesian</td>   <td>east</td>  <td>north</td> <td>US survey foot</td></tr>
+     * </table>
+     *
+     * @param  unit        desired unit of measurement.
+     * @param  directions  desired axis directions.
+     * @return EPSG codes for a coordinate system using the given axis directions and unit of measurement,
+     *         or {@code null} if unknown to this method. Note that a null value does not mean that a more
+     *         extensive search in the EPSG database would not find a matching coordinate system.
+     *
+     * @see Units#getEpsgCode(Unit, boolean)
+     * @see org.apache.sis.referencing.factory.GeodeticAuthorityFactory#createCoordinateSystem(String)
+     *
+     * @since 0.8
+     */
+    public static Integer getEpsgCode(final Unit<?> unit, final AxisDirection... directions) {
+        ensureNonNull("unit", unit);
+        ensureNonNull("directions", directions);
+        final int code = Codes.lookup(unit, directions);
+        return (code != 0) ? code : null;
     }
 }

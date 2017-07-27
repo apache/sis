@@ -29,12 +29,13 @@ import static org.apache.sis.util.collection.Containers.isNullOrEmpty;
  *
  * @author  Guilhem Legal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.3
+ * @since   0.3
  * @module
  */
 @XmlType(name = "MI_ImageDescription_Type")
 @XmlRootElement(name = "MI_ImageDescription")
+@SuppressWarnings("CloneableClassWithoutClone")
 public class MI_ImageDescription extends DefaultImageDescription {
     /**
      * For cross-version compatibility.
@@ -52,7 +53,7 @@ public class MI_ImageDescription extends DefaultImageDescription {
      * Creates a new metadata as a copy of the given one.
      * This is a shallow copy constructor.
      *
-     * @param original The original metadata to copy.
+     * @param original  the original metadata to copy.
      */
     public MI_ImageDescription(final ImageDescription original) {
         super(original);
@@ -62,8 +63,8 @@ public class MI_ImageDescription extends DefaultImageDescription {
      * Wraps the given metadata into a SIS implementation that can be marshalled,
      * using the {@code "gmi"} namespace if necessary.
      *
-     * @param  original The original metadata provided by the user.
-     * @return The metadata to marshall.
+     * @param  original  the original metadata provided by the user.
+     * @return the metadata to marshall.
      */
     public static DefaultImageDescription castOrCopy(final ImageDescription original) {
         if (original != null && !(original instanceof MI_ImageDescription)) {

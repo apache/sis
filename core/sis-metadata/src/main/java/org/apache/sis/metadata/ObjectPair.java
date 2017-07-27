@@ -29,8 +29,8 @@ import org.apache.sis.util.Classes;
  * Object order is not significant.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.3
+ * @since   0.3
  * @module
  */
 final class ObjectPair {
@@ -39,7 +39,7 @@ final class ObjectPair {
      */
     static final ThreadLocal<Set<ObjectPair>> CURRENT = new ThreadLocal<Set<ObjectPair>>() {
         @Override protected Set<ObjectPair> initialValue() {
-            return new HashSet<ObjectPair>();
+            return new HashSet<>();
         }
     };
 

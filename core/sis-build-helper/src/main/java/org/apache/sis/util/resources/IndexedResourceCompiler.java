@@ -23,17 +23,17 @@ import java.util.regex.Pattern;
 
 
 /**
- * Reads a given list of {@code .properties} files and copies their content to {@code .utf} files
- * using UTF-8 encoding. It also checks for key validity and checks values for {@link MessageFormat}
- * compatibility. Finally, it writes the key values in the Java source files.
+ * Reads a given list of {@code .properties} files and copies their content to {@code .utf} files using UTF-8 encoding.
+ * This class also checks for key validity and checks values for {@link MessageFormat} compatibility.
+ * Finally, it writes the key values in the Java source files.
  *
  * <p>This class is independent of any Mojo and could be executed from the command-line.
  * For now we keep it package-private, but we could consider to enable execution from
  * the command-line in a future version if this happen to be useful.</p>
  *
- * @author Martin Desruisseaux (IRD, Geomatys)
+ * @author  Martin Desruisseaux (IRD, Geomatys)
+ * @version 0.8
  * @since   0.3
- * @version 0.3
  * @module
  */
 class IndexedResourceCompiler implements FilenameFilter, Comparator<Object> {
@@ -81,7 +81,7 @@ class IndexedResourceCompiler implements FilenameFilter, Comparator<Object> {
     /**
      * Margin to write before the {@link #KEY_MODIFIERS}.
      */
-    private static final String KEY_MARGIN = "        "; // 8 spaces
+    private static final String KEY_MARGIN = "        ";        // 8 spaces
 
     /**
      * The source directory of the java and properties files.
@@ -100,16 +100,16 @@ class IndexedResourceCompiler implements FilenameFilter, Comparator<Object> {
     private File bundleClass;
 
     /**
-     * Integer IDs allocated to resource keys. This map will be shared for all languages
-     * of a given resource bundle.
+     * Integer IDs allocated to resource keys.
+     * This map will be shared for all languages of a given resource bundle.
      */
-    private final Map<Integer,String> allocatedIDs = new HashMap<Integer,String>();
+    private final Map<Integer,String> allocatedIDs = new HashMap<>();
 
     /**
      * Resource keys and their localized values. This map will be cleared for each language
      * in a resource bundle.
      */
-    private final Map<Object,Object> resources = new HashMap<Object,Object>();
+    private final Map<Object,Object> resources = new HashMap<>();
 
     /**
      * The resources bundle base classes.
@@ -124,14 +124,12 @@ class IndexedResourceCompiler implements FilenameFilter, Comparator<Object> {
     /**
      * Constructs a new {@code IndexedResourceCompiler}.
      *
-     * @param sourceDirectory The source directory.
-     * @param buildDirectory  The target directory where to write UTF files.
-     * @param resourcesToProcess The resource bundle base classes
-     *        (e.g. {@code org/apache/sis/util/resources/Vocabulary.java}).
+     * @param sourceDirectory     the source directory.
+     * @param buildDirectory      the target directory where to write UTF files.
+     * @param resourcesToProcess  the resource bundle base classes
+     *                            (e.g. {@code org/apache/sis/util/resources/Vocabulary.java}).
      */
-    public IndexedResourceCompiler(final File sourceDirectory, final File buildDirectory,
-            final File[] resourcesToProcess)
-    {
+    IndexedResourceCompiler(final File sourceDirectory, final File buildDirectory, final File[] resourcesToProcess) {
         this.sourceDirectory    = sourceDirectory;
         this.buildDirectory     = buildDirectory;
         this.resourcesToProcess = resourcesToProcess;
@@ -140,9 +138,10 @@ class IndexedResourceCompiler implements FilenameFilter, Comparator<Object> {
     /**
      * Runs the resource compiler.
      *
-     * @throws ResourceCompilerException If an error occurred.
-     * @return The number of errors found.
+     * @throws ResourceCompilerException if an error occurred.
+     * @return the number of errors found.
      */
+    @SuppressWarnings("ForLoopReplaceableByForEach")
     public int run() throws ResourceCompilerException {
         if (!sourceDirectory.isDirectory()) {
             throw new ResourceCompilerException(sourceDirectory + " not found or is not a directory.");
@@ -165,11 +164,10 @@ class IndexedResourceCompiler implements FilenameFilter, Comparator<Object> {
      * Loads the existing key values from the source file. This is used in order to avoid
      * the need to recompile the whole application when new entries are added.
      *
-     * @throws IOException If an error occurred while reading the source file.
+     * @throws IOException if an error occurred while reading the source file.
      */
     private void loadKeyValues() throws IOException {
-        final BufferedReader in = new BufferedReader(new InputStreamReader(new FileInputStream(bundleClass), JAVA_ENCODING));
-        try {
+        try (BufferedReader in = new BufferedReader(new InputStreamReader(new FileInputStream(bundleClass), JAVA_ENCODING))) {
             String line;
             while ((line = in.readLine()) != null) {
                 if ((line = line.trim()).startsWith(KEY_MODIFIERS)) {
@@ -178,18 +176,24 @@ class IndexedResourceCompiler implements FilenameFilter, Comparator<Object> {
                         final int c = line.indexOf(';', s);
                         if (c >= 0) {
                             final String key = line.substring(KEY_MODIFIERS.length(), s).trim();
-                            final Integer ID = Integer.valueOf(line.substring(s+1, c).trim());
-                            final String old = allocatedIDs.put(ID, key);
+                            final int    id  = Integer.parseInt(line.substring(s+1, c).trim());
+                            final String old = allocatedIDs.put(id, key);
                             if (old != null) {
-                                warning("Key " + ID + " is used by " + old + " and " + key);
+                                warning("Key " + id + " is used by " + old + " and " + key);
+                                errors++;
+                            } else if (id <= 0) {
+                                final StringBuilder buffer = new StringBuilder(key).append(" = ")
+                                        .append(id).append(" is not a valid value.");
+                                if (id == 0) {
+                                    buffer.append(" Zero is reserved for meaning “no localized message”.");
+                                }
+                                warning(buffer.toString());
                                 errors++;
                             }
                         }
                     }
                 }
             }
-        } finally {
-            in.close();
         }
     }
 
@@ -255,8 +259,8 @@ class IndexedResourceCompiler implements FilenameFilter, Comparator<Object> {
     /**
      * Returns {@code true} if the given file is a property file.
      *
-     * @param directory The directory (ignored).
-     * @param name The file name.
+     * @param  directory  the directory (ignored).
+     * @param  name       the file name.
      * @return {@code true} if the given file is a property file.
      */
     @Override
@@ -267,18 +271,15 @@ class IndexedResourceCompiler implements FilenameFilter, Comparator<Object> {
     /**
      * Loads the specified property file. No processing are performed on them.
      *
-     * @param  file The property file to load.
-     * @return The properties.
+     * @param  file  the property file to load.
+     * @return the properties.
      * @throws IOException if the file can not be read.
      */
     private static Properties loadRawProperties(final File file) throws IOException {
         final Properties properties;
-        final InputStream input = new FileInputStream(file);
-        try {
+        try (InputStream input = new FileInputStream(file)) {
             properties = new Properties();
             properties.load(input);
-        } finally {
-            input.close();
         }
         return properties;
     }
@@ -295,7 +296,7 @@ class IndexedResourceCompiler implements FilenameFilter, Comparator<Object> {
      *   <li>{@link #loadKeyValues()}</li>
      * </ul>
      *
-     * @param  file The properties file to read.
+     * @param  file  the properties file to read.
      * @throws IOException if an input/output operation failed.
      */
     private void loadProperties(final File file) throws IOException {
@@ -305,7 +306,7 @@ class IndexedResourceCompiler implements FilenameFilter, Comparator<Object> {
             final String key   = (String) entry.getKey();
             final String value = (String) entry.getValue();
             /*
-             * Checks key and value validity.
+             * Check key and value validity.
              */
             if (key.trim().isEmpty()) {
                 warning(file, key, "Empty key.", null);
@@ -316,7 +317,7 @@ class IndexedResourceCompiler implements FilenameFilter, Comparator<Object> {
                 continue;
             }
             /*
-             * Checks if the resource value is a legal MessageFormat pattern.
+             * Check if the resource value is a legal MessageFormat pattern.
              */
             final MessageFormat message;
             try {
@@ -326,21 +327,21 @@ class IndexedResourceCompiler implements FilenameFilter, Comparator<Object> {
                 continue;
             }
             /*
-             * Checks if the expected arguments count (according to naming conventions)
+             * Check if the expected arguments count (according to naming conventions)
              * matches the arguments count found in the MessageFormat pattern.
              */
-            final int argumentCount;
+            int argumentCount = 0;
+            String resource = value;
             final int index = key.lastIndexOf(ARGUMENT_COUNT_PREFIX);
-            if (index < 0) {
-                argumentCount = 0;
-                resources.put(key, value); // Text will not be formatted using MessageFormat.
-            } else try {
+            if (index >= 0) try {
                 String suffix = key.substring(index + ARGUMENT_COUNT_PREFIX.length());
                 argumentCount = Integer.parseInt(suffix);
-                resources.put(key, message.toPattern());
+                resource = message.toPattern();
             } catch (NumberFormatException exception) {
-                warning(file, key, "Bad number in resource key", exception);
-                continue;
+                // No warning - allow use of underscore for other purpose.
+            }
+            if (resources.put(key, resource) != null) {
+                warning(file, key, "Duplicated key", null);
             }
             final int expected = message.getFormatsByArgumentIndex().length;
             if (argumentCount != expected) {
@@ -349,18 +350,19 @@ class IndexedResourceCompiler implements FilenameFilter, Comparator<Object> {
             }
         }
         /*
-         * Allocates an ID for each new key.
+         * Allocate an ID for each new key. We start numbering at 1
+         * because some classes use key value 0 for meaning "no message".
          */
         final String[] keys = resources.keySet().toArray(new String[resources.size()]);
         Arrays.sort(keys, this);
         int freeID = 0;
         for (final String key : keys) {
             if (!allocatedIDs.containsValue(key)) {
-                Integer ID;
+                Integer id;
                 do {
-                    ID = freeID++;
-                } while (allocatedIDs.containsKey(ID));
-                allocatedIDs.put(ID, key);
+                    id = ++freeID;
+                } while (allocatedIDs.containsKey(id));
+                allocatedIDs.put(id, key);
             }
         }
     }
@@ -373,7 +375,7 @@ class IndexedResourceCompiler implements FilenameFilter, Comparator<Object> {
         int level =  0;
         int last  = -1;
         final StringBuilder buffer = new StringBuilder(text);
-search: for (int i=0; i<buffer.length(); i++) { // Length of 'buffer' will vary.
+search: for (int i=0; i<buffer.length(); i++) {                 // Length of 'buffer' will vary.
             switch (buffer.charAt(i)) {
                 /*
                  * Left and right braces take us up or down a level.  Quotes will only be doubled
@@ -429,24 +431,21 @@ search: for (int i=0; i<buffer.length(); i++) { // Length of 'buffer' will vary.
      *   <li>{@link #loadProperties(File)}</li>
      * </ul>
      *
-     * @param  file The destination file.
+     * @param  file  the destination file.
      * @throws IOException if an input/output operation failed.
      */
     private void writeUTF(final File file) throws IOException {
         final File directory = file.getParentFile();
         if (!directory.isDirectory() && !directory.mkdirs()) {
-            throw new IOException("Can't create the " + directory + " directory.");
+            throw new IOException("Can not create the " + directory + " directory.");
         }
-        final int count = allocatedIDs.isEmpty() ? 0 : Collections.max(allocatedIDs.keySet()) + 1;
-        final DataOutputStream out = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(file)));
-        try {
+        final int count = allocatedIDs.isEmpty() ? 0 : Collections.max(allocatedIDs.keySet());
+        try (DataOutputStream out = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(file)))) {
             out.writeInt(count);
-            for (int i=0; i<count; i++) {
+            for (int i=1; i<=count; i++) {
                 final String value = (String) resources.get(allocatedIDs.get(i));
                 out.writeUTF((value != null) ? value : "");
             }
-        } finally {
-            out.close();
         }
     }
 
@@ -477,8 +476,7 @@ search: for (int i=0; i<buffer.length(); i++) { // Length of 'buffer' will vary.
          * on the same line than the class declaration).
          */
         boolean modified;
-        final BufferedReader in = new BufferedReader(new InputStreamReader(new FileInputStream(file), JAVA_ENCODING));
-        try {
+        try (BufferedReader in = new BufferedReader(new InputStreamReader(new FileInputStream(file), JAVA_ENCODING))) {
             for (int state=0; state<=2; state++) {
                 final String regex;
                 switch (state) {
@@ -565,10 +563,10 @@ search: for (int i=0; i<buffer.length(); i++) { // Length of 'buffer' will vary.
                     if (endOfLine >= 0) {
                         if (buffer.substring(startLineToCompare, endOfLine).equals(line)) {
                             startLineToCompare = endOfLine + lineSeparator.length();
-                            continue; // Content is equals, do not set the 'modified' flag.
+                            continue;                   // Content is equals, do not set the 'modified' flag.
                         }
                     } else if (brackets == 0) {
-                        break; // Content finished in same time, do not set the 'modified' flag.
+                        break;              // Content finished in same time, do not set the 'modified' flag.
                     }
                     modified = true;
                 }
@@ -583,15 +581,10 @@ search: for (int i=0; i<buffer.length(); i++) { // Length of 'buffer' will vary.
                     buffer.append(line).append(lineSeparator);
                 }
             }
-        } finally {
-            in.close();
         }
         if (modified) {
-            final Writer out = new OutputStreamWriter(new FileOutputStream(file), JAVA_ENCODING);
-            try {
+            try (Writer out = new OutputStreamWriter(new FileOutputStream(file), JAVA_ENCODING)) {
                 out.write(buffer.toString());
-            } finally {
-                out.close();
             }
         }
     }
@@ -601,8 +594,8 @@ search: for (int i=0; i<buffer.length(); i++) { // Length of 'buffer' will vary.
      * objects representing resource keys (for example, "{@code MISMATCHED_DIMENSION}"), but
      * may also be {@link java.util.Map.Entry}.
      *
-     * @param  o1 The resource key to compare.
-     * @param  o2 The second resource key to compare.
+     * @param  o1  the resource key to compare.
+     * @param  o2  the second resource key to compare.
      * @return -1, 0 or +1 based on the alphabetic order of resource keys.
      */
     @Override
@@ -618,8 +611,9 @@ search: for (int i=0; i<buffer.length(); i++) { // Length of 'buffer' will vary.
      * Logs the given message at the {@code INFO} level.
      * The default implementation just sent it to the standard output stream.
      *
-     * @param message The message to log.
+     * @param  message  the message to log.
      */
+    @SuppressWarnings("UseOfSystemOutOrSystemErr")
     protected void info(final String message) {
         System.out.println(message);
     }
@@ -628,8 +622,9 @@ search: for (int i=0; i<buffer.length(); i++) { // Length of 'buffer' will vary.
      * Logs the given message at the {@code WARNING} level.
      * The default implementation just sent it to the standard output stream.
      *
-     * @param message The message to log.
+     * @param  message  the message to log.
      */
+    @SuppressWarnings("UseOfSystemOutOrSystemErr")
     protected void warning(final String message) {
         System.out.println(message);
     }
@@ -637,10 +632,10 @@ search: for (int i=0; i<buffer.length(); i++) { // Length of 'buffer' will vary.
     /**
      * Logs the given message at the {@code WARNING} level.
      *
-     * @param file      File that produced the error, or {@code null} if none.
-     * @param key       Resource key that produced the error, or {@code null} if none.
-     * @param message   The message string.
-     * @param exception An optional exception that is the cause of this warning.
+     * @param  file       file that produced the error, or {@code null} if none.
+     * @param  key        resource key that produced the error, or {@code null} if none.
+     * @param  message    the message string.
+     * @param  exception  an optional exception that is the cause of this warning.
      */
     private void warning(final File file,      final String key,
                          final String message, final Exception exception)

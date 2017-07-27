@@ -18,12 +18,11 @@ package org.apache.sis.internal.jaxb.referencing;
 
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
-import javax.measure.unit.Unit;
 import org.opengis.referencing.datum.Ellipsoid;
+import org.apache.sis.measure.Units;
 import org.apache.sis.xml.Namespaces;
 import org.apache.sis.internal.jaxb.Context;
-import org.apache.sis.internal.jaxb.gco.Measure;
-import org.apache.sis.internal.referencing.ReferencingUtilities;
+import org.apache.sis.internal.jaxb.gml.Measure;
 import org.apache.sis.util.resources.Errors;
 
 
@@ -34,22 +33,50 @@ import org.apache.sis.util.resources.Errors;
  *
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
+ * @version 0.8
  * @since   0.4
- * @version 0.4
  * @module
  */
 @XmlRootElement(name = "SecondDefiningParameter", namespace = Namespaces.GML)
 public final class SecondDefiningParameter {
     /**
      * Nested parameter, for JAXB purpose.
+     * This is used for marshalling XML like below:
+     *
+     * {@preformat xml
+     *   <gml:secondDefiningParameter>
+     *     <gml:SecondDefiningParameter>
+     *       <gml:semiMinorAxis uom="urn:ogc:def:uom:EPSG::9001">6371007</gml:semiMinorAxis>
+     *     </gml:SecondDefiningParameter>
+     *   </gml:secondDefiningParameter>
+     * }
      */
     @XmlElement(name = "SecondDefiningParameter")
     public SecondDefiningParameter secondDefiningParameter;
 
     /**
+     * Whether the ellipsoid is a sphere, or {@code null} if unspecified.
+     * If this value is {@code true}, then the XML shall be marshalled like below:
+     *
+     * {@preformat xml
+     *   <gml:secondDefiningParameter>
+     *     <gml:SecondDefiningParameter>
+     *       <gml:isSphere>true</gml:isSphere>
+     *     </gml:SecondDefiningParameter>
+     *   </gml:secondDefiningParameter>
+     * }
+     *
+     * @since 0.8
+     */
+    @XmlElement
+    public Boolean isSphere;
+
+    /**
      * The measure, which is either the polar radius or the inverse of the flattening value.
      * We distinguish those two cases by the unit: if the measure is the inverse flattening,
-     * then the unit must be {@link Unit#ONE}.
+     * then the unit must be {@link Units#UNITY}.
+     *
+     * <p>This value should be {@code null} if {@link #isSphere} is {@code true}.</p>
      *
      * @see Ellipsoid#getSemiMinorAxis()
      * @see Ellipsoid#getInverseFlattening()
@@ -65,15 +92,17 @@ public final class SecondDefiningParameter {
     /**
      * Stores the semi-minor axis or the inverse of the flattening value.
      *
-     * @param ellipsoid The ellipsoid from which to get the semi-minor or inverse flattening value.
-     * @param nested {@code true} if the element should be nested in an other XML type.
+     * @param  ellipsoid  the ellipsoid from which to get the semi-minor or inverse flattening value.
+     * @param  nested     {@code true} if the element should be nested in an other XML type.
      */
     public SecondDefiningParameter(final Ellipsoid ellipsoid, final boolean nested) {
         if (nested) {
             secondDefiningParameter = new SecondDefiningParameter(ellipsoid, false);
         } else {
-            if (ellipsoid.isIvfDefinitive()) {
-                measure = new Measure(ellipsoid.getInverseFlattening(), Unit.ONE);
+            if (ellipsoid.isSphere()) {
+                isSphere = Boolean.TRUE;
+            } else if (ellipsoid.isIvfDefinitive()) {
+                measure = new Measure(ellipsoid.getInverseFlattening(), Units.UNITY);
             } else {
                 measure = new Measure(ellipsoid.getSemiMinorAxis(), ellipsoid.getAxisUnit());
             }
@@ -86,13 +115,13 @@ public final class SecondDefiningParameter {
      * @return {@code true} if the measure is the inverse of the flattening value.
      */
     public boolean isIvfDefinitive() {
-        return (measure != null) && Unit.ONE.equals(measure.unit);
+        return (measure != null) && Units.UNITY.equals(measure.unit);
     }
 
     /**
      * Returns the semi-minor axis value as a measurement.
      *
-     * @return The measure of the semi-minor axis.
+     * @return the measure of the semi-minor axis.
      */
     @XmlElement(name = "semiMinorAxis")
     public Measure getSemiMinorAxis() {
@@ -104,7 +133,7 @@ public final class SecondDefiningParameter {
      * The unit of measurement (if any) shall be linear, but we do not verify that now.
      * This will be verified by {@code DefaultEllipsoid.setSecondDefiningParameter(…)}.
      *
-     * @param measure The semi-minor axis value.
+     * @param  measure  the semi-minor axis value.
      */
     public void setSemiMinorAxis(final Measure measure) {
         this.measure = measure;
@@ -114,7 +143,7 @@ public final class SecondDefiningParameter {
      * Returns the inverse of the flattening value as a measurement.
      * Note: The unit of this measurement is dimensionless.
      *
-     * @return The inverse of the flattening value as a measurement.
+     * @return the inverse of the flattening value as a measurement.
      */
     @XmlElement(name = "inverseFlattening")
     public Measure getInverseFlattening() {
@@ -128,12 +157,11 @@ public final class SecondDefiningParameter {
      * This method overwrite the unit with a dimensionless one. This is required anyway
      * in order to distinguish between the two cases.</p>
      *
-     * @param measure The inverse flattening value.
+     * @param  measure  the inverse flattening value.
      */
     public void setInverseFlattening(final Measure measure) {
-        if (measure.setUnit(Unit.ONE)) {
-            Context.warningOccured(Context.current(), ReferencingUtilities.LOGGER,
-                    SecondDefiningParameter.class, "setInverseFlattening",
+        if (measure.setUnit(Units.UNITY)) {
+            Context.warningOccured(Context.current(), SecondDefiningParameter.class, "setInverseFlattening",
                     Errors.class, Errors.Keys.IncompatiblePropertyValue_1, "uom");
         }
         this.measure = measure;

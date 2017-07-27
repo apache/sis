@@ -28,6 +28,8 @@ import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.nio.file.FileSystemException;
+import java.nio.file.Files;
 import com.sun.javadoc.RootDoc;
 import com.sun.tools.doclets.formats.html.HtmlDoclet;
 
@@ -49,8 +51,8 @@ import com.sun.tools.doclets.formats.html.HtmlDoclet;
  * <p>This class presumes that all CSS files are encoded in UTF-8.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
+ * @version 0.7
  * @since   0.5
- * @version 0.5
  * @module
  */
 public final class Doclet extends HtmlDoclet {
@@ -75,9 +77,15 @@ public final class Doclet extends HtmlDoclet {
     private static final String ENCODING = "UTF-8";
 
     /**
+     * Invoked by reflection for creating the doclet.
+     */
+    public Doclet() {
+    }
+
+    /**
      * Invoked by Javadoc for starting the doclet.
      *
-     * @param  root The root document.
+     * @param  root  the root document.
      * @return {@code true} on success, or {@code false} on failure.
      */
     public static boolean start(final RootDoc root) {
@@ -95,6 +103,12 @@ public final class Doclet extends HtmlDoclet {
             final File customCSS = customCSS(output);
             copyStylesheet(customCSS, output);
             copyResources(customCSS.getParentFile(), output);
+            final Rewriter r = new Rewriter();
+            for (final File file : output.listFiles()) {
+                if (file.isDirectory()) {       // Do not process files in the root directory, only in sub-directories.
+                    r.processDirectory(file);
+                }
+            }
         } catch (IOException e) {
             final StringWriter buffer = new StringWriter();
             final PrintWriter p = new PrintWriter(buffer);
@@ -142,38 +156,38 @@ public final class Doclet extends HtmlDoclet {
 
     /**
      * Copies the standard CSS file, then copies the custom CSS file.
+     * If the {@value #RENAMED_CSS} file already exists, it will not be overwritten.
      *
-     * @param  inputFile        The custom CSS file to copy in the destination directory.
-     * @param  outputDirectory  The directory where to copy the CSS file.
-     * @throws IOException      If an error occurred while reading or writing.
+     * @param  inputFile        the custom CSS file to copy in the destination directory.
+     * @param  outputDirectory  the directory where to copy the CSS file.
+     * @throws IOException      if an error occurred while reading or writing.
      */
     private static void copyStylesheet(final File inputFile, final File outputDirectory) throws IOException {
         final File stylesheetFile = new File(outputDirectory, STYLESHEET);
         final File standardFile   = new File(outputDirectory, RENAMED_CSS);
-        /*
-         * Copy the standard CSS file, skipping the import of DejaVu font
-         * since our custom CSS file does not use it.
-         */
-        BufferedReader in  = openReader(stylesheetFile);
-        BufferedWriter out = openWriter(standardFile);
-        try {
-            String line;
-            while ((line = in.readLine()) != null) {
-                if (!line.equals("@import url('resources/fonts/dejavu.css');")) {
-                    out.write(line);
-                    out.newLine();
+        if (!standardFile.exists()) {
+            /*
+             * Copy the standard CSS file, skipping the import of DejaVu font
+             * since our custom CSS file does not use it.
+             */
+            try (BufferedReader in  = openReader(stylesheetFile);
+                 BufferedWriter out = openWriter(standardFile))
+            {
+                String line;
+                while ((line = in.readLine()) != null) {
+                    if (!line.equals("@import url('resources/fonts/dejavu.css');")) {
+                        out.write(line);
+                        out.newLine();
+                    }
                 }
             }
-        } finally {
-            out.close();
-            in.close();
         }
         /*
          * Copy the custom CSS file, skipping comments for more compact file.
          */
-        in  = openReader(inputFile);
-        out = openWriter(stylesheetFile);
-        try {
+        try (BufferedReader in  = openReader(inputFile);
+             BufferedWriter out = openWriter(stylesheetFile))
+        {
             String line;
             while ((line = in.readLine()) != null) {
                 if (line.length() < 2 || line.charAt(1) != '*') {
@@ -181,9 +195,6 @@ public final class Doclet extends HtmlDoclet {
                     out.newLine();
                 }
             }
-        } finally {
-            out.close();
-            in.close();
         }
     }
 
@@ -193,9 +204,9 @@ public final class Doclet extends HtmlDoclet {
      * directory can be specified with {@code <javadocResourcesDirectory>}, I have been unable to make it work even
      * with absolute paths.
      *
-     * @param  inputFile        The directory containing resources.
-     * @param  outputDirectory  The directory where to copy the resource files.
-     * @throws IOException      If an error occurred while reading or writing.
+     * @param  inputFile        the directory containing resources.
+     * @param  outputDirectory  the directory where to copy the resource files.
+     * @throws IOException      if an error occurred while reading or writing.
      */
     private static void copyResources(final File inputDirectory, final File outputDirectory) throws IOException {
         final File[] inputFiles = inputDirectory.listFiles(new FilenameFilter() {
@@ -205,18 +216,27 @@ public final class Doclet extends HtmlDoclet {
                        !name.equals(STYLESHEET);
             }
         });
-        final byte[] buffer = new byte[4096];
-        for (final File input : inputFiles) {
-            final FileInputStream  in  = new FileInputStream(input);
-            final FileOutputStream out = new FileOutputStream(new File(outputDirectory, input.getName()));
-            try {
-                int c;
-                while ((c = in.read(buffer)) >= 0) {
-                    out.write(buffer, 0, c);
+        try {
+            for (final File input : inputFiles) {
+                final File output = new File(outputDirectory, input.getName());
+                if (!output.exists()) { // For avoiding a failure if the target exists.
+                    Files.createLink(output.toPath(), input.toPath());
                 }
-            } finally {
-                out.close();
-                in.close();
+            }
+        } catch (UnsupportedOperationException | FileSystemException e) {
+            /*
+             * If hard links are not supported, performs plain copy instead.
+             */
+            final byte[] buffer = new byte[4096];
+            for (final File input : inputFiles) {
+                try (FileInputStream  in  = new FileInputStream(input);
+                     FileOutputStream out = new FileOutputStream(new File(outputDirectory, input.getName())))
+                {
+                    int c;
+                    while ((c = in.read(buffer)) >= 0) {
+                        out.write(buffer, 0, c);
+                    }
+                }
             }
         }
     }

@@ -28,6 +28,7 @@ import org.apache.sis.util.iso.Types;
 import org.apache.sis.internal.jaxb.Context;
 import org.apache.sis.internal.jaxb.gmd.Country;
 import org.apache.sis.internal.jaxb.gmd.LanguageCode;
+import org.apache.sis.internal.jaxb.gmd.PT_FreeText;
 
 
 /**
@@ -57,13 +58,14 @@ import org.apache.sis.internal.jaxb.gmd.LanguageCode;
  * For an alternative (simpler) format, see {@link org.apache.sis.internal.jaxb.gmd.LocaleAdapter}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.4
- * @module
  *
  * @see LanguageCode
  * @see Country
  * @see org.apache.sis.internal.jaxb.gmd.LocaleAdapter
+ *
+ * @since 0.3
+ * @module
  */
 public final class PT_Locale extends XmlAdapter<PT_Locale, Locale> {
     /**
@@ -94,9 +96,9 @@ public final class PT_Locale extends XmlAdapter<PT_Locale, Locale> {
          *
          * <blockquote>Indeed, an XML file can only support data expressed in a single character set, which is generally
          * declared in the XML file header. Having all the localized strings stored in a single XML file would limit the
-         * use of a single character set such as UTF-8. In order to avoid this, the {@link LocalisedCharacterString}
+         * use of a single character set such as UTF-8. In order to avoid this, the {@code LocalisedCharacterString}
          * class is implemented specifically to allow a by-reference containment of the {@link PT_FreeText#textGroup}
-         * property, and the {@link PT_LocaleContainer} is the recommended root element to be instantiated in a
+         * property, and the {@code PT_LocaleContainer} is the recommended root element to be instantiated in a
          * dedicated XML file. The localized string related to a given locale can be stored in a corresponding locale
          * container (i.e. XML file) and referenced from the {@link PT_FreeText#textGroup} property instances.
          * </blockquote>
@@ -134,7 +136,7 @@ public final class PT_Locale extends XmlAdapter<PT_Locale, Locale> {
             final String encoding;
             try {
                 encoding = (String) marshaller.getProperty(Marshaller.JAXB_ENCODING);
-            } catch (Exception e) { // (PropertyException | ClassCastException) on the JDK7 branch.
+            } catch (PropertyException | ClassCastException e) {
                 // Should never happen. But if it happen anyway, just let the
                 // characterEncoding unitialized: it will not be marshalled.
                 Context.warningOccured(Context.current(), PT_Locale.class, "beforeMarshal", e, true);
@@ -163,8 +165,8 @@ public final class PT_Locale extends XmlAdapter<PT_Locale, Locale> {
      * Substitutes the locale by the wrapper to be marshalled into an XML file
      * or stream. JAXB calls automatically this method at marshalling time.
      *
-     * @param value The locale value.
-     * @return The wrapper for the locale value.
+     * @param  value  the locale value.
+     * @return the wrapper for the locale value.
      */
     @Override
     public PT_Locale marshal(final Locale value) {
@@ -175,8 +177,8 @@ public final class PT_Locale extends XmlAdapter<PT_Locale, Locale> {
      * Substitutes the wrapped value read from a XML stream by the object which will
      * contains the value. JAXB calls automatically this method at unmarshalling time.
      *
-     * @param value The wrapper for this metadata value.
-     * @return A locale which represents the metadata value.
+     * @param  value  the wrapper for this metadata value.
+     * @return a locale which represents the metadata value.
      */
     @Override
     public Locale unmarshal(final PT_Locale value) {

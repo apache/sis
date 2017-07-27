@@ -21,14 +21,16 @@ import java.util.Date;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
-import javax.measure.quantity.Duration;
-import javax.measure.converter.UnitConverter;
+import javax.measure.quantity.Time;
+import javax.measure.UnitConverter;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.cs.TimeCS;
 import org.opengis.referencing.crs.TemporalCRS;
 import org.opengis.referencing.datum.TemporalDatum;
 import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.referencing.AbstractReferenceSystem;
+import org.apache.sis.internal.metadata.MetadataUtilities;
+import org.apache.sis.internal.metadata.WKTKeywords;
 import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.measure.Units;
 
@@ -36,7 +38,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 
 
 /**
- * A 1D coordinate reference system used for the recording of time.
+ * A 1-dimensional coordinate reference system used for the recording of time.
  * The Apache SIS implementation provides the following methods in addition to the OGC/ISO properties:
  *
  * <ul>
@@ -44,7 +46,9 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  *   <li>{@link #toValue(Date)} for converting a {@link Date} to a temporal position.</li>
  * </ul>
  *
- * <p><b>Used with coordinate system type:</b>
+ * <p><b>Used with datum type:</b>
+ *   {@linkplain org.apache.sis.referencing.datum.DefaultTemporalDatum Temporal}.<br>
+ * <b>Used with coordinate system type:</b>
  *   {@linkplain org.apache.sis.referencing.cs.DefaultTimeCS Time}.
  * </p>
  *
@@ -54,12 +58,14 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  * in the javadoc, this condition holds if all components were created using only SIS factories and static constants.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.4
- * @version 0.6
- * @module
+ * @version 0.8
  *
  * @see org.apache.sis.referencing.datum.DefaultTemporalDatum
  * @see org.apache.sis.referencing.cs.DefaultTimeCS
+ * @see org.apache.sis.referencing.factory.GeodeticAuthorityFactory#createTemporalCRS(String)
+ *
+ * @since 0.4
+ * @module
  */
 @XmlType(name = "TemporalCRSType", propOrder = {
     "coordinateSystem",
@@ -74,9 +80,13 @@ public class DefaultTemporalCRS extends AbstractCRS implements TemporalCRS {
 
     /**
      * The datum.
+     *
+     * <p><b>Consider this field as final!</b>
+     * This field is modified only at unmarshalling time by {@link #setDatum(TemporalDatum)}</p>
+     *
+     * @see #getDatum()
      */
-    @XmlElement(name = "temporalDatum", required = true)
-    private final TemporalDatum datum;
+    private TemporalDatum datum;
 
     /**
      * A converter from values in this CRS to values in milliseconds.
@@ -90,15 +100,6 @@ public class DefaultTemporalCRS extends AbstractCRS implements TemporalCRS {
      * explicitly in order to use integer arithmetic.
      */
     private transient long origin;
-
-    /**
-     * Constructs a new object in which every attributes are set to a null value.
-     * <strong>This is not a valid object.</strong> This constructor is strictly
-     * reserved to JAXB, which will assign values to the fields using reflexion.
-     */
-    private DefaultTemporalCRS() {
-        datum = null;
-    }
 
     /**
      * Creates a coordinate reference system from the given properties, datum and coordinate system.
@@ -134,20 +135,22 @@ public class DefaultTemporalCRS extends AbstractCRS implements TemporalCRS {
      *     <td>{@link #getRemarks()}</td>
      *   </tr>
      *   <tr>
-     *     <td>{@value org.opengis.referencing.datum.Datum#DOMAIN_OF_VALIDITY_KEY}</td>
+     *     <td>{@value org.opengis.referencing.ReferenceSystem#DOMAIN_OF_VALIDITY_KEY}</td>
      *     <td>{@link org.opengis.metadata.extent.Extent}</td>
      *     <td>{@link #getDomainOfValidity()}</td>
      *   </tr>
      *   <tr>
-     *     <td>{@value org.opengis.referencing.datum.Datum#SCOPE_KEY}</td>
+     *     <td>{@value org.opengis.referencing.ReferenceSystem#SCOPE_KEY}</td>
      *     <td>{@link org.opengis.util.InternationalString} or {@link String}</td>
      *     <td>{@link #getScope()}</td>
      *   </tr>
      * </table>
      *
-     * @param properties The properties to be given to the coordinate reference system.
-     * @param datum The datum.
-     * @param cs The coordinate system.
+     * @param  properties  the properties to be given to the coordinate reference system.
+     * @param  datum       the datum.
+     * @param  cs          the coordinate system.
+     *
+     * @see org.apache.sis.referencing.factory.GeodeticObjectFactory#createTemporalCRS(Map, TemporalDatum, TimeCS)
      */
     public DefaultTemporalCRS(final Map<String,?> properties,
                               final TemporalDatum datum,
@@ -165,7 +168,7 @@ public class DefaultTemporalCRS extends AbstractCRS implements TemporalCRS {
      *
      * <p>This constructor performs a shallow copy, i.e. the properties are not cloned.</p>
      *
-     * @param crs The coordinate reference system to copy.
+     * @param  crs  the coordinate reference system to copy.
      *
      * @see #castOrCopy(TemporalCRS)
      */
@@ -180,8 +183,8 @@ public class DefaultTemporalCRS extends AbstractCRS implements TemporalCRS {
      * Otherwise if the given object is already a SIS implementation, then the given object is returned unchanged.
      * Otherwise a new SIS implementation is created and initialized to the attribute values of the given object.
      *
-     * @param  object The object to get as a SIS implementation, or {@code null} if none.
-     * @return A SIS implementation containing the values of the given object (may be the
+     * @param  object  the object to get as a SIS implementation, or {@code null} if none.
+     * @return a SIS implementation containing the values of the given object (may be the
      *         given object itself), or {@code null} if the argument was null.
      */
     public static DefaultTemporalCRS castOrCopy(final TemporalCRS object) {
@@ -210,35 +213,29 @@ public class DefaultTemporalCRS extends AbstractCRS implements TemporalCRS {
      */
     private void initializeConverter() {
         origin   = datum.getOrigin().getTime();
-        toMillis = getCoordinateSystem().getAxis(0).getUnit().asType(Duration.class).getConverterTo(Units.MILLISECOND);
+        toMillis = getCoordinateSystem().getAxis(0).getUnit().asType(Time.class).getConverterTo(Units.MILLISECOND);
     }
 
     /**
      * Returns the datum.
      *
-     * @return The datum.
+     * @return the datum.
      */
     @Override
-    public final TemporalDatum getDatum() {
+    @XmlElement(name = "temporalDatum", required = true)
+    public TemporalDatum getDatum() {
         return datum;
     }
 
     /**
      * Returns the coordinate system.
      *
-     * @return The coordinate system.
+     * @return the coordinate system.
      */
     @Override
     @XmlElement(name = "timeCS", required = true)
     public TimeCS getCoordinateSystem() {
         return (TimeCS) super.getCoordinateSystem();
-    }
-
-    /**
-     * Used by JAXB only (invoked by reflection).
-     */
-    private void setCoordinateSystem(final TimeCS cs) {
-        setCoordinateSystem("timeCS", cs);
     }
 
     /**
@@ -265,8 +262,8 @@ public class DefaultTemporalCRS extends AbstractCRS implements TemporalCRS {
      *
      * <p>This method is the converse of {@link #toValue(Date)}.</p>
      *
-     * @param  value A value in this axis unit.
-     * @return The value as a {@linkplain Date date}, or {@code null} if the given value is NaN or infinite.
+     * @param  value  a value in this axis unit.
+     * @return the value as a {@linkplain Date date}, or {@code null} if the given value is NaN or infinite.
      */
     public Date toDate(final double value) {
         if (Double.isNaN(value) || Double.isInfinite(value)) {
@@ -284,8 +281,8 @@ public class DefaultTemporalCRS extends AbstractCRS implements TemporalCRS {
      *
      * <p>This method is the converse of {@link #toDate(double)}.</p>
      *
-     * @param  time The value as a {@linkplain Date date}, or {@code null}.
-     * @return value A value in this axis unit, or {@link Double#NaN NaN} if the given time is {@code null}.
+     * @param  time  the value as a {@linkplain Date date}, or {@code null}.
+     * @return the value in this axis unit, or {@link Double#NaN NaN} if the given time is {@code null}.
      */
     public double toValue(final Date time) {
         if (time == null) {
@@ -304,6 +301,8 @@ public class DefaultTemporalCRS extends AbstractCRS implements TemporalCRS {
      * {@code TimeCRS} is defined in the WKT 2 specification only.</div>
      *
      * @return {@code "TimeCRS"}.
+     *
+     * @see <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html#88">WKT 2 specification §14</a>
      */
     @Override
     protected String formatTo(final Formatter formatter) {
@@ -311,6 +310,56 @@ public class DefaultTemporalCRS extends AbstractCRS implements TemporalCRS {
         if (formatter.getConvention().majorVersion() == 1) {
             formatter.setInvalidWKT(this, null);
         }
-        return isBaseCRS(formatter) ? "BaseTimeCRS" : "TimeCRS";
+        return isBaseCRS(formatter) ? WKTKeywords.BaseTimeCRS : WKTKeywords.TimeCRS;
+    }
+
+
+
+
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+    ////////                                                                                  ////////
+    ////////                               XML support with JAXB                              ////////
+    ////////                                                                                  ////////
+    ////////        The following methods are invoked by JAXB using reflection (even if       ////////
+    ////////        they are private) or are helpers for other methods invoked by JAXB.       ////////
+    ////////        Those methods can be safely removed if Geographic Markup Language         ////////
+    ////////        (GML) support is not needed.                                              ////////
+    ////////                                                                                  ////////
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Constructs a new object in which every attributes are set to a null value.
+     * <strong>This is not a valid object.</strong> This constructor is strictly
+     * reserved to JAXB, which will assign values to the fields using reflexion.
+     */
+    private DefaultTemporalCRS() {
+        /*
+         * The datum and the coordinate system are mandatory for SIS working. We do not verify their presence
+         * here because the verification would have to be done in an 'afterMarshal(…)' method and throwing an
+         * exception in that method causes the whole unmarshalling to fail.  But the SC_CRS adapter does some
+         * verifications.
+         */
+    }
+
+    /**
+     * Invoked by JAXB at unmarshalling time.
+     *
+     * @see #getDatum()
+     */
+    private void setDatum(final TemporalDatum value) {
+        if (datum == null) {
+            datum = value;
+        } else {
+            MetadataUtilities.propertyAlreadySet(DefaultVerticalCRS.class, "setDatum", "temporalDatum");
+        }
+    }
+
+    /**
+     * Used by JAXB only (invoked by reflection).
+     *
+     * @see #getCoordinateSystem()
+     */
+    private void setCoordinateSystem(final TimeCS cs) {
+        setCoordinateSystem("timeCS", cs);
     }
 }

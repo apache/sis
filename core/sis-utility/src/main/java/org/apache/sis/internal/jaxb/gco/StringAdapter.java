@@ -30,15 +30,15 @@ import org.apache.sis.internal.jaxb.Context;
  *
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.3
+ * @since   0.3
  * @module
  */
 public class StringAdapter extends XmlAdapter<GO_CharacterString, String> {
     /**
      * Empty constructor for JAXB or subclasses.
      */
-    public StringAdapter() {
+    protected StringAdapter() {
     }
 
     /**
@@ -48,12 +48,12 @@ public class StringAdapter extends XmlAdapter<GO_CharacterString, String> {
      * If the context is {@code null} or does not specify any locale, then the choice
      * of locale is left to the {@link InternationalString#toString()} implementation.
      *
-     * @param  text The {@code CharSequence} to convert to a {@code String}, or {@code null}.
-     * @return The localized representation of the given text, or {@code null} if the text was null.
+     * @param  text  the {@code CharSequence} to convert to a {@code String}, or {@code null}.
+     * @return the localized representation of the given text, or {@code null} if the text was null.
      *
      * @see org.apache.sis.xml.XML#LOCALE
      */
-    static String toString(final CharSequence text) {
+    public static String toString(final CharSequence text) {
         if (text == null) {
             return null;
         }
@@ -62,8 +62,10 @@ public class StringAdapter extends XmlAdapter<GO_CharacterString, String> {
             if (context != null) {
                 final Locale locale = context.getLocale();
                 if (locale != null) {
-                    // While Apache SIS accepts null locale, foreigner
-                    // implementations are not guaranteed to support null.
+                    /*
+                     * While Apache SIS accepts null locale, foreigner
+                     * implementations are not guaranteed to support null.
+                     */
                     return ((InternationalString) text).toString(locale);
                 }
             }
@@ -75,10 +77,10 @@ public class StringAdapter extends XmlAdapter<GO_CharacterString, String> {
      * Returns the string representation of the given {@code GO_CharacterString} for the current locale.
      * The locale is determined by the {@link org.apache.sis.xml.XML#LOCALE} property given to the marshaller.
      *
-     * @param  value The wrapper for the value, or {@code null}.
-     * @return The string representation of the given text, or {@code null}.
+     * @param  value  the wrapper for the value, or {@code null}.
+     * @return the string representation of the given text, or {@code null}.
      */
-    public static String toString(final GO_CharacterString value) {
+    static String toString(final GO_CharacterString value) {
         return (value != null) ? toString(value.toCharSequence()) : null;
     }
 
@@ -88,8 +90,8 @@ public class StringAdapter extends XmlAdapter<GO_CharacterString, String> {
      * sequence is an instance of {@link InternationalString}, then the locale from
      * the current unmashalling context is used in order to get a string.
      *
-     * @param  value The wrapper for the value, or {@code null}.
-     * @return The unwrapped {@link String} value, or {@code null}.
+     * @param  value  the wrapper for the value, or {@code null}.
+     * @return the unwrapped {@link String} value, or {@code null}.
      */
     @Override
     public String unmarshal(final GO_CharacterString value) {
@@ -100,8 +102,8 @@ public class StringAdapter extends XmlAdapter<GO_CharacterString, String> {
      * Converts a {@linkplain String string} to the object to be marshalled in a XML file or stream.
      * JAXB calls automatically this method at marshalling time.
      *
-     * @param  value The string value, or {@code null}.
-     * @return The wrapper for the given string, or {@code null}.
+     * @param  value  the string value, or {@code null}.
+     * @return the wrapper for the given string, or {@code null}.
      */
     @Override
     public GO_CharacterString marshal(final String value) {

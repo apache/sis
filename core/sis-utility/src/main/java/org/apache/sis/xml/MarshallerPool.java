@@ -19,18 +19,22 @@ package org.apache.sis.xml;
 import java.util.Map;
 import java.util.Deque;
 import java.util.ServiceLoader;
-import java.util.concurrent.LinkedBlockingDeque;
+import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
 import org.apache.sis.util.logging.Logging;
+import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.internal.system.DelayedExecutor;
 import org.apache.sis.internal.system.DelayedRunnable;
+import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.internal.jaxb.AdapterReplacement;
 import org.apache.sis.internal.jaxb.TypeRegistration;
+import org.apache.sis.internal.util.Constants;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.CharSequences;
 
 
 /**
@@ -55,42 +59,36 @@ import org.apache.sis.util.ArgumentChecks;
  * from multiple threads.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
- * @version 0.3
- * @module
+ * @version 0.8
  *
  * @see XML
  * @see <a href="http://jaxb.java.net/guide/Performance_and_thread_safety.html">JAXB Performance and thread-safety</a>
+ *
+ * @since 0.3
+ * @module
  */
 public class MarshallerPool {
-    /**
-     * The indentation string, fixed to 2 spaces instead of 4 because ISO/OGC XML are very verbose.
-     */
-    private static final String INDENTATION = "  ";
-
     /**
      * Amount of nanoseconds to wait before to remove unused (un)marshallers.
      * This is a very approximative value: actual timeout will not be shorter,
      * but may be twice longer.
      */
-    private static final long TIMEOUT = 15000000000L; // 15 seconds.
-
-    /**
-     * Kind of JAXB implementations.
-     */
-    private static final byte INTERNAL = 0, ENDORSED = 1, OTHER = 2;
+    private static final long TIMEOUT = 15000000000L;           // 15 seconds.
 
     /**
      * The JAXB context to use for creating marshaller and unmarshaller.
+     *
+     * @see #createMarshaller()
+     * @see #createUnmarshaller()
      */
-    private final JAXBContext context;
+    protected final JAXBContext context;
 
     /**
-     * {@link #INTERNAL} if the JAXB implementation is the one bundled in the JDK,
-     * {@link #ENDORSED} if the TAXB implementation is the endorsed JAXB (Glassfish), or
-     * {@link #OTHER} if unknown.
+     * {@code INTERNAL} if the JAXB implementation is the one bundled in the JDK,
+     * {@code ENDORSED} if the TAXB implementation is the endorsed JAXB (Glassfish), or
+     * {@code null} if unknown.
      */
-    private final byte implementation;
+    private final Implementation implementation;
 
     /**
      * The mapper between namespaces and prefix.
@@ -158,11 +156,16 @@ public class MarshallerPool {
      * for the {@code Unmarshaller}, then consider overriding the {@link #createMarshaller()}
      * or {@link #createUnmarshaller()} methods instead.</p>
      *
-     * @param  properties The properties to be given to the (un)marshaller, or {@code null} if none.
-     * @throws JAXBException If the JAXB context can not be created.
+     * @param  properties  the properties to be given to the (un)marshaller, or {@code null} if none.
+     * @throws JAXBException if the JAXB context can not be created.
      */
     public MarshallerPool(final Map<String,?> properties) throws JAXBException {
-        this(TypeRegistration.getSharedContext(), properties);
+        /*
+         * We currently add the default root adapters only when using the JAXB context provided by Apache SIS.
+         * We presume that if the user specified his own JAXBContext, then he does not expect us to change the
+         * classes that he wants to marshal.
+         */
+        this(TypeRegistration.getSharedContext(), TypeRegistration.addDefaultRootAdapters(properties));
     }
 
     /**
@@ -175,39 +178,21 @@ public class MarshallerPool {
      * for the {@code Unmarshaller}, then consider overriding the {@link #createMarshaller()}
      * or {@link #createUnmarshaller()} methods instead.</p>
      *
-     * @param  context The JAXB context.
-     * @param  properties The properties to be given to the (un)marshaller, or {@code null} if none.
-     * @throws JAXBException If the marshaller pool can not be created.
+     * @param  context     the JAXB context.
+     * @param  properties  the properties to be given to the (un)marshaller, or {@code null} if none.
+     * @throws JAXBException if the marshaller pool can not be created.
      */
-    @SuppressWarnings({"unchecked", "rawtypes"}) // Generic array creation
+    @SuppressWarnings({"unchecked", "rawtypes"})          // Generic array creation
     public MarshallerPool(final JAXBContext context, final Map<String,?> properties) throws JAXBException {
         ArgumentChecks.ensureNonNull("context", context);
         this.context = context;
-        replacements = ServiceLoader.load(AdapterReplacement.class);
-        /*
-         * Detects if we are using the endorsed JAXB implementation (i.e. the one provided in
-         * separated JAR files) or the one bundled in JDK 6. We use the JAXB context package
-         * name as a criterion:
-         *
-         *   JAXB endorsed JAR uses    "com.sun.xml.bind"
-         *   JAXB bundled in JDK uses  "com.sun.xml.internal.bind"
-         */
-        String classname = context.getClass().getName();
-        if (classname.startsWith("com.sun.xml.internal.bind.")) {
-            classname = "org.apache.sis.xml.OGCNamespacePrefixMapper";
-            implementation = INTERNAL;
-        } else if (classname.startsWith(Pooled.ENDORSED_PREFIX)) {
-            classname = "org.apache.sis.xml.OGCNamespacePrefixMapper_Endorsed";
-            implementation = ENDORSED;
-        } else {
-            classname = null;
-            implementation = OTHER;
-        }
+        replacements = DefaultFactories.createServiceLoader(AdapterReplacement.class);
+        implementation = Implementation.detect(context);
         /*
          * Prepares a copy of the property map (if any), then removes the
          * properties which are handled especially by this constructor.
          */
-        template = new PooledTemplate(properties, implementation == INTERNAL);
+        template = new PooledTemplate(properties, implementation);
         final Object rootNamespace = template.remove(XML.DEFAULT_NAMESPACE, "");
         /*
          * Instantiates the OGCNamespacePrefixMapper appropriate for the implementation
@@ -215,15 +200,16 @@ public class MarshallerPool {
          * usual ClassNotFoundException if the class was found but its parent class has
          * not been found.
          */
+        final String classname = implementation.mapper;
         if (classname == null) {
             mapper = null;
         } else try {
             mapper = Class.forName(classname).getConstructor(String.class).newInstance(rootNamespace);
-        } catch (Throwable exception) { // (ReflectiveOperationException | NoClassDefFoundError) on JDK7 branch.
+        } catch (ReflectiveOperationException | NoClassDefFoundError exception) {
             throw new JAXBException(exception);
         }
-        marshallers        = new LinkedBlockingDeque<Marshaller>();
-        unmarshallers      = new LinkedBlockingDeque<Unmarshaller>();
+        marshallers        = new ConcurrentLinkedDeque<>();
+        unmarshallers      = new ConcurrentLinkedDeque<>();
         isRemovalScheduled = new AtomicBoolean();
     }
 
@@ -241,9 +227,11 @@ public class MarshallerPool {
         try {
             ((Pooled) marshaller).reset(template);
         } catch (JAXBException exception) {
-            // Not expected to happen because we are supposed
-            // to reset the properties to their initial values.
-            Logging.unexpectedException(MarshallerPool.class, "recycle", exception);
+            /*
+             * Not expected to happen because we are supposed
+             * to reset the properties to their initial values.
+             */
+            Logging.unexpectedException(Logging.getLogger(Loggers.XML), MarshallerPool.class, "recycle", exception);
             return;
         }
         queue.push(marshaller);
@@ -274,7 +262,7 @@ public class MarshallerPool {
     final void removeExpired() {
         isRemovalScheduled.set(false);
         final long now = System.nanoTime();
-        if (!removeExpired(marshallers, now) | // Really |, not ||
+        if (!removeExpired(marshallers, now) |                      // Really |, not ||
             !removeExpired(unmarshallers, now))
         {
             scheduleRemoval();
@@ -284,9 +272,9 @@ public class MarshallerPool {
     /**
      * Removes expired (un)marshallers from the given queue.
      *
-     * @param  <T>   Either {@code Marshaller} or {@code Unmarshaller} type.
-     * @param  queue The queue from which to remove expired (un)marshallers.
-     * @param  now   Current value of {@link System#nanoTime()}.
+     * @param  <T>    either {@code Marshaller} or {@code Unmarshaller} type.
+     * @param  queue  the queue from which to remove expired (un)marshallers.
+     * @param  now    current value of {@link System#nanoTime()}.
      * @return {@code true} if the queue became empty as a result of this method call.
      */
     private static <T> boolean removeExpired(final Deque<T> queue, final long now) {
@@ -331,8 +319,8 @@ public class MarshallerPool {
      * Note that {@link #recycle(Marshaller)} shall not be invoked in case of exception,
      * since the marshaller may be in an invalid state.
      *
-     * @return A marshaller configured for formatting OGC/ISO XML.
-     * @throws JAXBException If an error occurred while creating and configuring a marshaller.
+     * @return a marshaller configured for formatting OGC/ISO XML.
+     * @throws JAXBException if an error occurred while creating and configuring a marshaller.
      */
     public Marshaller acquireMarshaller() throws JAXBException {
         Marshaller marshaller = marshallers.poll();
@@ -357,13 +345,26 @@ public class MarshallerPool {
      * Note that {@link #recycle(Unmarshaller)} shall not be invoked in case of exception,
      * since the unmarshaller may be in an invalid state.
      *
-     * @return A unmarshaller configured for parsing OGC/ISO XML.
-     * @throws JAXBException If an error occurred while creating and configuring the unmarshaller.
+     * @return a unmarshaller configured for parsing OGC/ISO XML.
+     * @throws JAXBException if an error occurred while creating and configuring the unmarshaller.
      */
     public Unmarshaller acquireUnmarshaller() throws JAXBException {
         Unmarshaller unmarshaller = unmarshallers.poll();
         if (unmarshaller == null) {
             unmarshaller = new PooledUnmarshaller(createUnmarshaller(), template);
+        }
+        return unmarshaller;
+    }
+
+    /**
+     * Acquires a unmarshaller and set the properties to the given value, if non-null.
+     */
+    final Unmarshaller acquireUnmarshaller(final Map<String,?> properties) throws JAXBException {
+        final Unmarshaller unmarshaller = acquireUnmarshaller();
+        if (properties != null) {
+            for (final Map.Entry<String,?> entry : properties.entrySet()) {
+                unmarshaller.setProperty(entry.getKey(), entry.getValue());
+            }
         }
         return unmarshaller;
     }
@@ -386,7 +387,7 @@ public class MarshallerPool {
      * Note that this method does not close any output stream.
      * Closing the marshaller stream is caller's or JAXB responsibility.
      *
-     * @param marshaller The marshaller to return to the pool.
+     * @param  marshaller  the marshaller to return to the pool.
      */
     public void recycle(final Marshaller marshaller) {
         recycle(marshallers, marshaller);
@@ -410,7 +411,7 @@ public class MarshallerPool {
      * Note that this method does not close any input stream.
      * Closing the unmarshaller stream is caller's or JAXB responsibility.
      *
-     * @param unmarshaller The unmarshaller to return to the pool.
+     * @param  unmarshaller  the unmarshaller to return to the pool.
      */
     public void recycle(final Unmarshaller unmarshaller) {
         recycle(unmarshallers, unmarshaller);
@@ -421,25 +422,25 @@ public class MarshallerPool {
      * This method is invoked only when no existing marshaller is available in the pool.
      * Subclasses can override this method if they need to change the marshaller configuration.
      *
-     * @return A new marshaller configured for formatting OGC/ISO XML.
-     * @throws JAXBException If an error occurred while creating and configuring the marshaller.
+     * @return a new marshaller configured for formatting OGC/ISO XML.
+     * @throws JAXBException if an error occurred while creating and configuring the marshaller.
+     *
+     * @see #context
+     * @see #acquireMarshaller()
      */
     protected Marshaller createMarshaller() throws JAXBException {
         final Marshaller marshaller = context.createMarshaller();
         marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
-        marshaller.setProperty(Marshaller.JAXB_ENCODING, "UTF-8");
-        switch (implementation) {
-            case INTERNAL: {
-                marshaller.setProperty("com.sun.xml.internal.bind.namespacePrefixMapper", mapper);
-                marshaller.setProperty("com.sun.xml.internal.bind.indentString", INDENTATION);
-                break;
-            }
-            case ENDORSED: {
-                marshaller.setProperty("com.sun.xml.bind.namespacePrefixMapper", mapper);
-                marshaller.setProperty("com.sun.xml.bind.indentString", INDENTATION);
-                break;
-            }
-            // Do nothing for the OTHER case.
+        /*
+         * Note: we do not set the Marshaller.JAXB_ENCODING property because specification
+         * said that the default value is "UTF-8", which is what we want.
+         */
+        String key;
+        if ((key = implementation.mapperKey) != null) {
+            marshaller.setProperty(key, mapper);
+        }
+        if ((key = implementation.indentKey) != null) {
+            marshaller.setProperty(key, CharSequences.spaces(Constants.DEFAULT_INDENTATION));
         }
         synchronized (replacements) {
             for (final AdapterReplacement adapter : replacements) {
@@ -454,8 +455,11 @@ public class MarshallerPool {
      * This method is invoked only when no existing unmarshaller is available in the pool.
      * Subclasses can override this method if they need to change the unmarshaller configuration.
      *
-     * @return A new unmarshaller configured for parsing OGC/ISO XML.
-     * @throws JAXBException If an error occurred while creating and configuring the unmarshaller.
+     * @return a new unmarshaller configured for parsing OGC/ISO XML.
+     * @throws JAXBException if an error occurred while creating and configuring the unmarshaller.
+     *
+     * @see #context
+     * @see #acquireUnmarshaller()
      */
     protected Unmarshaller createUnmarshaller() throws JAXBException {
         final Unmarshaller unmarshaller = context.createUnmarshaller();

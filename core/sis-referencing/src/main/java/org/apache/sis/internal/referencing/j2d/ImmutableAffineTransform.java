@@ -18,7 +18,7 @@ package org.apache.sis.internal.referencing.j2d;
 
 import java.awt.geom.AffineTransform;
 import java.awt.geom.NoninvertibleTransformException;
-import org.apache.sis.util.resources.Errors;
+import org.apache.sis.internal.referencing.Resources;
 
 
 /**
@@ -27,10 +27,11 @@ import org.apache.sis.util.resources.Errors;
  * throw an exception (which is the default), then {@code AffineTransform} is immutable.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.5
  * @version 0.5
+ * @since   0.5
  * @module
  */
+@SuppressWarnings("CloneableClassWithoutClone")    // No additional fields compared to parent.
 public class ImmutableAffineTransform extends AffineTransform {
     /**
      * Serial number for inter-operability with different versions.
@@ -81,7 +82,7 @@ public class ImmutableAffineTransform extends AffineTransform {
      * @throws UnsupportedOperationException if this affine transform is immutable.
      */
     protected void checkPermission() throws UnsupportedOperationException {
-        throw new UnsupportedOperationException(Errors.format(Errors.Keys.UnmodifiableAffineTransform));
+        throw new UnsupportedOperationException(Resources.format(Resources.Keys.UnmodifiableAffineTransform));
     }
 
     /**
@@ -296,7 +297,7 @@ public class ImmutableAffineTransform extends AffineTransform {
     /**
      * Checks for {@linkplain #checkPermission() permission} before inverting this transform.
      *
-     * @throws java.awt.geom.NoninvertibleTransformException If the matrix can not be inverted.
+     * @throws java.awt.geom.NoninvertibleTransformException if the matrix can not be inverted.
      */
     @Override
     public final void invert() throws NoninvertibleTransformException {

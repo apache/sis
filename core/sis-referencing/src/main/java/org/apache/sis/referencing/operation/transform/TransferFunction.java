@@ -47,7 +47,7 @@ import org.apache.sis.util.Debug;
  * This {@code TransferFunction} class handles only the continuous part of transfer functions.
  * This class does <strong>not</strong> handle missing values other than {@code NaN}.
  * For a more complete class with support for non-NaN missing values,
- * see {@link org.apache.sis.coverage.grid.GridSampleDimension}.
+ * see {@code GridSampleDimension}.
  *
  * <div class="section">Serialization</div>
  * Serialized instances of this class are not guaranteed to be compatible with future SIS versions.
@@ -55,8 +55,8 @@ import org.apache.sis.util.Debug;
  * same SIS version.
  *
  * @author  Martin Desruisseaux (Geomatys)
+ * @version 0.8
  * @since   0.5
- * @version 0.5
  * @module
  */
 public class TransferFunction implements Cloneable, Serializable {
@@ -106,7 +106,7 @@ public class TransferFunction implements Cloneable, Serializable {
     /**
      * Returns the transfer function type (linear, logarithmic or exponential).
      *
-     * @return The transfer function type.
+     * @return the transfer function type.
      */
     public TransferFunctionType getType() {
         return type;
@@ -116,7 +116,7 @@ public class TransferFunction implements Cloneable, Serializable {
      * Sets the transfer function type.
      * The default value is {@link TransferFunctionType#LINEAR}.
      *
-     * @param type The transfer function type.
+     * @param  type  the transfer function type.
      */
     public void setType(final TransferFunctionType type) {
         ArgumentChecks.ensureNonNull("type", type);
@@ -129,7 +129,7 @@ public class TransferFunction implements Cloneable, Serializable {
      * This value is always 1 for {@link TransferFunctionType#LINEAR},
      * and usually (but not necessarily) 10 for the logarithmic and exponential types.
      *
-     * @return The logarithmic or exponent base.
+     * @return the logarithmic or exponent base.
      */
     public double getBase() {
         return TransferFunctionType.LINEAR.equals(type) ? 1 : base;
@@ -140,7 +140,7 @@ public class TransferFunction implements Cloneable, Serializable {
      * This value is ignored for {@link TransferFunctionType#LINEAR}.
      * For other supported types, the default value is 10.
      *
-     * @param base The new logarithm or exponent base.
+     * @param  base  the new logarithm or exponent base.
      */
     public void setBase(final double base) {
         ArgumentChecks.ensureStrictlyPositive("base", base);
@@ -151,7 +151,7 @@ public class TransferFunction implements Cloneable, Serializable {
     /**
      * Returns the scale factor of the transfer function.
      *
-     * @return The scale factor.
+     * @return the scale factor.
      */
     public double getScale() {
         return scale;
@@ -161,7 +161,7 @@ public class TransferFunction implements Cloneable, Serializable {
      * Sets the scale factor of the transfer function.
      * The default value is 1.
      *
-     * @param scale The new scale factor.
+     * @param  scale  the new scale factor.
      */
     public void setScale(final double scale) {
         this.scale = scale;
@@ -171,7 +171,7 @@ public class TransferFunction implements Cloneable, Serializable {
     /**
      * Returns the offset of the transfer function.
      *
-     * @return The offset.
+     * @return the offset.
      */
     public double getOffset() {
         return offset;
@@ -181,7 +181,7 @@ public class TransferFunction implements Cloneable, Serializable {
      * Sets the offset of the transfer function.
      * The default value is 0.
      *
-     * @param offset The new offset.
+     * @param  offset  the new offset.
      */
     public void setOffset(final double offset) {
         this.offset = offset;
@@ -192,7 +192,7 @@ public class TransferFunction implements Cloneable, Serializable {
      * Returns the transform from sample values to geophysics values, as specified by the
      * current properties of this {@code TransferFunction}.
      *
-     * @return The transform from sample to geophysics values.
+     * @return the transform from sample to geophysics values.
      */
     public MathTransform1D getTransform() {
         if (transform == null) {
@@ -200,9 +200,8 @@ public class TransferFunction implements Cloneable, Serializable {
                 transform = LinearTransform1D.create(scale, offset);
             } else if (TransferFunctionType.EXPONENTIAL.equals(type)) {
                 transform = ExponentialTransform1D.create(base, scale);
-                if (offset != 0) {  // Rarely occurs in practice.
-                    transform = (MathTransform1D) ConcatenatedTransform.create(
-                            transform, LinearTransform1D.create(0, offset));
+                if (offset != 0) {                                          // Rarely occurs in practice.
+                    transform = MathTransforms.concatenate(transform, LinearTransform1D.create(0, offset));
                 }
             } else if (TransferFunctionType.LOGARITHMIC.equals(type)) {
                 if (scale == 1) {
@@ -213,7 +212,7 @@ public class TransferFunction implements Cloneable, Serializable {
                      * The ExponentialTransform1D.concatenate(…) method will rewrite the equation using
                      * mathematical identities. The result will be a function with a different base.
                      */
-                    transform = (MathTransform1D) ConcatenatedTransform.create(
+                    transform = MathTransforms.concatenate(
                             LogarithmicTransform1D.create(base, 0),
                             LinearTransform1D.create(scale, offset));
                 }
@@ -229,7 +228,7 @@ public class TransferFunction implements Cloneable, Serializable {
      * This method infers the {@linkplain #getBase() base}, {@linkplain #getScale() scale} and
      * {@linkplain #getOffset() offset} values from the given transform.
      *
-     * @param  function The transform to set.
+     * @param  function  the transform to set.
      * @throws IllegalArgumentException if this method does not recognize the given transform.
      */
     public void setTransform(final MathTransform1D function) throws IllegalArgumentException {
@@ -278,7 +277,7 @@ public class TransferFunction implements Cloneable, Serializable {
     /**
      * Sets the {@link #scale} and {@link #offset} terms from the given function.
      *
-     * @param  function The transform to set.
+     * @param  function  the transform to set.
      * @throws IllegalArgumentException if this method does not recognize the given transform.
      */
     private void setLinearTerms(final LinearTransform function) throws IllegalArgumentException {
@@ -294,10 +293,26 @@ public class TransferFunction implements Cloneable, Serializable {
     }
 
     /**
+     * Returns a clone of this transfer function.
+     *
+     * @return a clone of this transfer function.
+     *
+     * @since 0.8
+     */
+    @Override
+    public TransferFunction clone() {
+        try {
+            return (TransferFunction) super.clone();
+        } catch (CloneNotSupportedException e) {
+            throw new AssertionError(e);                    // Should never happen since we are cloneable.
+        }
+    }
+
+    /**
      * Returns a string representation of this transfer function for debugging purpose.
      * The string returned by this method may change in any future SIS version.
      *
-     * @return A string representation of this transfer function.
+     * @return a string representation of this transfer function.
      */
     @Debug
     @Override

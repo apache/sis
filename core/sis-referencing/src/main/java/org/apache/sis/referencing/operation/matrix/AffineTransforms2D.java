@@ -25,9 +25,9 @@ import java.awt.geom.RectangularShape;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.NoninvertibleTransformException;
 import org.opengis.referencing.operation.Matrix;
+import org.apache.sis.internal.referencing.Resources;
 import org.apache.sis.util.Static;
 import org.apache.sis.util.ArgumentChecks;
-import org.apache.sis.util.resources.Errors;
 
 import static java.lang.Math.*;
 import static java.awt.geom.AffineTransform.*;
@@ -38,8 +38,8 @@ import static java.awt.geom.AffineTransform.*;
  * Those {@code AffineTransform} instances can be viewed as 3×3 matrices.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.4
  * @version 0.4
+ * @since   0.4
  * @module
  */
 public final class AffineTransforms2D extends Static {
@@ -54,8 +54,8 @@ public final class AffineTransforms2D extends Static {
      * If the given matrix is already an instance of {@link AffineTransform}, then it is returned directly.
      * Otherwise the values are copied in a new {@code AffineTransform} instance.
      *
-     * @param  matrix The matrix to returns as an affine transform, or {@code null}.
-     * @return The matrix argument if it can be safely casted (including {@code null} argument),
+     * @param  matrix  the matrix to returns as an affine transform, or {@code null}.
+     * @return the matrix argument if it can be safely casted (including {@code null} argument),
      *         or a copy of the given matrix otherwise.
      * @throws IllegalArgumentException if the given matrix size is not 3×3 or if the matrix is not affine.
      *
@@ -65,9 +65,9 @@ public final class AffineTransforms2D extends Static {
         if (matrix == null || matrix instanceof AffineTransform) {
             return (AffineTransform) matrix;
         }
-        MatrixSIS.ensureSizeMatch(3, matrix);
+        MatrixSIS.ensureSizeMatch(3, 3, matrix);
         if (!Matrices.isAffine(matrix)) {
-            throw new IllegalStateException(Errors.format(Errors.Keys.NotAnAffineTransform));
+            throw new IllegalStateException(Resources.format(Resources.Keys.NotAnAffineTransform));
         }
         return new AffineTransform(matrix.getElement(0,0), matrix.getElement(1,0),
                                    matrix.getElement(0,1), matrix.getElement(1,1),
@@ -77,8 +77,8 @@ public final class AffineTransforms2D extends Static {
     /**
      * Creates a 3×3 matrix from the given affine transform.
      *
-     * @param  transform The affine transform to copy as a matrix.
-     * @return A matrix containing the same terms than the given affine transform.
+     * @param  transform  the affine transform to copy as a matrix.
+     * @return a matrix containing the same terms than the given affine transform.
      */
     public static Matrix3 toMatrix(final AffineTransform transform) {
         return new Matrix3(transform.getScaleX(), transform.getShearX(), transform.getTranslateX(),
@@ -97,12 +97,11 @@ public final class AffineTransforms2D extends Static {
      *   <li>It tries to recycle the given object if {@code overwrite} is {@code true}.</li>
      * </ul>
      *
-     * @param transform      The affine transform to use.
-     * @param shape          The shape to transform, or {@code null}.
-     * @param allowOverwrite If {@code true}, this method is allowed to overwrite {@code shape} with the
-     *                       transform result. If {@code false}, then {@code shape} is never modified.
-     *
-     * @return The transform of the given shape, or {@code null} if the given shape was null.
+     * @param  transform       the affine transform to use.
+     * @param  shape           the shape to transform, or {@code null}.
+     * @param  allowOverwrite  if {@code true}, this method is allowed to overwrite {@code shape} with the
+     *                         transform result. If {@code false}, then {@code shape} is never modified.
+     * @return the transform of the given shape, or {@code null} if the given shape was null.
      *         May or may not be the same instance than the given shape.
      *
      * @see AffineTransform#createTransformedShape(Shape)
@@ -116,16 +115,20 @@ public final class AffineTransforms2D extends Static {
         if (type == TYPE_IDENTITY) {
             return shape;
         }
-        // If there is only scale, flip, quadrant rotation or translation,
-        // then we can optimize the transformation of rectangular shapes.
+        /*
+         * If there is only scale, flip, quadrant rotation or translation,
+         * then we can optimize the transformation of rectangular shapes.
+         */
         if ((type & (TYPE_GENERAL_ROTATION | TYPE_GENERAL_TRANSFORM)) == 0) {
             // For a Rectangle input, the output should be a rectangle as well.
             if (shape instanceof Rectangle2D) {
                 final Rectangle2D rect = (Rectangle2D) shape;
                 return transform(transform, rect, allowOverwrite ? rect : null);
             }
-            // For other rectangular shapes, we restrict to cases without
-            // rotation or flip because we don't know if the shape is symmetric.
+            /*
+             * For other rectangular shapes, we restrict to cases without
+             * rotation or flip because we don't know if the shape is symmetric.
+             */
             if ((type & (TYPE_FLIP | TYPE_MASK_ROTATION)) == 0) {
                 if (shape instanceof RectangularShape) {
                     RectangularShape rect = (RectangularShape) shape;
@@ -171,14 +174,13 @@ public final class AffineTransforms2D extends Static {
      * <strong>upper-left corner</strong> of pixels (as in Java2D usage), not the center of pixels
      * (OGC usage).
      *
-     * @param transform The affine transform to use.
-     * @param bounds    The rectangle to transform, or {@code null}.
-     *                  This rectangle will not be modified except if {@code dest} references the same object.
-     * @param dest      Rectangle in which to place the result. If {@code null}, a new rectangle will be created.
+     * @param  transform  the affine transform to use.
+     * @param  bounds     the rectangle to transform, or {@code null}.
+     *                    this rectangle will not be modified except if {@code dest} references the same object.
+     * @param  dest       rectangle in which to place the result. If {@code null}, a new rectangle will be created.
+     * @return the direct transform of the {@code bounds} rectangle, or {@code null} if {@code bounds} was null.
      *
-     * @return The direct transform of the {@code bounds} rectangle, or {@code null} if {@code bounds} was null.
-     *
-     * @see org.apache.sis.referencing.CRS#transform(MathTransform2D, Rectangle2D, Rectangle2D)
+     * @see org.apache.sis.geometry.Shapes2D#transform(MathTransform2D, Rectangle2D, Rectangle2D)
      */
     public static Rectangle2D transform(final AffineTransform transform,
             final Rectangle2D bounds, final Rectangle2D dest)
@@ -217,12 +219,11 @@ public final class AffineTransforms2D extends Static {
      *     return createInverse().createTransformedShape(bounds).getBounds2D();
      * }
      *
-     * @param transform The affine transform to use.
-     * @param bounds    The rectangle to transform, or {@code null}.
-     *                  This rectangle will not be modified except if {@code dest} references the same object.
-     * @param dest      Rectangle in which to place the result. If {@code null}, a new rectangle will be created.
-     *
-     * @return The inverse transform of the {@code bounds} rectangle, or {@code null} if {@code bounds} was null.
+     * @param  transform  the affine transform to use.
+     * @param  bounds     the rectangle to transform, or {@code null}.
+     *                    this rectangle will not be modified except if {@code dest} references the same object.
+     * @param  dest       rectangle in which to place the result. If {@code null}, a new rectangle will be created.
+     * @return the inverse transform of the {@code bounds} rectangle, or {@code null} if {@code bounds} was null.
      * @throws NoninvertibleTransformException if the affine transform can't be inverted.
      */
     public static Rectangle2D inverseTransform(final AffineTransform transform,
@@ -257,12 +258,11 @@ public final class AffineTransforms2D extends Static {
      * Calculates the inverse transform of a point without applying the translation components.
      * In other words, calculates the inverse transform of a displacement vector.
      *
-     * @param transform The affine transform to use.
-     * @param vector    The vector to transform stored as a point.
-     *                  This point will not be modified except if {@code dest} references the same object.
-     * @param dest      Point in which to place the result. If {@code null}, a new point will be created.
-     *
-     * @return The inverse transform of the {@code vector}, or {@code null} if {@code source} was null.
+     * @param  transform  the affine transform to use.
+     * @param  vector     the vector to transform stored as a point.
+     *                    this point will not be modified except if {@code dest} references the same object.
+     * @param  dest       point in which to place the result. If {@code null}, a new point will be created.
+     * @return the inverse transform of the {@code vector}, or {@code null} if {@code source} was null.
      * @throws NoninvertibleTransformException if the affine transform can't be inverted.
      */
     public static Point2D inverseDeltaTransform(final AffineTransform transform,
@@ -298,7 +298,7 @@ public final class AffineTransforms2D extends Static {
      * preserved, {@code -1} if the transform seems to swap axis to the (<var>y</var>, <var>x</var>) axis order,
      * or {@code 0} if this method can not make a decision.
      *
-     * @param  transform The affine transform to inspect.
+     * @param  transform  the affine transform to inspect.
      * @return {@code true} if the given transform seems to swap axis order.
      */
     public static int getSwapXY(final AffineTransform transform) {
@@ -322,8 +322,8 @@ public final class AffineTransforms2D extends Static {
      * applied, then this method assumes that the flipped axis is the <var>y</var> one in <cite>source CRS</cite>
      * space. For a <cite>grid to world CRS</cite> transform, this is the row number in grid coordinates.
      *
-     * @param  transform The affine transform to inspect.
-     * @return An estimation of the rotation angle in radians,
+     * @param  transform  the affine transform to inspect.
+     * @return an estimation of the rotation angle in radians,
      *         or {@link Double#NaN NaN} if the angle can not be estimated.
      */
     public static double getRotation(final AffineTransform transform) {
@@ -365,7 +365,7 @@ public final class AffineTransforms2D extends Static {
      *     boolean flipped = (tr.getType() & TYPE_FLIP) != 0;
      * }
      *
-     * @param transform The affine transform to inspect.
+     * @param  transform  the affine transform to inspect.
      * @return -1 if an axis has been flipped, +1 if no flipping, or 0 if unknown.
      */
     public static int getFlip(final AffineTransform transform) {
@@ -385,15 +385,15 @@ public final class AffineTransforms2D extends Static {
      *
      * <p><img src="doc-files/scaleX0.png" alt="Scale factor on x axis"></p>
      *
-     * @param  transform The affine transform to inspect.
-     * @return The magnitude of scale factor <var>x</var>.
+     * @param  transform  the affine transform to inspect.
+     * @return the magnitude of scale factor <var>x</var>.
      */
     public static double getScaleX0(final AffineTransform transform) {
         ArgumentChecks.ensureNonNull("transform", transform);
         final double scale = transform.getScaleX();
         final double shear = transform.getShearX();
-        if (shear == 0) return abs(scale);  // Optimization for a very common case.
-        if (scale == 0) return abs(shear);  // Not as common as above, but still common enough.
+        if (shear == 0) return abs(scale);                  // Optimization for a very common case.
+        if (scale == 0) return abs(shear);                  // Not as common as above, but still common enough.
         return hypot(scale, shear);
     }
 
@@ -403,15 +403,15 @@ public final class AffineTransforms2D extends Static {
      *
      * <p><img src="doc-files/scaleY0.png" alt="Scale factor on y axis"></p>
      *
-     * @param  transform The affine transform to inspect.
-     * @return The magnitude of scale factor <var>y</var>.
+     * @param  transform  the affine transform to inspect.
+     * @return the magnitude of scale factor <var>y</var>.
      */
     public static double getScaleY0(final AffineTransform transform) {
         ArgumentChecks.ensureNonNull("transform", transform);
         final double scale = transform.getScaleY();
         final double shear = transform.getShearY();
-        if (shear == 0) return abs(scale);  // Optimization for a very common case.
-        if (scale == 0) return abs(shear);  // Not as common as above, but still common enough.
+        if (shear == 0) return abs(scale);                  // Optimization for a very common case.
+        if (scale == 0) return abs(shear);                  // Not as common as above, but still common enough.
         return hypot(scale, shear);
     }
 }

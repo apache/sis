@@ -18,16 +18,20 @@ package org.apache.sis.feature;
 
 import java.util.Map;
 import java.util.Set;
+import java.util.Objects;
 import java.util.Collections;
+import java.util.HashMap;
+import java.io.IOException;
 import org.opengis.util.GenericName;
+import org.opengis.metadata.Identifier;
 import org.opengis.parameter.GeneralParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.parameter.ParameterValueGroup;
-import org.apache.sis.referencing.IdentifiedObjects;
+import org.apache.sis.util.Classes;
 import org.apache.sis.util.Debug;
 
 // Branch-dependent imports
-import org.apache.sis.internal.jdk7.Objects;
+import org.apache.sis.internal.jdk8.UncheckedIOException;
 
 
 /**
@@ -42,15 +46,18 @@ import org.apache.sis.internal.jdk7.Objects;
  * <div class="note"><b>Example:</b> a mutator operation may raise the height of a dam. This changes
  * may affect other properties like the watercourse and the reservoir associated with the dam.</div>
  *
- * The value is computed, or the operation is executed, by {@link #apply(Feature, ParameterValueGroup)}.
- * If the value is modifiable, new value can be set by call to {@link Attribute#setValue(Object)}.
+ * The value is computed, or the operation is executed, by {@code apply(Feature, ParameterValueGroup)}.
+ * If the value is modifiable, new value can be set by call to {@code Attribute.setValue(Object)}.
  *
  * <div class="warning"><b>Warning:</b> this class is experimental and may change after we gained more
  * experience on this aspect of ISO 19109.</div>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.6
- * @version 0.6
+ * @version 0.8
+ *
+ * @see DefaultFeatureType
+ *
+ * @since 0.6
  * @module
  */
 public abstract class AbstractOperation extends AbstractIdentifiedType {
@@ -60,19 +67,85 @@ public abstract class AbstractOperation extends AbstractIdentifiedType {
     private static final long serialVersionUID = -179930765502963170L;
 
     /**
+     * The prefix for result identification entries in the {@code identification} map.
+     * This prefix is documented in {@link FeatureOperations} javadoc.
+     */
+    static final String RESULT_PREFIX = "result.";
+
+    /**
      * Constructs an operation from the given properties. The identification map is given unchanged to
      * the {@linkplain AbstractIdentifiedType#AbstractIdentifiedType(Map) super-class constructor}.
+     * The following table is a reminder of main (not all) recognized map entries:
      *
-     * @param identification The name and other information to be given to this operation.
+     * <table class="sis">
+     *   <caption>Recognized map entries (non exhaustive list)</caption>
+     *   <tr>
+     *     <th>Map key</th>
+     *     <th>Value type</th>
+     *     <th>Returned by</th>
+     *   </tr>
+     *   <tr>
+     *     <td>{@value org.apache.sis.feature.AbstractIdentifiedType#NAME_KEY}</td>
+     *     <td>{@link GenericName} or {@link String}</td>
+     *     <td>{@link #getName()}</td>
+     *   </tr>
+     *   <tr>
+     *     <td>{@value org.apache.sis.feature.AbstractIdentifiedType#DEFINITION_KEY}</td>
+     *     <td>{@link org.opengis.util.InternationalString} or {@link String}</td>
+     *     <td>{@link #getDefinition()}</td>
+     *   </tr>
+     *   <tr>
+     *     <td>{@value org.apache.sis.feature.AbstractIdentifiedType#DESIGNATION_KEY}</td>
+     *     <td>{@link org.opengis.util.InternationalString} or {@link String}</td>
+     *     <td>{@link #getDesignation()}</td>
+     *   </tr>
+     *   <tr>
+     *     <td>{@value org.apache.sis.feature.AbstractIdentifiedType#DESCRIPTION_KEY}</td>
+     *     <td>{@link org.opengis.util.InternationalString} or {@link String}</td>
+     *     <td>{@link #getDescription()}</td>
+     *   </tr>
+     *   <tr>
+     *     <td>{@value org.apache.sis.feature.AbstractIdentifiedType#DEPRECATED_KEY}</td>
+     *     <td>{@link Boolean}</td>
+     *     <td>{@link #isDeprecated()}</td>
+     *   </tr>
+     * </table>
+     *
+     * @param  identification  the name and other information to be given to this operation.
      */
     public AbstractOperation(final Map<String,?> identification) {
         super(identification);
     }
 
     /**
+     * Returns a map that can be used for creating the {@link #getResult()} type.
+     * This method can be invoked for subclass constructor with the user-supplied map in argument.
+     * If the given map contains at least one key prefixed by {@value #RESULT_PREFIX}, then the values
+     * associated to those keys will be used.
+     *
+     * @param  identification  the map given by user to sub-class constructor.
+     */
+    final Map<String,Object> resultIdentification(final Map<String,?> identification) {
+        final Map<String,Object> properties = new HashMap<>(6);
+        for (final Map.Entry<String,?> entry : identification.entrySet()) {
+            final String key = entry.getKey();
+            if (key != null && key.startsWith(RESULT_PREFIX)) {
+                properties.put(key.substring(RESULT_PREFIX.length()), entry.getValue());
+            }
+        }
+        if (properties.isEmpty()) {
+            properties.put(NAME_KEY,        super.getName());           // Do not invoke user-overrideable method.
+            properties.put(DEFINITION_KEY,  super.getDefinition());
+            properties.put(DESIGNATION_KEY, super.getDesignation());
+            properties.put(DESCRIPTION_KEY, super.getDescription());
+        }
+        return properties;
+    }
+
+    /**
      * Returns a description of the input parameters.
      *
-     * @return Description of the input parameters.
+     * @return description of the input parameters.
      */
     public abstract ParameterDescriptorGroup getParameters();
 
@@ -82,7 +155,7 @@ public abstract class AbstractOperation extends AbstractIdentifiedType {
      * <div class="warning"><b>Warning:</b> In a future SIS version, the return type may be changed
      * to {@code org.opengis.feature.IdentifiedType}. This change is pending GeoAPI revision.</div>
      *
-     * @return The type of the result, or {@code null} if none.
+     * @return the type of the result, or {@code null} if none.
      */
     public abstract AbstractIdentifiedType getResult();
 
@@ -93,17 +166,17 @@ public abstract class AbstractOperation extends AbstractIdentifiedType {
      * <ul>
      *   <li>If {@code getResult()} returns {@code null},
      *       then this method should return {@code null}.</li>
-     *   <li>If {@code getResult()} returns an instance of {@link AttributeType},
-     *       then this method shall return an instance of {@link Attribute}
+     *   <li>If {@code getResult()} returns an instance of {@code AttributeType},
+     *       then this method shall return an instance of {@code Attribute}
      *       and the {@code Attribute.getType() == getResult()} relation should hold.</li>
-     *   <li>If {@code getResult()} returns an instance of {@link FeatureAssociationRole},
-     *       then this method shall return an instance of {@link FeatureAssociation}
+     *   <li>If {@code getResult()} returns an instance of {@code FeatureAssociationRole},
+     *       then this method shall return an instance of {@code FeatureAssociation}
      *       and the {@code FeatureAssociation.getRole() == getResult()} relation should hold.</li>
      * </ul>
      *
      * <div class="note"><b>Analogy:</b>
-     * if we compare {@code Operation} to {@link Method} in the Java language, then this method is equivalent
-     * to {@link Method#apply(Object, Object...)}. The {@code Feature} argument is equivalent to {@code this}
+     * if we compare {@code Operation} to {@link java.lang.reflect.Method} in the Java language, then this method is equivalent
+     * to {@link java.lang.reflect.Method#invoke(Object, Object...)}. The {@code Feature} argument is equivalent to {@code this}
      * in the Java language, and may be {@code null} if the operation does not need a feature instance
      * (like static methods in the Java language).</div>
      *
@@ -111,16 +184,19 @@ public abstract class AbstractOperation extends AbstractIdentifiedType {
      * be changed to {@code org.opengis.feature.Feature} and {@code org.opengis.feature.Property} respectively.
      * This change is pending GeoAPI revision.</div>
      *
-     * @param  feature    The feature on which to execute the operation.
-     *                    Can be {@code null} if the operation does not need feature instance.
-     * @param  parameters The parameters to use for executing the operation.
-     *                    Can be {@code null} if the operation does not take any parameters.
-     * @return The operation result, or {@code null} if this operation does not produce any result.
+     * @param  feature     the feature on which to execute the operation.
+     *                     Can be {@code null} if the operation does not need feature instance.
+     * @param  parameters  the parameters to use for executing the operation.
+     *                     Can be {@code null} if the operation does not take any parameters.
+     * @return the operation result, or {@code null} if this operation does not produce any result.
      */
     public abstract Object apply(AbstractFeature feature, ParameterValueGroup parameters);
 
     /**
      * Returns the names of feature properties that this operation needs for performing its task.
+     * This method does not resolve transitive dependencies, i.e. if a dependency is itself an operation having
+     * other dependencies, the returned set will contain the name of that operation but not the names of that
+     * operation dependencies (unless they are the same that the direct dependencies of {@code this}).
      *
      * <div class="note"><b>Rational:</b>
      * this information is needed for writing the {@code SELECT} SQL statement to send to a database server.
@@ -130,7 +206,7 @@ public abstract class AbstractOperation extends AbstractIdentifiedType {
      *
      * The default implementation returns an empty set.
      *
-     * @return The names of feature properties needed by this operation for performing its task.
+     * @return the names of feature properties needed by this operation for performing its task.
      */
     public Set<String> getDependencies() {
         return Collections.emptySet();
@@ -138,7 +214,7 @@ public abstract class AbstractOperation extends AbstractIdentifiedType {
 
     /**
      * Returns a hash code value for this operation.
-     * The default implementation computes a hash code from the {@linkplain #getParameters() parameters}
+     * The default implementation computes a hash code from the {@linkplain #getParameters() parameters descriptor}
      * and {@linkplain #getResult() result type}.
      *
      * @return {@inheritDoc}
@@ -150,7 +226,7 @@ public abstract class AbstractOperation extends AbstractIdentifiedType {
 
     /**
      * Compares this operation with the given object for equality.
-     * The default implementation compares the {@linkplain #getParameters() parameters}
+     * The default implementation compares the {@linkplain #getParameters() parameters descriptor}
      * and {@linkplain #getResult() result type}.
      *
      * @return {@inheritDoc}
@@ -172,12 +248,12 @@ public abstract class AbstractOperation extends AbstractIdentifiedType {
      * Returns a string representation of this operation.
      * The returned string is for debugging purpose and may change in any future SIS version.
      *
-     * @return A string representation of this operation for debugging purpose.
+     * @return a string representation of this operation for debugging purpose.
      */
     @Debug
     @Override
     public String toString() {
-        final StringBuilder buffer = new StringBuilder(40).append("Operation").append('[');
+        final StringBuilder buffer = new StringBuilder(40).append(Classes.getShortClassName(this)).append('[');
         final GenericName name = getName();
         if (name != null) {
             buffer.append('“');
@@ -186,18 +262,58 @@ public abstract class AbstractOperation extends AbstractIdentifiedType {
         if (name != null) {
             buffer.append('”');
         }
-        String separator = " (";
-        for (final GeneralParameterDescriptor param : getParameters().descriptors()) {
-            buffer.append(separator).append(IdentifiedObjects.toString(param.getName()));
-            separator = ", ";
-        }
-        if (separator == ", ") { // Identity comparaison is okay here.
-            buffer.append(')');
-        }
         final AbstractIdentifiedType result = getResult();
         if (result != null) {
-            buffer.append(" : ").append(result.getName());
+            final Object type;
+            if (result instanceof DefaultAttributeType<?>) {
+                type = Classes.getShortName(((DefaultAttributeType<?>) result).getValueClass());
+            } else {
+                type = result.getName();
+            }
+            buffer.append(" : ").append(type);
         }
-        return buffer.append(']').toString();
+        try {
+            formatResultFormula(buffer.append("] = "));
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);      // Should never happen since we write in a StringBuilder.
+        }
+        return buffer.toString();
+    }
+
+    /**
+     * Appends a string representation of the "formula" used for computing the result.
+     * The "formula" may be for example a link to another property.
+     *
+     * @param  buffer  where to format the "formula".
+     * @throws IOException if an error occurred while writing in {@code buffer}.
+     */
+    void formatResultFormula(Appendable buffer) throws IOException {
+        defaultFormula(getParameters(), buffer);
+    }
+
+    /**
+     * Default implementation of {@link #formatResultFormula(Appendable)},
+     * to be used also for operations that are not instance of {@link AbstractOperation}.
+     */
+    static void defaultFormula(final ParameterDescriptorGroup parameters, final Appendable buffer) throws IOException {
+        buffer.append(parameters != null ? name(parameters.getName()) : "operation").append('(');
+        if (parameters != null) {
+            boolean hasMore = false;
+            for (GeneralParameterDescriptor p : parameters.descriptors()) {
+                if (p != null) {
+                    if (hasMore) buffer.append(", ");
+                    buffer.append(name(p.getName()));
+                    hasMore = true;
+                }
+            }
+        }
+        buffer.append(')');
+    }
+
+    /**
+     * Returns a short string representation of the given identifier, or {@code null} if none.
+     */
+    private static String name(final Identifier id) {
+        return (id != null) ? id.getCode() : null;
     }
 }

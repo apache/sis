@@ -20,12 +20,15 @@ import java.util.Date;
 import java.util.Locale;
 import java.util.Random;
 import java.util.Collection;
+import java.util.Map;
+import java.lang.reflect.Method;
 import org.opengis.util.CodeList;
 import org.opengis.metadata.identification.CharacterSet;
 import org.apache.sis.util.Numbers;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.collection.CheckedContainer;
 import org.apache.sis.internal.util.CollectionsExt;
+import org.apache.sis.internal.metadata.Dependencies;
 import org.apache.sis.test.AnnotationsTestCase;
 import org.apache.sis.test.TestUtilities;
 import org.apache.sis.test.DependsOn;
@@ -45,8 +48,8 @@ import static org.opengis.test.Assert.*;
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
+ * @version 0.8
  * @since   0.3
- * @version 0.5
  * @module
  */
 @DependsOn(PropertyAccessorTest.class)
@@ -64,8 +67,8 @@ public abstract strictfp class MetadataTestCase extends AnnotationsTestCase {
     /**
      * Creates a new test suite for the given types.
      *
-     * @param standard The standard implemented by the metadata objects to test.
-     * @param types The GeoAPI interfaces, {@link CodeList} or {@link Enum} types to test.
+     * @param  standard  the standard implemented by the metadata objects to test.
+     * @param  types     the GeoAPI interfaces, {@link CodeList} or {@link Enum} types to test.
      */
     protected MetadataTestCase(final MetadataStandard standard, final Class<?>... types) {
         super(types);
@@ -92,8 +95,8 @@ public abstract strictfp class MetadataTestCase extends AnnotationsTestCase {
      *
      * <p>The default implementation returns {@code true}.</p>
      *
-     * @param  impl     The implementation class.
-     * @param  property The name of the property to test.
+     * @param  impl      the implementation class.
+     * @param  property  the name of the property to test.
      * @return {@code true} if the given property is writable.
      */
     protected boolean isWritable(final Class<?> impl, final String property) {
@@ -108,11 +111,11 @@ public abstract strictfp class MetadataTestCase extends AnnotationsTestCase {
      * <p>The returned value may be of an other type than the given one if the
      * {@code PropertyAccessor} converter method know how to convert that type.</p>
      *
-     * @param  property The name of the property for which to create a value.
-     * @param  type The type of value to create.
-     * @return The value of the given {@code type}, or of a type convertible to the given type.
+     * @param  property  the name of the property for which to create a value.
+     * @param  type      the type of value to create.
+     * @return the value of the given {@code type}, or of a type convertible to the given type.
      */
-    protected Object valueFor(final String property, final Class<?> type) {
+    protected Object sampleValueFor(final String property, final Class<?> type) {
         if (CharSequence.class.isAssignableFrom(type)) {
             return "Dummy value for " + property + '.';
         }
@@ -139,7 +142,7 @@ public abstract strictfp class MetadataTestCase extends AnnotationsTestCase {
             }
             final CodeList[] codes = (CodeList[]) type.getMethod("values", (Class[]) null).invoke(null, (Object[]) null);
             return codes[random.nextInt(codes.length)];
-        } catch (Exception e) { // (ReflectiveOperationException) on JDK7 branch.
+        } catch (ReflectiveOperationException e) {
             fail(e.toString());
         }
         if (Locale.class.isAssignableFrom(type)) {
@@ -154,7 +157,7 @@ public abstract strictfp class MetadataTestCase extends AnnotationsTestCase {
             final Class<?> impl = getImplementation(type);
             if (impl != null) try {
                 return impl.getConstructor((Class<?>[]) null).newInstance((Object[]) null);
-            } catch (Exception e) { // (ReflectiveOperationException) on JDK7 branch.
+            } catch (ReflectiveOperationException e) {
                 fail(e.toString());
             }
         }
@@ -176,7 +179,7 @@ public abstract strictfp class MetadataTestCase extends AnnotationsTestCase {
      * Validates the given newly constructed metadata. The default implementation ensures that
      * {@link AbstractMetadata#isEmpty()} returns {@code true}.
      *
-     * @param metadata The metadata to validate.
+     * @param  metadata  the metadata to validate.
      */
     protected void validate(final AbstractMetadata metadata) {
         assertTrue("AbstractMetadata.isEmpty()", metadata.isEmpty());
@@ -184,7 +187,7 @@ public abstract strictfp class MetadataTestCase extends AnnotationsTestCase {
 
     /**
      * For every properties in every non-{@code Codelist} types listed in the {@link #types} array,
-     * test the property values. This method performs the tests documented in class javadoc.
+     * tests the property values. This method performs the tests documented in class javadoc.
      */
     @Test
     public void testPropertyValues() {
@@ -194,7 +197,7 @@ public abstract strictfp class MetadataTestCase extends AnnotationsTestCase {
                 final Class<?> impl = getImplementation(type);
                 if (impl != null) {
                     assertTrue(type.isAssignableFrom(impl));
-                    testPropertyValues(new PropertyAccessor(standard.getCitation(), type, impl));
+                    testPropertyValues(new PropertyAccessor(standard.getCitation(), type, impl, impl));
                 }
             }
         }
@@ -213,7 +216,7 @@ public abstract strictfp class MetadataTestCase extends AnnotationsTestCase {
         final Object instance;
         try {
             instance = accessor.implementation.getConstructor((Class<?>[]) null).newInstance((Object[]) null);
-        } catch (Exception e) { // (ReflectiveOperationException) on JDK7 branch.
+        } catch (ReflectiveOperationException e) {
             fail(e.toString());
             return;
         }
@@ -271,7 +274,7 @@ public abstract strictfp class MetadataTestCase extends AnnotationsTestCase {
                 fail("Non writable property: " + accessor + '.' + property);
             }
             if (isWritable) {
-                final Object newValue = valueFor(property, elementType);
+                final Object newValue = sampleValueFor(property, elementType);
                 final Object oldValue = accessor.set(i, instance, newValue, PropertyAccessor.RETURN_PREVIOUS);
                 assertEquals("PropertyAccessor.set(…) shall return the value previously returned by get(…).", value, oldValue);
                 value = accessor.get(i, instance);
@@ -313,5 +316,84 @@ public abstract strictfp class MetadataTestCase extends AnnotationsTestCase {
                method.equals("getScaleDenominator")) || // Deprecated method replaced by 'getSourceSpatialResolution()'.
               (implementation == org.apache.sis.metadata.iso.citation.DefaultResponsibleParty.class &&
                method.equals("getParties"));
+    }
+
+    /**
+     * Verifies the {@link TitleProperty} annotations. This method verifies that the property exist,
+     * is a singleton, and is not another metadata object. The property should also be mandatory,
+     * but this method does not verify that restriction since there is some exceptions.
+     *
+     * @since 0.8
+     */
+    @Test
+    public void testTitlePropertyAnnotation() {
+        for (final Class<?> type : types) {
+            final Class<?> impl = standard.getImplementation(type);
+            if (impl != null) {
+                final TitleProperty an = impl.getAnnotation(TitleProperty.class);
+                if (an != null) {
+                    final String name = an.name();
+                    final String message = impl.getSimpleName() + '.' + name;
+                    final PropertyAccessor accessor = new PropertyAccessor(standard.getCitation(), type, impl, impl);
+
+                    // Property shall exist.
+                    final int index = accessor.indexOf(name, false);
+                    assertTrue(message, index >= 0);
+
+                    // Property can not be a metadata.
+                    final Class<?> elementType = accessor.type(index, TypeValuePolicy.ELEMENT_TYPE);
+                    assertFalse(message, standard.isMetadata(elementType));
+
+                    // Property shall be a singleton.
+                    assertSame(message, elementType, accessor.type(index, TypeValuePolicy.PROPERTY_TYPE));
+                }
+            }
+        }
+    }
+
+    /**
+     * Verifies the {@link Dependencies} annotations. This method verifies that the annotation is applied on
+     * deprecated getter methods, that the referenced properties exist and the getter methods of referenced
+     * properties are not deprecated.
+     *
+     * @throws NoSuchMethodException if {@link PropertyAccessor} references a non-existent method (would be a bug).
+     *
+     * @since 0.8
+     */
+    @Test
+    public void testDependenciesAnnotation() throws NoSuchMethodException {
+        for (final Class<?> type : types) {
+            final Class<?> impl = standard.getImplementation(type);
+            if (impl != null) {
+                Map<String,String> names = null;
+                for (final Method method : impl.getDeclaredMethods()) {
+                    final Dependencies dep = method.getAnnotation(Dependencies.class);
+                    if (dep != null) {
+                        final String name = method.getName();
+                        if (names == null) {
+                            names = standard.asNameMap(type, KeyNamePolicy.JAVABEANS_PROPERTY, KeyNamePolicy.METHOD_NAME);
+                        }
+                        /*
+                         * Currently, @Dependencies is applied only on deprecated getter methods.
+                         * However this policy may change in future Apache SIS versions.
+                         */
+                        assertTrue(name, name.startsWith("get"));
+                        assertTrue(name, method.isAnnotationPresent(Deprecated.class));
+                        /*
+                         * All dependencies shall be non-deprecated methods. Combined with above
+                         * restriction about @Dependencies applied only on deprected methods, this
+                         * ensure that there is no cycle.
+                         */
+                        for (final String ref : dep.value()) {
+                            // Verify that the dependency is a property name.
+                            assertEquals(name, names.get(ref), ref);
+
+                            // Verify that the referenced method is non-deprecated.
+                            assertFalse(name, impl.getMethod(names.get(ref)).isAnnotationPresent(Deprecated.class));
+                        }
+                    }
+                }
+            }
+        }
     }
 }

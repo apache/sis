@@ -28,8 +28,8 @@ import static org.junit.Assert.*;
  * that requires a large amount of code list elements.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.3
+ * @since   0.3
  * @module
  */
 @SuppressWarnings("serial")
@@ -37,7 +37,7 @@ public final strictfp class LargeCodeList  extends CodeList<LargeCodeList> {
     /**
      * List of all enumerations of this type.
      */
-    private static final List<LargeCodeList> VALUES = new ArrayList<LargeCodeList>(100);
+    private static final List<LargeCodeList> VALUES = new ArrayList<>(100);
 
     /**
      * Creates 100 code list elements.
@@ -59,7 +59,7 @@ public final strictfp class LargeCodeList  extends CodeList<LargeCodeList> {
     /**
      * Returns the list of {@code LargeCodeList}s.
      *
-     * @return The list of codes declared in the current JVM.
+     * @return the list of codes declared in the current JVM.
      */
     public static LargeCodeList[] values() {
         synchronized (VALUES) {
@@ -69,6 +69,8 @@ public final strictfp class LargeCodeList  extends CodeList<LargeCodeList> {
 
     /**
      * Returns the list of codes of the same kind than this code list element.
+     *
+     * @return list of codes of {@code LargeCodeList} kind.
      */
     @Override
     public LargeCodeList[] family() {
@@ -79,8 +81,8 @@ public final strictfp class LargeCodeList  extends CodeList<LargeCodeList> {
      * Returns the axis code that matches the given string,
      * or returns a new one if none match it.
      *
-     * @param code The name of the code list element to fetch or to create.
-     * @return A code list element matching the given name.
+     * @param  code  the name of the code list element to fetch or to create.
+     * @return a code list element matching the given name.
      */
     public static LargeCodeList valueOf(final String code) {
         return valueOf(LargeCodeList.class, code);

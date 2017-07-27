@@ -25,23 +25,30 @@ import org.junit.BeforeClass;
  * All tests from the {@code sis-storage} module, in approximative dependency order.
  *
  * @author  Martin Desruisseaux (Geomatys)
+ * @version 0.8
  * @since   0.3
- * @version 0.5
  * @module
  */
 @Suite.SuiteClasses({
-    org.apache.sis.internal.storage.IOUtilitiesTest.class,
-    org.apache.sis.internal.storage.ChannelDataInputTest.class,
-    org.apache.sis.internal.storage.ChannelDataOutputTest.class,
-    org.apache.sis.internal.storage.ChannelImageInputStreamTest.class,
-    org.apache.sis.internal.storage.ChannelImageOutputStreamTest.class,
+    org.apache.sis.internal.storage.CodeTypeTest.class,
+    org.apache.sis.internal.storage.io.IOUtilitiesTest.class,
+    org.apache.sis.internal.storage.io.ChannelDataInputTest.class,
+    org.apache.sis.internal.storage.io.ChannelDataOutputTest.class,
+    org.apache.sis.internal.storage.io.ChannelImageInputStreamTest.class,
+    org.apache.sis.internal.storage.io.ChannelImageOutputStreamTest.class,
+    org.apache.sis.internal.storage.io.HyperRectangleReaderTest.class,
+    org.apache.sis.internal.storage.MetadataBuilderTest.class,
+    org.apache.sis.storage.FeatureNamingTest.class,
     org.apache.sis.storage.ProbeResultTest.class,
     org.apache.sis.storage.StorageConnectorTest.class,
     org.apache.sis.internal.storage.xml.MimeTypeDetectorTest.class,
-    org.apache.sis.internal.storage.xml.XMLStoreProviderTest.class,
-    org.apache.sis.internal.storage.xml.XMLStoreTest.class,
-    org.apache.sis.storage.DataStoresTest.class,
-    org.apache.sis.index.GeoHashCoderTest.class
+    org.apache.sis.internal.storage.xml.StoreProviderTest.class,
+    org.apache.sis.internal.storage.xml.StoreTest.class,
+    org.apache.sis.internal.storage.wkt.StoreProviderTest.class,
+    org.apache.sis.internal.storage.wkt.StoreTest.class,
+    org.apache.sis.internal.storage.csv.StoreProviderTest.class,
+    org.apache.sis.internal.storage.csv.StoreTest.class,
+    org.apache.sis.storage.DataStoresTest.class
 })
 public final strictfp class StorageTestSuite extends TestSuite {
     /**

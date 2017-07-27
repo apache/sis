@@ -17,14 +17,14 @@
 package org.apache.sis.referencing.cs;
 
 import java.util.Map;
-import javax.measure.unit.SI;
-import javax.measure.unit.Unit;
+import javax.measure.Unit;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlRootElement;
 import org.opengis.referencing.cs.VerticalCS;
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
-import org.apache.sis.internal.referencing.AxisDirections;
+import org.apache.sis.internal.metadata.AxisDirections;
+import org.apache.sis.measure.Units;
 
 
 /**
@@ -58,12 +58,14 @@ import org.apache.sis.internal.referencing.AxisDirections;
  * constants.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.4
- * @version 0.4
- * @module
+ * @version 0.8
  *
  * @see org.apache.sis.referencing.crs.DefaultVerticalCRS
  * @see org.apache.sis.referencing.datum.DefaultVerticalDatum
+ * @see org.apache.sis.referencing.factory.GeodeticAuthorityFactory#createVerticalCS(String)
+ *
+ * @since 0.4
+ * @module
  */
 @XmlType(name = "VerticalCSType")
 @XmlRootElement(name = "VerticalCS")
@@ -74,19 +76,11 @@ public class DefaultVerticalCS extends AbstractCS implements VerticalCS {
     private static final long serialVersionUID = 1201155778896630499L;
 
     /**
-     * Constructs a new coordinate system in which every attributes are set to a null or empty value.
-     * <strong>This is not a valid object.</strong> This constructor is strictly reserved to JAXB,
-     * which will assign values to the fields using reflexion.
-     */
-    private DefaultVerticalCS() {
-    }
-
-    /**
      * Creates a new coordinate system from an arbitrary number of axes. This constructor is for
-     * implementations of the {@link #createSameType(Map, CoordinateSystemAxis[])} method only,
+     * implementations of the {@link #createForAxes(Map, CoordinateSystemAxis[])} method only,
      * because it does not verify the number of axes.
      */
-    private DefaultVerticalCS(final Map<String,?> properties, final CoordinateSystemAxis[] axes) {
+    DefaultVerticalCS(final Map<String,?> properties, final CoordinateSystemAxis[] axes) {
         super(properties, axes);
     }
 
@@ -125,8 +119,10 @@ public class DefaultVerticalCS extends AbstractCS implements VerticalCS {
      *   </tr>
      * </table>
      *
-     * @param properties The properties to be given to the identified object.
-     * @param axis       The axis.
+     * @param  properties  the properties to be given to the identified object.
+     * @param  axis        the single axis (e.g. “height” or “depth”).
+     *
+     * @see org.apache.sis.referencing.factory.GeodeticObjectFactory#createVerticalCS(Map, CoordinateSystemAxis)
      */
     public DefaultVerticalCS(final Map<String,?> properties, final CoordinateSystemAxis axis) {
         super(properties, axis);
@@ -139,7 +135,7 @@ public class DefaultVerticalCS extends AbstractCS implements VerticalCS {
      *
      * <p>This constructor performs a shallow copy, i.e. the properties are not cloned.</p>
      *
-     * @param cs The coordinate system to copy.
+     * @param  cs  the coordinate system to copy.
      *
      * @see #castOrCopy(VerticalCS)
      */
@@ -153,8 +149,8 @@ public class DefaultVerticalCS extends AbstractCS implements VerticalCS {
      * Otherwise if the given object is already a SIS implementation, then the given object is returned unchanged.
      * Otherwise a new SIS implementation is created and initialized to the attribute values of the given object.
      *
-     * @param  object The object to get as a SIS implementation, or {@code null} if none.
-     * @return A SIS implementation containing the values of the given object (may be the
+     * @param  object  the object to get as a SIS implementation, or {@code null} if none.
+     * @return a SIS implementation containing the values of the given object (may be the
      *         given object itself), or {@code null} if the argument was null.
      */
     public static DefaultVerticalCS castOrCopy(final VerticalCS object) {
@@ -173,11 +169,11 @@ public class DefaultVerticalCS extends AbstractCS implements VerticalCS {
         if (!AxisDirection.UP.equals(AxisDirections.absolute(direction))) {
             return INVALID_DIRECTION;
         }
-        unit = unit.toSI();
-        if (unit.equals(SI.METRE)   ||  // Most usual case.
-            unit.equals(SI.PASCAL)  ||  // Height or depth estimated by the atmospheric or ocean pressure.
-            unit.equals(SI.SECOND)  ||  // Depth estimated by the time needed for an echo to travel.
-            unit.equals(Unit.ONE))      // Sigma-level (percentage from sea surface to ocean floor).
+        unit = unit.getSystemUnit();
+        if (unit.equals(Units.METRE)   ||       // Most usual case.
+            unit.equals(Units.PASCAL)  ||       // Height or depth estimated by the atmospheric or ocean pressure.
+            unit.equals(Units.SECOND)  ||       // Depth estimated by the time needed for an echo to travel.
+            unit.equals(Units.UNITY))           // Sigma-level (percentage from sea surface to ocean floor).
         {
             return VALID;
         }
@@ -211,10 +207,35 @@ public class DefaultVerticalCS extends AbstractCS implements VerticalCS {
     }
 
     /**
-     * Returns a coordinate system of the same class than this CS but with different axes.
+     * Returns a coordinate system with different axes.
      */
     @Override
-    final AbstractCS createSameType(final Map<String,?> properties, final CoordinateSystemAxis[] axes) {
-        return new DefaultVerticalCS(properties, axes);
+    final AbstractCS createForAxes(final Map<String,?> properties, final CoordinateSystemAxis[] axes) {
+        switch (axes.length) {
+            case 1: return new DefaultVerticalCS(properties, axes);
+            default: throw unexpectedDimension(properties, axes, 1);
+        }
+    }
+
+
+
+
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+    ////////                                                                                  ////////
+    ////////                               XML support with JAXB                              ////////
+    ////////                                                                                  ////////
+    ////////        The following methods are invoked by JAXB using reflection (even if       ////////
+    ////////        they are private) or are helpers for other methods invoked by JAXB.       ////////
+    ////////        Those methods can be safely removed if Geographic Markup Language         ////////
+    ////////        (GML) support is not needed.                                              ////////
+    ////////                                                                                  ////////
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Constructs a new coordinate system in which every attributes are set to a null or empty value.
+     * <strong>This is not a valid object.</strong> This constructor is strictly reserved to JAXB,
+     * which will assign values to the fields using reflexion.
+     */
+    private DefaultVerticalCS() {
     }
 }

@@ -20,7 +20,7 @@ import java.util.Collection;
 import java.awt.geom.Rectangle2D;
 import java.awt.geom.RectangularShape;
 import java.awt.geom.AffineTransform;
-import javax.measure.unit.Unit;
+import javax.measure.Unit;
 import org.opengis.geometry.Envelope;
 import org.opengis.metadata.Identifier;
 import org.opengis.parameter.GeneralParameterValue;
@@ -36,14 +36,18 @@ import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.opengis.referencing.cs.RangeMeaning;
 import org.opengis.util.GenericName;
 import org.apache.sis.geometry.AbstractEnvelope;
+import org.apache.sis.geometry.Envelopes;
 import org.apache.sis.geometry.GeneralDirectPosition;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.operation.transform.LinearTransform;
 import org.apache.sis.util.iso.DefaultNameSpace;
+import org.apache.sis.internal.util.Constants;
 
 import static java.lang.StrictMath.*;
-import static org.apache.sis.internal.util.Constants.*;
+
+// Branch-dependent imports
+import org.apache.sis.internal.jdk8.JDK8;
 
 
 /**
@@ -51,16 +55,11 @@ import static org.apache.sis.internal.util.Constants.*;
  * from other modules and libraries.
  *
  * @author  Martin Desruisseaux (Geomatys)
+ * @version 0.7
  * @since   0.3
- * @version 0.6
  * @module
  */
 public strictfp class ReferencingAssert extends MetadataAssert {
-    /**
-     * The tolerance threshold for strict comparisons of floating point values.
-     */
-    private static final double STRICT = 0;
-
     /**
      * For subclass constructor only.
      */
@@ -72,58 +71,61 @@ public strictfp class ReferencingAssert extends MetadataAssert {
      * The authority is expected to be {@link Citations#OGC}. We expect the exact same authority
      * instance because identifiers in OGC namespace are often hard-coded in SIS.
      *
-     * @param expected The expected identifier code.
-     * @param actual   The identifier to verify.
+     * @param expected  the expected identifier code.
+     * @param actual    the identifier to verify.
      *
      * @since 0.6
      */
     public static void assertOgcIdentifierEquals(final String expected, final ReferenceIdentifier actual) {
         assertNotNull(actual);
-        assertSame("Authority", Citations.OGC, actual.getAuthority());
-        assertIdentifierEquals(null, OGC, OGC, null, expected, actual);
+        assertEquals("code",       expected,      actual.getCode());
+        assertEquals("codeSpace",  Constants.OGC, actual.getCodeSpace());
+        assertSame  ("authority",  Citations.OGC, actual.getAuthority());
+        assertEquals("identifier", Constants.OGC + DefaultNameSpace.DEFAULT_SEPARATOR + expected,
+                IdentifiedObjects.toString(actual));
     }
 
     /**
      * Asserts that the given identifier has the expected code and the {@code "EPSG"} code space.
-     * The authority is expected to have the {@code "IOGP"} title or alternate title.
+     * The authority is expected to have the {@code "EPSG"} title, alternate title or identifier.
      *
-     * @param expected The expected identifier code.
-     * @param actual   The identifier to verify.
+     * @param expected  the expected identifier code.
+     * @param actual    the identifier to verify.
      *
      * @since 0.5
      */
     public static void assertEpsgIdentifierEquals(final String expected, final Identifier actual) {
         assertNotNull(actual);
-        assertEquals("code",       expected, actual.getCode());
-        assertEquals("codeSpace",  EPSG,  (actual instanceof ReferenceIdentifier) ? ((ReferenceIdentifier) actual).getCodeSpace() : null);
-        assertEquals("authority",  IOGP,  Citations.getIdentifier(actual.getAuthority()));
-        assertEquals("identifier", EPSG + DefaultNameSpace.DEFAULT_SEPARATOR + expected,
+        assertEquals("code",       expected,        actual.getCode());
+        assertEquals("codeSpace",  Constants.EPSG,  (actual instanceof ReferenceIdentifier) ? ((ReferenceIdentifier) actual).getCodeSpace() : null);
+        assertEquals("authority",  Constants.EPSG,  Citations.getIdentifier(actual.getAuthority()));
+        assertEquals("identifier", Constants.EPSG + DefaultNameSpace.DEFAULT_SEPARATOR + expected,
                 IdentifiedObjects.toString(actual));
     }
 
     /**
-     * Asserts that the string representation of the unique identifier in the given collection is equals to the given
-     * EPSG code. As a special case if the given code is 0, then this method verifies that the given object has no
-     * identifier.
+     * Asserts that the given object has the expected name and singleton identifier in the {@code "EPSG"} code space.
+     * No other identifier than the given one is expected. The authority is expected to have the {@code "EPSG"} title,
+     * alternate title or identifier.
      *
-     * @param expected    The expected EPSG code, or {@code 0} if we expect no EPSG code.
-     * @param actual The set of identifiers in which to verify the EPSG code.
+     * @param name        the expected EPSG name.
+     * @param identifier  the expected EPSG identifier.
+     * @param object      the object to verify.
+     *
+     * @since 0.6
      */
-    public static void assertEpsgIdentifierEquals(final int expected, final Collection<? extends Identifier> actual) {
-        assertNotNull(actual);
-        if (expected == 0) {
-            assertTrue("identifiers.isEmpty()", actual.isEmpty());
-        } else {
-            assertEpsgIdentifierEquals(String.valueOf(expected), TestUtilities.getSingleton(actual));
-        }
+    public static void assertEpsgNameAndIdentifierEqual(final String name, final int identifier, final IdentifiedObject object) {
+        assertNotNull(name, object);
+        assertEpsgIdentifierEquals(name, object.getName());
+        assertEpsgIdentifierEquals(String.valueOf(identifier), TestUtilities.getSingleton(object.getIdentifiers()));
     }
 
     /**
      * Asserts that the tip of the unique alias of the given object is equals to the expected value.
      * As a special case if the expected value is null, then this method verifies that the given object has no alias.
      *
-     * @param expected The expected alias, or {@code null} if we expect no alias.
-     * @param object   The object for which to test the alias.
+     * @param expected  the expected alias, or {@code null} if we expect no alias.
+     * @param object    the object for which to test the alias.
      */
     public static void assertAliasTipEquals(final String expected, final IdentifiedObject object) {
         final Collection<GenericName> aliases = object.getAlias();
@@ -137,14 +139,14 @@ public strictfp class ReferencingAssert extends MetadataAssert {
     /**
      * Compares the given coordinate system axis against the expected values.
      *
-     * @param name          The expected axis name code.
-     * @param abbreviation  The expected axis abbreviation.
-     * @param direction     The expected axis direction.
-     * @param minimumValue  The expected axis minimal value.
-     * @param maximumValue  The expected axis maximal value.
-     * @param unit          The expected axis unit of measurement.
-     * @param rangeMeaning  The expected axis range meaning.
-     * @param axis          The axis to verify.
+     * @param name           the expected axis name code.
+     * @param abbreviation   the expected axis abbreviation.
+     * @param direction      the expected axis direction.
+     * @param minimumValue   the expected axis minimal value.
+     * @param maximumValue   the expected axis maximal value.
+     * @param unit           the expected axis unit of measurement.
+     * @param rangeMeaning   the expected axis range meaning.
+     * @param axis           the axis to verify.
      */
     public static void assertAxisEquals(final String name, final String abbreviation, final AxisDirection direction,
             final double minimumValue, final double maximumValue, final Unit<?> unit, final RangeMeaning rangeMeaning,
@@ -153,8 +155,8 @@ public strictfp class ReferencingAssert extends MetadataAssert {
         assertEquals("name",         name,         axis.getName().getCode());
         assertEquals("abbreviation", abbreviation, axis.getAbbreviation());
         assertEquals("direction",    direction,    axis.getDirection());
-        assertEquals("minimumValue", minimumValue, axis.getMinimumValue(), STRICT);
-        assertEquals("maximumValue", maximumValue, axis.getMaximumValue(), STRICT);
+        assertEquals("minimumValue", minimumValue, axis.getMinimumValue(), TestCase.STRICT);
+        assertEquals("maximumValue", maximumValue, axis.getMaximumValue(), TestCase.STRICT);
         assertEquals("unit",         unit,         axis.getUnit());
         assertEquals("rangeMeaning", rangeMeaning, axis.getRangeMeaning());
     }
@@ -164,9 +166,9 @@ public strictfp class ReferencingAssert extends MetadataAssert {
      * a positive delta. Only the elements in the given descriptor are compared, and
      * the comparisons are done in the units declared in the descriptor.
      *
-     * @param expected  The expected parameter values.
-     * @param actual    The actual parameter values.
-     * @param tolerance The tolerance threshold for comparison of numerical values.
+     * @param expected   the expected parameter values.
+     * @param actual     the actual parameter values.
+     * @param tolerance  the tolerance threshold for comparison of numerical values.
      */
     public static void assertParameterEquals(final ParameterValueGroup expected,
             final ParameterValueGroup actual, final double tolerance)
@@ -199,13 +201,13 @@ public strictfp class ReferencingAssert extends MetadataAssert {
      * to the given values. The matrix doesn't need to be square. The last row is handled especially
      * if the {@code affine} argument is {@code true}.
      *
-     * @param expected  The values which are expected on the diagonal. If the length of this array
-     *                  is less than the matrix size, then the last element in the array is repeated
-     *                  for all remaining diagonal elements.
-     * @param affine    If {@code true}, then the last row is expected to contains the value 1
-     *                  in the last column, and all other columns set to 0.
-     * @param matrix    The matrix to test.
-     * @param tolerance The tolerance threshold while comparing floating point values.
+     * @param expected   the values which are expected on the diagonal. If the length of this array
+     *                   is less than the matrix size, then the last element in the array is repeated
+     *                   for all remaining diagonal elements.
+     * @param affine     if {@code true}, then the last row is expected to contains the value 1
+     *                   in the last column, and all other columns set to 0.
+     * @param matrix     the matrix to test.
+     * @param tolerance  the tolerance threshold while comparing floating point values.
      */
     public static void assertDiagonalEquals(final double[] expected, final boolean affine,
             final Matrix matrix, final double tolerance)
@@ -234,9 +236,9 @@ public strictfp class ReferencingAssert extends MetadataAssert {
     /**
      * Compares two affine transforms for equality.
      *
-     * @param expected  The expected affine transform.
-     * @param actual    The actual affine transform.
-     * @param tolerance The tolerance threshold.
+     * @param expected   the expected affine transform.
+     * @param actual     the actual affine transform.
+     * @param tolerance  the tolerance threshold.
      */
     public static void assertTransformEquals(final AffineTransform expected, final AffineTransform actual, final double tolerance) {
         assertEquals("scaleX",     expected.getScaleX(),     actual.getScaleX(),     tolerance);
@@ -250,10 +252,10 @@ public strictfp class ReferencingAssert extends MetadataAssert {
     /**
      * Asserts that two rectangles have the same location and the same size.
      *
-     * @param expected The expected rectangle.
-     * @param actual   The rectangle to compare with the expected one.
-     * @param tolx     The tolerance threshold on location along the <var>x</var> axis.
-     * @param toly     The tolerance threshold on location along the <var>y</var> axis.
+     * @param expected  the expected rectangle.
+     * @param actual    the rectangle to compare with the expected one.
+     * @param tolx      the tolerance threshold on location along the <var>x</var> axis.
+     * @param toly      the tolerance threshold on location along the <var>y</var> axis.
      */
     public static void assertRectangleEquals(final RectangularShape expected,
             final RectangularShape actual, final double tolx, final double toly)
@@ -269,6 +271,36 @@ public strictfp class ReferencingAssert extends MetadataAssert {
     }
 
     /**
+     * Asserts that two envelopes have the same minimum and maximum ordinates.
+     * This method ignores the envelope type (i.e. the implementation class) and the CRS.
+     *
+     * @param expected    the expected envelope.
+     * @param actual      the envelope to compare with the expected one.
+     * @param tolerances  the tolerance threshold on location along each axis. If this array length is shorter
+     *                    than the number of dimensions, then the last tolerance is reused for all remaining axes.
+     *                    If this array is empty, then the tolerance threshold is zero.
+     *
+     * @since 0.7
+     */
+    public static void assertEnvelopeEquals(final Envelope expected, final Envelope actual, final double... tolerances) {
+        final int dimension = expected.getDimension();
+        assertEquals("dimension", dimension, actual.getDimension());
+        double tolerance = 0;
+        for (int i=0; i<dimension; i++) {
+            if (i < tolerances.length) {
+                tolerance = tolerances[i];
+            }
+            if (abs(expected.getMinimum(i) - actual.getMinimum(i)) > tolerance ||
+                abs(expected.getMaximum(i) - actual.getMaximum(i)) > tolerance)
+            {
+                fail("Envelopes are not equal:\n"
+                        + "expected " + Envelopes.toString(expected) + "\n"
+                        + " but got " + Envelopes.toString(actual));
+            }
+        }
+    }
+
+    /**
      * Tests if the given {@code outer} shape contains the given {@code inner} rectangle.
      * This method will also verify class consistency by invoking the {@code intersects}
      * method, and by interchanging the arguments.
@@ -276,8 +308,8 @@ public strictfp class ReferencingAssert extends MetadataAssert {
      * <p>This method can be used for testing the {@code outer} implementation -
      * it should not be needed for standard JDK implementations.</p>
      *
-     * @param outer The shape which is expected to contains the given rectangle.
-     * @param inner The rectangle which should be contained by the shape.
+     * @param outer  the shape which is expected to contains the given rectangle.
+     * @param inner  the rectangle which should be contained by the shape.
      */
     public static void assertContains(final RectangularShape outer, final Rectangle2D inner) {
         assertTrue("outer.contains(inner)",   outer.contains  (inner));
@@ -295,8 +327,8 @@ public strictfp class ReferencingAssert extends MetadataAssert {
      * This method will also verify class consistency by invoking the {@code intersects}
      * method, and by interchanging the arguments.
      *
-     * @param outer The envelope which is expected to contains the given inner envelope.
-     * @param inner The envelope which should be contained by the outer envelope.
+     * @param outer  the envelope which is expected to contains the given inner envelope.
+     * @param inner  the envelope which should be contained by the outer envelope.
      */
     public static void assertContains(final AbstractEnvelope outer, final Envelope inner) {
         assertTrue("outer.contains(inner)",   outer.contains  (inner, true));
@@ -325,8 +357,8 @@ public strictfp class ReferencingAssert extends MetadataAssert {
      * <p>This method can be used for testing the {@code r1} implementation - it should not
      * be needed for standard implementations.</p>
      *
-     * @param r1 The first shape to test.
-     * @param r2 The second rectangle to test.
+     * @param r1  the first shape to test.
+     * @param r2  the second rectangle to test.
      */
     public static void assertDisjoint(final RectangularShape r1, final Rectangle2D r2) {
         assertFalse("r1.intersects(r2)", r1.intersects(r2));
@@ -358,8 +390,8 @@ public strictfp class ReferencingAssert extends MetadataAssert {
      * This method will also verify class consistency by invoking the {@code contains} method,
      * and by interchanging the arguments.
      *
-     * @param e1 The first envelope to test.
-     * @param e2 The second envelope to test.
+     * @param e1  the first envelope to test.
+     * @param e2  the second envelope to test.
      */
     public static void assertDisjoint(final AbstractEnvelope e1, final Envelope e2) {
         assertFalse("e1.intersects(e2)", e1.intersects(e2, false));
@@ -374,7 +406,7 @@ public strictfp class ReferencingAssert extends MetadataAssert {
             assertFalse("e2.contains(e1)",   ae.contains  (e1, true));
         }
         final int dimension = e1.getDimension();
-        final int numCases = (int) round(pow(3, dimension));
+        final int numCases = JDK8.toIntExact(round(pow(3, dimension)));
         final GeneralDirectPosition pos = new GeneralDirectPosition(dimension);
         for (int index=0; index<numCases; index++) {
             int n = index;
@@ -398,7 +430,7 @@ public strictfp class ReferencingAssert extends MetadataAssert {
      * Tests if the given transform is the identity transform.
      * If the current transform is linear, then this method will also verifies {@link Matrix#isIdentity()}.
      *
-     * @param transform The transform to test.
+     * @param transform  the transform to test.
      *
      * @since 0.6
      */
@@ -413,7 +445,7 @@ public strictfp class ReferencingAssert extends MetadataAssert {
      * Tests if the given transform is <strong>not</strong> the identity transform.
      * If the current transform is linear, then this method will also verifies {@link Matrix#isIdentity()}.
      *
-     * @param transform The transform to test.
+     * @param transform  the transform to test.
      *
      * @since 0.6
      */

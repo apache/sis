@@ -24,104 +24,57 @@ import org.apache.sis.util.logging.Logging;
 
 /**
  * A thread executing short tasks after some (potentially zero nanosecond) delay.
- * This thread is reserved to internal SIS usage - no user code shall be executed here.
- * All submitted tasks shall be very quick, since there is only one thread shared by everyone.
+ * This class should be reserved to internal SIS usage without user's code.
+ * In practice some user code may be indirectly executed through SIS tasks invoking overrideable methods.
+ * But all submitted tasks shall be very quick, since there is only one thread shared by everyone.
  *
- * <div class="note"><b>Note:</b>
- * In practice some user code may be indirectly executed, since some SIS tasks invoke overrideable methods.
- * We may need to revisit the {@code DelayedExecutor} design in a future version if the above happens to be
- * a problem. For example we may allow the user to specify an application-wide scheduled executor and delegate
- * the tasks to that executor.</div>
- *
- * The methods for use in this class are:
+ * <p>The methods for use in this class are:</p>
  * <ul>
- *   <li>{@link #executeDaemonTask(DelayedRunnable)}</li>
  *   <li>{@link #schedule(DelayedRunnable)}</li>
  * </ul>
  *
  * <div class="section">Comparison with {@code java.util.concurrent}</div>
- * We tried to use {@link java.util.concurrent.ScheduledThreadPoolExecutor} in a previous version,
- * but it seems more suitable to heavier tasks in applications controlling their own executor. For
- * example {@code ScheduledThreadPoolExecutor} acts as a fixed-sized pool, thus forcing us to use
- * only one thread if we don't want to waste resources (profiling shows that even a single thread
- * has very low activity). The {@code ThreadPoolExecutor} super-class is more flexible but still
- * have a quite aggressive policy on threads creation, and doesn't handle delayed tasks by itself.
- * We could combine both worlds with a {@code ThreadPoolExecutor} using a {@code DelayedQueue},
- * but it forces us to declare a core pool size of 0 otherwise {@code ThreadPoolExecutor} tries
- * to execute the tasks immediately without queuing them. Combined with the {@code DelayedQueue}
- * characteristics (being an unbounded queue), this result in {@code ThreadPoolExecutor} never
- * creating more than one thread (because it waits for the queue to reject a task before to create
- * more threads than the pool size).
+ * We tried to use {@link java.util.concurrent.ScheduledThreadPoolExecutor} in a previous SIS version,
+ * but its "fixed-sized pool" design forces us to use only one thread if we do not want to waste resources
+ * (profiling shows that even a single thread has very low activity), which reduces the interest of that class.
+ * Combination of {@code ThreadPoolExecutor} super-class with {@code DelayedQueue} were not successful neither.
  *
- * <p>Given that it seems difficult to configure {@code (Scheduled)ThreadPoolExecutor} in such
- * a way that two or more threads are created only when really needed, given that using those
- * thread pools seems an overkill when the pool size is fixed to one thread, given that our
- * profiling has show very low activity for that single thread anyway, and given that we do
- * not need cancellation and shutdown services for house keeping tasks (this is a daemon thread),
+ * <p>Given that it:</p>
+ * <ul>
+ *   <li>it seems difficult to configure {@code (Scheduled)ThreadPoolExecutor} in such a way
+ *       that two or more threads are created only when really needed,</li>
+ *   <li>using those executor services seems an overkill when the pool size is fixed to one thread,</li>
+ *   <li>our profiling has show very low activity for that single thread anyway,</li>
+ *   <li>we do not need cancellation and shutdown services for house keeping tasks (this is a daemon thread),</li>
+ * </ul>
  * a more lightweight solution seems acceptable here. Pseudo-benchmarking using the
- * {@code CacheTest.stress()} tests suggests that the lightweight solution is faster.</p>
- *
- * <div class="section">Future evolution</div>
- * We may remove (again) this class in a future SIS evolution if we happen to need an executor anyway.
- * However it may be better to wait and see what are the executor needs. Setting up an executor implies
- * choosing many arbitrary parameter values like the number of core threads, maximum threads, idle time,
- * queue capacity, etc. Furthermore some platforms (e.g. MacOS) provide OS-specific implementations
- * integrating well in their environment. We may want to let the user provides the executor of his
- * choice, or we way want to have more profiling data for choosing an appropriate executor. But we
- * may need to find some way to give priority to SIS tasks, since most of them are for releasing
- * resources - in which case quick execution probably help the system to run faster.
- * However before to switch from the lightweight solution to a more heavy solution,
- * micro-benchmarking is desirable. The {@code CacheTest.stress()} tests can be used
- * in first approximation.
+ * {@code CacheTest.stress()} tests suggests that the lightweight solution is faster.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
- * @version 0.3
- * @module
+ * @version 0.7
  *
  * @see <a href="https://issues.apache.org/jira/browse/SIS-76">SIS-76</a>
+ *
+ * @since 0.3
+ * @module
  */
 public final class DelayedExecutor extends DaemonThread {
     /**
-     * Executes the given short task in a daemon thread. This method shall be invoked for
-     * Apache SIS tasks only, <strong>not</strong> for arbitrary user task. The task must
-     * completes quickly, because we will typically use only one thread for all submitted
-     * tasks. Completion of the task shall not be critical, since the JVM is allowed to
-     * shutdown before task completion.
-     *
-     * <div class="section">Future evolution</div>
-     * If {@code DelayedExecutor} is removed in a future SIS version in favor of JDK6 executors,
-     * then the method signature will probably be {@code Executors.execute(Runnable)}.
-     *
-     * @param task The task to execute.
-     */
-    public static void executeDaemonTask(final DelayedRunnable task) {
-        QUEUE.add(task);
-    }
-
-    /**
      * Schedules the given short task for later execution in a daemon thread.
-     * The task will be executed after the delay specified by {@link DelayedRunnable#getDelay}
-     * The task must completes quickly, because we will typically use only one thread for all
-     * submitted tasks. Completion of the task shall not be critical, since the JVM is allowed
-     * to shutdown before task completion.
+     * The task will be executed after the delay specified by {@link DelayedRunnable#getDelay(TimeUnit)}
+     * The task must completes quickly, because we will typically use only one thread for all submitted tasks.
+     * Completion of the task shall not be critical, since the JVM is allowed to shutdown before task completion.
      *
-     * <div class="section">Future evolution</div>
-     * If {@code DelayedExecutor} is removed in a future SIS version in favor of JDK6 executors,
-     * then the method signature will probably be {@code Executors.schedule(Runnable, long, TimeUnit)}.
-     *
-     * @param task The task to schedule for later execution.
+     * @param  task  the task to schedule for later execution.
      */
     public static void schedule(final DelayedRunnable task) {
-        // For now the implementation is identical to 'execute'. However it may become
-        // different if we choose to use a library-wide executor in a future SIS version.
         QUEUE.add(task);
     }
 
     /**
      * List of delayed tasks to execute.
      */
-    private static final BlockingQueue<DelayedRunnable> QUEUE = new DelayQueue<DelayedRunnable>();
+    private static final BlockingQueue<DelayedRunnable> QUEUE = new DelayQueue<>();
 
     /**
      * Creates the singleton instance of the {@code DelayedExecutor} thread.
@@ -130,9 +83,14 @@ public final class DelayedExecutor extends DaemonThread {
         synchronized (Threads.class) {
             final DelayedExecutor thread;
             Threads.lastCreatedDaemon = thread = new DelayedExecutor(Threads.lastCreatedDaemon);
-            // Call to Thread.start() must be outside the constructor
-            // (Reference: Goetz et al.: "Java Concurrency in Practice").
+            /*
+             * Call to Thread.start() must be outside the constructor
+             * (Reference: Goetz et al.: "Java Concurrency in Practice").
+             */
             thread.start();
+        }
+        if (Supervisor.ENABLED) {
+            Supervisor.register();
         }
     }
 
@@ -170,10 +128,12 @@ public final class DelayedExecutor extends DaemonThread {
                     continue;
                 }
             } catch (InterruptedException exception) {
-                // Probably the 'killAll' method has been invoked.
-                // We need to test 'isKillRequested()' below.
+                /*
+                 * Probably the 'killAll' method has been invoked.
+                 * We need to test 'isKillRequested()' below.
+                 */
             } catch (Throwable exception) {
-                Logging.unexpectedException(getClass(), "run", exception);
+                Logging.unexpectedException(Logging.getLogger(Loggers.SYSTEM), getClass(), "run", exception);
             }
             if (isKillRequested()) {
                 queue.clear();
@@ -203,8 +163,10 @@ public final class DelayedExecutor extends DaemonThread {
             }
             return true;
         } catch (InterruptedException e) {
-            // Someone doesn't want to let us wait. Since we didn't had the time to
-            // determine if the thread is stalled, conservatively return 'false'.
+            /*
+             * Someone doesn't want to let us wait. Since we didn't had the time to
+             * determine if the thread is stalled, conservatively return 'false'.
+             */
         }
         return false;
     }

@@ -17,27 +17,32 @@
 package org.apache.sis.referencing;
 
 import java.util.Date;
-import org.opengis.test.Validators;
-import org.opengis.util.FactoryException;
-import org.opengis.referencing.crs.SingleCRS;
+import java.util.Map;
+import java.util.HashMap;
+import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.referencing.crs.TemporalCRS;
 import org.opengis.referencing.crs.VerticalCRS;
 import org.opengis.referencing.crs.GeographicCRS;
 import org.opengis.referencing.crs.GeocentricCRS;
+import org.opengis.referencing.crs.ProjectedCRS;
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.cs.EllipsoidalCS;
 import org.opengis.referencing.datum.TemporalDatum;
 import org.opengis.referencing.datum.VerticalDatum;
 import org.opengis.referencing.datum.VerticalDatumType;
-import org.apache.sis.internal.referencing.VerticalDatumTypes;
+import org.apache.sis.internal.metadata.AxisNames;
+import org.apache.sis.internal.metadata.VerticalDatumTypes;
 import org.apache.sis.internal.util.Constants;
+
+// Test dependencies
+import org.opengis.test.Validators;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
-import static org.junit.Assert.*;
+import static org.apache.sis.test.Assert.*;
 import static org.apache.sis.test.TestUtilities.*;
 
 
@@ -45,8 +50,8 @@ import static org.apache.sis.test.TestUtilities.*;
  * Tests the {@link CommonCRS} class.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
+ * @version 0.8
  * @since   0.4
- * @version 0.5
  * @module
  */
 @DependsOn({
@@ -59,6 +64,60 @@ public final strictfp class CommonCRSTest extends TestCase {
      * Length of a day in milliseconds.
      */
     private static final double DAY_LENGTH = 24 * 60 * 60 * 1000;
+
+    /**
+     * Verifies that the same EPSG code is not used for two objects. Collisions are not allowed between
+     * {@code geographic}, {@code geocentric}, {@code geo3D} and all UTM projections. Strictly speaking
+     * all the above-cited codes may collide with {@code datum} and {@code ellipsoid}, but we nevertheless
+     * avoid those collisions in order to simplify {@link EPSGFactoryFallback#createObject(String)} implementation.
+     */
+    @Test
+    public void ensureNoCodeCollision() {
+        final Map<Integer,Enum<?>> codes = new HashMap<>();
+        final CommonCRS[] values = CommonCRS.values();
+        for (final CommonCRS crs : values) {
+            assertNoCodeCollision(codes, crs, crs.geographic);
+            assertNoCodeCollision(codes, crs, crs.geocentric);
+            assertNoCodeCollision(codes, crs, crs.geo3D);
+            assertNoCodeCollision(codes, crs, crs.northUPS);
+            assertNoCodeCollision(codes, crs, crs.southUPS);
+            for (int zone = crs.firstZone; zone <= crs.lastZone; zone++) {
+                if (crs.northUTM != 0) assertNoCodeCollision(codes, crs, crs.northUTM + zone);
+                if (crs.southUTM != 0) assertNoCodeCollision(codes, crs, crs.southUTM + zone);
+            }
+        }
+        final CommonCRS.Vertical[] vertical = CommonCRS.Vertical.values();
+        for (final CommonCRS.Vertical crs : vertical) {
+            if (crs.isEPSG) {
+                assertNoCodeCollision(codes, crs, crs.crs);
+            }
+        }
+        /*
+         * Following restrictions are not strictly required, but their enforcement
+         * simplifies the EPSGFactoryFallback.createObject(String) implementation.
+         */
+        assertNull(codes.put(Integer.valueOf(StandardDefinitions.GREENWICH), CommonCRS.WGS84));
+        for (final CommonCRS crs : values) assertNull   (crs.name(),      codes.get(Integer.valueOf(crs.ellipsoid)));
+        for (final CommonCRS crs : values) assertNotSame(crs.name(), crs, codes.put(Integer.valueOf(crs.ellipsoid), crs));
+        for (final CommonCRS crs : values) assertNull   (crs.name(),      codes.get(Integer.valueOf(crs.datum)));
+        for (final CommonCRS.Vertical crs : vertical) {
+            if (crs.isEPSG) {
+                assertNull(crs.name(), codes.get(Integer.valueOf(crs.datum)));
+            }
+        }
+    }
+
+    /**
+     * Helper method for {@link #ensureNoCodeCollision()} only.
+     */
+    private static void assertNoCodeCollision(final Map<Integer,Enum<?>> codes, final Enum<?> crs, final int n) {
+        if (n != 0) {
+            final Enum<?> existing = codes.put(n, crs);
+            if (existing != null) {
+                fail(existing + " and " + crs + " both use the same EPSG:" + n + " code.");
+            }
+        }
+    }
 
     /**
      * Tests the {@link CommonCRS#geographic()} method.
@@ -97,7 +156,7 @@ public final strictfp class CommonCRSTest extends TestCase {
     public void testGeographic3D() {
         final GeographicCRS crs = CommonCRS.WGS72.geographic3D();
         Validators.validate(crs);
-        assertEquals("WGS 72", crs.getName().getCode());
+        assertEquals ("WGS 72", crs.getName().getCode());
         assertSame   (CommonCRS.WGS72.geographic().getDatum(), crs.getDatum());
         assertNotSame(CommonCRS.WGS84.geographic().getDatum(), crs.getDatum());
 
@@ -105,9 +164,7 @@ public final strictfp class CommonCRSTest extends TestCase {
         final String name = cs.getName().getCode();
         assertTrue(name, name.startsWith("Ellipsoidal 3D"));
         assertEquals("dimension", 3, cs.getDimension());
-        assertEquals(AxisDirection.NORTH, cs.getAxis(0).getDirection());
-        assertEquals(AxisDirection.EAST,  cs.getAxis(1).getDirection());
-        assertEquals(AxisDirection.UP,    cs.getAxis(2).getDirection());
+        assertAxisDirectionsEqual(name, cs, AxisDirection.NORTH, AxisDirection.EAST, AxisDirection.UP);
         assertSame("Cached value", crs, CommonCRS.WGS72.geographic3D());
     }
 
@@ -119,7 +176,7 @@ public final strictfp class CommonCRSTest extends TestCase {
     public void testGeocentric() {
         final GeocentricCRS crs = CommonCRS.WGS72.geocentric();
         Validators.validate(crs);
-        assertEquals("WGS 72", crs.getName().getCode());
+        assertEquals ("WGS 72", crs.getName().getCode());
         assertSame   (CommonCRS.WGS72.geographic().getDatum(), crs.getDatum());
         assertNotSame(CommonCRS.WGS84.geographic().getDatum(), crs.getDatum());
 
@@ -127,10 +184,29 @@ public final strictfp class CommonCRSTest extends TestCase {
         final String name = cs.getName().getCode();
         assertTrue(name, name.startsWith("Earth centred"));
         assertEquals("dimension", 3, cs.getDimension());
-        assertEquals(AxisDirection.GEOCENTRIC_X, cs.getAxis(0).getDirection());
-        assertEquals(AxisDirection.GEOCENTRIC_Y, cs.getAxis(1).getDirection());
-        assertEquals(AxisDirection.GEOCENTRIC_Z, cs.getAxis(2).getDirection());
+        assertAxisDirectionsEqual(name, cs, AxisDirection.GEOCENTRIC_X,
+                AxisDirection.GEOCENTRIC_Y, AxisDirection.GEOCENTRIC_Z);
         assertSame("Cached value", crs, CommonCRS.WGS72.geocentric());
+    }
+
+    /**
+     * Tests the {@link CommonCRS#spherical()} method.
+     */
+    @Test
+    @DependsOnMethod("testGeographic3D")
+    public void testSpherical() {
+        final GeocentricCRS crs = CommonCRS.ETRS89.spherical();
+        Validators.validate(crs);
+        assertEquals ("ETRS89", crs.getName().getCode());
+        assertSame   (CommonCRS.ETRS89.geographic().getDatum(), crs.getDatum());
+        assertNotSame(CommonCRS.WGS84 .geographic().getDatum(), crs.getDatum());
+
+        final CoordinateSystem cs = crs.getCoordinateSystem();
+        final String name = cs.getName().getCode();
+        assertTrue(name, name.startsWith("Spherical"));
+        assertEquals("dimension", 3, cs.getDimension());
+        assertAxisDirectionsEqual(name, cs, AxisDirection.NORTH, AxisDirection.EAST, AxisDirection.UP);
+        assertSame("Cached value", crs, CommonCRS.ETRS89.spherical());
     }
 
     /**
@@ -142,11 +218,12 @@ public final strictfp class CommonCRSTest extends TestCase {
             final VerticalDatumType datumType;
             final String axisName, datumName;
             switch (e) {
-                case BAROMETRIC:     axisName = "Barometric altitude";    datumName = "Constant pressure surface"; datumType = VerticalDatumType. BAROMETRIC;    break;
-                case MEAN_SEA_LEVEL: axisName = "Gravity-related height"; datumName = "Mean Sea Level";            datumType = VerticalDatumType. GEOIDAL;       break;
-                case DEPTH:          axisName = "Depth";                  datumName = "Mean Sea Level";            datumType = VerticalDatumType. GEOIDAL;       break;
-                case ELLIPSOIDAL:    axisName = "Ellipsoidal height";     datumName = "Ellipsoid";                 datumType = VerticalDatumTypes.ELLIPSOIDAL;   break;
-                case OTHER_SURFACE:  axisName = "Height";                 datumName = "Other surface";             datumType = VerticalDatumType. OTHER_SURFACE; break;
+                case NAVD88:         axisName = AxisNames.GRAVITY_RELATED_HEIGHT; datumName = "North American Vertical Datum 1988"; datumType = VerticalDatumType. GEOIDAL;       break;
+                case BAROMETRIC:     axisName = "Barometric altitude";            datumName = "Constant pressure surface";          datumType = VerticalDatumType. BAROMETRIC;    break;
+                case MEAN_SEA_LEVEL: axisName = AxisNames.GRAVITY_RELATED_HEIGHT; datumName = "Mean Sea Level";                     datumType = VerticalDatumType. GEOIDAL;       break;
+                case DEPTH:          axisName = AxisNames.DEPTH;                  datumName = "Mean Sea Level";                     datumType = VerticalDatumType. GEOIDAL;       break;
+                case ELLIPSOIDAL:    axisName = AxisNames.ELLIPSOIDAL_HEIGHT;     datumName = "Ellipsoid";                          datumType = VerticalDatumTypes.ELLIPSOIDAL;   break;
+                case OTHER_SURFACE:  axisName = "Height";                         datumName = "Other surface";                      datumType = VerticalDatumType. OTHER_SURFACE; break;
                 default: throw new AssertionError(e);
             }
             final String        name  = e.name();
@@ -159,8 +236,8 @@ public final strictfp class CommonCRSTest extends TestCase {
                  */
                 Validators.validate(crs);
             }
-            assertSame  (name, datum,          e.datum()); // Datum before CRS creation.
-            assertSame  (name, crs.getDatum(), e.datum()); // Datum after CRS creation.
+            assertSame  (name, datum,          e.datum());                      // Datum before CRS creation.
+            assertSame  (name, crs.getDatum(), e.datum());                      // Datum after CRS creation.
             assertEquals(name, datumName, datum.getName().getCode());
             assertEquals(name, datumType, datum.getVerticalDatumType());
             assertEquals(name, axisName,  crs.getCoordinateSystem().getAxis(0).getName().getCode());
@@ -193,49 +270,62 @@ public final strictfp class CommonCRSTest extends TestCase {
             final TemporalCRS   crs    = e.crs();
             final Date          origin = datum.getOrigin();
             Validators.validate(crs);
-            assertSame  (name, datum,          e.datum()); // Datum before CRS creation.
-            assertSame  (name, crs.getDatum(), e.datum()); // Datum after CRS creation.
+            assertSame  (name, datum,          e.datum());              // Datum before CRS creation.
+            assertSame  (name, crs.getDatum(), e.datum());              // Datum after CRS creation.
             assertEquals(name, epoch, format(origin));
             assertEquals(name, days, origin.getTime() / DAY_LENGTH - julianEpoch, 0);
         }
     }
 
     /**
-     * Tests {@link CommonCRS#forCode(String, String, FactoryException)}.
+     * Tests {@link CommonCRS#universal(double, double)} with Universal Transverse Mercator (UTM) projections.
      *
-     * @throws FactoryException If a CRS can not be constructed.
-     *
-     * @see CRSTest#testForEpsgCode()
-     * @see CRSTest#testForCrsCode()
-     *
-     * @since 0.5
+     * @since 0.7
      */
     @Test
-    public void testForCode() throws FactoryException {
-        verifyForCode(CommonCRS.WGS84 .geographic(),            Constants.EPSG, "4326");
-        verifyForCode(CommonCRS.WGS72 .geographic(),            Constants.EPSG, "4322");
-        verifyForCode(CommonCRS.SPHERE.geographic(),            Constants.EPSG, "4047");
-        verifyForCode(CommonCRS.NAD83 .geographic(),            Constants.EPSG, "4269");
-        verifyForCode(CommonCRS.NAD27 .geographic(),            Constants.EPSG, "4267");
-        verifyForCode(CommonCRS.ETRS89.geographic(),            Constants.EPSG, "4258");
-        verifyForCode(CommonCRS.ED50  .geographic(),            Constants.EPSG, "4230");
-        verifyForCode(CommonCRS.WGS84 .geocentric(),            Constants.EPSG, "4978");
-        verifyForCode(CommonCRS.WGS72 .geocentric(),            Constants.EPSG, "4984");
-        verifyForCode(CommonCRS.ETRS89.geocentric(),            Constants.EPSG, "4936");
-        verifyForCode(CommonCRS.WGS84 .geographic3D(),          Constants.EPSG, "4979");
-        verifyForCode(CommonCRS.WGS72 .geographic3D(),          Constants.EPSG, "4985");
-        verifyForCode(CommonCRS.ETRS89.geographic3D(),          Constants.EPSG, "4937");
-        verifyForCode(CommonCRS.Vertical.MEAN_SEA_LEVEL.crs(),  Constants.EPSG, "5714");
-        verifyForCode(CommonCRS.Vertical.DEPTH.crs(),           Constants.EPSG, "5715");
-        verifyForCode(CommonCRS.WGS84.normalizedGeographic(),   Constants.CRS,  "84");
-        verifyForCode(CommonCRS.NAD83.normalizedGeographic(),   Constants.CRS,  "83");
-        verifyForCode(CommonCRS.NAD27.normalizedGeographic(),   Constants.CRS,  "27");
+    @DependsOnMethod("testGeographic")
+    public void testUTM() {
+        final ProjectedCRS crs = CommonCRS.WGS72.universal(-45, -122);
+        assertEquals("name", "WGS 72 / UTM zone 10S", crs.getName().getCode());
+        final ParameterValueGroup pg = crs.getConversionFromBase().getParameterValues();
+        assertEquals(Constants.LATITUDE_OF_ORIGIN,    0, pg.parameter(Constants.LATITUDE_OF_ORIGIN).doubleValue(), STRICT);
+        assertEquals(Constants.CENTRAL_MERIDIAN,   -123, pg.parameter(Constants.CENTRAL_MERIDIAN)  .doubleValue(), STRICT);
+        assertEquals(Constants.SCALE_FACTOR,     0.9996, pg.parameter(Constants.SCALE_FACTOR)      .doubleValue(), STRICT);
+        assertEquals(Constants.FALSE_EASTING,    500000, pg.parameter(Constants.FALSE_EASTING)     .doubleValue(), STRICT);
+        assertEquals(Constants.FALSE_NORTHING, 10000000, pg.parameter(Constants.FALSE_NORTHING)    .doubleValue(), STRICT);
+        assertSame("Expected a cached instance.", crs, CommonCRS.WGS72.universal(-45, -122));
+        assertNotSame("Expected a new instance.", crs, CommonCRS.WGS72.universal(+45, -122));
     }
 
     /**
-     * Asserts that the result of {@link CommonCRS#forCode(String, String, FactoryException)} is the given CRS.
+     * Tests {@link CommonCRS#universal(double, double)} with Universal Polar Stereographic (UPS) projections.
+     *
+     * @since 0.8
      */
-    private static void verifyForCode(final SingleCRS expected, final String authority, final String code) throws FactoryException {
-        assertSame(code, expected, CommonCRS.forCode(authority, code, null));
+    @Test
+    @DependsOnMethod("testGeographic")
+    public void testUPS() {
+        final ProjectedCRS crs = CommonCRS.WGS72.universal(-85, -122);
+        assertEquals("name", "WGS 72 / Universal Polar Stereographic South", crs.getName().getCode());
+        final ParameterValueGroup pg = crs.getConversionFromBase().getParameterValues();
+        assertEquals(Constants.LATITUDE_OF_ORIGIN, -90, pg.parameter(Constants.LATITUDE_OF_ORIGIN).doubleValue(), STRICT);
+        assertEquals(Constants.CENTRAL_MERIDIAN,     0, pg.parameter(Constants.CENTRAL_MERIDIAN)  .doubleValue(), STRICT);
+        assertEquals(Constants.SCALE_FACTOR,     0.994, pg.parameter(Constants.SCALE_FACTOR)      .doubleValue(), STRICT);
+        assertEquals(Constants.FALSE_EASTING,  2000000, pg.parameter(Constants.FALSE_EASTING)     .doubleValue(), STRICT);
+        assertEquals(Constants.FALSE_NORTHING, 2000000, pg.parameter(Constants.FALSE_NORTHING)    .doubleValue(), STRICT);
+        assertSame("Expected a cached instance.", crs, CommonCRS.WGS72.universal(-85, -122));
+        assertNotSame("Expected a new instance.", crs, CommonCRS.WGS72.universal(+85, -122));
+    }
+
+    /**
+     * Tests {@link CommonCRS#forDatum(CoordinateReferenceSystem)}.
+     *
+     * @sinc 0.8
+     */
+    @Test
+    @DependsOnMethod("testGeographic")
+    public void testForDatum() {
+        assertSame("WGS84", CommonCRS.WGS84, CommonCRS.forDatum(CommonCRS.WGS84.geographic()));
+        assertSame("WGS72", CommonCRS.WGS72, CommonCRS.forDatum(CommonCRS.WGS72.geographic()));
     }
 }

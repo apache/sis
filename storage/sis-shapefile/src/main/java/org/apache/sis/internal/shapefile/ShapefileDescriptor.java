@@ -70,28 +70,108 @@ public class ShapefileDescriptor {
      * @param byteBuffer Source Bytebuffer.
      */
     public ShapefileDescriptor(MappedByteBuffer byteBuffer) {
-        fileCode = byteBuffer.getInt();
+        this.fileCode = byteBuffer.getInt();
         byteBuffer.getInt();
         byteBuffer.getInt();
         byteBuffer.getInt();
         byteBuffer.getInt();
         byteBuffer.getInt();
-        fileLength = byteBuffer.getInt() * 2;
+        this.fileLength = byteBuffer.getInt() * 2;
 
         byteBuffer.order(ByteOrder.LITTLE_ENDIAN);
-        version = byteBuffer.getInt();
-        shapeType = ShapeTypeEnum.get(byteBuffer.getInt());
-        xmin = byteBuffer.getDouble();
-        ymin = byteBuffer.getDouble();
-        xmax = byteBuffer.getDouble();
-        ymax = byteBuffer.getDouble();
-        zmin = byteBuffer.getDouble();
-        zmax = byteBuffer.getDouble();
-        mmin = byteBuffer.getDouble();
-        mmax = byteBuffer.getDouble();
+        this.version = byteBuffer.getInt();
+        this.shapeType = ShapeTypeEnum.get(byteBuffer.getInt());
+        this.xmin = byteBuffer.getDouble();
+        this.ymin = byteBuffer.getDouble();
+        this.xmax = byteBuffer.getDouble();
+        this.ymax = byteBuffer.getDouble();
+        this.zmin = byteBuffer.getDouble();
+        this.zmax = byteBuffer.getDouble();
+        this.mmin = byteBuffer.getDouble();
+        this.mmax = byteBuffer.getDouble();
         byteBuffer.order(ByteOrder.BIG_ENDIAN);
 
         //dbf.byteBuffer.get(); // should be 0d for field terminator
+    }
+
+    /**
+     * Returns the version of the shapefile.
+     * @return Version.
+     */
+    public int getVersion() {
+        return this.version;
+    }
+
+    /**
+     * Returns the ESRI shape type in the shapefile.
+     * @return Shape type.
+     */
+    public ShapeTypeEnum getShapeType() {
+        return this.shapeType;
+    }
+
+    /**
+     * Returns the X Min property.
+     * @return XMin.
+     */
+    public double getXmin() {
+        return this.xmin;
+    }
+
+    /**
+     * Returns the Y Min property.
+     * @return YMin.
+     */
+    public double getYmin() {
+        return this.ymin;
+    }
+
+    /**
+     * Returns the X Max property.
+     * @return XMax.
+     */
+    public double getXmax() {
+        return this.xmax;
+    }
+
+    /**
+     * Returns the Y Max property.
+     * @return YMax.
+     */
+    public double getYmax() {
+        return this.ymax;
+    }
+
+    /**
+     * Returns the Z Min property.
+     * @return ZMin.
+     */
+    public double getZmin() {
+        return this.zmin;
+    }
+
+    /**
+     * Returns the Z Max property.
+     * @return ZMax.
+     */
+    public double getZmax() {
+        return this.zmax;
+    }
+
+    /**
+     * Returns the M Min property. 
+     * @return M min.
+     */
+    public double getMmin() {
+        return this.mmin;
+    }
+    
+    /**
+     * Returns the M Max property.
+     * @return M Max.
+     */
+    public double getMmax(){
+        return this.mmax;
     }
 
     /**
@@ -102,18 +182,18 @@ public class ShapefileDescriptor {
         StringBuilder s = new StringBuilder();
         String lineSeparator = System.getProperty("line.separator", "\n");
 
-        s.append("FileCode: ").append(fileCode).append(lineSeparator);
-        s.append("FileLength: ").append(fileLength).append(lineSeparator);
-        s.append("Version: ").append(version).append(lineSeparator);
-        s.append("ShapeType: ").append(shapeType).append(lineSeparator);
-        s.append("xmin: ").append(xmin).append(lineSeparator);
-        s.append("ymin: ").append(ymin).append(lineSeparator);
-        s.append("xmax: ").append(xmax).append(lineSeparator);
-        s.append("ymax: ").append(ymax).append(lineSeparator);
-        s.append("zmin: ").append(zmin).append(lineSeparator);
-        s.append("zmax: ").append(zmax).append(lineSeparator);
-        s.append("mmin: ").append(mmin).append(lineSeparator);
-        s.append("mmax: ").append(mmax).append(lineSeparator);
+        s.append("FileCode: ").append(this.fileCode).append(lineSeparator);
+        s.append("FileLength: ").append(this.fileLength).append(lineSeparator);
+        s.append("Version: ").append(this.version).append(lineSeparator);
+        s.append("ShapeType: ").append(this.shapeType).append(lineSeparator);
+        s.append("xmin: ").append(this.xmin).append(lineSeparator);
+        s.append("ymin: ").append(this.ymin).append(lineSeparator);
+        s.append("xmax: ").append(this.xmax).append(lineSeparator);
+        s.append("ymax: ").append(this.ymax).append(lineSeparator);
+        s.append("zmin: ").append(this.zmin).append(lineSeparator);
+        s.append("zmax: ").append(this.zmax).append(lineSeparator);
+        s.append("mmin: ").append(this.mmin).append(lineSeparator);
+        s.append("mmax: ").append(this.mmax).append(lineSeparator);
         s.append("------------------------").append(lineSeparator);
 
         return s.toString();

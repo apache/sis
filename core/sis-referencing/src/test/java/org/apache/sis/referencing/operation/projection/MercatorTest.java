@@ -18,6 +18,7 @@ package org.apache.sis.referencing.operation.projection;
 
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.operation.TransformException;
+import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.apache.sis.internal.referencing.Formulas;
 import org.apache.sis.internal.referencing.provider.Mercator1SP;
 import org.apache.sis.internal.referencing.provider.Mercator2SP;
@@ -31,7 +32,7 @@ import org.junit.Test;
 import static java.lang.Double.*;
 import static java.lang.StrictMath.*;
 import static org.opengis.test.Assert.*;
-import static org.apache.sis.referencing.operation.projection.NormalizedProjectionTest.LN_INFINITY;
+import static org.apache.sis.referencing.operation.projection.ConformalProjectionTest.LN_INFINITY;
 
 // Branch-specific imports
 import static org.junit.Assume.assumeTrue;
@@ -44,18 +45,19 @@ import static org.apache.sis.test.Assert.PENDING_NEXT_GEOAPI_RELEASE;
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Simon Reynard (Geomatys)
  * @author  Rémi Maréchal (Geomatys)
+ * @version 0.8
  * @since   0.6
- * @version 0.6
  * @module
  */
-@DependsOn(NormalizedProjectionTest.class)
+@DependsOn(ConformalProjectionTest.class)
 public final strictfp class MercatorTest extends MapProjectionTestCase {
     /**
      * Creates a new instance of {@link Mercator} for a sphere or an ellipsoid.
+     * The new instance is stored in the inherited {@link #transform} field.
      *
-     * @param ellipse {@code false} for a sphere, or {@code true} for WGS84 ellipsoid.
+     * @param  ellipse  {@code false} for a sphere, or {@code true} for WGS84 ellipsoid.
      */
-    private void initialize(final boolean ellipse) {
+    private void createNormalizedProjection(final boolean ellipse) {
         final Mercator2SP method = new Mercator2SP();
         transform = new Mercator(method, parameters(method, ellipse));
         if (!ellipse) {
@@ -67,27 +69,73 @@ public final strictfp class MercatorTest extends MapProjectionTestCase {
 
     /**
      * Tests the WKT formatting of {@link NormalizedProjection}. For the Mercator projection, we expect only
-     * the semi-major and semi-minor axis length. We expect nothing else because all other parameters are used
+     * the ellipsoid eccentricity. We expect nothing else because all other parameters are used
      * by the (de)normalization affine transforms instead than the {@link Mercator} class itself.
+     *
+     * @throws NoninvertibleTransformException if the transform can not be inverted.
+     *
+     * @see LambertConicConformalTest#testNormalizedWKT()
      */
     @Test
-    public void testNormalizedWKT() {
-        initialize(true);
-        assertWktEquals(
-                "PARAM_MT[“Mercator_2SP”,\n" +
-                "  PARAMETER[“semi_major”, 1.0],\n" +
-                "  PARAMETER[“semi_minor”, 0.9966471893352525]]");
+    public void testNormalizedWKT() throws NoninvertibleTransformException {
+        createNormalizedProjection(true);
+        assertWktEquals("PARAM_MT[“Mercator (radians domain)”,\n" +
+                        "  PARAMETER[“eccentricity”, 0.0818191908426215]]");
+
+        transform = transform.inverse();
+        assertWktEquals("INVERSE_MT[\n" +
+                        "  PARAM_MT[“Mercator (radians domain)”,\n" +
+                        "    PARAMETER[“eccentricity”, 0.0818191908426215]]]");
+    }
+
+    /**
+     * Tests WKT of a complete map projection.
+     *
+     * @throws FactoryException if an error occurred while creating the map projection.
+     * @throws NoninvertibleTransformException if the transform can not be inverted.
+     */
+    @Test
+    @DependsOnMethod("testNormalizedWKT")
+    public void testCompleteWKT() throws FactoryException, NoninvertibleTransformException {
+        createCompleteProjection(new Mercator1SP(),
+                WGS84_A,    // Semi-major axis length
+                WGS84_B,    // Semi-minor axis length
+                0.5,        // Central meridian
+                NaN,        // Latitude of origin (none)
+                NaN,        // Standard parallel 1 (none)
+                NaN,        // Standard parallel 2 (none)
+                0.997,      // Scale factor
+                200,        // False easting
+                100);       // False northing
+
+        assertWktEquals("PARAM_MT[“Mercator_1SP”,\n" +
+                        "  PARAMETER[“semi_major”, 6378137.0],\n" +
+                        "  PARAMETER[“semi_minor”, 6356752.314245179],\n" +
+                        "  PARAMETER[“central_meridian”, 0.5],\n" +
+                        "  PARAMETER[“scale_factor”, 0.997],\n" +
+                        "  PARAMETER[“false_easting”, 200.0],\n" +
+                        "  PARAMETER[“false_northing”, 100.0]]");
+
+        transform = transform.inverse();
+        assertWktEquals("INVERSE_MT[\n" +
+                        "  PARAM_MT[“Mercator_1SP”,\n" +
+                        "    PARAMETER[“semi_major”, 6378137.0],\n" +
+                        "    PARAMETER[“semi_minor”, 6356752.314245179],\n" +
+                        "    PARAMETER[“central_meridian”, 0.5],\n" +
+                        "    PARAMETER[“scale_factor”, 0.997],\n" +
+                        "    PARAMETER[“false_easting”, 200.0],\n" +
+                        "    PARAMETER[“false_northing”, 100.0]]]");
     }
 
     /**
      * Tests the projection at some special latitudes (0, ±π/2, NaN).
      *
-     * @throws ProjectionException Should never happen.
+     * @throws ProjectionException if an error occurred while projecting a point.
      */
     @Test
     public void testSpecialLatitudes() throws ProjectionException {
-        if (transform == null) {    // May have been initialized by 'testSphericalCase'.
-            initialize(true);       // Elliptical case
+        if (transform == null) {                    // May have been initialized by 'testSphericalCase'.
+            createNormalizedProjection(true);       // Elliptical case
         }
         assertEquals ("Not a number",     NaN,                    transform(NaN),           tolerance);
         assertEquals ("Out of range",     NaN,                    transform(+2),            tolerance);
@@ -104,25 +152,25 @@ public final strictfp class MercatorTest extends MapProjectionTestCase {
         assertEquals ("Inverse 0 m",      0,     inverseTransform(0),                  tolerance);
         assertEquals ("Inverse +∞",       +PI/2, inverseTransform(POSITIVE_INFINITY),  tolerance);
         assertEquals ("Inverse +∞ appr.", +PI/2, inverseTransform(LN_INFINITY + 1),    tolerance);
-        assertEquals ("Inverse -∞",       -PI/2, inverseTransform(NEGATIVE_INFINITY),  tolerance);
-        assertEquals ("Inverse -∞ appr.", -PI/2, inverseTransform(-(LN_INFINITY + 1)), tolerance);
+        assertEquals ("Inverse −∞",       -PI/2, inverseTransform(NEGATIVE_INFINITY),  tolerance);
+        assertEquals ("Inverse −∞ appr.", -PI/2, inverseTransform(-(LN_INFINITY + 1)), tolerance);
     }
 
     /**
      * Tests the derivatives at a few points. This method compares the derivatives computed by
      * the projection with an estimation of derivatives computed by the finite differences method.
      *
-     * @throws TransformException Should never happen.
+     * @throws TransformException if an error occurred while projecting a point.
      */
     @Test
     @DependsOnMethod("testSpecialLatitudes")
     public void testDerivative() throws TransformException {
-        if (transform == null) {    // May have been initialized by 'testSphericalCase'.
-            initialize(true);       // Elliptical case
+        if (transform == null) {                                // May have been initialized by 'testSphericalCase'.
+            createNormalizedProjection(true);                   // Elliptical case
         }
-        final double delta = toRadians(100.0 / 60) / 1852; // Approximatively 100 metres.
+        final double delta = toRadians(100.0 / 60) / 1852;      // Approximatively 100 metres.
         derivativeDeltas = new double[] {delta, delta};
-        tolerance = 1E-9;
+        tolerance = 1E-9;                                       // More severe than Formulas.LINEAR_TOLERANCE.
         verifyDerivative(toRadians(15), toRadians( 30));
         verifyDerivative(toRadians(10), toRadians(-60));
     }
@@ -133,8 +181,6 @@ public final strictfp class MercatorTest extends MapProjectionTestCase {
      *
      * @throws FactoryException if an error occurred while creating the map projection.
      * @throws TransformException if an error occurred while projecting a coordinate.
-     *
-     * @see org.opengis.test.referencing.ParameterizedTransformTest#testMercator1SP()
      */
     @Test
     @DependsOnMethod({"testSpecialLatitudes", "testDerivative"})
@@ -148,8 +194,6 @@ public final strictfp class MercatorTest extends MapProjectionTestCase {
      *
      * @throws FactoryException if an error occurred while creating the map projection.
      * @throws TransformException if an error occurred while projecting a coordinate.
-     *
-     * @see org.opengis.test.referencing.ParameterizedTransformTest#testMercator2SP()
      */
     @Test
     @DependsOnMethod("testMercator1SP")
@@ -163,8 +207,6 @@ public final strictfp class MercatorTest extends MapProjectionTestCase {
      *
      * @throws FactoryException if an error occurred while creating the map projection.
      * @throws TransformException if an error occurred while projecting a coordinate.
-     *
-     * @see org.opengis.test.referencing.ParameterizedTransformTest#testMercatorVariantC()
      */
     @Test
     @DependsOnMethod("testMercator2SP")
@@ -178,8 +220,6 @@ public final strictfp class MercatorTest extends MapProjectionTestCase {
      *
      * @throws FactoryException if an error occurred while creating the map projection.
      * @throws TransformException if an error occurred while projecting a coordinate.
-     *
-     * @see org.opengis.test.referencing.ParameterizedTransformTest#testMercatorSpherical()
      */
     @Test
     @DependsOnMethod("testMercator1SP")
@@ -193,8 +233,6 @@ public final strictfp class MercatorTest extends MapProjectionTestCase {
      *
      * @throws FactoryException if an error occurred while creating the map projection.
      * @throws TransformException if an error occurred while projecting a coordinate.
-     *
-     * @see org.opengis.test.referencing.ParameterizedTransformTest#testPseudoMercator()
      */
     @Test
     @DependsOnMethod("testMercatorSpherical")
@@ -208,8 +246,6 @@ public final strictfp class MercatorTest extends MapProjectionTestCase {
      *
      * @throws FactoryException if an error occurred while creating the map projection.
      * @throws TransformException if an error occurred while projecting a coordinate.
-     *
-     * @see org.opengis.test.referencing.ParameterizedTransformTest#testMiller()
      */
     @Test
     @DependsOnMethod("testMercator1SP")
@@ -218,26 +254,45 @@ public final strictfp class MercatorTest extends MapProjectionTestCase {
     }
 
     /**
-     * Verifies the consistency of spherical formulas with the elliptical formulas.
+     * Performs the same tests than {@link #testSpecialLatitudes()} and {@link #testDerivative()},
+     * but using spherical formulas.
      *
      * @throws FactoryException if an error occurred while creating the map projection.
      * @throws TransformException if an error occurred while projecting a coordinate.
      */
     @Test
-    @DependsOnMethod("testSpecialLatitudes")
+    @DependsOnMethod({"testSpecialLatitudes", "testDerivative"})
     public void testSphericalCase() throws FactoryException, TransformException {
-        initialize(false); // Spherical case
+        createNormalizedProjection(false); // Spherical case
         testSpecialLatitudes();
         testDerivative();
-        /*
-         * Make sure that the above methods did not overwrote the 'transform' field.
-         */
+
+        // Make sure that the above methods did not overwrote the 'transform' field.
         assertEquals("transform.class", Mercator.Spherical.class, transform.getClass());
-        /*
-         * For some random points, compare the result of spherical formulas with the ellipsoidal ones.
-         */
-        initialize(new Mercator1SP(), false, false, false, true);
+    }
+
+    /**
+     * Verifies the consistency of elliptical formulas with the spherical formulas.
+     * This test compares the results of elliptical formulas with the spherical ones
+     * for some random points.
+     *
+     * @throws FactoryException if an error occurred while creating the map projection.
+     * @throws TransformException if an error occurred while projecting a coordinate.
+     */
+    @Test
+    @DependsOnMethod("testSphericalCase")
+    public void compareEllipticalWithSpherical() throws FactoryException, TransformException {
+        createCompleteProjection(new Mercator1SP(),
+                6371007,    // Semi-major axis length
+                6371007,    // Semi-minor axis length
+                0.5,        // Central meridian
+                NaN,        // Latitude of origin (none)
+                NaN,        // Standard parallel 1 (none)
+                NaN,        // Standard parallel 2 (none)
+                0.997,      // Scale factor
+                200,        // False easting
+                100);       // False northing
         tolerance = Formulas.LINEAR_TOLERANCE;
-        verifyInDomain(CoordinateDomain.GEOGRAPHIC_SAFE, 84018710);
+        compareEllipticalWithSpherical(CoordinateDomain.GEOGRAPHIC_SAFE, 0);
     }
 }

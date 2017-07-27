@@ -26,8 +26,8 @@ import static org.apache.sis.internal.util.DefinitionURI.regionMatches;
  * Utility methods related to x-paths.
  *
  * @author  Martin Desruisseaux (Geomatys)
+ * @version 0.8
  * @since   0.4
- * @version 0.4
  * @module
  */
 public final class XPaths extends Static {
@@ -35,6 +35,51 @@ public final class XPaths extends Static {
      * Do not allow instantiation of this class.
      */
     private XPaths() {
+    }
+
+    /**
+     * If the given character sequences seems to be a URI, returns the presumed end of that URN.
+     * Otherwise returns -1.
+     * Examples:
+     * <ul>
+     *   <li>{@code "urn:ogc:def:uom:EPSG::9001"}</li>
+     *   <li>{@code "http://schemas.opengis.net/iso/19139/20070417/resources/uom/gmxUom.xml#xpointer(//*[@gml:id='m'])"}</li>
+     * </ul>
+     *
+     * @param  uri     the URI candidate to verify.
+     * @param  offset  index of the first character to verify.
+     * @return index after the last character of the presumed URI, or -1 if this
+     *         method thinks that the given character sequence is not a URI.
+     *
+     * @since 0.8
+     */
+    public static int endOfURI(final CharSequence uri, int offset) {
+        boolean isURI = false;
+        int parenthesis = 0;
+        final int length = uri.length();
+scan:   while (offset < length) {
+            final int c = Character.codePointAt(uri, offset);
+            if (!Character.isLetterOrDigit(c)) {
+                switch (c) {
+                    case '#':                                           // Anchor in URL, presumed followed by xpointer.
+                    case ':': isURI |= (parenthesis == 0); break;       // Scheme or URN separator.
+                    case '_':
+                    case '-':                                           // Valid character in URL.
+                    case '%':                                           // Encoded character in URL.
+                    case '.':                                           // Domain name separator in URL.
+                    case '/': break;                                    // Path separator, but could also be division as in "m/s".
+                    case '(': parenthesis++; break;
+                    case ')': parenthesis--; break;
+                    default: {
+                        if (Character.isSpaceChar(c)) break;            // Not supposed to be valid, but be lenient.
+                        if (parenthesis != 0) break;
+                        break scan;                                     // Non-valid character outside parenthesis.
+                    }
+                }
+            }
+            offset += Character.charCount(c);
+        }
+        return isURI ? offset : -1;
     }
 
     /**
@@ -46,9 +91,9 @@ public final class XPaths extends Static {
      *       {@code "http://schemas.opengis.net/iso/19139/20070417/resources/uom/gmxUom.xml#xpointer(//*[@gml:id='m'])"})</li>
      * </ul>
      *
-     * @param  type The object type.
-     * @param  url  The URL to parse.
-     * @return The reference, or {@code null} if none.
+     * @param  type  the object type.
+     * @param  url   the URL to parse.
+     * @return the reference, or {@code null} if none.
      */
     public static String xpointer(final String type, final String url) {
         if (type.equals("uom")) {
@@ -69,7 +114,7 @@ public final class XPaths extends Static {
                     if (i >= 0 && regionMatches("xpointer", url, f+1, i)) {
                         i = url.indexOf("@gml:id=", i+1);
                         if (i >= 0) {
-                            i = skipLeadingWhitespaces(url, i+8, url.length()); // 8 is the length of "@gml:id="
+                            i = skipLeadingWhitespaces(url, i+8, url.length());     // 8 is the length of "@gml:id="
                             final int c = url.charAt(i);
                             if (c == '\'' || c == '"') {
                                 final int s = url.indexOf(c, ++i);

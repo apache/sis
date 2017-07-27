@@ -16,8 +16,12 @@
  */
 package org.apache.sis.referencing.cs;
 
-import org.opengis.referencing.cs.AxisDirection;    // For javadoc
-import org.opengis.referencing.cs.CoordinateSystem; // For javadoc
+import javax.measure.Unit;
+import org.opengis.referencing.cs.AxisDirection;
+import org.opengis.referencing.cs.CoordinateSystem;                 // For javadoc
+import org.opengis.referencing.cs.CoordinateSystemAxis;
+import org.apache.sis.internal.metadata.AxisDirections;
+import org.apache.sis.measure.Units;
 
 
 /**
@@ -101,14 +105,15 @@ import org.opengis.referencing.cs.CoordinateSystem; // For javadoc
  * (e.g. {@link org.apache.sis.geometry.GeneralEnvelope#normalize()}).
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.4
- * @version 0.5
- * @module
+ * @version 0.8
  *
  * @see AbstractCS#forConvention(AxesConvention)
  * @see org.apache.sis.referencing.crs.AbstractCRS#forConvention(AxesConvention)
+ *
+ * @since 0.4
+ * @module
  */
-public enum AxesConvention {
+public enum AxesConvention implements AxisFilter {
     /**
      * Axes order, direction and units of measure are forced to commonly used pre-defined values.
      * This enum represents the following changes to apply on a coordinate system:
@@ -117,9 +122,9 @@ public enum AxesConvention {
      *   <li>Axes are oriented and ordered as defined for {@link #CONVENTIONALLY_ORIENTED} coordinate systems.</li>
      *   <li>Known units are normalized (this list may be expanded in future SIS versions):
      *     <ul>
-     *       <li>Angular units are set to {@link javax.measure.unit.NonSI#DEGREE_ANGLE}.</li>
-     *       <li>Linear units are set to {@link javax.measure.unit.SI#METRE}.</li>
-     *       <li>Temporal units are set to {@link javax.measure.unit.NonSI#DAY}.</li>
+     *       <li>Angular units are set to {@link Units#DEGREE}.</li>
+     *       <li>Linear units are set to {@link Units#METRE}.</li>
+     *       <li>Temporal units are set to {@link Units#DAY}.</li>
      *     </ul>
      *   </li>
      * </ul>
@@ -137,14 +142,50 @@ public enum AxesConvention {
      * changes are more difficult to handle by coordinate operation factories.
      * </div>
      *
-     * @see CoordinateSystems#normalize(CoordinateSystem)
      * @see org.apache.sis.referencing.CommonCRS#normalizedGeographic()
+     * @see CoordinateSystems#replaceAxes(CoordinateSystem, AxisFilter)
      */
-    NORMALIZED,
+    NORMALIZED {
+        @Override
+        public boolean accept(final CoordinateSystemAxis axis) {
+            return true;
+        }
+
+        @Override
+        public Unit<?> getUnitReplacement(final CoordinateSystemAxis axis, Unit<?> unit) {
+            if (Units.isLinear(unit)) {
+                unit = Units.METRE;
+            } else if (Units.isAngular(unit)) {
+                unit = Units.DEGREE;
+            } else if (Units.isTemporal(unit)) {
+                unit = Units.DAY;
+            }
+            return unit;
+        }
+
+        @Override
+        public AxisDirection getDirectionReplacement(final CoordinateSystemAxis axis, final AxisDirection direction) {
+            /*
+             * For now we do not touch to inter-cardinal directions (e.g. "North-East")
+             * because it is not clear which normalization policy would match common usage.
+             */
+            if (!AxisDirections.isIntercardinal(direction)) {
+                /*
+                 * Change the direction only if the axis allows negative values.
+                 * If the axis accepts only positive values, then the direction
+                 * is considered non-invertible.
+                 */
+                if (axis == null || axis.getMinimumValue() < 0) {
+                    return AxisDirections.absolute(direction);
+                }
+            }
+            return direction;
+        }
+    },
 
     /**
      * Axes are oriented toward conventional directions and ordered for a {@linkplain #RIGHT_HANDED right-handed}
-     * coordinate system. Ranges of ordinate values and units of measurement are unchanged.
+     * coordinate system. Units of measurement are unchanged.
      *
      * <p>More specifically, directions opposites to the following ones are replaced by their "forward" counterpart
      * (e.g. {@code SOUTH} → {@code NORTH}):</p>
@@ -189,7 +230,22 @@ public enum AxesConvention {
      *
      * @since 0.5
      */
-    CONVENTIONALLY_ORIENTED,
+    CONVENTIONALLY_ORIENTED {
+        @Override
+        public boolean accept(final CoordinateSystemAxis axis) {
+            return true;
+        }
+
+        @Override
+        public Unit<?> getUnitReplacement(final CoordinateSystemAxis axis, final Unit<?> unit) {
+            return unit;
+        }
+
+        @Override
+        public AxisDirection getDirectionReplacement(CoordinateSystemAxis axis, AxisDirection direction) {
+            return NORMALIZED.getDirectionReplacement(axis, direction);
+        }
+    },
 
     /**
      * Axes are ordered for a <cite>right-handed</cite> coordinate system. Axis directions, ranges or ordinate values
@@ -218,7 +274,22 @@ public enum AxesConvention {
      * @see org.apache.sis.referencing.cs.CoordinateSystems#angle(AxisDirection, AxisDirection)
      * @see <a href="http://en.wikipedia.org/wiki/Right_hand_rule">Right-hand rule on Wikipedia</a>
      */
-    RIGHT_HANDED,
+    RIGHT_HANDED {
+        @Override
+        public boolean accept(final CoordinateSystemAxis axis) {
+            return true;
+        }
+
+        @Override
+        public Unit<?> getUnitReplacement(CoordinateSystemAxis axis, final Unit<?> unit) {
+            return unit;
+        }
+
+        @Override
+        public AxisDirection getDirectionReplacement(CoordinateSystemAxis axis, final AxisDirection direction) {
+            return direction;
+        }
+    },
 
     /**
      * Axes having a <cite>wraparound</cite>
@@ -243,5 +314,20 @@ public enum AxesConvention {
      *
      * @see org.opengis.referencing.cs.RangeMeaning#WRAPAROUND
      */
-    POSITIVE_RANGE
+    POSITIVE_RANGE {
+        @Override
+        public boolean accept(final CoordinateSystemAxis axis) {
+            return true;
+        }
+
+        @Override
+        public Unit<?> getUnitReplacement(CoordinateSystemAxis axis, final Unit<?> unit) {
+            return unit;
+        }
+
+        @Override
+        public AxisDirection getDirectionReplacement(CoordinateSystemAxis axis, final AxisDirection direction) {
+            return direction;
+        }
+    }
 }

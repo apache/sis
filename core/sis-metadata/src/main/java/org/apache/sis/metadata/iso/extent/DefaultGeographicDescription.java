@@ -19,14 +19,32 @@ package org.apache.sis.metadata.iso.extent;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+import org.opengis.util.InternationalString;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.extent.GeographicDescription;
 import org.apache.sis.metadata.iso.DefaultIdentifier;
+import org.apache.sis.util.CharSequences;
+import org.apache.sis.util.iso.Types;
 
 
 /**
  * Description of the geographic area using identifiers.
+ * The following properties are mandatory in a well-formed metadata according ISO 19115:
+ *
+ * <div class="preformat">{@code EX_GeographicDescription}
+ * {@code   └─geographicIdentifier……} The identifier used to represent a geographic area.
+ * {@code       └─code……………………………………} Alphanumeric value identifying an instance in the namespace.</div>
+ *
+ * The area is given by a {@linkplain #getGeographicIdentifier() geographic identifier},
+ * which may be a code in the codespace of some authority (for example an EPSG code).
+ * In addition, the geographic identifier can optionally have a
+ * {@linkplain DefaultIdentifier#getDescription() natural language description}.
+ *
+ * <div class="note"><b>Example:</b>
+ * a geographic area may be identified by the {@code 1731} code in the {@code EPSG} codespace.
+ * The natural language description for {@code EPSG:1731} can be <cite>“France – mainland north of 48.15°N”</cite>.
+ * </div>
  *
  * <p><b>Limitations:</b></p>
  * <ul>
@@ -40,10 +58,11 @@ import org.apache.sis.metadata.iso.DefaultIdentifier;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Touraïvane (IRD)
  * @author  Cédric Briançon (Geomatys)
+ * @version 0.6
  * @since   0.3
- * @version 0.3
  * @module
  */
+@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "EX_GeographicDescription_Type")
 @XmlRootElement(name = "EX_GeographicDescription")
 public class DefaultGeographicDescription extends AbstractGeographicExtent implements GeographicDescription {
@@ -64,16 +83,57 @@ public class DefaultGeographicDescription extends AbstractGeographicExtent imple
     }
 
     /**
-     * Creates an inclusive geographic description initialized to the specified value.
+     * Creates an inclusive geographic description initialized to the given identifier.
      * This constructor sets the {@linkplain #getInclusion() inclusion} property to {@code true}.
      *
-     * @param authority The authority of the identifier code, or {@code null} if none.
-     * @param code The identifier code used to represent a geographic area, or {@code null} if none.
+     * <p><b>Usage note:</b> if the description is a sentence like “Netherlands offshore”, it may not be suitable
+     * for the {@code code} argument. Callers may consider using the {@linkplain DefaultIdentifier#getDescription()
+     * identifier description} as an alternative and keep the code for a more compact string (often a primary key).</p>
+     *
+     * <div class="note"><b>Example:</b>
+     * <code>new DefaultGeographicDescription({@link org.apache.sis.metadata.iso.citation.Citations#EPSG}, "1731")</code>
+     * can stand for <cite>“France – mainland north of 48.15°N”</cite>.</div>
+     *
+     * @param authority  the authority of the identifier code, or {@code null} if none.
+     * @param code       the identifier code used to represent a geographic area, or {@code null} if none.
      */
     public DefaultGeographicDescription(final Citation authority, final String code) {
         super(true);
         if (authority != null || code != null) {
-            this.geographicIdentifier = new DefaultIdentifier(authority, code);
+            geographicIdentifier = new DefaultIdentifier(authority, code);
+        }
+    }
+
+    /**
+     * Creates an inclusive geographic description initialized to the given natural language description.
+     * This constructor sets the {@linkplain #getInclusion() inclusion} property to {@code true} and the
+     * {@linkplain DefaultIdentifier#getCode() identifier code} to one of the following choices:
+     *
+     * <ul>
+     *   <li>the given {@code description} string if it is a valid
+     *       {@linkplain CharSequences#isUnicodeIdentifier(CharSequence) Unicode identifier},</li>
+     *   <li>otherwise an {@linkplain CharSequences#camelCaseToAcronym(CharSequence) acronym}
+     *       of the given {@code description}.</li>
+     * </ul>
+     *
+     * @param description  the natural language description of the meaning of the code value, or {@code null} if none.
+     *
+     * @since 0.6
+     */
+    public DefaultGeographicDescription(final CharSequence description) {
+        super(true);
+        if (description != null) {
+            final DefaultIdentifier id = new DefaultIdentifier();
+            if (CharSequences.isUnicodeIdentifier(description)) {
+                id.setCode(description.toString());
+                if (description instanceof InternationalString) {
+                    id.setDescription((InternationalString) description);
+                }
+            } else {
+                id.setCode(CharSequences.camelCaseToAcronym(description).toString());
+                id.setDescription(Types.toInternationalString(description));
+            }
+            geographicIdentifier = id;
         }
     }
 
@@ -82,7 +142,7 @@ public class DefaultGeographicDescription extends AbstractGeographicExtent imple
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
-     * @param object The metadata to copy values from, or {@code null} if none.
+     * @param object  the metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(GeographicDescription)
      */
@@ -107,8 +167,8 @@ public class DefaultGeographicDescription extends AbstractGeographicExtent imple
      *       metadata contained in the given object are not recursively copied.</li>
      * </ul>
      *
-     * @param  object The object to get as a SIS implementation, or {@code null} if none.
-     * @return A SIS implementation containing the values of the given object (may be the
+     * @param  object  the object to get as a SIS implementation, or {@code null} if none.
+     * @return a SIS implementation containing the values of the given object (may be the
      *         given object itself), or {@code null} if the argument was null.
      */
     public static DefaultGeographicDescription castOrCopy(final GeographicDescription object) {
@@ -121,7 +181,15 @@ public class DefaultGeographicDescription extends AbstractGeographicExtent imple
     /**
      * Returns the identifier used to represent a geographic area.
      *
-     * @return The identifier used to represent a geographic area, or {@code null}.
+     * <div class="note"><b>Example:</b>
+     * an identifier with the following properties:
+     * <ul>
+     *   <li>the {@code "EPSG"} code space,</li>
+     *   <li>the {@code "1731"} code, and</li>
+     *   <li>the <cite>“France – mainland north of 48.15°N”</cite> description.</li>
+     * </ul></div>
+     *
+     * @return the identifier used to represent a geographic area, or {@code null}.
      */
     @Override
     @XmlElement(name = "geographicIdentifier", required = true)
@@ -132,7 +200,7 @@ public class DefaultGeographicDescription extends AbstractGeographicExtent imple
     /**
      * Sets the identifier used to represent a geographic area.
      *
-     * @param newValue The new geographic identifier.
+     * @param  newValue  the new geographic identifier.
      */
     public void setGeographicIdentifier(final Identifier newValue) {
         checkWritePermission();

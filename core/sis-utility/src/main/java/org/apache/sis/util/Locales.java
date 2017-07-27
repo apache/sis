@@ -24,10 +24,11 @@ import java.util.TreeMap;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.MissingResourceException;
+import java.util.IllformedLocaleException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import org.apache.sis.util.logging.Logging;
-import org.apache.sis.util.resources.Errors;
+import org.apache.sis.internal.system.Loggers;
 
 import static org.apache.sis.util.CharSequences.trimWhitespaces;
 import static org.apache.sis.util.collection.Containers.hashMapCapacity;
@@ -45,8 +46,8 @@ import static org.apache.sis.util.collection.Containers.hashMapCapacity;
  * }
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.3
  * @version 0.4
+ * @since   0.3
  * @module
  */
 public final class Locales extends Static {
@@ -57,7 +58,7 @@ public final class Locales extends Static {
     private static final Map<Locale,Locale> POOL;
     static {
         final Locale[] locales = Locale.getAvailableLocales();
-        POOL = new HashMap<Locale,Locale>(hashMapCapacity(locales.length));
+        POOL = new HashMap<>(hashMapCapacity(locales.length));
         for (final Locale lc : locales) {
             POOL.put(lc, lc);
         }
@@ -80,7 +81,7 @@ public final class Locales extends Static {
              * Not a big deal if this operation fails (this is actually just an
              * optimization for reducing memory usage). Log a warning and stop.
              */
-            Logging.unexpectedException(Locales.class, "<clinit>", exception);
+            Logging.unexpectedException(Logging.getLogger(Loggers.LOCALIZATION), Locales.class, "<clinit>", exception);
         }
     }
 
@@ -102,10 +103,10 @@ public final class Locales extends Static {
      */
     private static final short[] ISO3, ISO2;
     static {
-        final Short CONFLICT = 0; // Sentinal value for conflicts (paranoiac safety).
-        final Map<Short,Short> map = new TreeMap<Short,Short>();
+        final Short CONFLICT = 0;                           // Sentinal value for conflicts (paranoiac safety).
+        final Map<Short,Short> map = new TreeMap<>();
         for (final Locale locale : POOL.values()) {
-            short type = LANGUAGE; // 0 for language, or leftmost bit set for country.
+            short type = LANGUAGE;                          // 0 for language, or leftmost bit set for country.
             do { // Executed exactly twice: once for language, than once for country.
                 final short alpha2 = toNumber((type == LANGUAGE) ? locale.getLanguage() : locale.getCountry(), type);
                 if (alpha2 != 0) {
@@ -113,11 +114,11 @@ public final class Locales extends Static {
                     try {
                         alpha3 = toNumber((type == LANGUAGE) ? locale.getISO3Language() : locale.getISO3Country(), type);
                     } catch (MissingResourceException e) {
-                        continue; // No 3-letters code to map for this locale.
+                        continue;                           // No 3-letters code to map for this locale.
                     }
                     if (alpha3 != 0 && alpha3 != alpha2) {
                         final Short p = map.put(alpha3, alpha2);
-                        if (p != null && p.shortValue() != alpha2) {
+                        if (p != null && p != alpha2) {
                             // We do not expect any conflict. But if it happen anyway, conservatively
                             // remember that we should not perform any substitution for that code.
                             map.put(alpha3, CONFLICT);
@@ -126,7 +127,7 @@ public final class Locales extends Static {
                 }
             } while ((type ^= COUNTRY) != LANGUAGE);
         }
-        while (map.values().remove(CONFLICT)); // Remove all conflicts that we may have found.
+        while (map.values().remove(CONFLICT));              // Remove all conflicts that we may have found.
         ISO3 = new short[map.size()];
         ISO2 = new short[map.size()];
         int i = 0;
@@ -158,7 +159,7 @@ public final class Locales extends Static {
      * ({@link #SIS}). In the later case, this method returns only the languages for which
      * localized resources are provided in the {@code org.apache.sis.util.resources} package.
      *
-     * @return The list of supported languages.
+     * @return the list of supported languages.
      */
     public Locale[] getAvailableLanguages() {
         if (this == ALL) {
@@ -175,7 +176,7 @@ public final class Locales extends Static {
      * ({@link #SIS}). In the later case, this method returns only the locales for which
      * localized resources are provided in the {@code org.apache.sis.util.resources} package.
      *
-     * @return The list of supported locales.
+     * @return the list of supported locales.
      */
     public Locale[] getAvailableLocales() {
         if (this == ALL) {
@@ -190,8 +191,8 @@ public final class Locales extends Static {
         locales = Locale.getAvailableLocales();
 filter: for (final Locale locale : locales) {
             final String code = locale.getLanguage();
-            for (int i=0; i<languages.length; i++) {
-                if (code.equals(languages[i])) {
+            for (final String language : languages) {
+                if (code.equals(language)) {
                     locales[count++] = unique(locale);
                     continue filter;
                 }
@@ -206,11 +207,11 @@ filter: for (final Locale locale : locales) {
      * The instances returned by this method have no {@linkplain Locale#getCountry() country}
      * and no {@linkplain Locale#getVariant() variant} information.
      *
-     * @param  locales The locales from which to get the languages.
-     * @return The languages, without country or variant information.
+     * @param  locales  the locales from which to get the languages.
+     * @return the languages, without country or variant information.
      */
     private static Locale[] getLanguages(final Locale... locales) {
-        final Set<String> codes = new LinkedHashSet<String>(hashMapCapacity(locales.length));
+        final Set<String> codes = new LinkedHashSet<>(hashMapCapacity(locales.length));
         for (final Locale locale : locales) {
             codes.add(locale.getLanguage());
         }
@@ -231,13 +232,13 @@ filter: for (final Locale locale : locales) {
      * and country codes use 2 or 3 letters. This method tries to convert 3-letters codes to 2-letters code on a
      * <cite>best effort</cite> basis.</p>
      *
-     * @param  code The language code, optionally followed by country code and variant.
-     * @return The language for the given code (never {@code null}).
-     * @throws RuntimeException If the given code is not valid ({@code IllformedLocaleException} on the JDK7 branch).
+     * @param  code  the language code, optionally followed by country code and variant.
+     * @return the language for the given code (never {@code null}).
+     * @throws IllformedLocaleException if the given code is not valid.
      *
      * @see Locale#forLanguageTag(String)
      */
-    public static Locale parse(final String code) {
+    public static Locale parse(final String code) throws IllformedLocaleException {
         return parse(code, 0);
     }
 
@@ -252,25 +253,27 @@ filter: for (final Locale locale : locales) {
      * For example a dictionary may define the {@code "remarks"} property by values associated to the
      * {@code "remarks_en"} and {@code "remarks_fr"} keys, for English and French locales respectively.</div>
      *
-     * @param  code The language code, which may be followed by country code.
-     * @param  fromIndex Index of the first character to parse.
-     * @return The language for the given code (never {@code null}).
-     * @throws RuntimeException If the given code is not valid ({@code IllformedLocaleException} on the JDK7 branch).
+     * @param  code  the language code, which may be followed by country code.
+     * @param  fromIndex  index of the first character to parse.
+     * @return the language for the given code (never {@code null}).
+     * @throws IllformedLocaleException if the given code is not valid.
      *
      * @see Locale#forLanguageTag(String)
      * @see org.apache.sis.util.iso.Types#toInternationalString(Map, String)
      */
-    public static Locale parse(final String code, final int fromIndex) {
+    public static Locale parse(final String code, final int fromIndex) throws IllformedLocaleException {
         ArgumentChecks.ensureNonNull("code", code);
         ArgumentChecks.ensurePositive("fromIndex", fromIndex);
         int p1 = code.indexOf('_', fromIndex);
-        // JDK7 branch contains a code here with the following comment:
+        int i  = code.indexOf('-', fromIndex);
+        if (i >= 0 && (p1 < 0 || i < p1)) {
             /*
              * IETF BCP 47 language tag string. This syntax uses the '-' separator instead of '_'.
              * Note that the '_' character is illegal for the language code, but is legal for the
              * variant. Consequently we require the '-' character to appear before the first '_'.
              */
-        // End of JDK7-specific.
+            return unique(new Locale.Builder().setLanguageTag(code).build());
+        }
         /*
          * Old syntax (e.g. "en_US"). Split in (language, country, variant) components,
          * then convert the 3-letters codes to the 2-letters ones.
@@ -291,38 +294,16 @@ filter: for (final Locale locale : locales) {
         language = (String) trimWhitespaces(code, fromIndex, p1);
         language = toISO2(language, LANGUAGE);
         country  = toISO2(country,  COUNTRY);
-        if (language.length() > 8 || !isAlphaNumeric(language) ||
-             country.length() > 3 || !isAlphaNumeric(country))
-        {
-            throw new RuntimeException( // IllformedLocaleException (indirectly) on the JDK7 branch.
-                    Errors.format(Errors.Keys.IllegalLanguageCode_1, code.substring(fromIndex)));
-        }
-        return unique(new Locale(language, country, variant));
+        return unique(new Locale.Builder().setLanguage(language).setRegion(country).setVariant(variant).build());
     }
 
     /**
-     * Returns {@code true} if the given text contains only Latin alphabetic or numeric characters.
-     * We use this method for simulating the check performed by {@code Locale.Builder} on JDK7. Our
-     * test is not as accurate as the JDK7 one however - we are more permissive. But it is not our
-     * intend to reproduce all the JDK7 syntax checks here.
-     */
-    private static boolean isAlphaNumeric(final String text) {
-        for (int i=text.length(); --i>=0;) {
-            final char c = text.charAt(i);
-            if (!(c >= 'A' && c <= 'Z') && !(c >= 'a' && c <= 'z') && !(c >= '0' && c <= '9')) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    /**
-     * Converts a 3-letters ISO code to a 2-letters one. If the given code is not recognized,
-     * then this method returns {@code code} unmodified.
+     * Converts a 3-letters ISO code to a 2-letters one.
+     * If the given code is not recognized, then this method returns {@code code} unmodified.
      *
-     * @param  code The 3-letters code.
-     * @param  type Either {@link #LANGUAGE} or {@link #COUNTRY}.
-     * @return The 2-letters code, or {@code null} if none.
+     * @param  code  the 3-letters code.
+     * @param  type  either {@link #LANGUAGE} or {@link #COUNTRY}.
+     * @return the 2-letters code, or {@code null} if none.
      */
     private static String toISO2(final String code, final short type) {
         final short alpha3 = toNumber(code, type);
@@ -349,9 +330,9 @@ filter: for (final Locale locale : locales) {
      * <p>This method does not use the sign bit. Callers can use it for differentiating language codes
      * from country codes, using the {@link #LANGUAGE} or {@link #COUNTRY} bit masks.</p>
      *
-     * @param  code The 1-, 2- or 3- letters alpha code to convert.
-     * @param  n Initial bit pattern, either {@link #LANGUAGE} or {@link #COUNTRY}.
-     * @return A number for the given code, or 0 if a non alpha characters were found.
+     * @param  code  the 1-, 2- or 3- letters alpha code to convert.
+     * @param  n     initial bit pattern, either {@link #LANGUAGE} or {@link #COUNTRY}.
+     * @return a number for the given code, or 0 if a non alpha characters were found.
      */
     private static short toNumber(final String code, short n) {
         final int length = code.length();
@@ -374,8 +355,8 @@ filter: for (final Locale locale : locales) {
      * Returns a unique instance of the given locale, if one is available.
      * Otherwise returns the {@code locale} unchanged.
      *
-     * @param  locale The locale to canonicalize.
-     * @return A unique instance of the given locale, or {@code locale} if the given locale is not cached.
+     * @param  locale  the locale to canonicalize.
+     * @return a unique instance of the given locale, or {@code locale} if the given locale is not cached.
      */
     public static Locale unique(final Locale locale) {
         final Locale candidate = POOL.get(locale);

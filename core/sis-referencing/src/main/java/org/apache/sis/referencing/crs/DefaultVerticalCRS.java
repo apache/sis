@@ -26,17 +26,21 @@ import org.opengis.referencing.crs.VerticalCRS;
 import org.opengis.referencing.datum.VerticalDatum;
 import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.referencing.AbstractReferenceSystem;
+import org.apache.sis.internal.metadata.WKTKeywords;
+import org.apache.sis.internal.metadata.MetadataUtilities;
 import org.apache.sis.io.wkt.Formatter;
 
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 
 
 /**
- * A 1D coordinate reference system used for recording heights or depths.
+ * A 1-dimensional coordinate reference system used for recording heights or depths.
  * Vertical CRSs make use of the direction of gravity to define the concept of height or depth,
  * but the relationship with gravity may not be straightforward.
  *
- * <p><b>Used with coordinate system type:</b>
+ * <p><b>Used with datum type:</b>
+ *   {@linkplain org.apache.sis.referencing.datum.DefaultVerticalDatum Vertical}.<br>
+ * <b>Used with coordinate system type:</b>
  *   {@linkplain org.apache.sis.referencing.cs.DefaultVerticalCS Vertical}.
  * </p>
  *
@@ -46,12 +50,14 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  * in the javadoc, this condition holds if all components were created using only SIS factories and static constants.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.4
- * @version 0.6
- * @module
+ * @version 0.7
  *
  * @see org.apache.sis.referencing.datum.DefaultVerticalDatum
  * @see org.apache.sis.referencing.cs.DefaultVerticalCS
+ * @see org.apache.sis.referencing.factory.GeodeticAuthorityFactory#createVerticalCRS(String)
+ *
+ * @since 0.4
+ * @module
  */
 @XmlType(name = "VerticalCRSType", propOrder = {
     "coordinateSystem",
@@ -66,18 +72,13 @@ public class DefaultVerticalCRS extends AbstractCRS implements VerticalCRS {
 
     /**
      * The datum.
+     *
+     * <p><b>Consider this field as final!</b>
+     * This field is modified only at unmarshalling time by {@link #setDatum(VerticalDatum)}</p>
+     *
+     * @see #getDatum()
      */
-    @XmlElement(name = "verticalDatum", required = true)
-    private final VerticalDatum datum;
-
-    /**
-     * Constructs a new object in which every attributes are set to a null value.
-     * <strong>This is not a valid object.</strong> This constructor is strictly
-     * reserved to JAXB, which will assign values to the fields using reflexion.
-     */
-    private DefaultVerticalCRS() {
-        datum = null;
-    }
+    private VerticalDatum datum;
 
     /**
      * Creates a coordinate reference system from the given properties, datum and coordinate system.
@@ -113,20 +114,22 @@ public class DefaultVerticalCRS extends AbstractCRS implements VerticalCRS {
      *     <td>{@link #getRemarks()}</td>
      *   </tr>
      *   <tr>
-     *     <td>{@value org.opengis.referencing.datum.Datum#DOMAIN_OF_VALIDITY_KEY}</td>
+     *     <td>{@value org.opengis.referencing.ReferenceSystem#DOMAIN_OF_VALIDITY_KEY}</td>
      *     <td>{@link org.opengis.metadata.extent.Extent}</td>
      *     <td>{@link #getDomainOfValidity()}</td>
      *   </tr>
      *   <tr>
-     *     <td>{@value org.opengis.referencing.datum.Datum#SCOPE_KEY}</td>
+     *     <td>{@value org.opengis.referencing.ReferenceSystem#SCOPE_KEY}</td>
      *     <td>{@link org.opengis.util.InternationalString} or {@link String}</td>
      *     <td>{@link #getScope()}</td>
      *   </tr>
      * </table>
      *
-     * @param properties The properties to be given to the coordinate reference system.
-     * @param datum The datum.
-     * @param cs The coordinate system.
+     * @param  properties  the properties to be given to the coordinate reference system.
+     * @param  datum  the datum.
+     * @param  cs  the coordinate system.
+     *
+     * @see org.apache.sis.referencing.factory.GeodeticObjectFactory#createVerticalCRS(Map, VerticalDatum, VerticalCS)
      */
     public DefaultVerticalCRS(final Map<String,?> properties,
                               final VerticalDatum datum,
@@ -144,7 +147,7 @@ public class DefaultVerticalCRS extends AbstractCRS implements VerticalCRS {
      *
      * <p>This constructor performs a shallow copy, i.e. the properties are not cloned.</p>
      *
-     * @param crs The coordinate reference system to copy.
+     * @param  crs  the coordinate reference system to copy.
      *
      * @see #castOrCopy(VerticalCRS)
      */
@@ -159,8 +162,8 @@ public class DefaultVerticalCRS extends AbstractCRS implements VerticalCRS {
      * Otherwise if the given object is already a SIS implementation, then the given object is returned unchanged.
      * Otherwise a new SIS implementation is created and initialized to the attribute values of the given object.
      *
-     * @param  object The object to get as a SIS implementation, or {@code null} if none.
-     * @return A SIS implementation containing the values of the given object (may be the
+     * @param  object  the object to get as a SIS implementation, or {@code null} if none.
+     * @return a SIS implementation containing the values of the given object (may be the
      *         given object itself), or {@code null} if the argument was null.
      */
     public static DefaultVerticalCRS castOrCopy(final VerticalCRS object) {
@@ -187,29 +190,23 @@ public class DefaultVerticalCRS extends AbstractCRS implements VerticalCRS {
     /**
      * Returns the datum.
      *
-     * @return The datum.
+     * @return the datum.
      */
     @Override
-    public final VerticalDatum getDatum() {
+    @XmlElement(name = "verticalDatum", required = true)
+    public VerticalDatum getDatum() {
         return datum;
     }
 
     /**
      * Returns the coordinate system.
      *
-     * @return The coordinate system.
+     * @return the coordinate system.
      */
     @Override
     @XmlElement(name = "verticalCS", required = true)
     public VerticalCS getCoordinateSystem() {
         return (VerticalCS) super.getCoordinateSystem();
-    }
-
-    /**
-     * Used by JAXB only (invoked by reflection).
-     */
-    private void setCoordinateSystem(final VerticalCS cs) {
-        setCoordinateSystem("verticalCS", cs);
     }
 
     /**
@@ -234,11 +231,64 @@ public class DefaultVerticalCRS extends AbstractCRS implements VerticalCRS {
      * Formats this CRS as a <cite>Well Known Text</cite> {@code VerticalCRS[…]} element.
      *
      * @return {@code "VerticalCRS"} (WKT 2) or {@code "Vert_CS"} (WKT 1).
+     *
+     * @see <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html#69">WKT 2 specification §10</a>
      */
     @Override
     protected String formatTo(final Formatter formatter) {
         super.formatTo(formatter);
-        return (formatter.getConvention().majorVersion() == 1) ? "Vert_CS"
-               : isBaseCRS(formatter) ? "BaseVertCRS" : "VerticalCRS";
+        return (formatter.getConvention().majorVersion() == 1) ? WKTKeywords.Vert_CS
+               : isBaseCRS(formatter) ? WKTKeywords.BaseVertCRS
+                 : formatter.shortOrLong(WKTKeywords.VertCRS, WKTKeywords.VerticalCRS);
+    }
+
+
+
+
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+    ////////                                                                                  ////////
+    ////////                               XML support with JAXB                              ////////
+    ////////                                                                                  ////////
+    ////////        The following methods are invoked by JAXB using reflection (even if       ////////
+    ////////        they are private) or are helpers for other methods invoked by JAXB.       ////////
+    ////////        Those methods can be safely removed if Geographic Markup Language         ////////
+    ////////        (GML) support is not needed.                                              ////////
+    ////////                                                                                  ////////
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Constructs a new object in which every attributes are set to a null value.
+     * <strong>This is not a valid object.</strong> This constructor is strictly
+     * reserved to JAXB, which will assign values to the fields using reflexion.
+     */
+    private DefaultVerticalCRS() {
+        /*
+         * The datum and the coordinate system are mandatory for SIS working. We do not verify their presence
+         * here because the verification would have to be done in an 'afterMarshal(…)' method and throwing an
+         * exception in that method causes the whole unmarshalling to fail.  But the SC_CRS adapter does some
+         * verifications.
+         */
+    }
+
+    /**
+     * Invoked by JAXB at unmarshalling time.
+     *
+     * @see #getDatum()
+     */
+    private void setDatum(final VerticalDatum value) {
+        if (datum == null) {
+            datum = value;
+        } else {
+            MetadataUtilities.propertyAlreadySet(DefaultVerticalCRS.class, "setDatum", "verticalDatum");
+        }
+    }
+
+    /**
+     * Used by JAXB only (invoked by reflection).
+     *
+     * @see #getCoordinateSystem()
+     */
+    private void setCoordinateSystem(final VerticalCS cs) {
+        setCoordinateSystem("verticalCS", cs);
     }
 }

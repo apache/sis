@@ -28,10 +28,11 @@ import org.apache.sis.internal.jaxb.gco.PropertyType;
  *
  * @author  Guilhem Legal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.3
+ * @since   0.3
  * @module
  */
+@SuppressWarnings("deprecation")
 public final class MD_AggregateInformation extends
         PropertyType<MD_AggregateInformation, AggregateInformation>
 {
@@ -64,8 +65,8 @@ public final class MD_AggregateInformation extends
      * Invoked by {@link PropertyType} at marshalling time for wrapping the given metadata value
      * in a {@code <gmd:MD_AggregateInformation>} XML element.
      *
-     * @param  metadata The metadata element to marshall.
-     * @return A {@code PropertyType} wrapping the given the metadata element.
+     * @param  metadata  the metadata element to marshall.
+     * @return a {@code PropertyType} wrapping the given the metadata element.
      */
     @Override
     protected MD_AggregateInformation wrap(final AggregateInformation metadata) {
@@ -77,7 +78,7 @@ public final class MD_AggregateInformation extends
      * inside the {@code <gmd:MD_AggregateInformation>} XML element.
      * This is the value or a copy of the value given in argument to the {@code wrap} method.
      *
-     * @return The metadata to be marshalled.
+     * @return the metadata to be marshalled.
      */
     @XmlElementRef
     public DefaultAggregateInformation getElement() {
@@ -87,7 +88,7 @@ public final class MD_AggregateInformation extends
     /**
      * Invoked by JAXB at unmarshalling time for storing the result temporarily.
      *
-     * @param metadata The unmarshalled metadata.
+     * @param  metadata  the unmarshalled metadata.
      */
     public void setElement(final DefaultAggregateInformation metadata) {
         this.metadata = metadata;

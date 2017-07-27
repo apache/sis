@@ -19,6 +19,7 @@ package org.apache.sis.util.collection;
 import java.util.Map;
 import java.util.Collections;
 import java.io.Serializable;
+import java.io.ObjectStreamException;
 import java.io.InvalidObjectException;
 import org.opengis.util.InternationalString;
 import org.apache.sis.util.iso.Types;
@@ -90,11 +91,12 @@ import org.apache.sis.util.resources.Vocabulary;
  *
  * The constants defined in this class use a similar approach for providing serialization support.
  *
- * @param <V> Base type of all values in the column identified by this instance.
- *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.3
+ *
+ * @param <V>  base type of all values in the column identified by this instance.
+ *
+ * @since 0.3
  * @module
  */
 public class TableColumn<V> implements CheckedContainer<V> {
@@ -104,7 +106,7 @@ public class TableColumn<V> implements CheckedContainer<V> {
      * the column elements are typically instances of {@link String} or {@link InternationalString},
      * depending on whether the data provide localization support or not.
      */
-    public static final TableColumn<CharSequence> NAME = new Constant<CharSequence>("NAME",
+    public static final TableColumn<CharSequence> NAME = new Constant<>("NAME",
             CharSequence.class, Vocabulary.Keys.Name);
 
     /**
@@ -112,7 +114,7 @@ public class TableColumn<V> implements CheckedContainer<V> {
      * The column {@linkplain #getHeader() header} is <cite>"Identifier"</cite> (eventually localized)
      * and the column elements are instances of {@link String}.
      */
-    public static final TableColumn<String> IDENTIFIER = new Constant<String>("IDENTIFIER",
+    public static final TableColumn<String> IDENTIFIER = new Constant<>("IDENTIFIER",
             String.class, Vocabulary.Keys.Identifier);
 
     /**
@@ -120,7 +122,7 @@ public class TableColumn<V> implements CheckedContainer<V> {
      * The column {@linkplain #getHeader() header} is <cite>"Index"</cite> (eventually localized)
      * and the column elements are instances of {@link Integer}.
      */
-    public static final TableColumn<Integer> INDEX = new Constant<Integer>("INDEX",
+    public static final TableColumn<Integer> INDEX = new Constant<>("INDEX",
             Integer.class, Vocabulary.Keys.Index);
 
     /**
@@ -128,7 +130,7 @@ public class TableColumn<V> implements CheckedContainer<V> {
      * The column {@linkplain #getHeader() header} is <cite>"Type"</cite> (eventually localized).
      */
     @SuppressWarnings("unchecked")
-    public static final TableColumn<Class<?>> TYPE = new Constant<Class<?>>("TYPE",
+    public static final TableColumn<Class<?>> TYPE = new Constant<>("TYPE",
             (Class) Class.class, Vocabulary.Keys.Type);
 
     /**
@@ -139,7 +141,7 @@ public class TableColumn<V> implements CheckedContainer<V> {
      * @see #VALUE_AS_TEXT
      * @see #VALUE_AS_NUMBER
      */
-    public static final TableColumn<Object> VALUE = new Constant<Object>("VALUE",
+    public static final TableColumn<Object> VALUE = new Constant<>("VALUE",
             Object.class, Vocabulary.Keys.Value);
 
     /**
@@ -148,14 +150,14 @@ public class TableColumn<V> implements CheckedContainer<V> {
      * the column elements are typically instances of {@link String} or {@link InternationalString},
      * depending on whether the data provide localization support or not.
      */
-    public static final TableColumn<CharSequence> VALUE_AS_TEXT = new Constant<CharSequence>("VALUE_AS_TEXT",
+    public static final TableColumn<CharSequence> VALUE_AS_TEXT = new Constant<>("VALUE_AS_TEXT",
             CharSequence.class, Vocabulary.Keys.Value);
 
     /**
      * Frequently-used constant for a column of object numerical values.
      * The column {@linkplain #getHeader() header} is <cite>"Value"</cite> (eventually localized).
      */
-    public static final TableColumn<Number> VALUE_AS_NUMBER = new Constant<Number>("VALUE_AS_NUMBER",
+    public static final TableColumn<Number> VALUE_AS_NUMBER = new Constant<>("VALUE_AS_NUMBER",
             Number.class, Vocabulary.Keys.Value);
 
     /**
@@ -180,12 +182,7 @@ public class TableColumn<V> implements CheckedContainer<V> {
      * This implementation differs resource bundle loading until first needed,
      * and resolves deserialized instances to the singleton instances.
      *
-     * @param <V> Base type of all values in the column identified by this instance.
-     *
-     * @author  Martin Desruisseaux (Geomatys)
-     * @since   0.3
-     * @version 0.3
-     * @module
+     * @param  <V>  base type of all values in the column identified by this instance.
      */
     private static final class Constant<V> extends TableColumn<V> implements Serializable {
         /**
@@ -206,9 +203,9 @@ public class TableColumn<V> implements CheckedContainer<V> {
         /**
          * Creates a new instance for a build-in constant.
          *
-         * @param field  The programmatic name of the static final field holding this constant.
-         * @param type   Base type of all values in the column identified by this instance.
-         * @param header The resource key for the column header.
+         * @param field   the programmatic name of the static final field holding this constant.
+         * @param type    base type of all values in the column identified by this instance.
+         * @param header  the resource key for the column header.
          */
         Constant(final String field, final Class<V> type, final short header) {
             super(type);
@@ -231,16 +228,14 @@ public class TableColumn<V> implements CheckedContainer<V> {
         /**
          * Invoked on deserialization for resolving this instance to one of the predefined constants.
          *
-         * @return One of the predefined constants.
-         * @throws InvalidObjectException If this instance can not be resolved.
+         * @return one of the predefined constants.
+         * @throws InvalidObjectException if this instance can not be resolved.
          */
-        private Object readResolve() throws InvalidObjectException {
+        private Object readResolve() throws ObjectStreamException {
             try {
                 return TableColumn.class.getField(field).get(null);
-            } catch (Exception cause) { // (ReflectiveOperationException) on JDK7 branch.
-                InvalidObjectException e = new InvalidObjectException(cause.toString());
-                e.initCause(cause);
-                throw e;
+            } catch (ReflectiveOperationException cause) {
+                throw (InvalidObjectException) new InvalidObjectException(cause.toString()).initCause(cause);
             }
         }
     }
@@ -259,7 +254,7 @@ public class TableColumn<V> implements CheckedContainer<V> {
     /**
      * Creates a new instance for a build-in constant.
      *
-     * @param type Base type of all values in the column identified by this instance.
+     * @param type  base type of all values in the column identified by this instance.
      */
     TableColumn(final Class<V> type) {
         this.type = type;
@@ -268,8 +263,8 @@ public class TableColumn<V> implements CheckedContainer<V> {
     /**
      * Creates a new instance for the given type of values.
      *
-     * @param type   Base type of all values in the column identified by this instance.
-     * @param header The text to display as column header.
+     * @param type    base type of all values in the column identified by this instance.
+     * @param header  the text to display as column header.
      */
     public TableColumn(final Class<V> type, final CharSequence header) {
         ArgumentChecks.ensureNonNull("type",   this.type   = type);
@@ -279,7 +274,7 @@ public class TableColumn<V> implements CheckedContainer<V> {
     /**
      * Returns the text to display as column header.
      *
-     * @return The text to display as column header.
+     * @return the text to display as column header.
      */
     public synchronized InternationalString getHeader() {
         final InternationalString i18n = Types.toInternationalString(header);
@@ -288,8 +283,7 @@ public class TableColumn<V> implements CheckedContainer<V> {
     }
 
     /**
-     * Returns the base type of all values in any column identified by this {@code TableColumn}
-     * instance.
+     * Returns the base type of all values in any column identified by this {@code TableColumn} instance.
      */
     @Override
     public final Class<V> getElementType() {
@@ -298,8 +292,7 @@ public class TableColumn<V> implements CheckedContainer<V> {
 
     /**
      * Returns a string representation of this table column.
-     * The default implementation returns the {@linkplain #getHeader() header}
-     * in its default locale.
+     * The default implementation returns the {@linkplain #getHeader() header} in its default locale.
      */
     @Override
     public String toString() {

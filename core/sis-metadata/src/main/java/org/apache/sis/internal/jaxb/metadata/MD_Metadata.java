@@ -27,8 +27,8 @@ import org.apache.sis.internal.jaxb.gco.PropertyType;
  * package documentation for more information about JAXB and interface.
  *
  * @author  Guilhem Legal (Geomatys)
- * @since   0.4
  * @version 0.4
+ * @since   0.4
  * @module
  */
 public final class MD_Metadata extends PropertyType<MD_Metadata, Metadata> {
@@ -61,8 +61,8 @@ public final class MD_Metadata extends PropertyType<MD_Metadata, Metadata> {
      * Invoked by {@link PropertyType} at marshalling time for wrapping the given metadata value
      * in a {@code <gmd:MD_Metadata>} XML element.
      *
-     * @param  metadata The metadata element to marshall.
-     * @return A {@code PropertyType} wrapping the given the metadata element.
+     * @param  metadata  the metadata element to marshall.
+     * @return a {@code PropertyType} wrapping the given the metadata element.
      */
     @Override
     protected MD_Metadata wrap(final Metadata metadata) {
@@ -74,7 +74,7 @@ public final class MD_Metadata extends PropertyType<MD_Metadata, Metadata> {
      * inside the {@code <gmd:MD_Metadata>} XML element.
      * This is the value or a copy of the value given in argument to the {@code wrap} method.
      *
-     * @return The metadata to be marshalled.
+     * @return the metadata to be marshalled.
      */
     @XmlElementRef
     public DefaultMetadata getElement() {
@@ -84,7 +84,7 @@ public final class MD_Metadata extends PropertyType<MD_Metadata, Metadata> {
     /**
      * Invoked by JAXB at unmarshalling time for storing the result temporarily.
      *
-     * @param metadata The unmarshalled metadata.
+     * @param  metadata  the unmarshalled metadata.
      */
     public void setElement(final DefaultMetadata metadata) {
         this.metadata = metadata;

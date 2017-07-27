@@ -22,7 +22,7 @@ import org.opengis.metadata.Identifier;
 import org.opengis.metadata.quality.Result;
 import org.apache.sis.xml.IdentifiedObject;
 import org.apache.sis.xml.IdentifierMap;
-import org.apache.sis.internal.jaxb.IdentifierMapWithSpecialCases;
+import org.apache.sis.internal.jaxb.ModifiableIdentifierMap;
 
 
 /**
@@ -30,8 +30,8 @@ import org.apache.sis.internal.jaxb.IdentifierMapWithSpecialCases;
  * GeoAPI {@link Result} interface.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.3
+ * @since   0.3
  * @module
  */
 final strictfp class PropertyTypeMock extends PropertyType<PropertyTypeMock, Result> {
@@ -55,8 +55,8 @@ final strictfp class PropertyTypeMock extends PropertyType<PropertyTypeMock, Res
      * If this {@code PropertyTypeMock} class was not for testing purpose only,
      * this method would be invoked by JAXB at marshalling time.
      *
-     * @param  metadata The pseudo-metadata element to wrap.
-     * @return A {@code PropertyType} wrapping the given the metadata element.
+     * @param  metadata  the pseudo-metadata element to wrap.
+     * @return a {@code PropertyType} wrapping the given the metadata element.
      */
     @Override
     protected PropertyTypeMock wrap(final Result metadata) {
@@ -83,16 +83,18 @@ final strictfp class PropertyTypeMock extends PropertyType<PropertyTypeMock, Res
 
         /** Creates a new instance with initially no identifier. */
         Value() {
-            identifiers = new ArrayList<Identifier>();
-            map = new IdentifierMapWithSpecialCases(identifiers);
+            identifiers = new ArrayList<>();
+            map = new ModifiableIdentifierMap(identifiers);
         }
 
         /** Returns the identifiers as a modifiable list. */
+        @SuppressWarnings("ReturnOfCollectionOrArrayField")
         @Override public Collection<? extends Identifier> getIdentifiers() {
             return identifiers;
         }
 
         /** Returns a view of the identifiers as a map. */
+        @SuppressWarnings("ReturnOfCollectionOrArrayField")
         @Override public IdentifierMap getIdentifierMap() {
             return map;
         }

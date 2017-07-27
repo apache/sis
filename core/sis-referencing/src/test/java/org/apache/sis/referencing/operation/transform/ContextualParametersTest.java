@@ -33,24 +33,19 @@ import org.junit.Test;
 
 import static java.lang.StrictMath.PI;
 import static java.lang.StrictMath.toRadians;
-import static org.apache.sis.test.MetadataAssert.*;
+import static org.apache.sis.test.Assert.*;
 
 
 /**
  * Tests {@link ContextualParameters}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.6
  * @version 0.6
+ * @since   0.6
  * @module
  */
 @DependsOn(DefaultParameterDescriptorGroupTest.class)
 public final strictfp class ContextualParametersTest extends TestCase {
-    /**
-     * For floating point comparisons.
-     */
-    private static final double STRICT = 0;
-
     /**
      * Creates an instance to use for testing purpose.
      */
@@ -67,8 +62,10 @@ public final strictfp class ContextualParametersTest extends TestCase {
     public void testParameters() {
         final ContextualParameters p = create(1, 1);
         assertTrue("values().isEmpty()",       p.values().isEmpty());
-        assertTrue("normalize.isIdentity()",   p.getMatrix(true).isIdentity());
-        assertTrue("denormalize.isIdentity()", p.getMatrix(false).isIdentity());
+        assertTrue("normalize.isIdentity()",   p.getMatrix(ContextualParameters.MatrixRole.NORMALIZATION).isIdentity());
+        assertTrue("denormalize.isIdentity()", p.getMatrix(ContextualParameters.MatrixRole.DENORMALIZATION).isIdentity());
+        assertTrue("normalize.isIdentity()",   p.getMatrix(ContextualParameters.MatrixRole.INVERSE_NORMALIZATION).isIdentity());
+        assertTrue("denormalize.isIdentity()", p.getMatrix(ContextualParameters.MatrixRole.INVERSE_DENORMALIZATION).isIdentity());
 
         final ParameterValue<?> p1 = p.parameter("Mandatory 1");
         final ParameterValue<?> p2 = p.parameter("Mandatory 2");
@@ -89,25 +86,11 @@ public final strictfp class ContextualParametersTest extends TestCase {
     }
 
     /**
-     * Tests Well Known Text (WKT) formatting.
-     */
-    @DependsOnMethod("testParameters")
-    public void testWKT() {
-        final ContextualParameters p = create(1, 1);
-        p.parameter("Mandatory 1").setValue(4);
-        p.parameter("Mandatory 2").setValue(5);
-        assertWktEquals(
-                "Param_MT[“Test group”,\n" +
-                "  Parameter[“Mandatory 1”, 4],\n" +
-                "  Parameter[“Mandatory 2”, 5]]", p);
-    }
-
-    /**
      * Tests {@link ContextualParameters#completeTransform(MathTransformFactory, MathTransform)}
      * with identity normalization / denormalization transform. The complete transform should be
      * equals to the kernel (often the same instance, but not necessarily because of caching).
      *
-     * @throws FactoryException Should never happen.
+     * @throws FactoryException should never happen.
      */
     @Test
     public void testSameTransform() throws FactoryException {
@@ -129,7 +112,7 @@ public final strictfp class ContextualParametersTest extends TestCase {
      * Tests {@link ContextualParameters#completeTransform(MathTransformFactory, MathTransform)}
      * with non-identity normalization transforms.
      *
-     * @throws FactoryException Should never happen.
+     * @throws FactoryException should never happen.
      */
     @Test
     @DependsOnMethod("testSameTransform")

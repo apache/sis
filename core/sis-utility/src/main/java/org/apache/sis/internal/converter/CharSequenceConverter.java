@@ -37,8 +37,8 @@ import org.apache.sis.util.UnconvertibleObjectException;
  * if the converter given to the constructor is also immutable.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.3
+ * @since   0.3
  * @module
  */
 final class CharSequenceConverter<T> extends SystemConverter<CharSequence,T> {
@@ -55,8 +55,8 @@ final class CharSequenceConverter<T> extends SystemConverter<CharSequence,T> {
     /**
      * Creates a new converter from {@link CharSequence} to the given target type.
      *
-     * @param targetClass The target class requested by the user.
-     * @param next The converter to apply after this one.
+     * @param  targetClass  the target class requested by the user.
+     * @param  next         the converter to apply after this one.
      */
     CharSequenceConverter(final Class<T> targetClass, final ObjectConverter<? super String, ? extends T> next) {
         super(CharSequence.class, targetClass);

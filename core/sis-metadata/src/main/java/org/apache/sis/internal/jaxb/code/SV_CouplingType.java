@@ -18,18 +18,18 @@ package org.apache.sis.internal.jaxb.code;
 
 import javax.xml.bind.annotation.XmlElement;
 import org.apache.sis.internal.geoapi.evolution.UnsupportedCodeListAdapter;
-import org.apache.sis.internal.jaxb.gmd.CodeListProxy;
+import org.apache.sis.internal.jaxb.gmd.CodeListUID;
 import org.apache.sis.xml.Namespaces;
 
 
 /**
- * JAXB adapter for {@link CouplingType}, in order to integrate the value in an element respecting
+ * JAXB adapter for {@code CouplingType}, in order to integrate the value in an element respecting
  * the ISO-19139 standard. See package documentation for more information about the handling
  * of {@code CodeList} in ISO-19139.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.5
  * @version 0.5
+ * @since   0.5
  * @module
  */
 public final class SV_CouplingType extends UnsupportedCodeListAdapter<SV_CouplingType> {
@@ -40,26 +40,26 @@ public final class SV_CouplingType extends UnsupportedCodeListAdapter<SV_Couplin
     }
 
     /**
-     * Creates a new adapter for the given proxy.
+     * Creates a new adapter for the given value.
      */
-    private SV_CouplingType(final CodeListProxy proxy) {
-        super(proxy);
+    private SV_CouplingType(final CodeListUID value) {
+        super(value);
     }
 
     /**
      * {@inheritDoc}
      *
-     * @return The wrapper for the code list value.
+     * @return the wrapper for the code list value.
      */
     @Override
-    protected SV_CouplingType wrap(CodeListProxy proxy) {
-        return new SV_CouplingType(proxy);
+    protected SV_CouplingType wrap(final CodeListUID value) {
+        return new SV_CouplingType(value);
     }
 
     /**
      * {@inheritDoc}
      *
-     * @return The code list class name.
+     * @return the code list class.
      */
     @Override
     protected String getCodeListName() {
@@ -69,20 +69,20 @@ public final class SV_CouplingType extends UnsupportedCodeListAdapter<SV_Couplin
     /**
      * Invoked by JAXB on marshalling.
      *
-     * @return The value to be marshalled.
+     * @return the value to be marshalled.
      */
     @Override
     @XmlElement(name = "SV_CouplingType", namespace = Namespaces.SRV)
-    public CodeListProxy getElement() {
-        return proxy;
+    public CodeListUID getElement() {
+        return identifier;
     }
 
     /**
      * Invoked by JAXB on unmarshalling.
      *
-     * @param proxy The unmarshalled value.
+     * @param  value  the unmarshalled value.
      */
-    public void setElement(final CodeListProxy proxy) {
-        this.proxy = proxy;
+    public void setElement(final CodeListUID value) {
+        identifier = value;
     }
 }

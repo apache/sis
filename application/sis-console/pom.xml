@@ -28,7 +28,7 @@
   <parent>
     <groupId>org.apache.sis</groupId>
     <artifactId>application</artifactId>
-    <version>0.6-android-SNAPSHOT</version>
+    <version>0.8-SNAPSHOT</version>
   </parent>
 
 
@@ -37,7 +37,7 @@
        =========================================================== -->
   <groupId>org.apache.sis.application</groupId>
   <artifactId>sis-console</artifactId>
-  <packaging>jar</packaging>
+  <packaging>bundle</packaging>
   <name>Apache SIS console</name>
   <description>
   <!-- Left alignment because this description will be copied in META-INF/MANIFEST.MF
@@ -82,6 +82,21 @@ Console application.
           <skipIfEmpty>true</skipIfEmpty>
         </configuration>
       </plugin>
+
+      <!-- Package as OSGi bundle -->
+      <plugin>
+        <groupId>org.apache.felix</groupId>
+        <artifactId>maven-bundle-plugin</artifactId>
+        <configuration>
+          <instructions>
+            <Export-Package>
+              org.apache.sis.console
+            </Export-Package>
+            <Main-Class>org.apache.sis.console.Command</Main-Class>
+            <Bundle-SymbolicName>org.apache.sis.console</Bundle-SymbolicName>
+          </instructions>
+        </configuration>
+      </plugin>
     </plugins>
   </build>
 
@@ -92,13 +107,40 @@ Console application.
   <dependencies>
     <dependency>
       <groupId>org.apache.sis.storage</groupId>
+      <artifactId>sis-xmlstore</artifactId>
+      <version>${project.version}</version>
+      <scope>compile</scope>  <!-- Should be runtime after the hack in FormattedOutputCommand has been fixed. -->
+    </dependency>
+    <dependency>
+      <groupId>org.apache.sis.storage</groupId>
       <artifactId>sis-netcdf</artifactId>
       <version>${project.version}</version>
       <scope>runtime</scope>
     </dependency>
     <dependency>
+      <groupId>org.apache.sis.storage</groupId>
+      <artifactId>sis-geotiff</artifactId>
+      <version>${project.version}</version>
+      <scope>runtime</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.sis.storage</groupId>
+      <artifactId>sis-earth-observation</artifactId>
+      <version>${project.version}</version>
+      <scope>runtime</scope>
+    </dependency>
+
+    <!-- Test dependencies -->
+    <dependency>
       <groupId>org.apache.sis.core</groupId>
       <artifactId>sis-metadata</artifactId>
+      <version>${project.version}</version>
+      <type>test-jar</type>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.sis.storage</groupId>
+      <artifactId>sis-xmlstore</artifactId>
       <version>${project.version}</version>
       <type>test-jar</type>
       <scope>test</scope>

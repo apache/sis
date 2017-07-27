@@ -30,8 +30,8 @@ import static org.apache.sis.geometry.AbstractEnvelopeTest.WGS84;
  * Tests the {@link GeneralDirectPosition} class.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.3
  * @version 0.3
+ * @since   0.3
  * @module
  */
 @DependsOn(AbstractDirectPositionTest.class)
@@ -75,6 +75,7 @@ public final strictfp class GeneralDirectPositionTest extends TestCase {
      * with invalid input strings.
      */
     @Test
+    @SuppressWarnings("ResultOfObjectAllocationIgnored")
     public void testWktParsingFailures() {
         try {
             new GeneralDirectPosition("POINT(6 10 2");

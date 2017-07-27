@@ -39,28 +39,21 @@ import org.apache.sis.test.XMLTestCase;
 import org.apache.sis.test.DependsOn;
 import org.junit.Test;
 
-import static org.apache.sis.test.Assert.*;
+import static org.apache.sis.test.MetadataAssert.*;
 import static org.apache.sis.test.TestUtilities.date;
 import static org.apache.sis.test.TestUtilities.getSingleton;
 
 
 /**
- * Tests XML (un)marshalling of various metadata objects.
- * For every metadata objects tested by this class, the expected XML representation
- * is provided by {@code *.xml} files in the following directory:
+ * Tests {@link DefaultMetadata}, without Coordinate Reference System (CRS) information.
  *
- * <ul>
- *   <li>{@code "core/sis-metadata/src/test/resources/org/apache/sis/metadata/iso"}</li>
- * </ul>
- *
- * Metadata tested by this class do not include Coordinate Reference System (CRS) information. A metadata
- * object with CRS information is tested by {@code org.apache.sis.test.integration.DefaultMetadataTest}
- * in the {@code sis-referencing} module.
+ * <p><b>Note:</b> a metadata object with CRS information is tested by a different
+ * {@code org.apache.sis.test.integration.DefaultMetadataTest} class in the {@code sis-referencing} module.</p>
  *
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.5
+ * @since   0.3
  * @module
  */
 @DependsOn(org.apache.sis.internal.metadata.OtherLocalesTest.class)
@@ -91,8 +84,8 @@ public final strictfp class DefaultMetadataTest extends XMLTestCase implements W
      * warning occurred before this method call (i.e. each test is allowed to cause at most one warning), then
      * remember the warning parameters for verification by the test method.
      *
-     * @param source  Ignored.
-     * @param warning The warning.
+     * @param source   ignored.
+     * @param warning  the warning.
      */
     @Override
     public void warningOccured(final Object source, final LogRecord warning) {
@@ -118,7 +111,7 @@ public final strictfp class DefaultMetadataTest extends XMLTestCase implements W
      * Tests unmarshalling of a metadata having a collection that contains no element.
      * This was used to cause a {@code NullPointerException} prior SIS-139 fix.
      *
-     * @throws JAXBException If an error occurred during the during unmarshalling processes.
+     * @throws JAXBException if an error occurred during the during unmarshalling processes.
      *
      * @see <a href="https://issues.apache.org/jira/browse/SIS-139">SIS-139</a>
      */
@@ -219,14 +212,14 @@ public final strictfp class DefaultMetadataTest extends XMLTestCase implements W
         assertEquals("parentIdentifier", "ParentID", metadata.getParentIdentifier());
 
         DefaultCitation c = (DefaultCitation) metadata.getParentMetadata();
-        assertEquals("parentMetadata", "ParentID", c.getTitle().toString());
+        assertTitleEquals("parentMetadata", "ParentID", c);
         c.setTitle(new SimpleInternationalString("New parent"));
         assertEquals("parentIdentifier", "New parent", metadata.getParentIdentifier());
     }
 
     /**
      * Tests {@link DefaultMetadata#getHierarchyLevels()}, {@link DefaultMetadata#getHierarchyLevelNames()},
-     * {@link DefaultMetadata#setHierarchyLevel(Collection)} and {@link DefaultMetadata#setHierarchyLevelNames(Collection)}
+     * {@link DefaultMetadata#setHierarchyLevels(Collection)} and {@link DefaultMetadata#setHierarchyLevelNames(Collection)}
      * methods.
      */
     @Test
@@ -327,14 +320,14 @@ public final strictfp class DefaultMetadataTest extends XMLTestCase implements W
         assertEquals("metadataStandardName",    name,    metadata.getMetadataStandardName());
         assertEquals("metadataStandardVersion", version, metadata.getMetadataStandardVersion());
         final Citation standard = getSingleton(metadata.getMetadataStandards());
-        assertEquals(name,    standard.getTitle()  .toString());
+        assertTitleEquals("standard", name, standard);
         assertEquals(version, standard.getEdition().toString());
     }
 
     /**
      * Tests {@link DefaultMetadata#getDataSetUri()}.
      *
-     * @throws URISyntaxException Should not happen.
+     * @throws URISyntaxException if the URI used in this test is malformed.
      */
     @Test
     @SuppressWarnings("deprecation")

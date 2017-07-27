@@ -26,8 +26,8 @@ import java.nio.CharBuffer;
  * Wraps a {@link Appendable} as a {@link Writer}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.3
+ * @since   0.3
  * @module
  */
 final class AppendableWriter extends Writer {
@@ -39,7 +39,7 @@ final class AppendableWriter extends Writer {
     /**
      * Creates a new filtered formatter which will send its output to the given stream or buffer.
      *
-     * @param out The underlying character output stream or buffer.
+     * @param out  the underlying character output stream or buffer.
      */
     AppendableWriter(final Appendable out) {
         super(getLock(out));
@@ -69,6 +69,7 @@ final class AppendableWriter extends Writer {
      * Forwards the given single character to {@link #out}.
      */
     @Override
+    @SuppressWarnings("SynchronizeOnNonFinalField")
     public Writer append(final char c) throws IOException {
         synchronized (lock) {
             out.append(c);
@@ -80,6 +81,7 @@ final class AppendableWriter extends Writer {
      * Forwards the given single character to {@link #out}.
      */
     @Override
+    @SuppressWarnings("SynchronizeOnNonFinalField")
     public void write(int c) throws IOException {
         synchronized (lock) {
             out.append((char) c);
@@ -90,6 +92,7 @@ final class AppendableWriter extends Writer {
      * Forwards the given character sequence to {@link #out}.
      */
     @Override
+    @SuppressWarnings("SynchronizeOnNonFinalField")
     public Writer append(final CharSequence sequence) throws IOException {
         synchronized (lock) {
             out.append(sequence);
@@ -101,6 +104,7 @@ final class AppendableWriter extends Writer {
      * Forwards the given string to {@link #out}.
      */
     @Override
+    @SuppressWarnings("SynchronizeOnNonFinalField")
     public void write(final String string) throws IOException {
         synchronized (lock) {
             out.append(string);
@@ -111,6 +115,7 @@ final class AppendableWriter extends Writer {
      * Forwards the given character sub-sequence to {@link #out}.
      */
     @Override
+    @SuppressWarnings("SynchronizeOnNonFinalField")
     public Writer append(final CharSequence sequence, final int start, final int end) throws IOException {
         synchronized (lock) {
             out.append(sequence, start, end);
@@ -122,6 +127,7 @@ final class AppendableWriter extends Writer {
      * Forwards the given sub-string to {@link #out}.
      */
     @Override
+    @SuppressWarnings("SynchronizeOnNonFinalField")
     public void write(final String string, final int start, final int length) throws IOException {
         synchronized (lock) {
             out.append(string, start, start + length);
@@ -132,6 +138,7 @@ final class AppendableWriter extends Writer {
      * Forwards the given character array to {@link #out}.
      */
     @Override
+    @SuppressWarnings("SynchronizeOnNonFinalField")
     public void write(final char[] cbuf, final int offset, final int length) throws IOException {
         synchronized (lock) {
             out.append(CharBuffer.wrap(cbuf, offset, length));
@@ -139,10 +146,11 @@ final class AppendableWriter extends Writer {
     }
 
     /**
-     * If {@link #out} implements {@link Flushable}, or is a {@link Appender} wrapper
+     * If {@link #out} implements {@link java.io.Flushable}, or is a {@link Appender} wrapper
      * around a flushable object, delegates to that object. Otherwise do nothing.
      */
     @Override
+    @SuppressWarnings("SynchronizeOnNonFinalField")
     public void flush() throws IOException {
         synchronized (lock) {
             IO.flush(out);
@@ -150,10 +158,11 @@ final class AppendableWriter extends Writer {
     }
 
     /**
-     * If {@link #out} implements {@link Closeable}, or is a {@link Appender} wrapper
+     * If {@link #out} implements {@link java.io.Closeable}, or is a {@link Appender} wrapper
      * around a closeable object, delegates to that object. Otherwise just flush (if possible).
      */
     @Override
+    @SuppressWarnings("SynchronizeOnNonFinalField")
     public void close() throws IOException {
         synchronized (lock) {
             IO.close(out);
@@ -164,12 +173,13 @@ final class AppendableWriter extends Writer {
      * Returns the content of the underlying {@link Appendable} as a string if possible,
      * or the localized <cite>"Unavailable content"</cite> string otherwise.
      *
-     * @return The content of the underlying {@code Appendable},
+     * @return the content of the underlying {@code Appendable},
      *         or a localized message for unavailable content.
      *
      * @see IO#content(Appendable)
      */
     @Override
+    @SuppressWarnings("SynchronizeOnNonFinalField")
     public String toString() {
         synchronized (lock) {
             return IO.toString(out);

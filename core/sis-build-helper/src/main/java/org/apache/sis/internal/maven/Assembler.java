@@ -23,6 +23,9 @@ import java.io.FileInputStream;
 import java.io.FilterOutputStream;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
+import org.apache.maven.plugins.annotations.Mojo;
+import org.apache.maven.plugins.annotations.Parameter;
+import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.project.MavenProject;
 import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
 import org.apache.commons.compress.archivers.zip.ZipArchiveOutputStream;
@@ -45,31 +48,30 @@ import static org.apache.sis.internal.maven.Filenames.*;
  * file for more information.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
+ * @version 0.7
  * @since   0.4
- * @version 0.4
  * @module
- *
- * @goal dist
- * @phase install
  */
+@Mojo(name = "dist", defaultPhase = LifecyclePhase.INSTALL)
 public class Assembler extends AbstractMojo implements FilenameFilter {
     /**
      * Project information (name, version, URL).
-     *
-     * @parameter property="project"
-     * @required
-     * @readonly
      */
+    @Parameter(property="project", required=true, readonly=true)
     private MavenProject project;
 
     /**
      * The root directory (without the "<code>target/binaries</code>" sub-directory) where JARs
      * are to be copied. It should be the directory of the root <code>pom.xml</code>.
-     *
-     * @parameter property="session.executionRootDirectory"
-     * @required
      */
+    @Parameter(property="session.executionRootDirectory", required=true)
     private String rootDirectory;
+
+    /**
+     * Invoked by reflection for creating the MOJO.
+     */
+    public Assembler() {
+    }
 
     /**
      * Creates the distribution file.
@@ -87,8 +89,7 @@ public class Assembler extends AbstractMojo implements FilenameFilter {
         final String artifactBase = FINALNAME_PREFIX + version;
         try {
             final File targetFile = new File(distributionDirectory(targetDirectory), artifactBase + ".zip");
-            final ZipArchiveOutputStream zip = new ZipArchiveOutputStream(targetFile);
-            try {
+            try (ZipArchiveOutputStream zip = new ZipArchiveOutputStream(targetFile)) {
                 zip.setLevel(9);
                 appendRecursively(sourceDirectory, artifactBase, zip, new byte[8192]);
                 /*
@@ -96,7 +97,7 @@ public class Assembler extends AbstractMojo implements FilenameFilter {
                  * have been zipped.  Now generate the Pack200 file and zip it directly (without creating
                  * a temporary "sis.pack.gz" file).
                  */
-                final Packer packer = new Packer(project.getName(), project.getUrl(), version, targetDirectory);
+                final Packer packer = new Packer(project.getName(), version, targetDirectory);
                 final ZipArchiveEntry entry = new ZipArchiveEntry(
                         artifactBase + '/' + LIB_DIRECTORY + '/' + FATJAR_FILE + PACK_EXTENSION);
                 entry.setMethod(ZipArchiveEntry.STORED);
@@ -110,8 +111,6 @@ public class Assembler extends AbstractMojo implements FilenameFilter {
                         zip.closeArchiveEntry();
                     }
                 });
-            } finally {
-                zip.close();
             }
         } catch (IOException e) {
             throw new MojoExecutionException(e.getLocalizedMessage(), e);
@@ -136,14 +135,11 @@ public class Assembler extends AbstractMojo implements FilenameFilter {
         }
         out.putArchiveEntry(entry);
         if (!entry.isDirectory()) {
-            final FileInputStream in = new FileInputStream(file);
-            try {
+            try (FileInputStream in = new FileInputStream(file)) {
                 int n;
                 while ((n = in.read(buffer)) >= 0) {
                     out.write(buffer, 0, n);
                 }
-            } finally {
-                in.close();
             }
         }
         out.closeArchiveEntry();
@@ -157,8 +153,8 @@ public class Assembler extends AbstractMojo implements FilenameFilter {
     /**
      * The filter to use for selecting the files to be included in the ZIP file.
      *
-     * @param  directory The directory.
-     * @param  filename  The filename.
+     * @param  directory  the directory.
+     * @param  filename   the filename.
      * @return {@code true} if the given file should be included in the ZIP file.
      */
     @Override

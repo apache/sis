@@ -18,6 +18,8 @@ package org.apache.sis.util.collection;
 
 import java.util.List;
 import java.io.File;
+import java.nio.file.FileSystem;
+import java.nio.file.FileSystems;
 import java.text.ParseException;
 import org.junit.Test;
 import org.apache.sis.test.TestCase;
@@ -33,8 +35,8 @@ import static org.apache.sis.util.collection.TableColumn.*;
  * Tests the {@link TreeTables} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.3
+ * @since   0.3
  * @module
  */
 @DependsOn({
@@ -45,8 +47,8 @@ public final strictfp class TreeTablesTest extends TestCase {
      * The {@code concatenateSingletons(…)} example documented in the {@link TreeTables} class javadoc.
      * This simple code assumes that the children collection in the given node is a {@link List}.
      *
-     * @param  node The root of the node to simplify.
-     * @return The root of the simplified tree. May be the given {@code node} or a child.
+     * @param  node  the root of the node to simplify.
+     * @return the root of the simplified tree. May be the given {@code node} or a child.
      */
     public static TreeTable.Node concatenateSingletons(final TreeTable.Node node) {
         final List<TreeTable.Node> children = (List<TreeTable.Node>) node.getChildren();
@@ -68,7 +70,7 @@ public final strictfp class TreeTablesTest extends TestCase {
     /**
      * Tests the {@link #concatenateSingletons(TreeTable.Node)} example.
      *
-     * @throws ParseException Should never happen.
+     * @throws ParseException if parsing of test tree failed.
      */
     @Test
     public void testConcatenateSingletons() throws ParseException {
@@ -87,6 +89,33 @@ public final strictfp class TreeTablesTest extends TestCase {
                 "  │   ├─data/mercator\n" +
                 "  │   └─document\n" +
                 "  └─lib\n").replace('/', File.separatorChar), table.toString());
+    }
+
+    /**
+     * Tests the {@link TreeTables#nodeForPath(TreeTable.Node, TableColumn, Path)} method.
+     */
+    @Test
+    public void testNodeForPath() {
+        final FileSystem fs = FileSystems.getDefault();
+        final TreeTable table = new DefaultTreeTable(NAME, VALUE_AS_NUMBER);
+        final TreeTable.Node files = table.getRoot();
+        files.setValue(NAME, "Root");
+        nodeForPath(files, NAME, fs.getPath("users","Alice","data"))           .setValue(VALUE_AS_NUMBER, 10);
+        nodeForPath(files, NAME, fs.getPath("users","Bob","data"))             .setValue(VALUE_AS_NUMBER, 20);
+        nodeForPath(files, NAME, fs.getPath("users","Bob"))                    .setValue(VALUE_AS_NUMBER, 30);
+        nodeForPath(files, NAME, fs.getPath("lib"))                            .setValue(VALUE_AS_NUMBER, 40);
+        nodeForPath(files, NAME, fs.getPath("users","Alice","document"))       .setValue(VALUE_AS_NUMBER, 50);
+        nodeForPath(files, NAME, fs.getPath("users","Alice","data","mercator")).setValue(VALUE_AS_NUMBER, 60);
+        assertMultilinesEquals(
+                "Root\n" +
+                "  ├─users\n" +
+                "  │   ├─Alice\n" +
+                "  │   │   ├─data………………………… 10\n" +
+                "  │   │   │   └─mercator…… 60\n" +
+                "  │   │   └─document……………… 50\n" +
+                "  │   └─Bob……………………………………… 30\n" +
+                "  │       └─data………………………… 20\n" +
+                "  └─lib………………………………………………… 40\n", table.toString());
     }
 
     /**

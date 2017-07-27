@@ -20,6 +20,7 @@ import java.util.Set;
 import java.util.Map;
 import java.util.LinkedHashMap;
 import java.util.Arrays;
+import java.util.Objects;
 import java.io.Serializable;
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -40,9 +41,6 @@ import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.collection.Containers;
 import org.apache.sis.util.ObjectConverters;
 import org.apache.sis.internal.converter.SurjectiveConverter;
-
-// Branch-dependent imports
-import org.apache.sis.internal.jdk7.Objects;
 
 
 /**
@@ -87,13 +85,14 @@ import org.apache.sis.internal.jdk7.Objects;
  * so users wanting serialization may need to provide their own schema.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.3
  * @version 0.5
- * @module
  *
  * @see DefaultRecord
  * @see DefaultRecordSchema
  * @see DefaultMemberName
+ *
+ * @since 0.3
+ * @module
  */
 @XmlType(name = "RecordType")
 public class DefaultRecordType extends RecordDefinition implements RecordType, Serializable {
@@ -124,17 +123,9 @@ public class DefaultRecordType extends RecordDefinition implements RecordType, S
     private transient Type[] memberTypes;
 
     /**
-     * Empty constructor only used by JAXB.
-     */
-    private DefaultRecordType() {
-        typeName  = null;
-        container = null;
-    }
-
-    /**
      * Creates a new record with the same names and members than the given one.
      *
-     * @param other The {@code RecordType} to copy.
+     * @param other  the {@code RecordType} to copy.
      */
     public DefaultRecordType(final RecordType other) {
         typeName    = other.getTypeName();
@@ -152,9 +143,9 @@ public class DefaultRecordType extends RecordDefinition implements RecordType, S
      * implementation is sufficient, the {@link DefaultRecordSchema#createRecordType(CharSequence, Map)}
      * method provides an easier alternative.</p>
      *
-     * @param typeName  The name that identifies this record type.
-     * @param container The schema that contains this record type.
-     * @param members   The name and type of the members to be included in this record type.
+     * @param typeName   the name that identifies this record type.
+     * @param container  the schema that contains this record type.
+     * @param members    the name and type of the members to be included in this record type.
      *
      * @see DefaultRecordSchema#createRecordType(CharSequence, Map)
      */
@@ -194,10 +185,10 @@ public class DefaultRecordType extends RecordDefinition implements RecordType, S
      * Creates a new record from member names specified as character sequence.
      * This constructor builds the {@link MemberName} instance itself.
      *
-     * @param typeName    The name that identifies this record type.
-     * @param container   The schema that contains this record type.
-     * @param members     The name of the members to be included in this record type.
-     * @param nameFactory The factory to use for instantiating {@link MemberName}.
+     * @param typeName     the name that identifies this record type.
+     * @param container    the schema that contains this record type.
+     * @param members      the name of the members to be included in this record type.
+     * @param nameFactory  the factory to use for instantiating {@link MemberName}.
      */
     DefaultRecordType(final TypeName typeName, final RecordSchema container,
             final Map<? extends CharSequence, ? extends Type> members, final DefaultNameFactory nameFactory)
@@ -205,7 +196,7 @@ public class DefaultRecordType extends RecordDefinition implements RecordType, S
         this.typeName  = typeName;
         this.container = container;
         final NameSpace namespace = nameFactory.createNameSpace(typeName, null);
-        final Map<MemberName,Type> memberTypes = new LinkedHashMap<MemberName,Type>(Containers.hashMapCapacity(members.size()));
+        final Map<MemberName,Type> memberTypes = new LinkedHashMap<>(Containers.hashMapCapacity(members.size()));
         for (final Map.Entry<? extends CharSequence, ? extends Type> entry : members.entrySet()) {
             final Type         type   = entry.getValue();
             final CharSequence name   = entry.getKey();
@@ -221,14 +212,14 @@ public class DefaultRecordType extends RecordDefinition implements RecordType, S
      * Invoked on deserialization for restoring the transient fields.
      * See {@link #writeObject(ObjectOutputStream)} for the stream data description.
      *
-     * @param  in The input stream from which to deserialize an object.
-     * @throws IOException If an I/O error occurred while reading or if the stream contains invalid data.
-     * @throws ClassNotFoundException If the class serialized on the stream is not on the classpath.
+     * @param  in  the input stream from which to deserialize an object.
+     * @throws IOException if an I/O error occurred while reading or if the stream contains invalid data.
+     * @throws ClassNotFoundException if the class serialized on the stream is not on the classpath.
      */
     private void readObject(final ObjectInputStream in) throws IOException, ClassNotFoundException {
         in.defaultReadObject();
         final int size = in.readInt();
-        final Map<MemberName,Type> members = new LinkedHashMap<MemberName,Type>(Containers.hashMapCapacity(size));
+        final Map<MemberName,Type> members = new LinkedHashMap<>(Containers.hashMapCapacity(size));
         for (int i=0; i<size; i++) {
             final MemberName member = (MemberName) in.readObject();
             final Type type = (Type) in.readObject();
@@ -242,11 +233,11 @@ public class DefaultRecordType extends RecordDefinition implements RecordType, S
     /**
      * Invoked on serialization for writing the member names and their type.
      *
-     * @serialData The number of members as an {@code int}, followed by a
-     *             ({@code MemberName}, {@code Type}) pair for each member.
+     * @param  out  the output stream where to serialize this object.
+     * @throws IOException if an I/O error occurred while writing.
      *
-     * @param  out The output stream where to serialize this object.
-     * @throws IOException If an I/O error occurred while writing.
+     * @serialData the number of members as an {@code int}, followed by a
+     *             ({@code MemberName}, {@code Type}) pair for each member.
      */
     private void writeObject(final ObjectOutputStream out) throws IOException {
         final int size = size();
@@ -272,8 +263,8 @@ public class DefaultRecordType extends RecordDefinition implements RecordType, S
      *       in the given object are not recursively copied.</li>
      * </ul>
      *
-     * @param  other The object to get as a SIS implementation, or {@code null} if none.
-     * @return A SIS implementation containing the members of the given object
+     * @param  other  the object to get as a SIS implementation, or {@code null} if none.
+     * @return a SIS implementation containing the members of the given object
      *         (may be the given object itself), or {@code null} if the argument was {@code null}.
      */
     public static DefaultRecordType castOrCopy(final RecordType other) {
@@ -306,7 +297,7 @@ public class DefaultRecordType extends RecordDefinition implements RecordType, S
      * then this method can be think as the equivalent of the Java {@link Class#getName()} method.
      * </div>
      *
-     * @return The name that identifies this record type.
+     * @return the name that identifies this record type.
      */
     @Override
     public TypeName getTypeName() {
@@ -316,7 +307,7 @@ public class DefaultRecordType extends RecordDefinition implements RecordType, S
     /**
      * Returns the schema that contains this record type.
      *
-     * @return The schema that contains this record type.
+     * @return the schema that contains this record type.
      */
     @Override
     public RecordSchema getContainer() {
@@ -332,7 +323,7 @@ public class DefaultRecordType extends RecordDefinition implements RecordType, S
      * this method can be though as the related to the Java {@link Class#getFields()} method.
      * </div>
      *
-     * @return The dictionary of (<var>name</var>, <var>type</var>) pairs, or an empty map if none.
+     * @return the dictionary of (<var>name</var>, <var>type</var>) pairs, or an empty map if none.
      */
     @Override
     public Map<MemberName,Type> getMemberTypes() {
@@ -351,7 +342,7 @@ public class DefaultRecordType extends RecordDefinition implements RecordType, S
      *     getMemberTypes().keySet();
      * }
      *
-     * @return The set of attribute names, or an empty set if none.
+     * @return the set of attribute names, or an empty set if none.
      */
     @Override
     public Set<MemberName> getMembers() {
@@ -378,8 +369,8 @@ public class DefaultRecordType extends RecordDefinition implements RecordType, S
      * this method can be though as related to the Java {@link Class#getField(String)} method.
      * </div>
      *
-     * @param  memberName The attribute name for which to get the associated type name.
-     * @return The associated type name, or {@code null} if none.
+     * @param  memberName  the attribute name for which to get the associated type name.
+     * @return the associated type name, or {@code null} if none.
      */
     @Override
     public TypeName locate(final MemberName memberName) {
@@ -400,7 +391,7 @@ public class DefaultRecordType extends RecordDefinition implements RecordType, S
      * We do not require that {@code record.getRecordType() == this} in order to allow record
      * "sub-types" to define additional fields, in a way similar to Java sub-classing.</div>
      *
-     * @param  record The record to test for compatibility.
+     * @param  record  the record to test for compatibility.
      * @return {@code true} if the given record is compatible with this {@code RecordType}.
      */
     @Override
@@ -411,7 +402,7 @@ public class DefaultRecordType extends RecordDefinition implements RecordType, S
     /**
      * Compares the given object with this {@code RecordType} for equality.
      *
-     * @param  other The object to compare with this {@code RecordType}.
+     * @param  other  the object to compare with this {@code RecordType}.
      * @return {@code true} if both objects are equal.
      */
     @Override
@@ -435,5 +426,27 @@ public class DefaultRecordType extends RecordDefinition implements RecordType, S
     @Override
     public int hashCode() {
         return Objects.hashCode(typeName) + 31*(memberIndices().hashCode() + 31*Arrays.hashCode(memberTypes));
+    }
+
+
+
+
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+    ////////                                                                                  ////////
+    ////////                               XML support with JAXB                              ////////
+    ////////                                                                                  ////////
+    ////////        The following methods are invoked by JAXB using reflection (even if       ////////
+    ////////        they are private) or are helpers for other methods invoked by JAXB.       ////////
+    ////////        Those methods can be safely removed if Geographic Markup Language         ////////
+    ////////        (GML) support is not needed.                                              ////////
+    ////////                                                                                  ////////
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Empty constructor only used by JAXB.
+     */
+    private DefaultRecordType() {
+        typeName  = null;
+        container = null;
     }
 }

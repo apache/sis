@@ -17,16 +17,18 @@
 package org.apache.sis.referencing.cs;
 
 import javax.xml.bind.JAXBException;
-import javax.measure.unit.NonSI;
 import org.opengis.test.Validators;
+import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
+import org.opengis.referencing.cs.RangeMeaning;
+import org.apache.sis.measure.Units;
 import org.apache.sis.test.XMLTestCase;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.referencing.GeodeticObjectVerifier;
 import org.junit.Test;
 
-import static org.apache.sis.test.Assert.*;
+import static org.apache.sis.test.ReferencingAssert.*;
 import static org.apache.sis.test.TestUtilities.getSingleton;
 
 
@@ -34,17 +36,12 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
  * Tests the {@link DefaultEllipsoidalCS} class.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
+ * @version 0.8
  * @since   0.4
- * @version 0.4
  * @module
  */
 @DependsOn(AbstractCSTest.class)
 public final strictfp class DefaultEllipsoidalCSTest extends XMLTestCase {
-    /**
-     * Tolerance threshold for strict floating point comparisons.
-     */
-    private static final double STRICT = 0;
-
     /**
      * An XML file in this package containing an ellipsoidal coordinate system definition.
      */
@@ -102,7 +99,7 @@ public final strictfp class DefaultEllipsoidalCSTest extends XMLTestCase {
     public void testUnitConversion() {
         final DefaultEllipsoidalCS cs = HardCodedCS.ELLIPSOIDAL_gon;
         CoordinateSystemAxis axis = cs.getAxis(0);
-        assertEquals("unit", NonSI.GRADE, axis.getUnit());
+        assertEquals("unit", Units.GRAD, axis.getUnit());
         assertEquals("longitude.minimumValue", -200, axis.getMinimumValue(), STRICT);
         assertEquals("longitude.maximumValue", +200, axis.getMaximumValue(), STRICT);
 
@@ -111,7 +108,7 @@ public final strictfp class DefaultEllipsoidalCSTest extends XMLTestCase {
         Validators.validate(converted);
 
         axis = converted.getAxis(0);
-        assertEquals("unit", NonSI.DEGREE_ANGLE, axis.getUnit());
+        assertEquals("unit", Units.DEGREE, axis.getUnit());
         assertEquals("longitude.minimumValue", -180, axis.getMinimumValue(), STRICT);
         assertEquals("longitude.maximumValue", +180, axis.getMaximumValue(), STRICT);
     }
@@ -119,7 +116,7 @@ public final strictfp class DefaultEllipsoidalCSTest extends XMLTestCase {
     /**
      * Tests (un)marshalling of an ellipsoidal coordinate system.
      *
-     * @throws JAXBException If an error occurred during unmarshalling.
+     * @throws JAXBException if an error occurred during unmarshalling.
      */
     @Test
     public void testXML() throws JAXBException {
@@ -134,11 +131,11 @@ public final strictfp class DefaultEllipsoidalCSTest extends XMLTestCase {
         final CoordinateSystemAxis λ = cs.getAxis(1);
         assertEquals("name",    "Latitude (north), Longitude (east)",     cs.getName().getCode());
         assertEquals("remarks", "Used in two-dimensional GeographicCRS.", cs.getRemarks().toString());
-        assertIdentifierEquals(        "identifier", "IOGP", "EPSG", null, "6422", getSingleton(cs.getIdentifiers()));
-        assertIdentifierEquals("axis[0].identifier", "IOGP", "EPSG", null, "106",  getSingleton(φ.getIdentifiers()));
-        assertIdentifierEquals("axis[1].identifier", "IOGP", "EPSG", null, "107",  getSingleton(λ.getIdentifiers()));
-        assertEquals("axis[0].abbreviation", "φ", φ.getAbbreviation());
-        assertEquals("axis[1].abbreviation", "λ", λ.getAbbreviation());
+        assertAxisEquals("Geodetic latitude",  "φ", AxisDirection.NORTH, -90,  +90, Units.DEGREE, RangeMeaning.EXACT, φ);
+        assertAxisEquals("Geodetic longitude", "λ", AxisDirection.EAST, -180, +180, Units.DEGREE, RangeMeaning.WRAPAROUND, λ);
+        assertEpsgIdentifierEquals("6422", getSingleton(cs.getIdentifiers()));
+        assertEpsgIdentifierEquals("106",  getSingleton(φ.getIdentifiers()));
+        assertEpsgIdentifierEquals("107",  getSingleton(λ.getIdentifiers()));
         /*
          * Marshal and compare with the original file.
          */

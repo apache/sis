@@ -35,8 +35,16 @@ import static org.opengis.annotation.Specification.ISO_19115;
 
 /**
  * Associated resource information.
+ * The following properties are mandatory or conditional (i.e. mandatory under some circumstances)
+ * in a well-formed metadata according ISO 19115:
  *
- * <div class="section">Relationship between properties</div>
+ * <div class="preformat">{@code MD_AssociatedResource}
+ * {@code   ├─associationType…………} Type of relation between the resources.
+ * {@code   ├─metadataReference……} Reference to the metadata of the associated resource.
+ * {@code   │   ├─title…………………………} Name by which the cited resource is known.
+ * {@code   │   └─date……………………………} Reference date for the cited resource.
+ * {@code   └─name………………………………………} Citation information about the associated resource.</div>
+ *
  * According ISO 19115, at least one of {@linkplain #getName() name} and
  * {@linkplain #getMetadataReference() metadata reference} shall be provided.
  *
@@ -51,10 +59,11 @@ import static org.opengis.annotation.Specification.ISO_19115;
  *
  * @author  Rémi Maréchal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.5
  * @version 0.5
+ * @since   0.5
  * @module
  */
+@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "MD_AssociatedResource_Type" /*, propOrder = {
     "name",
     "associationType",
@@ -98,8 +107,8 @@ public class DefaultAssociatedResource extends ISOMetadata {
     /**
      * Constructs an associated resource initialized to the specified values.
      *
-     * @param name            Citation information about the associated resource.
-     * @param associationType Type of relation between the resources.
+     * @param name             citation information about the associated resource.
+     * @param associationType  type of relation between the resources.
      */
     public DefaultAssociatedResource(final Citation name, final AssociationType associationType) {
         this.name            = name;
@@ -124,7 +133,7 @@ public class DefaultAssociatedResource extends ISOMetadata {
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
-     * @param object The metadata to copy values from, or {@code null} if none.
+     * @param  object  the metadata to copy values from, or {@code null} if none.
      */
     DefaultAssociatedResource(final AggregateInformation object) {
         if (object != null) {
@@ -140,8 +149,8 @@ public class DefaultAssociatedResource extends ISOMetadata {
     /**
      * Returns a SIS metadata implementation with the values of the given arbitrary implementation.
      *
-     * @param  object The object to get as a SIS implementation, or {@code null} if none.
-     * @return A SIS implementation containing the values of the given object (may be the
+     * @param  object  the object to get as a SIS implementation, or {@code null} if none.
+     * @return a SIS implementation containing the values of the given object (may be the
      *         given object itself), or {@code null} if the argument was null.
      */
     static DefaultAssociatedResource castOrCopy(final AggregateInformation object) {
@@ -165,7 +174,7 @@ public class DefaultAssociatedResource extends ISOMetadata {
     /**
      * Sets citation information about the associated resource.
      *
-     * @param newValue The new citation information, or {@code null}.
+     * @param  newValue  the new citation information, or {@code null}.
      */
     public void setName(final Citation newValue) {
         checkWritePermission();
@@ -175,7 +184,7 @@ public class DefaultAssociatedResource extends ISOMetadata {
     /**
      * Returns the type of relation between the resources.
      *
-     * @return Type of relation between the resources.
+     * @return type of relation between the resources.
      */
 /// @XmlElement(name = "associationType", required = true)
     @UML(identifier="associationType", obligation=MANDATORY, specification=ISO_19115)
@@ -186,7 +195,7 @@ public class DefaultAssociatedResource extends ISOMetadata {
     /**
      * Sets the type of relation between the resources.
      *
-     * @param newValue The new type of relation.
+     * @param  newValue  the new type of relation.
      */
     public void setAssociationType(final AssociationType newValue) {
         checkWritePermission();
@@ -196,7 +205,7 @@ public class DefaultAssociatedResource extends ISOMetadata {
     /**
      * Returns the type of initiative under which the associated resource was produced, or {@code null} if none.
      *
-     * @return The type of initiative under which the associated resource was produced, or {@code null} if none.
+     * @return the type of initiative under which the associated resource was produced, or {@code null} if none.
      */
 /// @XmlElement(name = "initiativeType")
     @UML(identifier="initiativeType", obligation=OPTIONAL, specification=ISO_19115)
@@ -207,7 +216,7 @@ public class DefaultAssociatedResource extends ISOMetadata {
     /**
      * Sets a new type of initiative under which the associated resource was produced.
      *
-     * @param newValue The new type of initiative.
+     * @param  newValue  the new type of initiative.
      */
     public void setInitiativeType(final InitiativeType newValue) {
         checkWritePermission();
@@ -217,7 +226,7 @@ public class DefaultAssociatedResource extends ISOMetadata {
     /**
      * Return a reference to the metadata of the associated resource, or {@code null} if none.
      *
-     * @return Reference to the metadata of the associated resource, or {@code null} if none.
+     * @return reference to the metadata of the associated resource, or {@code null} if none.
      */
 /// @XmlElement(name = "metadataReference")
     @UML(identifier="metadataReference", obligation=CONDITIONAL, specification=ISO_19115)
@@ -228,7 +237,7 @@ public class DefaultAssociatedResource extends ISOMetadata {
     /**
      * Sets the reference to the metadata of the associated resource.
      *
-     * @param newValue The new reference to the metadata.
+     * @param  newValue  the new reference to the metadata.
      */
     public void setMetadataReference(final Citation newValue) {
         checkWritePermission();

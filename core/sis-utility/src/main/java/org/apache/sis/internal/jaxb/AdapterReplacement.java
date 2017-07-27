@@ -37,12 +37,13 @@ import javax.xml.bind.annotation.adapters.XmlAdapter;
  * only in SIS. However we will need to revisit this issue if we move this interface to public API.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.3
- * @module
  *
  * @see Marshaller#setAdapter(XmlAdapter)
  * @see Unmarshaller#setAdapter(XmlAdapter)
+ *
+ * @since 0.3
+ * @module
  */
 public interface AdapterReplacement {
     /**
@@ -54,7 +55,7 @@ public interface AdapterReplacement {
      * }
      *
      * @param  marshaller The marshaller to be configured.
-     * @throws JAXBException If the given marshaller can not be configured.
+     * @throws JAXBException if the given marshaller can not be configured.
      */
     void register(Marshaller marshaller) throws JAXBException;
 
@@ -67,7 +68,7 @@ public interface AdapterReplacement {
      * }
      *
      * @param  unmarshaller The unmarshaller to be configured.
-     * @throws JAXBException If the given unmarshaller can not be configured.
+     * @throws JAXBException if the given unmarshaller can not be configured.
      */
     void register(Unmarshaller unmarshaller) throws JAXBException;
 }

@@ -27,8 +27,8 @@ import org.apache.sis.test.DependsOnMethod;
  * Tests the {@link ArrayConverter} implementations.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.3
+ * @since   0.3
  * @module
  */
 public final strictfp class ArrayConverterTest extends TestCase {
@@ -37,7 +37,7 @@ public final strictfp class ArrayConverterTest extends TestCase {
      * The types need to be specified because we want to test wrapper and primitive types.
      */
     private static <S,T> ArrayConverter<S,T> create(final Class<S> sourceClass, final Class<T> targetClass) {
-        return new ArrayConverter<S,T>(sourceClass, targetClass, new NumberConverter<Integer,Double>(Integer.class, Double.class));
+        return new ArrayConverter<>(sourceClass, targetClass, new NumberConverter<>(Integer.class, Double.class));
     }
 
     /**

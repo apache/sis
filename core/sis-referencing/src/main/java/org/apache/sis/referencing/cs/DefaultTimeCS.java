@@ -17,14 +17,13 @@
 package org.apache.sis.referencing.cs;
 
 import java.util.Map;
-import javax.measure.unit.SI;
-import javax.measure.unit.Unit;
+import javax.measure.Unit;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlRootElement;
 import org.opengis.referencing.cs.TimeCS;
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
-import org.apache.sis.internal.referencing.AxisDirections;
+import org.apache.sis.internal.metadata.AxisDirections;
 import org.apache.sis.measure.Units;
 
 
@@ -48,12 +47,14 @@ import org.apache.sis.measure.Units;
  * constants.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.4
  * @version 0.4
- * @module
  *
  * @see org.apache.sis.referencing.crs.DefaultTemporalCRS
  * @see org.apache.sis.referencing.datum.DefaultTemporalDatum
+ * @see org.apache.sis.referencing.factory.GeodeticAuthorityFactory#createTimeCS(String)
+ *
+ * @since 0.4
+ * @module
  */
 @XmlType(name = "TimeCSType")
 @XmlRootElement(name = "TimeCS")
@@ -64,16 +65,8 @@ public class DefaultTimeCS extends AbstractCS implements TimeCS {
     private static final long serialVersionUID = 5222911412381303989L;
 
     /**
-     * Constructs a new coordinate system in which every attributes are set to a null or empty value.
-     * <strong>This is not a valid object.</strong> This constructor is strictly reserved to JAXB,
-     * which will assign values to the fields using reflexion.
-     */
-    private DefaultTimeCS() {
-    }
-
-    /**
      * Creates a new coordinate system from an arbitrary number of axes. This constructor is for
-     * implementations of the {@link #createSameType(Map, CoordinateSystemAxis[])} method only,
+     * implementations of the {@link #createForAxes(Map, CoordinateSystemAxis[])} method only,
      * because it does not verify the number of axes.
      */
     private DefaultTimeCS(final Map<String,?> properties, final CoordinateSystemAxis[] axes) {
@@ -115,8 +108,10 @@ public class DefaultTimeCS extends AbstractCS implements TimeCS {
      *   </tr>
      * </table>
      *
-     * @param properties The properties to be given to the identified object.
-     * @param axis       The axis.
+     * @param  properties  the properties to be given to the identified object.
+     * @param  axis        the axis.
+     *
+     * @see org.apache.sis.referencing.factory.GeodeticObjectFactory#createTimeCS(Map, CoordinateSystemAxis)
      */
     public DefaultTimeCS(final Map<String,?> properties, final CoordinateSystemAxis axis) {
         super(properties, axis);
@@ -129,7 +124,7 @@ public class DefaultTimeCS extends AbstractCS implements TimeCS {
      *
      * <p>This constructor performs a shallow copy, i.e. the properties are not cloned.</p>
      *
-     * @param cs The coordinate system to copy.
+     * @param  cs  the coordinate system to copy.
      *
      * @see #castOrCopy(TimeCS)
      */
@@ -143,8 +138,8 @@ public class DefaultTimeCS extends AbstractCS implements TimeCS {
      * Otherwise if the given object is already a SIS implementation, then the given object is returned unchanged.
      * Otherwise a new SIS implementation is created and initialized to the attribute values of the given object.
      *
-     * @param  object The object to get as a SIS implementation, or {@code null} if none.
-     * @return A SIS implementation containing the values of the given object (may be the
+     * @param  object  the object to get as a SIS implementation, or {@code null} if none.
+     * @return a SIS implementation containing the values of the given object (may be the
      *         given object itself), or {@code null} if the argument was null.
      */
     public static DefaultTimeCS castOrCopy(final TimeCS object) {
@@ -156,7 +151,7 @@ public class DefaultTimeCS extends AbstractCS implements TimeCS {
      * Returns {@code VALID} if the given argument values are allowed for this coordinate system,
      * or an {@code INVALID_*} error code otherwise. This method is invoked at construction time.
      * The current implementation accepts only temporal directions (i.e. {@link AxisDirection#FUTURE}
-     * and {@link AxisDirection#PAST}) and units compatible with {@link SI#SECOND}.
+     * and {@link AxisDirection#PAST}) and units compatible with {@link Units#SECOND}.
      */
     @Override
     final int validateAxis(final AxisDirection direction, final Unit<?> unit) {
@@ -196,10 +191,35 @@ public class DefaultTimeCS extends AbstractCS implements TimeCS {
     }
 
     /**
-     * Returns a coordinate system of the same class than this CS but with different axes.
+     * Returns a coordinate system with different axes.
      */
     @Override
-    final AbstractCS createSameType(final Map<String,?> properties, final CoordinateSystemAxis[] axes) {
-        return new DefaultTimeCS(properties, axes);
+    final AbstractCS createForAxes(final Map<String,?> properties, final CoordinateSystemAxis[] axes) {
+        switch (axes.length) {
+            case 1: return new DefaultTimeCS(properties, axes);
+            default: throw unexpectedDimension(properties, axes, 1);
+        }
+    }
+
+
+
+
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+    ////////                                                                                  ////////
+    ////////                               XML support with JAXB                              ////////
+    ////////                                                                                  ////////
+    ////////        The following methods are invoked by JAXB using reflection (even if       ////////
+    ////////        they are private) or are helpers for other methods invoked by JAXB.       ////////
+    ////////        Those methods can be safely removed if Geographic Markup Language         ////////
+    ////////        (GML) support is not needed.                                              ////////
+    ////////                                                                                  ////////
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Constructs a new coordinate system in which every attributes are set to a null or empty value.
+     * <strong>This is not a valid object.</strong> This constructor is strictly reserved to JAXB,
+     * which will assign values to the fields using reflexion.
+     */
+    private DefaultTimeCS() {
     }
 }

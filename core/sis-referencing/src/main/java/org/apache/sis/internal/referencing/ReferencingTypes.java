@@ -18,7 +18,11 @@ package org.apache.sis.internal.referencing;
 
 import java.util.Collection;
 import org.apache.sis.internal.jaxb.TypeRegistration;
+import org.apache.sis.parameter.DefaultParameterValue;
+import org.apache.sis.parameter.DefaultParameterValueGroup;
 import org.apache.sis.referencing.AbstractIdentifiedObject;
+import org.apache.sis.referencing.AbstractReferenceSystem;
+import org.opengis.referencing.ReferenceSystem;
 
 
 /**
@@ -26,8 +30,8 @@ import org.apache.sis.referencing.AbstractIdentifiedObject;
  * This class is declared in the {@code META-INF/services/org.apache.sis.internal.jaxb.TypeRegistration} file.
  *
  * @author  Martin Desruisseaux (Geomatys)
+ * @version 0.8
  * @since   0.4
- * @version 0.4
  * @module
  */
 public final class ReferencingTypes extends TypeRegistration {
@@ -35,7 +39,32 @@ public final class ReferencingTypes extends TypeRegistration {
      * Adds to the given collection the referencing types that should be given to the initial JAXB context.
      */
     @Override
-    public void getTypes(final Collection<Class<?>> addTo) {
+    protected void getTypes(final Collection<Class<?>> addTo) {
         addTo.add(AbstractIdentifiedObject.class);
+        addTo.add(DefaultParameterValue.class);
+        addTo.add(DefaultParameterValueGroup.class);
+    }
+
+    /**
+     * Notifies that the {@code sis-referencing} module can marshal arbitrary implementations
+     * of some coordinate reference system interfaces.
+     *
+     * @return {@code true}.
+     */
+    @Override
+    protected boolean canMarshalInterfaces() {
+        return true;
+    }
+
+    /**
+     * Ensures that the given value is an instance of a class that can be marshalled,
+     * or returns {@code null} if the type is not handled by this method.
+     *
+     * @param  value  the value to marshal.
+     * @return the given value as a type that can be marshalled, or {@code null}.
+     */
+    @Override
+    public Object toImplementation(final Object value) {
+        return (value instanceof ReferenceSystem) ? AbstractReferenceSystem.castOrCopy((ReferenceSystem) value) : null;
     }
 }

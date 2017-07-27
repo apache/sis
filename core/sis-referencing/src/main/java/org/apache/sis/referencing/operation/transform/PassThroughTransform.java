@@ -26,6 +26,7 @@ import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.internal.referencing.DirectPositionView;
+import org.apache.sis.internal.metadata.WKTKeywords;
 import org.apache.sis.geometry.GeneralDirectPosition;
 import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.util.ComparisonMode;
@@ -57,8 +58,11 @@ import static org.apache.sis.util.ArgumentChecks.*;
  * Serialization should be used only for short term storage or RMI between applications running the same SIS version.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.5
  * @version 0.5
+ *
+ * @see MathTransforms#compound(MathTransform...)
+ *
+ * @since 0.5
  * @module
  */
 public class PassThroughTransform extends AbstractMathTransform implements Serializable {
@@ -99,9 +103,9 @@ public class PassThroughTransform extends AbstractMathTransform implements Seria
      * since the most optimal pass-through transform for the given {@code subTransform} is not necessarily
      * a {@code PassThroughTransform} instance.
      *
-     * @param firstAffectedOrdinate Index of the first affected ordinate.
-     * @param subTransform          The sub-transform to apply on modified coordinates.
-     * @param numTrailingOrdinates  Number of trailing ordinates to pass through.
+     * @param firstAffectedOrdinate  index of the first affected ordinate.
+     * @param subTransform           the sub-transform to apply on modified coordinates.
+     * @param numTrailingOrdinates   number of trailing ordinates to pass through.
      *
      * @see #create(int, MathTransform, int)
      */
@@ -135,15 +139,16 @@ public class PassThroughTransform extends AbstractMathTransform implements Seria
      * Affected ordinates will range from {@code firstAffectedOrdinate} inclusive to
      * {@code dimTarget - numTrailingOrdinates} exclusive.
      *
-     * @param  firstAffectedOrdinate Index of the first affected ordinate.
-     * @param  subTransform          The sub-transform to apply on modified coordinates.
-     * @param  numTrailingOrdinates  Number of trailing ordinates to pass through.
-     * @return A pass-through transform, not necessarily a {@code PassThroughTransform} instance.
+     * @param  firstAffectedOrdinate  index of the first affected ordinate.
+     * @param  subTransform           the sub-transform to apply on modified coordinates.
+     * @param  numTrailingOrdinates   number of trailing ordinates to pass through.
+     * @return a pass-through transform, not necessarily a {@code PassThroughTransform} instance.
      */
     public static MathTransform create(final int firstAffectedOrdinate,
                                        final MathTransform subTransform,
                                        final int numTrailingOrdinates)
     {
+        ensureNonNull ("subTransform",          subTransform);
         ensurePositive("firstAffectedOrdinate", firstAffectedOrdinate);
         ensurePositive("numTrailingOrdinates",  numTrailingOrdinates);
         if (firstAffectedOrdinate == 0 && numTrailingOrdinates == 0) {
@@ -210,10 +215,10 @@ public class PassThroughTransform extends AbstractMathTransform implements Seria
                 if (sj >= 0 && sj < subDim) {
                     final int si;
                     final boolean pass;
-                    if (i == numCol-1) { // Translation term (last column)
+                    if (i == numCol-1) {                    // Translation term (last column)
                         si = subDim;
                         pass = true;
-                    } else { // Any term other than translation.
+                    } else {                                // Any term other than translation.
                         si = i - firstAffectedOrdinate;
                         pass = (si >= 0 && si < subDim);
                     }
@@ -264,7 +269,7 @@ public class PassThroughTransform extends AbstractMathTransform implements Seria
      * used" fields public in order to keep the flexibility to replace them by a {@code modifiedCoordinates}
      * array in a future SIS version.</div>
      *
-     * @return Indices of the modified source coordinates.
+     * @return Zero-based indices of the modified source coordinates.
      *
      * @see org.apache.sis.referencing.operation.DefaultPassThroughOperation#getModifiedCoordinates()
      */
@@ -280,7 +285,7 @@ public class PassThroughTransform extends AbstractMathTransform implements Seria
      * Returns the sub-transform to apply on the {@linkplain #getModifiedCoordinates() modified coordinates}.
      * This is often the sub-transform specified at construction time, but not necessarily.
      *
-     * @return The sub-transform.
+     * @return the sub-transform.
      *
      * @see org.apache.sis.referencing.operation.DefaultPassThroughOperation#getOperation()
      */
@@ -304,7 +309,7 @@ public class PassThroughTransform extends AbstractMathTransform implements Seria
      * computes the transform derivative if requested.
      *
      * @return {@inheritDoc}
-     * @throws TransformException If the {@linkplain #subTransform sub-transform} failed.
+     * @throws TransformException if the {@linkplain #subTransform sub-transform} failed.
      */
     @Override
     public Matrix transform(final double[] srcPts, final int srcOff,
@@ -324,7 +329,7 @@ public class PassThroughTransform extends AbstractMathTransform implements Seria
     /**
      * Transforms many coordinates in a list of ordinal values.
      *
-     * @throws TransformException If the {@linkplain #subTransform sub-transform} failed.
+     * @throws TransformException if the {@linkplain #subTransform sub-transform} failed.
      */
     @Override
     public void transform(double[] srcPts, int srcOff, final double[] dstPts, int dstOff, int numPts)
@@ -370,7 +375,7 @@ public class PassThroughTransform extends AbstractMathTransform implements Seria
     /**
      * Transforms many coordinates in a list of ordinal values.
      *
-     * @throws TransformException If the {@linkplain #subTransform sub-transform} failed.
+     * @throws TransformException if the {@linkplain #subTransform sub-transform} failed.
      */
     @Override
     public void transform(float[] srcPts, int srcOff, final float[] dstPts, int dstOff, int numPts)
@@ -416,7 +421,7 @@ public class PassThroughTransform extends AbstractMathTransform implements Seria
     /**
      * Transforms many coordinates in a list of ordinal values.
      *
-     * @throws TransformException If the {@linkplain #subTransform sub-transform} failed.
+     * @throws TransformException if the {@linkplain #subTransform sub-transform} failed.
      */
     @Override
     public void transform(final double[] srcPts, int srcOff, final float[] dstPts, int dstOff, int numPts)
@@ -425,13 +430,13 @@ public class PassThroughTransform extends AbstractMathTransform implements Seria
         final int subDimSource = subTransform.getSourceDimensions();
         final int subDimTarget = subTransform.getTargetDimensions();
         while (--numPts >= 0) {
-            for (int i=0; i<firstAffectedOrdinate; i++) {
+            for (int i=0; i < firstAffectedOrdinate; i++) {
                 dstPts[dstOff++] = (float) srcPts[srcOff++];
             }
             subTransform.transform(srcPts, srcOff, dstPts, dstOff, 1);
             srcOff += subDimSource;
             dstOff += subDimTarget;
-            for (int i=0; i<numTrailingOrdinates; i++) {
+            for (int i=0; i < numTrailingOrdinates; i++) {
                 dstPts[dstOff++] = (float) srcPts[srcOff++];
             }
         }
@@ -440,7 +445,7 @@ public class PassThroughTransform extends AbstractMathTransform implements Seria
     /**
      * Transforms many coordinates in a list of ordinal values.
      *
-     * @throws TransformException If the {@linkplain #subTransform sub-transform} failed.
+     * @throws TransformException if the {@linkplain #subTransform sub-transform} failed.
      */
     @Override
     public void transform(final float[] srcPts, int srcOff, final double[] dstPts, int dstOff, int numPts)
@@ -449,13 +454,13 @@ public class PassThroughTransform extends AbstractMathTransform implements Seria
         final int subDimSource = subTransform.getSourceDimensions();
         final int subDimTarget = subTransform.getTargetDimensions();
         while (--numPts >= 0) {
-            for (int i=0; i<firstAffectedOrdinate; i++) {
+            for (int i=0; i < firstAffectedOrdinate; i++) {
                 dstPts[dstOff++] = srcPts[srcOff++];
             }
             subTransform.transform(srcPts, srcOff, dstPts, dstOff, 1);
             srcOff += subDimSource;
             dstOff += subDimTarget;
-            for (int i=0; i<numTrailingOrdinates; i++) {
+            for (int i=0; i < numTrailingOrdinates; i++) {
                 dstPts[dstOff++] = srcPts[srcOff++];
             }
         }
@@ -465,7 +470,7 @@ public class PassThroughTransform extends AbstractMathTransform implements Seria
      * Gets the derivative of this transform at a point.
      *
      * @return {@inheritDoc}
-     * @throws TransformException If the {@linkplain #subTransform sub-transform} failed.
+     * @throws TransformException if the {@linkplain #subTransform sub-transform} failed.
      */
     @Override
     public Matrix derivative(final DirectPosition point) throws TransformException {
@@ -485,11 +490,11 @@ public class PassThroughTransform extends AbstractMathTransform implements Seria
      * sub-transform can be expressed as a matrix. It is also invoked for computing the
      * matrix returned by {@link #derivative}.
      *
-     * @param subMatrix The sub-transform as a matrix.
-     * @param firstAffectedOrdinate Index of the first affected ordinate.
-     * @param numTrailingOrdinates Number of trailing ordinates to pass through.
-     * @param affine 0 if the matrix do not contains translation terms, or 1 if
-     *        the matrix is an affine transform with translation terms.
+     * @param subMatrix              the sub-transform as a matrix.
+     * @param firstAffectedOrdinate  index of the first affected ordinate.
+     * @param numTrailingOrdinates   number of trailing ordinates to pass through.
+     * @param affine                 0 if the matrix do not contains translation terms, or 1 if
+     *                               the matrix is an affine transform with translation terms.
      */
     private static Matrix expand(final MatrixSIS subMatrix,
                                  final int firstAffectedOrdinate,
@@ -501,8 +506,8 @@ public class PassThroughTransform extends AbstractMathTransform implements Seria
         final int numSubCol = subMatrix.getNumCol() - affine;
         final int numRow    = numSubRow + (nSkipped + affine);
         final int numCol    = numSubCol + (nSkipped + affine);
-        final Number[] elements = new Number[numRow * numCol]; // Matrix elements as row major (column index varies faster).
-        Arrays.fill(elements, Integer.valueOf(0));
+        final Number[] elements = new Number[numRow * numCol];      // Matrix elements as row major (column index varies faster).
+        Arrays.fill(elements, 0);
         /*                      ┌                  ┐
          *  Set UL part to 1:   │ 1  0             │
          *                      │ 0  1             │
@@ -567,7 +572,7 @@ public class PassThroughTransform extends AbstractMathTransform implements Seria
      * Creates the inverse transform of this object.
      *
      * @return {@inheritDoc}
-     * @throws NoninvertibleTransformException If the {@linkplain #subTransform sub-transform} is not invertible.
+     * @throws NoninvertibleTransformException if the {@linkplain #subTransform sub-transform} is not invertible.
      */
     @Override
     public synchronized MathTransform inverse() throws NoninvertibleTransformException {
@@ -619,8 +624,8 @@ public class PassThroughTransform extends AbstractMathTransform implements Seria
      * then this method silently uses the WKT 1 convention without raising an error
      * (unless this {@code PassThroughTransform} can not be formatted as valid WKT 1 neither).</div>
      *
-     * @param  formatter The formatter to use.
-     * @return The WKT element name, which is {@code "PassThrough_MT"}.
+     * @param  formatter  the formatter to use.
+     * @return the WKT element name, which is {@code "PassThrough_MT"}.
      */
     @Override
     protected String formatTo(final Formatter formatter) {
@@ -630,6 +635,6 @@ public class PassThroughTransform extends AbstractMathTransform implements Seria
             formatter.setInvalidWKT(PassThroughTransform.class, null);
         }
         formatter.append(subTransform);
-        return "PassThrough_MT";
+        return WKTKeywords.PassThrough_MT;
     }
 }

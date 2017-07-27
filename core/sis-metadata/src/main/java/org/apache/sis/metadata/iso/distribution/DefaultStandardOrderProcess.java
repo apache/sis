@@ -50,10 +50,11 @@ import static org.apache.sis.internal.metadata.MetadataUtilities.toMilliseconds;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Touraïvane (IRD)
  * @author  Cédric Briançon (Geomatys)
- * @since   0.3
  * @version 0.5
+ * @since   0.3
  * @module
  */
+@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "MD_StandardOrderProcess_Type", propOrder = {
     "fees",
     "plannedAvailableDateTime",
@@ -115,7 +116,7 @@ public class DefaultStandardOrderProcess extends ISOMetadata implements Standard
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
-     * @param object The metadata to copy values from, or {@code null} if none.
+     * @param  object  the metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(StandardOrderProcess)
      */
@@ -147,8 +148,8 @@ public class DefaultStandardOrderProcess extends ISOMetadata implements Standard
      *       metadata contained in the given object are not recursively copied.</li>
      * </ul>
      *
-     * @param  object The object to get as a SIS implementation, or {@code null} if none.
-     * @return A SIS implementation containing the values of the given object (may be the
+     * @param  object  the object to get as a SIS implementation, or {@code null} if none.
+     * @return a SIS implementation containing the values of the given object (may be the
      *         given object itself), or {@code null} if the argument was null.
      */
     public static DefaultStandardOrderProcess castOrCopy(final StandardOrderProcess object) {
@@ -163,7 +164,7 @@ public class DefaultStandardOrderProcess extends ISOMetadata implements Standard
      * Include monetary units (as specified in ISO 4217).
      * The monetary units may also be available with {@link #getCurrency()}.
      *
-     * @return Fees and terms for retrieving the resource, or {@code null}.
+     * @return fees and terms for retrieving the resource, or {@code null}.
      *
      * @see #getCurrency()
      */
@@ -177,7 +178,7 @@ public class DefaultStandardOrderProcess extends ISOMetadata implements Standard
      * Sets fees and terms for retrieving the resource.
      * Include monetary units (as specified in ISO 4217).
      *
-     * @param newValue The new fees.
+     * @param  newValue  the new fees.
      *
      * @see #setCurrency(Currency)
      */
@@ -195,7 +196,7 @@ public class DefaultStandardOrderProcess extends ISOMetadata implements Standard
      * However if this method returns a non-null value, then that value is required to be consistent
      * with the fees text.</p>
      *
-     * @return The fees monetary units, or {@code null} if none or unknown.
+     * @return the fees monetary units, or {@code null} if none or unknown.
      *
      * @since 0.5
      *
@@ -210,11 +211,11 @@ public class DefaultStandardOrderProcess extends ISOMetadata implements Standard
      * Callers should ensure that the given currency is consistent with the currency
      * in the {@linkplain #getFees() fees} text.
      *
-     * @param newValue The new currency.
-     *
-     * @since 0.5
+     * @param  newValue  the new currency.
      *
      * @see #setFees(InternationalString)
+     *
+     * @since 0.5
      */
     public void setCurrency(final Currency newValue) {
         checkWritePermission();
@@ -224,7 +225,7 @@ public class DefaultStandardOrderProcess extends ISOMetadata implements Standard
     /**
      * Returns the date and time when the dataset will be available.
      *
-     * @return Date and time when the dataset will be available, or {@code null}.
+     * @return date and time when the dataset will be available, or {@code null}.
      */
     @Override
     @XmlElement(name = "plannedAvailableDateTime")
@@ -235,7 +236,7 @@ public class DefaultStandardOrderProcess extends ISOMetadata implements Standard
     /**
      * Sets the date and time when the dataset will be available.
      *
-     * @param newValue The new planned available time.
+     * @param  newValue  the new planned available time.
      */
     public void setPlannedAvailableDateTime(final Date newValue) {
         checkWritePermission();
@@ -245,7 +246,7 @@ public class DefaultStandardOrderProcess extends ISOMetadata implements Standard
     /**
      * Returns general instructions, terms and services provided by the distributor.
      *
-     * @return General instructions, terms and services provided by the distributor, or {@code null}.
+     * @return general instructions, terms and services provided by the distributor, or {@code null}.
      */
     @Override
     @XmlElement(name = "orderingInstructions")
@@ -256,7 +257,7 @@ public class DefaultStandardOrderProcess extends ISOMetadata implements Standard
     /**
      * Sets general instructions, terms and services provided by the distributor.
      *
-     * @param newValue The new ordering instructions.
+     * @param  newValue  the new ordering instructions.
      */
     public void setOrderingInstructions(final InternationalString newValue) {
         checkWritePermission();
@@ -266,7 +267,7 @@ public class DefaultStandardOrderProcess extends ISOMetadata implements Standard
     /**
      * Returns typical turnaround time for the filling of an order.
      *
-     * @return Typical turnaround time for the filling of an order, or {@code null}.
+     * @return typical turnaround time for the filling of an order, or {@code null}.
      */
     @Override
     @XmlElement(name = "turnaround")
@@ -277,7 +278,7 @@ public class DefaultStandardOrderProcess extends ISOMetadata implements Standard
     /**
      * Sets typical turnaround time for the filling of an order.
      *
-     * @param newValue The new turnaround.
+     * @param  newValue  the new turnaround.
      */
     public void setTurnaround(final InternationalString newValue) {
         checkWritePermission();
@@ -287,7 +288,7 @@ public class DefaultStandardOrderProcess extends ISOMetadata implements Standard
     /**
      * Returns the description of the {@linkplain #getOrderOptions() order options} record.
      *
-     * @return Description of the order options record, or {@code null} if none.
+     * @return description of the order options record, or {@code null} if none.
      *
      * @since 0.5
      *
@@ -314,7 +315,7 @@ public class DefaultStandardOrderProcess extends ISOMetadata implements Standard
     /**
      * Returns the request/purchase choices.
      *
-     * @return Request/purchase choices.
+     * @return request/purchase choices.
      *
      * @since 0.5
      *

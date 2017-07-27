@@ -19,25 +19,29 @@ package org.apache.sis.parameter;
 import java.util.Arrays;
 import java.util.Set;
 import java.util.Map;
-import javax.measure.unit.Unit;
+import java.util.Objects;
+import javax.xml.bind.annotation.XmlType;
+import javax.xml.bind.annotation.XmlRootElement;
+import javax.measure.Unit;
 import org.opengis.util.CodeList;
 import org.opengis.parameter.ParameterValue;
 import org.opengis.parameter.ParameterDescriptor;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.Numbers;
+import org.apache.sis.util.Utilities;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.measure.Range;
 import org.apache.sis.measure.MeasurementRange;
 import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.internal.util.CollectionsExt;
+import org.apache.sis.internal.jaxb.Context;
+import org.apache.sis.internal.jaxb.gco.PropertyType;
+import org.apache.sis.internal.jaxb.referencing.CC_OperationParameter;
 import org.apache.sis.referencing.IdentifiedObjects;
 
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 import static org.apache.sis.util.ArgumentChecks.ensureCanCast;
-
-// Branch-dependent imports
-import org.apache.sis.internal.jdk7.Objects;
 
 
 /**
@@ -59,17 +63,20 @@ import org.apache.sis.internal.jdk7.Objects;
  *   <li>The {@linkplain #getUnit() unit of measurement}.</li>
  * </ul>
  *
- * @param <T> The type of elements to be returned by {@link DefaultParameterValue#getValue()}.
- *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Johann Sorel (Geomatys)
- * @since   0.4
- * @version 0.5
- * @module
+ * @version 0.8
+ *
+ * @param <T>  the type of elements to be returned by {@link DefaultParameterValue#getValue()}.
  *
  * @see DefaultParameterValue
  * @see DefaultParameterDescriptorGroup
+ *
+ * @since 0.4
+ * @module
  */
+@XmlType(name = "OperationParameterType")
+@XmlRootElement(name = "OperationParameter")
 public class DefaultParameterDescriptor<T> extends AbstractParameterDescriptor implements ParameterDescriptor<T> {
     /**
      * Serial number for inter-operability with different versions.
@@ -85,7 +92,7 @@ public class DefaultParameterDescriptor<T> extends AbstractParameterDescriptor i
 
     /**
      * A set of valid values (usually from a {@linkplain CodeList code list})
-     * or {@code null} if it doesn't apply. This set is immutable.
+     * or {@code null} if it does not apply. This set is immutable.
      *
      * @see #getValidValues()
      */
@@ -141,7 +148,7 @@ public class DefaultParameterDescriptor<T> extends AbstractParameterDescriptor i
      *     <td>{@link #getIdentifiers()}</td>
      *   </tr>
      *   <tr>
-     *     <td>{@value org.opengis.metadata.Identifier#DESCRIPTION_KEY}</td>
+     *     <td>"description"</td>
      *     <td>{@link org.opengis.util.InternationalString} or {@link String}</td>
      *     <td>{@link #getDescription()}</td>
      *   </tr>
@@ -173,18 +180,18 @@ public class DefaultParameterDescriptor<T> extends AbstractParameterDescriptor i
      * If both {@code valueDomain} and {@code validValues} are non-null, then all valid values shall be contained
      * in the value domain.
      *
-     * @param properties    The properties to be given to the identified object.
-     * @param minimumOccurs The {@linkplain #getMinimumOccurs() minimum number of times} that values
-     *                      for this parameter group are required, or 0 if no restriction.
-     * @param maximumOccurs The {@linkplain #getMaximumOccurs() maximum number of times} that values
-     *                      for this parameter group are required, or {@link Integer#MAX_VALUE} if no restriction.
-     * @param valueClass    The class that describes the type of the parameter value.
-     * @param valueDomain   The minimum value, maximum value and unit of measurement, or {@code null} if none.
-     * @param validValues   The list of valid values, or {@code null} if there is no restriction.
-     *                      This property is mostly for restricting values to a {@linkplain CodeList code list}
-     *                      or enumeration subset. It is not necessary to provide this property when all values
-     *                      from the code list or enumeration are valid.
-     * @param defaultValue  The default value for the parameter, or {@code null} if none.
+     * @param properties     the properties to be given to the identified object.
+     * @param minimumOccurs  the {@linkplain #getMinimumOccurs() minimum number of times} that values
+     *                       for this parameter group are required, or 0 if no restriction.
+     * @param maximumOccurs  the {@linkplain #getMaximumOccurs() maximum number of times} that values
+     *                       for this parameter group are required, or {@link Integer#MAX_VALUE} if no restriction.
+     * @param valueClass     the class that describes the type of the parameter value.
+     * @param valueDomain    the minimum value, maximum value and unit of measurement, or {@code null} if none.
+     * @param validValues    the list of valid values, or {@code null} if there is no restriction.
+     *                       This property is mostly for restricting values to a {@linkplain CodeList code list}
+     *                       or enumeration subset. It is not necessary to provide this property when all values
+     *                       from the code list or enumeration are valid.
+     * @param defaultValue   the default value for the parameter, or {@code null} if none.
      */
     @SuppressWarnings("unchecked")
     public DefaultParameterDescriptor(final Map<String,?> properties,
@@ -257,7 +264,7 @@ public class DefaultParameterDescriptor<T> extends AbstractParameterDescriptor i
      *
      * <p>This constructor performs a shallow copy, i.e. the properties are not cloned.</p>
      *
-     * @param descriptor The descriptor to shallow copy.
+     * @param  descriptor  the descriptor to shallow copy.
      *
      * @see #castOrCopy(ParameterDescriptor)
      */
@@ -276,14 +283,14 @@ public class DefaultParameterDescriptor<T> extends AbstractParameterDescriptor i
      * Otherwise if the given object is already a SIS implementation, then the given object is returned unchanged.
      * Otherwise a new SIS implementation is created and initialized to the values of the given object.
      *
-     * @param  <T> The type of values.
-     * @param  object The object to get as a SIS implementation, or {@code null} if none.
-     * @return A SIS implementation containing the values of the given object (may be the
+     * @param  <T>     the type of values.
+     * @param  object  the object to get as a SIS implementation, or {@code null} if none.
+     * @return a SIS implementation containing the values of the given object (may be the
      *         given object itself), or {@code null} if the argument was null.
      */
     public static <T> DefaultParameterDescriptor<T> castOrCopy(final ParameterDescriptor<T> object) {
         return (object == null) || (object instanceof DefaultParameterDescriptor<?>)
-                ? (DefaultParameterDescriptor<T>) object : new DefaultParameterDescriptor<T>(object);
+                ? (DefaultParameterDescriptor<T>) object : new DefaultParameterDescriptor<>(object);
     }
 
     /**
@@ -306,7 +313,7 @@ public class DefaultParameterDescriptor<T> extends AbstractParameterDescriptor i
     /**
      * Returns the class that describe the type of the parameter.
      *
-     * @return The parameter value class.
+     * @return the parameter value class.
      */
     @Override
     public final Class<T> getValueClass() {
@@ -318,12 +325,13 @@ public class DefaultParameterDescriptor<T> extends AbstractParameterDescriptor i
      * The set of valid values is usually a {@linkplain CodeList code list} or enumeration.
      * This method returns {@code null} if this parameter does not limit values to a finite set.
      *
-     * @return A finite set of valid values (usually from a {@linkplain CodeList code list}),
+     * @return a finite set of valid values (usually from a {@linkplain CodeList code list}),
      *         or {@code null} if it does not apply or if there is no restriction.
      */
     @Override
+    @SuppressWarnings("ReturnOfCollectionOrArrayField")
     public Set<T> getValidValues() {
-        return validValues;
+        return validValues;                                             // Null or unmodifiable
     }
 
     /**
@@ -337,7 +345,7 @@ public class DefaultParameterDescriptor<T> extends AbstractParameterDescriptor i
      * {@code Range<T>}, or {@code Range<E>} where {@code <E>} is the {@linkplain Class#getComponentType() component
      * type} of {@code <T>} (using wrapper classes for primitive types).</div>
      *
-     * @return The domain of values, or {@code null}.
+     * @return the domain of values, or {@code null}.
      *
      * @see Parameters#getValueDomain(ParameterDescriptor)
      */
@@ -359,7 +367,7 @@ public class DefaultParameterDescriptor<T> extends AbstractParameterDescriptor i
      * <code>{@linkplain #getValueDomain()}.{@linkplain Range#getMinValue() getMinValue()}</code>.
      * Note that this method said nothing about whether the value is {@linkplain Range#isMinIncluded() inclusive}.</p>
      *
-     * @return The minimum parameter value (often an instance of {@link Double}), or {@code null} if unbounded.
+     * @return the minimum parameter value (often an instance of {@link Double}), or {@code null} if unbounded.
      */
     @Override
     @SuppressWarnings("unchecked")
@@ -377,7 +385,7 @@ public class DefaultParameterDescriptor<T> extends AbstractParameterDescriptor i
      * <code>{@linkplain #getValueDomain()}.{@linkplain Range#getMaxValue() getMaxValue()}</code>.
      * Note that this method said nothing about whether the value is {@linkplain Range#isMaxIncluded() inclusive}.</p>
      *
-     * @return The minimum parameter value (often an instance of {@link Double}), or {@code null} if unbounded.
+     * @return the minimum parameter value (often an instance of {@link Double}), or {@code null} if unbounded.
      */
     @Override
     @SuppressWarnings("unchecked")
@@ -391,7 +399,7 @@ public class DefaultParameterDescriptor<T> extends AbstractParameterDescriptor i
      * including a {@link Number} or a {@link String}. If there is no default value,
      * then this method returns {@code null}.
      *
-     * @return The default value, or {@code null} in none.
+     * @return the default value, or {@code null} in none.
      */
     @Override
     public T getDefaultValue() {
@@ -408,7 +416,7 @@ public class DefaultParameterDescriptor<T> extends AbstractParameterDescriptor i
      * <p>This is a convenience method for
      * <code>{@linkplain #getValueDomain()}.{@linkplain MeasurementRange#unit() unit()}</code>.</p>
      *
-     * @return The unit for numeric value, or {@code null} if it doesn't apply to the value type.
+     * @return the unit for numeric value, or {@code null} if it doesn't apply to the value type.
      */
     @Override
     public Unit<?> getUnit() {
@@ -420,11 +428,11 @@ public class DefaultParameterDescriptor<T> extends AbstractParameterDescriptor i
      * The {@linkplain DefaultParameterDescriptor parameter descriptor} for the created parameter value will be
      * {@code this} object.
      *
-     * @return A parameter initialized to the default value.
+     * @return a parameter initialized to the default value.
      */
     @Override
     public ParameterValue<T> createValue() {
-        return new DefaultParameterValue<T>(this);
+        return new DefaultParameterValue<>(this);
     }
 
     /**
@@ -462,7 +470,7 @@ public class DefaultParameterDescriptor<T> extends AbstractParameterDescriptor i
                     final ParameterDescriptor<?> that = (ParameterDescriptor<?>) object;
                     return getValueClass() == that.getValueClass() &&
                            Objects.deepEquals(getDefaultValue(), that.getDefaultValue()) &&
-                           Objects.equals(getUnit(), that.getUnit()) &&
+                           Utilities.deepEquals(getUnit(), that.getUnit(), mode) &&
                            (isHeuristicMatchForName(that.getName().getCode()) ||
                             IdentifiedObjects.isHeuristicMatchForName(that, getName().getCode()));
                 }
@@ -475,7 +483,7 @@ public class DefaultParameterDescriptor<T> extends AbstractParameterDescriptor i
                            Objects.    equals(getMinimumValue(), that.getMinimumValue()) &&
                            Objects.    equals(getMaximumValue(), that.getMaximumValue()) &&
                            Objects.deepEquals(getDefaultValue(), that.getDefaultValue()) &&
-                           Objects.    equals(getUnit(),         that.getUnit());
+                           Utilities.deepEquals(getUnit(),       that.getUnit(), mode);
                 }
                 case STRICT: {
                     final DefaultParameterDescriptor<?> that = (DefaultParameterDescriptor<?>) object;
@@ -497,5 +505,51 @@ public class DefaultParameterDescriptor<T> extends AbstractParameterDescriptor i
     @Override
     protected long computeHashCode() {
         return Arrays.deepHashCode(new Object[] {valueClass, valueDomain, defaultValue}) + super.computeHashCode();
+    }
+
+
+
+
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+    ////////                                                                                  ////////
+    ////////                               XML support with JAXB                              ////////
+    ////////                                                                                  ////////
+    ////////        The following methods are invoked by JAXB using reflection (even if       ////////
+    ////////        they are private) or are helpers for other methods invoked by JAXB.       ////////
+    ////////        Those methods can be safely removed if Geographic Markup Language         ////////
+    ////////        (GML) support is not needed.                                              ////////
+    ////////                                                                                  ////////
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+    /**
+     * Constructs a new object in which every attributes are set to a null value.
+     * <strong>This is not a valid object.</strong> This constructor is strictly
+     * reserved to JAXB, which will assign values to the fields using reflexion.
+     *
+     * <p>This constructor fetches the value class and the unit of measurement from the enclosing
+     * {@link DefaultParameterValue}, if presents, because those information are not presents in GML.
+     * They are GeoAPI additions.</p>
+     */
+    @SuppressWarnings("unchecked")
+    private DefaultParameterDescriptor() {
+        final PropertyType<?,?> wrapper = Context.getWrapper(Context.current());
+        if (wrapper instanceof CC_OperationParameter) {
+            final CC_OperationParameter param = (CC_OperationParameter) wrapper;
+            /*
+             * This unsafe cast would be forbidden if this constructor was public or used in any context where the
+             * user can choose the value of <T>. But this constructor should be invoked only during unmarshalling,
+             * after the creation of the ParameterValue (this is the reverse creation order than what we normally
+             * do through the public API). The 'valueClass' should be compatible with DefaultParameterValue.value,
+             * and the parameterized type visible to the user should be only <?>.
+             */
+            valueClass  = (Class) param.valueClass;
+            valueDomain = param.valueDomain;
+        } else {
+            valueClass  = null;
+            valueDomain = null;
+        }
+        validValues  = null;
+        defaultValue = null;
     }
 }

@@ -36,14 +36,15 @@ import org.junit.AfterClass;
 import org.junit.Test;
 
 import static org.apache.sis.test.Assert.*;
+import static org.apache.sis.internal.util.StandardDateFormat.UTC;
 
 
 /**
  * Tests the XML marshaling of {@code Locale} when used for a language.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.4
+ * @since   0.3
  * @module
  */
 public final strictfp class LanguageCodeTest extends XMLTestCase {
@@ -73,15 +74,15 @@ public final strictfp class LanguageCodeTest extends XMLTestCase {
      * Creates the XML (un)marshaller pool to be shared by all test methods.
      * The (un)marshallers locale and timezone will be set to fixed values.
      *
-     * @throws JAXBException If an error occurred while creating the pool.
+     * @throws JAXBException if an error occurred while creating the pool.
      *
      * @see #disposeMarshallerPool()
      */
     @BeforeClass
     public static void createMarshallerPool() throws JAXBException {
-        final Map<String,Object> properties = new HashMap<String,Object>(4);
+        final Map<String,Object> properties = new HashMap<>(4);
         assertNull(properties.put(XML.LOCALE, Locale.UK));
-        assertNull(properties.put(XML.TIMEZONE, "UTC"));
+        assertNull(properties.put(XML.TIMEZONE, UTC));
         pool = new MarshallerPool(JAXBContext.newInstance(MetadataMock.class), properties);
     }
 
@@ -106,7 +107,7 @@ public final strictfp class LanguageCodeTest extends XMLTestCase {
      *   </gmd:MD_Metadata>
      * }
      *
-     * @param languageCode The XML fragment to write inside the {@code <gmd:language>} element.
+     * @param  languageCode  the XML fragment to write inside the {@code <gmd:language>} element.
      */
     private static String getMetadataXML(final String languageCode) {
         return "<gmd:MD_Metadata" +
@@ -122,7 +123,7 @@ public final strictfp class LanguageCodeTest extends XMLTestCase {
      * Tests marshalling of {@code <gmd:LanguageCode>}.
      * The result shall be as documented in {@link #testLanguageCode()}.
      *
-     * @throws JAXBException Should never happen.
+     * @throws JAXBException if an error occurs while marshalling the language.
      *
      * @see #testMarshallCharacterString()
      */
@@ -146,7 +147,7 @@ public final strictfp class LanguageCodeTest extends XMLTestCase {
      *   </gmd:MD_Metadata>
      * }
      *
-     * @throws JAXBException Should never happen.
+     * @throws JAXBException if an error occurs while unmarshalling the language.
      *
      * @see #testMarshallLanguageCode()
      */
@@ -170,7 +171,7 @@ public final strictfp class LanguageCodeTest extends XMLTestCase {
      *   </gmd:MD_Metadata>
      * }
      *
-     * @throws JAXBException Should never happen.
+     * @throws JAXBException if an error occurs while unmarshalling the language.
      */
     @Test
     @DependsOnMethod("testLanguageCode")
@@ -186,7 +187,7 @@ public final strictfp class LanguageCodeTest extends XMLTestCase {
      * Tests marshalling of {@code <gco:CharacterString>}, which require explicit marshaller configuration.
      * The result shall be as documented in {@link #testCharacterString()}.
      *
-     * @throws JAXBException Should never happen.
+     * @throws JAXBException if an error occurs while marshalling the language.
      *
      * @see #testMarshallLanguageCode()
      */
@@ -212,7 +213,7 @@ public final strictfp class LanguageCodeTest extends XMLTestCase {
      *   </gmd:MD_Metadata>
      * }
      *
-     * @throws JAXBException Should never happen.
+     * @throws JAXBException if an error occurs while unmarshalling the language.
      */
     @Test
     public void testCharacterString() throws JAXBException {

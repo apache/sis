@@ -27,15 +27,15 @@ import static org.junit.Assert.*;
  * Tests the {@link XMLComparator} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.4
+ * @since   0.3
  * @module
  */
 public final strictfp class XMLComparatorTest extends TestCase {
     /**
      * Tests the {@link XMLComparator#ignoredAttributes} and {@link XMLComparator#ignoredNodes} sets.
      *
-     * @throws Exception Shall never happen.
+     * @throws Exception if an error occurred while reading the XML.
      */
     @Test
     public void testIgnore() throws Exception {
@@ -81,7 +81,7 @@ public final strictfp class XMLComparatorTest extends TestCase {
      *
      * @see javax.xml.parsers.DocumentBuilderFactory#setNamespaceAware(boolean)
      *
-     * @throws Exception Shall never happen.
+     * @throws Exception if an error occurred while reading the XML.
      */
     @Test
     public void testNamespaceAware() throws Exception {
@@ -120,8 +120,8 @@ public final strictfp class XMLComparatorTest extends TestCase {
      * invoked in order to test that the comparator rightly detected an error that we
      * were expected to detect.
      *
-     * @param message The message for JUnit if the comparison does not fail.
-     * @param cmp The comparator on which to invoke {@link XMLComparator#compare()}.
+     * @param  message  the message for JUnit if the comparison does not fail.
+     * @param  cmp      the comparator on which to invoke {@link XMLComparator#compare()}.
      */
     private static void assertFail(final String message, final XMLComparator cmp) {
         try {

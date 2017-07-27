@@ -18,6 +18,8 @@ package org.apache.sis.referencing.operation.transform;
 
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
+import org.opengis.referencing.operation.TransformException;
+import org.opengis.referencing.operation.NoninvertibleTransformException;
 
 
 /**
@@ -60,14 +62,15 @@ import org.opengis.referencing.operation.MathTransform;
  * convenience method.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.4
- * @version 0.6
- * @module
+ * @version 0.7
  *
  * @see org.apache.sis.referencing.operation.transform.MathTransforms#linear(Matrix)
  * @see org.apache.sis.referencing.operation.builder.LinearTransformBuilder
  * @see java.awt.geom.AffineTransform
  * @see <a href="http://mathworld.wolfram.com/AffineTransformation.html">Affine transformation on MathWorld</a>
+ *
+ * @since 0.4
+ * @module
  */
 public interface LinearTransform extends MathTransform {
     /**
@@ -88,9 +91,47 @@ public interface LinearTransform extends MathTransform {
      * returned matrix by a vector containing the ordinate values with an additional 1 in the last row.
      * See {@link LinearTransform} class Javadoc for more details.
      *
-     * @return The coefficients of this linear transform as a matrix.
+     * @return the coefficients of this linear transform as a matrix.
      *
      * @see MathTransforms#getMatrix(MathTransform)
      */
     Matrix getMatrix();
+
+    /**
+     * Transforms an array of relative distance vectors.
+     * Distance vectors are transformed without applying the translation components.
+     * The supplied array of distance values will contain packed values.
+     *
+     * <div class="note"><b>Example:</b> if the source dimension is 3, then the values will be packed in this order:
+     * (<var>Δx₀</var>,<var>Δy₀</var>,<var>Δz₀</var>,
+     *  <var>Δx₁</var>,<var>Δy₁</var>,<var>Δz₁</var> …).
+     * </div>
+     *
+     * @param  srcPts  the array containing the source vectors.
+     * @param  srcOff  the offset to the first vector to be transformed in the source array.
+     * @param  dstPts  the array into which the transformed vectors are returned. Can be the same than {@code srcPts}.
+     * @param  dstOff  the offset to the location of the first transformed vector that is stored in the destination array.
+     * @param  numPts  the number of vector objects to be transformed.
+     * @throws TransformException if a vector can not be transformed.
+     *
+     * @see java.awt.geom.AffineTransform#deltaTransform(double[], int, double[], int, int)
+     *
+     * @since 0.7
+     */
+    void deltaTransform(double[] srcPts, int srcOff, double[] dstPts, int dstOff, int numPts) throws TransformException;
+
+    /**
+     * Returns the inverse transform of this object, which shall also be linear.
+     * The target of the inverse transform is the source of the original.
+     * The source of the inverse transform is the target of the original.
+     *
+     * @return the inverse transform.
+     * @throws NoninvertibleTransformException if the transform can not be inverted.
+     *
+     * @see java.awt.geom.AffineTransform#createInverse()
+     *
+     * @since 0.7
+     */
+    @Override
+    LinearTransform inverse() throws NoninvertibleTransformException;
 }

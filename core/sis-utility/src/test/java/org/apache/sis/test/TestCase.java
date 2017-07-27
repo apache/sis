@@ -19,16 +19,16 @@ package org.apache.sis.test;
 import java.util.logging.Logger;
 import java.util.logging.Handler;
 import java.util.logging.ConsoleHandler;
+import java.util.logging.LogManager;
 import java.io.Console;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
+import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.util.logging.Logging;
+import org.apache.sis.util.logging.MonolineFormatter;
 import org.junit.runner.RunWith;
-
-import static org.apache.sis.test.TestConfiguration.VERBOSE_OUTPUT_KEY;
-import static org.apache.sis.test.TestConfiguration.OUTPUT_ENCODING_KEY;
 
 
 /**
@@ -49,8 +49,8 @@ import static org.apache.sis.test.TestConfiguration.OUTPUT_ENCODING_KEY;
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
+ * @version 0.7
  * @since   0.3
- * @version 0.4
  * @module
  */
 @RunWith(TestRunner.class)
@@ -73,15 +73,25 @@ public abstract strictfp class TestCase {
     public static final boolean PENDING_FUTURE_SIS_VERSION = false;
 
     /**
-     * The seed for the random number generator created by {@link TestUtilities#createRandomNumberGenerator(String)},
-     * or 0 if none. This information is used for printing the seed in case of test failure, in order to allow the
-     * developer to reproduce the failure.
+     * Tolerance threshold for strict comparisons of floating point numbers.
+     * This constant can be used like below, where {@code expected} and {@code actual} are {@code double} values:
+     *
+     * {@preformat java
+     *     assertEquals(expected, actual, STRICT);
+     * }
+     */
+    protected static final double STRICT = 0;
+
+    /**
+     * The seed for the random number generator created by {@link TestUtilities#createRandomNumberGenerator()},
+     * or 0 if none. This information is used for printing the seed in case of test failure, in order to allow
+     * the developer to reproduce the failure.
      */
     static long randomSeed;
 
     /**
      * The output writer where to print debugging information (never {@code null}).
-     * Texts sent to this printer will be show only if the test fails, or if the
+     * Texts sent to this printer will be shown only if the test fails, or if the
      * {@value org.apache.sis.test.TestConfiguration#VERBOSE_OUTPUT_KEY} system property
      * is set to {@code true}. This writer will use the system default encoding, unless
      * the {@value org.apache.sis.test.TestConfiguration#OUTPUT_ENCODING_KEY} system
@@ -100,14 +110,39 @@ public abstract strictfp class TestCase {
      * {@code true} if the {@value org.apache.sis.test.TestConfiguration#VERBOSE_OUTPUT_KEY}
      * system property is set to {@code true}.
      */
-    public static final boolean verbose;
+    public static final boolean VERBOSE;
+
+    /**
+     * {@code true} if the {@value org.apache.sis.test.TestConfiguration#EXTENSIVE_TESTS_KEY}
+     * system property is set to {@code true}.
+     * If {@code true}, then Apache SIS will run some tests which were normally skipped because they are slow.
+     */
+    public static final boolean RUN_EXTENSIVE_TESTS;
 
     /**
      * Sets the {@link #out} writer and its underlying {@link #buffer}.
      */
     static {
-        verbose = Boolean.getBoolean(VERBOSE_OUTPUT_KEY);
         out = new PrintWriter(buffer = new StringWriter());
+        VERBOSE = Boolean.getBoolean(TestConfiguration.VERBOSE_OUTPUT_KEY);
+        RUN_EXTENSIVE_TESTS = Boolean.getBoolean(TestConfiguration.EXTENSIVE_TESTS_KEY);
+    }
+
+    /**
+     * The parent logger of all Apache SIS loggers.
+     * Needs to be retained by strong reference.
+     */
+    static final Logger LOGGER = Logger.getLogger(Loggers.ROOT);
+
+    /**
+     * Initializes {@link MonolineFormatter} if it has been specified in the {@code logging.properties}
+     * configuration file.
+     */
+    static {
+        final LogManager manager = LogManager.getLogManager();
+        if (MonolineFormatter.class.getName().equals(manager.getProperty(ConsoleHandler.class.getName() + ".formatter"))) {
+            MonolineFormatter.install();
+        }
     }
 
     /**
@@ -120,12 +155,12 @@ public abstract strictfp class TestCase {
      * message and left the encoding unchanged.</p>
      */
     static {
-        final String encoding = System.getProperty(OUTPUT_ENCODING_KEY);
+        final String encoding = System.getProperty(TestConfiguration.OUTPUT_ENCODING_KEY);
         if (encoding != null) try {
-            for (Logger logger=Logger.getLogger("org.apache.sis"); logger!=null; logger=logger.getParent()) {
+            for (Logger logger=LOGGER; logger!=null; logger=logger.getParent()) {
                 for (final Handler handler : logger.getHandlers()) {
                     if (handler instanceof ConsoleHandler) {
-                        ((ConsoleHandler) handler).setEncoding(encoding);
+                        handler.setEncoding(encoding);
                     }
                 }
                 if (!logger.getUseParentHandlers()) {
@@ -133,8 +168,9 @@ public abstract strictfp class TestCase {
                 }
             }
         } catch (UnsupportedEncodingException e) {
-            Logging.recoverableException(TestCase.class, "<clinit>", e);
+            Logging.recoverableException(LOGGER, TestCase.class, "<clinit>", e);
         }
+        LOGGER.addHandler(LogRecordCollector.INSTANCE);
     }
 
     /**
@@ -145,12 +181,12 @@ public abstract strictfp class TestCase {
 
     /**
      * Invoked by {@link TestRunner} in order to clear the buffer before a new test begin.
-     * This is necessary when the previous test succeeded and the {@link #verbose} flag is
+     * This is necessary when the previous test succeeded and the {@link #VERBOSE} flag is
      * {@code false}, since the {@link #flushOutput()} method has not been invoked in such
      * case.
      */
     static void clearBuffer() {
-        synchronized (buffer) { // This is the lock used by the 'out' PrintWriter.
+        synchronized (buffer) {             // This is the lock used by the 'out' PrintWriter.
             out.flush();
             buffer.getBuffer().setLength(0);
         }
@@ -161,13 +197,12 @@ public abstract strictfp class TestCase {
      * The stream content will be flushed to the {@linkplain System#console() console}
      * if available, or to the {@linkplain System#out standard output stream} otherwise.
      * This method clears the stream buffer.
-     *
-     * @param success {@code true} if this method is invoked on build success,
      */
+    @SuppressWarnings("UseOfSystemOutOrSystemErr")
     static void flushOutput() {
         System.out.flush();
         System.err.flush();
-        synchronized (buffer) { // This is the lock used by the 'out' PrintWriter.
+        synchronized (buffer) {             // This is the lock used by the 'out' PrintWriter.
             out.flush();
             /*
              * Get the text content and remove the trailing spaces
@@ -182,7 +217,7 @@ public abstract strictfp class TestCase {
              * Get the output writer, using the specified encoding if any.
              */
             PrintWriter writer = null;
-            final String encoding = System.getProperty(OUTPUT_ENCODING_KEY);
+            final String encoding = System.getProperty(TestConfiguration.OUTPUT_ENCODING_KEY);
             if (encoding == null) {
                 final Console console = System.console();
                 if (console != null) {

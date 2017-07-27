@@ -19,21 +19,23 @@ package org.apache.sis.internal.jaxb;
 import java.util.AbstractMap;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
+import org.apache.sis.internal.util.Citations;
+
+// Branch-dependent imports
+import org.opengis.referencing.ReferenceIdentifier;
 
 
 /**
- * An entry in the {@link IdentifierMap}. This class implements both the
- * {@link Map.Entry} interface (for inclusion in the set to be returned
- * by {@link IdentifierMapAdapter#entrySet()}) and the {@link Identifier}
- * interface (for inclusion in the {@link IdentifierMapAdapter#identifiers}
- * collection).
+ * An entry in {@link org.apache.sis.xml.IdentifierMap}. This class implements both the {@link AbstractMap.Entry}
+ * interface (for inclusion in the set to be returned by {@link IdentifierMapAdapter#entrySet()}) and the
+ * {@link Identifier} interface (for inclusion in the {@link IdentifierMapAdapter#identifiers} collection).
  *
  * @author  Martin Desruisseaux (Geomatys)
+ * @version 0.5
  * @since   0.3
- * @version 0.3
  * @module
  */
-final class IdentifierMapEntry extends AbstractMap.SimpleEntry<Citation,String> implements Identifier {
+final class IdentifierMapEntry extends AbstractMap.SimpleEntry<Citation,String> implements ReferenceIdentifier {
     /**
      * For cross-version compatibility.
      */
@@ -60,6 +62,30 @@ final class IdentifierMapEntry extends AbstractMap.SimpleEntry<Citation,String> 
     @Override
     public String getCode() {
         return getValue();
+    }
+
+    /**
+     * Infers a code space from the authority.
+     *
+     * @return the code space, or {@code null} if none.
+     *
+     * @since 0.5
+     */
+    @Override
+    public String getCodeSpace() {
+        return Citations.getCodeSpace(getAuthority());
+    }
+
+    /**
+     * Returns {@code null} since this class does not hold version information.
+     *
+     * @return {@code null}.
+     *
+     * @since 0.5
+     */
+    @Override
+    public String getVersion() {
+        return null;
     }
 
     /**

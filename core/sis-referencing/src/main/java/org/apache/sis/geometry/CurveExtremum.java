@@ -23,12 +23,12 @@ import static java.lang.Math.*;
  * Finds the extremum of the unique cubic curve which fit the two given points and derivatives.
  * First, this method finds the A, B, C and D coefficients for the following equation:
  *
- * <blockquote><var>y</var> = A + B<var>x</var> + C<var>x</var><sup>2</sup> + D<var>x</var><sup>3</sup></blockquote>
+ * <blockquote><var>y</var> = A + B<var>x</var> + C<var>x</var>² + D<var>x</var>³</blockquote>
  *
  * Next, this method finds the extremum by finding the (<var>x</var>,<var>y</var>) values
  * that satisfy the following equation (which is the derivative of the above equation):
  *
- * <blockquote>B + 2C<var>x</var> + 3D<var>x</var><sup>2</sup> = 0</blockquote>
+ * <blockquote>B + 2C<var>x</var> + 3D<var>x</var>² = 0</blockquote>
  *
  * A cubic curve can have two extremum, which are stored in this object in no particular order.
  * The distance separating the two extremum is sometime a useful information for determining if
@@ -38,8 +38,8 @@ import static java.lang.Math.*;
  * given geometry is actually a line segment ({@code dy1} = {@code dy2} = slope from P1 to P2).</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.5
  * @version 0.5
+ * @since   0.5
  * @module
  */
 final class CurveExtremum {
@@ -63,13 +63,12 @@ final class CurveExtremum {
      * Finds the extremum of the unique cubic curve which fit the two given points and derivatives.
      * See class javadoc for more information.
      *
-     * @param  x1   The <var>x</var> ordinate of the first point.
-     * @param  y1   The <var>y</var> ordinate of the first point.
-     * @param  dy1  The ∂<var>x</var>/∂<var>y</var> value at the first point.
-     * @param  x2   The <var>x</var> ordinate of the second point.
-     * @param  y2   The <var>y</var> ordinate of the second point.
-     * @param  dy2  The ∂<var>x</var>/∂<var>y</var> value at the second point.
-     * @return The two points located on the extremum of the fitted cubic curve.
+     * @param  x1   the <var>x</var> ordinate of the first point.
+     * @param  y1   the <var>y</var> ordinate of the first point.
+     * @param  dy1  the ∂<var>x</var>/∂<var>y</var> value at the first point.
+     * @param  x2   the <var>x</var> ordinate of the second point.
+     * @param  y2   the <var>y</var> ordinate of the second point.
+     * @param  dy2  the ∂<var>x</var>/∂<var>y</var> value at the second point.
      */
     void resolve(double x1, double y1, final double dy1,
                  double x2, double y2, final double dy2)

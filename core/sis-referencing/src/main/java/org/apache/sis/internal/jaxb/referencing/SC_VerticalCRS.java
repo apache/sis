@@ -30,8 +30,8 @@ import org.apache.sis.referencing.crs.DefaultVerticalCRS;
  *
  * @author  Guilhem Legal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.4
  * @version 0.4
+ * @since   0.4
  * @module
  */
 public final class SC_VerticalCRS extends org.apache.sis.internal.jaxb.gml.SC_VerticalCRS implements AdapterReplacement {
@@ -44,7 +44,7 @@ public final class SC_VerticalCRS extends org.apache.sis.internal.jaxb.gml.SC_Ve
     /**
      * Wraps a Vertical CRS value in a {@code <gml:VerticalCRS>} element at marshalling-time.
      *
-     * @param crs The value to marshall.
+     * @param  crs  the value to marshall.
      */
     private SC_VerticalCRS(final VerticalCRS crs) {
         super(crs);
@@ -69,8 +69,8 @@ public final class SC_VerticalCRS extends org.apache.sis.internal.jaxb.gml.SC_Ve
     /**
      * Returns the Vertical CRS value wrapped by a {@code <gml:VerticalCRS>} element.
      *
-     * @param value The value to marshal.
-     * @return The wrapper for the metadata value.
+     * @param  value  the value to marshal.
+     * @return the wrapper for the metadata value.
      */
     @Override
     protected org.apache.sis.internal.jaxb.gml.SC_VerticalCRS wrap(final VerticalCRS value) {
@@ -81,7 +81,7 @@ public final class SC_VerticalCRS extends org.apache.sis.internal.jaxb.gml.SC_Ve
      * Returns the {@link DefaultVerticalCRS} created from the metadata value.
      * This method is systematically called at marshalling-time by JAXB.
      *
-     * @return The CRS to be marshalled.
+     * @return the CRS to be marshalled.
      */
     @Override
     public Object getElement() {

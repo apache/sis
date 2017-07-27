@@ -27,14 +27,16 @@ import java.util.logging.Logger;
  * than picking an arbitrary logger.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.3
  * @version 0.3
+ * @since   0.3
  * @module
  */
+@SuppressWarnings("ClassWithMultipleLoggers")
 final class DualLogger extends LoggerAdapter {
     /**
      * The two loggers.
      */
+    @SuppressWarnings("NonConstantLogger")
     private final Logger first, second;
 
     /**

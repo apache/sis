@@ -28,8 +28,8 @@ import static org.apache.sis.referencing.operation.matrix.Matrix2.SIZE;
  * This class inherits all tests defined in {@link MatrixTestCase}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.4
  * @version 0.4
+ * @since   0.4
  * @module
  */
 @DependsOn(SolverTest.class)
@@ -74,9 +74,9 @@ public final strictfp class Matrix2Test extends MatrixTestCase {
     @Test
     public void testGetExtendedElements() {
         GeneralMatrixTest.testGetExtendedElements(new Matrix2(
-                StrictMath.PI / 180, // Degrees to radians
-                180 / StrictMath.PI, // Radians to degrees
-                0.9,                 // Gradians to degrees
-                0.1234567));         // Random value with no special meaning.
+                StrictMath.PI / 180,        // Degrees to radians
+                180 / StrictMath.PI,        // Radians to degrees
+                0.9,                        // Gradians to degrees
+                0.1234567));                // Random value with no special meaning.
     }
 }

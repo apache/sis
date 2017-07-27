@@ -19,14 +19,15 @@ package org.apache.sis.referencing.operation;
 import java.util.Map;
 import java.util.HashMap;
 import org.opengis.metadata.Identifier;
+import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.referencing.ReferenceIdentifier;
 import org.opengis.referencing.operation.OperationMethod;
 import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.metadata.iso.ImmutableIdentifier;
+import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.metadata.iso.citation.DefaultCitation;
-import org.apache.sis.metadata.iso.citation.HardCodedCitations;
 import org.apache.sis.parameter.DefaultParameterDescriptorGroup;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
@@ -46,49 +47,51 @@ import static org.apache.sis.test.ReferencingAssert.*;
  */
 @DependsOn({
     DefaultFormulaTest.class,
-    org.apache.sis.referencing.AbstractIdentifiedObjectTest.class
+    org.apache.sis.referencing.AbstractIdentifiedObjectTest.class,
+    org.apache.sis.parameter.DefaultParameterDescriptorGroupTest.class
 })
 public final strictfp class DefaultOperationMethodTest extends TestCase {
     /**
      * Creates a new two-dimensional operation method for an operation of the given name and identifier.
      *
-     * @param  method     The operation name (example: "Mercator (variant A)").
-     * @param  identifier The EPSG numeric identifier (example: "9804").
-     * @param  formula    Formula citation (example: "EPSG guidance note #7-2").
-     * @param  dimension  The number of input and output dimension.
-     * @return The operation method.
+     * @param  method      the operation name (example: "Mercator (variant A)").
+     * @param  identifier  the EPSG numeric identifier (example: "9804").
+     * @param  formula     formula citation (example: "EPSG guidance note #7-2").
+     * @param  dimension   the number of input and output dimension, or {@code null}.
+     * @param  parameters  the parameters (can be empty).
+     * @return the operation method.
      */
-    private static DefaultOperationMethod create(final String method, final String identifier, final String formula,
-            final Integer dimension)
+    static DefaultOperationMethod create(final String method, final String identifier, final String formula,
+            final Integer dimension, final ParameterDescriptor<?>... parameters)
     {
-        final Map<String,Object> properties = new HashMap<String,Object>(8);
+        final Map<String,Object> properties = new HashMap<>(8);
         assertNull(properties.put(OperationMethod.NAME_KEY, method));
         assertNull(properties.put(ReferenceIdentifier.CODESPACE_KEY, "EPSG"));
-        assertNull(properties.put(Identifier.AUTHORITY_KEY, HardCodedCitations.IOGP));
+        assertNull(properties.put(Identifier.AUTHORITY_KEY, Citations.EPSG));
         /*
          * The parameter group for a Mercator projection is actually not empty, but it is not the purpose of
          * this class to test DefaultParameterDescriptorGroup. So we use an empty group of parameters here.
          */
-        final ParameterDescriptorGroup parameters = new DefaultParameterDescriptorGroup(properties, 1, 1);
+        final ParameterDescriptorGroup pg = new DefaultParameterDescriptorGroup(properties, 1, 1, parameters);
         /*
          * NAME_KEY share the same Identifier instance for saving a little bit of memory.
          * Then define the other properties to be given to OperationMethod.
          */
-        assertNotNull(properties.put(OperationMethod.NAME_KEY, parameters.getName()));
-        assertNull(properties.put(OperationMethod.IDENTIFIERS_KEY, new ImmutableIdentifier(HardCodedCitations.IOGP, "EPSG", identifier)));
+        assertNotNull(properties.put(OperationMethod.NAME_KEY, pg.getName()));
+        assertNull(properties.put(OperationMethod.IDENTIFIERS_KEY, new ImmutableIdentifier(Citations.EPSG, "EPSG", identifier)));
         assertNull(properties.put(OperationMethod.FORMULA_KEY, new DefaultCitation(formula)));
-        return new DefaultOperationMethod(properties, dimension, dimension, parameters);
+        return new DefaultOperationMethod(properties, dimension, dimension, pg);
     }
 
     /**
-     * Tests the {@link DefaultOperationMethod#DefaultOperationMethod(Map)} constructor.
+     * Tests the {@link DefaultOperationMethod#DefaultOperationMethod(Map, Integer, Integer, ParameterDescriptorGroup)}
+     * constructor.
      */
     @Test
     public void testConstruction() {
         final OperationMethod method = create("Mercator (variant A)", "9804", "EPSG guidance note #7-2", 2);
-        assertEpsgIdentifierEquals("Mercator (variant A)", method.getName());
-        assertEpsgIdentifierEquals(9804, method.getIdentifiers());
-        assertEquals("formula", "EPSG guidance note #7-2", method.getFormula().getCitation().getTitle().toString());
+        assertEpsgNameAndIdentifierEqual("Mercator (variant A)", 9804, method);
+        assertTitleEquals("formula", "EPSG guidance note #7-2", method.getFormula().getCitation());
         assertEquals("sourceDimensions", Integer.valueOf(2), method.getSourceDimensions());
         assertEquals("targetDimensions", Integer.valueOf(2), method.getTargetDimensions());
     }
@@ -114,7 +117,7 @@ public final strictfp class DefaultOperationMethodTest extends TestCase {
     }
 
     /**
-     * Tests {@link DefaultOperationMethod#redimension(OperationMethod, Integer, Integer)}.
+     * Tests {@link DefaultOperationMethod#redimension(OperationMethod, int, int)}.
      */
     @Test
     @DependsOnMethod({"testConstruction", "testEquals"})
@@ -152,12 +155,14 @@ public final strictfp class DefaultOperationMethodTest extends TestCase {
 
     /**
      * Tests {@link DefaultOperationMethod#toWKT()}.
+     * Since the WKT format of {@code OperationMethod} does not include parameters,
+     * we do not bother specifying the parameters in the object created here.
      */
     @Test
     @DependsOnMethod("testConstruction")
     public void testWKT() {
         final OperationMethod method = create("Mercator (variant A)", "9804", "EPSG guidance note #7-2", 2);
-        assertWktEquals("Method[“Mercator (variant A)”, Id[“EPSG”, 9804, Citation[“IOGP”], URI[“urn:ogc:def:method:EPSG::9804”]]]", method);
+        assertWktEquals("METHOD[“Mercator (variant A)”, ID[“EPSG”, 9804, URI[“urn:ogc:def:method:EPSG::9804”]]]", method);
         assertWktEquals(Convention.WKT1, "PROJECTION[“Mercator (variant A)”, AUTHORITY[“EPSG”, “9804”]]", method);
     }
 }

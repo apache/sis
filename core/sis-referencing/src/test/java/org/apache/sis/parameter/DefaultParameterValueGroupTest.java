@@ -19,6 +19,7 @@ package org.apache.sis.parameter;
 import java.util.List;
 import java.util.Arrays;
 import java.util.ArrayList;
+import java.util.Collections;
 import org.opengis.parameter.GeneralParameterDescriptor;
 import org.opengis.parameter.GeneralParameterValue;
 import org.opengis.parameter.ParameterDescriptor;
@@ -27,6 +28,7 @@ import org.opengis.parameter.ParameterValue;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.InvalidParameterNameException;
 import org.opengis.parameter.InvalidParameterCardinalityException;
+import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
@@ -42,8 +44,8 @@ import static org.opengis.referencing.IdentifiedObject.NAME_KEY;
  * Tests the {@link DefaultParameterValueGroup} class.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
+ * @version 0.7
  * @since   0.4
- * @version 0.6
  * @module
  */
 @DependsOn({
@@ -70,12 +72,11 @@ public final strictfp class DefaultParameterValueGroupTest extends TestCase {
      * and assigns to them an integer value in sequence with the given step. For example if {@code step} is 10,
      * then this method will create parameters with values 10, 20, 30 and 40.
      */
-    @SuppressWarnings({"unchecked", "rawtypes"})
     private DefaultParameterValue<?>[] createValues(final int step) {
         final List<GeneralParameterDescriptor> descriptors = descriptor.descriptors();
         final DefaultParameterValue<?>[] parameters = new DefaultParameterValue<?>[descriptors.size()];
         for (int i=0; i<parameters.length;) {
-            parameters[i] = new DefaultParameterValue((ParameterDescriptor<?>) descriptors.get(i));
+            parameters[i] = new DefaultParameterValue<>((ParameterDescriptor<?>) descriptors.get(i));
             parameters[i].setValue(++i * step);
         }
         return parameters;
@@ -238,8 +239,7 @@ public final strictfp class DefaultParameterValueGroupTest extends TestCase {
     @DependsOnMethod({"testValuesAddAll", "testAddGroup", "testEqualsAndHashCode"})
     public void testValuesAddAllWithSubgroups() {
         final DefaultParameterDescriptorGroup group, subGroup;
-        final List<GeneralParameterDescriptor> descriptors =
-                new ArrayList<GeneralParameterDescriptor>(descriptor.descriptors());
+        final List<GeneralParameterDescriptor> descriptors = new ArrayList<>(descriptor.descriptors());
         subGroup = new DefaultParameterDescriptorGroup(singletonMap(NAME_KEY, "theSubGroup"),
                 2, 4, descriptors.toArray(new GeneralParameterDescriptor[descriptors.size()]));
         descriptors.add(subGroup);
@@ -264,7 +264,7 @@ public final strictfp class DefaultParameterValueGroupTest extends TestCase {
         g1.parameter("Mandatory 1").setValue(3);
         g2.parameter( "Optional 4").setValue(7);
         g3.parameter("Mandatory 2").setValue(5);
-        final List<GeneralParameterValue> expected = new ArrayList<GeneralParameterValue>(6);
+        final List<GeneralParameterValue> expected = new ArrayList<>(6);
         assertTrue(expected.add(v2));
         assertTrue(expected.add(v3));
         assertTrue(expected.add(g1));
@@ -295,7 +295,7 @@ public final strictfp class DefaultParameterValueGroupTest extends TestCase {
     public void testValuesAddWrongParameter() {
         final DefaultParameterValueGroup    group = createGroup(10);
         final List<GeneralParameterValue>  values = group.values();
-        final ParameterValue<Integer> nonExistent = new DefaultParameterDescriptor<Integer>(
+        final ParameterValue<Integer> nonExistent = new DefaultParameterDescriptor<>(
                 singletonMap(NAME_KEY, "Optional 5"), 0, 1, Integer.class, null, null, null).createValue();
         try {
             values.add(nonExistent);
@@ -412,6 +412,26 @@ public final strictfp class DefaultParameterValueGroupTest extends TestCase {
         assertFalse ("equals", g1.equals(g2));
         assertTrue  ("equals", g1.equals(g3));
         assertEquals("hashCode", g1.hashCode(), g3.hashCode());
+    }
+
+    /**
+     * Tests {@link DefaultParameterValueGroup#equals(Object, ComparisonMode)}.
+     *
+     * @since 0.7
+     */
+    @Test
+    @DependsOnMethod("testEqualsAndHashCode")
+    public void testEqualsIgnoreMetadata() {
+        final DefaultParameterValueGroup g1 = createGroup(10);
+        final DefaultParameterValueGroup g2 = new DefaultParameterValueGroup(g1.getDescriptor());
+        final List<GeneralParameterValue> values = new ArrayList<>(g1.values());
+        Collections.swap(values, 2, 3);
+        g2.values().addAll(values);
+
+        assertFalse("STRICT",          g1.equals(g2, ComparisonMode.STRICT));
+        assertFalse("BY_CONTRACT",     g1.equals(g2, ComparisonMode.BY_CONTRACT));
+        assertTrue ("IGNORE_METADATA", g1.equals(g2, ComparisonMode.IGNORE_METADATA));
+        assertTrue ("APPROXIMATIVE",   g1.equals(g2, ComparisonMode.APPROXIMATIVE));
     }
 
     /**

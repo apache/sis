@@ -31,6 +31,7 @@ import org.apache.sis.referencing.operation.matrix.Matrix2;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.matrix.AffineTransforms2D;
 import org.apache.sis.referencing.operation.transform.LinearTransform;
+import org.apache.sis.internal.referencing.ExtendedPrecisionMatrix;
 import org.apache.sis.internal.referencing.provider.Affine;
 import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.util.LenientComparable;
@@ -47,14 +48,12 @@ import static org.apache.sis.util.ArgumentChecks.ensureDimensionMatches;
  * the {@link #equals(Object) equals} method, hopefully to occur only in exceptional corner cases.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
+ * @version 0.7
  * @since   0.5
- * @version 0.6
  * @module
- *
- * @see ProjectiveTransform
  */
-public class AffineTransform2D extends ImmutableAffineTransform implements MathTransform2D,
-        LinearTransform, LenientComparable, Parameterized
+public class AffineTransform2D extends ImmutableAffineTransform
+        implements LinearTransform2D, LenientComparable, Parameterized
 {
     /**
      * Serial number for inter-operability with different versions.
@@ -70,9 +69,8 @@ public class AffineTransform2D extends ImmutableAffineTransform implements MathT
      * set to a non-null value before an {@link AffineTransform2D} instance is published.</p>
      *
      * @see #getMatrix()
-     * @see #freeze()
      */
-    private AffineMatrix matrix;
+    private final AffineMatrix matrix;
 
     /**
      * The inverse transform. This field will be computed only when needed.
@@ -80,50 +78,26 @@ public class AffineTransform2D extends ImmutableAffineTransform implements MathT
     private transient volatile AffineTransform2D inverse;
 
     /**
-     * Constructs a <strong>temporarily mutable</strong> identity affine transform.
-     * Callers shall initializing the affine transform to the desired final values,
-     * then invoke {@link #freeze()}.
-     */
-    public AffineTransform2D() {
-        super();
-    }
-
-    /**
      * Constructs a new affine transform with the same coefficients than the specified transform.
      *
-     * @param transform The affine transform to copy.
-     * @param mutable {@code true} if this affine transform needs to be <strong>temporarily</strong> mutable.
-     *        If {@code true}, then caller shall invoke {@link #freeze()} after they completed initialization.
-     */
-    public AffineTransform2D(final AffineTransform transform, final boolean mutable) {
-        super(transform);
-        if (!mutable) {
-            freeze();
-        }
-    }
-
-    /**
-     * Constructs a new affine transform with the same coefficients than the specified transform.
-     *
-     * @param transform The affine transform to copy.
+     * @param transform  the affine transform to copy.
      */
     public AffineTransform2D(final AffineTransform transform) {
         super(transform);
-        forcePositiveZeros();
-        freeze();
+        forcePositiveZeros();   // Must be invoked before to set the 'matrix' value.
+        matrix = new AffineMatrix(this, null);
     }
 
     /**
      * Constructs a new {@code AffineTransform2D} from the given 9 or 18 values.
      *
-     * @param elements The matrix elements, optionally with error terms.
+     * @param elements  the matrix elements, optionally with error terms.
      */
     public AffineTransform2D(final double[] elements) {
         super(pz(elements[0]), pz(elements[3]),
               pz(elements[1]), pz(elements[4]),
               pz(elements[2]), pz(elements[5]));
         matrix = new AffineMatrix(this, elements);
-        // Do not call freeze(), as it was implied by above line.
     }
 
     /**
@@ -141,7 +115,7 @@ public class AffineTransform2D extends ImmutableAffineTransform implements MathT
      */
     public AffineTransform2D(double m00, double m10, double m01, double m11, double m02, double m12) {
         super(pz(m00), pz(m10), pz(m01), pz(m11), pz(m02), pz(m12));
-        freeze();
+        matrix = new AffineMatrix(this, null);
     }
 
     /**
@@ -167,19 +141,10 @@ public class AffineTransform2D extends ImmutableAffineTransform implements MathT
     }
 
     /**
-     * Makes this {@code AffineTransform2D} immutable.
-     * This method shall be invoked exactly once.
-     */
-    public final void freeze() {
-        assert matrix == null;
-        matrix = new AffineMatrix(this, null);
-    }
-
-    /**
      * Throws an {@link UnsupportedOperationException} when a mutable method
      * is invoked, since {@code AffineTransform2D} must be immutable.
      *
-     * @throws UnsupportedOperationException Always thrown.
+     * @throws UnsupportedOperationException always thrown.
      */
     @Override
     protected final void checkPermission() throws UnsupportedOperationException {
@@ -276,8 +241,8 @@ public class AffineTransform2D extends ImmutableAffineTransform implements MathT
      * For example if the given shape is a rectangle and this affine transform has no scale or
      * shear, then the returned shape will be an instance of {@link java.awt.geom.Rectangle2D}.
      *
-     * @param  shape Shape to transform.
-     * @return Transformed shape, or {@code shape} if this transform is the identity transform.
+     * @param  shape  shape to transform.
+     * @return transformed shape, or {@code shape} if this transform is the identity transform.
      */
     @Override
     public final Shape createTransformedShape(final Shape shape) {
@@ -317,7 +282,7 @@ public class AffineTransform2D extends ImmutableAffineTransform implements MathT
      * @throws NoninvertibleTransformException if this transform can not be inverted.
      */
     @Override
-    public final MathTransform2D inverse() throws NoninvertibleTransformException {
+    public final AffineTransform2D inverse() throws NoninvertibleTransformException {
         if (inverse == null) {
             if (super.isIdentity()) {
                 inverse = this;
@@ -327,15 +292,25 @@ public class AffineTransform2D extends ImmutableAffineTransform implements MathT
                  * Is okay with the new memory model since Java 5 provided that the field is
                  * declared volatile (Joshua Bloch, "Effective Java" second edition).
                  */
-                if (inverse == null) try {
-                    final AffineTransform2D work = new AffineTransform2D(this, true);
-                    work.invert();
-                    work.forcePositiveZeros();
-                    work.freeze();
+                if (inverse == null) {
+                    /*
+                     * In a previous version, we were using the Java2D code as below:
+                     *
+                     *     AffineTransform2D work = new AffineTransform2D(this, true);
+                     *     work.invert();
+                     *     work.forcePositiveZeros();
+                     *     work.freeze();
+                     *
+                     * Current version now uses the SIS code instead in order to get the double-double precision.
+                     * It usually does not make a difference in the result of the matrix inversion, when ignoring
+                     * the error terms.  But those error terms appear to be significant later, when the result of
+                     * this matrix inversion is multiplied with other matrices: the double-double accuracy allows
+                     * us to better detect the terms that are 0 or 1 after matrix concatenation.
+                     */
+                    final AffineTransform2D work = new AffineTransform2D(
+                            ((ExtendedPrecisionMatrix) Matrices.inverse(matrix)).getExtendedElements());
                     work.inverse = this;
-                    inverse = work; // Set only on success.
-                } catch (java.awt.geom.NoninvertibleTransformException exception) {
-                    throw new NoninvertibleTransformException(exception.getLocalizedMessage(), exception);
+                    inverse = work;                 // Set only on success.
                 }
             }
         }
@@ -344,18 +319,18 @@ public class AffineTransform2D extends ImmutableAffineTransform implements MathT
 
     /**
      * Compares this affine transform with the given object for equality. This method behaves as documented
-     * in the {@link LinearTransform#equals(Object, ComparisonMode) LinearTransform} interface, except for
-     * the following case: if the given mode is {@link ComparisonMode#STRICT}, then this method delegates
-     * to {@link #equals(Object)}. The later method has different rules than the ones documented in the
-     * {@code LinearTransform} interface, because of the {@code AffineTransform} inheritance.
+     * in the {@link LenientComparable#equals(Object, ComparisonMode) LenientComparable.equals(…)} method,
+     * except for the following case: if the given mode is {@link ComparisonMode#STRICT}, then this method
+     * delegates to {@link #equals(Object)}. The later method has different rules than the ones documented
+     * in the {@code LenientComparable} interface, because of the {@code AffineTransform} inheritance.
      *
-     * @param  object The object to compare to {@code this}.
-     * @param  mode The strictness level of the comparison.
+     * @param  object  the object to compare to {@code this}.
+     * @param  mode    the strictness level of the comparison.
      * @return {@code true} if both objects are equal.
      */
     @Override
     public boolean equals(final Object object, final ComparisonMode mode) {
-        if (object == this) { // Slight optimization
+        if (object == this) {                       // Slight optimization
             return true;
         }
         if (mode == ComparisonMode.STRICT) {
@@ -400,10 +375,10 @@ public class AffineTransform2D extends ImmutableAffineTransform implements MathT
      * <p>This special case exists in order to allow developers to attach additional information to their own subclass
      * of {@code AffineTransform2D}, and still distinguish their specialized subclass from ordinary affine transforms
      * in a pool of {@code MathTransform} instances. The main application is the
-     * {@linkplain org.apache.sis.referencing.operation.projection.Equirectangular} map projection,
+     * {@linkplain org.apache.sis.internal.referencing.provider.Equirectangular Equirectangular} map projection,
      * which can be simplified to an affine transform but still needs to remember the projection parameters.</p>
      *
-     * @param  object The object to compare with this affine transform for equality.
+     * @param  object  the object to compare with this affine transform for equality.
      * @return {@code true} if the given object is of appropriate class (as explained in the
      *         above documentation) and the affine transform coefficients are the same.
      */
@@ -429,9 +404,10 @@ public class AffineTransform2D extends ImmutableAffineTransform implements MathT
      * returns an instance of {@link AffineTransform}, <strong>not</strong> {@code AffineTransform2D}, because
      * the later is unmodifiable and cloning it make little sense.
      *
-     * @return A modifiable copy of this affine transform.
+     * @return a modifiable copy of this affine transform.
      */
     @Override
+    @SuppressWarnings("CloneDoesntCallSuperClone")
     public AffineTransform clone() {
         return new AffineTransform(this);
     }

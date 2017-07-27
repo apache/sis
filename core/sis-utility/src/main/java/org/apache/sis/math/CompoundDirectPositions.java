@@ -34,15 +34,15 @@ import org.apache.sis.util.resources.Errors;
  * same time.
  *
  * @author  Martin Desruisseaux (Geomatys)
+ * @version 0.8
  * @since   0.5
- * @version 0.5
  * @module
  */
 final class CompoundDirectPositions implements DirectPosition, Iterable<DirectPosition>, Iterator<DirectPosition> {
     /**
      * The arrays of ordinate values, for example (x[], y[], z[]).
      */
-    private final double[][] ordinates;
+    private final Vector[] ordinates;
 
     /**
      * Length of all ordinate values minus one.
@@ -57,24 +57,28 @@ final class CompoundDirectPositions implements DirectPosition, Iterable<DirectPo
     /**
      * Wraps the given array of ordinate values.
      */
-    CompoundDirectPositions(final double[]... ordinates) {
+    CompoundDirectPositions(final Vector... ordinates) {
         this.ordinates = ordinates;
-        final int length = ordinates[0].length;
+        final int length = ordinates[0].size();
         for (int i=1; i<ordinates.length; i++) {
-            if (ordinates[i].length != length) {
+            if (ordinates[i].size() != length) {
                 throw new IllegalArgumentException(Errors.format(Errors.Keys.MismatchedArrayLengths));
             }
         }
-        last = length - 1;
+        last  = length - 1;
+        index = length;
     }
 
     /**
      * Starts a new iteration.
      *
-     * @return Always {@code this}.
+     * @return always {@code this}.
      */
     @Override
     public Iterator<DirectPosition> iterator() {
+        if (hasNext()) {
+            throw new UnsupportedOperationException(Errors.format(Errors.Keys.CanIterateOnlyOnce));
+        }
         index = -1;
         return this;
     }
@@ -90,7 +94,7 @@ final class CompoundDirectPositions implements DirectPosition, Iterable<DirectPo
     /**
      * Sets this object to the next position and return it.
      *
-     * @return Always {@code this}.
+     * @return always {@code this}.
      */
     @Override
     public DirectPosition next() {
@@ -101,7 +105,7 @@ final class CompoundDirectPositions implements DirectPosition, Iterable<DirectPo
     /**
      * Returns {@code this} since this object is already a direct position.
      *
-     * @return Always {@code this}.
+     * @return always {@code this}.
      */
     @Override
     public DirectPosition getDirectPosition() {
@@ -111,7 +115,7 @@ final class CompoundDirectPositions implements DirectPosition, Iterable<DirectPo
     /**
      * Returns {@code null} since there is no CRS associated to this object.
      *
-     * @return Always {@code null}.
+     * @return always {@code null}.
      */
     @Override
     public CoordinateReferenceSystem getCoordinateReferenceSystem() {
@@ -131,7 +135,7 @@ final class CompoundDirectPositions implements DirectPosition, Iterable<DirectPo
      */
     @Override
     public double getOrdinate(final int dimension) {
-        return ordinates[dimension][index];
+        return ordinates[dimension].doubleValue(index);
     }
 
     /**

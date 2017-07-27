@@ -33,12 +33,13 @@ import org.apache.sis.internal.jaxb.Context;
  *
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.4
- * @module
  *
  * @see LanguageCode
  * @see org.apache.sis.internal.jaxb.code.PT_Locale
+ *
+ * @since 0.3
+ * @module
  */
 public final class LocaleAdapter extends XmlAdapter<LanguageCode, Locale> {
     /**
@@ -51,8 +52,8 @@ public final class LocaleAdapter extends XmlAdapter<LanguageCode, Locale> {
      * Converts the locale read from a XML stream to the object containing the value.
      * JAXB calls automatically this method at unmarshalling time.
      *
-     * @param  value The adapter for this metadata value.
-     * @return A {@linkplain Locale locale} which represents the metadata value.
+     * @param  value  the adapter for this metadata value.
+     * @return a {@linkplain Locale locale} which represents the metadata value.
      */
     @Override
     public Locale unmarshal(final LanguageCode value) {
@@ -64,8 +65,8 @@ public final class LocaleAdapter extends XmlAdapter<LanguageCode, Locale> {
      * Converts the {@linkplain Locale locale} to the object to be marshalled in a XML file or stream.
      * JAXB calls automatically this method at marshalling time.
      *
-     * @param  value The locale value.
-     * @return The adapter for the given locale.
+     * @param  value  the locale value.
+     * @return the adapter for the given locale.
      */
     @Override
     public LanguageCode marshal(final Locale value) {

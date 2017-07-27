@@ -43,8 +43,8 @@ import static org.apache.sis.test.TestUtilities.format;
  * <a href="http://toyoda-eizi.blogspot.fr/2011/02/examples-of-gml-fragment-in-iso.html">here</a>.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.3
+ * @since   0.3
  * @module
  */
 public final strictfp class TimePeriodTest extends XMLTestCase {
@@ -65,13 +65,13 @@ public final strictfp class TimePeriodTest extends XMLTestCase {
      * Creates the XML (un)marshaller pool to be shared by all test methods.
      * The (un)marshallers locale and timezone will be set to fixed values.
      *
-     * @throws JAXBException If an error occurred while creating the pool.
+     * @throws JAXBException if an error occurred while creating the pool.
      *
      * @see #disposeMarshallerPool()
      */
     @BeforeClass
     public static void createMarshallerPool() throws JAXBException {
-        final Map<String,Object> properties = new HashMap<String,Object>(4);
+        final Map<String,Object> properties = new HashMap<>(4);
         assertNull(properties.put(XML.LOCALE, Locale.FRANCE));
         assertNull(properties.put(XML.TIMEZONE, "CET"));
         pool = new MarshallerPool(JAXBContext.newInstance(TimeInstant.class, TimePeriod.class), properties);
@@ -89,8 +89,8 @@ public final strictfp class TimePeriodTest extends XMLTestCase {
     /**
      * Tests time instant. The test is executed using an arbitrary locale and timezone.
      *
-     * @throws JAXBException If an error occurred while marshalling.
-     * @throws DatatypeConfigurationException Should never happen.
+     * @throws JAXBException if an error occurred while marshalling.
+     * @throws DatatypeConfigurationException should never happen.
      */
     @Test
     public void testTimeInstant() throws JAXBException, DatatypeConfigurationException {

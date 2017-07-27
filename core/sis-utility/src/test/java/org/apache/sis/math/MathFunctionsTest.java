@@ -35,8 +35,9 @@ import org.apache.sis.internal.jdk8.JDK8;
  * Tests the {@link MathFunctions} static methods.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
+ * @author  Johann Sorel (Geomatys)
+ * @version 0.8
  * @since   0.3
- * @version 0.4
  * @module
  */
 @DependsOn({
@@ -44,11 +45,6 @@ import org.apache.sis.internal.jdk8.JDK8;
     org.apache.sis.internal.util.NumericsTest.class
 })
 public final strictfp class MathFunctionsTest extends TestCase {
-    /**
-     * Tolerance threshold for strict comparisons of floating point values.
-     */
-    private static final double STRICT = 0;
-
     /**
      * Small number for floating point comparisons.
      */
@@ -154,6 +150,30 @@ public final strictfp class MathFunctionsTest extends TestCase {
     }
 
     /**
+     * Tests the {@link MathFunctions#asinh(double)} method in the [-10 … +10] range.
+     */
+    @Test
+    public void testAsinh() {
+        for (int i=-100; i<=100; i++) {
+            final double x = 0.1 * i;
+            final double y = asinh(x);
+            assertEquals(x, StrictMath.sinh(y), EPS);
+        }
+    }
+
+    /**
+     * Tests the {@link MathFunctions#acosh(double)} method in the [1 … +10] range.
+     */
+    @Test
+    public void testAcosh() {
+        for (int i=10; i<=100; i++) {
+            final double x = 0.1 * i;
+            final double y = acosh(x);
+            assertEquals(x, StrictMath.cosh(y), EPS);
+        }
+    }
+
+    /**
      * Tests the {@link MathFunctions#atanh(double)} method in the [-1 … +1] range.
      */
     @Test
@@ -226,6 +246,7 @@ public final strictfp class MathFunctionsTest extends TestCase {
      * Tests the {@link MathFunctions#toNanFloat(int)} method. This will indirectly test the
      * converse {@link MathFunctions#toNanOrdinal(float)} method through Java assertions.
      */
+    @Test
     public void testToNanFloat() {
         final int standardNaN = Float.floatToRawIntBits(Float.NaN);
         for (int ordinal = 0; ordinal < MathFunctions.MAX_NAN_ORDINAL; ordinal += 256) {
@@ -237,6 +258,79 @@ public final strictfp class MathFunctionsTest extends TestCase {
             assertEquals(ordinal == 0, standardNaN == bn);
             assertEquals(ordinal == 0, bp == bn);
         }
+    }
+
+    /**
+     * Tests a part of the {@link MathFunctions#toNanOrdinal(float)} method contract.
+     * More extensive tests is performed indirectly by the {@link #testToNanFloat()} method.
+     */
+    @Test
+    public void testToNanOrdinal() {
+        assertEquals(0, toNanOrdinal(Float.NaN));
+    }
+
+    /**
+     * Tests the {@link MathFunctions#quadrupleToDouble(long, long)} method. Values used in this test are taken from
+     * <a href="https://en.wikipedia.org/wiki/Quadruple-precision_floating-point_format">Quadruple-precision
+     * floating-point format</a> on Wikipedia.
+     */
+    @Test
+    public void testQuadrupleToDouble(){
+        long l0, l1;
+
+        // 1.0
+        l0 = 0x3FFF000000000000L;
+        l1 = 0x0000000000000000L;
+        assertEquals(doubleToLongBits(1.0),
+                     doubleToLongBits(quadrupleToDouble(l0, l1)));
+
+        // -2.0
+        l0 = 0xC000000000000000L;
+        l1 = 0x0000000000000000L;
+        assertEquals(doubleToLongBits(-2.0),
+                     doubleToLongBits(quadrupleToDouble(l0, l1)));
+
+        // 3.1415926535897932384626433832795028
+        l0 = 0x4000921FB54442D1L;
+        l1 = 0x8469898CC51701B8L;
+        assertEquals(doubleToLongBits(3.1415926535897932384626433832795028),
+                     doubleToLongBits(quadrupleToDouble(l0, l1)));
+
+        // ~1/3
+        l0 = 0x3FFD555555555555L;
+        l1 = 0x5555555555555555L;
+        assertEquals(doubleToLongBits(1.0/3.0),
+                     doubleToLongBits(quadrupleToDouble(l0, l1)));
+
+        // positive zero
+        l0 = 0x0000000000000000L;
+        l1 = 0x0000000000000000L;
+        assertEquals(doubleToLongBits(+0.0),
+                     doubleToLongBits(quadrupleToDouble(l0, l1)));
+
+        // negative zero
+        l0 = 0x8000000000000000L;
+        l1 = 0x0000000000000000L;
+        assertEquals(doubleToLongBits(-0.0),
+                     doubleToLongBits(quadrupleToDouble(l0, l1)));
+
+        // positive infinite
+        l0 = 0x7FFF000000000000L;
+        l1 = 0x0000000000000000L;
+        assertEquals(doubleToLongBits(Double.POSITIVE_INFINITY),
+                     doubleToLongBits(quadrupleToDouble(l0, l1)));
+
+        // negative infinite
+        l0 = 0xFFFF000000000000L;
+        l1 = 0x0000000000000000L;
+        assertEquals(doubleToLongBits(Double.NEGATIVE_INFINITY),
+                     doubleToLongBits(quadrupleToDouble(l0, l1)));
+
+        // a random NaN
+        l0 = 0x7FFF000100040000L;
+        l1 = 0x0001005000080000L;
+        assertEquals(doubleToLongBits(Double.NaN),
+                     doubleToLongBits(quadrupleToDouble(l0, l1)));
     }
 
     /**

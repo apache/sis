@@ -22,15 +22,15 @@ package org.apache.sis.metadata;
  * This exception may happen in the following scenarios:
  *
  * <ul>
- *   <li>A metadata instance was initially {@linkplain org.apache.sis.metadata.ModifiableMetadata
- *       modifiable}, but that instance has since be declared unmodifiable.</li>
+ *   <li>A metadata instance was initially {@linkplain org.apache.sis.metadata.ModifiableMetadata modifiable},
+ *       but that instance has since be declared unmodifiable.</li>
  *   <li>A write operation has been attempted on the {@linkplain AbstractMetadata#asMap() map view},
  *       but the metadata object has no corresponding setter methods.</li>
  * </ul>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.3
  * @version 0.3
+ * @since   0.3
  * @module
  */
 public class UnmodifiableMetadataException extends UnsupportedOperationException {
@@ -42,7 +42,7 @@ public class UnmodifiableMetadataException extends UnsupportedOperationException
     /**
      * Creates a new exception with the specified detail message.
      *
-     * @param message The detail message.
+     * @param message  the detail message.
      */
     public UnmodifiableMetadataException(final String message) {
         super(message);

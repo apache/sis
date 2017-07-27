@@ -17,29 +17,30 @@
 package org.apache.sis.referencing.operation.matrix;
 
 import org.opengis.referencing.operation.Matrix;
+import org.apache.sis.internal.referencing.Resources;
 import org.apache.sis.internal.util.DoubleDouble;
-import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ArraysExt;
 
 
 /**
  * Computes the value of <var>U</var> which solves {@code X} × <var>U</var> = {@code Y}.
- * The {@link #solve(Matrix, Matrix, int)} method in this class is adapted from the {@code LUDecomposition}
- * class of the <a href="http://math.nist.gov/javanumerics/jama">JAMA matrix package</a>. JAMA is provided in
- * the public domain.
+ * The {@link #solve(double[], Matrix, double[], int, int)} method in this class is adapted from the
+ * {@code LUDecomposition} class of the <a href="http://math.nist.gov/javanumerics/jama">JAMA matrix package</a>.
+ * JAMA is provided in the public domain.
  *
  * <p>This class implements the {@link Matrix} interface as an implementation convenience.
  * This implementation details can be ignored.</p>
  *
  * @author  JAMA team
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.4
  * @version 0.4
+ * @since   0.4
  * @module
  */
-final class Solver implements Matrix { // Not Cloneable, despite the clone() method.
+@SuppressWarnings("CloneInNonCloneableClass")
+final class Solver implements Matrix {                          // Not Cloneable, despite the clone() method.
     /**
-     * The size of the (i, j, s) tuples used internally by {@link #solve(Matrix, Matrix, double[], int, int)}
+     * The size of the (i, j, s) tuples used internally by {@link #solve(Matrix, Matrix, double[], int, int, boolean)}
      * for storing information about the NaN values.
      */
     private static final int TUPLE_SIZE = 3;
@@ -85,6 +86,7 @@ final class Solver implements Matrix { // Not Cloneable, despite the clone() met
      * Returns {@code this} since this matrix is immutable.
      */
     @Override
+    @SuppressWarnings("CloneDoesntCallSuperClone")
     public Matrix clone() {
         return this;
     }
@@ -108,15 +110,15 @@ final class Solver implements Matrix { // Not Cloneable, despite the clone() met
     /**
      * Computes the inverse of the given matrix. This method shall be invoked only for square matrices.
      *
-     * @param  X        The matrix to invert, which must be square.
-     * @param  noChange If {@code true}, do not allow modifications to the {@code X} matrix.
-     * @throws NoninvertibleMatrixException If the {@code X} matrix is not square or singular.
+     * @param  X         the matrix to invert, which must be square.
+     * @param  noChange  if {@code true}, do not allow modifications to the {@code X} matrix.
+     * @throws NoninvertibleMatrixException if the {@code X} matrix is not square or singular.
      */
     static MatrixSIS inverse(final Matrix X, final boolean noChange) throws NoninvertibleMatrixException {
         final int size = X.getNumRow();
         final int numCol = X.getNumCol();
         if (numCol != size) {
-            throw new NoninvertibleMatrixException(Errors.format(Errors.Keys.NonInvertibleMatrix_2, size, numCol));
+            throw new NoninvertibleMatrixException(Resources.format(Resources.Keys.NonInvertibleMatrix_2, size, numCol));
         }
         return solve(X, IDENTITY, null, size, size, noChange);
     }
@@ -125,15 +127,15 @@ final class Solver implements Matrix { // Not Cloneable, despite the clone() met
      * Solves {@code X} × <var>U</var> = {@code Y}.
      * This method is an adaptation of the {@code LUDecomposition} class of the JAMA matrix package.
      *
-     * @param  X The matrix to invert.
-     * @param  Y The desired result of {@code X} × <var>U</var>.
-     * @throws NoninvertibleMatrixException If the {@code X} matrix is not square or singular.
+     * @param  X  the matrix to invert.
+     * @param  Y  the desired result of {@code X} × <var>U</var>.
+     * @throws NoninvertibleMatrixException if the {@code X} matrix is not square or singular.
      */
     static MatrixSIS solve(final Matrix X, final Matrix Y) throws NoninvertibleMatrixException {
         final int size   = X.getNumRow();
         final int numCol = X.getNumCol();
         if (numCol != size) {
-            throw new NoninvertibleMatrixException(Errors.format(Errors.Keys.NonInvertibleMatrix_2, size, numCol));
+            throw new NoninvertibleMatrixException(Resources.format(Resources.Keys.NonInvertibleMatrix_2, size, numCol));
         }
         final int innerSize = Y.getNumCol();
         GeneralMatrix.ensureNumRowMatch(size, Y.getNumRow(), innerSize);
@@ -141,7 +143,7 @@ final class Solver implements Matrix { // Not Cloneable, despite the clone() met
         if (Y instanceof GeneralMatrix) {
             eltY = ((GeneralMatrix) Y).elements;
             if (eltY.length == size * innerSize) {
-                eltY = null; // Matrix does not contains error terms.
+                eltY = null;                            // Matrix does not contains error terms.
             }
         }
         return solve(X, Y, eltY, size, innerSize, true);
@@ -168,13 +170,13 @@ final class Solver implements Matrix { // Not Cloneable, despite the clone() met
      *     }
      * }
      *
-     * @param  X         The matrix to invert, which must be square.
-     * @param  Y         The desired result of {@code X} × <var>U</var>.
-     * @param  eltY      Elements and error terms of the {@code Y} matrix, or {@code null} if not available.
-     * @param  size      The value of {@code X.getNumRow()}, {@code X.getNumCol()} and {@code Y.getNumRow()}.
-     * @param  innerSize The value of {@code Y.getNumCol()}.
-     * @param  noChange  If {@code true}, do not allow modifications to the {@code X} matrix.
-     * @throws NoninvertibleMatrixException If the {@code X} matrix is not square or singular.
+     * @param  X          the matrix to invert, which must be square.
+     * @param  Y          the desired result of {@code X} × <var>U</var>.
+     * @param  eltY       elements and error terms of the {@code Y} matrix, or {@code null} if not available.
+     * @param  size       the value of {@code X.getNumRow()}, {@code X.getNumCol()} and {@code Y.getNumRow()}.
+     * @param  innerSize  the value of {@code Y.getNumCol()}.
+     * @param  noChange   if {@code true}, do not allow modifications to the {@code X} matrix.
+     * @throws NoninvertibleMatrixException if the {@code X} matrix is not square or singular.
      */
     private static MatrixSIS solve(final Matrix X, final Matrix Y, final double[] eltY,
             final int size, final int innerSize, final boolean noChange) throws NoninvertibleMatrixException
@@ -208,12 +210,14 @@ searchNaN:  for (int flatIndex = (size - 1) * size; --flatIndex >= 0;) {
                      * that the column contains only zero values except on the current line.
                      */
                     int columnOfScale = -1;
-                    if (i != lastRowOrColumn) {                // Enter only if this column is not for translations.
-                        columnOfScale = i;                     // The non-translation element is the scale factor.
-                        for (int k=lastRowOrColumn; --k>=0;) { // Scan all other rows in the current column.
+                    if (i != lastRowOrColumn) {                     // Enter only if this column is not for translations.
+                        columnOfScale = i;                          // The non-translation element is the scale factor.
+                        for (int k=lastRowOrColumn; --k>=0;) {      // Scan all other rows in the current column.
                             if (k != j && LU[k*size + i] != 0) {
-                                // Found a non-zero element in the current column.
-                                // We can not proceed - cancel everything.
+                                /*
+                                 * Found a non-zero element in the current column.
+                                 * We can not proceed - cancel everything.
+                                 */
                                 indexOfNaN = null;
                                 indexCount = 0;
                                 break searchNaN;
@@ -228,8 +232,10 @@ searchNaN:  for (int flatIndex = (size - 1) * size; --flatIndex >= 0;) {
                     for (int k=lastRowOrColumn; --k>=0;) {
                         if (k != i && LU[j*size + k] != 0) {
                             if (columnOfScale >= 0) {
-                                // If there is more than 1 non-zero element,
-                                // abandon the attempt to handle NaN values.
+                                /*
+                                 * If there is more than 1 non-zero element,
+                                 * abandon the attempt to handle NaN values.
+                                 */
                                 indexOfNaN = null;
                                 indexCount = 0;
                                 break searchNaN;
@@ -242,11 +248,11 @@ searchNaN:  for (int flatIndex = (size - 1) * size; --flatIndex >= 0;) {
                      * Remember its index; the replacement will be performed later.
                      */
                     if (indexOfNaN == null) {
-                        indexOfNaN = new int[lastRowOrColumn * (2*TUPLE_SIZE)]; // At most one scale and one offset per row.
+                        indexOfNaN = new int[lastRowOrColumn * (2*TUPLE_SIZE)];     // At most one scale and one offset per row.
                     }
                     indexOfNaN[indexCount++] = i;
                     indexOfNaN[indexCount++] = j;
-                    indexOfNaN[indexCount++] = columnOfScale; // May be -1 (while uncommon)
+                    indexOfNaN[indexCount++] = columnOfScale;                   // May be -1 (while uncommon)
                     assert (indexCount % TUPLE_SIZE) == 0;
                 }
             }
@@ -260,7 +266,7 @@ searchNaN:  for (int flatIndex = (size - 1) * size; --flatIndex >= 0;) {
                 final int j = indexOfNaN[k+1];
                 final int flatIndex = j*size + i;
                 LU[flatIndex] = (i == lastRowOrColumn) ? 0 : 1;
-                LU[flatIndex + size*size] = 0; // Error term (see 'errorLU') in next method.
+                LU[flatIndex + size*size] = 0;                      // Error term (see 'errorLU') in next method.
             }
         }
         /*
@@ -278,9 +284,9 @@ searchNaN:  for (int flatIndex = (size - 1) * size; --flatIndex >= 0;) {
             final int s = indexOfNaN[k++];
             if (i != lastRowOrColumn) {
                 // Found a scale factor to set to NaN.
-                matrix.setElement(i, j, Double.NaN); // Note that i,j indices are interchanged.
+                matrix.setElement(i, j, Double.NaN);                      // Note that i,j indices are interchanged.
                 if (matrix.getElement(i, lastRowOrColumn) != 0) {
-                    matrix.setElement(i, lastRowOrColumn, Double.NaN); // = -offset/scale, so 0 stay 0.
+                    matrix.setElement(i, lastRowOrColumn, Double.NaN);    // = -offset/scale, so 0 stay 0.
                 }
             } else if (s >= 0) {
                 // Found a translation factory to set to NaN.
@@ -305,12 +311,12 @@ searchNaN:  for (int flatIndex = (size - 1) * size; --flatIndex >= 0;) {
      *   Y.getNumCol() == innerSize;
      * }
      *
-     * @param  LU        Elements of the {@code X} matrix to invert, including error terms.
-     * @param  Y         The desired result of {@code X} × <var>U</var>.
-     * @param  eltY      Elements and error terms of the {@code Y} matrix, or {@code null} if not available.
-     * @param  size      The value of {@code X.getNumRow()}, {@code X.getNumCol()} and {@code Y.getNumRow()}.
-     * @param  innerSize The value of {@code Y.getNumCol()}.
-     * @throws NoninvertibleMatrixException If the {@code X} matrix is not square or singular.
+     * @param  LU         elements of the {@code X} matrix to invert, including error terms.
+     * @param  Y          the desired result of {@code X} × <var>U</var>.
+     * @param  eltY       elements and error terms of the {@code Y} matrix, or {@code null} if not available.
+     * @param  size       the value of {@code X.getNumRow()}, {@code X.getNumCol()} and {@code Y.getNumRow()}.
+     * @param  innerSize  the value of {@code Y.getNumCol()}.
+     * @throws NoninvertibleMatrixException if the {@code X} matrix is not square or singular.
      */
     private static MatrixSIS solve(final double[] LU, final Matrix Y, final double[] eltY,
             final int size, final int innerSize) throws NoninvertibleMatrixException
@@ -321,17 +327,17 @@ searchNaN:  for (int flatIndex = (size - 1) * size; --flatIndex >= 0;) {
         for (int j=0; j<size; j++) {
            pivot[j] = j;
         }
-        final double[]  column = new double[size * 2]; // [0 … size-1] : column values; [size … 2*size-1] : error terms.
-        final DoubleDouble acc = new DoubleDouble();   // Temporary variable for sum ("accumulator") and subtraction.
-        final DoubleDouble rat = new DoubleDouble();   // Temporary variable for products and ratios.
+        final double[]  column = new double[size * 2];  // [0 … size-1] : column values; [size … 2*size-1] : error terms.
+        final DoubleDouble acc = new DoubleDouble();    // Temporary variable for sum ("accumulator") and subtraction.
+        final DoubleDouble rat = new DoubleDouble();    // Temporary variable for products and ratios.
         for (int i=0; i<size; i++) {
             /*
              * Make a copy of the i-th column.
              */
             for (int j=0; j<size; j++) {
                 final int k = j*size + i;
-                column[j]        = LU[k];            // Value
-                column[j + size] = LU[k + errorLU];  // Error
+                column[j]        = LU[k];               // Value
+                column[j + size] = LU[k + errorLU];     // Error
             }
             /*
              * Apply previous transformations. This part is equivalent to the following code,
@@ -370,7 +376,7 @@ searchNaN:  for (int flatIndex = (size - 1) * size; --flatIndex >= 0;) {
             if (p != i) {
                 final int pRow = p*size;
                 final int iRow = i*size;
-                for (int k=0; k<size; k++) { // Swap two full rows.
+                for (int k=0; k<size; k++) {                                // Swap two full rows.
                     DoubleDouble.swap(LU, pRow + k, iRow + k, errorLU);
                 }
                 ArraysExt.swap(pivot, p, i);
@@ -403,7 +409,7 @@ searchNaN:  for (int flatIndex = (size - 1) * size; --flatIndex >= 0;) {
         for (int j=0; j<size; j++) {
             rat.setFrom(LU, j*size + j, errorLU);
             if (rat.isZero()) {
-                throw new NoninvertibleMatrixException(Errors.format(Errors.Keys.SingularMatrix));
+                throw new NoninvertibleMatrixException(Resources.format(Resources.Keys.SingularMatrix));
             }
         }
         /*
@@ -433,10 +439,10 @@ searchNaN:  for (int flatIndex = (size - 1) * size; --flatIndex >= 0;) {
          *     elements[loRowOffset + i] -= (elements[rowOffset + i] * LU[luRowOffset + k]);
          */
         for (int k=0; k<size; k++) {
-            final int rowOffset = k*innerSize;          // Offset of row computed by current iteration.
+            final int rowOffset = k*innerSize;              // Offset of row computed by current iteration.
             for (int j=k; ++j < size;) {
-                final int loRowOffset = j*innerSize;    // Offset of some row after the current row.
-                final int luRowOffset = j*size;         // Offset of the corresponding row in the LU matrix.
+                final int loRowOffset = j*innerSize;        // Offset of some row after the current row.
+                final int luRowOffset = j*size;             // Offset of the corresponding row in the LU matrix.
                 for (int i=0; i<innerSize; i++) {
                     acc.setFrom (elements, loRowOffset + i, errorOffset);
                     rat.setFrom (elements, rowOffset   + i, errorOffset);

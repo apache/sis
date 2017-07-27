@@ -16,6 +16,8 @@
  */
 package org.apache.sis.feature;
 
+import java.util.Collection;
+import java.util.Collections;
 import java.io.Serializable;
 import org.opengis.util.GenericName;
 
@@ -26,8 +28,8 @@ import org.opengis.util.GenericName;
  * by instances of the actual feature type when the later become known.
  *
  * @author  Martin Desruisseaux (Geomatys)
+ * @version 0.8
  * @since   0.5
- * @version 0.5
  * @module
  */
 final class NamedFeatureType implements FeatureType, Serializable {
@@ -42,6 +44,14 @@ final class NamedFeatureType implements FeatureType, Serializable {
     private final GenericName name;
 
     /**
+     * The feature type to use instead of the {@code NamedFeatureType}. Initially null, then set to the "real"
+     * feature type after {@link DefaultAssociationRole#resolve(DefaultFeatureType)} has been able to create it.
+     * This information is stored in case the same {@code NamedFeatureType} instance has been used in more than
+     * one {@link DefaultFeatureType}.
+     */
+    volatile FeatureType resolved;
+
+    /**
      * Creates a new placeholder for a feature of the given name.
      */
     NamedFeatureType(final GenericName name) {
@@ -54,6 +64,22 @@ final class NamedFeatureType implements FeatureType, Serializable {
     @Override
     public GenericName getName() {
         return name;
+    }
+
+    /**
+     * Returns an empty set since this feature has no declared property yet.
+     */
+    @Override
+    public Collection<AbstractIdentifiedType> getProperties(final boolean includeSuperTypes) {
+        return Collections.emptySet();
+    }
+
+    /**
+     * This feature type is considered independent of all other feature types except itself.
+     */
+    @Override
+    public boolean isAssignableFrom(final DefaultFeatureType type) {
+        return false;
     }
 
     /**

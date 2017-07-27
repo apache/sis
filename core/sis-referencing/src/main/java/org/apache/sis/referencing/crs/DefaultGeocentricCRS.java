@@ -29,14 +29,39 @@ import org.apache.sis.referencing.AbstractReferenceSystem;
 
 
 /**
- * A 3D coordinate reference system with the origin at the approximate centre of mass of the earth.
- * A geocentric CRS deals with the earth's curvature by taking a 3D spatial view, which obviates
+ * A 3-dimensional coordinate reference system with the origin at the approximate centre of mass of the earth.
+ * A geocentric CRS deals with the earth's curvature by taking a 3-dimensional spatial view, which obviates
  * the need to model the earth's curvature.
  *
- * <p><b>Used with coordinate system type:</b>
+ * <p><b>Used with datum type:</b>
+ *   {@linkplain org.apache.sis.referencing.datum.DefaultGeodeticDatum Geodetic}.<br>
+ * <b>Used with coordinate system types:</b>
  *   {@linkplain org.apache.sis.referencing.cs.DefaultCartesianCS Cartesian} or
  *   {@linkplain org.apache.sis.referencing.cs.DefaultSphericalCS Spherical}.
  * </p>
+ *
+ * <div class="section">Creating new geocentric CRS instances</div>
+ * New instances can be created either directly by specifying all information to a factory method (choices 3
+ * and 4 below), or indirectly by specifying the identifier of an entry in a database (choices 1 and 2 below).
+ * Choice 1 in the following list is the easiest but most restrictive way to get a geocentric CRS.
+ * The other choices provide more freedom.
+ *
+ * <ol>
+ *   <li>Create a {@code GeocentricCRS} from one of the static convenience shortcuts listed in
+ *       {@link org.apache.sis.referencing.CommonCRS#geocentric()}.</li>
+ *   <li>Create a {@code GeocentricCRS} from an identifier in a database by invoking
+ *       {@link org.apache.sis.referencing.factory.GeodeticAuthorityFactory#createGeocentricCRS(String)}.</li>
+ *   <li>Create a {@code GeocentricCRS} by invoking the {@code CRSFactory.createGeocentricCRS(…)} method
+ *       (implemented for example by {@link org.apache.sis.referencing.factory.GeodeticObjectFactory}).</li>
+ *   <li>Create a {@code GeocentricCRS} by invoking the
+ *       {@linkplain #DefaultGeocentricCRS(Map, GeodeticDatum, CartesianCS) constructor}.</li>
+ * </ol>
+ *
+ * <b>Example:</b> the following code gets a geocentric CRS using the <cite>World Geodetic System 1984</cite> datum:
+ *
+ * {@preformat java
+ *     GeodeticDatum datum = CommonCRS.WGS84.geocentric();
+ * }
  *
  * <div class="section">Immutability and thread safety</div>
  * This class is immutable and thus thread-safe if the property <em>values</em> (not necessarily the map itself),
@@ -44,8 +69,11 @@ import org.apache.sis.referencing.AbstractReferenceSystem;
  * in the javadoc, this condition holds if all components were created using only SIS factories and static constants.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.4
  * @version 0.4
+ *
+ * @see org.apache.sis.referencing.factory.GeodeticAuthorityFactory#createGeocentricCRS(String)
+ *
+ * @since 0.4
  * @module
  */
 @XmlTransient
@@ -54,14 +82,6 @@ public class DefaultGeocentricCRS extends DefaultGeodeticCRS implements Geocentr
      * Serial number for inter-operability with different versions.
      */
     private static final long serialVersionUID = 6784642848287659827L;
-
-    /**
-     * Constructs a new object in which every attributes are set to a null value.
-     * <strong>This is not a valid object.</strong> This constructor is strictly
-     * reserved to JAXB, which will assign values to the fields using reflexion.
-     */
-    private DefaultGeocentricCRS() {
-    }
 
     /**
      * For {@link #createSameType(Map, CoordinateSystem)} usage only.
@@ -108,20 +128,22 @@ public class DefaultGeocentricCRS extends DefaultGeodeticCRS implements Geocentr
      *     <td>{@link #getRemarks()}</td>
      *   </tr>
      *   <tr>
-     *     <td>{@value org.opengis.referencing.datum.Datum#DOMAIN_OF_VALIDITY_KEY}</td>
+     *     <td>{@value org.opengis.referencing.ReferenceSystem#DOMAIN_OF_VALIDITY_KEY}</td>
      *     <td>{@link org.opengis.metadata.extent.Extent}</td>
      *     <td>{@link #getDomainOfValidity()}</td>
      *   </tr>
      *   <tr>
-     *     <td>{@value org.opengis.referencing.datum.Datum#SCOPE_KEY}</td>
+     *     <td>{@value org.opengis.referencing.ReferenceSystem#SCOPE_KEY}</td>
      *     <td>{@link org.opengis.util.InternationalString} or {@link String}</td>
      *     <td>{@link #getScope()}</td>
      *   </tr>
      * </table>
      *
-     * @param properties The properties to be given to the coordinate reference system.
-     * @param datum The datum.
-     * @param cs The coordinate system.
+     * @param  properties  the properties to be given to the coordinate reference system.
+     * @param  datum       the datum.
+     * @param  cs          the coordinate system, which must be three-dimensional.
+     *
+     * @see org.apache.sis.referencing.factory.GeodeticObjectFactory#createGeocentricCRS(Map, GeodeticDatum, CartesianCS)
      */
     public DefaultGeocentricCRS(final Map<String,?> properties,
                                 final GeodeticDatum datum,
@@ -135,9 +157,11 @@ public class DefaultGeocentricCRS extends DefaultGeodeticCRS implements Geocentr
      * The properties given in argument are the same than for the
      * {@linkplain #DefaultGeocentricCRS(Map, GeodeticDatum, CartesianCS) above constructor}.
      *
-     * @param properties The properties to be given to the coordinate reference system.
-     * @param datum The datum.
-     * @param cs The coordinate system.
+     * @param  properties  the properties to be given to the coordinate reference system.
+     * @param  datum       the datum.
+     * @param  cs          the coordinate system.
+     *
+     * @see org.apache.sis.referencing.factory.GeodeticObjectFactory#createGeocentricCRS(Map, GeodeticDatum, SphericalCS)
      */
     public DefaultGeocentricCRS(final Map<String,?> properties,
                                 final GeodeticDatum datum,
@@ -153,7 +177,7 @@ public class DefaultGeocentricCRS extends DefaultGeodeticCRS implements Geocentr
      *
      * <p>This constructor performs a shallow copy, i.e. the properties are not cloned.</p>
      *
-     * @param crs The coordinate reference system to copy.
+     * @param  crs  the coordinate reference system to copy.
      *
      * @see #castOrCopy(GeocentricCRS)
      */
@@ -167,8 +191,8 @@ public class DefaultGeocentricCRS extends DefaultGeodeticCRS implements Geocentr
      * Otherwise if the given object is already a SIS implementation, then the given object is returned unchanged.
      * Otherwise a new SIS implementation is created and initialized to the attribute values of the given object.
      *
-     * @param  object The object to get as a SIS implementation, or {@code null} if none.
-     * @return A SIS implementation containing the values of the given object (may be the
+     * @param  object  the object to get as a SIS implementation, or {@code null} if none.
+     * @return a SIS implementation containing the values of the given object (may be the
      *         given object itself), or {@code null} if the argument was null.
      */
     public static DefaultGeocentricCRS castOrCopy(final GeocentricCRS object) {
@@ -196,7 +220,7 @@ public class DefaultGeocentricCRS extends DefaultGeodeticCRS implements Geocentr
      * Returns the geodetic datum associated to this geocentric CRS.
      * This is the datum given at construction time.
      *
-     * @return The geodetic datum associated to this geocentric CRS.
+     * @return the geodetic datum associated to this geocentric CRS.
      */
     @Override
     public final GeodeticDatum getDatum() {
@@ -254,9 +278,33 @@ public class DefaultGeocentricCRS extends DefaultGeodeticCRS implements Geocentr
      * </div>
      *
      * @return {@code "GeodeticCRS"} (WKT 2) or {@code "GeocCS"} (WKT 1).
+     *
+     * @see <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html#49">WKT 2 specification §8</a>
      */
     @Override
     protected String formatTo(final Formatter formatter) {
         return super.formatTo(formatter);
+    }
+
+
+
+
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+    ////////                                                                                  ////////
+    ////////                               XML support with JAXB                              ////////
+    ////////                                                                                  ////////
+    ////////        The following methods are invoked by JAXB using reflection (even if       ////////
+    ////////        they are private) or are helpers for other methods invoked by JAXB.       ////////
+    ////////        Those methods can be safely removed if Geographic Markup Language         ////////
+    ////////        (GML) support is not needed.                                              ////////
+    ////////                                                                                  ////////
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Constructs a new object in which every attributes are set to a null value.
+     * <strong>This is not a valid object.</strong> This constructor is strictly
+     * reserved to JAXB, which will assign values to the fields using reflexion.
+     */
+    private DefaultGeocentricCRS() {
     }
 }

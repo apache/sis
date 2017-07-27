@@ -17,12 +17,14 @@
 package org.apache.sis.io.wkt;
 
 import java.io.Console;
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.concurrent.atomic.AtomicReference;
 import javax.xml.bind.annotation.XmlTransient;
 import org.apache.sis.util.Debug;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.internal.util.X364;
+import org.apache.sis.internal.util.Constants;
 
 
 /**
@@ -35,7 +37,7 @@ import org.apache.sis.internal.util.X364;
  * representation of this object:</p>
  *
  * <ul>
- *   <li>{@link #toWKT()} returns a strictly compliant WKT or throws {@link UnformattableObjectException}
+ *   <li>{@link #toWKT()} tries to return a strictly compliant WKT or throws {@link UnformattableObjectException}
  *       if this object contains elements not defined by the ISO 19162 standard.</li>
  *   <li>{@link #toString()} returns a WKT with some redundant information omitted and some constraints relaxed.
  *       This method never throw {@code UnformattableObjectException};
@@ -58,8 +60,12 @@ import org.apache.sis.internal.util.X364;
  * </ul>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.4
- * @version 0.4
+ * @version 0.6
+ *
+ * @see <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html">WKT 2 specification</a>
+ * @see <a href="http://www.geoapi.org/3.0/javadoc/org/opengis/referencing/doc-files/WKT.html">Legacy WKT 1</a>
+ *
+ * @since 0.4
  * @module
  */
 @XmlTransient
@@ -79,7 +85,7 @@ public abstract class FormattableObject {
      * Since {@code toString()} is typically invoked for debugging purpose, a single formatter for
      * any thread is presumed sufficient.</div>
      */
-    private static final AtomicReference<Formatter> FORMATTER = new AtomicReference<Formatter>();
+    private static final AtomicReference<Formatter> FORMATTER = new AtomicReference<>();
 
     /**
      * Default constructor.
@@ -94,8 +100,8 @@ public abstract class FormattableObject {
      *
      * <p>By default this method formats this object according the {@link Convention#WKT2} rules.</p>
      *
-     * @return The default Well Know Text representation of this object.
-     * @throws UnformattableObjectException If this object can not be formatted as a standard WKT.
+     * @return the default Well Know Text representation of this object.
+     * @throws UnformattableObjectException if this object can not be formatted as a standard WKT.
      *
      * @see org.opengis.referencing.IdentifiedObject#toWKT()
      */
@@ -105,12 +111,15 @@ public abstract class FormattableObject {
 
     /**
      * Returns a <cite>Well Known Text</cite> (WKT) or an alternative text representation for this object.
-     * If this object can not be represented in a standard way, then this method fallbacks on a non-standard
-     * representation.
+     * If this object can not be represented in a standard way, then this method may fallback on non-standard
+     * representation, or leave unformattable elements empty and append warnings after the WKT.
      *
-     * <p>By default this method formats this object according the {@link Convention#WKT2_SIMPLIFIED} rules.</p>
+     * <p>By default this method formats this object according the {@link Convention#WKT2_SIMPLIFIED} rules,
+     * except that Unicode characters are kept <i>as-is</i> (they are not converted to ASCII).
+     * Consequently the WKT is not guaranteed to be ISO 19162 compliant.
+     * For stricter conformance, use {@link #toWKT()} instead.</p>
      *
-     * @return The Well Known Text (WKT) or an alternative representation of this object.
+     * @return the Well Known Text (WKT) or an alternative representation of this object.
      */
     @Override
     public String toString() {
@@ -119,9 +128,14 @@ public abstract class FormattableObject {
 
     /**
      * Returns a <cite>Well Known Text</cite> (WKT) for this object using the specified convention.
+     * Unicode characters are kept <i>as-is</i> (they are not converted to ASCII).
+     * The returned string may contain non-standard elements or warnings
+     * if this object can not be formatted according the given convention.
      *
-     * @param  convention The WKT convention to use.
-     * @return The Well Known Text (WKT) or a pseudo-WKT representation of this object.
+     * <p>For stricter conformance to ISO 19162 standard, use {@link #toWKT()} or {@link WKTFormat} instead.</p>
+     *
+     * @param  convention  the WKT convention to use.
+     * @return the Well Known Text (WKT) or a pseudo-WKT representation of this object.
      */
     public String toString(final Convention convention) {
         ArgumentChecks.ensureNonNull("convention", convention);
@@ -137,6 +151,7 @@ public abstract class FormattableObject {
      * <p>This is a convenience method for debugging purpose and for console applications.</p>
      */
     @Debug
+    @SuppressWarnings("UseOfSystemOutOrSystemErr")
     public void print() {
         final Console console = System.console();
         final PrintWriter out = (console != null) ? console.writer() : null;
@@ -151,33 +166,52 @@ public abstract class FormattableObject {
     /**
      * Returns a WKT for this object using the specified convention.
      * If {@code strict} is true, then an exception is thrown if the WKT is not standard-compliant.
+     * If {@code strict} if false, then warnings are appended after the WKT instead.
      *
-     * @param  convention  The convention for choosing WKT element names.
+     * @param  convention  the convention for choosing WKT element names.
      * @param  colorize    {@code true} for applying syntax coloring, or {@code false} otherwise.
      * @param  strict      {@code true} if an exception shall be thrown for unformattable objects,
      *                     or {@code false} for providing a non-standard formatting instead.
-     * @return The Well Known Text (WKT) or a pseudo-WKT representation of this object.
-     * @throws UnformattableObjectException If {@code strict} is {@code true} and this object can not be formatted.
+     * @return the Well Known Text (WKT) or a pseudo-WKT representation of this object.
+     * @throws UnformattableObjectException if {@code strict} is {@code true} and this object can not be formatted.
      */
-    final String formatWKT(final Convention convention, final boolean colorize, final boolean strict)
+    private String formatWKT(final Convention convention, final boolean colorize, final boolean strict)
              throws UnformattableObjectException
     {
         Formatter formatter = FORMATTER.getAndSet(null);
         if (formatter == null) {
             formatter = new Formatter();
         }
+        /*
+         * Apply the same setting than in 'WKTFormat.updateFormatter(…)'
+         * when KeywordCase and KeywordStyle have their default values.
+         */
         formatter.configure(convention, null, colorize ? Colors.DEFAULT : null,
-                convention.majorVersion() == 1, WKTFormat.DEFAULT_INDENTATION);
+                convention.toUpperCase           ? (byte) +1 : 0,
+                (convention.majorVersion() == 1) ? (byte) -1 : 0,
+                Constants.DEFAULT_INDENTATION);
+        if (!strict) {
+            formatter.transliterator = Transliterator.IDENTITY;
+        }
+        formatter.verifyCharacterValidity = strict;
         final String wkt;
         try {
             formatter.append(this);
             if (strict) {
-                final String message = formatter.getErrorMessage();
-                if (message != null) {
-                    throw new UnformattableObjectException(message, formatter.getErrorCause());
+                /*
+                 * If a warning occurred, consider the object as non-formattable.
+                 * We take the last message since it is more likely to be about the enclosing element.
+                 */
+                final Warnings warnings = formatter.getWarnings();
+                if (warnings != null) {
+                    final int n = warnings.getNumMessages() - 1;
+                    throw new UnformattableObjectException(warnings.getMessage(n), warnings.getException(n));
                 }
             }
+            formatter.appendWarnings();
             wkt = formatter.toWKT();
+        } catch (IOException e) {
+            throw new UnformattableObjectException(e);      // Should never happen since we write to a StringBuffer.
         } finally {
             formatter.clear();
         }
@@ -210,8 +244,8 @@ public abstract class FormattableObject {
      * while the keyword needs to be defined by the concrete subclasses.
      * In such case, the method in the abstract class shall return {@code null}.</p>
      *
-     * @param  formatter The formatter where to format the inner content of this WKT element.
-     * @return The {@linkplain KeywordCase#CAMEL_CASE CamelCase} keyword for the WKT element, or {@code null} if unknown.
+     * @param  formatter  the formatter where to format the inner content of this WKT element.
+     * @return the {@linkplain KeywordCase#CAMEL_CASE CamelCase} keyword for the WKT element, or {@code null} if unknown.
      *
      * @see #toWKT()
      * @see #toString()

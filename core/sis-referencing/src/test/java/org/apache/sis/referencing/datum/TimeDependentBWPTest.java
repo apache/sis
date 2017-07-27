@@ -28,7 +28,6 @@ import org.junit.Test;
 
 import static org.apache.sis.test.Assert.*;
 import static org.apache.sis.test.TestUtilities.date;
-import static org.apache.sis.test.mock.GeodeticDatumMock.WGS84;
 import static org.apache.sis.internal.referencing.Formulas.JULIAN_YEAR_LENGTH;
 
 
@@ -36,14 +35,57 @@ import static org.apache.sis.internal.referencing.Formulas.JULIAN_YEAR_LENGTH;
  * Tests the {@link TimeDependentBWP} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
+ * @version 0.6
  * @since   0.4
- * @version 0.4
  * @module
  */
 @DependsOn(BursaWolfParametersTest.class)
 public final strictfp class TimeDependentBWPTest extends TestCase {
     /**
-     * Tests the {@link BursaWolfParameters#setPositionVectorTransformation(Matrix, double)} method
+     * Creates a {@code TimeDependentBWP} using the example given in the EPSG database for operation method EPSG:1053.
+     * The target datum given by the EPG example is actually GDA94, but it is coincident with WGS84 to within 1 metre.
+     * For the purpose of this test, the target datum does not matter anyway.
+     */
+    private static TimeDependentBWP create() {
+        final TimeDependentBWP p = new TimeDependentBWP(GeodeticDatumMock.WGS84, null, date("1994-01-01 00:00:00"));
+        p.tX = -0.08468;    p.dtX = +1.42;
+        p.tY = -0.01942;    p.dtY = +1.34;
+        p.tZ = +0.03201;    p.dtZ = +0.90;
+        p.rX = +0.0004254;  p.drX = -1.5461;
+        p.rY = -0.0022578;  p.drY = -1.1820;
+        p.rZ = -0.0024015;  p.drZ = -1.1551;
+        p.dS = +0.00971;    p.ddS = +0.000109;
+        return p;
+    }
+
+    /**
+     * Tests {@link TimeDependentBWP#invert()}. This will indirectly tests {@link TimeDependentBWP#getValues()}
+     * followed by {@link TimeDependentBWP#setValues(double[])} because of the way the {@code invert()} method
+     * is implemented.
+     */
+    @Test
+    public void testInvert() {
+        /*
+         * Opportunistically test getValue() first because it is used by TimeDependentBWP.invert().
+         */
+        final double[] expected = {
+            -0.08468, -0.01942, +0.03201, +0.0004254, -0.0022578, -0.0024015, +0.00971,
+            +1.42,    +1.34,    +0.90,    -1.5461,    -1.1820,    -1.1551,    +0.000109
+        };
+        final TimeDependentBWP p = create();
+        assertArrayEquals(expected, p.getValues(), STRICT);
+        /*
+         * Now perform the actual TimeDependentBWP.invert() test.
+         */
+        for (int i=0; i<expected.length; i++) {
+            expected[i] = -expected[i];
+        }
+        p.invert();
+        assertArrayEquals(expected, p.getValues(), STRICT);
+    }
+
+    /**
+     * Tests the {@link TimeDependentBWP#setPositionVectorTransformation(Matrix, double)} method
      * using the example given in the EPSG database for operation method EPSG:1053.
      *
      * @throws NoninvertibleMatrixException Should not happen.
@@ -52,21 +94,10 @@ public final strictfp class TimeDependentBWPTest extends TestCase {
     @DependsOnMethod("testEpsgCalculation")
     public void testSetPositionVectorTransformation() throws NoninvertibleMatrixException {
         /*
-         * The target datum is actually GDA94, but it is coincident with WGS84 to within 1 metre.
-         * For the purpose of this test, the target datum does not matter anyway.
-         */
-        final TimeDependentBWP p = new TimeDependentBWP(WGS84, null, date("1994-01-01 00:00:00"));
-        p.tX = -0.08468;    p.dtX = +1.42;
-        p.tY = -0.01942;    p.dtY = +1.34;
-        p.tZ = +0.03201;    p.dtZ = +0.90;
-        p.rX = +0.0004254;  p.drX = -1.5461;
-        p.rY = -0.0022578;  p.drY = -1.1820;
-        p.rZ = -0.0024015;  p.drZ = -1.1551;
-        p.dS = +0.00971;    p.ddS = +0.000109;
-        /*
          * The transformation that we are going to test use as input
          * geocentric coordinates on ITRF2008 at epoch 2013.9.
          */
+        final TimeDependentBWP p = create();
         final Date time = p.getTimeReference();
         time.setTime(time.getTime() + StrictMath.round((2013.9 - 1994) * JULIAN_YEAR_LENGTH));
         assertEquals(date("2013-11-25 11:24:00"), time);
@@ -95,8 +126,8 @@ public final strictfp class TimeDependentBWPTest extends TestCase {
      * EPSG documentation truncates the numerical values given in their example, so it is normal that we have a
      * slight difference.
      *
-     * @param actual The coordinates calculated by the matrix, or {@code null} for comparing against
-     *        the EPSG expected values.
+     * @param  actual  the coordinates calculated by the matrix, or {@code null} for comparing against
+     *                 the EPSG expected values.
      */
     private void compareWithExplicitCalculation(final Matrix actual) {
         /*
@@ -135,7 +166,7 @@ public final strictfp class TimeDependentBWPTest extends TestCase {
             assertEquals("Y", Yt, actual.getElement(1, 0), 0.0005);
             assertEquals("Z", Zt, actual.getElement(2, 0), 0.0005);
         } else {
-            assertEquals("X", -3789470.008, Xt, 0.013); // Smallest tolerance value such as the test do not fail.
+            assertEquals("X", -3789470.008, Xt, 0.013);     // Smallest tolerance value such as the test do not fail.
             assertEquals("Y",  4841770.685, Yt, 0.009);
             assertEquals("Z", -1690895.103, Zt, 0.003);
         }

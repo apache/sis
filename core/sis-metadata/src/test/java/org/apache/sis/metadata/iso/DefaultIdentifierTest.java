@@ -25,15 +25,15 @@ import org.apache.sis.test.XMLTestCase;
 import org.apache.sis.test.DependsOn;
 import org.junit.*;
 
-import static org.apache.sis.test.Assert.*;
+import static org.apache.sis.test.MetadataAssert.*;
 
 
 /**
  * Tests {@link DefaultIdentifier}.
  *
  * @author  Martin Desruisseaux
- * @since   0.4
  * @version 0.4
+ * @since   0.4
  * @module
  */
 @DependsOn(org.apache.sis.metadata.iso.citation.DefaultCitationTest.class)
@@ -44,9 +44,6 @@ public final strictfp class DefaultIdentifierTest extends XMLTestCase {
     private static final String XML =
             "<gmd:MD_Identifier xmlns:gmd=\"" + Namespaces.GMD + "\" " +
                                "xmlns:gco=\"" + Namespaces.GCO + "\">\n" +
-            "  <gmd:code>\n" +
-            "    <gco:CharacterString>4326</gco:CharacterString>\n" +
-            "  </gmd:code>\n" +
             "  <gmd:authority>\n" +
             "    <gmd:CI_Citation>\n" +
             "      <gmd:title>\n" +
@@ -54,6 +51,9 @@ public final strictfp class DefaultIdentifierTest extends XMLTestCase {
             "      </gmd:title>\n" +
             "    </gmd:CI_Citation>\n" +
             "  </gmd:authority>\n" +
+            "  <gmd:code>\n" +
+            "    <gco:CharacterString>4326</gco:CharacterString>\n" +
+            "  </gmd:code>\n" +
             "</gmd:MD_Identifier>";
 
     /**
@@ -66,7 +66,7 @@ public final strictfp class DefaultIdentifierTest extends XMLTestCase {
     /**
      * Test XML marshalling.
      *
-     * @throws JAXBException Should never happen.
+     * @throws JAXBException if an error occurred during (un)marshalling.
      */
     @Test
     public void testMarshal() throws JAXBException {
@@ -79,13 +79,13 @@ public final strictfp class DefaultIdentifierTest extends XMLTestCase {
     /**
      * Test XML unmarshalling.
      *
-     * @throws JAXBException Should never happen.
+     * @throws JAXBException if an error occurred during (un)marshalling.
      */
     @Test
     public void testUnmarshall() throws JAXBException {
         final DefaultIdentifier identifier = unmarshal(DefaultIdentifier.class, XML);
-        assertNull  (        identifier.getVersion());
-        assertEquals("4326", identifier.getCode());
-        assertEquals("EPSG", identifier.getAuthority().getTitle().toString());
+        assertNull       ("identifier",        identifier.getVersion());
+        assertTitleEquals("authority", "EPSG", identifier.getAuthority());
+        assertEquals     ("code",      "4326", identifier.getCode());
     }
 }

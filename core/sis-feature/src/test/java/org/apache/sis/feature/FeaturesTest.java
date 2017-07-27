@@ -27,14 +27,15 @@ import static org.junit.Assert.*;
  * Tests {@link Features}.
  *
  * @author  Martin Desruisseaux (Geomatys)
+ * @author  Johann Sorel (Geomatys)
+ * @version 0.7
  * @since   0.5
- * @version 0.5
  * @module
  */
 @DependsOn(SingletonAttributeTest.class)
 public final strictfp class FeaturesTest extends TestCase {
     /**
-     * Tests {@link Features#cast(AttributeType, Class)}.
+     * Tests {@code Features.cast(AttributeType, Class)}.
      */
     @Test
     public void testCastAttributeType() {
@@ -52,7 +53,7 @@ public final strictfp class FeaturesTest extends TestCase {
     }
 
     /**
-     * Tests {@link Features#cast(Attribute, Class)}.
+     * Tests {@code Features.cast(Attribute, Class)}.
      */
     @Test
     public void testCastAttributeInstance() {
@@ -67,5 +68,27 @@ public final strictfp class FeaturesTest extends TestCase {
             assertTrue(message, message.contains("String"));
             assertTrue(message, message.contains("CharSequence"));
         }
+    }
+
+    /**
+     * Tests {@code Features.validate(Feature)}.
+     */
+    @Test
+    public void testValidate() {
+        final AbstractFeature feature = DefaultFeatureTypeTest.city().newInstance();
+
+        // Should not pass validation.
+        try {
+            Features.validate(feature);
+            fail("Feature is invalid because of missing property “population”. Validation should have raised an exception.");
+        } catch (IllegalArgumentException ex) {
+            String message = ex.getMessage();
+            assertTrue(message, message.contains("city") || message.contains("population"));
+        }
+
+        // Should pass validation.
+        feature.setPropertyValue("city", "Utopia");
+        feature.setPropertyValue("population", 10);
+        Features.validate(feature);
     }
 }

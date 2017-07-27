@@ -36,8 +36,8 @@ import static org.junit.Assert.*;
  * converted map).
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.3
+ * @since   0.3
  * @module
  */
 @DependsOn(DerivedSetTest.class)
@@ -45,7 +45,7 @@ public final strictfp class DerivedMapTest extends TestCase implements ObjectCon
     /**
      * The value to replace by {@code null}.
      */
-    protected static final int EXCLUDED = 17; // non-private for javadoc purpose.
+    protected static final int EXCLUDED = 17;                       // non-private for javadoc purpose.
 
     /**
      * Fills test values in the given maps.
@@ -68,8 +68,8 @@ public final strictfp class DerivedMapTest extends TestCase implements ObjectCon
      */
     @Test
     public void testNoExclusion() {
-        final Map<Integer,Integer> source = new HashMap<Integer,Integer>();
-        final Map<Integer,Integer> target = new HashMap<Integer,Integer>();
+        final Map<Integer,Integer> source = new HashMap<>();
+        final Map<Integer,Integer> target = new HashMap<>();
         final Map<Integer,Integer> tested = DerivedMap.create(source, this, new DerivedSetTest());
         fill(source, target);
         assertEquals(target.size(),     tested.size());
@@ -82,7 +82,7 @@ public final strictfp class DerivedMapTest extends TestCase implements ObjectCon
         assertEquals("before remove(300)", 8,  source.get        (3  ).intValue());
         assertEquals("       remove(300)", 80, tested.remove     (300).intValue());
         assertFalse ("after  remove(300)",     source.containsKey(3  ));
-        assertEquals("       remove(300)", 80, target.remove     (300).intValue()); // For comparison purpose.
+        assertEquals("       remove(300)", 80, target.remove     (300).intValue());         // For comparison purpose.
         assertEquals(target, tested);
 
         assertEquals("before put(900)", 1,  source.get(9      ).intValue());
@@ -95,8 +95,8 @@ public final strictfp class DerivedMapTest extends TestCase implements ObjectCon
      */
     @Test
     public void testWithExclusion() {
-        final Map<Integer,Integer> source = new HashMap<Integer,Integer>();
-        final Map<Integer,Integer> target = new HashMap<Integer,Integer>();
+        final Map<Integer,Integer> source = new HashMap<>();
+        final Map<Integer,Integer> target = new HashMap<>();
         final Map<Integer,Integer> tested = DerivedMap.create(source, this, new DerivedSetTest());
         fill(source, target);
         assertNull(source.put(EXCLUDED, 4));
@@ -119,12 +119,12 @@ public final strictfp class DerivedMapTest extends TestCase implements ObjectCon
     /**
      * Multiplies the given value by 10, except value {@value #EXCLUDED}.
      *
-     * @param  value The value to multiply.
-     * @return The multiplied value, or {@code null}.
+     * @param  value  the value to multiply.
+     * @return the multiplied value, or {@code null}.
      */
     @Override
     public Integer apply(final Integer value) {
-        if (value.intValue() == EXCLUDED) {
+        if (value == EXCLUDED) {
             return null;
         }
         return value * 100;

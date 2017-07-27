@@ -38,8 +38,8 @@ import static org.apache.sis.test.Assert.*;
  * Tests the various {@link PathConverter} implementations.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.3
+ * @since   0.3
  * @module
  */
 @DependsOn(StringConverterTest.class)
@@ -80,7 +80,7 @@ public final strictfp class PathConverterTest extends TestCase {
     /**
      * Tests conversions from File to URI values.
      *
-     * @throws URISyntaxException Should never happen.
+     * @throws URISyntaxException if this test uses a malformed URI.
      */
     @Test
     @PlatformDependent
@@ -94,7 +94,7 @@ public final strictfp class PathConverterTest extends TestCase {
     /**
      * Tests conversions from File to URL values.
      *
-     * @throws MalformedURLException Should never happen.
+     * @throws MalformedURLException if this test uses a malformed URL.
      */
     @Test
     @PlatformDependent
@@ -108,7 +108,7 @@ public final strictfp class PathConverterTest extends TestCase {
     /**
      * Tests conversions from URI to string values.
      *
-     * @throws URISyntaxException Should never happen.
+     * @throws URISyntaxException if this test uses a malformed URI.
      */
     @Test
     public void testURI_String() throws URISyntaxException {
@@ -120,8 +120,8 @@ public final strictfp class PathConverterTest extends TestCase {
     /**
      * Tests conversions from URI to URL values.
      *
-     * @throws MalformedURLException Should never happen.
-     * @throws URISyntaxException Should never happen.
+     * @throws MalformedURLException if this test uses a malformed URL.
+     * @throws URISyntaxException if this test uses a malformed URI.
      */
     @Test
     public void testURI_URL() throws MalformedURLException, URISyntaxException {
@@ -133,7 +133,7 @@ public final strictfp class PathConverterTest extends TestCase {
     /**
      * Tests conversions from URI to File values.
      *
-     * @throws URISyntaxException Should never happen.
+     * @throws URISyntaxException if this test uses a malformed URI.
      */
     @Test
     @PlatformDependent
@@ -147,7 +147,7 @@ public final strictfp class PathConverterTest extends TestCase {
     /**
      * Tests conversions from URL to string values.
      *
-     * @throws MalformedURLException Should never happen.
+     * @throws MalformedURLException if this test uses a malformed URL.
      */
     @Test
     public void testURL_String() throws MalformedURLException {
@@ -159,8 +159,8 @@ public final strictfp class PathConverterTest extends TestCase {
     /**
      * Tests conversions from URL to URI values.
      *
-     * @throws MalformedURLException Should never happen.
-     * @throws URISyntaxException Should never happen.
+     * @throws MalformedURLException if this test uses a malformed URL.
+     * @throws URISyntaxException if this test uses a malformed URI.
      */
     @Test
     public void testURL_URI() throws MalformedURLException, URISyntaxException {
@@ -172,7 +172,7 @@ public final strictfp class PathConverterTest extends TestCase {
     /**
      * Tests conversions from URL to File values.
      *
-     * @throws MalformedURLException Should never happen.
+     * @throws MalformedURLException if this test uses a malformed URL.
      */
     @Test
     @PlatformDependent

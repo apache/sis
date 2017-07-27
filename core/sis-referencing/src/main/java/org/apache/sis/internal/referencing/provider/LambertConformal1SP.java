@@ -16,6 +16,7 @@
  */
 package org.apache.sis.internal.referencing.provider;
 
+import javax.xml.bind.annotation.XmlTransient;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.apache.sis.parameter.ParameterBuilder;
@@ -27,12 +28,14 @@ import org.apache.sis.metadata.iso.citation.Citations;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Rueben Schulz (UBC)
- * @since   0.6
  * @version 0.6
- * @module
  *
  * @see <a href="http://www.remotesensing.org/geotiff/proj_list/lambert_conic_conformal_1sp.html">Lambert Conic Conformal 1SP on RemoteSensing.org</a>
+ *
+ * @since 0.6
+ * @module
  */
+@XmlTransient
 public final class LambertConformal1SP extends AbstractLambert {
     /**
      * For cross-version compatibility.
@@ -46,7 +49,7 @@ public final class LambertConformal1SP extends AbstractLambert {
 
     /**
      * The operation parameter descriptor for the <cite>Latitude of natural origin</cite> (φ₀) parameter value.
-     * Valid values range is [-90 … 90]° and default value is 0°.
+     * Valid values range is [-90 … 90]°. There is no default value.
      */
     public static final ParameterDescriptor<Double> LATITUDE_OF_ORIGIN;
 
@@ -54,7 +57,7 @@ public final class LambertConformal1SP extends AbstractLambert {
      * The operation parameter descriptor for the <cite>Longitude of natural origin</cite> (λ₀) parameter value.
      * Valid values range is [-180 … 180]° and default value is 0°.
      */
-    public static final ParameterDescriptor<Double> CENTRAL_MERIDIAN = Mercator1SP.CENTRAL_MERIDIAN;
+    public static final ParameterDescriptor<Double> LONGITUDE_OF_ORIGIN = Mercator1SP.LONGITUDE_OF_ORIGIN;
 
     /**
      * The operation parameter descriptor for the <cite>Scale factor at natural origin</cite> (k₀) parameter value.
@@ -65,7 +68,7 @@ public final class LambertConformal1SP extends AbstractLambert {
     /**
      * The group of all parameters expected by this coordinate operation.
      */
-    static final ParameterDescriptorGroup PARAMETERS;
+    private static final ParameterDescriptorGroup PARAMETERS;
     static {
         final ParameterBuilder builder = builder();
 
@@ -73,17 +76,17 @@ public final class LambertConformal1SP extends AbstractLambert {
                 .addNamesAndIdentifiers(Mercator1SP.LATITUDE_OF_ORIGIN));
 
         PARAMETERS = builder
-            .addIdentifier(IDENTIFIER)
-            .addName(                    "Lambert Conic Conformal (1SP)")
-            .addName(Citations.OGC,      "Lambert_Conformal_Conic_1SP")
-            .addName(Citations.GEOTIFF,  "CT_LambertConfConic_1SP")
-            .addIdentifier(Citations.GEOTIFF, "9")
-            .createGroupForMapProjection(
-                    LATITUDE_OF_ORIGIN,
-                    CENTRAL_MERIDIAN,
-                    SCALE_FACTOR,
-                    FALSE_EASTING,
-                    FALSE_NORTHING);
+                .addIdentifier(IDENTIFIER)
+                .addName(                    "Lambert Conic Conformal (1SP)")
+                .addName(Citations.OGC,      "Lambert_Conformal_Conic_1SP")
+                .addName(Citations.GEOTIFF,  "CT_LambertConfConic_1SP")
+                .addIdentifier(Citations.GEOTIFF, "9")
+                .createGroupForMapProjection(
+                        LATITUDE_OF_ORIGIN,
+                        LONGITUDE_OF_ORIGIN,
+                        SCALE_FACTOR,
+                        FALSE_EASTING,
+                        FALSE_NORTHING);
     }
 
     /**

@@ -29,19 +29,22 @@ import org.apache.sis.util.CharSequences;
  * from its name and conversely.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
- * @version 0.4
+ * @version 0.8
+ *
+ * @see IndexedResourceBundle#getKeyConstants()
+ *
+ * @since 0.8
  * @module
  */
-class KeyConstants {
+public class KeyConstants {
     /**
      * The class that defines key constants.
      */
     private final Class<?> keysClass;
 
     /**
-     * The key names. This is usually not needed, but may be created from the {@code Keys}
-     * inner class in some occasions.
+     * The key names in the exact same order than {@link IndexedResourceBundle#values}.
+     * This is usually not needed, but may be created from the {@code Keys} inner class in some occasions.
      *
      * @see #getKeyNames()
      * @see #getKeyName(short)
@@ -68,6 +71,7 @@ class KeyConstants {
      * The keys names are used only in rare situation, like {@link IndexedResourceBundle#list(Appendable)}
      * or in log records.
      */
+    @SuppressWarnings("ReturnOfCollectionOrArrayField")
     final synchronized String[] getKeyNames() {
         if (keys == null) {
             String[] names;
@@ -77,7 +81,7 @@ class KeyConstants {
                 names = new String[fields.length];
                 for (final Field field : fields) {
                     if (Modifier.isStatic(field.getModifiers()) && field.getType() == Short.TYPE) {
-                        final int index = ((Short) field.get(null)) & 0xFFFF;
+                        final int index = (((Short) field.get(null)) & 0xFFFF) - IndexedResourceBundle.FIRST;
                         if (index >= length) {
                             length = index + 1;
                             if (length > names.length) {
@@ -102,9 +106,9 @@ class KeyConstants {
      * our {@link IndexedResourceBundle#handleGetObject(String)} implementation.
      */
     final String getKeyName(final short index) {
-        final int i = index & 0xFFFF;
+        final int i = (index & 0xFFFF) - IndexedResourceBundle.FIRST;
         final String[] keys = getKeyNames();
-        if (i < keys.length) {
+        if (i >= 0 && i < keys.length) {
             final String key = keys[i];
             if (key != null) {
                 return key;

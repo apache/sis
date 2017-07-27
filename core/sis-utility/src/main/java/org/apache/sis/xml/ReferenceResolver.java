@@ -16,6 +16,7 @@
  */
 package org.apache.sis.xml;
 
+import java.net.URI;
 import java.util.UUID;
 import java.lang.reflect.Proxy;
 import org.opengis.metadata.Identifier;
@@ -23,6 +24,7 @@ import org.apache.sis.util.Emptiable;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.LenientComparable;
 import org.apache.sis.internal.jaxb.gmx.Anchor;
+import org.apache.sis.internal.jaxb.Context;
 
 import static org.apache.sis.util.ArgumentChecks.*;
 
@@ -33,13 +35,13 @@ import static org.apache.sis.util.ArgumentChecks.*;
  * to an existing instance instead than writing the full object definition.
  * At unmarshalling time, this class replaces (if possible) a reference by the full object definition.
  *
- * <p>Subclasses can override the methods defined in this class in order to search in their
- * own catalog. See the {@link XML#RESOLVER} javadoc for an example of registering a custom
- * {@code ReferenceResolver} to a unmarshaller.</p>
+ * <p>Subclasses can override the methods defined in this class in order to search in their own catalog.
+ * See the {@link XML#RESOLVER} javadoc for an example of registering a custom {@code ReferenceResolver}
+ * to a unmarshaller.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
+ * @version 0.7
  * @since   0.3
- * @version 0.4
  * @module
  */
 public class ReferenceResolver {
@@ -70,14 +72,13 @@ public class ReferenceResolver {
      *       {@code false}, depending on the method return type.</li>
      * </ul>
      *
-     * @param  <T>     The compile-time type of the {@code type} argument.
-     * @param  context Context (GML version, locale, <i>etc.</i>) of the (un)marshalling process.
-     * @param  type    The type of object to be unmarshalled as an <strong>interface</strong>.
-     *                 This is usually a <a href="http://www.geoapi.org">GeoAPI</a> interface.
-     * @param  identifiers An arbitrary amount of identifiers. For each identifier, the
-     *         {@linkplain Identifier#getAuthority() authority} is typically (but not
-     *         necessarily) one of the constants defined in {@link IdentifierSpace}.
-     * @return An object of the given type for the given identifiers, or {@code null} if none.
+     * @param  <T>          the compile-time type of the {@code type} argument.
+     * @param  context      context (GML version, locale, <i>etc.</i>) of the (un)marshalling process.
+     * @param  type         the type of object to be unmarshalled, often as a GeoAPI interface.
+     * @param  identifiers  an arbitrary amount of identifiers. For each identifier,
+     *         the {@linkplain org.apache.sis.metadata.iso.ImmutableIdentifier#getAuthority() authority}
+     *         is typically (but not necessarily) one of the constants defined in {@link IdentifierSpace}.
+     * @return an object of the given type for the given identifiers, or {@code null} if none.
      */
     @SuppressWarnings("unchecked")
     public <T> T newIdentifiedObject(final MarshalContext context, final Class<T> type, final Identifier... identifiers) {
@@ -90,15 +91,14 @@ public class ReferenceResolver {
     }
 
     /**
-     * Returns an object of the given type for the given {@code uuid} attribute, or {@code null}
-     * if none. The default implementation returns {@code null} in all cases.
+     * Returns an object of the given type for the given {@code uuid} attribute, or {@code null} if none.
+     * The default implementation returns {@code null} in all cases.
      *
-     * @param  <T>     The compile-time type of the {@code type} argument.
-     * @param  context Context (GML version, locale, <i>etc.</i>) of the (un)marshalling process.
-     * @param  type    The type of object to be unmarshalled as an <strong>interface</strong>.
-     *                 This is usually a <a href="http://www.geoapi.org">GeoAPI</a> interface.
-     * @param  uuid The {@code uuid} attributes.
-     * @return An object of the given type for the given {@code uuid} attribute, or {@code null} if none.
+     * @param  <T>      the compile-time type of the {@code type} argument.
+     * @param  context  context (GML version, locale, <i>etc.</i>) of the (un)marshalling process.
+     * @param  type     the type of object to be unmarshalled, often as a GeoAPI interface.
+     * @param  uuid     the {@code uuid} attributes.
+     * @return an object of the given type for the given {@code uuid} attribute, or {@code null} if none.
      */
     @SuppressWarnings("unchecked")
     public <T> T resolve(final MarshalContext context, final Class<T> type, final UUID uuid) {
@@ -108,26 +108,90 @@ public class ReferenceResolver {
     }
 
     /**
-     * Returns an object of the given type for the given {@code xlink} attribute, or {@code null}
-     * if none. The default implementation returns {@code null} in all cases.
+     * Returns an object of the given type for the given {@code xlink} attribute, or {@code null} if none.
+     * The default implementation performs the following lookups:
      *
-     * @param  <T>     The compile-time type of the {@code type} argument.
-     * @param  context Context (GML version, locale, <i>etc.</i>) of the (un)marshalling process.
-     * @param  type    The type of object to be unmarshalled, often as an interface.
-     * @param  link    The {@code xlink} attributes.
-     * @return An object of the given type for the given {@code xlink} attribute, or {@code null} if none.
+     * <ul>
+     *   <li>If the {@link XLink#getHRef() xlink:href} attribute is an {@linkplain URI#getFragment() URI fragment}
+     *       of the form {@code "#foo"} and if an object of class {@code type} with the {@code gml:id="foo"} attribute
+     *       has previously been seen in the same XML document, then that object is returned.</li>
+     *   <li>Otherwise returns {@code null}.</li>
+     * </ul>
+     *
+     * @param  <T>      the compile-time type of the {@code type} argument.
+     * @param  context  context (GML version, locale, <i>etc.</i>) of the (un)marshalling process.
+     * @param  type     the type of object to be unmarshalled, often as a GeoAPI interface.
+     * @param  link     the {@code xlink} attributes.
+     * @return an object of the given type for the given {@code xlink} attribute, or {@code null} if none.
      */
     public <T> T resolve(final MarshalContext context, final Class<T> type, final XLink link) {
         ensureNonNull("type",  type);
         ensureNonNull("xlink", link);
+        final URI href = link.getHRef();
+        if (href != null && href.toString().startsWith("#")) {
+            final String id = href.getFragment();
+            final Context c = (context instanceof Context) ? (Context) context : Context.current();
+            final Object object = Context.getObjectForID(c, id);
+            if (type.isInstance(object)) {
+                return type.cast(object);
+            } else {
+                final short key;
+                final Object args;
+                if (object == null) {
+                    key = Errors.Keys.NotABackwardReference_1;
+                    args = id;
+                } else {
+                    key = Errors.Keys.UnexpectedTypeForReference_3;
+                    args = new Object[] {id, type, object.getClass()};
+                }
+                Context.warningOccured(c, ReferenceResolver.class, "resolve", Errors.class, key, args);
+            }
+        }
         return null;
     }
 
     /**
-     * Returns {@code true} if the marshaller can use a reference to the given metadata
-     * instead than writing the full element. This method is invoked when a metadata to
-     * be marshalled has a UUID identifier. Because those metadata may be defined externally,
-     * SIS can not know if the metadata shall be fully marshalled or not.
+     * Returns {@code true} if the marshaller can use a {@code xlink:href="#id"} reference to the given object
+     * instead than writing the full XML element. This method is invoked by the marshaller when:
+     *
+     * <ul>
+     *   <li>The given object has already been marshalled in the same XML document.</li>
+     *   <li>The marshalled object had a {@code gml:id} attribute
+     *     <ul>
+     *       <li>either specified explicitely by
+     *         <code>{@linkplain IdentifierMap#put IdentifierMap.put}({@linkplain IdentifierSpace#ID}, id)</code></li>
+     *       <li>or inferred automatically by the marshalled object
+     *         (e.g. {@link org.apache.sis.referencing.AbstractIdentifiedObject}).</li>
+     *     </ul>
+     *   </li>
+     * </ul>
+     *
+     * Note that if this method returns {@code true}, then the use of {@code xlink:href="#id"} will have
+     * precedence over {@linkplain #canSubstituteByReference(MarshalContext, Class, Object, UUID) UUID}
+     * and {@linkplain #canSubstituteByReference(MarshalContext, Class, Object, XLink) XLink alternatives}.
+     *
+     * <p>The default implementation unconditionally returns {@code true}.
+     * Subclasses can override this method if they want to filter which objects to declare by reference.</p>
+     *
+     * @param  <T>      the compile-time type of the {@code type} argument.
+     * @param  context  context (GML version, locale, <i>etc.</i>) of the (un)marshalling process.
+     * @param  type     the type of object to be unmarshalled, often as a GeoAPI interface.
+     * @param  object   the object to be marshalled.
+     * @param  id       the {@code gml:id} value of the object to be marshalled.
+     * @return {@code true} if the marshaller can use the {@code xlink:href="#id"} attribute
+     *         instead than marshalling the given object.
+     *
+     * @since 0.7
+     */
+    public <T> boolean canSubstituteByReference(final MarshalContext context, final Class<T> type, final T object, final String id) {
+        return true;
+    }
+
+    /**
+     * Returns {@code true} if the marshaller can use a reference to the given object
+     * instead than writing the full XML element. This method is invoked when an object to
+     * be marshalled has a UUID identifier. Because those object may be defined externally,
+     * SIS can not know if the object shall be fully marshalled or not.
      * Such information needs to be provided by the application.
      *
      * <p>The default implementation returns {@code true} in the following cases:</p>
@@ -138,13 +202,13 @@ public class ReferenceResolver {
      *
      * Subclasses can override this method if they know whether the receiver will be able to resolve the reference.
      *
-     * @param  <T>     The compile-time type of the {@code type} argument.
-     * @param  context Context (GML version, locale, <i>etc.</i>) of the (un)marshalling process.
-     * @param  type    The type of object to be unmarshalled, often as an interface.
-     * @param  object  The object to be marshalled.
-     * @param  uuid    The unique identifier of the object to be marshalled.
+     * @param  <T>      the compile-time type of the {@code type} argument.
+     * @param  context  context (GML version, locale, <i>etc.</i>) of the (un)marshalling process.
+     * @param  type     the type of object to be unmarshalled, often as a GeoAPI interface.
+     * @param  object   the object to be marshalled.
+     * @param  uuid     the unique identifier of the object to be marshalled.
      * @return {@code true} if the marshaller can use the {@code uuidref} attribute
-     *         instead than marshalling the given metadata.
+     *         instead than marshalling the given object.
      */
     public <T> boolean canSubstituteByReference(final MarshalContext context, final Class<T> type, final T object, final UUID uuid) {
         return (object instanceof NilObject) || (object instanceof Emptiable && ((Emptiable) object).isEmpty());
@@ -152,9 +216,9 @@ public class ReferenceResolver {
 
     /**
      * Returns {@code true} if the marshaller can use a {@code xlink:href} reference to the given
-     * metadata instead than writing the full element. This method is invoked when a metadata to be
-     * marshalled has a {@link XLink} identifier. Because those metadata may be defined externally,
-     * SIS can not know if the metadata shall be fully marshalled or not.
+     * object instead than writing the full XML element. This method is invoked when an object to be
+     * marshalled has a {@link XLink} identifier. Because those object may be defined externally,
+     * SIS can not know if the object shall be fully marshalled or not.
      * Such information needs to be provided by the application.
      *
      * <p>The default implementation returns {@code true} in the following cases:</p>
@@ -165,14 +229,13 @@ public class ReferenceResolver {
      *
      * Subclasses can override this method if they know whether the receiver will be able to resolve the reference.
      *
-     * @param  <T>     The compile-time type of the {@code type} argument.
-     * @param  context Context (GML version, locale, <i>etc.</i>) of the (un)marshalling process.
-     * @param  type    The type of object to be marshalled as an <strong>interface</strong>.
-     *                 This is usually a <a href="http://www.geoapi.org">GeoAPI</a> interface.
-     * @param  object  The object to be marshalled.
-     * @param  link    The reference of the object to be marshalled.
+     * @param  <T>      the compile-time type of the {@code type} argument.
+     * @param  context  context (GML version, locale, <i>etc.</i>) of the (un)marshalling process.
+     * @param  type     the type of object to be unmarshalled, often as a GeoAPI interface.
+     * @param  object   the object to be marshalled.
+     * @param  link     the reference of the object to be marshalled.
      * @return {@code true} if the marshaller can use the {@code xlink:href} attribute
-     *         instead than marshalling the given metadata.
+     *         instead than marshalling the given object.
      */
     public <T> boolean canSubstituteByReference(final MarshalContext context, final Class<T> type, final T object, final XLink link) {
         return (object instanceof NilObject) || (object instanceof Emptiable && ((Emptiable) object).isEmpty());
@@ -200,15 +263,14 @@ public class ReferenceResolver {
      * </td></tr>
      * </table>
      *
-     * Subclasses can override this method if they can provide a mapping from some text
-     * values to anchors.
+     * Subclasses can override this method if they can provide a mapping from some text values to anchors.
      *
-     * @param  context Context (GML version, locale, <i>etc.</i>) of the (un)marshalling process.
-     * @param  value   The value for which an anchor is requested. Often the same instance than {@code text},
-     *                 but can also be the {@link java.net.URI} or {@link java.util.Locale} instance for which
-     *                 {@code text} is a string representation.
-     * @param  text    The textual representation of the value for which to get the anchor.
-     * @return The anchor for the given text, or {@code null} if none.
+     * @param  context  context (GML version, locale, <i>etc.</i>) of the (un)marshalling process.
+     * @param  value    the value for which an anchor is requested. Often the same instance than {@code text},
+     *                  but can also be the {@link java.net.URI} or {@link java.util.Locale} instance for which
+     *                  {@code text} is a string representation.
+     * @param  text     the textual representation of the value for which to get the anchor.
+     * @return the anchor for the given text, or {@code null} if none.
      */
     public XLink anchor(final MarshalContext context, final Object value, final CharSequence text) {
         return (text instanceof Anchor) ? (Anchor) text : null;

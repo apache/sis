@@ -20,6 +20,7 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.ConcurrentModificationException;
+import java.util.IllformedLocaleException;
 import java.util.Locale;
 import java.util.TimeZone;
 import javax.xml.validation.Schema;
@@ -37,6 +38,7 @@ import org.apache.sis.util.logging.WarningListener;
 import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.internal.jaxb.Context;
 import org.apache.sis.internal.jaxb.LegacyNamespaces;
+import org.apache.sis.internal.jaxb.TypeRegistration;
 
 
 /**
@@ -47,8 +49,8 @@ import org.apache.sis.internal.jaxb.LegacyNamespaces;
  * "endorsed JAR" names if needed.
  *
  * @author  Martin Desruisseaux (Geomatys)
+ * @version 0.8
  * @since   0.3
- * @version 0.3
  * @module
  */
 abstract class Pooled {
@@ -59,21 +61,12 @@ abstract class Pooled {
     private static final String[] SCHEMA_KEYS = {"gmd"};
 
     /**
-     * The prefix of property names which are provided in external (endorsed) implementation of JAXB.
-     * This is slightly different than the prefix used by the implementation bundled with the JDK 6,
-     * which is {@code "com.sun.xml.internal.bind"}.
-     *
-     * @see #convertPropertyKey(String)
-     */
-    static final String ENDORSED_PREFIX = "com.sun.xml.bind.";
-
-    /**
      * {@code true} if the JAXB implementation is the one bundled in JDK 6, or {@code false}
      * if this is the external implementation provided as a JAR file in the endorsed directory.
      * If {@code true}, then an additional {@code "internal"} package name needs to be inserted
      * in the property keys.
      *
-     * @see #convertPropertyKey(String)
+     * @see Implementation#toInternal(String)
      */
     private final boolean internal;
 
@@ -155,6 +148,14 @@ abstract class Pooled {
     private ValueConverter converter;
 
     /**
+     * Converters from arbitrary classes implementing GeoAPI interfaces to Apache SIS implementations
+     * providing JAXB annotations, or null or an empty array if none. This is used at marshalling time.
+     *
+     * @see #getRootAdapters()
+     */
+    private TypeRegistration[] rootAdapters;
+
+    /**
      * The object to inform about warnings, or {@code null} if none.
      */
     private WarningListener<?> warningListener;
@@ -169,23 +170,23 @@ abstract class Pooled {
     /**
      * Creates a {@link PooledTemplate}.
      *
-     * @param internal {@code true} if the JAXB implementation is the one bundled in JDK 6,
+     * @param internal  {@code true} if the JAXB implementation is the one bundled in JDK 6,
      *        or {@code false} if this is the external implementation provided as a JAR file
      *        in the endorsed directory.
      */
     Pooled(final boolean internal) {
         this.internal = internal;
-        initialProperties = new LinkedHashMap<Object,Object>();
+        initialProperties = new LinkedHashMap<>();
     }
 
     /**
      * Creates a {@link PooledMarshaller} or {@link PooledUnmarshaller}. The {@link #initialize(Pooled)}
      * method must be invoked after this constructor for completing the initialization.
      *
-     * @param template The {@link PooledTemplate} from which to get the initial values.
+     * @param template the {@link PooledTemplate} from which to get the initial values.
      */
     Pooled(final Pooled template) {
-        initialProperties = new LinkedHashMap<Object,Object>();
+        initialProperties = new LinkedHashMap<>();
         internal = template.internal;
     }
 
@@ -194,11 +195,11 @@ abstract class Pooled {
      * This method is not invoked in the {@link #Pooled(Pooled)} constructor in order to
      * give to subclasses a chance to complete their construction first.
      *
-     * @param  template The {@link PooledTemplate} from which to get the initial values.
-     * @throws JAXBException If an error occurred while setting a property.
+     * @param  template  the {@link PooledTemplate} from which to get the initial values.
+     * @throws JAXBException if an error occurred while setting a property.
      */
     final void initialize(final Pooled template) throws JAXBException {
-        reset(template); // Set the SIS properties first. JAXB properties are set below.
+        reset(template);     // Set the SIS properties first. JAXB properties are set below.
         for (final Map.Entry<Object,Object> entry : template.initialProperties.entrySet()) {
             setStandardProperty((String) entry.getKey(), entry.getValue());
         }
@@ -209,8 +210,8 @@ abstract class Pooled {
      * This method is invoked by {@link MarshallerPool} just before to push a
      * (un)marshaller in the pool after its usage.
      *
-     * @param  template The {@link PooledTemplate} from which to get the initial values.
-     * @throws JAXBException If an error occurred while restoring a property.
+     * @param  template  the {@link PooledTemplate} from which to get the initial values.
+     * @throws JAXBException if an error occurred while restoring a property.
      */
     public final void reset(final Pooled template) throws JAXBException {
         for (final Map.Entry<Object,Object> entry : initialProperties.entrySet()) {
@@ -225,6 +226,7 @@ abstract class Pooled {
         versionGML       = template.versionGML;
         resolver         = template.resolver;
         converter        = template.converter;
+        rootAdapters     = template.rootAdapters;
         warningListener  = template.warningListener;
         resetTime        = System.nanoTime();
         if (this instanceof Marshaller) {
@@ -239,9 +241,9 @@ abstract class Pooled {
      * {@code setProperty(key, value)} method. Otherwise the value shall be given to
      * {@code setFoo(value)} method where {@code "Foo"} is determined from the key.
      *
-     * @param  key   The property to reset.
-     * @param  value The initial value to give to the property.
-     * @throws JAXBException If an error occurred while restoring a property.
+     * @param  key    the property to reset.
+     * @param  value  the initial value to give to the property.
+     * @throws JAXBException if an error occurred while restoring a property.
      */
     protected abstract void reset(final Object key, final Object value) throws JAXBException;
 
@@ -290,8 +292,8 @@ abstract class Pooled {
      * modified for the first time, in order to allow {@link #reset(Pooled)} to restore
      * the (un)marshaller to its initial state.
      *
-     * @param type  The property to save.
-     * @param value The current value of the property.
+     * @param  type   the property to save.
+     * @param  value  the current value of the property.
      */
     final <E> void saveProperty(final Class<E> type, final E value) {
         if (initialProperties.put(type, value) != null) {
@@ -302,47 +304,31 @@ abstract class Pooled {
     }
 
     /**
-     * Converts a property key from the JAXB name to the underlying implementation name.
-     * This applies only to property keys in the {@code "com.sun.xml.bind"} namespace.
-     *
-     * @param  key The JAXB property key.
-     * @return The property key to use.
-     */
-    private String convertPropertyKey(String key) {
-        if (internal && key.startsWith(ENDORSED_PREFIX)) {
-            final StringBuilder buffer = new StringBuilder(key.length() + 10);
-            key = buffer.append("com.sun.xml.internal.bind.")
-                    .append(key, ENDORSED_PREFIX.length(), key.length()).toString();
-        }
-        return key;
-    }
-
-    /**
      * A method which is common to both {@code Marshaller} and {@code Unmarshaller}.
      * It saves the initial state if it was not already done, but subclasses will
      * need to complete the work.
      */
     public final void setProperty(String name, final Object value) throws PropertyException {
         try {
-            /* switch (name) */ {
-                if (name.equals(XML.LOCALE)) {
+            switch (name) {
+                case XML.LOCALE: {
                     locale = (value instanceof CharSequence) ? Locales.parse(value.toString()) : (Locale) value;
                     return;
                 }
-                if (name.equals(XML.TIMEZONE)) {
+                case XML.TIMEZONE: {
                     timezone = (value instanceof CharSequence) ? TimeZone.getTimeZone(value.toString()) : (TimeZone) value;
                     return;
                 }
-                if (name.equals(XML.SCHEMAS)) {
+                case XML.SCHEMAS: {
                     final Map<?,?> map = (Map<?,?>) value;
                     Map<String,String> copy = null;
                     if (map != null) {
-                        copy = new HashMap<String,String>(4);
+                        copy = new HashMap<>(4);
                         for (final String key : SCHEMA_KEYS) {
                             final Object schema = map.get(key);
                             if (schema != null) {
                                 if (!(schema instanceof String)) {
-                                    throw new PropertyException(Errors.format(Errors.Keys.IllegalPropertyClass_2,
+                                    throw new PropertyException(Errors.format(Errors.Keys.IllegalPropertyValueClass_2,
                                             name + "[\"" + key + "\"]", value.getClass()));
                                 }
                                 copy.put(key, (String) schema);
@@ -353,19 +339,19 @@ abstract class Pooled {
                     schemas = copy;
                     return;
                 }
-                if (name.equals(XML.GML_VERSION)) {
+                case XML.GML_VERSION: {
                     versionGML = (value instanceof CharSequence) ? new Version(value.toString()) : (Version) value;
                     return;
                 }
-                if (name.equals(XML.RESOLVER)) {
+                case XML.RESOLVER: {
                     resolver = (ReferenceResolver) value;
                     return;
                 }
-                if (name.equals(XML.CONVERTER)) {
+                case XML.CONVERTER: {
                     converter = (ValueConverter) value;
                     return;
                 }
-                if (name.equals(XML.STRING_SUBSTITUTES)) {
+                case XML.STRING_SUBSTITUTES: {
                     bitMasks &= ~(Context.SUBSTITUTE_LANGUAGE |
                                   Context.SUBSTITUTE_COUNTRY  |
                                   Context.SUBSTITUTE_FILENAME |
@@ -385,27 +371,34 @@ abstract class Pooled {
                     }
                     return;
                 }
-                if (name.equals(XML.WARNING_LISTENER)) {
+                case XML.WARNING_LISTENER: {
                     warningListener = (WarningListener<?>) value;
                     return;
                 }
-                if (name.equals(LegacyNamespaces.APPLY_NAMESPACE_REPLACEMENTS)) {
+                case LegacyNamespaces.APPLY_NAMESPACE_REPLACEMENTS: {
                     xmlnsReplaceCode = 0;
                     if (value != null) {
                         xmlnsReplaceCode = ((Boolean) value) ? (byte) 1 : (byte) 2;
                     }
                     return;
                 }
+                case TypeRegistration.ROOT_ADAPTERS: {
+                    rootAdapters = (TypeRegistration[]) value;
+                    // No clone for now because ROOT_ADAPTERS is not yet a public API.
+                    return;
+                }
             }
-        } catch (RuntimeException e) { // (ClassCastException | IllformedLocaleException) on the JDK7 branch.
+        } catch (ClassCastException | IllformedLocaleException e) {
             throw new PropertyException(Errors.format(
-                    Errors.Keys.IllegalPropertyClass_2, name, value.getClass()), e);
+                    Errors.Keys.IllegalPropertyValueClass_2, name, value.getClass()), e);
         }
         /*
          * If we reach this point, the given name is not a SIS property. Try to handle
          * it as a (un)marshaller-specific property, after saving the previous value.
          */
-        name = convertPropertyKey(name);
+        if (internal) {
+            name = Implementation.toInternal(name);
+        }
         if (!initialProperties.containsKey(name)) {
             if (initialProperties.put(name, getStandardProperty(name)) != null) {
                 // Should never happen, unless on concurrent changes in a backgroung thread.
@@ -418,16 +411,17 @@ abstract class Pooled {
     /**
      * A method which is common to both {@code Marshaller} and {@code Unmarshaller}.
      */
-    public final Object getProperty(final String name) throws PropertyException {
-        /*switch (name)*/ {
-            if (name.equals(XML.LOCALE))           return locale;
-            if (name.equals(XML.TIMEZONE))         return timezone;
-            if (name.equals(XML.SCHEMAS))          return schemas;
-            if (name.equals(XML.GML_VERSION))      return versionGML;
-            if (name.equals(XML.RESOLVER))         return resolver;
-            if (name.equals(XML.CONVERTER))        return converter;
-            if (name.equals(XML.WARNING_LISTENER)) return warningListener;
-            if (name.equals(XML.STRING_SUBSTITUTES)) {
+    @SuppressWarnings("ReturnOfCollectionOrArrayField")     // Because unmodifiable.
+    public final Object getProperty(String name) throws PropertyException {
+        switch (name) {
+            case XML.LOCALE:           return locale;
+            case XML.TIMEZONE:         return timezone;
+            case XML.SCHEMAS:          return schemas;
+            case XML.GML_VERSION:      return versionGML;
+            case XML.RESOLVER:         return resolver;
+            case XML.CONVERTER:        return converter;
+            case XML.WARNING_LISTENER: return warningListener;
+            case XML.STRING_SUBSTITUTES: {
                 int n = 0;
                 final String[] substitutes = new String[4];
                 if ((bitMasks & Context.SUBSTITUTE_LANGUAGE) != 0) substitutes[n++] = "language";
@@ -436,14 +430,20 @@ abstract class Pooled {
                 if ((bitMasks & Context.SUBSTITUTE_MIMETYPE) != 0) substitutes[n++] = "mimetype";
                 return (n != 0) ? ArraysExt.resize(substitutes, n) : null;
             }
-            if (name.equals(LegacyNamespaces.APPLY_NAMESPACE_REPLACEMENTS)) {
+            case LegacyNamespaces.APPLY_NAMESPACE_REPLACEMENTS: {
                 switch (xmlnsReplaceCode) {
                     case 1:  return Boolean.TRUE;
                     case 2:  return Boolean.FALSE;
                     default: return null;
                 }
             }
-            return getStandardProperty(convertPropertyKey(name));
+            case TypeRegistration.ROOT_ADAPTERS: return (rootAdapters != null) ? rootAdapters.clone() : null;
+            default: {
+                if (internal) {
+                    name = Implementation.toInternal(name);
+                }
+                return getStandardProperty(name);
+            }
         }
     }
 
@@ -487,6 +487,18 @@ abstract class Pooled {
      */
     @SuppressWarnings("rawtypes")
     public abstract <A extends XmlAdapter> A getAdapter(final Class<A> type);
+
+    /**
+     * Returns the adapters to apply on the root object to marshal, or {@code null} or an empty array if none.
+     * This is used for converting from arbitrary implementations of GeoAPI interfaces to Apache SIS implementations
+     * providing JAXB annotations.
+     *
+     * @return a direct reference to the internal array of converters - do not modify.
+     */
+    @SuppressWarnings("ReturnOfCollectionOrArrayField")
+    final TypeRegistration[] getRootAdapters() {
+        return rootAdapters;
+    }
 
     /**
      * A method which is common to both {@code Marshaller} and {@code Unmarshaller}.

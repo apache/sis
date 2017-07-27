@@ -41,11 +41,13 @@ import org.apache.sis.internal.jaxb.XmlUtilities;
  * {@link org.apache.sis.xml.XML#TIMEZONE} property.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.4
  * @version 0.4
- * @module
  *
  * @see UniversalTimeAdapter
+ * @see org.apache.sis.internal.jaxb.gco.GO_DateTime
+ *
+ * @since 0.4
+ * @module
  */
 public final class DateAdapter extends XmlAdapter<XMLGregorianCalendar, Date> {
     /**
@@ -58,8 +60,8 @@ public final class DateAdapter extends XmlAdapter<XMLGregorianCalendar, Date> {
      * Converts a date read from a XML stream to the object which will contains
      * the value. JAXB calls automatically this method at unmarshalling time.
      *
-     * @param  value The XML date, or {@code null}.
-     * @return The {@code java.util} date, or {@code null}.
+     * @param  value  the XML date, or {@code null}.
+     * @return the {@code java.util} date, or {@code null}.
      */
     @Override
     public Date unmarshal(final XMLGregorianCalendar value) {
@@ -70,8 +72,8 @@ public final class DateAdapter extends XmlAdapter<XMLGregorianCalendar, Date> {
      * Converts the date to the object to be marshalled in a XML file or stream.
      * JAXB calls automatically this method at marshalling time.
      *
-     * @param  value The {@code java.util} date value, or {@code null}.
-     * @return The XML date, or {@code null}.
+     * @param  value  the {@code java.util} date value, or {@code null}.
+     * @return the XML date, or {@code null}.
      */
     @Override
     public XMLGregorianCalendar marshal(final Date value) {
@@ -79,7 +81,7 @@ public final class DateAdapter extends XmlAdapter<XMLGregorianCalendar, Date> {
             final Context context = Context.current();
             try {
                 final XMLGregorianCalendar gc = XmlUtilities.toXML(context, value);
-                XmlUtilities.trimTime(gc, true); // Type is xsd:date without time.
+                XmlUtilities.trimTime(gc, true);        // Type is xsd:date without time.
                 return gc;
             } catch (DatatypeConfigurationException e) {
                 Context.warningOccured(context, XmlAdapter.class, "marshal", e, true);

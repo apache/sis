@@ -30,18 +30,18 @@ import static org.apache.sis.test.Assert.*;
  * Tests {@link ServiceParameter}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.5
  * @version 0.5
+ * @since   0.5
  * @module
  */
 public final strictfp class ServiceParameterTest extends XMLTestCase {
     /**
      * Creates the parameter to use for testing purpose.
      *
-     * @return The test parameter.
+     * @return the test parameter.
      */
     public static ServiceParameter create() {
-        final MemberName paramName = Names.createMemberName(null, ":", "Version", String.class);
+        final MemberName paramName = Names.createMemberName(null, null, "Version", String.class);
         final ServiceParameter param = new ServiceParameter();
         param.memberName    = paramName;
         param.optionality   = true;

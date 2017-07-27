@@ -30,7 +30,7 @@ import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.measure.ValueRange;
 import org.apache.sis.util.resources.Messages;
 
-import static org.apache.sis.internal.metadata.MetadataUtilities.warnNonPositiveArgument;
+import static org.apache.sis.internal.metadata.MetadataUtilities.ensurePositive;
 
 // Branch-specific imports
 import static org.opengis.annotation.Obligation.CONDITIONAL;
@@ -39,8 +39,17 @@ import static org.opengis.annotation.Specification.ISO_19115;
 
 /**
  * Level of detail expressed as a scale factor or a ground distance.
+ * The following properties are mandatory or conditional (i.e. mandatory under some circumstances)
+ * in a well-formed metadata according ISO 19115:
  *
- * <div class="section">Relationship between properties</div>
+ * <div class="preformat">{@code MD_Resolution}
+ * {@code   ├─angularDistance……} Angular sampling measure.
+ * {@code   ├─distance………………………} Ground sample distance.
+ * {@code   ├─equivalentScale……} Level of detail expressed as the scale of a comparable hardcopy map or chart.
+ * {@code   │   └─denominator……} The number below the line in a vulgar fraction.
+ * {@code   ├─levelOfDetail…………} Brief textual description of the spatial resolution of the resource.
+ * {@code   └─vertical………………………} Vertical sampling distance.</div>
+ *
  * ISO 19115 defines {@code Resolution} as an <cite>union</cite> (in the C/C++ sense):
  * only one of the properties in this class can be set to a non-empty value.
  * Setting any property to a non-empty value discard all the other ones.
@@ -59,12 +68,14 @@ import static org.opengis.annotation.Specification.ISO_19115;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Touraïvane (IRD)
  * @author  Cédric Briançon (Geomatys)
- * @since   0.3
  * @version 0.6
- * @module
  *
  * @see AbstractIdentification#getSpatialResolutions()
+ *
+ * @since 0.3
+ * @module
  */
+@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "MD_Resolution_Type") // No need for propOrder since this structure is a union (see javadoc).
 @XmlRootElement(name = "MD_Resolution")
 public class DefaultResolution extends ISOMetadata implements Resolution {
@@ -121,7 +132,7 @@ public class DefaultResolution extends ISOMetadata implements Resolution {
     /**
      * Creates a new resolution initialized to the given scale.
      *
-     * @param scale The scale, or {@code null} if none.
+     * @param  scale  the scale, or {@code null} if none.
      *
      * @since 0.4
      */
@@ -152,7 +163,7 @@ public class DefaultResolution extends ISOMetadata implements Resolution {
      * metadata instances can also be obtained by unmarshalling an invalid XML document.
      * </div>
      *
-     * @param object The metadata to copy values from, or {@code null} if none.
+     * @param  object  the metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(Resolution)
      */
@@ -192,8 +203,8 @@ public class DefaultResolution extends ISOMetadata implements Resolution {
      *       metadata contained in the given object are not recursively copied.</li>
      * </ul>
      *
-     * @param  object The object to get as a SIS implementation, or {@code null} if none.
-     * @return A SIS implementation containing the values of the given object (may be the
+     * @param  object  the object to get as a SIS implementation, or {@code null} if none.
+     * @return a SIS implementation containing the values of the given object (may be the
      *         given object itself), or {@code null} if the argument was null.
      */
     public static DefaultResolution castOrCopy(final Resolution object) {
@@ -204,32 +215,19 @@ public class DefaultResolution extends ISOMetadata implements Resolution {
     }
 
     /**
-     * Ensures that the given property is greater than zero.
-     *
-     * @param  property The name of the property to verify.
-     * @param  value The property value, or {@code null}.
-     * @throws IllegalArgumentException if the property is zero or negative and the problem has not been logged.
-     */
-    private static void ensurePositive(final String property, final Double value) throws IllegalArgumentException {
-        if (value != null && !(value > 0)) { // Use '!' for catching NaN.
-            warnNonPositiveArgument(DefaultResolution.class, property, true, value);
-        }
-    }
-
-    /**
      * Sets the properties identified by the {@code code} argument, if non-null.
      * This discards any other properties.
      *
-     * @param code     The property which is going to be set.
-     * @param newValue The new value.
+     * @param  code      the property which is going to be set.
+     * @param  newValue  the new value.
      */
     private void setProperty(final byte code, final Object newValue) {
         checkWritePermission();
         if (value != null && property != code) {
             if (newValue == null) {
-                return; // Do not erase the other property.
+                return;                                     // Do not erase the other property.
             }
-            Context.warningOccured(Context.current(), LOGGER, DefaultResolution.class, SETTERS[code-1],
+            Context.warningOccured(Context.current(), DefaultResolution.class, SETTERS[code-1],
                     Messages.class, Messages.Keys.DiscardedExclusiveProperty_2, NAMES[property-1], NAMES[code-1]);
         }
         value = newValue;
@@ -239,7 +237,7 @@ public class DefaultResolution extends ISOMetadata implements Resolution {
     /**
      * Returns the level of detail expressed as the scale of a comparable hardcopy map or chart.
      *
-     * @return Level of detail expressed as the scale of a comparable hardcopy, or {@code null}.
+     * @return level of detail expressed as the scale of a comparable hardcopy, or {@code null}.
      */
     @Override
     @XmlElement(name = "equivalentScale")
@@ -254,7 +252,7 @@ public class DefaultResolution extends ISOMetadata implements Resolution {
      * If and only if the {@code newValue} is non-null, then this method automatically
      * discards all other properties.
      *
-     * @param newValue The new equivalent scale.
+     * @param  newValue  the new equivalent scale.
      */
     public void setEquivalentScale(final RepresentativeFraction newValue) {
         setProperty(SCALE, newValue);
@@ -263,7 +261,7 @@ public class DefaultResolution extends ISOMetadata implements Resolution {
     /**
      * Returns the ground sample distance.
      *
-     * @return The ground sample distance, or {@code null}.
+     * @return the ground sample distance, or {@code null}.
      */
     @Override
     @XmlElement(name = "distance")
@@ -280,18 +278,19 @@ public class DefaultResolution extends ISOMetadata implements Resolution {
      * If and only if the {@code newValue} is non-null, then this method automatically
      * discards all other properties.
      *
-     * @param newValue The new distance, or {@code null}.
+     * @param  newValue  the new distance, or {@code null}.
      * @throws IllegalArgumentException if the given value is NaN, zero or negative.
      */
     public void setDistance(final Double newValue) {
-        ensurePositive("distance", newValue);
-        setProperty(DISTANCE, newValue);
+        if (ensurePositive(DefaultResolution.class, "distance", true, newValue)) {
+            setProperty(DISTANCE, newValue);
+        }
     }
 
     /**
      * Returns the vertical sampling distance.
      *
-     * @return The vertical sampling distance, or {@code null}.
+     * @return the vertical sampling distance, or {@code null}.
      *
      * @since 0.5
      */
@@ -308,20 +307,21 @@ public class DefaultResolution extends ISOMetadata implements Resolution {
      * If and only if the {@code newValue} is non-null, then this method automatically
      * discards all other properties.
      *
-     * @param newValue The new distance, or {@code null}.
+     * @param  newValue  the new distance, or {@code null}.
      * @throws IllegalArgumentException if the given value is NaN, zero or negative.
      *
      * @since 0.5
      */
     public void setVertical(final Double newValue) {
-        ensurePositive("vertical", newValue);
-        setProperty(VERTICAL, newValue);
+        if (ensurePositive(DefaultResolution.class, "vertical", true, newValue)) {
+            setProperty(VERTICAL, newValue);
+        }
     }
 
     /**
      * Returns the angular sampling measure.
      *
-     * @return The angular sampling measure, or {@code null}.
+     * @return the angular sampling measure, or {@code null}.
      *
      * @since 0.5
      */
@@ -338,20 +338,21 @@ public class DefaultResolution extends ISOMetadata implements Resolution {
      * If and only if the {@code newValue} is non-null, then this method automatically
      * discards all other properties.
      *
-     * @param newValue The new distance, or {@code null}.
+     * @param  newValue  the new distance, or {@code null}.
      * @throws IllegalArgumentException if the given value is NaN, zero or negative.
      *
      * @since 0.5
      */
     public void setAngularDistance(final Double newValue) {
-        ensurePositive("angular", newValue);
-        setProperty(ANGULAR, newValue);
+        if (ensurePositive(DefaultResolution.class, "angular", true, newValue)) {
+            setProperty(ANGULAR, newValue);
+        }
     }
 
     /**
      * Returns a brief textual description of the spatial resolution of the resource.
      *
-     * @return Textual description of the spatial resolution, or {@code null}.
+     * @return textual description of the spatial resolution, or {@code null}.
      *
      * @since 0.5
      */
@@ -367,7 +368,7 @@ public class DefaultResolution extends ISOMetadata implements Resolution {
      * If and only if the {@code newValue} is non-null, then this method automatically
      * discards all other properties.
      *
-     * @param newValue The new distance.
+     * @param  newValue  the new distance.
      *
      * @since 0.5
      */

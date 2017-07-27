@@ -18,28 +18,29 @@ package org.apache.sis.referencing.cs;
 
 import java.util.Map;
 import javax.xml.bind.JAXBException;
-import javax.measure.unit.SI;
 import org.opengis.test.Validators;
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.apache.sis.referencing.GeodeticObjectVerifier;
+import org.apache.sis.internal.util.Constants;
+import org.apache.sis.measure.Units;
 import org.apache.sis.test.XMLTestCase;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.DependsOnMethod;
 import org.junit.Test;
 
-import static org.apache.sis.test.Assert.*;
 import static java.util.Collections.singletonMap;
 import static org.opengis.referencing.IdentifiedObject.NAME_KEY;
 import static org.apache.sis.test.TestUtilities.getSingleton;
+import static org.apache.sis.test.ReferencingAssert.*;
 
 
 /**
  * Tests the {@link DefaultCartesianCS} class.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
+ * @version 0.8
  * @since   0.4
- * @version 0.5
  * @module
  */
 @DependsOn({
@@ -131,7 +132,7 @@ public final strictfp class DefaultCartesianCSTest extends XMLTestCase {
         if (c.equals(AxisDirection.EAST))  return HardCodedAxes.EASTING;
         if (c.equals(AxisDirection.SOUTH)) return HardCodedAxes.SOUTHING;
         if (c.equals(AxisDirection.WEST))  return HardCodedAxes.WESTING;
-        return new DefaultCoordinateSystemAxis(singletonMap(NAME_KEY, c.name()), "?", c, SI.METRE);
+        return new DefaultCoordinateSystemAxis(singletonMap(NAME_KEY, c.name()), "?", c, Units.METRE);
     }
 
     /**
@@ -170,8 +171,8 @@ public final strictfp class DefaultCartesianCSTest extends XMLTestCase {
      * Then ensures that swapping the axes and applying conventional orientation gives back the original CS.
      */
     private static void testConventionalOrientation(final String x, final String y) {
-        assertConventionallyOrientedEquals(x, y, x, y); // Expect no-op.
-        assertConventionallyOrientedEquals(x, y, y, x); // Expect normalization.
+        assertConventionallyOrientedEquals(x, y, x, y);         // Expect no-op.
+        assertConventionallyOrientedEquals(x, y, y, x);         // Expect normalization.
     }
 
     /**
@@ -200,7 +201,7 @@ public final strictfp class DefaultCartesianCSTest extends XMLTestCase {
     /**
      * Tests (un)marshalling of a Cartesian coordinate system.
      *
-     * @throws JAXBException If an error occurred during unmarshalling.
+     * @throws JAXBException if an error occurred during unmarshalling.
      */
     @Test
     public void testXML() throws JAXBException {
@@ -215,9 +216,11 @@ public final strictfp class DefaultCartesianCSTest extends XMLTestCase {
         final CoordinateSystemAxis N = cs.getAxis(1);
         assertEquals("name",    "Easting, northing (E,N)", cs.getName().getCode());
         assertEquals("remarks", "Used in ProjectedCRS.", cs.getRemarks().toString());
-        assertIdentifierEquals(        "identifier", "IOGP", "EPSG", null, "4400", getSingleton(cs.getIdentifiers()));
-        assertIdentifierEquals("axis[0].identifier", "IOGP", "EPSG", null, "1",    getSingleton(E.getIdentifiers()));
-        assertIdentifierEquals("axis[1].identifier", "IOGP", "EPSG", null, "2",    getSingleton(N.getIdentifiers()));
+        assertEpsgIdentifierEquals(String.valueOf(Constants.EPSG_PROJECTED_CS), getSingleton(cs.getIdentifiers()));
+        assertEpsgIdentifierEquals("1", getSingleton(E.getIdentifiers()));
+        assertEpsgIdentifierEquals("2", getSingleton(N.getIdentifiers()));
+        assertAxisEquals("Easting",  "E", AxisDirection.EAST,  Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, Units.METRE, null, E);
+        assertAxisEquals("Northing", "N", AxisDirection.NORTH, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, Units.METRE, null, N);
         /*
          * Marshal and compare with the original file.
          */

@@ -17,6 +17,8 @@
 package org.apache.sis.referencing.operation;
 
 import java.util.Map;
+import javax.xml.bind.annotation.XmlType;
+import javax.xml.bind.annotation.XmlRootElement;
 import org.opengis.referencing.operation.Transformation;
 import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.referencing.operation.MathTransform;
@@ -39,19 +41,21 @@ import org.apache.sis.util.ArgumentChecks;
  * method if they need to provide a different set of parameters.</p>
  *
  * <div class="section">Immutability and thread safety</div>
- * This base class is immutable and thus thread-safe if the property <em>values</em> (not necessarily the map itself)
- * given to the constructor are also immutable. Most SIS subclasses and related classes are immutable under similar
- * conditions. This means that unless otherwise noted in the javadoc, {@code CoordinateOperation} instances created
- * using only SIS factories and static constants can be shared by many objects and passed between threads without
- * synchronization.
+ * This class is immutable and thus thread-safe if the property <em>values</em> (not necessarily the map itself)
+ * given to the constructor are also immutable. This means that unless otherwise noted in the javadoc,
+ * {@code Transformation} instances created using only SIS factories and static constants can be shared
+ * by many objects and passed between threads without synchronization.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.6
  * @version 0.6
- * @module
  *
  * @see DefaultConversion
+ *
+ * @since 0.6
+ * @module
  */
+@XmlType(name = "TransformationType")
+@XmlRootElement(name = "Transformation")
 public class DefaultTransformation extends AbstractSingleOperation implements Transformation {
     /**
      * Serial number for inter-operability with different versions.
@@ -94,12 +98,12 @@ public class DefaultTransformation extends AbstractSingleOperation implements Tr
      *   </tr>
      * </table>
      *
-     * @param properties The properties to be given to the identified object.
-     * @param sourceCRS  The source CRS.
-     * @param targetCRS  The target CRS.
-     * @param interpolationCRS The CRS of additional coordinates needed for the operation, or {@code null} if none.
-     * @param method     The coordinate operation method (mandatory in all cases).
-     * @param transform  Transform from positions in the source CRS to positions in the target CRS.
+     * @param  properties        the properties to be given to the identified object.
+     * @param  sourceCRS         the source CRS.
+     * @param  targetCRS         the target CRS.
+     * @param  interpolationCRS  the CRS of additional coordinates needed for the operation, or {@code null} if none.
+     * @param  method            the coordinate operation method (mandatory in all cases).
+     * @param  transform         transform from positions in the source CRS to positions in the target CRS.
      */
     public DefaultTransformation(final Map<String,?>             properties,
                                  final CoordinateReferenceSystem sourceCRS,
@@ -120,7 +124,7 @@ public class DefaultTransformation extends AbstractSingleOperation implements Tr
      *
      * <p>This constructor performs a shallow copy, i.e. the properties are not cloned.</p>
      *
-     * @param operation The coordinate operation to copy.
+     * @param  operation  the coordinate operation to copy.
      *
      * @see #castOrCopy(Transformation)
      */
@@ -136,8 +140,8 @@ public class DefaultTransformation extends AbstractSingleOperation implements Tr
      * Note that this is a <cite>shallow</cite> copy operation, since the other properties contained in the given
      * object are not recursively copied.
      *
-     * @param  object The object to get as a SIS implementation, or {@code null} if none.
-     * @return A SIS implementation containing the values of the given object (may be the
+     * @param  object  the object to get as a SIS implementation, or {@code null} if none.
+     * @return a SIS implementation containing the values of the given object (may be the
      *         given object itself), or {@code null} if the argument was null.
      */
     public static DefaultTransformation castOrCopy(final Transformation object) {
@@ -159,5 +163,27 @@ public class DefaultTransformation extends AbstractSingleOperation implements Tr
     @Override
     public Class<? extends Transformation> getInterface() {
         return Transformation.class;
+    }
+
+
+
+
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+    ////////                                                                                  ////////
+    ////////                               XML support with JAXB                              ////////
+    ////////                                                                                  ////////
+    ////////        The following methods are invoked by JAXB using reflection (even if       ////////
+    ////////        they are private) or are helpers for other methods invoked by JAXB.       ////////
+    ////////        Those methods can be safely removed if Geographic Markup Language         ////////
+    ////////        (GML) support is not needed.                                              ////////
+    ////////                                                                                  ////////
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Constructs a new object in which every attributes are set to a null value.
+     * <strong>This is not a valid object.</strong> This constructor is strictly
+     * reserved to JAXB, which will assign values to the fields using reflexion.
+     */
+    private DefaultTransformation() {
     }
 }

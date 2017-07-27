@@ -28,7 +28,7 @@
   <parent>
     <groupId>org.apache.sis</groupId>
     <artifactId>storage</artifactId>
-    <version>0.6-android-SNAPSHOT</version>
+    <version>0.8-SNAPSHOT</version>
   </parent>
 
 
@@ -37,7 +37,7 @@
        =========================================================== -->
   <groupId>org.apache.sis.storage</groupId>
   <artifactId>sis-storage</artifactId>
-  <packaging>jar</packaging>
+  <packaging>bundle</packaging>
   <name>Apache SIS common storage</name>
   <description>
   <!-- Left alignment because this description will be copied in META-INF/MANIFEST.MF
@@ -63,6 +63,17 @@ Provides the interfaces and base classes to be implemented by various storage fo
       </roles>
     </developer>
     <developer>
+      <name>Johann Sorel</name>
+      <id>jsorel</id>
+      <email>johann.sorel@geomatys.com</email>
+      <organization>Geomatys</organization>
+      <organizationUrl>http://www.geomatys.com</organizationUrl>
+      <timezone>+1</timezone>
+      <roles>
+        <role>developer</role>
+      </roles>
+    </developer>
+    <developer>
       <name>Martin Desruisseaux</name>
       <id>desruisseaux</id>
       <email>desruisseaux@apache.org</email>
@@ -73,41 +84,60 @@ Provides the interfaces and base classes to be implemented by various storage fo
         <role>developer</role>
       </roles>
     </developer>
-  </developers>
-  <contributors>
-    <contributor>
-      <name>Johann Sorel</name>
-      <email>johann.sorel@geomatys.com</email>
-      <organization>Geomatys</organization>
-      <organizationUrl>http://www.geomatys.com/</organizationUrl>
-      <timezone>+1</timezone>
-      <roles>
-        <role>developer</role>
-      </roles>
-    </contributor>
-    <contributor>
+    <developer>
       <name>Rémi Maréchal</name>
+      <id>rmarechal</id>
       <email>remi.marechal@geomatys.com</email>
       <organization>Geomatys</organization>
-      <organizationUrl>http://www.geomatys.com/</organizationUrl>
+      <organizationUrl>http://www.geomatys.com</organizationUrl>
       <timezone>+1</timezone>
       <roles>
         <role>developer</role>
       </roles>
-    </contributor>
-  </contributors>
+    </developer>
+  </developers>
+
+
+  <!-- ===========================================================
+           Build configuration
+       =========================================================== -->
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.felix</groupId>
+        <artifactId>maven-bundle-plugin</artifactId>
+        <configuration>
+          <instructions>
+            <Bundle-SymbolicName>org.apache.sis.storage</Bundle-SymbolicName>
+            <Export-Package>org.apache.sis.internal.storage; x-friends=org.apache.sis.storage.netcdf, *</Export-Package>
+          </instructions>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
 
 
   <!-- ===========================================================
            Dependencies
        =========================================================== -->
   <dependencies>
+    <dependency>
+      <groupId>org.apache.sis.core</groupId>
+      <artifactId>sis-feature</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+
     <!-- Test dependencies -->
     <dependency>
       <groupId>org.apache.sis.core</groupId>
       <artifactId>sis-metadata</artifactId>
       <version>${project.version}</version>
       <type>test-jar</type>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.esri.geometry</groupId>
+      <artifactId>esri-geometry-api</artifactId>
       <scope>test</scope>
     </dependency>
   </dependencies>

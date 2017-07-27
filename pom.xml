@@ -24,11 +24,10 @@
          xsi:schemaLocation = "http://maven.apache.org/POM/4.0.0
                                http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
-
   <parent>
     <groupId>org.apache</groupId>
     <artifactId>apache</artifactId>
-    <version>16</version>
+    <version>18</version>
   </parent>
 
 
@@ -39,7 +38,7 @@
        ============================================================== -->
   <groupId>org.apache.sis</groupId>
   <artifactId>parent</artifactId>
-  <version>0.6-android-SNAPSHOT</version>
+  <version>0.8-SNAPSHOT</version>
   <packaging>pom</packaging>
 
   <name>Apache SIS</name>
@@ -120,7 +119,21 @@ Apache SIS is a free software, Java language library for developing geospatial a
       <name>Adam Estrada</name>
       <id>aestrada</id>
       <roles>
-        <role>chair</role>
+        <role>PMC member</role>
+      </roles>
+    </developer>
+    <developer>
+      <name>Andrew Hart</name>
+      <id>ahart</id>
+      <roles>
+        <role>PMC member</role>
+      </roles>
+    </developer>
+    <developer>
+      <name>Charitha</name>
+      <id>charithcc</id>
+      <roles>
+        <role>PMC member</role>
       </roles>
     </developer>
     <developer>
@@ -132,6 +145,40 @@ Apache SIS is a free software, Java language library for developing geospatial a
       <organizationUrl>http://www.jpl.nasa.gov</organizationUrl>
       <timezone>-8</timezone>
       <roles>
+        <role>PMC emeritus</role>
+      </roles>
+    </developer>
+    <developer>
+      <name>Gregory D. Reddin</name>
+      <id>greddin</id>
+      <roles>
+        <role>PMC member</role>
+        <role>mentor</role>
+      </roles>
+    </developer>
+    <developer>
+      <name>Ian Holsman</name>
+      <id>ianh</id>
+      <roles>
+        <role>PMC member</role>
+        <role>mentor</role>
+      </roles>
+    </developer>
+    <developer>
+      <name>Joe Schaefer</name>
+      <id>joes</id>
+      <roles>
+        <role>PMC emeritus</role>
+      </roles>
+    </developer>
+    <developer>
+      <name>Johann Sorel</name>
+      <id>jsorel</id>
+      <email>johann.sorel@geomatys.com</email>
+      <organization>Geomatys</organization>
+      <organizationUrl>http://www.geomatys.com</organizationUrl>
+      <timezone>+1</timezone>
+      <roles>
         <role>committer</role>
       </roles>
     </developer>
@@ -139,7 +186,13 @@ Apache SIS is a free software, Java language library for developing geospatial a
       <name>Joseph F. White</name>
       <id>jwhite</id>
       <roles>
-        <role>developer</role>
+        <role>PMC member</role>
+      </roles>
+    </developer>
+    <developer>
+      <name>Marc le Bihan</name>
+      <roles>
+        <role>PMC member</role>
       </roles>
     </developer>
     <developer>
@@ -150,7 +203,19 @@ Apache SIS is a free software, Java language library for developing geospatial a
       <organizationUrl>http://www.geomatys.com</organizationUrl>
       <timezone>+1</timezone>
       <roles>
-        <role>developer</role>
+        <role>PMC member</role>
+        <role>chair</role>
+      </roles>
+    </developer>
+    <developer>
+      <name>Nga Thien Chung</name>
+      <id>nchung</id>
+      <email>nchung@apache.org</email>
+      <organization>NASA Jet Propulsion Laboratory</organization>
+      <organizationUrl>http://www.jpl.nasa.gov</organizationUrl>
+      <timezone>-8</timezone>
+      <roles>
+        <role>PMC member</role>
       </roles>
     </developer>
     <developer>
@@ -161,7 +226,7 @@ Apache SIS is a free software, Java language library for developing geospatial a
       <organizationUrl>http://www.attinteractive.com</organizationUrl>
       <timezone>-8</timezone>
       <roles>
-        <role>committer</role>
+        <role>PMC member</role>
       </roles>
     </developer>
     <developer>
@@ -173,18 +238,49 @@ Apache SIS is a free software, Java language library for developing geospatial a
       <organizationUrl>http://www.jpl.nasa.gov</organizationUrl>
       <timezone>-8</timezone>
       <roles>
+        <role>PMC member</role>
+      </roles>
+    </developer>
+    <developer>
+      <name>Peter Karich</name>
+      <id>pk</id>
+      <roles>
+        <role>PMC member</role>
+      </roles>
+    </developer>
+    <developer>
+      <name>Rémi Maréchal</name>
+      <id>rmarechal</id>
+      <email>remi.marechal@geomatys.com</email>
+      <organization>Geomatys</organization>
+      <organizationUrl>http://www.geomatys.com</organizationUrl>
+      <timezone>+1</timezone>
+      <roles>
         <role>committer</role>
       </roles>
     </developer>
     <developer>
-      <name>Sean McCleese</name>
+      <name>Ross Laidlaw</name>
+      <id>rlaidlaw</id>
+      <roles>
+        <role>PMC member</role>
+      </roles>
+    </developer>
+    <developer>
+      <name>Sean William McCleese</name>
       <id>smcclees</id>
       <email>smcclees@apache.org</email>
       <organization>NASA Jet Propulsion Laboratory</organization>
       <organizationUrl>http://www.jpl.nasa.gov</organizationUrl>
       <timezone>-8</timezone>
       <roles>
-        <role>committer</role>
+        <role>PMC member</role>
+      </roles>
+    </developer>
+    <developer>
+      <name>Suresh Marru</name>
+      <roles>
+        <role>PMC member</role>
       </roles>
     </developer>
     <developer>
@@ -192,18 +288,7 @@ Apache SIS is a free software, Java language library for developing geospatial a
       <id>tlpinney</id>
       <email>travis.pinney@gmail.com</email>
       <roles>
-        <role>developer</role>
-      </roles>
-    </developer>
-    <developer>
-      <name>Nga Chung</name>
-      <id>nchung</id>
-      <email>nchung@apache.org</email>
-      <organization>NASA Jet Propulsion Laboratory</organization>
-      <organizationUrl>http://www.jpl.nasa.gov</organizationUrl>
-      <timezone>-8</timezone>
-      <roles>
-        <role>committer</role>
+        <role>PMC member</role>
       </roles>
     </developer>
   </developers>
@@ -216,12 +301,13 @@ Apache SIS is a free software, Java language library for developing geospatial a
       </roles>
     </contributor>
     <contributor>
-      <name>Andrew Hart</name>
-      <!-- id>ahart</id -->
-    </contributor>
-    <contributor>
-      <name>Charitha</name>
-      <!-- id>charithcc</id -->
+      <name>Antoine Hnawia</name>
+      <organization>Institut de Recherche pour le Développement</organization>
+      <organizationUrl>http://www.ird.fr</organizationUrl>
+      <timezone>+11</timezone>
+      <roles>
+        <role>developer</role>
+      </roles>
     </contributor>
     <contributor>
       <name>Cédric Briançon</name>
@@ -240,41 +326,10 @@ Apache SIS is a free software, Java language library for developing geospatial a
       </roles>
     </contributor>
     <contributor>
-      <name>Gregory D. Reddin</name>
-      <!-- id>greddin</id -->
-      <roles>
-        <role>mentor</role>
-      </roles>
-    </contributor>
-    <contributor>
       <name>Guilhem Legal</name>
       <email>guilhem.legal@geomatys.com</email>
       <organization>Geomatys</organization>
       <organizationUrl>http://www.geomatys.com</organizationUrl>
-      <timezone>+1</timezone>
-      <roles>
-        <role>developer</role>
-      </roles>
-    </contributor>
-    <contributor>
-      <name>Ian Holsman</name>
-      <!-- id>ianh</id -->
-      <roles>
-        <role>mentor</role>
-      </roles>
-    </contributor>
-    <contributor>
-      <name>Joe Schaefer</name>
-      <!-- id>joes</id -->
-      <roles>
-        <role>mentor</role>
-      </roles>
-    </contributor>
-    <contributor>
-      <name>Johann Sorel</name>
-      <email>johann.sorel@geomatys.com</email>
-      <organization>Geomatys</organization>
-      <organizationUrl>http://www.geomatys.com/</organizationUrl>
       <timezone>+1</timezone>
       <roles>
         <role>developer</role>
@@ -287,12 +342,24 @@ Apache SIS is a free software, Java language library for developing geospatial a
       </roles>
     </contributor>
     <contributor>
-      <name>Peter Karich</name>
-      <!-- id>pk</id -->
+      <name>Minh Chinh Vu</name>
+      <email>chinhvm.uet.1995@gmail.com</email>
+      <organization>VNSC</organization>
+      <organizationUrl>http://vnsc.org.vn</organizationUrl>
+      <timezone>+7</timezone>
+      <roles>
+        <role>developer</role>
+      </roles>
     </contributor>
     <contributor>
-      <name>Ross Laidlaw</name>
-      <!-- id>rlaidlaw</id -->
+      <name>Thi Phuong Hao Nguyen</name>
+      <email>nguyenthiphuonghao243@gmail.com</email>
+      <organization>VNSC</organization>
+      <organizationUrl>http://vnsc.org.vn</organizationUrl>
+      <timezone>+7</timezone>
+      <roles>
+        <role>developer</role>
+      </roles>
     </contributor>
     <contributor>
       <name>Touraïvane</name>
@@ -316,13 +383,6 @@ Apache SIS is a free software, Java language library for developing geospatial a
        ============================================================== -->
   <dependencyManagement>
     <dependencies>
-      <dependency>
-        <groupId>com.google.android</groupId>
-        <artifactId>android</artifactId>
-        <version>4.1.1.4</version>
-        <scope>provided</scope>
-      </dependency>
-
       <!-- Import all dependency management used by the GeAPI project.
            This include JUnit and units of measurement. -->
       <dependency>
@@ -348,20 +408,48 @@ Apache SIS is a free software, Java language library for developing geospatial a
       <dependency>
         <groupId>com.esri.geometry</groupId>
         <artifactId>esri-geometry-api</artifactId>
-        <version>1.2</version>
+        <version>1.2.1</version>
+        <optional>true</optional>
       </dependency>
       <dependency>
         <groupId>gov.nist.math</groupId>
         <artifactId>jama</artifactId>
         <version>1.0.3</version>
+        <scope>test</scope>
+      </dependency>
+      <dependency>
+        <groupId>javax</groupId>
+        <artifactId>javaee-api</artifactId>
+        <version>7.0</version>
+        <scope>provided</scope>
       </dependency>
       <dependency>
         <groupId>org.apache.commons</groupId>
         <artifactId>commons-compress</artifactId>
-        <version>1.9</version>
+        <version>1.14</version>
+      </dependency>
+
+      <!-- Databases -->
+      <dependency>
+        <groupId>org.hsqldb</groupId>
+        <artifactId>hsqldb</artifactId>
+        <version>2.3.5</version>                <!-- Last version compatible with JDK7.-->
+        <scope>test</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.postgresql</groupId>
+        <artifactId>postgresql</artifactId>
+        <version>42.1.1.jre7</version>
+        <scope>test</scope>
       </dependency>
 
       <!-- Optional dependencies -->
+      <dependency>
+        <groupId>org.osgi</groupId>
+        <artifactId>org.osgi.core</artifactId>
+        <version>6.0.0</version>
+        <scope>provided</scope>
+      </dependency>
       <dependency>
         <groupId>edu.ucar</groupId>
         <artifactId>cdm</artifactId>
@@ -371,8 +459,8 @@ Apache SIS is a free software, Java language library for developing geospatial a
       <dependency>
         <groupId>org.slf4j</groupId>
         <artifactId>slf4j-jdk14</artifactId>
-        <version>1.7.5</version> <!-- Must matches the version used by NetCDF. -->
-        <scope>runtime</scope> <!-- Should never be needed at compile time. -->
+        <version>1.7.7</version>                <!-- Must matches the version used by NetCDF. -->
+        <scope>runtime</scope>                  <!-- Should never be needed at compile time.  -->
       </dependency>
     </dependencies>
   </dependencyManagement>
@@ -397,26 +485,29 @@ Apache SIS is a free software, Java language library for developing geospatial a
          The last properties in this list depend on the Apache SIS branch.
        =================================================================== -->
   <properties>
-    <netcdf.version>4.4.2</netcdf.version> <!-- Last version compatible with JDK6. -->
+    <netcdf.version>4.6.9</netcdf.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <website.encoding>UTF-8</website.encoding>
     <website.locale>en</website.locale>
 
     <!-- Following properties are branch-specific -->
-    <maven.compile.source>1.6</maven.compile.source>
-    <maven.compile.target>1.6</maven.compile.target>
+    <maven.compile.source>1.7</maven.compile.source>
+    <maven.compile.target>1.7</maven.compile.target>
     <sis.plugin.version>${project.version}</sis.plugin.version>
-    <geoapi.version>3.0.0</geoapi.version>
+    <geoapi.version>3.0.1-RC1</geoapi.version>
   </properties>
 
   <profiles>
     <profile>
       <id>apache-release</id>
       <properties>
-        <maven.compiler.debug>false</maven.compiler.debug> <!-- For smaller JAR files size. -->
+        <maven.compiler.debug>false</maven.compiler.debug>              <!-- For smaller JAR files size. -->
         <maven.compiler.optimize>true</maven.compiler.optimize>
+        <org.apache.sis.test.extensive>true</org.apache.sis.test.extensive>
       </properties>
     </profile>
+
+    <!-- Cross-version compilation (to be removed with JDK9). -->
     <profile>
       <id>jdk8</id>
       <activation>
@@ -461,6 +552,31 @@ Apache SIS is a free software, Java language library for developing geospatial a
         </plugins>
       </build>
     </profile>
+
+    <!-- ===================================================================
+           If the user has not set the SIS_DATA environment variable, set a
+           default value where we can create a minimalist database.
+         =================================================================== -->
+    <profile>
+      <id>sis-data</id>
+      <activation>
+        <property>
+          <name>!env.SIS_DATA</name>
+        </property>
+      </activation>
+      <build>
+        <plugins>
+          <plugin>
+            <artifactId>maven-surefire-plugin</artifactId>
+            <configuration>
+              <environmentVariables>
+                <SIS_DATA>${session.executionRootDirectory}/target</SIS_DATA>
+              </environmentVariables>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
   </profiles>
 
 
@@ -471,30 +587,18 @@ Apache SIS is a free software, Java language library for developing geospatial a
        ============================================================== -->
   <build>
     <plugins>
-      <plugin>
-        <groupId>com.simpligility.maven.plugins</groupId>
-        <artifactId>android-maven-plugin</artifactId>
-        <version>4.2.0</version>
-        <configuration>
-          <sdk>
-            <platform>2.1</platform>
-          </sdk>
-          <deleteconflictingfiles>true</deleteconflictingfiles>
-          <undeploybeforedeploy>true</undeploybeforedeploy>
-        </configuration>
-        <extensions>true</extensions>
-      </plugin>
 
       <!-- Compile -->
       <plugin>
         <artifactId>maven-compiler-plugin</artifactId>
+        <version>3.6.1</version>
         <configuration>
           <source>${maven.compile.source}</source>
           <target>${maven.compile.target}</target>
           <encoding>${project.build.sourceEncoding}</encoding>
           <useIncrementalCompilation>false</useIncrementalCompilation> <!-- https://jira.codehaus.org/browse/MCOMPILER-209 -->
           <compilerArgs>
-            <arg>-Xlint</arg>
+            <arg>-Xlint:all</arg>
           </compilerArgs>
         </configuration>
       </plugin>
@@ -503,10 +607,17 @@ Apache SIS is a free software, Java language library for developing geospatial a
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
+        <version>2.20</version>
         <configuration>
           <includes>
             <include>**/*TestSuite.java</include>
           </includes>
+          <systemProperties>
+            <property>
+              <name>derby.stream.error.file</name>
+              <value>${project.build.directory}/derby.log</value>
+            </property>
+          </systemProperties>
         </configuration>
       </plugin>
 
@@ -517,17 +628,18 @@ Apache SIS is a free software, Java language library for developing geospatial a
            INDEX.LIST file is incomplete (which seem to happen in practice). -->
       <plugin>
         <artifactId>maven-jar-plugin</artifactId>
+        <version>3.0.2</version>        <!-- For https://issues.apache.org/jira/browse/MJAR-223 bug fix. -->
         <configuration>
           <archive>
             <addMavenDescriptor>false</addMavenDescriptor>
             <index>false</index>
             <manifest>
               <addClasspath>true</addClasspath>
+              <classpathLayoutType>simple</classpathLayoutType>
               <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
             </manifest>
             <manifestEntries>
               <Built-On>${maven.build.timestamp}</Built-On>
-              <Implementation-URL>${project.url}</Implementation-URL>
               <Specification-Title>GeoAPI</Specification-Title>
               <Specification-Version>${geoapi.version}</Specification-Version>
               <Specification-Vendor>Open Geospatial Consortium</Specification-Vendor>
@@ -544,6 +656,33 @@ Apache SIS is a free software, Java language library for developing geospatial a
         </executions>
       </plugin>
 
+      <!-- Set "*-source-release.zip" filename prefix to "sis-*" instead of "parent-*" -->
+      <plugin>
+        <artifactId>maven-assembly-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>source-release-assembly</id>
+            <configuration>
+              <finalName>sis-${project.version}</finalName>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
+      <!-- Package as OSGi bundle -->
+      <plugin>
+        <groupId>org.apache.felix</groupId>
+        <artifactId>maven-bundle-plugin</artifactId>
+        <version>3.3.0</version>
+        <extensions>true</extensions>
+        <configuration>
+          <excludeDependencies>true</excludeDependencies>
+          <instructions>
+            <Bundle-DocURL>${project.url}</Bundle-DocURL>
+          </instructions>
+        </configuration>
+      </plugin>
+
       <!-- Checkstype configuration
            Legal note: Checkstyle is under LGPL license, but it is okay to use it only for
            the build if it is downloaded by Maven (not included in Apache SIS distribution).
@@ -552,7 +691,7 @@ Apache SIS is a free software, Java language library for developing geospatial a
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-checkstyle-plugin</artifactId>
-        <version>2.13</version>
+        <version>2.17</version>
         <executions>
           <execution>
             <goals>
@@ -564,12 +703,81 @@ Apache SIS is a free software, Java language library for developing geospatial a
               <consoleOutput>true</consoleOutput>
               <checkstyleRules>
                 <module name="Checker">
-                  <module name="FileTabCharacter"/>     <!-- Checks that there are no tab characters in the file. -->
-<!--              <module name="NewlineAtEndOfFile"/>   <!-  Checks that there is a newline at the end of each file. ->
+                  <!--
+                    Whether whitespaces should be present before or after various kind of tokens,
+                    and where line wraps are allowed or mandated.
+                  -->
+                  <module name="FileTabCharacter"/>                 <!-- No tab characters in the file. -->
+                  <module name="NewlineAtEndOfFile"/>               <!-- Newline at the end of each file. -->
                   <module name="TreeWalker">
-                    <module name="RedundantImport"/>    <!- Checks for redundant import statements. ->
-                    <module name="GenericWhitespace"/>  <!- Checks that the whitespace around the Generic tokens follow the typical convention. ->
-                  </module> -->
+                    <module name="RegexpSinglelineJava">
+                      <property name="format" value="\s+$"/>
+                      <property name="message" value="Trailing spaces not allowed."/>
+                    </module>
+                    <module name="NoLineWrap"/>                     <!-- Imports and package statements are not line-wrapped. -->
+                    <module name="RedundantImport"/>                <!-- No redundant import statements. -->
+                    <module name="GenericWhitespace"/>              <!-- Whitespace around the Generic tokens follow typical convention. -->
+                    <module name="TypecastParenPad"/>               <!-- No space inside parentheses for typecasts. -->
+                    <module name="SeparatorWrap">                   <!-- No line wrapping before comma. -->
+                      <property name="tokens" value="COMMA"/>
+                    </module>
+                    <module name="WhitespaceAfter">                 <!-- Checks that a token is followed by whitespace. -->
+                      <property name="tokens" value="TYPECAST"/>
+                    </module>
+                    <module name="NoWhitespaceAfter">               <!-- No whitespace after "++" in ++x, etc. -->
+                      <property name="tokens" value="INC, DEC, BNOT, LNOT"/>
+                    </module>
+                    <module name="NoWhitespaceBefore">              <!-- No whitespace before "++" in x++, etc. -->
+                      <property name="tokens" value="COMMA, POST_INC, POST_DEC"/>
+                    </module>
+                    <module name="WhitespaceAround">
+                      <property name="tokens" value="
+                        MINUS_ASSIGN, STAR_ASSIGN, DIV_ASSIGN, MOD_ASSIGN, MOD,
+                        SL, SL_ASSIGN, SR, SR_ASSIGN, BSR, BSR_ASSIGN,
+                        BAND, BAND_ASSIGN, BOR, BOR_ASSIGN, BXOR, BXOR_ASSIGN,
+                        TYPE_EXTENSION_AND, LAND, LOR, QUESTION,
+                        COLON, DO_WHILE, LITERAL_DO, LITERAL_WHILE, LITERAL_FOR,
+                        LITERAL_ELSE, LITERAL_SWITCH,
+                        LITERAL_TRY, LITERAL_CATCH, LITERAL_FINALLY,
+                        LITERAL_SYNCHRONIZED"/>
+                      <property name="allowEmptyConstructors" value="true"/>
+                      <property name="allowEmptyMethods"      value="true"/>
+                      <property name="allowEmptyTypes"        value="true"/>
+                      <property name="allowEmptyLoops"        value="true"/>
+                    </module>
+                    <!--
+                      Code formatting on other aspects than whitespaces. When there is different ways to express
+                      the same thing (e.g. Java-style versus C-style of array declarations), the following rules
+                      enforce one specific convention.
+                    -->
+                    <module name="UpperEll"/>                       <!-- Upper-case 'L' suffix for longs, not 'l'. -->
+                    <module name="ArrayTypeStyle"/>                 <!-- Java-style arrays, not C-style. -->
+                    <module name="ModifierOrder"/>                  <!-- Order of public, static, etc. keywords. -->
+                    <module name="AvoidEscapedUnicodeCharacters">
+                      <property name="allowEscapesForControlCharacters" value="true"/>
+                      <property name="allowNonPrintableEscapes"         value="true"/>
+                      <property name="allowIfAllCharactersEscaped"      value="true"/>
+                      <property name="allowByTailComment"               value="true"/>
+                    </module>
+                    <!--
+                      Programming language constructs: number of elements, modifiers, etc.
+                    -->
+                    <module name="OuterTypeNumber"/>                <!-- Only one outer type per file. -->
+                    <module name="OuterTypeFilename"/>              <!-- Outer type name and file name shall match. -->
+                    <module name="InterfaceIsType"/>                <!-- Do not allow interface without methods. -->
+                    <module name="PackageDeclaration"/>             <!-- All classes shall be in a package. -->
+                    <module name="HideUtilityClassConstructor"/>    <!-- No public constructor in utility classes. -->
+                    <module name="MissingOverride"/>                <!-- @Override annotation everywhere applicable. -->
+                    <module name="PackageAnnotation"/>              <!-- Package annotations shall be used only in package-info files. -->
+                    <module name="EmptyCatchBlock"/>                <!-- No empty catch unless there is a comment inside. -->
+                    <module name="CovariantEquals"/>                <!-- No equals(Foo), unless equals(Object) also exists. -->
+                    <module name="ExplicitInitialization"/>         <!-- No unnecessary initialization to 0 or null. -->
+                    <module name="SimplifyBooleanReturn"/>          <!-- No if (boolean) return true; else return false. -->
+                    <module name="RedundantModifier">               <!-- No modifiers that were implicit. -->
+                      <property name="tokens" value="VARIABLE_DEF, ANNOTATION_FIELD_DEF, INTERFACE_DEF, CLASS_DEF, ENUM_DEF"/>
+                    </module>
+                  </module>
+                  <module name="UniqueProperties"/>                 <!-- No duplicated keys in *.properties files. -->
                 </module>
               </checkstyleRules>
             </configuration>
@@ -580,7 +788,7 @@ Apache SIS is a free software, Java language library for developing geospatial a
       <!-- JavaDoc configuration. -->
       <plugin>
         <artifactId>maven-javadoc-plugin</artifactId>
-        <version>2.10.1</version>
+        <version>2.10.4</version>
         <configuration>
           <source>${maven.compile.source}</source>              <!-- Enables javadoc to handle language constructs present in target JDK. -->
           <encoding>${project.build.sourceEncoding}</encoding>  <!-- Encoding of Java source file. -->
@@ -595,7 +803,9 @@ Apache SIS is a free software, Java language library for developing geospatial a
           <breakiterator>true</breakiterator>                   <!-- Better boundary detection when determining the end of the first sentence. -->
           <validateLinks>true</validateLinks>                   <!-- Validates content of package-list resources. -->
           <links>
+            <link>http://unitsofmeasurement.github.io/unit-api/site/apidocs</link>
             <link>http://www.geoapi.org/3.0/javadoc</link>
+            <link>http://www.unidata.ucar.edu/software/thredds/current/netcdf-java/javadoc</link>
           </links>
 
           <!-- Separates packages on the overview page into the groups specified. -->
@@ -618,11 +828,11 @@ Apache SIS is a free software, Java language library for developing geospatial a
             </group>
             <group>
               <title>Referencing</title>
-              <packages>org.apache.sis.referencing*:org.apache.sis.parameter*</packages>
+              <packages>org.apache.sis.referencing*:org.apache.sis.parameter*:org.apache.sis.distance*</packages>
             </group>
             <group>
               <title>Metadata</title>
-              <packages>org.apache.sis.metadata*</packages>
+              <packages>org.apache.sis.metadata*:org.apache.sis.io.wkt</packages>
             </group>
             <group>
               <title>Utilities</title>
@@ -680,7 +890,7 @@ Apache SIS is a free software, Java language library for developing geospatial a
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>findbugs-maven-plugin</artifactId>
-        <version>2.5.3</version>
+        <version>3.0.4</version>
         <dependencies>
           <dependency>
             <groupId>org.apache.sis.core</groupId>
@@ -697,12 +907,12 @@ Apache SIS is a free software, Java language library for developing geospatial a
         <plugin>
           <groupId>org.codehaus.mojo</groupId>
           <artifactId>build-helper-maven-plugin</artifactId>
-          <version>1.9.1</version>
+          <version>3.0.0</version>
         </plugin>
         <plugin>
-          <groupId>org.mortbay.jetty</groupId>
+          <groupId>org.eclipse.jetty</groupId>
           <artifactId>jetty-maven-plugin</artifactId>
-          <version>8.1.14.v20131031</version>
+          <version>9.2.13.v20150730</version>           <!-- Versions 9.3.* require JDK 8 -->
         </plugin>
       </plugins>
     </pluginManagement>
@@ -727,6 +937,16 @@ Apache SIS is a free software, Java language library for developing geospatial a
       </releases>
     </pluginRepository>
   </pluginRepositories>
+
+  <!-- Temporary repository for GeoAPI 3.0.1-RC1.
+       Shall be removed after GeoAPI release. -->
+  <repositories>
+    <repository>
+      <id>geotoolkit</id>
+      <name>Geotoolkit.org repository</name>
+      <url>http://maven.geotoolkit.org</url>
+    </repository>
+  </repositories>
 
 
   <!-- ==============================================================

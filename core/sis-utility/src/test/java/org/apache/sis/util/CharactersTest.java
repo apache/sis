@@ -28,8 +28,8 @@ import static org.apache.sis.util.Characters.*;
  * Tests the {@link Characters} utility methods.
  *
  * @author  Martin Desruisseaux (Geomatys)
+ * @version 0.6
  * @since   0.3
- * @version 0.5
  * @module
  */
 public final strictfp class CharactersTest extends TestCase {
@@ -41,6 +41,21 @@ public final strictfp class CharactersTest extends TestCase {
     public void testUnicodeSeparators() {
         assertEquals(Character.LINE_SEPARATOR,      Character.getType(LINE_SEPARATOR));
         assertEquals(Character.PARAGRAPH_SEPARATOR, Character.getType(PARAGRAPH_SEPARATOR));
+    }
+
+    /**
+     * Tests the {@link Characters#isValidWKT(int)} method.
+     */
+    @Test
+    public void testIsValidWKT() {
+        final String valids = "_[](){}<=>.,:;+- %&'\"*^/\\?|°";
+        for (char c=0; c<256; c++) {
+            final boolean valid = (c >= 'A' && c <= 'Z')
+                               || (c >= 'a' && c <= 'z')
+                               || (c >= '0' && c <= '9')
+                               || valids.indexOf(c) >= 0;
+            assertEquals(valid, isValidWKT(c));
+        }
     }
 
     /**
@@ -58,7 +73,7 @@ public final strictfp class CharactersTest extends TestCase {
     }
 
     /**
-     * Tests the {@link Characters#isHexadecimal()} method.
+     * Tests the {@link Characters#isHexadecimal(int)} method.
      *
      * @since 0.5
      */

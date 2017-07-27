@@ -24,11 +24,12 @@
  * @author  Guilhem Legal (Geomatys)
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.4
- * @version 0.4
- * @module
+ * @version 0.7
  *
  * @see javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter
+ *
+ * @since 0.4
+ * @module
  */
 @XmlSchema(elementFormDefault = XmlNsForm.QUALIFIED, namespace = Namespaces.GML, xmlns = {
     @XmlNs(prefix = "gml", namespaceURI = Namespaces.GML),

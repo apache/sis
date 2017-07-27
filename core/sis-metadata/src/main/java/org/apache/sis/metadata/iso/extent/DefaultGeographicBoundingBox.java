@@ -16,6 +16,7 @@
  */
 package org.apache.sis.metadata.iso.extent;
 
+import java.util.Objects;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
@@ -30,13 +31,12 @@ import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.resources.Vocabulary;
-import org.apache.sis.internal.metadata.MetadataUtilities;
 import org.apache.sis.internal.metadata.ReferencingServices;
+import org.apache.sis.internal.jaxb.PrimitiveTypeProperties;
+import org.apache.sis.metadata.InvalidMetadataException;
+import org.apache.sis.xml.NilReason;
 
 import static java.lang.Double.doubleToLongBits;
-
-// Branch-dependent imports
-import org.apache.sis.internal.jdk7.Objects;
 
 
 /**
@@ -44,7 +44,15 @@ import org.apache.sis.internal.jdk7.Objects;
  * reference system is unnecessary. The CRS shall be geographic with Greenwich prime meridian,
  * but the datum doesn't need to be WGS84.
  *
- * <p>In addition to the standard properties, SIS provides the following methods:</p>
+ * <p>The following properties are mandatory in a well-formed metadata according ISO 19115:</p>
+ *
+ * <div class="preformat">{@code EX_GeographicBoundingBox}
+ * {@code   ├─westBoundLongitude……} The western-most coordinate of the limit of the dataset extent.
+ * {@code   ├─eastBoundLongitude……} The eastern-most coordinate of the limit of the dataset extent.
+ * {@code   ├─southBoundLatitude……} The southern-most coordinate of the limit of the dataset extent.
+ * {@code   └─northBoundLatitude……} The northern-most, coordinate of the limit of the dataset extent.</div>
+ *
+ * In addition to the standard properties, SIS provides the following methods:
  * <ul>
  *   <li>{@link #setBounds(double, double, double, double)} for setting the extent from (λ,φ) values.</li>
  *   <li>{@link #setBounds(Envelope)} for setting the extent from the given envelope.</li>
@@ -99,12 +107,14 @@ import org.apache.sis.internal.jdk7.Objects;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Touraïvane (IRD)
  * @author  Cédric Briançon (Geomatys)
- * @since   0.3
- * @version 0.4
- * @module
+ * @version 0.8
  *
  * @see org.apache.sis.geometry.GeneralEnvelope
+ *
+ * @since 0.3
+ * @module
  */
+@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "EX_GeographicBoundingBox_Type", propOrder = {
     "westBoundLongitude",
     "eastBoundLongitude",
@@ -162,12 +172,12 @@ public class DefaultGeographicBoundingBox extends AbstractGeographicExtent imple
      * Java2D world, which is rather (<var>x</var><sub>min</sub>, <var>y</var><sub>min</sub>,
      * <var>x</var><sub>max</sub>, <var>y</var><sub>max</sub>).</p>
      *
-     * @param westBoundLongitude The minimal λ value.
-     * @param eastBoundLongitude The maximal λ value.
-     * @param southBoundLatitude The minimal φ value.
-     * @param northBoundLatitude The maximal φ value.
+     * @param  westBoundLongitude  the minimal λ value.
+     * @param  eastBoundLongitude  the maximal λ value.
+     * @param  southBoundLatitude  the minimal φ value.
+     * @param  northBoundLatitude  the maximal φ value.
      *
-     * @throws IllegalArgumentException If (<var>south bound</var> &gt; <var>north bound</var>).
+     * @throws IllegalArgumentException if (<var>south bound</var> &gt; <var>north bound</var>).
      *         Note that {@linkplain Double#NaN NaN} values are allowed.
      *
      * @see #setBounds(double, double, double, double)
@@ -192,9 +202,10 @@ public class DefaultGeographicBoundingBox extends AbstractGeographicExtent imple
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
-     * @param object The metadata to copy values from, or {@code null} if none.
+     * @param  object  the metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(GeographicBoundingBox)
+     * @see #setBounds(GeographicBoundingBox)
      */
     public DefaultGeographicBoundingBox(final GeographicBoundingBox object) {
         super(object);
@@ -227,8 +238,8 @@ public class DefaultGeographicBoundingBox extends AbstractGeographicExtent imple
      *       metadata contained in the given object are not recursively copied.</li>
      * </ul>
      *
-     * @param  object The object to get as a SIS implementation, or {@code null} if none.
-     * @return A SIS implementation containing the values of the given object (may be the
+     * @param  object  the object to get as a SIS implementation, or {@code null} if none.
+     * @return a SIS implementation containing the values of the given object (may be the
      *         given object itself), or {@code null} if the argument was null.
      */
     public static DefaultGeographicBoundingBox castOrCopy(final GeographicBoundingBox object) {
@@ -239,13 +250,37 @@ public class DefaultGeographicBoundingBox extends AbstractGeographicExtent imple
     }
 
     /**
+     * Makes sure that the given inclusion is non-nil, then returns its value.
+     * If the given inclusion is {@code null}, then the default value is {@code true}.
+     *
+     * @param  value  the {@link org.opengis.metadata.extent.GeographicBoundingBox#getInclusion()} value.
+     * @return the given value as a primitive type.
+     * @throws InvalidMetadataException if the given value is nil.
+     */
+    @SuppressWarnings("NumberEquality")
+    static boolean getInclusion(final Boolean value) throws InvalidMetadataException {
+        if (value == null) {
+            return true;
+        }
+        final boolean p = value;
+        /*
+         * (value == Boolean.FALSE) is an optimization for a common case avoiding PrimitiveTypeProperties check.
+         * DO NOT REPLACE BY 'equals' OR 'booleanValue()' - the exact reference value matter.
+         */
+        if (p || (value == Boolean.FALSE) || !(PrimitiveTypeProperties.property(value) instanceof NilReason)) {
+            return p;
+        }
+        throw new InvalidMetadataException(Errors.format(Errors.Keys.MissingValueForProperty_1, "inclusion"));
+    }
+
+    /**
      * Returns the western-most coordinate of the limit of the dataset extent.
      * The value is expressed in longitude in decimal degrees (positive east).
      *
      * <p>Note that the returned value is greater than the {@linkplain #getEastBoundLongitude()
      * east bound longitude} if this box is spanning over the anti-meridian.</p>
      *
-     * @return The western-most longitude between -180° and +180° inclusive,
+     * @return the western-most longitude between -180° and +180° inclusive,
      *         or {@linkplain Double#NaN NaN} if undefined.
      */
     @Override
@@ -260,12 +295,12 @@ public class DefaultGeographicBoundingBox extends AbstractGeographicExtent imple
      * The value is expressed in longitude in decimal degrees (positive east).
      * Values outside the [-180 … 180]° range are {@linkplain Longitude#normalize(double) normalized}.
      *
-     * @param newValue The western-most longitude between -180° and +180° inclusive,
-     *        or {@linkplain Double#NaN NaN} to undefine.
+     * @param  newValue  the western-most longitude between -180° and +180° inclusive,
+     *         or {@linkplain Double#NaN NaN} to undefine.
      */
     public void setWestBoundLongitude(double newValue) {
         checkWritePermission();
-        if (newValue != Longitude.MAX_VALUE) { // Do not normalize +180° to -180°.
+        if (newValue != Longitude.MAX_VALUE) {                  // Do not normalize +180° to -180°.
             newValue = Longitude.normalize(newValue);
         }
         westBoundLongitude = newValue;
@@ -278,7 +313,7 @@ public class DefaultGeographicBoundingBox extends AbstractGeographicExtent imple
      * <p>Note that the returned value is smaller than the {@linkplain #getWestBoundLongitude()
      * west bound longitude} if this box is spanning over the anti-meridian.</p>
      *
-     * @return The eastern-most longitude between -180° and +180° inclusive,
+     * @return the eastern-most longitude between -180° and +180° inclusive,
      *         or {@linkplain Double#NaN NaN} if undefined.
      */
     @Override
@@ -293,12 +328,12 @@ public class DefaultGeographicBoundingBox extends AbstractGeographicExtent imple
      * The value is expressed in longitude in decimal degrees (positive east).
      * Values outside the [-180 … 180]° range are {@linkplain Longitude#normalize(double) normalized}.
      *
-     * @param newValue The eastern-most longitude between -180° and +180° inclusive,
-     *        or {@linkplain Double#NaN NaN} to undefine.
+     * @param  newValue  the eastern-most longitude between -180° and +180° inclusive,
+     *         or {@linkplain Double#NaN NaN} to undefine.
      */
     public void setEastBoundLongitude(double newValue) {
         checkWritePermission();
-        if (newValue != Longitude.MAX_VALUE) { // Do not normalize +180° to -180°.
+        if (newValue != Longitude.MAX_VALUE) {                      // Do not normalize +180° to -180°.
             newValue = Longitude.normalize(newValue);
         }
         eastBoundLongitude = newValue;
@@ -308,7 +343,7 @@ public class DefaultGeographicBoundingBox extends AbstractGeographicExtent imple
      * Returns the southern-most coordinate of the limit of the dataset extent.
      * The value is expressed in latitude in decimal degrees (positive north).
      *
-     * @return The southern-most latitude between -90° and +90° inclusive,
+     * @return the southern-most latitude between -90° and +90° inclusive,
      *         or {@linkplain Double#NaN NaN} if undefined.
      */
     @Override
@@ -325,8 +360,8 @@ public class DefaultGeographicBoundingBox extends AbstractGeographicExtent imple
      * If the result is greater than the {@linkplain #getNorthBoundLatitude() north bound latitude},
      * then the north bound is set to {@link Double#NaN}.
      *
-     * @param newValue The southern-most latitude between -90° and +90° inclusive,
-     *        or {@linkplain Double#NaN NaN} to undefine.
+     * @param  newValue  the southern-most latitude between -90° and +90° inclusive,
+     *         or {@linkplain Double#NaN NaN} to undefine.
      */
     public void setSouthBoundLatitude(final double newValue) {
         checkWritePermission();
@@ -340,7 +375,7 @@ public class DefaultGeographicBoundingBox extends AbstractGeographicExtent imple
      * Returns the northern-most, coordinate of the limit of the dataset extent.
      * The value is expressed in latitude in decimal degrees (positive north).
      *
-     * @return The northern-most latitude between -90° and +90° inclusive,
+     * @return the northern-most latitude between -90° and +90° inclusive,
      *         or {@linkplain Double#NaN NaN} if undefined.
      */
     @Override
@@ -357,8 +392,8 @@ public class DefaultGeographicBoundingBox extends AbstractGeographicExtent imple
      * If the result is smaller than the {@linkplain #getSouthBoundLatitude() south bound latitude},
      * then the south bound is set to {@link Double#NaN}.
      *
-     * @param newValue The northern-most latitude between -90° and +90° inclusive,
-     *        or {@linkplain Double#NaN NaN} to undefine.
+     * @param  newValue  the northern-most latitude between -90° and +90° inclusive,
+     *         or {@linkplain Double#NaN NaN} to undefine.
      */
     public void setNorthBoundLatitude(final double newValue) {
         checkWritePermission();
@@ -375,13 +410,13 @@ public class DefaultGeographicBoundingBox extends AbstractGeographicExtent imple
      *
      * <p>This method should be invoked <strong>before</strong> {@link #normalize()}.</p>
      *
-     * @throws IllegalArgumentException If (<var>south bound</var> &gt; <var>north bound</var>).
+     * @throws IllegalArgumentException if (<var>south bound</var> &gt; <var>north bound</var>).
      *         Note that {@linkplain Double#NaN NaN} values are allowed.
      */
     private static void verifyBounds(final double southBoundLatitude, final double northBoundLatitude)
             throws IllegalArgumentException
     {
-        if (southBoundLatitude > northBoundLatitude) { // Accept NaN.
+        if (southBoundLatitude > northBoundLatitude) {                          // Accept NaN.
             throw new IllegalArgumentException(Errors.format(Errors.Keys.IllegalOrdinateRange_3,
                     new Latitude(southBoundLatitude), new Latitude(northBoundLatitude),
                     Vocabulary.format(Vocabulary.Keys.Latitude)));
@@ -397,7 +432,7 @@ public class DefaultGeographicBoundingBox extends AbstractGeographicExtent imple
         southBoundLatitude = Latitude.clamp(southBoundLatitude);
         northBoundLatitude = Latitude.clamp(northBoundLatitude);
         final double span = eastBoundLongitude - westBoundLongitude;
-        if (!(span >= (Longitude.MAX_VALUE - Longitude.MIN_VALUE))) { // 'span' may be NaN.
+        if (!(span >= (Longitude.MAX_VALUE - Longitude.MIN_VALUE))) {           // 'span' may be NaN.
             westBoundLongitude = Longitude.normalize(westBoundLongitude);
             eastBoundLongitude = Longitude.normalize(eastBoundLongitude);
             if (span != 0) {
@@ -440,12 +475,12 @@ public class DefaultGeographicBoundingBox extends AbstractGeographicExtent imple
      * Java2D world, which is rather (<var>x</var><sub>min</sub>, <var>y</var><sub>min</sub>,
      * <var>x</var><sub>max</sub>, <var>y</var><sub>max</sub>).</p>
      *
-     * @param westBoundLongitude The minimal λ value.
-     * @param eastBoundLongitude The maximal λ value.
-     * @param southBoundLatitude The minimal φ value.
-     * @param northBoundLatitude The maximal φ value.
+     * @param  westBoundLongitude  the minimal λ value.
+     * @param  eastBoundLongitude  the maximal λ value.
+     * @param  southBoundLatitude  the minimal φ value.
+     * @param  northBoundLatitude  the maximal φ value.
      *
-     * @throws IllegalArgumentException If (<var>south bound</var> &gt; <var>north bound</var>).
+     * @throws IllegalArgumentException if (<var>south bound</var> &gt; <var>north bound</var>).
      *         Note that {@linkplain Double#NaN NaN} values are allowed.
      */
     public void setBounds(final double westBoundLongitude,
@@ -464,8 +499,8 @@ public class DefaultGeographicBoundingBox extends AbstractGeographicExtent imple
     }
 
     /**
-     * Constructs a geographic bounding box from the specified envelope. If the envelope contains
-     * a CRS, then the bounding box may be projected to a geographic CRS. Otherwise, the envelope
+     * Sets the bounding box to the specified envelope. If the envelope contains* a CRS,
+     * then the bounding box may be projected to a geographic CRS. Otherwise, the envelope
      * is assumed already in appropriate CRS.
      *
      * <p>When coordinate transformation is required, the target geographic CRS is not necessarily
@@ -477,7 +512,7 @@ public class DefaultGeographicBoundingBox extends AbstractGeographicExtent imple
      *
      * <p><b>Note:</b> this method is available only if the referencing module is on the classpath.</p>
      *
-     * @param  envelope The envelope to use for setting this geographic bounding box.
+     * @param  envelope  the envelope to use for setting this geographic bounding box.
      * @throws UnsupportedOperationException if the referencing module is not on the classpath.
      * @throws TransformException if the envelope can not be transformed to a geographic extent.
      *
@@ -489,13 +524,13 @@ public class DefaultGeographicBoundingBox extends AbstractGeographicExtent imple
         ArgumentChecks.ensureNonNull("envelope", envelope);
         checkWritePermission();
         ReferencingServices.getInstance().setBounds(envelope, this);
-        setInclusion(Boolean.TRUE); // Set only on success.
+        setInclusion(Boolean.TRUE);                                     // Set only on success.
     }
 
     /**
      * Sets the bounding box to the same values than the specified box.
      *
-     * @param box The geographic bounding box to use for setting the values of this box.
+     * @param  box  the geographic bounding box to use for setting the values of this box.
      */
     public void setBounds(final GeographicBoundingBox box) {
         ArgumentChecks.ensureNonNull("box", box);
@@ -602,7 +637,16 @@ public class DefaultGeographicBoundingBox extends AbstractGeographicExtent imple
      * In both cases, if either this box or the specified box has {@linkplain Double#NaN NaN} bounds,
      * then the corresponding bounds of the result will bet set to NaN.
      *
-     * @param box The geographic bounding box to add to this box.
+     * <div class="note"><b>Rational:</b>
+     * this class is stricter about NaN values than other classes like {@link org.apache.sis.geometry.GeneralEnvelope}.
+     * The reason is that computations on {@code GeographicBoundingBox} instances are rare ({@code Envelope} instances
+     * are preferred for this purpose). Usually, {@code GeographicBoundingBox} values come directly from some metadata
+     * structure. Consequently NaN values in {@code GeographicBoundingBox} means <cite>"information is unknown"</cite>
+     * more often than <cite>"not yet calculated"</cite>.</div>
+     *
+     * @param  box  the geographic bounding box to add to this box.
+     *
+     * @see org.apache.sis.geometry.GeneralEnvelope#add(Envelope)
      */
     public void add(final GeographicBoundingBox box) {
         checkWritePermission();
@@ -615,9 +659,9 @@ public class DefaultGeographicBoundingBox extends AbstractGeographicExtent imple
          * valid metadata object.  If the metadata object is invalid, it is better to get a
          * an exception than having a code doing silently some inappropriate work.
          */
-        final boolean i1 = MetadataUtilities.getInclusion(this.getInclusion());
-        final boolean i2 = MetadataUtilities.getInclusion(box. getInclusion());
-        final int status = denormalize(λmin, λmax); // Must be after call to getInclusion().
+        final boolean i1 = getInclusion(this.getInclusion());
+        final boolean i2 = getInclusion(box. getInclusion());
+        final int status = denormalize(λmin, λmax);             // Must be after call to getInclusion().
         switch (status) {
             case -1: λmin -= Longitude.MAX_VALUE - Longitude.MIN_VALUE; break;
             case +1: λmax += Longitude.MAX_VALUE - Longitude.MIN_VALUE; break;
@@ -655,16 +699,15 @@ public class DefaultGeographicBoundingBox extends AbstractGeographicExtent imple
      * box or the specified box has NaN bounds, then the corresponding bounds of the
      * intersection result will bet set to NaN.</p>
      *
-     * @param box The geographic bounding box to intersect with this box.
-     * @throws IllegalArgumentException If the inclusion status is not the same for both boxes.
+     * @param  box  the geographic bounding box to intersect with this box.
+     * @throws IllegalArgumentException if the inclusion status is not the same for both boxes.
      *
      * @see Extents#intersection(GeographicBoundingBox, GeographicBoundingBox)
+     * @see org.apache.sis.geometry.GeneralEnvelope#intersect(Envelope)
      */
     public void intersect(final GeographicBoundingBox box) throws IllegalArgumentException {
         checkWritePermission();
-        if (MetadataUtilities.getInclusion(    getInclusion()) !=
-            MetadataUtilities.getInclusion(box.getInclusion()))
-        {
+        if (getInclusion(getInclusion()) != getInclusion(box.getInclusion())) {
             throw new IllegalArgumentException(Errors.format(Errors.Keys.IncompatiblePropertyValue_1, "inclusion"));
         }
         double λmin = box.getWestBoundLongitude();
@@ -713,7 +756,7 @@ public class DefaultGeographicBoundingBox extends AbstractGeographicExtent imple
     /**
      * Compares this geographic bounding box with the specified object for equality.
      *
-     * @param object The object to compare for equality.
+     * @param  object  the object to compare for equality.
      * @return {@code true} if the given object is equal to this box.
      */
     @Override
@@ -721,9 +764,11 @@ public class DefaultGeographicBoundingBox extends AbstractGeographicExtent imple
         if (object == this) {
             return true;
         }
-        // Above code really requires DefaultGeographicBoundingBox.class, not getClass().
-        // This code is used only for performance raison. The super-class implementation
-        // is generic enough for all other cases.
+        /*
+         * Above code really requires DefaultGeographicBoundingBox.class, not getClass().
+         * This code is used only for performance raison. The super-class implementation
+         * is generic enough for all other cases.
+         */
         if (object != null && object.getClass() == DefaultGeographicBoundingBox.class) {
             final DefaultGeographicBoundingBox that = (DefaultGeographicBoundingBox) object;
             return Objects.equals(getInclusion(), that.getInclusion()) &&

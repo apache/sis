@@ -27,8 +27,14 @@ import org.opengis.metadata.constraint.LegalConstraints;
 
 /**
  * Restrictions and legal prerequisites for accessing and using the resource.
+ * The following properties are mandatory or conditional (i.e. mandatory under some circumstances)
+ * in a well-formed metadata according ISO 19115:
  *
- * <div class="section">Relationship between properties</div>
+ * <div class="preformat">{@code MD_LegalConstraints}
+ * {@code   ├─accessConstraints……} Access constraints applied to assure the protection of privacy or intellectual property.
+ * {@code   ├─useConstraints……………} Constraints applied to assure the protection of privacy or intellectual property.
+ * {@code   └─otherConstraints………} Other restrictions and legal prerequisites for accessing and using the resource.</div>
+ *
  * The {@linkplain #getOtherConstraints() other constraints} collection shall be non-empty if
  * {@linkplain #getAccessConstraints() access constraints} and/or {@linkplain #getUseConstraints()
  * use constraints} elements have a value of {@link Restriction#OTHER_RESTRICTIONS}.
@@ -45,10 +51,11 @@ import org.opengis.metadata.constraint.LegalConstraints;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Touraïvane (IRD)
  * @author  Cédric Briançon (Geomatys)
- * @since   0.3
  * @version 0.3
+ * @since   0.3
  * @module
  */
+@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "MD_LegalConstraints_Type", propOrder = {
     "accessConstraints",
     "useConstraints",
@@ -90,7 +97,7 @@ public class DefaultLegalConstraints extends DefaultConstraints implements Legal
     /**
      * Constructs a new constraints with the given {@linkplain #getUseLimitations() use limitation}.
      *
-     * @param useLimitation The use limitation, or {@code null} if none.
+     * @param useLimitation  the use limitation, or {@code null} if none.
      */
     public DefaultLegalConstraints(final CharSequence useLimitation) {
         super(useLimitation);
@@ -102,7 +109,7 @@ public class DefaultLegalConstraints extends DefaultConstraints implements Legal
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
-     * @param object The metadata to copy values from, or {@code null} if none.
+     * @param  object  the metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(LegalConstraints)
      */
@@ -129,8 +136,8 @@ public class DefaultLegalConstraints extends DefaultConstraints implements Legal
      *       metadata contained in the given object are not recursively copied.</li>
      * </ul>
      *
-     * @param  object The object to get as a SIS implementation, or {@code null} if none.
-     * @return A SIS implementation containing the values of the given object (may be the
+     * @param  object  the object to get as a SIS implementation, or {@code null} if none.
+     * @return a SIS implementation containing the values of the given object (may be the
      *         given object itself), or {@code null} if the argument was null.
      */
     public static DefaultLegalConstraints castOrCopy(final LegalConstraints object) {
@@ -144,7 +151,7 @@ public class DefaultLegalConstraints extends DefaultConstraints implements Legal
      * Returns the access constraints applied to assure the protection of privacy or intellectual property,
      * and any special restrictions or limitations on obtaining the resource.
      *
-     * @return Access constraints applied to assure the protection of privacy or intellectual property.
+     * @return access constraints applied to assure the protection of privacy or intellectual property.
      */
     @Override
     @XmlElement(name = "accessConstraints")
@@ -156,7 +163,7 @@ public class DefaultLegalConstraints extends DefaultConstraints implements Legal
      * Sets the access constraints applied to assure the protection of privacy or intellectual property,
      * and any special restrictions or limitations on obtaining the resource.
      *
-     * @param newValues The new access constraints.
+     * @param  newValues  the new access constraints.
      */
     public void setAccessConstraints(final Collection<? extends Restriction> newValues) {
         accessConstraints = writeCollection(newValues, accessConstraints, Restriction.class);
@@ -166,7 +173,7 @@ public class DefaultLegalConstraints extends DefaultConstraints implements Legal
      * Returns the constraints applied to assure the protection of privacy or intellectual property,
      * and any special restrictions or limitations or warnings on using the resource.
      *
-     * @return Constraints applied to assure the protection of privacy or intellectual property.
+     * @return constraints applied to assure the protection of privacy or intellectual property.
      */
     @Override
     @XmlElement(name = "useConstraints")
@@ -178,7 +185,7 @@ public class DefaultLegalConstraints extends DefaultConstraints implements Legal
      * Sets the constraints applied to assure the protection of privacy or intellectual property,
      * and any special restrictions or limitations or warnings on using the resource.
      *
-     * @param newValues The new use constraints.
+     * @param  newValues  the new use constraints.
      */
     public void setUseConstraints(final Collection<? extends Restriction> newValues) {
         useConstraints = writeCollection(newValues, useConstraints, Restriction.class);
@@ -190,7 +197,7 @@ public class DefaultLegalConstraints extends DefaultConstraints implements Legal
      * or {@linkplain #getUseConstraints() use constraints} declares
      * {@linkplain Restriction#OTHER_RESTRICTIONS other restrictions}.
      *
-     * @return Other restrictions and legal prerequisites for accessing and using the resource.
+     * @return other restrictions and legal prerequisites for accessing and using the resource.
      */
     @Override
     @XmlElement(name = "otherConstraints")

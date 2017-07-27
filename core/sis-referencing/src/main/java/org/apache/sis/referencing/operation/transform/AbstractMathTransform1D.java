@@ -52,8 +52,8 @@ import static org.apache.sis.util.ArgumentChecks.ensureDimensionMatches;
  * running the same SIS version.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.5
  * @version 0.5
+ * @since   0.5
  * @module
  */
 public abstract class AbstractMathTransform1D extends AbstractMathTransform implements MathTransform1D {
@@ -82,7 +82,7 @@ public abstract class AbstractMathTransform1D extends AbstractMathTransform impl
     /**
      * Transforms the specified value.
      *
-     * @param  value The value to transform.
+     * @param  value  the value to transform.
      * @return the transformed value.
      * @throws TransformException if the value can not be transformed.
      */
@@ -113,8 +113,8 @@ public abstract class AbstractMathTransform1D extends AbstractMathTransform impl
      * Gets the derivative of this function at a value. The derivative is the 1×1 matrix
      * of the non-translating portion of the approximate affine map at the value.
      *
-     * @param  value The value where to evaluate the derivative.
-     * @return The derivative at the specified point.
+     * @param  value  the value where to evaluate the derivative.
+     * @return the derivative at the specified point.
      * @throws TransformException if the derivative can not be evaluated at the specified point.
      */
     @Override
@@ -124,8 +124,8 @@ public abstract class AbstractMathTransform1D extends AbstractMathTransform impl
      * Gets the derivative of this transform at a point. The default implementation ensures that
      * {@code point} is one-dimensional, then delegates to {@link #derivative(double)}.
      *
-     * @param  point The coordinate point where to evaluate the derivative, or {@code null}.
-     * @return The derivative at the specified point (never {@code null}).
+     * @param  point  the coordinate point where to evaluate the derivative, or {@code null}.
+     * @return the derivative at the specified point (never {@code null}).
      * @throws MismatchedDimensionException if {@code point} does not have the expected dimension.
      * @throws TransformException if the derivative can not be evaluated at the specified point.
      */
@@ -149,5 +149,82 @@ public abstract class AbstractMathTransform1D extends AbstractMathTransform impl
     @Override
     public MathTransform1D inverse() throws NoninvertibleTransformException {
         return (MathTransform1D) super.inverse();
+    }
+
+    /**
+     * Base class for implementation of inverse math transforms.
+     * This inner class is the inverse of the enclosing {@link AbstractMathTransform1D}.
+     *
+     * <div class="section">Serialization</div>
+     * Instances of this class are serializable only if the enclosing math transform is also serializable.
+     * Serialized math transforms are not guaranteed to be compatible with future SIS versions.
+     * Serialization, if allowed, should be used only for short term storage or RMI between applications
+     * running the same SIS version.
+     *
+     * @author  Martin Desruisseaux (Geomatys)
+     * @version 0.7
+     * @since   0.7
+     * @module
+     */
+    protected abstract class Inverse extends AbstractMathTransform.Inverse implements MathTransform1D {
+        /**
+         * Serial number for inter-operability with different versions.
+         */
+        private static final long serialVersionUID = 2018412413506158560L;
+
+        /**
+         * Constructs an inverse math transform.
+         */
+        protected Inverse() {
+        }
+
+        /**
+         * Returns the enclosing math transform.
+         */
+        @Override
+        public MathTransform1D inverse() {
+            return (MathTransform1D) super.inverse();
+        }
+
+        /**
+         * Transforms a single point in the given array and opportunistically computes its derivative if requested.
+         * The default implementation delegates to {@link #transform(double)} and potentially to {@link #derivative(double)}.
+         * Subclasses may override this method for performance reason.
+         *
+         * @return {@inheritDoc}
+         * @throws TransformException {@inheritDoc}
+         */
+        @Override
+        public Matrix transform(final double[] srcPts, final int srcOff,
+                                final double[] dstPts, final int dstOff,
+                                final boolean derivate) throws TransformException
+        {
+            final double ordinate = srcPts[srcOff];
+            if (dstPts != null) {
+                dstPts[dstOff] = transform(ordinate);
+            }
+            return derivate ? new Matrix1(derivative(ordinate)) : null;
+        }
+
+        /**
+         * Gets the derivative of this transform at a point. The default implementation ensures that
+         * {@code point} is one-dimensional, then delegates to {@link #derivative(double)}.
+         *
+         * @param  point  the coordinate point where to evaluate the derivative, or {@code null}.
+         * @return the derivative at the specified point (never {@code null}).
+         * @throws MismatchedDimensionException if {@code point} does not have the expected dimension.
+         * @throws TransformException if the derivative can not be evaluated at the specified point.
+         */
+        @Override
+        public Matrix derivative(final DirectPosition point) throws TransformException {
+            final double ordinate;
+            if (point == null) {
+                ordinate = Double.NaN;
+            } else {
+                ensureDimensionMatches("point", 1, point);
+                ordinate = point.getOrdinate(0);
+            }
+            return new Matrix1(derivative(ordinate));
+        }
     }
 }

@@ -18,11 +18,11 @@ package org.apache.sis.metadata;
 
 
 /**
- * Thrown when a metadata is in a invalid state, usually because a mandatory property is missing.
+ * Thrown when a metadata is in a invalid state or has illegal property values.
  *
  * @author  Martin Desruisseaux (Geomatys)
+ * @version 0.8
  * @since   0.3
- * @version 0.3
  * @module
  */
 public class InvalidMetadataException extends IllegalStateException {
@@ -34,9 +34,33 @@ public class InvalidMetadataException extends IllegalStateException {
     /**
      * Creates a new exception with the specified detail message.
      *
-     * @param message The detail message.
+     * @param  message  the details message, or {@code null} if none.
      */
     public InvalidMetadataException(final String message) {
         super(message);
+    }
+
+    /**
+     * Creates a new exception with the specified cause.
+     * The details message is copied from the cause.
+     *
+     * @param  cause  the cause, or {@code null} if none.
+     *
+     * @since 0.8
+     */
+    public InvalidMetadataException(final Throwable cause) {
+        super(cause);
+    }
+
+    /**
+     * Creates a new exception with the specified detail message and cause.
+     *
+     * @param  message  the details message, or {@code null} if none.
+     * @param  cause    the cause, or {@code null} if none.
+     *
+     * @since 0.8
+     */
+    public InvalidMetadataException(final String message, final Throwable cause) {
+        super(message, cause);
     }
 }

@@ -25,16 +25,17 @@ import org.junit.BeforeClass;
  * All tests from the {@code sis-console} module, in approximative dependency order.
  *
  * @author  Martin Desruisseaux (Geomatys)
+ * @version 0.8
  * @since   0.3
- * @version 0.4
  * @module
  */
 @Suite.SuiteClasses({
-    org.apache.sis.console.SubCommandTest.class,
-    org.apache.sis.console.HelpSCTest.class,
-    org.apache.sis.console.AboutSCTest.class,
-    org.apache.sis.console.MimeTypeSCTest.class,
-    org.apache.sis.console.MetadataSCTest.class
+    org.apache.sis.console.CommandRunnerTest.class,
+    org.apache.sis.console.HelpCommandTest.class,
+    org.apache.sis.console.AboutCommandTest.class,
+    org.apache.sis.console.MimeTypeCommandTest.class,
+    org.apache.sis.console.MetadataCommandTest.class,
+    org.apache.sis.console.CRSCommandTest.class
 })
 public final strictfp class ConsoleTestSuite extends TestSuite {
     /**

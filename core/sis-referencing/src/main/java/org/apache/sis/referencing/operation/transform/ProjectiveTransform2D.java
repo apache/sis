@@ -19,21 +19,24 @@ package org.apache.sis.referencing.operation.transform;
 import java.awt.Shape;
 import java.awt.geom.Point2D;
 import org.opengis.referencing.operation.Matrix;
-import org.opengis.referencing.operation.MathTransform2D;
 import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.opengis.referencing.operation.TransformException;
+import org.apache.sis.internal.referencing.j2d.LinearTransform2D;
 
 
 /**
  * Projective transform in 2D case.
+ * This class is used only if the transform is not affine, i.e. the last row in the 3×3 matrix is not [0 0 1].
+ * Otherwise {@link org.apache.sis.internal.referencing.j2d.AffineTransform2D} should be used instead
+ * (unless {@link java.awt.geom.AffineTransform} is not available on the target platform).
  *
  * @author  Jan Jezek (UWB)
  * @author  Martin Desruisseaux (Geomatys)
+ * @version 0.7
  * @since   0.5
- * @version 0.5
  * @module
  */
-final class ProjectiveTransform2D extends ProjectiveTransform implements MathTransform2D {
+final class ProjectiveTransform2D extends ProjectiveTransform implements LinearTransform2D {
     /**
      * For cross-version compatibility.
      */
@@ -74,8 +77,8 @@ final class ProjectiveTransform2D extends ProjectiveTransform implements MathTra
     /**
      * Gets the derivative of this transform at a point.
      *
-     * @param  point Ignored, since derivative of a linear transform is the same everywhere.
-     * @return The derivative at the specified point as a 2×2 matrix.
+     * @param  point  ignored, since derivative of a linear transform is the same everywhere.
+     * @return the derivative at the specified point as a 2×2 matrix.
      */
     @Override
     public Matrix derivative(final Point2D point) {
@@ -84,17 +87,10 @@ final class ProjectiveTransform2D extends ProjectiveTransform implements MathTra
 
     /**
      * Creates the inverse transform of this object.
+     * The inverse shall be linear and two-dimensional.
      */
     @Override
-    public MathTransform2D inverse() throws NoninvertibleTransformException {
-        return (MathTransform2D) super.inverse();
-    }
-
-    /**
-     * Creates an inverse transform using the specified matrix.
-     */
-    @Override
-    ProjectiveTransform2D createInverse(final Matrix matrix) {
-        return new ProjectiveTransform2D(matrix);
+    public LinearTransform2D inverse() throws NoninvertibleTransformException {
+        return (LinearTransform2D) super.inverse();
     }
 }

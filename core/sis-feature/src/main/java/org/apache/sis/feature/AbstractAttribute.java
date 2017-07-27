@@ -32,7 +32,6 @@ import org.apache.sis.util.Debug;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.ArgumentChecks;
 
-import org.apache.sis.internal.jdk7.JDK7;
 
 /**
  * An instance of an {@linkplain DefaultAttributeType attribute type} containing the value of an attribute in a feature.
@@ -57,19 +56,25 @@ import org.apache.sis.internal.jdk7.JDK7;
  *   <li><b>Serialization:</b> serialized objects of this class are not guaranteed to be compatible with future
  *       versions. Serialization should be used only for short term storage or RMI between applications running
  *       the same SIS version.</li>
+ *   <li><b>Cloning:</b> despite providing a public {@link #clone()} method, this base class is <strong>not</strong>
+ *       cloneable by default. Subclasses shall implement the {@link Cloneable} interface themselves if they choose
+ *       to support cloning.</li>
  * </ul>
- *
- * @param <V> The type of attribute values.
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.5
- * @version 0.5
- * @module
+ * @version 0.8
  *
- * @see DefaultAttributeType#newInstance()
+ * @param <V>  the type of attribute values.
+ *
+ * @see AbstractFeature
+ * @see DefaultAttributeType
+ *
+ * @since 0.5
+ * @module
  */
-public abstract class AbstractAttribute<V> extends Field<V> implements Cloneable, Serializable {
+@SuppressWarnings("CloneInNonCloneableClass")       // Decision left to subclasses - see javadoc
+public abstract class AbstractAttribute<V> extends Field<V> implements Serializable {
     /**
      * For cross-version compatibility.
      */
@@ -98,7 +103,7 @@ public abstract class AbstractAttribute<V> extends Field<V> implements Cloneable
     /**
      * Creates a new attribute of the given type.
      *
-     * @param type Information about the attribute (base Java class, domain of values, <i>etc.</i>).
+     * @param type  information about the attribute (base Java class, domain of values, <i>etc.</i>).
      *
      * @see #create(DefaultAttributeType)
      */
@@ -110,40 +115,40 @@ public abstract class AbstractAttribute<V> extends Field<V> implements Cloneable
      * Creates a new attribute of the given type initialized to the
      * {@linkplain DefaultAttributeType#getDefaultValue() default value}.
      *
-     * @param  <V>  The type of attribute values.
-     * @param  type Information about the attribute (base Java class, domain of values, <i>etc.</i>).
-     * @return The new attribute.
+     * @param  <V>   the type of attribute values.
+     * @param  type  information about the attribute (base Java class, domain of values, <i>etc.</i>).
+     * @return the new attribute.
      *
      * @see DefaultAttributeType#newInstance()
      */
     public static <V> AbstractAttribute<V> create(final DefaultAttributeType<V> type) {
         ArgumentChecks.ensureNonNull("type", type);
         return isSingleton(type.getMaximumOccurs())
-               ? new SingletonAttribute<V>(type)
-               : new MultiValuedAttribute<V>(type);
+               ? new SingletonAttribute<>(type)
+               : new MultiValuedAttribute<>(type);
     }
 
     /**
      * Creates a new attribute of the given type initialized to the given value.
      * Note that a {@code null} value may not be the same as the default value.
      *
-     * @param  <V>   The type of attribute values.
-     * @param  type  Information about the attribute (base Java class, domain of values, <i>etc.</i>).
-     * @param  value The initial value (may be {@code null}).
-     * @return The new attribute.
+     * @param  <V>    the type of attribute values.
+     * @param  type   information about the attribute (base Java class, domain of values, <i>etc.</i>).
+     * @param  value  the initial value (may be {@code null}).
+     * @return the new attribute.
      */
     static <V> AbstractAttribute<V> create(final DefaultAttributeType<V> type, final Object value) {
         ArgumentChecks.ensureNonNull("type", type);
         return isSingleton(type.getMaximumOccurs())
-               ? new SingletonAttribute<V>(type, value)
-               : new MultiValuedAttribute<V>(type, value);
+               ? new SingletonAttribute<>(type, value)
+               : new MultiValuedAttribute<>(type, value);
     }
 
     /**
      * Invoked on serialization for saving the {@link #characteristics} field.
      *
-     * @param  out The output stream where to serialize this attribute.
-     * @throws IOException If an I/O error occurred while writing.
+     * @param  out  the output stream where to serialize this attribute.
+     * @throws IOException if an I/O error occurred while writing.
      */
     private void writeObject(final ObjectOutputStream out) throws IOException {
         out.defaultWriteObject();
@@ -159,9 +164,9 @@ public abstract class AbstractAttribute<V> extends Field<V> implements Cloneable
     /**
      * Invoked on deserialization for restoring the {@link #characteristics} field.
      *
-     * @param  in The input stream from which to deserialize an attribute.
-     * @throws IOException If an I/O error occurred while reading or if the stream contains invalid data.
-     * @throws ClassNotFoundException If the class serialized on the stream is not on the classpath.
+     * @param  in  the input stream from which to deserialize an attribute.
+     * @throws IOException if an I/O error occurred while reading or if the stream contains invalid data.
+     * @throws ClassNotFoundException if the class serialized on the stream is not on the classpath.
      */
     private void readObject(final ObjectInputStream in) throws IOException, ClassNotFoundException {
         in.defaultReadObject();
@@ -171,8 +176,9 @@ public abstract class AbstractAttribute<V> extends Field<V> implements Cloneable
                 characteristics = newCharacteristicsMap();
                 characteristics.values().addAll(Arrays.asList(characterizedBy));
             }
-        } catch (RuntimeException e) { // At least ClassCastException, NullPointerException, IllegalArgumentException and IllegalStateException.
-            throw (IOException) new InvalidObjectException(e.getMessage()).initCause(e);
+        } catch (RuntimeException e) {
+            // At least ClassCastException, NullPointerException, IllegalArgumentException and IllegalStateException.
+            throw (IOException) new InvalidObjectException(e.getLocalizedMessage()).initCause(e);
         }
     }
 
@@ -180,7 +186,7 @@ public abstract class AbstractAttribute<V> extends Field<V> implements Cloneable
      * Returns the name of this attribute as defined by its {@linkplain #getType() type}.
      * This convenience method delegates to {@link DefaultAttributeType#getName()}.
      *
-     * @return The attribute name specified by its type.
+     * @return the attribute name specified by its type.
      */
     @Override
     public GenericName getName() {
@@ -193,7 +199,7 @@ public abstract class AbstractAttribute<V> extends Field<V> implements Cloneable
      * <div class="warning"><b>Warning:</b> In a future SIS version, the return type may be changed
      * to {@code org.opengis.feature.AttributeType}. This change is pending GeoAPI revision.</div>
      *
-     * @return Information about the attribute.
+     * @return information about the attribute.
      */
     public DefaultAttributeType<V> getType() {
         return type;
@@ -204,7 +210,7 @@ public abstract class AbstractAttribute<V> extends Field<V> implements Cloneable
      * the common case where the {@linkplain DefaultAttributeType#getMaximumOccurs() maximum number}
      * of attribute values is restricted to 1 or 0.
      *
-     * @return The attribute value (may be {@code null}).
+     * @return the attribute value (may be {@code null}).
      * @throws IllegalStateException if this attribute contains more than one value.
      *
      * @see AbstractFeature#getPropertyValue(String)
@@ -220,7 +226,7 @@ public abstract class AbstractAttribute<V> extends Field<V> implements Cloneable
      * <p>The default implementation returns a collection which will delegate its work to
      * {@link #getValue()} and {@link #setValue(Object)}.</p>
      *
-     * @return The attribute values in a <cite>live</cite> collection.
+     * @return the attribute values in a <cite>live</cite> collection.
      */
     @Override
     public Collection<V> getValues() {
@@ -236,12 +242,14 @@ public abstract class AbstractAttribute<V> extends Field<V> implements Cloneable
      * and also because some rules may be temporarily broken while constructing a feature.
      * A more exhaustive verification can be performed by invoking the {@link #quality()} method.
      *
-     * @param value The new value, or {@code null} for removing all values from this attribute.
+     * @param  value  the new value, or {@code null} for removing all values from this attribute.
+     * @throws IllegalArgumentException if this method verifies argument validity and the given value
+     *         does not met the attribute constraints.
      *
      * @see AbstractFeature#setPropertyValue(String, Object)
      */
     @Override
-    public abstract void setValue(final V value);
+    public abstract void setValue(final V value) throws IllegalArgumentException;
 
     /**
      * Sets the attribute values. All previous values are replaced by the given collection.
@@ -249,7 +257,7 @@ public abstract class AbstractAttribute<V> extends Field<V> implements Cloneable
      * <p>The default implementation ensures that the given collection contains at most one element,
      * then delegates to {@link #setValue(Object)}.</p>
      *
-     * @param  values The new values.
+     * @param  values  the new values.
      * @throws IllegalArgumentException if the given collection contains too many elements.
      */
     @Override
@@ -303,7 +311,7 @@ public abstract class AbstractAttribute<V> extends Field<V> implements Cloneable
      *     Example:
      *
      *     {@preformat java
-     *       Attribute<?> accuracy = ...; // To be created by the caller.
+     *       Attribute<?> accuracy = ...;                               // To be created by the caller.
      *       characteristics.put("accuracy", accuracy);
      *     }</li>
      *
@@ -313,7 +321,7 @@ public abstract class AbstractAttribute<V> extends Field<V> implements Cloneable
      *     Example:
      *
      *     {@preformat java
-     *       Attribute<?> accuracy = ...; // To be created by the caller.
+     *       Attribute<?> accuracy = ...;                               // To be created by the caller.
      *       characteristics.values().add(accuracy);
      *     }</li>
      *
@@ -322,21 +330,22 @@ public abstract class AbstractAttribute<V> extends Field<V> implements Cloneable
      *     Example:
      *
      *     {@preformat java
-     *       characteristics.keySet().add("accuracy"); // Ensure that an entry will exist for that name.
+     *       characteristics.keySet().add("accuracy");                  // Ensure that an entry will exist for that name.
      *       Attribute<?> accuracy = characteristics.get("accuracy");
-     *       Features.cast(accuracy, Float.class).setValue(...); // Set new accuracy value here as a float.
+     *       Features.cast(accuracy, Float.class).setValue(...);        // Set new accuracy value here as a float.
      *     }</li>
      * </ol>
      *
-     * @return Other attribute types that describes this attribute type, or an empty map if none.
+     * @return other attribute types that describes this attribute type, or an empty map if none.
      *
      * @see DefaultAttributeType#characteristics()
      */
+    @SuppressWarnings("ReturnOfCollectionOrArrayField")
     public Map<String,AbstractAttribute<?>> characteristics() {
         if (characteristics == null) {
             characteristics = newCharacteristicsMap();
         }
-        return characteristics;
+        return characteristics;                                 // Intentionally modifiable
     }
 
     /**
@@ -431,7 +440,7 @@ public abstract class AbstractAttribute<V> extends Field<V> implements Cloneable
      * }
      * </div>
      *
-     * @return Reports on all constraint violations found.
+     * @return reports on all constraint violations found.
      *
      * @see AbstractFeature#quality()
      */
@@ -451,15 +460,15 @@ public abstract class AbstractAttribute<V> extends Field<V> implements Cloneable
      *     └─ characteristics: units=°C, accuracy=0.1
      * }
      *
-     * @return A string representation of this attribute for debugging purpose.
+     * @return a string representation of this attribute for debugging purpose.
      */
     @Debug
     @Override
     public String toString() {
-        final StringBuilder buffer = FieldType.toString("Attribute", type,
+        final StringBuilder buffer = FieldType.toString(isDeprecated(type), "Attribute", type.getName(),
                 Classes.getShortName(type.getValueClass()), getValues().iterator());
         if (characteristics != null && !characteristics.isEmpty()) {
-            buffer.append(JDK7.lineSeparator());
+            buffer.append(System.lineSeparator());
             String separator = "└─ characteristics: ";
             for (final Map.Entry<String,AbstractAttribute<?>> entry : characteristics.entrySet()) {
                 buffer.append(separator).append(entry.getKey()).append('=').append(entry.getValue().getValue());
@@ -470,13 +479,15 @@ public abstract class AbstractAttribute<V> extends Field<V> implements Cloneable
     }
 
     /**
-     * Returns a copy of this attribute.
-     * The default implementation returns a <em>shallow</em> copy:
+     * Returns a copy of this attribute if cloning is supported.
+     * The decision to support cloning or not is left to subclasses. If the subclass does not implement
+     * the {@link Cloneable} interface, then this method throws a {@link CloneNotSupportedException}.
+     * Otherwise the default implementation returns a <em>shallow</em> copy of this {@code Attribute}:
      * the attribute {@linkplain #getValue() value} and {@linkplain #characteristics() characteristics}
      * are <strong>not</strong> cloned.
      * However subclasses may choose to do otherwise.
      *
-     * @return A clone of this attribute.
+     * @return a clone of this attribute.
      * @throws CloneNotSupportedException if this attribute, the {@linkplain #getValue() value}
      *         or one of its {@linkplain #characteristics() characteristics} can not be cloned.
      */

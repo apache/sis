@@ -23,7 +23,7 @@ import org.opengis.util.GenericName;
 import org.opengis.metadata.quality.DataQuality;
 import org.apache.sis.util.Debug;
 import org.apache.sis.util.ArgumentChecks;
-import org.apache.sis.util.resources.Errors;
+import org.apache.sis.internal.feature.Resources;
 
 
 /**
@@ -40,11 +40,13 @@ import org.apache.sis.util.resources.Errors;
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.5
- * @version 0.5
- * @module
+ * @version 0.8
  *
- * @see DefaultAssociationRole#newInstance()
+ * @see AbstractFeature
+ * @see DefaultAssociationRole
+ *
+ * @since 0.5
+ * @module
  */
 public abstract class AbstractAssociation extends Field<AbstractFeature> implements Cloneable, Serializable {
     /**
@@ -60,7 +62,7 @@ public abstract class AbstractAssociation extends Field<AbstractFeature> impleme
     /**
      * Creates a new association of the given role.
      *
-     * @param role Information about the association.
+     * @param role  information about the association.
      *
      * @see #create(DefaultAssociationRole)
      */
@@ -71,8 +73,8 @@ public abstract class AbstractAssociation extends Field<AbstractFeature> impleme
     /**
      * Creates a new association of the given role.
      *
-     * @param  role Information about the association.
-     * @return The new association.
+     * @param  role  information about the association.
+     * @return the new association.
      *
      * @see DefaultAssociationRole#newInstance()
      */
@@ -86,9 +88,9 @@ public abstract class AbstractAssociation extends Field<AbstractFeature> impleme
     /**
      * Creates a new association of the given role initialized to the given value.
      *
-     * @param  role  Information about the association.
-     * @param  value The initial value (may be {@code null}).
-     * @return The new association.
+     * @param  role   information about the association.
+     * @param  value  the initial value (may be {@code null}).
+     * @return the new association.
      */
     static AbstractAssociation create(final DefaultAssociationRole role, final Object value) {
         ArgumentChecks.ensureNonNull("role", role);
@@ -101,7 +103,7 @@ public abstract class AbstractAssociation extends Field<AbstractFeature> impleme
      * Returns the name of this association as defined by its {@linkplain #getRole() role}.
      * This convenience method delegates to {@link DefaultAssociationRole#getName()}.
      *
-     * @return The association name specified by its role.
+     * @return the association name specified by its role.
      */
     @Override
     public GenericName getName() {
@@ -114,7 +116,7 @@ public abstract class AbstractAssociation extends Field<AbstractFeature> impleme
      * <div class="warning"><b>Warning:</b> In a future SIS version, the return type may be changed
      * to {@code org.opengis.feature.AssociationRole}. This change is pending GeoAPI revision.</div>
      *
-     * @return Information about the association.
+     * @return information about the association.
      */
     public DefaultAssociationRole getRole() {
         return role;
@@ -128,13 +130,13 @@ public abstract class AbstractAssociation extends Field<AbstractFeature> impleme
      * <div class="warning"><b>Warning:</b> In a future SIS version, the return type may be changed
      * to {@code org.opengis.feature.Feature}. This change is pending GeoAPI revision.</div>
      *
-     * @return The associated feature (may be {@code null}).
+     * @return the associated feature (may be {@code null}).
      * @throws IllegalStateException if this association contains more than one value.
      *
      * @see AbstractFeature#getPropertyValue(String)
      */
     @Override
-    public abstract AbstractFeature getValue();
+    public abstract AbstractFeature getValue() throws IllegalStateException;
 
     /**
      * Returns all features, or an empty collection if none.
@@ -144,7 +146,7 @@ public abstract class AbstractAssociation extends Field<AbstractFeature> impleme
      * <p>The default implementation returns a collection which will delegate its work to
      * {@link #getValue()} and {@link #setValue(Object)}.</p>
      *
-     * @return The features in a <cite>live</cite> collection.
+     * @return the features in a <cite>live</cite> collection.
      */
     @Override
     public Collection<AbstractFeature> getValues() {
@@ -163,8 +165,8 @@ public abstract class AbstractAssociation extends Field<AbstractFeature> impleme
      * and also because some rules may be temporarily broken while constructing a feature.
      * A more exhaustive verification can be performed by invoking the {@link #quality()} method.
      *
-     * @param  value The new value, or {@code null}.
-     * @throws IllegalArgumentException If the given feature is not valid for this association.
+     * @param  value  the new value, or {@code null}.
+     * @throws IllegalArgumentException if the given feature is not valid for this association.
      *
      * @see AbstractFeature#setPropertyValue(String, Object)
      */
@@ -177,7 +179,7 @@ public abstract class AbstractAssociation extends Field<AbstractFeature> impleme
      * <p>The default implementation ensures that the given collection contains at most one element,
      * then delegates to {@link #setValue(AbstractFeature)}.</p>
      *
-     * @param  values The new values.
+     * @param  values  the new values.
      * @throws IllegalArgumentException if the given collection contains too many elements.
      */
     @Override
@@ -192,7 +194,7 @@ public abstract class AbstractAssociation extends Field<AbstractFeature> impleme
     final void ensureValid(final DefaultFeatureType base, final DefaultFeatureType type) {
         if (base != type && !DefaultFeatureType.maybeAssignableFrom(base, type)) {
             throw new IllegalArgumentException(
-                    Errors.format(Errors.Keys.IllegalArgumentClass_3, getName(), base.getName(), type.getName()));
+                    Resources.format(Resources.Keys.IllegalFeatureType_3, getName(), base.getName(), type.getName()));
         }
     }
 
@@ -207,7 +209,7 @@ public abstract class AbstractAssociation extends Field<AbstractFeature> impleme
      * {@linkplain org.apache.sis.metadata.iso.quality.DefaultConformanceResult conformance result} having a
      * {@linkplain org.apache.sis.metadata.iso.quality.DefaultConformanceResult#pass() pass} value of {@code false}.</p>
      *
-     * @return Reports on all constraint violations found.
+     * @return reports on all constraint violations found.
      *
      * @see AbstractFeature#quality()
      */
@@ -221,14 +223,16 @@ public abstract class AbstractAssociation extends Field<AbstractFeature> impleme
      * Returns a string representation of this association.
      * The returned string is for debugging purpose and may change in any future SIS version.
      *
-     * @return A string representation of this association for debugging purpose.
+     * @return a string representation of this association for debugging purpose.
      */
     @Debug
     @Override
     public String toString() {
         final String pt = DefaultAssociationRole.getTitleProperty(role);
         final Iterator<AbstractFeature> it = getValues().iterator();
-        return FieldType.toString("FeatureAssociation", role, DefaultAssociationRole.getValueTypeName(role), new Iterator<Object>() {
+        return FieldType.toString(isDeprecated(role), "FeatureAssociation", role.getName(),
+                DefaultAssociationRole.getValueTypeName(role), new Iterator<Object>()
+        {
             @Override public boolean hasNext() {
                 return it.hasNext();
             }
@@ -250,7 +254,7 @@ public abstract class AbstractAssociation extends Field<AbstractFeature> impleme
      * the association {@linkplain #getValue() value} is <strong>not</strong> cloned.
      * However subclasses may choose to do otherwise.
      *
-     * @return A clone of this association.
+     * @return a clone of this association.
      * @throws CloneNotSupportedException if this association can not be cloned.
      *         The default implementation never throw this exception. However subclasses may throw it.
      */

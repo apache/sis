@@ -22,6 +22,7 @@ import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.maintenance.ScopeCode;
+import org.opengis.metadata.quality.DataQuality;
 import org.opengis.metadata.quality.EvaluationMethodType;
 import org.apache.sis.metadata.iso.quality.AbstractElement;
 import org.apache.sis.metadata.iso.quality.DefaultDataQuality;
@@ -36,8 +37,8 @@ import org.apache.sis.util.resources.Errors;
  * Provides validation methods to be shared by different implementations.
  *
  * @author  Martin Desruisseaux (Geomatys)
+ * @version 0.7
  * @since   0.5
- * @version 0.5
  * @module
  */
 final class Validator {
@@ -49,8 +50,8 @@ final class Validator {
     /**
      * Creates a new validator.
      *
-     * @param feature {@code FEATURE} if the object to validate is a feature,
-     *        or {@code ATTRIBUTE} for an attribute, or {@code null} otherwise.
+     * @param scope  {@code FEATURE} if the object to validate is a feature, or
+     *               {@code ATTRIBUTE} for an attribute, or {@code null} otherwise.
      */
     Validator(final ScopeCode scope) {
         quality = new DefaultDataQuality();
@@ -71,10 +72,10 @@ final class Validator {
      * We are not strictly forbidden to use the same identifier for both the quality measurement than the measurement
      * itself. However strictly speaking, maybe we should use a different scope.</div>
      *
-     * @param  report      Where to add the result, or {@code null} if not yet created.
-     * @param  type        Description of the property for which a constraint violation has been found.
-     * @param  explanation Explanation of the constraint violation.
-     * @return The {@code report}, or a new report if {@code report} was null.
+     * @param  report       where to add the result, or {@code null} if not yet created.
+     * @param  type         description of the property for which a constraint violation has been found.
+     * @param  explanation  explanation of the constraint violation.
+     * @return the {@code report}, or a new report if {@code report} was null.
      */
     private AbstractElement addViolationReport(AbstractElement report,
             final AbstractIdentifiedType type, final InternationalString explanation)
@@ -99,6 +100,35 @@ final class Validator {
             return (value != null) ? Collections.singletonList(value) : Collections.emptyList();
         } else {
             return (Collection<?>) value;
+        }
+    }
+
+    /**
+     * Implementation of {@link AbstractFeature#quality()}, also shared by {@link Features} static method.
+     *
+     * @param type     the type of the {@code feature} argument, provided explicitely for protecting from user overriding.
+     * @param feature  the feature to validate.
+     */
+    void validate(final FeatureType type, final AbstractFeature feature) {
+        for (final AbstractIdentifiedType pt : type.getProperties(true)) {
+            final Object property = feature.getProperty(pt.getName().toString());
+            final DataQuality pq;
+            if (property instanceof AbstractAttribute<?>) {
+                pq = ((AbstractAttribute<?>) property).quality();
+            } else if (property instanceof AbstractAssociation) {
+                pq = ((AbstractAssociation) property).quality();
+            } else if (property instanceof AbstractAttribute<?>) {
+                validate(((AbstractAttribute<?>) property).getType(), ((AbstractAttribute<?>) property).getValues());
+                continue;
+            } else if (property instanceof AbstractAssociation) {
+                validate(((AbstractAssociation) property).getRole(), ((AbstractAssociation) property).getValues());
+                continue;
+            } else {
+                continue;
+            }
+            if (pq != null) {                                          // Should not be null, but let be safe.
+                quality.getReports().addAll(pq.getReports());
+            }
         }
     }
 
@@ -128,10 +158,13 @@ final class Validator {
              * method signature. However in practice the call to Attribute.setValue(…) is sometime done after type erasure,
              * so we are better to check.
              */
-            if (!type.getValueClass().isInstance(value)) {
+            final Class<?> valueClass = type.getValueClass();
+            if (!valueClass.isInstance(value)) {
                 report = addViolationReport(report, type, Errors.formatInternational(
-                        Errors.Keys.IllegalPropertyClass_2, type.getName(), value.getClass()));
-                break; // Report only the first violation for now.
+                        Errors.Keys.IllegalPropertyValueClass_3, type.getName(), valueClass, value.getClass()));
+
+                // Report only the first violation for now.
+                break;
             }
         }
         verifyCardinality(report, type, type.getMinimumOccurs(), type.getMaximumOccurs(), values.size());
@@ -144,10 +177,13 @@ final class Validator {
         AbstractElement report = null;
         for (final Object value : values) {
             final DefaultFeatureType type = ((AbstractFeature) value).getType();
-            if (!role.getValueType().isAssignableFrom(type)) {
+            final FeatureType valueType = role.getValueType();
+            if (!valueType.isAssignableFrom(type)) {
                 report = addViolationReport(report, role, Errors.formatInternational(
-                        Errors.Keys.IllegalPropertyClass_2, role.getName(), type.getName()));
-                break; // Report only the first violation for now.
+                        Errors.Keys.IllegalPropertyValueClass_3, role.getName(), valueType.getName(), type.getName()));
+
+                // Report only the first violation for now.
+                break;
             }
         }
         verifyCardinality(report, role, role.getMinimumOccurs(), role.getMaximumOccurs(), values.size());
@@ -156,7 +192,7 @@ final class Validator {
     /**
      * Verifies if the given value mets the cardinality constraint.
      *
-     * @param report Where to add the result, or {@code null} if not yet created.
+     * @param report  where to add the result, or {@code null} if not yet created.
      */
     private void verifyCardinality(final AbstractElement report, final AbstractIdentifiedType type,
             final int minimumOccurs, final int maximumOccurs, final int count)

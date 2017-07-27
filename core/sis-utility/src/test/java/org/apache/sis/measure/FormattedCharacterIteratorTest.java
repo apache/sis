@@ -40,8 +40,8 @@ import static org.junit.Assert.*;
  * Tests the {@link FormattedCharacterIterator} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.3
+ * @since   0.3
  * @module
  */
 public final strictfp class FormattedCharacterIteratorTest extends TestCase {
@@ -51,7 +51,7 @@ public final strictfp class FormattedCharacterIteratorTest extends TestCase {
     static final String LATITUDE_STRING = "45°30′15.0″N";
 
     /**
-     * The numerical value corresponding to {@link #ANGLE_STRING}.
+     * The numerical value corresponding to {@link #LATITUDE_STRING}.
      * This information is used by {@link AngleFormatTest}.
      */
     static final double LATITUDE_VALUE = 45.50416666666667;
@@ -112,7 +112,7 @@ public final strictfp class FormattedCharacterIteratorTest extends TestCase {
      * @param withNumberFields {@code true} for including the keys for {@code NumberFormat} fields.
      */
     private static Set<Attribute> getAllAttributeKeys(final boolean withNumberFields) {
-        final Set<Attribute> keys = new HashSet<Attribute>(8);
+        final Set<Attribute> keys = new HashSet<>(8);
         assertTrue(keys.add(DEGREES));
         assertTrue(keys.add(MINUTES));
         assertTrue(keys.add(SECONDS));
@@ -130,7 +130,7 @@ public final strictfp class FormattedCharacterIteratorTest extends TestCase {
      * with attributes. Built in a sub-class of {@link SimpleCharacterIterator} in
      * order to have access to the protected {@link #upper} field.
      */
-    @SuppressWarnings("serial")
+    @SuppressWarnings({"serial", "CloneableClassWithoutClone"})
     private static class LatitudeString extends SimpleCharacterIterator {
         LatitudeString() {
             super(LATITUDE_STRING);
@@ -213,19 +213,19 @@ public final strictfp class FormattedCharacterIteratorTest extends TestCase {
                  */
                 if (!isInteger) {
                     if (index < 7) {
-                        startInteger = index;   // End of previous integer field.
-                        limitInteger = index+1; // Start of next integer field.
+                        startInteger = index;               // End of previous integer field.
+                        limitInteger = index+1;             // Start of next integer field.
                     } else {
-                        startInteger = 8;       // End of last integer field.
+                        startInteger = 8;                   // End of last integer field.
                     }
                 }
                 if (!isSeparator) {
-                    if (index < 8) limitSeparator = 8; // Start of next separator field.
-                    else           startSeparator = 9; // End of previous separator field.
+                    if (index < 8) limitSeparator = 8;      // Start of next separator field.
+                    else           startSeparator = 9;      // End of previous separator field.
                 }
                 if (!isFraction) {
-                    if (index < 9) limitFraction =  9; // Start of next fraction field.
-                    else           startFraction = 10; // End of previous fraction field.
+                    if (index < 9) limitFraction =  9;      // Start of next fraction field.
+                    else           startFraction = 10;      // End of previous fraction field.
                 }
             }
             final Map<Attribute,Object> attributes = it.getAttributes();

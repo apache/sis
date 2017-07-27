@@ -68,11 +68,12 @@ import java.lang.annotation.RetentionPolicy;
  * classes.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.3
- * @module
  *
  * @see NumberRange#NumberRange(Class, ValueRange)
+ *
+ * @since 0.3
+ * @module
  */
 @Documented
 @Target({ElementType.FIELD, ElementType.METHOD})
@@ -83,7 +84,7 @@ public @interface ValueRange {
      * {@linkplain Double#NEGATIVE_INFINITY negative infinity}, which means that
      * there is no minimal value.
      *
-     * @return The minimal value.
+     * @return the minimal value.
      */
     double minimum() default Double.NEGATIVE_INFINITY;
 
@@ -100,7 +101,7 @@ public @interface ValueRange {
      * {@linkplain Double#POSITIVE_INFINITY positive infinity}, which means that
      * there is no maximal value.
      *
-     * @return The maximal value.
+     * @return the maximal value.
      */
     double maximum() default Double.POSITIVE_INFINITY;
 

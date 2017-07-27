@@ -16,6 +16,8 @@
  */
 package org.apache.sis.util;
 
+import org.opengis.referencing.IdentifiedObject;
+
 
 /**
  * May be thrown on attempt to use an object which has been corrupted by a previous operation.
@@ -56,8 +58,8 @@ package org.apache.sis.util;
  * ignored by the user.
  *
  * @author  Martin Desruisseaux (Geomatys)
+ * @version 0.6
  * @since   0.5
- * @version 0.5
  * @module
  */
 public class CorruptedObjectException extends RuntimeException {
@@ -76,9 +78,20 @@ public class CorruptedObjectException extends RuntimeException {
     /**
      * Constructs a new exception with the specified detail message.
      *
-     * @param message The detail message, or {@code null} if none.
+     * @param message  the detail message, or {@code null} if none.
      */
     public CorruptedObjectException(final String message) {
         super(message);
+    }
+
+    /**
+     * Constructs a new exception with the name of the given object.
+     *
+     * @param  object  the corrupted object, or {@code null} if unknown.
+     *
+     * @since 0.6
+     */
+    public CorruptedObjectException(final IdentifiedObject object) {
+        super(object != null ? String.valueOf(object.getName()) : null);
     }
 }

@@ -28,8 +28,8 @@ import org.apache.sis.referencing.datum.DefaultGeodeticDatum;
  *
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
+ * @version 0.7
  * @since   0.4
- * @version 0.4
  * @module
  */
 public final class CD_GeodeticDatum extends PropertyType<CD_GeodeticDatum, GeodeticDatum> {
@@ -62,8 +62,8 @@ public final class CD_GeodeticDatum extends PropertyType<CD_GeodeticDatum, Geode
      * Invoked by {@link PropertyType} at marshalling time for wrapping the given value
      * in a {@code <gml:GeodeticDatum>} XML element.
      *
-     * @param  datum The element to marshall.
-     * @return A {@code PropertyType} wrapping the given the element.
+     * @param  datum  the element to marshall.
+     * @return a {@code PropertyType} wrapping the given the element.
      */
     @Override
     protected CD_GeodeticDatum wrap(final GeodeticDatum datum) {
@@ -75,7 +75,7 @@ public final class CD_GeodeticDatum extends PropertyType<CD_GeodeticDatum, Geode
      * inside the {@code <gml:GeodeticDatum>} XML element.
      * This is the value or a copy of the value given in argument to the {@code wrap} method.
      *
-     * @return The element to be marshalled.
+     * @return the element to be marshalled.
      */
     @XmlElement(name = "GeodeticDatum")
     public DefaultGeodeticDatum getElement() {
@@ -85,9 +85,11 @@ public final class CD_GeodeticDatum extends PropertyType<CD_GeodeticDatum, Geode
     /**
      * Invoked by JAXB at unmarshalling time for storing the result temporarily.
      *
-     * @param datum The unmarshalled element.
+     * @param  datum  the unmarshalled element.
      */
     public void setElement(final DefaultGeodeticDatum datum) {
         metadata = datum;
+        if (datum.getEllipsoid()     == null) incomplete("ellipsoid");
+        if (datum.getPrimeMeridian() == null) incomplete("primeMeridian");
     }
 }

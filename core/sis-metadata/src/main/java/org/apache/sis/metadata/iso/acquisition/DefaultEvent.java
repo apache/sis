@@ -38,6 +38,15 @@ import static org.apache.sis.internal.metadata.MetadataUtilities.toMilliseconds;
 
 /**
  * Identification of a significant collection point within an operation.
+ * The following properties are mandatory in a well-formed metadata according ISO 19115:
+ *
+ * <div class="preformat">{@code MI_Event}
+ * {@code   ├─identifier……} Event name or number.
+ * {@code   │   └─code…………} Alphanumeric value identifying an instance in the namespace.
+ * {@code   ├─trigger……………} Initiator of the event.
+ * {@code   ├─context……………} Meaning of the event.
+ * {@code   ├─sequence…………} Relative time ordering of the event.
+ * {@code   └─time……………………} Time the event occurred.</div>
  *
  * <p><b>Limitations:</b></p>
  * <ul>
@@ -50,10 +59,11 @@ import static org.apache.sis.internal.metadata.MetadataUtilities.toMilliseconds;
  *
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.3
+ * @since   0.3
  * @module
  */
+@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "MI_Event_Type", propOrder = {
     "identifier",
     "trigger",
@@ -117,7 +127,7 @@ public class DefaultEvent extends ISOMetadata implements Event {
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
-     * @param object The metadata to copy values from, or {@code null} if none.
+     * @param  object  the metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(Event)
      */
@@ -149,8 +159,8 @@ public class DefaultEvent extends ISOMetadata implements Event {
      *       metadata contained in the given object are not recursively copied.</li>
      * </ul>
      *
-     * @param  object The object to get as a SIS implementation, or {@code null} if none.
-     * @return A SIS implementation containing the values of the given object (may be the
+     * @param  object  the object to get as a SIS implementation, or {@code null} if none.
+     * @return a SIS implementation containing the values of the given object (may be the
      *         given object itself), or {@code null} if the argument was null.
      */
     public static DefaultEvent castOrCopy(final Event object) {
@@ -163,7 +173,7 @@ public class DefaultEvent extends ISOMetadata implements Event {
     /**
      * Returns the event name or number.
      *
-     * @return Event name or number, or {@code null}.
+     * @return event name or number, or {@code null}.
      */
     @Override
     @XmlElement(name = "identifier", required = true)
@@ -174,7 +184,7 @@ public class DefaultEvent extends ISOMetadata implements Event {
     /**
      * Sets the event name or number.
      *
-     * @param newValue The event identifier value.
+     * @param  newValue  the event identifier value.
      */
     public void setIdentifier(final Identifier newValue) {
         checkWritePermission();
@@ -185,7 +195,7 @@ public class DefaultEvent extends ISOMetadata implements Event {
     /**
      * Returns the initiator of the event.
      *
-     * @return Initiator of the event, or {@code null}.
+     * @return initiator of the event, or {@code null}.
      */
     @Override
     @XmlElement(name = "trigger", required = true)
@@ -196,7 +206,7 @@ public class DefaultEvent extends ISOMetadata implements Event {
     /**
      * Sets the initiator of the event.
      *
-     * @param newValue The new trigger value.
+     * @param  newValue  the new trigger value.
      */
     public void setTrigger(final Trigger newValue) {
         checkWritePermission();
@@ -206,7 +216,7 @@ public class DefaultEvent extends ISOMetadata implements Event {
     /**
      * Meaning of the event.
      *
-     * @return Meaning of the event, or {@code null}.
+     * @return meaning of the event, or {@code null}.
      */
     @Override
     @XmlElement(name = "context", required = true)
@@ -217,7 +227,7 @@ public class DefaultEvent extends ISOMetadata implements Event {
     /**
      * Sets the meaning of the event.
      *
-     * @param newValue The new context value.
+     * @param  newValue  the new context value.
      */
     public void setContext(final Context newValue) {
         checkWritePermission();
@@ -227,7 +237,7 @@ public class DefaultEvent extends ISOMetadata implements Event {
     /**
      * Returns the relative time ordering of the event.
      *
-     * @return Relative time ordering, or {@code null}.
+     * @return relative time ordering, or {@code null}.
      */
     @Override
     @XmlElement(name = "sequence", required = true)
@@ -238,7 +248,7 @@ public class DefaultEvent extends ISOMetadata implements Event {
     /**
      * Sets the relative time ordering of the event.
      *
-     * @param newValue The new sequence value.
+     * @param  newValue  the new sequence value.
      */
     public void setSequence(final Sequence newValue) {
         checkWritePermission();
@@ -248,7 +258,7 @@ public class DefaultEvent extends ISOMetadata implements Event {
     /**
      * Returns the time the event occurred.
      *
-     * @return Time the event occurred, or {@code null}.
+     * @return time the event occurred, or {@code null}.
      */
     @Override
     @XmlElement(name = "time", required = true)
@@ -259,7 +269,7 @@ public class DefaultEvent extends ISOMetadata implements Event {
     /**
      * Sets the time the event occurred.
      *
-     * @param newValue The new time value.
+     * @param  newValue  the new time value.
      */
     public void setTime(final Date newValue) {
         checkWritePermission();
@@ -269,7 +279,7 @@ public class DefaultEvent extends ISOMetadata implements Event {
     /**
      * Returns the objective or objectives satisfied by an event.
      *
-     * @return Objectives satisfied by an event.
+     * @return objectives satisfied by an event.
      */
     @Override
     @XmlElement(name = "expectedObjective")
@@ -280,7 +290,7 @@ public class DefaultEvent extends ISOMetadata implements Event {
     /**
      * Sets the objective or objectives satisfied by an event.
      *
-     * @param newValues The new expected objectives values.
+     * @param  newValues  the new expected objectives values.
      */
     public void setExpectedObjectives(final Collection<? extends Objective> newValues) {
         expectedObjectives = writeCollection(newValues, expectedObjectives, Objective.class);
@@ -289,7 +299,7 @@ public class DefaultEvent extends ISOMetadata implements Event {
     /**
      * Returns the pass during which an event occurs. {@code null} if unspecified.
      *
-     * @return Pass during which an event occurs, or {@code null}.
+     * @return pass during which an event occurs, or {@code null}.
      */
     @Override
     @XmlElement(name = "relatedPass")
@@ -300,7 +310,7 @@ public class DefaultEvent extends ISOMetadata implements Event {
     /**
      * Sets the pass during which an event occurs.
      *
-     * @param newValue The new platform pass value.
+     * @param  newValue  the new platform pass value.
      */
     public void setRelatedPass(final PlatformPass newValue) {
         relatedPass = newValue;
@@ -309,7 +319,7 @@ public class DefaultEvent extends ISOMetadata implements Event {
     /**
      * Returns the instrument or instruments for which the event is meaningful.
      *
-     * @return Instruments for which the event is meaningful.
+     * @return instruments for which the event is meaningful.
      */
     @Override
     @XmlElement(name = "relatedSensor")
@@ -320,7 +330,7 @@ public class DefaultEvent extends ISOMetadata implements Event {
     /**
      * Sets the instrument or instruments for which the event is meaningful.
      *
-     * @param newValues The new instrument values.
+     * @param  newValues  the new instrument values.
      */
     public void setRelatedSensors(final Collection<? extends Instrument> newValues) {
         relatedSensors = writeCollection(newValues, relatedSensors, Instrument.class);

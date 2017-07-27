@@ -24,11 +24,16 @@ import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.measure.ValueRange;
 import org.apache.sis.xml.Namespaces;
 
-import static org.apache.sis.internal.metadata.MetadataUtilities.warnNonPositiveArgument;
+import static org.apache.sis.internal.metadata.MetadataUtilities.ensurePositive;
 
 
 /**
  * Distance between consistent parts of (centre, left side, right side) adjacent pixels.
+ * The following properties are mandatory in a well-formed metadata according ISO 19115:
+ *
+ * <div class="preformat">{@code LE_NominalResolution}
+ * {@code   ├─scanningResolution……} Distance between consistent parts of (centre, left side, right side) adjacent pixels in the scan plane.
+ * {@code   └─groundResolution…………} Distance between consistent parts of (centre, left side, right side) adjacent pixels in the object space.</div>
  *
  * <p><b>Limitations:</b></p>
  * <ul>
@@ -41,10 +46,11 @@ import static org.apache.sis.internal.metadata.MetadataUtilities.warnNonPositive
  *
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.5
+ * @since   0.3
  * @module
  */
+@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "LE_NominalResolution_Type", propOrder = {
     "scanningResolution",
     "groundResolution"
@@ -86,7 +92,7 @@ public class DefaultNominalResolution extends ISOMetadata implements NominalReso
      * metadata instances can also be obtained by unmarshalling an invalid XML document.
      * </div>
      *
-     * @param object The metadata to copy values from, or {@code null} if none.
+     * @param  object  the metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(NominalResolution)
      */
@@ -112,8 +118,8 @@ public class DefaultNominalResolution extends ISOMetadata implements NominalReso
      *       metadata contained in the given object are not recursively copied.</li>
      * </ul>
      *
-     * @param  object The object to get as a SIS implementation, or {@code null} if none.
-     * @return A SIS implementation containing the values of the given object (may be the
+     * @param  object  the object to get as a SIS implementation, or {@code null} if none.
+     * @return a SIS implementation containing the values of the given object (may be the
      *         given object itself), or {@code null} if the argument was null.
      */
     public static DefaultNominalResolution castOrCopy(final NominalResolution object) {
@@ -124,23 +130,10 @@ public class DefaultNominalResolution extends ISOMetadata implements NominalReso
     }
 
     /**
-     * Ensures that the given property is greater than zero.
-     *
-     * @param  property The name of the property to verify.
-     * @param  value The property value, or {@code null}.
-     * @throws IllegalArgumentException if the property is zero or negative and the problem has not been logged.
-     */
-    private static void ensurePositive(final String property, final Double value) throws IllegalArgumentException {
-        if (value != null && !(value > 0)) { // Use '!' for catching NaN.
-            warnNonPositiveArgument(DefaultNominalResolution.class, property, true, value);
-        }
-    }
-
-    /**
      * Returns the distance between consistent parts of (centre, left side, right side)
      * adjacent pixels in the scan plane.
      *
-     * @return Distance between consistent parts of adjacent pixels in the scan plane, or {@code null}.
+     * @return distance between consistent parts of adjacent pixels in the scan plane, or {@code null}.
      */
     @Override
     @ValueRange(minimum=0, isMinIncluded=false)
@@ -153,20 +146,21 @@ public class DefaultNominalResolution extends ISOMetadata implements NominalReso
      * Sets the distance between consistent parts of (centre, left side, right side) adjacent
      * pixels in the scan plane.
      *
-     * @param newValue The new scanning resolution value.
+     * @param  newValue  the new scanning resolution value.
      * @throws IllegalArgumentException if the given value is NaN, zero or negative.
      */
     public void setScanningResolution(final Double newValue) {
         checkWritePermission();
-        ensurePositive("scanningResolution", newValue);
-        scanningResolution = newValue;
+        if (ensurePositive(DefaultNominalResolution.class, "scanningResolution", true, newValue)) {
+            scanningResolution = newValue;
+        }
     }
 
     /**
      * Returns the distance between consistent parts of (centre, left side, right side) adjacent
      * pixels in the object space.
      *
-     * @return Distance between consistent parts of adjacent pixels in the object space, or {@code null}.
+     * @return distance between consistent parts of adjacent pixels in the object space, or {@code null}.
      */
     @Override
     @ValueRange(minimum=0, isMinIncluded=false)
@@ -179,12 +173,13 @@ public class DefaultNominalResolution extends ISOMetadata implements NominalReso
      * Sets the distance between consistent parts of (centre, left side, right side) adjacent pixels
      * in the object space.
      *
-     * @param newValue The new ground resolution value.
+     * @param  newValue  the new ground resolution value.
      * @throws IllegalArgumentException if the given value is NaN, zero or negative.
      */
     public void setGroundResolution(final Double newValue) {
         checkWritePermission();
-        ensurePositive("groundResolution", newValue);
-        groundResolution = newValue;
+        if (ensurePositive(DefaultNominalResolution.class, "groundResolution", true, newValue)) {
+            groundResolution = newValue;
+        }
     }
 }

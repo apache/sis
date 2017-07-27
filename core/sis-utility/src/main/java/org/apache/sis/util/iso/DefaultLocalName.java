@@ -19,6 +19,8 @@ package org.apache.sis.util.iso;
 import java.util.List;
 import java.util.Collections;
 import java.util.Locale;
+import java.util.Objects;
+import java.io.ObjectStreamException;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlSeeAlso;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
@@ -31,9 +33,6 @@ import org.opengis.util.InternationalString;
 import org.apache.sis.xml.Namespaces;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.internal.jaxb.gco.CharSequenceAdapter;
-
-// Branch-dependent imports
-import org.apache.sis.internal.jdk7.Objects;
 
 
 /**
@@ -56,12 +55,13 @@ import org.apache.sis.internal.jdk7.Objects;
  * remain safe to call from multiple threads and do not change any public {@code LocalName} state.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.3
  * @version 0.5
- * @module
  *
  * @see DefaultNameSpace
  * @see DefaultScopedName
+ *
+ * @since 0.3
+ * @module
  */
 
 /*
@@ -101,29 +101,19 @@ public class DefaultLocalName extends AbstractName implements LocalName {
     final CharSequence name;
 
     /**
-     * Empty constructor to be used by JAXB only, or by sub-classes empty constructors
-     * themselves used only by JAXB. Despite its "final" declaration, the {@link #name}
-     * field will be set by JAXB during unmarshalling.
-     */
-    DefaultLocalName() {
-        scope = null;
-        name  = null;
-    }
-
-    /**
      * Constructs a local name from the given character sequence.
      * If the character sequence is an instance of {@link InternationalString},
      * then its {@link InternationalString#toString(java.util.Locale) toString(Locale.ROOT)}
      * method will be invoked for fetching an unlocalized name.
      * Otherwise the {@link CharSequence#toString()} method will be used.
      *
-     * @param scope The scope of this name, or {@code null} for a global scope.
-     * @param name The local name (never {@code null}).
+     * @param scope  the scope of this name, or {@code null} for a global scope.
+     * @param name   the local name (never {@code null}).
      */
     protected DefaultLocalName(NameSpace scope, final CharSequence name) {
         ArgumentChecks.ensureNonNull("name", name);
         if (scope == GlobalNameSpace.GLOBAL) {
-            scope = null; // Handled specially by scope().
+            scope = null;                                       // Handled specially by scope().
         }
         this.scope = scope;
         if (name instanceof InternationalString) {
@@ -168,8 +158,8 @@ public class DefaultLocalName extends AbstractName implements LocalName {
      *       with the same values than the given name.</li>
      * </ul>
      *
-     * @param  object The object to get as a SIS implementation, or {@code null} if none.
-     * @return A SIS implementation containing the values of the given object (may be the
+     * @param  object  the object to get as a SIS implementation, or {@code null} if none.
+     * @return a SIS implementation containing the values of the given object (may be the
      *         given object itself), or {@code null} if the argument was null.
      */
     public static DefaultLocalName castOrCopy(final LocalName object) {
@@ -185,7 +175,7 @@ public class DefaultLocalName extends AbstractName implements LocalName {
         final NameSpace scope = object.scope();
         final InternationalString name = object.toInternationalString();
         if (scope instanceof DefaultNameSpace) {
-            return ((DefaultNameSpace) scope).local(name, null); // May return a cached instance.
+            return ((DefaultNameSpace) scope).local(name, null);        // May return a cached instance.
         } else {
             return new DefaultLocalName(scope, name);
         }
@@ -243,7 +233,7 @@ public class DefaultLocalName extends AbstractName implements LocalName {
      * This string does not include the scope, which is consistent with the
      * {@linkplain #getParsedNames() parsed names} definition.
      *
-     * @return A local-independent string representation of this name.
+     * @return a local-independent string representation of this name.
      */
     @Override
     public synchronized String toString() {
@@ -275,7 +265,7 @@ public class DefaultLocalName extends AbstractName implements LocalName {
      * zero, or a positive integer as this name lexicographically precedes, is equal to,
      * or follows the specified object.
      *
-     * @param name The other name to compare with this name.
+     * @param  name  the other name to compare with this name.
      * @return -1 if this name precedes the given one, +1 if it follows, 0 if equals.
      */
     @Override
@@ -297,7 +287,7 @@ public class DefaultLocalName extends AbstractName implements LocalName {
     /**
      * Compares this local name with the specified object for equality.
      *
-     * @param object The object to compare with this name for equality.
+     * @param  object  the object to compare with this name for equality.
      * @return {@code true} if the given object is equal to this name.
      */
     @Override
@@ -328,11 +318,12 @@ public class DefaultLocalName extends AbstractName implements LocalName {
      * deserialized class is a subclass. This is the intended behavior since we don't want
      * to replace an instance of a user-defined class.</p>
      *
-     * @return The unique instance.
+     * @return the unique instance.
+     * @throws ObjectStreamException required by specification but should never be thrown.
      */
-    private Object readResolve() {
+    private Object readResolve() throws ObjectStreamException {
         final DefaultNameSpace ns;
-        if (scope == null) { // Not a bug: readResolve() is intentionally private.
+        if (scope == null) {                    // Not a bug: readResolve() is intentionally private.
             ns = GlobalNameSpace.GLOBAL;
         } else if (scope instanceof DefaultNameSpace) {
             ns = (DefaultNameSpace) scope;
@@ -340,5 +331,29 @@ public class DefaultLocalName extends AbstractName implements LocalName {
             return this;
         }
         return ns.local(name, this);
+    }
+
+
+
+
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+    ////////                                                                                  ////////
+    ////////                               XML support with JAXB                              ////////
+    ////////                                                                                  ////////
+    ////////        The following methods are invoked by JAXB using reflection (even if       ////////
+    ////////        they are private) or are helpers for other methods invoked by JAXB.       ////////
+    ////////        Those methods can be safely removed if Geographic Markup Language         ////////
+    ////////        (GML) support is not needed.                                              ////////
+    ////////                                                                                  ////////
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Empty constructor to be used by JAXB only, or by sub-classes empty constructors
+     * themselves used only by JAXB. Despite its "final" declaration, the {@link #name}
+     * field will be set by JAXB during unmarshalling.
+     */
+    DefaultLocalName() {
+        scope = null;
+        name  = null;
     }
 }

@@ -20,8 +20,9 @@
  * See {@link org.apache.sis.console.Command} for the list of supported commands.
  *
  * <div class="section">SIS installation on remote machines</div>
- * Some sub-commands can operate on SIS installation on remote machines, provided
- * that the remote Java Virtual Machine has been started with the following options:
+ * Some sub-commands can operate on SIS installation on remote machines, provided that Apache SIS
+ * has been <a href="http://sis.apache.org/branches.html#trunk">compiled with MBeans enabled</a>
+ * and that the remote Java Virtual Machine has been started with the following options:
  *
  * {@preformat shell
  *   java -Dcom.sun.management.jmxremote.port=1099 \
@@ -36,7 +37,7 @@
  * {@code about} sub-command shall be invoked as below:
  *
  * {@preformat shell
- *   java org.apache.sis.console.Command about localhost:9999
+ *   java org.apache.sis.console.Command about localhost:1099
  * }
  *
  * The {@code com.sun.management.jmxremote.local.only} property is recommended if the remote JVM is an other
@@ -46,8 +47,8 @@
  * and Management Using JMX Technology</a> page.
  *
  * @author  Martin Desruisseaux (Geomatys)
+ * @version 0.8
  * @since   0.3
- * @version 0.4
  * @module
  */
 package org.apache.sis.console;

@@ -16,6 +16,7 @@
  */
 package org.apache.sis.io;
 
+import java.io.ObjectStreamException;
 import java.text.Format;
 import java.text.FieldPosition;
 import java.text.ParsePosition;
@@ -30,10 +31,11 @@ import org.apache.sis.util.Classes;
  * Note that this is specific to {@code ClassFormat} and generally not true for arbitrary {@code Format} classes.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.3
+ * @since   0.3
  * @module
  */
+@SuppressWarnings("CloneableClassWithoutClone")   // Because this class does not contain field that need to be cloned.
 final class ClassFormat extends Format {
     /**
      * For cross-version compatibility.
@@ -71,7 +73,7 @@ final class ClassFormat extends Format {
     /**
      * Resolves to the singleton instance on deserialization.
      */
-    private Object readResolve() {
+    private Object readResolve() throws ObjectStreamException {
         return INSTANCE;
     }
 }

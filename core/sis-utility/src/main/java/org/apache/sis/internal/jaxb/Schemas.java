@@ -19,12 +19,13 @@ package org.apache.sis.internal.jaxb;
 
 /**
  * Constants for URL to schema directories or definition files.
- * Constants in this class are organized in two groups:
+ * Constants in this class are organized in three groups:
  *
  * <ul>
  *   <li>Constants with the {@code _ROOT} suffix are {@code "http://"} URL to a root directory.</li>
  *   <li>Constants with the {@code _PATH} suffix are relative paths to concatenate to a {@code _ROOT}
  *       constant in order to get the full path to a file.</li>
+ *   <li>Constants with the {@code _XSD} suffix are {@code "http://"} URL to a the XSD definition file.</li>
  * </ul>
  *
  * <div class="section">Note on multi-lingual files</div>
@@ -40,11 +41,21 @@ package org.apache.sis.internal.jaxb;
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
+ * @version 0.7
  * @since   0.4
- * @version 0.4
  * @module
  */
 public final class Schemas {
+    /**
+     * The XSD definition for Geographic Markup Language (GML) objects.
+     */
+    public static final String GML_XSD = "http://schemas.opengis.net/gml/3.2.1/gml.xsd";
+
+    /**
+     * The XSD definition for metadata objects.
+     */
+    public static final String METADATA_XSD = "http://schemas.opengis.net/iso/19139/20070417/gmd/gmd.xsd";
+
     /**
      * The root directory of OGC metadata schemas.
      * This is the schema used by default in Apache SIS.

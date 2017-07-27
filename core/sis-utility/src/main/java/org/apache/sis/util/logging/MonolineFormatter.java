@@ -31,6 +31,7 @@ import java.util.SortedMap;
 import java.util.Comparator;
 import java.util.ResourceBundle;
 import java.util.logging.*;
+import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.system.OS;
 import org.apache.sis.internal.util.X364;
 import org.apache.sis.io.IO;
@@ -40,8 +41,7 @@ import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.Configuration;
 import org.apache.sis.util.Debug;
 
-// Related to JDK7
-import org.apache.sis.internal.jdk7.JDK7;
+import static org.apache.sis.internal.util.StandardDateFormat.UTC;
 
 
 /**
@@ -53,7 +53,7 @@ import org.apache.sis.internal.jdk7.JDK7;
  * <tr><td><code>00:01</code></td><td style="background:blue"><code>CONFIG</code></td>
  *     <td><code><b>[MyApplication]</b> Read configuration from “my-application/setup.xml”.</code></td></tr>
  * <tr><td><code>00:03</code></td><td style="background:green"><code>INFO</code></td>
- *     <td><code><b>[DirectEpsgFactory]</b> Connected to the EPSG database version 6.9 on JavaDB 10.8.</code></td></tr>
+ *     <td><code><b>[EPSGFactory]</b> Connected to the EPSG database version 6.9 on JavaDB 10.8.</code></td></tr>
  * <tr><td><code>00:12</code></td><td style="background:goldenrod"><code>WARNING</code></td>
  *     <td><code><b>[DefaultTemporalExtent]</b> This operation requires the “sis-temporal” module.</code></td></tr>
  * </table></blockquote>
@@ -88,7 +88,7 @@ import org.apache.sis.internal.jdk7.JDK7;
  *     #
  *     #  source: If set, writes the source logger name or the source class name.
  *     #          Valid argument values are "none", "logger:short", "logger:long",
- *     #          "class:short" and "class:long".
+ *     #          "class:short", "class:long" and "class.method".
  *     ###########################################################################
  *     org.apache.sis.util.logging.MonolineFormatter.time = HH:mm:ss.SSS
  *     org.apache.sis.util.logging.MonolineFormatter.source = class:short
@@ -109,12 +109,13 @@ import org.apache.sis.internal.jdk7.JDK7;
  * from multiple threads.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
- * @version 0.4
- * @module
+ * @version 0.7
  *
  * @see SimpleFormatter
  * @see Handler#setFormatter(Formatter)
+ *
+ * @since 0.3
+ * @module
  */
 public class MonolineFormatter extends Formatter {
     /** Do not format source class name.       */ private static final int NO_SOURCE    = 0;
@@ -122,16 +123,18 @@ public class MonolineFormatter extends Formatter {
     /** Format the source logger only.         */ private static final int LOGGER_LONG  = 2;
     /** Format the class name without package. */ private static final int CLASS_SHORT  = 3;
     /** Format the fully qualified class name. */ private static final int CLASS_LONG   = 4;
+    /** Format the class name and method name. */ private static final int METHOD       = 5;
 
     /**
      * The label to use in the {@code logging.properties} for setting the source format.
      */
-    private static final String[] FORMAT_LABELS = new String[5];
+    private static final String[] FORMAT_LABELS = new String[6];
     static {
         FORMAT_LABELS[LOGGER_SHORT] = "logger:short";
         FORMAT_LABELS[LOGGER_LONG ] = "logger:long";
         FORMAT_LABELS[ CLASS_SHORT] = "class:short";
         FORMAT_LABELS[ CLASS_LONG ] = "class:long";
+        FORMAT_LABELS[METHOD      ] = "class.method";
     }
 
     /**
@@ -238,7 +241,7 @@ public class MonolineFormatter extends Formatter {
 
     /**
      * One of the following constants: {@link #NO_SOURCE}, {@link #LOGGER_SHORT},
-     * {@link #LOGGER_LONG}, {@link #CLASS_SHORT} or {@link #CLASS_LONG}.
+     * {@link #LOGGER_LONG}, {@link #CLASS_SHORT}, {@link #CLASS_LONG} or {@link #METHOD}.
      */
     private int sourceFormat = NO_SOURCE;
 
@@ -297,12 +300,12 @@ public class MonolineFormatter extends Formatter {
         try {
             timeFormat(manager.getProperty(classname + ".time"));
         } catch (IllegalArgumentException exception) {
-            Logging.configurationException(MonolineFormatter.class, "<init>", exception);
+            Logging.configurationException(Logging.getLogger(Modules.UTILITIES), MonolineFormatter.class, "<init>", exception);
         }
         try {
             sourceFormat(manager.getProperty(classname + ".source"));
         } catch (IllegalArgumentException exception) {
-            Logging.configurationException(MonolineFormatter.class, "<init>", exception);
+            Logging.configurationException(Logging.getLogger(Modules.UTILITIES), MonolineFormatter.class, "<init>", exception);
         }
         /*
          * Applies the default set of colors only if the handler is writing to the console.
@@ -321,7 +324,7 @@ public class MonolineFormatter extends Formatter {
          * The default (8 characters) is a little bit too wide...
          */
         final StringWriter str = new StringWriter();
-        writer  = new LineAppender(str, JDK7.lineSeparator(), true);
+        writer  = new LineAppender(str, System.lineSeparator(), true);
         buffer  = str.getBuffer().append(header);
         printer = new PrintWriter(IO.asWriter(writer));
         writer.setTabulationWidth(4);
@@ -358,7 +361,7 @@ loop:   for (int i=0; ; i++) {
      * Returns the string to write on the left side of the first line of every log records, or {@code null} if none.
      * This is a string to be shown just before the level.
      *
-     * @return The string to write on the left side of the first line of every log records, or {@code null} if none.
+     * @return the string to write on the left side of the first line of every log records, or {@code null} if none.
      */
     public String getHeader() {
         final String header;
@@ -377,7 +380,7 @@ loop:   for (int i=0; ; i++) {
      *        or {@code null} if none.
      */
     public void setHeader(String header) {
-        if (header == null) { // See comment in getHeader().
+        if (header == null) {                           // See comment in getHeader().
             header = "";
         }
         synchronized (buffer) {
@@ -392,7 +395,7 @@ loop:   for (int i=0; ; i++) {
      * {@code org.apache.sis.util.logging.MonolineFormatter.time} property in the
      * {@code jre/lib/logging.properties} file.
      *
-     * @return The time pattern, or {@code null} if elapsed time is not formatted.
+     * @return the time pattern, or {@code null} if elapsed time is not formatted.
      */
     public String getTimeFormat() {
         synchronized (buffer) {
@@ -408,8 +411,8 @@ loop:   for (int i=0; ; i++) {
      * The {@code "HH:mm:ss.SSS"} pattern will display the elapsed time in hours, minutes, seconds
      * and milliseconds.</div>
      *
-     * @param  pattern The time pattern, or {@code null} to disable time formatting.
-     * @throws IllegalArgumentException If the given pattern is invalid.
+     * @param  pattern  the time pattern, or {@code null} to disable time formatting.
+     * @throws IllegalArgumentException if the given pattern is invalid.
      */
     public void setTimeFormat(final String pattern) throws IllegalArgumentException {
         synchronized (buffer) {
@@ -425,7 +428,7 @@ loop:   for (int i=0; ; i++) {
             timeFormat = null;
         } else if (timeFormat == null) {
             timeFormat = new SimpleDateFormat(pattern);
-            timeFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
+            timeFormat.setTimeZone(TimeZone.getTimeZone(UTC));
         } else {
             timeFormat.applyPattern(pattern);
         }
@@ -438,7 +441,7 @@ loop:   for (int i=0; ; i++) {
      * {@code org.apache.sis.util.logging.MonolineFormatter.source} property in the
      * {@code jre/lib/logging.properties} file.
      *
-     * @return The source format, or {@code null} if source is not formatted.
+     * @return the source format, or {@code null} if source is not formatted.
      */
     public String getSourceFormat() {
         synchronized (buffer) {
@@ -456,13 +459,15 @@ loop:   for (int i=0; ; i++) {
      *   <li>{@code "logger:long"}  for the {@linkplain LogRecord#getLoggerName() logger name}</li>
      *   <li>{@code "class:short"}  for the source class name without the package part.</li>
      *   <li>{@code "logger:short"} for the logger name without the package part.</li>
+     *   <li>{@code "class.method"} for the short class name followed by the
+     *       {@linkplain LogRecord#getSourceMethodName() source method name}</li>
      * </ul>
      *
      * The source class name usually contains the logger name since (by convention) logger
      * names are package names, but this is not mandatory neither enforced.
      *
-     * @param  format The format for displaying the source, or {@code null} if the source shall not be formatted.
-     * @throws IllegalArgumentException If the given argument is not one of the recognized format names.
+     * @param  format  the format for displaying the source, or {@code null} if the source shall not be formatted.
+     * @throws IllegalArgumentException if the given argument is not one of the recognized format names.
      */
     public void setSourceFormat(final String format) throws IllegalArgumentException {
         synchronized (buffer) {
@@ -493,8 +498,8 @@ loop:   for (int i=0; ; i++) {
      * The current set of supported colors are {@code "red"}, {@code "green"}, {@code "yellow"}, {@code "blue"},
      * {@code "magenta"}, {@code "cyan"} and {@code "gray"}. This set may be extended in any future SIS version.
      *
-     * @param  level The level for which to get the color.
-     * @return The color for the given level, or {@code null} if none.
+     * @param  level  the level for which to get the color.
+     * @return the color for the given level, or {@code null} if none.
      */
     public String getLevelColor(final Level level) {
         synchronized (buffer) {
@@ -517,9 +522,9 @@ loop:   for (int i=0; ; i++) {
      * <p>The given {@code color} argument shall be one of the values documented in the
      * {@link #getLevelColor(Level)} method.</p>
      *
-     * @param  level The level for which to set a new color.
-     * @param  color The case-insensitive new color, or {@code null} if none.
-     * @throws IllegalArgumentException If the given color is not one of the recognized values.
+     * @param  level  the level for which to set a new color.
+     * @param  color  the case-insensitive new color, or {@code null} if none.
+     * @throws IllegalArgumentException if the given color is not one of the recognized values.
      */
     public void setLevelColor(final Level level, final String color) throws IllegalArgumentException {
         boolean changed = false;
@@ -543,9 +548,10 @@ loop:   for (int i=0; ; i++) {
     /**
      * Returns the {@link #colors} map, creating it if needed.
      */
+    @SuppressWarnings("ReturnOfCollectionOrArrayField")
     private SortedMap<Level,X364> colors() {
         if (colors == null) {
-            colors = new TreeMap<Level,X364>(COMPARATOR);
+            colors = new TreeMap<>(COMPARATOR);
         }
         return colors;
     }
@@ -606,7 +612,7 @@ loop:   for (int i=0; ; i++) {
         }
         int i = Arrays.binarySearch(colorLevels, level.intValue());
         if (i < 0) {
-            i = Math.max((~i)-1, 0);  // Really tild, not minus sign.
+            i = Math.max((~i)-1, 0);                    // Really tild, not minus sign.
         }
         return colorSequences[i];
     }
@@ -615,8 +621,8 @@ loop:   for (int i=0; ; i++) {
      * Formats the given log record and return the formatted string.
      * See the <a href="#overview">class javadoc</a> for information on the log format.
      *
-     * @param  record The log record to be formatted.
-     * @return A formatted log record.
+     * @param  record  the log record to be formatted.
+     * @return a formatted log record.
      */
     @Override
     public String format(final LogRecord record) {
@@ -641,19 +647,17 @@ loop:   for (int i=0; ; i++) {
              * This level will be formatted with a colorized background if ANSI escape sequences are enabled.
              */
             int margin = buffer.length();
+            String levelColor = "", levelReset = "";
             if (SHOW_LEVEL) {
                 if (colors) {
-                    buffer.append(colorAt(level));
+                    levelColor = colorAt(level);
+                    levelReset = X364.BACKGROUND_DEFAULT.sequence();
                 }
-                final int offset = buffer.length();
+                final int offset = buffer.append(levelColor).length();
                 buffer.append(level.getLocalizedName())
                       .append(CharSequences.spaces(levelWidth - (buffer.length() - offset)));
                 margin += buffer.length() - offset;
-                if (colors) {
-                    buffer.append(X364.BACKGROUND_DEFAULT.sequence());
-                }
-                buffer.append(' ');
-                margin++;
+                buffer.append(levelReset).append(' ');
             }
             /*
              * Appends the logger name or source class name, in long of short form.
@@ -663,18 +667,23 @@ loop:   for (int i=0; ; i++) {
             switch (sourceFormat) {
                 case LOGGER_SHORT: // Fall through
                 case LOGGER_LONG:  source = record.getLoggerName(); break;
+                case METHOD:       // Fall through
                 case CLASS_SHORT:  // Fall through
                 case CLASS_LONG:   source = record.getSourceClassName(); break;
                 default:           source = null; break;
             }
             if (source != null) {
                 switch (sourceFormat) {
+                    case METHOD:       // Fall through
                     case LOGGER_SHORT: // Fall through
                     case CLASS_SHORT: {
                         // Works even if there is no '.' since we get -1 as index.
                         source = source.substring(source.lastIndexOf('.') + 1);
                         break;
                     }
+                }
+                if (sourceFormat == METHOD) {
+                    source = source + '.' + record.getSourceMethodName();
                 }
                 if (colors && emphase) {
                     buffer.append(X364.BOLD.sequence());
@@ -690,9 +699,9 @@ loop:   for (int i=0; ; i++) {
              * amount of spaces in order to align message body on the column after the level name.
              */
             String bodyLineSeparator = writer.getLineSeparator();
-            final String lineSeparator = JDK7.lineSeparator();
-            if (bodyLineSeparator.length() != lineSeparator.length() + margin) {
-                bodyLineSeparator = lineSeparator + CharSequences.spaces(margin);
+            final String lineSeparator = System.lineSeparator();
+            if (bodyLineSeparator.length() != lineSeparator.length() + margin + 1) {
+                bodyLineSeparator = lineSeparator + levelColor + CharSequences.spaces(margin) + levelReset + ' ';
                 writer.setLineSeparator(bodyLineSeparator);
             }
             if (colors && !emphase) {
@@ -715,7 +724,7 @@ loop:   for (int i=0; ; i++) {
                 }
                 if (exception != null) {
                     if (message != null) {
-                        writer.append("\nCaused by: "); // LineAppender will replace '\n' by the system EOL.
+                        writer.append("\nCaused by: ");     // LineAppender will replace '\n' by the system EOL.
                     }
                     if (level.intValue() >= LEVEL_THRESHOLD.intValue()) {
                         exception.printStackTrace(printer);
@@ -751,7 +760,7 @@ loop:   for (int i=0; ; i++) {
      * </ul>
      *
      * @param  record The log record from which to get a localized message.
-     * @return The localized message.
+     * @return the localized message.
      */
     @Override
     public String formatMessage(final LogRecord record) {
@@ -765,7 +774,7 @@ loop:   for (int i=0; ; i++) {
         if (resources != null) {
             message = resources.getString(message);
         }
-        final Object parameters[] = record.getParameters();
+        final Object[] parameters = record.getParameters();
         if (parameters != null && parameters.length != 0) {
             int i = message.indexOf('{');
             if (i >= 0 && ++i < message.length()) {
@@ -795,11 +804,11 @@ loop:   for (int i=0; ; i++) {
      * Prints an abridged stack trace. This method is invoked when the record is logged at
      * at low logging level (typically less than {@link Level#INFO}).
      *
-     * @param exception         The exception to be logged.
-     * @param writer            Where to print the stack trace.
-     * @param loggerName        The name of the logger when the log will be sent.
-     * @param sourceClassName   The name of the class that emitted the log.
-     * @param sourceMethodName  The name of the method that emitted the log.
+     * @param exception         the exception to be logged.
+     * @param writer            where to print the stack trace.
+     * @param loggerName        the name of the logger when the log will be sent.
+     * @param sourceClassName   the name of the class that emitted the log.
+     * @param sourceMethodName  the name of the method that emitted the log.
      */
     private static void printAbridged(Throwable exception, final Appendable writer,
             final String loggerName, final String sourceClassName, final String sourceMethodName) throws IOException
@@ -884,7 +893,7 @@ loop:   for (int i=0; ; i++) {
             if (con) {
                 writer.append(" ...");
             }
-            writer.append('\n'); // LineAppender will replace '\n' by the system EOL.
+            writer.append('\n');                    // LineAppender will replace '\n' by the system EOL.
         }
     }
 
@@ -908,9 +917,9 @@ loop:   for (int i=0; ; i++) {
      * The current implementation does not check for duplicated {@code ConsoleHandler} instances,
      * and does not check if any child logger has a {@code ConsoleHandler}.</div>
      *
-     * @return The new or existing {@code MonolineFormatter}. The formatter output can be configured
+     * @return the new or existing {@code MonolineFormatter}. The formatter output can be configured
      *         using the {@link #setTimeFormat(String)} and {@link #setSourceFormat(String)} methods.
-     * @throws SecurityException If this method does not have the permission to install the formatter.
+     * @throws SecurityException if this method does not have the permission to install the formatter.
      */
     @Configuration
     public static MonolineFormatter install()  throws SecurityException {
@@ -950,11 +959,11 @@ loop:   for (int i=0; ; i++) {
      * This is mostly a convenience for temporary increase of logging verbosity for debugging purpose.
      * This functionality should not be used in production environment, since it overwrite user's level setting.
      *
-     * @param  logger The base logger to apply the change on.
-     * @param  level The desired level, or {@code null} if no level should be set.
-     * @return The new or existing {@code MonolineFormatter}. The formatter output can be configured
+     * @param  logger  the base logger to apply the change on.
+     * @param  level   the desired level, or {@code null} if no level should be set.
+     * @return the new or existing {@code MonolineFormatter}. The formatter output can be configured
      *         using the {@link #setTimeFormat(String)} and {@link #setSourceFormat(String)} methods.
-     * @throws SecurityException If this method does not have the permission to install the formatter.
+     * @throws SecurityException if this method does not have the permission to install the formatter.
      */
     @Debug
     @Configuration
@@ -1004,7 +1013,7 @@ loop:   for (int i=0; ; i++) {
             }
             final Handler handler = new ConsoleHandler();
             if (level != null) {
-                handler.setLevel(level); // Shall be before MonolineFormatter creation.
+                handler.setLevel(level);                    // Shall be before MonolineFormatter creation.
             }
             monoline = new MonolineFormatter(handler);
             handler.setFormatter(monoline);

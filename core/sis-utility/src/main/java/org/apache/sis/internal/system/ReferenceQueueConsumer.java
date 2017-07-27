@@ -46,8 +46,8 @@ import org.apache.sis.util.logging.Logging;
  * }
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.3
+ * @since   0.3
  * @module
  */
 public final class ReferenceQueueConsumer extends DaemonThread {
@@ -56,7 +56,7 @@ public final class ReferenceQueueConsumer extends DaemonThread {
      * {@link Reference} constructors as documented in the class javadoc. Those {@code Reference}
      * sub-classes <strong>must</strong> implement the {@link Disposable} interface.
      */
-    public static final ReferenceQueue<Object> QUEUE = new ReferenceQueue<Object>();
+    public static final ReferenceQueue<Object> QUEUE = new ReferenceQueue<>();
 
     /**
      * Creates the singleton instance of the {@code ReferenceQueueConsumer} thread.
@@ -65,9 +65,14 @@ public final class ReferenceQueueConsumer extends DaemonThread {
         synchronized (Threads.class) {
             final ReferenceQueueConsumer thread;
             Threads.lastCreatedDaemon = thread = new ReferenceQueueConsumer(Threads.lastCreatedDaemon);
-            // Call to Thread.start() must be outside the constructor
-            // (Reference: Goetz et al.: "Java Concurrency in Practice").
+            /*
+             * Call to Thread.start() must be outside the constructor
+             * (Reference: Goetz et al.: "Java Concurrency in Practice").
+             */
             thread.start();
+        }
+        if (Supervisor.ENABLED) {
+            Supervisor.register();
         }
     }
 
@@ -117,10 +122,12 @@ public final class ReferenceQueueConsumer extends DaemonThread {
                     continue;
                 }
             } catch (InterruptedException exception) {
-                // Probably the 'killAll' method has been invoked.
-                // We need to test 'isKillRequested()' below.
+                /*
+                 * Probably the 'killAll' method has been invoked.
+                 * We need to test 'isKillRequested()' below.
+                 */
             } catch (Throwable exception) {
-                Logging.unexpectedException(getClass(), "run", exception);
+                Logging.unexpectedException(Logging.getLogger(Loggers.SYSTEM), getClass(), "run", exception);
             }
             if (isKillRequested()) {
                 break;

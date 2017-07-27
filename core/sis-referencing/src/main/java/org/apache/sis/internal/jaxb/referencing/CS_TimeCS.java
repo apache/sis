@@ -28,8 +28,8 @@ import org.apache.sis.internal.jaxb.gco.PropertyType;
  *
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.4
  * @version 0.4
+ * @since   0.4
  * @module
  */
 public final class CS_TimeCS extends PropertyType<CS_TimeCS, TimeCS> {
@@ -62,8 +62,8 @@ public final class CS_TimeCS extends PropertyType<CS_TimeCS, TimeCS> {
      * Invoked by {@link PropertyType} at marshalling time for wrapping the given value
      * in a {@code <gml:TimeCS>} XML element.
      *
-     * @param  cs The element to marshall.
-     * @return A {@code PropertyType} wrapping the given the element.
+     * @param  cs  the element to marshall.
+     * @return a {@code PropertyType} wrapping the given the element.
      */
     @Override
     protected CS_TimeCS wrap(final TimeCS cs) {
@@ -75,7 +75,7 @@ public final class CS_TimeCS extends PropertyType<CS_TimeCS, TimeCS> {
      * inside the {@code <gml:TimeCS>} XML element.
      * This is the value or a copy of the value given in argument to the {@code wrap} method.
      *
-     * @return The element to be marshalled.
+     * @return the element to be marshalled.
      */
     @XmlElement(name = "TimeCS")
     public DefaultTimeCS getElement() {
@@ -85,7 +85,7 @@ public final class CS_TimeCS extends PropertyType<CS_TimeCS, TimeCS> {
     /**
      * Invoked by JAXB at unmarshalling time for storing the result temporarily.
      *
-     * @param cs The unmarshalled element.
+     * @param  cs  the unmarshalled element.
      */
     public void setElement(final DefaultTimeCS cs) {
         metadata = cs;

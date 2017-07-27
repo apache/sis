@@ -45,8 +45,8 @@ import static org.apache.sis.test.Assert.*;
  * then this {@code IndexedResourceBundleTest} class will need to be updated.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.4
+ * @since   0.3
  */
 @DependsOn(LoaderTest.class)
 public final strictfp class IndexedResourceBundleTest extends TestCase {
@@ -81,7 +81,7 @@ public final strictfp class IndexedResourceBundleTest extends TestCase {
     /**
      * Tests the {@link IndexedResourceBundle#list(Appendable)} method.
      *
-     * @throws IOException Should never happen.
+     * @throws IOException should never happen since this test writes only in memory.
      */
     @Test
     @DependsOnMethod("testGetResources")
@@ -118,7 +118,7 @@ public final strictfp class IndexedResourceBundleTest extends TestCase {
     }
 
     /**
-     * Tests the {@link IndexedResourceBundle#getString(int)} method on different locales.
+     * Tests the {@link IndexedResourceBundle#getString(short)} method on different locales.
      */
     @Test
     @DependsOnMethod("testGetResources")
@@ -146,7 +146,7 @@ public final strictfp class IndexedResourceBundleTest extends TestCase {
     }
 
     /**
-     * Tests the {@link IndexedResourceBundle#getString(int, Object)} method on different locales.
+     * Tests the {@link IndexedResourceBundle#getString(short, Object)} method on different locales.
      */
     @Test
     @DependsOnMethod("testGetString")
@@ -159,7 +159,7 @@ public final strictfp class IndexedResourceBundleTest extends TestCase {
     }
 
     /**
-     * Tests the {@link IndexedResourceBundle#getString(int, Object)} method with a {@code CodeList} argument.
+     * Tests the {@link IndexedResourceBundle#getString(short, Object)} method with a {@code CodeList} argument.
      * The intend is to test the code list localization.
      */
     @Test
@@ -192,7 +192,7 @@ public final strictfp class IndexedResourceBundleTest extends TestCase {
     }
 
     /**
-     * Tests the {@link IndexedResourceBundle#getLogRecord(Level, int, Object)} method.
+     * Tests the {@link IndexedResourceBundle#getLogRecord(Level, short, Object)} method.
      */
     @Test
     @DependsOnMethod("testGetResources")
@@ -210,7 +210,7 @@ public final strictfp class IndexedResourceBundleTest extends TestCase {
     /**
      * If a test failed, lists the resource bundle content to {@link #out}.
      *
-     * @throws IOException Should never happen.
+     * @throws IOException should never happen since this test writes only in memory.
      */
     @After
     public void dumpResourcesOnError() throws IOException {

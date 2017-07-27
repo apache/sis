@@ -25,16 +25,16 @@ import org.opengis.util.MemberName;
  * package documentation for more information about JAXB and interface.
  *
  * @author  Guilhem Legal (Geomatys)
- * @since   0.5
  * @version 0.5
+ * @since   0.5
  * @module
  */
 public final class GO_MemberName extends MetadataAdapter<MemberName, DefaultMemberName> {
     /**
      * Converts a GeoAPI interface to the SIS implementation for XML marshalling.
      *
-     * @param  value The bound type value, here the GeoAPI interface.
-     * @return The adapter for the given value, here the SIS implementation.
+     * @param  value  the bound type value, here the GeoAPI interface.
+     * @return the adapter for the given value, here the SIS implementation.
      */
     @Override
     public DefaultMemberName marshal(MemberName value) {

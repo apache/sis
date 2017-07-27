@@ -52,13 +52,13 @@ public final strictfp class DirectReferenceSystemTest extends XMLTestCase {
     /**
      * Creates the metadata object to be tested.
      *
-     * @param legacy {@code true} for using the legacy {@code ResponsibleParty} instead of {@code Responsibility}.
-     *        This is sometime needed for comparison purpose with unmarshalled metadata.
+     * @param  legacy  {@code true} for using the legacy {@code ResponsibleParty} instead of {@code Responsibility}.
+     *                 This is sometime needed for comparison purpose with unmarshalled metadata.
      */
     @SuppressWarnings("deprecation")
     private static DefaultMetadata createMetadata(final boolean legacy) {
         final DefaultMetadata metadata = new DefaultMetadata();
-        final DefaultCitation citation = new DefaultCitation("European Petroleum Survey Group");
+        final DefaultCitation citation = new DefaultCitation("EPSG Geodetic Parameter Dataset");
         Collection<ResponsibleParty> r = HardCodedCitations.EPSG.getCitedResponsibleParties();
         if (legacy) {
             r = Collections.<ResponsibleParty>singleton(new DefaultResponsibleParty(TestUtilities.getSingleton(r)));

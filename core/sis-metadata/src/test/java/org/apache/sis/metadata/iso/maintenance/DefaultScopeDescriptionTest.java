@@ -16,8 +16,10 @@
  */
 package org.apache.sis.metadata.iso.maintenance;
 
-import org.apache.sis.metadata.iso.LoggingWatcher;
+import org.apache.sis.internal.jaxb.Context;
+import org.apache.sis.test.LoggingWatcher;
 import org.apache.sis.test.TestCase;
+import org.junit.After;
 import org.junit.Rule;
 import org.junit.Test;
 
@@ -28,27 +30,25 @@ import static org.apache.sis.test.Assert.*;
  * Tests {@link DefaultScopeDescription}.
  *
  * @author  Martin Desruisseaux (Geomatys)
+ * @version 0.5
  * @since   0.3
- * @version 0.3
  * @module
  */
 public final strictfp class DefaultScopeDescriptionTest extends TestCase {
     /**
-     * A JUnit {@linkplain Rule rule} for listening to log events. This field is public
-     * because JUnit requires us to do so, but should be considered as an implementation
-     * details (it should have been a private field).
+     * A JUnit {@link Rule} for listening to log events. This field is public because JUnit requires us to
+     * do so, but should be considered as an implementation details (it should have been a private field).
      */
     @Rule
-    public final LoggingWatcher listener = new LoggingWatcher() {
-        /**
-         * Ensures that the logging message contains the name of the exclusive properties.
-         */
-        @Override
-        protected void verifyMessage(final String message) {
-            assertTrue(message.contains("dataset"));
-            assertTrue(message.contains("other"));
-        }
-    };
+    public final LoggingWatcher loggings = new LoggingWatcher(Context.LOGGER);
+
+    /**
+     * Verifies that no unexpected warning has been emitted in any test defined in this class.
+     */
+    @After
+    public void assertNoUnexpectedLog() {
+        loggings.assertNoUnexpectedLog();
+    }
 
     /**
      * Tests the various setter methods. Since they are exclusive properties,
@@ -59,13 +59,15 @@ public final strictfp class DefaultScopeDescriptionTest extends TestCase {
         final DefaultScopeDescription metadata = new DefaultScopeDescription();
         metadata.setDataset("A dataset");
         assertEquals("dataset", "A dataset", metadata.getDataset());
+        loggings.assertNoUnexpectedLog();
 
-        listener.maximumLogCount = 1;
         metadata.setOther("Other value");
         assertEquals("other", "Other value", metadata.getOther());
         assertNull("dataset", metadata.getDataset());
+        loggings.assertNextLogContains("dataset", "other");
+        loggings.assertNoUnexpectedLog();
 
-        metadata.setDataset(null); // Expected to be a no-op.
+        metadata.setDataset(null);                  // Expected to be a no-op.
         assertEquals("other", "Other value", metadata.getOther());
         assertNull("dataset", metadata.getDataset());
 

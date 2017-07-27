@@ -17,7 +17,7 @@
 package org.apache.sis.referencing.crs;
 
 import java.util.Map;
-import javax.measure.unit.Unit;
+import javax.measure.Unit;
 import javax.measure.quantity.Angle;
 import javax.measure.quantity.Length;
 import javax.xml.bind.annotation.XmlType;
@@ -29,32 +29,39 @@ import org.opengis.parameter.GeneralParameterDescriptor;
 import org.opengis.referencing.crs.ProjectedCRS;
 import org.opengis.referencing.crs.GeographicCRS;
 import org.opengis.referencing.cs.CartesianCS;
-import org.opengis.referencing.cs.CoordinateSystem; // For javadoc
+import org.opengis.referencing.cs.CoordinateSystem;                 // For javadoc
 import org.opengis.referencing.datum.Ellipsoid;
 import org.opengis.referencing.datum.GeodeticDatum;
 import org.opengis.referencing.operation.Conversion;
 import org.opengis.referencing.operation.Projection;
 import org.opengis.geometry.MismatchedDimensionException;
 import org.apache.sis.referencing.IdentifiedObjects;
+import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.referencing.operation.DefaultOperationMethod;
 import org.apache.sis.internal.referencing.ReferencingUtilities;
+import org.apache.sis.internal.metadata.AxisDirections;
+import org.apache.sis.internal.metadata.WKTKeywords;
 import org.apache.sis.internal.referencing.WKTUtilities;
 import org.apache.sis.internal.util.Constants;
+import org.apache.sis.internal.system.Loggers;
+import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.io.wkt.FormattableObject;
 import org.apache.sis.io.wkt.Formatter;
-import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.util.ComparisonMode;
+import org.apache.sis.util.logging.Logging;
 
 import static org.apache.sis.internal.referencing.WKTUtilities.toFormattable;
 
 
 /**
- * A 2D coordinate reference system used to approximate the shape of the earth on a planar surface.
- * It is done in such a way that the distortion that is inherent to the approximation is carefully
- * controlled and known. Distortion correction is commonly applied to calculated bearings and
- * distances to produce values that are a close match to actual field values.
+ * A 2-dimensional coordinate reference system used to approximate the shape of the earth on a planar surface.
+ * It is done in such a way that the distortion that is inherent to the approximation is carefully controlled and known.
+ * Distortion correction is commonly applied to calculated bearings and distances to produce values
+ * that are a close match to actual field values.
  *
- * <p><b>Used with coordinate system type:</b>
+ * <p><b>Used with datum type:</b>
+ *   {@linkplain org.apache.sis.referencing.datum.DefaultGeodeticDatum Geodetic}.<br>
+ * <b>Used with coordinate system type:</b>
  *   {@linkplain org.apache.sis.referencing.cs.DefaultCartesianCS Cartesian}.
  * </p>
  *
@@ -64,11 +71,14 @@ import static org.apache.sis.internal.referencing.WKTUtilities.toFormattable;
  * in the javadoc, this condition holds if all components were created using only SIS factories and static constants.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.6
  * @version 0.6
+ *
+ * @see org.apache.sis.referencing.factory.GeodeticAuthorityFactory#createProjectedCRS(String)
+ *
+ * @since 0.6
  * @module
  */
-@XmlType(name="ProjectedCRSType", propOrder = {
+@XmlType(name = "ProjectedCRSType", propOrder = {
     "baseCRS",
     "coordinateSystem"
 })
@@ -78,14 +88,6 @@ public class DefaultProjectedCRS extends AbstractDerivedCRS<Projection> implemen
      * Serial number for inter-operability with different versions.
      */
     private static final long serialVersionUID = -4502680112031773028L;
-
-    /**
-     * Constructs a new object in which every attributes are set to a default value.
-     * <strong>This is not a valid object.</strong> This constructor is strictly
-     * reserved to JAXB, which will assign values to the fields using reflexion.
-     */
-    private DefaultProjectedCRS() {
-    }
 
     /**
      * Creates a projected CRS from a defining conversion.
@@ -121,32 +123,39 @@ public class DefaultProjectedCRS extends AbstractDerivedCRS<Projection> implemen
      *     <td>{@link #getRemarks()}</td>
      *   </tr>
      *   <tr>
-     *     <td>{@value org.opengis.referencing.datum.Datum#DOMAIN_OF_VALIDITY_KEY}</td>
+     *     <td>{@value org.opengis.referencing.ReferenceSystem#DOMAIN_OF_VALIDITY_KEY}</td>
      *     <td>{@link org.opengis.metadata.extent.Extent}</td>
      *     <td>{@link #getDomainOfValidity()}</td>
      *   </tr>
      *   <tr>
-     *     <td>{@value org.opengis.referencing.datum.Datum#SCOPE_KEY}</td>
+     *     <td>{@value org.opengis.referencing.ReferenceSystem#SCOPE_KEY}</td>
      *     <td>{@link org.opengis.util.InternationalString} or {@link String}</td>
      *     <td>{@link #getScope()}</td>
      *   </tr>
      * </table>
      *
-     * @param  properties The properties to be given to the new derived CRS object.
-     * @param  baseCRS Coordinate reference system to base the derived CRS on.
-     * @param  conversionFromBase The conversion from the base CRS to this derived CRS.
-     * @param  derivedCS The coordinate system for the derived CRS. The number of axes
-     *         must match the target dimension of the {@code baseToDerived} transform.
-     * @throws MismatchedDimensionException if the source and target dimension of {@code baseToDerived}
-     *         do not match the dimension of {@code base} and {@code derivedCS} respectively.
+     * The supplied {@code conversion} argument shall <strong>not</strong> includes the operation steps
+     * for performing {@linkplain org.apache.sis.referencing.cs.CoordinateSystems#swapAndScaleAxes unit
+     * conversions and change of axis order} since those operations will be inferred by this constructor.
+     *
+     * @param  properties  the properties to be given to the new derived CRS object.
+     * @param  baseCRS     coordinate reference system to base the derived CRS on.
+     * @param  conversion  the defining conversion from a {@linkplain AxesConvention#NORMALIZED normalized}
+     *                     base to a normalized derived CRS.
+     * @param  derivedCS   the coordinate system for the derived CRS. The number of axes must match
+     *                     the target dimension of the {@code baseToDerived} transform.
+     * @throws MismatchedDimensionException if the source and target dimensions of {@code baseToDerived}
+     *         do not match the dimensions of {@code base} and {@code derivedCS} respectively.
+     *
+     * @see org.apache.sis.referencing.factory.GeodeticObjectFactory#createProjectedCRS(Map, GeographicCRS, Conversion, CartesianCS)
      */
     public DefaultProjectedCRS(final Map<String,?> properties,
                                final GeographicCRS baseCRS,
-                               final Conversion    conversionFromBase,
+                               final Conversion    conversion,
                                final CartesianCS   derivedCS)
             throws MismatchedDimensionException
     {
-        super(properties, Projection.class, baseCRS, conversionFromBase, derivedCS);
+        super(properties, baseCRS, conversion, derivedCS);
     }
 
     /**
@@ -156,12 +165,12 @@ public class DefaultProjectedCRS extends AbstractDerivedCRS<Projection> implemen
      *
      * <p>This constructor performs a shallow copy, i.e. the properties are not cloned.</p>
      *
-     * @param crs The coordinate reference system to copy.
+     * @param  crs  the coordinate reference system to copy.
      *
      * @see #castOrCopy(ProjectedCRS)
      */
     protected DefaultProjectedCRS(final ProjectedCRS crs) {
-        super(crs, Projection.class);
+        super(crs);
     }
 
     /**
@@ -170,13 +179,22 @@ public class DefaultProjectedCRS extends AbstractDerivedCRS<Projection> implemen
      * Otherwise if the given object is already a SIS implementation, then the given object is returned unchanged.
      * Otherwise a new SIS implementation is created and initialized to the attribute values of the given object.
      *
-     * @param  object The object to get as a SIS implementation, or {@code null} if none.
-     * @return A SIS implementation containing the values of the given object (may be the
+     * @param  object  the object to get as a SIS implementation, or {@code null} if none.
+     * @return a SIS implementation containing the values of the given object (may be the
      *         given object itself), or {@code null} if the argument was null.
      */
     public static DefaultProjectedCRS castOrCopy(final ProjectedCRS object) {
         return (object == null) || (object instanceof DefaultProjectedCRS)
                 ? (DefaultProjectedCRS) object : new DefaultProjectedCRS(object);
+    }
+
+    /**
+     * Returns the type of conversion associated to this {@code DefaultProjectedCRS}.
+     * Must be a hard-coded, constant value (not dependent on object state).
+     */
+    @Override
+    final Class<Projection> getConversionType() {
+        return Projection.class;
     }
 
     /**
@@ -198,7 +216,7 @@ public class DefaultProjectedCRS extends AbstractDerivedCRS<Projection> implemen
     /**
      * Returns the datum of the {@linkplain #getBaseCRS() base CRS}.
      *
-     * @return The datum of the base CRS.
+     * @return the datum of the base CRS.
      */
     @Override
     public GeodeticDatum getDatum() {
@@ -211,12 +229,13 @@ public class DefaultProjectedCRS extends AbstractDerivedCRS<Projection> implemen
      * the {@linkplain org.apache.sis.referencing.operation.DefaultConversion#getSourceCRS() source}
      * of the {@linkplain #getConversionFromBase() conversion from base}.
      *
-     * @return The base coordinate reference system, which must be geographic.
+     * @return the base coordinate reference system, which must be geographic.
      */
     @Override
-    @XmlElement(name = "baseGeodeticCRS", required = true)  // Note: older GML version used "baseGeographicCRS".
+    @XmlElement(name = "baseGeodeticCRS", required = true)        // Note: older GML version used "baseGeographicCRS".
     public GeographicCRS getBaseCRS() {
-        return (GeographicCRS) super.getConversionFromBase().getSourceCRS();
+        final Projection projection = super.getConversionFromBase();
+        return (projection != null) ? (GeographicCRS) projection.getSourceCRS() : null;
     }
 
     /**
@@ -233,7 +252,7 @@ public class DefaultProjectedCRS extends AbstractDerivedCRS<Projection> implemen
      * <div class="note"><b>Note:</b>
      * This is different than ISO 19111, which allows source and target CRS to be {@code null}.</div>
      *
-     * @return The map projection from base CRS to this CRS.
+     * @return the map projection from base CRS to this CRS.
      */
     @Override
     public Projection getConversionFromBase() {
@@ -244,30 +263,52 @@ public class DefaultProjectedCRS extends AbstractDerivedCRS<Projection> implemen
      * Returns the coordinate system.
      */
     @Override
-    @XmlElement(name="cartesianCS", required = true)
-    public CartesianCS getCoordinateSystem() {
+    @XmlElement(name = "cartesianCS", required = true)
+    public final CartesianCS getCoordinateSystem() {
+        /*
+         * See AbstractDerivedCRS.createConversionFromBase(…) for
+         * an explanation about why this method is declared final.
+         */
         return (CartesianCS) super.getCoordinateSystem();
     }
 
     /**
-     * Used by JAXB only (invoked by reflection).
+     * {@inheritDoc}
+     *
+     * @return {@inheritDoc}
      */
-    private void setCoordinateSystem(final CartesianCS cs) {
-        setCoordinateSystem("cartesianCS", cs);
+    @Override
+    public DefaultProjectedCRS forConvention(final AxesConvention convention) {
+        return (DefaultProjectedCRS) super.forConvention(convention);
+    }
+
+    /**
+     * Returns a coordinate reference system of the same type than this CRS but with different axes.
+     */
+    @Override
+    final AbstractCRS createSameType(final Map<String,?> properties, final CoordinateSystem cs) {
+        final Projection conversion = super.getConversionFromBase();
+        return new DefaultProjectedCRS(properties, (GeographicCRS) conversion.getSourceCRS(), conversion, (CartesianCS) cs);
     }
 
     /**
      * Compares this coordinate reference system with the specified object for equality.
+     * In addition to the metadata documented in the
+     * {@linkplain org.apache.sis.referencing.AbstractIdentifiedObject#equals(Object, ComparisonMode) parent class},
+     * this method considers coordinate system axes of the {@linkplain #getBaseCRS() base CRS} as metadata.
+     * This means that if the given {@code ComparisonMode} is {@code IGNORE_METADATA} or {@code APPROXIMATIVE},
+     * then axis order of the base geographic CRS are ignored
+     * (but <strong>not</strong> axis order of <strong>this</strong> projected CRS).
      *
-     * @param  object The object to compare to {@code this}.
-     * @param  mode {@link ComparisonMode#STRICT STRICT} for performing a strict comparison, or
-     *         {@link ComparisonMode#IGNORE_METADATA IGNORE_METADATA} for comparing only properties
-     *         relevant to coordinate transformations.
+     * @param  object  the object to compare to {@code this}.
+     * @param  mode    {@link ComparisonMode#STRICT STRICT} for performing a strict comparison, or
+     *                 {@link ComparisonMode#IGNORE_METADATA IGNORE_METADATA} for comparing only
+     *                 properties relevant to coordinate transformations.
      * @return {@code true} if both objects are equal.
      */
     @Override
     public boolean equals(final Object object, final ComparisonMode mode) {
-        return (object == this) || super.equals(object, mode);
+        return super.equals(object, mode);
     }
 
     /**
@@ -291,10 +332,10 @@ public class DefaultProjectedCRS extends AbstractDerivedCRS<Projection> implemen
      *     BaseGeodCRS[“NTF (Paris)”,
      *       Datum[“Nouvelle Triangulation Francaise”,
      *         Ellipsoid[“NTF”, 6378249.2, 293.4660212936269, LengthUnit[“metre”, 1]]],
-     *         PrimeMeridian[“Paris”, 2.5969213, AngleUnit[“grade”, 0.015707963267948967]]],
+     *         PrimeMeridian[“Paris”, 2.5969213, AngleUnit[“grad”, 0.015707963267948967]]],
      *     Conversion[“Lambert zone II”,
      *       Method[“Lambert Conic Conformal (1SP)”, Id[“EPSG”, 9801, Citation[“IOGP”]]],
-     *       Parameter[“Latitude of natural origin”, 52.0, AngleUnit[“grade”, 0.015707963267948967], Id[“EPSG”, 8801]],
+     *       Parameter[“Latitude of natural origin”, 52.0, AngleUnit[“grad”, 0.015707963267948967], Id[“EPSG”, 8801]],
      *       Parameter[“Longitude of natural origin”, 0.0, AngleUnit[“degree”, 0.017453292519943295], Id[“EPSG”, 8802]],
      *       Parameter[“Scale factor at natural origin”, 0.99987742, ScaleUnit[“unity”, 1], Id[“EPSG”, 8805]],
      *       Parameter[“False easting”, 600000.0, LengthUnit[“metre”, 1], Id[“EPSG”, 8806]],
@@ -331,15 +372,28 @@ public class DefaultProjectedCRS extends AbstractDerivedCRS<Projection> implemen
      * </div>
      *
      * @return {@code "ProjectedCRS"} (WKT 2) or {@code "ProjCS"} (WKT 1).
+     *
+     * @see <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html#57">WKT 2 specification §9</a>
      */
     @Override
     protected String formatTo(final Formatter formatter) {
+        if (super.getConversionFromBase() == null) {
+            /*
+             * Should never happen except temporarily at construction time, or if the user invoked the copy constructor
+             * with an invalid Conversion. Delegates to the super-class method for avoiding a NullPointerException.
+             * That method returns 'null', which will cause the WKT to be declared invalid.
+             */
+            return super.formatTo(formatter);
+        }
         WKTUtilities.appendName(this, formatter, null);
-        final Convention    convention = formatter.getConvention();
-        final boolean       isWKT1     = (convention.majorVersion() == 1);
-        final GeographicCRS baseCRS    = getBaseCRS();
-        final Unit<Angle>   unit       = ReferencingUtilities.getAngularUnit(baseCRS.getCoordinateSystem());
-        final Unit<Angle>   oldUnit    = formatter.addContextualUnit(unit);
+        final Convention    convention  = formatter.getConvention();
+        final boolean       isWKT1      = (convention.majorVersion() == 1);
+        final CartesianCS   cs          = getCoordinateSystem();
+        final GeographicCRS baseCRS     = getBaseCRS();
+        final Unit<?>       lengthUnit  = ReferencingUtilities.getUnit(cs);
+        final Unit<Angle>   angularUnit = AxisDirections.getAngularUnit(baseCRS.getCoordinateSystem(), null);
+        final Unit<Angle>   oldAngle    = formatter.addContextualUnit(angularUnit);
+        final Unit<?>       oldLength   = formatter.addContextualUnit(lengthUnit);
         /*
          * Format the enclosing base CRS. Note that WKT 1 formats a full GeographicCRS while WKT 2 formats only
          * the datum with the prime meridian (no coordinate system) and uses a different keyword ("BaseGeodCRS"
@@ -352,22 +406,23 @@ public class DefaultProjectedCRS extends AbstractDerivedCRS<Projection> implemen
         final Parameters p = new Parameters(this);
         final boolean isBaseCRS;
         if (isWKT1) {
-            p.append(formatter);    // Format outside of any "Conversion" element.
+            p.append(formatter);                        // Format outside of any "Conversion" element.
             isBaseCRS = false;
         } else {
-            formatter.append(p);    // Format inside a "Conversion" element.
+            formatter.append(p);                        // Format inside a "Conversion" element.
             isBaseCRS = isBaseCRS(formatter);
         }
         /*
          * In WKT 2 format, the coordinate system axes are written only if this projected CRS is not the base CRS
          * of another derived CRS.
          */
-        if (!isBaseCRS) {
-            formatCS(formatter, getCoordinateSystem(), isWKT1);
+        if (!isBaseCRS || convention == Convention.INTERNAL) {
+            formatCS(formatter, cs, lengthUnit, isWKT1);
         }
-        formatter.removeContextualUnit(unit);
-        formatter.addContextualUnit(oldUnit);
-        return isWKT1 ? "ProjCS" : isBaseCRS ? "BaseProjCRS" : "ProjectedCRS";
+        formatter.restoreContextualUnit(lengthUnit, oldLength);
+        formatter.restoreContextualUnit(angularUnit, oldAngle);
+        return isWKT1 ? WKTKeywords.ProjCS : isBaseCRS ? WKTKeywords.BaseProjCRS
+                : formatter.shortOrLong(WKTKeywords.ProjCRS, WKTKeywords.ProjectedCRS);
     }
 
     /**
@@ -391,7 +446,7 @@ public class DefaultProjectedCRS extends AbstractDerivedCRS<Projection> implemen
             WKTUtilities.appendName(conversion, formatter, null);
             formatter.newLine();
             append(formatter);
-            return "Conversion";
+            return WKTKeywords.Conversion;
         }
 
         /** Formats this {@code Conversion} element without the conversion name. */
@@ -411,7 +466,23 @@ public class DefaultProjectedCRS extends AbstractDerivedCRS<Projection> implemen
                      * the lengths are different from the ones declared in the datum.
                      */
                     if (param instanceof ParameterValue<?>) {
-                        final double value = ((ParameterValue<?>) param).doubleValue(axisUnit);
+                        final double value;
+                        try {
+                            value = ((ParameterValue<?>) param).doubleValue(axisUnit);
+                        } catch (IllegalStateException e) {
+                            /*
+                             * May happen if the 'conversionFromBase' parameter group does not provide values
+                             * for "semi_major" or "semi_minor" axis length. This should not happen with SIS
+                             * implementation, but may happen with user-defined map projection implementations.
+                             * Since the intend of this check was to skip those parameters anyway, it is okay
+                             * for the purpose of WKT formatting if there is no parameter for axis lengths.
+                             */
+                            Logging.recoverableException(Logging.getLogger(Loggers.WKT), DefaultProjectedCRS.class, "formatTo", e);
+                            continue;
+                        }
+                        if (Double.isNaN(value)) {
+                            continue;
+                        }
                         final double expected = (name == Constants.SEMI_MINOR)   // using '==' is okay here.
                                 ? ellipsoid.getSemiMinorAxis() : ellipsoid.getSemiMajorAxis();
                         if (value == expected) {
@@ -422,5 +493,45 @@ public class DefaultProjectedCRS extends AbstractDerivedCRS<Projection> implemen
                 WKTUtilities.append(param, formatter);
             }
         }
+    }
+
+
+
+
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+    ////////                                                                                  ////////
+    ////////                               XML support with JAXB                              ////////
+    ////////                                                                                  ////////
+    ////////        The following methods are invoked by JAXB using reflection (even if       ////////
+    ////////        they are private) or are helpers for other methods invoked by JAXB.       ////////
+    ////////        Those methods can be safely removed if Geographic Markup Language         ////////
+    ////////        (GML) support is not needed.                                              ////////
+    ////////                                                                                  ////////
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Constructs a new object in which every attributes are set to a default value.
+     * <strong>This is not a valid object.</strong> This constructor is strictly
+     * reserved to JAXB, which will assign values to the fields using reflexion.
+     */
+    private DefaultProjectedCRS() {
+    }
+
+    /**
+     * Used by JAXB only (invoked by reflection).
+     *
+     * @see #getBaseCRS()
+     */
+    private void setBaseCRS(final GeographicCRS crs) {
+        setBaseCRS("baseGeodeticCRS", crs);
+    }
+
+    /**
+     * Used by JAXB only (invoked by reflection).
+     *
+     * @see #getCoordinateSystem()
+     */
+    private void setCoordinateSystem(final CartesianCS cs) {
+        setCoordinateSystem("cartesianCS", cs);
     }
 }

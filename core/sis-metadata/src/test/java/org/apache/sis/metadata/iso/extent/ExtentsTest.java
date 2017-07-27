@@ -16,13 +16,20 @@
  */
 package org.apache.sis.metadata.iso.extent;
 
+import java.util.List;
 import java.util.Arrays;
-import javax.measure.unit.SI;
+import java.util.Collections;
+import javax.measure.Unit;
+import javax.measure.UnitConverter;
+import javax.measure.IncommensurableException;
+import org.opengis.geometry.DirectPosition;
 import org.opengis.metadata.extent.GeographicBoundingBox;
+import org.apache.sis.measure.Units;
 import org.apache.sis.measure.MeasurementRange;
 import org.apache.sis.test.mock.VerticalCRSMock;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
+import org.apache.sis.test.TestUtilities;
 import org.junit.Test;
 
 import static org.apache.sis.internal.metadata.ReferencingServices.NAUTICAL_MILE;
@@ -30,11 +37,14 @@ import static org.junit.Assert.*;
 
 
 /**
- * Tests {@link Extents}.
+ * Tests {@link Extents} static methods.
+ *
+ * <p><b>Note:</b> the {@link Extents#WORLD} constant is tested in another class,
+ * {@link DefaultExtentTest#testWorldConstant()}.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
+ * @version 0.8
  * @since   0.4
- * @version 0.4
  * @module
  */
 @DependsOn(DefaultGeographicBoundingBoxTest.class)
@@ -46,22 +56,41 @@ public final strictfp class ExtentsTest extends TestCase {
 
     /**
      * Tests {@link Extents#getVerticalRange(Extent)}.
+     *
+     * @throws IncommensurableException if a conversion between incompatible units were attempted.
      */
     @Test
-    public void testGetVerticalRange() {
-        final DefaultExtent extent = new DefaultExtent();
-        extent.setVerticalElements(Arrays.asList(
+    @SuppressWarnings("null")
+    public void testGetVerticalRange() throws IncommensurableException {
+        final List<DefaultVerticalExtent> extents = Arrays.asList(
                 new DefaultVerticalExtent( -200,  -100, VerticalCRSMock.HEIGHT),
                 new DefaultVerticalExtent(  150,   300, VerticalCRSMock.DEPTH),
                 new DefaultVerticalExtent(  0.1,   0.2, VerticalCRSMock.SIGMA_LEVEL),
-                new DefaultVerticalExtent( -600,  -300, VerticalCRSMock.HEIGHT_ft), // [91.44 182.88] metres
+                new DefaultVerticalExtent( -600,  -300, VerticalCRSMock.HEIGHT_ft), // [91.44 … 182.88] metres
                 new DefaultVerticalExtent(10130, 20260, VerticalCRSMock.BAROMETRIC_HEIGHT)
-        ));
+        );
+        Collections.shuffle(extents, TestUtilities.createRandomNumberGenerator());
+        /*
+         * Since we have shuffled the vertical extents in random order, the range that we will
+         * test may be either in metres or in feet depending on which vertical extent is first.
+         * So we need to check which linear unit is first.
+         */
+        Unit<?> unit = null;
+        for (final DefaultVerticalExtent e : extents) {
+            unit = e.getVerticalCRS().getCoordinateSystem().getAxis(0).getUnit();
+            if (Units.isLinear(unit)) break;
+        }
+        final UnitConverter c = unit.getConverterToAny(Units.METRE);
+        /*
+         * The actual test. Arbitrarily compare the heights in metres, converting them if needed.
+         */
+        final DefaultExtent extent = new DefaultExtent();
+        extent.setVerticalElements(extents);
         final MeasurementRange<Double> range = Extents.getVerticalRange(extent);
         assertNotNull("getVerticalRange", range);
-        assertEquals("unit", SI.METRE,  range.unit());
-        assertEquals("minimum", -300,   range.getMinDouble(), 0.001);
-        assertEquals("maximum", -91.44, range.getMaxDouble(), 0.001);
+        assertSame   ("unit",    unit,    range.unit());
+        assertEquals ("minimum", -300,    c.convert(range.getMinDouble()), 0.001);
+        assertEquals ("maximum", -91.44,  c.convert(range.getMaxDouble()), 0.001);
     }
 
     /**
@@ -99,6 +128,11 @@ public final strictfp class ExtentsTest extends TestCase {
         box.setNorthBoundLatitude(-90+MINUTE);
         assertEquals(499.5, Extents.area(box), 0.1);
         /*
+         * Spanning 360° of longitude.
+         */
+        box.setBounds(-180, +180, -90, 90);
+        assertEquals(5.1E+14, Extents.area(box), 1E+11);
+        /*
          * EPSG:1241    USA - CONUS including EEZ
          * This is only an anti-regression test - the value has not been validated.
          * However the expected area MUST be greater than the Alaska's one below,
@@ -106,7 +140,7 @@ public final strictfp class ExtentsTest extends TestCase {
          */
         box.setBounds(-129.16, -65.70, 23.82, 49.38);
         assertFalse(DefaultGeographicBoundingBoxTest.isSpanningAntiMeridian(box));
-        assertEquals(15967665, Extents.area(box) / 1E6, 1); // Compare in km²
+        assertEquals(15967665, Extents.area(box) / 1E6, 1);                             // Compare in km²
         /*
          * EPSG:2373    USA - Alaska including EEZ    (spanning the anti-meridian).
          * This is only an anti-regression test - the value has not been validated.
@@ -114,6 +148,28 @@ public final strictfp class ExtentsTest extends TestCase {
          */
         box.setBounds(167.65, -129.99, 47.88, 74.71);
         assertTrue(DefaultGeographicBoundingBoxTest.isSpanningAntiMeridian(box));
-        assertEquals(9845438, Extents.area(box) / 1E6, 1); // Compare in km²
+        assertEquals(9845438, Extents.area(box) / 1E6, 1);                              // Compare in km²
+    }
+
+    /**
+     * Tests the {@link Extents#centroid(GeographicBoundingBox)} method. This method is defined here but executed from
+     * the {@link org.apache.sis.internal.referencing.ServicesForMetadataTest} class in {@code sis-referencing} module.
+     * This method can not be executed in the {@code sis-metadata} module because it has a dependency to a referencing
+     * implementation class.
+     *
+     * @since 0.8
+     */
+    public static void testCentroid() {
+        final DefaultGeographicBoundingBox bbox = new DefaultGeographicBoundingBox(140, 160, 30, 50);
+        DirectPosition pos = Extents.centroid(bbox);
+        assertEquals("longitude", 150, pos.getOrdinate(0), STRICT);
+        assertEquals("latitude",   40, pos.getOrdinate(1), STRICT);
+        /*
+         * Test crossing anti-meridian.
+         */
+        bbox.setEastBoundLongitude(-160);
+        pos = Extents.centroid(bbox);
+        assertEquals("longitude", 170, pos.getOrdinate(0), STRICT);
+        assertEquals("latitude",   40, pos.getOrdinate(1), STRICT);
     }
 }

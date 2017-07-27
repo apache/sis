@@ -47,10 +47,11 @@ import org.apache.sis.internal.simple.SimpleCharacterIterator;
  * will still been seen as 3 separated fields by this implementation.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.3
+ * @since   0.3
  * @module
  */
+@SuppressWarnings("CloneableClassWithoutClone")     // Not needed - see comment about clone() at the end of this file.
 final class FormattedCharacterIterator extends SimpleCharacterIterator implements AttributedCharacterIterator {
     /**
      * For cross-version compatibility.
@@ -80,7 +81,7 @@ final class FormattedCharacterIterator extends SimpleCharacterIterator implement
      *   <li>{@link #limit} is 3.</li>
      * </ul>
      */
-    private static final class Entry {
+    private static final class Entry implements Serializable {
         /**
          * For cross-version compatibility.
          */
@@ -106,6 +107,7 @@ final class FormattedCharacterIterator extends SimpleCharacterIterator implement
          * Creates a new entry for the given value, together with the range of index where
          * the field value has been formatted. See class javadoc for more information.
          */
+        @SuppressWarnings("ThisEscapedInObjectConstruction")
         Entry(final Attribute field, final Object value, final int start, final int limit,
                 final Map<Attribute,Entry> attributes)
         {
@@ -144,18 +146,18 @@ final class FormattedCharacterIterator extends SimpleCharacterIterator implement
     /**
      * The value to be returned by {@code getRunStart(…)} and {@code getRunLimit(…)}
      * when the index value is {@code validity}. Those values are updated when needed
-     * by the {@link #update(Set)} method.
+     * by the {@link #update(Attribute, Collection)} method.
      */
     private transient int start, limit, validity;
 
     /**
      * Creates a new character iterator for the given character sequence.
      *
-     * @param text The formatted text. Can be a {@link StringBuilder} to be filled later.
+     * @param  text  the formatted text. Can be a {@link StringBuilder} to be filled later.
      */
     FormattedCharacterIterator(final CharSequence text) {
         super(text);
-        attributes = new IdentityHashMap<Attribute,Entry>(8);
+        attributes = new IdentityHashMap<>(8);
     }
 
     /**
@@ -164,20 +166,22 @@ final class FormattedCharacterIterator extends SimpleCharacterIterator implement
      * {@linkplain #text} length, exclusive.
      */
     final void addFieldLimit(final Attribute field, final Object value, final int start) {
-        // The Entry constructor adds itself to the attributes map.
-        // The returned intance is used only for assertions checks.
+        /*
+         * The Entry constructor adds itself to the attributes map.
+         * The returned intance is used only for assertions checks.
+         */
         Entry e = new Entry(field, value, start, upper = text.length(), attributes);
-        assert ((e = e.previous) == null) || (start >= e.limit); // Check for non-overlapping fields.
+        assert ((e = e.previous) == null) || (start >= e.limit);        // Check for non-overlapping fields.
     }
 
     /**
      * Appends all characters and attributes from the given iterator.
      *
-     * @param toAppendTo Shall be the same instance than {@link #text}.
+     * @param  toAppendTo  shall be the same instance than {@link #text}.
      */
     final void append(final AttributedCharacterIterator it, final StringBuffer toAppendTo) {
         final int offset = toAppendTo.length();
-        int currentRunLimit = 0; // Next index where to check for attributes.
+        int currentRunLimit = 0;                                        // Next index where to check for attributes.
         for (char c=it.first(); c!=DONE; c=it.next()) {
             toAppendTo.append(c);
             if (it.getIndex() == currentRunLimit) {
@@ -185,9 +189,9 @@ final class FormattedCharacterIterator extends SimpleCharacterIterator implement
                 for (final Map.Entry<Attribute,Object> entry : it.getAttributes().entrySet()) {
                     final Attribute attribute = entry.getKey();
                     if (it.getRunLimit(attribute) == currentRunLimit) {
-                        new Entry(attribute, entry.getValue(), // Constructeur adds itself to the map.
-                                offset + it.getRunStart(attribute),
-                                offset + currentRunLimit, attributes);
+                        final Entry e = new Entry(attribute, entry.getValue(),  // Constructeur adds itself to the map.
+                                                  offset + it.getRunStart(attribute),
+                                                  offset + currentRunLimit, attributes);
                     }
                 }
             }
@@ -199,9 +203,9 @@ final class FormattedCharacterIterator extends SimpleCharacterIterator implement
      * Ensures that the {@link #start}, {@link #limit} and {@link #attributes} fields
      * are valid for the current index position and the given attribute.
      *
-     * @param attribute The attribute which shall have the same value in the run range.
-     * @param entries   The entries on which to iterate for computing the run range.
-     *                  Mandatory if {@code attribute} is {@code null}.
+     * @param  attribute  the attribute which shall have the same value in the run range.
+     * @param  entries    the entries on which to iterate for computing the run range.
+     *                    Mandatory if {@code attribute} is {@code null}.
      */
     private void update(final Attribute attribute, Collection<Entry> entries) {
         final int index = getIndex();
@@ -314,7 +318,7 @@ final class FormattedCharacterIterator extends SimpleCharacterIterator implement
      * {@code getRunStart(Set)} and {@code getRunLimit(Set)} methods.
      */
     private Collection<Entry> entries(final Set<? extends Attribute> requested) {
-        final Collection<Entry> entries = new ArrayList<Entry>(requested.size());
+        final Collection<Entry> entries = new ArrayList<>(requested.size());
         for (final Attribute r : requested) {
             final Entry e = attributes.get(r);
             if (e != null) {
@@ -405,7 +409,7 @@ final class FormattedCharacterIterator extends SimpleCharacterIterator implement
     @Override
     public Object getAttribute(final Attribute attribute) {
         final int index = getIndex();
-        for (Entry e=attributes.get(attribute); e!=null; e=e.previous) {
+        for (Entry e = attributes.get(attribute); e != null; e = e.previous) {
             if (index >= e.start && index < e.limit) {
                 return e.value;
             }
@@ -417,6 +421,7 @@ final class FormattedCharacterIterator extends SimpleCharacterIterator implement
      * Returns the keys of all attributes defined in the iterator text range.
      */
     @Override
+    @SuppressWarnings("ReturnOfCollectionOrArrayField")     // Safe because immutable.
     public Set<Attribute> getAllAttributeKeys() {
         if (attributeKeys == null) {
             attributeKeys = Collections.unmodifiableSet(attributes.keySet());

@@ -17,22 +17,22 @@
 package org.apache.sis.parameter;
 
 import java.util.Map;
-import javax.measure.unit.Unit;
-import org.opengis.util.InternationalString;
+import javax.xml.bind.annotation.XmlType;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlSeeAlso;
+import javax.xml.bind.annotation.XmlSchemaType;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.parameter.GeneralParameterDescriptor;
 import org.apache.sis.referencing.AbstractIdentifiedObject;
+import org.apache.sis.internal.metadata.WKTKeywords;
 import org.apache.sis.io.wkt.FormattableObject;
 import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.Debug;
 
-// Branch-dependent imports
-import org.opengis.referencing.ReferenceIdentifier;
-import org.apache.sis.metadata.iso.DefaultIdentifier;
-import org.apache.sis.metadata.iso.ImmutableIdentifier;
+import static org.apache.sis.internal.jaxb.referencing.CC_GeneralOperationParameter.DEFAULT_OCCURRENCE;
 
 
 /**
@@ -66,7 +66,7 @@ import org.apache.sis.metadata.iso.ImmutableIdentifier;
  *     <td class="sep">Also known as “definition”.</td>
  *   </tr>
  *   <tr>
- *     <td>{@link #getDirection()}</td>
+ *     <td>{@code getDirection()}</td>
  *     <td class="sep"></td>
  *     <td class="sep"></td>
  *     <td class="sep">{@code direction}</td>
@@ -89,10 +89,18 @@ import org.apache.sis.metadata.iso.ImmutableIdentifier;
  * </table>
  *
  * @author  Martin Desruisseaux (Geomatys)
+ * @version 0.6
  * @since   0.5
- * @version 0.5
  * @module
  */
+@XmlType(name = "AbstractGeneralOperationParameterType", propOrder = {
+    "nonDefaultMinimumOccurs",
+    "nonDefaultMaximumOccurs"
+})
+@XmlSeeAlso({
+    DefaultParameterDescriptor.class,
+    DefaultParameterDescriptorGroup.class
+})
 public abstract class AbstractParameterDescriptor extends AbstractIdentifiedObject implements GeneralParameterDescriptor {
     /**
      * Serial number for inter-operability with different versions.
@@ -103,8 +111,11 @@ public abstract class AbstractParameterDescriptor extends AbstractIdentifiedObje
      * The minimum number of times that values for this parameter group are required, as an unsigned short.
      * We use a short because this value is usually either 0 or 1, or a very small number like 2 or 3.
      * A large number would be a bad idea with this parameter implementation.
+     *
+     * <p><b>Consider this field as final!</b>
+     * This field is modified only at unmarshalling time by {@link #setNonDefaultMinimumOccurs(Integer)}</p>
      */
-    private final short minimumOccurs;
+    private short minimumOccurs;
 
     /**
      * The maximum number of times that values for this parameter group are required, as an unsigned short.
@@ -112,8 +123,11 @@ public abstract class AbstractParameterDescriptor extends AbstractIdentifiedObje
      *
      * <p>We use a short because this value is usually 1 or a very small number like 2 or 3. This also serve
      * as a safety since a large number would be a bad idea with this parameter implementation.</p>
+     *
+     * <p><b>Consider this field as final!</b>
+     * This field is modified only at unmarshalling time by {@link #setNonDefaultMaximumOccurs(Integer)}</p>
      */
-    private final short maximumOccurs;
+    private short maximumOccurs;
 
     /**
      * Constructs a parameter descriptor from a set of properties. The properties map is given unchanged to the
@@ -149,11 +163,11 @@ public abstract class AbstractParameterDescriptor extends AbstractIdentifiedObje
      *   </tr>
      * </table>
      *
-     * @param properties    The properties to be given to the identified object.
-     * @param minimumOccurs The {@linkplain #getMinimumOccurs() minimum number of times} that values
-     *                      for this parameter group are required, or 0 if no restriction.
-     * @param maximumOccurs The {@linkplain #getMaximumOccurs() maximum number of times} that values
-     *                      for this parameter group are required, or {@link Integer#MAX_VALUE} if no restriction.
+     * @param properties     the properties to be given to the identified object.
+     * @param minimumOccurs  the {@linkplain #getMinimumOccurs() minimum number of times} that values
+     *                       for this parameter group are required, or 0 if no restriction.
+     * @param maximumOccurs  the {@linkplain #getMaximumOccurs() maximum number of times} that values
+     *                       for this parameter group are required, or {@link Integer#MAX_VALUE} if no restriction.
      */
     protected AbstractParameterDescriptor(final Map<String,?> properties,
             final int minimumOccurs, final int maximumOccurs)
@@ -167,7 +181,7 @@ public abstract class AbstractParameterDescriptor extends AbstractIdentifiedObje
         }
         if (maximumOccurs > 0xFFFE && maximumOccurs != Integer.MAX_VALUE) {
             throw new IllegalArgumentException(Errors.getResources(properties).getString(
-                    Errors.Keys.TooManyOccurrences_2, 0xFFFE, super.getName()));
+                    Errors.Keys.TooManyOccurrences_2, 0xFFFE, super.getName().getCode()));
         }
     }
 
@@ -178,13 +192,17 @@ public abstract class AbstractParameterDescriptor extends AbstractIdentifiedObje
      *
      * <p>This constructor performs a shallow copy, i.e. the properties are not cloned.</p>
      *
-     * @param descriptor The object to shallow copy.
+     * @param  descriptor  the object to shallow copy.
      */
     protected AbstractParameterDescriptor(final GeneralParameterDescriptor descriptor) {
         super(descriptor);
         minimumOccurs = crop(descriptor.getMinimumOccurs());
         maximumOccurs = crop(descriptor.getMaximumOccurs());
     }
+
+    // NOTE: There is no 'castOrCopy' static method in this class because AbstractParameterDescriptor is abstract.
+    // If nevertheless we choose to add such method in the future, then CC_GeneralOperationParameter.getElement()
+    // should be simplified.
 
     /**
      * Crops the given integer in the [0 … 0xFFFF] range.
@@ -198,7 +216,7 @@ public abstract class AbstractParameterDescriptor extends AbstractIdentifiedObje
      * The default implementation returns {@code GeneralParameterDescriptor.class}.
      * Subclasses implementing a more specific GeoAPI interface shall override this method.
      *
-     * @return The parameter descriptor interface implemented by this class.
+     * @return the parameter descriptor interface implemented by this class.
      */
     @Override
     public Class<? extends GeneralParameterDescriptor> getInterface() {
@@ -206,28 +224,10 @@ public abstract class AbstractParameterDescriptor extends AbstractIdentifiedObje
     }
 
     /**
-     * Returns a narrative explanation of the role of the parameter. The default implementation returns
-     * the {@linkplain org.apache.sis.metadata.iso.ImmutableIdentifier#getDescription() description}
-     * provided by the parameter {@linkplain #getName() name}.
-     *
-     * @return A narrative explanation of the role of the parameter, or {@code null} if none.
-     */
-    public InternationalString getDescription() {
-        final ReferenceIdentifier name = getName();
-        if (name instanceof ImmutableIdentifier) {
-            return ((ImmutableIdentifier) name).getDescription();
-        }
-        if (name instanceof DefaultIdentifier) {
-            return ((DefaultIdentifier) name).getDescription();
-        }
-        return null;
-    }
-
-    /**
      * The minimum number of times that values for this parameter group or parameter are required.
      * A value of 0 means an optional parameter.
      *
-     * @return The minimum occurrence.
+     * @return the minimum occurrence.
      */
     @Override
     public int getMinimumOccurs() {
@@ -238,7 +238,7 @@ public abstract class AbstractParameterDescriptor extends AbstractIdentifiedObje
      * The maximum number of times that values for this parameter group or parameter can be included.
      * A value greater than 1 means a repeatable parameter.
      *
-     * @return The maximum occurrence.
+     * @return the maximum occurrence.
      */
     @Override
     public int getMaximumOccurs() {
@@ -308,11 +308,10 @@ public abstract class AbstractParameterDescriptor extends AbstractIdentifiedObje
      * {@linkplain DefaultParameterDescriptor#formatTo(Formatter) descriptors}.
      * The text formatted by this method is {@linkplain Formatter#setInvalidWKT flagged as invalid WKT}.
      *
-     * @param  formatter The formatter where to format the inner content of this WKT element.
+     * @param  formatter  the formatter where to format the inner content of this WKT element.
      * @return {@code "Parameter"} or {@code "ParameterGroup"}.
      */
     @Override
-    @SuppressWarnings({"unchecked","rawtypes"})
     protected String formatTo(final Formatter formatter) {
         super.formatTo(formatter);
         formatter.setInvalidWKT(this, null);
@@ -320,7 +319,7 @@ public abstract class AbstractParameterDescriptor extends AbstractIdentifiedObje
             for (GeneralParameterDescriptor parameter : ((ParameterDescriptorGroup) this).descriptors()) {
                 if (!(parameter instanceof FormattableObject)) {
                     if (parameter instanceof ParameterDescriptor<?>) {
-                        parameter = new DefaultParameterDescriptor((ParameterDescriptor<?>) parameter);
+                        parameter = new DefaultParameterDescriptor<>((ParameterDescriptor<?>) parameter);
                     } else if (parameter instanceof ParameterDescriptorGroup) {
                         parameter = new DefaultParameterDescriptorGroup((ParameterDescriptorGroup) parameter);
                     } else {
@@ -330,19 +329,81 @@ public abstract class AbstractParameterDescriptor extends AbstractIdentifiedObje
                 formatter.newLine();
                 formatter.append((FormattableObject) parameter);
             }
-            return "ParameterGroup";
+            return WKTKeywords.ParameterGroup;
         } else if (this instanceof ParameterDescriptor<?>) {
             final Object defaultValue = ((ParameterDescriptor<?>) this).getDefaultValue();
             if (defaultValue != null) {
                 formatter.appendAny(defaultValue);
             }
-            final Unit<?> unit = ((ParameterDescriptor<?>) this).getUnit();
-            if (unit != null) {
-                if (!formatter.getConvention().isSimplified() || !unit.equals(formatter.toContextualUnit(unit))) {
-                    formatter.append(unit);
-                }
-            }
+            formatter.append(((ParameterDescriptor<?>) this).getUnit());
         }
-        return "Parameter";
+        return WKTKeywords.Parameter;
+    }
+
+
+
+
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+    ////////                                                                                  ////////
+    ////////                               XML support with JAXB                              ////////
+    ////////                                                                                  ////////
+    ////////        The following methods are invoked by JAXB using reflection (even if       ////////
+    ////////        they are private) or are helpers for other methods invoked by JAXB.       ////////
+    ////////        Those methods can be safely removed if Geographic Markup Language         ////////
+    ////////        (GML) support is not needed.                                              ////////
+    ////////                                                                                  ////////
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Constructs a new object in which every attributes are set to a null value.
+     * <strong>This is not a valid object.</strong> This constructor is strictly
+     * reserved to JAXB, which will assign values to the fields using reflexion.
+     */
+    AbstractParameterDescriptor() {
+        super(org.apache.sis.internal.referencing.NilReferencingObject.INSTANCE);
+        minimumOccurs = DEFAULT_OCCURRENCE;  // Default value if XML element is omitted.
+        maximumOccurs = DEFAULT_OCCURRENCE;
+    }
+
+    /**
+     * Invoked by JAXB for marshalling the {@link #minimumOccurs} value. Omit marshalling of this
+     * {@code gml:minimumOccurs} element if its value is equals to the default value, which is 1.
+     */
+    @XmlElement(name = "minimumOccurs")
+    @XmlSchemaType(name = "nonNegativeInteger")
+    private Integer getNonDefaultMinimumOccurs() {
+        final int n = getMinimumOccurs();
+        return (n != DEFAULT_OCCURRENCE) ? n : null;
+    }
+
+    /**
+     * Invoked by JAXB for marshalling the {@link #maximumOccurs} value. Omit marshalling of this
+     * {@code gml:maximumOccurs} element if its value is equals to the default value, which is 1.
+     *
+     * <p>This property should not be marshalled in {@link DefaultParameterDescriptor} objects (the GML schema
+     * does not allow that). It should be marshalled only for {@link DefaultParameterDescriptorGroup} objects.
+     * Since SIS marshals {@code minimumOccurs} and {@code maximumOccurs} properties only when their value is
+     * different than 1, and since {@code ParameterDescriptor} should not have a {@code maximumOccurs} value
+     * different than 1 when ISO 19111 compliance is desired, the GML document should be valid in most cases.</p>
+     */
+    @XmlElement(name = "maximumOccurs")
+    @XmlSchemaType(name = "nonNegativeInteger")
+    private Integer getNonDefaultMaximumOccurs() {
+        final int n = getMaximumOccurs();
+        return (n != DEFAULT_OCCURRENCE) ? n : null;
+    }
+
+    /**
+     * Invoked by JAXB for unmarshalling the {@link #minimumOccurs} value.
+     */
+    private void setNonDefaultMinimumOccurs(final Integer n) {
+        minimumOccurs = (n != null) ? crop(n) : DEFAULT_OCCURRENCE;
+    }
+
+    /**
+     * Invoked by JAXB for unmarshalling the {@link #maximumOccurs} value.
+     */
+    private void setNonDefaultMaximumOccurs(final Integer n) {
+        maximumOccurs = (n != null) ? crop(n) : DEFAULT_OCCURRENCE;
     }
 }

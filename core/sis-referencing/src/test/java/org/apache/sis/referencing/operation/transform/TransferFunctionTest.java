@@ -31,17 +31,12 @@ import static org.apache.sis.test.Assert.*;
  * Tests {@link TransferFunction}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.5
  * @version 0.5
+ * @since   0.5
  * @module
  */
 @DependsOn(ExponentialTransform1DTest.class)
-public final class TransferFunctionTest extends TestCase {
-    /**
-     * For floating point comparisons.
-     */
-    private static final double STRICT = 0;
-
+public final strictfp class TransferFunctionTest extends TestCase {
     /**
      * Tests the creation of a linear transfer function.
      */

@@ -26,15 +26,15 @@ import com.sun.tools.doclets.Taglet;
  * The <code>@module</code> tag. This tag expects no argument.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.3
  * @version 0.4
+ * @since   0.3
  * @module
  */
 public final class Module implements Taglet {
     /**
      * Register this taglet.
      *
-     * @param tagletMap the map to register this tag to.
+     * @param  tagletMap  the map to register this tag to.
      */
     public static void register(final Map<String,Taglet> tagletMap) {
        final Module tag = new Module();
@@ -56,7 +56,7 @@ public final class Module implements Taglet {
     /**
      * Returns the name of this custom tag.
      *
-     * @return The tag name.
+     * @return the tag name.
      */
     @Override
     public String getName() {
@@ -66,7 +66,7 @@ public final class Module implements Taglet {
     /**
      * Returns {@code false} since <code>@module</code> can not be used in overview.
      *
-     * @return Always {@code false}.
+     * @return always {@code false}.
      */
     @Override
     public boolean inOverview() {
@@ -76,7 +76,7 @@ public final class Module implements Taglet {
     /**
      * Returns {@code true} since <code>@module</code> can be used in package documentation.
      *
-     * @return Always {@code true}.
+     * @return always {@code true}.
      */
     @Override
     public boolean inPackage() {
@@ -87,7 +87,7 @@ public final class Module implements Taglet {
      * Returns {@code true} since <code>@module</code> can be used in type documentation
      * (classes or interfaces). This is actually its main target.
      *
-     * @return Always {@code true}.
+     * @return always {@code true}.
      */
     @Override
     public boolean inType() {
@@ -97,7 +97,7 @@ public final class Module implements Taglet {
     /**
      * Returns {@code false} since <code>@module</code> can not be used in constructor.
      *
-     * @return Always {@code false}.
+     * @return always {@code false}.
      */
     @Override
     public boolean inConstructor() {
@@ -107,7 +107,7 @@ public final class Module implements Taglet {
     /**
      * Returns {@code false} since <code>@module</code> can not be used in method documentation.
      *
-     * @return Always {@code false}.
+     * @return always {@code false}.
      */
     @Override
     public boolean inMethod() {
@@ -117,7 +117,7 @@ public final class Module implements Taglet {
     /**
      * Returns {@code false} since <code>@module</code> can not be used in field documentation.
      *
-     * @return Always {@code false}.
+     * @return always {@code false}.
      */
     @Override
     public boolean inField() {
@@ -127,7 +127,7 @@ public final class Module implements Taglet {
     /**
      * Returns {@code false} since <code>@module</code> is not an inline tag.
      *
-     * @return Always {@code false}.
+     * @return always {@code false}.
      */
     @Override
     public boolean isInlineTag() {
@@ -138,8 +138,8 @@ public final class Module implements Taglet {
      * Given the <code>Tag</code> representation of this custom tag, return its string representation.
      * The default implementation invokes the array variant of this method.
      *
-     * @param tag The tag to format.
-     * @return A string representation of the given tag.
+     * @param  tag  the tag to format.
+     * @return a string representation of the given tag.
      */
     @Override
     public String toString(final Tag tag) {
@@ -150,8 +150,8 @@ public final class Module implements Taglet {
      * Given an array of {@code Tag}s representing this custom tag, return its string
      * representation.
      *
-     * @param tags The tags to format.
-     * @return A string representation of the given tags.
+     * @param  tags  the tags to format.
+     * @return a string representation of the given tags.
      */
     @Override
     public String toString(final Tag[] tags) {

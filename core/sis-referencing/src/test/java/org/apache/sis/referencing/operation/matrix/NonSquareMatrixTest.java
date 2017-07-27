@@ -20,9 +20,10 @@ import java.util.Random;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestUtilities;
 import org.junit.AfterClass;
+import org.junit.Test;
 
 import static java.lang.Double.NaN;
-import static org.junit.Assert.*;
+import static org.apache.sis.test.Assert.*;
 
 
 /**
@@ -36,25 +37,25 @@ import static org.junit.Assert.*;
  * is that reported statistics will be incomplete.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
+ * @version 0.7
  * @since   0.4
- * @version 0.4
  * @module
  */
 @DependsOn(SolverTest.class)
 public final strictfp class NonSquareMatrixTest extends MatrixTestCase {
     /**
-     * Number of rows and columns, initialized by {@link #initialize(String, boolean)}.
+     * Number of rows and columns, initialized by {@link #prepareNewMatrixSize(Random)}.
      */
     private int numRow, numCol;
 
     /**
      * Computes a random size for the next matrix to create.
      *
-     * @param random The random number generator to use.
+     * @param  random  the random number generator to use.
      */
     @Override
     void prepareNewMatrixSize(final Random random) {
-        numRow = 5 + random.nextInt(8); // Matrix sizes from 5 to 12 inclusive.
+        numRow = 5 + random.nextInt(8);                 // Matrix sizes from 5 to 12 inclusive.
         int n;
         do n = 5 + random.nextInt(8);
         while (n == numRow);
@@ -76,8 +77,9 @@ public final strictfp class NonSquareMatrixTest extends MatrixTestCase {
     /**
      * Tests {@link NonSquareMatrix#inverse()} with a non-square matrix.
      *
-     * @throws NoninvertibleMatrixException Should never happen.
+     * @throws NoninvertibleMatrixException if the matrix can not be inverted.
      */
+    @Test
     @Override
     public void testInverse() throws NoninvertibleMatrixException {
         testDimensionReduction(null, 1, 0);
@@ -85,10 +87,51 @@ public final strictfp class NonSquareMatrixTest extends MatrixTestCase {
     }
 
     /**
+     * Tests inversion of a matrix with a column containing only a translation term.
+     * The purpose is to test the algorithm that selects the rows to omit.
+     *
+     * @throws NoninvertibleMatrixException if the matrix can not be inverted.
+     */
+    @Test
+    public void testInverseWithTranslationTerm() throws NoninvertibleMatrixException {
+        final NonSquareMatrix m = new NonSquareMatrix(5, 3, new double[] {
+            2, 0, 0,
+            0, 0, 0,
+            0, 4, 0,
+            0, 0, 3,
+            0, 0, 1
+        });
+        MatrixSIS inverse = m.inverse();
+        assertMatrixEquals("Inverse of non-square matrix.", new NonSquareMatrix(3, 5, new double[] {
+            0.5, 0,   0,    0,   0,
+            0,   0,   0.25, 0,   0,
+            0,   0,   0,    0,   1}), inverse, STRICT);
+
+        assertMatrixEquals("Back to original.", new NonSquareMatrix(5, 3, new double[] {
+            2, 0, 0,
+            0, 0, NaN,
+            0, 4, 0,
+            0, 0, NaN,
+            0, 0, 1}), inverse.inverse(), STRICT);
+        /*
+         * Change the [0 0 3] row into [1 0 3]. The NonSquareMarix class should no longer omit that row.
+         * As a consequence, the matrix can not be inverted anymore.
+         */
+        m.setElement(3, 0, 1);
+        try {
+            m.inverse();
+            fail("Matrix should not be invertible.");
+        } catch (NoninvertibleMatrixException e) {
+            assertNotNull(e.getMessage());
+        }
+    }
+
+    /**
      * Tests {@link NonSquareMatrix#solve(Matrix)} with a non-square matrix.
      *
-     * @throws NoninvertibleMatrixException Should never happen.
+     * @throws NoninvertibleMatrixException if the matrix can not be inverted.
      */
+    @Test
     @Override
     public void testSolve() throws NoninvertibleMatrixException {
         testDimensionReduction(new Matrix3(
@@ -107,10 +150,10 @@ public final strictfp class NonSquareMatrixTest extends MatrixTestCase {
      * Tests {@link NonSquareMatrix#inverse()} or {@link NonSquareMatrix#solve(Matrix)} with a conversion
      * matrix having more source dimensions (columns) than target dimensions (rows).
      *
-     * @param  Y    The matrix to give to {@code solve(Y)}, {@code null} for testing {@code inverse()}.
-     * @param  sf   The scale factor by which to multiply all expected scale elements.
-     * @param  uks  Value of unknown scales (O for {@code inverse()}, or NaN for {@code solve(Y)}).
-     * @throws NoninvertibleMatrixException Should never happen.
+     * @param  Y    the matrix to give to {@code solve(Y)}, {@code null} for testing {@code inverse()}.
+     * @param  sf   the scale factor by which to multiply all expected scale elements.
+     * @param  uks  value of unknown scales (O for {@code inverse()}, or NaN for {@code solve(Y)}).
+     * @throws NoninvertibleMatrixException if the matrix can not be inverted.
      */
     private static void testDimensionReduction(final MatrixSIS Y, final double sf, final double uks)
             throws NoninvertibleMatrixException
@@ -135,9 +178,9 @@ public final strictfp class NonSquareMatrixTest extends MatrixTestCase {
      * Tests {@link NonSquareMatrix#inverse()} or {@link NonSquareMatrix#solve(Matrix)} with a conversion
      * matrix having more target dimensions (rows) than source dimensions (columns).
      *
-     * @param  Y    The matrix to give to {@code solve(Y)}, {@code null} for testing {@code inverse()}.
-     * @param  sf   The scale factor by which to multiply all expected scale elements.
-     * @throws NoninvertibleMatrixException Should never happen.
+     * @param  Y   the matrix to give to {@code solve(Y)}, {@code null} for testing {@code inverse()}.
+     * @param  sf  the scale factor by which to multiply all expected scale elements.
+     * @throws NoninvertibleMatrixException if the matrix can not be inverted.
      */
     private static void testDimensionIncrease(final MatrixSIS Y, final double sf)
             throws NoninvertibleMatrixException
@@ -160,7 +203,7 @@ public final strictfp class NonSquareMatrixTest extends MatrixTestCase {
 
     /**
      * Prints the statistics about the differences between JAMA and SIS matrix elements.
-     * Those statistics will be visible only if {@link #verbose} is {@code true}.
+     * Those statistics will be visible only if {@link #VERBOSE} is {@code true}.
      */
     @AfterClass
     public static void printStatistics() {

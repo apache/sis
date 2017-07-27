@@ -28,6 +28,14 @@ import org.apache.sis.util.iso.Types;
 /**
  * Information about the outcome of evaluating the obtained value (or set of values) against
  * a specified acceptable conformance quality level.
+ * The following properties are mandatory in a well-formed metadata according ISO 19115:
+ *
+ * <div class="preformat">{@code DQ_ConformanceResult}
+ * {@code   ├─specification……………} Citation of product specification or user requirement against which data is being evaluated.
+ * {@code   │   ├─title………………………} Name by which the cited resource is known.
+ * {@code   │   └─date…………………………} Reference date for the cited resource.
+ * {@code   ├─explanation…………………} Explanation of the meaning of conformance for this result.
+ * {@code   └─pass……………………………………} Indication of the conformance result.</div>
  *
  * <p><b>Limitations:</b></p>
  * <ul>
@@ -41,10 +49,11 @@ import org.apache.sis.util.iso.Types;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Touraïvane (IRD)
  * @author  Guilhem Legal (Geomatys)
- * @since   0.3
  * @version 0.3
+ * @since   0.3
  * @module
  */
+@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "DQ_ConformanceResult_Type", propOrder = {
     "specification",
     "explanation",
@@ -85,9 +94,9 @@ public class DefaultConformanceResult extends AbstractResult implements Conforma
     /**
      * Creates a conformance result initialized to the given values.
      *
-     * @param specification Specification or requirement against which data is being evaluated, or {@code null}.
-     * @param explanation The meaning of conformance for this result, or {@code null}.
-     * @param pass Indication of the conformance result, or {@code null}.
+     * @param specification  specification or requirement against which data is being evaluated, or {@code null}.
+     * @param explanation    the meaning of conformance for this result, or {@code null}.
+     * @param pass           indication of the conformance result, or {@code null}.
      */
     public DefaultConformanceResult(final Citation specification,
                                     final CharSequence explanation,
@@ -103,7 +112,7 @@ public class DefaultConformanceResult extends AbstractResult implements Conforma
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
-     * @param object The metadata to copy values from, or {@code null} if none.
+     * @param  object  the metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(ConformanceResult)
      */
@@ -130,8 +139,8 @@ public class DefaultConformanceResult extends AbstractResult implements Conforma
      *       metadata contained in the given object are not recursively copied.</li>
      * </ul>
      *
-     * @param  object The object to get as a SIS implementation, or {@code null} if none.
-     * @return A SIS implementation containing the values of the given object (may be the
+     * @param  object  the object to get as a SIS implementation, or {@code null} if none.
+     * @return a SIS implementation containing the values of the given object (may be the
      *         given object itself), or {@code null} if the argument was null.
      */
     public static DefaultConformanceResult castOrCopy(final ConformanceResult object) {
@@ -144,7 +153,7 @@ public class DefaultConformanceResult extends AbstractResult implements Conforma
     /**
      * Returns the citation of product specification or user requirement against which data is being evaluated.
      *
-     * @return Citation of product specification or user requirement, or {@code null}.
+     * @return citation of product specification or user requirement, or {@code null}.
      */
     @Override
     @XmlElement(name = "specification", required = true)
@@ -155,7 +164,7 @@ public class DefaultConformanceResult extends AbstractResult implements Conforma
     /**
      * Sets the citation of product specification or user requirement against which data is being evaluated.
      *
-     * @param newValue The new specification.
+     * @param  newValue  the new specification.
      */
     public void setSpecification(final Citation newValue) {
         checkWritePermission();
@@ -165,7 +174,7 @@ public class DefaultConformanceResult extends AbstractResult implements Conforma
     /**
      * Returns the explanation of the meaning of conformance for this result.
      *
-     * @return Explanation of the meaning of conformance, or {@code null}.
+     * @return explanation of the meaning of conformance, or {@code null}.
      */
     @Override
     @XmlElement(name = "explanation", required = true)
@@ -176,7 +185,7 @@ public class DefaultConformanceResult extends AbstractResult implements Conforma
     /**
      * Sets the explanation of the meaning of conformance for this result.
      *
-     * @param newValue The new explanation.
+     * @param  newValue  the new explanation.
      */
     public void setExplanation(final InternationalString newValue) {
         checkWritePermission();
@@ -186,7 +195,7 @@ public class DefaultConformanceResult extends AbstractResult implements Conforma
     /**
      * Returns an indication of the conformance result.
      *
-     * @return Indication of the conformance result, or {@code null}.
+     * @return indication of the conformance result, or {@code null}.
      */
     @Override
     public Boolean pass() {

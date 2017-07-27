@@ -30,8 +30,9 @@ import org.opengis.metadata.distribution.Medium;
 import org.apache.sis.internal.metadata.LegacyPropertyAdapter;
 import org.apache.sis.measure.ValueRange;
 import org.apache.sis.metadata.iso.ISOMetadata;
+import org.apache.sis.internal.metadata.Dependencies;
 
-import static org.apache.sis.internal.metadata.MetadataUtilities.warnNonPositiveArgument;
+import static org.apache.sis.internal.metadata.MetadataUtilities.ensurePositive;
 
 // Branch-specific imports
 import static org.opengis.annotation.Obligation.OPTIONAL;
@@ -53,10 +54,11 @@ import static org.opengis.annotation.Specification.ISO_19115;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Touraïvane (IRD)
  * @author  Cédric Briançon (Geomatys)
- * @since   0.3
  * @version 0.5
+ * @since   0.3
  * @module
  */
+@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "MD_DigitalTransferOptions_Type", propOrder = {
     "unitsOfDistribution",
     "transferSize",
@@ -119,7 +121,7 @@ public class DefaultDigitalTransferOptions extends ISOMetadata implements Digita
      * metadata instances can also be obtained by unmarshalling an invalid XML document.
      * </div>
      *
-     * @param object The metadata to copy values from, or {@code null} if none.
+     * @param  object  the metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(DigitalTransferOptions)
      */
@@ -154,8 +156,8 @@ public class DefaultDigitalTransferOptions extends ISOMetadata implements Digita
      *       metadata contained in the given object are not recursively copied.</li>
      * </ul>
      *
-     * @param  object The object to get as a SIS implementation, or {@code null} if none.
-     * @return A SIS implementation containing the values of the given object (may be the
+     * @param  object  the object to get as a SIS implementation, or {@code null} if none.
+     * @return a SIS implementation containing the values of the given object (may be the
      *         given object itself), or {@code null} if the argument was null.
      */
     public static DefaultDigitalTransferOptions castOrCopy(final DigitalTransferOptions object) {
@@ -168,7 +170,7 @@ public class DefaultDigitalTransferOptions extends ISOMetadata implements Digita
     /**
      * Returns tiles, layers, geographic areas, <i>etc.</i>, in which data is available.
      *
-     * @return Tiles, layers, geographic areas, <cite>etc.</cite> in which data is available, or {@code null}.
+     * @return tiles, layers, geographic areas, <cite>etc.</cite> in which data is available, or {@code null}.
      */
     @Override
     @XmlElement(name = "unitsOfDistribution")
@@ -179,7 +181,7 @@ public class DefaultDigitalTransferOptions extends ISOMetadata implements Digita
     /**
      * Sets tiles, layers, geographic areas, <i>etc.</i>, in which data is available.
      *
-     * @param newValue The new units of distribution.
+     * @param  newValue  the new units of distribution.
      */
     public void setUnitsOfDistribution(final InternationalString newValue) {
         checkWritePermission();
@@ -190,7 +192,7 @@ public class DefaultDigitalTransferOptions extends ISOMetadata implements Digita
      * Returns an estimated size of a unit in the specified transfer format, expressed in megabytes.
      * The transfer size is greater than zero.
      *
-     * @return Estimated size of a unit in the specified transfer format in megabytes, or {@code null}.
+     * @return estimated size of a unit in the specified transfer format in megabytes, or {@code null}.
      */
     @Override
     @XmlElement(name = "transferSize")
@@ -203,21 +205,20 @@ public class DefaultDigitalTransferOptions extends ISOMetadata implements Digita
      * Sets an estimated size of a unit in the specified transfer format, expressed in megabytes.
      * The transfer shall be greater than zero.
      *
-     * @param newValue The new transfer size, or {@code null}.
+     * @param  newValue  the new transfer size, or {@code null}.
      * @throws IllegalArgumentException if the given value is NaN or negative.
      */
     public void setTransferSize(final Double newValue) {
         checkWritePermission();
-        if (newValue != null && !(newValue >= 0)) { // Use '!' for catching NaN.
-            warnNonPositiveArgument(DefaultDigitalTransferOptions.class, "transferSize", true, newValue);
+        if (ensurePositive(DefaultDigitalTransferOptions.class, "transferSize", true, newValue)) {
+            transferSize = newValue;
         }
-        transferSize = newValue;
     }
 
     /**
      * Returns information about online sources from which the resource can be obtained.
      *
-     * @return Online sources from which the resource can be obtained.
+     * @return online sources from which the resource can be obtained.
      */
     @Override
     @XmlElement(name = "onLine")
@@ -228,7 +229,7 @@ public class DefaultDigitalTransferOptions extends ISOMetadata implements Digita
     /**
      * Sets information about online sources from which the resource can be obtained.
      *
-     * @param newValues The new online sources.
+     * @param  newValues  the new online sources.
      */
     public void setOnLines(final Collection<? extends OnlineResource> newValues) {
         onLines = writeCollection(newValues, onLines, OnlineResource.class);
@@ -237,7 +238,7 @@ public class DefaultDigitalTransferOptions extends ISOMetadata implements Digita
     /**
      * Returns information about offline media on which the resource can be obtained.
      *
-     * @return Offline media on which the resource can be obtained.
+     * @return offline media on which the resource can be obtained.
      *
      * @since 0.5
      */
@@ -249,7 +250,7 @@ public class DefaultDigitalTransferOptions extends ISOMetadata implements Digita
     /**
      * Sets information about offline media on which the resource can be obtained.
      *
-     * @param newValues The new offline media.
+     * @param  newValues  the new offline media.
      *
      * @since 0.5
      */
@@ -260,13 +261,14 @@ public class DefaultDigitalTransferOptions extends ISOMetadata implements Digita
     /**
      * Returns information about offline media on which the resource can be obtained.
      *
-     * @return Offline media on which the resource can be obtained, or {@code null}.
+     * @return offline media on which the resource can be obtained, or {@code null}.
      *
      * @deprecated As of ISO 19115:2014, replaced by {@link #getOffLines()}.
      */
     @Override
     @Deprecated
     @XmlElement(name = "offLine")
+    @Dependencies("getOffLines")
     public Medium getOffLine() {
         return LegacyPropertyAdapter.getSingleton(getOffLines(), Medium.class, null, DefaultDigitalTransferOptions.class, "getOffLine");
     }
@@ -274,7 +276,7 @@ public class DefaultDigitalTransferOptions extends ISOMetadata implements Digita
     /**
      * Sets information about offline media on which the resource can be obtained.
      *
-     * @param newValue The new offline media.
+     * @param  newValue  the new offline media.
      *
      * @deprecated As of ISO 19115:2014, replaced by {@link #setOffLines(Collection)}.
      */
@@ -286,7 +288,7 @@ public class DefaultDigitalTransferOptions extends ISOMetadata implements Digita
     /**
      * Returns the rate of occurrence of distribution.
      *
-     * @return Rate of occurrence of distribution, or {@code null} if none.
+     * @return rate of occurrence of distribution, or {@code null} if none.
      *
      * @since 0.5
      */
@@ -298,7 +300,7 @@ public class DefaultDigitalTransferOptions extends ISOMetadata implements Digita
     /**
      * Sets the rate of occurrence of distribution.
      *
-     * @param newValue The new rate of occurrence of distribution.
+     * @param  newValue  the new rate of occurrence of distribution.
      *
      * @since 0.5
      */
@@ -310,7 +312,7 @@ public class DefaultDigitalTransferOptions extends ISOMetadata implements Digita
     /**
      * Returns the formats of distribution.
      *
-     * @return Formats of distribution.
+     * @return formats of distribution.
      *
      * @since 0.5
      */
@@ -322,7 +324,7 @@ public class DefaultDigitalTransferOptions extends ISOMetadata implements Digita
     /**
      * Sets the formats of distribution.
      *
-     * @param newValues The new formats of distribution.
+     * @param  newValues  the new formats of distribution.
      *
      * @since 0.5
      */

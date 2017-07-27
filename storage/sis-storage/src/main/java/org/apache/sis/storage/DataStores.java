@@ -16,6 +16,7 @@
  */
 package org.apache.sis.storage;
 
+import java.util.Collection;
 import org.apache.sis.util.Static;
 import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.system.SystemListener;
@@ -27,8 +28,8 @@ import org.apache.sis.internal.system.SystemListener;
  * but can also be any other objects documented in the {@link StorageConnector} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
+ * @version 0.8
  * @since   0.4
- * @version 0.4
  * @module
  */
 public final class DataStores extends Static {
@@ -78,11 +79,23 @@ public final class DataStores extends Static {
     }
 
     /**
+     * Returns the list of data store providers available at this method invocation time.
+     * More providers may be added later in a running JVM if new modules are added on the classpath.
+     *
+     * @return descriptions of available data stores.
+     *
+     * @since 0.8
+     */
+    public static Collection<DataStoreProvider> providers() {
+        return registry().providers();
+    }
+
+    /**
      * Returns the MIME type of the storage file format, or {@code null} if unknown or not applicable.
      *
-     * @param  storage The input/output object as a URL, file, image input stream, <i>etc.</i>.
-     * @return The storage MIME type, or {@code null} if unknown or not applicable.
-     * @throws DataStoreException If an error occurred while opening the storage.
+     * @param  storage  the input/output object as a URL, file, image input stream, <i>etc.</i>.
+     * @return the storage MIME type, or {@code null} if unknown or not applicable.
+     * @throws DataStoreException if an error occurred while opening the storage.
      */
     public static String probeContentType(final Object storage) throws DataStoreException {
         return registry().probeContentType(storage);
@@ -93,7 +106,7 @@ public final class DataStores extends Static {
      * The {@code storage} argument can be any of the following types:
      *
      * <ul>
-     *   <li>A {@link java.io.File} for a file or a directory.</li>
+     *   <li>A {@link java.nio.file.Path} or a {@link java.io.File} for a file or a directory.</li>
      *   <li>A {@link java.net.URI} or a {@link java.net.URL} to a distant resource.</li>
      *   <li>A {@link java.lang.CharSequence} interpreted as a filename or a URL.</li>
      *   <li>A {@link java.nio.channels.Channel}, {@link java.io.DataInput}, {@link java.io.InputStream} or {@link java.io.Reader}.</li>
@@ -102,10 +115,10 @@ public final class DataStores extends Static {
      *   <li>An existing {@link StorageConnector} instance.</li>
      * </ul>
      *
-     * @param  storage The input/output object as a URL, file, image input stream, <i>etc.</i>.
-     * @return The object to use for reading geospatial data from the given storage.
+     * @param  storage  the input/output object as a URL, file, image input stream, <i>etc.</i>.
+     * @return the object to use for reading geospatial data from the given storage.
      * @throws UnsupportedStorageException if no {@link DataStoreProvider} is found for a given storage object.
-     * @throws DataStoreException If an error occurred while opening the storage.
+     * @throws DataStoreException if an error occurred while opening the storage.
      */
     public static DataStore open(final Object storage) throws UnsupportedStorageException, DataStoreException {
         return registry().open(storage);

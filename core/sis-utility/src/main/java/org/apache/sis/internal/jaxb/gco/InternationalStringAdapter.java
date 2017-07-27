@@ -30,8 +30,8 @@ import org.apache.sis.util.iso.SimpleInternationalString;
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Guilhem Legal (Geomatys)
- * @since   0.3
  * @version 0.3
+ * @since   0.3
  * @module
  */
 public final class InternationalStringAdapter extends XmlAdapter<GO_CharacterString, InternationalString> {
@@ -45,8 +45,8 @@ public final class InternationalStringAdapter extends XmlAdapter<GO_CharacterStr
      * Converts an object read from a XML stream to an {@link InternationalString} implementation.
      * JAXB invokes automatically this method at unmarshalling time.
      *
-     * @param  value The wrapper for the value, or {@code null}.
-     * @return The unwrapped {@link String} value, or {@code null}.
+     * @param  value  the wrapper for the value, or {@code null}.
+     * @return the unwrapped {@link String} value, or {@code null}.
      */
     @Override
     public InternationalString unmarshal(final GO_CharacterString value) {
@@ -66,8 +66,8 @@ public final class InternationalStringAdapter extends XmlAdapter<GO_CharacterStr
      * Converts an {@link InternationalString} to an object to format into a XML stream.
      * JAXB invokes automatically this method at marshalling time.
      *
-     * @param  value The string value, or {@code null}.
-     * @return The wrapper for the given string, or {@code null}.
+     * @param  value  the string value, or {@code null}.
+     * @return the wrapper for the given string, or {@code null}.
      */
     @Override
     public GO_CharacterString marshal(final InternationalString value) {

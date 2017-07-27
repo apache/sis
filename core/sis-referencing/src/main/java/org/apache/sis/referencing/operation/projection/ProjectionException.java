@@ -17,16 +17,31 @@
 package org.apache.sis.referencing.operation.projection;
 
 import org.opengis.referencing.operation.TransformException;
-import org.apache.sis.util.resources.Errors;
 
 
 /**
  * Thrown by {@link NormalizedProjection} when a map projection failed.
  *
+ * <div class="section">When this exception is thrown</div>
+ * Apache SIS implementations of map projections return a {@linkplain Double#isFinite(double) finite} number
+ * under normal conditions, but may also return an {@linkplain Double#isInfinite(double) infinite} number or
+ * {@linkplain Double#isNaN(double) NaN} value, or throw this exception.
+ * The behavior depends on the reason why the projection can not return a finite number:
+ *
+ * <ul>
+ *   <li>If the expected mathematical value is infinite (for example the Mercator projection at ±90° of latitude),
+ *       then the map projection should return a {@link Double#POSITIVE_INFINITY} or {@link Double#NEGATIVE_INFINITY},
+ *       depending on the sign of the correct mathematical answer.</li>
+ *   <li>If no real number is expected to exist for the input coordinate (for example the root of a negative value),
+ *       then the map projection should return {@link Double#NaN}.</li>
+ *   <li>If a real number is expected to exist but the map projection fails to compute it (for example because an
+ *       iterative algorithm does not converge), then the projection should throw {@code ProjectionException}.</li>
+ * </ul>
+ *
  * @author  André Gosselin (MPO)
  * @author  Martin Desruisseaux (MPO, IRD, Geomatys)
- * @since   0.6
  * @version 0.6
+ * @since   0.6
  * @module
  */
 public class ProjectionException extends TransformException {
@@ -44,7 +59,7 @@ public class ProjectionException extends TransformException {
     /**
      * Constructs a new exception with the specified detail message.
      *
-     * @param message The details message, or {@code null} if none.
+     * @param  message  the details message, or {@code null} if none.
      */
     public ProjectionException(final String message) {
         super(message);
@@ -54,38 +69,20 @@ public class ProjectionException extends TransformException {
      * Constructs a new exception with the specified cause.
      * The details message is copied from the cause.
      *
-     * @param cause The cause, or {@code null} if none.
+     * @param  cause  the cause, or {@code null} if none.
      */
     public ProjectionException(final Throwable cause) {
-        super(cause.getLocalizedMessage(), cause);
+        // Reproduce the behavior of standard Throwable(Throwable) constructor.
+        super((cause != null) ? cause.toString() : null, cause);
     }
 
     /**
      * Constructs a new exception with the specified detail message and cause.
      *
-     * @param message The details message, or {@code null} if none.
-     * @param cause   The cause, or {@code null} if none.
+     * @param  message  the details message, or {@code null} if none.
+     * @param  cause    the cause, or {@code null} if none.
      */
     public ProjectionException(final String message, final Throwable cause) {
         super(message, cause);
-    }
-
-    /**
-     * Constructs a new exception with the specified detail message.
-     *
-     * @param code One of the constants suitable for {@link Errors#format(short)}.
-     */
-    ProjectionException(final short code) {
-        this(Errors.format(code));
-    }
-
-    /**
-     * Constructs a new exception with the specified detail message.
-     *
-     * @param code One of the constants suitable for {@link Errors#format(short)}.
-     * @param value An argument value to be formatted.
-     */
-    ProjectionException(final short code, final Object value) {
-        this(Errors.format(code, value));
     }
 }

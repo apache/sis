@@ -50,8 +50,8 @@ import org.apache.sis.referencing.cs.AxesConvention;
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
+ * @version 0.7
  * @since   0.4
- * @version 0.6
  * @module
  */
 final class SubTypes implements Comparator<Object> {
@@ -123,8 +123,17 @@ final class SubTypes implements Comparator<Object> {
              * The GeographicCRS and GeocentricCRS types are not part of ISO 19111.
              * ISO uses a single type, GeodeticCRS, for both of them and infer the
              * geographic or geocentric type from the coordinate system. We do this
-             * check here for instantiating the most appropriate SIS type.
+             * check here for instantiating the most appropriate SIS type, but only
+             * if we need to create a new object anyway (see below for rational).
              */
+            if (object instanceof DefaultGeodeticCRS) {
+                /*
+                 * Result of XML unmarshalling — keep as-is. We avoid creating a new object because it
+                 * would break object identities specified in GML document by the xlink:href attribute.
+                 * However we may revisit this policy in the future. See SC_CRS.setElement(AbstractCRS).
+                 */
+                return (DefaultGeodeticCRS) object;
+            }
             final Map<String,?> properties = IdentifiedObjects.getProperties(object);
             final GeodeticDatum datum = ((GeodeticCRS) object).getDatum();
             final CoordinateSystem cs = object.getCoordinateSystem();

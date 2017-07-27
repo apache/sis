@@ -17,6 +17,7 @@
 package org.apache.sis.referencing.cs;
 
 import org.opengis.referencing.cs.AxisDirection;
+import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
@@ -28,17 +29,12 @@ import static org.apache.sis.test.MetadataAssert.*;
  * Tests the {@link DirectionAlongMeridian} class.
  *
  * @author  Martin Desruisseaux (IRD)
- * @since   0.4
  * @version 0.4
+ * @since   0.4
  * @module
  */
-@DependsOn(org.apache.sis.internal.referencing.AxisDirectionsTest.class)
+@DependsOn(org.apache.sis.internal.metadata.AxisDirectionsTest.class)
 public final strictfp class DirectionAlongMeridianTest extends TestCase {
-    /**
-     * Tolerance threshold for strict floating point comparisons.
-     */
-    private static final double STRICT = 0;
-
     /**
      * Tests the {@link DirectionAlongMeridian#parse(AxisDirection)} method.
      */
@@ -107,11 +103,14 @@ public final strictfp class DirectionAlongMeridianTest extends TestCase {
     }
 
     /**
-     * Test Well Known Text formatting.
+     * Tests Well Known Text formatting.
      */
     @Test
     public void testWKT() {
-        assertWktEquals("Meridian[-90.0, AngleUnit[“degree”, 0.017453292519943295]]",
-                DirectionAlongMeridian.parse("South along 90°W"));
+        final DirectionAlongMeridian dm = DirectionAlongMeridian.parse("South along 90°W");
+        assertWktEquals(Convention.WKT2,
+                "MERIDIAN[-90.0, ANGLEUNIT[“degree”, 0.017453292519943295]]", dm);
+        assertWktEquals(Convention.WKT2_SIMPLIFIED,
+                "Meridian[-90.0, Unit[“degree”, 0.017453292519943295]]", dm);
     }
 }

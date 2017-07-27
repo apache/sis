@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Licensed to the Apache Software Foundation (ASF) under one
+  or more contributor license agreements.  See the NOTICE file
+  distributed with this work for additional information
+  regarding copyright ownership.  The ASF licenses this file
+  to you under the Apache License, Version 2.0 (the
+  "License"); you may not use this file except in compliance
+  with the License.  You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing,
+  software distributed under the License is distributed on an
+  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+  KIND, either express or implied.  See the License for the
+  specific language governing permissions and limitations
+  under the License.
+-->
+
+<gml:GeodeticDatum xsi:schemaLocation = "http://www.opengis.net/gml/3.2 http://schemas.opengis.net/gml/3.2.1/datums.xsd"
+                   xmlns:gml          = "http://www.opengis.net/gml/3.2"
+                   xmlns:gmd          = "http://www.isotc211.org/2005/gmd"
+                   xmlns:gco          = "http://www.isotc211.org/2005/gco"
+                   xmlns:xsi          = "http://www.w3.org/2001/XMLSchema-instance"
+                   gml:id             = "epsg-datum-6326">
+
+  <gml:identifier codeSpace="IOGP">urn:ogc:def:datum:EPSG::6326</gml:identifier>
+  <gml:name>World Geodetic System 1984</gml:name>
+  <gml:remarks>No distinction between the original and subsequent WGS 84 frames.</gml:remarks>
+  <gml:domainOfValidity>
+    <gmd:EX_Extent>
+      <gmd:description>
+        <gco:CharacterString>World.</gco:CharacterString>
+      </gmd:description>
+      <gmd:geographicElement>
+        <gmd:EX_GeographicBoundingBox>
+          <gmd:westBoundLongitude><gco:Decimal>-180</gco:Decimal></gmd:westBoundLongitude>
+          <gmd:eastBoundLongitude><gco:Decimal>+180</gco:Decimal></gmd:eastBoundLongitude>
+          <gmd:southBoundLatitude><gco:Decimal> -90</gco:Decimal></gmd:southBoundLatitude>
+          <gmd:northBoundLatitude><gco:Decimal> +90</gco:Decimal></gmd:northBoundLatitude>
+        </gmd:EX_GeographicBoundingBox>
+      </gmd:geographicElement>
+    </gmd:EX_Extent>
+  </gml:domainOfValidity>
+  <gml:scope>Satellite navigation.</gml:scope>
+  <gml:anchorDefinition>Station coordinates changed by a few centimetres in 1994, 1997, 2002 and 2012.</gml:anchorDefinition>
+  <gml:realizationEpoch>1984-01-01</gml:realizationEpoch>
+  <gml:primeMeridian>
+    <gml:PrimeMeridian gml:id = "epsg-meridian-8901">
+      <gml:identifier codeSpace="IOGP">urn:ogc:def:meridian:EPSG::8901</gml:identifier>
+      <gml:name>Greenwich</gml:name>
+      <gml:greenwichLongitude uom="urn:ogc:def:uom:EPSG::9102">0</gml:greenwichLongitude>
+    </gml:PrimeMeridian>
+  </gml:primeMeridian>
+  <gml:ellipsoid>
+    <gml:Ellipsoid gml:id = "epsg-ellipsoid-7030">
+      <gml:identifier codeSpace="IOGP">urn:ogc:def:ellipsoid:EPSG::7030</gml:identifier>
+      <gml:name>WGS 84</gml:name>
+      <gml:remarks>Defining parameters cited in EPSG database.</gml:remarks>
+      <gml:semiMajorAxis uom="urn:ogc:def:uom:EPSG::9001">6378137</gml:semiMajorAxis>
+      <gml:secondDefiningParameter>
+        <gml:SecondDefiningParameter>
+          <gml:inverseFlattening uom="urn:ogc:def:uom:EPSG::9201">298.257223563</gml:inverseFlattening>
+        </gml:SecondDefiningParameter>
+      </gml:secondDefiningParameter>
+    </gml:Ellipsoid>
+  </gml:ellipsoid>
+</gml:GeodeticDatum>

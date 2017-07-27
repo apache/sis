@@ -17,6 +17,7 @@
 package org.apache.sis.internal.jaxb.code;
 
 import java.util.Arrays;
+import java.util.Collection;
 import javax.xml.bind.JAXBException;
 import org.opengis.metadata.identification.TopicCategory;
 import org.apache.sis.metadata.iso.identification.DefaultDataIdentification;
@@ -31,23 +32,25 @@ import static org.apache.sis.test.Assert.*;
  * Tests the XML marshaling of {@code Enum}.
  *
  * @author  Martin Desruisseaux (Geomatys)
+ * @version 0.6
  * @since   0.5
- * @version 0.5
  * @module
  */
 public final strictfp class EnumMarshallingTest extends XMLTestCase {
     /**
-     * Tests marshaling of a code list which is not in the list of standard codes.
+     * Tests (un)marshaling of an enumeration.
      *
-     * @throws JAXBException If an error occurred while marshaling the XML.
+     * @throws JAXBException if an error occurred while (un)marshaling the XML.
      */
     @Test
-    public void testEnums() throws JAXBException {
-        final DefaultDataIdentification id = new DefaultDataIdentification();
-        id.setTopicCategories(Arrays.asList(
+    public void testTopicCategories() throws JAXBException {
+        final Collection<TopicCategory> expected = Arrays.asList(
                 TopicCategory.OCEANS,
                 TopicCategory.ENVIRONMENT,
-                TopicCategory.HEALTH));
+                TopicCategory.IMAGERY_BASE_MAPS_EARTH_COVER);   // We need to test at least one enum with many words.
+
+        final DefaultDataIdentification id = new DefaultDataIdentification();
+        id.setTopicCategories(expected);
 
         final String xml = marshal(id);
         assertXmlEquals(
@@ -56,12 +59,17 @@ public final strictfp class EnumMarshallingTest extends XMLTestCase {
                 "    <gmd:MD_TopicCategoryCode>environment</gmd:MD_TopicCategoryCode>\n" +
                 "  </gmd:topicCategory>\n" +
                 "  <gmd:topicCategory>\n" +
-                "    <gmd:MD_TopicCategoryCode>health</gmd:MD_TopicCategoryCode>\n" +
+                "    <gmd:MD_TopicCategoryCode>imageryBaseMapsEarthCover</gmd:MD_TopicCategoryCode>\n" +
                 "  </gmd:topicCategory>\n" +
                 "  <gmd:topicCategory>\n" +
                 "    <gmd:MD_TopicCategoryCode>oceans</gmd:MD_TopicCategoryCode>\n" +
                 "  </gmd:topicCategory>\n" +
                 "</gmd:MD_DataIdentification>",
                 xml, "xmlns:*");
+        /*
+         * Unmarshall the above XML and verify that we find all the topic categories.
+         */
+        final Collection<TopicCategory> unmarshalled = unmarshal(DefaultDataIdentification.class, xml).getTopicCategories();
+        assertSetEquals(expected, unmarshalled);
     }
 }

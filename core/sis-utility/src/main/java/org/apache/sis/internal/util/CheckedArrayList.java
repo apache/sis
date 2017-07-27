@@ -46,15 +46,17 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  * The checks are performed only on a <cite>best effort</cite> basis. In current implementation,
  * holes are known to exist in use cases like {@code sublist(…).set(…)} or when using the list iterator.
  *
- * @param <E> The type of elements in the list.
- *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.5
- * @module
+ *
+ * @param <E>  the type of elements in the list.
  *
  * @see Collections#checkedList(List, Class)
+ *
+ * @since 0.3
+ * @module
  */
+@SuppressWarnings("CloneableClassWithoutClone")         // ArrayList.clone() is sufficient.
 public final class CheckedArrayList<E> extends ArrayList<E> implements CheckedContainer<E> {
     /**
      * Serial version UID for compatibility with different versions.
@@ -69,7 +71,7 @@ public final class CheckedArrayList<E> extends ArrayList<E> implements CheckedCo
     /**
      * Constructs a list of the specified type.
      *
-     * @param type The element type (can not be null).
+     * @param type  the element type (can not be null).
      */
     public CheckedArrayList(final Class<E> type) {
         super();
@@ -80,8 +82,8 @@ public final class CheckedArrayList<E> extends ArrayList<E> implements CheckedCo
     /**
      * Constructs a list of the specified type and initial capacity.
      *
-     * @param type The element type (should not be null).
-     * @param capacity The initial capacity.
+     * @param type      the element type (should not be null).
+     * @param capacity  the initial capacity.
      */
     public CheckedArrayList(final Class<E> type, final int capacity) {
         super(capacity);
@@ -92,10 +94,10 @@ public final class CheckedArrayList<E> extends ArrayList<E> implements CheckedCo
     /**
      * Returns the given collection as a {@code CheckedArrayList} instance of the given element type.
      *
-     * @param  <E>        The element type.
-     * @param  collection The collection or {@code null}.
-     * @param  type       The element type.
-     * @return The given collection as a {@code CheckedArrayList}, or {@code null} if the given collection was null.
+     * @param  <E>         the element type.
+     * @param  collection  the collection or {@code null}.
+     * @param  type        the element type.
+     * @return the given collection as a {@code CheckedArrayList}, or {@code null} if the given collection was null.
      * @throws ClassCastException if an element is not of the expected type.
      *
      * @since 0.5
@@ -108,8 +110,8 @@ public final class CheckedArrayList<E> extends ArrayList<E> implements CheckedCo
         if (collection instanceof CheckedArrayList<?> && ((CheckedArrayList<?>) collection).type == type) {
             return (CheckedArrayList<E>) collection;
         } else {
-            final CheckedArrayList<E> list = new CheckedArrayList<E>(type, collection.size());
-            list.addAll((Collection) collection); // addAll will perform the type checks.
+            final CheckedArrayList<E> list = new CheckedArrayList<>(type, collection.size());
+            list.addAll((Collection) collection);               // addAll will perform the type checks.
             return list;
         }
     }
@@ -138,10 +140,10 @@ public final class CheckedArrayList<E> extends ArrayList<E> implements CheckedCo
      *       stack trace depth, so the first element on the stack trace is the public {@code add(E)} method.</li>
      * </ul>
      *
-     * @param  collection   The collection in which the user attempted to add an invalid element.
-     * @param  element      The element that the user attempted to add (may be {@code null}).
-     * @param  expectedType The type of elements that the collection expected.
-     * @return The message to give to the exception to be thrown, or {@code null} if no message shall be thrown.
+     * @param  collection    the collection in which the user attempted to add an invalid element.
+     * @param  element       the element that the user attempted to add (may be {@code null}).
+     * @param  expectedType  the type of elements that the collection expected.
+     * @return the message to give to the exception to be thrown, or {@code null} if no message shall be thrown.
      *
      * @see <a href="https://issues.apache.org/jira/browse/SIS-139">SIS-139</a>
      * @see <a href="https://issues.apache.org/jira/browse/SIS-157">SIS-157</a>
@@ -160,7 +162,7 @@ public final class CheckedArrayList<E> extends ArrayList<E> implements CheckedCo
         }
         final Context context = Context.current();
         if (context != null) {
-            Context.warningOccured(context, Context.LOGGER, collection.getClass(), "add", Errors.class, key, arguments);
+            Context.warningOccured(context, collection.getClass(), "add", Errors.class, key, arguments);
             return null;
         } else {
             return Errors.format(key, arguments);
@@ -168,10 +170,9 @@ public final class CheckedArrayList<E> extends ArrayList<E> implements CheckedCo
     }
 
     /**
-     * Ensures that the given element is non-null and assignable to the type
-     * specified at construction time.
+     * Ensures that the given element is non-null and assignable to the type specified at construction time.
      *
-     * @param  element the object to check, or {@code null}.
+     * @param  element  the object to check, or {@code null}.
      * @return {@code true} if the instance is valid, {@code false} if it shall be ignored.
      * @throws NullPointerException if the given element is {@code null}.
      * @throws ClassCastException if the given element is not of the expected type.
@@ -199,8 +200,8 @@ public final class CheckedArrayList<E> extends ArrayList<E> implements CheckedCo
     /**
      * Ensures that all elements of the given collection can be added to this list.
      *
-     * @param  collection the collection to check, or {@code null}.
-     * @return The potentially filtered collection of elements to add.
+     * @param  collection  the collection to check, or {@code null}.
+     * @return the potentially filtered collection of elements to add.
      * @throws NullPointerException if an element is {@code null}.
      * @throws ClassCastException if an element is not of the expected type.
      */
@@ -215,7 +216,7 @@ public final class CheckedArrayList<E> extends ArrayList<E> implements CheckedCo
         }
         // Not-so-unsafe cast: we verified in the above loop that all elements are instance of E.
         // The array itself may not be an instance of E[], but this is not important for Mediator.
-        return new Mediator<E>(ArraysExt.resize((E[]) array, count));
+        return new Mediator<>(ArraysExt.resize((E[]) array, count));
     }
 
     /**
@@ -225,21 +226,22 @@ public final class CheckedArrayList<E> extends ArrayList<E> implements CheckedCo
      * In particular {@link #toArray()} returns directly the internal array, because this is the method to be
      * invoked by {@code ArrayList.addAll(…)} (this is actually the only important method in this wrapper).
      *
-     * @param <E> The type or list elements.
+     * @param  <E>  the type or list elements.
      */
+    @SuppressWarnings("ReturnOfCollectionOrArrayField")
     private static final class Mediator<E> extends AbstractList<E> {
         private final E[] array;
         Mediator(final E[] array)           {this.array = array;}
         @Override public int size()         {return array.length;}
         @Override public E   get(int index) {return array[index];}
-        @Override public E[] toArray()      {return array;} // See class javadoc.
+        @Override public E[] toArray()      {return array;}                 // See class javadoc.
     }
 
     /**
      * Replaces the element at the specified position in this list with the specified element.
      *
-     * @param  index   index of element to replace.
-     * @param  element element to be stored at the specified position.
+     * @param  index    index of element to replace.
+     * @param  element  element to be stored at the specified position.
      * @return the element previously at the specified position.
      * @throws IndexOutOfBoundsException if index out of range.
      * @throws NullPointerException if the given element is {@code null}.
@@ -256,7 +258,7 @@ public final class CheckedArrayList<E> extends ArrayList<E> implements CheckedCo
     /**
      * Appends the specified element to the end of this list.
      *
-     * @param  element element to be appended to this list.
+     * @param  element  element to be appended to this list.
      * @return always {@code true}.
      * @throws NullPointerException if the given element is {@code null}.
      * @throws ClassCastException if the given element is not of the expected type.
@@ -272,8 +274,8 @@ public final class CheckedArrayList<E> extends ArrayList<E> implements CheckedCo
     /**
      * Inserts the specified element at the specified position in this list.
      *
-     * @param  index index at which the specified element is to be inserted.
-     * @param  element element to be inserted.
+     * @param  index  index at which the specified element is to be inserted.
+     * @param  element  element to be inserted.
      * @throws IndexOutOfBoundsException if index out of range.
      * @throws NullPointerException if the given element is {@code null}.
      * @throws ClassCastException if the given element is not of the expected type.
@@ -289,7 +291,7 @@ public final class CheckedArrayList<E> extends ArrayList<E> implements CheckedCo
      * Appends all of the elements in the specified collection to the end of this list,
      * in the order that they are returned by the specified Collection's Iterator.
      *
-     * @param  collection the elements to be inserted into this list.
+     * @param  collection  the elements to be inserted into this list.
      * @return {@code true} if this list changed as a result of the call.
      * @throws NullPointerException if an element is {@code null}.
      * @throws ClassCastException if an element is not of the expected type.
@@ -303,8 +305,8 @@ public final class CheckedArrayList<E> extends ArrayList<E> implements CheckedCo
      * Inserts all of the elements in the specified collection into this list,
      * starting at the specified position.
      *
-     * @param  index index at which to insert first element fromm the specified collection.
-     * @param  collection elements to be inserted into this list.
+     * @param  index  index at which to insert first element fromm the specified collection.
+     * @param  collection  elements to be inserted into this list.
      * @return {@code true} if this list changed as a result of the call.
      * @throws NullPointerException if an element is {@code null}.
      * @throws ClassCastException if an element is not of the expected type.
@@ -320,9 +322,9 @@ public final class CheckedArrayList<E> extends ArrayList<E> implements CheckedCo
      * <p><b>Limitation:</b> current implementation checks only the type.
      * It does not prevent the insertion of {@code null} values.</p>
      *
-     * @param  fromIndex Index of the first element.
-     * @param  toIndex   Index after the last element.
-     * @return The sublist in the given index range.
+     * @param  fromIndex  index of the first element.
+     * @param  toIndex    index after the last element.
+     * @return the sublist in the given index range.
      */
     @Override
     public List<E> subList(final int fromIndex, final int toIndex) {

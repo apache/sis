@@ -27,8 +27,8 @@ import static org.junit.Assert.*;
  * This class inherits all tests defined in {@link MatrixTestCase}.
  *
  * @author  Martin Desruisseaux (Geomatys)
+ * @version 0.8
  * @since   0.4
- * @version 0.6
  * @module
  */
 public final strictfp class GeneralMatrixTest extends MatrixTestCase {
@@ -40,11 +40,11 @@ public final strictfp class GeneralMatrixTest extends MatrixTestCase {
     /**
      * Computes a random size for the next matrix to create.
      *
-     * @param random The random number generator to use.
+     * @param  random  the random number generator to use.
      */
     @Override
     void prepareNewMatrixSize(final Random random) {
-        size = 5 + random.nextInt(8); // Matrix sizes from 5 to 12 inclusive.
+        size = 5 + random.nextInt(8);                   // Matrix sizes from 5 to 12 inclusive.
     }
 
     /** {@inheritDoc} */ @Override int getNumRow() {return size;}
@@ -69,10 +69,10 @@ public final strictfp class GeneralMatrixTest extends MatrixTestCase {
     @Test
     public void testGetExtendedElements() {
         testGetExtendedElements(new GeneralMatrix(2, 2, new double[] {
-                StrictMath.PI / 180, // Degrees to radians
-                180 / StrictMath.PI, // Radians to degrees
-                0.9,                 // Gradians to degrees
-                0.1234567}));        // Random value with no special meaning.
+                StrictMath.PI / 180,            // Degrees to radians
+                180 / StrictMath.PI,            // Radians to degrees
+                0.9,                            // Gradians to degrees
+                0.1234567}));                   // Random value with no special meaning.
     }
 
     /**
@@ -95,8 +95,8 @@ public final strictfp class GeneralMatrixTest extends MatrixTestCase {
     }
 
     /**
-     * Tests {@link MatrixSIS#convertBefore(int, Number, Number)} using {@link AffineTranform}
-     * as a reference implementation.
+     * Tests {@link MatrixSIS#convertBefore(int, Number, Number)}
+     * using {@link java.awt.geom.AffineTransform} as a reference implementation.
      *
      * @since 0.6
      */
@@ -107,8 +107,8 @@ public final strictfp class GeneralMatrixTest extends MatrixTestCase {
     }
 
     /**
-     * Tests {@link MatrixSIS#convertAfter(int, Number, Number)} using {@link AffineTranform}
-     * as a reference implementation.
+     * Tests {@link MatrixSIS#convertAfter(int, Number, Number)}
+     * using {@link java.awt.geom.AffineTransform} as a reference implementation.
      *
      * @since 0.6
      */
@@ -116,5 +116,17 @@ public final strictfp class GeneralMatrixTest extends MatrixTestCase {
     public void testConvertAfter() {
         testConvertAfter(new GeneralMatrix(3, 3, true, 1));    // Double precision
         testConvertAfter(new GeneralMatrix(3, 3, true, 2));    // Double-double precision
+    }
+
+    /**
+     * Tests {@link MatrixSIS#multiply(double[])}
+     * using {@link java.awt.geom.AffineTransform} as a reference implementation.
+     *
+     * @since 0.8
+     */
+    @Test
+    public void testMultiplyVector() {
+        testMultiplyVector(new GeneralMatrix(3, 3, true, 1));    // Double precision
+        testMultiplyVector(new GeneralMatrix(3, 3, true, 2));    // Double-double precision
     }
 }

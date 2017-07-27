@@ -17,6 +17,7 @@
 package org.apache.sis.internal.converter;
 
 import java.io.Serializable;
+import java.io.ObjectStreamException;
 import org.opengis.util.InternationalString;
 import org.apache.sis.util.Debug;
 import org.apache.sis.util.ObjectConverter;
@@ -32,8 +33,8 @@ import org.apache.sis.util.collection.DefaultTreeTable;
  * This is used mostly for debugging purpose.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.3
+ * @since   0.3
  * @module
  */
 final class Column extends TableColumn<Class<?>> implements Serializable {
@@ -77,7 +78,7 @@ final class Column extends TableColumn<Class<?>> implements Serializable {
     /**
      * Resources to the singleton instance on deserialization.
      */
-    private Object readResolve() {
+    private Object readResolve() throws ObjectStreamException {
         return target ? TARGET : SOURCE;
     }
 
@@ -93,8 +94,8 @@ final class Column extends TableColumn<Class<?>> implements Serializable {
      * Used by {@link FallbackConverter} and {@link ConverterRegistry} for
      * implementing their {@code toString()} method.
      *
-     * @param  converter The converter for which to create a tree.
-     * @param  addTo     The node in which to add the converter.
+     * @param  converter  the converter for which to create a tree.
+     * @param  addTo      the node in which to add the converter.
      */
     static void toTree(final ObjectConverter<?,?> converter, final TreeTable.Node addTo) {
         final TreeTable.Node node = addTo.newChild();

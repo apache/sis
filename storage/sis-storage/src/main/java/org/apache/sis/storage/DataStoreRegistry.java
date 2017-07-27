@@ -18,10 +18,13 @@ package org.apache.sis.storage;
 
 import java.util.List;
 import java.util.LinkedList;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.ServiceLoader;
+import org.apache.sis.internal.storage.Resources;
+import org.apache.sis.internal.system.DefaultFactories;
+import org.apache.sis.internal.util.LazySet;
 import org.apache.sis.util.ArgumentChecks;
-import org.apache.sis.util.resources.Errors;
 
 
 /**
@@ -38,8 +41,8 @@ import org.apache.sis.util.resources.Errors;
  * on the part of the caller.
  *
  * @author  Martin Desruisseaux (Geomatys)
+ * @version 0.8
  * @since   0.4
- * @version 0.4
  * @module
  */
 final class DataStoreRegistry {
@@ -51,29 +54,61 @@ final class DataStoreRegistry {
     private final ServiceLoader<DataStoreProvider> loader;
 
     /**
-     * Creates a new registry which will use the current thread
-     * {@linkplain Thread#getContextClassLoader() context class loader}.
+     * Creates a new registry which will look for data stores accessible to the default class loader.
+     * The default is the current thread {@linkplain Thread#getContextClassLoader() context class loader},
+     * provided that it can access at least the Apache SIS stores.
      */
-    DataStoreRegistry() {
-        loader = ServiceLoader.load(DataStoreProvider.class);
+    public DataStoreRegistry() {
+        loader = DefaultFactories.createServiceLoader(DataStoreProvider.class);
     }
 
     /**
-     * Creates a new registry which will use the given class loader.
+     * Creates a new registry which will look for data stores accessible to the given class loader.
      *
-     * @param loader The class loader to use for loading {@link DataStoreProvider} implementations.
+     * @param  loader  the class loader to use for loading {@link DataStoreProvider} implementations.
      */
-    DataStoreRegistry(final ClassLoader loader) {
+    public DataStoreRegistry(final ClassLoader loader) {
         ArgumentChecks.ensureNonNull("loader", loader);
         this.loader = ServiceLoader.load(DataStoreProvider.class, loader);
     }
 
     /**
+     * Returns the list of data store providers available at this method invocation time.
+     * More providers may be added later if new modules are added on the classpath.
+     *
+     * @return descriptions of available data stores.
+     *
+     * @since 0.8
+     */
+    public Collection<DataStoreProvider> providers() {
+        synchronized (loader) {
+            final Iterator<DataStoreProvider> providers = loader.iterator();
+            return new LazySet<>(new Iterator<DataStoreProvider>() {
+                @Override public boolean hasNext() {
+                    synchronized (loader) {
+                        return providers.hasNext();
+                    }
+                }
+
+                @Override public DataStoreProvider next() {
+                    synchronized (loader) {
+                        return providers.next();
+                    }
+                }
+
+                @Override public void remove() {
+                    throw new UnsupportedOperationException();
+                }
+            });
+        }
+    }
+
+    /**
      * Returns the MIME type of the storage file format, or {@code null} if unknown or not applicable.
      *
-     * @param  storage The input/output object as a URL, file, image input stream, <i>etc.</i>.
-     * @return The storage MIME type, or {@code null} if unknown or not applicable.
-     * @throws DataStoreException If an error occurred while opening the storage.
+     * @param  storage  the input/output object as a URL, file, image input stream, <i>etc.</i>.
+     * @return the storage MIME type, or {@code null} if unknown or not applicable.
+     * @throws DataStoreException if an error occurred while opening the storage.
      */
     public String probeContentType(final Object storage) throws DataStoreException {
         ArgumentChecks.ensureNonNull("storage", storage);
@@ -86,7 +121,7 @@ final class DataStoreRegistry {
      * The {@code storage} argument can be any of the following types:
      *
      * <ul>
-     *   <li>A {@link java.io.File} for a file or a directory.</li>
+     *   <li>A {@link java.nio.file.Path} or a {@link java.io.File} for a file or a directory.</li>
      *   <li>A {@link java.net.URI} or a {@link java.net.URL} to a distant resource.</li>
      *   <li>A {@link java.lang.CharSequence} interpreted as a filename or a URL.</li>
      *   <li>A {@link java.nio.channels.Channel}, {@link java.io.DataInput}, {@link java.io.InputStream} or {@link java.io.Reader}.</li>
@@ -95,10 +130,10 @@ final class DataStoreRegistry {
      *   <li>An existing {@link StorageConnector} instance.</li>
      * </ul>
      *
-     * @param  storage The input/output object as a URL, file, image input stream, <i>etc.</i>.
-     * @return The object to use for reading geospatial data from the given storage.
+     * @param  storage  the input/output object as a URL, file, image input stream, <i>etc.</i>.
+     * @return the object to use for reading geospatial data from the given storage.
      * @throws UnsupportedStorageException if no {@link DataStoreProvider} is found for a given storage object.
-     * @throws DataStoreException If an error occurred while opening the storage.
+     * @throws DataStoreException if an error occurred while opening the storage.
      */
     public DataStore open(final Object storage) throws UnsupportedStorageException, DataStoreException {
         ArgumentChecks.ensureNonNull("storage", storage);
@@ -108,10 +143,10 @@ final class DataStoreRegistry {
     /**
      * Implementation of {@link #probeContentType(Object)} and {@link #open(Object)}.
      *
-     * @param  storage The input/output object as a URL, file, image input stream, <i>etc.</i>.
-     * @param  open {@code true} for creating a {@link DataStore}, or {@code false} if not needed.
+     * @param  storage  the input/output object as a URL, file, image input stream, <i>etc.</i>.
+     * @param  open     {@code true} for creating a {@link DataStore}, or {@code false} if not needed.
      * @throws UnsupportedStorageException if no {@link DataStoreProvider} is found for a given storage object.
-     * @throws DataStoreException If an error occurred while opening the storage.
+     * @throws DataStoreException if an error occurred while opening the storage.
      */
     private ProbeProviderPair lookup(final Object storage, final boolean open) throws DataStoreException {
         StorageConnector connector;
@@ -152,7 +187,7 @@ final class DataStoreRegistry {
                      * found an other provider.
                      */
                     if (deferred == null) {
-                        deferred = new LinkedList<ProbeProviderPair>();
+                        deferred = new LinkedList<>();
                     }
                     deferred.add(new ProbeProviderPair(provider, probe));
                 } else if (ProbeResult.UNDETERMINED.equals(probe)) {
@@ -177,18 +212,18 @@ final class DataStoreRegistry {
              */
             if (deferred != null) {
 search:         while (!deferred.isEmpty() && connector.prefetch()) {
-                    for (final Iterator<ProbeProviderPair> it=deferred.iterator(); it.hasNext();) {
+                    for (final Iterator<ProbeProviderPair> it = deferred.iterator(); it.hasNext();) {
                         final ProbeProviderPair p = it.next();
-                        p.probe = provider.probeContent(connector);
+                        p.probe = p.provider.probeContent(connector);
                         if (p.probe.isSupported()) {
                             selected = p;
                             break search;
                         }
                         if (!ProbeResult.INSUFFICIENT_BYTES.equals(p.probe)) {
                             if (ProbeResult.UNDETERMINED.equals(p.probe)) {
-                                selected = p; // To be used only if we don't find a better match.
+                                selected = p;                   // To be used only if we don't find a better match.
                             }
-                            it.remove(); // UNSUPPORTED_* or UNDETERMINED: do not try again those providers.
+                            it.remove();        // UNSUPPORTED_* or UNDETERMINED: do not try again those providers.
                         }
                     }
                 }
@@ -202,7 +237,7 @@ search:         while (!deferred.isEmpty() && connector.prefetch()) {
              */
             if (open && selected != null) {
                 selected.store = selected.provider.open(connector);
-                connector = null; // For preventing it to be closed.
+                connector = null;                                               // For preventing it to be closed.
             }
         } finally {
             if (connector != null && connector != storage) {
@@ -210,7 +245,7 @@ search:         while (!deferred.isEmpty() && connector.prefetch()) {
             }
         }
         if (open && selected == null) {
-            throw new UnsupportedStorageException(Errors.format(Errors.Keys.UnknownFormatFor_1, connector.getStorageName()));
+            throw new UnsupportedStorageException(null, Resources.Keys.UnknownFormatFor_1, connector.getStorageName());
         }
         return selected;
     }

@@ -35,8 +35,12 @@ import org.apache.sis.internal.metadata.ReferencingServices;
 
 /**
  * Time period covered by the content of the dataset.
+ * The following property is mandatory in a well-formed metadata according ISO 19115:
  *
- * <p>In addition to the standard properties, SIS provides the following methods:</p>
+ * <div class="preformat">{@code EX_TemporalExtent}
+ * {@code   └─extent…………………} The date and time for the content of the dataset.</div>
+ *
+ * In addition to the standard properties, SIS provides the following methods:
  * <ul>
  *   <li>{@link #getStartTime()} for fetching the start time from the temporal primitive.</li>
  *   <li>{@link #getEndTime()} for fetching the end time from the temporal primitive.</li>
@@ -56,10 +60,11 @@ import org.apache.sis.internal.metadata.ReferencingServices;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Touraïvane (IRD)
  * @author  Cédric Briançon (Geomatys)
- * @since   0.3
  * @version 0.3
+ * @since   0.3
  * @module
  */
+@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "EX_TemporalExtent_Type")
 @XmlRootElement(name = "EX_TemporalExtent")
 @XmlSeeAlso(DefaultSpatialTemporalExtent.class)
@@ -85,7 +90,7 @@ public class DefaultTemporalExtent extends ISOMetadata implements TemporalExtent
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
-     * @param object The metadata to copy values from, or {@code null} if none.
+     * @param  object  the metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(TemporalExtent)
      */
@@ -113,8 +118,8 @@ public class DefaultTemporalExtent extends ISOMetadata implements TemporalExtent
      *       metadata contained in the given object are not recursively copied.</li>
      * </ul>
      *
-     * @param  object The object to get as a SIS implementation, or {@code null} if none.
-     * @return A SIS implementation containing the values of the given object (may be the
+     * @param  object  the object to get as a SIS implementation, or {@code null} if none.
+     * @return a SIS implementation containing the values of the given object (may be the
      *         given object itself), or {@code null} if the argument was null.
      */
     public static DefaultTemporalExtent castOrCopy(final TemporalExtent object) {
@@ -134,7 +139,7 @@ public class DefaultTemporalExtent extends ISOMetadata implements TemporalExtent
      * then this method will build an extent from the {@linkplain #getStartTime() start
      * time} and {@linkplain #getEndTime() end time} if any.
      *
-     * @return The date and time for the content, or {@code null}.
+     * @return the date and time for the content, or {@code null}.
      */
     @Override
     @XmlElement(name = "extent", required = true)
@@ -145,7 +150,7 @@ public class DefaultTemporalExtent extends ISOMetadata implements TemporalExtent
     /**
      * Sets the date and time for the content of the dataset.
      *
-     * @param newValue The new content date.
+     * @param  newValue  the new content date.
      */
     public void setExtent(final TemporalPrimitive newValue) {
         checkWritePermission();
@@ -155,9 +160,9 @@ public class DefaultTemporalExtent extends ISOMetadata implements TemporalExtent
     /**
      * Infers a value from the extent as a {@link Date} object.
      *
-     * @param begin {@code true} if we are asking for the start time,
-     *              or {@code false} for the end time.
-     * @return The requested time as a Java date, or {@code null} if none.
+     * @param  begin  {@code true} if we are asking for the start time,
+     *                or {@code false} for the end time.
+     * @return the requested time as a Java date, or {@code null} if none.
      */
     static Date getTime(final TemporalPrimitive extent, final boolean begin) {
         final Instant instant;
@@ -175,7 +180,7 @@ public class DefaultTemporalExtent extends ISOMetadata implements TemporalExtent
      * The start date and time for the content of the dataset.
      * This method tries to infer it from the {@linkplain #getExtent() extent}.
      *
-     * @return The start time, or {@code null} if none.
+     * @return the start time, or {@code null} if none.
      */
     public Date getStartTime() {
         return getTime(extent, true);
@@ -185,7 +190,7 @@ public class DefaultTemporalExtent extends ISOMetadata implements TemporalExtent
      * Returns the end date and time for the content of the dataset.
      * This method tries to infer it from the {@linkplain #getExtent() extent}.
      *
-     * @return The end time, or {@code null} if none.
+     * @return the end time, or {@code null} if none.
      */
     public Date getEndTime() {
         return getTime(extent, false);
@@ -196,10 +201,10 @@ public class DefaultTemporalExtent extends ISOMetadata implements TemporalExtent
      * primitive for the given dates, then invokes {@link #setExtent(TemporalPrimitive)}.
      *
      * <p><b>Note:</b> this method is available only if the {@code sis-temporal} module is available on the classpath,
-     * or any other module providing an implementation of the {@link org.opengis.temporal.TemporalFactory} interface.</p>
+     * or any other module providing an implementation of the {@code TemporalFactory} interface.</p>
      *
-     * @param  startTime The start date and time for the content of the dataset, or {@code null} if none.
-     * @param  endTime   The end date and time for the content of the dataset, or {@code null} if none.
+     * @param  startTime  the start date and time for the content of the dataset, or {@code null} if none.
+     * @param  endTime    the end date and time for the content of the dataset, or {@code null} if none.
      * @throws UnsupportedOperationException if no implementation of {@code TemporalFactory} has been found
      *         on the classpath.
      */
@@ -225,7 +230,7 @@ public class DefaultTemporalExtent extends ISOMetadata implements TemporalExtent
      * <p><b>Note:</b> this method is available only if the {@code sis-referencing} module is
      * available on the classpath.</p>
      *
-     * @param  envelope The envelope to use for setting this temporal extent.
+     * @param  envelope  the envelope to use for setting this temporal extent.
      * @throws UnsupportedOperationException if the referencing module or the temporal module is not on the classpath.
      * @throws TransformException if the envelope can not be transformed to a temporal extent.
      *

@@ -72,17 +72,29 @@
  * {@code      ├─} {@linkplain org.apache.sis.feature.DefaultAssociationRole  Feature association role}<br>
  * {@code      └─} {@linkplain org.apache.sis.feature.AbstractOperation       Operation}<br>
  * </td><td class="sep" style="width: 50%; white-space: nowrap">
- *             {@linkplain org.apache.sis.feature.AbstractFeature     Feature}             (<cite>sparse</cite> or <cite>dense</cite>)<br>
- *                                                                    Property<br>
- * {@code  ├─} {@linkplain org.apache.sis.feature.AbstractAttribute   Attribute}           (<cite>singleton</cite> or <cite>multi-valued</cite>)<br>
- * {@code  └─} {@linkplain org.apache.sis.feature.AbstractAssociation Feature association} (<cite>singleton</cite> or <cite>multi-valued</cite>)<br>
+ *                 Object<br>
+ * {@code  ├─}     {@linkplain org.apache.sis.feature.AbstractFeature     Feature}             (<cite>sparse</cite> or <cite>dense</cite>)<br>
+ * {@code  └─}                                                            Property<br>
+ * {@code      ├─} {@linkplain org.apache.sis.feature.AbstractAttribute   Attribute}           (<cite>singleton</cite> or <cite>multi-valued</cite>)<br>
+ * {@code      └─} {@linkplain org.apache.sis.feature.AbstractAssociation Feature association} (<cite>singleton</cite> or <cite>multi-valued</cite>)<br>
  * </td></tr></table>
+ *
+ * <div class="section">Instantiation</div>
+ * Classes defined in this package are rarely instantiated directly (by a {@code new} statement).
+ * Instead those classes are instantiated indirectly by invoking a method on a parent container,
+ * or by using a builder. The starting point is {@code FeatureType}, which may be created by a
+ * {@link org.apache.sis.feature.builder.FeatureTypeBuilder} or may be provided by a
+ * {@link org.apache.sis.storage.DataStore} reading a data file.
+ * Once a {@code FeatureType} has been obtained, {@code Feature}s can be instantiated by calls to the
+ * {@link org.apache.sis.feature.DefaultFeatureType#newInstance() FeatureType.newInstance()} method.
+ * Once a {@code Feature} instance has been obtained, {@code Attribute}s can be instantiated indirectly
+ * by calls to the {@link org.apache.sis.feature.AbstractFeature#setPropertyValue Feature.setPropertyValue(…)} method.
  *
  * @author  Travis L. Pinney
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
+ * @version 0.8
  * @since   0.5
- * @version 0.5
  * @module
  */
 package org.apache.sis.feature;

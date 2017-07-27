@@ -19,24 +19,25 @@ package org.apache.sis.referencing.operation.transform;
 import java.util.List;
 import java.util.Arrays;
 import java.io.Serializable;
-import javax.measure.unit.SI;
-import javax.measure.unit.NonSI;
+import org.opengis.util.FactoryException;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.geometry.MismatchedDimensionException;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
+import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.opengis.referencing.operation.OperationMethod;
-import org.opengis.referencing.operation.SingleOperation;
 import org.apache.sis.geometry.GeneralDirectPosition;
 import org.apache.sis.parameter.Parameterized;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.io.wkt.FormattableObject;
+import org.apache.sis.internal.referencing.Resources;
 import org.apache.sis.internal.referencing.WKTUtilities;
+import org.apache.sis.internal.metadata.WKTKeywords;
 import org.apache.sis.util.Utilities;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.LenientComparable;
@@ -78,12 +79,13 @@ import static org.apache.sis.util.ArgumentChecks.ensureDimensionMatches;
  * running the same SIS version.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.5
- * @version 0.6
- * @module
+ * @version 0.8
  *
  * @see DefaultMathTransformFactory
  * @see org.apache.sis.referencing.operation.AbstractCoordinateOperation
+ *
+ * @since 0.5
+ * @module
  */
 public abstract class AbstractMathTransform extends FormattableObject
         implements MathTransform, Parameterized, LenientComparable
@@ -132,7 +134,7 @@ public abstract class AbstractMathTransform extends FormattableObject
     /**
      * Gets the dimension of input points.
      *
-     * @return The dimension of input points.
+     * @return the dimension of input points.
      *
      * @see org.apache.sis.referencing.operation.DefaultOperationMethod#getSourceDimensions()
      */
@@ -142,7 +144,7 @@ public abstract class AbstractMathTransform extends FormattableObject
     /**
      * Gets the dimension of output points.
      *
-     * @return The dimension of output points.
+     * @return the dimension of output points.
      *
      * @see org.apache.sis.referencing.operation.DefaultOperationMethod#getTargetDimensions()
      */
@@ -155,12 +157,13 @@ public abstract class AbstractMathTransform extends FormattableObject
      * <div class="note"><b>Relationship with ISO 19111:</b>
      * This method is similar to {@link OperationMethod#getParameters()}, except that typical
      * {@link MathTransform} implementations return parameters in standard units (usually
-     * {@linkplain SI#METRE metres} or {@linkplain NonSI#DEGREE_ANGLE decimal degrees}).
+     * {@linkplain org.apache.sis.measure.Units#METRE metres} or
+     * {@linkplain org.apache.sis.measure.Units#DEGREE decimal degrees}).
      * </div>
      *
-     * @return The parameter descriptors for this math transform, or {@code null} if unspecified.
+     * @return the parameter descriptors for this math transform, or {@code null} if unspecified.
      *
-     * @see OperationMethod#getParameters()
+     * @see org.apache.sis.referencing.operation.DefaultOperationMethod#getParameters()
      */
     @Override
     public ParameterDescriptorGroup getParameterDescriptors() {
@@ -180,12 +183,12 @@ public abstract class AbstractMathTransform extends FormattableObject
      * to take in account the context of this math transform, i.e. the scales and offsets applied before
      * and after this transform. This information is provided by {@link #getContextualParameters()}.
      *
-     * @return The parameter values for this math transform, or {@code null} if unspecified.
+     * @return the parameter values for this math transform, or {@code null} if unspecified.
      *         Note that those parameters may be normalized (e.g. represent a transformation
      *         of an ellipsoid of semi-major axis length of 1).
      *
      * @see #getContextualParameters()
-     * @see SingleOperation#getParameterValues()
+     * @see org.apache.sis.referencing.operation.DefaultConversion#getParameterValues()
      */
     @Override
     public ParameterValueGroup getParameterValues() {
@@ -207,7 +210,7 @@ public abstract class AbstractMathTransform extends FormattableObject
      * If a split has been done, then this {@code MathTransform} represents only the non-linear step and Apache SIS
      * needs this method for reconstructing the parameters of the complete transform.
      *
-     * @return The parameters values for the sequence of <cite>normalize</cite> → {@code this} → <cite>denormalize</cite>
+     * @return the parameters values for the sequence of <cite>normalize</cite> → {@code this} → <cite>denormalize</cite>
      *         transforms, or {@code null} if unspecified.
      *         Callers should not modify the returned parameters, since modifications (if allowed)
      *         will generally not be reflected back in this {@code MathTransform}.
@@ -230,12 +233,12 @@ public abstract class AbstractMathTransform extends FormattableObject
     /**
      * Constructs an error message for the {@link MismatchedDimensionException}.
      *
-     * @param argument  The argument name with the wrong number of dimensions.
-     * @param expected  The expected dimension.
-     * @param dimension The wrong dimension.
+     * @param  argument   the argument name with the wrong number of dimensions.
+     * @param  expected   the expected dimension.
+     * @param  dimension  the wrong dimension.
      */
-    static String mismatchedDimension(final String argument, final int expected, final int dimension) {
-        return Errors.format(Errors.Keys.MismatchedDimension_3, argument, expected, dimension);
+    static MismatchedDimensionException mismatchedDimension(final String argument, final int expected, final int dimension) {
+        return new MismatchedDimensionException(Errors.format(Errors.Keys.MismatchedDimension_3, argument, expected, dimension));
     }
 
     /**
@@ -249,8 +252,10 @@ public abstract class AbstractMathTransform extends FormattableObject
      *   <li>Delegates to the {@link #transform(double[], int, double[], int, boolean)} method.</li>
      * </ul>
      *
-     * @param  ptSrc the coordinate point to be transformed.
-     * @param  ptDst the coordinate point that stores the result of transforming {@code ptSrc}, or {@code null}.
+     * This method does not update the associated {@link org.opengis.referencing.crs.CoordinateReferenceSystem} value.
+     *
+     * @param  ptSrc  the coordinate point to be transformed.
+     * @param  ptDst  the coordinate point that stores the result of transforming {@code ptSrc}, or {@code null}.
      * @return the coordinate point after transforming {@code ptSrc} and storing the result in {@code ptDst},
      *         or a newly created point if {@code ptDst} was null.
      * @throws MismatchedDimensionException if {@code ptSrc} or {@code ptDst} doesn't have the expected dimension.
@@ -333,16 +338,16 @@ public abstract class AbstractMathTransform extends FormattableObject
      * The source and destination may overlap. Consequently, implementors must read all source
      * ordinate values before to start writing the transformed ordinates in the destination array.
      *
-     * @param srcPts   The array containing the source coordinate (can not be {@code null}).
-     * @param srcOff   The offset to the point to be transformed in the source array.
-     * @param dstPts   The array into which the transformed coordinate is returned. May be the same than {@code srcPts}.
-     *                 May be {@code null} if only the derivative matrix is desired.
-     * @param dstOff   The offset to the location of the transformed point that is stored in the destination array.
-     * @param derivate {@code true} for computing the derivative, or {@code false} if not needed.
-     * @return The matrix of the transform derivative at the given source position,
+     * @param  srcPts    the array containing the source coordinate (can not be {@code null}).
+     * @param  srcOff    the offset to the point to be transformed in the source array.
+     * @param  dstPts    the array into which the transformed coordinate is returned. May be the same than {@code srcPts}.
+     *                   May be {@code null} if only the derivative matrix is desired.
+     * @param  dstOff    the offset to the location of the transformed point that is stored in the destination array.
+     * @param  derivate  {@code true} for computing the derivative, or {@code false} if not needed.
+     * @return the matrix of the transform derivative at the given source position,
      *         or {@code null} if the {@code derivate} argument is {@code false}.
-     * @throws TransformException If the point can not be transformed or if a problem occurred while calculating the
-     *         derivative.
+     * @throws TransformException if the point can not be transformed or
+     *         if a problem occurred while calculating the derivative.
      *
      * @see #derivative(DirectPosition)
      * @see #transform(DirectPosition, DirectPosition)
@@ -356,8 +361,8 @@ public abstract class AbstractMathTransform extends FormattableObject
      * transforming many points. The supplied array of ordinal values will contain packed ordinal values.
      *
      * <div class="note"><b>Example:</b> if the source dimension is 3, then the ordinates will be packed in this order:
-     * (<var>x<sub>0</sub></var>,<var>y<sub>0</sub></var>,<var>z<sub>0</sub></var>,
-     *  <var>x<sub>1</sub></var>,<var>y<sub>1</sub></var>,<var>z<sub>1</sub></var> …).
+     * (<var>x₀</var>,<var>y₀</var>,<var>z₀</var>,
+     *  <var>x₁</var>,<var>y₁</var>,<var>z₁</var> …).
      * </div>
      *
      * The default implementation invokes {@link #transform(double[], int, double[], int, boolean)} in a loop,
@@ -366,12 +371,12 @@ public abstract class AbstractMathTransform extends FormattableObject
      *
      * <div class="note"><b>Implementation note:</b> see {@link IterationStrategy} javadoc for a method skeleton.</div>
      *
-     * @param  srcPts The array containing the source point coordinates.
-     * @param  srcOff The offset to the first point to be transformed in the source array.
-     * @param  dstPts The array into which the transformed point coordinates are returned.
-     *                May be the same than {@code srcPts}.
-     * @param  dstOff The offset to the location of the first transformed point that is stored in the destination array.
-     * @param  numPts The number of point objects to be transformed.
+     * @param  srcPts  the array containing the source point coordinates.
+     * @param  srcOff  the offset to the first point to be transformed in the source array.
+     * @param  dstPts  the array into which the transformed point coordinates are returned.
+     *                 May be the same than {@code srcPts}.
+     * @param  dstOff  the offset to the location of the first transformed point that is stored in the destination array.
+     * @param  numPts  the number of point objects to be transformed.
      * @throws TransformException if a point can not be transformed. Some implementations will stop at the first failure,
      *         wile some other implementations will fill the untransformable points with {@linkplain Double#NaN} values,
      *         continue and throw the exception only at end. Implementations that fall in the later case should set the
@@ -403,7 +408,7 @@ public abstract class AbstractMathTransform extends FormattableObject
                     dstOff += (numPts-1) * dstInc; dstInc = -dstInc;
                     break;
                 }
-                default: // Following should alway work even for unknown cases.
+                default:                    // Following should alway work even for unknown cases.
                 case BUFFER_SOURCE: {
                     srcPts = Arrays.copyOfRange(srcPts, srcOff, srcOff + numPts*srcInc);
                     srcOff = 0;
@@ -422,7 +427,7 @@ public abstract class AbstractMathTransform extends FormattableObject
          * and continue with other points, up to some maximal amount of failures.
          */
         TransformException failure = null;
-        int failureCount = 0; // Count ordinates, not coordinates.
+        int failureCount = 0;                           // Count ordinates, not coordinates.
         int blockStart   = 0;
         do {
             try {
@@ -444,11 +449,12 @@ public abstract class AbstractMathTransform extends FormattableObject
                  */
                 Arrays.fill(dstPts, dstOff, dstOff + Math.abs(dstInc), Double.NaN);
                 if (failure == null) {
-                    failure = exception; // Keep only the first failure.
+                    failure = exception;                        // Keep only the first failure.
                     blockStart = srcOff;
                 } else {
+                    failure.addSuppressed(exception);
                     if (Math.abs(srcOff - blockStart) > MAXIMUM_BUFFER_SIZE) {
-                        failureCount = 0; // We started a new block of coordinates.
+                        failureCount = 0;                       // We started a new block of coordinates.
                         blockStart = srcOff;
                     }
                 }
@@ -476,12 +482,12 @@ public abstract class AbstractMathTransform extends FormattableObject
      *
      * <div class="note"><b>Implementation note:</b> see {@link IterationStrategy} javadoc for a method skeleton.</div>
      *
-     * @param srcPts The array containing the source point coordinates.
-     * @param srcOff The offset to the first point to be transformed in the source array.
-     * @param dstPts The array into which the transformed point coordinates are returned.
-     *               May be the same than {@code srcPts}.
-     * @param dstOff The offset to the location of the first transformed point that is stored in the destination array.
-     * @param numPts The number of point objects to be transformed.
+     * @param  srcPts  the array containing the source point coordinates.
+     * @param  srcOff  the offset to the first point to be transformed in the source array.
+     * @param  dstPts  the array into which the transformed point coordinates are returned.
+     *                 May be the same than {@code srcPts}.
+     * @param  dstOff  the offset to the location of the first transformed point that is stored in the destination array.
+     * @param  numPts  the number of point objects to be transformed.
      * @throws TransformException if a point can't be transformed. Some implementations will stop at the first failure,
      *         wile some other implementations will fill the un-transformable points with {@link Float#NaN} values,
      *         continue and throw the exception only at end. Implementations that fall in the later case should set
@@ -519,10 +525,10 @@ public abstract class AbstractMathTransform extends FormattableObject
          */
         int srcInc = dimSource * numBufferedPts;
         int dstInc = dimTarget * numBufferedPts;
-        int srcStop = srcInc; // src|dstStop will be used and modified in the do..while loop later.
+        int srcStop = srcInc;                   // src|dstStop will be used and modified in the do..while loop later.
         int dstStop = dstInc;
         if (srcPts == dstPts) {
-            final int numPass = (numPts + numBufferedPts-1) / numBufferedPts; // Round toward higher integer.
+            final int numPass = (numPts + numBufferedPts-1) / numBufferedPts;         // Round toward higher integer.
             switch (IterationStrategy.suggest(srcOff, srcInc, dstOff, dstInc, numPass)) {
                 case ASCENDING: {
                     break;
@@ -558,15 +564,17 @@ public abstract class AbstractMathTransform extends FormattableObject
                 srcStop = numPts * dimSource;
                 dstStop = numPts * dimTarget;
                 if (srcInc < 0) {
-                    // If we were applying IterationStrategy.DESCENDING, then srcOff and dstOff
-                    // may be negative at this point because the last pass may not fill all the
-                    // buffer space. We need to apply the correction below.
+                    /*
+                     * If we were applying IterationStrategy.DESCENDING, then srcOff and dstOff
+                     * may be negative at this point because the last pass may not fill all the
+                     * buffer space. We need to apply the correction below.
+                     */
                     srcOff -= (srcStop + srcInc);
                     dstOff -= (dstStop + dstInc);
                 }
             }
             for (int i=0; i<srcStop; i++) {
-                buffer[bufferedSrcOff + i] = (double) srcPts[srcOff + i];
+                buffer[bufferedSrcOff + i] = srcPts[srcOff + i];
             }
             assert !IterationStrategy.suggest(bufferedSrcOff, dimSource, 0, dimTarget, numBufferedPts).needBuffer;
             try {
@@ -581,7 +589,9 @@ public abstract class AbstractMathTransform extends FormattableObject
                 if (exception.getLastCompletedTransform() != this) {
                     throw exception;
                 } else if (failure == null) {
-                    failure = exception; // Keep only the first exception.
+                    failure = exception;                        // Keep only the first exception.
+                } else {
+                    failure.addSuppressed(exception);
                 }
             }
             for (int i=0; i<dstStop; i++) {
@@ -600,11 +610,11 @@ public abstract class AbstractMathTransform extends FormattableObject
      * Transforms a list of coordinate point ordinal values. The default implementation delegates
      * to {@link #transform(double[], int, double[], int, int)} using a temporary array of doubles.
      *
-     * @param srcPts The array containing the source point coordinates.
-     * @param srcOff The offset to the first point to be transformed in the source array.
-     * @param dstPts The array into which the transformed point coordinates are returned.
-     * @param dstOff The offset to the location of the first transformed point that is stored in the destination array.
-     * @param numPts The number of point objects to be transformed.
+     * @param  srcPts  the array containing the source point coordinates.
+     * @param  srcOff  the offset to the first point to be transformed in the source array.
+     * @param  dstPts  the array into which the transformed point coordinates are returned.
+     * @param  dstOff  the offset to the location of the first transformed point that is stored in the destination array.
+     * @param  numPts  the number of point objects to be transformed.
      * @throws TransformException if a point can not be transformed. Some implementations will stop at the first failure,
      *         wile some other implementations will fill the untransformable points with {@linkplain Float#NaN} values,
      *         continue and throw the exception only at end. Implementations that fall in the later case should set the
@@ -644,6 +654,8 @@ public abstract class AbstractMathTransform extends FormattableObject
                     throw exception;
                 } else if (failure == null) {
                     failure = exception;
+                } else {
+                    failure.addSuppressed(exception);
                 }
             }
             for (int i=0; i<dstLength; i++) {
@@ -662,11 +674,11 @@ public abstract class AbstractMathTransform extends FormattableObject
      * to {@link #transform(double[], int, double[], int, int)} using a temporary array of doubles
      * if necessary.
      *
-     * @param srcPts The array containing the source point coordinates.
-     * @param srcOff The offset to the first point to be transformed in the source array.
-     * @param dstPts The array into which the transformed point coordinates are returned.
-     * @param dstOff The offset to the location of the first transformed point that is stored in the destination array.
-     * @param numPts The number of point objects to be transformed.
+     * @param  srcPts  the array containing the source point coordinates.
+     * @param  srcOff  the offset to the first point to be transformed in the source array.
+     * @param  dstPts  the array into which the transformed point coordinates are returned.
+     * @param  dstOff  the offset to the location of the first transformed point that is stored in the destination array.
+     * @param  numPts  the number of point objects to be transformed.
      * @throws TransformException if a point can not be transformed. Some implementations will stop at the first failure,
      *         wile some other implementations will fill the untransformable points with {@linkplain Double#NaN} values,
      *         continue and throw the exception only at end. Implementations that fall in the later case should set the
@@ -707,7 +719,7 @@ public abstract class AbstractMathTransform extends FormattableObject
                 dstLength = numPts * dimTarget;
             }
             for (int i=0; i<srcLength; i++) {
-                buffer[i] = (double) srcPts[srcOff++];
+                buffer[i] = srcPts[srcOff++];
             }
             try {
                 transform(buffer, 0, dstPts, dstOff, numBufferedPts);
@@ -717,6 +729,8 @@ public abstract class AbstractMathTransform extends FormattableObject
                     throw exception;
                 } else if (failure == null) {
                     failure = exception;
+                } else {
+                    failure.addSuppressed(exception);
                 }
             }
             dstOff += dstLength;
@@ -741,8 +755,8 @@ public abstract class AbstractMathTransform extends FormattableObject
      *       Otherwise throws {@link TransformException}.</li>
      * </ul>
      *
-     * @param  point The coordinate point where to evaluate the derivative.
-     * @return The derivative at the specified point (never {@code null}).
+     * @param  point  the coordinate point where to evaluate the derivative.
+     * @return the derivative at the specified point (never {@code null}).
      * @throws NullPointerException if the derivative depends on coordinate and {@code point} is {@code null}.
      * @throws MismatchedDimensionException if {@code point} does not have the expected dimension.
      * @throws TransformException if the derivative can not be evaluated at the specified point.
@@ -752,11 +766,11 @@ public abstract class AbstractMathTransform extends FormattableObject
         final int dimSource = getSourceDimensions();
         final double[] coordinate = point.getCoordinate();
         if (coordinate.length != dimSource) {
-            throw new MismatchedDimensionException(mismatchedDimension("point", coordinate.length, dimSource));
+            throw mismatchedDimension("point", dimSource, coordinate.length);
         }
         final Matrix derivative = transform(coordinate, 0, null, 0, true);
         if (derivative == null) {
-            throw new TransformException(Errors.format(Errors.Keys.CanNotComputeDerivative));
+            throw new TransformException(Resources.format(Resources.Keys.CanNotComputeDerivative));
         }
         return derivative;
     }
@@ -774,13 +788,13 @@ public abstract class AbstractMathTransform extends FormattableObject
         if (isIdentity()) {
             return this;
         }
-        throw new NoninvertibleTransformException(Errors.format(Errors.Keys.NonInvertibleTransform));
+        throw new NoninvertibleTransformException(Resources.format(Resources.Keys.NonInvertibleTransform));
     }
 
     /**
-     * Concatenates in an optimized way this math transform with the given one. A new math transform
-     * is created to perform the combined transformation. The {@code applyOtherFirst} value determines
-     * the transformation order as bellow:
+     * Concatenates or pre-concatenates in an optimized way this math transform with the given one.
+     * A new math transform is created to perform the combined transformation.
+     * The {@code applyOtherFirst} value determines the transformation order as bellow:
      *
      * <ul>
      *   <li>If {@code applyOtherFirst} is {@code true}, then transforming a point
@@ -796,15 +810,22 @@ public abstract class AbstractMathTransform extends FormattableObject
      * {@link ConcatenatedTransform}.
      *
      * <p>The default implementation always returns {@code null}. This method is ought to be overridden
-     * by subclasses capable of concatenating some combination of transforms in a special way.
-     * Examples are {@link ExponentialTransform1D} and {@link LogarithmicTransform1D}.</p>
+     * by subclasses capable of concatenating some combination of transforms in a special way.</p>
      *
-     * @param  other The math transform to apply.
-     * @param  applyOtherFirst {@code true} if the transformation order is {@code other} followed by {@code this},
-     *         or {@code false} if the transformation order is {@code this} followed by {@code other}.
-     * @return The combined math transform, or {@code null} if no optimized combined transform is available.
+     * @param  applyOtherFirst  {@code true} if the transformation order is {@code other} followed by {@code this}, or
+     *                          {@code false} if the transformation order is {@code this} followed by {@code other}.
+     * @param  other            the other math transform to (pre-)concatenate with this transform.
+     * @param  factory          the factory which is (indirectly) invoking this method, or {@code null} if none.
+     * @return the combined math transform, or {@code null} if no optimized combined transform is available.
+     * @throws FactoryException if an error occurred while combining the transforms.
+     *
+     * @see DefaultMathTransformFactory#createConcatenatedTransform(MathTransform, MathTransform)
+     *
+     * @since 0.8
      */
-    MathTransform concatenate(final MathTransform other, final boolean applyOtherFirst) {
+    protected MathTransform tryConcatenate(boolean applyOtherFirst, MathTransform other, MathTransformFactory factory)
+            throws FactoryException
+    {
         return null;
     }
 
@@ -813,10 +834,10 @@ public abstract class AbstractMathTransform extends FormattableObject
      * when first needed and caches the value for future invocations. Subclasses shall override
      * {@code computeHashCode()} instead than this method.
      *
-     * @return The hash code value. This value may change between different execution of the Apache SIS library.
+     * @return the hash code value. This value may change between different execution of the Apache SIS library.
      */
     @Override
-    public final int hashCode() { // No need to synchronize; ok if invoked twice.
+    public final int hashCode() {               // No need to synchronize; ok if invoked twice.
         int hash = hashCode;
         if (hash == 0) {
             hash = computeHashCode();
@@ -832,7 +853,7 @@ public abstract class AbstractMathTransform extends FormattableObject
     /**
      * Computes a hash value for this transform. This method is invoked by {@link #hashCode()} when first needed.
      *
-     * @return The hash code value. This value may change between different execution of the Apache SIS library.
+     * @return the hash code value. This value may change between different execution of the Apache SIS library.
      */
     protected int computeHashCode() {
         return getClass().hashCode() + getSourceDimensions() + 31 * getTargetDimensions();
@@ -846,7 +867,7 @@ public abstract class AbstractMathTransform extends FormattableObject
      *     return equals(other, ComparisonMode.STRICT);
      * }
      *
-     * @param  object The object to compare with this transform.
+     * @param  object  the object to compare with this transform.
      * @return {@code true} if the given object is a transform of the same class and using the same parameter values.
      */
     @Override
@@ -867,29 +888,30 @@ public abstract class AbstractMathTransform extends FormattableObject
      * <p>The default implementation returns {@code true} if the following conditions are meet:</p>
      * <ul>
      *   <li>{@code object} is an instance of the same class than {@code this}. We require the
-     *        same class because there is no interface for the various kinds of transform.</li>
-     *   <li>The {@linkplain #getParameterDescriptors() parameter descriptors} are equal according
+     *       same class because there is no interface for the various kinds of transform.</li>
+     *   <li>If the hash code value has already been {@linkplain #computeHashCode() computed} for both
+     *       instances, their values are the same <i>(opportunist performance enhancement)</i>.</li>
+     *   <li>The {@linkplain #getContextualParameters() contextual parameters} are equal according
      *       the given comparison mode.</li>
      * </ul>
      *
-     * The {@linkplain #getParameterValues() parameter values} are <strong>not</strong> compared because
-     * subclasses can typically compare those values more efficiently by accessing to their member fields.
-     *
-     * @param  object The object to compare with this transform.
-     * @param  mode The strictness level of the comparison. Default to {@link ComparisonMode#STRICT STRICT}.
+     * @param  object  the object to compare with this transform.
+     * @param  mode    the strictness level of the comparison. Default to {@link ComparisonMode#STRICT STRICT}.
      * @return {@code true} if the given object is considered equals to this math transform.
      */
     @Override
     public boolean equals(final Object object, final ComparisonMode mode) {
-        // Do not check 'object==this' here, since this
-        // optimization is usually done in subclasses.
+        /*
+         * Do not check 'object==this' here, since this
+         * optimization is usually done in subclasses.
+         */
         if (object != null && getClass() == object.getClass()) {
             final AbstractMathTransform that = (AbstractMathTransform) object;
             /*
              * If the classes are the same, then the hash codes should be computed in the same way. Since those
              * codes are cached, this is an efficient way to quickly check if the two objects are different.
              */
-            if (mode.ordinal() < ComparisonMode.APPROXIMATIVE.ordinal()) {
+            if (!mode.isApproximative()) {
                 final int tc = hashCode;
                 if (tc != 0) {
                     final int oc = that.hashCode;
@@ -899,11 +921,15 @@ public abstract class AbstractMathTransform extends FormattableObject
                 }
             }
             // See the policy documented in the LenientComparable javadoc.
-            if (mode.ordinal() >= ComparisonMode.IGNORE_METADATA.ordinal()) {
+            if (mode.isIgnoringMetadata()) {
                 return true;
             }
-            return Utilities.deepEquals(this.getParameterDescriptors(),
-                                        that.getParameterDescriptors(), mode);
+            /*
+             * We do not compare getParameters() because they usually duplicate the internal fields.
+             * Contextual parameters, on the other hand, typically contain new information.
+             */
+            return Utilities.deepEquals(this.getContextualParameters(),
+                                        that.getContextualParameters(), mode);
         }
         return false;
     }
@@ -919,10 +945,10 @@ public abstract class AbstractMathTransform extends FormattableObject
      * <p>This method is invoked only by {@link ConcatenatedTransform#getPseudoSteps()} in order to
      * get the {@link ParameterValueGroup} of a map projection, or to format a {@code PROJCS} WKT.</p>
      *
-     * @param  transforms The full chain of concatenated transforms.
-     * @param  index      The index of this transform in the {@code transforms} chain.
-     * @param  inverse    Always {@code false}, except if we are formatting the inverse transform.
-     * @return Index of the last transform processed. Iteration should continue at that index + 1.
+     * @param  transforms  the full chain of concatenated transforms.
+     * @param  index       the index of this transform in the {@code transforms} chain.
+     * @param  inverse     always {@code false}, except if we are formatting the inverse transform.
+     * @return index of this transform in the {@code transforms} chain after processing.
      *
      * @see ConcatenatedTransform#getPseudoSteps()
      */
@@ -943,13 +969,13 @@ public abstract class AbstractMathTransform extends FormattableObject
      * then this method silently uses the WKT 1 convention without raising an error
      * (unless this {@code MathTransform} can not be formatted as valid WKT 1 neither).</div>
      *
-     * @param  formatter The formatter to use.
-     * @return The WKT element name, which is {@code "Param_MT"} in the default implementation.
+     * @param  formatter  the formatter to use.
+     * @return the WKT element name, which is {@code "Param_MT"} in the default implementation.
      */
     @Override
     protected String formatTo(final Formatter formatter) {
         WKTUtilities.appendParamMT(getParameterValues(), formatter);
-        return "Param_MT";
+        return WKTKeywords.Param_MT;
     }
 
     /**
@@ -971,8 +997,8 @@ public abstract class AbstractMathTransform extends FormattableObject
      * running the same SIS version.
      *
      * @author  Martin Desruisseaux (IRD, Geomatys)
-     * @since   0.5
      * @version 0.6
+     * @since   0.5
      * @module
      */
     protected abstract class Inverse extends AbstractMathTransform implements Serializable {
@@ -1035,7 +1061,7 @@ public abstract class AbstractMathTransform extends FormattableObject
         /**
          * Returns the inverse of this math transform, which is the enclosing math transform.
          *
-         * @return The enclosing math transform.
+         * @return the enclosing math transform.
          */
         @Override
         public MathTransform inverse() {
@@ -1073,8 +1099,7 @@ public abstract class AbstractMathTransform extends FormattableObject
         @Override
         public boolean equals(final Object object, final ComparisonMode mode) {
             if (object == this) {
-                // Slight optimization
-                return true;
+                return true;                                            // Slight optimization
             }
             if (object != null && object.getClass() == getClass()) {
                 return AbstractMathTransform.this.equals(((Inverse) object).inverse(), mode);
@@ -1088,21 +1113,26 @@ public abstract class AbstractMathTransform extends FormattableObject
          * but with the knowledge that this transform is an inverse transform.
          */
         @Override
-        final int beforeFormat(final List<Object> transforms, final int index, final boolean inverse) {
-            return AbstractMathTransform.this.beforeFormat(transforms, index, !inverse);
+        int beforeFormat(final List<Object> transforms, final int index, final boolean inverse) {
+            final ContextualParameters parameters = getContextualParameters();
+            if (parameters != null) {
+                return parameters.beforeFormat(transforms, index, inverse);
+            } else {
+                return AbstractMathTransform.this.beforeFormat(transforms, index, !inverse);
+            }
         }
 
         /**
          * Formats the inner part of a <cite>Well Known Text</cite> version 1 (WKT 1) element.
-         * If this inverse math transform has any parameter values, then this method format the
-         * WKT as in the {@linkplain AbstractMathTransform#formatWKT super-class method}.
+         * If this inverse math transform has any parameter values, then this method formats
+         * the WKT as in the {@linkplain AbstractMathTransform#formatWKT super-class method}.
          * Otherwise this method formats the math transform as an {@code "Inverse_MT"} entity.
          *
          * <div class="note"><b>Compatibility note:</b>
          * {@code Param_MT} and {@code Inverse_MT} are defined in the WKT 1 specification only.</div>
          *
-         * @param  formatter The formatter to use.
-         * @return The WKT element name, which is {@code "Param_MT"} or
+         * @param  formatter  the formatter to use.
+         * @return the WKT element name, which is {@code "Param_MT"} or
          *         {@code "Inverse_MT"} in the default implementation.
          */
         @Override
@@ -1110,10 +1140,11 @@ public abstract class AbstractMathTransform extends FormattableObject
             final ParameterValueGroup parameters = getParameterValues();
             if (parameters != null) {
                 WKTUtilities.appendParamMT(parameters, formatter);
-                return "Param_MT";
+                return WKTKeywords.Param_MT;
             } else {
+                formatter.newLine();
                 formatter.append((FormattableObject) AbstractMathTransform.this);
-                return "Inverse_MT";
+                return WKTKeywords.Inverse_MT;
             }
         }
     }

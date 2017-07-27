@@ -23,7 +23,6 @@ import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
 import org.apache.sis.metadata.iso.identification.DefaultResolution;
 import org.apache.sis.metadata.iso.identification.DefaultDataIdentification;
 import org.apache.sis.metadata.iso.identification.DefaultRepresentativeFraction;
-import org.apache.sis.metadata.iso.acquisition.DefaultAcquisitionInformation;
 import org.apache.sis.internal.simple.SimpleIdentifier;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
@@ -39,8 +38,8 @@ import static org.apache.sis.metadata.ValueExistencePolicy.isNullOrEmpty;
  * Tests the {@link AbstractMetadata#isEmpty()} and {@link ModifiableMetadata#prune()} methods.
  *
  * @author  Martin Desruisseaux (Geomatys)
+ * @version 0.8
  * @since   0.3
- * @version 0.6
  * @module
  */
 @DependsOn(ValueMapTest.class)
@@ -114,7 +113,7 @@ public final strictfp class PrunerTest extends TestCase {
         /*
          * Set a non-empty metadata info.
          */
-        metadata.setMetadataIdentifier(new SimpleIdentifier(null, "A file identifiers"));
+        metadata.setMetadataIdentifier(new SimpleIdentifier(null, "A file identifiers", false));
         assertTrue ("GeographicBoundingBox", bbox.isEmpty());
         assertTrue ("Extent",                extent.isEmpty());
         assertTrue ("Scale",                 scale.isEmpty());
@@ -142,7 +141,7 @@ public final strictfp class PrunerTest extends TestCase {
          * Set an empty string in an element.
          */
         scale.setScale(Double.NaN);
-        metadata.setMetadataIdentifier(new SimpleIdentifier(null, "   "));
+        metadata.setMetadataIdentifier(new SimpleIdentifier(null, "   ", false));
         assertTrue("Scale",                 scale.isEmpty());
         assertTrue("DataIdentification",    identification.isEmpty());
         assertTrue("Metadata",              metadata.isEmpty());
@@ -153,9 +152,7 @@ public final strictfp class PrunerTest extends TestCase {
      * The cycle is between {@code platform.instrument} and {@code instrument.isMountedOn}.
      */
     private void createCyclicMetadata() {
-        final DefaultAcquisitionInformation acquisition = new DefaultAcquisitionInformation();
-        acquisition.setPlatforms(singleton(MetadataStandardTest.createCyclicMetadata()));
-        metadata.setAcquisitionInformation(singleton(acquisition));
+        metadata.setAcquisitionInformation(singleton(MetadataStandardTest.createCyclicMetadata()));
     }
 
     /**
@@ -176,7 +173,7 @@ public final strictfp class PrunerTest extends TestCase {
     @Test
     @DependsOnMethod("testIsEmpty")
     public void testPrune() {
-        metadata.setMetadataIdentifier(new SimpleIdentifier(null, "A file identifiers"));
+        metadata.setMetadataIdentifier(new SimpleIdentifier(null, "A file identifiers", false));
         identification.setCitation(new DefaultCitation("A citation title"));
         assertFalse(isNullOrEmpty(metadata.getMetadataIdentifier()));
         assertFalse(isNullOrEmpty(identification.getCitation()));
@@ -193,7 +190,7 @@ public final strictfp class PrunerTest extends TestCase {
         assertEquals(0, extent.getGeographicElements().size());
         assertFalse(metadata.isEmpty());
 
-        metadata.setMetadataIdentifier(new SimpleIdentifier(null, " "));
+        metadata.setMetadataIdentifier(new SimpleIdentifier(null, " ", false));
         identification.setCitation(new DefaultCitation(" "));
         assertNotNull(metadata.getMetadataIdentifier());
         metadata.prune();

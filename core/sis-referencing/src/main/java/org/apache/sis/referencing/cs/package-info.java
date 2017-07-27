@@ -28,12 +28,18 @@
  *   <li>{@link org.apache.sis.referencing.cs.AbstractCS#forConvention AbstractCS.forConvention(AxesConvention)}</li>
  * </ul>
  *
+ * This package provides also a {@link org.apache.sis.referencing.cs.CoordinateSystems} utility class
+ * with static methods for estimating an angle between two axes, determining the change of axis directions
+ * and units between two coordinate systems, or filtering axes.
+ *
  * @author  Martin Desruisseaux (IRD, Geomatys)
+ * @version 0.8
  * @since   0.4
- * @version 0.4
  * @module
  */
-@XmlSchema(elementFormDefault = XmlNsForm.QUALIFIED, namespace = Namespaces.GML, xmlns = {
+@XmlSchema(location = "http://schemas.opengis.net/gml/3.2.1/coordinateSystems.xsd",
+           elementFormDefault = XmlNsForm.QUALIFIED, namespace = Namespaces.GML, xmlns =
+{
     @XmlNs(prefix = "gml", namespaceURI = Namespaces.GML),
     @XmlNs(prefix = "xsi", namespaceURI = Namespaces.XSI)
 })

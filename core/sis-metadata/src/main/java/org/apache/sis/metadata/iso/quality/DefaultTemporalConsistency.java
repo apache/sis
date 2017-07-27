@@ -23,6 +23,10 @@ import org.opengis.metadata.quality.TemporalConsistency;
 
 /**
  * Correctness of ordered events or sequences, if reported.
+ * The following property is mandatory in a well-formed metadata according ISO 19115:
+ *
+ * <div class="preformat">{@code DQ_TemporalConsistency}
+ * {@code   └─result……………} Value obtained from applying a data quality measure.</div>
  *
  * <p><b>Limitations:</b></p>
  * <ul>
@@ -35,10 +39,11 @@ import org.opengis.metadata.quality.TemporalConsistency;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Touraïvane (IRD)
- * @since   0.3
  * @version 0.3
+ * @since   0.3
  * @module
  */
+@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "DQ_TemporalConsistency_Type")
 @XmlRootElement(name = "DQ_TemporalConsistency")
 public class DefaultTemporalConsistency extends AbstractTemporalAccuracy implements TemporalConsistency {
@@ -58,7 +63,7 @@ public class DefaultTemporalConsistency extends AbstractTemporalAccuracy impleme
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
-     * @param object The metadata to copy values from, or {@code null} if none.
+     * @param  object  the metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(TemporalConsistency)
      */
@@ -80,8 +85,8 @@ public class DefaultTemporalConsistency extends AbstractTemporalAccuracy impleme
      *       metadata contained in the given object are not recursively copied.</li>
      * </ul>
      *
-     * @param  object The object to get as a SIS implementation, or {@code null} if none.
-     * @return A SIS implementation containing the values of the given object (may be the
+     * @param  object  the object to get as a SIS implementation, or {@code null} if none.
+     * @return a SIS implementation containing the values of the given object (may be the
      *         given object itself), or {@code null} if the argument was null.
      */
     public static DefaultTemporalConsistency castOrCopy(final TemporalConsistency object) {

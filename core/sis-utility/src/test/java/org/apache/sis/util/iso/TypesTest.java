@@ -28,19 +28,21 @@ import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.citation.OnLineFunction;
 import org.opengis.metadata.content.ImagingCondition;
 import org.opengis.referencing.datum.Datum;
+import org.opengis.referencing.datum.PixelInCell;
 import org.opengis.referencing.cs.AxisDirection;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
 import static org.opengis.test.Assert.*;
+import static org.apache.sis.test.Assert.PENDING_NEXT_GEOAPI_RELEASE;
 
 
 /**
  * Tests the {@link Types} class.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
+ * @version 0.6
  * @since   0.3
- * @version 0.5
  * @module
  */
 public final strictfp class TypesTest extends TestCase {
@@ -106,7 +108,7 @@ public final strictfp class TypesTest extends TestCase {
 
     /**
      * Tests the {@link Types#forEnumName(Class, String)} method with an enumeration from the JDK.
-     * Such enumerations do not implement the {@link org.opengis.util.Enumerated} interface.
+     * Such enumerations do not implement the {@code org.opengis.util.ControlledVocabulary} interface.
      *
      * @since 0.5
      */
@@ -129,6 +131,16 @@ public final strictfp class TypesTest extends TestCase {
         assertSame(ImagingCondition.SEMI_DARKNESS, Types.forCodeName(ImagingCondition.class, "semi darkness", false));
         assertSame(ImagingCondition.SEMI_DARKNESS, Types.forCodeName(ImagingCondition.class, "semi-darkness", false));
         assertNull(Types.forCodeName(ImagingCondition.class, "darkness", false));
+
+        assertSame(PixelInCell.CELL_CORNER, Types.forCodeName(PixelInCell.class, "cell corner", false));
+        assertSame(PixelInCell.CELL_CORNER, Types.forCodeName(PixelInCell.class, "cellCorner",  false));
+        assertSame(PixelInCell.CELL_CENTER, Types.forCodeName(PixelInCell.class, "cell center", false));
+        assertSame(PixelInCell.CELL_CENTER, Types.forCodeName(PixelInCell.class, "cellCenter",  false));
+
+        if (PENDING_NEXT_GEOAPI_RELEASE) {
+            assertSame(PixelInCell.CELL_CENTER, Types.forCodeName(PixelInCell.class, "cell centre", false));
+            assertSame(PixelInCell.CELL_CENTER, Types.forCodeName(PixelInCell.class, "cellCentre",  false));
+        }
     }
 
     /**
@@ -166,7 +178,7 @@ public final strictfp class TypesTest extends TestCase {
     }
 
     /**
-     * Tests the {@link Types#getDescription(Enumerated)} method.
+     * Tests the {@code Types.getDescription(ControlledVocabulary)} method.
      */
     @Test
     public void testGetCodeDescription() {
@@ -180,7 +192,7 @@ public final strictfp class TypesTest extends TestCase {
     }
 
     /**
-     * Tests the examples given in {@link Types#getListName(Enumerated)} javadoc.
+     * Tests the examples given in {@code Types.getListName(ControlledVocabulary)} javadoc.
      */
     @Test
     public void testGetListName() {
@@ -190,7 +202,7 @@ public final strictfp class TypesTest extends TestCase {
     }
 
     /**
-     * Tests the examples given in {@link Types#getCodeName(Enumerated)} javadoc.
+     * Tests the examples given in {@code Types.getCodeName(ControlledVocabulary)} javadoc.
      */
     @Test
     public void testGetCodeName() {
@@ -200,7 +212,7 @@ public final strictfp class TypesTest extends TestCase {
     }
 
     /**
-     * Tests the examples given in {@link Types#getCodeLabel(Enumerated)} javadoc.
+     * Tests the examples given in {@code Types.getCodeLabel(ControlledVocabulary)} javadoc.
      */
     @Test
     public void testGetCodeLabel() {
@@ -210,13 +222,16 @@ public final strictfp class TypesTest extends TestCase {
     }
 
     /**
-     * Tests {@link Types#getCodeTitle(Enumerated)}.
+     * Tests {@code Types.getCodeTitle(ControlledVocabulary)}.
+     * Also opportunistically tests {@link Types#forCodeTitle(CharSequence)}.
      */
     @Test
     public void testGetCodeTitle() {
-        assertEquals("Download",       Types.getCodeTitle(OnLineFunction.DOWNLOAD).toString(Locale.ROOT));
-        assertEquals("Download",       Types.getCodeTitle(OnLineFunction.DOWNLOAD).toString(Locale.ENGLISH));
-        assertEquals("Téléchargement", Types.getCodeTitle(OnLineFunction.DOWNLOAD).toString(Locale.FRENCH));
+        final InternationalString title = Types.getCodeTitle(OnLineFunction.DOWNLOAD);
+        assertSame("forCodeTitle", OnLineFunction.DOWNLOAD, Types.forCodeTitle(title));
+        assertEquals("Download",       title.toString(Locale.ROOT));
+        assertEquals("Download",       title.toString(Locale.ENGLISH));
+        assertEquals("Téléchargement", title.toString(Locale.FRENCH));
     }
 
     /**

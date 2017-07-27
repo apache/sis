@@ -17,13 +17,13 @@
 package org.apache.sis.referencing.cs;
 
 import java.util.Map;
-import javax.measure.unit.Unit;
+import javax.measure.Unit;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlRootElement;
 import org.opengis.referencing.cs.PolarCS;
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
-import org.apache.sis.internal.referencing.AxisDirections;
+import org.apache.sis.internal.metadata.AxisDirections;
 import org.apache.sis.measure.Units;
 
 
@@ -48,8 +48,12 @@ import org.apache.sis.measure.Units;
  * constants.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.4
  * @version 0.4
+ *
+ * @see DefaultCylindricalCS
+ * @see org.apache.sis.referencing.factory.GeodeticAuthorityFactory#createPolarCS(String)
+ *
+ * @since 0.4
  * @module
  */
 @XmlType(name = "PolarCSType")
@@ -61,19 +65,11 @@ public class DefaultPolarCS extends AbstractCS implements PolarCS {
     private static final long serialVersionUID = 3960197260975470951L;
 
     /**
-     * Constructs a new coordinate system in which every attributes are set to a null or empty value.
-     * <strong>This is not a valid object.</strong> This constructor is strictly reserved to JAXB,
-     * which will assign values to the fields using reflexion.
-     */
-    private DefaultPolarCS() {
-    }
-
-    /**
      * Creates a new coordinate system from an arbitrary number of axes. This constructor is for
-     * implementations of the {@link #createSameType(Map, CoordinateSystemAxis[])} method only,
+     * implementations of the {@link #createForAxes(Map, CoordinateSystemAxis[])} method only,
      * because it does not verify the number of axes.
      */
-    private DefaultPolarCS(final Map<String,?> properties, final CoordinateSystemAxis[] axes) {
+    DefaultPolarCS(final Map<String,?> properties, final CoordinateSystemAxis[] axes) {
         super(properties, axes);
     }
 
@@ -112,9 +108,11 @@ public class DefaultPolarCS extends AbstractCS implements PolarCS {
      *   </tr>
      * </table>
      *
-     * @param properties The properties to be given to the identified object.
-     * @param axis0 The first axis.
-     * @param axis1 The second axis.
+     * @param  properties  the properties to be given to the identified object.
+     * @param  axis0       the first axis.
+     * @param  axis1       the second axis.
+     *
+     * @see org.apache.sis.referencing.factory.GeodeticObjectFactory#createPolarCS(Map, CoordinateSystemAxis, CoordinateSystemAxis)
      */
     public DefaultPolarCS(final Map<String,?>   properties,
                           final CoordinateSystemAxis axis0,
@@ -130,7 +128,7 @@ public class DefaultPolarCS extends AbstractCS implements PolarCS {
      *
      * <p>This constructor performs a shallow copy, i.e. the properties are not cloned.</p>
      *
-     * @param cs The coordinate system to copy.
+     * @param  cs  the coordinate system to copy.
      *
      * @see #castOrCopy(PolarCS)
      */
@@ -144,8 +142,8 @@ public class DefaultPolarCS extends AbstractCS implements PolarCS {
      * Otherwise if the given object is already a SIS implementation, then the given object is returned unchanged.
      * Otherwise a new SIS implementation is created and initialized to the attribute values of the given object.
      *
-     * @param  object The object to get as a SIS implementation, or {@code null} if none.
-     * @return A SIS implementation containing the values of the given object (may be the
+     * @param  object  the object to get as a SIS implementation, or {@code null} if none.
+     * @return a SIS implementation containing the values of the given object (may be the
      *         given object itself), or {@code null} if the argument was null.
      */
     public static DefaultPolarCS castOrCopy(final PolarCS object) {
@@ -199,10 +197,35 @@ public class DefaultPolarCS extends AbstractCS implements PolarCS {
     }
 
     /**
-     * Returns a coordinate system of the same class than this CS but with different axes.
+     * Returns a coordinate system with different axes.
      */
     @Override
-    final AbstractCS createSameType(final Map<String,?> properties, final CoordinateSystemAxis[] axes) {
-        return new DefaultPolarCS(properties, axes);
+    final AbstractCS createForAxes(final Map<String,?> properties, final CoordinateSystemAxis[] axes) {
+        switch (axes.length) {
+            case 2: return new DefaultPolarCS(properties, axes);
+            default: throw unexpectedDimension(properties, axes, 2);
+        }
+    }
+
+
+
+
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+    ////////                                                                                  ////////
+    ////////                               XML support with JAXB                              ////////
+    ////////                                                                                  ////////
+    ////////        The following methods are invoked by JAXB using reflection (even if       ////////
+    ////////        they are private) or are helpers for other methods invoked by JAXB.       ////////
+    ////////        Those methods can be safely removed if Geographic Markup Language         ////////
+    ////////        (GML) support is not needed.                                              ////////
+    ////////                                                                                  ////////
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Constructs a new coordinate system in which every attributes are set to a null or empty value.
+     * <strong>This is not a valid object.</strong> This constructor is strictly reserved to JAXB,
+     * which will assign values to the fields using reflexion.
+     */
+    private DefaultPolarCS() {
     }
 }

@@ -69,9 +69,7 @@ import static org.apache.sis.util.iso.DefaultNameSpace.DEFAULT_SEPARATOR_STRING;
  * from multiple threads.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.5
- * @module
  *
  * @see Names
  * @see DefaultNameSpace
@@ -79,6 +77,9 @@ import static org.apache.sis.util.iso.DefaultNameSpace.DEFAULT_SEPARATOR_STRING;
  * @see DefaultLocalName
  * @see DefaultTypeName
  * @see DefaultMemberName
+ *
+ * @since 0.3
+ * @module
  */
 public class DefaultNameFactory extends AbstractFactory implements NameFactory {
     /**
@@ -105,14 +106,14 @@ public class DefaultNameFactory extends AbstractFactory implements NameFactory {
      * Creates a new factory.
      */
     public DefaultNameFactory() {
-        pool = new WeakHashSet<GenericName>(GenericName.class);
+        pool = new WeakHashSet<>(GenericName.class);
     }
 
     /**
      * Creates an international string from a set of strings in different locales.
      *
-     * @param strings String value for each locale key.
-     * @return The international string.
+     * @param  strings  string value for each locale key.
+     * @return the international string.
      *
      * @see Types#toInternationalString(CharSequence)
      */
@@ -169,13 +170,10 @@ public class DefaultNameFactory extends AbstractFactory implements NameFactory {
      *   <li>For HTTP namespace, {@code separator.head} = {@code "://"} and {@code separator} = {@code "."}.</li>
      * </ul></div>
      *
-     * @param name
-     *          The name of the namespace to be returned. This argument can be created using
-     *          <code>{@linkplain #createGenericName(NameSpace, CharSequence[]) createGenericName}(null, namespace)</code>.
-     * @param properties
-     *          An optional map of properties to be assigned to the namespace, or {@code null} if none.
-     *
-     * @return A namespace having the given name and separator.
+     * @param  name  the name of the namespace to be returned. This argument can be created using
+     *         <code>{@linkplain #createGenericName(NameSpace, CharSequence[]) createGenericName}(null, namespace)</code>.
+     * @param  properties  an optional map of properties to be assigned to the namespace, or {@code null} if none.
+     * @return a namespace having the given name and separator.
      *
      * @see Names#createLocalName(CharSequence, String, CharSequence)
      */
@@ -202,10 +200,10 @@ public class DefaultNameFactory extends AbstractFactory implements NameFactory {
      * Creates a type name from the given character sequence.
      * The default implementation returns a new or an existing {@link DefaultTypeName} instance.
      *
-     * @param  scope The {@linkplain AbstractName#scope() scope} of the type
-     *         name to be created, or {@code null} for a global namespace.
-     * @param  name The type name as a string or an international string.
-     * @return The type name for the given character sequence.
+     * @param  scope  the {@linkplain AbstractName#scope() scope} of the type name to be created,
+     *                or {@code null} for a global namespace.
+     * @param  name   the type name as a string or an international string.
+     * @return the type name for the given character sequence.
      *
      * @see #toTypeName(Class)
      * @see Names#createTypeName(CharSequence, String, CharSequence)
@@ -219,11 +217,13 @@ public class DefaultNameFactory extends AbstractFactory implements NameFactory {
      * Creates a member name from the given character sequence and attribute type.
      * The default implementation returns a new or an existing {@link DefaultMemberName} instance.
      *
-     * @param  scope The {@linkplain AbstractName#scope() scope} of the member
-     *         name to be created, or {@code null} for a global namespace.
-     * @param  name The member name as a string or an international string.
-     * @param  attributeType The type of the data associated with the record member.
-     * @return The member name for the given character sequence.
+     * @param  scope  the {@linkplain AbstractName#scope() scope} of the member name to be created,
+     *                or {@code null} for a global namespace.
+     * @param  name   the member name as a string or an international string.
+     * @param  attributeType  the type of the data associated with the record member.
+     * @return the member name for the given character sequence.
+     *
+     * @see Names#createMemberName(CharSequence, String, CharSequence, Class)
      */
     public MemberName createMemberName(final NameSpace scope, final CharSequence name, final TypeName attributeType) {
         return pool.unique(new DefaultMemberName(scope, name, attributeType));
@@ -233,10 +233,10 @@ public class DefaultNameFactory extends AbstractFactory implements NameFactory {
      * Creates a local name from the given character sequence.
      * The default implementation returns a new or an existing {@link DefaultLocalName} instance.
      *
-     * @param  scope The {@linkplain AbstractName#scope() scope} of the local
-     *         name to be created, or {@code null} for a global namespace.
-     * @param  name The local name as a string or an international string.
-     * @return The local name for the given character sequence.
+     * @param  scope  the {@linkplain AbstractName#scope() scope} of the local name to be created,
+     *                or {@code null} for a global namespace.
+     * @param  name   the local name as a string or an international string.
+     * @return the local name for the given character sequence.
      *
      * @see Names#createLocalName(CharSequence, String, CharSequence)
      */
@@ -259,11 +259,11 @@ public class DefaultNameFactory extends AbstractFactory implements NameFactory {
      * array is 1, or an instance of {@link DefaultScopedName} if the length of the array is 2
      * or more.
      *
-     * @param  scope The {@linkplain AbstractName#scope() scope} of the generic name to be created,
-     *         or {@code null} for a global namespace.
-     * @param  parsedNames The local names as an array of {@link String} or {@link InternationalString} instances.
-     *         This array shall contain at least one element.
-     * @return The generic name for the given parsed names.
+     * @param  scope        the {@linkplain AbstractName#scope() scope} of the generic name to be created,
+     *                      or {@code null} for a global namespace.
+     * @param  parsedNames  the local names as an array of {@link String} or {@link InternationalString} instances.
+     *                      This array shall contain at least one element.
+     * @return the generic name for the given parsed names.
      *
      * @see #parseGenericName(NameSpace, CharSequence)
      */
@@ -282,11 +282,10 @@ public class DefaultNameFactory extends AbstractFactory implements NameFactory {
      * This method splits the given name around a separator inferred from the given scope, or the
      * {@link DefaultNameSpace#DEFAULT_SEPARATOR ':'} separator if the given scope is null.
      *
-     * @param  scope The {@linkplain AbstractName#scope() scope} of the generic name to
-     *         be created, or {@code null} for a global namespace.
-     * @param  name The qualified name, as a sequence of names separated by a scope-dependent
-     *         separator.
-     * @return A name parsed from the given string.
+     * @param  scope  the {@linkplain AbstractName#scope() scope} of the generic name to be created,
+     *                or {@code null} for a global namespace.
+     * @param  name   the qualified name, as a sequence of names separated by a scope-dependent separator.
+     * @return a name parsed from the given string.
      *
      * @see Names#parseGenericName(CharSequence, String, CharSequence)
      */
@@ -299,7 +298,7 @@ public class DefaultNameFactory extends AbstractFactory implements NameFactory {
             separator = DEFAULT_SEPARATOR_STRING;
         }
         final int s = separator.length();
-        final List<String> names = new ArrayList<String>();
+        final List<String> names = new ArrayList<>();
         int lower = 0;
         final String string = name.toString();
         while (true) {
@@ -313,8 +312,10 @@ public class DefaultNameFactory extends AbstractFactory implements NameFactory {
             }
         }
         if (names.size() == 1) {
-            // Preserves the InternationalString (current implementation of
-            // the parsing code above has lost the internationalization).
+            /*
+             * Preserves the InternationalString (current implementation of
+             * the parsing code above has lost the internationalization).
+             */
             return createLocalName(scope, name);
         }
         return createGenericName(scope, names.toArray(new String[names.size()]));
@@ -338,8 +339,8 @@ public class DefaultNameFactory extends AbstractFactory implements NameFactory {
      * If {@code value} is an array or a collection containing {@code null} elements,
      * then the corresponding element in the returned array will also be {@code null}.
      *
-     * @param  value The object to cast into an array of generic names, or {@code null}.
-     * @return The generic names, or {@code null} if the given {@code value} was null.
+     * @param  value  the object to cast into an array of generic names, or {@code null}.
+     * @return the generic names, or {@code null} if the given {@code value} was null.
      *         Note that it may be the {@code value} reference itself casted to {@code GenericName[]}.
      * @throws ClassCastException if {@code value} can't be casted.
      *
@@ -390,8 +391,8 @@ public class DefaultNameFactory extends AbstractFactory implements NameFactory {
      * {@link GenericName}, {@link Identifier}, {@link CharSequence} or {@link Class}.
      * If the given object is not recognized, then this method returns {@code null}.
      *
-     * @param  value The object to convert.
-     * @return The converted object, or {@code null} if {@code value} is not convertible.
+     * @param  value  the object to convert.
+     * @return the converted object, or {@code null} if {@code value} is not convertible.
      */
     private GenericName toGenericName(final Object value) {
         if (value instanceof GenericName) {
@@ -417,8 +418,8 @@ public class DefaultNameFactory extends AbstractFactory implements NameFactory {
      * encouraged to retrieve the {@code valueClass} by invoking the {@link Names#toClass(TypeName)} method instead
      * than parsing the name.</p>
      *
-     * @param  valueClass The Java class for which to get a type name, or {@code null}.
-     * @return A suggested type name, or {@code null} if the given class was null.
+     * @param  valueClass  the Java class for which to get a type name, or {@code null}.
+     * @return a suggested type name, or {@code null} if the given class was null.
      *
      * @see DefaultTypeName#toClass()
      * @see Names#toClass(TypeName)
@@ -446,7 +447,7 @@ public class DefaultNameFactory extends AbstractFactory implements NameFactory {
              * better to avoid double synchronization for reducing the risk of dead-lock.
              */
             final TypeNames c = new TypeNames(this);
-            synchronized (this) { // Double-check strategy is ok if 'typeNames' is volatile.
+            synchronized (this) {                       // Double-check strategy is ok if 'typeNames' is volatile.
                 t = typeNames;
                 if (t == null) {
                     typeNames = t = c;

@@ -17,6 +17,7 @@
 package org.apache.sis.referencing.datum;
 
 import java.util.Map;
+import java.util.Objects;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -25,14 +26,13 @@ import org.opengis.util.InternationalString;
 import org.opengis.referencing.ReferenceIdentifier;
 import org.opengis.referencing.datum.ImageDatum;
 import org.opengis.referencing.datum.PixelInCell;
+import org.apache.sis.internal.metadata.WKTKeywords;
+import org.apache.sis.internal.metadata.MetadataUtilities;
 import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.util.ComparisonMode;
 
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
-
-// Branch-dependent imports
-import org.apache.sis.internal.jdk7.Objects;
 
 
 /**
@@ -46,8 +46,12 @@ import org.apache.sis.internal.jdk7.Objects;
  * all components were created using only SIS factories and static constants.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.4
- * @version 0.4
+ * @version 0.7
+ *
+ * @see org.apache.sis.referencing.crs.DefaultImageCRS
+ * @see org.apache.sis.referencing.factory.GeodeticAuthorityFactory#createImageDatum(String)
+ *
+ * @since 0.4
  * @module
  */
 @XmlType(name = "ImageDatumType")
@@ -60,18 +64,13 @@ public class DefaultImageDatum extends AbstractDatum implements ImageDatum {
 
     /**
      * Specification of the way the image grid is associated with the image data attributes.
+     *
+     * <p><b>Consider this field as final!</b>
+     * This field is modified only at unmarshalling time by {@link #setPixelInCell(PixelInCell)}</p>
+     *
+     * @see #getPixelInCell()
      */
-    @XmlElement(required = true)
-    private final PixelInCell pixelInCell;
-
-    /**
-     * Constructs a new datum in which every attributes are set to a null value.
-     * <strong>This is not a valid object.</strong> This constructor is strictly
-     * reserved to JAXB, which will assign values to the fields using reflexion.
-     */
-    private DefaultImageDatum() {
-        pixelInCell = null;
-    }
+    private PixelInCell pixelInCell;
 
     /**
      * Creates an image datum from the given properties. The properties map is given
@@ -127,8 +126,10 @@ public class DefaultImageDatum extends AbstractDatum implements ImageDatum {
      *   </tr>
      * </table>
      *
-     * @param properties  The properties to be given to the identified object.
-     * @param pixelInCell The way the image grid is associated with the image data attributes.
+     * @param  properties   the properties to be given to the identified object.
+     * @param  pixelInCell  the way the image grid is associated with the image data attributes.
+     *
+     * @see org.apache.sis.referencing.factory.GeodeticObjectFactory#createImageDatum(Map, PixelInCell)
      */
     public DefaultImageDatum(final Map<String,?> properties, final PixelInCell pixelInCell) {
         super(properties);
@@ -143,7 +144,7 @@ public class DefaultImageDatum extends AbstractDatum implements ImageDatum {
      *
      * <p>This constructor performs a shallow copy, i.e. the properties are not cloned.</p>
      *
-     * @param datum The datum to copy.
+     * @param  datum  the datum to copy.
      *
      * @see #castOrCopy(ImageDatum)
      */
@@ -158,8 +159,8 @@ public class DefaultImageDatum extends AbstractDatum implements ImageDatum {
      * Otherwise if the given object is already a SIS implementation, then the given object is returned unchanged.
      * Otherwise a new SIS implementation is created and initialized to the attribute values of the given object.
      *
-     * @param  object The object to get as a SIS implementation, or {@code null} if none.
-     * @return A SIS implementation containing the values of the given object (may be the
+     * @param  object  the object to get as a SIS implementation, or {@code null} if none.
+     * @return a SIS implementation containing the values of the given object (may be the
      *         given object itself), or {@code null} if the argument was null.
      */
     public static DefaultImageDatum castOrCopy(final ImageDatum object) {
@@ -186,9 +187,10 @@ public class DefaultImageDatum extends AbstractDatum implements ImageDatum {
     /**
      * Specification of the way the image grid is associated with the image data attributes.
      *
-     * @return The way image grid is associated with image data attributes.
+     * @return the way image grid is associated with image data attributes.
      */
     @Override
+    @XmlElement(required = true)
     public PixelInCell getPixelInCell() {
         return pixelInCell;
     }
@@ -196,7 +198,7 @@ public class DefaultImageDatum extends AbstractDatum implements ImageDatum {
     /**
      * Compares this datum with the specified object for equality.
      *
-     * @param  object The object to compare to {@code this}.
+     * @param  object  the object to compare to {@code this}.
      * @param  mode {@link ComparisonMode#STRICT STRICT} for performing a strict comparison, or
      *         {@link ComparisonMode#IGNORE_METADATA IGNORE_METADATA} for comparing only properties
      *         relevant to coordinate transformations.
@@ -205,7 +207,7 @@ public class DefaultImageDatum extends AbstractDatum implements ImageDatum {
     @Override
     public boolean equals(final Object object, final ComparisonMode mode) {
         if (object == this) {
-            return true; // Slight optimization.
+            return true;                                                // Slight optimization.
         }
         if (!super.equals(object, mode)) {
             return false;
@@ -225,7 +227,7 @@ public class DefaultImageDatum extends AbstractDatum implements ImageDatum {
      * See {@link org.apache.sis.referencing.AbstractIdentifiedObject#computeHashCode()}
      * for more information.
      *
-     * @return The hash code value. This value may change in any future Apache SIS version.
+     * @return the hash code value. This value may change in any future Apache SIS version.
      */
     @Override
     protected long computeHashCode() {
@@ -239,6 +241,8 @@ public class DefaultImageDatum extends AbstractDatum implements ImageDatum {
      * {@code ImageDatum} is defined in the WKT 2 specification only.</div>
      *
      * @return {@code "ImageDatum"}.
+     *
+     * @see <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html#81">WKT 2 specification §12.2</a>
      */
     @Override
     protected String formatTo(final Formatter formatter) {
@@ -249,6 +253,41 @@ public class DefaultImageDatum extends AbstractDatum implements ImageDatum {
         } else if (convention.majorVersion() == 1) {
             formatter.setInvalidWKT(this, null);
         }
-        return "ImageDatum";
+        return formatter.shortOrLong(WKTKeywords.IDatum, WKTKeywords.ImageDatum);
+    }
+
+
+
+
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+    ////////                                                                                  ////////
+    ////////                               XML support with JAXB                              ////////
+    ////////                                                                                  ////////
+    ////////        The following methods are invoked by JAXB using reflection (even if       ////////
+    ////////        they are private) or are helpers for other methods invoked by JAXB.       ////////
+    ////////        Those methods can be safely removed if Geographic Markup Language         ////////
+    ////////        (GML) support is not needed.                                              ////////
+    ////////                                                                                  ////////
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Constructs a new datum in which every attributes are set to a null value.
+     * <strong>This is not a valid object.</strong> This constructor is strictly
+     * reserved to JAXB, which will assign values to the fields using reflexion.
+     */
+    private DefaultImageDatum() {
+    }
+
+    /**
+     * Invoked by JAXB only at unmarshalling time.
+     *
+     * @see #getPixelInCell()
+     */
+    private void setPixelInCell(final PixelInCell value) {
+        if (pixelInCell == null) {
+            pixelInCell = value;
+        } else {
+            MetadataUtilities.propertyAlreadySet(DefaultImageDatum.class, "setPixelInCell", "pixelInCell");
+        }
     }
 }

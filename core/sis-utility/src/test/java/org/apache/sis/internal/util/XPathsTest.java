@@ -16,6 +16,7 @@
  */
 package org.apache.sis.internal.util;
 
+import org.apache.sis.util.Characters;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
@@ -26,11 +27,25 @@ import static org.junit.Assert.*;
  * Tests {@link XPaths}.
  *
  * @author  Martin Desruisseaux (Geomatys)
+ * @version 0.8
  * @since   0.4
- * @version 0.4
  * @module
  */
 public final strictfp class XPathsTest extends TestCase {
+    /**
+     * Tests the {@link XPaths#endOfURI(CharSequence, int)} method.
+     *
+     * @since 0.8
+     */
+    @Test
+    public void testEndOfURI() {
+        assertEquals(26, XPaths.endOfURI("urn:ogc:def:uom:EPSG::9001", 0));
+        assertEquals(97, XPaths.endOfURI("http://schemas.opengis.net/iso/19139/20070417/resources/uom/gmxUom.xml#xpointer(//*[@gml:id='m'])", 0));
+        assertEquals(-1, XPaths.endOfURI("m/s", 0));
+        assertEquals(-1, XPaths.endOfURI("m.s", 0));
+        assertEquals(11, XPaths.endOfURI("EPSG" + Characters.NO_BREAK_SPACE + ": 9001", 0));
+    }
+
     /**
      * Tests {@link XPaths#xpointer(String, String)}.
      */

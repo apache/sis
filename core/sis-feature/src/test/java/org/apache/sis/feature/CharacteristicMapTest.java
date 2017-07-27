@@ -31,8 +31,8 @@ import static org.apache.sis.test.Assert.*;
  * Tests {@link CharacteristicMap} indirectly, through {@link AbstractAttribute} construction.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.5
  * @version 0.5
+ * @since   0.5
  * @module
  */
 @DependsOn(CharacteristicTypeMapTest.class)
@@ -40,26 +40,25 @@ public final strictfp class CharacteristicMapTest extends TestCase {
     /**
      * Creates an attribute for a temperature measurement of 20°C with a ±0.1°C accuracy.
      *
-     * @return A {@code "temperature"} attribute with two characteristics: {@code "accuracy"} and {@code "units"}.
+     * @return a {@code "temperature"} attribute with two characteristics: {@code "accuracy"} and {@code "units"}.
      */
     public static AbstractAttribute<Float> temperature() {
-        return new SingletonAttribute<Float>(CharacteristicTypeMapTest.temperature(), 20f);
+        return new SingletonAttribute<>(CharacteristicTypeMapTest.temperature(), 20f);
     }
 
     /**
      * Creates an attribute for the given characteristic.
      *
-     * @param  temperature The attribute created by {@link #temperature()}.
-     * @param  name Either {@code "accuracy"} or {@code "units"}.
-     * @return An attribute for the given name.
+     * @param  temperature  the attribute created by {@link #temperature()}.
+     * @param  name         either {@code "accuracy"} or {@code "units"}.
+     * @return an attribute for the given name.
      */
-    @SuppressWarnings({"unchecked","rawtypes"})    // Not needed on JDK7 branch.
     private static AbstractAttribute<?> create(final AbstractAttribute<?> temperature, final String name) {
-        return new SingletonAttribute(((DefaultAttributeType<?>) temperature.getType()).characteristics().get(name));
+        return new SingletonAttribute<>(((DefaultAttributeType<?>) temperature.getType()).characteristics().get(name));
     }
 
     /**
-     * Tests adding explicitely a characteristic with {@link CharacteristicMap#put(String, Attribute)}.
+     * Tests adding explicitely a characteristic with {@code CharacteristicMap.put(String, Attribute)}.
      */
     @Test
     public void testPut() {
@@ -146,7 +145,7 @@ public final strictfp class CharacteristicMapTest extends TestCase {
     }
 
     /**
-     * Tests adding a characteristic indirectly with {@link CharacteristicMap#addValue(Attribute)}.
+     * Tests adding a characteristic indirectly with {@code CharacteristicMap.addValue(Attribute)}.
      */
     @Test
     @DependsOnMethod("testPut")
@@ -266,9 +265,9 @@ public final strictfp class CharacteristicMapTest extends TestCase {
     /**
      * Verifies that the given characteristics map contains entries for the given attributes.
      *
-     * @param units           The first expected value in iteration order.
-     * @param accuracy        The second expected value in iteration order.
-     * @param characteristics The map to verify.
+     * @param  units            the first expected value in iteration order.
+     * @param  accuracy         the second expected value in iteration order.
+     * @param  characteristics  the map to verify.
      */
     private static void assertEntriesEqual(final AbstractAttribute<?> units, final AbstractAttribute<?> accuracy,
             final Map<String,AbstractAttribute<?>> characteristics)
@@ -276,17 +275,17 @@ public final strictfp class CharacteristicMapTest extends TestCase {
         assertArrayEquals("keySet", new String[] {"accuracy", "units"}, characteristics.keySet().toArray());
         assertArrayEquals("values", new Object[] { accuracy ,  units }, characteristics.values().toArray());
         assertArrayEquals("entrySet", new Object[] {
-                new SimpleEntry<String,AbstractAttribute<?>>("accuracy", accuracy),
-                new SimpleEntry<String,AbstractAttribute<?>>("units",    units)
+                new SimpleEntry<>("accuracy", accuracy),
+                new SimpleEntry<>("units",    units)
             }, characteristics.entrySet().toArray());
     }
 
     /**
      * Sets the accuracy characteristic in the given attribute.
      *
-     * @param temperature The attribute where to set the accuracy.
-     * @param isFirstTime {@code true} if the accuracy value is set for the first time.
-     * @param value       The new accuracy value.
+     * @param  temperature  the attribute where to set the accuracy.
+     * @param  isFirstTime  {@code true} if the accuracy value is set for the first time.
+     * @param  value        the new accuracy value.
      */
     private static void setAccuracy(final AbstractAttribute<Float> temperature, final boolean isFirstTime, final float value) {
         assertEquals("keySet.add", isFirstTime, temperature.characteristics().keySet().add("accuracy"));
@@ -321,7 +320,7 @@ public final strictfp class CharacteristicMapTest extends TestCase {
      * Tests the reconstruction of {@link CharacteristicTypeMap} after serialization.
      */
     @Test
-    @DependsOnMethod({"testEquals", "testAddValue"}) // Implementation of readObject use values().addAll(...).
+    @DependsOnMethod({"testEquals", "testAddValue"})            // Implementation of readObject use values().addAll(…).
     public void testSerialization() {
         final AbstractAttribute<Float> temperature = temperature();
         setAccuracy(temperature, true, 0.2f);

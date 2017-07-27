@@ -22,7 +22,6 @@ import org.opengis.metadata.maintenance.ScopeCode;
 import org.opengis.metadata.quality.DataQuality;
 import org.apache.sis.internal.util.Cloner;
 import org.apache.sis.util.ArgumentChecks;
-import org.apache.sis.util.resources.Errors;
 
 
 /**
@@ -32,12 +31,13 @@ import org.apache.sis.util.resources.Errors;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Marc le Bihan
- * @since   0.5
  * @version 0.6
- * @module
  *
  * @see SparseFeature
  * @see DefaultFeatureType
+ *
+ * @since 0.5
+ * @module
  */
 final class DenseFeature extends AbstractFeature implements Cloneable {
     /**
@@ -65,7 +65,7 @@ final class DenseFeature extends AbstractFeature implements Cloneable {
     /**
      * Creates a new feature of the given type.
      *
-     * @param type Information about the feature (name, characteristics, <i>etc.</i>).
+     * @param type  information about the feature (name, characteristics, <i>etc.</i>).
      */
     public DenseFeature(final DefaultFeatureType type) {
         super(type);
@@ -76,25 +76,25 @@ final class DenseFeature extends AbstractFeature implements Cloneable {
      * Returns the index for the property of the given name, or {@link DefaultFeatureType#OPERATION_INDEX}
      * if the property is a parameterless operation.
      *
-     * @param  name The property name.
-     * @return The index for the property of the given name,
+     * @param  name  the property name.
+     * @return the index for the property of the given name,
      *         or a negative value if the property is a parameterless operation.
-     * @throws IllegalArgumentException If the given argument is not a property name of this feature.
+     * @throws IllegalArgumentException if the given argument is not a property name of this feature.
      */
     private int getIndex(final String name) throws IllegalArgumentException {
         final Integer index = indices.get(name);
         if (index != null) {
             return index;
         }
-        throw new IllegalArgumentException(Errors.format(Errors.Keys.PropertyNotFound_2, getName(), name));
+        throw new IllegalArgumentException(propertyNotFound(type, getName(), name));
     }
 
     /**
      * Returns the property (attribute, operation or association) of the given name.
      *
-     * @param  name The property name.
-     * @return The property of the given name.
-     * @throws IllegalArgumentException If the given argument is not a property name of this feature.
+     * @param  name  the property name.
+     * @return the property of the given name.
+     * @throws IllegalArgumentException if the given argument is not a property name of this feature.
      */
     @Override
     public Object getProperty(final String name) throws IllegalArgumentException {
@@ -125,9 +125,9 @@ final class DenseFeature extends AbstractFeature implements Cloneable {
     /**
      * Sets the property (attribute, operation or association).
      *
-     * @param  property The property to set.
+     * @param  property  the property to set.
      * @throws IllegalArgumentException if the type of the given property is not one of the types
-     *         known to this feature.
+     *         known to this feature, or if the property can not be set or another reason.
      */
     @Override
     public void setProperty(final Object property) throws IllegalArgumentException {
@@ -162,15 +162,15 @@ final class DenseFeature extends AbstractFeature implements Cloneable {
                 }
             }
         }
-        properties = c; // Store only on success.
+        properties = c;     // Store only on success.
     }
 
     /**
      * Returns the value for the property of the given name.
      *
-     * @param  name The property name.
-     * @return The value for the given property, or {@code null} if none.
-     * @throws IllegalArgumentException If the given argument is not an attribute or association name of this feature.
+     * @param  name  the property name.
+     * @return the value for the given property, or {@code null} if none.
+     * @throws IllegalArgumentException if the given argument is not an attribute or association name of this feature.
      */
     @Override
     public Object getPropertyValue(final String name) throws IllegalArgumentException {
@@ -189,7 +189,7 @@ final class DenseFeature extends AbstractFeature implements Cloneable {
                 } else if (element instanceof AbstractAssociation) {
                     return getAssociationValue((AbstractAssociation) element);
                 } else {
-                    throw unsupportedPropertyType(((Property) element).getName());
+                    throw new IllegalArgumentException(unsupportedPropertyType(((Property) element).getName()));
                 }
             }
         }
@@ -199,10 +199,10 @@ final class DenseFeature extends AbstractFeature implements Cloneable {
     /**
      * Sets the value for the property of the given name.
      *
-     * @param  name  The attribute name.
-     * @param  value The new value for the given attribute (may be {@code null}).
-     * @throws ClassCastException If the value is not assignable to the expected value class.
-     * @throws IllegalArgumentException If the given value can not be assigned for an other reason.
+     * @param  name   the attribute name.
+     * @param  value  the new value for the given attribute (may be {@code null}).
+     * @throws ClassCastException if the value is not assignable to the expected value class.
+     * @throws IllegalArgumentException if the given value can not be assigned for another reason.
      */
     @Override
     public void setPropertyValue(final String name, Object value) throws IllegalArgumentException {
@@ -262,7 +262,7 @@ final class DenseFeature extends AbstractFeature implements Cloneable {
      * the clone operation is <cite>deep</cite> or <cite>shallow</cite>) depends on the behavior or
      * property {@code clone()} methods.
      *
-     * @return A clone of this attribute.
+     * @return a clone of this attribute.
      * @throws CloneNotSupportedException if this feature can not be cloned, typically because
      *         {@code clone()} on a property instance failed.
      */
@@ -285,12 +285,36 @@ final class DenseFeature extends AbstractFeature implements Cloneable {
 
     /**
      * Returns a hash code value for this feature.
+     * This implementation computes the hash code using only the property values, not the {@code Property} instances,
+     * in order to keep the hash code value stable before and after the {@code properties} array is promoted from the
+     * {@code Object[]} type to the {@code Property[]} type.
      *
-     * @return A hash code value.
+     * @return a hash code value.
      */
     @Override
     public int hashCode() {
-        return type.hashCode() + 37 * Arrays.hashCode(properties);
+        int code = 1;
+        if (properties != null) {
+            if (properties instanceof Property[]) {
+                for (final Property p : (Property[]) properties) {
+                    code = 31 * code;
+                    final Object value;
+                    if (p instanceof AbstractAttribute<?>) {
+                        value = getAttributeValue((AbstractAttribute<?>) p);
+                    } else if (p instanceof AbstractAssociation) {
+                        value = getAssociationValue((AbstractAssociation) p);
+                    } else {
+                        continue;
+                    }
+                    if (value != null) {
+                        code += value.hashCode();
+                    }
+                }
+            } else {
+                code = Arrays.hashCode(properties);
+            }
+        }
+        return type.hashCode() + code;
     }
 
     /**
@@ -305,7 +329,17 @@ final class DenseFeature extends AbstractFeature implements Cloneable {
         }
         if (obj instanceof DenseFeature) {
             final DenseFeature that = (DenseFeature) obj;
-            return type.equals(that.type) && Arrays.equals(properties, that.properties);
+            if (type.equals(that.type)) {
+                final boolean asProperties = (properties instanceof Property[]);
+                if (asProperties != (that.properties instanceof Property[])) {
+                    if (asProperties) {
+                        that.wrapValuesInProperties();
+                    } else {
+                        wrapValuesInProperties();
+                    }
+                }
+                return Arrays.equals(properties, that.properties);
+            }
         }
         return false;
     }

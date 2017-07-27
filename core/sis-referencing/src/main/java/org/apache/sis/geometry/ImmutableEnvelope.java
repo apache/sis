@@ -42,8 +42,8 @@ import static org.apache.sis.util.ArgumentChecks.ensureDimensionMatches;
  *
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.3
  * @version 0.3
+ * @since   0.3
  * @module
  */
 public final class ImmutableEnvelope extends ArrayEnvelope implements Serializable {
@@ -56,10 +56,10 @@ public final class ImmutableEnvelope extends ArrayEnvelope implements Serializab
      * Constructs an envelope defined by two corners given as direct positions.
      * The envelope CRS will be the CRS of the given positions.
      *
-     * @param  lowerCorner The limits in the direction of decreasing ordinate values for each dimension.
-     * @param  upperCorner The limits in the direction of increasing ordinate values for each dimension.
-     * @throws MismatchedDimensionException If the two positions do not have the same dimension.
-     * @throws MismatchedReferenceSystemException If the CRS of the two position are not equal.
+     * @param  lowerCorner  the limits in the direction of decreasing ordinate values for each dimension.
+     * @param  upperCorner  the limits in the direction of increasing ordinate values for each dimension.
+     * @throws MismatchedDimensionException if the two positions do not have the same dimension.
+     * @throws MismatchedReferenceSystemException if the CRS of the two position are not equal.
      */
     public ImmutableEnvelope(final DirectPosition lowerCorner, final DirectPosition upperCorner)
             throws MismatchedDimensionException, MismatchedReferenceSystemException
@@ -70,10 +70,10 @@ public final class ImmutableEnvelope extends ArrayEnvelope implements Serializab
     /**
      * Constructs an envelope defined by two corners given as sequences of ordinate values.
      *
-     * @param  lowerCorner The limits in the direction of decreasing ordinate values for each dimension.
-     * @param  upperCorner The limits in the direction of increasing ordinate values for each dimension.
-     * @param  crs         The CRS to assign to this envelope, or {@code null}.
-     * @throws MismatchedDimensionException If the two sequences do not have the same length, or
+     * @param  lowerCorner  the limits in the direction of decreasing ordinate values for each dimension.
+     * @param  upperCorner  the limits in the direction of increasing ordinate values for each dimension.
+     * @param  crs          the CRS to assign to this envelope, or {@code null}.
+     * @throws MismatchedDimensionException if the two sequences do not have the same length, or
      *         if the dimension of the given CRS is not equals to the dimension of the given corners.
      */
     public ImmutableEnvelope(final double[] lowerCorner, final double[] upperCorner,
@@ -90,7 +90,7 @@ public final class ImmutableEnvelope extends ArrayEnvelope implements Serializab
      * {@linkplain org.apache.sis.referencing.CommonCRS#defaultGeographic() default geographic CRS}.
      * Axis order is (<var>longitude</var>, <var>latitude</var>).
      *
-     * @param box The bounding box to copy.
+     * @param box  the bounding box to copy.
      */
     public ImmutableEnvelope(final GeographicBoundingBox box) {
         super(box);
@@ -102,7 +102,7 @@ public final class ImmutableEnvelope extends ArrayEnvelope implements Serializab
      * be an instance of {@code ImmutableEnvelope}. In case of doubt,
      * consider using {@link #castOrCopy(Envelope)} instead.
      *
-     * @param envelope The envelope to copy.
+     * @param envelope  the envelope to copy.
      *
      * @see #castOrCopy(Envelope)
      */
@@ -119,9 +119,9 @@ public final class ImmutableEnvelope extends ArrayEnvelope implements Serializab
      * <p>The main purpose of this method is to assign a non-null CRS when the envelope to
      * copy has a null CRS.</p>
      *
-     * @param  crs      The CRS to assign to this envelope, or {@code null}.
-     * @param  envelope The envelope from which to copy ordinate values.
-     * @throws MismatchedDimensionException If the dimension of the given CRS is not equals
+     * @param  crs       the CRS to assign to this envelope, or {@code null}.
+     * @param  envelope  the envelope from which to copy ordinate values.
+     * @throws MismatchedDimensionException if the dimension of the given CRS is not equals
      *         to the dimension of the given envelope.
      */
     public ImmutableEnvelope(final CoordinateReferenceSystem crs, final Envelope envelope)
@@ -145,10 +145,10 @@ public final class ImmutableEnvelope extends ArrayEnvelope implements Serializab
      * See the javadoc of the {@link GeneralEnvelope#GeneralEnvelope(CharSequence) GeneralEnvelope}
      * constructor for more information.
      *
-     * @param  crs The coordinate reference system, or {@code null} if none.
-     * @param  wkt The {@code BOX}, {@code POLYGON} or other kind of element to parse.
-     * @throws IllegalArgumentException If the given string can not be parsed.
-     * @throws MismatchedDimensionException If the dimension of the given CRS is not equals
+     * @param  crs  the coordinate reference system, or {@code null} if none.
+     * @param  wkt  the {@code BOX}, {@code POLYGON} or other kind of element to parse.
+     * @throws IllegalArgumentException if the given string can not be parsed.
+     * @throws MismatchedDimensionException if the dimension of the given CRS is not equals
      *         to the dimension of the parsed envelope.
      */
     public ImmutableEnvelope(final CoordinateReferenceSystem crs, final CharSequence wkt)
@@ -165,8 +165,8 @@ public final class ImmutableEnvelope extends ArrayEnvelope implements Serializab
      * Otherwise the coordinate values and the CRS of the given envelope are copied in a
      * new envelope.
      *
-     * @param  envelope The envelope to cast, or {@code null}.
-     * @return The values of the given envelope as an {@code ImmutableEnvelope} instance.
+     * @param  envelope  the envelope to cast, or {@code null}.
+     * @return the values of the given envelope as an {@code ImmutableEnvelope} instance.
      *
      * @see AbstractEnvelope#castOrCopy(Envelope)
      * @see GeneralEnvelope#castOrCopy(Envelope)

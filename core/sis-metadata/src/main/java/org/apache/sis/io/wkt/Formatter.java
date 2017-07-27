@@ -17,25 +17,23 @@
 package org.apache.sis.io.wkt;
 
 import java.util.Map;
+import java.util.Set;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Locale;
-import java.util.TimeZone;
 import java.util.Date;
 import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.text.NumberFormat;
 import java.text.FieldPosition;
+import java.io.IOException;
 import java.lang.reflect.Array;
 import java.math.RoundingMode;
-import javax.measure.unit.SI;
-import javax.measure.unit.NonSI;
-import javax.measure.unit.Unit;
-import javax.measure.unit.UnitFormat;
-import javax.measure.quantity.Quantity;
+import javax.measure.Unit;
+import javax.measure.Quantity;
 
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.Identifier;
@@ -50,8 +48,11 @@ import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.ReferenceIdentifier;
 import org.opengis.referencing.ReferenceSystem;
 import org.opengis.referencing.datum.Datum;
+import org.opengis.referencing.crs.CompoundCRS;
+import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.referencing.operation.CoordinateOperation;
+import org.opengis.referencing.operation.ConcatenatedOperation;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.util.CodeList;
 
@@ -62,12 +63,20 @@ import org.apache.sis.util.Debug;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.Numbers;
 import org.apache.sis.util.Localized;
+import org.apache.sis.util.Exceptions;
+import org.apache.sis.util.Characters;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.util.resources.Vocabulary;
+import org.apache.sis.internal.util.X364;
 import org.apache.sis.internal.util.Citations;
+import org.apache.sis.internal.util.Constants;
+import org.apache.sis.internal.util.StandardDateFormat;
 import org.apache.sis.internal.simple.SimpleExtent;
+import org.apache.sis.internal.metadata.WKTKeywords;
 import org.apache.sis.internal.metadata.ReferencingServices;
+import org.apache.sis.measure.UnitFormat;
 import org.apache.sis.measure.Range;
 import org.apache.sis.measure.MeasurementRange;
 import org.apache.sis.metadata.iso.ImmutableIdentifier;
@@ -89,8 +98,12 @@ import org.apache.sis.metadata.iso.extent.Extents;
  * </ul>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.4
- * @version 0.6
+ * @version 0.8
+ *
+ * @see <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html">WKT 2 specification</a>
+ * @see <a href="http://www.geoapi.org/3.0/javadoc/org/opengis/referencing/doc-files/WKT.html">Legacy WKT 1</a>
+ *
+ * @since 0.4
  * @module
  */
 public class Formatter implements Localized {
@@ -105,12 +118,6 @@ public class Formatter implements Localized {
      * The value used here is arbitrary and may change in any future SIS version.
      */
     private static final int VERTICAL_ACCURACY = 9;
-
-    /**
-     * The time span threshold for switching between the {@code "yyyy-MM-dd'T'HH:mm:ss.SX"}
-     * and {@code "yyyy-MM-dd"} date pattern when formatting a temporal extent.
-     */
-    private static final long TEMPORAL_THRESHOLD = 24 * 60 * 60 * 1000L;
 
     /**
      * The value of {@code X364.FOREGROUND_DEFAULT.sequence()}, hard-coded for avoiding
@@ -149,7 +156,7 @@ public class Formatter implements Localized {
      * If non-null, the terminal must be ANSI X3.64 compatible.
      * The default value is {@code null}.
      *
-     * @see #configure(Convention, Citation, Colors, boolean, byte)
+     * @see #configure(Convention, Citation, Colors, byte, byte, byte)
      */
     private Colors colors;
 
@@ -157,30 +164,38 @@ public class Formatter implements Localized {
      * The preferred convention for objects or parameter names.
      * This field should never be {@code null}.
      *
-     * @see #configure(Convention, Citation, Colors, boolean, byte)
+     * @see #configure(Convention, Citation, Colors, byte, byte, byte)
      */
     private Convention convention;
 
     /**
      * The preferred authority for objects or parameter names.
      *
-     * @see #configure(Convention, Citation, Colors, boolean, byte)
+     * @see #configure(Convention, Citation, Colors, byte, byte, byte)
      */
     private Citation authority;
 
     /**
-     * {@link CharEncoding#UNICODE} for preserving non-ASCII characters. The default value is
-     * {@link CharEncoding#DEFAULT}, which causes replacements like "é" → "e" in all elements
-     * except {@code REMARKS["…"]}. May also be a user-supplied encoding.
+     * {@link Transliterator#IDENTITY} for preserving non-ASCII characters. The default value is
+     * {@link Transliterator#DEFAULT}, which causes replacements like "é" → "e" in all elements
+     * except {@code REMARKS["…"]}. May also be a user-supplied transliterator.
+     *
+     * @see #getTransliterator()
      */
-    CharEncoding encoding;
+    Transliterator transliterator;
+
+    /**
+     * {@code true} if this {@code Formatter} should verify the validity of characters in quoted texts.
+     * ISO 19162 restricts quoted texts to ASCII characters with addition of degree symbol (°).
+     */
+    boolean verifyCharacterValidity = true;
 
     /**
      * The enclosing WKT element being formatted.
      *
      * @see #getEnclosingElement(int)
      */
-    private final List<FormattableObject> enclosingElements = new ArrayList<FormattableObject>();
+    private final List<FormattableObject> enclosingElements = new ArrayList<>();
 
     /**
      * The contextual units for writing lengths, angles or other type of measurements.
@@ -191,7 +206,7 @@ public class Formatter implements Localized {
      * @see #addContextualUnit(Unit)
      * @see #toContextualUnit(Unit)
      */
-    private final Map<Unit<?>, Unit<?>> units = new HashMap<Unit<?>, Unit<?>>(4);
+    private final Map<Unit<?>, Unit<?>> units = new HashMap<>(4);
 
     /**
      * A bits mask of elements which defined a contextual units.
@@ -240,11 +255,16 @@ public class Formatter implements Localized {
     private int elementStart;
 
     /**
-     * {@code true} if keywords shall be converted to upper cases.
+     * {@code 1} if keywords shall be converted to upper cases, or {@code -1} for lower cases.
      *
-     * @see #configure(Convention, Citation, Colors, boolean, byte)
+     * @see #configure(Convention, Citation, Colors, byte, byte, byte)
      */
-    private boolean toUpperCase;
+    private byte toUpperCase;
+
+    /**
+     * {@code -1} for short keywords, {@code +1} for long keywords or 0 for the default.
+     */
+    private byte longKeywords;
 
     /**
      * Incremented when {@link #setColor(ElementKind)} is invoked, and decremented when {@link #resetColor()}
@@ -256,7 +276,7 @@ public class Formatter implements Localized {
      * The amount of spaces to use in indentation, or {@value org.apache.sis.io.wkt.WKTFormat#SINGLE_LINE}
      * if indentation is disabled.
      *
-     * @see #configure(Convention, Citation, Colors, boolean, byte)
+     * @see #configure(Convention, Citation, Colors, byte, byte, byte)
      */
     private byte indentation;
 
@@ -279,7 +299,7 @@ public class Formatter implements Localized {
      * {@code ID} (previously known as {@code AUTHORITY}) and {@code REMARKS}, and have a special treatment: they
      * are written by {@link #append(FormattableObject)} after the {@code formatTo(Formatter)} method returned.
      *
-     * @see #appendComplement(IdentifiedObject, boolean)
+     * @see #appendComplement(IdentifiedObject, FormattableObject, FormattableObject)
      */
     private boolean isComplement;
 
@@ -287,56 +307,51 @@ public class Formatter implements Localized {
      * {@code true} if the last formatted element was invalid WKT and shall be highlighted with syntactic coloration.
      * This field has no effect if {@link #colors} is null. This field is reset to {@code false} after the invalid
      * part has been processed by {@link #append(FormattableObject)}, in order to highlight only the first erroneous
-     * element without clearing the {@link #invalidElement} value.
+     * element without clearing the {@link #warnings} value.
      */
     private boolean highlightError;
 
     /**
-     * Non-null if the WKT is invalid. If non-null, then this field contains a keyword that identify the
-     * problematic part.
+     * The warnings that occurred during WKT formatting, or {@code null} if none.
      *
      * @see #isInvalidWKT()
-     * @see #getErrorMessage()
+     * @see #getWarnings()
      */
-    private String invalidElement;
-
-    /**
-     * Error that occurred during WKT formatting, or {@code null} if none.
-     *
-     * @see #getErrorCause()
-     */
-    private Exception errorCause;
+    private Warnings warnings;
 
     /**
      * Creates a new formatter instance with the default configuration.
      */
     public Formatter() {
-        this(Convention.DEFAULT, Symbols.getDefault(), WKTFormat.DEFAULT_INDENTATION);
+        this(Convention.DEFAULT, Symbols.getDefault(), Constants.DEFAULT_INDENTATION);
     }
 
     /**
      * Creates a new formatter instance with the specified convention, symbols and indentation.
      *
-     * @param convention  The convention to use.
-     * @param symbols     The symbols.
-     * @param indentation The amount of spaces to use in indentation for WKT formatting,
-     *        or {@link WKTFormat#SINGLE_LINE} for formatting the whole WKT on a single line.
+     * @param  convention   the convention to use.
+     * @param  symbols      the symbols.
+     * @param  indentation  the amount of spaces to use in indentation for WKT formatting,
+     *                      or {@link WKTFormat#SINGLE_LINE} for formatting the whole WKT on a single line.
      */
     public Formatter(final Convention convention, final Symbols symbols, final int indentation) {
         ArgumentChecks.ensureNonNull("convention",  convention);
         ArgumentChecks.ensureNonNull("symbols",     symbols);
         ArgumentChecks.ensureBetween("indentation", WKTFormat.SINGLE_LINE, Byte.MAX_VALUE, indentation);
-        this.locale        = Locale.getDefault();
+        this.locale        = Locale.getDefault(Locale.Category.DISPLAY);
         this.convention    = convention;
         this.authority     = convention.getNameAuthority();
         this.symbols       = symbols.immutable();
         this.lineSeparator = this.symbols.lineSeparator();
         this.indentation   = (byte) indentation;
         this.numberFormat  = symbols.createNumberFormat();
-        this.dateFormat    = new SimpleDateFormat(WKTFormat.DATE_PATTERN + "'Z'", symbols.getLocale());
-        this.unitFormat    = UnitFormat.getInstance(symbols.getLocale());
+        this.dateFormat    = new StandardDateFormat(symbols.getLocale());
+        this.unitFormat    = new UnitFormat(symbols.getLocale());
         this.buffer        = new StringBuffer();
-        dateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
+        unitFormat.setStyle(UnitFormat.Style.NAME);
+        if (convention.usesCommonUnits) {
+            unitFormat.setLocale(Locale.US);
+        }
     }
 
     /**
@@ -351,10 +366,10 @@ public class Formatter implements Localized {
         this.authority     = Convention.DEFAULT.getNameAuthority();
         this.symbols       = symbols;
         this.lineSeparator = this.symbols.lineSeparator();
-        this.indentation   = WKTFormat.DEFAULT_INDENTATION;
-        this.numberFormat  = numberFormat; // No clone needed.
-        this.dateFormat    = dateFormat;   // No clone needed.
-        this.unitFormat    = unitFormat;   // No clone needed.
+        this.indentation   = Constants.DEFAULT_INDENTATION;
+        this.numberFormat  = numberFormat;                      // No clone needed.
+        this.dateFormat    = dateFormat;
+        this.unitFormat    = unitFormat;
         // Do not set the buffer. It will be set by WKTFormat.format(…).
     }
 
@@ -370,28 +385,31 @@ public class Formatter implements Localized {
      * Sets the convention, authority, colors and indentation to use for formatting WKT elements.
      * This method does not validate the argument — validation must be done by the caller.
      *
-     * @param convention  The convention, or {@code null} for the default value.
-     * @param authority   The authority, or {@code null} for inferring it from the convention.
-     * @param colors      The syntax coloring, or {@code null} if none.
-     * @param toUpperCase Whether keywords shall be converted to upper cases.
-     * @param indentation The amount of spaces to use in indentation for WKT formatting,
-     *                    or {@link WKTFormat#SINGLE_LINE}.
+     * @param  convention    the convention, or {@code null} for the default value.
+     * @param  authority     the authority, or {@code null} for inferring it from the convention.
+     * @param  colors        the syntax coloring, or {@code null} if none.
+     * @param  toUpperCase   whether keywords shall be converted to upper cases.
+     * @param  longKeywords  {@code -1} for short keywords, {@code +1} for long keywords or 0 for the default.
+     * @param  indentation   the amount of spaces to use in indentation for WKT formatting,
+     *                       or {@link WKTFormat#SINGLE_LINE}.
      */
     final void configure(Convention convention, final Citation authority, final Colors colors,
-            final boolean toUpperCase, final byte indentation)
+            final byte toUpperCase, final byte longKeywords, final byte indentation)
     {
-        this.convention   = convention;
-        this.authority    = (authority != null) ? authority : convention.getNameAuthority();
-        this.colors       = colors;
-        this.toUpperCase  = toUpperCase;
-        this.indentation  = indentation;
-        this.encoding     = (convention == Convention.INTERNAL) ? CharEncoding.UNICODE : CharEncoding.DEFAULT;
+        this.convention     = convention;
+        this.authority      = (authority != null) ? authority : convention.getNameAuthority();
+        this.colors         = colors;
+        this.toUpperCase    = toUpperCase;
+        this.longKeywords   = longKeywords;
+        this.indentation    = indentation;
+        this.transliterator = (convention == Convention.INTERNAL) ? Transliterator.IDENTITY : Transliterator.DEFAULT;
+        unitFormat.setLocale(convention.usesCommonUnits ? Locale.US : Locale.ROOT);
     }
 
     /**
      * Returns the convention to use for formatting the WKT. The default is {@link Convention#WKT2}.
      *
-     * @return The convention (never {@code null}).
+     * @return the convention (never {@code null}).
      *
      * @see WKTFormat#setConvention(Convention)
      * @see FormattableObject#toString(Convention)
@@ -406,20 +424,20 @@ public class Formatter implements Localized {
      * according ISO 19162 specification. Return values can be:
      *
      * <ul>
-     *   <li>{@link CharEncoding#DEFAULT} for performing replacements like "é" → "e"
+     *   <li>{@link Transliterator#DEFAULT} for performing replacements like "é" → "e"
      *       in all WKT elements except {@code REMARKS["…"]}.</li>
-     *   <li>{@link CharEncoding#UNICODE} for preserving non-ASCII characters.</li>
+     *   <li>{@link Transliterator#IDENTITY} for preserving non-ASCII characters.</li>
      *   <li>Any other user-supplied mapping.</li>
      * </ul>
      *
-     * @return The mapper between Java character sequences and the characters to write in WKT.
+     * @return the mapper between Java character sequences and the characters to write in WKT.
      *
-     * @see WKTFormat#setCharEncoding(CharEncoding)
+     * @see WKTFormat#setTransliterator(Transliterator)
      *
      * @since 0.6
      */
-    public final CharEncoding getCharEncoding() {
-        return encoding;
+    public final Transliterator getTransliterator() {
+        return transliterator;
     }
 
     /**
@@ -433,7 +451,7 @@ public class Formatter implements Localized {
      * However if the preferred authority is OGC, then the formatted datum name will rather look like
      * <cite>"WGS84"</cite> (the exact string depends on the object aliases).</div>
      *
-     * @return The authority for projection and parameter names.
+     * @return the authority for projection and parameter names.
      *
      * @see WKTFormat#getNameAuthority()
      * @see org.apache.sis.referencing.IdentifiedObjects#getName(IdentifiedObject, Citation)
@@ -446,7 +464,7 @@ public class Formatter implements Localized {
      * Returns the locale to use for localizing {@link InternationalString} instances.
      * This is <em>not</em> the locale for formatting dates and numbers.
      *
-     * @return The locale to use for localizing international strings.
+     * @return the locale to use for localizing international strings.
      */
     @Override
     public final Locale getLocale() {
@@ -462,9 +480,14 @@ public class Formatter implements Localized {
             if (colorApplied == 0) {
                 final String color = colors.getAnsiSequence(type);
                 if (color == null) {
-                    return; // Do not increment 'colorApplied' for giving a chance to children to apply their colors.
+                    // Do not increment 'colorApplied' for giving a chance to children to apply their colors.
+                    return;
                 }
+                final boolean isStart = (buffer.length() == elementStart);
                 buffer.append(color);
+                if (isStart) {
+                    elementStart = buffer.length();
+                }
             }
             colorApplied++;
         }
@@ -487,7 +510,6 @@ public class Formatter implements Localized {
      *
      * <p>This method has no effect in any of the following cases:</p>
      * <ul>
-     *   <li>WKT formatting has not yet started.</li>
      *   <li>This method has already been invoked before the next {@code append(…)}.</li>
      *   <li>The indentation is {@link WKTFormat#SINGLE_LINE}.</li>
      * </ul>
@@ -503,10 +525,30 @@ public class Formatter implements Localized {
      * the indentation by the amount of spaces specified at construction time,
      * and a value of {@code -1} reduces it by the same amount.
      *
-     * @param amount +1 for increasing the indentation, or -1 for decreasing it, or 0 for no-op.
+     * @param  amount  +1 for increasing the indentation, or -1 for decreasing it, or 0 for no-op.
      */
     public void indent(final int amount) {
         margin = Math.max(0, margin + indentation*amount);
+    }
+
+    /**
+     * Selects a short or long keyword depending on the {@link KeywordStyle} value.
+     * This method can be used by {@link FormattableObject#formatTo(Formatter)}
+     * implementations for choosing the return value.
+     *
+     * @param  shortKeyword  the keyword to return if the style is {@link KeywordStyle#SHORT}.
+     * @param  longKeyword   the keyword to return if the style is {@link KeywordStyle#LONG}.
+     * @return the short or long keyword depending on the keyword style setting.
+     *
+     * @see WKTFormat#setKeywordStyle(KeywordStyle)
+     *
+     * @since 0.6
+     */
+    public String shortOrLong(final String shortKeyword, final String longKeyword) {
+        return (longKeywords != 0
+                ? longKeywords < 0              // If keyword style was explicitely specified, use the setting.
+                : convention.toUpperCase)       // Otherwise use the default value determined by the convention.
+               ? shortKeyword : longKeyword;
     }
 
     /**
@@ -520,6 +562,8 @@ public class Formatter implements Localized {
             } else {
                 buffer.append(symbols.getSeparator());
             }
+        } else if (requestNewLine) {
+            buffer.append(System.lineSeparator()).append(CharSequences.spaces(margin));
         }
         requestNewLine = false;
     }
@@ -527,16 +571,17 @@ public class Formatter implements Localized {
     /**
      * Appends a separator if needed, then opens a new element.
      *
-     * @param newLine {@code true} for invoking {@link #newLine()} first.
-     * @param keyword The element keyword (e.g. {@code "DATUM"}, {@code "AXIS"}, <i>etc</i>).
+     * @param  newLine  {@code true} for invoking {@link #newLine()} first.
+     * @param  keyword  the element keyword (e.g. {@code "DATUM"}, {@code "AXIS"}, <i>etc</i>).
      */
     private void openElement(final boolean newLine, String keyword) {
-        if (newLine) {
+        if (newLine && buffer.length() != elementStart) {
             newLine();
         }
         appendSeparator();
-        if (toUpperCase) {
-            keyword = keyword.toUpperCase(symbols.getLocale());
+        if (toUpperCase != 0) {
+            final Locale locale = symbols.getLocale();
+            keyword = (toUpperCase >= 0) ? keyword.toUpperCase(locale) : keyword.toLowerCase(locale);
         }
         elementStart = buffer.append(keyword).appendCodePoint(symbols.getOpeningBracket(0)).length();
     }
@@ -544,7 +589,7 @@ public class Formatter implements Localized {
     /**
      * Closes the element opened by {@link #openElement(boolean, String)}.
      *
-     * @param newLine {@code true} for invoking {@link #newLine()} last.
+     * @param  newLine  {@code true} for invoking {@link #newLine()} last.
      */
     private void closeElement(final boolean newLine) {
         buffer.appendCodePoint(symbols.getClosingBracket(0));
@@ -576,7 +621,7 @@ public class Formatter implements Localized {
      *   <tr><td>{@code Remarks[…]}</td>       <td></td> <td>{@link ReferenceSystem}, {@link CoordinateOperation}</td></tr>
      * </table></blockquote>
      *
-     * @param object The formattable object to append to the WKT, or {@code null} if none.
+     * @param  object  the formattable object to append to the WKT, or {@code null} if none.
      */
     public void append(final FormattableObject object) {
         if (object == null) {
@@ -615,18 +660,18 @@ public class Formatter implements Localized {
          *             GEOGCS[...etc...],
          *             ...etc...
          */
-        final IdentifiedObject info = (object instanceof IdentifiedObject) ? (IdentifiedObject) object : null;
+        IdentifiedObject info = (object instanceof IdentifiedObject) ? (IdentifiedObject) object : null;
         String keyword = object.formatTo(this);
         if (keyword == null) {
             if (info != null) {
                 setInvalidWKT(info, null);
-                keyword = getName(info.getClass());
             } else {
                 setInvalidWKT(object.getClass(), null);
-                keyword = invalidElement;
             }
-        } else if (toUpperCase) {
-            keyword = keyword.toUpperCase(symbols.getLocale());
+            keyword = getName(object.getClass());
+        } else if (toUpperCase != 0) {
+            final Locale locale = symbols.getLocale();
+            keyword = (toUpperCase >= 0) ? keyword.toUpperCase(locale) : keyword.toLowerCase(locale);
         }
         if (highlightError && colors != null) {
             final String color = colors.getAnsiSequence(ElementKind.ERROR);
@@ -641,10 +686,12 @@ public class Formatter implements Localized {
          * Format the SCOPE["…"], AREA["…"] and other elements. Some of those information
          * are available only for Datum, CoordinateOperation and ReferenceSystem objects.
          */
+        if (info == null && convention.majorVersion() != 1 && object instanceof GeneralParameterValue) {
+            info = ((GeneralParameterValue) object).getDescriptor();
+        }
         if (info != null) {
-            appendComplement(info, stackDepth == 0);
-        } else if (convention.majorVersion() != 1 && object instanceof GeneralParameterValue) {
-            appendComplement(((GeneralParameterValue) object).getDescriptor(), false);
+            appendComplement(info, (stackDepth >= 1) ? enclosingElements.get(stackDepth - 1) : null,
+                                   (stackDepth >= 2) ? enclosingElements.get(stackDepth - 2) : null);
         }
         buffer.appendCodePoint(symbols.getClosingBracket(0));
         indent(-1);
@@ -659,9 +706,10 @@ public class Formatter implements Localized {
      * and have a special treatment: they are written by {@link #append(FormattableObject)}
      * after the {@code formatTo(Formatter)} method returned.
      *
-     * <p>The {@code ID[<name>,<code>,…]} element is written only for the root element, unless the convention are
-     * INTERNAL. If formatted, the ID element will be on the same line than the enclosing one if no line separator
-     * were requested (e.g. SPHEROID["Clarke 1866", …, ID["EPSG", 7008]]), or on a new line otherwise. Example:</p>
+     * <p>The {@code ID[<name>,<code>,…]} element is normally written only for the root element
+     * (unless the convention is {@code INTERNAL}), but there is various exceptions to this rule.
+     * If formatted, the {@code ID} element will be by default on the same line than the enclosing
+     * element (e.g. {@code SPHEROID["Clarke 1866", …, ID["EPSG", 7008]]}). Other example:</p>
      *
      * {@preformat text
      *   PROJCS["NAD27 / Idaho Central",
@@ -671,8 +719,8 @@ public class Formatter implements Localized {
      * }
      *
      * For non-internal conventions, all elements other than {@code ID[…]} are formatted
-     * only for {@link CoordinateOperation} and {@link ReferenceSystem} types.
-     * In the later case, we also require that the CRS is not the base of a derived CRS.
+     * only for {@link CoordinateOperation} and root {@link ReferenceSystem} instances,
+     * with an exception for remarks of {@code ReferenceSystem} embedded inside {@code CoordinateOperation}.
      * Those restrictions are our interpretation of the following ISO 19162 requirement:
      *
      * <blockquote>(…snip…) {@code <scope extent identifier remark>} is a collection of four optional attributes
@@ -682,32 +730,53 @@ public class Formatter implements Localized {
      * A {@code <remark>} can be included within the descriptions of source and target CRS embedded within
      * a coordinate transformation as well as within the coordinate transformation itself.</blockquote>
      */
-    private void appendComplement(final IdentifiedObject object, final boolean isRoot) {
+    @SuppressWarnings("null")
+    private void appendComplement(final IdentifiedObject object, final FormattableObject parent, final FormattableObject gp) {
         isComplement = true;
         final boolean showIDs;      // Whether to format ID[…] elements.
         final boolean filterID;     // Whether we shall limit to a single ID[…] element.
-        final boolean showOthers;   // Whether to format any element other than ID[…].
+        final boolean showOthers;   // Whether to format any element other than ID[…] and Remarks[…].
+        final boolean showRemarks;  // Whether to format Remarks[…].
         if (convention == Convention.INTERNAL) {
-            showIDs    = true;
-            filterID   = false;
-            showOthers = true;
+            showIDs     = true;
+            filterID    = false;
+            showOthers  = true;
+            showRemarks = true;
         } else {
-            if (convention == Convention.WKT2_SIMPLIFIED) {
-                showIDs = isRoot;
+            /*
+             * Except for the special cases of OperationMethod and Parameters, ISO 19162 recommends to format the
+             * ID only for the root element.  But Apache SIS adds an other exception to this rule by handling the
+             * components of CompoundCRS as if they were root elements. The reason is that users often create their
+             * own CompoundCRS from standard components, for example by adding a time axis to some standard CRS like
+             * "WGS84". The resulting CompoundCRS usually have no identifier. Then the users often need to extract a
+             * particular component of a CompoundCRS, most often the horizontal part, and will need its identifier
+             * for example in a Web Map Service (WMS). Those ID are lost if we do not format them here.
+             */
+            if (parent == null || parent instanceof CompoundCRS) {
+                showIDs = true;
+            } else if (gp instanceof CoordinateOperation && !(parent instanceof IdentifiedObject)) {
+                // "SourceCRS[…]" and "TargetCRS[…]" sub-elements in CoordinateOperation.
+                showIDs = true;
+            } else if (convention == Convention.WKT2_SIMPLIFIED) {
+                showIDs = false;
             } else {
-                showIDs = isRoot || (object instanceof OperationMethod) || (object instanceof GeneralParameterDescriptor);
+                showIDs = (object instanceof OperationMethod) || (object instanceof GeneralParameterDescriptor);
             }
             if (convention.majorVersion() == 1) {
-                filterID   = true;
-                showOthers = false;
+                filterID    = true;
+                showOthers  = false;
+                showRemarks = false;
             } else {
-                filterID = !isRoot;
+                filterID = (parent != null);
                 if (object instanceof CoordinateOperation) {
-                    showOthers = true;
+                    showOthers  = !(parent instanceof ConcatenatedOperation);
+                    showRemarks = showOthers;
                 } else if (object instanceof ReferenceSystem) {
-                    showOthers = !(getEnclosingElement(1) instanceof ReferenceSystem);
+                    showOthers  = (parent == null);
+                    showRemarks = (parent == null) || (gp instanceof CoordinateOperation);
                 } else {
-                    showOthers = false; // Mandated by ISO 19162.
+                    showOthers  = false;    // Mandated by ISO 19162.
+                    showRemarks = false;
                 }
             }
         }
@@ -716,7 +785,7 @@ public class Formatter implements Localized {
         }
         if (showIDs) {
             Collection<ReferenceIdentifier> identifiers = object.getIdentifiers();
-            if (identifiers != null) { // Paranoiac check
+            if (identifiers != null) {                                                  // Paranoiac check
                 if (filterID) {
                     for (final ReferenceIdentifier id : identifiers) {
                         if (Citations.identifierMatches(authority, id.getAuthority())) {
@@ -734,8 +803,8 @@ public class Formatter implements Localized {
                 }
             }
         }
-        if (showOthers) {
-            appendOnNewLine("Remarks", object.getRemarks(), ElementKind.REMARKS);
+        if (showRemarks) {
+            appendOnNewLine(WKTKeywords.Remark, object.getRemarks(), ElementKind.REMARKS);
         }
         isComplement = false;
     }
@@ -762,10 +831,10 @@ public class Formatter implements Localized {
         } else {
             return;
         }
-        appendOnNewLine("Anchor", anchor, null);
-        appendOnNewLine("Scope", scope, ElementKind.SCOPE);
+        appendOnNewLine(WKTKeywords.Anchor, anchor, null);
+        appendOnNewLine(WKTKeywords.Scope, scope, ElementKind.SCOPE);
         if (area != null) {
-            appendOnNewLine("Area", area.getDescription(), ElementKind.EXTENT);
+            appendOnNewLine(WKTKeywords.Area, area.getDescription(), ElementKind.EXTENT);
             append(Extents.getGeographicBoundingBox(area), BBOX_ACCURACY);
             appendVerticalExtent(Extents.getVerticalRange(area));
             appendTemporalExtent(Extents.getTimeRange(area));
@@ -783,12 +852,12 @@ public class Formatter implements Localized {
      * This is because {@code GeographicBoundingBox} does not specify the datum, so this box
      * is an approximative information only.
      *
-     * @param bbox The geographic bounding box to append to the WKT, or {@code null}.
-     * @param fractionDigits The number of fraction digits to use. The recommended value is 2.
+     * @param  bbox  the geographic bounding box to append to the WKT, or {@code null}.
+     * @param  fractionDigits  the number of fraction digits to use. The recommended value is 2.
      */
     public void append(final GeographicBoundingBox bbox, final int fractionDigits) {
         if (bbox != null) {
-            openElement(isComplement, "BBox");
+            openElement(isComplement, WKTKeywords.BBox);
             setColor(ElementKind.EXTENT);
             numberFormat.setMinimumFractionDigits(fractionDigits);
             numberFormat.setMaximumFractionDigits(fractionDigits);
@@ -812,26 +881,30 @@ public class Formatter implements Localized {
      *   <li>“{@code VerticalExtent[102, 108, LengthUnit["m", 1]]}”       (Δz =   6)</li>
      *   <li>“{@code VerticalExtent[100.2, 100.8, LengthUnit["m", 1]]}”   (Δz = 0.6)</li>
      * </ul>
+     *
+     * Note that according ISO 19162, heights are positive toward up and relative to an unspecified mean sea level.
+     * It is caller's responsibility to ensure that the given range complies with that specification as much as
+     * possible.
      */
     private void appendVerticalExtent(final MeasurementRange<Double> range) {
         if (range != null) {
             final double min = range.getMinDouble();
             final double max = range.getMaxDouble();
             int minimumFractionDigits = Math.max(0, DecimalFunctions.fractionDigitsForDelta(max - min, false));
-            int maximumFractionDigits = minimumFractionDigits + 2; // Arbitrarily allow 2 more digits.
+            int maximumFractionDigits = minimumFractionDigits + 2;          // Arbitrarily allow 2 more digits.
             if (maximumFractionDigits > VERTICAL_ACCURACY) {
                 maximumFractionDigits = VERTICAL_ACCURACY;
                 minimumFractionDigits = 0;
             }
-            openElement(true, "VerticalExtent");
+            openElement(true, WKTKeywords.VerticalExtent);
             setColor(ElementKind.EXTENT);
             numberFormat.setMinimumFractionDigits(minimumFractionDigits);
             numberFormat.setMaximumFractionDigits(maximumFractionDigits);
             numberFormat.setRoundingMode(RoundingMode.FLOOR);   appendPreset(min);
             numberFormat.setRoundingMode(RoundingMode.CEILING); appendPreset(max);
             final Unit<?> unit = range.unit();
-            if (!convention.isSimplified() || !SI.METRE.equals(unit)) {
-                append(unit); // Unit are optional if they are metres.
+            if (!convention.isSimplified() || !Units.METRE.equals(unit)) {
+                append(unit);                                               // Unit are optional if they are metres.
             }
             resetColor();
             closeElement(true);
@@ -839,13 +912,12 @@ public class Formatter implements Localized {
     }
 
     /**
-     * Appends the given temporal extents, if non-null.
-     * This method uses a simplified format if the time span is large enough.
+     * Appends the given temporal extent, if non-null.
      * Examples:
      *
      * <ul>
-     *   <li>“{@code TemporalExtent[1980-04-12, 1980-04-18]}” (Δt = 6 days)</li>
-     *   <li>“{@code TemporalExtent[1980-04-12T18:00:00.0Z, 1980-04-12T21:00:00.0Z]}” (Δt = 3 hours)</li>
+     *   <li>“{@code TemporalExtent[1980-04-12, 1980-04-18]}”</li>
+     *   <li>“{@code TemporalExtent[1980-04-12T18:00:00.0Z, 1980-04-12T21:00:00.0Z]}”</li>
      * </ul>
      */
     private void appendTemporalExtent(final Range<Date> range) {
@@ -853,26 +925,10 @@ public class Formatter implements Localized {
             final Date min = range.getMinValue();
             final Date max = range.getMaxValue();
             if (min != null && max != null) {
-                String pattern = null;
-                if (dateFormat instanceof SimpleDateFormat && (max.getTime() - min.getTime()) >= TEMPORAL_THRESHOLD) {
-                    final String p = ((SimpleDateFormat) dateFormat).toPattern();
-                    if (p.length() > WKTFormat.SHORT_DATE_PATTERN.length() &&
-                        p.startsWith(WKTFormat.SHORT_DATE_PATTERN))
-                    {
-                        pattern = p;
-                        ((SimpleDateFormat) dateFormat).applyPattern(WKTFormat.SHORT_DATE_PATTERN);
-                    }
-                }
-                openElement(true, "TimeExtent");
+                openElement(true, WKTKeywords.TimeExtent);
                 setColor(ElementKind.EXTENT);
-                try {
-                    append(min);
-                    append(max);
-                } finally {
-                    if (pattern != null) {
-                        ((SimpleDateFormat) dateFormat).applyPattern(pattern);
-                    }
-                }
+                append(min);
+                append(max);
                 resetColor();
                 closeElement(true);
             }
@@ -882,7 +938,7 @@ public class Formatter implements Localized {
     /**
      * Appends the given math transform, typically (but not necessarily) in a {@code PARAM_MT[…]} element.
      *
-     * @param transform The transform object to append to the WKT, or {@code null} if none.
+     * @param  transform  the transform object to append to the WKT, or {@code null} if none.
      */
     public void append(final MathTransform transform) {
         if (transform != null) {
@@ -912,10 +968,10 @@ public class Formatter implements Localized {
      *   </ul>
      * </div>
      *
-     * @param keyword The {@linkplain KeywordCase#CAMEL_CASE camel-case} keyword.
-     *                Example: {@code "Scope"}, {@code "Area"} or {@code "Remarks"}.
-     * @param text The text, or {@code null} if none.
-     * @param type The key of the colors to apply if syntax coloring is enabled.
+     * @param  keyword  the {@linkplain KeywordCase#CAMEL_CASE camel-case} keyword.
+     *                  Example: {@code "Scope"}, {@code "Area"} or {@code "Remarks"}.
+     * @param  text     the text, or {@code null} if none.
+     * @param  type     the key of the colors to apply if syntax coloring is enabled.
      */
     private void appendOnNewLine(final String keyword, final InternationalString text, final ElementKind type) {
         ArgumentChecks.ensureNonNull("keyword", keyword);
@@ -933,13 +989,24 @@ public class Formatter implements Localized {
      * Appends a character string between quotes.
      * The {@linkplain Symbols#getSeparator() element separator} will be written before the text if needed.
      *
-     * @param text The string to format to the WKT, or {@code null} if none.
-     * @param type The key of the colors to apply if syntax coloring is enabled.
+     * @param  text  the string to format to the WKT, or {@code null} if none.
+     * @param  type  the key of the colors to apply if syntax coloring is enabled, or {@code null} if none.
      */
     public void append(final String text, final ElementKind type) {
         if (text != null) {
             appendSeparator();
-            quote(text, type);
+            if (type != ElementKind.CODE_LIST) {
+                quote(text, type);
+            } else {
+                /*
+                 * Code lists have no quotes. They are normally formatted by the append(ControlledVocabulary) method,
+                 * but an important exception is the CS[type] element in which the type is defined by the interface
+                 * implemented by the CoordinateSystem rather than a CodeList instance.
+                 */
+                setColor(type);
+                buffer.append(text);
+                resetColor();
+            }
         }
     }
 
@@ -948,14 +1015,36 @@ public class Formatter implements Localized {
      * that character will be doubled (WKT 2) or deleted (WKT 1). We check for the closing quote only because
      * it is the character that the parser will look for determining the text end.
      */
-    private void quote(final String text, final ElementKind type) {
+    private void quote(String text, final ElementKind type) {
         setColor(type);
         final int base = buffer.appendCodePoint(symbols.getOpeningQuote(0)).length();
-        if (type == ElementKind.REMARKS) {
-            buffer.append(text);
-        } else {
-            buffer.append(encoding.filter(text));
+        if (type != ElementKind.REMARKS) {
+            text = transliterator.filter(text);
+            if (verifyCharacterValidity) {
+                int startAt = 0;                                        // Index of the last space character.
+                final int length = text.length();
+                for (int i = 0; i < length;) {
+                    int c = text.codePointAt(i);
+                    int n = Character.charCount(c);
+                    if (!Characters.isValidWKT(c)) {
+                        final String illegal = text.substring(i, i+n);
+                        while ((i += n) < length) {
+                            c = text.codePointAt(i);
+                            n = Character.charCount(c);
+                            if (c == ' ' || c == '_') break;
+                        }
+                        warnings().add(Errors.formatInternational(Errors.Keys.IllegalCharacterForFormat_3,
+                                "Well-Known Text", text.substring(startAt, i), illegal), null, null);
+                        break;
+                    }
+                    i += n;
+                    if (c == ' ' || c == '_') {
+                        startAt = i;
+                    }
+                }
+            }
         }
+        buffer.append(text);
         closeQuote(base);
         resetColor();
     }
@@ -988,14 +1077,24 @@ public class Formatter implements Localized {
      * Appends an enumeration or code list value.
      * The {@linkplain Symbols#getSeparator() element separator} will be written before the code list if needed.
      *
-     * @param code The code list to append to the WKT, or {@code null} if none.
+     * <p>For the WKT 2 format, this method uses the {@linkplain Types#getCodeName ISO name if available}
+     * (for example {@code "northEast"}).
+     * For the WKT 1 format, this method uses the programmatic name instead (for example {@code "NORTH_EAST"}).</p>
+     *
+     * @param  code  the code list to append to the WKT, or {@code null} if none.
      */
     public void append(final CodeList<?> code) {
         if (code != null) {
             appendSeparator();
-            setColor(ElementKind.CODE_LIST);
-            buffer.append(convention.majorVersion() == 1 ? code.name() : Types.getCodeName(code));
-            resetColor();
+            final String name = convention.majorVersion() == 1 ? code.name() : Types.getCodeName(code);
+            if (CharSequences.isUnicodeIdentifier(name)) {
+                setColor(ElementKind.CODE_LIST);
+                buffer.append(name);
+                resetColor();
+            } else {
+                quote(name, ElementKind.CODE_LIST);
+                setInvalidWKT(code.getClass(), null);
+            }
         }
     }
 
@@ -1003,7 +1102,7 @@ public class Formatter implements Localized {
      * Appends a date.
      * The {@linkplain Symbols#getSeparator() element separator} will be written before the date if needed.
      *
-     * @param date The date to append to the WKT, or {@code null} if none.
+     * @param  date  the date to append to the WKT, or {@code null} if none.
      */
     public void append(final Date date) {
         if (date != null) {
@@ -1016,7 +1115,7 @@ public class Formatter implements Localized {
      * Appends a boolean value.
      * The {@linkplain Symbols#getSeparator() element separator} will be written before the boolean if needed.
      *
-     * @param value The boolean to append to the WKT.
+     * @param  value  the boolean to append to the WKT.
      */
     public void append(final boolean value) {
         appendSeparator();
@@ -1027,11 +1126,15 @@ public class Formatter implements Localized {
      * Appends an integer value.
      * The {@linkplain Symbols#getSeparator() element separator} will be written before the number if needed.
      *
-     * @param number The integer to append to the WKT.
+     * @param  number  the integer to append to the WKT.
      */
     public void append(final long number) {
         appendSeparator();
-        setColor(ElementKind.INTEGER);
+        /*
+         * The check for 'isComplement' is a hack for ImmutableIdentifier.formatTo(Formatter).
+         * We do not have a public API for controlling the integer colors (it may not be desirable).
+         */
+        setColor(isComplement ? ElementKind.IDENTIFIER : ElementKind.INTEGER);
         numberFormat.setMaximumFractionDigits(0);
         numberFormat.format(number, buffer, dummy);
         resetColor();
@@ -1041,22 +1144,37 @@ public class Formatter implements Localized {
      * Appends an floating point value.
      * The {@linkplain Symbols#getSeparator() element separator} will be written before the number if needed.
      *
-     * @param number The floating point value to append to the WKT.
+     * @param  number  the floating point value to append to the WKT.
      */
     public void append(final double number) {
         appendSeparator();
         setColor(ElementKind.NUMBER);
+        final double abs = Math.abs(number);
         /*
-         * The 2 below is for using two less fraction digits than the expected number accuracy.
-         * The intend is to give to DecimalFormat a chance to hide rounding errors, keeping in
-         * mind that the number value is not necessarily the original one (we may have applied
-         * a unit conversion). In the case of WGS84 semi-major axis in metres, we still have a
-         * maximum of 8 fraction digits, which is more than enough.
+         * Use scientific notation if the number magnitude is too high or too low. The threshold values used here
+         * may be different than the threshold values used in the standard 'StringBuilder.append(double)' method.
+         * In particular, we use a higher threshold for large numbers because ellipsoid axis lengths are above the
+         * JDK threshold when the axis length is given in feet (about 2.1E+7) while we still want to format them
+         * as usual numbers.
+         *
+         * Note that we perform this special formatting only if the 'NumberFormat' is not localized
+         * (which is the usual case).
          */
-        numberFormat.setMaximumFractionDigits(DecimalFunctions.fractionDigitsForValue(number, 2));
-        numberFormat.setMinimumFractionDigits(1); // Must be after setMaximumFractionDigits(…).
-        numberFormat.setRoundingMode(RoundingMode.HALF_EVEN);
-        numberFormat.format(number, buffer, dummy);
+        if (Symbols.SCIENTIFIC_NOTATION && (abs < 1E-3 || abs >= 1E+9) && symbols.getLocale() == Locale.ROOT) {
+            buffer.append(number);
+        } else {
+            /*
+             * The 2 below is for using two less fraction digits than the expected number accuracy.
+             * The intend is to give to DecimalFormat a chance to hide rounding errors, keeping in
+             * mind that the number value is not necessarily the original one (we may have applied
+             * a unit conversion). In the case of WGS84 semi-major axis in metres, we still have a
+             * maximum of 8 fraction digits, which is more than enough.
+             */
+            numberFormat.setMaximumFractionDigits(DecimalFunctions.fractionDigitsForValue(number, 2));
+            numberFormat.setMinimumFractionDigits(1); // Must be after setMaximumFractionDigits(…).
+            numberFormat.setRoundingMode(RoundingMode.HALF_EVEN);
+            numberFormat.format(number, buffer, dummy);
+        }
         resetColor();
     }
 
@@ -1102,51 +1220,73 @@ public class Formatter implements Localized {
     }
 
     /**
-     * Appends a unit in a {@code UNIT[…]} element or one of the specialized elements. Specialized elements are
-     * {@code ANGLEUNIT}, {@code LENGTHUNIT}, {@code SCALEUNIT}, {@code PARAMETRICUNIT} and {@code TIMEUNIT}.
-     * Specialization is used in WKT 2 format except the <cite>simplified WKT 2</cite> one.
+     * Appends a unit in a {@code Unit[…]} element or one of the specialized elements. Specialized elements are
+     * {@code AngleUnit}, {@code LengthUnit}, {@code ScaleUnit}, {@code ParametricUnit} and {@code TimeUnit}.
+     * By {@linkplain KeywordStyle#DEFAULT default}, specialized unit keywords are used with the
+     * {@linkplain Convention#WKT2 WKT 2 convention}.
      *
      * <div class="note"><b>Example:</b>
-     * {@code append(SI.KILOMETRE)} will append "{@code LENGTHUNIT["km", 1000]}" to the WKT.</div>
+     * {@code append(Units.KILOMETRE)} will append "{@code LengthUnit["km", 1000]}" to the WKT.</div>
      *
-     * @param unit The unit to append to the WKT, or {@code null} if none.
+     * @param  unit  the unit to append to the WKT, or {@code null} if none.
+     *
+     * @see <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html#35">WKT 2 specification §7.4</a>
      */
     public void append(final Unit<?> unit) {
         if (unit != null) {
-            String keyword = "Unit";
-            if (!convention.isSimplified()) {
-                if (Units.isLinear(unit)) {
-                    keyword = "LengthUnit";
-                } else if (Units.isAngular(unit)) {
-                    keyword = "AngleUnit";
-                } else if (Units.isScale(unit)) {
-                    keyword = "ScaleUnit";
-                } else if (Units.isTemporal(unit)) {
-                    keyword = "TimeUnit";
-                }
+            final boolean isSimplified = (longKeywords == 0) ? convention.isSimplified() : (longKeywords < 0);
+            final boolean isWKT1 = convention.majorVersion() == 1;
+            final Unit<?> base = unit.getSystemUnit();
+            final String keyword;
+            if (base.equals(Units.METRE)) {
+                keyword = isSimplified ? WKTKeywords.Unit : WKTKeywords.LengthUnit;
+            } else if (base.equals(Units.RADIAN)) {
+                keyword = isSimplified ? WKTKeywords.Unit : WKTKeywords.AngleUnit;
+            } else if (base.equals(Units.UNITY)) {
+                keyword = isSimplified ? WKTKeywords.Unit : WKTKeywords.ScaleUnit;
+            } else if (base.equals(Units.SECOND)) {
+                keyword = WKTKeywords.TimeUnit;  // "Unit" alone is not allowed for time units according ISO 19162.
+            } else {
+                keyword = WKTKeywords.ParametricUnit;
             }
             openElement(false, keyword);
             setColor(ElementKind.UNIT);
             final int fromIndex = buffer.appendCodePoint(symbols.getOpeningQuote(0)).length();
-            if (Unit.ONE.equals(unit)) {
-                buffer.append("unity");
-            } else if (NonSI.DEGREE_ANGLE.equals(unit)) {
-                buffer.append("degree");
-            } else if (SI.METRE.equals(unit)) {
-                buffer.append(convention.usesCommonUnits() ? "meter" : "metre");
-            } else if (Units.PPM.equals(unit)) {
-                buffer.append("parts per million");
-            } else {
-                unitFormat.format(unit, buffer, dummy);
-            }
+            unitFormat.format(unit, buffer, dummy);
             closeQuote(fromIndex);
             resetColor();
             final double conversion = Units.toStandardUnit(unit);
-            if (!(conversion > 0)) { // ISO 19162 requires the conversion factor to be positive.
+            if (Double.isNaN(conversion) && Units.isAngular(unit)) {
+                appendExact(Math.PI / 180);                 // Presume that we have sexagesimal degrees (see below).
+            } else {
+                appendExact(conversion);
+            }
+            /*
+             * The EPSG code in UNIT elements is generally not recommended. But we make an exception for sexagesimal
+             * units (EPSG:9108, 9110 and 9111) because they can not be represented by a simple scale factor in WKT.
+             * Those units are identified by a conversion factor set to NaN since the conversion is non-linear.
+             */
+            if (convention == Convention.INTERNAL || Double.isNaN(conversion)) {
+                final Integer code = Units.getEpsgCode(unit, getEnclosingElement(1) instanceof CoordinateSystemAxis);
+                if (code != null) {
+                    openElement(false, isWKT1 ? WKTKeywords.Authority : WKTKeywords.Id);
+                    append(Constants.EPSG, null);
+                    if (isWKT1) {
+                        append(code.toString(), null);
+                    } else {
+                        append(code);
+                    }
+                    closeElement(false);
+                }
+            }
+            closeElement(false);
+            /*
+             * ISO 19162 requires the conversion factor to be positive.
+             * In addition, keywords other than "Unit" are not valid in WKt 1.
+             */
+            if (!(conversion > 0) || (keyword != WKTKeywords.Unit && isWKT1)) {
                 setInvalidWKT(Unit.class, null);
             }
-            appendExact(conversion);
-            closeElement(false);
         }
     }
 
@@ -1163,7 +1303,7 @@ public class Formatter implements Localized {
      *   <li>Otherwise the given value is appended as a quoted text with its {@code toString()} representation.</li>
      * </ul>
      *
-     * @param value The value to append to the WKT, or {@code null}.
+     * @param  value  the value to append to the WKT, or {@code null}.
      */
     public void appendAny(final Object value) {
         if (value == null) {
@@ -1184,7 +1324,7 @@ public class Formatter implements Localized {
     final boolean appendValue(final Object value) {
         if (value.getClass().isArray()) {
             appendSeparator();
-            buffer.appendCodePoint(symbols.getOpenSequence());
+            elementStart = buffer.appendCodePoint(symbols.getOpenSequence()).length();
             final int length = Array.getLength(value);
             for (int i=0; i<length; i++) {
                 appendAny(Array.get(value, i));
@@ -1250,8 +1390,8 @@ public class Formatter implements Localized {
      * This method is useful for {@code FormattableObject} which are wrapper around another object.
      * It allows to delegate the WKT formatting to the wrapped object.
      *
-     * @param  other The object to format with this formatter.
-     * @return The value returned by {@link FormattableObject#formatTo(Formatter)}.
+     * @param   other  the object to format with this formatter.
+     * @return  the value returned by {@link FormattableObject#formatTo(Formatter)}.
      *
      * @since 0.5
      */
@@ -1268,8 +1408,8 @@ public class Formatter implements Localized {
      * Returns the enclosing WKT element, or {@code null} if element being formatted is the root.
      * This method can be invoked by child elements having some aspects that depend on the enclosing element.
      *
-     * @param  depth 1 for the immediate parent, 2 for the parent of the parent, <i>etc.</i>
-     * @return The parent element at the given depth, or {@code null}.
+     * @param  depth  1 for the immediate parent, 2 for the parent of the parent, <i>etc.</i>
+     * @return the parent element at the given depth, or {@code null}.
      */
     public FormattableObject getEnclosingElement(int depth) {
         ArgumentChecks.ensurePositive("depth", depth);
@@ -1286,8 +1426,8 @@ public class Formatter implements Localized {
      * The main purpose of this method is to allow {@code AXIS[…]} elements to determine if they should
      * inherit the unit specified by the enclosing CRS, or if they should specify their unit explicitly.</div>
      *
-     * @param  depth 1 for the immediate parent, 2 for the parent of the parent, <i>etc.</i>
-     * @return Whether the parent element at the given depth has invoked {@code addContextualUnit(…)} at least once.
+     * @param  depth  1 for the immediate parent, 2 for the parent of the parent, <i>etc.</i>
+     * @return whether the parent element at the given depth has invoked {@code addContextualUnit(…)} at least once.
      */
     public boolean hasContextualUnit(final int depth) {
         ArgumentChecks.ensurePositive("depth", depth);
@@ -1297,7 +1437,7 @@ public class Formatter implements Localized {
     /**
      * Adds a unit to use for the next measurements of the quantity {@code Q}. The given unit will apply to
      * all WKT elements containing a value of quantity {@code Q} without their own {@code UNIT[…]} element,
-     * until the {@link #removeContextualUnit(Unit)} method is invoked with a unit of the same quantity.
+     * until the {@link #restoreContextualUnit(Unit, Unit)} method is invoked.
      *
      * <p>If the given unit is null, then this method does nothing and returns {@code null}.</p>
      *
@@ -1305,50 +1445,80 @@ public class Formatter implements Localized {
      * If the WKT conventions are {@code WKT1_COMMON_UNITS}, then this method ignores the given unit
      * and returns {@code null}. See {@link Convention#WKT1_COMMON_UNITS} javadoc for more information.
      *
-     * @param  <Q>  The unit quantity.
-     * @param  unit The contextual unit to add, or {@code null} if none.
-     * @return The previous contextual unit for quantity {@code Q}, or {@code null} if none.
+     * @param  <Q>   the unit quantity.
+     * @param  unit  the contextual unit to add, or {@code null} if none.
+     * @return the previous contextual unit for quantity {@code Q}, or {@code null} if none.
      */
     @SuppressWarnings("unchecked")
-    public <Q extends Quantity> Unit<Q> addContextualUnit(final Unit<Q> unit) {
-        if (unit == null || convention.usesCommonUnits()) {
+    public <Q extends Quantity<Q>> Unit<Q> addContextualUnit(final Unit<Q> unit) {
+        if (unit == null || convention.usesCommonUnits) {
             return null;
         }
         hasContextualUnit |= 1;
-        return (Unit<Q>) units.put(unit.toSI(), unit);
+        return (Unit<Q>) units.put(unit.getSystemUnit(), unit);
     }
 
     /**
-     * Removes the unit previously added by a call to {@code addContextualUnit(unit)}.
-     * If the given unit is null, then this method does nothing.
+     * Restores the contextual unit to its previous state before the call to {@link #addContextualUnit(Unit)}.
+     * This method is used in the following pattern:
      *
-     * @param unit The contextual unit to remove, or {@code null} if none.
+     * {@preformat java
+     *   final Unit<?> previous = formatter.addContextualUnit(unit);
+     *   // ... format some WKT elements here.
+     *   formatter.restoreContextualUnit(unit, previous);
+     * }
+     *
+     * @param  unit      the value given in argument to {@code addContextualUnit(unit)} (can be {@code null}).
+     * @param  previous  the value returned by {@code addContextualUnit(unit)} (can be {@code null}).
+     * @throws IllegalStateException if this method has not been invoked in the pattern documented above.
+     *
+     * @since 0.6
      */
-    public void removeContextualUnit(final Unit<?> unit) {
-        if (unit != null) {
-            units.remove(unit.toSI());
+    public void restoreContextualUnit(final Unit<?> unit, final Unit<?> previous) {
+        if (previous == null) {
+            if (unit != null && units.remove(unit.getSystemUnit()) != unit) {
+                /*
+                 * The unit that we removed was not the expected one. Probably the user has invoked
+                 * addContextualUnit(…) again without a matching call to restoreContextualUnit(…).
+                 * However this check does not work in Convention.WKT1_COMMON_UNITS mode, since the
+                 * map is always empty in that mode.
+                 */
+                if (!convention.usesCommonUnits) {
+                    throw new IllegalStateException();
+                }
+            }
+            hasContextualUnit &= ~1;
+        } else if (units.put(previous.getSystemUnit(), previous) != unit) {
+            /*
+             * The unit that we replaced was not the expected one. Probably the user has invoked
+             * addContextualUnit(…) again without a matching call to restoreContextualUnit(…).
+             * Note that this case should never happen in Convention.WKT1_COMMON_UNITS mode,
+             * since 'previous' should never be non-null in that mode (if the user followed
+             * the documented pattern).
+             */
+            throw new IllegalStateException();
         }
     }
 
     /**
-     * Returns the unit to use instead than the given one, or {@code null} if there is no replacement
-     * for {@code unit}. This method searches for a unit specified by {@link #addContextualUnit(Unit)}
+     * Returns the unit to use instead than the given one, or {@code unit} if there is no replacement.
+     * This method searches for a unit specified by {@link #addContextualUnit(Unit)}
      * which {@linkplain Unit#isCompatible(Unit) is compatible} with the given unit.
      *
-     * @param  <Q>  The quantity of the unit.
-     * @param  unit The unit to replace by the contextual unit, or {@code null}.
-     * @return A contextual unit compatible with the given unit, or {@code unit}
-     *         if no contextual unit has been found.
+     * @param  <Q>   the quantity of the unit.
+     * @param  unit  the unit to replace by the contextual unit, or {@code null}.
+     * @return a contextual unit compatible with the given unit, or {@code unit}
+     *         (which may be null) if no contextual unit has been found.
      */
-    public <Q extends Quantity> Unit<Q> toContextualUnit(final Unit<Q> unit) {
+    public <Q extends Quantity<Q>> Unit<Q> toContextualUnit(final Unit<Q> unit) {
         if (unit != null) {
             @SuppressWarnings("unchecked")
-            final Unit<Q> candidate = (Unit<Q>) units.get(unit.toSI());
+            final Unit<Q> candidate = (Unit<Q>) units.get(unit.getSystemUnit());
             if (candidate != null) {
                 return candidate;
             }
         }
-        return null;
+        return unit;
     }
 
     /**
@@ -1362,7 +1532,7 @@ public class Formatter implements Localized {
      * @return {@code true} if the WKT is invalid.
      */
     public boolean isInvalidWKT() {
-        return (invalidElement != null) || (buffer != null && buffer.length() == 0);
+        return (warnings != null) || (buffer != null && buffer.length() == 0);
         /*
          * Note: we really use a "and" condition (not an other "or") for the buffer test because
          *       the buffer is reset to 'null' by WKTFormat after a successfull formatting.
@@ -1370,17 +1540,23 @@ public class Formatter implements Localized {
     }
 
     /**
-     * Marks the current WKT representation of the given object as not strictly compliant to the WKT specification.
+     * Returns the object where to store warnings.
+     */
+    private Warnings warnings() {
+        if (warnings == null) {
+            warnings = new Warnings(locale, false, Collections.<String, List<String>>emptyMap());
+        }
+        return warnings;
+    }
+
+    /**
+     * Marks the current WKT representation of the given object as not strictly compliant with the WKT specification.
      * This method can be invoked by implementations of {@link FormattableObject#formatTo(Formatter)} when the object
      * to format is more complex than what the WKT specification allows.
      * Applications can test {@link #isInvalidWKT()} later for checking WKT validity.
      *
-     * <p>If any {@code setInvalidWKT(…)} method is invoked more than once during formatting,
-     * then only information about the last failure will be retained. The reason is that the
-     * last failure is typically the enclosing element.</p>
-     *
-     * @param unformattable The object that can not be formatted,
-     * @param cause The cause for the failure to format, or {@code null} if the cause is not an exception.
+     * @param  unformattable  the object that can not be formatted,
+     * @param  cause  the cause for the failure to format, or {@code null} if the cause is not an exception.
      */
     public void setInvalidWKT(final IdentifiedObject unformattable, final Exception cause) {
         ArgumentChecks.ensureNonNull("unformattable", unformattable);
@@ -1389,28 +1565,30 @@ public class Formatter implements Localized {
         if (id == null || (name = id.getCode()) == null) {
             name = getName(unformattable.getClass());
         }
-        invalidElement = name;
-        errorCause     = cause;
-        highlightError = true;
+        setInvalidWKT(name, cause);
     }
 
     /**
-     * Marks the current WKT representation of the given class as not strictly compliant to the WKT specification.
+     * Marks the current WKT representation of the given class as not strictly compliant with the WKT specification.
      * This method can be used as an alternative to {@link #setInvalidWKT(IdentifiedObject, Exception)} when the
      * problematic object is not an instance of {@code IdentifiedObject}.
      *
-     * <p>If any {@code setInvalidWKT(…)} method is invoked more than once during formatting,
-     * then only information about the first failure will be retained.</p>
-     *
-     * @param unformattable The class of the object that can not be formatted,
-     * @param cause The cause for the failure to format, or {@code null} if the cause is not an exception.
+     * @param  unformattable  the class of the object that can not be formatted,
+     * @param  cause  the cause for the failure to format, or {@code null} if the cause is not an exception.
      */
     public void setInvalidWKT(final Class<?> unformattable, final Exception cause) {
         ArgumentChecks.ensureNonNull("unformattable", unformattable);
-        if (invalidElement == null) {
-            invalidElement = getName(unformattable);
-            errorCause     = cause;
-        }
+        setInvalidWKT(getName(unformattable), cause);
+    }
+
+    /**
+     * Implementation of public {@code setInvalidWKT(…)} methods.
+     *
+     * <div class="note"><b>Note:</b> the message is stored as an {@link InternationalString}
+     * in order to defer the actual message formatting until needed.</div>
+     */
+    private void setInvalidWKT(final String invalidElement, final Exception cause) {
+        warnings().add(Errors.formatInternational(Errors.Keys.CanNotRepresentInFormat_2, "WKT", invalidElement), cause, null);
         highlightError = true;
     }
 
@@ -1431,24 +1609,48 @@ public class Formatter implements Localized {
     }
 
     /**
-     * Returns the error message {@link #isInvalidWKT()} is set, or {@code null} otherwise.
-     * If non-null, a cause may be available in the {@link #getErrorCause()} method.
+     * Returns the warnings, or {@code null} if none.
      */
-    final String getErrorMessage() {
-        return isInvalidWKT() ? Errors.format(Errors.Keys.CanNotRepresentInFormat_2, "WKT", invalidElement) : null;
+    final Warnings getWarnings() {
+        return warnings;
     }
 
     /**
-     * Returns the cause of the error, or {@code null} if the cause is not an exception.
+     * Appends the warnings after the WKT string. If there is no warnings, then this method does nothing.
+     * If this method is invoked, then it shall be the last method before {@link #toWKT()}.
      */
-    final Exception getErrorCause() {
-        return errorCause;
+    final void appendWarnings() throws IOException {
+        final Warnings warnings = this.warnings;                    // Protect against accidental changes.
+        if (warnings != null) {
+            final StringBuffer buffer = this.buffer;
+            final String ln = System.lineSeparator();
+            buffer.append(ln).append(ln);
+            if (colors != null) {
+                buffer.append(X364.BACKGROUND_RED.sequence()).append(X364.BOLD.sequence()).append(' ');
+            }
+            Vocabulary.getResources(locale).appendLabel(Vocabulary.Keys.Warnings, buffer);
+            if (colors != null) {
+                buffer.append(' ').append(X364.RESET.sequence()).append(X364.FOREGROUND_RED.sequence());
+            }
+            buffer.append(ln);
+            final int n = warnings.getNumMessages();
+            final Set<String> done = new HashSet<>();
+            for (int i=0; i<n; i++) {
+                String message = Exceptions.getLocalizedMessage(warnings.getException(i), locale);
+                if (message == null) {
+                    message = warnings.getMessage(i);
+                }
+                if (done.add(message)) {
+                    buffer.append("  • ").append(message).append(ln);
+                }
+            }
+        }
     }
 
     /**
      * Returns the WKT formatted by this object.
      *
-     * @return The WKT formatted by this formatter.
+     * @return the WKT formatted by this formatter.
      */
     public String toWKT() {
         return buffer.toString();
@@ -1457,18 +1659,18 @@ public class Formatter implements Localized {
     /**
      * Returns a string representation of this formatter for debugging purpose.
      *
-     * @return A string representation of this formatter.
+     * @return a string representation of this formatter.
      */
     @Debug
     @Override
     public String toString() {
-        final StringBuilder b = new StringBuilder(Classes.getShortClassName(this)).append('[');
-        String separator = "";
-        for (final FormattableObject element : enclosingElements) {
-            b.append(separator).append(Classes.getShortClassName(element));
-            separator = " 〉 ";
+        final StringBuilder b = new StringBuilder(Classes.getShortClassName(this));
+        String separator = " of ";
+        for (int i=enclosingElements.size(); --i >= 0;) {
+            b.append(separator).append(Classes.getShortClassName(enclosingElements.get(i)));
+            separator = " inside ";
         }
-        return b.append(']').toString();
+        return b.toString();
     }
 
     /**
@@ -1493,7 +1695,6 @@ public class Formatter implements Localized {
         requestNewLine    = false;
         isComplement      = false;
         highlightError    = false;
-        invalidElement    = null;
-        errorCause        = null;
+        warnings          = null;
     }
 }

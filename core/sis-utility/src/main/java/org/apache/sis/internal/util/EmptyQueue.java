@@ -16,6 +16,7 @@
  */
 package org.apache.sis.internal.util;
 
+import java.io.ObjectStreamException;
 import java.io.Serializable;
 import java.util.AbstractQueue;
 import java.util.Collections;
@@ -26,11 +27,12 @@ import java.util.Queue;
 /**
  * An immutable and serializable empty queue.
  *
- * @param  <E> Type of elements in the collection.
- *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.3
+ *
+ * @param <E>  type of elements in the collection.
+ *
+ * @since 0.3
  * @module
  */
 final class EmptyQueue<E> extends AbstractQueue<E> implements Serializable {
@@ -40,7 +42,7 @@ final class EmptyQueue<E> extends AbstractQueue<E> implements Serializable {
     private static final long serialVersionUID = 2798927118201392605L;
 
     /**
-     * The singleton instance to be returned by {@link Collections#emptyQueue()}.
+     * The singleton instance to be returned by {@link CollectionsExt#emptyQueue()}.
      * This is not parameterized on intend.
      */
     @SuppressWarnings("rawtypes")
@@ -63,7 +65,8 @@ final class EmptyQueue<E> extends AbstractQueue<E> implements Serializable {
     /**
      * Returns the singleton instance on deserialization.
      */
-    protected Object readResolve() {
+    @SuppressWarnings("ReturnOfCollectionOrArrayField")
+    protected Object readResolve() throws ObjectStreamException {
         return INSTANCE;
     }
 }

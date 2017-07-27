@@ -19,9 +19,10 @@ package org.apache.sis.internal.netcdf.ucar;
 import java.util.Date;
 import java.util.List;
 import java.util.EnumSet;
+import java.util.Formatter;
+import java.util.Collection;
 import java.io.IOException;
 import ucar.nc2.Group;
-import ucar.nc2.Dimension;
 import ucar.nc2.Attribute;
 import ucar.nc2.VariableIF;
 import ucar.nc2.NetcdfFile;
@@ -32,20 +33,26 @@ import ucar.nc2.units.DateUnit;
 import ucar.nc2.time.Calendar;
 import ucar.nc2.time.CalendarDate;
 import ucar.nc2.time.CalendarDateFormatter;
+import ucar.nc2.ft.FeatureDataset;
+import ucar.nc2.ft.FeatureDatasetPoint;
+import ucar.nc2.ft.FeatureDatasetFactoryManager;
+import ucar.nc2.ft.FeatureCollection;
 import org.apache.sis.util.Debug;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.logging.WarningListeners;
 import org.apache.sis.internal.netcdf.Decoder;
 import org.apache.sis.internal.netcdf.Variable;
 import org.apache.sis.internal.netcdf.GridGeometry;
+import org.apache.sis.internal.netcdf.DiscreteSampling;
+import org.apache.sis.storage.DataStore;
 
 
 /**
  * Provides NetCDF decoding services based on the NetCDF library.
  *
  * @author  Martin Desruisseaux (Geomatys)
+ * @version 0.8
  * @since   0.3
- * @version 0.3
  * @module
  */
 public final class DecoderWrapper extends Decoder implements CancelTask {
@@ -76,6 +83,11 @@ public final class DecoderWrapper extends Decoder implements CancelTask {
     private transient Variable[] variables;
 
     /**
+     * The discrete sampling features, or {@code null} if none.
+     */
+    private transient FeatureDataset features;
+
+    /**
      * The grid geometries, computed when first needed.
      *
      * @see #getGridGeometries()
@@ -87,10 +99,10 @@ public final class DecoderWrapper extends Decoder implements CancelTask {
      * {@link NetcdfFile} instance, the {@link NetcdfDataset} subclass is necessary in order to
      * get coordinate system information.
      *
-     * @param listeners Where to send the warnings.
-     * @param file The NetCDF file from which to read data.
+     * @param listeners  where to send the warnings.
+     * @param file       the NetCDF file from which to read data.
      */
-    public DecoderWrapper(final WarningListeners<?> listeners, final NetcdfFile file) {
+    public DecoderWrapper(final WarningListeners<DataStore> listeners, final NetcdfFile file) {
         super(listeners);
         this.file = file;
     }
@@ -98,13 +110,24 @@ public final class DecoderWrapper extends Decoder implements CancelTask {
     /**
      * Creates a new decoder for the given filename.
      *
-     * @param  listeners Where to send the warnings.
-     * @param  filename  The name of the NetCDF file from which to read data.
-     * @throws IOException If an error occurred while opening the NetCDF file.
+     * @param  listeners  where to send the warnings.
+     * @param  filename   the name of the NetCDF file from which to read data.
+     * @throws IOException if an error occurred while opening the NetCDF file.
      */
-    public DecoderWrapper(final WarningListeners<?> listeners, final String filename) throws IOException {
+    @SuppressWarnings("ThisEscapedInObjectConstruction")
+    public DecoderWrapper(final WarningListeners<DataStore> listeners, final String filename) throws IOException {
         super(listeners);
         file = NetcdfDataset.openDataset(filename, false, this);
+    }
+
+    /**
+     * Returns a filename for information purpose only. This is used for formatting error messages.
+     *
+     * @return a filename to report in warning or error messages.
+     */
+    @Override
+    public String getFilename() {
+        return file.getLocation();
     }
 
     /**
@@ -119,7 +142,7 @@ public final class DecoderWrapper extends Decoder implements CancelTask {
             if (name != null) {
                 final Group group = file.findGroup(name);
                 if (group == null) {
-                    continue; // Group not found - do not increment the counter.
+                    continue;                   // Group not found - do not increment the counter.
                 }
                 groups[count] = group;
             }
@@ -132,6 +155,8 @@ public final class DecoderWrapper extends Decoder implements CancelTask {
      * Returns the path which is currently set. The array returned by this method may be only
      * a subset of the array given to {@link #setSearchPath(String[])} since only the name of
      * groups which have been found in the NetCDF file are returned by this method.
+     *
+     * @return the current search path.
      */
     @Override
     public String[] getSearchPath() {
@@ -146,17 +171,27 @@ public final class DecoderWrapper extends Decoder implements CancelTask {
     }
 
     /**
+     * Returns the names of all global attributes found in the file.
+     *
+     * @return names of all global attributes in the file.
+     */
+    @Override
+    public Collection<String> getAttributeNames() {
+        return VariableWrapper.toNames(file.getGlobalAttributes());
+    }
+
+    /**
      * Returns the NetCDF attribute of the given name in the given group, or {@code null} if none.
      * This method is invoked for every global and group attributes to be read by this class (but
-     * not {@linkplain VariableSimpleIF variable} attributes), thus providing a single point where
-     * we can filter the attributes to be read - if we want to do that in a future version.
+     * not {@linkplain ucar.nc2.VariableSimpleIF variable} attributes), thus providing a single point
+     * where we can filter the attributes to be read - if we want to do that in a future version.
      *
      * <p>The {@code name} argument is typically (but is not restricted too) one of the constants
-     * defined in the {@link AttributeNames} class.</p>
+     * defined in the {@link org.apache.sis.storage.netcdf.AttributeNames} class.</p>
      *
-     * @param  group The group in which to search the attribute, or {@code null} for global attributes.
-     * @param  name  The name of the attribute to search (can not be null).
-     * @return The attribute, or {@code null} if none.
+     * @param  group  the group in which to search the attribute, or {@code null} for global attributes.
+     * @param  name   the name of the attribute to search (can not be null).
+     * @return the attribute, or {@code null} if none.
      */
     private Attribute findAttribute(final Group group, final String name) {
         return (group != null) ? group.findAttributeIgnoreCase(name) : file.findGlobalAttributeIgnoreCase(name);
@@ -167,12 +202,12 @@ public final class DecoderWrapper extends Decoder implements CancelTask {
      * This method searches in the groups specified by the last call to {@link #setSearchPath(String[])}.
      * Null values and empty strings are ignored.
      *
-     * @param  name The name of the attribute to search, or {@code null}.
-     * @return The attribute value, or {@code null} if none or empty or if the given name was null.
+     * @param  name  the name of the attribute to search, or {@code null}.
+     * @return the attribute value, or {@code null} if none or empty or if the given name was null.
      */
     @Override
     public String stringValue(final String name) {
-        if (name != null) { // For createResponsibleParty(...) convenience.
+        if (name != null) {                                 // For createResponsibleParty(...) convenience.
             for (final Group group : groups) {
                 final Attribute attribute = findAttribute(group, name);
                 if (attribute != null && attribute.isString()) {
@@ -189,8 +224,8 @@ public final class DecoderWrapper extends Decoder implements CancelTask {
     /**
      * Returns the value of the attribute of the given name as a number, or {@code null} if none.
      *
-     * @param  name The name of the attribute to search, or {@code null}.
-     * @return The attribute value, or {@code null} if none or unparsable or if the given name was null.
+     * @param  name  the name of the attribute to search, or {@code null}.
+     * @return the attribute value, or {@code null} if none or unparsable or if the given name was null.
      */
     @Override
     public Number numericValue(final String name) {
@@ -215,8 +250,8 @@ public final class DecoderWrapper extends Decoder implements CancelTask {
     /**
      * Returns the value of the attribute of the given name as a date, or {@code null} if none.
      *
-     * @param  name The name of the attribute to search, or {@code null}.
-     * @return The attribute value, or {@code null} if none or unparsable or if the given name was null.
+     * @param  name  the name of the attribute to search, or {@code null}.
+     * @return the attribute value, or {@code null} if none or unparsable or if the given name was null.
      */
     @Override
     public Date dateValue(final String name) {
@@ -245,8 +280,8 @@ public final class DecoderWrapper extends Decoder implements CancelTask {
      * Converts the given numerical values to date, using the information provided in the given unit symbol.
      * The unit symbol is typically a string like <cite>"days since 1970-01-01T00:00:00Z"</cite>.
      *
-     * @param  values The values to convert. May contains {@code null} elements.
-     * @return The converted values. May contains {@code null} elements.
+     * @param  values  the values to convert. May contains {@code null} elements.
+     * @return the converted values. May contains {@code null} elements.
      */
     @Override
     public Date[] numberToDate(final String symbol, final Number... values) {
@@ -269,6 +304,8 @@ public final class DecoderWrapper extends Decoder implements CancelTask {
 
     /**
      * Returns the globally unique dataset identifier as determined by the UCAR library.
+     *
+     * @return the global dataset identifier, or {@code null} if none.
      */
     @Override
     public String getId() {
@@ -277,6 +314,8 @@ public final class DecoderWrapper extends Decoder implements CancelTask {
 
     /**
      * Returns the human readable title as determined by the UCAR library.
+     *
+     * @return the dataset title, or {@code null} if none.
      */
     @Override
     public String getTitle() {
@@ -286,25 +325,55 @@ public final class DecoderWrapper extends Decoder implements CancelTask {
     /**
      * Returns all variables found in the NetCDF file.
      * This method returns a direct reference to an internal array - do not modify.
+     *
+     * @return all variables, or an empty array if none.
      */
     @Override
+    @SuppressWarnings({"ReturnOfCollectionOrArrayField", "null"})
     public Variable[] getVariables() {
         if (variables == null) {
-            final List<Dimension> dimensions = file.getDimensions();
             final List<? extends VariableIF> all = file.getVariables();
             variables = new Variable[(all != null) ? all.size() : 0];
             for (int i=0; i<variables.length; i++) {
-                variables[i] = new VariableWrapper(all.get(i), dimensions);
+                variables[i] = new VariableWrapper(all.get(i));
             }
         }
         return variables;
     }
 
     /**
-     * Returns all grid geometries (related to coordinate systems) found in the NetCDF file.
-     * This method returns a direct reference to an internal array - do not modify.
+     * If this decoder can handle the file content as features, returns handlers for them.
+     *
+     * @return {@inheritDoc}
+     * @throws IOException if an I/O operation was necessary but failed.
      */
     @Override
+    @SuppressWarnings("null")
+    public DiscreteSampling[] getDiscreteSampling() throws IOException {
+        if (features == null && file instanceof NetcdfDataset) {
+            features = FeatureDatasetFactoryManager.wrap(null, (NetcdfDataset) file, this,
+                    new Formatter(new LogAdapter(listeners), listeners.getLocale()));
+        }
+        List<FeatureCollection> fc = null;
+        if (features instanceof FeatureDatasetPoint) {
+            fc = ((FeatureDatasetPoint) features).getPointFeatureCollectionList();
+        }
+        final FeaturesWrapper[] wrappers = new FeaturesWrapper[(fc != null) ? fc.size() : 0];
+        for (int i=0; i<wrappers.length; i++) {
+            wrappers[i] = new FeaturesWrapper(fc.get(i));
+        }
+        return wrappers;
+    }
+
+    /**
+     * Returns all grid geometries (related to coordinate systems) found in the NetCDF file.
+     * This method returns a direct reference to an internal array - do not modify.
+     *
+     * @return all grid geometries, or an empty array if none.
+     * @throws IOException if an I/O operation was necessary but failed.
+     */
+    @Override
+    @SuppressWarnings({"ReturnOfCollectionOrArrayField", "null"})
     public GridGeometry[] getGridGeometries() throws IOException {
         if (geometries == null) {
             List<CoordinateSystem> systems = null;
@@ -328,7 +397,7 @@ public final class DecoderWrapper extends Decoder implements CancelTask {
      * Invoked by the UCAR NetCDF library for checking if the reading process has been canceled.
      * This method returns the {@link #canceled} flag.
      *
-     * @return The {@link #canceled} flag.
+     * @return the {@link #canceled} flag.
      */
     @Override
     public boolean isCancel() {
@@ -338,8 +407,8 @@ public final class DecoderWrapper extends Decoder implements CancelTask {
     /**
      * Invoked by the UCAR library during the reading process for progress information.
      *
-     * @param message The message to show to the user.
-     * @param progress Count of progress, or -1 if unknown. This is not necessarily a percentage done.
+     * @param  message   the message to show to the user.
+     * @param  progress  count of progress, or -1 if unknown. This is not necessarily a percentage done.
      */
     @Override
     public void setProgress(final String message, final int progress) {
@@ -348,7 +417,7 @@ public final class DecoderWrapper extends Decoder implements CancelTask {
     /**
      * Invoked by the UCAR NetCDF library when an error occurred.
      *
-     * @param message The error message.
+     * @param  message  the error message.
      */
     @Override
     public void setError(final String message) {
@@ -358,10 +427,14 @@ public final class DecoderWrapper extends Decoder implements CancelTask {
     /**
      * Closes the NetCDF file.
      *
-     * @throws IOException If an error occurred while closing the file.
+     * @throws IOException if an error occurred while closing the file.
      */
     @Override
     public void close() throws IOException {
+        if (features != null) {
+            features.close();
+            features = null;
+        }
         file.close();
     }
 
@@ -372,6 +445,6 @@ public final class DecoderWrapper extends Decoder implements CancelTask {
     @Debug
     @Override
     public String toString() {
-        return "UCAR driver: “" + file.getLocation() + '”';
+        return "UCAR driver: “" + getFilename() + '”';
     }
 }

@@ -16,11 +16,11 @@
  */
 package org.apache.sis.internal.referencing.provider;
 
-import javax.measure.unit.NonSI;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.referencing.operation.MathTransform;
 import org.apache.sis.referencing.operation.transform.LinearTransform;
 import org.apache.sis.referencing.operation.matrix.Matrix3;
+import org.apache.sis.measure.Units;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
@@ -33,20 +33,20 @@ import static org.apache.sis.test.MetadataAssert.*;
  * Tests the {@link LongitudeRotation} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
+ * @version 0.8
  * @since   0.6
- * @version 0.6
  * @module
  */
 @DependsOn(AffineTest.class)
 public final strictfp class LongitudeRotationTest extends TestCase {
     /**
-     * Tests {@link LongitudeRotation#createMathTransform(ParameterValueGroup)}.
+     * Tests {@code LongitudeRotation.createMathTransform(…)}.
      */
     @Test
     public void testCreateMathTransform() {
         final LongitudeRotation provider = new LongitudeRotation();
         ParameterValueGroup p = provider.getParameters().createValue();
-        p.parameter(LongitudeRotation.NAME).setValue(2.5969213, NonSI.GRADE);   // Paris meridian
+        p.parameter("Longitude offset").setValue(2.5969213, Units.GRAD);   // Paris meridian
         final MathTransform mt = provider.createMathTransform(null, p);
         /*
          * Verify the full matrix. Note that the longitude offset is expected to be in degrees.
@@ -69,9 +69,9 @@ public final strictfp class LongitudeRotationTest extends TestCase {
     public void testWKT() {
         final LongitudeRotation provider = new LongitudeRotation();
         final ParameterValueGroup p = provider.getParameters().createValue();
-        p.parameter(LongitudeRotation.NAME).setValue(2.5969213, NonSI.GRADE);
+        p.parameter("Longitude offset").setValue(2.5969213, Units.GRAD);
         assertWktEquals(
-                "Param_MT[“Affine parametric transformation”,\n" +
-                "  Parameter[“A2”, 2.33722917, Id[“EPSG”, 8625]]]", provider.createMathTransform(null, p));
+                "PARAM_MT[“Affine parametric transformation”,\n" +
+                "  PARAMETER[“A2”, 2.33722917, ID[“EPSG”, 8625]]]", provider.createMathTransform(null, p));
     }
 }

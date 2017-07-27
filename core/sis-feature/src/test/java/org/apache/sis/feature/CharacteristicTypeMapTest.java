@@ -26,13 +26,14 @@ import static java.util.Collections.singletonMap;
 import static org.apache.sis.feature.DefaultAssociationRole.NAME_KEY;
 import static org.apache.sis.test.Assert.*;
 
+import org.apache.sis.util.iso.Names;
 
 /**
  * Tests {@link CharacteristicTypeMap} indirectly, through {@link DefaultAttributeType} construction.
  *
  * @author  Martin Desruisseaux (Geomatys)
+ * @version 0.8
  * @since   0.5
- * @version 0.5
  * @module
  */
 @DependsOn(DefaultAttributeTypeTest.class)
@@ -40,13 +41,13 @@ public final strictfp class CharacteristicTypeMapTest extends TestCase {
     /**
      * Creates an attribute type for a temperature measurement in °C with a ±0.1°C accuracy.
      *
-     * @return A {@code "temperature"} type attribute with two characteristics: {@code "accuracy"} and {@code "units"}.
+     * @return a {@code "temperature"} type attribute with two characteristics: {@code "accuracy"} and {@code "units"}.
      */
     public static DefaultAttributeType<Float> temperature() {
         final DefaultAttributeType<?> units, accuracy;
-        units    = new DefaultAttributeType<String>(singletonMap(NAME_KEY, "units"),      String.class, 1, 1, "°C", (DefaultAttributeType[]) null);
-        accuracy = new DefaultAttributeType<Float> (singletonMap(NAME_KEY, "accuracy"),    Float.class, 1, 1, 0.1f, (DefaultAttributeType[]) null);
-        return     new DefaultAttributeType<Float> (singletonMap(NAME_KEY, "temperature"), Float.class, 1, 1, null, accuracy, units);
+        units    = new DefaultAttributeType<>(singletonMap(NAME_KEY, "units"),      String.class, 1, 1, "°C", (DefaultAttributeType[]) null);
+        accuracy = new DefaultAttributeType<>(singletonMap(NAME_KEY, "accuracy"),    Float.class, 1, 1, 0.1f, (DefaultAttributeType[]) null);
+        return     new DefaultAttributeType<>(singletonMap(NAME_KEY, "temperature"), Float.class, 1, 1, null, accuracy, units);
     }
 
     /**
@@ -91,8 +92,8 @@ public final strictfp class CharacteristicTypeMapTest extends TestCase {
         assertArrayEquals("keySet", new String[] {"accuracy", "units"}, characteristics.keySet().toArray());
         assertArrayEquals("values", new Object[] { accuracy ,  units }, characteristics.values().toArray());
         assertArrayEquals("entrySet", new Object[] {
-                new SimpleEntry<String,DefaultAttributeType<?>>("accuracy", accuracy),
-                new SimpleEntry<String,DefaultAttributeType<?>>("units",    units)
+                new SimpleEntry<>("accuracy", accuracy),
+                new SimpleEntry<>("units",    units)
             }, characteristics.entrySet().toArray());
     }
 
@@ -105,5 +106,25 @@ public final strictfp class CharacteristicTypeMapTest extends TestCase {
         final DefaultAttributeType<Float> unserialized = assertSerializedEquals(temperature);
         assertNotSame(temperature, unserialized);
         assertSame(temperature.characteristics(), unserialized.characteristics());
+    }
+
+    /**
+     * Tests usage of names in namespaces.
+     */
+    @Test
+    public void testQualifiedNames() {
+        final DefaultAttributeType<?> a1, a2, a3, tp;
+        a1 = new DefaultAttributeType<>(singletonMap(NAME_KEY, Names.parseGenericName(null, null, "ns1:accuracy")), Float.class, 1, 1, 0.1f);
+        a2 = new DefaultAttributeType<>(singletonMap(NAME_KEY, Names.parseGenericName(null, null, "ns2:accuracy")), Float.class, 1, 1, 0.1f);
+        a3 = new DefaultAttributeType<>(singletonMap(NAME_KEY, Names.parseGenericName(null, null, "ns2:s3:units")), String.class, 1, 1, "°C");
+        tp = new DefaultAttributeType<>(singletonMap(NAME_KEY, "temperature"), Float.class, 1, 1, null, a1, a2, a3);
+
+        final Map<String, DefaultAttributeType<?>> characteristics = tp.characteristics();
+        assertSame("ns1:accuracy", a1, characteristics.get("ns1:accuracy"));
+        assertSame("ns2:accuracy", a2, characteristics.get("ns2:accuracy"));
+        assertSame("ns2:s3:units", a3, characteristics.get("ns2:s3:units"));
+        assertSame(    "s3:units", a3, characteristics.get(    "s3:units"));
+        assertSame(       "units", a3, characteristics.get(       "units"));
+        assertNull("    accuracy",     characteristics.get("    accuracy"));        // Because ambiguous.
     }
 }

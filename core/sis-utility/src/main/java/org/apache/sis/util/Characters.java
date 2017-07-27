@@ -16,6 +16,7 @@
  */
 package org.apache.sis.util;
 
+import org.opengis.metadata.citation.Citation;  // For javadoc.
 import org.apache.sis.util.resources.Errors;
 
 
@@ -26,8 +27,8 @@ import org.apache.sis.util.resources.Errors;
  * symbols. For those symbols, constants are declared in this class.
  *
  * @author  Martin Desruisseaux (Geomatys)
+ * @version 0.6
  * @since   0.3
- * @version 0.5
  * @module
  */
 public final class Characters extends Static {
@@ -77,11 +78,39 @@ public final class Characters extends Static {
     }
 
     /**
+     * Returns {@code true} if the given code point is a valid character for <cite>Well Known Text</cite> (WKT).
+     * This method returns {@code true} for the following characters:
+     *
+     * <blockquote><pre>{@literal A-Z a-z 0-9 _ [ ] ( ) { } < = > . , : ; + - (space) % & ' " * ^ / \ ? | °}</pre></blockquote>
+     *
+     * They are ASCII codes 32 to 125 inclusive except ! (33), # (35), $ (36), @ (64) and ` (96),
+     * plus the addition of ° (176) despite being formally outside the ASCII character set.
+     *
+     * @param  c  the code point to test.
+     * @return {@code true} if the given code point is a valid WKT character.
+     *
+     * @see org.apache.sis.io.wkt.Transliterator
+     *
+     * @since 0.6
+     */
+    public static boolean isValidWKT(final int c) {
+        switch (c) {
+            case '!':
+            case '#':
+            case '$':
+            case '@':
+            case '`': return false;
+            case '°': return true;
+            default : return (c >= ' ') && (c <= '}');
+        }
+    }
+
+    /**
      * Returns {@code true} if the given code point is a {@linkplain Character#LINE_SEPARATOR
      * line separator}, a {@linkplain Character#PARAGRAPH_SEPARATOR paragraph separator} or one
      * of the {@code '\r'} or {@code '\n'} control characters.
      *
-     * @param  c The code point to test.
+     * @param  c  the code point to test.
      * @return {@code true} if the given code point is a line or paragraph separator.
      *
      * @see #LINE_SEPARATOR
@@ -101,7 +130,7 @@ public final class Characters extends Static {
      * This method returns {@code true} if {@code c} is between {@code '0'} and {@code '9'} inclusive,
      * or between {@code 'A'} and {@code 'F'} inclusive, or between {@code 'a'} and {@code 'f'} inclusive.
      *
-     * @param  c The character to test.
+     * @param  c  the character to test.
      * @return {@code true} if the given character is an hexadecimal digit.
      *
      * @since 0.5
@@ -123,16 +152,16 @@ public final class Characters extends Static {
      *   ⁰ ¹ ² ³ ⁴ ⁵ ⁶ ⁷ ⁸ ⁹ ⁺ ⁻ ⁼ ⁽ ⁾ ⁿ
      * }
      *
-     * @param  c The character to test.
+     * @param  c  the character to test.
      * @return {@code true} if the given character is a superscript.
      */
     public static boolean isSuperScript(final int c) {
         switch (c) {
             case '¹':      // Legacy values in "Latin-1 supplement" space: 00B9, 00B2 and 00B3.
-            case '²':      // Those values are outside the normal [2070 … 207F] range.
+            case '²':      // Those values are outside the usual [2070 … 207F] range.
             case '³':      return true;
-            case '\u2071': // Would be the '¹', '²' and '³' values if they were declared in the
-            case '\u2072': // normal range. Since they are not, those values are unassigned.
+            case '\u2071': // Would be the '¹', '²' and '³' values if they were declared in the usual range.
+            case '\u2072': // Since they are not, those values are unassigned.
             case '\u2073': return false;
             default:       return (c >= '⁰' && c <= 'ⁿ');
         }
@@ -146,7 +175,7 @@ public final class Characters extends Static {
      *   ₀ ₁ ₂ ₃ ₄ ₅ ₆ ₇ ₈ ₉ ₊ ₋ ₌ ₍ ₎
      * }
      *
-     * @param  c The character to test.
+     * @param  c  the character to test.
      * @return {@code true} if the given character is a subscript.
      */
     public static boolean isSubScript(final int c) {
@@ -161,9 +190,8 @@ public final class Characters extends Static {
      *     0 1 2 3 4 5 6 7 8 9 + - = ( ) n
      * }
      *
-     * @param  c The character to convert.
-     * @return The given character as a superscript, or {@code c}
-     *         if the given character can not be converted.
+     * @param  c  the character to convert.
+     * @return the given character as a superscript, or {@code c} if the given character can not be converted.
      */
     public static char toSuperScript(char c) {
         switch (c) {
@@ -194,9 +222,8 @@ public final class Characters extends Static {
      *     0 1 2 3 4 5 6 7 8 9 + - = ( )
      * }
      *
-     * @param  c The character to convert.
-     * @return The given character as a subscript, or {@code c}
-     *         if the given character can not be converted.
+     * @param  c  the character to convert.
+     * @return the given character as a subscript, or {@code c} if the given character can not be converted.
      */
     public static char toSubScript(char c) {
         switch (c) {
@@ -218,8 +245,8 @@ public final class Characters extends Static {
     /**
      * Converts the given character argument to normal script.
      *
-     * @param  c The character to convert.
-     * @return The given character as a normal script, or {@code c} if the
+     * @param  c  the character to convert.
+     * @return the given character as a normal script, or {@code c} if the
      *         given character was not a superscript or a subscript.
      */
     public static char toNormalScript(char c) {
@@ -263,13 +290,30 @@ public final class Characters extends Static {
      * in this class. Then, Unicode characters can be tested for inclusion in the subset by
      * calling the {@link #contains(int)} method.</p>
      *
+     * <div class="section">Relationship with international standards</div>
+     * ISO 19162:2015 §B.5.2 recommends to ignore spaces, case and the following characters when comparing two
+     * {@linkplain org.apache.sis.referencing.AbstractIdentifiedObject#getName() identified object names}:
+     * “{@code _}” (underscore), “{@code -}” (minus sign), “{@code /}” (solidus),
+     * “{@code (}” (left parenthesis) and “{@code )}” (right parenthesis).
+     * The same specification also limits the set of valid characters in a name to the following (§6.3.1):
+     *
+     * <blockquote>{@code A-Z a-z 0-9 _ [ ] ( ) { } < = > . , : ; + - (space) % & ' " * ^ / \ ? | °}</blockquote>
+     * <div class="note"><b>Note:</b> SIS does not enforce this restriction in its programmatic API,
+     * but may perform some character substitutions at <cite>Well Known Text</cite> (WKT) formatting time.</div>
+     *
+     * If we take only the characters in the above list which are valid in a {@linkplain #UNICODE_IDENTIFIER
+     * Unicode identifier} and remove the characters that ISO 19162 recommends to ignore, the only characters
+     * left are {@linkplain #LETTERS_AND_DIGITS letters and digits}.
+     *
      * @author  Martin Desruisseaux (Geomatys)
-     * @since   0.3
      * @version 0.3
-     * @module
      *
      * @see java.lang.Character.Subset
      * @see Character#getType(int)
+     * @see <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html#139">WKT 2 specification §B.5</a>
+     *
+     * @since 0.3
+     * @module
      */
     public static class Filter extends Character.Subset {
         /*
@@ -281,12 +325,23 @@ public final class Characters extends Static {
         /**
          * The subset of all characters for which {@link Character#isLetterOrDigit(int)}
          * returns {@code true}. This subset includes the following general categories:
+         *
+         * <blockquote>
          * {@link Character#LOWERCASE_LETTER},
          * {@link Character#UPPERCASE_LETTER     UPPERCASE_LETTER},
          * {@link Character#TITLECASE_LETTER     TITLECASE_LETTER},
          * {@link Character#MODIFIER_LETTER      MODIFIER_LETTER},
          * {@link Character#OTHER_LETTER         OTHER_LETTER} and
          * {@link Character#DECIMAL_DIGIT_NUMBER DECIMAL_DIGIT_NUMBER}.
+         * </blockquote>
+         *
+         * SIS uses this filter when comparing two
+         * {@linkplain org.apache.sis.referencing.AbstractIdentifiedObject#getName() identified object names}.
+         * See the <cite>Relationship with international standards</cite> section in this class javadoc
+         * for more information.
+         *
+         * @see org.apache.sis.referencing.AbstractIdentifiedObject#isHeuristicMatchForName(String)
+         * @see org.apache.sis.metadata.iso.citation.Citations#identifierMatches(Citation, String)
          */
         public static final Filter LETTERS_AND_DIGITS = new LettersAndDigits();
 
@@ -295,10 +350,13 @@ public final class Characters extends Static {
          * returns {@code true}, excluding {@linkplain Character#isIdentifierIgnorable(int) ignorable} characters.
          * This subset includes all the {@link #LETTERS_AND_DIGITS} categories with the addition of the following
          * ones:
+         *
+         * <blockquote>
          * {@link Character#LETTER_NUMBER},
          * {@link Character#CONNECTOR_PUNCTUATION CONNECTOR_PUNCTUATION},
          * {@link Character#NON_SPACING_MARK NON_SPACING_MARK} and
          * {@link Character#COMBINING_SPACING_MARK COMBINING_SPACING_MARK}.
+         * </blockquote>
          */
         public static final Filter UNICODE_IDENTIFIER = new UnicodeIdentifier();
 
@@ -310,8 +368,8 @@ public final class Characters extends Static {
         /**
          * Creates a new subset of the given name.
          *
-         * @param name  The subset name.
-         * @param types A bitmask of character types.
+         * @param  name   the subset name.
+         * @param  types  a bitmask of character types.
          */
         Filter(final String name, final long types) {
             super(name);
@@ -321,7 +379,7 @@ public final class Characters extends Static {
         /**
          * Returns {@code true} if this subset contains the given Unicode character.
          *
-         * @param  codePoint The Unicode character, as a code point value.
+         * @param  codePoint  the Unicode character, as a code point value.
          * @return {@code true} if this subset contains the given character.
          */
         public boolean contains(final int codePoint) {
@@ -336,7 +394,7 @@ public final class Characters extends Static {
          * {@link Character#DECIMAL_DIGIT_NUMBER DECIMAL_DIGIT_NUMBER} or
          * {@link Character#SPACE_SEPARATOR      SPACE_SEPARATOR}.
          *
-         * @param  type One of the {@link Character} constants.
+         * @param  type  one of the {@link Character} constants.
          * @return {@code true} if this subset contains the characters of the given type.
          *
          * @see Character#getType(int)
@@ -348,8 +406,8 @@ public final class Characters extends Static {
         /**
          * Returns a subset representing the union of all Unicode characters of the given types.
          *
-         * @param  types The character types, as {@link Character} constants.
-         * @return The subset of Unicode characters of the given type.
+         * @param  types  the character types, as {@link Character} constants.
+         * @return the subset of Unicode characters of the given type.
          *
          * @see Character#LOWERCASE_LETTER
          * @see Character#UPPERCASE_LETTER

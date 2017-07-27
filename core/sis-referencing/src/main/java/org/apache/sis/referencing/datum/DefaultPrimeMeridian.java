@@ -17,8 +17,8 @@
 package org.apache.sis.referencing.datum;
 
 import java.util.Map;
-import javax.measure.unit.Unit;
-import javax.measure.unit.NonSI;
+import java.util.Objects;
+import javax.measure.Unit;
 import javax.measure.quantity.Angle;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
@@ -27,19 +27,22 @@ import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
 import org.opengis.referencing.ReferenceIdentifier;
 import org.opengis.referencing.datum.PrimeMeridian;
+import org.opengis.referencing.crs.GeneralDerivedCRS;
 import org.apache.sis.referencing.AbstractIdentifiedObject;
-import org.apache.sis.internal.jaxb.gco.Measure;
+import org.apache.sis.internal.referencing.Formulas;
+import org.apache.sis.internal.referencing.WKTUtilities;
+import org.apache.sis.internal.referencing.ReferencingUtilities;
+import org.apache.sis.internal.metadata.MetadataUtilities;
+import org.apache.sis.internal.metadata.WKTKeywords;
+import org.apache.sis.internal.jaxb.gml.Measure;
 import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.util.ComparisonMode;
+import org.apache.sis.measure.Units;
 
 import static org.apache.sis.util.ArgumentChecks.ensureFinite;
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
-import static org.apache.sis.internal.referencing.ReferencingUtilities.canSetProperty;
-
-// Branch-dependent imports
-import org.apache.sis.internal.jdk7.Objects;
 
 
 /**
@@ -60,8 +63,8 @@ import org.apache.sis.internal.jdk7.Objects;
  *       {@link org.apache.sis.referencing.CommonCRS#primeMeridian()}.</li>
  *   <li>Create a {@code PrimeMeridian} from an identifier in a database by invoking
  *       {@link org.opengis.referencing.datum.DatumAuthorityFactory#createPrimeMeridian(String)}.</li>
- *   <li>Create a {@code PrimeMeridian} by invoking the {@code createPrimeMeridian(…)}
- *       method defined in the {@link org.opengis.referencing.datum.DatumFactory} interface.</li>
+ *   <li>Create a {@code PrimeMeridian} by invoking the {@code DatumFactory.createPrimeMeridian(…)} method
+ *       (implemented for example by {@link org.apache.sis.referencing.factory.GeodeticObjectFactory}).</li>
  *   <li>Create a {@code DefaultPrimeMeridian} by invoking the
  *       {@linkplain #DefaultPrimeMeridian(Map, double, Unit) constructor}.</li>
  * </ol>
@@ -79,11 +82,13 @@ import org.apache.sis.internal.jdk7.Objects;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Cédric Briançon (Geomatys)
- * @since   0.4
- * @version 0.4
- * @module
+ * @version 0.7
  *
  * @see org.apache.sis.referencing.CommonCRS#primeMeridian()
+ * @see org.apache.sis.referencing.factory.GeodeticAuthorityFactory#createPrimeMeridian(String)
+ *
+ * @since 0.4
+ * @module
  */
 @XmlType(name = "PrimeMeridianType")
 @XmlRootElement(name = "PrimeMeridian")
@@ -108,15 +113,6 @@ public class DefaultPrimeMeridian extends AbstractIdentifiedObject implements Pr
      * This field is modified only at unmarshalling time by {@link #setGreenwichMeasure(Measure)}</p>
      */
     private Unit<Angle> angularUnit;
-
-    /**
-     * Constructs a new object in which every attributes are set to a null value.
-     * <strong>This is not a valid object.</strong> This constructor is strictly
-     * reserved to JAXB, which will assign values to the fields using reflexion.
-     */
-    private DefaultPrimeMeridian() {
-        super(org.apache.sis.internal.referencing.NilReferencingObject.INSTANCE);
-    }
 
     /**
      * Creates a prime meridian from the given properties. The properties map is given unchanged to the
@@ -152,9 +148,11 @@ public class DefaultPrimeMeridian extends AbstractIdentifiedObject implements Pr
      *   </tr>
      * </table>
      *
-     * @param properties          The properties to be given to the identified object.
-     * @param greenwichLongitude  The longitude value relative to the Greenwich Meridian.
-     * @param angularUnit         The angular unit of the longitude.
+     * @param  properties          the properties to be given to the identified object.
+     * @param  greenwichLongitude  the longitude value relative to the Greenwich Meridian.
+     * @param  angularUnit         the angular unit of the longitude.
+     *
+     * @see org.apache.sis.referencing.factory.GeodeticObjectFactory#createPrimeMeridian(Map, double, Unit)
      */
     public DefaultPrimeMeridian(final Map<String,?> properties, final double greenwichLongitude,
                                 final Unit<Angle> angularUnit)
@@ -173,7 +171,7 @@ public class DefaultPrimeMeridian extends AbstractIdentifiedObject implements Pr
      *
      * <p>This constructor performs a shallow copy, i.e. the properties are not cloned.</p>
      *
-     * @param meridian The prime meridian to copy.
+     * @param  meridian  the prime meridian to copy.
      *
      * @see #castOrCopy(PrimeMeridian)
      */
@@ -189,8 +187,8 @@ public class DefaultPrimeMeridian extends AbstractIdentifiedObject implements Pr
      * Otherwise if the given object is already a SIS implementation, then the given object is returned unchanged.
      * Otherwise a new SIS implementation is created and initialized to the attribute values of the given object.
      *
-     * @param  object The object to get as a SIS implementation, or {@code null} if none.
-     * @return A SIS implementation containing the values of the given object (may be the
+     * @param  object  the object to get as a SIS implementation, or {@code null} if none.
+     * @return a SIS implementation containing the values of the given object (may be the
      *         given object itself), or {@code null} if the argument was null.
      */
     public static DefaultPrimeMeridian castOrCopy(final PrimeMeridian object) {
@@ -217,7 +215,7 @@ public class DefaultPrimeMeridian extends AbstractIdentifiedObject implements Pr
     /**
      * Longitude of the prime meridian measured from the Greenwich meridian, positive eastward.
      *
-     * @return The prime meridian Greenwich longitude, in {@linkplain #getAngularUnit() angular unit}.
+     * @return the prime meridian Greenwich longitude, in {@linkplain #getAngularUnit() angular unit}.
      */
     @Override
     public double getGreenwichLongitude() {
@@ -230,24 +228,193 @@ public class DefaultPrimeMeridian extends AbstractIdentifiedObject implements Pr
      * code, regardless of the underlying angular units of this prime meridian:
      *
      * {@preformat java
-     *     double longitudeInDegrees = primeMeridian.getGreenwichLongitude(NonSI.DEGREE_ANGLE);
+     *     double longitudeInDegrees = primeMeridian.getGreenwichLongitude(Units.DEGREE);
      * }
      *
-     * @param targetUnit The unit in which to express longitude.
-     * @return The Greenwich longitude in the given units.
+     * @param  unit  the unit in which to express longitude.
+     * @return the Greenwich longitude in the given units.
      */
-    public double getGreenwichLongitude(final Unit<Angle> targetUnit) {
-        return getAngularUnit().getConverterTo(targetUnit).convert(getGreenwichLongitude());
+    public double getGreenwichLongitude(final Unit<Angle> unit) {
+        return getAngularUnit().getConverterTo(unit).convert(getGreenwichLongitude());
     }
 
     /**
      * Returns the angular unit of the Greenwich longitude.
      *
-     * @return The angular unit of the {@linkplain #getGreenwichLongitude() Greenwich longitude}.
+     * @return the angular unit of the {@linkplain #getGreenwichLongitude() Greenwich longitude}.
      */
     @Override
     public Unit<Angle> getAngularUnit() {
         return angularUnit;
+    }
+
+    /**
+     * Compares this prime meridian with the specified object for equality.
+     *
+     * @param  object  the object to compare to {@code this}.
+     * @param  mode {@link ComparisonMode#STRICT STRICT} for performing a strict comparison, or
+     *         {@link ComparisonMode#IGNORE_METADATA IGNORE_METADATA} for comparing only properties
+     *         relevant to coordinate transformations.
+     * @return {@code true} if both objects are equal.
+     */
+    @Override
+    public boolean equals(final Object object, final ComparisonMode mode) {
+        if (object == this) {
+            return true;                                // Slight optimization.
+        }
+        if (super.equals(object, mode)) switch (mode) {
+            case STRICT: {
+                final DefaultPrimeMeridian that = (DefaultPrimeMeridian) object;
+                return Numerics.equals(this.greenwichLongitude, that.greenwichLongitude) &&
+                        Objects.equals(this.angularUnit,        that.angularUnit);
+            }
+            case BY_CONTRACT: {
+                final PrimeMeridian that = (PrimeMeridian) object;
+                return Numerics.equals(getGreenwichLongitude(), that.getGreenwichLongitude()) &&
+                        Objects.equals(getAngularUnit(),        that.getAngularUnit());
+            }
+            default: {
+                final double v1 = getGreenwichLongitude(Units.DEGREE);
+                final double v2 = ReferencingUtilities.getGreenwichLongitude((PrimeMeridian) object, Units.DEGREE);
+                if (mode == ComparisonMode.IGNORE_METADATA) {
+                    /*
+                     * We relax the check on unit of measurement because EPSG uses sexagesimal degrees
+                     * for the Greenwich meridian.  Requirying the same unit would make more difficult
+                     * for isWGS84(…) methods to recognize EPSG's WGS84. We allow this relaxation here
+                     * because the unit of the prime meridian is usually not inherited by axes (indeed,
+                     * they are often not the same in the EPSG dataset). The same is not true for other
+                     * objects like DefaultEllipsoid.
+                     */
+                    return Numerics.equals(v1, v2);
+                } else if (Numerics.epsilonEqual(v1, v2, Formulas.ANGULAR_TOLERANCE)) {
+                    return true;
+                }
+                assert (mode != ComparisonMode.DEBUG) : Numerics.messageForDifference("greenwichLongitude", v1, v2);
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Invoked by {@code hashCode()} for computing the hash code when first needed.
+     * See {@link org.apache.sis.referencing.AbstractIdentifiedObject#computeHashCode()}
+     * for more information.
+     *
+     * @return the hash code value. This value may change in any future Apache SIS version.
+     */
+    @Override
+    protected long computeHashCode() {
+        return super.computeHashCode() + Double.doubleToLongBits(greenwichLongitude) + Objects.hashCode(angularUnit);
+    }
+
+    /**
+     * Returns {@code true} if the given formatter is in the process of formatting the prime meridian of a base CRS
+     * of an {@code AbstractDerivedCRS}. In such case, base CRS coordinate system axes shall not be formatted, which
+     * has the consequence of bringing the {@code UNIT[…]} element right below the {@code PRIMEM[…]} one. Example:
+     *
+     * {@preformat wkt
+     *   ProjectedCRS[“NTF (Paris) / Lambert zone II”,
+     *     BaseGeodCRS[“NTF (Paris)”,
+     *       Datum[“Nouvelle Triangulation Francaise”,
+     *         Ellipsoid[“NTF”, 6378249.2, 293.4660212936269]],
+     *       PrimeMeridian[“Paris”, 2.5969213],
+     *       AngleUnit[“grad”, 0.015707963267948967]],
+     *     Conversion[“Lambert zone II”,
+     *       etc...
+     * }
+     *
+     * If we were not formatting a base CRS, we would have many lines between {@code PrimeMeridian[…]} and
+     * {@code AngleUnit[…]} in the above example, which would make less obvious that the angle unit applies
+     * also to the prime meridian. It does not bring any ambiguity from an ISO 19162 standard point of view,
+     * but historically some other softwares interpreted the {@code PRIMEM[…]} units wrongly, which is why
+     * we try to find a compromise between keeping the WKT simple and avoiding an historical ambiguity.
+     *
+     * @see org.apache.sis.referencing.crs.AbstractCRS#isBaseCRS(Formatter)
+     */
+    private static boolean isElementOfBaseCRS(final Formatter formatter) {
+        return formatter.getEnclosingElement(2) instanceof GeneralDerivedCRS;
+    }
+
+    /**
+     * Returns {@code true} if {@link #formatTo(Formatter)} should conservatively format the angular unit
+     * even if it would be legal to omit it.
+     *
+     * <div class="section">Rational</div>
+     * According the ISO 19162 standard, it is legal to omit the {@code PrimeMeridian} angular unit when
+     * that unit is the same than the unit of the axes of the enclosing {@code GeographicCRS}. However the
+     * relationship between the CRS axes and the prime meridian is less obvious in WKT2 than it was in WKT1,
+     * because the WKT2 {@code UNIT[…]} element is far from the {@code PRIMEM[…]} element while it was just
+     * below it in WKT1.   Furthermore, the {@code PRIMEM[…]} unit is one source of incompatibility between
+     * various WKT1 parsers (i.e. some popular libraries are not conform to OGC 01-009 and ISO 19162).
+     * So we are safer to unconditionally format any unit other than degrees, even if we could legally
+     * omit them.
+     *
+     * <p>However in order to keep the WKT slightly simpler in {@link Convention#WKT2_SIMPLIFIED} mode,
+     * we make an exception to the above-cited safety if the {@code UNIT[…]} element is formatted right
+     * below the {@code PRIMEM[…]} one, which happen if we are inside a base CRS.
+     * See {@link #isElementOfBaseCRS(Formatter)} for more discussion.
+     */
+    private static boolean beConservative(final Formatter formatter, final Unit<Angle> contextualUnit) {
+        return !contextualUnit.equals(Units.DEGREE) && !isElementOfBaseCRS(formatter);
+    }
+
+    /**
+     * Formats this prime meridian as a <cite>Well Known Text</cite> {@code PrimeMeridian[…]} element.
+     *
+     * @return {@code "PrimeMeridian"} (WKT 2) or {@code "PrimeM"} (WKT 1).
+     *
+     * @see <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html#53">WKT 2 specification §8.2.2</a>
+     */
+    @Override
+    protected String formatTo(final Formatter formatter) {
+        super.formatTo(formatter);
+        final Convention  convention = formatter.getConvention();
+        final boolean     isWKT1 = (convention.majorVersion() == 1);
+        final Unit<Angle> contextualUnit = formatter.toContextualUnit(Units.DEGREE);
+        Unit<Angle> unit = contextualUnit;
+        if (!isWKT1) {
+            unit = getAngularUnit();
+            if (convention != Convention.INTERNAL) {
+                unit = WKTUtilities.toFormattable(unit);
+            }
+        }
+        formatter.append(getGreenwichLongitude(unit));
+        if (isWKT1) {
+            return WKTKeywords.PrimeM;
+        }
+        if (!convention.isSimplified() || !contextualUnit.equals(unit) || beConservative(formatter, contextualUnit)) {
+            formatter.append(unit);
+        }
+        return formatter.shortOrLong(WKTKeywords.PrimeM, WKTKeywords.PrimeMeridian);
+    }
+
+
+
+
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+    ////////                                                                                  ////////
+    ////////                               XML support with JAXB                              ////////
+    ////////                                                                                  ////////
+    ////////        The following methods are invoked by JAXB using reflection (even if       ////////
+    ////////        they are private) or are helpers for other methods invoked by JAXB.       ////////
+    ////////        Those methods can be safely removed if Geographic Markup Language         ////////
+    ////////        (GML) support is not needed.                                              ////////
+    ////////                                                                                  ////////
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Constructs a new object in which every attributes are set to a null value.
+     * <strong>This is not a valid object.</strong> This constructor is strictly
+     * reserved to JAXB, which will assign values to the fields using reflexion.
+     */
+    private DefaultPrimeMeridian() {
+        super(org.apache.sis.internal.referencing.NilReferencingObject.INSTANCE);
+        /*
+         * Angular units are mandatory for SIS working. We do not verify their presence here (because the
+         * verification would have to be done in an 'afterMarshal(…)' method and throwing an exception in
+         * that method causes the whole unmarshalling to fail). But the CD_PrimeMeridian adapter does some
+         * verifications.
+         */
     }
 
     /**
@@ -262,101 +429,22 @@ public class DefaultPrimeMeridian extends AbstractIdentifiedObject implements Pr
      * Invoked by JAXB for setting the Greenwich longitude and its unit of measurement.
      */
     private void setGreenwichMeasure(final Measure measure) {
-        if (measure != null && canSetProperty(DefaultPrimeMeridian.class,
-                "setGreenwichMeasure", "greenwichLongitude", greenwichLongitude != 0 || angularUnit != null))
-        {
+        if (greenwichLongitude == 0 && angularUnit == null) {
             greenwichLongitude = measure.value;
             angularUnit = measure.getUnit(Angle.class);
             if (angularUnit == null) {
                 /*
                  * Missing unit: if the Greenwich longitude is zero, any angular unit gives the same result
                  * (assuming that the missing unit was not applying an offset), so we can select a default.
-                 * If the Greenwich longitude is not zero, we can not guess. Our object will be invalid.
+                 * If the Greenwich longitude is not zero, presume egrees but log a warning.
                  */
-                if (greenwichLongitude == 0) {
-                    angularUnit = NonSI.DEGREE_ANGLE;
-                } else {
+                angularUnit = Units.DEGREE;
+                if (greenwichLongitude != 0) {
                     Measure.missingUOM(DefaultPrimeMeridian.class, "setGreenwichMeasure");
                 }
             }
+        } else {
+            MetadataUtilities.propertyAlreadySet(DefaultPrimeMeridian.class, "setGreenwichMeasure", "greenwichLongitude");
         }
-    }
-
-    /**
-     * Compares this prime meridian with the specified object for equality.
-     *
-     * @param  object The object to compare to {@code this}.
-     * @param  mode {@link ComparisonMode#STRICT STRICT} for performing a strict comparison, or
-     *         {@link ComparisonMode#IGNORE_METADATA IGNORE_METADATA} for comparing only properties
-     *         relevant to coordinate transformations.
-     * @return {@code true} if both objects are equal.
-     */
-    @Override
-    public boolean equals(final Object object, final ComparisonMode mode) {
-        if (object == this) {
-            return true; // Slight optimization.
-        }
-        if (!super.equals(object, mode)) {
-            return false;
-        }
-        switch (mode) {
-            case STRICT: {
-                final DefaultPrimeMeridian that = (DefaultPrimeMeridian) object;
-                return Numerics.equals(this.greenwichLongitude, that.greenwichLongitude) &&
-                        Objects.equals(this.angularUnit,        that.angularUnit);
-            }
-            case BY_CONTRACT: {
-                final PrimeMeridian that = (PrimeMeridian) object;
-                return Numerics.equals(getGreenwichLongitude(), that.getGreenwichLongitude()) &&
-                        Objects.equals(getAngularUnit(),        that.getAngularUnit());
-            }
-            default: {
-                final DefaultPrimeMeridian that = castOrCopy((PrimeMeridian) object);
-                return Numerics.epsilonEqual(this.getGreenwichLongitude(NonSI.DEGREE_ANGLE),
-                                             that.getGreenwichLongitude(NonSI.DEGREE_ANGLE), mode);
-                /*
-                 * Note: if mode==IGNORE_METADATA, we relax the unit check because EPSG uses
-                 *       sexagesimal degrees for the Greenwich meridian. Requirying the same
-                 *       unit prevent Geodetic.isWGS84(...) method to recognize EPSG's WGS84.
-                 */
-            }
-        }
-    }
-
-    /**
-     * Invoked by {@code hashCode()} for computing the hash code when first needed.
-     * See {@link org.apache.sis.referencing.AbstractIdentifiedObject#computeHashCode()}
-     * for more information.
-     *
-     * @return The hash code value. This value may change in any future Apache SIS version.
-     */
-    @Override
-    protected long computeHashCode() {
-        return super.computeHashCode() + Double.doubleToLongBits(greenwichLongitude) + Objects.hashCode(angularUnit);
-    }
-
-    /**
-     * Formats this prime meridian as a <cite>Well Known Text</cite> {@code PrimeMeridian[…]} element.
-     *
-     * @return {@code "PrimeMeridian"} (WKT 2) or {@code "PrimeM"} (WKT 1).
-     */
-    @Override
-    protected String formatTo(final Formatter formatter) {
-        super.formatTo(formatter);
-        final Convention convention = formatter.getConvention();
-        final boolean isWKT1 = convention.majorVersion() == 1;
-        Unit<Angle> targetUnit = formatter.toContextualUnit(NonSI.DEGREE_ANGLE);
-        if (targetUnit == null) {
-            targetUnit = NonSI.DEGREE_ANGLE;
-        }
-        formatter.append(isWKT1 ? getGreenwichLongitude(targetUnit) : getGreenwichLongitude());
-        if (isWKT1) {
-            return "PrimeM";
-        }
-        final Unit<Angle> angularUnit = getAngularUnit();   // Gives to users a chance to override properties.
-        if (!convention.isSimplified() || !targetUnit.equals(angularUnit)) {
-            formatter.append(angularUnit);
-        }
-        return "PrimeMeridian";
     }
 }

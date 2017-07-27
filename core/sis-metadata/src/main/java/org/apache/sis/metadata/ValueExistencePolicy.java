@@ -38,11 +38,12 @@ import org.apache.sis.xml.NilReason;
  * Those explanations can be obtained by calls to the {@link org.apache.sis.xml.NilReason#forObject(Object)} method.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
- * @version 0.4
- * @module
+ * @version 0.8
  *
- * @see MetadataStandard#asValueMap(Object, KeyNamePolicy, ValueExistencePolicy)
+ * @see MetadataStandard#asValueMap(Object, Class, KeyNamePolicy, ValueExistencePolicy)
+ *
+ * @since 0.3
+ * @module
  */
 public enum ValueExistencePolicy {
     /**
@@ -118,6 +119,59 @@ public enum ValueExistencePolicy {
      * <p>The set of {@code NON_EMPTY} properties is a subset of {@link #NON_NIL} properties.</p>
      */
     NON_EMPTY() {
+        /** Skips all null or empty values. */
+        @Override boolean isSkipped(final Object value) {
+            return isNullOrEmpty(value);
+        }
+
+        /** Never substitute null or empty collections since they should be skipped. */
+        @Override boolean substituteByNullElement(final Collection<?> values) {
+            return false;
+        }
+    },
+
+    /**
+     * Includes non-empty properties but omits {@linkplain TitleProperty title properties}.
+     * Values associated to title properties are instead associated with the parent node.
+     * This policy is relevant for metadata classes annotated with {@link TitleProperty};
+     * for all other classes, this policy is identical to {@link #NON_EMPTY}.
+     *
+     * <div class="note"><b>Example:</b>
+     * the {@link org.apache.sis.metadata.iso.citation.DefaultCitation} and
+     * {@link org.apache.sis.metadata.iso.citation.DefaultCitationDate} classes are annotated with
+     * <code>&#64;TitleProperty(name="title")</code> and <code>&#64;TitleProperty(name="date")</code>
+     * respectively. The following table compares the trees produced by two policies:
+     *
+     * <table class="sis">
+     *   <caption>Comparison of "non-empty" and "compact" policy on the same metadata</caption>
+     *   <tr>
+     *     <th>{@code NON_EMPTY}</th>
+     *     <th class="sep">{@code COMPACT}</th>
+     *   </tr><tr><td>
+     *     {@preformat text
+     *       Citation
+     *        ├─Title……………………… My document
+     *        └─Date
+     *           ├─Date………………… 2012/01/01
+     *           └─Date type…… Creation
+     *     }
+     *   </td><td class="sep">
+     *     {@preformat text
+     *       Citation……………………… My document
+     *        └─Date………………………… 2012/01/01
+     *           └─Date type…… Creation
+     *     }
+     *   </td></tr>
+     * </table></div>
+     *
+     * This policy is the default behavior of {@link AbstractMetadata#asTreeTable()},
+     * and consequently defines the default rendering of {@link AbstractMetadata#toString()}.
+     *
+     * @see TitleProperty
+     *
+     * @since 0.8
+     */
+    COMPACT() {
         /** Skips all null or empty values. */
         @Override boolean isSkipped(final Object value) {
             return isNullOrEmpty(value);

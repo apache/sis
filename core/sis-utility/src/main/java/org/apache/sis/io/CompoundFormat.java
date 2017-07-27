@@ -24,24 +24,30 @@ import java.util.Date;
 import java.io.IOException;
 import java.text.Format;
 import java.text.DateFormat;
+import java.text.NumberFormat;
 import java.text.FieldPosition;
 import java.text.ParsePosition;
-import java.text.NumberFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import javax.measure.unit.Unit;
-import javax.measure.unit.UnitFormat;
+import javax.measure.Unit;
 
 import org.opengis.referencing.IdentifiedObject;
+import org.opengis.geometry.DirectPosition;
 import org.apache.sis.measure.Angle;
 import org.apache.sis.measure.AngleFormat;
 import org.apache.sis.measure.Range;
 import org.apache.sis.measure.RangeFormat;
+import org.apache.sis.measure.UnitFormat;
 import org.apache.sis.util.Localized;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.ArgumentChecks;
-import org.apache.sis.util.collection.BackingStoreException;
+import org.apache.sis.internal.util.MetadataServices;
 import org.apache.sis.internal.util.LocalizedParseException;
+
+import static org.apache.sis.internal.util.StandardDateFormat.UTC;
+
+// Branch-dependent imports
+import org.apache.sis.internal.jdk8.UncheckedIOException;
 
 
 /**
@@ -50,32 +56,49 @@ import org.apache.sis.internal.util.LocalizedParseException;
  * large blocks of data, for example a metadata tree or a <cite>Well Known Text</cite> (WKT).
  * Those blocks of data usually contain smaller elements like numbers and dates, whose parsing
  * and formatting can be delegated to {@link NumberFormat} and {@link DateFormat} respectively.
+ * Subclasses can obtain instances of those formats by call to {@link #getFormat(Class)} where
+ * the argument is the type of the value to parse or format.
+ * {@code CompoundFormat} supports at least the following value types, but subclasses may add more types:
  *
- * <p>Since {@code CompoundFormat} may work on larger texts than the usual {@code Format} classes,
+ * <table class="sis">
+ *   <caption>Supported value types</caption>
+ *   <tr><th>Value type</th>              <th>Format type</th>                                      <th>Remarks</th></tr>
+ *   <tr><td>{@link DirectPosition}</td>  <td>{@link org.apache.sis.geometry.CoordinateFormat}</td> <td>Requires {@code sis-referencing} module.</td></tr>
+ *   <tr><td>{@link Angle}</td>           <td>{@link AngleFormat}</td>                              <td></td></tr>
+ *   <tr><td>{@link Date}</td>            <td>{@link DateFormat}</td>                               <td>Timezone specified by {@link #getTimeZone()}.</td></tr>
+ *   <tr><td>{@link Number}</td>          <td>{@link NumberFormat}</td>                             <td></td></tr>
+ *   <tr><td>{@link Unit}</td>            <td>{@link UnitFormat}</td>                               <td></td></tr>
+ *   <tr><td>{@link Range}</td>           <td>{@link RangeFormat}</td>                              <td></td></tr>
+ *   <tr><td>{@link Class}</td>           <td>(internal)</td>                                       <td></td></tr>
+ * </table>
+ *
+ * <div class="section">Sources and destinations</div>
+ * Since {@code CompoundFormat} may work on larger texts than the usual {@code Format} classes,
  * it defines {@code parse} and {@code format} methods working with arbitrary {@link CharSequence}
  * and {@link Appendable} instances. The standard {@code Format} methods redirect to the above-cited
- * methods.</p>
+ * methods.
  *
- * <p>The abstract methods to be defined by subclasses are:</p>
- *
+ * <div class="section">Sub-classing</div>
+ * The abstract methods to be defined by subclasses are:
  * <ul>
- *   <li>{@link #getValueType()} returns the {@code <T>} class or a subclass.</li>
- *   <li>{@link #parse(CharSequence, ParsePosition)} may throws {@code ParseException}.</li>
- *   <li>{@link #format(Object, Appendable)} may throws {@code IOException}.</li>
+ *   <li>{@link #getValueType()}</li>
+ *   <li>{@link #format(Object, Appendable)}</li>
+ *   <li>{@link #parse(CharSequence, ParsePosition)}</li>
  * </ul>
  *
  * <div class="note"><b>API note:</b>
- * In the standard {@link Format} class, the {@code parse} methods either accept a {@link ParsePosition} argument
+ * in the standard {@link Format} class, the {@code parse} methods either accept a {@link ParsePosition} argument
  * and returns {@code null} on error, or does not take position argument and throws a {@link ParseException} on error.
  * In this {@code CompoundFormat} class, the {@code parse} method both takes a {@code ParsePosition} argument and
  * throws a {@code ParseException} on error. This allows both substring parsing and more accurate exception message
  * in case of error.</div>
  *
- * @param <T> The base type of objects parsed and formatted by this class.
- *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
- * @version 0.3
+ * @version 0.8
+ *
+ * @param <T>  the base type of objects parsed and formatted by this class.
+ *
+ * @since 0.3
  * @module
  */
 public abstract class CompoundFormat<T> extends Format implements Localized {
@@ -110,8 +133,8 @@ public abstract class CompoundFormat<T> extends Format implements Localized {
      * {@link Locale#ROOT} if this format shall parse and format "unlocalized" strings.
      * See {@link #getLocale()} for more information about the {@code ROOT} locale.
      *
-     * @param locale   The locale for the new {@code Format}, or {@code null} for {@code Locale.ROOT}.
-     * @param timezone The timezone, or {@code null} for UTC.
+     * @param  locale    the locale for the new {@code Format}, or {@code null} for {@code Locale.ROOT}.
+     * @param  timezone  the timezone, or {@code null} for UTC.
      */
     protected CompoundFormat(final Locale locale, final TimeZone timezone) {
         this.locale   = (locale != null) ? locale : Locale.ROOT;
@@ -128,7 +151,7 @@ public abstract class CompoundFormat<T> extends Format implements Localized {
      *   <li>Format {@link Date} instances using the ISO pattern instead than the English one.</li>
      * </ul>
      *
-     * @return The locale of this {@code Format}, or {@code Locale.ROOT} for unlocalized format.
+     * @return the locale of this {@code Format}, or {@code Locale.ROOT} for unlocalized format.
      */
     @Override
     public Locale getLocale() {
@@ -136,12 +159,40 @@ public abstract class CompoundFormat<T> extends Format implements Localized {
     }
 
     /**
+     * Returns the locale for the given category. Subclasses may override this method in order to assign
+     * different roles to the different locale categories. A typical (but not mandatory) mapping is:
+     *
+     * <ul>
+     *   <li>{@link java.util.Locale.Category#FORMAT} specifies the locale to use for numbers, dates and angles formatting.</li>
+     *   <li>{@link java.util.Locale.Category#DISPLAY} specifies the locale to use for {@link org.opengis.util.CodeList} labels
+     *       and {@link org.opengis.util.InternationalString} contents.</li>
+     * </ul>
+     *
+     * <div class="note"><b>Example:</b>
+     * The ISO 19162 (<cite>Well Known Text</cite>) standard requires a number format similar to the one defined by
+     * {@code Locale.ROOT} while it allows informative texts (remarks, <i>etc.</i>) to be formatted according the
+     * user's locale. Consequently {@code WKTFormat} fixes (usually) the locale for {@code Category.FORMAT} to
+     * {@code Locale.ROOT} and let {@code Category.DISPLAY} be any locale.</div>
+     *
+     * For subclasses that do not override this method, the default implementation returns {@link #getLocale()}.
+     *
+     * @param  category  the category for which a locale is desired.
+     * @return the locale for the given category (never {@code null}).
+     *
+     * @since 0.4
+     */
+    public Locale getLocale(final Locale.Category category) {
+        ArgumentChecks.ensureNonNull("category", category);
+        return getLocale();
+    }
+
+    /**
      * Returns the timezone used by this format.
      *
-     * @return The timezone used for this format, or UTC for unlocalized format.
+     * @return the timezone used for this format, or UTC for unlocalized format.
      */
     public TimeZone getTimeZone() {
-        return timezone != null ? (TimeZone) timezone.clone() : TimeZone.getTimeZone("UTC");
+        return (timezone != null) ? (TimeZone) timezone.clone() : TimeZone.getTimeZone(UTC);
     }
 
     /**
@@ -156,7 +207,7 @@ public abstract class CompoundFormat<T> extends Format implements Localized {
      *   </ul>
      * </div>
      *
-     * @return The base type of values parsed and formatted by this {@code Format} instance.
+     * @return the base type of values parsed and formatted by this {@code Format} instance.
      */
     public abstract Class<? extends T> getValueType();
 
@@ -177,25 +228,31 @@ public abstract class CompoundFormat<T> extends Format implements Localized {
      *   <li>The {@code pos} index is left unchanged</li>
      *   <li>The {@code pos} {@linkplain ParsePosition#getErrorIndex() error index}
      *       is set to the beginning of the unparsable character sequence.</li>
-     *   <li>A {@code ParseException} is thrown with an
-     *       {@linkplain ParseException#getErrorOffset() error offset} relative to the above-cited
-     *       {@code pos} error index. Consequently the exact error location is <var>{@code pos}
-     *       error index</var> + <var>{@code ParseException} error offset</var>.</li>
+     *   <li>One of the following actions is taken (at implementation choice):
+     *     <ul>
+     *       <li>this method returns {@code null}, or</li>
+     *       <li>a {@code ParseException} is thrown with an {@linkplain ParseException#getErrorOffset() error offset}
+     *           set to the index of the first unparsable character.</li>
+     *     </ul>
+     *   </li>
      * </ul>
      *
-     * <div class="note"><b>Example:</b>
-     * If parsing of the {@code "30.0 40,0"} coordinate fails on the coma in the last number, then the {@code pos}
-     * error index will be set to 5 (the beginning of the {@code "40.0"} character sequence) while the
-     * {@link ParseException} error offset will be set to 2 (the coma position relative the beginning
-     * of the {@code "40.0"} character sequence).</div>
+     * <div class="note"><b>Note:</b>
+     * if a {@code ParseException} is thrown, its error offset is usually the same than the {@code ParsePosition}
+     * error index, but implementations are free to adopt a slightly different policy. For example
+     * if parsing of the {@code "30.0 40,0"} coordinate fails on the coma in the last number, then the {@code pos}
+     * {@linkplain ParsePosition#getErrorIndex() error index} may be set to 5 (the beginning of the {@code "40.0"}
+     * character sequence) or to 7 (the coma position), depending on the implementation.</div>
      *
-     * This error offset policy is a consequence of the compound nature of {@code CompoundFormat},
-     * since the exception may have been produced by a call to {@link Format#parseObject(String)}.
+     * Most implementations never return {@code null}. However some implementations may choose to return {@code null}
+     * if they can determine that the given text is not a supported format and reserve {@code ParseException} for the
+     * cases where the text seems to be the expected format but contains a malformed element.
      *
-     * @param  text The character sequence for the object to parse.
-     * @param  pos  The position where to start the parsing.
-     * @return The parsed object.
-     * @throws ParseException If an error occurred while parsing the object.
+     * @param  text  the character sequence for the object to parse.
+     * @param  pos   the position where to start the parsing.
+     *               On return, the position where the parsing stopped or where an error occurred.
+     * @return the parsed object, or {@code null} if the text is not recognized.
+     * @throws ParseException if an error occurred while parsing the object.
      */
     public abstract T parse(CharSequence text, ParsePosition pos) throws ParseException;
 
@@ -220,19 +277,19 @@ public abstract class CompoundFormat<T> extends Format implements Localized {
      * </ul>
      *
      * The default implementation delegates to {@link #parse(CharSequence, ParsePosition)}.
-     * In case of failure, the {@linkplain ParseException exception error offset} is added
-     * to the {@code pos} error index.
      *
-     * @param  text The string representation of the object to parse.
-     * @param  pos  The position where to start the parsing.
-     * @return The parsed object, or {@code null} if the given string can not be parsed.
+     * @param  text  the string representation of the object to parse.
+     * @param  pos   the position where to start the parsing.
+     * @return the parsed object, or {@code null} if the given string can not be parsed.
      */
     @Override
     public T parseObject(final String text, final ParsePosition pos) {
         try {
             return parse(text, pos);
         } catch (ParseException e) {
-            pos.setErrorIndex(Math.max(pos.getIndex(), pos.getErrorIndex()) + e.getErrorOffset());
+            if (pos.getErrorIndex() < 0) {
+                pos.setErrorIndex(e.getErrorOffset());
+            }
             return null;
         }
     }
@@ -250,9 +307,9 @@ public abstract class CompoundFormat<T> extends Format implements Localized {
      * and {@code isISOControl(…)} done in this {@code parseObject(…)} method is more permissive since it encompasses
      * all whitespace characters, plus non-breaking spaces and non-white ISO controls.</div>
      *
-     * @param  text The string representation of the object to parse.
-     * @return The parsed object.
-     * @throws ParseException If an error occurred while parsing the object.
+     * @param  text  the string representation of the object to parse.
+     * @return the parsed object.
+     * @throws ParseException if an error occurred while parsing the object.
      */
     @Override
     public T parseObject(final String text) throws ParseException {
@@ -270,15 +327,15 @@ public abstract class CompoundFormat<T> extends Format implements Localized {
             } while (Character.isSpaceChar(c) || Character.isISOControl(c));
             pos.setErrorIndex(i);
         }
-        throw new LocalizedParseException(getLocale(), getValueType(), text, pos);
+        throw new LocalizedParseException(getLocale(Locale.Category.DISPLAY), getValueType(), text, pos);
     }
 
     /**
      * Writes a textual representation of the given object in the given stream or buffer.
      *
-     * @param  object      The object to format.
-     * @param  toAppendTo  Where to format the object.
-     * @throws IOException If an error occurred while writing to the given appendable.
+     * @param  object      the object to format.
+     * @param  toAppendTo  where to format the object.
+     * @throws IOException if an error occurred while writing to the given appendable.
      */
     public abstract void format(T object, Appendable toAppendTo) throws IOException;
 
@@ -293,24 +350,24 @@ public abstract class CompoundFormat<T> extends Format implements Localized {
      * method and performs some I/O operation outside the given {@link StringBuffer}. However this is not the intended
      * usage of this class and implementors should avoid such unexpected I/O operation.</div>
      *
-     * @param  object      The object to format.
-     * @param  toAppendTo  Where to format the object.
-     * @param  pos         Ignored in current implementation.
-     * @return             The given buffer, returned for convenience.
+     * @param  object      the object to format.
+     * @param  toAppendTo  where to format the object.
+     * @param  pos         ignored in current implementation.
+     * @return the given buffer, returned for convenience.
      */
     @Override
     public StringBuffer format(final Object object, final StringBuffer toAppendTo, final FieldPosition pos) {
         final Class<? extends T> valueType = getValueType();
-        ArgumentChecks.ensureCanCast("tree", valueType, object);
+        ArgumentChecks.ensureCanCast("object", valueType, object);
         try {
             format(valueType.cast(object), toAppendTo);
         } catch (IOException e) {
             /*
              * Should never happen when writing into a StringBuffer, unless the user
-             * override the format(Object, Appendable) method. We do not rethrown an
+             * override the format(Object, Appendable) method.  We do not rethrow an
              * AssertionError because of this possibility.
              */
-            throw new BackingStoreException(e);
+            throw new UncheckedIOException(e);
         }
         return toAppendTo;
     }
@@ -330,14 +387,14 @@ public abstract class CompoundFormat<T> extends Format implements Localized {
      * See {@link #createFormat(Class)} for the list of value types recognized by the default
      * {@code CompoundFormat} implementation.
      *
-     * @param  valueType The base type of values to parse or format, or {@code null} if unknown.
-     * @return The format to use for parsing and formatting values of the given type or any
-     *         parent type, or {@code null} if none.
+     * @param  valueType  the base type of values to parse or format, or {@code null} if unknown.
+     * @return the format to use for parsing and formatting values of the given type or any parent type,
+     *         or {@code null} if none.
      */
     protected Format getFormat(final Class<?> valueType) {
         Format format = null;
         Map<Class<?>,Format> formats = this.formats;
-        for (Class<?> type=valueType; type!=null; type=type.getSuperclass()) {
+        for (Class<?> type = valueType; type != null; type = type.getSuperclass()) {
             if (formats != null) {
                 format = formats.get(type);
                 if (format != null) {
@@ -350,7 +407,7 @@ public abstract class CompoundFormat<T> extends Format implements Localized {
             format = createFormat(type);
             if (format != null) {
                 if (formats == null) {
-                    this.formats = formats = new IdentityHashMap<Class<?>,Format>(4);
+                    this.formats = formats = new IdentityHashMap<>(4);
                 }
                 formats.put(type, format);
                 break;
@@ -363,18 +420,18 @@ public abstract class CompoundFormat<T> extends Format implements Localized {
      * Creates a new format to use for parsing and formatting values of the given type.
      * This method is invoked by {@link #getFormat(Class)} the first time that a format
      * is needed for the given type.
-     *
-     * <p>The default implementation creates the following formats:</p>
+     * The class given in argument can be any of the classes listed in the "Value type" column below:
      *
      * <table class="sis">
-     *   <caption>Supported formats by type</caption>
-     *   <tr><th>Value type</th>     <th>Format</th></tr>
-     *   <tr><td>{@link Angle}</td>  <td>{@link AngleFormat}</td></tr>
-     *   <tr><td>{@link Date}</td>   <td>{@link DateFormat}</td></tr>
-     *   <tr><td>{@link Number}</td> <td>{@link NumberFormat}</td></tr>
-     *   <tr><td>{@link Unit}</td>   <td>{@link UnitFormat}</td></tr>
-     *   <tr><td>{@link Range}</td>  <td>{@link RangeFormat}</td></tr>
-     *   <tr><td>{@link Class}</td>  <td>(internal)</td></tr>
+     *   <caption>Supported value types</caption>
+     *   <tr><th>Value type</th>              <th>Format type</th></tr>
+     *   <tr><td>{@link DirectPosition}</td>  <td>{@link org.apache.sis.geometry.CoordinateFormat}</td></tr>
+     *   <tr><td>{@link Angle}</td>           <td>{@link AngleFormat}</td></tr>
+     *   <tr><td>{@link Date}</td>            <td>{@link DateFormat}</td></tr>
+     *   <tr><td>{@link Number}</td>          <td>{@link NumberFormat}</td></tr>
+     *   <tr><td>{@link Unit}</td>            <td>{@link UnitFormat}</td></tr>
+     *   <tr><td>{@link Range}</td>           <td>{@link RangeFormat}</td></tr>
+     *   <tr><td>{@link Class}</td>           <td>(internal)</td></tr>
      * </table>
      *
      * Subclasses can override this method for adding more types, or for configuring the
@@ -386,9 +443,8 @@ public abstract class CompoundFormat<T> extends Format implements Localized {
      * sub-types. For example a subclass may choose to format {@link Double} values differently
      * than other types of number.
      *
-     * @param  valueType The base type of values to parse or format.
-     * @return The format to use for parsing of formatting values of the given type,
-     *         or {@code null} if none.
+     * @param  valueType  the base type of values to parse or format.
+     * @return the format to use for parsing of formatting values of the given type, or {@code null} if none.
      */
     protected Format createFormat(final Class<?> valueType) {
         /*
@@ -396,7 +452,7 @@ public abstract class CompoundFormat<T> extends Format implements Localized {
          * documented in this method javadoc. But actually it is not, since the call to
          * DefaultFormat.getInstance(…) will indirectly perform this kind of comparison.
          */
-        final Locale locale = getLocale();
+        final Locale locale = getLocale(Locale.Category.FORMAT);
         if (Number.class.isAssignableFrom(valueType)) {
             if (Locale.ROOT.equals(locale)) {
                 return DefaultFormat.getInstance(valueType);
@@ -415,9 +471,11 @@ public abstract class CompoundFormat<T> extends Format implements Localized {
         } else if (valueType == Angle.class) {
             return AngleFormat.getInstance(locale);
         } else if (valueType == Unit.class) {
-            return UnitFormat.getInstance(locale);
+            return new UnitFormat(locale);
         } else if (valueType == Range.class) {
             return new RangeFormat(locale);
+        } else if (valueType == DirectPosition.class) {
+            return MetadataServices.getInstance().createCoordinateFormat(locale, getTimeZone());
         } else if (valueType == Class.class) {
             return ClassFormat.INSTANCE;
         } else {
@@ -432,14 +490,14 @@ public abstract class CompoundFormat<T> extends Format implements Localized {
     /**
      * Returns a clone of this format.
      *
-     * @return A clone of this format.
+     * @return a clone of this format.
      */
     @Override
     public CompoundFormat<T> clone() {
         @SuppressWarnings("unchecked")
         final CompoundFormat<T> clone = (CompoundFormat<T>) super.clone();
         if (clone.formats != null) {
-            clone.formats = new IdentityHashMap<Class<?>,Format>(clone.formats);
+            clone.formats = new IdentityHashMap<>(clone.formats);
             for (final Map.Entry<Class<?>,Format> entry : clone.formats.entrySet()) {
                 entry.setValue((Format) entry.getValue().clone());
             }

@@ -28,8 +28,8 @@ import static org.apache.sis.referencing.operation.matrix.Matrix3.SIZE;
  * This class inherits all tests defined in {@link MatrixTestCase}.
  *
  * @author  Martin Desruisseaux (Geomatys)
+ * @version 0.8
  * @since   0.4
- * @version 0.6
  * @module
  */
 @DependsOn(SolverTest.class)
@@ -76,7 +76,7 @@ public final strictfp class Matrix3Test extends MatrixTestCase {
      * Verifies our claim that {@code A.solve(B)} is equivalent to {@code A.inverse().multiply(B)}.
      * This claim is documented in {@link MatrixSIS#solve(Matrix)} javadoc.
      *
-     * @throws NoninvertibleMatrixException Should not happen.
+     * @throws NoninvertibleMatrixException should not happen.
      */
     @Test
     public void testSolveEquivalence() throws NoninvertibleMatrixException {
@@ -102,8 +102,8 @@ public final strictfp class Matrix3Test extends MatrixTestCase {
     }
 
     /**
-     * Tests {@link MatrixSIS#convertBefore(int, Number, Number)} using {@link AffineTranform}
-     * as a reference implementation.
+     * Tests {@link MatrixSIS#convertBefore(int, Number, Number)}
+     * using {@link java.awt.geom.AffineTransform} as a reference implementation.
      *
      * @since 0.6
      */
@@ -113,13 +113,24 @@ public final strictfp class Matrix3Test extends MatrixTestCase {
     }
 
     /**
-     * Tests {@link MatrixSIS#convertAfter(int, Number, Number)} using {@link AffineTranform}
-     * as a reference implementation.
+     * Tests {@link MatrixSIS#convertAfter(int, Number, Number)}
+     * using {@link java.awt.geom.AffineTransform} as a reference implementation.
      *
      * @since 0.6
      */
     @Test
     public void testConvertAfter() {
         testConvertAfter(new Matrix3());
+    }
+
+    /**
+     * Tests {@link MatrixSIS#multiply(double[])}
+     * using {@link java.awt.geom.AffineTransform} as a reference implementation.
+     *
+     * @since 0.8
+     */
+    @Test
+    public void testMultiplyVector() {
+        testMultiplyVector(new Matrix3());
     }
 }

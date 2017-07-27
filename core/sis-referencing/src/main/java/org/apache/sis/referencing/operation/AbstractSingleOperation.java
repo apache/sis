@@ -17,20 +17,40 @@
 package org.apache.sis.referencing.operation;
 
 import java.util.Map;
+import java.util.List;
+import java.util.IdentityHashMap;
+import java.util.Objects;
+import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlSeeAlso;
+import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+import org.opengis.util.FactoryException;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptorGroup;
+import org.opengis.parameter.GeneralParameterDescriptor;
+import org.opengis.parameter.GeneralParameterValue;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.SingleOperation;
 import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.referencing.operation.MathTransform;
+import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.apache.sis.parameter.Parameters;
 import org.apache.sis.parameter.Parameterized;
+import org.apache.sis.parameter.DefaultParameterValueGroup;
+import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.referencing.operation.transform.PassThroughTransform;
-import org.apache.sis.internal.referencing.OperationMethods;
+import org.apache.sis.internal.jaxb.referencing.CC_OperationParameterGroup;
+import org.apache.sis.internal.jaxb.referencing.CC_OperationMethod;
+import org.apache.sis.internal.jaxb.Context;
+import org.apache.sis.internal.referencing.Resources;
+import org.apache.sis.internal.referencing.ReferencingUtilities;
+import org.apache.sis.internal.metadata.ReferencingServices;
+import org.apache.sis.internal.metadata.MetadataUtilities;
+import org.apache.sis.internal.system.DefaultFactories;
+import org.apache.sis.internal.util.Constants;
 import org.apache.sis.util.collection.Containers;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ArgumentChecks;
@@ -38,26 +58,30 @@ import org.apache.sis.util.ComparisonMode;
 
 import static org.apache.sis.util.Utilities.deepEquals;
 
-// Branch-dependent imports
-import org.apache.sis.internal.jdk7.Objects;
-
 
 /**
  * Shared implementation for {@link DefaultConversion} and {@link DefaultTransformation}.
  * Does not need to be public, as users should handle only conversions or transformations.
  *
+ * <p><b>Note:</b> this class is not strictly equivalent to {@code <gml:AbstractSingleOperationType>}
+ * because the GML schema does not define the method and parameters in this base class. Instead, they
+ * repeat those two elements in the {@code <gml:Conversion>} and {@code <gml:Transformation>} subtypes.
+ * An other difference is that SIS does not use {@code AbstractSingleOperation} as the base class of
+ * {@link DefaultPassThroughOperation}.</p>
+ *
  * @author  Martin Desruisseaux (IRD, Geomatys)
+ * @version 0.7
  * @since   0.6
- * @version 0.6
  * @module
  */
-@XmlType(name="AbstractSingleOperationType", propOrder = {
-//  "method",   // TODO
-//  "parameters"
+@XmlType(name = "AbstractSingleOperationType", propOrder = {    // See note in class javadoc.
+    "method",
+    "parameters"
 })
 @XmlRootElement(name = "AbstractSingleOperation")
 @XmlSeeAlso({
-    DefaultConversion.class
+    DefaultConversion.class,
+    DefaultTransformation.class
 })
 class AbstractSingleOperation extends AbstractCoordinateOperation implements SingleOperation, Parameterized {
     /**
@@ -67,27 +91,28 @@ class AbstractSingleOperation extends AbstractCoordinateOperation implements Sin
 
     /**
      * The operation method.
+     *
+     * <p><b>Consider this field as final!</b>
+     * This field is modified only at unmarshalling time by {@link #setMethod(OperationMethod)}.</p>
+     *
+     * @see #getMethod()
      */
-    private final OperationMethod method;
+    private OperationMethod method;
 
     /**
      * The parameter values, or {@code null} for inferring it from the math transform.
+     *
+     * <p><b>Consider this field as final!</b>
+     * This field is non-final only for the convenience of constructors and for initialization
+     * at XML unmarshalling time by {@link #setParameters(GeneralParameterValue[])}.</p>
      */
-    private final ParameterValueGroup parameters;
-
-    /**
-     * Constructs a new object in which every attributes are set to a null value.
-     * <strong>This is not a valid object.</strong> This constructor is strictly
-     * reserved to JAXB, which will assign values to the fields using reflexion.
-     */
-    AbstractSingleOperation() {
-        method = null;
-        parameters = null;
-    }
+    ParameterValueGroup parameters;
 
     /**
      * Creates a coordinate operation from the given properties.
+     * This constructor would be public if {@code AbstractSingleOperation} was public.
      */
+    @SuppressWarnings("PublicConstructorInNonPublicClass")
     public AbstractSingleOperation(final Map<String,?>             properties,
                                    final CoordinateReferenceSystem sourceCRS,
                                    final CoordinateReferenceSystem targetCRS,
@@ -96,31 +121,36 @@ class AbstractSingleOperation extends AbstractCoordinateOperation implements Sin
                                    final MathTransform             transform)
     {
         super(properties, sourceCRS, targetCRS, interpolationCRS, transform);
-        ArgumentChecks.ensureNonNull("method", method);
-        checkDimensions(method, transform, properties);
+        ArgumentChecks.ensureNonNull("method",    method);
+        ArgumentChecks.ensureNonNull("transform", transform);
+        checkDimensions(method, ReferencingUtilities.getDimension(interpolationCRS), transform, properties);
         this.method = method;
         /*
          * Undocumented property, because SIS usually infers the parameters from the MathTransform.
          * However there is a few cases, for example the Molodenski transform, where we can not infer the
          * parameters easily because the operation is implemented by a concatenation of math transforms.
          */
-        parameters = Containers.property(properties, OperationMethods.PARAMETERS_KEY, ParameterValueGroup.class);
-        // No clone since this is a SIS internal property and SIS does not modify those values after construction.
+        parameters = Parameters.unmodifiable(Containers.property(properties, ReferencingServices.PARAMETERS_KEY, ParameterValueGroup.class));
     }
 
     /**
-     * Constructs a new operation with the same values than the specified one, together with the
-     * specified source and target CRS. While the source operation can be an arbitrary one, it is
-     * typically a defining conversion.
+     * Creates a new coordinate operation initialized from the given properties.
+     * It is caller's responsibility to:
+     *
+     * <ul>
+     *   <li>Set the following fields:<ul>
+     *     <li>{@link #sourceCRS}</li>
+     *     <li>{@link #targetCRS}</li>
+     *     <li>{@link #transform}</li>
+     *     <li>{@link #parameters}</li>
+     *   </ul></li>
+     *   <li>Invoke {@link #checkDimensions(Map)} after the above-cited fields have been set.</li>
+     * </ul>
      */
-    AbstractSingleOperation(final SingleOperation           definition,
-                            final CoordinateReferenceSystem sourceCRS,
-                            final CoordinateReferenceSystem targetCRS)
-    {
-        super(definition, sourceCRS, targetCRS);
-        method = definition.getMethod();
-        parameters = (definition instanceof AbstractSingleOperation) ?
-                ((AbstractSingleOperation) definition).parameters : definition.getParameterValues();
+    AbstractSingleOperation(final Map<String,?> properties, final OperationMethod method) {
+        super(properties);
+        ArgumentChecks.ensureNonNull("method", method);
+        this.method = method;
     }
 
     /**
@@ -130,13 +160,12 @@ class AbstractSingleOperation extends AbstractCoordinateOperation implements Sin
      *
      * <p>This constructor performs a shallow copy, i.e. the properties are not cloned.</p>
      *
-     * @param operation The coordinate operation to copy.
+     * @param  operation  the coordinate operation to copy.
      */
     protected AbstractSingleOperation(final SingleOperation operation) {
         super(operation);
         method = operation.getMethod();
-        parameters = (operation instanceof AbstractSingleOperation) ?
-                ((AbstractSingleOperation) operation).parameters : operation.getParameterValues();
+        parameters = Parameters.unmodifiable(operation.getParameterValues());
     }
 
     /**
@@ -160,19 +189,20 @@ class AbstractSingleOperation extends AbstractCoordinateOperation implements Sin
      *       is taken. Only one non-ignorable step may exist, otherwise we do not try to select any of them.</li>
      * </ul>
      *
-     * @param  method     The operation method to compare to the math transform.
-     * @param  transform  The math transform to compare to the operation method.
-     * @param  properties Properties of the caller object being constructed, used only for formatting error message.
+     * @param  method      the operation method to compare to the math transform.
+     * @param  interpDim   the number of interpolation dimension, or 0 if none.
+     * @param  transform   the math transform to compare to the operation method.
+     * @param  properties  properties of the caller object being constructed, used only for formatting error message.
      * @throws IllegalArgumentException if the number of dimensions are incompatible.
      */
-    static void checkDimensions(final OperationMethod method, MathTransform transform,
+    static void checkDimensions(final OperationMethod method, final int interpDim, MathTransform transform,
             final Map<String,?> properties) throws IllegalArgumentException
     {
         int actual = transform.getSourceDimensions();
         Integer expected = method.getSourceDimensions();
-        if (expected != null && actual > expected) {
+        if (expected != null && actual > expected + interpDim) {
             /*
-             * The given MathTransform use more dimensions than the OperationMethod.
+             * The given MathTransform uses more dimensions than the OperationMethod.
              * Try to locate one and only one sub-transform, ignoring axis swapping and scaling.
              */
             MathTransform subTransform = null;
@@ -193,19 +223,28 @@ class AbstractSingleOperation extends AbstractCoordinateOperation implements Sin
         }
         /*
          * Now verify if the MathTransform dimensions are equal to the OperationMethod ones,
-         * ignoring null java.lang.Integer instances.
+         * ignoring null java.lang.Integer instances.  We do not specify whether the method
+         * dimensions should include the interpolation dimensions or not, so we accept both.
          */
-        byte isTarget = 0; // false: wrong dimension is the source one.
-        if (expected == null || actual == expected) {
+        int isTarget = 0;               // 0 == false: the wrong dimension is the source one.
+        if (expected == null || (actual == expected) || (actual == expected + interpDim)) {
             actual = transform.getTargetDimensions();
             expected = method.getTargetDimensions();
-            if (expected == null || actual == expected) {
+            if (expected == null || (actual == expected) || (actual == expected + interpDim)) {
                 return;
             }
-            isTarget = 1; // true: wrong dimension is the target one.
+            isTarget = 1;               // 1 == true: the wrong dimension is the target one.
         }
-        throw new IllegalArgumentException(Errors.getResources(properties).getString(
-                Errors.Keys.MismatchedTransformDimension_3, isTarget, expected, actual));
+        /*
+         * At least one dimension does not match.  In principle this is an error, but we make an exception for the
+         * "Affine parametric transformation" (EPSG:9624). The reason is that while OGC define that transformation
+         * as two-dimensional, it can easily be extended to any number of dimensions. Note that Apache SIS already
+         * has special handling for this operation (a TensorParameters dedicated class, etc.)
+         */
+        if (!IdentifiedObjects.isHeuristicMatchForName(method, Constants.AFFINE)) {
+            throw new IllegalArgumentException(Resources.forProperties(properties).getString(
+                    Resources.Keys.MismatchedTransformDimension_3, isTarget, expected, actual));
+        }
     }
 
     /**
@@ -235,26 +274,37 @@ class AbstractSingleOperation extends AbstractCoordinateOperation implements Sin
     }
 
     /**
-     * Returns the operation method.
+     * Returns a description of the operation method, including a list of expected parameter names.
+     * The returned object does not contains any parameter value.
      *
-     * @return The operation method.
+     * @return a description of the operation method.
      */
     @Override
+    @XmlElement(name = "method", required = true)
     public OperationMethod getMethod() {
         return method;
     }
 
     /**
-     * Returns a description of the parameters. The default implementation tries to infer the
-     * description from the {@linkplain #getMathTransform() math transform} itself before to
-     * fallback on the {@linkplain DefaultOperationMethod#getParameters() method parameters}.
+     * Returns a description of the parameters. The default implementation performs the following choice:
+     *
+     * <ul>
+     *   <li>If parameter values were specified explicitely at construction time,
+     *       then the descriptor of those parameters is returned.</li>
+     *   <li>Otherwise if this method can infer the parameter descriptor from the
+     *       {@linkplain #getMathTransform() math transform}, then that descriptor is returned.</li>
+     *   <li>Otherwise fallback on the {@linkplain DefaultOperationMethod#getParameters() method parameters}.</li>
+     * </ul>
      *
      * <div class="note"><b>Note:</b>
      * the two parameter descriptions (from the {@code MathTransform} or from the {@code OperationMethod})
      * should be very similar. If they differ, it should be only in minor details like remarks, default
      * values or units of measurement.</div>
      *
-     * @return A description of the parameters.
+     * @return a description of the parameters.
+     *
+     * @see DefaultOperationMethod#getParameters()
+     * @see org.apache.sis.referencing.operation.transform.AbstractMathTransform#getParameterDescriptors()
      */
     @Override
     public ParameterDescriptorGroup getParameterDescriptors() {
@@ -262,16 +312,25 @@ class AbstractSingleOperation extends AbstractCoordinateOperation implements Sin
     }
 
     /**
-     * Returns the parameter values. The default implementation infers the parameter values from the
-     * {@linkplain #getMathTransform() math transform}, if possible.
+     * Returns the parameter values. The default implementation performs the following choice:
      *
-     * @return The parameter values.
+     * <ul>
+     *   <li>If parameter values were specified explicitely at construction time, then they are returned as an
+     *       {@linkplain Parameters#unmodifiable(ParameterValueGroup) unmodifiable parameter group}.</li>
+     *   <li>Otherwise if this method can infer the parameter values from the
+     *       {@linkplain #getMathTransform() math transform}, then those parameters are returned.</li>
+     *   <li>Otherwise throw {@link org.apache.sis.util.UnsupportedImplementationException}.</li>
+     * </ul>
+     *
+     * @return the parameter values.
      * @throws UnsupportedOperationException if the parameter values can not be determined
      *         for the current math transform implementation.
+     *
+     * @see org.apache.sis.referencing.operation.transform.AbstractMathTransform#getParameterValues()
      */
     @Override
     public ParameterValueGroup getParameterValues() {
-        return (parameters != null) ? parameters.clone() : super.getParameterValues();
+        return (parameters != null) ? parameters : super.getParameterValues();
     }
 
     /**
@@ -285,7 +344,7 @@ class AbstractSingleOperation extends AbstractCoordinateOperation implements Sin
     @Override
     public boolean equals(final Object object, final ComparisonMode mode) {
         if (object == this) {
-            return true;   // Slight optimization.
+            return true;                            // Slight optimization.
         }
         if (!super.equals(object, mode)) {
             return false;
@@ -305,8 +364,8 @@ class AbstractSingleOperation extends AbstractCoordinateOperation implements Sin
         /*
          * We consider the operation method as metadata. One could argue that OperationMethod's 'sourceDimension' and
          * 'targetDimension' are not metadata, but their values should be identical to the 'sourceCRS' and 'targetCRS'
-         * dimensions, already checked below. We could also argue that 'OperationMethod.parameters' are not metadata,
-         * but their values should have been taken in account for the MathTransform creation, compared below.
+         * dimensions, already checked above. We could also argue that 'OperationMethod.parameters' are not metadata,
+         * but their values should have been taken in account for the MathTransform creation, compared above.
          *
          * Comparing the MathTransforms instead of parameters avoid the problem of implicit parameters. For example in
          * a ProjectedCRS, the "semiMajor" and "semiMinor" axis lengths are sometime provided as explicit parameters,
@@ -327,5 +386,141 @@ class AbstractSingleOperation extends AbstractCoordinateOperation implements Sin
          * (e.g. "Mercator (1SP)" and "Mercator (2SP)" when the parameters are properly chosen).
          */
         return true;
+    }
+
+
+
+
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+    ////////                                                                                  ////////
+    ////////                               XML support with JAXB                              ////////
+    ////////                                                                                  ////////
+    ////////        The following methods are invoked by JAXB using reflection (even if       ////////
+    ////////        they are private) or are helpers for other methods invoked by JAXB.       ////////
+    ////////        Those methods can be safely removed if Geographic Markup Language         ////////
+    ////////        (GML) support is not needed.                                              ////////
+    ////////                                                                                  ////////
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Constructs a new object in which every attributes are set to a null value.
+     * <strong>This is not a valid object.</strong> This constructor is strictly
+     * reserved to JAXB, which will assign values to the fields using reflexion.
+     */
+    AbstractSingleOperation() {
+        /*
+         * The method is mandatory for SIS working. We do not verify its presence here because the verification
+         * would have to be done in an 'afterMarshal(…)' method and throwing an exception in that method causes
+         * the whole unmarshalling to fail. But the CC_CoordinateOperation adapter does some verifications.
+         */
+    }
+
+    /**
+     * Invoked by JAXB at unmarshalling time.
+     *
+     * @see #getMethod()
+     */
+    private void setMethod(final OperationMethod value) {
+        if (method == null) {
+            method = value;
+        } else {
+            MetadataUtilities.propertyAlreadySet(AbstractSingleOperation.class, "setMethod", "method");
+        }
+    }
+
+    /**
+     * Invoked by JAXB for getting the parameters to marshal. This method usually marshals the sequence
+     * of parameters without their {@link ParameterValueGroup} wrapper, because GML is defined that way.
+     * The {@code ParameterValueGroup} wrapper is a GeoAPI addition done for allowing usage of its
+     * methods as a convenience (e.g. {@link ParameterValueGroup#parameter(String)}).
+     *
+     * <p>However it could happen that the user really wanted to specify a {@code ParameterValueGroup} as the
+     * sole {@code <gml:parameterValue>} element. We currently have no easy way to distinguish those cases.
+     * See {@link DefaultOperationMethod#getDescriptors()} for more discussion.</p>
+     *
+     * @see DefaultOperationMethod#getDescriptors()
+     */
+    @XmlElement(name = "parameterValue")
+    private GeneralParameterValue[] getParameters() {
+        if (parameters != null) {
+            final List<GeneralParameterValue> values = parameters.values();
+            if (values != null) {      // Paranoiac check (should not be allowed).
+                return CC_OperationMethod.filterImplicit(values.toArray(new GeneralParameterValue[values.size()]));
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Invoked by JAXB for setting the unmarshalled parameters.
+     * This method wraps the given parameters in a {@link ParameterValueGroup},
+     * unless the given descriptors was already a {@code ParameterValueGroup}.
+     *
+     * @see DefaultOperationMethod#setDescriptors
+     */
+    private void setParameters(final GeneralParameterValue[] values) {
+        if (parameters == null) {
+            if (!(method instanceof DefaultOperationMethod)) {  // May be a non-null proxy if defined only by xlink:href.
+                throw new IllegalStateException(Errors.format(Errors.Keys.MissingValueForProperty_1, "method"));
+            }
+            /*
+             * The descriptors in the <gml:method> element do not know the class of parameter value
+             * (String, Integer, Double, double[], etc.) because this information is not part of GML.
+             * But this information is available to descriptors in the <gml:parameterValue> elements
+             * because Apache SIS infers the type from the actual parameter value. The 'merge' method
+             * below puts those information together.
+             */
+            final Map<GeneralParameterDescriptor,GeneralParameterDescriptor> replacements = new IdentityHashMap<>(4);
+            final GeneralParameterDescriptor[] merged = CC_OperationParameterGroup.merge(
+                    method.getParameters().descriptors(),
+                    Parameters.getDescriptors(values),
+                    replacements);
+            /*
+             * Sometime Apache SIS recognizes the OperationMethod as one of its build-in methods and use the
+             * build-in parameters. In such cases the unmarshalled ParameterDescriptorGroup can be used as-in.
+             * But if the above 'merge' method has changed any parameter descriptor, then we will need to create
+             * a new ParameterDescriptorGroup with the new descriptors.
+             */
+            for (int i=0; i<merged.length; i++) {
+                if (merged[i] != values[i].getDescriptor()) {
+                    ((DefaultOperationMethod) method).updateDescriptors(merged);
+                    // At this point, method.getParameters() may have changed.
+                    break;
+                }
+            }
+            /*
+             * Sometime the descriptors associated to ParameterValues need to be updated, for example because
+             * the descriptors in OperationMethod contain more information (remarks, etc.). Those updates, if
+             * needed, are applied on-the-fly by the copy operation below, using the information provided by
+             * the 'replacements' map.
+             */
+            parameters = new DefaultParameterValueGroup(method.getParameters());
+            CC_OperationMethod.store(values, parameters.values(), replacements);
+            parameters = Parameters.unmodifiable(parameters);
+        } else {
+            MetadataUtilities.propertyAlreadySet(AbstractSingleOperation.class, "setParameters", "parameterValue");
+        }
+    }
+
+    /**
+     * Invoked by JAXB after unmarshalling. This method needs information provided by:
+     *
+     * <ul>
+     *   <li>{@link #setSource(CoordinateReferenceSystem)}</li>
+     *   <li>{@link #setTarget(CoordinateReferenceSystem)}</li>
+     *   <li>{@link #setParameters(GeneralParameterValue[])}</li>
+     * </ul>
+     *
+     * @see <a href="http://issues.apache.org/jira/browse/SIS-291">SIS-291</a>
+     */
+    private void afterUnmarshal(Unmarshaller unmarshaller, Object parent) {
+        final CoordinateReferenceSystem sourceCRS = super.getSourceCRS();
+        final CoordinateReferenceSystem targetCRS = super.getTargetCRS();
+        if (transform == null && sourceCRS != null && targetCRS != null && parameters != null) try {
+            transform = DefaultFactories.forBuildin(MathTransformFactory.class)
+                    .createBaseToDerived(sourceCRS, parameters, targetCRS.getCoordinateSystem());
+        } catch (FactoryException e) {
+            Context.warningOccured(Context.current(), AbstractSingleOperation.class, "afterUnmarshal", e, true);
+        }
     }
 }

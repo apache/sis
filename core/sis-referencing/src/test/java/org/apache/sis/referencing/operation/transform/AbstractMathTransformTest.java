@@ -35,8 +35,8 @@ import static org.junit.Assert.*;
  * Tests the {@link AbstractMathTransformTest} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.5
  * @version 0.5
+ * @since   0.5
  * @module
  */
 @DependsOn(IterationStrategyTest.class)
@@ -47,7 +47,7 @@ public final strictfp class AbstractMathTransformTest extends TestCase {
      * method as the reference implementation, assuming that the later has been correctly tested
      * by {@link IterationStrategyTest}.
      *
-     * @throws TransformException Should never occur.
+     * @throws TransformException should never occur.
      */
     @Test
     public void testTransforms() throws TransformException {
@@ -206,13 +206,17 @@ public final strictfp class AbstractMathTransformTest extends TestCase {
                                  " failures among " + numPts + " points = " + 100*count/numPts +
                                  "%) doesn't match the expected one for a statistitical frequency of " +
                                  100/denominator + "% of failures:", expected, completed);
-                    // TIP: if the above assertion fails, make sure that the frequencies declared
-                    //      in the 'denominators' array are not to close to the cutoff frequency.
+                    /*
+                     * TIP: if the above assertion fails, make sure that the frequencies declared
+                     *      in the 'denominators' array are not to close to the cutoff frequency.
+                     */
                     if (completed) {
                         completedCount++;
                     } else {
-                        // If the transform has given up, then there is no guarantee about the state
-                        // of the destination array so we can not continue the tests in this run.
+                        /*
+                         * If the transform has given up, then there is no guarantee about the state
+                         * of the destination array so we can not continue the tests in this run.
+                         */
                         tr.failures.clear();
                         abandonCount++;
                         continue;

@@ -16,13 +16,10 @@
  */
 package org.apache.sis.parameter;
 
-import javax.measure.unit.Unit;
+import javax.measure.Unit;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.parameter.GeneralParameterDescriptor;
-import org.opengis.parameter.ParameterValueGroup;
-import org.opengis.referencing.cs.CoordinateSystem;             // For javadoc
-import org.opengis.referencing.crs.CoordinateReferenceSystem;   // For javadoc
 import org.apache.sis.measure.MeasurementRange;
 import org.apache.sis.measure.NumberRange;
 import org.apache.sis.measure.Range;
@@ -76,22 +73,22 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  *   // Constructs the list of parameters.
  *   ParameterDescriptor<?>[] parameters = {
  *       builder.addName("Latitude of natural origin")              // Name in the default namespace ("EPSG" in this example).
- *              .createBounded( -80,  +84, 0, NonSI.DEGREE_ANGLE),  // Latitude of Mercator projection can not go to the poles.
+ *              .createBounded( -80,  +84, 0, Units.DEGREE),        // Latitude of Mercator projection can not go to the poles.
  *
  *       builder.addIdentifier("8802")                              // Primary key in default namespace ("EPSG" in this example).
  *              .addName("Longitude of natural origin")             // Primary name in default namespace ("EPSG" in this example).
  *              .addName(Citations.OGC, "central_meridian")         // First alias in "OGC" namespace.
  *              .addName(Citations.GEOTIFF, "NatOriginLong")        // Second alias in "GeoTIFF" namespace.
- *              .createBounded(-180, +180, 0, NonSI.DEGREE_ANGLE),  // Projection is valid on all the longitude range (±180°).
+ *              .createBounded(-180, +180, 0, Units.DEGREE),        // Projection is valid on all the longitude range (±180°).
  *
  *       builder.addName("Scale factor at natural origin")
- *              .createStrictlyPositive(1, Unit.ONE),
+ *              .createStrictlyPositive(1, Units.UNITY),
  *
  *       builder.addName("False easting")
- *              .create(0, SI.METRE),
+ *              .create(0, Units.METRE),
  *
  *       builder.addName("False northing")
- *              .create(0, SI.METRE)
+ *              .create(0, Units.METRE)
  *   };
  *
  *   // Put all above parameters in a group.
@@ -107,8 +104,8 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  * }
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.4
  * @version 0.6
+ * @since   0.4
  * @module
  */
 public class ParameterBuilder extends Builder<ParameterBuilder> {
@@ -123,6 +120,20 @@ public class ParameterBuilder extends Builder<ParameterBuilder> {
      * Creates a new builder.
      */
     public ParameterBuilder() {
+    }
+
+    /**
+     * Creates a new builder initialized to properties of the given object.
+     *
+     * @param descriptor  the descriptor from which to inherit properties, or {@code null}.
+     *
+     * @since 0.6
+     */
+    public ParameterBuilder(final GeneralParameterDescriptor descriptor) {
+        super(descriptor);
+        if (descriptor != null) {
+            required = descriptor.getMinimumOccurs() != 0;
+        }
     }
 
     /**
@@ -148,16 +159,28 @@ public class ParameterBuilder extends Builder<ParameterBuilder> {
      * Boxes the given value if non-NaN, or returns {@code null} if the value is {@code NaN}.
      */
     private static Double valueOf(final double value) {
-        return Double.isNaN(value) ? null : Double.valueOf(value);
+        return Double.isNaN(value) ? null : value;
+    }
+
+    /**
+     * Creates a descriptor for values of the given type without domain restriction.
+     *
+     * @param  <T>           the compile-time type of the {@code valueClass} argument.
+     * @param  valueClass    the class that describe the type of the parameter values.
+     * @param  defaultValue  the default value for the parameter, or {@code null} if none.
+     * @return the parameter descriptor for the given default value and unit.
+     */
+    public <T> ParameterDescriptor<T> create(final Class<T> valueClass, final T defaultValue) {
+        return create(valueClass, null, null, defaultValue);
     }
 
     /**
      * Creates a descriptor for floating point values without domain restriction.
      * All {@code double} values are considered valid.
      *
-     * @param  defaultValue The default value for the parameter, or {@link Double#NaN} if none.
-     * @param  unit         The default unit, or {@code null} if none.
-     * @return The parameter descriptor for the given default value and unit.
+     * @param  defaultValue  the default value for the parameter, or {@link Double#NaN} if none.
+     * @param  unit          the default unit, or {@code null} if none.
+     * @return the parameter descriptor for the given default value and unit.
      */
     public ParameterDescriptor<Double> create(final double defaultValue, final Unit<?> unit) {
         final Range<Double> valueDomain;
@@ -170,24 +193,12 @@ public class ParameterBuilder extends Builder<ParameterBuilder> {
     }
 
     /**
-     * Creates a descriptor for values of the given type without domain restriction.
-     *
-     * @param  <T>          The compile-time type of the {@code valueClass} argument.
-     * @param  valueClass   The class that describe the type of the parameter values.
-     * @param  defaultValue The default value for the parameter, or {@code null} if none.
-     * @return The parameter descriptor for the given default value and unit.
-     */
-    public <T> ParameterDescriptor<T> create(final Class<T> valueClass, final T defaultValue) {
-        return create(valueClass, null, null, defaultValue);
-    }
-
-    /**
      * Creates a descriptor for floating point values greater than zero.
      * The zero value is not considered valid. There is no maximal value.
      *
-     * @param  defaultValue The default value for the parameter, or {@link Double#NaN} if none.
-     * @param  unit         The default unit, or {@code null} if none.
-     * @return The parameter descriptor for the given default value and unit.
+     * @param  defaultValue  the default value for the parameter, or {@link Double#NaN} if none.
+     * @param  unit          the default unit, or {@code null} if none.
+     * @return the parameter descriptor for the given default value and unit.
      */
     public ParameterDescriptor<Double> createStrictlyPositive(final double defaultValue, final Unit<?> unit) {
         final Range<Double> valueDomain;
@@ -202,11 +213,11 @@ public class ParameterBuilder extends Builder<ParameterBuilder> {
     /**
      * Creates a descriptor for floating point values restricted to the given domain.
      *
-     * @param  minimumValue The minimum parameter value (inclusive), or {@link Double#NEGATIVE_INFINITY} if none.
-     * @param  maximumValue The maximum parameter value (inclusive), or {@link Double#POSITIVE_INFINITY} if none.
-     * @param  defaultValue The default value for the parameter, or {@link Double#NaN} if none.
-     * @param  unit         The unit for default, minimum and maximum values, or {@code null} if none.
-     * @return The parameter descriptor for the given domain of values.
+     * @param  minimumValue  the minimum parameter value (inclusive), or {@link Double#NEGATIVE_INFINITY} if none.
+     * @param  maximumValue  the maximum parameter value (inclusive), or {@link Double#POSITIVE_INFINITY} if none.
+     * @param  defaultValue  the default value for the parameter, or {@link Double#NaN} if none.
+     * @param  unit          the unit for default, minimum and maximum values, or {@code null} if none.
+     * @return the parameter descriptor for the given domain of values.
      */
     public ParameterDescriptor<Double> createBounded(final double minimumValue, final double maximumValue,
             final double defaultValue, final Unit<?> unit)
@@ -225,10 +236,10 @@ public class ParameterBuilder extends Builder<ParameterBuilder> {
     /**
      * Creates a descriptor for integer values restricted to the given domain.
      *
-     * @param  minimumValue The minimum parameter value (inclusive).
-     * @param  maximumValue The maximum parameter value (inclusive).
-     * @param  defaultValue The default value for the parameter.
-     * @return The parameter descriptor for the given domain of values.
+     * @param  minimumValue  the minimum parameter value (inclusive).
+     * @param  maximumValue  the maximum parameter value (inclusive).
+     * @param  defaultValue  the default value for the parameter.
+     * @return the parameter descriptor for the given domain of values.
      */
     public ParameterDescriptor<Integer> createBounded(final int minimumValue, final int maximumValue,
             final int defaultValue)
@@ -239,12 +250,12 @@ public class ParameterBuilder extends Builder<ParameterBuilder> {
     /**
      * Creates a descriptor for values of the given type restricted to the given domain.
      *
-     * @param  <T>          The compile-time type of the {@code valueClass} argument.
-     * @param  valueClass   The class that describe the type of the parameter values.
-     * @param  minimumValue The minimum parameter value (inclusive), or {@code null} if none.
-     * @param  maximumValue The maximum parameter value (inclusive), or {@code null} if none.
-     * @param  defaultValue The default value for the parameter, or {@code null} if none.
-     * @return The parameter descriptor for the given domain of values.
+     * @param  <T>           the compile-time type of the {@code valueClass} argument.
+     * @param  valueClass    the class that describe the type of the parameter values.
+     * @param  minimumValue  the minimum parameter value (inclusive), or {@code null} if none.
+     * @param  maximumValue  the maximum parameter value (inclusive), or {@code null} if none.
+     * @param  defaultValue  the default value for the parameter, or {@code null} if none.
+     * @return the parameter descriptor for the given domain of values.
      */
     @SuppressWarnings({"unchecked", "rawtypes"})
     public <T extends Comparable<? super T>> ParameterDescriptor<T> createBounded(final Class<T> valueClass,
@@ -257,7 +268,7 @@ public class ParameterBuilder extends Builder<ParameterBuilder> {
         } else if (Number.class.isAssignableFrom(valueClass)) {
             valueDomain = new NumberRange((Class) valueClass, (Number) minimumValue, true, (Number) maximumValue, true);
         } else {
-            valueDomain = new Range<T>(valueClass, minimumValue, true, maximumValue, true);
+            valueDomain = new Range<>(valueClass, minimumValue, true, maximumValue, true);
         }
         return create(valueClass, valueDomain, null, defaultValue);
     }
@@ -266,10 +277,10 @@ public class ParameterBuilder extends Builder<ParameterBuilder> {
      * Creates a descriptor for values in the domain represented by the given {@code Range} object.
      * This method allows to specify whether the minimum and maximum values are inclusive or not.
      *
-     * @param  <T>          The type of the parameter values.
-     * @param  valueDomain  The minimum value, maximum value and unit of measurement.
-     * @param  defaultValue The default value for the parameter, or {@code null} if none.
-     * @return The parameter descriptor for the given domain of values.
+     * @param  <T>           the type of the parameter values.
+     * @param  valueDomain   the minimum value, maximum value and unit of measurement.
+     * @param  defaultValue  the default value for the parameter, or {@code null} if none.
+     * @return the parameter descriptor for the given domain of values.
      */
     public <T extends Comparable<? super T>> ParameterDescriptor<T> createBounded(
             final Range<T> valueDomain, final T defaultValue)
@@ -286,12 +297,12 @@ public class ParameterBuilder extends Builder<ParameterBuilder> {
      * a {@linkplain org.opengis.util.CodeList code list} or {@linkplain Enum enumeration} subset.
      * It is not necessary to provide this property when all values from the code list or enumeration are valid.</p>
      *
-     * @param  <T>          The compile-time type of the {@code valueClass} argument.
-     * @param  valueClass   The class that describe the type of the parameter values.
-     * @param  validValues  A finite set of valid values (usually from a code list or enumeration)
-     *                      or {@code null} if it doesn't apply.
-     * @param  defaultValue The default value for the parameter, or {@code null} if none.
-     * @return The parameter descriptor for the given set of valid values.
+     * @param  <T>           the compile-time type of the {@code valueClass} argument.
+     * @param  valueClass    the class that describe the type of the parameter values.
+     * @param  validValues   a finite set of valid values (usually from a code list or enumeration)
+     *                       or {@code null} if it doesn't apply.
+     * @param  defaultValue  the default value for the parameter, or {@code null} if none.
+     * @return the parameter descriptor for the given set of valid values.
      */
     public <T> ParameterDescriptor<T> createEnumerated(final Class<T> valueClass, final T[] validValues, final T defaultValue) {
         ensureNonNull("valueClass", valueClass);
@@ -308,7 +319,7 @@ public class ParameterBuilder extends Builder<ParameterBuilder> {
         final ParameterDescriptor<T> descriptor;
         onCreate(false);
         try {
-            descriptor = new DefaultParameterDescriptor<T>(properties, required ? 1 : 0, 1,
+            descriptor = new DefaultParameterDescriptor<>(properties, required ? 1 : 0, 1,
                     valueClass, valueDomain, validValues, defaultValue);
         } finally {
             onCreate(true);
@@ -319,13 +330,13 @@ public class ParameterBuilder extends Builder<ParameterBuilder> {
     /**
      * Creates a descriptor group for the given cardinality and parameters.
      *
-     * @param  minimumOccurs The {@linkplain DefaultParameterDescriptorGroup#getMinimumOccurs() minimum}
-     *                       number of times that values for this parameter group are required.
-     * @param  maximumOccurs The {@linkplain DefaultParameterDescriptorGroup#getMaximumOccurs() maximum}
-     *                       number of times that values for this parameter group are required.
-     * @param  parameters    The {@linkplain DefaultParameterDescriptorGroup#descriptors() parameter descriptors}
-     *                       for the group to create.
-     * @return The parameter descriptor group.
+     * @param  minimumOccurs  the {@linkplain DefaultParameterDescriptorGroup#getMinimumOccurs() minimum}
+     *                        number of times that values for this parameter group are required.
+     * @param  maximumOccurs  the {@linkplain DefaultParameterDescriptorGroup#getMaximumOccurs() maximum}
+     *                        number of times that values for this parameter group are required.
+     * @param  parameters     the {@linkplain DefaultParameterDescriptorGroup#descriptors() parameter descriptors}
+     *                        for the group to create.
+     * @return the parameter descriptor group.
      */
     public ParameterDescriptorGroup createGroup(final int minimumOccurs, final int maximumOccurs,
             final GeneralParameterDescriptor... parameters)
@@ -345,12 +356,37 @@ public class ParameterBuilder extends Builder<ParameterBuilder> {
      * {@link #createGroup(int, int, GeneralParameterDescriptor[])} with a cardinality of [0 … 1]
      * or [1 … 1] depending on the value given to the last call to {@link #setRequired(boolean)}.
      *
-     * @param  parameters The {@linkplain DefaultParameterDescriptorGroup#descriptors() parameter descriptors}
+     * @param  parameters  the {@linkplain DefaultParameterDescriptorGroup#descriptors() parameter descriptors}
      *         for the group to create.
-     * @return The parameter descriptor group.
+     * @return the parameter descriptor group.
      */
     public ParameterDescriptorGroup createGroup(final GeneralParameterDescriptor... parameters) {
         return createGroup(required ? 1 : 0, 1, parameters);
+    }
+
+    /**
+     * Creates a descriptor group with the same parameters than another group. This is a convenience constructor
+     * for operations that expect the same parameters than another operation, but perform a different process.
+     *
+     * <div class="note"><b>Example:</b>
+     * the various <cite>"Coordinate Frame Rotation"</cite> variants (EPSG codes 1032, 1038 and 9607)
+     * expect the same parameters than their <cite>"Position Vector transformation"</cite> counterpart
+     * (EPSG codes 1033, 1037 and 9606) but perform the rotation in the opposite direction.</div>
+     *
+     * @param  parameters  the existing group from which to copy the parameters.
+     * @return the parameter descriptor group.
+     *
+     * @since 0.7
+     */
+    public ParameterDescriptorGroup createGroupWithSameParameters(final ParameterDescriptorGroup parameters) {
+        final ParameterDescriptorGroup group;
+        onCreate(false);
+        try {
+            group = new DefaultParameterDescriptorGroup(properties, parameters);
+        } finally {
+            onCreate(true);
+        }
+        return group;
     }
 
     /**
@@ -371,7 +407,7 @@ public class ParameterBuilder extends Builder<ParameterBuilder> {
      *   <tr><td>{@code "semi_major"}</td>         <td>Always</td>     <td>Standard parameter defined by WKT 1.</td></tr>
      *   <tr><td>{@code "semi_minor"}</td>         <td>Always</td>     <td>Standard parameter defined by WKT 1.</td></tr>
      *   <tr><td>{@code "earth_radius"}</td>       <td>Hidden</td>     <td>Mapped to {@code "semi_major"} and {@code "semi_minor"} parameters.</td></tr>
-     *   <tr><td>{@code "inverse_flattening"}</td> <td>Hidden</td>     <td>Mapped to {@code "semi_major"} and {@code "semi_minor"} parameters.</td></tr>
+     *   <tr><td>{@code "inverse_flattening"}</td> <td>Hidden</td>     <td>Computed from the {@code "semi_major"} and {@code "semi_minor"} parameters.</td></tr>
      *   <tr><td>{@code "standard_parallel"}</td>  <td>Hidden</td>
      *     <td>Array of 1 or 2 elements mapped to {@code "standard_parallel_1"} and {@code "standard_parallel_2"}.</td></tr>
      * </table>
@@ -385,11 +421,9 @@ public class ParameterBuilder extends Builder<ParameterBuilder> {
      * minimum} and {@linkplain DefaultParameterDescriptorGroup#getMaximumOccurs() maximum occurrence} of 1,
      * regardless the value given to {@link #setRequired(boolean)}.
      *
-     * @param  parameters The {@linkplain DefaultParameterDescriptorGroup#descriptors() parameter descriptors}
+     * @param  parameters the {@linkplain DefaultParameterDescriptorGroup#descriptors() parameter descriptors}
      *         for the group to create.
-     * @return The parameter descriptor group for a map projection.
-     *
-     * @see org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory#createBaseToDerived(CoordinateReferenceSystem, ParameterValueGroup, CoordinateSystem)
+     * @return the parameter descriptor group for a map projection.
      *
      * @since 0.6
      */

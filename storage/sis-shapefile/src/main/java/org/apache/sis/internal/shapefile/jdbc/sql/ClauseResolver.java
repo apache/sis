@@ -16,6 +16,7 @@
  */
 package org.apache.sis.internal.shapefile.jdbc.sql;
 
+import java.util.Objects;
 import java.util.logging.Level;
 
 import org.apache.sis.internal.shapefile.AutoChecker;
@@ -24,7 +25,6 @@ import org.apache.sis.internal.shapefile.jdbc.resultset.*;
 
 // Branch-dependent imports
 import org.apache.sis.internal.jdk8.Function;
-import org.apache.sis.internal.jdk7.Objects;
 import org.apache.sis.util.Numbers;
 
 
@@ -49,9 +49,9 @@ public abstract class ClauseResolver extends AutoChecker {
      * @param op The operator to apply.
      */
     public ClauseResolver(Object cmp1, Object cmp2, String op) {
-        comparand1 = cmp1;
-        comparand2 = cmp2;
-        operator = op;
+        this.comparand1 = cmp1;
+        this.comparand2 = cmp2;
+        this.operator = op;
     }
 
     /**
@@ -59,7 +59,7 @@ public abstract class ClauseResolver extends AutoChecker {
      * @return First comparand.
      */
     public Object getComparand1() {
-        return comparand1;
+        return this.comparand1;
     }
 
     /**
@@ -67,7 +67,7 @@ public abstract class ClauseResolver extends AutoChecker {
      * @return Second comparand.
      */
     public Object getComparand2() {
-        return comparand2;
+        return this.comparand2;
     }
 
     /**
@@ -75,7 +75,7 @@ public abstract class ClauseResolver extends AutoChecker {
      * @return Operator.
      */
     public String getOperator() {
-        return operator;
+        return this.operator;
     }
 
     /**
@@ -83,7 +83,7 @@ public abstract class ClauseResolver extends AutoChecker {
      * @param comparand First comparand.
      */
     public void setComparand1(Object comparand) {
-        comparand1 = comparand;
+        this.comparand1 = comparand;
     }
 
     /**
@@ -91,7 +91,7 @@ public abstract class ClauseResolver extends AutoChecker {
      * @param comparand Second comparand.
      */
     public void setComparand2(Object comparand) {
-        comparand2 = comparand;
+        this.comparand2 = comparand;
     }
 
     /**
@@ -99,7 +99,7 @@ public abstract class ClauseResolver extends AutoChecker {
      * @param op Operator.
      */
     public void setOperator(String op) {
-        operator = op;
+        this.operator = op;
     }
 
     /**
@@ -116,24 +116,26 @@ public abstract class ClauseResolver extends AutoChecker {
      * @throws SQLConnectionClosedException if the connection is closed.
      */
     public boolean isVerified(DBFRecordBasedResultSet rs) throws SQLInvalidStatementException, SQLIllegalParameterException, SQLNoSuchFieldException, SQLUnsupportedParsingFeatureException, SQLConnectionClosedException, SQLNotNumericException, SQLNotDateException {
-        final String v = getOperator();
-        if (v.equals("="))
-            return compare(rs) == 0;
+        switch(getOperator()) {
+            case "=" :
+                return compare(rs) == 0;
 
-        if (v.equals(">"))
-            return compare(rs) > 0;
+            case ">" :
+                return compare(rs) > 0;
 
-        if (v.equals(">="))
-            return compare(rs) >= 0;
+            case ">=" :
+                return compare(rs) >= 0;
 
-        if (v.equals("<"))
-            return compare(rs) < 0;
+            case "<" :
+                return compare(rs) < 0;
 
-        if (v.equals("<="))
-            return compare(rs) <= 0;
+            case "<=" :
+                return compare(rs) <= 0;
 
-        String message = format(Level.WARNING, "excp.invalid_statement_operator", getOperator(), rs.getSQL());
-        throw new SQLInvalidStatementException(message, rs.getSQL(), rs.getFile());
+            default :
+                 String message = format(Level.WARNING, "excp.invalid_statement_operator", getOperator(), rs.getSQL());
+                 throw new SQLInvalidStatementException(message, rs.getSQL(), rs.getFile());
+        }
     }
 
     /**
@@ -309,11 +311,8 @@ public abstract class ClauseResolver extends AutoChecker {
         }
         else {
             // The string designs a field name, return its value.
-            DBFBuiltInMemoryResultSetForColumnsListing field = (DBFBuiltInMemoryResultSetForColumnsListing)rs.getFieldDesc(text, rs.getSQL());
-            try {
+            try(DBFBuiltInMemoryResultSetForColumnsListing field = (DBFBuiltInMemoryResultSetForColumnsListing)rs.getFieldDesc(text, rs.getSQL())) {
                 return valueOf(rs, field);
-            } finally {
-                field.close();
             }
         }
     }
@@ -332,51 +331,52 @@ public abstract class ClauseResolver extends AutoChecker {
     private Object valueOf(DBFRecordBasedResultSet rs, DBFBuiltInMemoryResultSetForColumnsListing field) throws SQLConnectionClosedException, SQLNoSuchFieldException, SQLNotNumericException, SQLUnsupportedParsingFeatureException, SQLNotDateException {
         String columnName = field.getString("COLUMN_NAME");
 
-        final String v = field.getString("TYPE_NAME");
-        if (v.equals("AUTO_INCREMENT"))
-            return rs.getInt(columnName);
+        switch(field.getString("TYPE_NAME")) {
+            case "AUTO_INCREMENT":
+                return rs.getInt(columnName);
 
-        if (v.equals("CHAR"))
-            return rs.getString(columnName);
+            case "CHAR":
+                return rs.getString(columnName);
 
-        if (v.equals("INTEGER"))
-            return rs.getInt(columnName);
+            case "INTEGER":
+                return rs.getInt(columnName);
 
-        if (v.equals("DATE"))
-            return rs.getDate(columnName);
+            case "DATE":
+                return rs.getDate(columnName);
 
-        if (v.equals("DOUBLE"))
-            return rs.getDouble(columnName);
+            case "DOUBLE":
+                return rs.getDouble(columnName);
 
-        if (v.equals("FLOAT"))
-            return rs.getFloat(columnName);
+            case "FLOAT":
+                return rs.getFloat(columnName);
 
 
-        if (v.equals("DECIMAL")) {
-            // Choose Integer or Long type, if no decimal and that the field is not to big.
-            if (field.getInt("DECIMAL_DIGITS") == 0 && field.getInt("COLUMN_SIZE") <= 18) {
-                if (field.getInt("COLUMN_SIZE") <= 9)
-                    return rs.getInt(columnName);
-                else
-                    return rs.getLong(columnName);
+            case "DECIMAL": {
+                // Choose Integer or Long type, if no decimal and that the field is not to big.
+                if (field.getInt("DECIMAL_DIGITS") == 0 && field.getInt("COLUMN_SIZE") <= 18) {
+                    if (field.getInt("COLUMN_SIZE") <= 9)
+                        return rs.getInt(columnName);
+                    else
+                        return rs.getLong(columnName);
+                }
+
+                return rs.getDouble(columnName);
             }
 
-            return rs.getDouble(columnName);
-        }
+            case "BOOLEAN":
+            case "CURRENCY":
+            case "DATETIME":
+            case "TIMESTAMP":
+            case "MEMO":
+            case "PICTURE":
+            case "VARIFIELD":
+            case "VARIANT":
+            case "UNKNOWN":
+                String message = format(Level.WARNING, "excp.unparsable_field_type", columnName, field.getString("TYPE_NAME"), rs.getSQL());
+                throw new SQLUnsupportedParsingFeatureException(message, rs.getSQL(), rs.getFile());
 
-        if (v.equals("BOOLEAN") ||
-            v.equals("CURRENCY") ||
-            v.equals("DATETIME") ||
-            v.equals("TIMESTAMP") ||
-            v.equals("MEMO") ||
-            v.equals("PICTURE") ||
-            v.equals("VARIFIELD") ||
-            v.equals("VARIANT") ||
-            v.equals("UNKNOWN"))
-        {
-            String message = format(Level.WARNING, "excp.unparsable_field_type", columnName, field.getString("TYPE_NAME"), rs.getSQL());
-            throw new SQLUnsupportedParsingFeatureException(message, rs.getSQL(), rs.getFile());
+            default:
+                throw new RuntimeException(format(Level.WARNING, "assert.unknown_field_type", field.getString("TYPE_NAME")));
         }
-        throw new RuntimeException(format(Level.WARNING, "assert.unknown_field_type", field.getString("TYPE_NAME")));
     }
 }

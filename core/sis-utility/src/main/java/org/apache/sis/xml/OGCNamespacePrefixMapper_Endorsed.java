@@ -30,8 +30,8 @@ import com.sun.xml.bind.marshaller.NamespacePrefixMapper;
  * This final class is immutable and thus inherently thread-safe.
  *
  * @author  Cédric Briançon (Geomatys)
- * @since   0.3
  * @version 0.3
+ * @since   0.3
  * @module
  */
 final class OGCNamespacePrefixMapper_Endorsed extends NamespacePrefixMapper {
@@ -44,7 +44,7 @@ final class OGCNamespacePrefixMapper_Endorsed extends NamespacePrefixMapper {
      * Creates a new prefix mapper.
      * This constructor is invoked by reflection and needs to be public for that reason.
      *
-     * @param defaultNamespace The namespace which doesn't need prefix, or {@code null} if none.
+     * @param defaultNamespace the namespace which doesn't need prefix, or {@code null} if none.
      */
     public OGCNamespacePrefixMapper_Endorsed(final String defaultNamespace) {
         this.defaultNamespace = defaultNamespace;
@@ -53,11 +53,12 @@ final class OGCNamespacePrefixMapper_Endorsed extends NamespacePrefixMapper {
     /**
      * Returns a preferred prefix for the given namespace URI.
      *
-     * @param  namespace  The namespace URI for which the prefix needs to be found.
-     * @param  suggestion The suggested prefix, returned if the given namespace is not recognized.
-     * @param  required   {@code true} if this method is not allowed to return the empty string.
-     * @return The prefix inferred from the namespace URI.
+     * @param  namespace   the namespace URI for which the prefix needs to be found.
+     * @param  suggestion  the suggested prefix, returned if the given namespace is not recognized.
+     * @param  required    {@code true} if this method is not allowed to return the empty string.
+     * @return the prefix inferred from the namespace URI.
      */
+    @Override
     public String getPreferredPrefix(final String namespace, final String suggestion, final boolean required) {
         /*
          * If the given namespace is the one defined as default namespace, this implementation

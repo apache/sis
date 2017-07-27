@@ -34,8 +34,8 @@ import static org.apache.sis.util.collection.TableColumn.*;
  * Tests the {@link TreeTableFormat} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.3
+ * @since   0.3
  * @module
  */
 @DependsOn({
@@ -68,7 +68,7 @@ public final strictfp class TreeTableFormatTest extends TestCase {
      * and performs its check on the assumption that the tree formatting is
      * accurate.
      *
-     * @throws ParseException Should never happen.
+     * @throws ParseException if the parsing failed.
      */
     @Test
     @DependsOnMethod("testTreeFormat")
@@ -90,8 +90,8 @@ public final strictfp class TreeTableFormatTest extends TestCase {
     @Test
     @DependsOnMethod("testTreeFormat")
     public void testTreeTableFormat() {
-        final TableColumn<Integer> valueA = new TableColumn<Integer>(Integer.class, "value #1");
-        final TableColumn<String>  valueB = new TableColumn<String> (String .class, "value #2");
+        final TableColumn<Integer> valueA = new TableColumn<>(Integer.class, "value #1");
+        final TableColumn<String>  valueB = new TableColumn<>(String .class, "value #2");
         final DefaultTreeTable table  = new DefaultTreeTable(NAME, valueA, valueB);
         final TreeTable.Node   root   = new DefaultTreeTable.Node(table);
         root.setValue(NAME, "Node #1");
@@ -139,13 +139,13 @@ public final strictfp class TreeTableFormatTest extends TestCase {
      * Tests the parsing of a tree table. This method parses and reformats a tree table,
      * and performs its check on the assumption that the tree table formatting is accurate.
      *
-     * @throws ParseException Should never happen.
+     * @throws ParseException if the parsing failed.
      */
     @Test
     @DependsOnMethod("testTreeTableFormat")
     public void testTreeTableParse() throws ParseException {
-        final TableColumn<Integer> valueA = new TableColumn<Integer>(Integer.class, "value #1");
-        final TableColumn<String>  valueB = new TableColumn<String> (String .class, "value #2");
+        final TableColumn<Integer> valueA = new TableColumn<>(Integer.class, "value #1");
+        final TableColumn<String>  valueB = new TableColumn<>(String .class, "value #2");
         final TreeTableFormat tf = new TreeTableFormat(null, null);
         tf.setColumns(NAME, valueA, valueB);
         tf.setVerticalLinePosition(1);
@@ -161,13 +161,13 @@ public final strictfp class TreeTableFormatTest extends TestCase {
     /**
      * Tests parsing and formatting using a different column separator.
      *
-     * @throws ParseException Should never happen.
+     * @throws ParseException if the parsing failed.
      */
     @Test
     @DependsOnMethod("testTreeTableParse")
     public void testAlternativeColumnSeparatorPattern() throws ParseException {
-        final TableColumn<Integer> valueA = new TableColumn<Integer>(Integer.class, "value #1");
-        final TableColumn<String>  valueB = new TableColumn<String> (String .class, "value #2");
+        final TableColumn<Integer> valueA = new TableColumn<>(Integer.class, "value #1");
+        final TableColumn<String>  valueB = new TableColumn<>(String .class, "value #2");
         final TreeTableFormat tf = new TreeTableFormat(null, null);
         assertEquals("?……[…] ", tf.getColumnSeparatorPattern());
         tf.setColumns(NAME, valueA, valueB);
@@ -190,7 +190,7 @@ public final strictfp class TreeTableFormatTest extends TestCase {
         tf.setColumnSeparatorPattern("? [ ]; ");
         assertMultilinesEquals(
                 "Node #1         ; 10 ; Value #1B\n" +
-                " ├──Node #2     ; 20\n" + // Column separator omitted here.
+                " ├──Node #2     ; 20\n" +                                  // Column separator omitted here.
                 " │   └──Node #4 ; 40 ; Value #4B\n" +
                 " └──Node #3     ;    ; Value #3B\n", tf.format(table));
         /*
@@ -256,14 +256,14 @@ public final strictfp class TreeTableFormatTest extends TestCase {
         assertMultilinesEquals(
                 "Root\n" +
                 "  ├─CodeList…… Point of contact\n" + // Not yet localized.
-                "  ├─Enum……………… Half down\n" +        // No localization provided.
+                "  ├─Enum……………… Half down\n" +                      // No localization provided.
                 "  └─i18n……………… Une phrase en français\n", tf.format(table));
 
         tf = new TreeTableFormat(Locale.JAPANESE, null);
         assertMultilinesEquals(
                 "Root\n" +
-                "  ├─CodeList…… Point of contact\n" + // Not yet localized.
-                "  ├─Enum……………… Half down\n" +        // No localization provided.
+                "  ├─CodeList…… Point of contact\n" +               // Not yet localized.
+                "  ├─Enum……………… Half down\n" +                      // No localization provided.
                 "  └─i18n……………… 日本語の言葉\n", tf.format(table));
     }
 }

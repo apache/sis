@@ -23,10 +23,6 @@ import org.opengis.referencing.IdentifiedObject;    // For javadoc
 
 import static java.lang.Character.*;
 
-// Related to JDK7
-import static org.apache.sis.internal.jdk7.JDK7.lowSurrogate;
-import static org.apache.sis.internal.jdk7.JDK7.highSurrogate;
-
 
 /**
  * Static methods working with {@link CharSequence} instances. Some methods defined in this
@@ -76,11 +72,12 @@ import static org.apache.sis.internal.jdk7.JDK7.highSurrogate;
  * {@code 0} or {@code false} primitive type calculated as if the input was an empty string.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
- * @version 0.4
- * @module
+ * @version 0.7
  *
  * @see StringBuilders
+ *
+ * @since 0.3
+ * @module
  */
 public final class CharSequences extends Static {
     /**
@@ -95,16 +92,6 @@ public final class CharSequences extends Static {
      * of length 4. Strings are constructed only when first needed.
      */
     private static final String[] SPACES = new String[10];
-    static {
-        // Our 'spaces(int)' method will invoke 'substring' on the longuest string in an attempt
-        // to share the same char[] array. Note however that array sharing has been removed from
-        // JDK8, which copy every char[] arrays anyway. Consequently the JDK8 branch will abandon
-        // this strategy and build the char[] array on the fly.
-        final int last = SPACES.length - 1;
-        final char[] spaces = new char[last+1];
-        Arrays.fill(spaces, ' ');
-        SPACES[last] = new String(spaces).intern();
-    }
 
     /**
      * Do not allow instantiation of this class.
@@ -132,8 +119,8 @@ public final class CharSequences extends Static {
      * Since the <var>used width</var> value may be greater than expected, this method handle negative {@code length}
      * values as if the value was zero.
      *
-     * @param  length The string length. Negative values are clamped to 0.
-     * @return A string of length {@code length} filled with white spaces.
+     * @param  length  the string length. Negative values are clamped to 0.
+     * @return a string of length {@code length} filled with white spaces.
      */
     public static CharSequence spaces(final int length) {
         /*
@@ -145,10 +132,12 @@ public final class CharSequences extends Static {
             return "";
         }
         if (length < SPACES.length) {
-            String s = SPACES[length-1];
+            String s = SPACES[length - 1];
             if (s == null) {
-                s = SPACES[SPACES.length - 1].substring(0, length).intern();
-                SPACES[length-1] = s;
+                final char[] spaces = new char[length];
+                Arrays.fill(spaces, ' ');
+                s = new String(spaces).intern();
+                SPACES[length - 1] = s;
             }
             return s;
         }
@@ -180,8 +169,8 @@ public final class CharSequences extends Static {
      * Returns the {@linkplain CharSequence#length() length} of the given characters sequence,
      * or 0 if {@code null}.
      *
-     * @param  text The character sequence from which to get the length, or {@code null}.
-     * @return The length of the character sequence, or 0 if the argument is {@code null}.
+     * @param  text  the character sequence from which to get the length, or {@code null}.
+     * @return the length of the character sequence, or 0 if the argument is {@code null}.
      */
     public static int length(final CharSequence text) {
         return (text != null) ? text.length() : 0;
@@ -192,8 +181,8 @@ public final class CharSequences extends Static {
      * or 0 if {@code null}. Unpaired surrogates within the text count as one code
      * point each.
      *
-     * @param  text The character sequence from which to get the count, or {@code null}.
-     * @return The number of Unicode code points, or 0 if the argument is {@code null}.
+     * @param  text  the character sequence from which to get the count, or {@code null}.
+     * @return the number of Unicode code points, or 0 if the argument is {@code null}.
      *
      * @see #codePointCount(CharSequence, int, int)
      */
@@ -221,10 +210,10 @@ public final class CharSequences extends Static {
      * to delegate to the optimized methods from the {@link String}, {@link StringBuilder},
      * {@link StringBuffer} or {@link CharBuffer} classes if possible.</p>
      *
-     * @param  text      The character sequence from which to get the count, or {@code null}.
-     * @param  fromIndex The index from which to start the computation.
-     * @param  toIndex   The index after the last character to take in account.
-     * @return The number of Unicode code points, or 0 if the argument is {@code null}.
+     * @param  text       the character sequence from which to get the count, or {@code null}.
+     * @param  fromIndex  the index from which to start the computation.
+     * @param  toIndex    the index after the last character to take in account.
+     * @return the number of Unicode code points, or 0 if the argument is {@code null}.
      *
      * @see Character#codePointCount(CharSequence, int, int)
      * @see String#codePointCount(int, int)
@@ -249,13 +238,13 @@ public final class CharSequences extends Static {
      * Returns the number of occurrences of the {@code toSearch} string in the given {@code text}.
      * The search is case-sensitive.
      *
-     * @param  text The character sequence to count occurrences, or {@code null}.
-     * @param  toSearch The string to search in the given {@code text}.
-     *         It shall contain at least one character.
-     * @return The number of occurrences of {@code toSearch} in {@code text},
+     * @param  text      the character sequence to count occurrences, or {@code null}.
+     * @param  toSearch  the string to search in the given {@code text}.
+     *                   It shall contain at least one character.
+     * @return the number of occurrences of {@code toSearch} in {@code text},
      *         or 0 if {@code text} was null or empty.
-     * @throws NullArgumentException If the {@code toSearch} argument is null.
-     * @throws IllegalArgumentException If the {@code toSearch} argument is empty.
+     * @throws NullArgumentException if the {@code toSearch} argument is null.
+     * @throws IllegalArgumentException if the {@code toSearch} argument is empty.
      */
     public static int count(final CharSequence text, final String toSearch) {
         ArgumentChecks.ensureNonEmpty("toSearch", toSearch);
@@ -278,9 +267,9 @@ public final class CharSequences extends Static {
     /**
      * Counts the number of occurrence of the given character in the given character sequence.
      *
-     * @param  text The character sequence to count occurrences, or {@code null}.
-     * @param  toSearch The character to count.
-     * @return The number of occurrences of the given character, or 0 if the {@code text} is null.
+     * @param  text      the character sequence to count occurrences, or {@code null}.
+     * @param  toSearch  the character to count.
+     * @return the number of occurrences of the given character, or 0 if the {@code text} is null.
      */
     public static int count(final CharSequence text, final char toSearch) {
         int n = 0;
@@ -317,14 +306,14 @@ public final class CharSequences extends Static {
      * from 0 or {@code toIndex} respectively. This is consistent with the
      * {@link String#indexOf(String, int)} behavior.
      *
-     * @param  text      The string in which to perform the search.
-     * @param  toSearch  The substring for which to search.
-     * @param  fromIndex The index from which to start the search.
-     * @param  toIndex   The index after the last character where to perform the search.
-     * @return The index within the text of the first occurrence of the specified part, starting at the specified
-     *         index, or -1 if no occurrence has been found or if the {@code text} argument is null.
-     * @throws NullArgumentException If the {@code toSearch} argument is null.
-     * @throws IllegalArgumentException If the {@code toSearch} argument is empty.
+     * @param  text       the string in which to perform the search.
+     * @param  toSearch   the substring for which to search.
+     * @param  fromIndex  the index from which to start the search.
+     * @param  toIndex    the index after the last character where to perform the search.
+     * @return the index within the text of the first occurrence of the specified part, starting at the specified index,
+     *         or -1 if no occurrence has been found or if the {@code text} argument is null.
+     * @throws NullArgumentException if the {@code toSearch} argument is null.
+     * @throws IllegalArgumentException if the {@code toSearch} argument is empty.
      *
      * @see String#indexOf(String, int)
      * @see StringBuilder#indexOf(String, int)
@@ -376,11 +365,11 @@ search:     for (; fromIndex <= toIndex; fromIndex++) {
      * from 0 or {@code toIndex} respectively. This is consistent with the behavior documented
      * in {@link String#indexOf(int, int)}.</p>
      *
-     * @param  text      The character sequence in which to perform the search, or {@code null}.
-     * @param  toSearch  The Unicode code point of the character to search.
-     * @param  fromIndex The index to start the search from.
-     * @param  toIndex   The index after the last character where to perform the search.
-     * @return The index of the first occurrence of the given character in the specified sub-sequence,
+     * @param  text       the character sequence in which to perform the search, or {@code null}.
+     * @param  toSearch   the Unicode code point of the character to search.
+     * @param  fromIndex  the index to start the search from.
+     * @param  toIndex    the index after the last character where to perform the search.
+     * @return the index of the first occurrence of the given character in the specified sub-sequence,
      *         or -1 if no occurrence has been found or if the {@code text} argument is null.
      *
      * @see String#indexOf(int, int)
@@ -400,7 +389,7 @@ search:     for (; fromIndex <= toIndex; fromIndex++) {
             }
             char head = (char) toSearch;
             char tail = (char) 0;
-            if (head != toSearch) { // Outside BMP plane?
+            if (head != toSearch) {                     // Outside BMP plane?
                 head = highSurrogate(toSearch);
                 tail = lowSurrogate (toSearch);
                 toIndex--;
@@ -427,11 +416,11 @@ search:     for (; fromIndex <= toIndex; fromIndex++) {
      * from {@code length} or {@code fromIndex} respectively. This is consistent with the behavior
      * documented in {@link String#lastIndexOf(int, int)}.</p>
      *
-     * @param  text      The character sequence in which to perform the search, or {@code null}.
-     * @param  toSearch  The Unicode code point of the character to search.
-     * @param  fromIndex The index of the first character in the range where to perform the search.
-     * @param  toIndex   The index after the last character in the range where to perform the search.
-     * @return The index of the last occurrence of the given character in the specified sub-sequence,
+     * @param  text       the character sequence in which to perform the search, or {@code null}.
+     * @param  toSearch   the Unicode code point of the character to search.
+     * @param  fromIndex  the index of the first character in the range where to perform the search.
+     * @param  toIndex    the index after the last character in the range where to perform the search.
+     * @return the index of the last occurrence of the given character in the specified sub-sequence,
      *         or -1 if no occurrence has been found or if the {@code text} argument is null.
      *
      * @see String#lastIndexOf(int, int)
@@ -482,12 +471,12 @@ search:     for (; fromIndex <= toIndex; fromIndex++) {
      * {@code text.length()} is returned. If this method reaches the beginning of
      * {@code text} while searching backward, then 0 is returned.</p>
      *
-     * @param  text      The string in which to skip a determined amount of lines.
-     * @param  numLines  The number of lines to skip. Can be positive, zero or negative.
-     * @param  fromIndex Index at which to start the search, from 0 to {@code text.length()} inclusive.
-     * @return Index of the first character after the last skipped line.
-     * @throws NullPointerException If the {@code text} argument is null.
-     * @throws IndexOutOfBoundsException If {@code fromIndex} is out of bounds.
+     * @param  text       the string in which to skip a determined amount of lines.
+     * @param  numLines   the number of lines to skip. Can be positive, zero or negative.
+     * @param  fromIndex  index at which to start the search, from 0 to {@code text.length()} inclusive.
+     * @return index of the first character after the last skipped line.
+     * @throws NullPointerException if the {@code text} argument is null.
+     * @throws IndexOutOfBoundsException if {@code fromIndex} is out of bounds.
      */
     public static int indexOfLineStart(final CharSequence text, int numLines, int fromIndex) {
         final int length = text.length();
@@ -554,10 +543,10 @@ search:     for (; fromIndex <= toIndex; fromIndex++) {
      *
      * Space characters are identified by the {@link Character#isWhitespace(int)} method.
      *
-     * @param  text      The string in which to perform the search (can not be null).
-     * @param  fromIndex The index from which to start the search (can not be negative).
-     * @param  toIndex   The index after the last character where to perform the search.
-     * @return The index within the text of the first occurrence of a non-space character, starting
+     * @param  text       the string in which to perform the search (can not be null).
+     * @param  fromIndex  the index from which to start the search (can not be negative).
+     * @param  toIndex    the index after the last character where to perform the search.
+     * @return the index within the text of the first occurrence of a non-space character, starting
      *         at the specified index, or a value equals or greater than {@code toIndex} if none.
      * @throws NullPointerException if the {@code text} argument is null.
      *
@@ -580,7 +569,7 @@ search:     for (; fromIndex <= toIndex; fromIndex++) {
      *
      * <p>Special cases:</p>
      * <ul>
-     *   <li>If {@code toIndex} is lower than {@code toIndex},
+     *   <li>If {@code fromIndex} is lower than {@code toIndex},
      *       then this method unconditionally returns {@code toIndex}.</li>
      *   <li>If the given range contains only space characters and the character at {@code fromIndex}
      *       is the low surrogate of a valid supplementary code point, then this method returns
@@ -591,10 +580,10 @@ search:     for (; fromIndex <= toIndex; fromIndex++) {
      *
      * Space characters are identified by the {@link Character#isWhitespace(int)} method.
      *
-     * @param  text      The string in which to perform the search (can not be null).
-     * @param  fromIndex The index from which to start the search (can not be negative).
-     * @param  toIndex   The index after the last character where to perform the search.
-     * @return The index within the text of the last occurrence of a non-space character, starting
+     * @param  text       the string in which to perform the search (can not be null).
+     * @param  fromIndex  the index from which to start the search (can not be negative).
+     * @param  toIndex    the index after the last character where to perform the search.
+     * @return the index within the text of the last occurrence of a non-space character, starting
      *         at the specified index, or a value equals or lower than {@code fromIndex} if none.
      * @throws NullPointerException if the {@code text} argument is null.
      *
@@ -620,8 +609,8 @@ search:     for (; fromIndex <= toIndex; fromIndex++) {
      * <p>Note that this is a undocumented SIS features. There is currently no commitment that this implementation
      * details will not change in future version.</p>
      *
-     * @param  text The text to be splitted.
-     * @return An array where to store the result of splitting the given {@code text}.
+     * @param  text  the text to be splitted.
+     * @return an array where to store the result of splitting the given {@code text}.
      */
     private static CharSequence[] createSplitArray(final CharSequence text) {
         return (text instanceof String ||
@@ -648,20 +637,21 @@ search:     for (; fromIndex <= toIndex; fromIndex++) {
      *   <li>The leading and trailing spaces of each subsequences are trimmed.</li>
      * </ul>
      *
-     * @param  text The text to split, or {@code null}.
-     * @param  separator The delimiting character (typically the coma).
-     * @return The array of subsequences computed by splitting the given text around the given
+     * @param  text       the text to split, or {@code null}.
+     * @param  separator  the delimiting character (typically the coma).
+     * @return the array of subsequences computed by splitting the given text around the given
      *         character, or an empty array if {@code toSplit} was null.
      *
      * @see String#split(String)
      */
+    @SuppressWarnings("ReturnOfCollectionOrArrayField")
     public static CharSequence[] split(final CharSequence text, final char separator) {
         if (text == null) {
             return EMPTY_ARRAY;
         }
         if (separator == '\n' || separator == '\r') {
             final CharSequence[] splitted = splitOnEOL(text);
-            for (int i=0; i<splitted.length; i++) {
+            for (int i=0; i < splitted.length; i++) {
                 // For consistency with the rest of this method.
                 splitted[i] = trimWhitespaces(splitted[i]);
             }
@@ -716,11 +706,12 @@ search:     for (; fromIndex <= toIndex; fromIndex++) {
      * However this method still useful for other {@link CharSequence} implementations providing an efficient
      * {@code subSequence(int,int)} method.</div>
      *
-     * @param  text The multi-line text from which to get the individual lines, or {@code null}.
-     * @return The lines in the text, or an empty array if the given text was null.
+     * @param  text  the multi-line text from which to get the individual lines, or {@code null}.
+     * @return the lines in the text, or an empty array if the given text was null.
      *
      * @see #indexOfLineStart(CharSequence, int, int)
      */
+    @SuppressWarnings("ReturnOfCollectionOrArrayField")
     public static CharSequence[] splitOnEOL(final CharSequence text) {
         if (text == null) {
             return EMPTY_ARRAY;
@@ -792,11 +783,11 @@ search:     for (; fromIndex <= toIndex; fromIndex++) {
      * then {@linkplain Double#parseDouble(String) parses} each item as a {@code double}.
      * Empty sub-sequences are parsed as {@link Double#NaN}.
      *
-     * @param  values    The text containing the values to parse, or {@code null}.
-     * @param  separator The delimiting character (typically the coma).
-     * @return The array of numbers parsed from the given text,
+     * @param  values     the text containing the values to parse, or {@code null}.
+     * @param  separator  the delimiting character (typically the coma).
+     * @return the array of numbers parsed from the given text,
      *         or an empty array if {@code values} was null.
-     * @throws NumberFormatException If at least one number can not be parsed.
+     * @throws NumberFormatException if at least one number can not be parsed.
      */
     public static double[] parseDoubles(final CharSequence values, final char separator)
             throws NumberFormatException
@@ -815,11 +806,11 @@ search:     for (; fromIndex <= toIndex; fromIndex++) {
      * then {@linkplain Float#parseFloat(String) parses} each item as a {@code float}.
      * Empty sub-sequences are parsed as {@link Float#NaN}.
      *
-     * @param  values    The text containing the values to parse, or {@code null}.
-     * @param  separator The delimiting character (typically the coma).
-     * @return The array of numbers parsed from the given text,
+     * @param  values     the text containing the values to parse, or {@code null}.
+     * @param  separator  the delimiting character (typically the coma).
+     * @return the array of numbers parsed from the given text,
      *         or an empty array if {@code values} was null.
-     * @throws NumberFormatException If at least one number can not be parsed.
+     * @throws NumberFormatException if at least one number can not be parsed.
      */
     public static float[] parseFloats(final CharSequence values, final char separator)
             throws NumberFormatException
@@ -837,12 +828,12 @@ search:     for (; fromIndex <= toIndex; fromIndex++) {
      * {@linkplain #split(CharSequence, char) Splits} the given text around the given character,
      * then {@linkplain Long#parseLong(String) parses} each item as a {@code long}.
      *
-     * @param  values    The text containing the values to parse, or {@code null}.
-     * @param  separator The delimiting character (typically the coma).
-     * @param  radix     The radix to be used for parsing. This is usually 10.
-     * @return The array of numbers parsed from the given text,
+     * @param  values     the text containing the values to parse, or {@code null}.
+     * @param  separator  the delimiting character (typically the coma).
+     * @param  radix      the radix to be used for parsing. This is usually 10.
+     * @return the array of numbers parsed from the given text,
      *         or an empty array if {@code values} was null.
-     * @throws NumberFormatException If at least one number can not be parsed.
+     * @throws NumberFormatException if at least one number can not be parsed.
      */
     public static long[] parseLongs(final CharSequence values, final char separator, final int radix)
             throws NumberFormatException
@@ -859,12 +850,12 @@ search:     for (; fromIndex <= toIndex; fromIndex++) {
      * {@linkplain #split(CharSequence, char) Splits} the given text around the given character,
      * then {@linkplain Integer#parseInt(String) parses} each item as an {@code int}.
      *
-     * @param  values    The text containing the values to parse, or {@code null}.
-     * @param  separator The delimiting character (typically the coma).
-     * @param  radix     The radix to be used for parsing. This is usually 10.
-     * @return The array of numbers parsed from the given text,
+     * @param  values     the text containing the values to parse, or {@code null}.
+     * @param  separator  the delimiting character (typically the coma).
+     * @param  radix      the radix to be used for parsing. This is usually 10.
+     * @return the array of numbers parsed from the given text,
      *         or an empty array if {@code values} was null.
-     * @throws NumberFormatException If at least one number can not be parsed.
+     * @throws NumberFormatException if at least one number can not be parsed.
      */
     public static int[] parseInts(final CharSequence values, final char separator, final int radix)
             throws NumberFormatException
@@ -881,12 +872,12 @@ search:     for (; fromIndex <= toIndex; fromIndex++) {
      * {@linkplain #split(CharSequence, char) Splits} the given text around the given character,
      * then {@linkplain Short#parseShort(String) parses} each item as a {@code short}.
      *
-     * @param  values    The text containing the values to parse, or {@code null}.
-     * @param  separator The delimiting character (typically the coma).
-     * @param  radix     The radix to be used for parsing. This is usually 10.
-     * @return The array of numbers parsed from the given text,
+     * @param  values     the text containing the values to parse, or {@code null}.
+     * @param  separator  the delimiting character (typically the coma).
+     * @param  radix      the radix to be used for parsing. This is usually 10.
+     * @return the array of numbers parsed from the given text,
      *         or an empty array if {@code values} was null.
-     * @throws NumberFormatException If at least one number can not be parsed.
+     * @throws NumberFormatException if at least one number can not be parsed.
      */
     public static short[] parseShorts(final CharSequence values, final char separator, final int radix)
             throws NumberFormatException
@@ -903,12 +894,12 @@ search:     for (; fromIndex <= toIndex; fromIndex++) {
      * {@linkplain #split(CharSequence, char) Splits} the given text around the given character,
      * then {@linkplain Byte#parseByte(String) parses} each item as a {@code byte}.
      *
-     * @param  values    The text containing the values to parse, or {@code null}.
-     * @param  separator The delimiting character (typically the coma).
-     * @param  radix     The radix to be used for parsing. This is usually 10.
-     * @return The array of numbers parsed from the given text,
+     * @param  values     the text containing the values to parse, or {@code null}.
+     * @param  separator  the delimiting character (typically the coma).
+     * @param  radix      the radix to be used for parsing. This is usually 10.
+     * @return the array of numbers parsed from the given text,
      *         or an empty array if {@code values} was null.
-     * @throws NumberFormatException If at least one number can not be parsed.
+     * @throws NumberFormatException if at least one number can not be parsed.
      */
     public static byte[] parseBytes(final CharSequence values, final char separator, final int radix)
             throws NumberFormatException
@@ -923,24 +914,24 @@ search:     for (; fromIndex <= toIndex; fromIndex++) {
 
     /**
      * Replaces some Unicode characters by ASCII characters on a "best effort basis".
-     * For example the {@code 'é'} character is replaced by {@code 'e'} (without accent).
-     *
-     * <p>The current implementation replaces the characters in the range {@code 00C0}
-     * to {@code 00FF} (inclusive) and some space and punctuation characters.</p>
+     * For example the “ é ” character is replaced by  “ e ” (without accent),
+     * the  “ ″ ” symbol for minutes of angle is replaced by straight double quotes “ " ”,
+     * and combined characters like ㎏, ㎎, ㎝, ㎞, ㎢, ㎦, ㎖, ㎧, ㎩, ㎐, <i>etc.</i> are replaced
+     * by the corresponding sequences of characters.
      *
      * <div class="note"><b>Note:</b>
      * the replacement of Greek letters is a more complex task than what this method can do,
      * since it depends on the context. For example if the Greek letters are abbreviations
      * for coordinate system axes like φ and λ, then the replacements depend on the enclosing
-     * coordinate system. See {@link org.apache.sis.io.wkt.CharEncoding} for more information.</div>
+     * coordinate system. See {@link org.apache.sis.io.wkt.Transliterator} for more information.</div>
      *
-     * @param  text The text to scan for Unicode characters to replace by ASCII characters,
-     *         or {@code null}.
-     * @return The given text with substitutions applied, or {@code text} if no replacement
+     * @param  text  the text to scan for Unicode characters to replace by ASCII characters, or {@code null}.
+     * @return the given text with substitutions applied, or {@code text} if no replacement
      *         has been applied, or {@code null} if the given text was null.
      *
      * @see StringBuilders#toASCII(StringBuilder)
-     * @see org.apache.sis.io.wkt.CharEncoding#filter(String)
+     * @see org.apache.sis.io.wkt.Transliterator#filter(String)
+     * @see java.text.Normalizer
      */
     public static CharSequence toASCII(final CharSequence text) {
         return StringBuilders.toASCII(text, null);
@@ -957,8 +948,8 @@ search:     for (; fromIndex <= toIndex; fromIndex++) {
      * <p>This method performs the same work than {@link #trimWhitespaces(CharSequence)},
      * but is overloaded for the {@code String} type because of its frequent use.</p>
      *
-     * @param  text The text from which to remove leading and trailing whitespaces, or {@code null}.
-     * @return A string with leading and trailing whitespaces removed, or {@code null} is the given
+     * @param  text  the text from which to remove leading and trailing whitespaces, or {@code null}.
+     * @return a string with leading and trailing whitespaces removed, or {@code null} is the given
      *         text was null.
      */
     public static String trimWhitespaces(String text) {
@@ -976,8 +967,8 @@ search:     for (; fromIndex <= toIndex; fromIndex++) {
      *
      * <p>This method is the generic version of {@link #trimWhitespaces(String)}.</p>
      *
-     * @param  text The text from which to remove leading and trailing whitespaces, or {@code null}.
-     * @return A characters sequence with leading and trailing whitespaces removed,
+     * @param  text  the text from which to remove leading and trailing whitespaces, or {@code null}.
+     * @return a characters sequence with leading and trailing whitespaces removed,
      *         or {@code null} is the given text was null.
      *
      * @see #skipLeadingWhitespaces(CharSequence, int, int)
@@ -1002,12 +993,12 @@ search:     for (; fromIndex <= toIndex; fromIndex++) {
      *     text = trimWhitespaces(text.subSequence(lower, upper));
      * }
      *
-     * @param  text  The text from which to remove leading and trailing white spaces.
-     * @param  lower Index of the first character to consider for inclusion in the sub-sequence.
-     * @param  upper Index after the last character to consider for inclusion in the sub-sequence.
-     * @return A characters sequence with leading and trailing white spaces removed, or {@code null}
+     * @param  text   the text from which to remove leading and trailing white spaces.
+     * @param  lower  index of the first character to consider for inclusion in the sub-sequence.
+     * @param  upper  index after the last character to consider for inclusion in the sub-sequence.
+     * @return a characters sequence with leading and trailing white spaces removed, or {@code null}
      *         if the {@code text} argument is null.
-     * @throws IndexOutOfBoundsException If {@code lower} or {@code upper} is out of bounds.
+     * @throws IndexOutOfBoundsException if {@code lower} or {@code upper} is out of bounds.
      */
     public static CharSequence trimWhitespaces(CharSequence text, int lower, int upper) {
         final int length = length(text);
@@ -1015,7 +1006,7 @@ search:     for (; fromIndex <= toIndex; fromIndex++) {
         if (text != null) {
             lower = skipLeadingWhitespaces (text, lower, upper);
             upper = skipTrailingWhitespaces(text, lower, upper);
-            if (lower != 0 || upper != length) { // Safety in case subSequence doesn't make the check.
+            if (lower != 0 || upper != length) {                  // Safety in case subSequence doesn't make the check.
                 text = text.subSequence(lower, upper);
             }
         }
@@ -1042,8 +1033,8 @@ search:     for (; fromIndex <= toIndex; fromIndex++) {
      * if that number should preferably be parsed as an integer before attempting to parse
      * it as a floating point number.
      *
-     * @param  value The value to trim if possible, or {@code null}.
-     * @return The value without the trailing {@code ".0"} part (if any),
+     * @param  value  the value to trim if possible, or {@code null}.
+     * @return the value without the trailing {@code ".0"} part (if any),
      *         or {@code null} if the given text was null.
      *
      * @see StringBuilders#trimFractionalPart(StringBuilder)
@@ -1081,10 +1072,9 @@ search:     for (; fromIndex <= toIndex; fromIndex++) {
      *   "This sentence given (…) in a short name."
      * </blockquote>
      *
-     * @param  text The sentence to reduce if it is too long, or {@code null}.
-     * @param  maxLength The maximum length allowed for {@code text}.
-     * @return A sentence not longer than {@code maxLength}, or {@code null}
-     *         if the given text was null.
+     * @param  text       the sentence to reduce if it is too long, or {@code null}.
+     * @param  maxLength  the maximum length allowed for {@code text}.
+     * @return a sentence not longer than {@code maxLength}, or {@code null} if the given text was null.
      */
     public static CharSequence shortSentence(CharSequence text, final int maxLength) {
         ArgumentChecks.ensureStrictlyPositive("maxLength", maxLength);
@@ -1174,8 +1164,8 @@ searchWordBreak:    while (true) {
      * <p>Note that those heuristic rules may be modified in future SIS versions,
      * depending on the practical experience gained.</p>
      *
-     * @param  identifier The name of a Java constant, or {@code null}.
-     * @return The identifier like an English sentence, or {@code null}
+     * @param  identifier  the name of a Java constant, or {@code null}.
+     * @return the identifier like an English sentence, or {@code null}
      *         if the given {@code identifier} argument was null.
      */
     public static CharSequence upperCaseToSentence(final CharSequence identifier) {
@@ -1223,8 +1213,8 @@ searchWordBreak:    while (true) {
      * <p>Note that those heuristic rules may be modified in future SIS versions,
      * depending on the practical experience gained.</p>
      *
-     * @param  identifier An identifier with no space, words begin with an upper-case character, or {@code null}.
-     * @return The identifier with spaces inserted after what looks like words, or {@code null}
+     * @param  identifier  an identifier with no space, words begin with an upper-case character, or {@code null}.
+     * @return the identifier with spaces inserted after what looks like words, or {@code null}
      *         if the given {@code identifier} argument was null.
      */
     public static CharSequence camelCaseToSentence(final CharSequence identifier) {
@@ -1269,10 +1259,10 @@ searchWordBreak:    while (true) {
      *
      * <p>The given string is usually a programmatic identifier like a class name or a method name.</p>
      *
-     * @param  identifier An identifier with no space, words begin with an upper-case character.
-     * @param  toLowerCase {@code true} for changing the first character of words to lower case,
+     * @param  identifier   an identifier with no space, words begin with an upper-case character.
+     * @param  toLowerCase  {@code true} for changing the first character of words to lower case,
      *         except for the first word and acronyms.
-     * @return The identifier with spaces inserted after what looks like words, or {@code null}
+     * @return the identifier with spaces inserted after what looks like words, or {@code null}
      *         if the given {@code identifier} argument was null.
      */
     public static CharSequence camelCaseToWords(final CharSequence identifier, final boolean toLowerCase) {
@@ -1325,24 +1315,25 @@ searchWordBreak:    while (true) {
     }
 
     /**
-     * Creates an acronym from the given text. If every characters in the given text are upper
-     * case, then the text is returned unchanged on the assumption that it is already an acronym.
-     * Otherwise this method returns a string containing the first character of each word, where
-     * the words are separated by the camel case convention, the {@code '_'} character, or any
-     * character which is not a {@linkplain Character#isUnicodeIdentifierPart(int) Unicode
-     * identifier part} (including spaces).
+     * Creates an acronym from the given text. This method returns a string containing the first character of each word,
+     * where the words are separated by the camel case convention, the {@code '_'} character, or any character which is
+     * not a {@linkplain Character#isUnicodeIdentifierPart(int) Unicode identifier part} (including spaces).
+     *
+     * <p>An exception to the above rule happens if the given text is a Unicode identifier without the {@code '_'}
+     * character, and every characters are upper case. In such case the text is returned unchanged on the assumption
+     * that it is already an acronym.</p>
      *
      * <p><b>Examples:</b> given {@code "northEast"}, this method returns {@code "NE"}.
      * Given {@code "Open Geospatial Consortium"}, this method returns {@code "OGC"}.</p>
      *
-     * @param  text The text for which to create an acronym, or {@code null}.
-     * @return The acronym, or {@code null} if the given text was null.
+     * @param  text  the text for which to create an acronym, or {@code null}.
+     * @return the acronym, or {@code null} if the given text was null.
      */
     public static CharSequence camelCaseToAcronym(CharSequence text) {
         text = trimWhitespaces(text);
-        if (text != null && !isUpperCase(text, 0, text.length())) {
+        if (text != null && !isAcronym(text)) {
             final int length = text.length();
-            final StringBuilder buffer = new StringBuilder(8); // Acronyms are usually short.
+            final StringBuilder buffer = new StringBuilder(8);              // Acronyms are usually short.
             boolean wantChar = true;
             for (int i=0; i<length;) {
                 final int c = codePointAt(text, i);
@@ -1355,8 +1346,8 @@ searchWordBreak:    while (true) {
                     wantChar = true;
                 } else if (Character.isUpperCase(c)) {
                     // Test for mixed-case (e.g. "northEast").
-                    // Note that the buffer is guaranteed to contain at least 1 character.
-                    if (isLowerCase(buffer.codePointBefore(buffer.length()))) {
+                    // Note that i is guaranteed to be greater than 0 here.
+                    if (!Character.isUpperCase(Character.codePointBefore(text, i))) {
                         buffer.appendCodePoint(c);
                     }
                 }
@@ -1369,7 +1360,7 @@ searchWordBreak:    while (true) {
                  * first one is upper-case as well. This is for handling the identifiers which
                  * are compliant to Java-Beans convention (e.g. "northEast").
                  */
-                if (isUpperCase(buffer, 1, acrlg)) {
+                if (isUpperCase(buffer, 1, acrlg, true)) {
                     final int c = buffer.codePointAt(0);
                     final int up = toUpperCase(c);
                     if (c != up) {
@@ -1397,8 +1388,8 @@ searchWordBreak:    while (true) {
      *
      * If any of the given arguments is {@code null}, this method returns {@code false}.
      *
-     * @param  acronym A possible acronym of the sequence of words, or {@code null}.
-     * @param  words The sequence of words, or {@code null}.
+     * @param  acronym  a possible acronym of the sequence of words, or {@code null}.
+     * @param  words    the sequence of words, or {@code null}.
      * @return {@code true} if the first string is an acronym of the second one.
      */
     public static boolean isAcronymForWords(final CharSequence acronym, final CharSequence words) {
@@ -1496,6 +1487,16 @@ cmp:    while (ia < lga) {
     }
 
     /**
+     * Returns {@code true} if the given text is presumed to be an acronym. Acronyms are presumed
+     * to be valid Unicode identifiers in all upper-case letters and without the {@code '_'} character.
+     *
+     * @see #camelCaseToAcronym(CharSequence)
+     */
+    private static boolean isAcronym(final CharSequence text) {
+        return isUpperCase(text) && indexOf(text, '_', 0, text.length()) < 0 && isUnicodeIdentifier(text);
+    }
+
+    /**
      * Returns {@code true} if the given identifier is a legal Unicode identifier.
      * This method returns {@code true} if the identifier length is greater than zero,
      * the first character is a {@linkplain Character#isUnicodeIdentifierStart(int)
@@ -1532,7 +1533,7 @@ cmp:    while (ia < lga) {
      * {@linkplain org.apache.sis.util.iso.DefaultNameSpace#DEFAULT_SEPARATOR namespace separators},
      * this exclusion is considered desirable.
      *
-     * @param  identifier The character sequence to test, or {@code null}.
+     * @param  identifier  the character sequence to test, or {@code null}.
      * @return {@code true} if the given character sequence is a legal Unicode identifier.
      *
      * @see org.apache.sis.metadata.iso.ImmutableIdentifier
@@ -1558,27 +1559,43 @@ cmp:    while (ia < lga) {
     }
 
     /**
-     * Returns {@code true} if every characters in the given sequence are
-     * {@linkplain Character#isUpperCase(int) upper-case} letters.
+     * Returns {@code true} if the given text is non-null, contains at least one upper-case character and
+     * no lower-case character. Space and punctuation are ignored.
      *
-     * <div class="note"><b>Note:</b>
-     * The behavior of this method regarding digits and punctuation is unspecified
-     * and may change in future versions.</div>
-     *
-     * @param  text The character sequence to test.
-     * @return {@code true} if every character are upper-case.
+     * @param  text  the character sequence to test (may be {@code null}).
+     * @return {@code true} if non-null, contains at least one upper-case character and no lower-case character.
      *
      * @see String#toUpperCase()
+     *
+     * @since 0.7
      */
-    static boolean isUpperCase(final CharSequence text, int lower, final int upper) {
+    public static boolean isUpperCase(final CharSequence text) {
+        return isUpperCase(text, 0, length(text), false);
+    }
+
+    /**
+     * Returns {@code true} if the given sub-sequence is non-null, contains at least one upper-case character and
+     * no lower-case character. Space and punctuation are ignored.
+     *
+     * @param  text          the character sequence to test.
+     * @param  lower         index of the first character to check, inclusive.
+     * @param  upper         index of the last character to check, exclusive.
+     * @param  hasUpperCase  {@code true} if this method should behave as if the given text already had
+     *         at least one upper-case character (not necessarily in the portion given by the indices).
+     * @return {@code true} if contains at least one upper-case character and no lower-case character.
+     */
+    private static boolean isUpperCase(final CharSequence text, int lower, final int upper, boolean hasUpperCase) {
         while (lower < upper) {
             final int c = codePointAt(text, lower);
-            if (!Character.isUpperCase(c)) {
+            if (Character.isLowerCase(c)) {
                 return false;
+            }
+            if (!hasUpperCase) {
+                hasUpperCase = Character.isUpperCase(c);
             }
             lower += charCount(c);
         }
-        return true;
+        return hasUpperCase;
     }
 
     /**
@@ -1594,11 +1611,11 @@ cmp:    while (ia < lga) {
      *     assert equalsFiltered("WGS84", "WGS_84", Characters.Filter.LETTERS_AND_DIGITS, true) == true;
      * }
      *
-     * @param  s1 The first characters sequence to compare, or {@code null}.
-     * @param  s2 The second characters sequence to compare, or {@code null}.
-     * @param  filter The subset of characters to compare, or {@code null} for comparing all characters.
-     * @param  ignoreCase {@code true} for comparing cases, or {@code false} for requiring exact match.
-     * @return {@code true} if or if both arguments are {@code null} or if the two given texts are equal,
+     * @param  s1          the first characters sequence to compare, or {@code null}.
+     * @param  s2          the second characters sequence to compare, or {@code null}.
+     * @param  filter      the subset of characters to compare, or {@code null} for comparing all characters.
+     * @param  ignoreCase  {@code true} for ignoring cases, or {@code false} for requiring exact match.
+     * @return {@code true} if both arguments are {@code null} or if the two given texts are equal,
      *         optionally ignoring case and filtered-out characters.
      */
     public static boolean equalsFiltered(final CharSequence s1, final CharSequence s2,
@@ -1620,11 +1637,10 @@ cmp:    while (ia < lga) {
             int c1 = codePointAt(s1, i1);
             final int n = charCount(c1);
             if (filter.contains(c1)) {
-                // Fetch the next significant character from the second string.
-                int c2;
+                int c2;                     // Fetch the next significant character from the second string.
                 do {
                     if (i2 >= lg2) {
-                        return false; // The first string has more significant characters than expected.
+                        return false;       // The first string has more significant characters than expected.
                     }
                     c2 = codePointAt(s2, i2);
                     i2 += charCount(c2);
@@ -1640,7 +1656,7 @@ cmp:    while (ia < lga) {
         while (i2 < lg2) {
             final int s = codePointAt(s2, i2);
             if (filter.contains(s)) {
-                return false; // The first string has less significant characters than expected.
+                return false;               // The first string has less significant characters than expected.
             }
             i2 += charCount(s);
         }
@@ -1670,8 +1686,8 @@ cmp:    while (ia < lga) {
      * it works on arbitrary character sequences and compares <cite>code points</cite>
      * instead than characters.
      *
-     * @param  s1 The first string to compare, or {@code null}.
-     * @param  s2 The second string to compare, or {@code null}.
+     * @param  s1  the first string to compare, or {@code null}.
+     * @param  s2  the second string to compare, or {@code null}.
      * @return {@code true} if the two given texts are equal, ignoring case,
      *         or if both arguments are {@code null}.
      *
@@ -1706,8 +1722,8 @@ cmp:    while (ia < lga) {
      * {@link String#contentEquals(CharSequence)} if possible. This method never invoke
      * {@link CharSequence#toString()} in order to avoid a potentially large copy of data.
      *
-     * @param  s1 The first string to compare, or {@code null}.
-     * @param  s2 The second string to compare, or {@code null}.
+     * @param  s1  the first string to compare, or {@code null}.
+     * @param  s2  the second string to compare, or {@code null}.
      * @return {@code true} if the two given texts are equal, or if both arguments are {@code null}.
      *
      * @see String#contentEquals(CharSequence)
@@ -1746,9 +1762,9 @@ cmp:    while (ia < lga) {
      * {@code fromIndex < 0} or {@code fromIndex + part.length() > text.length()},
      * then this method returns {@code false}.
      *
-     * @param text      The character sequence for which to tests for the presence of {@code part}.
-     * @param fromIndex The offset in {@code text} where to test for the presence of {@code part}.
-     * @param part      The part which may be present in {@code text}.
+     * @param  text       the character sequence for which to tests for the presence of {@code part}.
+     * @param  fromIndex  the offset in {@code text} where to test for the presence of {@code part}.
+     * @param  part       the part which may be present in {@code text}.
      * @return {@code true} if {@code text} contains {@code part} at the given {@code offset}.
      * @throws NullPointerException if any of the arguments is null.
      *
@@ -1786,10 +1802,10 @@ cmp:    while (ia < lga) {
      * {@code fromIndex < 0} or {@code fromIndex + part.length() > text.length()},
      * then this method returns {@code false}.
      *
-     * @param text       The character sequence for which to tests for the presence of {@code part}.
-     * @param fromIndex  The offset in {@code text} where to test for the presence of {@code part}.
-     * @param part       The part which may be present in {@code text}.
-     * @param ignoreCase {@code true} if the case should be ignored.
+     * @param  text        the character sequence for which to tests for the presence of {@code part}.
+     * @param  fromIndex   the offset in {@code text} where to test for the presence of {@code part}.
+     * @param  part        the part which may be present in {@code text}.
+     * @param  ignoreCase  {@code true} if the case should be ignored.
      * @return {@code true} if {@code text} contains {@code part} at the given {@code offset}.
      * @throws NullPointerException if any of the arguments is null.
      *
@@ -1805,7 +1821,7 @@ cmp:    while (ia < lga) {
         // because we compare code points while String.regionMatches(…) compares characters.
         final int limit  = text.length();
         final int length = part.length();
-        if (fromIndex < 0) { // Not checked before because we want NullPointerException if an argument is null.
+        if (fromIndex < 0) {                // Not checked before because we want NullPointerException if an argument is null.
             return false;
         }
         for (int i=0; i<length;) {
@@ -1826,9 +1842,9 @@ cmp:    while (ia < lga) {
     /**
      * Returns {@code true} if the given character sequence starts with the given prefix.
      *
-     * @param  text        The characters sequence to test.
-     * @param  prefix      The expected prefix.
-     * @param  ignoreCase  {@code true} if the case should be ignored.
+     * @param  text         the characters sequence to test.
+     * @param  prefix       the expected prefix.
+     * @param  ignoreCase   {@code true} if the case should be ignored.
      * @return {@code true} if the given sequence starts with the given prefix.
      * @throws NullPointerException if any of the arguments is null.
      */
@@ -1839,9 +1855,9 @@ cmp:    while (ia < lga) {
     /**
      * Returns {@code true} if the given character sequence ends with the given suffix.
      *
-     * @param  text        The characters sequence to test.
-     * @param  suffix      The expected suffix.
-     * @param  ignoreCase  {@code true} if the case should be ignored.
+     * @param  text         the characters sequence to test.
+     * @param  suffix       the expected suffix.
+     * @param  ignoreCase   {@code true} if the case should be ignored.
      * @return {@code true} if the given sequence ends with the given suffix.
      * @throws NullPointerException if any of the arguments is null.
      */
@@ -1867,9 +1883,9 @@ cmp:    while (ia < lga) {
      * Returns the longest sequence of characters which is found at the beginning of the two
      * given texts. If one of those texts is {@code null}, then the other text is returned.
      *
-     * @param  s1 The first text,  or {@code null}.
-     * @param  s2 The second text, or {@code null}.
-     * @return The common prefix of both texts, or {@code null} if both texts are null.
+     * @param  s1  the first text,  or {@code null}.
+     * @param  s2  the second text, or {@code null}.
+     * @return the common prefix of both texts, or {@code null} if both texts are null.
      */
     public static CharSequence commonPrefix(final CharSequence s1, final CharSequence s2) {
         if (s1 == null) return s2;
@@ -1900,9 +1916,9 @@ cmp:    while (ia < lga) {
      * Returns the longest sequence of characters which is found at the end of the two given texts.
      * If one of those texts is {@code null}, then the other text is returned.
      *
-     * @param  s1 The first text,  or {@code null}.
-     * @param  s2 The second text, or {@code null}.
-     * @return The common suffix of both texts, or {@code null} if both texts are null.
+     * @param  s1  the first text,  or {@code null}.
+     * @param  s2  the second text, or {@code null}.
+     * @return the common suffix of both texts, or {@code null} if both texts are null.
      */
     public static CharSequence commonSuffix(final CharSequence s1, final CharSequence s2) {
         if (s1 == null) return s2;
@@ -1947,9 +1963,9 @@ cmp:    while (ia < lga) {
      *       the same value than for <var>c</var>.</li>
      * </ul>
      *
-     * @param  text The text for which to get the token.
-     * @param  fromIndex Index of the fist character to consider in the given text.
-     * @return A sub-sequence of {@code text} starting at the given offset, or an empty string
+     * @param  text       the text for which to get the token.
+     * @param  fromIndex  index of the fist character to consider in the given text.
+     * @return a sub-sequence of {@code text} starting at the given offset, or an empty string
      *         if there is no non-blank character at or after the given offset.
      * @throws NullPointerException if the {@code text} argument is null.
      */
@@ -1997,10 +2013,10 @@ cmp:    while (ia < lga) {
      *       The {@code toSearch} value is searched verbatim.</li>
      * </ul>
      *
-     * @param  text      The character sequence in which to perform the replacements, or {@code null}.
-     * @param  toSearch  The string to replace.
-     * @param  replaceBy The replacement for the searched string.
-     * @return The given text with replacements applied, or {@code text} if no replacement has been applied,
+     * @param  text       the character sequence in which to perform the replacements, or {@code null}.
+     * @param  toSearch   the string to replace.
+     * @param  replaceBy  the replacement for the searched string.
+     * @return the given text with replacements applied, or {@code text} if no replacement has been applied,
      *         or {@code null} if the given text was null
      *
      * @see String#replace(char, char)
@@ -2032,11 +2048,11 @@ cmp:    while (ia < lga) {
     /**
      * Copies a sequence of characters in the given {@code char[]} array.
      *
-     * @param src       The characters sequence from which to copy characters.
-     * @param srcOffset Index of the first character from {@code src} to copy.
-     * @param dst       The array where to copy the characters.
-     * @param dstOffset Index where to write the first character in {@code dst}.
-     * @param length    Number of characters to copy.
+     * @param src        the characters sequence from which to copy characters.
+     * @param srcOffset  index of the first character from {@code src} to copy.
+     * @param dst        the array where to copy the characters.
+     * @param dstOffset  index where to write the first character in {@code dst}.
+     * @param length     number of characters to copy.
      *
      * @see String#getChars(int, int, char[], int)
      * @see StringBuilder#getChars(int, int, char[], int)
@@ -2054,8 +2070,8 @@ cmp:    while (ia < lga) {
             ((StringBuilder) src).getChars(srcOffset, srcOffset + length, dst, dstOffset);
         } else if (src instanceof StringBuffer) {
             ((StringBuffer) src).getChars(srcOffset, srcOffset + length, dst, dstOffset);
-//      } else if (src instanceof CharBuffer) {
-// JDK7     ((CharBuffer) src).subSequence(srcOffset, srcOffset + length).get(dst, dstOffset, length);
+        } else if (src instanceof CharBuffer) {
+            ((CharBuffer) src).subSequence(srcOffset, srcOffset + length).get(dst, dstOffset, length);
         } else {
             // An other candidate could be javax.swing.text.Segment, but it
             // is probably not worth to introduce a Swing dependency for it.

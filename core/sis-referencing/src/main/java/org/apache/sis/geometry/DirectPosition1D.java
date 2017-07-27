@@ -21,6 +21,7 @@ package org.apache.sis.geometry;
  * support Java2D (e.g. Android), or applications that do not need it may want to avoid to
  * to force installation of the Java2D module (e.g. JavaFX/SWT).
  */
+import java.util.Objects;
 import java.io.Serializable;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.geometry.DirectPosition;
@@ -30,20 +31,19 @@ import org.apache.sis.util.resources.Errors;
 
 import static org.apache.sis.util.ArgumentChecks.ensureDimensionMatches;
 
-// Branch-dependent imports
-import org.apache.sis.internal.jdk7.Objects;
-
 
 /**
  * A one-dimensional position within some coordinate reference system.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.3
  * @version 0.3
- * @module
  *
  * @see DirectPosition2D
  * @see GeneralDirectPosition
+ * @see CoordinateFormat
+ *
+ * @since 0.3
+ * @module
  */
 public class DirectPosition1D extends AbstractDirectPosition implements Serializable, Cloneable {
     /**
@@ -71,7 +71,7 @@ public class DirectPosition1D extends AbstractDirectPosition implements Serializ
     /**
      * Constructs a position with the specified coordinate reference system.
      *
-     * @param crs The coordinate reference system.
+     * @param  crs  the coordinate reference system.
      */
     public DirectPosition1D(final CoordinateReferenceSystem crs) {
         ensureDimensionMatches("crs", 1, crs);
@@ -81,7 +81,7 @@ public class DirectPosition1D extends AbstractDirectPosition implements Serializ
     /**
      * Constructs a 1D position from the specified ordinate.
      *
-     * @param ordinate The ordinate value.
+     * @param ordinate  the ordinate value.
      */
     public DirectPosition1D(final double ordinate) {
         this.ordinate = ordinate;
@@ -96,12 +96,12 @@ public class DirectPosition1D extends AbstractDirectPosition implements Serializ
      *     POINT(6)
      * }
      *
-     * @param  wkt The {@code POINT} or other kind of element to parse.
-     * @throws IllegalArgumentException If the given string can not be parsed.
-     * @throws MismatchedDimensionException If the given point is not one-dimensional.
+     * @param  wkt  the {@code POINT} or other kind of element to parse.
+     * @throws IllegalArgumentException if the given string can not be parsed.
+     * @throws MismatchedDimensionException if the given point is not one-dimensional.
      *
      * @see #toString()
-     * @see org.apache.sis.measure.CoordinateFormat
+     * @see CoordinateFormat
      */
     public DirectPosition1D(final CharSequence wkt) throws IllegalArgumentException {
         final double[] ordinates = parse(wkt);
@@ -117,7 +117,7 @@ public class DirectPosition1D extends AbstractDirectPosition implements Serializ
      * The length of coordinate sequence (the number of entries).
      * This is always 1 for {@code DirectPosition1D} objects.
      *
-     * @return The dimensionality of this position.
+     * @return the dimensionality of this position.
      */
     @Override
     public final int getDimension() {
@@ -129,7 +129,7 @@ public class DirectPosition1D extends AbstractDirectPosition implements Serializ
      * May be {@code null} if this particular {@code DirectPosition} is included
      * in a larger object with such a reference to a CRS.
      *
-     * @return The coordinate reference system, or {@code null}.
+     * @return the coordinate reference system, or {@code null}.
      */
     @Override
     public final CoordinateReferenceSystem getCoordinateReferenceSystem() {
@@ -139,7 +139,7 @@ public class DirectPosition1D extends AbstractDirectPosition implements Serializ
     /**
      * Sets the coordinate reference system in which the coordinate is given.
      *
-     * @param crs The new coordinate reference system, or {@code null}.
+     * @param  crs  the new coordinate reference system, or {@code null}.
      */
     public void setCoordinateReferenceSystem(final CoordinateReferenceSystem crs) {
         ensureDimensionMatches("crs", 1, crs);
@@ -152,7 +152,7 @@ public class DirectPosition1D extends AbstractDirectPosition implements Serializ
      * <div class="note"><b>API note:</b>
      * This method is final for ensuring consistency with the {@link #ordinate} field, which is public.</div>
      *
-     * @return The coordinates.
+     * @return the coordinates.
      */
     @Override
     public final double[] getCoordinate() {
@@ -165,8 +165,8 @@ public class DirectPosition1D extends AbstractDirectPosition implements Serializ
      * <div class="note"><b>API note:</b>
      * This method is final for ensuring consistency with the {@link #ordinate} field, which is public.</div>
      *
-     * @param  dimension The dimension, which must be 0.
-     * @return The {@linkplain #ordinate}.
+     * @param  dimension  the dimension, which must be 0.
+     * @return the {@linkplain #ordinate}.
      * @throws IndexOutOfBoundsException if the specified dimension is out of bounds.
      */
     @Override
@@ -181,8 +181,8 @@ public class DirectPosition1D extends AbstractDirectPosition implements Serializ
     /**
      * Sets the ordinate value along the specified dimension.
      *
-     * @param  dimension The dimension, which must be 0.
-     * @param  value the ordinate value.
+     * @param  dimension  the dimension, which must be 0.
+     * @param  value      the ordinate value.
      * @throws IndexOutOfBoundsException if the specified dimension is out of bounds.
      */
     @Override
@@ -199,7 +199,7 @@ public class DirectPosition1D extends AbstractDirectPosition implements Serializ
      * contains a coordinate reference system (CRS), then the CRS for this position will
      * be set to the CRS of the specified position.
      *
-     * @param  position The new position for this point.
+     * @param  position  the new position for this point.
      * @throws MismatchedDimensionException if this point doesn't have the expected dimension.
      */
     @Override
@@ -228,7 +228,7 @@ public class DirectPosition1D extends AbstractDirectPosition implements Serializ
     /**
      * Returns a copy of this position.
      *
-     * @return A copy of this position.
+     * @return a copy of this position.
      */
     @Override
     public DirectPosition1D clone() {

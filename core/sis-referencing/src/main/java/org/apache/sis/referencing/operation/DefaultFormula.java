@@ -16,19 +16,18 @@
  */
 package org.apache.sis.referencing.operation;
 
+import java.util.Objects;
 import java.io.Serializable;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.referencing.operation.Formula;
+import org.apache.sis.internal.metadata.WKTKeywords;
 import org.apache.sis.io.wkt.ElementKind;
 import org.apache.sis.io.wkt.FormattableObject;
 import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.util.iso.Types;
 
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
-
-// Branch-dependent imports
-import org.apache.sis.internal.jdk7.Objects;
 
 
 /**
@@ -42,12 +41,13 @@ import org.apache.sis.internal.jdk7.Objects;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.5
- * @since   0.5
- * @module
  *
  * @see DefaultOperationMethod
  * @see org.apache.sis.referencing.operation.transform.AbstractMathTransform
  * @see org.apache.sis.referencing.operation.transform.MathTransformProvider
+ *
+ * @since 0.5
+ * @module
  */
 public class DefaultFormula extends FormattableObject implements Formula, Serializable {
     /**
@@ -66,9 +66,19 @@ public class DefaultFormula extends FormattableObject implements Formula, Serial
     private final Citation citation;
 
     /**
+     * Creates a new formula. This constructor is not public because of {@code Formula} object should not have
+     * both the formula literal and the citation. But we use this constructor an unmarshalling time if the XML
+     * document have both. Having both is not valid GML, but SIS is tolerant to this situation.
+     */
+    DefaultFormula(final InternationalString formula, final Citation citation) {
+        this.formula  = formula;
+        this.citation = citation;
+    }
+
+    /**
      * Creates a new formula from the given string.
      *
-     * @param formula The formula.
+     * @param formula  the formula.
      */
     public DefaultFormula(final CharSequence formula) {
         ensureNonNull("formula", formula);
@@ -79,7 +89,7 @@ public class DefaultFormula extends FormattableObject implements Formula, Serial
     /**
      * Creates a new formula from the given citation.
      *
-     * @param citation The citation.
+     * @param citation  the citation.
      */
     public DefaultFormula(final Citation citation) {
         ensureNonNull("citation", citation);
@@ -94,7 +104,7 @@ public class DefaultFormula extends FormattableObject implements Formula, Serial
      *
      * <p>This constructor performs a shallow copy, i.e. the properties are not cloned.</p>
      *
-     * @param formula The formula to copy.
+     * @param formula  the formula to copy.
      *
      * @see #castOrCopy(Formula)
      */
@@ -110,8 +120,8 @@ public class DefaultFormula extends FormattableObject implements Formula, Serial
      * Otherwise if the given object is already a SIS implementation, then the given object is returned unchanged.
      * Otherwise a new SIS implementation is created and initialized to the attribute values of the given object.
      *
-     * @param  object The object to get as a SIS implementation, or {@code null} if none.
-     * @return A SIS implementation containing the values of the given object (may be the
+     * @param  object  the object to get as a SIS implementation, or {@code null} if none.
+     * @return a SIS implementation containing the values of the given object (may be the
      *         given object itself), or {@code null} if the argument was null.
      */
     public static DefaultFormula castOrCopy(final Formula object) {
@@ -150,7 +160,7 @@ public class DefaultFormula extends FormattableObject implements Formula, Serial
     /**
      * Compares this formula with the given object for equality.
      *
-     * @param  object The object to compare with this formula.
+     * @param  object  the object to compare with this formula.
      * @return {@code true} if both objects are equal.
      */
     @Override
@@ -191,6 +201,6 @@ public class DefaultFormula extends FormattableObject implements Formula, Serial
             formatter.append(text.toString(formatter.getLocale()), ElementKind.REMARKS);
         }
         formatter.setInvalidWKT(Formula.class, null);
-        return "Formula";
+        return WKTKeywords.Formula;
     }
 }

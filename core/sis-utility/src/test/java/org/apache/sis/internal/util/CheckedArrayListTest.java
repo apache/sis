@@ -31,8 +31,8 @@ import static org.apache.sis.test.Assert.*;
  * Tests the {@link CheckedArrayList} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.4
  * @version 0.5
+ * @since   0.4
  * @module
  */
 public final strictfp class CheckedArrayListTest extends TestCase {
@@ -41,7 +41,7 @@ public final strictfp class CheckedArrayListTest extends TestCase {
      */
     @Test
     public void testAdd() {
-        final CheckedArrayList<String> list = new CheckedArrayList<String>(String.class);
+        final CheckedArrayList<String> list = new CheckedArrayList<>(String.class);
         assertTrue(list.add("One"));
         assertTrue(list.add("Two"));
         assertTrue(list.add("Three"));
@@ -53,7 +53,7 @@ public final strictfp class CheckedArrayListTest extends TestCase {
      */
     @Test
     public void testAddAll() {
-        final CheckedArrayList<String> list = new CheckedArrayList<String>(String.class);
+        final CheckedArrayList<String> list = new CheckedArrayList<>(String.class);
         assertTrue(list.add("One"));
         assertTrue(list.addAll(Arrays.asList("Two", "Three")));
         assertEquals(Arrays.asList("One", "Two", "Three"), list);
@@ -64,7 +64,7 @@ public final strictfp class CheckedArrayListTest extends TestCase {
      */
     @Test
     public void testAddNull() {
-        final CheckedArrayList<String> list = new CheckedArrayList<String>(String.class);
+        final CheckedArrayList<String> list = new CheckedArrayList<>(String.class);
         try {
             list.add(null);
         } catch (NullArgumentException e) {
@@ -78,7 +78,7 @@ public final strictfp class CheckedArrayListTest extends TestCase {
      */
     @Test
     public void testAddAllNull() {
-        final CheckedArrayList<String> list = new CheckedArrayList<String>(String.class);
+        final CheckedArrayList<String> list = new CheckedArrayList<>(String.class);
         final Collection<String> toAdd = Arrays.asList("One", null, "Three");
         try {
             list.addAll(toAdd);
@@ -93,7 +93,7 @@ public final strictfp class CheckedArrayListTest extends TestCase {
      */
     @Test
     public void testAddWrongType() {
-        final CheckedArrayList<String> list = new CheckedArrayList<String>(String.class);
+        final CheckedArrayList<String> list = new CheckedArrayList<>(String.class);
         final String message = testAddWrongType(list);
         assertTrue("element", message.contains("element"));
         assertTrue("Integer", message.contains("Integer"));
@@ -121,7 +121,7 @@ public final strictfp class CheckedArrayListTest extends TestCase {
     @Test
     @DependsOnMethod("testAddWrongType")
     public void testAddWrongTypeToSublist() {
-        final CheckedArrayList<String> list = new CheckedArrayList<String>(String.class);
+        final CheckedArrayList<String> list = new CheckedArrayList<>(String.class);
         assertTrue(list.add("One"));
         assertTrue(list.add("Two"));
         assertTrue(list.add("Three"));

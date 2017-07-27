@@ -22,8 +22,8 @@ import java.util.Locale;
 import javax.xml.bind.JAXBException;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.metadata.iso.citation.DefaultCitation;
-import org.apache.sis.metadata.iso.citation.HardCodedCitations;
 import org.apache.sis.util.iso.SimpleInternationalString;
+import org.apache.sis.internal.simple.SimpleCitation;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.test.DependsOnMethod;
@@ -40,8 +40,8 @@ import static org.opengis.referencing.ReferenceIdentifier.*;
  * Tests {@link ImmutableIdentifier}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.6
+ * @since   0.3
  * @module
  */
 @DependsOn({
@@ -53,7 +53,7 @@ public final strictfp class ImmutableIdentifierTest extends TestCase {
      * Returns the properties map to be used in argument to test methods.
      */
     private static Map<String,Object> properties() {
-        final Map<String,Object> properties = new HashMap<String,Object>();
+        final Map<String,Object> properties = new HashMap<>();
         assertNull(properties.put(CODE_KEY,            "This is a code"));
         assertNull(properties.put(AUTHORITY_KEY,       "This is an authority"));
         assertNull(properties.put(VERSION_KEY,         "This is a version"));
@@ -73,14 +73,14 @@ public final strictfp class ImmutableIdentifierTest extends TestCase {
         final ImmutableIdentifier identifier = new ImmutableIdentifier(properties);
         Validators.validate(identifier);
 
-        assertEquals(CODE_KEY,            "This is a code",         identifier.getCode());
-        assertNull  (CODESPACE_KEY,                                 identifier.getCodeSpace());
-        assertEquals(AUTHORITY_KEY,       "This is an authority",   identifier.getAuthority().getTitle().toString());
-        assertEquals(VERSION_KEY,         "This is a version",      identifier.getVersion());
-        assertEquals("description",       "There is a description", identifier.getDescription().toString(Locale.ENGLISH));
-        assertEquals("description_fr",    "Voici une description",  identifier.getDescription().toString(Locale.FRENCH));
-        assertEquals("description_fr_CA", "Pareil",                 identifier.getDescription().toString(Locale.CANADA_FRENCH));
-        assertEquals("description_fr_BE", "Voici une description",  identifier.getDescription().toString(new Locale("fr", "BE")));
+        assertEquals     (CODE_KEY,            "This is a code",         identifier.getCode());
+        assertNull       (CODESPACE_KEY,                                 identifier.getCodeSpace());
+        assertTitleEquals(AUTHORITY_KEY,       "This is an authority",   identifier.getAuthority());
+        assertEquals     (VERSION_KEY,         "This is a version",      identifier.getVersion());
+        assertEquals     ("description",       "There is a description", identifier.getDescription().toString(Locale.ENGLISH));
+        assertEquals     ("description_fr",    "Voici une description",  identifier.getDescription().toString(Locale.FRENCH));
+        assertEquals     ("description_fr_CA", "Pareil",                 identifier.getDescription().toString(Locale.CANADA_FRENCH));
+        assertEquals     ("description_fr_BE", "Voici une description",  identifier.getDescription().toString(new Locale("fr", "BE")));
     }
 
     /**
@@ -94,13 +94,13 @@ public final strictfp class ImmutableIdentifierTest extends TestCase {
         final ImmutableIdentifier identifier = new ImmutableIdentifier(properties);
         Validators.validate(identifier);
 
-        assertEquals(CODE_KEY,            "This is a code",          identifier.getCode());
-        assertNull  (CODESPACE_KEY,                                  identifier.getCodeSpace());
-        assertEquals(AUTHORITY_KEY,       "This is an authority",    identifier.getAuthority().getTitle().toString());
-        assertEquals(VERSION_KEY,         "This is a version",       identifier.getVersion());
-        assertEquals("description",       "Overwritten description", identifier.getDescription().toString(Locale.ENGLISH));
-        assertEquals("description_fr",    "Voici une description",   identifier.getDescription().toString(Locale.FRENCH));
-        assertEquals("description_fr_CA", "Pareil",                  identifier.getDescription().toString(Locale.CANADA_FRENCH));
+        assertEquals     (CODE_KEY,            "This is a code",          identifier.getCode());
+        assertNull       (CODESPACE_KEY,                                  identifier.getCodeSpace());
+        assertTitleEquals(AUTHORITY_KEY,       "This is an authority",    identifier.getAuthority());
+        assertEquals     (VERSION_KEY,         "This is a version",       identifier.getVersion());
+        assertEquals     ("description",       "Overwritten description", identifier.getDescription().toString(Locale.ENGLISH));
+        assertEquals     ("description_fr",    "Voici une description",   identifier.getDescription().toString(Locale.FRENCH));
+        assertEquals     ("description_fr_CA", "Pareil",                  identifier.getDescription().toString(Locale.CANADA_FRENCH));
     }
 
     /**
@@ -114,13 +114,13 @@ public final strictfp class ImmutableIdentifierTest extends TestCase {
         final ImmutableIdentifier identifier = new ImmutableIdentifier(properties);
         Validators.validate(identifier);
 
-        assertEquals(CODE_KEY,            "This is a code",         identifier.getCode());
-        assertNull  (CODESPACE_KEY,                                 identifier.getCodeSpace());
-        assertEquals(AUTHORITY_KEY,       "An other authority",     identifier.getAuthority().getTitle().toString());
-        assertEquals(VERSION_KEY,         "This is a version",      identifier.getVersion());
-        assertEquals("description",       "There is a description", identifier.getDescription().toString(Locale.ENGLISH));
-        assertEquals("description_fr",    "Voici une description",  identifier.getDescription().toString(Locale.FRENCH));
-        assertEquals("description_fr_CA", "Pareil",                 identifier.getDescription().toString(Locale.CANADA_FRENCH));
+        assertEquals     (CODE_KEY,            "This is a code",         identifier.getCode());
+        assertNull       (CODESPACE_KEY,                                 identifier.getCodeSpace());
+        assertTitleEquals(AUTHORITY_KEY,       "An other authority",     identifier.getAuthority());
+        assertEquals     (VERSION_KEY,         "This is a version",      identifier.getVersion());
+        assertEquals     ("description",       "There is a description", identifier.getDescription().toString(Locale.ENGLISH));
+        assertEquals     ("description_fr",    "Voici une description",  identifier.getDescription().toString(Locale.FRENCH));
+        assertEquals     ("description_fr_CA", "Pareil",                 identifier.getDescription().toString(Locale.CANADA_FRENCH));
     }
 
     /**
@@ -166,7 +166,7 @@ public final strictfp class ImmutableIdentifierTest extends TestCase {
     /**
      * Test XML marshalling.
      *
-     * @throws JAXBException Should never happen.
+     * @throws JAXBException if an error occurred during (un)marshalling.
      */
     @Test
     public void testMarshal() throws JAXBException {
@@ -179,8 +179,17 @@ public final strictfp class ImmutableIdentifierTest extends TestCase {
      */
     @Test
     public void testWKT() {
-        final ImmutableIdentifier id = new ImmutableIdentifier(HardCodedCitations.IOGP, "EPSG", "4326", "8.2", null);
-        assertWktEquals(Convention.WKT2, "Id[“EPSG”, 4326, “8.2”, Citation[“IOGP”]]", id);
+        ImmutableIdentifier id = new ImmutableIdentifier(Citations.EPSG, "EPSG", "4326", "8.2", null);
+        assertWktEquals(Convention.WKT2_SIMPLIFIED, "Id[“EPSG”, 4326, “8.2”]", id);
+        assertWktEquals(Convention.WKT2, "ID[“EPSG”, 4326, “8.2”]", id);
+        assertWktEquals(Convention.WKT1, "AUTHORITY[“EPSG”, “4326”]", id);
+        /*
+         * Same identifier, but with an authority different than the EPSG one.
+         * The Citation element should then be visible in WKT 2.
+         */
+        id = new ImmutableIdentifier(new SimpleCitation("IOGP"), "EPSG", "4326", "8.2", null);
+        assertWktEquals(Convention.WKT2_SIMPLIFIED, "Id[“EPSG”, 4326, “8.2”, Citation[“IOGP”]]", id);
+        assertWktEquals(Convention.WKT2, "ID[“EPSG”, 4326, “8.2”, CITATION[“IOGP”]]", id);
         assertWktEquals(Convention.WKT1, "AUTHORITY[“EPSG”, “4326”]", id);
     }
 }

@@ -28,8 +28,8 @@ import static java.util.Collections.singletonMap;
  * Tests {@link LinkOperation}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.6
  * @version 0.6
+ * @since   0.6
  * @module
  */
 @DependsOn({
@@ -42,12 +42,12 @@ public final strictfp class LinkOperationTest extends TestCase {
      * The feature contains the following properties:
      *
      * <ul>
-     *   <li>{@code city}       as a  {@link String}  (mandatory)</li>
-     *   <li>{@code population} as an {@link Integer} (mandatory)</li>
+     *   <li>{@code city}       as a  {@link String}  (mandatory).</li>
+     *   <li>{@code population} as an {@link Integer} (mandatory).</li>
      *   <li>{@code name} as a link to the {@code city} attribute.</li>
      * </ul>
      *
-     * @return The feature for a city.
+     * @return the feature for a city.
      */
     private static DefaultFeatureType city() {
         final DefaultFeatureType city = DefaultFeatureTypeTest.city();
@@ -63,14 +63,14 @@ public final strictfp class LinkOperationTest extends TestCase {
     private static void run(final AbstractFeature feature) {
         assertEquals("Get directly",     "Utopia", feature.getPropertyValue("city"));
         assertEquals("Get through link", "Utopia", feature.getPropertyValue("name"));
-        feature.setPropertyValue("name", "Atlantide");  // Set through link.
+        feature.setPropertyValue("name", "Atlantide");                                          // Set through link.
         assertEquals("Get directly",     "Atlantide", feature.getPropertyValue("city"));
         assertEquals("Get through link", "Atlantide", feature.getPropertyValue("name"));
         assertSame(feature.getProperty("name"), feature.getProperty("name"));
     }
 
     /**
-     * Tests a dense type with operations.
+     * Tests a dense feature type with operations.
      */
     @Test
     public void testDenseFeature() {

@@ -29,8 +29,8 @@ import org.apache.sis.referencing.operation.matrix.Matrices;
  * Concatenated transform where both transforms are two-dimensional.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.5
  * @version 0.5
+ * @since   0.5
  * @module
  */
 final class ConcatenatedTransformDirect2D extends ConcatenatedTransformDirect implements MathTransform2D {
@@ -71,8 +71,8 @@ final class ConcatenatedTransformDirect2D extends ConcatenatedTransformDirect im
     /**
      * Transforms the specified shape.
      *
-     * @param  shape Shape to transform.
-     * @return Transformed shape.
+     * @param  shape  shape to transform.
+     * @return transformed shape.
      * @throws TransformException if a transform failed.
      */
     @Override
@@ -83,8 +83,8 @@ final class ConcatenatedTransformDirect2D extends ConcatenatedTransformDirect im
     /**
      * Gets the derivative of this transform at a point.
      *
-     * @param  point The coordinate point where to evaluate the derivative.
-     * @return The derivative at the specified point (never {@code null}).
+     * @param  point  the coordinate point where to evaluate the derivative.
+     * @return the derivative at the specified point (never {@code null}).
      * @throws TransformException if the derivative can't be evaluated at the specified point.
      */
     @Override

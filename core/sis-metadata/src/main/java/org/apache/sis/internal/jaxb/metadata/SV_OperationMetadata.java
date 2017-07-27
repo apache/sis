@@ -26,8 +26,8 @@ import org.apache.sis.internal.jaxb.gco.PropertyType;
  * package documentation for more information about JAXB and interface.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.5
  * @version 0.5
+ * @since   0.5
  * @module
  */
 public final class SV_OperationMetadata extends PropertyType<SV_OperationMetadata, DefaultOperationMetadata> {
@@ -58,8 +58,8 @@ public final class SV_OperationMetadata extends PropertyType<SV_OperationMetadat
      * Invoked by {@link PropertyType} at marshalling time for wrapping the given metadata value
      * in a {@code <srv:SV_OperationMetadata>} XML element.
      *
-     * @param  metadata The metadata element to marshall.
-     * @return A {@code PropertyType} wrapping the given the metadata element.
+     * @param  metadata  the metadata element to marshall.
+     * @return a {@code PropertyType} wrapping the given the metadata element.
      */
     @Override
     protected SV_OperationMetadata wrap(final DefaultOperationMetadata metadata) {
@@ -71,7 +71,7 @@ public final class SV_OperationMetadata extends PropertyType<SV_OperationMetadat
      * inside the {@code <srv:SV_OperationMetadata>} XML element.
      * This is the value or a copy of the value given in argument to the {@code wrap} method.
      *
-     * @return The metadata to be marshalled.
+     * @return the metadata to be marshalled.
      */
     @XmlElementRef
     public DefaultOperationMetadata getElement() {
@@ -81,7 +81,7 @@ public final class SV_OperationMetadata extends PropertyType<SV_OperationMetadat
     /**
      * Invoked by JAXB at unmarshalling time for storing the result temporarily.
      *
-     * @param metadata The unmarshalled metadata.
+     * @param  metadata  the unmarshalled metadata.
      */
     public void setElement(final DefaultOperationMetadata metadata) {
         this.metadata = metadata;

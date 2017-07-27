@@ -24,8 +24,8 @@ import java.util.Locale;
  * Those classes are often parsers or formatters.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.3
+ * @since   0.3
  * @module
  */
 public interface Localized {
@@ -35,7 +35,7 @@ public interface Localized {
      * implementation-dependent, but typical interpretations are:
      *
      * <ul>
-     *   <li>A synonymous of the {@linkplain Locale#getDefault() system default locale};</li>
+     *   <li>A synonymous of the {@linkplain Locale#getDefault() system default locale}.</li>
      *   <li>A synonymous of {@link Locale#ROOT} for an "unlocalized" service. For example the
      *       service may format numbers using {@link Double#toString(double)} instead than
      *       {@link java.text.NumberFormat}.</li>
@@ -44,9 +44,7 @@ public interface Localized {
      * Implementations are encouraged to return a non-null value in every cases.
      * Nevertheless client codes should be prepared to receive null values.
      *
-     * @return The locale, or {@code null} if not explicitly defined.
-     *
-     * @see org.apache.sis.io.CompoundFormat#getLocale()
+     * @return the locale, or {@code null} if not explicitly defined.
      */
     Locale getLocale();
 }

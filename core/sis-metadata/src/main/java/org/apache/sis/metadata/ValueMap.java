@@ -31,11 +31,12 @@ import static org.apache.sis.metadata.PropertyAccessor.RETURN_PREVIOUS;
  * are the value returned by the {@code getFoo()} method using reflection.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.3
- * @module
  *
- * @see MetadataStandard#asValueMap(Object, KeyNamePolicy, ValueExistencePolicy)
+ * @see MetadataStandard#asValueMap(Object, Class, KeyNamePolicy, ValueExistencePolicy)
+ *
+ * @since 0.3
+ * @module
  */
 final class ValueMap extends PropertyMap<Object> {
     /**
@@ -51,10 +52,10 @@ final class ValueMap extends PropertyMap<Object> {
     /**
      * Creates a map of values for the specified metadata and accessor.
      *
-     * @param metadata    The metadata object to wrap.
-     * @param accessor    The accessor to use for the metadata.
-     * @param keyPolicy   Determines the string representation of keys in the map..
-     * @param valuePolicy The behavior of this map toward null or empty values.
+     * @param metadata     the metadata object to wrap.
+     * @param accessor     the accessor to use for the metadata.
+     * @param keyPolicy    determines the string representation of keys in the map..
+     * @param valuePolicy  the behavior of this map toward null or empty values.
      */
     ValueMap(final Object metadata, final PropertyAccessor accessor,
             final KeyNamePolicy keyPolicy, final ValueExistencePolicy valuePolicy)
@@ -173,8 +174,8 @@ final class ValueMap extends PropertyMap<Object> {
      * A map entry for a given property.
      *
      * @author  Martin Desruisseaux (Geomatys)
-     * @since   0.3
      * @version 0.3
+     * @since   0.3
      * @module
      */
     final class Property extends AbstractMapEntry<String,Object> {
@@ -234,8 +235,8 @@ final class ValueMap extends PropertyMap<Object> {
      * The iterator over the {@link Property} elements contained in an {@link Entries} set.
      *
      * @author  Martin Desruisseaux (Geomatys)
-     * @since   0.3
      * @version 0.3
+     * @since   0.3
      * @module
      */
     private final class Iter implements Iterator<Map.Entry<String,Object>> {
@@ -312,8 +313,8 @@ final class ValueMap extends PropertyMap<Object> {
      * View of the entries contained in the map.
      *
      * @author  Martin Desruisseaux (Geomatys)
-     * @since   0.3
      * @version 0.3
+     * @since   0.3
      * @module
      */
     private final class Entries extends PropertyMap<Object>.Entries {

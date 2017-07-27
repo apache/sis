@@ -54,11 +54,12 @@ import java.util.EnumSet;
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.3
- * @module
  *
  * @see org.apache.sis.util.ObjectConverter#properties()
+ *
+ * @since 0.3
+ * @module
  */
 public enum FunctionProperty {
     /**
@@ -159,7 +160,7 @@ public enum FunctionProperty {
      *   <li>{@link #SURJECTIVE}</li>
      * </ul>
      *
-     * @param  properties The properties of the function to test for bijectivity.
+     * @param  properties  the properties of the function to test for bijectivity.
      * @return {@code true} if a function having the given set of properties is bijective.
      */
     public static boolean isBijective(final Set<FunctionProperty> properties) {
@@ -176,7 +177,7 @@ public enum FunctionProperty {
      *   <li>{@link #ORDER_REVERSING}</li>
      * </ul>
      *
-     * @param  properties The properties of the function to test for monotonicity.
+     * @param  properties  the properties of the function to test for monotonicity.
      * @return {@code true} if a function having the given set of properties is monotonic.
      */
     public static boolean isMonotonic(final Set<FunctionProperty> properties) {

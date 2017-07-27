@@ -16,13 +16,12 @@
  */
 package org.apache.sis.storage;
 
+import java.util.Objects;
 import java.io.Serializable;
+import java.io.ObjectStreamException;
 import org.apache.sis.util.Debug;
 import org.apache.sis.util.Version;
 import org.apache.sis.internal.util.Utilities;
-
-// Branch-dependent imports
-import org.apache.sis.internal.jdk7.Objects;
 
 
 /**
@@ -47,11 +46,12 @@ import org.apache.sis.internal.jdk7.Objects;
  * In such cases, SIS will revisit those providers only if no better suited provider is found.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.4
  * @version 0.4
- * @module
  *
  * @see DataStoreProvider#probeContent(StorageConnector)
+ *
+ * @since 0.4
+ * @module
  */
 public class ProbeResult implements Serializable {
     /**
@@ -156,10 +156,10 @@ public class ProbeResult implements Serializable {
     /**
      * Creates a new {@code ProbeResult} with the given support status, MIME type and version number.
      *
-     * @param isSupported {@code true} if the storage is supported by the {@link DataStoreProvider}.
-     * @param mimeType    The storage MIME type, or {@code null} if unknown or not applicable.
-     * @param version     The version of file format or database schema used by the storage,
-     *                    or {@code null} if unknown or not applicable.
+     * @param isSupported  {@code true} if the storage is supported by the {@link DataStoreProvider}.
+     * @param mimeType     the storage MIME type, or {@code null} if unknown or not applicable.
+     * @param version      the version of file format or database schema used by the storage,
+     *                     or {@code null} if unknown or not applicable.
      */
     public ProbeResult(final boolean isSupported, final String mimeType, final Version version) {
         this.isSupported = isSupported;
@@ -203,7 +203,7 @@ public class ProbeResult implements Serializable {
      *   <tr><td>{@code "application/soap+xml"}</td>                               <td></td><td></td></tr>
      * </table>
      *
-     * @return The storage MIME type, or {@code null} if unknown or not applicable.
+     * @return the storage MIME type, or {@code null} if unknown or not applicable.
      */
     public String getMimeType() {
         return mimeType;
@@ -213,7 +213,7 @@ public class ProbeResult implements Serializable {
      * Returns the version of file format or database schema used by the storage,
      * or {@code null} if unknown or not applicable.
      *
-     * @return The version of file format or database schema used by the storage,
+     * @return the version of file format or database schema used by the storage,
      *         or {@code null} if unknown or not applicable.
      */
     public Version getVersion() {
@@ -233,7 +233,7 @@ public class ProbeResult implements Serializable {
      * Two {@code ProbeResult}s are equal if they are instances of the same class
      * and all their properties are equal.
      *
-     * @param  object The object to compare with this {@code ProbeResult}.
+     * @param  object  the object to compare with this {@code ProbeResult}.
      * @return {@code true} if the two objects are equal.
      */
     @Override
@@ -287,10 +287,10 @@ public class ProbeResult implements Serializable {
          * okay if all comparisons are performed by the {@code equals} method instead
          * than the {@code ==} operator.
          */
-        Object readResolve() {
+        Object readResolve() throws ObjectStreamException {
             try {
                 return ProbeResult.class.getField(name).get(null);
-            } catch (Exception e) { // ReflectiveOperationException on the JDK7 branch.
+            } catch (ReflectiveOperationException e) {
                 return this; // See javadoc
             }
         }

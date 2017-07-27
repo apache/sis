@@ -22,8 +22,11 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.io.IOException;
 import java.lang.reflect.UndeclaredThrowableException;
+import org.apache.sis.storage.DataStore;
+import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.util.logging.EmptyWarningListeners;
 import org.apache.sis.internal.netcdf.ucar.DecoderWrapper;
+import org.apache.sis.internal.system.Modules;
 import ucar.nc2.dataset.NetcdfDataset;
 import org.junit.AfterClass;
 
@@ -36,16 +39,15 @@ import static org.junit.Assert.*;
  * <p>This class is <strong>not</strong> thread safe - do not run subclasses in parallel.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.3
+ * @since   0.3
  * @module
  */
 public abstract strictfp class TestCase extends IOTestCase {
     /**
      * A dummy list of listeners which can be given to the {@link Decoder} constructor.
      */
-    public static EmptyWarningListeners<Decoder> LISTENERS =
-            new EmptyWarningListeners<Decoder>("org.apache.sis.storage.netcdf");
+    public static EmptyWarningListeners<DataStore> LISTENERS = new EmptyWarningListeners<>(null, Modules.NETCDF);
 
     /**
      * The {@code searchPath} argument value to be given to the {@link Decoder#setSearchPath(String[])}
@@ -56,7 +58,7 @@ public abstract strictfp class TestCase extends IOTestCase {
     /**
      * The decoders cached by {@link #selectDataset(String)}.
      */
-    private static final Map<String,Decoder> DECODERS = new HashMap<String,Decoder>();
+    private static final Map<String,Decoder> DECODERS = new HashMap<>();
 
     /**
      * The decoder to test, which is set by {@link #selectDataset(String)}.
@@ -76,7 +78,7 @@ public abstract strictfp class TestCase extends IOTestCase {
      * supplemental formats tested in this suite. Subclasses working only with the NetCDF
      * classic or 64-bits format can unconditionally returns {@code false}.
      *
-     * @param  format Either {@code "THREDDS"} or {@code "HDF5"}.
+     * @param  format  either {@code "THREDDS"} or {@code "HDF5"}.
      * @return {@code true} if the given supplemental format is supported.
      */
     protected boolean isSupplementalFormatSupported(final String format) {
@@ -88,10 +90,8 @@ public abstract strictfp class TestCase extends IOTestCase {
      * The {@code name} parameter can be one of the following values:
      *
      * <ul>
-     *   <li>{@link #THREDDS} for a NcML file.</li>
      *   <li>{@link #NCEP}    for a NetCDF binary file.</li>
      *   <li>{@link #CIP}     for a NetCDF binary file.</li>
-     *   <li>{@link #LANDSAT} for a NetCDF binary file.</li>
      * </ul>
      *
      * The default implementation first delegates to {@link #open(String)}, then wraps the result
@@ -99,11 +99,12 @@ public abstract strictfp class TestCase extends IOTestCase {
      * reference implementation. However subclasses can override if they want to test a different
      * library.
      *
-     * @param  name The file name as one of the above-cited constants.
-     * @return The decoder for the given name.
-     * @throws IOException If an error occurred while opening the file.
+     * @param  name  the file name as one of the above-cited constants.
+     * @return the decoder for the given name.
+     * @throws IOException if an I/O error occurred while opening the file.
+     * @throws DataStoreException if a logical error occurred.
      */
-    protected Decoder createDecoder(final String name) throws IOException {
+    protected Decoder createDecoder(final String name) throws IOException, DataStoreException {
         return new DecoderWrapper(LISTENERS, new NetcdfDataset(open(name)));
     }
 
@@ -115,12 +116,13 @@ public abstract strictfp class TestCase extends IOTestCase {
      * <p>The {@linkplain Decoder#setSearchPath(String[]) search path} of the returned decoder
      * is initialized to the global attributes only.</p>
      *
-     * @param  name The file name as one of the constants enumerated in the {@link #createDecoder(String)} method.
-     * @return The decoder for the given name.
-     * @throws IOException If an error occurred while opening the file.
+     * @param  name  the file name as one of the constants enumerated in the {@link #createDecoder(String)} method.
+     * @return the decoder for the given name.
+     * @throws IOException if an I/O error occurred while opening the file.
+     * @throws DataStoreException if a logical error occurred.
      */
-    protected final Decoder selectDataset(final String name) throws IOException {
-        synchronized (DECODERS) { // Paranoiac safety, but should not be used in multi-threads environment.
+    protected final Decoder selectDataset(final String name) throws IOException, DataStoreException {
+        synchronized (DECODERS) {               // Paranoiac safety, but should not be used in multi-threads environment.
             decoder = DECODERS.get(name);
             if (decoder == null) {
                 decoder = createDecoder(name);
@@ -128,7 +130,7 @@ public abstract strictfp class TestCase extends IOTestCase {
                 assertNull(DECODERS.put(name, decoder));
             }
             decoder.setSearchPath(GLOBAL);
-            return decoder; // Reminder: Decoder instances are not thread-safe.
+            return decoder;                     // Reminder: Decoder instances are not thread-safe.
         }
     }
 
@@ -136,12 +138,12 @@ public abstract strictfp class TestCase extends IOTestCase {
      * Invoked after all tests in a class have been executed.
      * This method closes all NetCDF files.
      *
-     * @throws IOException If an error occurred while closing a file.
+     * @throws IOException if an error occurred while closing a file.
      */
     @AfterClass
     public static void closeAllDecoders() throws IOException {
         Throwable failure = null;
-        synchronized (DECODERS) { // Paranoiac safety.
+        synchronized (DECODERS) {               // Paranoiac safety.
             final Iterator<Decoder> it = DECODERS.values().iterator();
             while (it.hasNext()) {
                 final Decoder decoder = it.next();
@@ -151,7 +153,7 @@ public abstract strictfp class TestCase extends IOTestCase {
                     if (failure == null) {
                         failure = e;
                     } else {
-                        // On JDK7 branch: failure.addSuppressed(e);
+                        failure.addSuppressed(e);
                     }
                 }
                 it.remove();
@@ -180,9 +182,9 @@ public abstract strictfp class TestCase extends IOTestCase {
      * Asserts that the textual value of the named attribute is equals to the expected value.
      * The {@link #selectDataset(String)} method must be invoked at least once before this method.
      *
-     * @param  expected      The expected attribute value.
-     * @param  attributeName The name of the attribute to test.
-     * @throws IOException   If an error occurred while reading the NetCDF file.
+     * @param  expected       the expected attribute value.
+     * @param  attributeName  the name of the attribute to test.
+     * @throws IOException if an error occurred while reading the NetCDF file.
      */
     protected final void assertAttributeEquals(final String expected, final String attributeName) throws IOException {
         assertEquals(attributeName, expected, decoder.stringValue(attributeName));
@@ -192,9 +194,9 @@ public abstract strictfp class TestCase extends IOTestCase {
      * Asserts that the numeric value of the named attribute is equals to the expected value.
      * The {@link #selectDataset(String)} method must be invoked at least once before this method.
      *
-     * @param  expected      The expected attribute value.
-     * @param  attributeName The name of the attribute to test.
-     * @throws IOException   If an error occurred while reading the NetCDF file.
+     * @param  expected       the expected attribute value.
+     * @param  attributeName  the name of the attribute to test.
+     * @throws IOException if an error occurred while reading the NetCDF file.
      */
     protected final void assertAttributeEquals(final Number expected, final String attributeName) throws IOException {
         assertEquals(attributeName, expected, decoder.numericValue(attributeName));
@@ -204,9 +206,9 @@ public abstract strictfp class TestCase extends IOTestCase {
      * Asserts that the temporal value of the named attribute is equals to the expected value.
      * The {@link #selectDataset(String)} method must be invoked at least once before this method.
      *
-     * @param  expected      The expected attribute value.
-     * @param  attributeName The name of the attribute to test.
-     * @throws IOException   If an error occurred while reading the NetCDF file.
+     * @param  expected       the expected attribute value.
+     * @param  attributeName  the name of the attribute to test.
+     * @throws IOException if an error occurred while reading the NetCDF file.
      */
     protected final void assertAttributeEquals(final Date expected, final String attributeName) throws IOException {
         assertEquals(attributeName, expected, decoder.dateValue(attributeName));

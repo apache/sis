@@ -23,11 +23,9 @@ import java.io.InvalidObjectException;
 import java.io.IOException;
 import java.util.Locale;
 import java.util.MissingResourceException;
+import java.util.Objects;
 import org.apache.sis.util.Utilities;
 import org.apache.sis.util.iso.AbstractInternationalString;
-
-// Branch-dependent imports
-import org.apache.sis.internal.jdk7.Objects;
 
 
 /**
@@ -39,11 +37,11 @@ import org.apache.sis.internal.jdk7.Objects;
  * This base class is immutable and thus inherently thread-safe.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
- * @version 0.4
+ * @version 0.8
+ * @since   0.8
  * @module
  */
-abstract class ResourceInternationalString extends AbstractInternationalString implements Serializable {
+public abstract class ResourceInternationalString extends AbstractInternationalString implements Serializable {
     /**
      * Serial number for inter-operability with different versions.
      */
@@ -71,9 +69,9 @@ abstract class ResourceInternationalString extends AbstractInternationalString i
     /**
      * Creates a new international string for the given key.
      *
-     * @param key The key for the resource to fetch.
+     * @param key  the key for the resource to fetch.
      */
-    ResourceInternationalString(final short key) {
+    protected ResourceInternationalString(final short key) {
         this.key     = key;
         hasArguments = false;
         arguments    = null;
@@ -82,10 +80,10 @@ abstract class ResourceInternationalString extends AbstractInternationalString i
     /**
      * Creates a new international string for the given key and arguments.
      *
-     * @param key The key for the resource to fetch.
-     * @param arguments The argument(s).
+     * @param key        the key for the resource to fetch.
+     * @param arguments  the argument(s).
      */
-    ResourceInternationalString(final short key, final Object arguments) {
+    protected ResourceInternationalString(final short key, final Object arguments) {
         this.key          = key;
         this.hasArguments = true;
         this.arguments    = arguments;
@@ -96,24 +94,24 @@ abstract class ResourceInternationalString extends AbstractInternationalString i
      * This is used at serialization time in order to serialize the constant name
      * rather than its numeric value.
      *
-     * @return A handler for the constants declared in the inner {@code Keys} class.
+     * @return a handler for the constants declared in the inner {@code Keys} class.
      */
-    abstract KeyConstants getKeyConstants();
+    protected abstract KeyConstants getKeyConstants();
 
     /**
      * Returns the resource bundle for the given locale.
      *
-     * @param  locale The locale for which to get the resource bundle.
-     * @return The resource bundle for the given locale.
+     * @param  locale  the locale for which to get the resource bundle.
+     * @return the resource bundle for the given locale.
      */
-    abstract IndexedResourceBundle getBundle(final Locale locale);
+    protected abstract IndexedResourceBundle getBundle(final Locale locale);
 
     /**
      * Returns a string in the specified locale.
      *
-     * @param  locale The desired locale for the string to be returned.
-     * @return The string in the specified locale, or in a fallback locale.
-     * @throws MissingResourceException is the key given to the constructor is invalid.
+     * @param  locale  the desired locale for the string to be returned.
+     * @return the string in the specified locale, or in a fallback locale.
+     * @throws MissingResourceException if the key given to the constructor is invalid.
      */
     @Override
     public final String toString(final Locale locale) throws MissingResourceException {
@@ -124,7 +122,7 @@ abstract class ResourceInternationalString extends AbstractInternationalString i
     /**
      * Compares this international string with the specified object for equality.
      *
-     * @param object The object to compare with this international string.
+     * @param  object  the object to compare with this international string.
      * @return {@code true} if the given object is equal to this string.
      */
     @Override
@@ -139,7 +137,7 @@ abstract class ResourceInternationalString extends AbstractInternationalString i
     /**
      * Returns a hash code value for this international text.
      *
-     * @return A hash code value for this international text.
+     * @return a hash code value for this international text.
      */
     @Override
     public final int hashCode() {
@@ -149,8 +147,8 @@ abstract class ResourceInternationalString extends AbstractInternationalString i
     /**
      * Serializes this international string using the key name rather than numerical value.
      *
-     * @param  out The output stream where to serialize this object.
-     * @throws IOException If an I/O error occurred while writing.
+     * @param  out  the output stream where to serialize this object.
+     * @throws IOException if an I/O error occurred while writing.
      */
     private void writeObject(final ObjectOutputStream out) throws IOException {
         out.defaultWriteObject();
@@ -160,18 +158,16 @@ abstract class ResourceInternationalString extends AbstractInternationalString i
     /**
      * Deserializes an object serialized by {@link #writeObject(ObjectOutputStream)}.
      *
-     * @param  in The input stream from which to deserialize an object.
-     * @throws IOException If an I/O error occurred while reading or if the stream contains invalid data.
-     * @throws ClassNotFoundException If the class serialized on the stream is not on the classpath.
+     * @param  in  the input stream from which to deserialize an object.
+     * @throws IOException if an I/O error occurred while reading or if the stream contains invalid data.
+     * @throws ClassNotFoundException if the class serialized on the stream is not on the classpath.
      */
     private void readObject(final ObjectInputStream in) throws IOException, ClassNotFoundException {
         in.defaultReadObject();
         try {
             key = getKeyConstants().getKeyValue(in.readUTF());
-        } catch (Exception cause) { // (ReflectiveOperationException) on JDK7
-            InvalidObjectException e = new InvalidObjectException(cause.toString());
-            e.initCause(cause);
-            throw e;
+        } catch (ReflectiveOperationException cause) {
+            throw (InvalidObjectException) new InvalidObjectException(cause.toString()).initCause(cause);
         }
     }
 }

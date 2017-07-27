@@ -20,6 +20,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.util.Deprecable;
 
 
 /**
@@ -27,8 +28,8 @@ import org.apache.sis.util.resources.Errors;
  * This include {@code Attribute} and {@code Association}, but not {@code Operation}.
  *
  * @author  Martin Desruisseaux (Geomatys)
+ * @version 0.8
  * @since   0.5
- * @version 0.5
  * @module
  */
 abstract class Field<V> extends Property {
@@ -52,11 +53,12 @@ abstract class Field<V> extends Property {
     /**
      * Returns the field feature or attribute value, or {@code null} if none.
      *
-     * @return The feature or attribute value (may be {@code null}).
+     * @return the feature or attribute value (may be {@code null}).
      * @throws IllegalStateException if this field contains more than one value.
      *
      * @see AbstractFeature#getPropertyValue(String)
      */
+    @Override
     public abstract V getValue() throws IllegalStateException;
 
     /**
@@ -64,16 +66,16 @@ abstract class Field<V> extends Property {
      * The returned collection is <cite>live</cite>: changes in the returned collection
      * will be reflected immediately in this {@code Field} instance, and conversely.
      *
-     * @return The features or attribute values in a <cite>live</cite> collection.
+     * @return the features or attribute values in a <cite>live</cite> collection.
      */
     public Collection<V> getValues() {
-        return new PropertySingleton<V>(this);
+        return new PropertySingleton<>(this);
     }
 
     /**
      * Sets the feature or attribute value. All previous values are replaced by the given singleton.
      *
-     * @param value The new value, or {@code null} for removing all values from this field.
+     * @param  value  the new value, or {@code null} for removing all values from this field.
      *
      * @see AbstractFeature#setPropertyValue(String, Object)
      */
@@ -85,7 +87,7 @@ abstract class Field<V> extends Property {
      * <p>The default implementation ensures that the given collection contains at most one element,
      * then delegates to {@link #setValue(Object)}.</p>
      *
-     * @param values The new values.
+     * @param  values  the new values.
      * @throws IllegalArgumentException if the given collection contains too many elements.
      */
     public void setValues(final Collection<? extends V> values) throws IllegalArgumentException {
@@ -99,5 +101,12 @@ abstract class Field<V> extends Property {
             }
         }
         setValue(value);
+    }
+
+    /**
+     * Returns whether the given property is deprecated.
+     */
+    static boolean isDeprecated(final AbstractIdentifiedType type) {
+        return (type instanceof Deprecable) && ((Deprecable) type).isDeprecated();
     }
 }

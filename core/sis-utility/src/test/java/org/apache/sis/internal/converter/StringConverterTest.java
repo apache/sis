@@ -17,20 +17,23 @@
 package org.apache.sis.internal.converter;
 
 import java.util.Locale;
-import java.io.File;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.io.File;
 import java.net.URI;
 import java.net.URL;
 import java.net.URISyntaxException;
 import java.net.MalformedURLException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.lang.annotation.ElementType;
-import javax.measure.unit.SI;
-import javax.measure.unit.Unit;
+import javax.measure.Unit;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.citation.OnLineFunction;
 import org.apache.sis.measure.Angle;
+import org.apache.sis.measure.Units;
 import org.apache.sis.math.FunctionProperty;
 import org.apache.sis.util.ObjectConverter;
 import org.apache.sis.util.UnconvertibleObjectException;
@@ -41,18 +44,16 @@ import org.junit.Test;
 
 import static org.apache.sis.test.Assert.*;
 
-// Branch-dependent imports
-import org.apache.sis.internal.jdk7.StandardCharsets;
-
 
 /**
  * Tests the various {@link StringConverter} implementations.
  *
  * @author  Martin Desruisseaux (Geomatys)
+ * @version 0.8
  * @since   0.3
- * @version 0.5
  * @module
  */
+@SuppressWarnings("UnnecessaryBoxing")
 @DependsOn(org.apache.sis.measure.AngleTest.class)
 public final strictfp class StringConverterTest extends TestCase {
     /**
@@ -258,6 +259,17 @@ public final strictfp class StringConverterTest extends TestCase {
     }
 
     /**
+     * Tests conversions to {@link Path}.
+     */
+    @Test
+    public void testPath() {
+        final ObjectConverter<String,Path> c = new StringConverter.Path();
+        final String path = "home/user/index.txt".replace('/', File.separatorChar);
+        runInvertibleConversion(c, path, Paths.get(path));
+        assertSerializedEquals(c);
+    }
+
+    /**
      * Tests conversions to {@link URI}.
      *
      * @throws URISyntaxException Should never happen.
@@ -287,7 +299,7 @@ public final strictfp class StringConverterTest extends TestCase {
     @Test
     public void testUnit() {
         final ObjectConverter<String,Unit<?>> c = new StringConverter.Unit();
-        runInvertibleConversion(c, "km", SI.KILOMETRE);
+        runInvertibleConversion(c, "km", Units.KILOMETRE);
         assertSerializedEquals(c);
     }
 
@@ -296,7 +308,7 @@ public final strictfp class StringConverterTest extends TestCase {
      */
     @Test
     public void testCodeList() {
-        final ObjectConverter<String, OnLineFunction> c = new StringConverter.CodeList<OnLineFunction>(OnLineFunction.class);
+        final ObjectConverter<String, OnLineFunction> c = new StringConverter.CodeList<>(OnLineFunction.class);
         runInvertibleConversion(c, "OFFLINE_ACCESS", OnLineFunction.OFFLINE_ACCESS);
         tryUnconvertibleValue(c);
         assertSerializedEquals(c);
@@ -309,7 +321,7 @@ public final strictfp class StringConverterTest extends TestCase {
      */
     @Test
     public void testEnum() {
-        final ObjectConverter<String, ElementType> c = new StringConverter.Enum<ElementType>(ElementType.class);
+        final ObjectConverter<String, ElementType> c = new StringConverter.Enum<>(ElementType.class);
         runInvertibleConversion(c, "PACKAGE", ElementType.PACKAGE);
         tryUnconvertibleValue(c);
         assertSerializedEquals(c);

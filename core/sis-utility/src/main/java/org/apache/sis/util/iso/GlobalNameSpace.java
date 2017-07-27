@@ -16,6 +16,8 @@
  */
 package org.apache.sis.util.iso;
 
+import java.io.ObjectStreamException;
+
 
 /**
  * The global namespace. Only one instance of this class is allowed to exists. We do not expose
@@ -26,8 +28,8 @@ package org.apache.sis.util.iso;
  * This class is immutable and thus inherently thread-safe.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.3
  * @version 0.3
+ * @since   0.3
  * @module
  */
 final class GlobalNameSpace extends DefaultNameSpace {
@@ -58,10 +60,10 @@ final class GlobalNameSpace extends DefaultNameSpace {
     /**
      * Returns the unique instance of global name space on deserialization.
      *
-     * @return The unique instance.
+     * @return the unique instance.
      */
     @Override
-    Object readResolve() {
+    Object readResolve() throws ObjectStreamException {
         return GLOBAL;
     }
 }

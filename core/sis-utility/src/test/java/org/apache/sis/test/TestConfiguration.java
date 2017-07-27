@@ -23,11 +23,18 @@ import org.apache.sis.util.Static;
  * Information about the configuration of tests
  *
  * @author  Martin Desruisseaux (Geomatys)
+ * @version 0.7
  * @since   0.3
- * @version 0.3
  * @module
  */
 public final strictfp class TestConfiguration extends Static {
+    /**
+     * The {@value} system property for enabling more extensive tests.
+     * If this {@linkplain System#getProperties() system property} is set to {@code true},
+     * then Apache SIS will run some tests which were normally skipped because they are slow.
+     */
+    public static final String EXTENSIVE_TESTS_KEY = "org.apache.sis.test.extensive";
+
     /**
      * The {@value} system property for enabling verbose outputs.
      * If this {@linkplain System#getProperties() system property} is set to {@code true},

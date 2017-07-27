@@ -17,9 +17,10 @@
 package org.apache.sis.referencing.datum;
 
 import java.util.Map;
-import javax.measure.unit.Unit;
+import javax.measure.Unit;
 import javax.measure.quantity.Length;
 import javax.xml.bind.annotation.XmlTransient;
+import org.opengis.referencing.datum.Ellipsoid;
 
 import static java.lang.Math.*;
 
@@ -34,8 +35,8 @@ import static java.lang.Math.*;
  * all components were created using only SIS factories and static constants.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
+ * @version 0.7
  * @since   0.4
- * @version 0.4
  * @module
  */
 @XmlTransient
@@ -48,10 +49,10 @@ final class Sphere extends DefaultEllipsoid {
     /**
      * Creates a new sphere using the specified radius.
      *
-     * @param properties    The properties to be given to the identified object.
-     * @param radius        The equatorial and polar radius.
-     * @param ivfDefinitive {@code true} if the inverse flattening is definitive.
-     * @param unit          The units of the radius value.
+     * @param properties     the properties to be given to the identified object.
+     * @param radius         the equatorial and polar radius.
+     * @param ivfDefinitive  {@code true} if the inverse flattening is definitive.
+     * @param unit           the units of the radius value.
      */
     protected Sphere(Map<String,?> properties, double radius, boolean ivfDefinitive, Unit<Length> unit) {
         super(properties, radius, radius, Double.POSITIVE_INFINITY, ivfDefinitive, unit);
@@ -82,15 +83,31 @@ final class Sphere extends DefaultEllipsoid {
     }
 
     /**
+     * Eccentricity of a sphere is always zero.
+     */
+    @Override
+    public double getEccentricitySquared() {
+        return 0;
+    }
+
+    /**
+     * Returns the flattening factor of the other ellipsoid, since the flattening factor of {@code this} is zero.
+     */
+    @Override
+    public double flatteningDifference(final Ellipsoid other) {
+        return 1 / other.getInverseFlattening();
+    }
+
+    /**
      * Returns the orthodromic distance between two geographic coordinates.
      * The orthodromic distance is the shortest distance between two points
      * on a sphere's surface. The orthodromic path is always on a great circle.
      *
-     * @param  λ1 Longitude of first point (in decimal degrees).
-     * @param  φ1 Latitude of first point (in decimal degrees).
-     * @param  λ2 Longitude of second point (in decimal degrees).
-     * @param  φ2 Latitude of second point (in decimal degrees).
-     * @return The orthodromic distance (in the units of this ellipsoid's axis).
+     * @param  λ1  longitude of first point (in decimal degrees).
+     * @param  φ1  latitude of first point (in decimal degrees).
+     * @param  λ2  longitude of second point (in decimal degrees).
+     * @param  φ2  latitude of second point (in decimal degrees).
+     * @return the orthodromic distance (in the units of this ellipsoid's axis).
      */
     @Override
     public double orthodromicDistance(double λ1, double φ1, double λ2, double φ2) {
@@ -99,8 +116,8 @@ final class Sphere extends DefaultEllipsoid {
         final double dx = toRadians(abs(λ2-λ1) % 360);
         double rho = sin(φ1)*sin(φ2) + cos(φ1)*cos(φ2)*cos(dx);
         assert abs(rho) < 1.0000001 : rho;
-        if (rho > +1) rho = +1; // Catch rounding error.
-        if (rho < -1) rho = -1; // Catch rounding error.
+        if (rho > +1) rho = +1;                         // Catch rounding error.
+        if (rho < -1) rho = -1;                         // Catch rounding error.
         return acos(rho) * getSemiMajorAxis();
     }
 }

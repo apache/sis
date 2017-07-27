@@ -19,7 +19,7 @@ package org.apache.sis.internal.jaxb.code;
 import javax.xml.bind.annotation.XmlElement;
 import org.opengis.metadata.identification.CharacterSet;
 import org.apache.sis.internal.jaxb.gmd.CodeListAdapter;
-import org.apache.sis.internal.jaxb.gmd.CodeListProxy;
+import org.apache.sis.internal.jaxb.gmd.CodeListUID;
 
 
 /**
@@ -28,8 +28,8 @@ import org.apache.sis.internal.jaxb.gmd.CodeListProxy;
  * the handling of {@code CodeList} in ISO-19139.
  *
  * @author  Cédric Briançon (Geomatys)
+ * @version 0.5
  * @since   0.3
- * @version 0.3
  * @module
  */
 public final class MD_CharacterSetCode extends CodeListAdapter<MD_CharacterSetCode, CharacterSet> {
@@ -42,16 +42,16 @@ public final class MD_CharacterSetCode extends CodeListAdapter<MD_CharacterSetCo
     /**
      * Creates a new adapter for the given proxy.
      */
-    private MD_CharacterSetCode(final CodeListProxy proxy) {
-        super(proxy);
+    private MD_CharacterSetCode(final CodeListUID value) {
+        super(value);
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    protected MD_CharacterSetCode wrap(CodeListProxy proxy) {
-        return new MD_CharacterSetCode(proxy);
+    protected MD_CharacterSetCode wrap(final CodeListUID value) {
+        return new MD_CharacterSetCode(value);
     }
 
     /**
@@ -65,20 +65,20 @@ public final class MD_CharacterSetCode extends CodeListAdapter<MD_CharacterSetCo
     /**
      * Invoked by JAXB on marshalling.
      *
-     * @return The value to be marshalled.
+     * @return the value to be marshalled.
      */
     @Override
     @XmlElement(name = "MD_CharacterSetCode")
-    public CodeListProxy getElement() {
-        return proxy;
+    public CodeListUID getElement() {
+        return identifier;
     }
 
     /**
      * Invoked by JAXB on unmarshalling.
      *
-     * @param proxy The unmarshalled value.
+     * @param  value  the unmarshalled value.
      */
-    public void setElement(final CodeListProxy proxy) {
-        this.proxy = proxy;
+    public void setElement(final CodeListUID value) {
+        identifier = value;
     }
 }

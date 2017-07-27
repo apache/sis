@@ -30,8 +30,8 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
  * Tests {@link OptionKey}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.3
+ * @since   0.3
  * @module
  */
 public final strictfp class OptionKeyTest extends TestCase {
@@ -90,7 +90,7 @@ public final strictfp class OptionKeyTest extends TestCase {
      */
     @Test
     public void testSubclassSerialization() {
-        final CustomKey<Integer> key = new CustomKey<Integer>("key", Integer.class);
+        final CustomKey<Integer> key = new CustomKey<>("key", Integer.class);
         assertNotSame(key, assertSerializedEquals(key));
     }
 }

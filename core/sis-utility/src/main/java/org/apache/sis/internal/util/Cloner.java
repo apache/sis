@@ -28,8 +28,8 @@ import org.apache.sis.util.resources.Errors;
  * for the lack of public {@code clone()} method in the {@link Cloneable} interface.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.6
+ * @since   0.3
  * @module
  */
 @Workaround(library="JDK", version="1.7")
@@ -61,7 +61,7 @@ public class Cloner {
      * <p>The default implementation returns {@code true} in every cases.
      * Subclasses can override this method if they need a different behavior.</p>
      *
-     * @param  object The object that can not be cloned.
+     * @param  object  the object that can not be cloned.
      * @return {@code true} if the problem shall be considered a clone failure.
      */
     protected boolean isCloneRequired(final Object object) {
@@ -78,9 +78,9 @@ public class Cloner {
      *   <li>Otherwise the given object is returned.</li>
      * </ul>
      *
-     * @param  object The object to clone, or {@code null}.
-     * @return A clone of the given object, or {@code null} if {@code object} was null.
-     * @throws CloneNotSupportedException If the given object can not be cloned.
+     * @param  object  the object to clone, or {@code null}.
+     * @return a clone of the given object, or {@code null} if {@code object} was null.
+     * @throws CloneNotSupportedException if the given object can not be cloned.
      */
     public Object clone(final Object object) throws CloneNotSupportedException {
         if (object == null) {
@@ -91,7 +91,7 @@ public class Cloner {
         try {
             if (valueType != type) {
                 method = valueType.getMethod("clone", (Class<?>[]) null);
-                type = valueType; // Set only if the above line succeed.
+                type = valueType;                                           // Set only if the above line succeed.
                 /*
                  * If the class implementing the 'clone()' method is not public, we may not be able to access that
                  * method even if it is public. Try to make the method accessible. If we fail for security reason,
@@ -118,7 +118,9 @@ public class Cloner {
             method = null;
             type = valueType;
         } catch (IllegalAccessException e) {
-            // JDK7 branch has the following: e.addSuppressed(security);
+            if (security != null) {
+                e.addSuppressed(security);
+            }
             throw fail(e, valueType);
         } catch (InvocationTargetException e) {
             rethrow(e.getCause());
@@ -134,7 +136,7 @@ public class Cloner {
      * or an unchecked exception, or do nothing otherwise. If this method returns normally,
      * then it is caller's responsibility to throw an other exception.
      *
-     * @param cause The value of {@link InvocationTargetException#getCause()}.
+     * @param  cause  the value of {@link InvocationTargetException#getCause()}.
      */
     private static void rethrow(final Throwable cause) throws CloneNotSupportedException {
         if (cause instanceof CloneNotSupportedException) {
@@ -152,9 +154,9 @@ public class Cloner {
     /**
      * Returns an exception telling that the object can not be cloned because of the given error.
      *
-     * @param  cause The cause for the failure to clone an object.
-     * @param  type  The type of object that we failed to clone.
-     * @return An exception with an error message and the given cause.
+     * @param  cause  the cause for the failure to clone an object.
+     * @param  type   the type of object that we failed to clone.
+     * @return an exception with an error message and the given cause.
      */
     private static CloneNotSupportedException fail(final Throwable cause, final Class<?> type) {
         return (CloneNotSupportedException) new CloneNotSupportedException(
@@ -166,8 +168,8 @@ public class Cloner {
      * This method may be convenient when there is only one object to clone, otherwise instantiating a new
      * {@code Cloner} object is more efficient.
      *
-     * @param  object The object to clone, or {@code null}.
-     * @return The given object (which may be {@code null}) or a clone of the given object.
+     * @param  object  the object to clone, or {@code null}.
+     * @return the given object (which may be {@code null}) or a clone of the given object.
      * @throws CloneNotSupportedException if the call to {@link Object#clone()} failed.
      *
      * @since 0.6
@@ -180,13 +182,11 @@ public class Cloner {
                 if (Modifier.isPublic(m.getModifiers())) {
                     return m.invoke(object, (Object[]) null);
                 }
-            } catch (NoSuchMethodException e) {
+            } catch (NoSuchMethodException | IllegalAccessException e) {
                 /*
                  * Should never happen because all objects have a clone() method
                  * and we verified that the method is public.
                  */
-                throw new AssertionError(e);
-            } catch (IllegalAccessException e) {
                 throw new AssertionError(e);
             } catch (InvocationTargetException e) {
                 rethrow(e.getCause());

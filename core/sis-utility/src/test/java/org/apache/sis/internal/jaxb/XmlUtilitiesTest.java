@@ -31,8 +31,8 @@ import static javax.xml.datatype.DatatypeConstants.FIELD_UNDEFINED;
  * Test {@link XmlUtilities}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.3
+ * @since   0.3
  * @module
  */
 public final strictfp class XmlUtilitiesTest extends XMLTestCase {
@@ -40,7 +40,7 @@ public final strictfp class XmlUtilitiesTest extends XMLTestCase {
      * Tests the {@link XmlUtilities#toXML} method.
      * This test arbitrarily uses the CET timezone.
      *
-     * @throws DatatypeConfigurationException Should never happen.
+     * @throws DatatypeConfigurationException if the XML factory can not be created.
      */
     @Test
     public void testToXML() throws DatatypeConfigurationException {

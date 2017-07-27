@@ -28,8 +28,11 @@ import org.opengis.geometry.MismatchedDimensionException;
  * that the operation involves two Coordinate Reference Systems of incompatible dimensions.</div>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.4
  * @version 0.4
+ *
+ * @see org.apache.sis.referencing.operation.MismatchedDatumException
+ *
+ * @since 0.4
  * @module
  */
 public class MismatchedMatrixSizeException extends MismatchedDimensionException {
@@ -48,7 +51,7 @@ public class MismatchedMatrixSizeException extends MismatchedDimensionException 
     /**
      * Constructs a new exception with the specified detail message.
      *
-     * @param message The detail message, or {@code null} if none.
+     * @param message  the detail message, or {@code null} if none.
      */
     public MismatchedMatrixSizeException(final String message) {
         super(message);
@@ -57,8 +60,8 @@ public class MismatchedMatrixSizeException extends MismatchedDimensionException 
     /**
      * Constructs a new exception with the specified detail message and cause.
      *
-     * @param message The detail message, or {@code null} if none.
-     * @param cause The cause, or {@code null} if none.
+     * @param message  the detail message, or {@code null} if none.
+     * @param cause    the cause, or {@code null} if none.
      */
     public MismatchedMatrixSizeException(final String message, final Throwable cause) {
         super(message, cause);

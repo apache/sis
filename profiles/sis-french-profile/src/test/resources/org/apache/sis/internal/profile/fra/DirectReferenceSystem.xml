@@ -33,13 +33,10 @@
     <fra:FRA_DirectReferenceSystem>
       <gmd:referenceSystemIdentifier>
         <gmd:RS_Identifier>
-          <gmd:code>
-            <gco:CharacterString>4326</gco:CharacterString>
-          </gmd:code>
           <gmd:authority>
             <gmd:CI_Citation>
               <gmd:title>
-                <gco:CharacterString>European Petroleum Survey Group</gco:CharacterString>
+                <gco:CharacterString>EPSG Geodetic Parameter Dataset</gco:CharacterString>
               </gmd:title>
               <gmd:citedResponsibleParty>
                 <gmd:CI_ResponsibleParty>
@@ -67,6 +64,9 @@
               </gmd:citedResponsibleParty>
             </gmd:CI_Citation>
           </gmd:authority>
+          <gmd:code>
+            <gco:CharacterString>4326</gco:CharacterString>
+          </gmd:code>
         </gmd:RS_Identifier>
       </gmd:referenceSystemIdentifier>
     </fra:FRA_DirectReferenceSystem>

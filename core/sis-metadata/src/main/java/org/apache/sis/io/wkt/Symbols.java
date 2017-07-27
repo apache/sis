@@ -19,15 +19,14 @@ package org.apache.sis.io.wkt;
 import java.util.Arrays;
 import java.util.Locale;
 import java.io.Serializable;
+import java.io.ObjectStreamException;
 import java.text.NumberFormat;
 import org.apache.sis.util.Localized;
+import org.apache.sis.util.Workaround;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.resources.Errors;
 
 import static org.apache.sis.util.ArgumentChecks.*;
-
-// Related to JDK7
-import org.apache.sis.internal.jdk7.JDK7;
 
 
 /**
@@ -68,18 +67,34 @@ import org.apache.sis.internal.jdk7.JDK7;
  * Users can create their own {@code Symbols} instance for parsing or formatting a WKT with different symbols.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.4
- * @version 0.4
- * @module
+ * @version 0.6
  *
  * @see WKTFormat#getSymbols()
  * @see WKTFormat#setSymbols(Symbols)
+ *
+ * @since 0.4
+ * @module
  */
 public class Symbols implements Localized, Cloneable, Serializable {
     /**
      * For cross-version compatibility.
      */
     private static final long serialVersionUID = -1730166945430878916L;
+
+    /**
+     * Set to {@code true} if parsing and formatting of number in scientific notation is allowed.
+     * The way to achieve that is currently a hack, because {@link NumberFormat} has no API for
+     * managing that as of JDK 1.8.
+     *
+     * @todo See if a future version of JDK allows us to get ride of this ugly hack.
+     */
+    @Workaround(library = "JDK", version = "1.8")
+    static final boolean SCIENTIFIC_NOTATION = true;
+
+    /**
+     * The prefix character for the value of a WKT fragment.
+     */
+    static final char FRAGMENT_VALUE = '$';
 
     /**
      * A set of symbols with values between square brackets, like {@code DATUM["WGS84"]}.
@@ -167,6 +182,11 @@ public class Symbols implements Localized, Cloneable, Serializable {
     private String separator;
 
     /**
+     * Same value than {@link #separator} but without leading and trailing spaces.
+     */
+    private transient String trimmedSeparator;
+
+    /**
      * {@code true} if this instance shall be considered as immutable.
      */
     private boolean isImmutable;
@@ -174,17 +194,18 @@ public class Symbols implements Localized, Cloneable, Serializable {
     /**
      * Creates a new set of WKT symbols initialized to a copy of the given symbols.
      *
-     * @param symbols The symbols to copy.
+     * @param symbols  the symbols to copy.
      */
     public Symbols(final Symbols symbols) {
         ensureNonNull("symbols", symbols);
-        locale        = symbols.locale;
-        brackets      = symbols.brackets;
-        quotes        = symbols.quotes;
-        quote         = symbols.quote;
-        openSequence  = symbols.openSequence;
-        closeSequence = symbols.closeSequence;
-        separator     = symbols.separator;
+        locale           = symbols.locale;
+        brackets         = symbols.brackets;
+        quotes           = symbols.quotes;
+        quote            = symbols.quote;
+        openSequence     = symbols.openSequence;
+        closeSequence    = symbols.closeSequence;
+        separator        = symbols.separator;
+        trimmedSeparator = symbols.trimmedSeparator;
     }
 
     /**
@@ -192,14 +213,15 @@ public class Symbols implements Localized, Cloneable, Serializable {
      * The given array is stored by reference - it is not cloned.
      */
     private Symbols(final int[] brackets, final int[] quotes) {
-        this.locale        = Locale.ROOT;
-        this.brackets      = brackets;
-        this.quotes        = quotes;
-        this.quote         = "\"";
-        this.openSequence  = '{';
-        this.closeSequence = '}';
-        this.separator     = ", ";
-        this.isImmutable   = true;
+        this.locale           = Locale.ROOT;
+        this.brackets         = brackets;
+        this.quotes           = quotes;
+        this.quote            = "\"";
+        this.openSequence     = '{';
+        this.closeSequence    = '}';
+        this.separator        = ", ";
+        this.trimmedSeparator = ",";
+        this.isImmutable      = true;
     }
 
     /**
@@ -215,7 +237,7 @@ public class Symbols implements Localized, Cloneable, Serializable {
      * Returns the default set of symbols.
      * This is currently set to {@link #SQUARE_BRACKETS}.
      *
-     * @return The default set of symbols.
+     * @return the default set of symbols.
      */
     public static Symbols getDefault() {
         return SQUARE_BRACKETS;
@@ -231,9 +253,9 @@ public class Symbols implements Localized, Cloneable, Serializable {
      * On the contrary, the {@code Locale} property of this {@code Symbols} class controls
      * the decimal format symbols and is very rarely set to an other locale than {@code Locale.ROOT}.
      *
-     * @return The locale for dates and numbers.
+     * @return the locale for dates and numbers.
      *
-     * @see WKTFormat#getLocale()
+     * @see WKTFormat#getLocale(Locale.Category)
      */
     @Override
     public final Locale getLocale() {
@@ -245,7 +267,7 @@ public class Symbols implements Localized, Cloneable, Serializable {
      * Note that any non-English locale is likely to produce WKT that do not conform to ISO 19162.
      * Such WKT can be used for human reading, but not for data export.
      *
-     * @param locale The new symbols locale.
+     * @param  locale  the new symbols locale.
      */
     public void setLocale(final Locale locale) {
         checkWritePermission();
@@ -254,23 +276,30 @@ public class Symbols implements Localized, Cloneable, Serializable {
     }
 
     /**
-     * If the given character is an opening bracket, returns the matching closing bracket.
-     * Otherwise returns -1.
+     * Implementation of {@link #matchingBracket(int)} and {@link #matchingQuote(int)}.
      */
-    final int matchingBracket(final int c) {
-        for (int i=0; i<brackets.length; i+=2) {
-            if (brackets[i] == c) {
-                return brackets[i+1];
+    private static int matching(final int[] chars, final int c) {
+        for (int i = 0; i < chars.length; i += 2) {
+            if (chars[i] == c) {
+                return chars[i + 1];
             }
         }
         return -1;
     }
 
     /**
+     * If the given character is an opening bracket, returns the matching closing bracket.
+     * Otherwise returns -1.
+     */
+    final int matchingBracket(final int c) {
+        return matching(brackets, c);
+    }
+
+    /**
      * Returns the number of paired brackets. For example if the WKT parser accepts both the
      * {@code […]} and {@code (…)} bracket pairs, then this method returns 2.
      *
-     * @return The number of bracket pairs.
+     * @return the number of bracket pairs.
      *
      * @see #getOpeningBracket(int)
      * @see #getClosingBracket(int)
@@ -284,8 +313,8 @@ public class Symbols implements Localized, Cloneable, Serializable {
      * Index 0 stands for the default bracket used at formatting time.
      * All other index are for optional brackets accepted at parsing time.
      *
-     * @param  index Index of the opening bracket to get, from 0 to {@link #getNumPairedBrackets()} exclusive.
-     * @return The opening bracket at the given index, as a Unicode code point.
+     * @param  index  index of the opening bracket to get, from 0 to {@link #getNumPairedBrackets()} exclusive.
+     * @return the opening bracket at the given index, as a Unicode code point.
      * @throws IndexOutOfBoundsException if the given index is out of bounds.
      */
     public final int getOpeningBracket(final int index) {
@@ -297,8 +326,8 @@ public class Symbols implements Localized, Cloneable, Serializable {
      * Index 0 stands for the default bracket used at formatting time.
      * All other index are for optional brackets accepted at parsing time.
      *
-     * @param  index Index of the closing bracket to get, from 0 to {@link #getNumPairedBrackets()} exclusive.
-     * @return The closing bracket at the given index, as a Unicode code point.
+     * @param  index  index of the closing bracket to get, from 0 to {@link #getNumPairedBrackets()} exclusive.
+     * @return the closing bracket at the given index, as a Unicode code point.
      * @throws IndexOutOfBoundsException if the given index is out of bounds.
      */
     public final int getClosingBracket(final int index) {
@@ -318,8 +347,8 @@ public class Symbols implements Localized, Cloneable, Serializable {
      *   symbols.setPairedBrackets("()", "[]");
      * }</div>
      *
-     * @param preferred The preferred pair of opening and closing quotes, used at formatting time.
-     * @param alternatives Alternative pairs of opening and closing quotes accepted at parsing time.
+     * @param  preferred     the preferred pair of opening and closing quotes, used at formatting time.
+     * @param  alternatives  alternative pairs of opening and closing quotes accepted at parsing time.
      */
     public void setPairedBrackets(final String preferred, final String... alternatives) {
         checkWritePermission();
@@ -327,10 +356,18 @@ public class Symbols implements Localized, Cloneable, Serializable {
     }
 
     /**
+     * If the given character is an opening quote, returns the matching closing quote.
+     * Otherwise returns -1.
+     */
+    final int matchingQuote(final int c) {
+        return matching(quotes, c);
+    }
+
+    /**
      * Returns the number of paired quotes. For example if the WKT parser accepts both the
      * {@code "…"} and {@code “…”} quote pairs, then this method returns 2.
      *
-     * @return The number of quote pairs.
+     * @return the number of quote pairs.
      *
      * @see #getOpeningQuote(int)
      * @see #getClosingQuote(int)
@@ -344,8 +381,8 @@ public class Symbols implements Localized, Cloneable, Serializable {
      * Index 0 stands for the default quote used at formatting time, which is usually {@code '"'}.
      * All other index are for optional quotes accepted at parsing time.
      *
-     * @param  index Index of the opening quote to get, from 0 to {@link #getNumPairedQuotes()} exclusive.
-     * @return The opening quote at the given index, as a Unicode code point.
+     * @param  index  index of the opening quote to get, from 0 to {@link #getNumPairedQuotes()} exclusive.
+     * @return the opening quote at the given index, as a Unicode code point.
      * @throws IndexOutOfBoundsException if the given index is out of bounds.
      */
     public final int getOpeningQuote(final int index) {
@@ -357,8 +394,8 @@ public class Symbols implements Localized, Cloneable, Serializable {
      * Index 0 stands for the default quote used at formatting time, which is usually {@code '"'}.
      * All other index are for optional quotes accepted at parsing time.
      *
-     * @param  index Index of the closing quote to get, from 0 to {@link #getNumPairedQuotes()} exclusive.
-     * @return The closing quote at the given index, as a Unicode code point.
+     * @param  index  index of the closing quote to get, from 0 to {@link #getNumPairedQuotes()} exclusive.
+     * @return the closing quote at the given index, as a Unicode code point.
      * @throws IndexOutOfBoundsException if the given index is out of bounds.
      */
     public final int getClosingQuote(final int index) {
@@ -388,8 +425,8 @@ public class Symbols implements Localized, Cloneable, Serializable {
      *   symbols.setPairedQuotes("“”", "\"\"");
      * }</div>
      *
-     * @param preferred The preferred pair of opening and closing quotes, used at formatting time.
-     * @param alternatives Alternative pairs of opening and closing quotes accepted at parsing time.
+     * @param  preferred     the preferred pair of opening and closing quotes, used at formatting time.
+     * @param  alternatives  alternative pairs of opening and closing quotes accepted at parsing time.
      */
     public void setPairedQuotes(final String preferred, final String... alternatives) {
         checkWritePermission();
@@ -413,8 +450,8 @@ public class Symbols implements Localized, Cloneable, Serializable {
                 throw new IllegalArgumentException(Errors.format(Errors.Keys.IllegalArgumentValue_2, name, pair));
             }
             final int c = pair.codePointAt(0);
-            ensureValidUnicodeCodePoint(name, array[j++] = c);
-            ensureValidUnicodeCodePoint(name, array[j++] = pair.codePointAt(Character.charCount(c)));
+            ensureValidQuoteOrBracket(name, array[j++] = c);
+            ensureValidQuoteOrBracket(name, array[j++] = pair.codePointAt(Character.charCount(c)));
             if (i >= n) {
                 break;
             }
@@ -424,10 +461,21 @@ public class Symbols implements Localized, Cloneable, Serializable {
     }
 
     /**
+     * Ensures that the given code point is a valid Unicode code point but not a Unicode identifier part.
+     */
+    private static void ensureValidQuoteOrBracket(final String name, final int code) {
+        ensureValidUnicodeCodePoint(name, code);
+        if (Character.isUnicodeIdentifierPart(code) || Character.isSpaceChar(code) || code == FRAGMENT_VALUE) {
+            throw new IllegalArgumentException(Errors.format(Errors.Keys.IllegalCharacter_2,
+                    name, String.valueOf(Character.toChars(code))));
+        }
+    }
+
+    /**
      * Returns the character used for opening a sequence of values.
      * This is usually <code>'{'</code>.
      *
-     * @return The character used for opening a sequence of values, as a Unicode code point.
+     * @return the character used for opening a sequence of values, as a Unicode code point.
      */
     public final int getOpenSequence() {
         return openSequence;
@@ -437,7 +485,7 @@ public class Symbols implements Localized, Cloneable, Serializable {
      * Returns the character used for closing a sequence of values.
      * This is usually <code>'}'</code>.
      *
-     * @return The character used for closing a sequence of values, as a Unicode code point.
+     * @return the character used for closing a sequence of values, as a Unicode code point.
      */
     public final int getCloseSequence() {
         return closeSequence;
@@ -446,13 +494,13 @@ public class Symbols implements Localized, Cloneable, Serializable {
     /**
      * Sets the characters used for opening and closing a sequence of values.
      *
-     * @param openSequence  The character for opening a sequence of values, as a Unicode code point.
-     * @param closeSequence The character for closing a sequence of values, as a Unicode code point.
+     * @param  openSequence   the character for opening a sequence of values, as a Unicode code point.
+     * @param  closeSequence  the character for closing a sequence of values, as a Unicode code point.
      */
     public void setSequenceBrackets(final int openSequence, final int closeSequence) {
         checkWritePermission();
-        ensureValidUnicodeCodePoint("openSequence",  openSequence);
-        ensureValidUnicodeCodePoint("closeSequence", closeSequence);
+        ensureValidQuoteOrBracket("openSequence",  openSequence);
+        ensureValidQuoteOrBracket("closeSequence", closeSequence);
         this.openSequence  = openSequence;
         this.closeSequence = closeSequence;
     }
@@ -461,7 +509,7 @@ public class Symbols implements Localized, Cloneable, Serializable {
      * Returns the string used as a separator in a list of values. This is usually {@code ", "},
      * but may be different if a non-English locale is used for formatting numbers.
      *
-     * @return The string used as a separator in a list of values.
+     * @return the string used as a separator in a list of values.
      */
     public final String getSeparator() {
         return separator;
@@ -472,12 +520,21 @@ public class Symbols implements Localized, Cloneable, Serializable {
      * The given string will be used "as-is" at formatting time,
      * but leading and trailing spaces will be ignored at parsing time.
      *
-     * @param separator The new string to use as a separator in a list of values.
+     * @param  separator  the new string to use as a separator in a list of values.
      */
     public void setSeparator(final String separator) {
         checkWritePermission();
-        ensureNonEmpty("separator", separator);
+        final String s = CharSequences.trimWhitespaces(separator.trim());
+        ensureNonEmpty("separator", s);
         this.separator = separator;
+        trimmedSeparator = s;
+    }
+
+    /**
+     * Returns the separator without trailing spaces.
+     */
+    final String trimmedSeparator() {
+        return trimmedSeparator;
     }
 
     /**
@@ -487,7 +544,7 @@ public class Symbols implements Localized, Cloneable, Serializable {
     final String lineSeparator() {
         final String separator = getSeparator();
         return separator.substring(0, CharSequences.skipTrailingWhitespaces(separator, 0, separator.length()))
-                .concat(JDK7.lineSeparator());
+                .concat(System.lineSeparator());
     }
 
     /**
@@ -525,8 +582,8 @@ public class Symbols implements Localized, Cloneable, Serializable {
      * The purpose of this method is to guess some characteristics about the encoded object without
      * the cost of a full WKT parsing.
      *
-     * @param  wkt The WKT to inspect.
-     * @param  element The element to search for.
+     * @param  wkt      the WKT to inspect.
+     * @param  element  the element to search for.
      * @return {@code true} if the given WKT contains at least one instance of the given element.
      */
     public boolean containsElement(final CharSequence wkt, final String element) {
@@ -550,7 +607,7 @@ public class Symbols implements Localized, Cloneable, Serializable {
      * Consequently, the presence of {@code AXIS[…]} elements in a WKT is an indication that the encoded
      * object may not be understood as intended by some external softwares.
      *
-     * @param  wkt The WKT to inspect.
+     * @param  wkt  the WKT to inspect.
      * @return {@code true} if the given WKT contains at least one instance of the {@code AXIS[…]} element.
      */
     public boolean containsAxis(final CharSequence wkt) {
@@ -561,9 +618,9 @@ public class Symbols implements Localized, Cloneable, Serializable {
     /**
      * Implementation of {@link #containsElement(CharSequence, String)} without verification of argument validity.
      *
-     * @param  wkt     The WKT to inspect.
-     * @param  element The element to search. Must contains only uppercase letters.
-     * @param  offset  The index to start the search from.
+     * @param  wkt      the WKT to inspect.
+     * @param  element  the element to search. Must contains only uppercase letters.
+     * @param  offset   the index to start the search from.
      */
     private boolean containsElement(final CharSequence wkt, final String element, int offset) {
         final int[] quotes = this.quotes;
@@ -630,7 +687,7 @@ public class Symbols implements Localized, Cloneable, Serializable {
     /**
      * Returns a clone of this {@code Symbols}.
      *
-     * @return A clone of this {@code Symbols}.
+     * @return a clone of this {@code Symbols}.
      */
     @Override
     public Symbols clone() {
@@ -651,7 +708,7 @@ public class Symbols implements Localized, Cloneable, Serializable {
     /**
      * Compares this {@code Symbols} with the given object for equality.
      *
-     * @param  other The object to compare with this {@code Symbols}.
+     * @param  other  the object to compare with this {@code Symbols}.
      * @return {@code true} if both objects are equal.
      */
     @Override
@@ -672,7 +729,7 @@ public class Symbols implements Localized, Cloneable, Serializable {
     /**
      * Returns a hash code value for this object.
      *
-     * @return A hash code value.
+     * @return a hash code value.
      */
     @Override
     public int hashCode() {
@@ -683,14 +740,16 @@ public class Symbols implements Localized, Cloneable, Serializable {
      * Invoked on deserialization for replacing the deserialized instance by the constant instance.
      * This method also opportunistically recompute the {@link #quote} field if no replacement is done.
      *
-     * @return The object to use after deserialization.
+     * @return the object to use after deserialization.
+     * @throws ObjectStreamException required by specification but should never be thrown.
      */
-    final Object readResolve() {
+    final Object readResolve() throws ObjectStreamException {
         if (isImmutable) {
             if (equals(SQUARE_BRACKETS)) return SQUARE_BRACKETS;
             if (equals(CURLY_BRACKETS))  return CURLY_BRACKETS;
         }
         quote = String.valueOf(Character.toChars(quotes[1]));
+        trimmedSeparator = CharSequences.trimWhitespaces(separator.trim());
         return this;
     }
 }

@@ -27,11 +27,12 @@ import static org.junit.Assert.*;
  * Tests {@link LineAppender} implementation when used for inserting a margin before every line.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.3
- * @module
  *
  * @see LineAppender#onLineBegin(boolean)
+ *
+ * @since 0.3
+ * @module
  */
 @DependsOn(LineAppenderTest.class)
 public final strictfp class LeftMarginTest extends LineAppenderTest {
@@ -52,8 +53,8 @@ public final strictfp class LeftMarginTest extends LineAppenderTest {
     /**
      * Runs the test using an extract from Arthur RIMBAUD (1854-1891), "Le bateau ivre".
      *
-     * @param  lineSeparator The line separator to use in the test strings.
-     * @throws IOException Should never happen, since we are writing in a {@link StringBuilder}.
+     * @param  lineSeparator  the line separator to use in the test strings.
+     * @throws IOException should never happen, since we are writing in a {@link StringBuilder}.
      */
     @Override
     void run(final String lineSeparator) throws IOException {

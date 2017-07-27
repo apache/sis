@@ -17,32 +17,33 @@
 package org.apache.sis.referencing.operation;
 
 import java.util.Map;
-import java.util.Set;
 import java.util.List;
-import java.util.HashMap;
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.LinkedHashSet;
+import java.util.Collections;
+import java.util.Objects;
+import javax.xml.bind.annotation.XmlType;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlRootElement;
 import org.opengis.util.FactoryException;
-import org.opengis.metadata.quality.PositionalAccuracy;
+import org.opengis.metadata.extent.Extent;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.opengis.referencing.operation.SingleOperation;
 import org.opengis.referencing.operation.CoordinateOperation;
 import org.opengis.referencing.operation.ConcatenatedOperation;
+import org.opengis.referencing.operation.Conversion;
 import org.opengis.referencing.operation.Transformation;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
+import org.apache.sis.internal.referencing.PositionalAccuracyConstant;
+import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
-import org.apache.sis.util.collection.Containers;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.io.wkt.Formatter;
 
 import static org.apache.sis.util.Utilities.deepEquals;
 
-// Branch-dependent imports
-import org.apache.sis.internal.jdk7.Objects;
-
+import org.opengis.referencing.operation.SingleOperation;
 
 /**
  * An ordered sequence of two or more single coordinate operations. The sequence of operations is constrained
@@ -52,11 +53,13 @@ import org.apache.sis.internal.jdk7.Objects;
  * reference system associated with the concatenated operation.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
+ * @version 0.7
  * @since   0.6
- * @version 0.6
  * @module
  */
-public class DefaultConcatenatedOperation extends AbstractCoordinateOperation implements ConcatenatedOperation {
+@XmlType(name = "ConcatenatedOperationType")
+@XmlRootElement(name = "ConcatenatedOperation")
+final class DefaultConcatenatedOperation extends AbstractCoordinateOperation implements ConcatenatedOperation {
     /**
      * Serial number for inter-operability with different versions.
      */
@@ -64,8 +67,11 @@ public class DefaultConcatenatedOperation extends AbstractCoordinateOperation im
 
     /**
      * The sequence of operations.
+     *
+     * <p><b>Consider this field as final!</b>
+     * This field is modified only at unmarshalling time by {@link #setSteps(CoordinateOperation[])}</p>
      */
-    private final List<SingleOperation> operations;
+    private List<SingleOperation> operations;
 
     /**
      * Constructs a concatenated operation from a set of properties and a
@@ -94,129 +100,59 @@ public class DefaultConcatenatedOperation extends AbstractCoordinateOperation im
      *   </tr>
      * </table>
      *
-     * @param  properties The properties to be given to the identified object.
-     * @param  operations The sequence of operations. Shall contains at least two operations.
-     * @param  factory    The math transform factory to use for math transforms concatenation.
+     * @param  properties  the properties to be given to the identified object.
+     * @param  operations  the sequence of operations. Shall contains at least two operations.
+     * @param  mtFactory   the math transform factory to use for math transforms concatenation.
      * @throws FactoryException if the factory can not concatenate the math transforms.
      */
-    public DefaultConcatenatedOperation(final Map<String,?> properties,
-                                        final CoordinateOperation[] operations,
-                                        final MathTransformFactory factory)
-            throws FactoryException
+    public DefaultConcatenatedOperation(final Map<String,?> properties, CoordinateOperation[] operations,
+            final MathTransformFactory mtFactory) throws FactoryException
     {
-        this(properties, new ArrayList<SingleOperation>(operations.length), operations, factory);
-    }
-
-    /**
-     * Work around for RFE #4093999 in Sun's bug database
-     * ("Relax constraint on placement of this()/super() call in constructors").
-     */
-    private DefaultConcatenatedOperation(final Map<String,?> properties,
-                                         final ArrayList<SingleOperation> list,
-                                         final CoordinateOperation[] operations,
-                                         final MathTransformFactory factory)
-            throws FactoryException
-    {
-        this(properties, expand(operations, list, factory, true), list);
-    }
-
-    /**
-     * Work around for RFE #4093999 in Sun's bug database
-     * ("Relax constraint on placement of this()/super() call in constructors").
-     */
-    private DefaultConcatenatedOperation(final Map<String,?> properties,
-                                         final MathTransform transform,
-                                         final List<SingleOperation> operations)
-    {
-        super(mergeAccuracy(properties, operations),
-              operations.get(0).getSourceCRS(),
-              operations.get(operations.size() - 1).getTargetCRS(),
-              null, transform);
-
-        this.operations = UnmodifiableArrayList.wrap(operations.toArray(new SingleOperation[operations.size()]));
-    }
-
-    /**
-     * Transforms the list of operations into a list of single operations.
-     * This method also checks for null value and makes sure that all CRS dimensions match.
-     *
-     * @param  operations    The array of operations to expand.
-     * @param  target        The destination list in which to add {@code SingleOperation}.
-     * @param  factory       The math transform factory to use.
-     * @param  wantTransform {@code true} if the concatenated math transform should be computed.
-     *         This is set to {@code false} only when this method invokes itself recursively.
-     * @return The concatenated math transform, or {@code null} if {@code wantTransform} was {@code false}.
-     * @throws FactoryException if the factory can not concatenate the math transforms.
-     */
-    private static MathTransform expand(final CoordinateOperation[] operations,
-                                        final List<SingleOperation> target,
-                                        final MathTransformFactory  factory,
-                                        final boolean wantTransform)
-            throws FactoryException
-    {
-        MathTransform transform = null;
+        super(properties);
         ArgumentChecks.ensureNonNull("operations", operations);
-        for (int i=0; i<operations.length; i++) {
-            ArgumentChecks.ensureNonNullElement("operations", i, operations);
-            final CoordinateOperation op = operations[i];
-            if (op instanceof SingleOperation) {
-                target.add((SingleOperation) op);
-            } else if (op instanceof ConcatenatedOperation) {
-                final ConcatenatedOperation cop = (ConcatenatedOperation) op;
-                final List<SingleOperation> cops = cop.getOperations();
-                expand(cops.toArray(new CoordinateOperation[cops.size()]), target, factory, false);
-            } else {
-                throw new IllegalArgumentException(Errors.format(
-                        Errors.Keys.IllegalArgumentClass_2, "operations[" + i + ']', op.getClass()));
-            }
-            /*
-             * Checks the CRS dimensions.
-             */
-            if (i != 0) {
-                final CoordinateReferenceSystem previous = operations[i-1].getTargetCRS();
-                if (previous != null) {
-                    final CoordinateReferenceSystem next = op.getSourceCRS();
-                    if (next != null) {
-                        final int dim1 = previous.getCoordinateSystem().getDimension();
-                        final int dim2 = next.getCoordinateSystem().getDimension();
-                        if (dim1 != dim2) {
-                            throw new IllegalArgumentException(Errors.format(Errors.Keys.MismatchedDimension_3,
-                                    "operations[" + i + "].sourceCRS", dim1, dim2));
-                        }
-                    }
-                }
-            }
-            /*
-             * Concatenates the math transform.
-             */
-            if (wantTransform) {
-                final MathTransform step = op.getMathTransform();
-                if (transform == null) {
-                    transform = step;
-                } else {
-                    transform = factory.createConcatenatedTransform(transform, step);
-                }
-            }
-        }
-        if (wantTransform && target.size() <= 1) {
-            throw new IllegalArgumentException(Errors.format(
+        if (operations.length < 2) {
+            throw new IllegalArgumentException(Errors.getResources(properties).getString(
                     Errors.Keys.TooFewOccurrences_2, 2, CoordinateOperation.class));
         }
-        return transform;
+        final List<CoordinateOperation> flattened = new ArrayList<>(operations.length);
+        initialize(properties, operations, flattened, mtFactory,
+                (coordinateOperationAccuracy == null), (domainOfValidity == null));
+        /*
+         * At this point we should have flattened.size() >= 2, except if some operations
+         * were omitted because their associated math transform were identity operation.
+         */
+        // The array is of kind CoordinateOperation[] on GeoAPI 4.0-M03,
+        // but we have to restrict to SingleOperation[] on GeoAPI 3.x.
+        operations      = flattened.toArray(new SingleOperation[flattened.size()]);
+        this.operations = UnmodifiableArrayList.wrap((SingleOperation[]) operations);
+        this.sourceCRS  = operations[0].getSourceCRS();
+        this.targetCRS  = operations[operations.length - 1].getTargetCRS();
+        checkDimensions(properties);
     }
 
     /**
-     * If no accuracy were specified in the given properties map, adds all accuracies found in the operations
-     * to concatenate. This method considers only {@link Transformation} components and ignores all conversions.
+     * Performs the part of {@code DefaultConcatenatedOperations} construction that requires an iteration over
+     * the sequence of coordinate operations. This method performs the following processing:
      *
-     * <div class="note"><b>Why we ignore conversions:</b>
-     * if a concatenated operation contains a datum shift (i.e. a transformation) with unknown accuracy,
-     * and a projection (i.e. a conversion) with a declared 0 meter error, we don't want to declare this
-     * 0 meter error as the concatenated operation  accuracy; it would be a false information.
+     * <ul>
+     *   <li>Verify the validity of the {@code operations} argument.</li>
+     *   <li>Add the single operations in the {@code flattened} array.</li>
+     *   <li>Set the {@link #transform} field to the concatenated transform.</li>
+     *   <li>Set the {@link #coordinateOperationAccuracy} field, but only if {@code setAccuracy} is {@code true}.</li>
+     * </ul>
      *
-     * <p>An other reason is that a concatenated operation typically contains an arbitrary amount of conversions,
+     * This method invokes itself recursively if there is nested {@code ConcatenatedOperation} instances
+     * in the given list. This should not happen according ISO 19111 standard, but we try to be safe.
+     *
+     * <div class="section">How coordinate operation accuracy is determined</div>
+     * If {@code setAccuracy} is {@code true}, then this method copies accuracy information found in the single
+     * {@link Transformation} instance. This method ignores instances of other kinds for the following reason:
+     * some {@link Conversion} instances declare an accuracy, which is typically close to zero. If a concatenated
+     * operation contains such conversion together with a transformation with unknown accuracy, then we do not want
+     * to declare "0 meter" as the concatenated operation accuracy; it would be a false information.
+     * An other reason is that a concatenated operation typically contains an arbitrary amount of conversions,
      * but only one transformation. So considering only transformations usually means to pickup only one operation
-     * in the given {@code operations} list, which make things clearer.</p></div>
+     * in the given {@code operations} list, which make things clearer.
      *
      * <div class="note"><b>Note:</b>
      * according ISO 19111, the accuracy attribute is allowed only for transformations. However this restriction
@@ -224,32 +160,97 @@ public class DefaultConcatenatedOperation extends AbstractCoordinateOperation im
      * which is conceptually exact. In this class we are departing from strict interpretation of the specification
      * since we are adding accuracy informations to a concatenated operation. This departure should be considered
      * as a convenience feature only; accuracies are really relevant in transformations only.</div>
+     *
+     * @param  properties   the properties specified at construction time, or {@code null} if unknown.
+     * @param  operations   the operations to concatenate.
+     * @param  flattened    the destination list in which to add the {@code SingleOperation} instances.
+     * @param  mtFactory    the math transform factory to use, or {@code null} for not performing concatenation.
+     * @param  setAccuracy  {@code true} for setting the {@link #coordinateOperationAccuracy} field.
+     * @param  setDomain    {@code true} for setting the {@link #domainOfValidity} field.
+     * @throws FactoryException if the factory can not concatenate the math transforms.
      */
-    private static Map<String,?> mergeAccuracy(final Map<String,?> properties,
-            final List<? extends CoordinateOperation> operations)
+    private void initialize(final Map<String,?>             properties,
+                            final CoordinateOperation[]     operations,
+                            final List<CoordinateOperation> flattened,
+                            final MathTransformFactory      mtFactory,
+                            boolean                         setAccuracy,
+                            boolean                         setDomain)
+            throws FactoryException
     {
-        if (!properties.containsKey(COORDINATE_OPERATION_ACCURACY_KEY)) {
-            Set<PositionalAccuracy> accuracy = null;
-            for (final CoordinateOperation op : operations) {
-                if (op instanceof Transformation) {
-                    // See javadoc for a rational why we take only transformations in account.
-                    Collection<PositionalAccuracy> candidates = op.getCoordinateOperationAccuracy();
-                    if (!Containers.isNullOrEmpty(candidates)) {
-                        if (accuracy == null) {
-                            accuracy = new LinkedHashSet<PositionalAccuracy>();
-                        }
-                        accuracy.addAll(candidates);
+        CoordinateReferenceSystem previous = null;
+        for (int i=0; i<operations.length; i++) {
+            final CoordinateOperation op = operations[i];
+            ArgumentChecks.ensureNonNullElement("operations", i, op);
+            /*
+             * Verify consistency of user argument: for each coordinate operation, the number of dimensions of the
+             * source CRS shall be equals to the number of dimensions of the target CRS in the previous operation.
+             */
+            if (previous != null) {
+                final CoordinateReferenceSystem next = op.getSourceCRS();
+                if (next != null) {
+                    final int dim1 = previous.getCoordinateSystem().getDimension();
+                    final int dim2 = next.getCoordinateSystem().getDimension();
+                    if (dim1 != dim2) {
+                        throw new IllegalArgumentException(Errors.getResources(properties).getString(
+                                Errors.Keys.MismatchedDimension_3, "operations[" + i + "].sourceCRS", dim1, dim2));
                     }
                 }
             }
-            if (accuracy != null) {
-                final Map<String,Object> merged = new HashMap<String,Object>(properties);
-                merged.put(COORDINATE_OPERATION_ACCURACY_KEY,
-                        accuracy.toArray(new PositionalAccuracy[accuracy.size()]));
-                return merged;
+            previous = op.getTargetCRS();                                       // For next iteration cycle.
+            /*
+             * Now that we have verified the CRS dimensions, we should be able to concatenate the transforms.
+             * If an operation is a nested ConcatenatedOperation (not allowed by ISO 19111, but we try to be
+             * safe), we will first try to use the ConcatenatedOperation.transform as a whole.  Only if that
+             * concatenated operation does not provide a transform we will concatenate its components.  Note
+             * however that we traverse nested concatenated operations unconditionally at least for checking
+             * its consistency.
+             */
+            MathTransform step = op.getMathTransform();
+            if (op instanceof ConcatenatedOperation) {
+                final List<? extends CoordinateOperation> children = ((ConcatenatedOperation) op).getOperations();
+                @SuppressWarnings("SuspiciousToArrayCall")
+                final CoordinateOperation[] asArray = children.toArray(new CoordinateOperation[children.size()]);
+                initialize(properties, asArray, flattened, (step == null) ? mtFactory : null, setAccuracy, setDomain);
+            } else if (!step.isIdentity()) {
+                flattened.add(op);
+            }
+            if (mtFactory != null) {
+                transform = (transform != null) ? mtFactory.createConcatenatedTransform(transform, step) : step;
+            }
+            /*
+             * Optionally copy the coordinate operation accuracy from the transformation (or from a concatenated
+             * operation on the assumption that its accuracy was computed by the same algorithm than this method).
+             * See javadoc for a rational about why we take only transformations in account. If more than one
+             * transformation is found, clear the collection and abandon the attempt to set the accuracy information.
+             * Instead the user will get a better result by invoking PositionalAccuracyConstant.getLinearAccuracy(…)
+             * since that method conservatively computes the sum of all linear accuracy.
+             */
+            if (setAccuracy && (op instanceof Transformation || op instanceof ConcatenatedOperation)
+                    && (PositionalAccuracyConstant.getLinearAccuracy(op) != 0))
+            {
+                if (coordinateOperationAccuracy == null) {
+                    coordinateOperationAccuracy = op.getCoordinateOperationAccuracy();
+                } else {
+                    coordinateOperationAccuracy = null;
+                    setAccuracy = false;
+                }
+            }
+            /*
+             * Optionally copy the domain of validity, provided that it is the same for all component.
+             * Current implementation does not try to compute the intersection of all components.
+             */
+            if (setDomain) {
+                final Extent domain = op.getDomainOfValidity();
+                if (domain != null) {
+                    if (domainOfValidity == null) {
+                        domainOfValidity = domain;
+                    } else if (!domain.equals(domainOfValidity)) {
+                        domainOfValidity = null;
+                        setDomain = false;
+                    }
+                }
             }
         }
-        return properties;
     }
 
     /**
@@ -259,7 +260,7 @@ public class DefaultConcatenatedOperation extends AbstractCoordinateOperation im
      *
      * <p>This constructor performs a shallow copy, i.e. the properties are not cloned.</p>
      *
-     * @param operation The coordinate operation to copy.
+     * @param  operation  the coordinate operation to copy.
      *
      * @see #castOrCopy(ConcatenatedOperation)
      */
@@ -276,8 +277,8 @@ public class DefaultConcatenatedOperation extends AbstractCoordinateOperation im
      * Note that this is a <cite>shallow</cite> copy operation, since the other properties contained in the given
      * object are not recursively copied.
      *
-     * @param  object The object to get as a SIS implementation, or {@code null} if none.
-     * @return A SIS implementation containing the values of the given object (may be the
+     * @param  object  the object to get as a SIS implementation, or {@code null} if none.
+     * @return a SIS implementation containing the values of the given object (may be the
      *         given object itself), or {@code null} if the argument was null.
      */
     public static DefaultConcatenatedOperation castOrCopy(final ConcatenatedOperation object) {
@@ -304,9 +305,16 @@ public class DefaultConcatenatedOperation extends AbstractCoordinateOperation im
     /**
      * Returns the sequence of operations.
      *
-     * @return The sequence of operations.
+     * <div class="warning"><b>Upcoming API change</b><br>
+     * This method is conformant to ISO 19111:2003. But the ISO 19111:2007 revision changed the element type
+     * from {@code SingleOperation} to {@link CoordinateOperation}. This change may be applied in GeoAPI 4.0.
+     * This is necessary for supporting usage of {@code PassThroughOperation} with {@link ConcatenatedOperation}.
+     * </div>
+     *
+     * @return the sequence of operations.
      */
     @Override
+    @SuppressWarnings("ReturnOfCollectionOrArrayField")
     public List<SingleOperation> getOperations() {
         return operations;
     }
@@ -322,7 +330,7 @@ public class DefaultConcatenatedOperation extends AbstractCoordinateOperation im
     @Override
     public boolean equals(final Object object, final ComparisonMode mode) {
         if (object == this) {
-            return true; // Slight optimization.
+            return true;                            // Slight optimization.
         }
         if (super.equals(object, mode)) {
             if (mode == ComparisonMode.STRICT) {
@@ -341,6 +349,68 @@ public class DefaultConcatenatedOperation extends AbstractCoordinateOperation im
      */
     @Override
     protected long computeHashCode() {
-        return super.computeHashCode() + 37 * operations.hashCode();
+        return super.computeHashCode() + 37 * Objects.hashCode(operations);
+    }
+
+    /**
+     * Formats this coordinate operation in pseudo-WKT. This is specific to Apache SIS since
+     * there is no concatenated operation in the Well Known Text (WKT) version 2 format.
+     *
+     * @param  formatter  the formatter to use.
+     * @return {@code "ConcatenatedOperation"}.
+     */
+    @Override
+    protected String formatTo(final Formatter formatter) {
+        super.formatTo(formatter);
+        for (final CoordinateOperation component : operations) {
+            formatter.newLine();
+            formatter.append(castOrCopy(component));
+        }
+        formatter.setInvalidWKT(this, null);
+        return "ConcatenatedOperation";
+    }
+
+
+
+
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+    ////////                                                                                  ////////
+    ////////                               XML support with JAXB                              ////////
+    ////////                                                                                  ////////
+    ////////        The following methods are invoked by JAXB using reflection (even if       ////////
+    ////////        they are private) or are helpers for other methods invoked by JAXB.       ////////
+    ////////        Those methods can be safely removed if Geographic Markup Language         ////////
+    ////////        (GML) support is not needed.                                              ////////
+    ////////                                                                                  ////////
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Constructs a new object in which every attributes are set to a null value.
+     * <strong>This is not a valid object.</strong> This constructor is strictly
+     * reserved to JAXB, which will assign values to the fields using reflexion.
+     */
+    private DefaultConcatenatedOperation() {
+        operations = Collections.emptyList();
+    }
+
+    /**
+     * Returns the operations to marshal. We use this private methods instead than annotating
+     * {@link #getOperations()} in order to force JAXB to invoke the setter method on unmarshalling.
+     */
+    @SuppressWarnings("SuspiciousToArrayCall")
+    @XmlElement(name = "coordOperation", required = true)
+    private CoordinateOperation[] getSteps() {
+        final List<? extends CoordinateOperation> operations = getOperations();
+        return (operations != null) ? operations.toArray(new CoordinateOperation[operations.size()]) : null;
+    }
+
+    /**
+     * Invoked by JAXB for setting the operations.
+     */
+    private void setSteps(final CoordinateOperation[] steps) throws FactoryException {
+        final List<CoordinateOperation> flattened = new ArrayList<>(steps.length);
+        initialize(null, steps, flattened, DefaultFactories.forBuildin(MathTransformFactory.class),
+                (coordinateOperationAccuracy == null), (domainOfValidity == null));
+        operations = UnmodifiableArrayList.wrap(flattened.toArray(new SingleOperation[flattened.size()]));
     }
 }

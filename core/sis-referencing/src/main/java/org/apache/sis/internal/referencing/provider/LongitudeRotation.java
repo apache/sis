@@ -16,15 +16,13 @@
  */
 package org.apache.sis.internal.referencing.provider;
 
+import javax.xml.bind.annotation.XmlTransient;
 import org.opengis.parameter.ParameterValueGroup;
-import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.parameter.ParameterNotFoundException;
-import org.opengis.referencing.operation.Conversion;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
 import org.apache.sis.internal.referencing.j2d.AffineTransform2D;
-import org.apache.sis.parameter.ParameterBuilder;
 import org.apache.sis.parameter.Parameters;
 
 
@@ -45,51 +43,45 @@ import org.apache.sis.parameter.Parameters;
  * The longitude axis of source and target CRS shall be converted to degrees before this operation is applied.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
+ * @version 0.7
  * @since   0.6
- * @version 0.6
  * @module
  */
-public final class LongitudeRotation extends AbstractProvider {
+@XmlTransient
+public final class LongitudeRotation extends GeographicOffsets {
     /**
      * Serial number for inter-operability with different versions.
      */
     private static final long serialVersionUID = -2104496465933824935L;
 
     /**
-     * The name of the {@link #OFFSET} parameter.
-     */
-    static final String NAME = "Longitude offset";
-
-    /**
-     * The operation parameter descriptor for the <cite>"longitude offset"</cite> parameter value.
-     */
-    private static final ParameterDescriptor<Double> OFFSET;
-
-    /**
      * The group of all parameters expected by this coordinate operation.
      */
     private static final ParameterDescriptorGroup PARAMETERS;
     static {
-        final ParameterBuilder builder = builder();
-        OFFSET = createLongitude(builder.addIdentifier("8602").addName(NAME));
-        PARAMETERS = builder.addIdentifier("9601").addName("Longitude rotation").createGroup(OFFSET);
+        PARAMETERS = builder().addIdentifier("9601").addName("Longitude rotation").createGroup(TX);
     }
 
     /**
      * Constructs a provider with default parameters.
      */
     public LongitudeRotation() {
-        super(2, 2, PARAMETERS);
+        this(2, 2, new LongitudeRotation[4]);
+        redimensioned[0] = this;
+        redimensioned[1] = new LongitudeRotation(2, 3, redimensioned);
+        redimensioned[2] = new LongitudeRotation(3, 2, redimensioned);
+        redimensioned[3] = new LongitudeRotation(3, 3, redimensioned);
     }
 
     /**
-     * Returns the operation type.
+     * Constructs a provider for the given dimensions.
      *
-     * @return Interface implemented by all coordinate operations that use this method.
+     * @param sourceDimensions  number of dimensions in the source CRS of this operation method.
+     * @param targetDimensions  number of dimensions in the target CRS of this operation method.
+     * @param redimensioned     providers for all combinations between 2D and 3D cases.
      */
-    @Override
-    public Class<Conversion> getOperationType() {
-        return Conversion.class;
+    private LongitudeRotation(int sourceDimensions, int targetDimensions, GeodeticOperation[] redimensioned) {
+        super(sourceDimensions, targetDimensions, PARAMETERS, redimensioned);
     }
 
     /**
@@ -103,16 +95,16 @@ public final class LongitudeRotation extends AbstractProvider {
      * does not, so maybe our unconditional conversion to degrees would be more surprising for the user if the
      * operation was shown as a "Longitude rotation".</p>
      *
-     * @param  factory Ignored (can be null).
-     * @param  values The group of parameter values.
-     * @return The created math transform.
+     * @param  factory  ignored (can be null).
+     * @param  values   the group of parameter values.
+     * @return the created math transform.
      * @throws ParameterNotFoundException if a required parameter was not found.
      */
     @Override
     public MathTransform createMathTransform(final MathTransformFactory factory, final ParameterValueGroup values)
             throws ParameterNotFoundException
     {
-        final double offset = Parameters.castOrWrap(values).doubleValue(OFFSET);
-        return new AffineTransform2D(1, 0, 0, 1, offset, 0);
+        final Parameters pv = Parameters.castOrWrap(values);
+        return new AffineTransform2D(1, 0, 0, 1, pv.doubleValue(TX), 0);
     }
 }

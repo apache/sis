@@ -22,7 +22,7 @@ import java.util.Locale;
 import org.opengis.test.Validators;
 import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.metadata.iso.ImmutableIdentifier;
-import org.apache.sis.metadata.iso.citation.HardCodedCitations;
+import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.metadata.iso.extent.DefaultExtent;
 import org.apache.sis.metadata.iso.extent.DefaultTemporalExtent;
 import org.apache.sis.metadata.iso.extent.DefaultVerticalExtent;
@@ -42,8 +42,8 @@ import static org.apache.sis.test.MetadataAssert.assertWktEquals;
  * Tests the {@link AbstractReferenceSystem} class.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.4
  * @version 0.6
+ * @since   0.4
  * @module
  */
 @DependsOn(AbstractIdentifiedObjectTest.class)
@@ -53,7 +53,7 @@ public final strictfp class AbstractReferenceSystemTest extends TestCase {
      */
     @Test
     public void testCreateFromMap() {
-        final Map<String,Object> properties = new HashMap<String,Object>();
+        final Map<String,Object> properties = new HashMap<>();
         assertNull(properties.put("name",       "This is a name"));
         assertNull(properties.put("scope",      "This is a scope"));
         assertNull(properties.put("scope_fr",   "Valide dans ce domaine"));
@@ -76,7 +76,7 @@ public final strictfp class AbstractReferenceSystemTest extends TestCase {
     @Test
     @DependsOnMethod("testCreateFromMap")
     public void testSerialization() {
-        final Map<String,Object> properties = new HashMap<String,Object>(8);
+        final Map<String,Object> properties = new HashMap<>(8);
         assertNull(properties.put("code",       "4326"));
         assertNull(properties.put("codeSpace",  "EPSG"));
         assertNull(properties.put("scope",      "This is a scope"));
@@ -96,21 +96,20 @@ public final strictfp class AbstractReferenceSystemTest extends TestCase {
     @Test
     @DependsOnMethod("testCreateFromMap")
     public void testWKT() {
-        final Map<String,Object> properties = new HashMap<String,Object>(8);
+        final Map<String,Object> properties = new HashMap<>(8);
         assertNull(properties.put(NAME_KEY, "My “object”."));
         assertNull(properties.put(SCOPE_KEY, "Large scale topographic mapping and cadastre."));
         assertNull(properties.put(REMARKS_KEY, "注です。"));
         assertNull(properties.put(IDENTIFIERS_KEY, new ImmutableIdentifier(
-                HardCodedCitations.IOGP, "EPSG", "4326", "8.2", null)));
+                Citations.EPSG, "EPSG", "4326", "8.2", null)));
         assertNull(properties.put(DOMAIN_OF_VALIDITY_KEY, new DefaultExtent("Netherlands offshore.",
                 new DefaultGeographicBoundingBox(2.54, 6.40, 51.43, 55.77),
                 new DefaultVerticalExtent(10, 1000, VerticalCRSMock.DEPTH),
                 new DefaultTemporalExtent()))); // TODO: needs sis-temporal module for testing that one.
         final AbstractReferenceSystem object = new AbstractReferenceSystem(properties);
 
-        assertEquals( // Quotes (at least the closing one) conservatively omitted for WKT 1.
-                "ReferenceSystem[\"My object.\", AUTHORITY[\"EPSG\", \"4326\"]]",
-                object.toString(Convention.WKT1));
+        assertTrue(object.toString(Convention.WKT1).startsWith(
+                "ReferenceSystem[\"My “object”.\", AUTHORITY[\"EPSG\", \"4326\"]]"));
 
         assertWktEquals(Convention.WKT1,
                 "ReferenceSystem[“My \"object\".”, AUTHORITY[“EPSG”, “4326”]]",
@@ -118,12 +117,12 @@ public final strictfp class AbstractReferenceSystemTest extends TestCase {
 
         assertWktEquals(Convention.WKT2,
                 "ReferenceSystem[“My \"object\".”,\n" +     // Quotes replaced
-                "  Scope[“Large scale topographic mapping and cadastre.”],\n" +
-                "  Area[“Netherlands offshore.”],\n" +
-                "  BBox[51.43, 2.54, 55.77, 6.40],\n" +
-                "  VerticalExtent[-1000, -10, LengthUnit[“metre”, 1]],\n" +
-                "  Id[“EPSG”, 4326, “8.2”, Citation[“IOGP”], URI[“urn:ogc:def:referenceSystem:EPSG:8.2:4326”]],\n" +
-                "  Remarks[“注です。”]]",
+                "  SCOPE[“Large scale topographic mapping and cadastre.”],\n" +
+                "  AREA[“Netherlands offshore.”],\n" +
+                "  BBOX[51.43, 2.54, 55.77, 6.40],\n" +
+                "  VERTICALEXTENT[-1000, -10, LENGTHUNIT[“metre”, 1]],\n" +
+                "  ID[“EPSG”, 4326, “8.2”, URI[“urn:ogc:def:referenceSystem:EPSG:8.2:4326”]],\n" +
+                "  REMARK[“注です。”]]",
                 object);
 
         assertWktEquals(Convention.WKT2_SIMPLIFIED,
@@ -132,8 +131,8 @@ public final strictfp class AbstractReferenceSystemTest extends TestCase {
                 "  Area[“Netherlands offshore.”],\n" +
                 "  BBox[51.43, 2.54, 55.77, 6.40],\n" +
                 "  VerticalExtent[-1000, -10],\n" +
-                "  Id[“EPSG”, 4326, “8.2”, Citation[“IOGP”], URI[“urn:ogc:def:referenceSystem:EPSG:8.2:4326”]],\n" +
-                "  Remarks[“注です。”]]",
+                "  Id[“EPSG”, 4326, “8.2”, URI[“urn:ogc:def:referenceSystem:EPSG:8.2:4326”]],\n" +
+                "  Remark[“注です。”]]",
                 object);
 
         assertWktEquals(Convention.INTERNAL,
@@ -142,8 +141,8 @@ public final strictfp class AbstractReferenceSystemTest extends TestCase {
                 "  Area[“Netherlands offshore.”],\n" +
                 "  BBox[51.43, 2.54, 55.77, 6.40],\n" +
                 "  VerticalExtent[-1000, -10],\n" +
-                "  Id[“EPSG”, 4326, “8.2”, Citation[“IOGP”]],\n" +
-                "  Remarks[“注です。”]]",
+                "  Id[“EPSG”, 4326, “8.2”],\n" +
+                "  Remark[“注です。”]]",
                 object);
     }
 }

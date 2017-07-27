@@ -55,7 +55,7 @@ public abstract class BuiltInMemoryResultSet extends DBFResultSet {
      */
     @Override
     public BigDecimal getBigDecimal(int columnIndex) throws SQLException {
-        return getBigDecimal(getFieldName(columnIndex, sql));
+        return getBigDecimal(getFieldName(columnIndex, this.sql));
     }
 
     /**
@@ -71,7 +71,7 @@ public abstract class BuiltInMemoryResultSet extends DBFResultSet {
      */
     @Override
     public Date getDate(int columnIndex) throws SQLException {
-        return getDate(getFieldName(columnIndex, sql));
+        return getDate(getFieldName(columnIndex, this.sql));
     }
 
     /**
@@ -95,7 +95,7 @@ public abstract class BuiltInMemoryResultSet extends DBFResultSet {
      */
     @Override
     public double getDouble(int columnIndex) throws SQLException {
-        return getDouble(getFieldName(columnIndex, sql));
+        return getDouble(getFieldName(columnIndex, this.sql));
     }
 
     /**
@@ -103,7 +103,7 @@ public abstract class BuiltInMemoryResultSet extends DBFResultSet {
      */
     @Override
     public float getFloat(int columnIndex) throws SQLException {
-        return getFloat(getFieldName(columnIndex, sql));
+        return getFloat(getFieldName(columnIndex, this.sql));
     }
 
     /**
@@ -127,7 +127,7 @@ public abstract class BuiltInMemoryResultSet extends DBFResultSet {
      */
     @Override
     public int getInt(int columnIndex) throws SQLException {
-        return getInt(getFieldName(columnIndex, sql));
+        return getInt(getFieldName(columnIndex, this.sql));
     }
 
     /**
@@ -141,7 +141,7 @@ public abstract class BuiltInMemoryResultSet extends DBFResultSet {
      * @see java.sql.ResultSet#getLong(int)
      */
     @Override public long getLong(int columnIndex) throws SQLException {
-        return getLong(getFieldName(columnIndex, sql));
+        return getLong(getFieldName(columnIndex, this.sql));
     }
 
     /**
@@ -156,7 +156,7 @@ public abstract class BuiltInMemoryResultSet extends DBFResultSet {
      */
     @Override
     public short getShort(int columnIndex) throws SQLException {
-        return getShort(getFieldName(columnIndex, sql));
+        return getShort(getFieldName(columnIndex, this.sql));
     }
 
     /**
@@ -171,7 +171,7 @@ public abstract class BuiltInMemoryResultSet extends DBFResultSet {
      */
     @Override
     public String getString(int columnIndex) throws SQLException {
-        return(getString(getFieldName(columnIndex, sql)));
+        return(getString(getFieldName(columnIndex, this.sql)));
     }
 
     /**

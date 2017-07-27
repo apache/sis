@@ -20,8 +20,8 @@
  * Doclet performing post-processing after Javadoc generation.
  *
  * @author  Martin Desruisseaux (Geomatys)
+ * @version 0.7
  * @since   0.5
- * @version 0.5
  * @module
  */
 package org.apache.sis.internal.doclet;

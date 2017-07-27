@@ -17,7 +17,11 @@
 package org.apache.sis.metadata.iso.extent;
 
 import java.util.Date;
-import javax.measure.unit.Unit;
+import java.util.List;
+import java.util.ArrayList;
+import javax.measure.Unit;
+import org.opengis.geometry.Envelope;
+import org.opengis.geometry.DirectPosition;
 import org.opengis.temporal.TemporalPrimitive;
 import org.opengis.metadata.extent.Extent;
 import org.opengis.metadata.extent.VerticalExtent;
@@ -28,17 +32,25 @@ import org.opengis.metadata.extent.GeographicBoundingBox;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.crs.VerticalCRS;
+import org.opengis.referencing.crs.GeographicCRS;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.opengis.referencing.datum.VerticalDatum;
+import org.opengis.referencing.datum.VerticalDatumType;
+import org.opengis.referencing.operation.TransformException;
+import org.apache.sis.internal.metadata.ReferencingServices;
+import org.apache.sis.metadata.InvalidMetadataException;
 import org.apache.sis.measure.Longitude;
 import org.apache.sis.measure.MeasurementRange;
 import org.apache.sis.measure.Range;
 import org.apache.sis.util.resources.Vocabulary;
+import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Static;
 
 import static java.lang.Math.*;
-import static org.apache.sis.internal.metadata.MetadataUtilities.getInclusion;
 import static org.apache.sis.internal.metadata.ReferencingServices.AUTHALIC_RADIUS;
 
+import org.apache.sis.internal.jdk8.JDK8;
 
 /**
  * Convenience static methods for extracting information from {@link Extent} objects.
@@ -53,11 +65,12 @@ import static org.apache.sis.internal.metadata.ReferencingServices.AUTHALIC_RADI
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
- * @version 0.4
- * @module
+ * @version 0.8
  *
  * @see org.apache.sis.geometry.Envelopes
+ *
+ * @since 0.3
+ * @module
  */
 public final class Extents extends Static {
     /**
@@ -82,96 +95,160 @@ public final class Extents extends Static {
 
     /**
      * Returns a single geographic bounding box from the specified extent.
-     * If no bounding box is found, then this method returns {@code null}.
-     * If a single bounding box is found, then that box is returned directly.
-     * If more than one box is found, then all those boxes are
-     * {@linkplain DefaultGeographicBoundingBox#add added} together.
+     * This method tries to find the bounding box in the cheapest way
+     * before to fallback on more expansive computations:
      *
-     * @param  extent The extent to convert to a geographic bounding box, or {@code null}.
-     * @return A geographic bounding box extracted from the given extent, or {@code null} in none.
+     * <ol>
+     *   <li>First, this method searches geographic elements that are instance of {@link GeographicBoundingBox}.<ul>
+     *     <li>If exactly one such instance is found, then this method returns that instance directly (no copy).</li>
+     *     <li>If more than one instance is found, then this method computes and returns the
+     *         {@linkplain DefaultGeographicBoundingBox#add union} of all bounding boxes.</li>
+     *   </ul></li>
+     *   <li>If above step found no {@code GeographicBoundingBox}, then this method inspects geographic elements
+     *       that are instance of {@link BoundingPolygon}, taking in account only the envelopes associated to a
+     *       coordinate reference system of kind {@link GeographicCRS}. If such envelopes are found, then this
+     *       method computes and returns their union.</li>
+     *   <li>If above step found no polygon's envelope associated to a geographic CRS, then in last resort this
+     *       method uses all polygon's envelopes regardless their coordinate reference system (provided that the
+     *       CRS is not null), applying coordinate transformations if needed.</li>
+     *   <li>If above step found no polygon's envelope, then this method returns {@code null}.</li>
+     * </ol>
+     *
+     * @param  extent  the extent to convert to a geographic bounding box, or {@code null}.
+     * @return a geographic bounding box extracted from the given extent, or {@code null} if none.
+     *
+     * @see org.apache.sis.referencing.CRS#getDomainOfValidity(CoordinateReferenceSystem)
      */
     public static GeographicBoundingBox getGeographicBoundingBox(final Extent extent) {
-        GeographicBoundingBox candidate = null;
+        GeographicBoundingBox bounds = null;
         if (extent != null) {
             DefaultGeographicBoundingBox modifiable = null;
+            final List<Envelope> fallbacks = new ArrayList<>();
             for (final GeographicExtent element : extent.getGeographicElements()) {
-                final GeographicBoundingBox bounds;
-                if (element instanceof GeographicBoundingBox) {
-                    bounds = (GeographicBoundingBox) element;
-                } else if (element instanceof BoundingPolygon) {
-                    // TODO: iterates through all polygons and invoke Polygon.getEnvelope();
-                    continue;
-                } else {
-                    continue;
-                }
                 /*
-                 * A single geographic bounding box has been extracted. Now add it to previous
-                 * ones (if any). All exclusion boxes before the first inclusion box are ignored.
+                 * If a geographic bounding box can be obtained, add it to the previous boxes (if any).
+                 * All exclusion boxes before the first inclusion box are ignored.
                  */
-                if (candidate == null) {
-                    /*
-                     * Reminder: 'inclusion' is a mandatory attribute, so it should never be
-                     * null for a valid metadata object.  If the metadata object is invalid,
-                     * it is better to get an exception than having a code doing silently
-                     * some probably inappropriate work.
-                     */
-                    if (getInclusion(bounds.getInclusion())) {
-                        candidate = bounds;
+                if (element instanceof GeographicBoundingBox) {
+                    final GeographicBoundingBox item = (GeographicBoundingBox) element;
+                    if (bounds == null) {
+                        /*
+                         * We use DefaultGeographicBoundingBox.getInclusion(Boolean) below because
+                         * add(…) method that we use cares about the case where inclusion is false.
+                         */
+                        if (DefaultGeographicBoundingBox.getInclusion(item.getInclusion())) {
+                            bounds = item;
+                        }
+                    } else {
+                        if (modifiable == null) {
+                            bounds = modifiable = new DefaultGeographicBoundingBox(bounds);
+                        }
+                        modifiable.add(item);
                     }
-                } else {
-                    if (modifiable == null) {
-                        modifiable = new DefaultGeographicBoundingBox();
-                        modifiable.setBounds(candidate);
-                        candidate = modifiable;
-                    }
-                    modifiable.add(bounds);
                 }
             }
+            /*
+             * If we found not explicit GeographicBoundingBox element, use the information that we
+             * collected in BoundingPolygon elements. This may involve coordinate transformations.
+             */
+            if (bounds == null) try {
+                for (final Envelope envelope : fallbacks) {
+                    final DefaultGeographicBoundingBox item = new DefaultGeographicBoundingBox();
+                    item.setBounds(envelope);
+                    if (bounds == null) {
+                        bounds = item;
+                    } else {
+                        if (modifiable == null) {
+                            bounds = modifiable = new DefaultGeographicBoundingBox(bounds);
+                        }
+                        modifiable.add(item);
+                    }
+                }
+            } catch (TransformException e) {
+                throw new InvalidMetadataException(Errors.format(Errors.Keys.CanNotTransformEnvelope), e);
+            }
         }
-        return candidate;
+        return bounds;
     }
 
     /**
-     * Returns the union of all vertical ranges found in the given extent, or {@code null} if none.
-     * Depths have negative height values: if the {@linkplain CoordinateSystemAxis#getDirection() axis direction}
+     * Returns the union of chosen vertical ranges found in the given extent, or {@code null} if none.
+     * This method gives preference to heights above the Mean Sea Level when possible.
+     * Depths have negative height values: if the
+     * {@linkplain org.apache.sis.referencing.cs.DefaultCoordinateSystemAxis#getDirection() axis direction}
      * is toward down, then this method reverses the sign of minimum and maximum values.
      *
      * <div class="section">Multi-occurrences</div>
      * If the given {@code Extent} object contains more than one vertical extent, then this method
-     * performs the following choices:
+     * performs a choice based on the vertical datum and the unit of measurement:
      *
-     * <ul>
-     *   <li>If no range specify a unit of measurement, return the first range and ignore all others.</li>
-     *   <li>Otherwise take the first range having a unit of measurement. Then:<ul>
-     *     <li>All other ranges having an incompatible unit of measurement will be ignored.</li>
-     *     <li>All other ranges having a compatible unit of measurement will be converted to
-     *         the unit of the first retained range, and their union will be computed.</li>
-     *   </ul></li>
+     * <ul class="verbose">
+     *   <li><p><b>Choice based on vertical datum</b><br>
+     *   Only the extents associated (indirectly, through their CRS) to the same non-null {@link VerticalDatumType}
+     *   will be taken in account. If all datum types are null, then this method conservatively uses only the first
+     *   vertical extent. Otherwise the datum type used for filtering the vertical extents is:</p>
+     *
+     *   <ul>
+     *     <li>{@link VerticalDatumType#GEOIDAL} or {@link VerticalDatumType#DEPTH DEPTH} if at least one extent
+     *         uses those datum types. For this method, {@code DEPTH} is considered as equivalent to {@code GEOIDAL}
+     *         except for the axis direction.</li>
+     *     <li>Otherwise, the first non-null datum type found in iteration order.</li>
+     *   </ul>
+     *
+     *   <div class="note"><b>Rational:</b> like {@linkplain #getGeographicBoundingBox(Extent) geographic bounding box},
+     *   the vertical range is an approximative information; the range returned by this method does not carry any
+     *   information about the vertical CRS and this method does not attempt to perform coordinate transformation.
+     *   But this method is more useful if the returned ranges are close to a frequently used surface, like the
+     *   Mean Sea Level. The same simplification is applied in the
+     *   <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html#31">{@code VerticalExtent} element of
+     *   Well Known Text (WKT) format</a>, which specifies that <cite>“Vertical extent is an approximate description
+     *   of location; heights are relative to an unspecified mean sea level.”</cite></div></li>
+     *
+     *   <li><p><b>Choice based on units of measurement</b><br>
+     *   If, after the choice based on the vertical datum described above, there is still more than one vertical
+     *   extent to consider, then the next criterion checks for the units of measurement.</p>
+     *   <ul>
+     *     <li>If no range specify a unit of measurement, return the first range and ignore all others.</li>
+     *     <li>Otherwise take the first range having a unit of measurement. Then:<ul>
+     *       <li>All other ranges having an incompatible unit of measurement will be ignored.</li>
+     *       <li>All other ranges having a compatible unit of measurement will be converted to
+     *           the unit of the first retained range, and their union will be computed.</li>
+     *     </ul></li>
+     *   </ul>
+     *
+     *   <div class="note"><b>Example:</b>
+     *   Heights or depths are often measured using some pressure units, for example hectopascals (hPa).
+     *   An {@code Extent} could contain two vertical elements: one with the height measurements in hPa,
+     *   and the other element with heights transformed to metres using an empirical formula.
+     *   In such case this method will select the first vertical element on the assumption that it is
+     *   the "main" one that the metadata producer intended to show. Next, this method will search for
+     *   other vertical elements using pressure unit. In our example there is none, but if such elements
+     *   were found, this method would compute their union.</div></li>
      * </ul>
      *
-     * <div class="note"><b>Example:</b>
-     * Heights or depths are often measured using some pressure units, for example hectopascals (hPa).
-     * An {@code Extent} could contain two vertical elements: one with the height measurements in hPa,
-     * and the other element with heights transformed to metres using an empirical formula.
-     * In such case this method will select the first vertical element on the assumption that it is
-     * the "main" one that the metadata producer intended to show. Next, this method will search for
-     * other vertical elements using pressure unit. In our example there is none, but if such elements
-     * were found, this method would compute their union.</div>
-     *
-     * @param  extent The extent to convert to a vertical measurement range, or {@code null}.
-     * @return A vertical measurement range created from the given extent, or {@code null} if none.
+     * @param  extent  the extent to convert to a vertical measurement range, or {@code null}.
+     * @return a vertical measurement range created from the given extent, or {@code null} if none.
      *
      * @since 0.4
      */
     public static MeasurementRange<Double> getVerticalRange(final Extent extent) {
         MeasurementRange<Double> range = null;
+        VerticalDatumType selectedType = null;
         if (extent != null) {
             for (final VerticalExtent element : extent.getVerticalElements()) {
                 double min = element.getMinimumValue();
                 double max = element.getMaximumValue();
                 final VerticalCRS crs = element.getVerticalCRS();
+                VerticalDatumType type = null;
                 Unit<?> unit = null;
                 if (crs != null) {
+                    final VerticalDatum datum = crs.getDatum();
+                    if (datum != null) {
+                        type = datum.getVerticalDatumType();
+                        if (VerticalDatumType.DEPTH.equals(type)) {
+                            type = VerticalDatumType.GEOIDAL;
+                        }
+                    }
                     final CoordinateSystemAxis axis = crs.getCoordinateSystem().getAxis(0);
                     unit = axis.getUnit();
                     if (AxisDirection.DOWN.equals(axis.getDirection())) {
@@ -182,27 +259,39 @@ public final class Extents extends Static {
                 }
                 if (range != null) {
                     /*
-                     * If the new range does not specify any unit, then we do not know how to convert
-                     * the values before to perform the union operation. Conservatively do nothing.
+                     * If the new range does not specify any datum type or unit, then we do not know how to
+                     * convert the values before to perform the union operation. Conservatively do nothing.
                      */
-                    if (unit == null) {
+                    if (type == null || unit == null) {
                         continue;
                     }
                     /*
-                     * If previous range did not specify any unit, then unconditionally replace it by
-                     * the new range since it provides more information. If both ranges specify units,
-                     * then we will compute the union if we can, or ignore the new range otherwise.
+                     * If the new range is not measured relative to the same kind of surface than the previous range,
+                     * then we do not know how to combine those ranges. Do nothing, unless the new range is a Mean Sea
+                     * Level Height in which case we forget all previous ranges and use the new one instead.
                      */
-                    final Unit<?> previous = range.unit();
-                    if (previous != null) {
-                        if (previous.isCompatible(unit)) {
-                            range = (MeasurementRange<Double>) range.union(
-                                    MeasurementRange.create(min, true, max, true, unit));
+                    if (!type.equals(selectedType)) {
+                        if (!type.equals(VerticalDatumType.GEOIDAL)) {
+                            continue;
                         }
-                        continue;
+                    } else if (selectedType != null) {
+                        /*
+                         * If previous range did not specify any unit, then unconditionally replace it by
+                         * the new range since it provides more information. If both ranges specify units,
+                         * then we will compute the union if we can, or ignore the new range otherwise.
+                         */
+                        final Unit<?> previous = range.unit();
+                        if (previous != null) {
+                            if (previous.isCompatible(unit)) {
+                                range = (MeasurementRange<Double>) range.union(
+                                        MeasurementRange.create(min, true, max, true, unit));
+                            }
+                            continue;
+                        }
                     }
                 }
                 range = MeasurementRange.create(min, true, max, true, unit);
+                selectedType = type;
             }
         }
         return range;
@@ -211,8 +300,8 @@ public final class Extents extends Static {
     /**
      * Returns the union of all time ranges found in the given extent, or {@code null} if none.
      *
-     * @param  extent The extent to convert to a time range, or {@code null}.
-     * @return A time range created from the given extent, or {@code null} if none.
+     * @param  extent  the extent to convert to a time range, or {@code null}.
+     * @return a time range created from the given extent, or {@code null} if none.
      *
      * @since 0.4
      */
@@ -224,7 +313,7 @@ public final class Extents extends Static {
                 final Date startTime, endTime;
                 if (t instanceof DefaultTemporalExtent) {
                     final DefaultTemporalExtent dt = (DefaultTemporalExtent) t;
-                    startTime = dt.getStartTime(); // Maybe user has overridden those methods.
+                    startTime = dt.getStartTime();                  // Maybe user has overridden those methods.
                     endTime   = dt.getEndTime();
                 } else {
                     final TemporalPrimitive p = t.getExtent();
@@ -238,7 +327,7 @@ public final class Extents extends Static {
         if (min == null && max == null) {
             return null;
         }
-        return new Range<Date>(Date.class, min, true, max, true);
+        return new Range<>(Date.class, min, true, max, true);
     }
 
     /**
@@ -258,10 +347,10 @@ public final class Extents extends Static {
      *   <li>If {@code location} is outside the [0 … 1] range, then the result will be outside the temporal extent.</li>
      * </ul>
      *
-     * @param  extent   The extent from which to get an instant, or {@code null}.
-     * @param  location 0 for the start time, 1 for the end time, 0.5 for the average time, or the
-     *                  coefficient (usually in the [0 … 1] range) for interpolating an instant.
-     * @return An instant interpolated at the given location, or {@code null} if none.
+     * @param  extent    the extent from which to get an instant, or {@code null}.
+     * @param  location  0 for the start time, 1 for the end time, 0.5 for the average time, or the
+     *                   coefficient (usually in the [0 … 1] range) for interpolating an instant.
+     * @return an instant interpolated at the given location, or {@code null} if none.
      *
      * @since 0.4
      */
@@ -275,7 +364,7 @@ public final class Extents extends Static {
                 Date   endTime = null;
                 if (t instanceof DefaultTemporalExtent) {
                     final DefaultTemporalExtent dt = (DefaultTemporalExtent) t;
-                    if (location != 1) startTime = dt.getStartTime(); // Maybe user has overridden those methods.
+                    if (location != 1) startTime = dt.getStartTime();       // Maybe user has overridden those methods.
                     if (location != 0)   endTime = dt.getEndTime();
                 } else {
                     final TemporalPrimitive p = t.getExtent();
@@ -293,6 +382,30 @@ public final class Extents extends Static {
     }
 
     /**
+     * Returns the position at the median longitude and latitude values of the given bounding box.
+     * This method does not check the {@linkplain DefaultGeographicBoundingBox#getInclusion() inclusion} status.
+     * This method takes in account bounding boxes that cross the anti-meridian.
+     *
+     * @param  bbox  the bounding box for which to get the median longitude and latitude values, or {@code null}.
+     * @return a median position of the given bounding box, or {@code null} if none.
+     */
+    public static DirectPosition centroid(final GeographicBoundingBox bbox) {
+        if (bbox != null) {
+            double y    = (bbox.getNorthBoundLatitude() + bbox.getSouthBoundLatitude()) / 2;
+            double x    =  bbox.getWestBoundLongitude();
+            double xmax =  bbox.getEastBoundLongitude();
+            if (xmax < x) {
+                xmax += (Longitude.MAX_VALUE - Longitude.MIN_VALUE);
+            }
+            x = Longitude.normalize((x + xmax) / 2);
+            if (JDK8.isFinite(x) || JDK8.isFinite(y)) {
+                return ReferencingServices.getInstance().geographic(x, y);
+            }
+        }
+        return null;
+    }
+
+    /**
      * Returns the intersection of the given geographic bounding boxes. If any of the arguments is {@code null},
      * then this method returns the other argument (which may be null). Otherwise this method returns a box which
      * is the intersection of the two given boxes.
@@ -300,11 +413,11 @@ public final class Extents extends Static {
      * <p>This method never modify the given boxes, but may return directly one of the given arguments if it
      * already represents the intersection result.</p>
      *
-     * @param  b1 The first bounding box, or {@code null}.
-     * @param  b2 The second bounding box, or {@code null}.
-     * @return The intersection (may be any of the {@code b1} or {@code b2} argument if unchanged),
+     * @param  b1  the first bounding box, or {@code null}.
+     * @param  b2  the second bounding box, or {@code null}.
+     * @return the intersection (may be any of the {@code b1} or {@code b2} argument if unchanged),
      *         or {@code null} if the two given boxes are null.
-     * @throws IllegalArgumentException If the {@linkplain DefaultGeographicBoundingBox#getInclusion() inclusion status}
+     * @throws IllegalArgumentException if the {@linkplain DefaultGeographicBoundingBox#getInclusion() inclusion status}
      *         is not the same for both boxes.
      *
      * @see DefaultGeographicBoundingBox#intersect(GeographicBoundingBox)
@@ -328,8 +441,8 @@ public final class Extents extends Static {
      * {@linkplain org.apache.sis.referencing.CommonCRS#SPHERE GRS 1980 Authalic Sphere}.
      * However this may change in any future SIS version.</p>
      *
-     * @param  box The geographic bounding box for which to compute the area, or {@code null}.
-     * @return An estimation of the area in the given bounding box (m²),
+     * @param  box  the geographic bounding box for which to compute the area, or {@code null}.
+     * @return an estimation of the area in the given bounding box (m²),
      *         or {@linkplain Double#NaN NaN} if the given box was null.
      *
      * @since 0.4
@@ -338,8 +451,17 @@ public final class Extents extends Static {
         if (box == null) {
             return Double.NaN;
         }
-        double Δλ = box.getEastBoundLongitude() - box.getWestBoundLongitude(); // Negative if spanning the anti-meridian
-        Δλ -= floor(Δλ / (Longitude.MAX_VALUE - Longitude.MIN_VALUE)) * (Longitude.MAX_VALUE - Longitude.MIN_VALUE);
+        double Δλ = box.getEastBoundLongitude() - box.getWestBoundLongitude();
+        final double span = Longitude.MAX_VALUE - Longitude.MIN_VALUE;
+        if (Δλ > span) {
+            Δλ = span;
+        } else if (Δλ < 0) {
+            if (Δλ < -span) {
+                Δλ = -span;
+            } else {
+                Δλ += span;
+            }
+        }
         return (AUTHALIC_RADIUS * AUTHALIC_RADIUS) * toRadians(Δλ) *
                max(0, sin(toRadians(box.getNorthBoundLatitude())) -
                       sin(toRadians(box.getSouthBoundLatitude())));

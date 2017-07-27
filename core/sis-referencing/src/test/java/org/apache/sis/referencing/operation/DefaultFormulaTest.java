@@ -16,6 +16,7 @@
  */
 package org.apache.sis.referencing.operation;
 
+import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
@@ -37,6 +38,7 @@ public final strictfp class DefaultFormulaTest extends TestCase {
     @Test
     public void testWKT() {
         final DefaultFormula formula = new DefaultFormula("Mercator");
-        assertWktEquals("Formula[“Mercator”]", formula);
+        assertWktEquals(Convention.WKT2_SIMPLIFIED, "Formula[“Mercator”]", formula);
+        assertWktEquals(Convention.WKT2, "FORMULA[“Mercator”]", formula);
     }
 }

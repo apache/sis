@@ -31,8 +31,8 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
  * Tests {@link PropertySingleton}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.5
  * @version 0.5
+ * @since   0.5
  * @module
  */
 public final strictfp class PropertySingletonTest extends TestCase {
@@ -50,9 +50,9 @@ public final strictfp class PropertySingletonTest extends TestCase {
      * Creates a new test case.
      */
     public PropertySingletonTest() {
-        attribute = new SingletonAttribute<Integer>(new DefaultAttributeType<Integer>(
+        attribute = new SingletonAttribute<>(new DefaultAttributeType<>(
                 singletonMap(DefaultAttributeType.NAME_KEY, "test"), Integer.class, 0, 1, null));
-        singleton = new PropertySingleton<Integer>(attribute);
+        singleton = new PropertySingleton<>(attribute);
     }
 
     /**

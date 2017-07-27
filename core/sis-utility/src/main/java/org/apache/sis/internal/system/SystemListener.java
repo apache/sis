@@ -27,8 +27,8 @@ import org.apache.sis.util.ArraysExt;
  * to keep the SIS library OSGi-independent.
  *
  * @author  Martin Desruisseaux (Geomatys)
+ * @version 0.6
  * @since   0.3
- * @version 0.3
  * @module
  */
 public abstract class SystemListener implements EventListener {
@@ -45,9 +45,9 @@ public abstract class SystemListener implements EventListener {
     private final String module;
 
     /**
-     * Creates a nes listener.
+     * Creates a new listener.
      *
-     * @param module The OSGi module symbolic name, as declared in the {@code Bundle-SymbolicName}
+     * @param module  the OSGi module symbolic name, as declared in the {@code Bundle-SymbolicName}
      *        entry of the {@code META-INF/MANIFEST.MF} file. Shall be one of {@link Modules} constants.
      */
     protected SystemListener(final String module) {
@@ -59,7 +59,7 @@ public abstract class SystemListener implements EventListener {
      * This method doesn't check if the given listener is already present in the array,
      * unless assertions are enabled.
      *
-     * @param listener The listener to add. Can not be {@code null}.
+     * @param  listener  the listener to add. Can not be {@code null}.
      */
     public static synchronized void add(final SystemListener listener) {
         assert (listener != null) && !ArraysExt.contains(listeners, listener);
@@ -78,7 +78,7 @@ public abstract class SystemListener implements EventListener {
      * Only one occurrence should exist, but this method check all of them as
      * a paranoiac check.`
      *
-     * @param listener The listener to remove.
+     * @param  listener  the listener to remove.
      */
     public static synchronized void remove(final SystemListener listener) {
         SystemListener[] list = listeners;
@@ -96,8 +96,8 @@ public abstract class SystemListener implements EventListener {
      * Removes all listeners for the module of the given name.
      * This method is invoked by {@link OSGiActivator}.
      *
-     * @param name The name of the module for which to remove listeners, or {@code null} if the module
-     *        to uninstall does not have symbolic name (in which case it is probably not a SIS module).
+     * @param  name  the name of the module for which to remove listeners, or {@code null} if the module
+     *         to uninstall does not have symbolic name (in which case it is probably not a SIS module).
      */
     static synchronized void removeModule(final String name) {
         if (name != null) {
@@ -120,6 +120,7 @@ public abstract class SystemListener implements EventListener {
     /**
      * Notifies all registered listeners that the classpath may have changed.
      */
+    @SuppressWarnings("ForLoopReplaceableByForEach")
     public static void fireClasspathChanged() {
         final SystemListener[] list;
         synchronized (SystemListener.class) {
@@ -134,7 +135,16 @@ public abstract class SystemListener implements EventListener {
 
     /**
      * Invoked when the classpath is likely to have changed.
-     * Any classes using {@link java.util.ServiceLoader} are advised to clear their cache.
+     * When this method is invoked, any classes using {@link java.util.ServiceLoader} are advised to clear their cache.
      */
     protected abstract void classpathChanged();
+
+    /**
+     * Invoked when the database content changed.
+     * When this method is invoked, EPSG and Citations database are advised to clear their cache.
+     *
+     * @since 0.6
+     */
+    protected void databaseChanged() {
+    }
 }

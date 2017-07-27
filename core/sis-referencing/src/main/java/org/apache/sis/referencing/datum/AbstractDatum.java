@@ -19,27 +19,32 @@ package org.apache.sis.referencing.datum;
 import java.util.Date;
 import java.util.Map;
 import javax.xml.bind.annotation.XmlType;
+import javax.xml.bind.annotation.XmlSchemaType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlSeeAlso;
 import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.extent.Extent;
+import org.opengis.metadata.citation.Citation;
 import org.opengis.referencing.datum.Datum;
 import org.opengis.referencing.ReferenceIdentifier;
 import org.apache.sis.referencing.AbstractIdentifiedObject;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.util.iso.Types;
+import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.internal.util.Citations;
+import org.apache.sis.internal.metadata.NameToIdentifier;
 import org.apache.sis.internal.metadata.MetadataUtilities;
+import org.apache.sis.io.wkt.ElementKind;
+import org.apache.sis.io.wkt.Formatter;
 
 import static org.apache.sis.util.Utilities.deepEquals;
 import static org.apache.sis.util.collection.Containers.property;
-import static org.apache.sis.internal.referencing.ReferencingUtilities.canSetProperty;
 
 // Branch-dependent imports
-import org.apache.sis.internal.jdk7.Objects;
+import java.util.Objects;
 
 
 /**
@@ -60,17 +65,18 @@ import org.apache.sis.internal.jdk7.Objects;
  * and static constants can be shared by many objects and passed between threads without synchronization.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.4
- * @version 0.4
- * @module
+ * @version 0.7
  *
  * @see org.apache.sis.referencing.cs.AbstractCS
  * @see org.apache.sis.referencing.crs.AbstractCRS
+ *
+ * @since 0.4
+ * @module
  */
 @XmlType(name = "AbstractDatumType", propOrder = {
     "domainOfValidity",
     "scope",
-    "anchorDefinition",
+    "anchorPoint",
     "realizationEpoch"
 })
 @XmlRootElement(name = "AbstractDatum")
@@ -78,6 +84,7 @@ import org.apache.sis.internal.jdk7.Objects;
     DefaultGeodeticDatum.class,
     DefaultVerticalDatum.class,
     DefaultTemporalDatum.class,
+    DefaultParametricDatum.class,
     DefaultEngineeringDatum.class,
     DefaultImageDatum.class
 })
@@ -95,9 +102,13 @@ public class AbstractDatum extends AbstractIdentifiedObject implements Datum {
     /**
      * Description, possibly including coordinates, of the point or points used to anchor the datum
      * to the Earth. Also known as the "origin", especially for Engineering and Image Datums.
+     *
+     * <p><b>Consider this field as final!</b>
+     * This field is modified only at unmarshalling time by {@link #setAnchorPoint(InternationalString)}</p>
+     *
+     * @see #getAnchorPoint()
      */
-    @XmlElement
-    private final InternationalString anchorDefinition;
+    private InternationalString anchorDefinition;
 
     /**
      * The time after which this datum definition is valid. This time may be precise
@@ -111,28 +122,23 @@ public class AbstractDatum extends AbstractIdentifiedObject implements Datum {
 
     /**
      * Area or region in which this datum object is valid.
+     *
+     * <p><b>Consider this field as final!</b>
+     * This field is modified only at unmarshalling time by {@link #setDomainOfValidity(Extent)}</p>
+     *
+     * @see #getDomainOfValidity()
      */
-    @XmlElement
-    private final Extent domainOfValidity;
+    private Extent domainOfValidity;
 
     /**
      * Description of domain of usage, or limitations of usage, for which this datum object is valid.
+     *
+     * <p><b>Consider this field as final!</b>
+     * This field is modified only at unmarshalling time by {@link #setScope(InternationalString)}</p>
+     *
+     * @see #getScope()
      */
-    @XmlElement
-    private final InternationalString scope;
-
-    /**
-     * Constructs a new object in which every attributes are set to a null value.
-     * <strong>This is not a valid object.</strong> This constructor is strictly
-     * reserved to JAXB, which will assign values to the fields using reflexion.
-     */
-    AbstractDatum() {
-        super(org.apache.sis.internal.referencing.NilReferencingObject.INSTANCE);
-        anchorDefinition = null;
-        realizationEpoch = Long.MIN_VALUE;
-        domainOfValidity = null;
-        scope            = null;
-    }
+    private InternationalString scope;
 
     /**
      * Creates a datum from the given properties.
@@ -192,7 +198,7 @@ public class AbstractDatum extends AbstractIdentifiedObject implements Datum {
      *   </tr>
      * </table>
      *
-     * @param properties The properties to be given to the identified object.
+     * @param  properties  the properties to be given to the identified object.
      */
     public AbstractDatum(final Map<String,?> properties) {
         super(properties);
@@ -209,7 +215,7 @@ public class AbstractDatum extends AbstractIdentifiedObject implements Datum {
      *
      * <p>This constructor performs a shallow copy, i.e. the properties are not cloned.</p>
      *
-     * @param datum The datum to copy.
+     * @param  datum  the datum to copy.
      */
     protected AbstractDatum(final Datum datum) {
         super(datum);
@@ -242,8 +248,8 @@ public class AbstractDatum extends AbstractIdentifiedObject implements Datum {
      *       properties contained in the given object are not recursively copied.</li>
      * </ul>
      *
-     * @param  object The object to get as a SIS implementation, or {@code null} if none.
-     * @return A SIS implementation containing the values of the given object (may be the
+     * @param  object  the object to get as a SIS implementation, or {@code null} if none.
+     * @return a SIS implementation containing the values of the given object (may be the
      *         given object itself), or {@code null} if the argument was null.
      */
     public static AbstractDatum castOrCopy(final Datum object) {
@@ -255,7 +261,7 @@ public class AbstractDatum extends AbstractIdentifiedObject implements Datum {
      * The default implementation returns {@code Datum.class}.
      * Subclasses implementing a more specific GeoAPI interface shall override this method.
      *
-     * @return The datum interface implemented by this class.
+     * @return the datum interface implemented by this class.
      */
     @Override
     public Class<? extends Datum> getInterface() {
@@ -280,10 +286,10 @@ public class AbstractDatum extends AbstractIdentifiedObject implements Datum {
      *       {@linkplain DefaultTemporalDatum#getOrigin() origin} instead.</li>
      * </ul>
      *
-     * @return Description, possibly including coordinates, of the point or points used to anchor the datum
-     *         to the Earth.
+     * @return description, possibly including coordinates, of the point or points used to anchor the datum to the Earth.
      */
     @Override
+    @XmlElement(name = "anchorDefinition")
     public InternationalString getAnchorPoint() {
         return anchorDefinition;
     }
@@ -295,33 +301,24 @@ public class AbstractDatum extends AbstractIdentifiedObject implements Datum {
      * <p>If an old datum is superseded by a new datum, then the realization epoch for the new datum
      * defines the upper limit for the validity of the old datum.</p>
      *
-     * @return The time after which this datum definition is valid, or {@code null} if none.
+     * @return the time after which this datum definition is valid, or {@code null} if none.
      */
     @Override
+    @XmlSchemaType(name = "date")
     @XmlElement(name = "realizationEpoch")
     public Date getRealizationEpoch() {
         return MetadataUtilities.toDate(realizationEpoch);
     }
 
     /**
-     * Invoked by JAXB only at unmarshalling time.
-     */
-    private void setRealizationEpoch(final Date value) {
-        if (value != null && canSetProperty(AbstractDatum.class,
-                "setRealizationEpoch", "realizationEpoch", realizationEpoch != Long.MIN_VALUE))
-        {
-            realizationEpoch = value.getTime();
-        }
-    }
-
-    /**
      * Returns the region or timeframe in which this datum is valid, or {@code null} if unspecified.
      *
-     * @return Area or region or timeframe in which this datum is valid, or {@code null}.
+     * @return area or region or timeframe in which this datum is valid, or {@code null}.
      *
      * @see org.apache.sis.metadata.iso.extent.DefaultExtent
      */
     @Override
+    @XmlElement(name = "domainOfValidity")
     public Extent getDomainOfValidity() {
         return domainOfValidity;
     }
@@ -329,9 +326,10 @@ public class AbstractDatum extends AbstractIdentifiedObject implements Datum {
     /**
      * Returns the domain or limitations of usage, or {@code null} if unspecified.
      *
-     * @return Description of domain of usage, or limitations of usage, for which this datum object is valid.
+     * @return description of domain of usage, or limitations of usage, for which this datum object is valid.
      */
     @Override
+    @XmlElement(name = "scope", required = true)
     public InternationalString getScope() {
         return scope;
     }
@@ -340,12 +338,14 @@ public class AbstractDatum extends AbstractIdentifiedObject implements Datum {
      * Returns {@code true} if either the {@linkplain #getName() primary name} or at least
      * one {@linkplain #getAlias() alias} matches the given string according heuristic rules.
      * This method performs the comparison documented in the
-     * {@link AbstractIdentifiedObject#isHeuristicMatchForName(String) super-class},
+     * {@linkplain AbstractIdentifiedObject#isHeuristicMatchForName(String) super-class},
      * with the following additional flexibility:
      *
      * <ul>
      *   <li>The {@code "D_"} prefix (used in ESRI datum names), if presents in the given name or in this datum name,
      *       is ignored.</li>
+     *   <li>If this datum is an instance of {@link DefaultGeodeticDatum}, then the prime meridian name may also
+     *       be ignored.</li>
      * </ul>
      *
      * <div class="section">Future evolutions</div>
@@ -353,21 +353,34 @@ public class AbstractDatum extends AbstractIdentifiedObject implements Datum {
      * with different data producers. Those rules may be adjusted in any future SIS version according experience
      * gained while working with more data producers.
      *
-     * @param  name The name to compare.
-     * @return {@code true} if the primary name of at least one alias matches the specified {@code name}.
+     * @param  name  the name to compare.
+     * @return {@code true} if the primary name or at least one alias matches the specified {@code name}.
      */
     @Override
     public boolean isHeuristicMatchForName(final String name) {
-        if (name.startsWith((ESRI_PREFIX))) {
-            if (super.isHeuristicMatchForName(name.substring(ESRI_PREFIX.length()))) {
-                return true;
+        return NameToIdentifier.isHeuristicMatchForName(super.getName(), super.getAlias(), name, Simplifier.INSTANCE);
+    }
+
+    /**
+     * A function for simplifying a {@link Datum} name before comparison.
+     *
+     * @since 0.7
+     */
+    static class Simplifier extends NameToIdentifier.Simplifier {
+        /** The singleton simplifier for non-geodetic datum. */
+        static final Simplifier INSTANCE = new Simplifier();
+
+        /** For subclasses and default instance only. */
+        Simplifier() {}
+
+        /** Simplify the given datum name. */
+        @Override protected CharSequence apply(CharSequence name) {
+            name = super.apply(name);
+            if (CharSequences.startsWith(name, ESRI_PREFIX, false)) {
+                name = name.subSequence(ESRI_PREFIX.length(), name.length());
             }
-        } else if (getName().getCode().startsWith(ESRI_PREFIX)) {
-            if (super.isHeuristicMatchForName(ESRI_PREFIX.concat(name))) {
-                return true;
-            }
+            return name;
         }
-        return super.isHeuristicMatchForName(name);
     }
 
     /**
@@ -377,10 +390,10 @@ public class AbstractDatum extends AbstractIdentifiedObject implements Datum {
      * {@linkplain #getAnchorPoint() anchor point}, {@linkplain #getRealizationEpoch() realization epoch},
      * {@linkplain #getDomainOfValidity() domain of validity} and the {@linkplain #getScope() scope}.
      *
-     * @param  object The object to compare to {@code this}.
-     * @param  mode {@link ComparisonMode#STRICT STRICT} for performing a strict comparison, or
-     *         {@link ComparisonMode#IGNORE_METADATA IGNORE_METADATA} for comparing only properties
-     *         relevant to coordinate transformations.
+     * @param  object  the object to compare to {@code this}.
+     * @param  mode    {@link ComparisonMode#STRICT STRICT} for performing a strict comparison, or
+     *                 {@link ComparisonMode#IGNORE_METADATA IGNORE_METADATA} for comparing only
+     *                 properties relevant to coordinate transformations.
      * @return {@code true} if both objects are equal.
      */
     @Override
@@ -429,10 +442,111 @@ public class AbstractDatum extends AbstractIdentifiedObject implements Datum {
      * See {@link org.apache.sis.referencing.AbstractIdentifiedObject#computeHashCode()}
      * for more information.
      *
-     * @return The hash code value. This value may change in any future Apache SIS version.
+     * @return the hash code value. This value may change in any future Apache SIS version.
      */
     @Override
     protected long computeHashCode() {
         return super.computeHashCode() + Objects.hash(anchorDefinition, realizationEpoch, domainOfValidity, scope);
+    }
+
+    /**
+     * Formats the inner part of the <cite>Well Known Text</cite> (WKT) representation for this datum.
+     * See {@link AbstractIdentifiedObject#formatTo(Formatter)} for more information.
+     *
+     * @param  formatter  the formatter where to format the inner content of this WKT element.
+     * @return the {@linkplain org.apache.sis.io.wkt.KeywordCase#CAMEL_CASE CamelCase} keyword
+     *         for the WKT element, or {@code null} if unknown.
+     */
+    @Override
+    protected String formatTo(final Formatter formatter) {
+        final Citation authority = formatter.getNameAuthority();
+        String name = IdentifiedObjects.getName(this, authority);
+        if (name == null) {
+            name = IdentifiedObjects.getName(this, null);
+            if (name == null) { // Should never happen, but be safe.
+                return super.formatTo(formatter);
+            }
+            if ("ESRI".equalsIgnoreCase(Citations.getCodeSpace(authority)) && !name.startsWith(ESRI_PREFIX)) {
+                name = ESRI_PREFIX + name;
+            }
+        }
+        formatter.append(name, ElementKind.DATUM);
+        return null;
+    }
+
+
+
+
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+    ////////                                                                                  ////////
+    ////////                               XML support with JAXB                              ////////
+    ////////                                                                                  ////////
+    ////////        The following methods are invoked by JAXB using reflection (even if       ////////
+    ////////        they are private) or are helpers for other methods invoked by JAXB.       ////////
+    ////////        Those methods can be safely removed if Geographic Markup Language         ////////
+    ////////        (GML) support is not needed.                                              ////////
+    ////////                                                                                  ////////
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Constructs a new object in which every attributes are set to a null value.
+     * <strong>This is not a valid object.</strong> This constructor is strictly
+     * reserved to JAXB, which will assign values to the fields using reflexion.
+     */
+    AbstractDatum() {
+        super(org.apache.sis.internal.referencing.NilReferencingObject.INSTANCE);
+        realizationEpoch = Long.MIN_VALUE;
+    }
+
+    /**
+     * Invoked by JAXB only at unmarshalling time.
+     *
+     * @see #getAnchorPoint()
+     */
+    private void setAnchorPoint(final InternationalString value) {
+        if (anchorDefinition == null) {
+            anchorDefinition = value;
+        } else {
+            MetadataUtilities.propertyAlreadySet(AbstractDatum.class, "setAnchorPoint", "anchorDefinition");
+        }
+    }
+
+    /**
+     * Invoked by JAXB only at unmarshalling time.
+     *
+     * @see #getRealizationEpoch()
+     */
+    private void setRealizationEpoch(final Date value) {
+        if (realizationEpoch == Long.MIN_VALUE) {
+            realizationEpoch = value.getTime();
+        } else {
+            MetadataUtilities.propertyAlreadySet(AbstractDatum.class, "setRealizationEpoch", "realizationEpoch");
+        }
+    }
+
+    /**
+     * Invoked by JAXB only at unmarshalling time.
+     *
+     * @see #getDomainOfValidity()
+     */
+    private void setDomainOfValidity(final Extent value) {
+        if (domainOfValidity == null) {
+            domainOfValidity = value;
+        } else {
+            MetadataUtilities.propertyAlreadySet(AbstractDatum.class, "setDomainOfValidity", "domainOfValidity");
+        }
+    }
+
+    /**
+     * Invoked by JAXB only at unmarshalling time.
+     *
+     * @see #getScope()
+     */
+    private void setScope(final InternationalString value) {
+        if (scope == null) {
+            scope = value;
+        } else {
+            MetadataUtilities.propertyAlreadySet(AbstractDatum.class, "setScope", "scope");
+        }
     }
 }

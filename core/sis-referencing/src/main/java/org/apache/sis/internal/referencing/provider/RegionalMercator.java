@@ -16,6 +16,7 @@
  */
 package org.apache.sis.internal.referencing.provider;
 
+import javax.xml.bind.annotation.XmlTransient;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.apache.sis.metadata.iso.citation.Citations;
@@ -23,7 +24,7 @@ import org.apache.sis.parameter.ParameterBuilder;
 
 
 /**
- * The provider for "<cite>Mercator (variant C)</cite>" projection (EPSG:1044).
+ * The provider for <cite>"Mercator (variant C)"</cite> projection (EPSG:1044).
  *
  * <div class="note"><b>Note on naming:</b>
  * The "Regional Mercator" class name is inspired by MapInfo practice, while not exactly the same projection.
@@ -32,10 +33,11 @@ import org.apache.sis.parameter.ParameterBuilder;
  * </div>
  *
  * @author  Martin Desruisseaux (Geomatys)
+ * @version 0.8
  * @since   0.6
- * @version 0.6
  * @module
  */
+@XmlTransient
 public class RegionalMercator extends AbstractMercator {
     /**
      * For cross-version compatibility.
@@ -72,30 +74,36 @@ public class RegionalMercator extends AbstractMercator {
     static {
         final ParameterBuilder builder = builder();
 
-        LATITUDE_OF_FALSE_ORIGIN = createLatitude(exceptEPSG(Mercator1SP.LATITUDE_OF_ORIGIN, builder
-                .addIdentifier("8821")
-                .addName("Latitude of false origin"))
-                .rename(Citations.GEOTIFF, "FalseOriginLat"), false);
+        LATITUDE_OF_FALSE_ORIGIN = createLatitude(builder
+                .addNamesAndIdentifiers(Mercator1SP.LATITUDE_OF_ORIGIN)
+                .rename(Citations.EPSG, "Latitude of false origin")
+                .rename(Citations.GEOTIFF, "FalseOriginLat")
+                .reidentify(Citations.EPSG, "8821")
+                .reidentify(Citations.GEOTIFF, "3085"), false);
 
-        EASTING_AT_FALSE_ORIGIN = createShift(exceptEPSG(FALSE_EASTING, builder
-                .addIdentifier("8826")
-                .addName("Easting at false origin"))
-                .rename(Citations.GEOTIFF, "FalseOriginEasting"));
+        EASTING_AT_FALSE_ORIGIN = createShift(builder
+                .addNamesAndIdentifiers(FALSE_EASTING)
+                .rename(Citations.EPSG, "Easting at false origin")
+                .rename(Citations.GEOTIFF, "FalseOriginEasting")
+                .reidentify(Citations.EPSG, "8826")
+                .reidentify(Citations.GEOTIFF, "3086"));
 
-        NORTHING_AT_FALSE_ORIGIN = createShift(exceptEPSG(FALSE_NORTHING, builder
-                .addIdentifier("8827")
-                .addName("Northing at false origin"))
-                .rename(Citations.GEOTIFF, "FalseOriginNorthing"));
+        NORTHING_AT_FALSE_ORIGIN = createShift(builder
+                .addNamesAndIdentifiers(FALSE_NORTHING)
+                .rename(Citations.EPSG, "Northing at false origin")
+                .rename(Citations.GEOTIFF, "FalseOriginNorthing")
+                .reidentify(Citations.EPSG, "8827")
+                .reidentify(Citations.GEOTIFF, "3087"));
 
         PARAMETERS = builder
-            .addIdentifier(IDENTIFIER)
-            .addName("Mercator (variant C)")
-            .createGroupForMapProjection(
-                    Mercator2SP.STANDARD_PARALLEL,
-                    Mercator1SP.CENTRAL_MERIDIAN,
-                    LATITUDE_OF_FALSE_ORIGIN,
-                    EASTING_AT_FALSE_ORIGIN,
-                    NORTHING_AT_FALSE_ORIGIN);
+                .addIdentifier(IDENTIFIER)
+                .addName("Mercator (variant C)")
+                .createGroupForMapProjection(
+                        Mercator2SP.STANDARD_PARALLEL,
+                        Mercator1SP.LONGITUDE_OF_ORIGIN,    // Really "natural origin", not "false origin".
+                        LATITUDE_OF_FALSE_ORIGIN,
+                        EASTING_AT_FALSE_ORIGIN,
+                        NORTHING_AT_FALSE_ORIGIN);
     }
 
     /**

@@ -28,8 +28,8 @@ import org.apache.sis.referencing.datum.DefaultTemporalDatum;
  *
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
+ * @version 0.7
  * @since   0.4
- * @version 0.4
  * @module
  */
 public final class CD_TemporalDatum extends PropertyType<CD_TemporalDatum, TemporalDatum> {
@@ -62,8 +62,8 @@ public final class CD_TemporalDatum extends PropertyType<CD_TemporalDatum, Tempo
      * Invoked by {@link PropertyType} at marshalling time for wrapping the given value
      * in a {@code <gml:TemporalDatum>} XML element.
      *
-     * @param  datum The element to marshall.
-     * @return A {@code PropertyType} wrapping the given the element.
+     * @param  datum  the element to marshall.
+     * @return a {@code PropertyType} wrapping the given the element.
      */
     @Override
     protected CD_TemporalDatum wrap(final TemporalDatum datum) {
@@ -75,7 +75,7 @@ public final class CD_TemporalDatum extends PropertyType<CD_TemporalDatum, Tempo
      * inside the {@code <gml:TemporalDatum>} XML element.
      * This is the value or a copy of the value given in argument to the {@code wrap} method.
      *
-     * @return The element to be marshalled.
+     * @return the element to be marshalled.
      */
     @XmlElement(name = "TemporalDatum")
     public DefaultTemporalDatum getElement() {
@@ -85,9 +85,10 @@ public final class CD_TemporalDatum extends PropertyType<CD_TemporalDatum, Tempo
     /**
      * Invoked by JAXB at unmarshalling time for storing the result temporarily.
      *
-     * @param datum The unmarshalled element.
+     * @param  datum  the unmarshalled element.
      */
     public void setElement(final DefaultTemporalDatum datum) {
         metadata = datum;
+        if (datum.getOrigin() == null) incomplete("origin");
     }
 }

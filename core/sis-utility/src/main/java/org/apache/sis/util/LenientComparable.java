@@ -98,8 +98,8 @@ package org.apache.sis.util;
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.3
+ * @since   0.3
  * @module
  */
 public interface LenientComparable {
@@ -137,8 +137,8 @@ public interface LenientComparable {
      *       {@code APPROXIMATIVE} mode is incompatible with the transitivity contract.</li>
      * </ul>
      *
-     * @param  other The object to compare to {@code this}.
-     * @param  mode The strictness level of the comparison.
+     * @param  other  the object to compare to {@code this}.
+     * @param  mode   the strictness level of the comparison.
      * @return {@code true} if both objects are equal according the given comparison mode.
      *
      * @see Utilities#deepEquals(Object, Object, ComparisonMode)
@@ -170,7 +170,7 @@ public interface LenientComparable {
      * subclasses override the above {@link #equals(Object, ComparisonMode)} method instead
      * than this one.
      *
-     * @param  other The object to compare to {@code this}.
+     * @param  other  the object to compare to {@code this}.
      * @return {@code true} if both objects are strictly equal.
      *
      * @see ComparisonMode#STRICT

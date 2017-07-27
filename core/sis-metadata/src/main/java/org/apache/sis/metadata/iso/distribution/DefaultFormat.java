@@ -27,6 +27,7 @@ import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.distribution.Format;
 import org.opengis.metadata.distribution.Medium;
 import org.opengis.metadata.distribution.Distributor;
+import org.apache.sis.internal.metadata.Dependencies;
 import org.apache.sis.internal.metadata.LegacyPropertyAdapter;
 import org.apache.sis.metadata.iso.citation.DefaultCitation;
 import org.apache.sis.metadata.iso.ISOMetadata;
@@ -42,6 +43,33 @@ import static org.opengis.annotation.Specification.ISO_19115;
 /**
  * Description of the computer language construct that specifies the representation
  * of data objects in a record, file, message, storage device or transmission channel.
+ * The following properties are mandatory in a well-formed metadata according ISO 19115:
+ *
+ * <div class="preformat">{@code MD_Format}
+ * {@code   └─formatSpecificationCitation……} Citation/URL of the specification format.
+ * {@code       ├─title……………………………………………………} Name by which the cited resource is known.
+ * {@code       └─date………………………………………………………} Reference date for the cited resource.</div>
+ *
+ * Each {@code Format} instance should contain a {@linkplain #getFormatSpecificationCitation() reference
+ * to the format specification}, for example <cite>"PNG (Portable Network Graphics) Specification"</cite>.
+ * The specification often has an abbreviation (for example "PNG") which can be stored as an
+ * {@linkplain DefaultCitation#getAlternateTitles() alternate title}.
+ *
+ * <p>Apache SIS provides pre-defined metadata structures for some commonly-used formats.
+ * A pre-defined format can be obtained by a call to
+ * <code>{@linkplain org.apache.sis.metadata.sql.MetadataSource#lookup(Class, String) lookup}(Format.class,
+ * <var>abbreviation</var>)</code> where <var>abbreviation</var> can be one of the values listed below:</p>
+ *
+ * <table class="sis">
+ *   <caption>Specification titles for well-known format names</caption>
+ *   <tr><th>Abbreviation</th> <th>Specification title</th></tr>
+ *   <tr><td>CSV</td>          <td>Common Format and MIME Type for Comma-Separated Values (CSV) Files</td></tr>
+ *   <tr><td>GeoTIFF</td>      <td>GeoTIFF Coverage Encoding Profile</td></tr>
+ *   <tr><td>NetCDF</td>       <td>NetCDF Classic and 64-bit Offset Format</td></tr>
+ *   <tr><td>PNG</td>          <td>PNG (Portable Network Graphics) Specification</td></tr>
+ * </table>
+ *
+ * Above list may be expanded in any future SIS version.
  *
  * <p><b>Limitations:</b></p>
  * <ul>
@@ -55,10 +83,11 @@ import static org.opengis.annotation.Specification.ISO_19115;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Touraïvane (IRD)
  * @author  Cédric Briançon (Geomatys)
+ * @version 0.8
  * @since   0.3
- * @version 0.5
  * @module
  */
+@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "MD_Format_Type", propOrder = {
     "name",
     "version",
@@ -108,11 +137,17 @@ public class DefaultFormat extends ISOMetadata implements Format {
 
     /**
      * Creates a format initialized to the given name and version.
+     * The given name should be a short name or abbreviation, for example "JPEG" or "GeoTIFF".
      *
-     * @param name    The name of the data transfer format(s), or {@code null}.
-     * @param version The version of the format (date, number, etc.), or {@code null}.
+     * @param  name     the abbreviated name of the data transfer format, or {@code null}.
+     * @param  version  the version of the format (date, number, <i>etc.</i>), or {@code null}.
+     *
+     * @deprecated This constructor had a straightforward meaning in ISO 19115:2003, but became confusing
+     *             with the ISO 19115:2014 update because of differences in the {@code Format} model.
+     *             Consider using {@link org.apache.sis.metadata.sql.MetadataSource#lookup(Class, String)} instead.
      */
-    public DefaultFormat(final CharSequence name, final CharSequence version) {
+    @Deprecated
+    public DefaultFormat(CharSequence name, final CharSequence version) {
         final DefaultCitation citation = new DefaultCitation();
         if (name != null) {
             citation.setAlternateTitles(Collections.singleton(Types.toInternationalString(name)));
@@ -126,7 +161,7 @@ public class DefaultFormat extends ISOMetadata implements Format {
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
-     * @param object The metadata to copy values from, or {@code null} if none.
+     * @param  object  the metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(Format)
      */
@@ -161,8 +196,8 @@ public class DefaultFormat extends ISOMetadata implements Format {
      *       metadata contained in the given object are not recursively copied.</li>
      * </ul>
      *
-     * @param  object The object to get as a SIS implementation, or {@code null} if none.
-     * @return A SIS implementation containing the values of the given object (may be the
+     * @param  object  the object to get as a SIS implementation, or {@code null} if none.
+     * @return a SIS implementation containing the values of the given object (may be the
      *         given object itself), or {@code null} if the argument was null.
      */
     public static DefaultFormat castOrCopy(final Format object) {
@@ -175,7 +210,7 @@ public class DefaultFormat extends ISOMetadata implements Format {
     /**
      * Returns the citation / URL of the specification format.
      *
-     * @return Citation / URL of the specification format.
+     * @return citation / URL of the specification format.
      *
      * @since 0.5
      */
@@ -188,7 +223,7 @@ public class DefaultFormat extends ISOMetadata implements Format {
     /**
      * Sets the citation / URL of the specification format.
      *
-     * @param newValue The new specification format.
+     * @param  newValue  the new specification format.
      *
      * @since 0.5
      */
@@ -221,7 +256,7 @@ public class DefaultFormat extends ISOMetadata implements Format {
     /**
      * Returns the name of a subset, profile, or product specification of the format.
      *
-     * @return Name of a subset, profile, or product specification of the format, or {@code null}.
+     * @return name of a subset, profile, or product specification of the format, or {@code null}.
      *
      * @deprecated As of ISO 19115:2014, replaced by
      * <code>{@linkplain #getFormatSpecificationCitation()}.{@linkplain DefaultCitation#getTitle() getTitle()}</code>.
@@ -229,15 +264,16 @@ public class DefaultFormat extends ISOMetadata implements Format {
     @Override
     @Deprecated
     @XmlElement(name = "specification")
+    @Dependencies("getFormatSpecificationCitation")
     public InternationalString getSpecification() {
         final Citation citation = getFormatSpecificationCitation();
-        return (citation != null) ? citation.getTitle(): null;
+        return (citation != null) ? citation.getTitle() : null;
     }
 
     /**
      * Sets the name of a subset, profile, or product specification of the format.
      *
-     * @param newValue The new specification.
+     * @param  newValue  the new specification.
      *
      * @deprecated As of ISO 19115:2014, replaced by
      * <code>{@linkplain #getFormatSpecificationCitation()}.{@linkplain DefaultCitation#setTitle(InternationalString)
@@ -256,7 +292,7 @@ public class DefaultFormat extends ISOMetadata implements Format {
     /**
      * Returns the name of the data transfer format(s).
      *
-     * @return Name of the data transfer format(s), or {@code null}.
+     * @return name of the data transfer format(s), or {@code null}.
      *
      * @deprecated As of ISO 19115:2014, replaced by
      * <code>{@linkplain #getFormatSpecificationCitation()}.{@linkplain DefaultCitation#getAlternateTitles()
@@ -265,6 +301,7 @@ public class DefaultFormat extends ISOMetadata implements Format {
     @Override
     @Deprecated
     @XmlElement(name = "name", required = true)
+    @Dependencies("getFormatSpecificationCitation")
     public InternationalString getName() {
         final Citation citation = getFormatSpecificationCitation();
         if (citation != null) {
@@ -277,7 +314,7 @@ public class DefaultFormat extends ISOMetadata implements Format {
     /**
      * Sets the name of the data transfer format(s).
      *
-     * @param newValue The new name.
+     * @param  newValue  the new name.
      *
      * @deprecated As of ISO 19115:2014, replaced by
      * <code>{@linkplain #getFormatSpecificationCitation()}.{@linkplain DefaultCitation#setAlternateTitles(Collection)
@@ -296,7 +333,7 @@ public class DefaultFormat extends ISOMetadata implements Format {
     /**
      * Returns the version of the format (date, number, etc.).
      *
-     * @return Version of the format, or {@code null}.
+     * @return version of the format, or {@code null}.
      *
      * @deprecated As of ISO 19115:2014, replaced by
      * <code>{@linkplain #getFormatSpecificationCitation()}.{@linkplain DefaultCitation#getEdition()
@@ -305,15 +342,16 @@ public class DefaultFormat extends ISOMetadata implements Format {
     @Override
     @Deprecated
     @XmlElement(name = "version", required = true)
+    @Dependencies("getFormatSpecificationCitation")
     public InternationalString getVersion() {
         final Citation citation = getFormatSpecificationCitation();
-        return (citation != null) ? citation.getEdition(): null;
+        return (citation != null) ? citation.getEdition() : null;
     }
 
     /**
      * Sets the version of the format (date, number, etc.).
      *
-     * @param newValue The new version.
+     * @param  newValue  the new version.
      *
      * @deprecated As of ISO 19115:2014, replaced by
      * <code>{@linkplain #getFormatSpecificationCitation()}.{@linkplain DefaultCitation#setEdition(InternationalString)
@@ -332,7 +370,7 @@ public class DefaultFormat extends ISOMetadata implements Format {
     /**
      * Returns the amendment number of the format version.
      *
-     * @return Amendment number of the format version, or {@code null}.
+     * @return amendment number of the format version, or {@code null}.
      */
     @Override
     @XmlElement(name = "amendmentNumber")
@@ -343,7 +381,7 @@ public class DefaultFormat extends ISOMetadata implements Format {
     /**
      * Sets the amendment number of the format version.
      *
-     * @param newValue The new amendment number.
+     * @param  newValue  the new amendment number.
      */
     public void setAmendmentNumber(final InternationalString newValue) {
         checkWritePermission();
@@ -354,7 +392,7 @@ public class DefaultFormat extends ISOMetadata implements Format {
      * Returns recommendations of algorithms or processes that can be applied to read or
      * expand resources to which compression techniques have been applied.
      *
-     * @return Processes that can be applied to read resources to which compression techniques have
+     * @return processes that can be applied to read resources to which compression techniques have
      *         been applied, or {@code null}.
      */
     @Override
@@ -367,7 +405,7 @@ public class DefaultFormat extends ISOMetadata implements Format {
      * Sets recommendations of algorithms or processes that can be applied to read or
      * expand resources to which compression techniques have been applied.
      *
-     * @param newValue The new file decompression technique.
+     * @param  newValue  the new file decompression technique.
      */
     public void setFileDecompressionTechnique(final InternationalString newValue) {
         checkWritePermission();
@@ -377,7 +415,7 @@ public class DefaultFormat extends ISOMetadata implements Format {
     /**
      * Returns the media used by the format.
      *
-     * @return Media used by the format.
+     * @return media used by the format.
      *
      * @since 0.5
      */
@@ -390,7 +428,7 @@ public class DefaultFormat extends ISOMetadata implements Format {
     /**
      * Sets the media used by the format.
      *
-     * @param newValues The new media.
+     * @param  newValues  the new media.
      *
      * @since 0.5
      */
@@ -401,7 +439,7 @@ public class DefaultFormat extends ISOMetadata implements Format {
     /**
      * Provides information about the distributor's format.
      *
-     * @return Information about the distributor's format.
+     * @return information about the distributor's format.
      */
     @Override
     @XmlElement(name = "formatDistributor")
@@ -412,7 +450,7 @@ public class DefaultFormat extends ISOMetadata implements Format {
     /**
      * Sets information about the distributor's format.
      *
-     * @param newValues The new format distributors.
+     * @param  newValues  the new format distributors.
      */
     public void setFormatDistributors(final Collection<? extends Distributor> newValues) {
         formatDistributors = writeCollection(newValues, formatDistributors, Distributor.class);

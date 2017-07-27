@@ -43,12 +43,13 @@ import org.apache.sis.util.resources.Errors;
  * <div class="section">Immutability and thread safety</div>
  * This class and all inner classes are immutable, and thus inherently thread-safe.
  *
- * @param <S> The source number type.
- * @param <T> The target number type.
- *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.3
+ *
+ * @param <S>  the source number type.
+ * @param <T>  the target number type.
+ *
+ * @since 0.3
  * @module
  */
 final class NumberConverter<S extends Number, T extends Number> extends SystemConverter<S,T> {
@@ -80,8 +81,10 @@ final class NumberConverter<S extends Number, T extends Number> extends SystemCo
      */
     @Override
     public ObjectConverter<T,S> inverse() throws UnsupportedOperationException {
-        // No need to synchronize. This is not a big deal if the same object is fetched twice.
-        // The ConverterRegistry clas provides the required synchronization.
+        /*
+         * No need to synchronize. This is not a big deal if the same object is fetched twice.
+         * The ConverterRegistry clas provides the required synchronization.
+         */
         ObjectConverter<T,S> candidate = inverse;
         if (candidate == null) try {
             inverse = candidate = SystemRegistry.INSTANCE.findExact(targetClass, sourceClass);

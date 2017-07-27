@@ -1,0 +1,189 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Licensed to the Apache Software Foundation (ASF) under one
+  or more contributor license agreements.  See the NOTICE file
+  distributed with this work for additional information
+  regarding copyright ownership.  The ASF licenses this file
+  to you under the Apache License, Version 2.0 (the
+  "License"); you may not use this file except in compliance
+  with the License.  You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing,
+  software distributed under the License is distributed on an
+  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+  KIND, either express or implied.  See the License for the
+  specific language governing permissions and limitations
+  under the License.
+-->
+
+<gml:ProjectedCRS xsi:schemaLocation = "http://www.opengis.net/gml/3.2 http://schemas.opengis.net/gml/3.2.1/coordinateReferenceSystems.xsd"
+                  xmlns:gml          = "http://www.opengis.net/gml/3.2"
+                  xmlns:xlink        = "http://www.w3.org/1999/xlink"
+                  xmlns:xsi          = "http://www.w3.org/2001/XMLSchema-instance"
+                  gml:id             = "epsg-crs-27572">
+
+  <gml:identifier codeSpace="IOGP">urn:ogc:def:crs:EPSG::27572</gml:identifier>
+  <gml:name codeSpace="EPSG">NTF (Paris) / Lambert zone II</gml:name>
+  <gml:scope>Large and medium scale topographic mapping and engineering survey.</gml:scope>
+  <gml:conversion>
+    <gml:Conversion gml:id="LambertZoneII">
+      <gml:identifier codeSpace="IOGP">urn:ogc:def:coordinateOperation:EPSG::18082</gml:identifier>
+      <gml:name codeSpace="EPSG">Lambert zone II</gml:name>
+      <gml:scope>Large and medium scale topographic mapping and engineering survey.</gml:scope>
+      <gml:method>
+        <gml:OperationMethod gml:id="epsg-method-9801">
+          <gml:identifier codeSpace="IOGP">urn:ogc:def:method:EPSG::9801</gml:identifier>
+          <gml:name codeSpace="EPSG">Lambert Conic Conformal (1SP)</gml:name>
+          <gml:formula>See EPSG Guidance Note #7-2.</gml:formula>
+          <gml:sourceDimensions>2</gml:sourceDimensions>
+          <gml:targetDimensions>2</gml:targetDimensions>
+          <gml:parameter>
+            <gml:OperationParameter gml:id="epsg-parameter-8801">
+              <gml:identifier codeSpace="IOGP">urn:ogc:def:parameter:EPSG::8801</gml:identifier>
+              <gml:name>Latitude of natural origin</gml:name>
+            </gml:OperationParameter>
+          </gml:parameter>
+          <gml:parameter>
+            <gml:OperationParameter gml:id="epsg-parameter-8802">
+              <gml:identifier codeSpace="IOGP">urn:ogc:def:parameter:EPSG::8802</gml:identifier>
+              <gml:name>Longitude of natural origin</gml:name>
+            </gml:OperationParameter>
+          </gml:parameter>
+          <gml:parameter>
+            <gml:OperationParameter gml:id="epsg-parameter-8805">
+              <gml:identifier codeSpace="IOGP">urn:ogc:def:parameter:EPSG::8805</gml:identifier>
+              <gml:name>Scale factor at natural origin</gml:name>
+            </gml:OperationParameter>
+          </gml:parameter>
+          <gml:parameter>
+            <gml:OperationParameter gml:id="epsg-parameter-8806">
+              <gml:identifier codeSpace="IOGP">urn:ogc:def:parameter:EPSG::8806</gml:identifier>
+              <gml:name>False easting</gml:name>
+            </gml:OperationParameter>
+          </gml:parameter>
+          <gml:parameter>
+            <gml:OperationParameter gml:id="epsg-parameter-8807">
+              <gml:identifier codeSpace="IOGP">urn:ogc:def:parameter:EPSG::8807</gml:identifier>
+              <gml:name>False northing</gml:name>
+            </gml:OperationParameter>
+          </gml:parameter>
+        </gml:OperationMethod>
+      </gml:method>
+      <gml:parameterValue>
+        <gml:ParameterValue>
+          <gml:value uom="urn:ogc:def:uom:EPSG::9105">52</gml:value>
+          <gml:operationParameter xlink:href="#epsg-parameter-8801"/>
+        </gml:ParameterValue>
+      </gml:parameterValue>
+      <gml:parameterValue>
+        <gml:ParameterValue>
+          <gml:value uom="urn:ogc:def:uom:EPSG::9105">0</gml:value>
+          <gml:operationParameter xlink:href="#epsg-parameter-8802"/>
+        </gml:ParameterValue>
+      </gml:parameterValue>
+      <gml:parameterValue>
+        <gml:ParameterValue>
+          <gml:value uom="urn:ogc:def:uom:EPSG::9201">0.99987742</gml:value>
+          <gml:operationParameter xlink:href="#epsg-parameter-8805"/>
+        </gml:ParameterValue>
+      </gml:parameterValue>
+      <gml:parameterValue>
+        <gml:ParameterValue>
+          <gml:value uom="urn:ogc:def:uom:EPSG::9001">600000</gml:value>
+          <gml:operationParameter xlink:href="#epsg-parameter-8806"/>
+        </gml:ParameterValue>
+      </gml:parameterValue>
+      <gml:parameterValue>
+        <gml:ParameterValue>
+          <gml:value uom="urn:ogc:def:uom:EPSG::9001">2200000</gml:value>
+          <gml:operationParameter xlink:href="#epsg-parameter-8807"/>
+        </gml:ParameterValue>
+      </gml:parameterValue>
+    </gml:Conversion>
+  </gml:conversion>
+  <gml:baseGeodeticCRS>
+    <gml:GeodeticCRS gml:id="epsg-crs-4807">
+      <gml:identifier codeSpace="IOGP">urn:ogc:def:crs:EPSG::4807</gml:identifier>
+      <gml:name codeSpace="EPSG">NTF (Paris)</gml:name>
+      <gml:scope>Geodetic survey.</gml:scope>
+      <gml:ellipsoidalCS>
+        <gml:EllipsoidalCS gml:id="epsg-cs-6422">
+          <gml:identifier codeSpace="IOGP">urn:ogc:def:cs:EPSG::6422</gml:identifier>
+          <gml:name>Latitude (north), Longitude (east)</gml:name>
+          <gml:axis>
+            <gml:CoordinateSystemAxis gml:id="epsg-axis-106" uom="urn:ogc:def:uom:EPSG::9122">
+              <gml:identifier codeSpace="IOGP">urn:ogc:def:axis:EPSG::106</gml:identifier>
+              <gml:name>Geodetic latitude</gml:name>
+              <gml:axisAbbrev>φ</gml:axisAbbrev>
+              <gml:axisDirection codeSpace="EPSG">north</gml:axisDirection>
+              <gml:minimumValue>-90</gml:minimumValue>
+              <gml:maximumValue>+90</gml:maximumValue>
+              <gml:rangeMeaning codeSpace="EPSG">exact</gml:rangeMeaning>
+            </gml:CoordinateSystemAxis>
+          </gml:axis>
+          <gml:axis>
+            <gml:CoordinateSystemAxis gml:id="epsg-axis-107" uom="urn:ogc:def:uom:EPSG::9122">
+              <gml:identifier codeSpace="IOGP">urn:ogc:def:axis:EPSG::107</gml:identifier>
+              <gml:name>Geodetic longitude</gml:name>
+              <gml:axisAbbrev>λ</gml:axisAbbrev>
+              <gml:axisDirection codeSpace="EPSG">east</gml:axisDirection>
+              <gml:minimumValue>-180</gml:minimumValue>
+              <gml:maximumValue>+180</gml:maximumValue>
+              <gml:rangeMeaning codeSpace="EPSG">wraparound</gml:rangeMeaning>
+            </gml:CoordinateSystemAxis>
+          </gml:axis>
+        </gml:EllipsoidalCS>
+      </gml:ellipsoidalCS>
+      <gml:geodeticDatum>
+        <gml:GeodeticDatum gml:id="epsg-datum-6807">
+          <gml:identifier codeSpace="IOGP">urn:ogc:def:datum:EPSG::6807</gml:identifier>
+          <gml:name>Nouvelle Triangulation Française</gml:name>
+          <gml:scope>Topographic mapping.</gml:scope>
+          <gml:primeMeridian>
+            <gml:PrimeMeridian gml:id="epsg-meridian-8903">
+              <gml:identifier codeSpace="IOGP">urn:ogc:def:meridian:EPSG::8903</gml:identifier>
+              <gml:name>Paris</gml:name>
+              <gml:greenwichLongitude uom="urn:ogc:def:uom:EPSG::9105">2.5969213</gml:greenwichLongitude>
+            </gml:PrimeMeridian>
+          </gml:primeMeridian>
+          <gml:ellipsoid>
+            <gml:Ellipsoid gml:id = "epsg-ellipsoid-7011">
+              <gml:identifier codeSpace="IOGP">urn:ogc:def:ellipsoid:EPSG::7011</gml:identifier>
+              <gml:name codeSpace="EPSG">Clarke 1880 (IGN)</gml:name>
+              <gml:semiMajorAxis uom="urn:ogc:def:uom:EPSG::9001">6378249.2</gml:semiMajorAxis>
+              <gml:secondDefiningParameter>
+                <gml:SecondDefiningParameter>
+                  <gml:semiMinorAxis uom="urn:ogc:def:uom:EPSG::9001">6356515.0</gml:semiMinorAxis>
+                </gml:SecondDefiningParameter>
+              </gml:secondDefiningParameter>
+            </gml:Ellipsoid>
+          </gml:ellipsoid>
+        </gml:GeodeticDatum>
+      </gml:geodeticDatum>
+    </gml:GeodeticCRS>
+  </gml:baseGeodeticCRS>
+  <gml:cartesianCS>
+    <gml:CartesianCS gml:id="epsg-cs-4400">
+      <gml:identifier codeSpace="IOGP">urn:ogc:def:cs:EPSG::4400</gml:identifier>
+      <gml:name>Easting, Northing</gml:name>
+      <gml:axis>
+        <gml:CoordinateSystemAxis uom="urn:ogc:def:uom:EPSG::9001" gml:id="Easting">
+          <gml:identifier codeSpace="IOGP">urn:ogc:def:axis:EPSG::1</gml:identifier>
+          <gml:name>Easting</gml:name>
+          <gml:axisAbbrev>E</gml:axisAbbrev>
+          <gml:axisDirection codeSpace="EPSG">east</gml:axisDirection>
+        </gml:CoordinateSystemAxis>
+      </gml:axis>
+      <gml:axis>
+        <gml:CoordinateSystemAxis uom="urn:ogc:def:uom:EPSG::9001" gml:id="Northing">
+          <gml:identifier codeSpace="IOGP">urn:ogc:def:axis:EPSG::2</gml:identifier>
+          <gml:name>Northing</gml:name>
+          <gml:axisAbbrev>N</gml:axisAbbrev>
+          <gml:axisDirection codeSpace="EPSG">north</gml:axisDirection>
+        </gml:CoordinateSystemAxis>
+      </gml:axis>
+    </gml:CartesianCS>
+  </gml:cartesianCS>
+</gml:ProjectedCRS>

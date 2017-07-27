@@ -17,7 +17,7 @@
 package org.apache.sis.metadata.iso.distribution;
 
 import java.util.Collection;
-import javax.measure.unit.Unit;
+import javax.measure.Unit;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -28,11 +28,13 @@ import org.opengis.metadata.distribution.Medium;
 import org.opengis.metadata.distribution.MediumName;
 import org.opengis.metadata.distribution.MediumFormat;
 import org.apache.sis.measure.ValueRange;
+import org.apache.sis.metadata.TitleProperty;
 import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.internal.jaxb.NonMarshalledAuthority;
+import org.apache.sis.internal.metadata.Dependencies;
 import org.apache.sis.internal.metadata.LegacyPropertyAdapter;
 
-import static org.apache.sis.internal.metadata.MetadataUtilities.warnNonPositiveArgument;
+import static org.apache.sis.internal.metadata.MetadataUtilities.ensurePositive;
 
 // Branch-specific imports
 import static org.opengis.annotation.Obligation.OPTIONAL;
@@ -41,6 +43,11 @@ import static org.opengis.annotation.Specification.ISO_19115;
 
 /**
  * Information about the media on which the resource can be distributed.
+ * The following property is mandatory or conditional (i.e. mandatory under some circumstances)
+ * in a well-formed metadata according ISO 19115:
+ *
+ * <div class="preformat">{@code MD_Medium}
+ * {@code   └─densityUnits……} Units of measure for the recording density.</div>
  *
  * <p><b>Limitations:</b></p>
  * <ul>
@@ -54,10 +61,12 @@ import static org.opengis.annotation.Specification.ISO_19115;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Touraïvane (IRD)
  * @author  Cédric Briançon (Geomatys)
- * @since   0.3
  * @version 0.5
+ * @since   0.3
  * @module
  */
+@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
+@TitleProperty(name = "name")
 @XmlType(name = "MD_Medium_Type", propOrder = {
     "name",
     "densities",
@@ -122,7 +131,7 @@ public class DefaultMedium extends ISOMetadata implements Medium {
      * metadata instances can also be obtained by unmarshalling an invalid XML document.
      * </div>
      *
-     * @param object The metadata to copy values from, or {@code null} if none.
+     * @param  object  the metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(Medium)
      */
@@ -155,8 +164,8 @@ public class DefaultMedium extends ISOMetadata implements Medium {
      *       metadata contained in the given object are not recursively copied.</li>
      * </ul>
      *
-     * @param  object The object to get as a SIS implementation, or {@code null} if none.
-     * @return A SIS implementation containing the values of the given object (may be the
+     * @param  object  the object to get as a SIS implementation, or {@code null} if none.
+     * @return a SIS implementation containing the values of the given object (may be the
      *         given object itself), or {@code null} if the argument was null.
      */
     public static DefaultMedium castOrCopy(final Medium object) {
@@ -169,7 +178,7 @@ public class DefaultMedium extends ISOMetadata implements Medium {
     /**
      * Returns the name of the medium on which the resource can be received.
      *
-     * @return Name of the medium, or {@code null}.
+     * @return name of the medium, or {@code null}.
      */
     @Override
     @XmlElement(name = "name")
@@ -180,7 +189,7 @@ public class DefaultMedium extends ISOMetadata implements Medium {
     /**
      * Sets the name of the medium on which the resource can be received.
      *
-     * @param newValue The new name.
+     * @param  newValue  the new name.
      */
     public void setName(final MediumName newValue) {
         checkWritePermission();
@@ -191,7 +200,7 @@ public class DefaultMedium extends ISOMetadata implements Medium {
      * Returns the density at which the data is recorded.
      * The number shall be greater than zero.
      *
-     * @return Density at which the data is recorded, or {@code null}.
+     * @return density at which the data is recorded, or {@code null}.
      *
      * @since 0.5
      */
@@ -205,27 +214,27 @@ public class DefaultMedium extends ISOMetadata implements Medium {
      * Sets density at which the data is recorded.
      * The number shall be greater than zero.
      *
-     * @param newValue The new density.
+     * @param  newValue  the new density.
      * @throws IllegalArgumentException if the given value is NaN, zero or negative.
      *
      * @since 0.5
      */
     public void setDensity(final Double newValue) {
         checkWritePermission();
-        if (newValue != null && !(newValue > 0)) { // Use '!' for catching NaN.
-            warnNonPositiveArgument(DefaultMedium.class, "density", true, newValue);
+        if (ensurePositive(DefaultMedium.class, "density", true, newValue)) {
+            densities = writeCollection(LegacyPropertyAdapter.asCollection(newValue), densities, Double.class);
         }
-        densities = writeCollection(LegacyPropertyAdapter.asCollection(newValue), densities, Double.class);
     }
 
     /**
      * @deprecated As of ISO 19115:2014, replaced by {@link #getDensity()}.
      *
-     * @return Density at which the data is recorded, or {@code null}.
+     * @return density at which the data is recorded, or {@code null}.
      */
     @Override
     @Deprecated
     @XmlElement(name = "density")
+    @Dependencies("getDensity")
     public Collection<Double> getDensities() {
         return densities = nonNullCollection(densities, Double.class);
     }
@@ -233,7 +242,7 @@ public class DefaultMedium extends ISOMetadata implements Medium {
     /**
      * @deprecated As of ISO 19115:2014, replaced by {@link #setDensity(Double)}.
      *
-     * @param newValues The new densities.
+     * @param  newValues  the new densities.
      */
     @Deprecated
     public void setDensities(final Collection<? extends Double> newValues) {
@@ -243,7 +252,7 @@ public class DefaultMedium extends ISOMetadata implements Medium {
     /**
      * Returns the units of measure for the recording density.
      *
-     * @return Units of measure for the recording density, or {@code null}.
+     * @return units of measure for the recording density, or {@code null}.
      */
     @Override
     @XmlElement(name = "densityUnits")
@@ -254,7 +263,7 @@ public class DefaultMedium extends ISOMetadata implements Medium {
     /**
      * Sets the units of measure for the recording density.
      *
-     * @param newValue The new density units.
+     * @param  newValue  the new density units.
      */
     public void setDensityUnits(final Unit<?> newValue) {
         checkWritePermission();
@@ -264,7 +273,7 @@ public class DefaultMedium extends ISOMetadata implements Medium {
     /**
      * Returns the number of items in the media identified.
      *
-     * @return Number of items in the media identified, or {@code null}.
+     * @return number of items in the media identified, or {@code null}.
      */
     @Override
     @ValueRange(minimum = 0)
@@ -276,21 +285,20 @@ public class DefaultMedium extends ISOMetadata implements Medium {
     /**
      * Sets the number of items in the media identified.
      *
-     * @param newValue The new volumes, or {@code null}.
+     * @param  newValue  the new volumes, or {@code null}.
      * @throws IllegalArgumentException if the given value is negative.
      */
     public void setVolumes(final Integer newValue) {
         checkWritePermission();
-        if (newValue != null && newValue < 0) {
-            warnNonPositiveArgument(DefaultMedium.class, "volumes", false, newValue);
+        if (ensurePositive(DefaultMedium.class, "volumes", false, newValue)) {
+            volumes = newValue;
         }
-        volumes = newValue;
     }
 
     /**
      * Returns the method used to write to the medium.
      *
-     * @return Method used to write to the medium, or {@code null}.
+     * @return method used to write to the medium, or {@code null}.
      */
     @Override
     @XmlElement(name = "mediumFormat")
@@ -301,7 +309,7 @@ public class DefaultMedium extends ISOMetadata implements Medium {
     /**
      * Sets the method used to write to the medium.
      *
-     * @param newValues The new medium formats.
+     * @param  newValues  the new medium formats.
      */
     public void setMediumFormats(final Collection<? extends MediumFormat> newValues) {
         mediumFormats = writeCollection(newValues, mediumFormats, MediumFormat.class);
@@ -310,7 +318,7 @@ public class DefaultMedium extends ISOMetadata implements Medium {
     /**
      * Returns a description of other limitations or requirements for using the medium.
      *
-     * @return Description of other limitations for using the medium, or {@code null}.
+     * @return description of other limitations for using the medium, or {@code null}.
      */
     @Override
     @XmlElement(name = "mediumNote")
@@ -321,7 +329,7 @@ public class DefaultMedium extends ISOMetadata implements Medium {
     /**
      * Sets a description of other limitations or requirements for using the medium.
      *
-     * @param newValue The new medium note.
+     * @param  newValue  the new medium note.
      */
     public void setMediumNote(final InternationalString newValue) {
         checkWritePermission();
@@ -331,7 +339,7 @@ public class DefaultMedium extends ISOMetadata implements Medium {
     /**
      * Returns a unique identifier for an instance of the medium.
      *
-     * @return Unique identifier, or {@code null} if none.
+     * @return unique identifier, or {@code null} if none.
      *
      * @since 0.5
      */
@@ -344,7 +352,7 @@ public class DefaultMedium extends ISOMetadata implements Medium {
     /**
      * Sets a unique identifier for an instance of the medium.
      *
-     * @param newValue The new identifier.
+     * @param  newValue  the new identifier.
      *
      * @since 0.5
      */

@@ -28,14 +28,14 @@ import java.io.IOException;
  * and Pack200 bundle</cite> section in the <code>src/site/apt/index.apt</code> file.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.4
  * @version 0.4
+ * @since   0.4
  * @module
  */
 final class Filenames {
     /**
      * The target directory. This directory name is hard-coded instead than using a property annotated
-     * by {@code @parameter default-value="${project.build.directory}"} - or alternatively by invoking
+     * by {@code @Parameter(defaultValue="${project.build.directory}")} - or alternatively by invoking
      * {@code MavenProject.getModel().getBuild().getDirectory()}, because we need the target directory
      * of the project root rather than the directory of the module being built.
      */
@@ -95,7 +95,7 @@ final class Filenames {
     /**
      * Returns the distribution directory, creating it if needed.
      *
-     * @param targetDirectory The {@code target} directory.
+     * @param  targetDirectory  the {@code target} directory.
      */
     static File distributionDirectory(final File targetDirectory) throws IOException {
         final File outDirectory = new File(targetDirectory, DISTRIBUTION_DIRECTORY);

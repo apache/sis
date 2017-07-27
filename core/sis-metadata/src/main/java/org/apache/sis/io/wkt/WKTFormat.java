@@ -19,32 +19,49 @@ package org.apache.sis.io.wkt;
 import java.util.Date;
 import java.util.Locale;
 import java.util.TimeZone;
+import java.util.Set;
+import java.util.Map;
+import java.util.HashMap;
+import java.util.TreeMap;
 import java.io.IOException;
 import java.text.Format;
 import java.text.NumberFormat;
 import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.text.ParsePosition;
-import javax.measure.unit.Unit;
-import javax.measure.unit.UnitFormat;
+import java.text.ParseException;
+import javax.measure.Unit;
+import org.opengis.util.Factory;
+import org.opengis.util.InternationalString;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.referencing.IdentifiedObject;
+import org.opengis.referencing.cs.CSFactory;
+import org.opengis.referencing.crs.CRSFactory;
+import org.opengis.referencing.datum.DatumFactory;
+import org.opengis.referencing.operation.MathTransformFactory;
+import org.opengis.referencing.operation.CoordinateOperationFactory;
 import org.apache.sis.io.CompoundFormat;
+import org.apache.sis.measure.UnitFormat;
+import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.internal.util.Constants;
+import org.apache.sis.internal.util.StandardDateFormat;
+
+// Branch-dependent imports
+import org.apache.sis.internal.jdk8.JDK8;
 
 
 /**
- * Parser and formatter for <cite>Well Known Text</cite> (WKT) objects.
+ * Parser and formatter for <cite>Well Known Text</cite> (WKT) strings.
  * This format handles a pair of {@link Parser} and {@link Formatter},
- * to be used by {@code parse} and {@code format} methods respectively.
+ * used by the {@code parse(…)} and {@code format(…)} methods respectively.
  * {@code WKTFormat} objects allow the following configuration:
  *
  * <ul>
  *   <li>The preferred authority of {@linkplain IdentifiedObject#getName() object name} to
  *       format (see {@link Formatter#getNameAuthority()} for more information).</li>
  *   <li>The {@linkplain Symbols symbols} to use (curly braces or brackets, <i>etc</i>).</li>
- *   <li>The {@linkplain CharEncoding character encoding} (i.e. replacements to use for Unicode characters).</li>
+ *   <li>The {@linkplain Transliterator transliterator} to use for replacing Unicode characters by ASCII ones.</li>
  *   <li>Whether ANSI X3.64 colors are allowed or not (default is not).</li>
  *   <li>The indentation.</li>
  * </ul>
@@ -52,34 +69,52 @@ import org.apache.sis.util.resources.Errors;
  * <div class="section">String expansion</div>
  * Because the strings to be parsed by this class are long and tend to contain repetitive substrings,
  * {@code WKTFormat} provides a mechanism for performing string substitutions before the parsing take place.
- * Long strings can be assigned short names by calls to the
- * <code>{@linkplain #definitions()}.put(<var>key</var>,<var>value</var>)</code> method.
- * After definitions have been added, any call to a parsing method will replace all occurrences
- * of a short name by the associated long string.
- *
- * <p>The short names must comply with the rules of Java identifiers. It is recommended, but not
- * required, to prefix the names by some symbol like {@code "$"} in order to avoid ambiguity.
- * Note however that this class doesn't replace occurrences between quoted text, so string
- * expansion still relatively safe even when used with non-prefixed identifiers.</p>
+ * Long strings can be assigned short names by calls to the {@link #addFragment(String, String)} method.
+ * After fragments have been added, any call to a parsing method will replace all occurrences (except in
+ * quoted text) of tokens like {@code $foo} by the WKT fragment named "foo".
  *
  * <div class="note"><b>Example:</b>
  * In the example below, the {@code $WGS84} substring which appear in the argument given to the
- * {@code parseObject(…)} method will be expanded into the full {@code GEOGCS["WGS84", …]} string
- * before the parsing proceed.
+ * {@code parseObject(…)} method will be expanded into the full {@code GeodeticCRS[“WGS84”, …]}
+ * string before the parsing proceed.
  *
- * <blockquote><code>{@linkplain #definitions()}.put("$WGS84", "GEOGCS[\"WGS84\", DATUM[</code> <i>…etc…</i> <code>]]);<br>
- * Object crs = {@linkplain #parseObject(String) parseObject}("PROJCS[\"Mercator_1SP\", <strong>$WGS84</strong>,
- * PROJECTION[</code> <i>…etc…</i> <code>]]");</code></blockquote>
+ * <blockquote><code>
+ * {@linkplain #addFragment addFragment}("deg", "AngleUnit[“degree”, 0.0174532925199433]");<br>
+ * {@linkplain #addFragment addFragment}("lat", "Axis[“Latitude”, NORTH, <strong>$deg</strong>]");<br>
+ * {@linkplain #addFragment addFragment}("lon", "Axis[“Longitude”, EAST, <strong>$deg</strong>]");<br>
+ * {@linkplain #addFragment addFragment}("MyBaseCRS", "GeodeticCRS[“WGS84”, Datum[</code> <i>…etc…</i> <code>],
+ * CS[</code> <i>…etc…</i> <code>], <strong>$lat</strong>, <strong>$lon</strong>]");<br>
+ * Object crs = {@linkplain #parseObject(String) parseObject}("ProjectedCRS[“Mercator_1SP”, <strong>$MyBaseCRS</strong>,
+ * </code> <i>…etc…</i> <code>]");
+ * </code></blockquote>
+ *
+ * Note that the parsing of WKT fragment does not always produce the same object.
+ * In particular, the default linear and angular units depend on the context in which the WKT fragment appears.
  * </div>
  *
- * <div class="section">Thread safety</div>
- * {@code WKTFormat}s are not synchronized. It is recommended to create separated format instances for each thread.
- * If multiple threads access a {@code WKTFormat} concurrently, it must be synchronized externally.
+ * <div class="section">Limitations</div>
+ * <ul>
+ *   <li><strong>The WKT format is not lossless!</strong>
+ *       Objects formatted by {@code WKTFormat} are not guaranteed to be identical after parsing.
+ *       Some metadata may be lost or altered, but the coordinate operations between two CRS should produce
+ *       the same numerical results provided that the two CRS were formatted independently (do not rely on
+ *       {@link org.opengis.referencing.crs.GeneralDerivedCRS#getConversionFromBase()} for instance).</li>
+ *   <li>Instances of this class are not synchronized for multi-threading.
+ *       It is recommended to create separated format instances for each thread.
+ *       If multiple threads access a {@code WKTFormat} concurrently, it must be synchronized externally.</li>
+ *   <li>Serialized objects of this class are not guaranteed to be compatible with future Apache SIS releases.
+ *       Serialization support is appropriate for short term storage or RMI between applications running the
+ *       same version of Apache SIS.</li>
+ * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Rémi Eve (IRD)
- * @since   0.4
- * @version 0.6
+ * @version 0.8
+ *
+ * @see <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html">WKT 2 specification</a>
+ * @see <a href="http://www.geoapi.org/3.0/javadoc/org/opengis/referencing/doc-files/WKT.html">Legacy WKT 1</a>
+ *
+ * @since 0.4
  * @module
  */
 public class WKTFormat extends CompoundFormat<Object> {
@@ -91,33 +126,12 @@ public class WKTFormat extends CompoundFormat<Object> {
     /**
      * The indentation value to give to the {@link #setIndentation(int)}
      * method for formatting the complete object on a single line.
+     *
+     * @see #getIndentation()
+     * @see #setIndentation(int)
+     * @see org.apache.sis.setup.OptionKey#INDENTATION
      */
     public static final int SINGLE_LINE = -1;
-
-    /**
-     * The default indentation value.
-     */
-    static final byte DEFAULT_INDENTATION = 2;
-
-    /**
-     * The pattern of dates.
-     *
-     * The JDK7 branch have a 'X' pattern at the end of this format. But JDK6 does not support that pattern.
-     * As a workaround, code using this pattern will append a hard-coded {@code "'Z'"} if the timezone is
-     * known to be UTC.
-     *
-     * @see #createFormat(Class)
-     */
-    static final String DATE_PATTERN = "yyyy-MM-dd'T'HH:mm:ss.S";
-
-    /**
-     * Short version of {@link #DATE_PATTERN}, to be used when formatting temporal extents
-     * if the duration is at least {@link Formatter#TEMPORAL_THRESHOLD}. This pattern must
-     * be a prefix of {@link #DATE_PATTERN}, since we will use that condition for deciding
-     * if this pattern is really shorter (the user could have created his own date format
-     * with a different pattern).
-     */
-    static final String SHORT_DATE_PATTERN = "yyyy-MM-dd";
 
     /**
      * The symbols to use for this formatter.
@@ -151,13 +165,18 @@ public class WKTFormat extends CompoundFormat<Object> {
     private KeywordCase keywordCase;
 
     /**
-     * {@link CharEncoding#UNICODE} for preserving non-ASCII characters. The default value is
-     * {@link CharEncoding#DEFAULT}, which causes replacements like "é" → "e" in all elements
-     * except {@code REMARKS["…"]}. May also be a user-supplied encoding.
+     * Whether to use short or long WKT keywords.
+     */
+    private KeywordStyle keywordStyle;
+
+    /**
+     * {@link Transliterator#IDENTITY} for preserving non-ASCII characters. The default value is
+     * {@link Transliterator#DEFAULT}, which causes replacements like "é" → "e" in all elements
+     * except {@code REMARKS["…"]}. May also be a user-supplied transliterator.
      *
      * <p>A {@code null} value means to infer this property from the {@linkplain #convention}.</p>
      */
-    private CharEncoding encoding;
+    private Transliterator transliterator;
 
     /**
      * The amount of spaces to use in indentation, or {@value #SINGLE_LINE} if indentation is disabled.
@@ -167,31 +186,114 @@ public class WKTFormat extends CompoundFormat<Object> {
     private byte indentation;
 
     /**
+     * WKT fragments that can be inserted in longer WKT strings, or {@code null} if none. Keys are short identifiers
+     * and values are WKT subtrees to substitute to the identifiers when they are found in a WKT to parse.
+     *
+     * @see #fragments()
+     */
+    private Map<String,Element> fragments;
+
+    /**
+     * Temporary map used by {@link #addFragment(String, String)} for reusing existing instances when possible.
+     * Keys and values are the same {@link String}, {@link Boolean}, {@link Number} or {@link Date} instances.
+     *
+     * <p>This reference is set to null when we assume that no more fragments will be added to this format.
+     * It is not a problem if this map is destroyed too aggressively, since it will be recreated when needed.
+     * The only cost of destroying the map too aggressively is that we may have more instance duplications
+     * than what we would otherwise have.</p>
+     */
+    private transient Map<Object,Object> sharedValues;
+
+    /**
      * A formatter using the same symbols than the {@linkplain #parser}.
      * Will be created by the {@link #format(Object, Appendable)} method when first needed.
      */
     private transient Formatter formatter;
 
     /**
-     * Creates a format for the given locale and timezone. The given locale will be used for
-     * {@link org.opengis.util.InternationalString} localization; this is <strong>not</strong>
-     * the locale for number format.
+     * The parser. Will be created when first needed.
+     */
+    private transient AbstractParser parser;
+
+    /**
+     * The factories needed by the parser. Those factories are currently not serialized (because usually not
+     * serializable), so any value that users may have specified with {@link #setFactory(Class, Factory)}
+     * will be lost at serialization time.
      *
-     * @param locale   The locale for the new {@code Format}, or {@code null} for {@code Locale.ROOT}.
-     * @param timezone The timezone, or {@code null} for UTC.
+     * @see #factories()
+     */
+    private transient Map<Class<?>,Factory> factories;
+
+    /**
+     * The warning produced by the last parsing or formatting operation, or {@code null} if none.
+     *
+     * @see #getWarnings()
+     */
+    private transient Warnings warnings;
+
+    /**
+     * Creates a format for the given locale and timezone. The given locale will be used for
+     * {@link InternationalString} localization; this is <strong>not</strong> the locale for number format.
+     *
+     * @param  locale    the locale for the new {@code Format}, or {@code null} for {@code Locale.ROOT}.
+     * @param  timezone  the timezone, or {@code null} for UTC.
      */
     public WKTFormat(final Locale locale, final TimeZone timezone) {
         super(locale, timezone);
-        convention  = Convention.DEFAULT;
-        symbols     = Symbols.getDefault();
-        keywordCase = KeywordCase.DEFAULT;
-        indentation = DEFAULT_INDENTATION;
+        convention   = Convention.DEFAULT;
+        symbols      = Symbols.getDefault();
+        keywordCase  = KeywordCase.DEFAULT;
+        keywordStyle = KeywordStyle.DEFAULT;
+        indentation  = Constants.DEFAULT_INDENTATION;
+    }
+
+    /**
+     * Returns the {@link #fragments} map, creating it when first needed.
+     */
+    @SuppressWarnings("ReturnOfCollectionOrArrayField")
+    private Map<String,Element> fragments() {
+        if (fragments == null) {
+            fragments = new TreeMap<>();
+        }
+        return fragments;
+    }
+
+    /**
+     * Returns the {@link #factories} map, creating it when first needed.
+     */
+    @SuppressWarnings("ReturnOfCollectionOrArrayField")
+    private Map<Class<?>,Factory> factories() {
+        if (factories == null) {
+            factories = new HashMap<>(8);
+        }
+        return factories;
+    }
+
+    /**
+     * Returns the locale for the given category. This method implements the following mapping:
+     *
+     * <ul>
+     *   <li>{@link java.util.Locale.Category#FORMAT}: the value of {@link Symbols#getLocale()},
+     *       normally fixed to {@link Locale#ROOT}, used for number formatting.</li>
+     *   <li>{@link java.util.Locale.Category#DISPLAY}: the {@code locale} given at construction time,
+     *       used for {@link InternationalString} localization.</li>
+     * </ul>
+     *
+     * @param  category  the category for which a locale is desired.
+     * @return the locale for the given category (never {@code null}).
+     */
+    @Override
+    public Locale getLocale(final Locale.Category category) {
+        if (category == Locale.Category.FORMAT) {
+            return symbols.getLocale();
+        }
+        return super.getLocale(category);
     }
 
     /**
      * Returns the symbols used for parsing and formatting WKT.
      *
-     * @return The current set of symbols used for parsing and formatting WKT.
+     * @return the current set of symbols used for parsing and formatting WKT.
      */
     public Symbols getSymbols() {
         return symbols;
@@ -200,13 +302,14 @@ public class WKTFormat extends CompoundFormat<Object> {
     /**
      * Sets the symbols used for parsing and formatting WKT.
      *
-     * @param symbols The new set of symbols to use for parsing and formatting WKT.
+     * @param  symbols  the new set of symbols to use for parsing and formatting WKT.
      */
     public void setSymbols(final Symbols symbols) {
         ArgumentChecks.ensureNonNull("symbols", symbols);
         if (!symbols.equals(this.symbols)) {
             this.symbols = symbols.immutable();
             formatter = null;
+            parser = null;
         }
     }
 
@@ -216,20 +319,20 @@ public class WKTFormat extends CompoundFormat<Object> {
      * according ISO 19162 specification. Return values can be:
      *
      * <ul>
-     *   <li>{@link CharEncoding#DEFAULT} for performing replacements like "é" → "e"
+     *   <li>{@link Transliterator#DEFAULT} for performing replacements like "é" → "e"
      *       in all WKT elements except {@code REMARKS["…"]}.</li>
-     *   <li>{@link CharEncoding#UNICODE} for preserving non-ASCII characters.</li>
+     *   <li>{@link Transliterator#IDENTITY} for preserving non-ASCII characters.</li>
      *   <li>Any other user-supplied mapping.</li>
      * </ul>
      *
-     * @return The mapper between Java character sequences and the characters to write in WKT.
+     * @return the mapper between Java character sequences and the characters to write in WKT.
      *
      * @since 0.6
      */
-    public CharEncoding getCharEncoding() {
-        CharEncoding result = encoding;
+    public Transliterator getTransliterator() {
+        Transliterator result = transliterator;
         if (result == null) {
-            result = (convention == Convention.INTERNAL) ? CharEncoding.UNICODE : CharEncoding.DEFAULT;
+            result = (convention == Convention.INTERNAL) ? Transliterator.IDENTITY : Transliterator.DEFAULT;
         }
         return result;
     }
@@ -238,55 +341,25 @@ public class WKTFormat extends CompoundFormat<Object> {
      * Sets the mapper between Java character sequences and the characters to write in WKT.
      *
      * <p>If this method is never invoked, or if this method is invoked with a {@code null} value,
-     * then the default mapper is {@link CharEncoding#DEFAULT} except for WKT formatted according
+     * then the default mapper is {@link Transliterator#DEFAULT} except for WKT formatted according
      * the {@linkplain Convention#INTERNAL internal convention}.</p>
      *
-     * @param encoding The new mapper to use, or {@code null} for restoring the default value.
+     * @param  transliterator  the new mapper to use, or {@code null} for restoring the default value.
      *
      * @since 0.6
      */
-    public void setCharEncoding(final CharEncoding encoding) {
-        this.encoding = encoding;
-    }
-
-    /**
-     * Returns whether non-ASCII characters are preserved. The default value is {@code false},
-     * which causes replacements like "é" → "e" in all elements except {@link ElementKind#REMARKS}.
-     *
-     * <p>This value is always {@code true} when the WKT {@linkplain #getConvention() convention}
-     * is set to {@link Convention#INTERNAL}.</p>
-     *
-     * @return Whether non-ASCII characters are preserved.
-     *
-     * @since 0.5
-     *
-     * @deprecated Replaced by {@link #getCharEncoding()}.
-     */
-    @Deprecated
-    public boolean isNonAsciiAllowed() {
-        return getCharEncoding() == CharEncoding.UNICODE;
-    }
-
-    /**
-     * Sets whether non-ASCII characters shall be preserved. The default value is {@code false},
-     * which causes replacements like "é" → "e" in all elements except {@link ElementKind#REMARKS}.
-     * Setting this property to {@code true} will disable such replacements.
-     *
-     * @param allowed Whether non-ASCII characters shall be preserved.
-     *
-     * @since 0.5
-     *
-     * @deprecated Replaced by {@link #setCharEncoding(CharEncoding)}.
-     */
-    @Deprecated
-    public void setNonAsciiAllowed(final boolean allowed) {
-        setCharEncoding(allowed ? CharEncoding.UNICODE : CharEncoding.DEFAULT);
+    public void setTransliterator(final Transliterator transliterator) {
+        if (this.transliterator != transliterator) {
+            this.transliterator = transliterator;
+            updateFormatter(formatter);
+            parser = null;
+        }
     }
 
     /**
      * Returns whether WKT keywords should be written with upper cases or camel cases.
      *
-     * @return The case to use for formatting keywords.
+     * @return the case to use for formatting keywords.
      */
     public KeywordCase getKeywordCase() {
         return keywordCase;
@@ -295,7 +368,7 @@ public class WKTFormat extends CompoundFormat<Object> {
     /**
      * Sets whether WKT keywords should be written with upper cases or camel cases.
      *
-     * @param keywordCase The case to use for formatting keywords.
+     * @param  keywordCase  the case to use for formatting keywords.
      */
     public void setKeywordCase(final KeywordCase keywordCase) {
         ArgumentChecks.ensureNonNull("keywordCase", keywordCase);
@@ -304,10 +377,34 @@ public class WKTFormat extends CompoundFormat<Object> {
     }
 
     /**
+     * Returns whether to use short or long WKT keywords.
+     *
+     * @return the style used for formatting keywords.
+     *
+     * @since 0.6
+     */
+    public KeywordStyle getKeywordStyle() {
+        return keywordStyle;
+    }
+
+    /**
+     * Sets whether to use short or long WKT keywords.
+     *
+     * @param  keywordStyle  the style to use for formatting keywords.
+     *
+     * @since 0.6
+     */
+    public void setKeywordStyle(final KeywordStyle keywordStyle) {
+        ArgumentChecks.ensureNonNull("keywordStyle", keywordStyle);
+        this.keywordStyle = keywordStyle;
+        updateFormatter(formatter);
+    }
+
+    /**
      * Returns the colors to use for syntax coloring, or {@code null} if none.
      * By default there is no syntax coloring.
      *
-     * @return The colors for syntax coloring, or {@code null} if none.
+     * @return the colors for syntax coloring, or {@code null} if none.
      */
     public Colors getColors() {
         return colors;
@@ -322,7 +419,7 @@ public class WKTFormat extends CompoundFormat<Object> {
      * method tries to highlight most of the elements that are relevant to
      * {@link org.apache.sis.util.Utilities#equalsIgnoreMetadata(Object, Object)}.</p>
      *
-     * @param colors The colors for syntax coloring, or {@code null} if none.
+     * @param  colors  the colors for syntax coloring, or {@code null} if none.
      */
     public void setColors(Colors colors) {
         if (colors != null) {
@@ -336,7 +433,7 @@ public class WKTFormat extends CompoundFormat<Object> {
      * Returns the convention for parsing and formatting WKT elements.
      * The default value is {@link Convention#WKT2}.
      *
-     * @return The convention to use for formatting WKT elements (never {@code null}).
+     * @return the convention to use for formatting WKT elements (never {@code null}).
      */
     public Convention getConvention() {
         return convention;
@@ -345,12 +442,15 @@ public class WKTFormat extends CompoundFormat<Object> {
     /**
      * Sets the convention for parsing and formatting WKT elements.
      *
-     * @param convention The new convention to use for parsing and formatting WKT elements.
+     * @param  convention  the new convention to use for parsing and formatting WKT elements.
      */
     public void setConvention(final Convention convention) {
         ArgumentChecks.ensureNonNull("convention", convention);
-        this.convention = convention;
-        updateFormatter(formatter);
+        if (this.convention != convention) {
+            this.convention = convention;
+            updateFormatter(formatter);
+            parser = null;
+        }
     }
 
     /**
@@ -368,10 +468,10 @@ public class WKTFormat extends CompoundFormat<Object> {
      *   <tr><td>GEOTIFF</td>   <td>CT_Mercator</td></tr>
      * </table></div>
      *
-     * If no authority has been {@link #setNameAuthority(Citation) explicitly set}, then this
+     * If no authority has been {@linkplain #setNameAuthority(Citation) explicitly set}, then this
      * method returns the default authority for the current {@linkplain #getConvention() convention}.
      *
-     * @return The organization, standard or project to look for when fetching projection and parameter names.
+     * @return the organization, standard or project to look for when fetching projection and parameter names.
      *
      * @see Formatter#getNameAuthority()
      */
@@ -389,7 +489,7 @@ public class WKTFormat extends CompoundFormat<Object> {
      * associated to the {@linkplain #getConvention() convention}. A {@code null} value
      * restore the default behavior.
      *
-     * @param authority The new authority, or {@code null} for inferring it from the convention.
+     * @param  authority  the new authority, or {@code null} for inferring it from the convention.
      *
      * @see Formatter#getNameAuthority()
      */
@@ -406,15 +506,22 @@ public class WKTFormat extends CompoundFormat<Object> {
      */
     private void updateFormatter(final Formatter formatter) {
         if (formatter != null) {
-            final boolean toUpperCase;
+            final byte toUpperCase;
             switch (keywordCase) {
-                case UPPER_CASE: toUpperCase = true;  break;
-                case CAMEL_CASE: toUpperCase = false; break;
-                default: toUpperCase = (convention.majorVersion() == 1); break;
+                case LOWER_CASE: toUpperCase = -1; break;
+                case UPPER_CASE: toUpperCase = +1; break;
+                case CAMEL_CASE: toUpperCase =  0; break;
+                default: toUpperCase = convention.toUpperCase ? (byte) +1 : 0; break;
             }
-            formatter.configure(convention, authority, colors, toUpperCase, indentation);
-            if (encoding != null) {
-                formatter.encoding = encoding;
+            final byte longKeywords;
+            switch (keywordStyle) {
+                case SHORT: longKeywords = -1; break;
+                case LONG:  longKeywords = +1; break;
+                default:    longKeywords = (convention.majorVersion() == 1) ? (byte) -1 : 0; break;
+            }
+            formatter.configure(convention, authority, colors, toUpperCase, longKeywords, indentation);
+            if (transliterator != null) {
+                formatter.transliterator = transliterator;
             }
         }
     }
@@ -423,7 +530,7 @@ public class WKTFormat extends CompoundFormat<Object> {
      * Returns the current indentation to be used for formatting objects.
      * The {@value #SINGLE_LINE} value means that the whole WKT is to be formatted on a single line.
      *
-     * @return The current indentation.
+     * @return the current indentation.
      */
     public int getIndentation() {
         return indentation;
@@ -433,12 +540,90 @@ public class WKTFormat extends CompoundFormat<Object> {
      * Sets a new indentation to be used for formatting objects.
      * The {@value #SINGLE_LINE} value means that the whole WKT is to be formatted on a single line.
      *
-     * @param indentation The new indentation to use.
+     * @param  indentation  the new indentation to use.
+     *
+     * @see org.apache.sis.setup.OptionKey#INDENTATION
      */
     public void setIndentation(final int indentation) {
         ArgumentChecks.ensureBetween("indentation", SINGLE_LINE, Byte.MAX_VALUE, indentation);
         this.indentation = (byte) indentation;
         updateFormatter(formatter);
+    }
+
+    /**
+     * Verifies if the given type is a valid key for the {@link #factories} map.
+     */
+    private void ensureValidFactoryType(final Class<?> type) throws IllegalArgumentException {
+        ArgumentChecks.ensureNonNull("type", type);
+        if (type != CRSFactory.class            &&
+            type != CSFactory.class             &&
+            type != DatumFactory.class          &&
+            type != MathTransformFactory.class  &&
+            type != CoordinateOperationFactory.class)
+        {
+            throw new IllegalArgumentException(Errors.getResources(getLocale())
+                    .getString(Errors.Keys.IllegalArgumentValue_2, "type", type));
+        }
+    }
+
+    /**
+     * Returns one of the factories used by this {@code WKTFormat} for parsing WKT.
+     * The given {@code type} argument can be one of the following values:
+     *
+     * <ul>
+     *   <li><code>{@linkplain CRSFactory}.class</code></li>
+     *   <li><code>{@linkplain CSFactory}.class</code></li>
+     *   <li><code>{@linkplain DatumFactory}.class</code></li>
+     *   <li><code>{@linkplain MathTransformFactory}.class</code></li>
+     *   <li><code>{@linkplain CoordinateOperationFactory}.class</code></li>
+     * </ul>
+     *
+     * @param  <T>   the compile-time type of the {@code type} argument.
+     * @param  type  the factory type.
+     * @return the factory used by this {@code WKTFormat} for the given type.
+     * @throws IllegalArgumentException if the {@code type} argument is not one of the valid values.
+     */
+    public <T extends Factory> T getFactory(final Class<T> type) {
+        ensureValidFactoryType(type);
+        if (type == CoordinateOperationFactory.class) {
+            /*
+             * HACK: we have a special way to get the CoordinateOperationFactory because of its dependency
+             * toward MathTransformFactory.  A lazy (but costly) way to ensure a consistent behavior is to
+             * let the GeodeticObjectParser constructor do its job.  This is costly, but should not happen
+             * often.
+             */
+            parser();
+        }
+        return GeodeticObjectParser.getFactory(type, factories());
+    }
+
+    /**
+     * Sets one of the factories to be used by this {@code WKTFormat} for parsing WKT.
+     * The given {@code type} argument can be one of the following values:
+     *
+     * <ul>
+     *   <li><code>{@linkplain CRSFactory}.class</code></li>
+     *   <li><code>{@linkplain CSFactory}.class</code></li>
+     *   <li><code>{@linkplain DatumFactory}.class</code></li>
+     *   <li><code>{@linkplain MathTransformFactory}.class</code></li>
+     *   <li><code>{@linkplain CoordinateOperationFactory}.class</code></li>
+     * </ul>
+     *
+     * <div class="section">Limitation</div>
+     * The current implementation does not serialize the given factories, because they are usually not
+     * {@link java.io.Serializable}. The factories used by {@code WKTFormat} instances after deserialization
+     * are the default ones.
+     *
+     * @param  <T>      the compile-time type of the {@code type} argument.
+     * @param  type     the factory type.
+     * @param  factory  the factory to be used by this {@code WKTFormat} for the given type.
+     * @throws IllegalArgumentException if the {@code type} argument is not one of the valid values.
+     */
+    public <T extends Factory> void setFactory(final Class<T> type, final T factory) {
+        ensureValidFactoryType(type);
+        if (factories().put(type, factory) != factory) {
+            parser = null;
+        }
     }
 
     /**
@@ -453,15 +638,128 @@ public class WKTFormat extends CompoundFormat<Object> {
     }
 
     /**
-     * Not yet supported.
+     * Returns the name of all WKT fragments known to this {@code WKTFormat}.
+     * The returned collection is initially empty.
+     * WKT fragments can be added by call to {@link #addFragment(String, String)}.
      *
-     * @param  text The text to parse.
-     * @param  position The index of the first character to parse.
-     * @return The parsed object, or {@code null} in case of failure.
+     * <p>The returned collection is modifiable. In particular, a call to {@link Set#clear()}
+     * removes all fragments from this {@code WKTFormat}.</p>
+     *
+     * @return the name of all fragments known to this {@code WKTFormat}.
+     */
+    public Set<String> getFragmentNames() {
+        return fragments().keySet();
+    }
+
+    /**
+     * Adds a fragment of Well Know Text (WKT). The {@code wkt} argument given to this method
+     * can contains itself other fragments specified in some previous calls to this method.
+     *
+     * <div class="note"><b>Example</b>
+     * if the following method is invoked:
+     *
+     * {@preformat java
+     *   addFragment("MyEllipsoid", "Ellipsoid[“Bessel 1841”, 6377397.155, 299.1528128, ID[“EPSG”,“7004”]]");
+     * }
+     *
+     * Then other WKT strings parsed by this {@code WKTFormat} instance can refer to the above fragment as below
+     * (WKT after the ellipsoid omitted for brevity):
+     *
+     * {@preformat java
+     *   Object crs = parseObject("GeodeticCRS[“Tokyo”, Datum[“Tokyo”, $MyEllipsoid], …]");
+     * }
+     * </div>
+     *
+     * For removing a fragment, use <code>{@linkplain #getFragmentNames()}.remove(name)</code>.
+     *
+     * @param  name  the name to assign to the WKT fragment. Identifiers are case-sensitive.
+     * @param  wkt   the Well Know Text (WKT) fragment represented by the given identifier.
+     * @throws IllegalArgumentException if the name is invalid or if a fragment is already present for that name.
+     * @throws ParseException if an error occurred while parsing the given WKT.
+     */
+    public void addFragment(final String name, final String wkt) throws IllegalArgumentException, ParseException {
+        ArgumentChecks.ensureNonEmpty("wkt", wkt);
+        ArgumentChecks.ensureNonEmpty("name", name);
+        short error = Errors.Keys.NotAUnicodeIdentifier_1;
+        if (CharSequences.isUnicodeIdentifier(name)) {
+            if (sharedValues == null) {
+                sharedValues = new HashMap<>();
+            }
+            final ParsePosition pos = new ParsePosition(0);
+            final Element element = new Element(parser(), wkt, pos, sharedValues);
+            final int index = CharSequences.skipLeadingWhitespaces(wkt, pos.getIndex(), wkt.length());
+            if (index < wkt.length()) {
+                throw new UnparsableObjectException(getLocale(), Errors.Keys.UnexpectedCharactersAfter_2,
+                        new Object[] {name + " = " + element.keyword + "[…]", CharSequences.token(wkt, index)}, index);
+            }
+            // 'fragments' map has been created by 'parser()'.
+            if (JDK8.putIfAbsent(fragments, name, element) == null) {
+                return;
+            }
+            error = Errors.Keys.ElementAlreadyPresent_1;
+        }
+        throw new IllegalArgumentException(Errors.getResources(getLocale()).getString(error, name));
+    }
+
+    /**
+     * Creates an object from the given character sequence.
+     * The parsing begins at the index given by the {@code pos} argument.
+     * After successful parsing, {@link ParsePosition#getIndex()} gives the position after the last parsed character.
+     * In case of error, {@link ParseException#getErrorOffset()} gives the position of the first illegal character.
+     *
+     * @param  wkt  the character sequence for the object to parse.
+     * @param  pos  the position where to start the parsing.
+     * @return the parsed object (never {@code null}).
+     * @throws ParseException if an error occurred while parsing the WKT.
      */
     @Override
-    public Object parse(final CharSequence text, final ParsePosition position) {
-        throw new UnsupportedOperationException("Not supported yet.");
+    public Object parse(final CharSequence wkt, final ParsePosition pos) throws ParseException {
+        warnings = null;
+        sharedValues = null;
+        ArgumentChecks.ensureNonEmpty("wkt", wkt);
+        ArgumentChecks.ensureNonNull ("pos", pos);
+        final AbstractParser parser = parser();
+        Object object = null;
+        try {
+            return object = parser.parseObject(wkt.toString(), pos);
+        } finally {
+            warnings = parser.getAndClearWarnings(object);
+        }
+    }
+
+    /**
+     * Returns the parser, created when first needed.
+     */
+    private AbstractParser parser() {
+        AbstractParser parser = this.parser;
+        if (parser == null) {
+            this.parser = parser = new Parser(symbols, fragments(),
+                    (NumberFormat) getFormat(Number.class),
+                    (DateFormat)   getFormat(Date.class),
+                    (UnitFormat)   getFormat(Unit.class),
+                    convention,
+                    (transliterator != null) ? transliterator : Transliterator.DEFAULT,
+                    getLocale(),
+                    factories());
+        }
+        return parser;
+    }
+
+    /**
+     * The parser created by {@link #parser()}, identical to {@link GeodeticObjectParser} except for
+     * the source of logging messages which is the enclosing {@code WKTParser} instead than a factory.
+     */
+    private static final class Parser extends GeodeticObjectParser {
+        Parser(final Symbols symbols, final Map<String,Element> fragments,
+                final NumberFormat numberFormat, final DateFormat dateFormat, final UnitFormat unitFormat,
+                final Convention convention, final Transliterator transliterator, final Locale errorLocale,
+                final Map<Class<?>,Factory> factories)
+        {
+            super(symbols, fragments, numberFormat, dateFormat, unitFormat, convention, transliterator, errorLocale, factories);
+        }
+
+        @Override String getPublicFacade() {return WKTFormat.class.getName();}
+        @Override String getFacadeMethod() {return "parse";}
     }
 
     /**
@@ -473,14 +771,15 @@ public class WKTFormat extends CompoundFormat<Object> {
      * {@link org.opengis.metadata.extent.TemporalExtent}
      * and {@link Unit}.
      *
-     * @param  object     The object to format.
-     * @param  toAppendTo Where the text is to be appended.
-     * @throws IOException If an error occurred while writing to {@code toAppendTo}.
+     * @param  object      the object to format.
+     * @param  toAppendTo  where the text is to be appended.
+     * @throws IOException if an error occurred while writing to {@code toAppendTo}.
      *
-     * @see #getWarning()
+     * @see FormattableObject#toWKT()
      */
     @Override
     public void format(final Object object, final Appendable toAppendTo) throws IOException {
+        warnings = null;
         ArgumentChecks.ensureNonNull("object",     object);
         ArgumentChecks.ensureNonNull("toAppendTo", toAppendTo);
         /*
@@ -512,11 +811,15 @@ public class WKTFormat extends CompoundFormat<Object> {
             formatter.setBuffer(buffer);
             valid = formatter.appendElement(object) || formatter.appendValue(object);
         } finally {
+            warnings = formatter.getWarnings();     // Must be saved before formatter.clear() is invoked.
             formatter.setBuffer(null);
             formatter.clear();
         }
+        if (warnings != null) {
+            warnings.setRoot(object);
+        }
         if (!valid) {
-            throw new ClassCastException(Errors.format(
+            throw new ClassCastException(Errors.getResources(getLocale()).getString(
                     Errors.Keys.IllegalArgumentClass_2, "object", object.getClass()));
         }
         if (buffer != toAppendTo) {
@@ -530,8 +833,8 @@ public class WKTFormat extends CompoundFormat<Object> {
      * The {@code valueType} can be any types declared in the
      * {@linkplain CompoundFormat#createFormat(Class) parent class}.
      *
-     * @param  valueType The base type of values to parse or format.
-     * @return The format to use for parsing of formatting values of the given type, or {@code null} if none.
+     * @param  valueType  the base type of values to parse or format.
+     * @return the format to use for parsing of formatting values of the given type, or {@code null} if none.
      */
     @Override
     protected Format createFormat(final Class<?> valueType) {
@@ -539,34 +842,43 @@ public class WKTFormat extends CompoundFormat<Object> {
             return symbols.createNumberFormat();
         }
         if (valueType == Date.class) {
-            final TimeZone timezone = getTimeZone();
-            final DateFormat format = new SimpleDateFormat("UTC".equals(timezone.getID()) ?
-                    DATE_PATTERN + "'Z'" : DATE_PATTERN, symbols.getLocale());
-            format.setTimeZone(timezone);
-            return format;
+            return new StandardDateFormat(symbols.getLocale(), getTimeZone());
         }
-        return super.createFormat(valueType);
+        final Format format = super.createFormat(valueType);
+        if (format instanceof UnitFormat) {
+            ((UnitFormat) format).setStyle(UnitFormat.Style.NAME);
+        }
+        return format;
     }
 
     /**
-     * If a warning occurred during the last WKT {@linkplain #format(Object, Appendable) formatting}, returns
-     * the warning. Otherwise returns {@code null}. The warning is cleared every time a new object is formatted.
+     * If warnings occurred during the last WKT {@linkplain #parse(CharSequence, ParsePosition) parsing} or
+     * {@linkplain #format(Object, Appendable) formatting}, returns the warnings. Otherwise returns {@code null}.
+     * The warnings are cleared every time a new object is parsed or formatted.
      *
-     * @return The last warning, or {@code null} if none.
+     * @return the warnings of the last parsing of formatting operation, or {@code null} if none.
+     *
+     * @since 0.6
      */
-    public String getWarning() {
-        return (formatter != null) ? formatter.getErrorMessage() : null;
+    public Warnings getWarnings() {
+        final Warnings w = warnings;
+        if (w != null) {
+            w.publish();
+        }
+        return w;
     }
 
     /**
      * Returns a clone of this format.
      *
-     * @return A clone of this format.
+     * @return a clone of this format.
      */
     @Override
     public WKTFormat clone() {
         final WKTFormat clone = (WKTFormat) super.clone();
-        clone.formatter = null; // Do not share the formatter.
+        clone.formatter = null;                                 // Do not share the formatter.
+        clone.parser    = null;
+        clone.warnings  = null;
         return clone;
     }
 }

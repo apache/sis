@@ -28,8 +28,8 @@ import static org.apache.sis.test.Assert.*;
  * Tests {@link SingletonAssociation}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.5
  * @version 0.5
+ * @since   0.5
  * @module
  */
 @DependsOn({

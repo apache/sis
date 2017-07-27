@@ -55,8 +55,8 @@ import static org.apache.sis.util.collection.Containers.hashMapCapacity;
  *
  * @author  Stephen Connolly
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3 (derived from <a href="http://github.com/junit-team/junit.contrib/tree/master/assumes">junit-team</a>)
  * @version 0.5
+ * @since   0.3 (derived from <a href="http://github.com/junit-team/junit.contrib/tree/master/assumes">junit-team</a>)
  * @module
  */
 public final class TestRunner extends BlockJUnit4ClassRunner {
@@ -107,9 +107,10 @@ public final class TestRunner extends BlockJUnit4ClassRunner {
          */
         @Override
         public void testStarted(final Description description) {
-            if (!TestCase.verbose) {
+            if (!TestCase.VERBOSE) {
                 TestCase.clearBuffer();
             }
+            LogRecordCollector.INSTANCE.setCurrentTest(description);
         }
 
         /**
@@ -119,10 +120,11 @@ public final class TestRunner extends BlockJUnit4ClassRunner {
          */
         @Override
         public void testFinished(final Description description) {
-            if (TestCase.verbose) {
+            if (TestCase.VERBOSE) {
                 TestCase.flushOutput();
             }
             TestCase.randomSeed = 0;
+            LogRecordCollector.INSTANCE.setCurrentTest(null);
         }
 
         /**
@@ -146,7 +148,7 @@ public final class TestRunner extends BlockJUnit4ClassRunner {
                 out.println('.');
                 // Seed we be cleared by testFinished(…).
             }
-            if (!TestCase.verbose) {
+            if (!TestCase.VERBOSE) {
                 TestCase.flushOutput();
             }
             // In verbose mode, the flush will be done by testFinished(…).
@@ -176,8 +178,8 @@ public final class TestRunner extends BlockJUnit4ClassRunner {
     /**
      * Creates a new test runner for the given class.
      *
-     * @param  testClass The class to run.
-     * @throws InitializationError If the test class is malformed.
+     * @param  testClass  the class to run.
+     * @throws InitializationError if the test class is malformed.
      */
     public TestRunner(final Class<?> testClass) throws InitializationError {
         super(testClass);
@@ -188,7 +190,7 @@ public final class TestRunner extends BlockJUnit4ClassRunner {
      * verification documented in {@link BlockJUnit4ClassRunner#validateTestMethods(List)},
      * then ensures that all {@link DependsOnMethod} annotations refer to an existing method.
      *
-     * @param errors The list where to report any problem found.
+     * @param  errors  the list where to report any problem found.
      */
     @Override
     protected void validateTestMethods(final List<Throwable> errors) {
@@ -196,7 +198,7 @@ public final class TestRunner extends BlockJUnit4ClassRunner {
         final TestClass testClass = getTestClass();
         final List<FrameworkMethod> depends = testClass.getAnnotatedMethods(DependsOnMethod.class);
         if (!isNullOrEmpty(depends)) {
-            final Set<String> dependencies = new HashSet<String>(hashMapCapacity(depends.size()));
+            final Set<String> dependencies = new HashSet<>(hashMapCapacity(depends.size()));
             for (final FrameworkMethod method : depends) {
                 for (final String value : method.getAnnotation(DependsOnMethod.class).value()) {
                     dependencies.add(value);
@@ -215,7 +217,7 @@ public final class TestRunner extends BlockJUnit4ClassRunner {
     /**
      * Returns the test methods to be executed, with dependencies sorted before dependant tests.
      *
-     * @return The test method to be executed in dependencies order.
+     * @return the test methods to be executed in dependencies order.
      */
     @Override
     public List<FrameworkMethod> getChildren() {
@@ -225,8 +227,9 @@ public final class TestRunner extends BlockJUnit4ClassRunner {
     /**
      * Returns the test methods to be executed, with dependencies sorted before dependant tests.
      *
-     * @return The test method to be executed in dependencies order.
+     * @return the test methods to be executed in dependencies order.
      */
+    @SuppressWarnings("ReturnOfCollectionOrArrayField")
     private FrameworkMethod[] getFilteredChildren() {
         if (filteredChildren == null) {
             final List<FrameworkMethod> children = super.getChildren();
@@ -241,7 +244,7 @@ public final class TestRunner extends BlockJUnit4ClassRunner {
      * conform to the sorter specification, since this method will ensure that dependencies
      * are still sorted before dependant tests.
      *
-     * @param sorter The sorter to use for sorting tests.
+     * @param  sorter  the sorter to use for sorting tests.
      */
     @Override
     public void sort(final Sorter sorter) {
@@ -262,24 +265,32 @@ public final class TestRunner extends BlockJUnit4ClassRunner {
     /**
      * Sorts the given array of methods in dependencies order.
      *
-     * @param methods The methods to sort.
+     * @param  methods  the methods to sort.
      */
     private static void sortDependantTestsLast(final FrameworkMethod[] methods) {
-        Set<String> dependencies = null;
+        final Set<String> dependencies = new HashSet<>();
+        int retryCount = methods.length;
         for (int i=methods.length-1; --i>=0;) {
             final FrameworkMethod method = methods[i];
             final DependsOnMethod depend = method.getAnnotation(DependsOnMethod.class);
             if (depend != null) {
-                if (dependencies == null) {
-                    dependencies = new HashSet<String>();
-                }
                 dependencies.addAll(Arrays.asList(depend.value()));
                 for (int j=methods.length; --j>i;) {
                     if (dependencies.contains(methods[j].getName())) {
-                        // Found a method j which is a dependency of i. Move i after j.
-                        // The order of other methods relative to j is left unchanged.
+                        /*
+                         * Found a method j which is a dependency of i. Move i after j.
+                         * The order of other methods relative to j is left unchanged.
+                         *
+                         * As a result of this move, maybe some methods between i and j
+                         * need to be revisited. We should restart the iteration from j.
+                         * Over unlimited retries could cause an infinite loop, so we
+                         * arbitrarily limit the amount of time we retry.
+                         */
                         System.arraycopy(methods, i+1, methods, i, j-i);
                         methods[j] = method;
+                        if (--retryCount >= 0) {
+                            i = j;                      // Revisit the methods between i and j.
+                        }
                         break;
                     }
                 }
@@ -291,8 +302,8 @@ public final class TestRunner extends BlockJUnit4ClassRunner {
     /**
      * Removes tests that don't pass the parameter {@code filter}.
      *
-     * @param  filter The filter to apply.
-     * @throws NoTestsRemainException If all tests are filtered out.
+     * @param  filter  the filter to apply.
+     * @throws NoTestsRemainException if all tests are filtered out.
      */
     @Override
     public void filter(final Filter filter) throws NoTestsRemainException {
@@ -318,8 +329,8 @@ public final class TestRunner extends BlockJUnit4ClassRunner {
      * Returns the {@link Statement} which will execute all the tests in the class given
      * to the {@linkplain #TestRunner(Class) constructor}.
      *
-     * @param  notifier The object to notify about test results.
-     * @return The statement to execute for running the tests.
+     * @param  notifier  the object to notify about test results.
+     * @return the statement to execute for running the tests.
      */
     @Override
     protected Statement childrenInvoker(final RunNotifier notifier) {
@@ -342,8 +353,8 @@ public final class TestRunner extends BlockJUnit4ClassRunner {
      * Before to delegate to the {@linkplain BlockJUnit4ClassRunner#runChild default implementation},
      * check if a dependency of the given method failed. In such case, the test will be ignored.
      *
-     * @param method   The test method to execute.
-     * @param notifier The object to notify about test results.
+     * @param  method    the test method to execute.
+     * @param  notifier  the object to notify about test results.
      */
     @Override
     protected void runChild(final FrameworkMethod method, final RunNotifier notifier) {
@@ -370,16 +381,16 @@ public final class TestRunner extends BlockJUnit4ClassRunner {
      * Declares that the given method failed.
      * Other methods depending on this method will be ignored.
      *
-     * @param methodName The name of the method that failed.
+     * @param  methodName the name of the method that failed.
      */
     final void addDependencyFailure(final String methodName) {
         if (methodDependencyFailures == null) {
-            methodDependencyFailures = new HashSet<String>();
+            methodDependencyFailures = new HashSet<>();
         }
         methodDependencyFailures.add(methodName);
         synchronized (TestRunner.class) {
             if (classDependencyFailures == null) {
-                classDependencyFailures = new HashSet<Class<?>>();
+                classDependencyFailures = new HashSet<>();
             }
             classDependencyFailures.add(getTestClass().getJavaClass());
         }

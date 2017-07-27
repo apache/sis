@@ -30,8 +30,8 @@ import static org.apache.sis.test.Assert.*;
  * Tests {@link MultiValuedAttribute}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.5
  * @version 0.5
+ * @since   0.5
  * @module
  */
 @DependsOn(SingletonAttributeTest.class)
@@ -41,7 +41,7 @@ public final strictfp class MultiValuedAttributeTest extends TestCase {
      * The cardinality is [0 … ∞].
      */
     static MultiValuedAttribute<String> universities() {
-        return new MultiValuedAttribute<String>(DefaultAttributeTypeTest.universities());
+        return new MultiValuedAttribute<>(DefaultAttributeTypeTest.universities());
     }
 
     /**
@@ -49,7 +49,7 @@ public final strictfp class MultiValuedAttributeTest extends TestCase {
      * This attribute has no default value.
      */
     private static MultiValuedAttribute<Integer> population() {
-        return new MultiValuedAttribute<Integer>(DefaultAttributeTypeTest.population(new HashMap<String,Object>(4)));
+        return new MultiValuedAttribute<>(DefaultAttributeTypeTest.population(new HashMap<String,Object>(4)));
     }
 
     /**
@@ -106,7 +106,7 @@ public final strictfp class MultiValuedAttributeTest extends TestCase {
     @Test
     @DependsOnMethod("testValue")
     public void testDefaultValue() {
-        final AbstractAttribute<String> attribute = new MultiValuedAttribute<String>(DefaultAttributeTypeTest.city());
+        final AbstractAttribute<String> attribute = new MultiValuedAttribute<>(DefaultAttributeTypeTest.city());
         assertEquals     ("value",                "Utopia",  attribute.getValue());
         assertArrayEquals("values", new String[] {"Utopia"}, attribute.getValues().toArray());
 
@@ -124,6 +124,7 @@ public final strictfp class MultiValuedAttributeTest extends TestCase {
      */
     @Test
     @DependsOnMethod("testValue")
+    @SuppressWarnings("ObjectEqualsNull")
     public void testEquals() {
         final AbstractAttribute<Integer> a1 = population();
         final AbstractAttribute<Integer> a2 = population();
@@ -134,7 +135,7 @@ public final strictfp class MultiValuedAttributeTest extends TestCase {
     /**
      * Tests {@link MultiValuedAttribute#clone()}.
      *
-     * @throws CloneNotSupportedException Should never happen.
+     * @throws CloneNotSupportedException should never happen.
      */
     @Test
     @DependsOnMethod("testEquals")

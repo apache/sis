@@ -30,8 +30,8 @@ import static org.apache.sis.test.Assert.*;
  * Tests the {@link DefaultInternationalString} implementation.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.3
  * @version 0.3
+ * @since   0.3
  * @module
  */
 public final strictfp class DefaultInternationalStringTest extends TestCase {
@@ -81,8 +81,8 @@ public final strictfp class DefaultInternationalStringTest extends TestCase {
     /**
      * Ensures that the given international string contains the expected localized texts.
      *
-     * @param quebecker Either {@link #MESSAGE_fr} or {@link #MESSAGE_fr_CA},
-     *        depending on the localization details being tested.
+     * @param quebecker  either {@link #MESSAGE_fr} or {@link #MESSAGE_fr_CA},
+     *                   depending on the localization details being tested.
      */
     private static void assertLocalized(final InternationalString toTest, final String quebecker) {
         assertEquals ("Unlocalized message:", MESSAGE,    toTest.toString(null));

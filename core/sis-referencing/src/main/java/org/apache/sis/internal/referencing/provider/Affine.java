@@ -19,11 +19,11 @@ package org.apache.sis.internal.referencing.provider;
 import java.util.Map;
 import java.util.Arrays;
 import java.util.Collections;
+import javax.xml.bind.annotation.XmlTransient;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterNotFoundException;
 import org.opengis.referencing.operation.Matrix;
-import org.opengis.referencing.operation.Conversion;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.operation.OperationMethod;
@@ -57,10 +57,11 @@ import org.apache.sis.referencing.operation.transform.MathTransforms;
  * </table>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.5
  * @version 0.6
+ * @since   0.5
  * @module
  */
+@XmlTransient
 public final class Affine extends AbstractProvider {
     /**
      * Serial number for inter-operability with different versions.
@@ -135,9 +136,9 @@ public final class Affine extends AbstractProvider {
 
     /**
      * Creates a provider for affine transform with the specified dimensions.
-     * This is created when first needed by {@link #getProvider(int, int)}.
+     * This is created when first needed by {@link #getProvider(int, int, boolean)}.
      *
-     * @see #getProvider(int, int)
+     * @see #getProvider(int, int, boolean)
      */
     private Affine(final int sourceDimensions, final int targetDimensions) {
         super(IDENTIFICATION_OGC, sourceDimensions, targetDimensions, new Descriptor(IDENTIFICATION_OGC,
@@ -168,22 +169,30 @@ public final class Affine extends AbstractProvider {
         }
     }
 
+    /*
+     * Do not override the 'getOperationType()' method. We want to inherit the super-type value, which is
+     * SingleOperation.class, because we do not know if this operation method will be used for a Conversion
+     * or a Transformation. When applied on geocentric coordinates, this method applies a transformation
+     * (indeeded, the EPSG method name is "Affine parametric transformation"). But this method can also
+     * be applied for unit conversions or axis swapping for examples, which are conversions.
+     */
+
     /**
-     * Returns the type of operations created by this provider.
+     * The inverse of this operation can be described by the same operation with different parameter values.
      *
-     * @return Always {@code Conversion.class} for this provider.
+     * @return {@code true} for all {@code Affine}.
      */
     @Override
-    public Class<Conversion> getOperationType() {
-        return Conversion.class;
+    public final boolean isInvertible() {
+        return true;
     }
 
     /**
      * Creates a projective transform from the specified group of parameter values.
      *
-     * @param  factory Ignored (can be null).
-     * @param  values The group of parameter values.
-     * @return The created math transform.
+     * @param  factory  ignored (can be null).
+     * @param  values   the group of parameter values.
+     * @return the created math transform.
      * @throws ParameterNotFoundException if a required parameter was not found.
      */
     @Override
@@ -200,9 +209,9 @@ public final class Affine extends AbstractProvider {
     /**
      * Returns the same operation method, but for different dimensions.
      *
-     * @param  sourceDimensions The desired number of input dimensions.
-     * @param  targetDimensions The desired number of output dimensions.
-     * @return The redimensioned operation method, or {@code this} if no change is needed.
+     * @param  sourceDimensions  the desired number of input dimensions.
+     * @param  targetDimensions  the desired number of output dimensions.
+     * @return the redimensioned operation method, or {@code this} if no change is needed.
      */
     @Override
     public OperationMethod redimension(final int sourceDimensions, final int targetDimensions) {
@@ -226,10 +235,10 @@ public final class Affine extends AbstractProvider {
      * Returns the operation method for the specified source and target dimensions.
      * This method provides different {@code Affine} instances for different dimensions.
      *
-     * @param sourceDimensions The number of source dimensions.
-     * @param targetDimensions The number of target dimensions.
-     * @param isAffine {@code true} if the transform is affine.
-     * @return The provider for transforms of the given source and target dimensions.
+     * @param  sourceDimensions  the number of source dimensions.
+     * @param  targetDimensions  the number of target dimensions.
+     * @param  isAffine          {@code true} if the transform is affine.
+     * @return the provider for transforms of the given source and target dimensions.
      */
     public static Affine getProvider(final int sourceDimensions, final int targetDimensions, final boolean isAffine) {
         Affine method;
@@ -277,8 +286,8 @@ public final class Affine extends AbstractProvider {
      * Returns the parameter values for the given matrix. This method is invoked by implementations of
      * {@link org.apache.sis.referencing.operation.transform.AbstractMathTransform#getParameterValues()}.
      *
-     * @param  matrix The matrix for which to get parameter values.
-     * @return The parameters of the given matrix.
+     * @param  matrix  the matrix for which to get parameter values.
+     * @return the parameters of the given matrix.
      */
     public static ParameterValueGroup parameters(final Matrix matrix) {
         final int sourceDimensions = matrix.getNumCol() - 1;

@@ -27,8 +27,8 @@ import org.apache.sis.internal.jaxb.gco.PropertyType;
  * package documentation for more information about JAXB and interface.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.4
  * @version 0.4
+ * @since   0.4
  * @module
  */
 public final class CS_UserDefinedCS extends PropertyType<CS_UserDefinedCS, UserDefinedCS> {
@@ -61,8 +61,8 @@ public final class CS_UserDefinedCS extends PropertyType<CS_UserDefinedCS, UserD
      * Invoked by {@link PropertyType} at marshalling time for wrapping the given value
      * in a {@code <gml:UserDefinedCS>} XML element.
      *
-     * @param  cs The element to marshall.
-     * @return A {@code PropertyType} wrapping the given the element.
+     * @param  cs  the element to marshall.
+     * @return a {@code PropertyType} wrapping the given the element.
      */
     @Override
     protected CS_UserDefinedCS wrap(final UserDefinedCS cs) {
@@ -74,7 +74,7 @@ public final class CS_UserDefinedCS extends PropertyType<CS_UserDefinedCS, UserD
      * inside the {@code <gml:UserDefinedCS>} XML element.
      * This is the value or a copy of the value given in argument to the {@code wrap} method.
      *
-     * @return The element to be marshalled.
+     * @return the element to be marshalled.
      */
     @XmlElement(name = "UserDefinedCS")
     public DefaultUserDefinedCS getElement() {
@@ -84,7 +84,7 @@ public final class CS_UserDefinedCS extends PropertyType<CS_UserDefinedCS, UserD
     /**
      * Invoked by JAXB at unmarshalling time for storing the result temporarily.
      *
-     * @param cs The unmarshalled element.
+     * @param  cs  the unmarshalled element.
      */
     public void setElement(final DefaultUserDefinedCS cs) {
         metadata = cs;

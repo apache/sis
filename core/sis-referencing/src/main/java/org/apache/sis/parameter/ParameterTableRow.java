@@ -29,7 +29,7 @@ import java.lang.reflect.Array;
 import java.io.IOException;
 import java.text.Format;
 import java.text.FieldPosition;
-import javax.measure.unit.Unit;
+import javax.measure.Unit;
 import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.Identifier;
@@ -56,8 +56,8 @@ import org.apache.sis.internal.jdk8.JDK8;
  * A row in the table to be formatted by {@link ParameterFormat}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.4
  * @version 0.6
+ * @since   0.4
  * @module
  */
 final class ParameterTableRow {
@@ -123,21 +123,21 @@ final class ParameterTableRow {
     /**
      * Creates a new row in a table to be formatted by {@link ParameterFormat}.
      *
-     * @param object  The object for which to get the (<var>codespace(s)</var>, <var>name(s)</var>).
-     * @param locale  The locale for formatting the names and the remarks.
-     * @param remarks An initially empty map, to be filled with any remarks we may found.
+     * @param object   the object for which to get the (<var>codespace(s)</var>, <var>name(s)</var>).
+     * @param locale   the locale for formatting the names and the remarks.
+     * @param remarks  an initially empty map, to be filled with any remarks we may found.
      */
     ParameterTableRow(final IdentifiedObject object, final Locale locale, final Set<String> preferredCodespaces,
             final Map<String,Integer> remarks, final boolean isBrief)
     {
-        values = new ArrayList<Object>(2); // In the vast majority of cases, we will have only one value.
-        units  = new ArrayList<Object>(2);
-        identifiers = new LinkedHashMap<String,Set<Object>>();
+        values = new ArrayList<>(2);            // In the vast majority of cases, we will have only one value.
+        units  = new ArrayList<>(2);
+        identifiers = new LinkedHashMap<>();
         ReferenceIdentifier name = object.getName();
-        if (name != null) { // Paranoiac check.
+        if (name != null) {                                             // Paranoiac check.
             final String codespace = name.getCodeSpace();
             if (preferredCodespaces == null || preferredCodespaces.contains(codespace)) {
-                addIdentifier(codespace, name.getCode()); // Value needs to be a String here.
+                addIdentifier(codespace, name.getCode());               // Value needs to be a String here.
                 name = null;
             }
         }
@@ -147,7 +147,7 @@ final class ParameterTableRow {
          */
         if (!isBrief || identifiers.isEmpty()) {
             final Collection<GenericName> aliases = object.getAlias();
-            if (aliases != null) { // Paranoiac check.
+            if (aliases != null) {                                      // Paranoiac check.
                 for (GenericName alias : aliases) {
                     if (!isDeprecated(alias)) {
                         final String codespace = NameToIdentifier.getCodeSpace(alias, locale);
@@ -170,19 +170,19 @@ final class ParameterTableRow {
          * unconditionally add the name regardless its namespace.
          */
         if (name != null) {
-            addIdentifier(name.getCodeSpace(), name.getCode()); // Value needs to be a String here.
+            addIdentifier(name.getCodeSpace(), name.getCode());         // Value needs to be a String here.
         }
         /*
          * Add identifiers (detailed mode only).
          */
         if (!isBrief) {
             final Collection<? extends ReferenceIdentifier> ids = object.getIdentifiers();
-            if (ids != null) { // Paranoiac check.
+            if (ids != null) {                                          // Paranoiac check.
                 for (final ReferenceIdentifier id : ids) {
                     if (!isDeprecated(id)) {
                         final String codespace = id.getCodeSpace();
                         if (preferredCodespaces == null || preferredCodespaces.contains(codespace)) {
-                            addIdentifier(codespace, id); // No .getCode() here.
+                            addIdentifier(codespace, id);               // No .getCode() here.
                         }
                     }
                 }
@@ -219,7 +219,7 @@ final class ParameterTableRow {
         }
         Set<Object> ids = identifiers.get(codespace);
         if (ids == null) {
-            ids = new LinkedHashSet<Object>(8);
+            ids = new LinkedHashSet<>(8);
             identifiers.put(codespace, ids);
         }
         ids.add(identifier);
@@ -243,10 +243,10 @@ final class ParameterTableRow {
     /**
      * Sets the value domain to the string representation of the given range.
      *
-     * @param  range  The range to format.
-     * @param  format The format to use for formatting the {@code range}.
-     * @param  buffer A temporary buffer to use for formatting the range.
-     * @return The position of a character on which to align the text in the cell.
+     * @param  range   the range to format.
+     * @param  format  the format to use for formatting the {@code range}.
+     * @param  buffer  a temporary buffer to use for formatting the range.
+     * @return the position of a character on which to align the text in the cell.
      */
     final int setValueDomain(final Range<?> range, final Format format, final StringBuffer buffer) {
         final FieldPosition fieldPosition = new FieldPosition(RangeFormat.Field.MAX_VALUE);
@@ -258,8 +258,8 @@ final class ParameterTableRow {
     /**
      * Adds a value and its unit of measurement.
      *
-     * @param value The value, or {@code null}.
-     * @param unit  The unit of measurement, or {@code null}.
+     * @param  value  the value, or {@code null}.
+     * @param  unit   the unit of measurement, or {@code null}.
      */
     final void addValue(final Object value, final Unit<?> unit) {
         values.add(value);
@@ -325,18 +325,18 @@ final class ParameterTableRow {
      * <p><b>This method can be invoked only once per {@code ParameterTableRow} instance</b>,
      * as its implementation destroys the internal list of identifiers.</p>
      *
-     * @param  out             Where to write.
-     * @param  writeCodespaces {@code true} for writing codespaces, or {@code false} for omitting them.
-     * @param  colors          Non null if syntax coloring should be applied for table title.
-     * @param  colorsForRows   {@code true} if syntax coloring should be applied for table rows.
-     * @param  lineSeparator   The system-dependent line separator.
-     * @throws IOException     If an exception occurred while writing.
+     * @param  out              where to write.
+     * @param  writeCodespaces  {@code true} for writing codespaces, or {@code false} for omitting them.
+     * @param  colors           non-null if syntax coloring should be applied for table title.
+     * @param  colorsForRows    {@code true} if syntax coloring should be applied for table rows.
+     * @param  lineSeparator    the system-dependent line separator.
+     * @throws IOException if an exception occurred while writing.
      */
     final void writeIdentifiers(final Appendable out, final boolean writeCodespaces,
             final Colors colors, final boolean colorsForRows, final String lineSeparator) throws IOException
     {
         if (codespaceWidth != 0) {
-            codespaceWidth += 2; // Add a colon and space between codespace and code in e.g. "OGC: Mercator".
+            codespaceWidth += 2;    // Add a colon and space between codespace and code in e.g. "OGC: Mercator".
         }
         boolean isNewLine = false;
         for (final Map.Entry<String,Set<Object>> entry : identifiers.entrySet()) {

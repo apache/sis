@@ -18,8 +18,9 @@ package org.apache.sis.referencing.operation.matrix;
 
 import java.util.Arrays;
 import java.io.Serializable;
-import java.awt.geom.AffineTransform;   // For javadoc
+import java.awt.geom.AffineTransform;                       // For javadoc
 import org.opengis.referencing.operation.Matrix;
+import org.apache.sis.internal.referencing.ExtendedPrecisionMatrix;
 import org.apache.sis.internal.util.DoubleDouble;
 import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.util.ArgumentChecks;
@@ -54,11 +55,12 @@ import org.apache.sis.util.resources.Errors;
  * </ul>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.4
- * @version 0.6
- * @module
+ * @version 0.8
  *
  * @see Matrices
+ *
+ * @since 0.4
+ * @module
  */
 public abstract class MatrixSIS implements Matrix, LenientComparable, Cloneable, Serializable {
     /**
@@ -76,7 +78,7 @@ public abstract class MatrixSIS implements Matrix, LenientComparable, Cloneable,
      * Ensures that the given array is non-null and has the expected length.
      * This is a convenience method for subclasses constructors.
      *
-     * @throws IllegalArgumentException If the given array does not have the expected length.
+     * @throws IllegalArgumentException if the given array does not have the expected length.
      */
     static void ensureLengthMatch(final int expected, final double[] elements) throws IllegalArgumentException {
         ArgumentChecks.ensureNonNull("elements", elements);
@@ -87,27 +89,28 @@ public abstract class MatrixSIS implements Matrix, LenientComparable, Cloneable,
     }
 
     /**
-     * Ensures that the given matrix is a square matrix having the given dimension.
+     * Ensures that the given matrix has the given dimension.
      * This is a convenience method for subclasses.
      */
-    static void ensureSizeMatch(final int size, final Matrix matrix) {
-        final int numRow = matrix.getNumRow();
-        final int numCol = matrix.getNumCol();
-        if (numRow != size || numCol != size) {
-            final Integer n = size;
+    static void ensureSizeMatch(final int numRow, final int numCol, final Matrix matrix)
+            throws MismatchedMatrixSizeException
+    {
+        final int othRow = matrix.getNumRow();
+        final int othCol = matrix.getNumCol();
+        if (numRow != othRow || numCol != othCol) {
             throw new MismatchedMatrixSizeException(Errors.format(
-                    Errors.Keys.MismatchedMatrixSize_4, n, n, numRow, numCol));
+                    Errors.Keys.MismatchedMatrixSize_4, numRow, numCol, othRow, othCol));
         }
     }
 
     /**
-     * Ensures that the number of rows of the given matrix matches the given value.
+     * Ensures that the number of rows of a given matrix matches the given value.
      * This is a convenience method for {@link #multiply(Matrix)} implementations.
      *
-     * @param expected The expected number of rows.
-     * @param matrix   The matrix to verify.
-     * @param numCol   The number of columns to report in case of errors. This is an arbitrary
-     *                 value and have no incidence on the verification performed by this method.
+     * @param  expected  the expected number of rows.
+     * @param  actual    the actual number of rows in the matrix to verify.
+     * @param  numCol    the number of columns to report in case of errors. This is an arbitrary
+     *                   value and have no incidence on the verification performed by this method.
      */
     static void ensureNumRowMatch(final int expected, final int actual, final int numCol) {
         if (actual != expected) {
@@ -128,8 +131,8 @@ public abstract class MatrixSIS implements Matrix, LenientComparable, Cloneable,
      * an instance of {@code MatrixSIS}, then it is returned unchanged. Otherwise all elements
      * are copied in a new {@code MatrixSIS} object.
      *
-     * @param  matrix The matrix to cast or copy, or {@code null}.
-     * @return The matrix argument if it can be safely casted (including {@code null} argument),
+     * @param  matrix  the matrix to cast or copy, or {@code null}.
+     * @return the matrix argument if it can be safely casted (including {@code null} argument),
      *         or a copy of the given matrix otherwise.
      *
      * @see Matrices#copy(Matrix)
@@ -164,20 +167,42 @@ public abstract class MatrixSIS implements Matrix, LenientComparable, Cloneable,
      * Retrieves the value at the specified row and column of this matrix, wrapped in a {@code Number}.
      * The {@code Number} type depends on the matrix accuracy.
      *
-     * @param row    The row index, from 0 inclusive to {@link #getNumRow()} exclusive.
-     * @param column The column index, from 0 inclusive to {@link #getNumCol()} exclusive.
-     * @return       The current value at the given row and column.
+     * @param  row     the row index, from 0 inclusive to {@link #getNumRow()} exclusive.
+     * @param  column  the column index, from 0 inclusive to {@link #getNumCol()} exclusive.
+     * @return the current value at the given row and column.
      */
     public Number getNumber(int row, int column) {
         return getElement(row, column);
     }
 
     /**
+     * Modifies the value at the specified row and column of this matrix.
+     * This method is the converses of {@link #getNumber(int, int)}.
+     *
+     * @param  row     the row index, from 0 inclusive to {@link #getNumRow()} exclusive.
+     * @param  column  the column index, from 0 inclusive to {@link #getNumCol()} exclusive.
+     * @param  value   the new matrix element value.
+     *
+     * @see #setElement(int, int, double)
+     *
+     * @since 0.8
+     */
+    public void setNumber(int row, int column, final Number value) {
+        if (value instanceof DoubleDouble) {
+            set(row, column, (DoubleDouble) value);
+        } else if (DoubleDouble.shouldConvert(value)) {
+            set(row, column, new DoubleDouble(value));
+        } else {
+            setElement(row, column, value.doubleValue());
+        }
+    }
+
+    /**
      * Retrieves the value at the specified row and column of this matrix.
      *
-     * @param row    The row index, from 0 inclusive to {@link #getNumRow()} exclusive.
-     * @param column The column index, from 0 inclusive to {@link #getNumCol()} exclusive.
-     * @return       The current value at the given row and column.
+     * @param  row     the row index, from 0 inclusive to {@link #getNumRow()} exclusive.
+     * @param  column  the column index, from 0 inclusive to {@link #getNumCol()} exclusive.
+     * @return the current value at the given row and column.
      */
     @Override
     public abstract double getElement(int row, int column);
@@ -186,7 +211,7 @@ public abstract class MatrixSIS implements Matrix, LenientComparable, Cloneable,
      * Returns a copy of all matrix elements in a flat, row-major (column indices vary fastest) array.
      * The array length is <code>{@linkplain #getNumRow()} * {@linkplain #getNumCol()}</code>.
      *
-     * @return A copy of all current matrix elements in a row-major array.
+     * @return a copy of all current matrix elements in a row-major array.
      */
     public double[] getElements() {
         final int numRow = getNumRow();
@@ -205,12 +230,33 @@ public abstract class MatrixSIS implements Matrix, LenientComparable, Cloneable,
      * All subclasses in this {@code org.apache.sis.referencing.operation.matrix} package override this
      * method with a more efficient implementation.
      *
-     * @param dest The destination array. May be longer than necessary (this happen when the caller needs to
-     *             append {@link org.apache.sis.internal.util.DoubleDouble#error} values after the elements).
+     * @param  dest  the destination array. May be longer than necessary (this happen when the caller needs to
+     *               append {@link org.apache.sis.internal.util.DoubleDouble#error} values after the elements).
      */
     void getElements(final double[] dest) {
         final double[] elements = getElements();
         System.arraycopy(elements, 0, dest, 0, elements.length);
+    }
+
+    /**
+     * Copies the elements of the given matrix in the given array.
+     * This method ignores the error terms, if any.
+     *
+     * @param  matrix    the matrix to copy.
+     * @param  numRow    {@code matrix.getNumRow()}.
+     * @param  numCol    {@code matrix.getNumCol()}.
+     * @param  elements  where to copy the elements.
+     */
+    static void getElements(final Matrix matrix, final int numRow, final int numCol, final double[] elements) {
+        if (matrix instanceof MatrixSIS) {
+            ((MatrixSIS) matrix).getElements(elements);
+        } else {
+            for (int k=0,j=0; j<numRow; j++) {
+                for (int i=0; i<numCol; i++) {
+                    elements[k++] = matrix.getElement(j, i);
+                }
+            }
+        }
     }
 
     /**
@@ -224,6 +270,89 @@ public abstract class MatrixSIS implements Matrix, LenientComparable, Cloneable,
      * @see Matrices#create(int, int, double[])
      */
     public abstract void setElements(final double[] elements);
+
+    /**
+     * Sets elements in a sub-region of this matrix, optionally including error terms.
+     *
+     * @param  source    row-major values as given by {@link ExtendedPrecisionMatrix#getExtendedElements()}.
+     * @param  length    number of elements ({@code numRow} × {@code numCol}) in the source matrix, not including error terms.
+     * @param  stride    number of columns in the source matrix, used for computing indices in {@code source} array.
+     * @param  srcRow    index of the first row from the {@code source} to copy in {@code this}.
+     * @param  srcCol    index of the first column from the {@code source} to copy in {@code this}.
+     * @param  dstRow    index of the first row in {@code this} where to copy the {@code source} values.
+     * @param  dstCol    index of the first column in {@code this} where to copy the {@code source} values.
+     * @param  numRow    number of rows to copy.
+     * @param  numCol    number of columns to copy.
+     * @param  transfer  if both {@code source} and {@code this} use extended precision,
+     *                   the temporary object to use for transferring values. Otherwise {@code null}.
+     */
+    final void setElements(final double[] source, final int length, final int stride, final DoubleDouble transfer,
+                           int srcRow, final int srcCol,
+                           int dstRow, final int dstCol,
+                           int numRow, final int numCol)
+    {
+        while (--numRow >= 0) {
+            final int valueOffset = srcRow*stride + srcCol;
+            for (int i=0; i<numCol; i++) {
+                if (transfer != null) {
+                    transfer.setFrom(source, valueOffset + i, length);
+                    set(dstRow, dstCol + i, transfer);
+                } else {
+                    setElement(dstRow, dstCol + i, source[valueOffset + i]);
+                }
+            }
+            srcRow++;
+            dstRow++;
+        }
+    }
+
+    /**
+     * Sets this matrix to the values of another matrix.
+     * The given matrix must have the same size.
+     *
+     * @param  matrix  the matrix to copy.
+     * @throws MismatchedMatrixSizeException if the given matrix has a different size than this matrix.
+     *
+     * @since 0.7
+     */
+    public void setMatrix(final Matrix matrix) throws MismatchedMatrixSizeException {
+        ArgumentChecks.ensureNonNull("matrix", matrix);
+        final int numRow = getNumRow();
+        final int numCol = getNumCol();
+        ensureSizeMatch(numRow, numCol, matrix);
+        final int count = numRow * numCol;
+        final double[] elements;
+        /*
+         * If both matrices use extended precision, the elements array will have twice the expected length
+         * with the matrix values in the first half and the error terms in the second half.  If we want to
+         * preserve the extended precision, we have to transfer the values between the two matrices with a
+         * DoubleDouble object.
+         */
+        if (isExtendedPrecision() && matrix instanceof ExtendedPrecisionMatrix) {
+            elements = ((ExtendedPrecisionMatrix) matrix).getExtendedElements();
+            if (elements.length > count) {
+                final DoubleDouble t = new DoubleDouble();
+                for (int i=0; i<count; i++) {
+                    t.value = elements[i];
+                    t.error = elements[i + count];
+                    set(i / numCol, i % numCol, t);
+                }
+                return;
+            }
+        } else {
+            // Fallback for matrices that do not use extended precision.
+            elements = new double[count];
+            getElements(matrix, numRow, numCol, elements);
+        }
+        setElements(elements);
+    }
+
+    /**
+     * Returns {@code true} if this matrix uses extended precision.
+     */
+    boolean isExtendedPrecision() {
+        return false;
+    }
 
     /**
      * Returns {@code true} if this matrix represents an affine transform.
@@ -305,7 +434,7 @@ public abstract class MatrixSIS implements Matrix, LenientComparable, Cloneable,
             sum.clear();
             for (int j=0; j<numRow; j++) {
                 get(j, i, dot);
-                dot.multiply(dot);
+                dot.square();
                 sum.add(dot);
             }
             sum.sqrt();
@@ -342,9 +471,9 @@ public abstract class MatrixSIS implements Matrix, LenientComparable, Cloneable,
      *   </tr>
      * </table>
      *
-     * @param srcDim The dimension of the ordinate to rescale in the source coordinates.
-     * @param scale  The amount by which to multiply the source ordinate value before to apply the transform, or {@code null} if none.
-     * @param offset The amount by which to translate the source ordinate value before to apply the transform, or {@code null} if none.
+     * @param  srcDim  the dimension of the ordinate to rescale in the source coordinates.
+     * @param  scale   the amount by which to multiply the source ordinate value before to apply the transform, or {@code null} if none.
+     * @param  offset  the amount by which to translate the source ordinate value before to apply the transform, or {@code null} if none.
      * @throws UnsupportedOperationException if this matrix is unmodifiable.
      *
      * @see AffineTransform#concatenate(AffineTransform)
@@ -377,9 +506,9 @@ public abstract class MatrixSIS implements Matrix, LenientComparable, Cloneable,
      * given dimension. Converting a point with the resulting matrix is equivalent to first convert the point with
      * the original matrix, then convert the result with {@code ordinates[tgtDim] = ordinates[tgtDim] * scale + offset}.
      *
-     * @param tgtDim The dimension of the ordinate to rescale in the target coordinates.
-     * @param scale  The amount by which to multiply the target ordinate value after this transform, or {@code null} if none.
-     * @param offset The amount by which to translate the target ordinate value after this transform, or {@code null} if none.
+     * @param  tgtDim  the dimension of the ordinate to rescale in the target coordinates.
+     * @param  scale   the amount by which to multiply the target ordinate value after this transform, or {@code null} if none.
+     * @param  offset  the amount by which to translate the target ordinate value after this transform, or {@code null} if none.
      * @throws UnsupportedOperationException if this matrix is unmodifiable.
      *
      * @see AffineTransform#preConcatenate(AffineTransform)
@@ -414,8 +543,8 @@ public abstract class MatrixSIS implements Matrix, LenientComparable, Cloneable,
      * <code>{@linkplain AffineTransform#concatenate AffineTransform.concatenate}(other)</code>:
      * first transforms by the supplied transform and then transform the result by the original transform.
      *
-     * @param  matrix The matrix to multiply to this matrix.
-     * @return The result of {@code this} × {@code matrix}.
+     * @param  matrix  the matrix to multiply to this matrix.
+     * @return the result of {@code this} × {@code matrix}.
      * @throws MismatchedMatrixSizeException if the number of rows in the given matrix is not equals to the
      *         number of columns in this matrix.
      */
@@ -428,12 +557,52 @@ public abstract class MatrixSIS implements Matrix, LenientComparable, Cloneable,
     }
 
     /**
+     * Returns a new vector which is the result of multiplying this matrix with the specified vector.
+     * In other words, returns {@code this} × {@code vector}. The length of the given vector must be
+     * equal to the number of columns in this matrix, and the length of the returned vector will be
+     * equal to the number of rows in this matrix.
+     *
+     * <div class="section">Relationship with coordinate operations</div>
+     * In the context of coordinate operations, {@code Matrix.multiply(vector)} is related to
+     * <code>{@linkplain AffineTransform#transform(double[], int, double[], int, int) AffineTransform.transform}(…)</code>
+     * except that the last {@code vector} number is implicitly 1 in {@code AffineTransform} operations.
+     * While this {@code multiply(double[])} method could be used for coordinate transformation, it is not its purpose.
+     * This method is designed for occasional uses when accuracy is more important than performance.
+     *
+     * @param  vector  the vector to multiply to this matrix.
+     * @return the result of {@code this} × {@code vector}.
+     * @throws MismatchedMatrixSizeException if the length of the given vector is not equals to the
+     *         number of columns in this matrix.
+     *
+     * @since 0.8
+     */
+    public double[] multiply(final double[] vector) {
+        final int numCol = getNumCol();
+        if (vector.length != numCol) {
+            throw new MismatchedMatrixSizeException(Errors.format(Errors.Keys.UnexpectedArrayLength_2,  numCol, vector.length));
+        }
+        final double[] target = new double[getNumRow()];
+        final DoubleDouble ele = new DoubleDouble();
+        final DoubleDouble sum = new DoubleDouble();
+        for (int j=0; j<target.length; j++) {
+            for (int i=0; i<numCol; i++) {
+                get(j, i, ele);
+                ele.multiply(vector[i]);
+                sum.add(ele);
+            }
+            target[j] = sum.value;
+            sum.clear();
+        }
+        return target;
+    }
+
+    /**
      * Returns the value of <var>U</var> which solves {@code this} × <var>U</var> = {@code matrix}.
      * This is equivalent to first computing the inverse of {@code this}, then multiplying the result
      * by the given matrix.
      *
-     * @param  matrix The matrix to solve.
-     * @return The <var>U</var> matrix that satisfies {@code this} × <var>U</var> = {@code matrix}.
+     * @param  matrix  the matrix to solve.
+     * @return the <var>U</var> matrix that satisfies {@code this} × <var>U</var> = {@code matrix}.
      * @throws MismatchedMatrixSizeException if the number of rows in the given matrix is not equals
      *         to the number of columns in this matrix.
      * @throws NoninvertibleMatrixException if this matrix is not invertible.
@@ -445,7 +614,7 @@ public abstract class MatrixSIS implements Matrix, LenientComparable, Cloneable,
     /**
      * Returns the inverse of this matrix.
      *
-     * @return The inverse of this matrix.
+     * @return the inverse of this matrix.
      * @throws NoninvertibleMatrixException if this matrix is not invertible.
      *
      * @see AffineTransform#createInverse()
@@ -455,9 +624,80 @@ public abstract class MatrixSIS implements Matrix, LenientComparable, Cloneable,
     }
 
     /**
+     * Returns a new matrix with the same elements than this matrix except for the specified rows.
+     * This method is useful for removing a range of <em>target</em> dimensions in an affine transform.
+     *
+     * @param  lower  index of the first row to remove (inclusive).
+     * @param  upper  index after the last row to remove (exclusive).
+     * @return a copy of this matrix with the specified rows removed.
+     *
+     * @since 0.7
+     */
+    public MatrixSIS removeRows(final int lower, final int upper) {
+        final int numRow = getNumRow();
+        final int numCol = getNumCol();
+        ArgumentChecks.ensureValidIndexRange(numRow, lower, upper);
+        final DoubleDouble dd = isExtendedPrecision() ? new DoubleDouble() : null;
+        final MatrixSIS reduced = Matrices.createZero(numRow - (upper - lower), numCol, dd != null);
+        int dest = 0;
+        for (int j=0; j<numRow; j++) {
+            if (j == lower) {
+                j = upper;
+                if (j == numRow) break;
+            }
+            for (int i=0; i<numCol; i++) {
+                if (dd != null) {
+                    get(j, i, dd);
+                    reduced.set(dest, i, dd);
+                } else {
+                    reduced.setElement(dest, i, getElement(j, i));
+                }
+            }
+            dest++;
+        }
+        return reduced;
+    }
+
+    /**
+     * Returns a new matrix with the same elements than this matrix except for the specified columns.
+     * This method is useful for removing a range of <em>source</em> dimensions in an affine transform.
+     * Coordinates will be converted as if the values in the removed dimensions were zeros.
+     *
+     * @param  lower  index of the first column to remove (inclusive).
+     * @param  upper  index after the last column to remove (exclusive).
+     * @return a copy of this matrix with the specified columns removed.
+     *
+     * @since 0.7
+     */
+    public MatrixSIS removeColumns(final int lower, final int upper) {
+        final int numRow = getNumRow();
+        final int numCol = getNumCol();
+        ArgumentChecks.ensureValidIndexRange(numCol, lower, upper);
+        final DoubleDouble dd = isExtendedPrecision() ? new DoubleDouble() : null;
+        final MatrixSIS reduced = Matrices.createZero(numRow, numCol - (upper - lower), dd != null);
+        int dest = 0;
+        for (int i=0; i<numCol; i++) {
+            if (i == lower) {
+                i = upper;
+                if (i == numCol) break;
+            }
+            for (int j=0; j<numRow; j++) {
+                if (dd != null) {
+                    get(j, i, dd);
+                    reduced.set(j, dest, dd);
+                } else {
+                    reduced.setElement(j, dest, getElement(j, i));
+                }
+            }
+            dest++;
+        }
+        return reduced;
+    }
+
+    /**
      * Returns a hash code value based on the data values in this matrix.
      *
-     * @return A hash code value for this matrix.
+     * @return a hash code value for this matrix.
      */
     @Override
     public int hashCode() {
@@ -468,7 +708,7 @@ public abstract class MatrixSIS implements Matrix, LenientComparable, Cloneable,
      * Returns {@code true} if the specified object is of the same class than this matrix and
      * all of the data members are equal to the corresponding data members in this matrix.
      *
-     * @param object The object to compare with this matrix for equality.
+     * @param  object  the object to compare with this matrix for equality.
      * @return {@code true} if the given object is equal to this matrix.
      */
     @Override
@@ -503,8 +743,8 @@ public abstract class MatrixSIS implements Matrix, LenientComparable, Cloneable,
      *       smaller than or equals to the given threshold.</li>
      * </ul>
      *
-     * @param matrix    The matrix to compare.
-     * @param tolerance The tolerance value.
+     * @param  matrix     the matrix to compare.
+     * @param  tolerance  the tolerance value.
      * @return {@code true} if this matrix is close enough to the given matrix given the tolerance value.
      *
      * @see Matrices#equals(Matrix, Matrix, double, boolean)
@@ -529,8 +769,8 @@ public abstract class MatrixSIS implements Matrix, LenientComparable, Cloneable,
      *       The threshold value is determined empirically and may change in any future SIS versions.</li>
      * </ul>
      *
-     * @param  object The object to compare to {@code this}.
-     * @param  mode The strictness level of the comparison.
+     * @param  object  the object to compare to {@code this}.
+     * @param  mode    the strictness level of the comparison.
      * @return {@code true} if both objects are equal.
      *
      * @see Matrices#equals(Matrix, Matrix, ComparisonMode)
@@ -543,7 +783,7 @@ public abstract class MatrixSIS implements Matrix, LenientComparable, Cloneable,
     /**
      * Returns a clone of this matrix.
      *
-     * @return A new matrix of the same class and with the same values than this matrix.
+     * @return a new matrix of the same class and with the same values than this matrix.
      *
      * @see Matrices#copy(Matrix)
      */

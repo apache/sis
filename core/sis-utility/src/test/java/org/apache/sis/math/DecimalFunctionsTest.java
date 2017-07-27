@@ -33,17 +33,12 @@ import static org.apache.sis.math.DecimalFunctions.*;
  * Tests the {@link DecimalFunctions} static methods.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.4
  * @version 0.4
+ * @since   0.4
  * @module
  */
 @DependsOn(org.apache.sis.internal.util.NumericsTest.class)
 public final strictfp class DecimalFunctionsTest extends TestCase {
-    /**
-     * Tolerance threshold for strict comparisons of floating point values.
-     */
-    private static final double STRICT = 0;
-
     /**
      * Verifies the values of {@link DecimalFunctions#EXPONENT_FOR_ZERO}.
      */
@@ -185,8 +180,8 @@ public final strictfp class DecimalFunctionsTest extends TestCase {
         assertEquals(1, fractionDigitsForDelta(0.100, true));
         assertEquals(1, fractionDigitsForDelta(0.125, true));
         assertEquals(1, fractionDigitsForDelta(0.949, true));
-        assertEquals(2, fractionDigitsForDelta(0.994, true)); // Special case
-        assertEquals(3, fractionDigitsForDelta(0.999, true)); // Special case
+        assertEquals(2, fractionDigitsForDelta(0.994, true));           // Special case
+        assertEquals(3, fractionDigitsForDelta(0.999, true));           // Special case
 
         assertEquals( 0, fractionDigitsForDelta(  1.0, true));
         assertEquals( 0, fractionDigitsForDelta(  1.9, true));
@@ -194,24 +189,24 @@ public final strictfp class DecimalFunctionsTest extends TestCase {
         assertEquals(-1, fractionDigitsForDelta( 10.0, true));
         assertEquals(-1, fractionDigitsForDelta( 19.9, true));
         assertEquals(-1, fractionDigitsForDelta( 94.9, true));
-        assertEquals( 0, fractionDigitsForDelta( 99.0, true)); // Special case
+        assertEquals( 0, fractionDigitsForDelta( 99.0, true));          // Special case
         assertEquals(-2, fractionDigitsForDelta(100.0, true));
         assertEquals(-2, fractionDigitsForDelta(100.1, true));
-        assertEquals(-1, fractionDigitsForDelta(994.9, true)); // Special case
-        assertEquals(+1, fractionDigitsForDelta(999.9, true)); // Special case
+        assertEquals(-1, fractionDigitsForDelta(994.9, true));          // Special case
+        assertEquals(+1, fractionDigitsForDelta(999.9, true));          // Special case
         assertEquals(-3, fractionDigitsForDelta(1000,  true));
 
         // Tests values out of the POW10 array range.
         assertEquals(23,  fractionDigitsForDelta(1.0E-23,  true));
         assertEquals(23,  fractionDigitsForDelta(1.9E-23,  true));
         assertEquals(23,  fractionDigitsForDelta(9.1E-23,  true));
-        assertEquals(24,  fractionDigitsForDelta(9.6E-23,  true)); // Special case
+        assertEquals(24,  fractionDigitsForDelta(9.6E-23,  true));      // Special case
         assertEquals(300, fractionDigitsForDelta(1.1E-300, true));
 
         assertEquals(-23,  fractionDigitsForDelta(1.0E+23,  true));
         assertEquals(-23,  fractionDigitsForDelta(1.9E+23,  true));
         assertEquals(-23,  fractionDigitsForDelta(9.1E+23,  true));
-        assertEquals(-22,  fractionDigitsForDelta(9.6E+23,  true)); // Special case
+        assertEquals(-22,  fractionDigitsForDelta(9.6E+23,  true));     // Special case
         assertEquals(-300, fractionDigitsForDelta(1.1E+300, true));
 
         // Other cases.

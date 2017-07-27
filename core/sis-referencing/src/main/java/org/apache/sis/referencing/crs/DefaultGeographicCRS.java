@@ -43,13 +43,40 @@ import static org.apache.sis.internal.util.Constants.CRS84;
 
 
 /**
- * A coordinate reference system based on an ellipsoidal approximation of the geoid.
+ * A 2- or 3-dimensional coordinate reference system based on an ellipsoidal approximation of the geoid.
  * This provides an accurate representation of the geometry of geographic features
  * for a large portion of the earth's surface.
  *
- * <p><b>Used with coordinate system type:</b>
+ * <p><b>Used with datum type:</b>
+ *   {@linkplain org.apache.sis.referencing.datum.DefaultGeodeticDatum Geodetic}.<br>
+ * <b>Used with coordinate system type:</b>
  *   {@linkplain org.apache.sis.referencing.cs.DefaultEllipsoidalCS Ellipsoidal}.
  * </p>
+ *
+ * <div class="section">Creating new geographic CRS instances</div>
+ * New instances can be created either directly by specifying all information to a factory method (choices 3
+ * and 4 below), or indirectly by specifying the identifier of an entry in a database (choices 1 and 2 below).
+ * Choice 1 in the following list is the easiest but most restrictive way to get a geographic CRS.
+ * The other choices provide more freedom.
+ *
+ * <ol>
+ *   <li>Create a {@code GeographicCRS} from one of the static convenience shortcuts listed in
+ *       {@link org.apache.sis.referencing.CommonCRS#geographic()} or
+ *       {@link org.apache.sis.referencing.CommonCRS#geographic3D()}.</li>
+ *   <li>Create a {@code GeographicCRS} from an identifier in a database by invoking
+ *       {@link org.apache.sis.referencing.factory.GeodeticAuthorityFactory#createGeographicCRS(String)}.</li>
+ *   <li>Create a {@code GeographicCRS} by invoking the {@code CRSFactory.createGeographicCRS(…)} method
+ *       (implemented for example by {@link org.apache.sis.referencing.factory.GeodeticObjectFactory}).</li>
+ *   <li>Create a {@code GeographicCRS} by invoking the
+ *       {@linkplain #DefaultGeographicCRS(Map, GeodeticDatum, EllipsoidalCS) constructor}.</li>
+ * </ol>
+ *
+ * <b>Example:</b> the following code gets a two-dimensional geographic CRS
+ * using the <cite>World Geodetic System 1984</cite> datum:
+ *
+ * {@preformat java
+ *     GeodeticDatum datum = CommonCRS.WGS84.geographic();
+ * }
  *
  * <div class="section">Immutability and thread safety</div>
  * This class is immutable and thus thread-safe if the property <em>values</em> (not necessarily the map itself),
@@ -57,8 +84,11 @@ import static org.apache.sis.internal.util.Constants.CRS84;
  * in the javadoc, this condition holds if all components were created using only SIS factories and static constants.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.4
  * @version 0.6
+ *
+ * @see org.apache.sis.referencing.factory.GeodeticAuthorityFactory#createGeographicCRS(String)
+ *
+ * @since 0.4
  * @module
  */
 @XmlTransient
@@ -77,14 +107,6 @@ public class DefaultGeographicCRS extends DefaultGeodeticCRS implements Geograph
      * Serial number for inter-operability with different versions.
      */
     private static final long serialVersionUID = 861224913438092335L;
-
-    /**
-     * Constructs a new object in which every attributes are set to a null value.
-     * <strong>This is not a valid object.</strong> This constructor is strictly
-     * reserved to JAXB, which will assign values to the fields using reflexion.
-     */
-    private DefaultGeographicCRS() {
-    }
 
     /**
      * Creates a coordinate reference system from the given properties, datum and coordinate system.
@@ -120,20 +142,22 @@ public class DefaultGeographicCRS extends DefaultGeodeticCRS implements Geograph
      *     <td>{@link #getRemarks()}</td>
      *   </tr>
      *   <tr>
-     *     <td>{@value org.opengis.referencing.datum.Datum#DOMAIN_OF_VALIDITY_KEY}</td>
+     *     <td>{@value org.opengis.referencing.ReferenceSystem#DOMAIN_OF_VALIDITY_KEY}</td>
      *     <td>{@link org.opengis.metadata.extent.Extent}</td>
      *     <td>{@link #getDomainOfValidity()}</td>
      *   </tr>
      *   <tr>
-     *     <td>{@value org.opengis.referencing.datum.Datum#SCOPE_KEY}</td>
+     *     <td>{@value org.opengis.referencing.ReferenceSystem#SCOPE_KEY}</td>
      *     <td>{@link org.opengis.util.InternationalString} or {@link String}</td>
      *     <td>{@link #getScope()}</td>
      *   </tr>
      * </table>
      *
-     * @param properties The properties to be given to the coordinate reference system.
-     * @param datum The datum.
-     * @param cs The coordinate system.
+     * @param  properties  the properties to be given to the coordinate reference system.
+     * @param  datum       the datum.
+     * @param  cs          the two- or three-dimensional coordinate system.
+     *
+     * @see org.apache.sis.referencing.factory.GeodeticObjectFactory#createGeographicCRS(Map, GeodeticDatum, EllipsoidalCS)
      */
     public DefaultGeographicCRS(final Map<String,?> properties,
                                 final GeodeticDatum datum,
@@ -143,28 +167,13 @@ public class DefaultGeographicCRS extends DefaultGeodeticCRS implements Geograph
     }
 
     /**
-     * For {@link SC_GeographicCRS} JAXB adapter only. This is needed because GML does not have "GeographicCRS" type.
-     * Instead, the unmarshalling process will give us a "GeodeticCRS" object with the constraint that the coordinate
-     * system shall be ellipsoidal. This constructor will be invoked for converting the GeodeticCRS instance to a
-     * GeographicCRS instance.
-     */
-    DefaultGeographicCRS(final GeodeticCRS crs) {
-        super(crs);
-        final CoordinateSystem cs = super.getCoordinateSystem();
-        if (!(cs instanceof EllipsoidalCS)) {
-            throw new IllegalArgumentException(Errors.format(
-                    Errors.Keys.IllegalClass_2, EllipsoidalCS.class, cs.getClass()));
-        }
-    }
-
-    /**
      * Constructs a new coordinate reference system with the same values than the specified one.
      * This copy constructor provides a way to convert an arbitrary implementation into a SIS one
      * or a user-defined one (as a subclass), usually in order to leverage some implementation-specific API.
      *
      * <p>This constructor performs a shallow copy, i.e. the properties are not cloned.</p>
      *
-     * @param crs The coordinate reference system to copy.
+     * @param  crs  the coordinate reference system to copy.
      *
      * @see #castOrCopy(GeographicCRS)
      */
@@ -178,8 +187,8 @@ public class DefaultGeographicCRS extends DefaultGeodeticCRS implements Geograph
      * Otherwise if the given object is already a SIS implementation, then the given object is returned unchanged.
      * Otherwise a new SIS implementation is created and initialized to the attribute values of the given object.
      *
-     * @param  object The object to get as a SIS implementation, or {@code null} if none.
-     * @return A SIS implementation containing the values of the given object (may be the
+     * @param  object  the object to get as a SIS implementation, or {@code null} if none.
+     * @return a SIS implementation containing the values of the given object (may be the
      *         given object itself), or {@code null} if the argument was null.
      */
     public static DefaultGeographicCRS castOrCopy(final GeographicCRS object) {
@@ -207,7 +216,7 @@ public class DefaultGeographicCRS extends DefaultGeodeticCRS implements Geograph
      * Returns the geodetic datum associated to this geographic CRS.
      * This is the datum given at construction time.
      *
-     * @return The geodetic datum associated to this geographic CRS.
+     * @return the geodetic datum associated to this geographic CRS.
      */
     @Override
     public final GeodeticDatum getDatum() {
@@ -217,7 +226,7 @@ public class DefaultGeographicCRS extends DefaultGeodeticCRS implements Geograph
     /**
      * Returns the coordinate system.
      *
-     * @return The coordinate system.
+     * @return the coordinate system.
      */
     @Override
     public EllipsoidalCS getCoordinateSystem() {
@@ -254,7 +263,7 @@ public class DefaultGeographicCRS extends DefaultGeodeticCRS implements Geograph
                     final int i = Arrays.binarySearch(EPSG_CODES, Short.parseShort(identifier.getCode()));
                     if (i >= 0) {
                         final Map<String,Object> c = new HashMap<String,Object>(properties);
-                        c.put(IDENTIFIERS_KEY, new ImmutableIdentifier(Citations.OGC, CRS, Short.toString(CRS_CODES[i])));
+                        c.put(IDENTIFIERS_KEY, new ImmutableIdentifier(Citations.WMS, CRS, Short.toString(CRS_CODES[i])));
                         properties = c;
                     }
                 } catch (NumberFormatException e) {
@@ -301,9 +310,48 @@ public class DefaultGeographicCRS extends DefaultGeodeticCRS implements Geograph
      * </div>
      *
      * @return {@code "GeodeticCRS"} (WKT 2) or {@code "GeogCS"} (WKT 1).
+     *
+     * @see <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html#49">WKT 2 specification §8</a>
      */
     @Override
     protected String formatTo(final Formatter formatter) {
         return super.formatTo(formatter);
+    }
+
+
+
+
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+    ////////                                                                                  ////////
+    ////////                               XML support with JAXB                              ////////
+    ////////                                                                                  ////////
+    ////////        The following methods are invoked by JAXB using reflection (even if       ////////
+    ////////        they are private) or are helpers for other methods invoked by JAXB.       ////////
+    ////////        Those methods can be safely removed if Geographic Markup Language         ////////
+    ////////        (GML) support is not needed.                                              ////////
+    ////////                                                                                  ////////
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Constructs a new object in which every attributes are set to a null value.
+     * <strong>This is not a valid object.</strong> This constructor is strictly
+     * reserved to JAXB, which will assign values to the fields using reflexion.
+     */
+    private DefaultGeographicCRS() {
+    }
+
+    /**
+     * For {@link SC_GeographicCRS} JAXB adapter only. This is needed because GML does not have "GeographicCRS" type.
+     * Instead, the unmarshalling process will give us a "GeodeticCRS" object with the constraint that the coordinate
+     * system shall be ellipsoidal. This constructor will be invoked for converting the GeodeticCRS instance to a
+     * GeographicCRS instance.
+     */
+    DefaultGeographicCRS(final GeodeticCRS crs) {
+        super(crs);
+        final CoordinateSystem cs = super.getCoordinateSystem();
+        if (!(cs instanceof EllipsoidalCS)) {
+            throw new IllegalArgumentException(Errors.format(
+                    Errors.Keys.IllegalClass_2, EllipsoidalCS.class, cs.getClass()));
+        }
     }
 }

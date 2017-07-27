@@ -49,7 +49,7 @@ package org.apache.sis.util;
  * <tr><td>{@link org.apache.sis.referencing.operation.matrix.Matrices}</td>
  *     <td>Create and compare {@link org.opengis.referencing.operation.Matrix} objects</td></tr>
  * <tr><td>{@link org.apache.sis.measure.Units}</td>
- *     <td>Get a {@linkplain javax.measure.unit.Unit unit} from a symbol or EPSG code,
+ *     <td>Get a {@linkplain javax.measure.Unit unit} from a symbol or EPSG code,
  *         and test if a unit is angular, linear or temporal.</td></tr>
  *
  * <tr><th colspan="2" class="hsep">OGC/ISO objects (metadata, referencing, geometries)</th></tr>
@@ -99,8 +99,8 @@ package org.apache.sis.util;
  * </table>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.3
+ * @since   0.3
  * @module
  */
 public class Static {

@@ -32,8 +32,8 @@ import static org.apache.sis.internal.util.CollectionsExt.singletonOrEmpty;
  * component is available.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.5
  * @version 0.5
+ * @since   0.5
  * @module
  */
 public final class SimpleExtent implements Extent {
@@ -55,9 +55,9 @@ public final class SimpleExtent implements Extent {
     /**
      * Creates a new extent with the given elements.
      *
-     * @param geographicElements Geographic components of the extent, or {@code null}.
-     * @param verticalElements   Vertical   components of the extent, or {@code null}.
-     * @param temporalElements   Temporal   components of the extent, or {@code null}.
+     * @param geographicElements  geographic components of the extent, or {@code null}.
+     * @param verticalElements    vertical   components of the extent, or {@code null}.
+     * @param temporalElements    temporal   components of the extent, or {@code null}.
      */
     public SimpleExtent(final GeographicExtent geographicElements,
                         final VerticalExtent   verticalElements,

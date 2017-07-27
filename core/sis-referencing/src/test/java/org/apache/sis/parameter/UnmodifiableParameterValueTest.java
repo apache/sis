@@ -32,17 +32,12 @@ import static org.junit.Assert.*;
  * Tests the {@link UnmodifiableParameterValue} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.6
  * @version 0.6
+ * @since   0.6
  * @module
  */
 @DependsOn(DefaultParameterValueTest.class)
 public final strictfp class UnmodifiableParameterValueTest extends TestCase {
-    /**
-     * Strict tolerance factor for floating point comparisons.
-     */
-    private static final double STRICT = 0.0;
-
     /**
      * Creates an {@link UnmodifiableParameterValue} implementation for the given parameter
      * and asserts that we got a new instance equivalent to the original one.

@@ -16,8 +16,9 @@
  */
 package org.apache.sis.feature;
 
+import java.util.Objects;
+
 // Branch-dependent imports
-import org.apache.sis.internal.jdk7.Objects;
 
 
 /**
@@ -30,19 +31,23 @@ import org.apache.sis.internal.jdk7.Objects;
  * <ul>
  *   <li><b>Multi-threading:</b> {@code SingletonAttribute} instances are <strong>not</strong> thread-safe.
  *       Synchronization, if needed, shall be done externally by the caller.</li>
+ *   <li><b>Cloning:</b> this class support <em>shallow</em> cloning only:
+ *       the attribute is cloned, but not its {@linkplain #getValue() value}.</li>
  * </ul>
- *
- * @param <V> The type of the attribute value.
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.5
- * @version 0.5
- * @module
+ * @version 0.8
+ *
+ * @param <V>  the type of the attribute value.
  *
  * @see DefaultAttributeType
+ *
+ * @since 0.5
+ * @module
  */
-final class SingletonAttribute<V> extends AbstractAttribute<V> {
+@SuppressWarnings("CloneableClassWithoutClone")     // Nothing to add compared to subclass.
+final class SingletonAttribute<V> extends AbstractAttribute<V> implements Cloneable {
     /**
      * For cross-version compatibility.
      */
@@ -57,7 +62,7 @@ final class SingletonAttribute<V> extends AbstractAttribute<V> {
      * Creates a new attribute of the given type initialized to the
      * {@linkplain DefaultAttributeType#getDefaultValue() default value}.
      *
-     * @param type Information about the attribute (base Java class, domain of values, <i>etc.</i>).
+     * @param type  information about the attribute (base Java class, domain of values, <i>etc.</i>).
      */
     public SingletonAttribute(final DefaultAttributeType<V> type) {
         super(type);
@@ -69,8 +74,8 @@ final class SingletonAttribute<V> extends AbstractAttribute<V> {
      * Creates a new attribute of the given type initialized to the given value.
      * Note that a {@code null} value may not be the same as the default value.
      *
-     * @param type  Information about the attribute (base Java class, domain of values, <i>etc.</i>).
-     * @param value The initial value (may be {@code null}).
+     * @param type   information about the attribute (base Java class, domain of values, <i>etc.</i>).
+     * @param value  the initial value (may be {@code null}).
      */
     SingletonAttribute(final DefaultAttributeType<V> type, final Object value) {
         super(type);
@@ -81,7 +86,7 @@ final class SingletonAttribute<V> extends AbstractAttribute<V> {
     /**
      * Returns the attribute value.
      *
-     * @return The attribute value (may be {@code null}).
+     * @return the attribute value (may be {@code null}).
      */
     @Override
     public V getValue() {
@@ -91,7 +96,7 @@ final class SingletonAttribute<V> extends AbstractAttribute<V> {
     /**
      * Sets the attribute value.
      *
-     * @param value The new value.
+     * @param value the new value.
      */
     @Override
     public void setValue(final V value) {
@@ -101,7 +106,7 @@ final class SingletonAttribute<V> extends AbstractAttribute<V> {
     /**
      * Returns a hash code value for this attribute.
      *
-     * @return A hash code value.
+     * @return a hash code value.
      */
     @Override
     public int hashCode() {

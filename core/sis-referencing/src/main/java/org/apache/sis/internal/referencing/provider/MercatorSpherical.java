@@ -16,6 +16,7 @@
  */
 package org.apache.sis.internal.referencing.provider;
 
+import javax.xml.bind.annotation.XmlTransient;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.apache.sis.parameter.ParameterBuilder;
@@ -28,10 +29,11 @@ import org.apache.sis.parameter.ParameterBuilder;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Rueben Schulz (UBC)
- * @since   0.6
  * @version 0.6
+ * @since   0.6
  * @module
  */
+@XmlTransient
 public final class MercatorSpherical extends AbstractMercator {
     /**
      * For cross-version compatibility.
@@ -62,17 +64,14 @@ public final class MercatorSpherical extends AbstractMercator {
                 .setRemarks(Mercator2SP.SCALE_FACTOR.getRemarks())
                 .setRequired(false));
 
-        PARAMETERS = builder
-            .addIdentifier(IDENTIFIER)
-            .addDeprecatedIdentifier("9841", IDENTIFIER)
-            .addName("Mercator (Spherical)")                                          // Starting from EPSG version 7.6
-            .addDeprecatedName("Mercator (1SP) (Spherical)", "Mercator (Spherical)")  // Prior to EPSG version 7.6
-            .createGroupForMapProjection(
-                    Mercator1SP.LATITUDE_OF_ORIGIN,
-                    Mercator1SP.CENTRAL_MERIDIAN,
-                    scaleFactor,
-                    FALSE_EASTING,
-                    FALSE_NORTHING);
+        PARAMETERS = addNameAndLegacy(addIdentifierAndLegacy(builder, IDENTIFIER, "9841"),
+                "Mercator (Spherical)", "Mercator (1SP) (Spherical)")   // "Mercator (Spherical)" starting from EPSG version 7.6
+                .createGroupForMapProjection(
+                        Mercator1SP.LATITUDE_OF_ORIGIN,
+                        Mercator1SP.LONGITUDE_OF_ORIGIN,
+                        scaleFactor,
+                        FALSE_EASTING,
+                        FALSE_NORTHING);
     }
 
     /**

@@ -17,6 +17,7 @@
 package org.apache.sis.measure;
 
 import java.util.Locale;
+import java.math.RoundingMode;
 import java.text.FieldPosition;
 import java.text.AttributedCharacterIterator;
 import java.text.ParseException;
@@ -33,8 +34,8 @@ import static org.apache.sis.test.TestUtilities.*;
  * Tests parsing and formatting done by the {@link AngleFormat} class.
  *
  * @author  Martin Desruisseaux (MPO, IRD, Geomatys)
+ * @version 0.8
  * @since   0.3
- * @version 0.4
  * @module
  */
 @DependsOn({
@@ -187,7 +188,7 @@ public final strictfp class AngleFormatTest extends TestCase {
     /**
      * Tests the example provided in the {@link AngleFormat} javadoc.
      *
-     * @throws ParseException If a string can not be parsed.
+     * @throws ParseException if a string can not be parsed.
      */
     @Test
     @DependsOnMethod("testOptionalFields")
@@ -205,11 +206,11 @@ public final strictfp class AngleFormatTest extends TestCase {
     /**
      * Tests a single line of Javadoc examples.
      *
-     * @param f       The angle format to test.
-     * @param pattern The pattern to apply for the test.
-     * @param e1      The expected string value of 48.5.
-     * @param e2      The expected string value of -12.53125.
-     * @param eps     The tolerance for comparing the parsed value of {@code e2}.
+     * @param f        the angle format to test.
+     * @param pattern  the pattern to apply for the test.
+     * @param e1       the expected string value of 48.5.
+     * @param e2       the expected string value of -12.53125.
+     * @param eps      the tolerance for comparing the parsed value of {@code e2}.
      */
     private static void testExample(final AngleFormat f, final String pattern, final String e1, final String e2,
             final double eps) throws ParseException
@@ -220,6 +221,30 @@ public final strictfp class AngleFormatTest extends TestCase {
         assertEquals("format(double)", e2,       f.format(-12.53125));
         assertEquals("parse(String)",  48.5,     f.parse(e1).degrees(), 0.0);
         assertEquals("parse(String)", -12.53125, f.parse(e2).degrees(), eps);
+    }
+
+    /**
+     * Tests formatting the same value with different rounding modes.
+     *
+     * @since 0.8
+     */
+    @Test
+    @DependsOnMethod("testDegreeMinutesSeconds")
+    public void testRoundingMode() {
+        final AngleFormat f = new AngleFormat("DD°MM′SS″", Locale.CANADA);
+        Angle angle = new Angle(12.515625);
+        f.setRoundingMode(RoundingMode.DOWN);      assertEquals("12°30′56″", f.format(angle));
+        f.setRoundingMode(RoundingMode.UP);        assertEquals("12°30′57″", f.format(angle));
+        f.setRoundingMode(RoundingMode.FLOOR);     assertEquals("12°30′56″", f.format(angle));
+        f.setRoundingMode(RoundingMode.CEILING);   assertEquals("12°30′57″", f.format(angle));
+        f.setRoundingMode(RoundingMode.HALF_EVEN); assertEquals("12°30′56″", f.format(angle));
+
+        angle = new Angle(-12.515625);
+        f.setRoundingMode(RoundingMode.DOWN);      assertEquals("-12°30′56″", f.format(angle));
+        f.setRoundingMode(RoundingMode.UP);        assertEquals("-12°30′57″", f.format(angle));
+        f.setRoundingMode(RoundingMode.FLOOR);     assertEquals("-12°30′57″", f.format(angle));
+        f.setRoundingMode(RoundingMode.CEILING);   assertEquals("-12°30′56″", f.format(angle));
+        f.setRoundingMode(RoundingMode.HALF_EVEN); assertEquals("-12°30′56″", f.format(angle));
     }
 
     /**

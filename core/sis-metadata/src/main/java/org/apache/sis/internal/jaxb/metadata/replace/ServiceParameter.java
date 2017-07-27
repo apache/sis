@@ -17,11 +17,12 @@
 package org.apache.sis.internal.jaxb.metadata.replace;
 
 import java.util.Set;
+import java.util.Objects;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
-import javax.measure.unit.Unit;
+import javax.measure.Unit;
 import org.opengis.util.TypeName;
 import org.opengis.util.MemberName;
 import org.opengis.util.GenericName;
@@ -40,9 +41,6 @@ import org.apache.sis.xml.Namespaces;
 
 import static org.apache.sis.internal.util.CollectionsExt.nonNull;
 import static org.apache.sis.internal.jaxb.gco.PropertyType.LEGACY_XML;
-
-// Branch-dependent imports
-import org.apache.sis.internal.jdk7.Objects;
 
 
 /**
@@ -68,7 +66,7 @@ import org.apache.sis.internal.jdk7.Objects;
  * @since   0.5
  * @module
  */
-@SuppressWarnings("rawtypes") // For the omission of <T> in ParameterDescriptor<T> - see javadoc.
+@SuppressWarnings("rawtypes")               // For the omission of <T> in ParameterDescriptor<T> - see javadoc.
 @XmlType(name = "SV_Parameter_Type", namespace = Namespaces.SRV, propOrder = {
     "memberName",
     "description",
@@ -146,8 +144,8 @@ public final class ServiceParameter extends SimpleIdentifiedObject implements Pa
     /**
      * Returns the given parameter as an instance of {@code ServiceParameter}.
      *
-     * @param  parameter The parameter (may be {@code null}).
-     * @return The service parameter, or {@code null} if the given argument was null.
+     * @param  parameter  the parameter (may be {@code null}).
+     * @return the service parameter, or {@code null} if the given argument was null.
      */
     public static ServiceParameter castOrCopy(final ParameterDescriptor<?> parameter) {
         if (parameter == null || parameter instanceof ServiceParameter) {
@@ -161,8 +159,8 @@ public final class ServiceParameter extends SimpleIdentifiedObject implements Pa
      * {@code MemberName}. If not, this method searches for the first alias which is an instance of {@code MemberName}.
      * If none is found, then this method tries to build a member name from the primary name and value class.
      *
-     * @param  parameter The parameter from which to get the name (may be {@code null}).
-     * @return The member name, or {@code null} if none.
+     * @param  parameter  the parameter from which to get the name (may be {@code null}).
+     * @return the member name, or {@code null} if none.
      */
     public static MemberName getMemberName(final ParameterDescriptor<?> parameter) {
         if (parameter != null) {
@@ -180,7 +178,7 @@ public final class ServiceParameter extends SimpleIdentifiedObject implements Pa
                 if (valueClass != null) {
                     final String code = id.getCode();
                     if (code != null) {
-                        return Names.createMemberName(id.getCodeSpace(), ":", code, valueClass);
+                        return Names.createMemberName(id.getCodeSpace(), null, code, valueClass);
                     }
                 }
             }
@@ -194,7 +192,7 @@ public final class ServiceParameter extends SimpleIdentifiedObject implements Pa
      *
      * This method is the converse of {@link #getMemberName(ParameterDescriptor)}.
      *
-     * @return The parameter name as an identifier (the type specified by ISO 19111).
+     * @return the parameter name as an identifier (the type specified by ISO 19111).
      */
     @Override
     public synchronized ReferenceIdentifier getName() {
@@ -214,7 +212,7 @@ public final class ServiceParameter extends SimpleIdentifiedObject implements Pa
      * (see <cite>Note about raw-type usage</cite> in class javadoc), since there is no way we
      * can ensure that the returned class is really for type {@code <T>}.
      *
-     * @return The value class inferred from the attribute type, or {@code null} if unknown.
+     * @return the value class inferred from the attribute type, or {@code null} if unknown.
      */
     @Override
     public Class<?> getValueClass() {
@@ -234,7 +232,7 @@ public final class ServiceParameter extends SimpleIdentifiedObject implements Pa
     /**
      * Returns a narrative explanation of the role of the parameter.
      *
-     * @return A narrative explanation of the role of the parameter, or {@code null} if none.
+     * @return a narrative explanation of the role of the parameter, or {@code null} if none.
      */
     public InternationalString getDescription() {
         return description;
@@ -261,7 +259,7 @@ public final class ServiceParameter extends SimpleIdentifiedObject implements Pa
     /**
      * The minimum number of times that values for this parameter group or parameter are required.
      *
-     * @return The minimum occurrence.
+     * @return the minimum occurrence.
      */
     @Override
     public int getMinimumOccurs() {
@@ -271,7 +269,7 @@ public final class ServiceParameter extends SimpleIdentifiedObject implements Pa
     /**
      * The maximum number of times that values for this parameter group or parameter can be included.
      *
-     * @return The maximum occurrence.
+     * @return the maximum occurrence.
      */
     @Override
     public int getMaximumOccurs() {
@@ -282,7 +280,7 @@ public final class ServiceParameter extends SimpleIdentifiedObject implements Pa
      * Optional properties.
      * @return {@code null}.
      */
-    @Override public Set<?>        getValidValues()  {return null;} // Really null, not an empty set. See method contract.
+    @Override public Set<?>        getValidValues()  {return null;}     // Really null, not an empty set. See method contract.
     @Override public Comparable<?> getMinimumValue() {return null;}
     @Override public Comparable<?> getMaximumValue() {return null;}
     @Override public Object        getDefaultValue() {return null;}
@@ -293,7 +291,7 @@ public final class ServiceParameter extends SimpleIdentifiedObject implements Pa
      * This method delegates the work to {@link org.apache.sis.parameter.DefaultParameterDescriptor}
      * since this {@code ServiceParameter} class is not a full-featured parameter descriptor implementation.
      *
-     * @return A new instance of {@code ParameterValue}.
+     * @return a new instance of {@code ParameterValue}.
      */
     @Override
     public ParameterValue<?> createValue() {
@@ -310,8 +308,8 @@ public final class ServiceParameter extends SimpleIdentifiedObject implements Pa
     /**
      * Compares this object with the given one for equality.
      *
-     * @param  object The object to compare with this reference system.
-     * @param  mode The strictness level of the comparison.
+     * @param  object  the object to compare with this reference system.
+     * @param  mode    the strictness level of the comparison.
      * @return {@code true} if both objects are equal.
      */
     @Override
@@ -325,8 +323,9 @@ public final class ServiceParameter extends SimpleIdentifiedObject implements Pa
                 that.getDefaultValue() == null &&
                 that.getValueClass()   == getValueClass())
             {
-                if (mode.ordinal() >= ComparisonMode.IGNORE_METADATA.ordinal()) {
+                if (mode.isIgnoringMetadata()) {
                     return Objects.equals(toString(getName()), toString(that.getName()));
+                    // super.equals(…) already compared 'getName()' in others mode.
                 }
                 return that.getMinimumOccurs() == getMinimumOccurs() &&
                        that.getMaximumOccurs() == getMaximumOccurs() &&

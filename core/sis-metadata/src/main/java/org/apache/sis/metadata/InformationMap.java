@@ -27,19 +27,20 @@ import org.opengis.metadata.ExtendedElementInformation;
  * All values in this map are instances of {@link PropertyInformation}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.3
- * @module
  *
  * @see PropertyInformation
  * @see MetadataStandard#asInformationMap(Class, KeyNamePolicy)
+ *
+ * @since 0.3
+ * @module
  */
 final class InformationMap extends PropertyMap<ExtendedElementInformation> {
     /**
      * Creates an information map for the specified accessor.
      *
-     * @param accessor  The accessor to use for the metadata.
-     * @param keyPolicy Determines the string representation of keys in the map.
+     * @param accessor   the accessor to use for the metadata.
+     * @param keyPolicy  determines the string representation of keys in the map.
      */
     InformationMap(final PropertyAccessor accessor, final KeyNamePolicy keyPolicy) {
         super(accessor, keyPolicy);
@@ -70,7 +71,7 @@ final class InformationMap extends PropertyMap<ExtendedElementInformation> {
                     // PropertyAccessor.information(int) never return null if the index is valid.
                     throw new NoSuchElementException();
                 }
-                return new SimpleImmutableEntry<String,ExtendedElementInformation>(accessor.name(index++, keyPolicy), value);
+                return new SimpleImmutableEntry<>(accessor.name(index++, keyPolicy), value);
             }
         };
     }

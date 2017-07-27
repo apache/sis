@@ -38,8 +38,8 @@ import static org.opengis.referencing.cs.AxisDirection.*;
  * Tests the {@link Matrices} implementation.
  *
  * @author  Martin Desruisseaux (Geomatys)
+ * @version 0.7
  * @since   0.4
- * @version 0.4
  * @module
  */
 @DependsOn({
@@ -81,7 +81,7 @@ public final strictfp class MatricesTest extends TestCase {
         }
         final MatrixSIS matrix = Matrices.create(SIZE, SIZE, elements);
         assertInstanceOf("Created with DoubleDouble elements", GeneralMatrix.class, matrix);
-        assertFalse(expected.equals(matrix)); // Because not the same type.
+        assertFalse(expected.equals(matrix));                                       // Because not the same type.
         assertTrue(Matrices.equals(expected, matrix, ComparisonMode.BY_CONTRACT));
         final double[] errors = ((GeneralMatrix) matrix).elements;
         for (int i = 0; i < SIZE*SIZE; i++) {
@@ -130,12 +130,12 @@ public final strictfp class MatricesTest extends TestCase {
         assertFalse("isIdentity", matrix.isIdentity());
         assertEquals("numRow", 4, matrix.getNumRow());
         assertEquals("numCol", 4, matrix.getNumCol());
-        assertEquals(Matrices.create(4, 4, new double[] {
+        assertMatrixEquals("(N,E,U) → (W,U,S)", Matrices.create(4, 4, new double[] {
              0,-1, 0, 0,
              0, 0, 1, 0,
             -1, 0, 0, 0,
              0, 0, 0, 1
-        }), matrix);
+        }), matrix, STRICT);
     }
 
     /**
@@ -156,11 +156,11 @@ public final strictfp class MatricesTest extends TestCase {
         assertFalse("isIdentity", matrix.isIdentity());
         assertEquals("numRow", 3, matrix.getNumRow());
         assertEquals("numCol", 4, matrix.getNumCol());
-        assertEquals(Matrices.create(3, 4, new double[] {
+        assertMatrixEquals("(N,E,U) → (D,N)", Matrices.create(3, 4, new double[] {
             0, 0,-1, 0,
             1, 0, 0, 0,
             0, 0, 0, 1
-        }), matrix);
+        }), matrix, STRICT);
     }
 
     /**
@@ -181,11 +181,11 @@ public final strictfp class MatricesTest extends TestCase {
         assertFalse("isIdentity", matrix.isIdentity());
         assertEquals("numRow", 3, matrix.getNumRow());
         assertEquals("numCol", 4, matrix.getNumCol());
-        assertEquals(Matrices.create(3, 4, new double[] {
+        assertMatrixEquals("(N,E,U) → (D,D)", Matrices.create(3, 4, new double[] {
             0, 0,-1, 0,
             0, 0,-1, 0,
             0, 0, 0, 1
-        }), matrix);
+        }), matrix, STRICT);
     }
 
     /**
@@ -303,11 +303,11 @@ public final strictfp class MatricesTest extends TestCase {
         assertFalse("isIdentity", matrix.isIdentity());
         assertEquals("numRow", 3, matrix.getNumRow());
         assertEquals("numCol", 3, matrix.getNumCol());
-        assertEquals(Matrices.create(3, 3, new double[] {
+        assertMatrixEquals("(N,E) → (E,N)", Matrices.create(3, 3, new double[] {
             0,   -3.0, 350,
             2.5,  0,    75,
             0,    0,     1
-        }), matrix);
+        }), matrix, STRICT);
         /*
          * Test dropping a dimension.
          */
@@ -319,11 +319,11 @@ public final strictfp class MatricesTest extends TestCase {
                 dstEnvelope, new AxisDirection[] {EAST, NORTH});
         assertEquals("numRow", 3, matrix.getNumRow());
         assertEquals("numCol", 4, matrix.getNumCol());
-        assertEquals(Matrices.create(3, 4, new double[] {
+        assertMatrixEquals("(N,E,U) → (E,N)", Matrices.create(3, 4, new double[] {
             0,   -3.0, 0, 350,
             2.5,  0,   0,  75,
             0,    0,   0,   1
-        }), matrix);
+        }), matrix, STRICT);
     }
 
     /**
@@ -354,12 +354,84 @@ public final strictfp class MatricesTest extends TestCase {
         });
         matrix = Matrices.createPassThrough(2, matrix, 1);
         assertEquals(Matrices.create(6, 7, new double[] {
-            1, 0, 0, 0, 0, 0, 0,  // Dimension added
-            0, 1, 0, 0, 0, 0, 0,  // Dimension added
-            0, 0, 2, 0, 3, 0, 8,  // Sub-matrix, row 0
-            0, 0, 0, 4, 7, 0, 5,  // Sub-matrix, row 1
-            0, 0, 0, 0, 0, 1, 0,  // Dimension added
-            0, 0, 0, 0, 0, 0, 1   // Last sub-matrix row
+            1, 0, 0, 0, 0, 0, 0,        // Dimension added
+            0, 1, 0, 0, 0, 0, 0,        // Dimension added
+            0, 0, 2, 0, 3, 0, 8,        // Sub-matrix, row 0
+            0, 0, 0, 4, 7, 0, 5,        // Sub-matrix, row 1
+            0, 0, 0, 0, 0, 1, 0,        // Dimension added
+            0, 0, 0, 0, 0, 0, 1         // Last sub-matrix row
+        }), matrix);
+    }
+
+    /**
+     * Tests {@link Matrices#resizeAffine(Matrix, int, int)}.
+     */
+    @Test
+    public void testResizeAffine() {
+        // Add dimensions
+        MatrixSIS matrix = Matrices.create(3, 4, new double[] {
+            2, 0, 3, 8,
+            0, 4, 7, 5,
+            0, 0, 0, 1
+        });
+        assertEquals(Matrices.create(5, 6, new double[] {
+            2, 0, 3, 0, 0, 8,
+            0, 4, 7, 0, 0, 5,
+            0, 0, 1, 0, 0, 0,
+            0, 0, 0, 1, 0, 0,
+            0, 0, 0, 0, 0, 1
+        }), Matrices.resizeAffine(matrix, 5, 6));
+
+        // Remove dimensions
+        matrix = Matrices.create(4, 5, new double[] {
+            1, 2, 7, 8, 9,
+            3, 4, 6, 7, 8,
+            9, 8, 7, 6, 5,
+            4, 3, 2, 1, -1
+        });
+        assertEquals(Matrices.create(3, 3, new double[] {
+            1, 2, 9,
+            3, 4, 8,
+            4, 3, -1
+        }), Matrices.resizeAffine(matrix, 3, 3));
+    }
+
+    /**
+     * Tests {@link MatrixSIS#removeRows(int, int)}
+     */
+    @Test
+    public void testRemoveRows() {
+        MatrixSIS matrix = Matrices.create(4, 5, new double[] {
+            1, 2, 7, 8, 9,
+            3, 4, 6, 7, 8,
+            9, 8, 7, 6, 5,
+            4, 3, 2, 1, 0
+        });
+        matrix = matrix.removeRows(3, 4);
+        assertEquals(Matrices.create(3, 5, new double[] {
+            1, 2, 7, 8, 9,
+            3, 4, 6, 7, 8,
+            9, 8, 7, 6, 5
+        }), matrix);
+    }
+
+    /**
+     * Tests {@link MatrixSIS#removeColumns(int, int)}
+     */
+    @Test
+    public void testRemoveColumns() {
+        MatrixSIS matrix = Matrices.create(4, 5, new double[] {
+            1, 2, 7, 8, 9,
+            3, 4, 6, 7, 8,
+            9, 8, 7, 6, 5,
+            4, 3, 2, 1, 0
+        });
+        matrix = matrix.removeColumns(2, 4);
+        assertEquals(Matrices.create(4, 3, new double[] {
+            1, 2, 9,
+            3, 4, 8,
+            9, 8, 5,
+            4, 3, 0
         }), matrix);
     }
 

@@ -17,11 +17,8 @@
 package org.apache.sis.referencing.operation.transform;
 
 import java.util.Arrays;
-import java.io.Serializable;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.referencing.operation.Matrix;
-import org.opengis.referencing.operation.MathTransform;
-import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.internal.referencing.ExtendedPrecisionMatrix;
@@ -37,15 +34,14 @@ import org.apache.sis.util.ArgumentChecks;
  * lines in the source is preserved in the output.</p>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.5
- * @version 0.5
- * @module
+ * @version 0.7
  *
  * @see java.awt.geom.AffineTransform
+ *
+ * @since 0.5
+ * @module
  */
-class ProjectiveTransform extends AbstractLinearTransform implements LinearTransform, ExtendedPrecisionMatrix,
-        Serializable // Not Cloneable, despite the clone() method.
-{
+class ProjectiveTransform extends AbstractLinearTransform implements ExtendedPrecisionMatrix {
     /**
      * Serial number for inter-operability with different versions.
      */
@@ -70,17 +66,10 @@ class ProjectiveTransform extends AbstractLinearTransform implements LinearTrans
     private final double[] elt;
 
     /**
-     * The inverse transform. Will be created only when first needed. This field is part of the serialization form
-     * in order to avoid rounding errors if a user asks for the inverse of the inverse (i.e. the original transform)
-     * after deserialization.
-     */
-    AbstractMathTransform inverse;
-
-    /**
      * Constructs a transform from the specified matrix.
      * The matrix is usually square and affine, but this is not enforced.
      *
-     * @param matrix The matrix.
+     * @param matrix  the matrix.
      */
     protected ProjectiveTransform(final Matrix matrix) {
         numRow = matrix.getNumRow();
@@ -97,6 +86,33 @@ class ProjectiveTransform extends AbstractLinearTransform implements LinearTrans
                 }
             }
         }
+    }
+
+    /**
+     * If a more efficient implementation of this math transform can be used, returns it.
+     * Otherwise returns {@code this} unchanged.
+     */
+    final LinearTransform optimize() {
+        if (numCol < numRow) {
+            return this;
+        }
+        final int n = (numRow - 1) * numCol;
+        for (int i = 0; i != numCol;) {
+            if (elt[n + i] != (++i == numCol ? 1 : 0)) {
+                return this;            // Transform is not affine (ignoring if square or not).
+            }
+        }
+        /*
+         * Note: we could check for CopyTransform case here, but this check is rather done in
+         * MathTransforms.linear(Matrix) in order to avoid ProjectiveTransform instantiation.
+         */
+        for (int i=0; i<n; i++) {
+            // Non-zero elements are allowed to appear only on the diagonal.
+            if (elt[i] != 0 && (i / numCol) != (i % numCol)) {
+                return this;
+            }
+        }
+        return new ScaleTransform(numRow, numCol, elt);
     }
 
     /**
@@ -158,7 +174,7 @@ class ProjectiveTransform extends AbstractLinearTransform implements LinearTrans
      * instead than using a factory method.</div>
      */
     @Override
-    public boolean isIdentity() {
+    public final boolean isIdentity() {
         if (numRow != numCol) {
             return false;
         }
@@ -180,9 +196,9 @@ class ProjectiveTransform extends AbstractLinearTransform implements LinearTrans
      * @return {@inheritDoc}
      */
     @Override
-    public Matrix transform(final double[] srcPts, final int srcOff,
-                            final double[] dstPts, final int dstOff,
-                            final boolean derivate)
+    public final Matrix transform(final double[] srcPts, final int srcOff,
+                                  final double[] dstPts, final int dstOff,
+                                  final boolean derivate)
     {
         transform(srcPts, srcOff, dstPts, dstOff, 1);
         return derivate ? derivative((DirectPosition) null) : null;
@@ -193,19 +209,19 @@ class ProjectiveTransform extends AbstractLinearTransform implements LinearTrans
      * equal to <code>{@link Matrix#getNumCol}-1</code>. For example, for square matrix of size 4×4, coordinate
      * points are three-dimensional and stored in the arrays starting at the specified offset ({@code srcOff}) in
      * the order
-     * <code>[x<sub>0</sub>, y<sub>0</sub>, z<sub>0</sub>,
-     *        x<sub>1</sub>, y<sub>1</sub>, z<sub>1</sub>...,
+     * <code>[x₀, y₀, z₀,
+     *        x₁, y₁, z₁...,
      *        x<sub>n</sub>, y<sub>n</sub>, z<sub>n</sub>]</code>.
      *
-     * @param srcPts The array containing the source point coordinates.
-     * @param srcOff The offset to the first point to be transformed in the source array.
-     * @param dstPts The array into which the transformed point coordinates are returned.
-     * @param dstOff The offset to the location of the first transformed point that is stored in the
-     *               destination array. The source and destination array sections can overlap.
-     * @param numPts The number of points to be transformed.
+     * @param srcPts  the array containing the source point coordinates.
+     * @param srcOff  the offset to the first point to be transformed in the source array.
+     * @param dstPts  the array into which the transformed point coordinates are returned.
+     * @param dstOff  the offset to the location of the first transformed point that is stored in the
+     *                destination array. The source and destination array sections can overlap.
+     * @param numPts  the number of points to be transformed.
      */
     @Override
-    public void transform(double[] srcPts, int srcOff, double[] dstPts, int dstOff, int numPts) {
+    public final void transform(double[] srcPts, int srcOff, final double[] dstPts, int dstOff, int numPts) {
         final int srcDim, dstDim;
         int srcInc = srcDim = numCol - 1; // The last ordinate will be assumed equal to 1.
         int dstInc = dstDim = numRow - 1;
@@ -264,19 +280,19 @@ class ProjectiveTransform extends AbstractLinearTransform implements LinearTrans
      * equal to <code>{@link Matrix#getNumCol()} - 1</code>. For example, for square matrix of size 4×4, coordinate
      * points are three-dimensional and stored in the arrays starting at the specified offset ({@code srcOff})
      * in the order
-     * <code>[x<sub>0</sub>, y<sub>0</sub>, z<sub>0</sub>,
-     *        x<sub>1</sub>, y<sub>1</sub>, z<sub>1</sub>...,
+     * <code>[x₀, y₀, z₀,
+     *        x₁, y₁, z₁...,
      *        x<sub>n</sub>, y<sub>n</sub>, z<sub>n</sub>]</code>.
      *
-     * @param srcPts The array containing the source point coordinates.
-     * @param srcOff The offset to the first point to be transformed in the source array.
-     * @param dstPts The array into which the transformed point coordinates are returned.
-     * @param dstOff The offset to the location of the first transformed point that is stored in the
-     *               destination array. The source and destination array sections can overlap.
-     * @param numPts The number of points to be transformed.
+     * @param srcPts  the array containing the source point coordinates.
+     * @param srcOff  the offset to the first point to be transformed in the source array.
+     * @param dstPts  the array into which the transformed point coordinates are returned.
+     * @param dstOff  the offset to the location of the first transformed point that is stored in the
+     *                destination array. The source and destination array sections can overlap.
+     * @param numPts  the number of points to be transformed.
      */
     @Override
-    public void transform(float[] srcPts, int srcOff, float[] dstPts, int dstOff, int numPts) {
+    public final void transform(float[] srcPts, int srcOff, final float[] dstPts, int dstOff, int numPts) {
         final int srcDim, dstDim;
         int srcInc = srcDim = numCol-1;
         int dstInc = dstDim = numRow-1;
@@ -325,14 +341,14 @@ class ProjectiveTransform extends AbstractLinearTransform implements LinearTrans
     /**
      * Transforms an array of floating point coordinates by this matrix.
      *
-     * @param srcPts The array containing the source point coordinates.
-     * @param srcOff The offset to the first point to be transformed in the source array.
-     * @param dstPts The array into which the transformed point coordinates are returned.
-     * @param dstOff The offset to the location of the first transformed point that is stored in the destination array.
-     * @param numPts The number of points to be transformed.
+     * @param srcPts  the array containing the source point coordinates.
+     * @param srcOff  the offset to the first point to be transformed in the source array.
+     * @param dstPts  the array into which the transformed point coordinates are returned.
+     * @param dstOff  the offset to the location of the first transformed point that is stored in the destination array.
+     * @param numPts  the number of points to be transformed.
      */
     @Override
-    public void transform(double[] srcPts, int srcOff, float[] dstPts, int dstOff, int numPts) {
+    public final void transform(final double[] srcPts, int srcOff, final float[] dstPts, int dstOff, int numPts) {
         final int srcDim = numCol-1;
         final int dstDim = numRow-1;
         final double[] buffer = new double[numRow];
@@ -342,7 +358,7 @@ class ProjectiveTransform extends AbstractLinearTransform implements LinearTrans
                 double sum = elt[mix + srcDim];
                 for (int i=0; i<srcDim; i++) {
                     final double e = elt[mix++];
-                    if (e != 0) { // See comment in transform(double[], ...)
+                    if (e != 0) {                                   // See comment in transform(double[], ...)
                         sum += srcPts[srcOff + i] * e;
                     }
                 }
@@ -360,14 +376,14 @@ class ProjectiveTransform extends AbstractLinearTransform implements LinearTrans
     /**
      * Transforms an array of floating point coordinates by this matrix.
      *
-     * @param srcPts The array containing the source point coordinates.
-     * @param srcOff The offset to the first point to be transformed in the source array.
-     * @param dstPts The array into which the transformed point coordinates are returned.
-     * @param dstOff The offset to the location of the first transformed point that is stored in the destination array.
-     * @param numPts The number of points to be transformed.
+     * @param srcPts  the array containing the source point coordinates.
+     * @param srcOff  the offset to the first point to be transformed in the source array.
+     * @param dstPts  the array into which the transformed point coordinates are returned.
+     * @param dstOff  the offset to the location of the first transformed point that is stored in the destination array.
+     * @param numPts  the number of points to be transformed.
      */
     @Override
-    public void transform(float[] srcPts, int srcOff, double[] dstPts, int dstOff, int numPts) {
+    public final void transform(final float[] srcPts, int srcOff, final double[] dstPts, int dstOff, int numPts) {
         final int srcDim = numCol - 1;
         final int dstDim = numRow - 1;
         final double[] buffer = new double[numRow];
@@ -377,7 +393,7 @@ class ProjectiveTransform extends AbstractLinearTransform implements LinearTrans
                 double sum = elt[mix + srcDim];
                 for (int i=0; i<srcDim; i++) {
                     final double e = elt[mix++];
-                    if (e != 0) { // See comment in transform(double[], ...)
+                    if (e != 0) {                                   // See comment in transform(double[], ...)
                         sum += srcPts[srcOff + i] * e;
                     }
                 }
@@ -396,10 +412,10 @@ class ProjectiveTransform extends AbstractLinearTransform implements LinearTrans
      * Gets the derivative of this transform at a point.
      * For a matrix transform, the derivative is the same everywhere.
      *
-     * @param point Ignored (can be {@code null}).
+     * @param  point  ignored (can be {@code null}).
      */
     @Override
-    public Matrix derivative(final DirectPosition point) {
+    public final Matrix derivative(final DirectPosition point) {
         final int srcDim = numCol - 1;
         final int dstDim = numRow - 1;
         final MatrixSIS matrix = Matrices.createZero(dstDim, srcDim);
@@ -408,38 +424,9 @@ class ProjectiveTransform extends AbstractLinearTransform implements LinearTrans
             for (int i=0; i<srcDim; i++) {
                 matrix.setElement(j, i, elt[mix++]);
             }
-            mix++; // Skip translation column.
+            mix++;                                      // Skip translation column.
         }
         return matrix;
-    }
-
-    /**
-     * Creates the inverse transform of this object.
-     */
-    @Override
-    public synchronized MathTransform inverse() throws NoninvertibleTransformException {
-        if (inverse == null) {
-            /*
-             * Note: we do not perform the following optimization, because MathTransforms.linear(…)
-             *       should never instantiate this class in the identity case.
-             *
-             *       if (isIdentity()) {
-             *           inverse = this;
-             *       } else { ... }
-             */
-            ProjectiveTransform inv = createInverse(Matrices.inverse(this));
-            inv.inverse = this;
-            inverse = inv;
-        }
-        return inverse;
-    }
-
-    /**
-     * Creates an inverse transform using the specified matrix.
-     * To be overridden by {@link GeocentricTranslation}.
-     */
-    ProjectiveTransform createInverse(final Matrix matrix) {
-        return new ProjectiveTransform(matrix);
     }
 
     /**

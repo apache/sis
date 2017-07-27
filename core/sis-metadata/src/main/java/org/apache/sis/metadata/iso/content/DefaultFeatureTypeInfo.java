@@ -21,9 +21,10 @@ import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
 import org.opengis.util.GenericName;
 import org.apache.sis.measure.ValueRange;
+import org.apache.sis.metadata.TitleProperty;
 import org.apache.sis.metadata.iso.ISOMetadata;
 
-import static org.apache.sis.internal.metadata.MetadataUtilities.warnNonPositiveArgument;
+import static org.apache.sis.internal.metadata.MetadataUtilities.ensurePositive;
 
 // Branch-specific imports
 import org.opengis.annotation.UML;
@@ -54,10 +55,16 @@ import static org.opengis.annotation.Specification.ISO_19115;
  *
  * @author  Rémi Maréchal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.5
  * @version 0.5
+ *
+ * @see org.apache.sis.storage.FeatureNaming
+ * @see org.apache.sis.feature.DefaultFeatureType
+ *
+ * @since 0.5
  * @module
  */
+@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
+@TitleProperty(name = "featureTypeName")
 @XmlType(name = "MD_FeatureTypeInfo", propOrder = {
     "featureTypeName",
     "featureInstanceCount"
@@ -89,7 +96,7 @@ public class DefaultFeatureTypeInfo extends ISOMetadata {
     /**
      * Constructs a feature type info initialized to the specified name.
      *
-     * @param featureTypeName Name of the feature type.
+     * @param  featureTypeName  name of the feature type.
      */
     public DefaultFeatureTypeInfo(final GenericName featureTypeName) {
         this.featureTypeName = featureTypeName;
@@ -107,7 +114,7 @@ public class DefaultFeatureTypeInfo extends ISOMetadata {
      * metadata instances can also be obtained by unmarshalling an invalid XML document.
      * </div>
      *
-     * @param object The metadata to copy values from, or {@code null} if none.
+     * @param  object  the metadata to copy values from, or {@code null} if none.
      */
     public DefaultFeatureTypeInfo(final DefaultFeatureTypeInfo object) {
         super(object);
@@ -120,7 +127,7 @@ public class DefaultFeatureTypeInfo extends ISOMetadata {
     /**
      * Returns the name of the feature type.
      *
-     * @return Name of the feature type.
+     * @return name of the feature type.
      *
      * @see org.apache.sis.feature.DefaultFeatureType#getName()
      */
@@ -133,7 +140,7 @@ public class DefaultFeatureTypeInfo extends ISOMetadata {
     /**
      * Sets the name of the feature type.
      *
-     * @param newValue The new name.
+     * @param  newValue  the new name.
      */
     public void setFeatureTypeName(final GenericName newValue) {
         checkWritePermission();
@@ -143,7 +150,7 @@ public class DefaultFeatureTypeInfo extends ISOMetadata {
     /**
      * Returns the number of occurrence of feature instances for this feature types, or {@code null} if none.
      *
-     * @return The number of occurrence of feature instances for this feature types, or {@code null} if none.
+     * @return the number of occurrence of feature instances for this feature types, or {@code null} if none.
      */
     @ValueRange(minimum = 1)
     @XmlElement(name = "featureInstanceCount")
@@ -155,14 +162,13 @@ public class DefaultFeatureTypeInfo extends ISOMetadata {
     /**
      * Sets a new number of occurrence of feature instances for this feature types.
      *
-     * @param newValue the new number of occurrence.
+     * @param  newValue  the new number of occurrence.
      * @throws IllegalArgumentException if the given value is negative.
      */
     public void setFeatureInstanceCount(final Integer newValue) {
         checkWritePermission();
-        if (newValue != null && newValue < 0) {
-            warnNonPositiveArgument(DefaultFeatureTypeInfo.class, "featureInstanceCount", true, newValue);
+        if (ensurePositive(DefaultFeatureTypeInfo.class, "featureInstanceCount", true, newValue)) {
+            featureInstanceCount = newValue;
         }
-        featureInstanceCount = newValue;
     }
 }

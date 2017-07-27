@@ -73,19 +73,34 @@
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Cédric Briançon (Geomatys)
+ * @version 0.7
  * @since   0.4
- * @version 0.6
  * @module
  */
-@XmlSchema(elementFormDefault= XmlNsForm.QUALIFIED, namespace = Namespaces.GML, xmlns = {
+@XmlSchema(location = "http://schemas.opengis.net/gml/3.2.1/coordinateReferenceSystems.xsd",
+           elementFormDefault = XmlNsForm.QUALIFIED, namespace = Namespaces.GML, xmlns =
+{
     @XmlNs(prefix = "gml", namespaceURI = Namespaces.GML),
     @XmlNs(prefix = "xsi", namespaceURI = Namespaces.XSI)
 })
 @XmlAccessorType(XmlAccessType.NONE)
 @XmlJavaTypeAdapters({
+    /*
+     * Do NOT declare the following adapters in this package-info:
+     *
+     *   - CS_CoordinateSystem
+     *   - SC_SingleCRS
+     *   - SC_CRS
+     *
+     * Because the above types are the base type of many other types,
+     * adding the above adapters is a cause of confusion for JAXB.
+     *
+     * Note: be careful with CS_AffineCS and CS_CartesianCS relationship.
+     */
     @XmlJavaTypeAdapter(CD_GeodeticDatum.class),
     @XmlJavaTypeAdapter(CD_EngineeringDatum.class),
     @XmlJavaTypeAdapter(CD_ImageDatum.class),
+    @XmlJavaTypeAdapter(CD_ParametricDatum.class),
     @XmlJavaTypeAdapter(CD_TemporalDatum.class),
     @XmlJavaTypeAdapter(CD_VerticalDatum.class),
     @XmlJavaTypeAdapter(CS_CartesianCS.class),      // Must be before CS_AffineCS.
@@ -93,6 +108,7 @@
     @XmlJavaTypeAdapter(CS_CylindricalCS.class),
     @XmlJavaTypeAdapter(CS_EllipsoidalCS.class),
     @XmlJavaTypeAdapter(CS_LinearCS.class),
+    @XmlJavaTypeAdapter(CS_ParametricCS.class),
     @XmlJavaTypeAdapter(CS_PolarCS.class),
     @XmlJavaTypeAdapter(CS_SphericalCS.class),
     @XmlJavaTypeAdapter(CS_TimeCS.class),

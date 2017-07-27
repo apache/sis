@@ -17,6 +17,7 @@
 package org.apache.sis.parameter;
 
 import java.util.Map;
+import javax.xml.bind.annotation.XmlTransient;
 import org.opengis.util.GenericName;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptor;
@@ -45,12 +46,14 @@ import org.apache.sis.util.Workaround;
  * The main purpose of this class is to support transparently the NetCDF ways to express some parameter values.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.6
  * @version 0.6
- * @module
  *
  * @see <a href="http://www.unidata.ucar.edu/software/netcdf-java/reference/StandardCoordinateTransforms.html">NetCDF projection parameters</a>
+ *
+ * @since 0.6
+ * @module
  */
+@XmlTransient
 final class MapProjectionDescriptor extends DefaultParameterDescriptorGroup {
     /**
      * For cross-version compatibility.
@@ -58,53 +61,31 @@ final class MapProjectionDescriptor extends DefaultParameterDescriptorGroup {
     private static final long serialVersionUID = -9142116135803309453L;
 
     /**
-     * The NetCDF parameter name for the Earth radius.
-     *
-     * @see Constants#SEMI_MAJOR
-     * @see Constants#SEMI_MINOR
-     */
-    static final String EARTH_RADIUS = "earth_radius";
-
-    /**
-     * The NetCDF parameter name for inverse flattening.
-     *
-     * @see Constants#SEMI_MAJOR
-     * @see Constants#SEMI_MINOR
-     */
-    static final String INVERSE_FLATTENING = "inverse_flattening";
-
-    /**
-     * The NetCDF parameter name for the standard parallels.
-     *
-     * @see Constants#STANDARD_PARALLEL_1
-     * @see Constants#STANDARD_PARALLEL_2
-     */
-    static final String STANDARD_PARALLEL = "standard_parallel";
-
-    /**
-     * {@code true} if the {@link #STANDARD_PARALLEL} parameter can be added.
+     * {@code true} if the {@value Constants#STANDARD_PARALLEL} parameter can be added.
      */
     final boolean hasStandardParallels;
 
     /**
      * Creates a new parameter descriptor from the given properties and parameters.
      *
-     * @param properties Names, aliases and identifiers of the parameter group.
-     * @param parameters The "real" parameters.
+     * @param properties  names, aliases and identifiers of the parameter group.
+     * @param parameters  the "real" parameters.
      */
     MapProjectionDescriptor(final Map<String,?> properties, final ParameterDescriptor<?>[] parameters) {
         super(properties, addAxisLengths(parameters));
         boolean hasP1 = false;
         boolean hasP2 = false;
         for (final ParameterDescriptor<?> param : parameters) {
-            String code = param.getName().getCode();
-            if (code.equals(Constants.STANDARD_PARALLEL_1)) hasP1 = true;
-            else if (code.equals(Constants.STANDARD_PARALLEL_2)) hasP2 = true;
-            else {
-                for (final GenericName alias : param.getAlias()) {
-                    code = alias.tip().toString();
-                    if (code.equals(Constants.STANDARD_PARALLEL_1)) hasP1 = true;
-                    else if (code.equals(Constants.STANDARD_PARALLEL_2)) hasP2 = true;
+            switch (param.getName().getCode()) {
+                case Constants.STANDARD_PARALLEL_1: hasP1 = true; break;
+                case Constants.STANDARD_PARALLEL_2: hasP2 = true; break;
+                default: {
+                    for (final GenericName alias : param.getAlias()) {
+                        switch (alias.tip().toString()) {
+                            case Constants.STANDARD_PARALLEL_1: hasP1 = true; break;
+                            case Constants.STANDARD_PARALLEL_2: hasP2 = true; break;
+                        }
+                    }
                 }
             }
             if (hasP1 & hasP2) break;
@@ -138,20 +119,23 @@ final class MapProjectionDescriptor extends DefaultParameterDescriptorGroup {
      * Returns the parameter descriptor for the given name. If the given name is one of the dynamic parameters,
      * returns a descriptor for that parameter without adding it to the list of parameter values.
      *
-     * @param  name The case insensitive name of the parameter to search for.
-     * @return The parameter for the given name.
+     * @param  name  the case insensitive name of the parameter to search for.
+     * @return the parameter for the given name.
      * @throws ParameterNotFoundException if there is no parameter for the given name.
      */
     @Override
     public GeneralParameterDescriptor descriptor(final String name) throws ParameterNotFoundException {
-        if (isHeuristicMatchForName(name, EARTH_RADIUS)) {
+        if (isHeuristicMatchForName(name, Constants.EARTH_RADIUS)) {
             return MapProjectionParameters.EarthRadius.DESCRIPTOR;
         }
-        if (isHeuristicMatchForName(name, INVERSE_FLATTENING)) {
+        if (isHeuristicMatchForName(name, Constants.INVERSE_FLATTENING)) {
             return MapProjectionParameters.InverseFlattening.DESCRIPTOR;
         }
+        if (isHeuristicMatchForName(name, Constants.IS_IVF_DEFINITIVE)) {
+            return MapProjectionParameters.IsIvfDefinitive.DESCRIPTOR;
+        }
         if (hasStandardParallels) {
-            if (isHeuristicMatchForName(name, STANDARD_PARALLEL)) {
+            if (isHeuristicMatchForName(name, Constants.STANDARD_PARALLEL)) {
                 return MapProjectionParameters.StandardParallel.DESCRIPTOR;
             }
         }

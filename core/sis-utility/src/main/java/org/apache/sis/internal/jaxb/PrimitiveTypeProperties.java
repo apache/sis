@@ -29,11 +29,12 @@ import org.apache.sis.xml.NilReason;
  * This class provides a workaround using specific instances of those wrappers.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.4
  * @version 0.4
- * @module
  *
  * @see NilReason#createNilObject(Class)
+ *
+ * @since 0.4
+ * @module
  */
 public final class PrimitiveTypeProperties {
     /**
@@ -59,7 +60,7 @@ public final class PrimitiveTypeProperties {
      * <div class="section">Synchronization</div>
      * All accesses to this map shall be synchronized on the map object.
      */
-    private static final Map<Object,Object> SENTINEL_VALUES = new IdentityHashMap<Object,Object>();
+    private static final Map<Object,Object> SENTINEL_VALUES = new IdentityHashMap<>();
 
     /**
      * Do not allow instantiation of this class.
@@ -81,8 +82,8 @@ public final class PrimitiveTypeProperties {
      * The {@code primitive} argument shall be a specific instance created by the {@code new} keyword, not
      * a shared instance link {@link Boolean#FALSE} or the values returned by {@link Integer#valueOf(int)}.
      *
-     * @param primitive The {@link Boolean}, {@link Integer}, {@link Double} or {@link String} specific instance.
-     * @param property  The {@link NilReason} or other property to associate to the given instance.
+     * @param  primitive  the {@link Boolean}, {@link Integer}, {@link Double} or {@link String} specific instance.
+     * @param  property   the {@link NilReason} or other property to associate to the given instance.
      */
     public static void associate(final Object primitive, final Object property) {
         assert isValidKey(primitive) : primitive;
@@ -98,8 +99,8 @@ public final class PrimitiveTypeProperties {
     /**
      * Returns the property of the given primitive type, or {@code null} if none.
      *
-     * @param  primitive The {@link Boolean}, {@link Integer}, {@link Double} or {@link String} specific instance.
-     * @return The property associated to the given instance, or {@code null} if none.
+     * @param  primitive  the {@link Boolean}, {@link Integer}, {@link Double} or {@link String} specific instance.
+     * @return the property associated to the given instance, or {@code null} if none.
      */
     public static Object property(final Object primitive) {
         // No 'assert isValidKey(primitive)' because this method is sometime invoked

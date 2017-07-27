@@ -36,8 +36,8 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
  * Tests the {@link DefaultRecordType} implementation.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.5
  * @version 0.5
+ * @since   0.5
  * @module
  */
 @DependsOn(TypeNamesTest.class)
@@ -68,7 +68,7 @@ public final strictfp class DefaultRecordTypeTest extends TestCase {
      * Creates a new record type from the current values of private fields.
      */
     private DefaultRecordType create() throws IllegalArgumentException {
-        final Type memberType = new SimpleAttributeType<Integer>(memberTypeName, Integer.class);
+        final Type memberType = new SimpleAttributeType<>(memberTypeName, Integer.class);
         return new DefaultRecordType(recordTypeName, container, Collections.singletonMap(memberName, memberType));
     }
 

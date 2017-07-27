@@ -31,14 +31,16 @@ import org.apache.sis.internal.util.Numerics;
  * └         ┘</pre></blockquote>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.4
  * @version 0.4
- * @module
  *
  * @see Matrix1
  * @see Matrix3
  * @see Matrix4
+ *
+ * @since 0.4
+ * @module
  */
+@SuppressWarnings("CloneableClassWithoutClone")             // No field in this class needs clone.
 public final class Matrix2 extends MatrixSIS {
     /**
      * Serial number for inter-operability with different versions.
@@ -65,7 +67,7 @@ public final class Matrix2 extends MatrixSIS {
     /**
      * Creates a new matrix filled with only zero values.
      *
-     * @param ignore Shall always be {@code false} in current version.
+     * @param ignore  shall always be {@code false} in current version.
      */
     Matrix2(final boolean ignore) {
     }
@@ -73,10 +75,10 @@ public final class Matrix2 extends MatrixSIS {
     /**
      * Creates a new matrix initialized to the specified values.
      *
-     * @param m00 The first matrix element in the first row.
-     * @param m01 The second matrix element in the first row.
-     * @param m10 The first matrix element in the second row.
-     * @param m11 The second matrix element in the second row.
+     * @param m00  the first matrix element in the first row.
+     * @param m01  the second matrix element in the first row.
+     * @param m10  the first matrix element in the second row.
+     * @param m11  the second matrix element in the second row.
      */
     public Matrix2(final double m00, final double m01,
                    final double m10, final double m11)
@@ -89,8 +91,8 @@ public final class Matrix2 extends MatrixSIS {
      * Creates a new matrix initialized to the specified values.
      * The length of the given array must be 4 and the values in the same order than the above constructor.
      *
-     * @param elements Elements of the matrix. Column indices vary fastest.
-     * @throws IllegalArgumentException If the given array does not have the expected length.
+     * @param  elements  elements of the matrix. Column indices vary fastest.
+     * @throws IllegalArgumentException if the given array does not have the expected length.
      *
      * @see #setElements(double[])
      * @see Matrices#create(int, int, double[])
@@ -104,7 +106,7 @@ public final class Matrix2 extends MatrixSIS {
      * The specified matrix size must be {@value #SIZE}×{@value #SIZE}.
      * This is not verified by this constructor, since it shall be verified by {@link Matrices}.
      *
-     * @param  matrix The matrix to copy.
+     * @param  matrix  the matrix to copy.
      */
     Matrix2(final Matrix matrix) {
         m00 = matrix.getElement(0,0);
@@ -118,16 +120,16 @@ public final class Matrix2 extends MatrixSIS {
      * is already an instance of {@code Matrix2}, then it is returned unchanged. Otherwise this method
      * verifies the matrix size, then copies all elements in a new {@code Matrix2} object.
      *
-     * @param  matrix The matrix to cast or copy, or {@code null}.
-     * @return The matrix argument if it can be safely casted (including {@code null} argument),
+     * @param  matrix  the matrix to cast or copy, or {@code null}.
+     * @return the matrix argument if it can be safely casted (including {@code null} argument),
      *         or a copy of the given matrix otherwise.
-     * @throws MismatchedMatrixSizeException If the size of the given matrix is not {@value #SIZE}×{@value #SIZE}.
+     * @throws MismatchedMatrixSizeException if the size of the given matrix is not {@value #SIZE}×{@value #SIZE}.
      */
     public static Matrix2 castOrCopy(final Matrix matrix) throws MismatchedMatrixSizeException {
         if (matrix == null || matrix instanceof Matrix2) {
             return (Matrix2) matrix;
         }
-        ensureSizeMatch(SIZE, matrix);
+        ensureSizeMatch(SIZE, SIZE, matrix);
         return new Matrix2(matrix);
     }
 
@@ -143,7 +145,7 @@ public final class Matrix2 extends MatrixSIS {
     /**
      * Returns the number of rows in this matrix, which is always {@value #SIZE} in this implementation.
      *
-     * @return Always {@value #SIZE}.
+     * @return always {@value #SIZE}.
      */
     @Override
     public final int getNumRow() {
@@ -153,7 +155,7 @@ public final class Matrix2 extends MatrixSIS {
     /**
      * Returns the number of columns in this matrix, which is always {@value #SIZE} in this implementation.
      *
-     * @return Always {@value #SIZE}.
+     * @return always {@value #SIZE}.
      */
     @Override
     public final int getNumCol() {
@@ -166,9 +168,9 @@ public final class Matrix2 extends MatrixSIS {
      * If the matrix is known to be an instance of {@code Matrix2},
      * then the {@link #m00} … {@link #m11} fields can be read directly for efficiency.
      *
-     * @param row    The row index, which can only be 0 or 1.
-     * @param column The column index, which can only be 0 or 1.
-     * @return       The current value at the given row and column.
+     * @param  row     the row index, which can only be 0 or 1.
+     * @param  column  the column index, which can only be 0 or 1.
+     * @return the current value at the given row and column.
      */
     @Override
     public final double getElement(final int row, final int column) {
@@ -189,9 +191,9 @@ public final class Matrix2 extends MatrixSIS {
      * If the matrix is known to be an instance of {@code Matrix2},
      * then the {@link #m00} … {@link #m11} fields can be set directly for efficiency.
      *
-     * @param row    The row index, which can only be 0 or 1.
-     * @param column The column index, which can only be 0 or 1.
-     * @param value  The new value to set at the given row and column.
+     * @param  row     the row index, which can only be 0 or 1.
+     * @param  column  the column index, which can only be 0 or 1.
+     * @param  value   the new value to set at the given row and column.
      */
     @Override
     public final void setElement(final int row, final int column, final double value) {
@@ -285,7 +287,7 @@ public final class Matrix2 extends MatrixSIS {
      * Returns {@code true} if the specified object is of type {@code Matrix2} and
      * all of the data members are equal to the corresponding data members in this matrix.
      *
-     * @param object The object to compare with this matrix for equality.
+     * @param  object  the object to compare with this matrix for equality.
      * @return {@code true} if the given object is equal to this matrix.
      */
     @Override

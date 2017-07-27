@@ -26,19 +26,19 @@ project logo are trademarks of The Apache Software Foundation.
 Getting Started
 ===============
 
-SIS is based on Java 6 and uses the Maven 2 <http://maven.apache.org/>
+SIS requires Java 6 and uses the Maven 3 <http://maven.apache.org/>
 build system. To build SIS, use the following command in this directory:
 
     mvn clean install
 
-Information for running the application can be found on the wiki
-(<http://cwiki.apache.org/confluence/display/SIS/>)
+Information for running a command-line tool can be found on the web site:
+(<http://sis.apache.org/command-line.html>)
 
 
 License (see also LICENSE)
 ==========================
 
-Collective work: Copyright 2010-2015 The Apache Software Foundation.
+Collective work: Copyright 2010-2017 The Apache Software Foundation.
 
 Licensed to the Apache Software Foundation (ASF) under one or more
 contributor license agreements.  See the NOTICE file distributed with

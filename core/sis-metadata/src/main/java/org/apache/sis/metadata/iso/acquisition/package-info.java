@@ -50,24 +50,24 @@
  * {@code  ├─} {@linkplain org.opengis.metadata.acquisition.GeometryType  Geometry type}<br>
  * {@code  └─} {@linkplain org.opengis.metadata.acquisition.OperationType Operation type}<br>
  * </td><td class="sep" style="width: 50%; white-space: nowrap">
- *                             {@linkplain org.apache.sis.metadata.iso.acquisition.DefaultAcquisitionInformation Acquisition information}<br>
- * {@code  ├─}                 {@linkplain org.apache.sis.metadata.iso.acquisition.DefaultObjective              Objective}<br>
- * {@code  │   ├─}             {@linkplain org.opengis.metadata.acquisition.ObjectiveType                        Objective type} «code list»<br>
- * {@code  │   ├─}             {@linkplain org.apache.sis.metadata.iso.acquisition.DefaultPlatformPass           Platform pass}<br>
- * {@code  │   │   └─}         {@linkplain org.apache.sis.metadata.iso.acquisition.DefaultEvent                  Event}<br>
- * {@code  │   │       ├─}     {@linkplain org.opengis.metadata.acquisition.Trigger                              Trigger} «code list»<br>
- * {@code  │   │       ├─}     {@linkplain org.opengis.metadata.acquisition.Context                              Context} «code list»<br>
- * {@code  │   │       └─}     {@linkplain org.opengis.metadata.acquisition.Sequence                             Sequence} «code list»<br>
- * {@code  │   ├─}             {@linkplain org.apache.sis.metadata.iso.acquisition.DefaultRequirement            Requirement}<br>
- * {@code  │   │   ├─}         {@linkplain org.apache.sis.metadata.iso.acquisition.DefaultRequestedDate          Requested date}<br>
- * {@code  │   │   └─}         {@linkplain org.opengis.metadata.acquisition.Priority                             Priority} «code list»<br>
- * {@code  │   └─}             {@linkplain org.apache.sis.metadata.iso.acquisition.DefaultPlan                   Plan}<br>
- * {@code  │       ├─}         {@linkplain org.opengis.metadata.acquisition.GeometryType                         Geometry type} «code list»<br>
- * {@code  │       └─}         {@linkplain org.apache.sis.metadata.iso.acquisition.DefaultOperation              Operation}<br>
- * {@code  │           ├─}     {@linkplain org.opengis.metadata.acquisition.OperationType                        Operation type} «code list»<br>
- * {@code  │           └─}     {@linkplain org.apache.sis.metadata.iso.acquisition.DefaultPlatform               Platform}<br>
- * {@code  │               └─} {@linkplain org.apache.sis.metadata.iso.acquisition.DefaultInstrument             Instrument}<br>
- * {@code  └─}                 {@linkplain org.apache.sis.metadata.iso.acquisition.DefaultEnvironmentalRecord    Environmental record}<br>
+ *                         {@linkplain org.apache.sis.metadata.iso.acquisition.DefaultAcquisitionInformation Acquisition information}<br>
+ * {@code  ├─}             {@linkplain org.apache.sis.metadata.iso.acquisition.DefaultRequirement            Requirement}<br>
+ * {@code  │   ├─}         {@linkplain org.apache.sis.metadata.iso.acquisition.DefaultRequestedDate          Requested date}<br>
+ * {@code  │   └─}         {@linkplain org.opengis.metadata.acquisition.Priority                             Priority} «code list»<br>
+ * {@code  ├─}             {@linkplain org.apache.sis.metadata.iso.acquisition.DefaultObjective              Objective}<br>
+ * {@code  │   ├─}         {@linkplain org.opengis.metadata.acquisition.ObjectiveType                        Objective type} «code list»<br>
+ * {@code  │   └─}         {@linkplain org.apache.sis.metadata.iso.acquisition.DefaultPlatformPass           Platform pass}<br>
+ * {@code  │       └─}     {@linkplain org.apache.sis.metadata.iso.acquisition.DefaultEvent                  Event}<br>
+ * {@code  │           ├─} {@linkplain org.opengis.metadata.acquisition.Trigger                              Trigger} «code list»<br>
+ * {@code  │           ├─} {@linkplain org.opengis.metadata.acquisition.Context                              Context} «code list»<br>
+ * {@code  │           └─} {@linkplain org.opengis.metadata.acquisition.Sequence                             Sequence} «code list»<br>
+ * {@code  ├─}             {@linkplain org.apache.sis.metadata.iso.acquisition.DefaultPlan                   Plan}<br>
+ * {@code  │   ├─}         {@linkplain org.opengis.metadata.acquisition.GeometryType                         Geometry type} «code list»<br>
+ * {@code  │   └─}         {@linkplain org.apache.sis.metadata.iso.acquisition.DefaultOperation              Operation}<br>
+ * {@code  │       ├─}     {@linkplain org.opengis.metadata.acquisition.OperationType                        Operation type} «code list»<br>
+ * {@code  │       └─}     {@linkplain org.apache.sis.metadata.iso.acquisition.DefaultPlatform               Platform}<br>
+ * {@code  │           └─} {@linkplain org.apache.sis.metadata.iso.acquisition.DefaultInstrument             Instrument}<br>
+ * {@code  └─}             {@linkplain org.apache.sis.metadata.iso.acquisition.DefaultEnvironmentalRecord    Environmental record}<br>
  * </td></tr></table>
  *
  * <div class="section">Null values, nil objects and collections</div>
@@ -86,11 +86,11 @@
  *
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.5
+ * @since   0.3
  * @module
  */
-@XmlSchema(elementFormDefault = XmlNsForm.QUALIFIED, namespace = Namespaces.GMI, xmlns = {
+@XmlSchema(location=Schemas.METADATA_XSD, elementFormDefault=XmlNsForm.QUALIFIED, namespace=Namespaces.GMI, xmlns = {
     @XmlNs(prefix = "gmi", namespaceURI = Namespaces.GMI),
     @XmlNs(prefix = "gmd", namespaceURI = Namespaces.GMD),
     @XmlNs(prefix = "gco", namespaceURI = Namespaces.GCO),
@@ -137,6 +137,7 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapters;
 import org.apache.sis.xml.Namespaces;
+import org.apache.sis.internal.jaxb.Schemas;
 import org.apache.sis.internal.jaxb.gco.*;
 import org.apache.sis.internal.jaxb.code.*;
 import org.apache.sis.internal.jaxb.metadata.*;

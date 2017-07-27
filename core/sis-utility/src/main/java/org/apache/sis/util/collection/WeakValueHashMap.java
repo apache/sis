@@ -21,6 +21,7 @@ import java.util.Set;
 import java.util.AbstractMap;
 import java.util.AbstractSet;
 import java.util.Iterator;
+import java.util.Objects;
 import java.util.Arrays;
 import java.lang.reflect.Array;
 import java.lang.ref.WeakReference;
@@ -32,9 +33,6 @@ import org.apache.sis.util.NullArgumentException;
 import org.apache.sis.util.resources.Errors;
 
 import static org.apache.sis.util.collection.WeakEntry.*;
-
-// Branch-dependent imports
-import org.apache.sis.internal.jdk7.Objects;
 
 
 /**
@@ -56,7 +54,7 @@ import org.apache.sis.internal.jdk7.Objects;
  *     V value;
  *     synchronized (map) {
  *         value = map.get(key);
- *         if (value != null) {
+ *         if (value == null) {
  *             value = ...; // Create the value here.
  *             map.put(key, value);
  *         }
@@ -75,17 +73,18 @@ import org.apache.sis.internal.jdk7.Objects;
  * of the caller. But if a sequence of two or more method calls need to appear atomic from other threads perspective,
  * then the caller can synchronize on {@code this}.
  *
- * @param <K> The class of key elements.
- * @param <V> The class of value elements.
- *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.3
- * @version 0.4
- * @module
+ * @version 0.7
+ *
+ * @param <K>  the class of key elements.
+ * @param <V>  the class of value elements.
  *
  * @see java.util.WeakHashMap
  * @see WeakHashSet
  * @see Cache
+ *
+ * @since 0.3
+ * @module
  */
 public class WeakValueHashMap<K,V> extends AbstractMap<K,V> {
     /**
@@ -233,7 +232,7 @@ public class WeakValueHashMap<K,V> extends AbstractMap<K,V> {
     /**
      * Creates a new {@code WeakValueHashMap}.
      *
-     * @param keyType The type of keys in the map.
+     * @param  keyType  the type of keys in the map.
      */
     public WeakValueHashMap(final Class<K> keyType) {
         this(keyType, false);
@@ -247,9 +246,9 @@ public class WeakValueHashMap<K,V> extends AbstractMap<K,V> {
      * <p>Reference-equality semantic is rarely used. See the {@link java.util.IdentityHashMap} class javadoc
      * for a discussion about drawbacks and use cases when reference-equality semantic is useful.</p>
      *
-     * @param keyType  The type of keys in the map.
-     * @param identity {@code true} if the map shall use reference-equality in place of object-equality
-     *                 when comparing keys, or {@code false} for the standard behavior.
+     * @param  keyType   the type of keys in the map.
+     * @param  identity  {@code true} if the map shall use reference-equality in place of object-equality
+     *                   when comparing keys, or {@code false} for the standard behavior.
      *
      * @since 0.4
      */
@@ -309,7 +308,7 @@ public class WeakValueHashMap<K,V> extends AbstractMap<K,V> {
     /**
      * Returns the number of key-value mappings in this map.
      *
-     * @return The number of entries in this map.
+     * @return the number of entries in this map.
      */
     @Override
     public synchronized int size() {
@@ -320,7 +319,7 @@ public class WeakValueHashMap<K,V> extends AbstractMap<K,V> {
     /**
      * Returns the hash code value for the given key.
      *
-     * @param key The key (can not be null).
+     * @param  key  the key (can not be null).
      */
     final int keyHashCode(final Object key) {
         switch (comparisonMode) {
@@ -334,8 +333,8 @@ public class WeakValueHashMap<K,V> extends AbstractMap<K,V> {
     /**
      * Returns {@code true} if the two given keys are equal.
      *
-     * @param k1 The first key (can not be null).
-     * @paral k2 The second key.
+     * @param  k1  the first key (can not be null).
+     * @paral  k2  the second key.
      */
     final boolean keyEquals(final Object k1, final Object k2) {
         switch (comparisonMode) {
@@ -350,7 +349,7 @@ public class WeakValueHashMap<K,V> extends AbstractMap<K,V> {
      * Returns {@code true} if this map contains a mapping for the specified key.
      * Null keys are considered never present.
      *
-     * @param  key key whose presence in this map is to be tested.
+     * @param  key  key whose presence in this map is to be tested.
      * @return {@code true} if this map contains a mapping for the specified key.
      */
     @Override
@@ -362,7 +361,7 @@ public class WeakValueHashMap<K,V> extends AbstractMap<K,V> {
      * Returns {@code true} if this map maps one or more keys to this value.
      * Null values are considered never present.
      *
-     * @param  value value whose presence in this map is to be tested.
+     * @param  value  value whose presence in this map is to be tested.
      * @return {@code true} if this map maps one or more keys to this value.
      */
     @Override
@@ -375,8 +374,8 @@ public class WeakValueHashMap<K,V> extends AbstractMap<K,V> {
      * Returns {@code null} if the map contains no mapping for this key.
      * Null keys are considered never present.
      *
-     * @param  key Key whose associated value is to be returned.
-     * @return The value to which this map maps the specified key.
+     * @param  key  key whose associated value is to be returned.
+     * @return the value to which this map maps the specified key.
      */
     @Override
     @SuppressWarnings("unchecked")
@@ -398,7 +397,7 @@ public class WeakValueHashMap<K,V> extends AbstractMap<K,V> {
      * Implementation of {@link #put(Object, Object)} and {@link #remove(Object)} operations
      */
     @SuppressWarnings("unchecked")
-    private synchronized V intern(final Object key, final V value) {
+    private synchronized V intern(final Object key, final V value, final boolean replace) {
         assert isValid();
         /*
          * If 'value' is already contained in this WeakValueHashMap, we need to clear it.
@@ -410,6 +409,9 @@ public class WeakValueHashMap<K,V> extends AbstractMap<K,V> {
         for (Entry e = table[index]; e != null; e = (Entry) e.next) {
             if (keyEquals(key, e.key)) {
                 oldValue = e.get();
+                if (oldValue != null && !replace) {
+                    return oldValue;
+                }
                 e.dispose();
                 table = this.table; // May have changed.
                 index = hash % table.length;
@@ -433,10 +435,9 @@ public class WeakValueHashMap<K,V> extends AbstractMap<K,V> {
      * Associates the specified value with the specified key in this map.
      * The value is associated using a {@link WeakReference}.
      *
-     * @param  key key with which the specified value is to be associated.
-     * @param  value value to be associated with the specified key.
-     * @return The previous value associated with specified key, or {@code null}
-     *         if there was no mapping for key.
+     * @param  key    key with which the specified value is to be associated.
+     * @param  value  value to be associated with the specified key.
+     * @return the previous value associated with specified key, or {@code null} if there was no mapping for key.
      *
      * @throws NullArgumentException if the key or the value is {@code null}.
      */
@@ -446,19 +447,40 @@ public class WeakValueHashMap<K,V> extends AbstractMap<K,V> {
             throw new NullArgumentException(Errors.format(key == null
                     ? Errors.Keys.NullMapKey : Errors.Keys.NullMapValue));
         }
-        return intern(key, value);
+        return intern(key, value, true);
+    }
+
+    /**
+     * Associates the specified value with the specified key in this map if no value were previously associated.
+     * If an other value is already associated to the given key, then the map is left unchanged and the current
+     * value is returned. Otherwise the specified value is associated to the key using a {@link WeakReference}
+     * and {@code null} is returned.
+     *
+     * @param  key    key with which the specified value is to be associated.
+     * @param  value  value to be associated with the specified key.
+     * @return the current value associated with specified key, or {@code null} if there was no mapping for key.
+     *
+     * @throws NullArgumentException if the key or the value is {@code null}.
+     *
+     * @since 0.7
+     */
+    public V putIfAbsent(final K key, final V value) throws NullArgumentException {
+        if (key == null || value == null) {
+            throw new NullArgumentException(Errors.format(key == null
+                    ? Errors.Keys.NullMapKey : Errors.Keys.NullMapValue));
+        }
+        return intern(key, value, false);
     }
 
     /**
      * Removes the mapping for this key from this map if present.
      *
-     * @param key key whose mapping is to be removed from the map.
-     * @return previous value associated with specified key, or {@code null}
-     *         if there was no entry for key.
+     * @param  key  key whose mapping is to be removed from the map.
+     * @return previous value associated with specified key, or {@code null} if there was no entry for key.
      */
     @Override
     public V remove(final Object key) {
-        return intern(key, null);
+        return intern(key, null, true);
     }
 
     /**
@@ -477,6 +499,7 @@ public class WeakValueHashMap<K,V> extends AbstractMap<K,V> {
      * @return a set view of the mappings contained in this map.
      */
     @Override
+    @SuppressWarnings("ReturnOfCollectionOrArrayField")
     public synchronized Set<Map.Entry<K,V>> entrySet() {
         if (entrySet == null) {
             entrySet = new EntrySet();
@@ -488,8 +511,8 @@ public class WeakValueHashMap<K,V> extends AbstractMap<K,V> {
      * The set of entries.
      *
      * @author  Martin Desruisseaux (Geomatys)
-     * @since   0.3
      * @version 0.3
+     * @since   0.3
      * @module
      */
     private final class EntrySet extends AbstractSet<Map.Entry<K,V>> {
@@ -503,8 +526,7 @@ public class WeakValueHashMap<K,V> extends AbstractMap<K,V> {
 
         /**
          * Returns a view of this set as an array. Note that this array contains strong references.
-         * Consequently, no object reclamation will occur as long as a reference to this array is
-         * hold.
+         * Consequently, no object reclamation will occur as long as a reference to this array is hold.
          */
         @Override
         @SuppressWarnings("unchecked")
@@ -517,7 +539,7 @@ public class WeakValueHashMap<K,V> extends AbstractMap<K,V> {
                 final Entry[] table = WeakValueHashMap.this.table;
                 for (Entry el : table) {
                     while (el != null) {
-                        final Map.Entry<K,V> entry = new SimpleEntry<K,V>(el);
+                        final Map.Entry<K,V> entry = new SimpleEntry<>(el);
                         if (entry.getValue() != null) {
                             elements[index++] = entry;
                         }

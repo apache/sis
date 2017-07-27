@@ -18,31 +18,49 @@ package org.apache.sis.referencing.operation;
 
 import java.util.Map;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Objects;
 import java.util.Collections;
+import javax.xml.bind.annotation.XmlType;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlSchemaType;
+import org.opengis.util.InternationalString;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.operation.Formula;
+import org.opengis.referencing.operation.Conversion;
 import org.opengis.referencing.operation.Projection;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.referencing.operation.SingleOperation;
+import org.opengis.referencing.crs.GeneralDerivedCRS;
+import org.opengis.parameter.GeneralParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
+import org.opengis.parameter.ParameterDescriptor;
 import org.apache.sis.util.Utilities;
 import org.apache.sis.util.Workaround;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.resources.Vocabulary;
+import org.apache.sis.util.iso.SimpleInternationalString;
 import org.apache.sis.internal.util.Citations;
+import org.apache.sis.internal.metadata.WKTKeywords;
+import org.apache.sis.internal.jaxb.gco.StringAdapter;
+import org.apache.sis.internal.jaxb.referencing.CC_OperationMethod;
+import org.apache.sis.internal.referencing.NilReferencingObject;
+import org.apache.sis.internal.referencing.Resources;
+import org.apache.sis.internal.metadata.MetadataUtilities;
+import org.apache.sis.parameter.DefaultParameterDescriptorGroup;
 import org.apache.sis.parameter.Parameterized;
 import org.apache.sis.referencing.NamedIdentifier;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.AbstractIdentifiedObject;
 import org.apache.sis.io.wkt.Formatter;
+import org.apache.sis.io.wkt.ElementKind;
+import org.apache.sis.io.wkt.FormattableObject;
 
 import static org.apache.sis.util.ArgumentChecks.*;
-
-// Branch-dependent imports
-import org.apache.sis.internal.jdk7.Objects;
 
 
 /**
@@ -99,13 +117,23 @@ import org.apache.sis.internal.jdk7.Objects;
  * {@link org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory}.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 0.6
- * @since   0.5
- * @module
+ * @version 0.7
  *
- * @see DefaultSingleOperation
+ * @see DefaultConversion
+ * @see DefaultTransformation
  * @see org.apache.sis.referencing.operation.transform.MathTransformProvider
+ *
+ * @since 0.5
+ * @module
  */
+@XmlType(name = "OperationMethodType", propOrder = {
+    "formulaCitation",
+    "formulaDescription",
+    "sourceDimensions",
+    "targetDimensions",
+    "descriptors"
+})
+@XmlRootElement(name = "OperationMethod")
 public class DefaultOperationMethod extends AbstractIdentifiedObject implements OperationMethod {
     /*
      * NOTE FOR JAVADOC WRITER:
@@ -122,27 +150,44 @@ public class DefaultOperationMethod extends AbstractIdentifiedObject implements 
      * Formula(s) or procedure used by this operation method. This may be a reference to a publication.
      * Note that the operation method may not be analytic, in which case this attribute references or
      * contains the procedure, not an analytic formula.
+     *
+     * <p><b>Consider this field as final!</b>
+     * This field is modified only at unmarshalling time by {@link #setFormulaCitation(Citation)}
+     * or {@link #setFormulaDescription(String)}.</p>
      */
-    private final Formula formula;
+    private Formula formula;
 
     /**
      * Number of dimensions in the source CRS of this operation method.
      * May be {@code null} if this method can work with any number of
      * source dimensions (e.g. <cite>Affine Transform</cite>).
+     *
+     * <p><b>Consider this field as final!</b>
+     * This field is modified only at unmarshalling time by {@link #setSourceDimensions(Integer)}</p>
+     *
+     * @see #getSourceDimensions()
      */
-    private final Integer sourceDimensions;
+    private Integer sourceDimensions;
 
     /**
      * Number of dimensions in the target CRS of this operation method.
      * May be {@code null} if this method can work with any number of
      * target dimensions (e.g. <cite>Affine Transform</cite>).
+     *
+     * <p><b>Consider this field as final!</b>
+     * This field is modified only at unmarshalling time by {@link #setTargetDimensions(Integer)}</p>
+     *
+     * @see #getTargetDimensions()
      */
-    private final Integer targetDimensions;
+    private Integer targetDimensions;
 
     /**
      * The set of parameters, or {@code null} if none.
+     *
+     * <p><b>Consider this field as final!</b>
+     * This field is modified only at unmarshalling time by {@link #setDescriptors(GeneralParameterDescriptor[])}</p>
      */
-    private final ParameterDescriptorGroup parameters;
+    private ParameterDescriptorGroup parameters;
 
     /**
      * Constructs an operation method from a set of properties and a descriptor group. The properties map is given
@@ -167,17 +212,17 @@ public class DefaultOperationMethod extends AbstractIdentifiedObject implements 
      *   </tr>
      *   <tr>
      *     <td>{@value org.opengis.referencing.IdentifiedObject#NAME_KEY}</td>
-     *     <td>{@link Identifier} or {@link String}</td>
+     *     <td>{@link org.opengis.metadata.Identifier} or {@link String}</td>
      *     <td>{@link #getName()}</td>
      *   </tr>
      *   <tr>
      *     <td>{@value org.opengis.referencing.IdentifiedObject#ALIAS_KEY}</td>
-     *     <td>{@link GenericName} or {@link CharSequence} (optionally as array)</td>
+     *     <td>{@link org.opengis.util.GenericName} or {@link CharSequence} (optionally as array)</td>
      *     <td>{@link #getAlias()}</td>
      *   </tr>
      *   <tr>
      *     <td>{@value org.opengis.referencing.IdentifiedObject#IDENTIFIERS_KEY}</td>
-     *     <td>{@link Identifier} (optionally as array)</td>
+     *     <td>{@link org.opengis.metadata.Identifier} (optionally as array)</td>
      *     <td>{@link #getIdentifiers()}</td>
      *   </tr>
      *   <tr>
@@ -190,10 +235,10 @@ public class DefaultOperationMethod extends AbstractIdentifiedObject implements 
      * The source and target dimensions may be {@code null} if this method can work
      * with any number of dimensions (e.g. <cite>Affine Transform</cite>).
      *
-     * @param properties       Set of properties. Shall contain at least {@code "name"}.
-     * @param sourceDimensions Number of dimensions in the source CRS of this operation method, or {@code null}.
-     * @param targetDimensions Number of dimensions in the target CRS of this operation method, or {@code null}.
-     * @param parameters       Description of parameters expected by this operation.
+     * @param  properties        set of properties. Shall contain at least {@code "name"}.
+     * @param  sourceDimensions  number of dimensions in the source CRS of this operation method, or {@code null}.
+     * @param  targetDimensions  number of dimensions in the target CRS of this operation method, or {@code null}.
+     * @param  parameters        description of parameters expected by this operation.
      */
     public DefaultOperationMethod(final Map<String,?> properties,
                                   final Integer sourceDimensions,
@@ -214,7 +259,7 @@ public class DefaultOperationMethod extends AbstractIdentifiedObject implements 
             formula = new DefaultFormula((CharSequence) value);
         } else {
             throw new IllegalArgumentException(Errors.getResources(properties)
-                    .getString(Errors.Keys.IllegalPropertyClass_2, FORMULA_KEY, value.getClass()));
+                    .getString(Errors.Keys.IllegalPropertyValueClass_2, FORMULA_KEY, value.getClass()));
         }
         this.parameters       = parameters;
         this.sourceDimensions = sourceDimensions;
@@ -226,7 +271,7 @@ public class DefaultOperationMethod extends AbstractIdentifiedObject implements 
      * The information provided in the newly created object are approximative, and
      * usually acceptable only as a fallback when no other information are available.
      *
-     * @param transform The math transform to describe.
+     * @param  transform  the math transform to describe.
      */
     public DefaultOperationMethod(final MathTransform transform) {
         super(getProperties(transform));
@@ -253,13 +298,13 @@ public class DefaultOperationMethod extends AbstractIdentifiedObject implements 
                 return getProperties(parameters, null);
             }
         }
-        return Collections.singletonMap(NAME_KEY, Vocabulary.format(Vocabulary.Keys.Unnamed));
+        return Collections.singletonMap(NAME_KEY, NilReferencingObject.UNNAMED);
     }
 
     /**
      * Returns the properties to be given to an identified object derived from the specified one.
-     * This method returns the same properties than the supplied argument (as of
-     * <code>{@linkplain IdentifiedObjects#getProperties(IdentifiedObject) getProperties}(info)</code>),
+     * This method returns the same properties than the supplied argument
+     * (as of <code>{@linkplain IdentifiedObjects#getProperties getProperties}(info)</code>),
      * except for the following:
      *
      * <ul>
@@ -271,10 +316,10 @@ public class DefaultOperationMethod extends AbstractIdentifiedObject implements 
      * This method returns a mutable map. Consequently, callers can add their own identifiers
      * directly to this map if they wish.
      *
-     * @param  info The identified object to view as a properties map.
-     * @param  authority The new authority for the object to be created,
-     *         or {@code null} if it is not going to have any declared authority.
-     * @return The identified object properties in a mutable map.
+     * @param  info       the identified object to view as a properties map.
+     * @param  authority  the new authority for the object to be created,
+     *                    or {@code null} if it is not going to have any declared authority.
+     * @return the identified object properties in a mutable map.
      */
     private static Map<String,Object> getProperties(final IdentifiedObject info, final Citation authority) {
         final Map<String,Object> properties = new HashMap<String,Object>(IdentifiedObjects.getProperties(info));
@@ -290,7 +335,7 @@ public class DefaultOperationMethod extends AbstractIdentifiedObject implements 
      *
      * <p>This constructor performs a shallow copy, i.e. the properties are not cloned.</p>
      *
-     * @param method The operation method to copy.
+     * @param  method  the operation method to copy.
      *
      * @see #castOrCopy(OperationMethod)
      */
@@ -308,8 +353,8 @@ public class DefaultOperationMethod extends AbstractIdentifiedObject implements 
      * Otherwise if the given object is already a SIS implementation, then the given object is returned unchanged.
      * Otherwise a new SIS implementation is created and initialized to the attribute values of the given object.
      *
-     * @param  object The object to get as a SIS implementation, or {@code null} if none.
-     * @return A SIS implementation containing the values of the given object (may be the
+     * @param  object  the object to get as a SIS implementation, or {@code null} if none.
+     * @return a SIS implementation containing the values of the given object (may be the
      *         given object itself), or {@code null} if the argument was null.
      */
     public static DefaultOperationMethod castOrCopy(final OperationMethod object) {
@@ -322,9 +367,9 @@ public class DefaultOperationMethod extends AbstractIdentifiedObject implements 
      * The source and target dimensions may be {@code null} if this method can work with any number of dimensions
      * (e.g. <cite>Affine Transform</cite>).
      *
-     * @param method           The operation method to copy.
-     * @param sourceDimensions Number of dimensions in the source CRS of this operation method.
-     * @param targetDimensions Number of dimensions in the target CRS of this operation method.
+     * @param  method            the operation method to copy.
+     * @param  sourceDimensions  number of dimensions in the source CRS of this operation method.
+     * @param  targetDimensions  number of dimensions in the target CRS of this operation method.
      */
     private DefaultOperationMethod(final OperationMethod method,
                                    final Integer sourceDimensions,
@@ -342,11 +387,11 @@ public class DefaultOperationMethod extends AbstractIdentifiedObject implements 
      * This method accepts to change a dimension only if the value specified by the original method
      * is {@code null}. Otherwise an {@link IllegalArgumentException} is thrown.
      *
-     * @param method           The operation method to redimension.
-     * @param sourceDimensions The desired new source dimensions.
-     * @param methodSource     The current number of source dimensions (may be {@code null}).
-     * @param targetDimensions The desired new target dimensions.
-     * @param methodTarget     The current number of target dimensions (may be {@code null}).
+     * @param  method            the operation method to redimension.
+     * @param  sourceDimensions  the desired new source dimensions.
+     * @param  methodSource      the current number of source dimensions (may be {@code null}).
+     * @param  targetDimensions  the desired new target dimensions.
+     * @param  methodTarget      the current number of target dimensions (may be {@code null}).
      * @throws IllegalArgumentException if the given dimensions are illegal for this operation method.
      */
     private static OperationMethod redimension(final OperationMethod method,
@@ -363,7 +408,7 @@ public class DefaultOperationMethod extends AbstractIdentifiedObject implements 
         ensurePositive("sourceDimensions", sourceDimensions);
         ensurePositive("targetDimensions", targetDimensions);
         if (!sourceValids || !targetValids) {
-            throw new IllegalArgumentException(Errors.format(Errors.Keys.IllegalOperationDimension_3,
+            throw new IllegalArgumentException(Resources.format(Resources.Keys.IllegalOperationDimension_3,
                     method.getName().getCode(), sourceDimensions, targetDimensions));
         }
         return new DefaultOperationMethod(method, sourceDimensions, targetDimensions);
@@ -399,10 +444,10 @@ public class DefaultOperationMethod extends AbstractIdentifiedObject implements 
      *   </li>
      * </ul>
      *
-     * @param  method           The operation method to redimension, or {@code null}.
-     * @param  sourceDimensions The desired number of input dimensions.
-     * @param  targetDimensions The desired number of output dimensions.
-     * @return The redimensioned operation method, or {@code null} if the given method was null,
+     * @param  method            the operation method to redimension, or {@code null}.
+     * @param  sourceDimensions  the desired number of input dimensions.
+     * @param  targetDimensions  the desired number of output dimensions.
+     * @return the redimensioned operation method, or {@code null} if the given method was null,
      *         or {@code method} if no change is needed.
      * @throws IllegalArgumentException if the given dimensions are illegal for the given operation method.
      */
@@ -438,9 +483,9 @@ public class DefaultOperationMethod extends AbstractIdentifiedObject implements 
      * but can also work in a two-dimensional space by assuming that the ellipsoidal height is zero
      * everywhere.
      *
-     * @param  sourceDimensions The desired number of input dimensions.
-     * @param  targetDimensions The desired number of output dimensions.
-     * @return The redimensioned operation method, or {@code this} if no change is needed.
+     * @param  sourceDimensions  the desired number of input dimensions.
+     * @param  targetDimensions  the desired number of output dimensions.
+     * @return the redimensioned operation method, or {@code this} if no change is needed.
      * @throws IllegalArgumentException if the given dimensions are illegal for this operation method.
      *
      * @since 0.6
@@ -490,7 +535,7 @@ public class DefaultOperationMethod extends AbstractIdentifiedObject implements 
      * The default implementation returns {@code SingleOperation.class},
      * which is the most conservative return value.
      *
-     * @return Interface implemented by all coordinate operations that use this method.
+     * @return interface implemented by all coordinate operations that use this method.
      *
      * @see org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory#getAvailableMethods(Class)
      */
@@ -506,7 +551,7 @@ public class DefaultOperationMethod extends AbstractIdentifiedObject implements 
      * <div class="note"><b>Departure from the ISO 19111 standard:</b>
      * this property is mandatory according ISO 19111, but optional in Apache SIS.</div>
      *
-     * @return The formula used by this method, or {@code null} if unknown.
+     * @return the formula used by this method, or {@code null} if unknown.
      *
      * @see DefaultFormula
      * @see org.apache.sis.referencing.operation.transform.MathTransformProvider
@@ -520,11 +565,13 @@ public class DefaultOperationMethod extends AbstractIdentifiedObject implements 
      * Number of dimensions in the source CRS of this operation method.
      * May be null if unknown, as in an <cite>Affine Transform</cite>.
      *
-     * @return The dimension of source CRS, or {@code null} if unknown.
+     * @return the dimension of source CRS, or {@code null} if unknown.
      *
      * @see org.apache.sis.referencing.operation.transform.AbstractMathTransform#getSourceDimensions()
      */
     @Override
+    @XmlElement(name = "sourceDimensions")
+    @XmlSchemaType(name = "positiveInteger")
     public Integer getSourceDimensions() {
         return sourceDimensions;
     }
@@ -533,11 +580,13 @@ public class DefaultOperationMethod extends AbstractIdentifiedObject implements 
      * Number of dimensions in the target CRS of this operation method.
      * May be null if unknown, as in an <cite>Affine Transform</cite>.
      *
-     * @return The dimension of target CRS, or {@code null} if unknown.
+     * @return the dimension of target CRS, or {@code null} if unknown.
      *
      * @see org.apache.sis.referencing.operation.transform.AbstractMathTransform#getTargetDimensions()
      */
     @Override
+    @XmlElement(name = "targetDimensions")
+    @XmlSchemaType(name = "positiveInteger")
     public Integer getTargetDimensions() {
         return targetDimensions;
     }
@@ -547,9 +596,13 @@ public class DefaultOperationMethod extends AbstractIdentifiedObject implements 
      *
      * <div class="note"><b>Departure from the ISO 19111 standard:</b>
      * this property is mandatory according ISO 19111, but may be null in Apache SIS if the
-     * {@link #DefaultOperationMethod(MathTransform)} constructor has been unable to infer it.</div>
+     * {@link #DefaultOperationMethod(MathTransform)} constructor has been unable to infer it
+     * or if this {@code OperationMethod} has been read from an incomplete GML document.</div>
      *
-     * @return The parameters, or {@code null} if unknown.
+     * @return the parameters, or {@code null} if unknown.
+     *
+     * @see DefaultConversion#getParameterDescriptors()
+     * @see DefaultConversion#getParameterValues()
      */
     @Override
     public ParameterDescriptorGroup getParameters() {
@@ -562,16 +615,16 @@ public class DefaultOperationMethod extends AbstractIdentifiedObject implements 
      * {@link ComparisonMode#BY_CONTRACT BY_CONTRACT}, then all available properties
      * are compared including the {@linkplain #getFormula() formula}.
      *
-     * @param  object The object to compare to {@code this}.
-     * @param  mode {@link ComparisonMode#STRICT STRICT} for performing a strict comparison, or
-     *         {@link ComparisonMode#IGNORE_METADATA IGNORE_METADATA} for comparing only properties
-     *         relevant to transformations.
+     * @param  object  the object to compare to {@code this}.
+     * @param  mode    {@link ComparisonMode#STRICT STRICT} for performing a strict comparison, or
+     *                 {@link ComparisonMode#IGNORE_METADATA IGNORE_METADATA} for comparing only
+     *                 properties relevant to transformations.
      * @return {@code true} if both objects are equal.
      */
     @Override
     public boolean equals(final Object object, final ComparisonMode mode) {
         if (object == this) {
-            return true; // Slight optimization.
+            return true;                                                // Slight optimization.
         }
         if (super.equals(object, mode)) {
             switch (mode) {
@@ -626,7 +679,7 @@ public class DefaultOperationMethod extends AbstractIdentifiedObject implements 
      * See {@link org.apache.sis.referencing.AbstractIdentifiedObject#computeHashCode()}
      * for more information.
      *
-     * @return The hash code value. This value may change in any future Apache SIS version.
+     * @return the hash code value. This value may change in any future Apache SIS version.
      */
     @Override
     protected long computeHashCode() {
@@ -637,11 +690,57 @@ public class DefaultOperationMethod extends AbstractIdentifiedObject implements 
      * Formats this operation as a <cite>Well Known Text</cite> {@code Method[…]} element.
      *
      * @return {@code "Method"} (WKT 2) or {@code "Projection"} (WKT 1).
+     *
+     * @see <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html#118">WKT 2 specification §17.2.3</a>
      */
     @Override
     protected String formatTo(final Formatter formatter) {
-        super.formatTo(formatter);
-        if (formatter.getConvention().majorVersion() == 1) {
+        final boolean isWKT1 = formatter.getConvention().majorVersion() == 1;
+        /*
+         * The next few lines below are basically a copy of the work done by super.formatTo(formatter),
+         * which search for the name to write inside METHOD["name"]. The difference is in the fallback
+         * executed if we do not find a name for the given authority.
+         */
+        final Citation authority = formatter.getNameAuthority();
+        String name = IdentifiedObjects.getName(this, authority);
+        ElementKind kind = ElementKind.METHOD;
+        if (name == null) {
+            /*
+             * No name found for the given authority. We may use the primary name as a fallback.
+             * But before doing that, maybe we can find the name that we are looking for in the
+             * hard-coded values in the 'org.apache.sis.internal.referencing.provider' package.
+             * The typical use case is when this DefaultOperationMethod has been instantiated
+             * by the EPSG factory using only the information found in the EPSG database.
+             *
+             * We can find the hard-coded names by looking at the ParameterDescriptorGroup of the
+             * enclosing ProjectedCRS or DerivedCRS. This is because that parameter descriptor was
+             * typically provided by the 'org.apache.sis.internal.referencing.provider' package in
+             * order to create the MathTransform associated with the enclosing CRS.  The enclosing
+             * CRS is either the immediate parent in WKT 1, or the parent of the parent in WKT 2.
+             */
+            final FormattableObject parent = formatter.getEnclosingElement(isWKT1 ? 1 : 2);
+            if (parent instanceof GeneralDerivedCRS) {
+                final Conversion conversion = ((GeneralDerivedCRS) parent).getConversionFromBase();
+                if (conversion != null) {   // Should never be null, but let be safe.
+                    final ParameterDescriptorGroup descriptor;
+                    if (conversion instanceof Parameterized) {  // Usual case in SIS implementation.
+                        descriptor = ((Parameterized) conversion).getParameterDescriptors();
+                    } else {
+                        descriptor = conversion.getParameterValues().getDescriptor();
+                    }
+                    name = IdentifiedObjects.getName(descriptor, authority);
+                }
+            }
+            if (name == null) {
+                name = IdentifiedObjects.getName(this, null);
+                if (name == null) {
+                    name = Vocabulary.getResources(formatter.getLocale()).getString(Vocabulary.Keys.Unnamed);
+                    kind = ElementKind.NAME;  // Because the "Unnamed" string is not a real OperationMethod name.
+                }
+            }
+        }
+        formatter.append(name, kind);
+        if (isWKT1) {
             /*
              * The WKT 1 keyword is "PROJECTION", which imply that the operation method should be of type
              * org.opengis.referencing.operation.Projection. So strictly speaking only the first check in
@@ -660,10 +759,179 @@ public class DefaultOperationMethod extends AbstractIdentifiedObject implements 
              */
             final Class<? extends SingleOperation> type = getOperationType();
             if (Projection.class.isAssignableFrom(type) || type.isAssignableFrom(Projection.class)) {
-                return "Projection";
+                return WKTKeywords.Projection;
             }
             formatter.setInvalidWKT(this, null);
         }
-        return "Method";
+        return WKTKeywords.Method;
+    }
+
+
+
+
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+    ////////                                                                                  ////////
+    ////////                               XML support with JAXB                              ////////
+    ////////                                                                                  ////////
+    ////////        The following methods are invoked by JAXB using reflection (even if       ////////
+    ////////        they are private) or are helpers for other methods invoked by JAXB.       ////////
+    ////////        Those methods can be safely removed if Geographic Markup Language         ////////
+    ////////        (GML) support is not needed.                                              ////////
+    ////////                                                                                  ////////
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Creates a new object in which every attributes are set to a null value.
+     * <strong>This is not a valid object.</strong> This constructor is strictly
+     * reserved to JAXB, which will assign values to the fields using reflexion.
+     */
+    private DefaultOperationMethod() {
+        super(org.apache.sis.internal.referencing.NilReferencingObject.INSTANCE);
+    }
+
+    /**
+     * Invoked by JAXB at unmarshalling time.
+     *
+     * @see #getSourceDimensions()
+     */
+    private void setSourceDimensions(final Integer value) {
+        if (sourceDimensions == null) {
+            sourceDimensions = value;
+        } else {
+            MetadataUtilities.propertyAlreadySet(DefaultOperationMethod.class, "setSourceDimensions", "sourceDimensions");
+        }
+    }
+
+    /**
+     * Invoked by JAXB at unmarshalling time.
+     *
+     * @see #getTargetDimensions()
+     */
+    private void setTargetDimensions(final Integer value) {
+        if (targetDimensions == null) {
+            targetDimensions = value;
+        } else {
+            MetadataUtilities.propertyAlreadySet(DefaultOperationMethod.class, "setTargetDimensions", "targetDimensions");
+        }
+    }
+
+    /**
+     * Invoked by JAXB for marshalling a citation to the formula. In principle at most one of
+     * {@code getFormulaCitation()} and {@link #getFormulaDescription()} methods can return a
+     * non-null value. However SIS accepts both coexist (but this is invalid GML).
+     */
+    @XmlElement(name = "formulaCitation")
+    private Citation getFormulaCitation() {
+        final Formula formula = getFormula();   // Give to users a chance to override.
+        return (formula != null) ? formula.getCitation() : null;
+    }
+
+    /**
+     * Invoked by JAXB for marshalling the formula literally. In principle at most one of
+     * {@code getFormulaDescription()} and {@link #getFormulaCitation()} methods can return
+     * a non-null value. However SIS accepts both to coexist (but this is invalid GML).
+     */
+    @XmlElement(name = "formula")
+    private String getFormulaDescription() {
+        final Formula formula = getFormula();   // Give to users a chance to override.
+        return (formula != null) ? StringAdapter.toString(formula.getFormula()) : null;
+    }
+
+    /**
+     * Invoked by JAXB for setting the citation to the formula.
+     */
+    private void setFormulaCitation(final Citation citation) {
+        if (formula == null || formula.getCitation() == null) {
+            formula = (formula == null) ? new DefaultFormula(citation)
+                      : new DefaultFormula(formula.getFormula(), citation);
+        } else {
+            MetadataUtilities.propertyAlreadySet(DefaultOperationMethod.class, "setFormulaCitation", "formulaCitation");
+        }
+    }
+
+    /**
+     * Invoked by JAXB for setting the formula description.
+     */
+    private void setFormulaDescription(final String description) {
+        if (formula == null || formula.getFormula() == null) {
+            formula = (formula == null) ? new DefaultFormula(description)
+                      : new DefaultFormula(new SimpleInternationalString(description), formula.getCitation());
+        } else {
+            MetadataUtilities.propertyAlreadySet(DefaultOperationMethod.class, "setFormulaDescription", "formula");
+        }
+    }
+
+    /**
+     * Invoked by JAXB for getting the parameters to marshal. This method usually marshals the sequence of
+     * descriptors without their {@link ParameterDescriptorGroup} wrapper, because GML is defined that way.
+     * The {@code ParameterDescriptorGroup} wrapper is a GeoAPI addition done for allowing usage of its
+     * methods as a convenience (e.g. {@link ParameterDescriptorGroup#descriptor(String)}).
+     *
+     * <p>However it could happen that the user really wanted to specify a {@code ParameterDescriptorGroup} as
+     * the sole {@code <gml:parameter>} element. We currently have no easy way to distinguish those cases.</p>
+     *
+     * <div class="note"><b>Tip:</b>
+     * One possible way to distinguish the two cases would be to check that the parameter group does not contain
+     * any property that this method does not have:
+     *
+     * {@preformat java
+     *   if (IdentifiedObjects.getProperties(this).entrySet().containsAll(
+     *       IdentifiedObjects.getProperties(parameters).entrySet())) ...
+     * }
+     *
+     * But we would need to make sure that {@link AbstractSingleOperation#getParameters()} is consistent
+     * with the decision taken by this method.</div>
+     *
+     * <p><b>Historical note:</b> older, deprecated, names for the parameters were:
+     * <ul>
+     *   <li>{@code includesParameter}</li>
+     *   <li>{@code generalOperationParameter} - note that this name was used by the EPSG registry</li>
+     *   <li>{@code usesParameter}</li>
+     * </ul>
+     *
+     * @see #getParameters()
+     * @see AbstractSingleOperation#getParameters()
+     */
+    @XmlElement(name = "parameter")
+    private GeneralParameterDescriptor[] getDescriptors() {
+        if (parameters != null) {
+            final List<GeneralParameterDescriptor> descriptors = parameters.descriptors();
+            if (descriptors != null) {      // Paranoiac check (should not be allowed).
+                return CC_OperationMethod.filterImplicit(descriptors.toArray(
+                        new GeneralParameterDescriptor[descriptors.size()]));
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Invoked by JAXB for setting the unmarshalled parameters.
+     * This method wraps the given descriptors in a {@link DefaultParameterDescriptorGroup}.
+     *
+     * <p>The parameter descriptors created by this method are incomplete since we can not
+     * provide a non-null value for {@link ParameterDescriptor#getValueClass()}. The value
+     * class will be provided either by replacing this {@code OperationMethod} by one of the
+     * pre-defined methods, or by unmarshalling the enclosing {@link AbstractSingleOperation}.</p>
+     *
+     * <p><b>Maintenance note:</b> the {@code "setDescriptors"} method name is also hard-coded in
+     * {@link org.apache.sis.internal.jaxb.referencing.CC_GeneralOperationParameter} for logging purpose.</p>
+     *
+     * @see AbstractSingleOperation#setParameters
+     */
+    private void setDescriptors(final GeneralParameterDescriptor[] descriptors) {
+        if (parameters == null) {
+            parameters = CC_OperationMethod.group(super.getName(), descriptors);
+        } else {
+            MetadataUtilities.propertyAlreadySet(DefaultOperationMethod.class, "setDescriptors", "parameter");
+        }
+    }
+
+    /**
+     * Invoked by {@link AbstractSingleOperation} for completing the parameter descriptor.
+     */
+    final void updateDescriptors(final GeneralParameterDescriptor[] descriptors) {
+        final ParameterDescriptorGroup previous = parameters;
+        parameters = new DefaultParameterDescriptorGroup(IdentifiedObjects.getProperties(previous),
+                previous.getMinimumOccurs(), previous.getMaximumOccurs(), descriptors);
     }
 }

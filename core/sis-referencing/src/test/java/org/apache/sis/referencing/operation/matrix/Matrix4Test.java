@@ -28,8 +28,8 @@ import static org.apache.sis.referencing.operation.matrix.Matrix4.SIZE;
  * This class inherits all tests defined in {@link MatrixTestCase}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.4
  * @version 0.4
+ * @since   0.4
  * @module
  */
 @DependsOn(SolverTest.class)
@@ -82,11 +82,11 @@ public final strictfp class Matrix4Test extends MatrixTestCase {
     /**
      * Tests the accuracy of a chain of matrix operations.
      *
-     * @throws NoninvertibleMatrixException Should never happen.
+     * @throws NoninvertibleMatrixException should never happen.
      */
     @Test
     public void testAccuracy() throws NoninvertibleMatrixException {
-        final double parisMeridian = 2 + (20 + 13.82/60)/60;  // Paris meridian: 2°20'13.82"
+        final double parisMeridian = 2 + (20 + 13.82/60)/60;            // Paris meridian: 2°20'13.82"
         final double toRadians = StrictMath.PI / 180;
         /*
          * Gradians to degrees with a Prime Meridian shift
@@ -95,7 +95,7 @@ public final strictfp class Matrix4Test extends MatrixTestCase {
         final Matrix4 step1 = new Matrix4(
                 0.9,  0,    0,    parisMeridian,
                 0,    0.9,  0,    0,
-                0,    0,    0.8,  0, // Random conversion factor for z values.
+                0,    0,    0.8,  0,                                    // Random conversion factor for z values.
                 0,    0,    0,    1);
         /*
          * Degrees to radians with swapping of (longitude, latitude) axes

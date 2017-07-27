@@ -19,12 +19,12 @@ package org.apache.sis.referencing.operation.transform;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Set;
-import java.util.AbstractSet;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.ServiceLoader;
 import org.opengis.referencing.operation.SingleOperation;
 import org.opengis.referencing.operation.OperationMethod;
+import org.apache.sis.internal.util.SetOfUnknownSize;
 import org.apache.sis.referencing.operation.DefaultOperationMethod;
 
 
@@ -42,11 +42,11 @@ import org.apache.sis.referencing.operation.DefaultOperationMethod;
  * of all elements in this set.
  *
  * @author  Martin Desruisseaux (Geomatys)
+ * @version 0.7
  * @since   0.6
- * @version 0.6
  * @module
  */
-final class OperationMethodSet extends AbstractSet<OperationMethod> {
+final class OperationMethodSet extends SetOfUnknownSize<OperationMethod> {
     /**
      * The operation type we are looking for.
      */
@@ -73,15 +73,15 @@ final class OperationMethodSet extends AbstractSet<OperationMethod> {
      * Constructs a set wrapping the given iterable.
      * The caller musts holds the lock on {@code methods} when invoking this constructor.
      *
-     * @param type The type of coordinate operation for which to retain methods.
-     * @param methods The {@link DefaultMathTransformFactory#methods} used for fetching the initial methods.
+     * @param  type     the type of coordinate operation for which to retain methods.
+     * @param  methods  the {@link DefaultMathTransformFactory#methods} used for fetching the initial methods.
      */
     OperationMethodSet(final Class<? extends SingleOperation> type,
             final Iterable<? extends OperationMethod> methods)
     {
         this.type = type;
         this.methods = methods;
-        cachedMethods = new ArrayList<OperationMethod>();
+        cachedMethods = new ArrayList<>();
         reset();
     }
 
@@ -163,6 +163,14 @@ final class OperationMethodSet extends AbstractSet<OperationMethod> {
     }
 
     /**
+     * Returns {@code true} if the {@link #size()} method is cheap.
+     */
+    @Override
+    protected synchronized boolean isSizeKnown() {
+        return methodIterator == null;
+    }
+
+    /**
      * Returns {@code true} if {@link #next(int)} can return an operation method at the given index.
      */
     final synchronized boolean hasNext(final int index) {
@@ -177,7 +185,7 @@ final class OperationMethodSet extends AbstractSet<OperationMethod> {
     /**
      * Returns the operation method at the given index. In case of index out of bounds, this method throws a
      * {@link NoSuchElementException} instead than an {@link IndexOutOfBoundsException} because this method
-     * is designed for being invoked by {@link Iter#next()}.
+     * is designed for being invoked by {@link Iterator#next()}.
      */
     final synchronized OperationMethod next(final int index) {
         if (index >= cachedMethods.size()) {

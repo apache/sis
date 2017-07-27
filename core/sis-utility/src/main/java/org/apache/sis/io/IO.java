@@ -30,8 +30,8 @@ import org.apache.sis.util.resources.Vocabulary;
  * Utilities methods working on {@link java.io} objects.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.3
+ * @since   0.3
  * @module
  */
 public final class IO extends Static {
@@ -46,10 +46,10 @@ public final class IO extends Static {
      * of wrappers defined in this package around a flushable object, invokes the
      * {@link Flushable#flush() flush()} method on that object. Otherwise do nothing.
      *
-     * <p>Chains of wrappers are followed until a {@code Flushable}
-     * instance is found, if any. The search stops at the first occurrence found.</p>
+     * <p>Chains of wrappers are followed until a {@code Flushable} instance is found, if any.
+     * The search stops at the first occurrence found.</p>
      *
-     * @param  out The stream or buffer to flush, or {@code null}.
+     * @param  out  the output stream, writer or buffer to flush, or {@code null}.
      * @throws IOException if an error occurred while flushing the given stream.
      */
     public static void flush(Appendable out) throws IOException {
@@ -67,12 +67,12 @@ public final class IO extends Static {
      * of wrappers defined in this package around a closeable object, invokes the
      * {@link Closeable#close() close()} method on that object. Otherwise do nothing.
      *
-     * <p>Chains of wrappers are followed until a {@code Closeable}
-     * instance is found, if any. The first {@link Flushable} instance found <em>before</em> the
-     * {@code Closeable} one, if any, is {@linkplain Flushable#flush() flushed}. The search stops
-     * at the first {@code Closeable} occurrence found.</p>
+     * <p>Chains of wrappers are followed until a {@code Closeable} instance is found, if any.
+     * The first {@link Flushable} instance found <em>before</em> the {@code Closeable} one,
+     * if any, is {@linkplain Flushable#flush() flushed}.
+     * The search stops at the first {@code Closeable} occurrence found.</p>
      *
-     * @param  out The stream or buffer to close, or {@code null}.
+     * @param  out  the output stream, writer or buffer to close, or {@code null}.
      * @throws IOException if an error occurred while closing the given stream.
      */
     public static void close(Appendable out) throws IOException {
@@ -113,8 +113,8 @@ public final class IO extends Static {
      * to get proper content. In particular, this is necessary if the chain of {@code Appendable}s
      * contains {@link TableAppender} or {@link LineAppender} instances.</p>
      *
-     * @param  out The stream or buffer from which to get the content, or {@code null}.
-     * @return The content of the given stream of buffer, or {@code null} if unavailable.
+     * @param  out  the output stream, writer or buffer from which to get the content, or {@code null}.
+     * @return the content of the given stream of buffer, or {@code null} if unavailable.
      *
      * @see #flush(Appendable)
      */
@@ -153,9 +153,8 @@ public final class IO extends Static {
      * Any write operations performed on the returned writer will be forwarded
      * to the given {@code Appendable}.
      *
-     * @param  out The stream or buffer to view as a {@link Writer}, or {@code null}.
-     * @return A view of this {@code Appendable} as a writer, or {@code null} if the
-     *         given argument was null.
+     * @param  out  the output stream, writer or buffer to view as a {@link Writer}, or {@code null}.
+     * @return a view of this {@code Appendable} as a writer, or {@code null} if the given argument was null.
      */
     public static Writer asWriter(final Appendable out) {
         if (out == null || out instanceof Writer) {

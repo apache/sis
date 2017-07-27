@@ -19,9 +19,7 @@ package org.apache.sis.referencing.cs;
 import java.util.Map;
 import java.util.EnumMap;
 import java.util.Arrays;
-import javax.measure.unit.SI;
-import javax.measure.unit.Unit;
-import javax.measure.unit.NonSI;
+import javax.measure.Unit;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -33,8 +31,11 @@ import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.apache.sis.referencing.AbstractIdentifiedObject;
-import org.apache.sis.internal.referencing.ReferencingUtilities;
-import org.apache.sis.internal.referencing.AxisDirections;
+import org.apache.sis.internal.referencing.WKTUtilities;
+import org.apache.sis.internal.metadata.AxisDirections;
+import org.apache.sis.internal.metadata.WKTKeywords;
+import org.apache.sis.internal.referencing.Resources;
+import org.apache.sis.io.wkt.ElementKind;
 import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.resources.Errors;
@@ -63,18 +64,19 @@ import static org.apache.sis.util.Utilities.deepEquals;
  * objects and passed between threads without synchronization.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.4
- * @version 0.5
- * @module
+ * @version 0.8
  *
  * @see DefaultCoordinateSystemAxis
  * @see org.apache.sis.referencing.crs.AbstractCRS
+ *
+ * @since 0.4
+ * @module
  */
 @XmlType(name = "AbstractCoordinateSystemType")
 @XmlRootElement(name = "AbstractCoordinateSystem")
 @XmlSeeAlso({
     DefaultAffineCS.class,
-    DefaultCartesianCS.class, // Not an AffineCS subclass in GML schema.
+    DefaultCartesianCS.class,               // Not an AffineCS subclass in GML schema.
     DefaultSphericalCS.class,
     DefaultEllipsoidalCS.class,
     DefaultCylindricalCS.class,
@@ -82,6 +84,7 @@ import static org.apache.sis.util.Utilities.deepEquals;
     DefaultLinearCS.class,
     DefaultVerticalCS.class,
     DefaultTimeCS.class,
+    DefaultParametricCS.class,
     DefaultUserDefinedCS.class
 })
 public class AbstractCS extends AbstractIdentifiedObject implements CoordinateSystem {
@@ -96,15 +99,14 @@ public class AbstractCS extends AbstractIdentifiedObject implements CoordinateSy
     static final int VALID = 0, INVALID_DIRECTION = 1, INVALID_UNIT = 2;
 
     /**
-     * An empty array of axes, used only for JAXB.
-     */
-    private static final CoordinateSystemAxis[] EMPTY = new CoordinateSystemAxis[0];
-
-    /**
      * The sequence of axes for this coordinate system.
+     *
+     * <p><b>Consider this field as final!</b>
+     * This field is modified only at unmarshalling time by {@link #setAxis(CoordinateSystemAxis[])}</p>
+     *
+     * @see #getAxis(int)
      */
-    @XmlElement(name = "axis")
-    private final CoordinateSystemAxis[] axes;
+    private CoordinateSystemAxis[] axes;
 
     /**
      * Other coordinate systems derived from this coordinate systems for other axes conventions.
@@ -113,16 +115,6 @@ public class AbstractCS extends AbstractIdentifiedObject implements CoordinateSy
      * @see #forConvention(AxesConvention)
      */
     private transient Map<AxesConvention,AbstractCS> derived;
-
-    /**
-     * Constructs a new object in which every attributes are set to a null or empty value.
-     * <strong>This is not a valid object.</strong> This constructor is strictly reserved
-     * to JAXB, which will assign values to the fields using reflexion.
-     */
-    AbstractCS() {
-        super(org.apache.sis.internal.referencing.NilReferencingObject.INSTANCE);
-        axes = EMPTY;
-    }
 
     /**
      * Constructs a coordinate system from a set of properties and a sequence of axes.
@@ -139,7 +131,7 @@ public class AbstractCS extends AbstractIdentifiedObject implements CoordinateSy
      *   </tr>
      *   <tr>
      *     <td>{@value org.opengis.referencing.IdentifiedObject#NAME_KEY}</td>
-     *     <td>{@link ReferenceIdentifier} or {@link String}</td>
+     *     <td>{@link org.opengis.referencing.ReferenceIdentifier} or {@link String}</td>
      *     <td>{@link #getName()}</td>
      *   </tr>
      *   <tr>
@@ -149,7 +141,7 @@ public class AbstractCS extends AbstractIdentifiedObject implements CoordinateSy
      *   </tr>
      *   <tr>
      *     <td>{@value org.opengis.referencing.IdentifiedObject#IDENTIFIERS_KEY}</td>
-     *     <td>{@link ReferenceIdentifier} (optionally as array)</td>
+     *     <td>{@link org.opengis.referencing.ReferenceIdentifier} (optionally as array)</td>
      *     <td>{@link #getIdentifiers()}</td>
      *   </tr>
      *   <tr>
@@ -159,9 +151,10 @@ public class AbstractCS extends AbstractIdentifiedObject implements CoordinateSy
      *   </tr>
      * </table>
      *
-     * @param properties The properties to be given to the identified object.
-     * @param axes       The sequence of axes.
+     * @param  properties  the properties to be given to the identified object.
+     * @param  axes        the sequence of axes.
      */
+    @SuppressWarnings("OverridableMethodCallDuringObjectConstruction")
     public AbstractCS(final Map<String,?> properties, CoordinateSystemAxis... axes) {
         super(properties);
         ensureNonNull("axes", axes);
@@ -182,12 +175,12 @@ public class AbstractCS extends AbstractIdentifiedObject implements CoordinateSy
              */
             switch (validateAxis(direction, unit)) {
                 case INVALID_DIRECTION: {
-                    throw new IllegalArgumentException(Errors.getResources(properties).getString(
-                            Errors.Keys.IllegalAxisDirection_2, getClass(), direction));
+                    throw new IllegalArgumentException(Resources.forProperties(properties).getString(
+                            Resources.Keys.IllegalAxisDirection_2, getClass(), direction));
                 }
                 case INVALID_UNIT: {
-                    throw new IllegalArgumentException(Errors.getResources(properties).getString(
-                            Errors.Keys.IllegalUnitFor_2, name, unit));
+                    throw new IllegalArgumentException(Resources.forProperties(properties).getString(
+                            Resources.Keys.IllegalUnitFor_2, name, unit));
                 }
             }
             /*
@@ -201,8 +194,8 @@ public class AbstractCS extends AbstractIdentifiedObject implements CoordinateSy
                     final AxisDirection other = axes[j].getDirection();
                     final AxisDirection abs = AxisDirections.absolute(other);
                     if (dir.equals(abs) && !abs.equals(AxisDirection.FUTURE)) {
-                        throw new IllegalArgumentException(Errors.getResources(properties).getString(
-                                Errors.Keys.ColinearAxisDirections_2, direction, other));
+                        throw new IllegalArgumentException(Resources.forProperties(properties).getString(
+                                Resources.Keys.ColinearAxisDirections_2, direction, other));
                     }
                 }
             }
@@ -216,20 +209,24 @@ public class AbstractCS extends AbstractIdentifiedObject implements CoordinateSy
      *
      * <p>This constructor performs a shallow copy, i.e. the properties are not cloned.</p>
      *
-     * @param cs The coordinate system to copy.
+     * @param  cs  the coordinate system to copy.
      *
      * @see #castOrCopy(CoordinateSystem)
      */
     protected AbstractCS(final CoordinateSystem cs) {
         super(cs);
-        if (cs instanceof AbstractCS) {
-            axes = ((AbstractCS) cs).axes; // Share the array.
-        } else {
-            axes = new CoordinateSystemAxis[cs.getDimension()];
-            for (int i=0; i<axes.length; i++) {
-                axes[i] = cs.getAxis(i);
-            }
+        axes = (cs instanceof AbstractCS) ? ((AbstractCS) cs).axes : getAxes(cs);
+    }
+
+    /**
+     * Returns the axes of the given coordinate system.
+     */
+    private static CoordinateSystemAxis[] getAxes(final CoordinateSystem cs) {
+        final CoordinateSystemAxis[] axes = new CoordinateSystemAxis[cs.getDimension()];
+        for (int i=0; i<axes.length; i++) {
+            axes[i] = cs.getAxis(i);
         }
+        return axes;
     }
 
     /**
@@ -260,8 +257,8 @@ public class AbstractCS extends AbstractIdentifiedObject implements CoordinateSy
      *       properties contained in the given object are not recursively copied.</li>
      * </ul>
      *
-     * @param  object The object to get as a SIS implementation, or {@code null} if none.
-     * @return A SIS implementation containing the values of the given object (may be the
+     * @param  object  the object to get as a SIS implementation, or {@code null} if none.
+     * @return a SIS implementation containing the values of the given object (may be the
      *         given object itself), or {@code null} if the argument was null.
      */
     public static AbstractCS castOrCopy(final CoordinateSystem object) {
@@ -273,13 +270,14 @@ public class AbstractCS extends AbstractIdentifiedObject implements CoordinateSy
      * or an {@code INVALID_*} error code otherwise. This method is invoked at construction time for checking
      * argument validity. The default implementation returns {@code VALID} in all cases. Subclasses override
      * this method in order to put more restrictions on allowed axis directions and check for compatibility
-     * with {@linkplain SI#METRE metre} or {@linkplain NonSI#DEGREE_ANGLE degree} units.
+     * with {@linkplain org.apache.sis.measure.Units#METRE metre} or
+     * {@linkplain org.apache.sis.measure.Units#DEGREE degree} units.
      *
      * <p><b>Note for implementors:</b> since this method is invoked at construction time, it shall not depend
      * on this object's state. This method is not in public API for that reason.</p>
      *
-     * @param  direction The direction to test for compatibility (never {@code null}).
-     * @param  unit The unit to test for compatibility (never {@code null}).
+     * @param  direction  the direction to test for compatibility (never {@code null}).
+     * @param  unit       the unit to test for compatibility (never {@code null}).
      * @return {@link #VALID} if the given direction and unit are compatible with this coordinate system,
      *         {@link #INVALID_DIRECTION} if the direction is invalid or {@link #INVALID_UNIT} if the unit
      *         is invalid.
@@ -293,7 +291,7 @@ public class AbstractCS extends AbstractIdentifiedObject implements CoordinateSy
      * The default implementation returns {@code CoordinateSystem.class}.
      * Subclasses implementing a more specific GeoAPI interface shall override this method.
      *
-     * @return The coordinate system interface implemented by this class.
+     * @return the coordinate system interface implemented by this class.
      */
     @Override
     public Class<? extends CoordinateSystem> getInterface() {
@@ -304,7 +302,7 @@ public class AbstractCS extends AbstractIdentifiedObject implements CoordinateSy
      * Returns the number of dimensions of this coordinate system.
      * This is the number of axes given at construction time.
      *
-     * @return The number of dimensions of this coordinate system.
+     * @return the number of dimensions of this coordinate system.
      */
     @Override
     public final int getDimension() {
@@ -314,8 +312,8 @@ public class AbstractCS extends AbstractIdentifiedObject implements CoordinateSy
     /**
      * Returns the axis for this coordinate system at the specified dimension.
      *
-     * @param  dimension The zero based index of axis.
-     * @return The axis at the specified dimension.
+     * @param  dimension  the zero based index of axis.
+     * @return the axis at the specified dimension.
      * @throws IndexOutOfBoundsException if {@code dimension} is out of bounds.
      */
     @Override
@@ -327,24 +325,21 @@ public class AbstractCS extends AbstractIdentifiedObject implements CoordinateSy
      * Returns a coordinate system equivalent to this one but with axes rearranged according the given convention.
      * If this coordinate system is already compatible with the given convention, then this method returns {@code this}.
      *
-     * @param  convention The axes convention for which a coordinate system is desired.
-     * @return A coordinate system compatible with the given convention (may be {@code this}).
+     * @param  convention  the axes convention for which a coordinate system is desired.
+     * @return a coordinate system compatible with the given convention (may be {@code this}).
      *
      * @see org.apache.sis.referencing.crs.AbstractCRS#forConvention(AxesConvention)
      */
     public synchronized AbstractCS forConvention(final AxesConvention convention) {
         ensureNonNull("convention", convention);
         if (derived == null) {
-            derived = new EnumMap<AxesConvention,AbstractCS>(AxesConvention.class);
+            derived = new EnumMap<>(AxesConvention.class);
         }
         AbstractCS cs = derived.get(convention);
         if (cs == null) {
-            switch (convention) {
-                case NORMALIZED:              cs = Normalizer.normalize(this, true,  true);  break;
-                case CONVENTIONALLY_ORIENTED: cs = Normalizer.normalize(this, true,  false); break;
-                case RIGHT_HANDED:            cs = Normalizer.normalize(this, false, false); break;
-                case POSITIVE_RANGE:          cs = Normalizer.shiftAxisRange(this);          break;
-                default: throw new AssertionError(convention);
+            cs = Normalizer.forConvention(this, convention);
+            if (cs == null) {
+                cs = this;  // This coordinate system is already normalized.
             }
             for (final AbstractCS existing : derived.values()) {
                 if (cs.equals(existing)) {
@@ -358,29 +353,49 @@ public class AbstractCS extends AbstractIdentifiedObject implements CoordinateSy
     }
 
     /**
-     * Returns a coordinate system of the same type than this CS but with different axes.
+     * Returns a coordinate system usually of the same type than this CS but with different axes.
      * This method shall be overridden by all {@code AbstractCS} subclasses in this package.
      *
-     * @param  axes The set of axes to give to the new coordinate system.
-     * @return A new coordinate system of the same type than {@code this}, but using the given axes.
+     * <p>This method returns a coordinate system of the same type if the number of axes is unchanged.
+     * But if the given {@code axes} array has less elements than this coordinate system dimension, then
+     * this method may return an other kind of coordinate system. See {@link AxisFilter} for an example.</p>
+     *
+     * @param  axes  the set of axes to give to the new coordinate system.
+     * @return a new coordinate system of the same type than {@code this}, but using the given axes.
      */
-    AbstractCS createSameType(final Map<String,?> properties, final CoordinateSystemAxis[] axes) {
+    AbstractCS createForAxes(final Map<String,?> properties, final CoordinateSystemAxis[] axes) {
         return new AbstractCS(properties, axes);
+    }
+
+    /**
+     * Convenience method for implementations of {@link #createForAxes(Map, CoordinateSystemAxis[])}
+     * when the resulting coordinate system would have an unexpected number of dimensions.
+     *
+     * @param  properties  the properties which was supposed to be given to the constructor.
+     * @param  axes        the axes which was supposed to be given to the constructor.
+     * @param  expected    the minimal expected number of dimensions (may be less than {@link #getDimension()}).
+     */
+    static IllegalArgumentException unexpectedDimension(final Map<String,?> properties,
+            final CoordinateSystemAxis[] axes, final int expected)
+    {
+        return new IllegalArgumentException(Errors.getResources(properties).getString(
+                Errors.Keys.MismatchedDimension_3, "filter(cs)", expected, axes.length));
     }
 
     /**
      * Compares the specified object with this coordinate system for equality.
      *
-     * @param  object The object to compare to {@code this}.
-     * @param  mode {@link ComparisonMode#STRICT STRICT} for performing a strict comparison, or
-     *         {@link ComparisonMode#IGNORE_METADATA IGNORE_METADATA} for comparing only properties
-     *         relevant to coordinate transformations.
+     * @param  object  the object to compare to {@code this}.
+     * @param  mode    {@link ComparisonMode#STRICT STRICT} for performing a strict comparison, or
+     *                 {@link ComparisonMode#IGNORE_METADATA IGNORE_METADATA} for comparing only
+     *                 properties relevant to coordinate transformations.
      * @return {@code true} if both objects are equal.
      */
     @Override
+    @SuppressWarnings("fallthrough")
     public boolean equals(final Object object, final ComparisonMode mode) {
         if (object == this) {
-            return true; // Slight optimization.
+            return true;                                            // Slight optimization.
         }
         if (!super.equals(object, mode)) {
             return false;
@@ -390,15 +405,25 @@ public class AbstractCS extends AbstractIdentifiedObject implements CoordinateSy
                 // No need to check the class - this check has been done by super.equals(…).
                 return Arrays.equals(axes, ((AbstractCS) object).axes);
             }
+            case DEBUG: {
+                final int d1 = axes.length;
+                final int d2 = ((CoordinateSystem) object).getDimension();
+                if (d1 != d2) {
+                    throw new AssertionError(Errors.format(Errors.Keys.MismatchedDimension_2, d1, d2));
+                }
+                // Fall through
+            }
             default: {
                 final CoordinateSystem that = (CoordinateSystem) object;
                 final int dimension = getDimension();
                 if (dimension != that.getDimension()) {
                     return false;
                 }
-                for (int i=0; i<dimension; i++) {
-                    if (!deepEquals(getAxis(i), that.getAxis(i), mode)) {
-                        return false;
+                if (mode != ComparisonMode.ALLOW_VARIANT) {
+                    for (int i=0; i<dimension; i++) {
+                        if (!deepEquals(getAxis(i), that.getAxis(i), mode)) {
+                            return false;
+                        }
                     }
                 }
                 return true;
@@ -411,7 +436,7 @@ public class AbstractCS extends AbstractIdentifiedObject implements CoordinateSy
      * See {@link org.apache.sis.referencing.AbstractIdentifiedObject#computeHashCode()}
      * for more information.
      *
-     * @return The hash code value. This value may change in any future Apache SIS version.
+     * @return the hash code value. This value may change in any future Apache SIS version.
      */
     @Override
     protected long computeHashCode() {
@@ -438,15 +463,68 @@ public class AbstractCS extends AbstractIdentifiedObject implements CoordinateSy
      * {@code CS} is defined in the WKT 2 specification only.</div>
      *
      * @return {@code "CS"}.
+     *
+     * @see <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html#36">WKT 2 specification §7.5</a>
      */
     @Override
     protected String formatTo(final Formatter formatter) {
-        final String type = ReferencingUtilities.toWKTType(CoordinateSystem.class, getInterface());
+        final String type = WKTUtilities.toType(CoordinateSystem.class, getInterface());
         if (type == null) {
             formatter.setInvalidWKT(this, null);
         }
-        formatter.append(type, null);
+        formatter.append(type, ElementKind.CODE_LIST);
         formatter.append(getDimension());
-        return "CS";
+        return WKTKeywords.CS;
+    }
+
+
+
+
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+    ////////                                                                                  ////////
+    ////////                               XML support with JAXB                              ////////
+    ////////                                                                                  ////////
+    ////////        The following methods are invoked by JAXB using reflection (even if       ////////
+    ////////        they are private) or are helpers for other methods invoked by JAXB.       ////////
+    ////////        Those methods can be safely removed if Geographic Markup Language         ////////
+    ////////        (GML) support is not needed.                                              ////////
+    ////////                                                                                  ////////
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * An empty array of axes, used only for JAXB.
+     */
+    private static final CoordinateSystemAxis[] EMPTY = new CoordinateSystemAxis[0];
+
+    /**
+     * Constructs a new object in which every attributes are set to a null or empty value.
+     * <strong>This is not a valid object.</strong> This constructor is strictly reserved
+     * to JAXB, which will assign values to the fields using reflexion.
+     */
+    AbstractCS() {
+        super(org.apache.sis.internal.referencing.NilReferencingObject.INSTANCE);
+        axes = EMPTY;
+        /*
+         * Coordinate system axes are mandatory for SIS working. We do not verify their presence here
+         * (because the verification would have to be done in an 'afterMarshal(…)' method and throwing
+         * an exception in that method causes the whole unmarshalling to fail). But the CS_CoordinateSystem
+         * adapter does some verifications.
+         */
+    }
+
+    /**
+     * Invoked by JAXB at marshalling time.
+     */
+    @XmlElement(name = "axis")
+    private CoordinateSystemAxis[] getAxis() {
+        return getAxes(this);                           // Give a chance to users to override getAxis(int).
+    }
+
+    /**
+     * Invoked by JAXB at unmarshalling time.
+     */
+    @SuppressWarnings("AssignmentToCollectionOrArrayFieldFromParameter")
+    private void setAxis(final CoordinateSystemAxis[] values) {
+        axes = values;
     }
 }

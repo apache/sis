@@ -30,6 +30,19 @@ import org.apache.sis.xml.Namespaces;
 
 /**
  * Result of a data quality measure organising the measured values as a coverage.
+ * The following properties are mandatory in a well-formed metadata according ISO 19115:
+ *
+ * <div class="preformat">{@code QE_CoverageResult}
+ * {@code   ├─spatialRepresentationType……………………} Method used to spatially represent the coverage result.
+ * {@code   ├─resultSpatialRepresentation………………} Digital representation of data quality measures composing the coverage result.
+ * {@code   ├─resultContentDescription………………………} Description of the content of the result coverage, i.e. semantic definition of the data quality measures.
+ * {@code   │   └─attributeDescription………………………} Description of the attribute described by the measurement value.
+ * {@code   ├─resultFormat………………………………………………………} Information about the format of the result coverage data.
+ * {@code   │   └─formatSpecificationCitation……} Citation/URL of the specification format.
+ * {@code   │       ├─title……………………………………………………} Name by which the cited resource is known.
+ * {@code   │       └─date………………………………………………………} Reference date for the cited resource.
+ * {@code   └─resultFile……………………………………………………………} Information about the data file containing the result coverage data.
+ * {@code       └─fileFormat…………………………………………………} Defines the format of the transfer data file.</div>
  *
  * <p><b>Limitations:</b></p>
  * <ul>
@@ -42,10 +55,11 @@ import org.apache.sis.xml.Namespaces;
  *
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.3
+ * @since   0.3
  * @module
  */
+@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "QE_CoverageResult_Type", propOrder = {
     "spatialRepresentationType",
     "resultSpatialRepresentation",
@@ -97,7 +111,7 @@ public class DefaultCoverageResult extends AbstractResult implements CoverageRes
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
-     * @param object The metadata to copy values from, or {@code null} if none.
+     * @param  object  the metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(CoverageResult)
      */
@@ -126,8 +140,8 @@ public class DefaultCoverageResult extends AbstractResult implements CoverageRes
      *       metadata contained in the given object are not recursively copied.</li>
      * </ul>
      *
-     * @param  object The object to get as a SIS implementation, or {@code null} if none.
-     * @return A SIS implementation containing the values of the given object (may be the
+     * @param  object  the object to get as a SIS implementation, or {@code null} if none.
+     * @return a SIS implementation containing the values of the given object (may be the
      *         given object itself), or {@code null} if the argument was null.
      */
     public static DefaultCoverageResult castOrCopy(final CoverageResult object) {
@@ -140,7 +154,7 @@ public class DefaultCoverageResult extends AbstractResult implements CoverageRes
     /**
      * Returns the method used to spatially represent the coverage result.
      *
-     * @return Spatial representation of the coverage result, or {@code null}.
+     * @return spatial representation of the coverage result, or {@code null}.
      */
     @Override
     @XmlElement(name = "spatialRepresentationType", namespace = Namespaces.GMI, required = true)
@@ -151,7 +165,7 @@ public class DefaultCoverageResult extends AbstractResult implements CoverageRes
     /**
      * Sets the method used to spatially represent the coverage result.
      *
-     * @param newValue The new spatial representation type value.
+     * @param  newValue  the new spatial representation type value.
      */
     public void setSpatialRepresentationType(final SpatialRepresentationType newValue) {
         checkWritePermission();
@@ -161,7 +175,7 @@ public class DefaultCoverageResult extends AbstractResult implements CoverageRes
     /**
      * Returns the digital representation of data quality measures composing the coverage result.
      *
-     * @return Digital representation of data quality measures composing the coverage result, or {@code null}.
+     * @return digital representation of data quality measures composing the coverage result, or {@code null}.
      */
     @Override
     @XmlElement(name = "resultSpatialRepresentation", namespace = Namespaces.GMI, required = true)
@@ -172,7 +186,7 @@ public class DefaultCoverageResult extends AbstractResult implements CoverageRes
     /**
      * Sets the digital representation of data quality measures composing the coverage result.
      *
-     * @param newValue The new spatial representation value.
+     * @param  newValue  the new spatial representation value.
      */
     public void setResultSpatialRepresentation(final SpatialRepresentation newValue) {
         checkWritePermission();
@@ -183,7 +197,7 @@ public class DefaultCoverageResult extends AbstractResult implements CoverageRes
      * Returns the description of the content of the result coverage, i.e. semantic definition
      * of the data quality measures.
      *
-     * @return Description of the content of the result coverage, or {@code null}.
+     * @return description of the content of the result coverage, or {@code null}.
      */
     @Override
     @XmlElement(name = "resultContentDescription", namespace = Namespaces.GMI, required = true)
@@ -195,7 +209,7 @@ public class DefaultCoverageResult extends AbstractResult implements CoverageRes
      * Sets the description of the content of the result coverage, i.e. semantic definition
      * of the data quality measures.
      *
-     * @param newValue The new content description value.
+     * @param  newValue  the new content description value.
      */
     public void setResultContentDescription(final CoverageDescription newValue) {
         checkWritePermission();
@@ -205,7 +219,7 @@ public class DefaultCoverageResult extends AbstractResult implements CoverageRes
     /**
      * Returns the information about the format of the result coverage data.
      *
-     * @return Format of the result coverage data, or {@code null}.
+     * @return format of the result coverage data, or {@code null}.
      */
     @Override
     @XmlElement(name = "resultFormat", namespace = Namespaces.GMI, required = true)
@@ -216,7 +230,7 @@ public class DefaultCoverageResult extends AbstractResult implements CoverageRes
     /**
      * Sets the information about the format of the result coverage data.
      *
-     * @param newValue The new result format value.
+     * @param  newValue  the new result format value.
      */
     public void setResultFormat(final Format newValue) {
         checkWritePermission();
@@ -226,7 +240,7 @@ public class DefaultCoverageResult extends AbstractResult implements CoverageRes
     /**
      * Returns the information about the data file containing the result coverage data.
      *
-     * @return Data file containing the result coverage data, or {@code null}.
+     * @return data file containing the result coverage data, or {@code null}.
      */
     @Override
     @XmlElement(name = "resultFile", namespace = Namespaces.GMX, required = true)
@@ -237,7 +251,7 @@ public class DefaultCoverageResult extends AbstractResult implements CoverageRes
     /**
      * Sets the information about the data file containing the result coverage data.
      *
-     * @param newValue The new result file value.
+     * @param  newValue  the new result file value.
      */
     public void setResultFile(final DataFile newValue) {
         checkWritePermission();

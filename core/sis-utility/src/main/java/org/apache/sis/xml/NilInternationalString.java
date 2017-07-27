@@ -18,6 +18,7 @@ package org.apache.sis.xml;
 
 import java.util.Locale;
 import java.io.Serializable;
+import java.io.ObjectStreamException;
 import org.opengis.util.InternationalString;
 import org.apache.sis.util.resources.Errors;
 
@@ -26,8 +27,8 @@ import org.apache.sis.util.resources.Errors;
  * An empty {@link InternationalString} which is nil for the given reason.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.4
  * @version 0.4
+ * @since   0.4
  * @module
  */
 final class NilInternationalString implements InternationalString, NilObject, Serializable {
@@ -116,7 +117,7 @@ final class NilInternationalString implements InternationalString, NilObject, Se
     /**
      * Invoked on deserialization for replacing the deserialized instance by the unique instance.
      */
-    private Object readResolve() {
+    private Object readResolve() throws ObjectStreamException {
         return reason.createNilObject(InternationalString.class);
     }
 }
