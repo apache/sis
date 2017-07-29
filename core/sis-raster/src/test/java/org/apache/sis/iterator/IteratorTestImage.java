@@ -32,7 +32,7 @@ import java.util.Vector;
  *
  * @author Remi Marechal (Geomatys).
  */
-public class IteratorTestImage implements WritableRenderedImage {
+final class IteratorTestImage implements WritableRenderedImage {
 
     private final int minx;
     private final int miny;
@@ -53,21 +53,21 @@ public class IteratorTestImage implements WritableRenderedImage {
 
     public IteratorTestImage(final int minx, final int miny, final int width, final int height,
             final int tilesWidth, final int tilesHeight, final int tileGridXOffset, final int tileGridYOffset,
-            final SampleModel sampleM) {
-
+            final SampleModel sampleM)
+    {
         this.minx = minx;
         this.miny = miny;
         this.width = width;
         this.height = height;
         this.tileSize = new Dimension(tilesWidth, tilesHeight);
-        numxtile = (int) Math.ceil(width / (double) tilesWidth);
-        numytile = (int) Math.ceil(height / (double) tilesHeight);
+        numxtile = (int) StrictMath.ceil(width / (double) tilesWidth);
+        numytile = (int) StrictMath.ceil(height / (double) tilesHeight);
         sm = sampleM;
         tgXo = tileGridXOffset;
         tgYo = tileGridYOffset;
         tiles = new WritableRaster[numxtile * numytile];
-        minTx = (int) Math.floor((tgXo - minx) / (double)tileSize.width);
-        minTy = (int) Math.floor((tgYo - miny) / (double)tileSize.height);
+        minTx = (int) StrictMath.floor((tgXo - minx) / (double)tileSize.width);
+        minTy = (int) StrictMath.floor((tgYo - miny) / (double)tileSize.height);
     }
 
 
@@ -233,8 +233,8 @@ public class IteratorTestImage implements WritableRenderedImage {
     }
 
     private WritableRaster getTileFromPixCoords(final int x, final int y) {
-        final int tx = Math.floorDiv((x - tgXo), tileSize.width);
-        final int ty = Math.floorDiv((y - tgYo) , tileSize.height);
+        final int tx = StrictMath.floorDiv((x - tgXo), tileSize.width);
+        final int ty = StrictMath.floorDiv((y - tgYo), tileSize.height);
         return getWritableTile(tx, ty);
     }
 }
