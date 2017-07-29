@@ -14,8 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.iterator;
+package org.apache.sis.image;
 
+import org.apache.sis.image.PixelIteratorFactory;
+import org.apache.sis.image.PixelIterator;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.image.DataBuffer;

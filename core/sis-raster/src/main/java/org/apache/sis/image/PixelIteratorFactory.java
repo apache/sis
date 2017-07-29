@@ -14,18 +14,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.iterator;
+package org.apache.sis.image;
 
 import java.awt.Rectangle;
 import java.awt.image.*;
-import java.util.Arrays;
 
 /**
  * Create an appropriate iterator.
  *
  * @author Rémi Marechal (Geomatys).
  */
-public final class PixelIteratorFactory {
+final class PixelIteratorFactory {
 
     private PixelIteratorFactory() {
     }
