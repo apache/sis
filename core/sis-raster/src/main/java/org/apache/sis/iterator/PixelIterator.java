@@ -45,8 +45,8 @@ import org.opengis.coverage.grid.SequenceType;
  *
  * Moreover comportment not specify if iterator exceed image limits.
  *
- * @author Rémi Marechal       (Geomatys).
- * @author Martin Desruisseaux (Geomatys).
+ * @author Rémi Marechal (Geomatys)
+ * @author Martin Desruisseaux (Geomatys)
  */
 abstract class PixelIterator implements Closeable {
 
@@ -54,7 +54,7 @@ abstract class PixelIterator implements Closeable {
      * Define boundary, in pixel coordinates, of area traveled by this PixeIterator.
      * @see #getBoundary(boolean)
      */
-    protected final RectIter areaIterate;
+    final RectIter areaIterate;
 
     /**
      * Define boundary, in pixel coordinates, of iterated object.
@@ -66,58 +66,58 @@ abstract class PixelIterator implements Closeable {
      * Tile index of iterated object.
      * note : raster is considered as image of one tile.
      */
-    protected final RectIter tileIndexArea;
+    final RectIter tileIndexArea;
 
     /**
      * Size of tiles from iterated object.
      */
-    protected final Dimension tileSize;
+    final Dimension tileSize;
 
     /**
      * Current raster which is followed by Iterator.
      */
-    protected Raster currentRaster;
+    Raster currentRaster;
 
     /**
      * RenderedImage which is followed by Iterator.
      */
-    protected final RenderedImage renderedImage;
+    final RenderedImage renderedImage;
 //
     /**
      * Number of band.
      */
-    protected final int fixedNumBand;
+    final int fixedNumBand;
 
     /**
      * Number of raster band.
      * WARNING ! this is used a bit everywhere in iterator as a 'updateTileRaster' flag.
      */
-    protected int rasterNumBand;
+    int rasterNumBand;
 
     /**
      * Current band position in this current raster.
      */
-    protected int band;
+    int band;
 
     /**
      * {@link SampleModel} from the iterate object.
      */
-    protected final SampleModel currentSampleModel;
+    final SampleModel currentSampleModel;
 
     //-- Iteration attributs
     /**
      * Stored position of upper right corner of current traveled raster.
-     * Generaly when this values are reach an update of the current
+     * Generally when this values are reach an update of the current
      * traveled raster is effectuate.
      */
-    protected int currentRasterMaxX;
-    protected int currentRasterMaxY;
+    int currentRasterMaxX;
+    int currentRasterMaxY;
 
     /**
      * Current Tile index of current traveled raster.
      */
-    protected int tX;
-    protected int tY;
+    int tX;
+    int tY;
 
     /**
      * Create raster iterator to follow from minX, minY raster and rectangle intersection coordinate.
