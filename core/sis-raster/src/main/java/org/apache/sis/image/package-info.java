@@ -17,8 +17,17 @@
 
 /**
  * Provides helper classes for handling Java2D rendered images together with some operations.
- * This package does not use any geospatial functions; it works only on "pure" images (not necessarily RGB).
- * However this package is used as a basis for georeferenced or georeferenceable <cite>grid coverages</cite>.
+ * This package does not provide any geospatial functionalities;
+ * it works only on sample or pixel values stored in {@link java.awt.image.RenderedImage}s.
+ * Note that Java2D {@code RenderedImage}s have the following capabilities:
+ *
+ * <ul>
+ *   <li>Images may have an arbitrary number of bands (not necessarily RGB).</li>
+ *   <li>Sample values can be bytes, shorts (signed or unsigned), integers or floating-point values.</li>
+ *   <li>Images can be tiled.</li>
+ * </ul>
+ *
+ * This package is used as a basis for georeferenced or georeferenceable <cite>grid coverages</cite>.
  *
  * @author  Rémi Maréchal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
