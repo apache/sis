@@ -38,15 +38,16 @@ import org.apache.sis.util.ArgumentChecks;
 import org.opengis.coverage.grid.SequenceType;
 
 /**
- * Define standard iterator for image pixel.
+ * An iterator over sample values in an image. This iterator make easier to get the values
+ * without managing the complexity of various {@linkplain SampleModel sample model} and tiling.
+ * Iteration may be done on a full image or only a sub-area of it.
+ * Iteration order is implementation specific.
  *
- * Iteration order is define in sub-classes implementation.
- * However iteration begging by Bands.
- *
- * Moreover comportment not specify if iterator exceed image limits.
- *
- * @author Rémi Marechal (Geomatys)
- * @author Martin Desruisseaux (Geomatys)
+ * @author  Rémi Marechal (Geomatys)
+ * @author  Martin Desruisseaux (Geomatys)
+ * @version 0.8
+ * @since   0.8
+ * @module
  */
 public abstract class PixelIterator implements Closeable {
 

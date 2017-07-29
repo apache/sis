@@ -38,8 +38,11 @@ import static org.junit.Assert.*;
 /**
  * Base class of {@link PixelIterator} tests.
  *
- * @author Rémi Maréchal (Geomatys)
- * @author Martin Desruisseaux (Geomatys)
+ * @author  Rémi Maréchal (Geomatys)
+ * @author  Martin Desruisseaux (Geomatys)
+ * @version 0.8
+ * @since   0.8
+ * @module
  */
 public strictfp class PixelIteratorTest extends TestCase {
     /**
