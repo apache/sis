@@ -36,7 +36,8 @@ import static org.junit.Assert.*;
 
 
 /**
- * Base class of {@link PixelIterator} tests.
+ * Base class of {@link PixelIterator} tests. This base class tests the default read-only iterator
+ * on integer values. Subclasses will test variants, for example the read-write iterator.
  *
  * @author  Rémi Maréchal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
@@ -143,7 +144,7 @@ public strictfp class PixelIteratorTest extends TestCase {
         }
         expected = new float[(subMaxX - subMinX) * (subMaxY - subMinY) * numBands];
         final WritableRaster raster = Raster.createWritableRaster(new PixelInterleavedSampleModel(dataType,
-                width, height, numBands, width * numBands, new int[] {0,1,2}), new Point(xmin, ymin));
+                width, height, numBands, width * numBands, TiledImage.bandOffsets(numBands)), new Point(xmin, ymin));
         /*
          * At this point, all data structures have been created an initialized to zero sample values.
          * Now fill the data structures with arbitrary values.
@@ -196,8 +197,7 @@ public strictfp class PixelIteratorTest extends TestCase {
             subMaxY = StrictMath.min(ymax, subArea.y + subArea.height);
         }
         expected = new float[(subMaxX - subMinX) * (subMaxY - subMinY) * numBands];
-        final IteratorTestImage image = new IteratorTestImage(xmin, ymin, width, height, tileWidth, tileHeight, xmin+tileWidth, ymin+tileHeight,
-                new PixelInterleavedSampleModel(dataType, tileWidth, tileHeight, numBands, tileWidth * numBands, new int[] {0,1,2}));
+        final TiledImage image = new TiledImage(dataType, numBands, xmin, ymin, width, height, tileWidth, tileHeight, -1, 2);
         /*
          * At this point, all data structures have been created an initialized to zero sample values.
          * Now fill the data structures with arbitrary values. We fill them tile-by-tile.

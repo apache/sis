@@ -141,8 +141,8 @@ class DefaultIterator extends PixelIterator {
         final int cRMinY       = this.currentRaster.getMinY();
         this.minX = this.x     = Math.max(areaIterate.minx, cRMinX);
         this.y                 = Math.max(areaIterate.miny, cRMinY);
-        this.currentRasterMaxX = Math.min(areaIterate.maxX, cRMinX + tileSize.width);
-        this.currentRasterMaxY = Math.min(areaIterate.maxY, cRMinY + tileSize.height);
+        this.currentRasterMaxX = Math.min(areaIterate.maxX, cRMinX + tileWidth);
+        this.currentRasterMaxY = Math.min(areaIterate.maxY, cRMinY + tileHeight);
         this.rasterNumBand     = this.currentRaster.getNumBands(); //-- ??? what is this attributs
     }
 
@@ -215,8 +215,8 @@ class DefaultIterator extends PixelIterator {
         if (renderedImage != null) {
             final int riMinX = renderedImage.getMinX();
             final int riMinY = renderedImage.getMinY();
-            final int tmpTX = (x - riMinX) / tileSize.width  + renderedImage.getMinTileX();
-            final int tmpTY = (y - riMinY) / tileSize.height + renderedImage.getMinTileY();
+            final int tmpTX = (x - riMinX) / tileWidth  + renderedImage.getMinTileX();
+            final int tmpTY = (y - riMinY) / tileHeight + renderedImage.getMinTileY();
             if (tmpTX != tX || tmpTY != tY) {
                 tX = tmpTX;
                 tY = tmpTY;
