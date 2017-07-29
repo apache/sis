@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.iterator;
+package org.apache.sis.image;
 
 import java.awt.Dimension;
 import java.awt.Rectangle;
@@ -48,7 +48,7 @@ import org.opengis.coverage.grid.SequenceType;
  * @author Rémi Marechal (Geomatys)
  * @author Martin Desruisseaux (Geomatys)
  */
-abstract class PixelIterator implements Closeable {
+public abstract class PixelIterator implements Closeable {
 
     /**
      * Define boundary, in pixel coordinates, of area traveled by this PixeIterator.
