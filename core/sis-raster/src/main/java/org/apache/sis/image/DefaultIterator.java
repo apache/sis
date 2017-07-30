@@ -19,7 +19,9 @@ package org.apache.sis.image;
 import java.awt.Rectangle;
 import java.awt.image.Raster;
 import java.awt.image.RenderedImage;
+import java.awt.image.RasterFormatException;
 import org.opengis.coverage.grid.SequenceType;
+
 
 /**
  * An Iterator for traversing anyone rendered Image.
@@ -72,11 +74,10 @@ class DefaultIterator extends PixelIterator {
      */
     DefaultIterator(final Raster raster, final Rectangle subArea) {
         super(raster, subArea);
-        this.minX              = areaIterate.minx;
-        this.currentRasterMaxX = areaIterate.maxX;
-        this.currentRasterMaxY = areaIterate.maxY;
-        x                      = this.minX;
-        y                      = areaIterate.miny;
+        x = minX          = domain.minx;
+        y                 = domain.miny;
+        currentRasterMaxX = domain.maxX;
+        currentRasterMaxY = domain.maxY;
     }
 
     /**
@@ -88,8 +89,8 @@ class DefaultIterator extends PixelIterator {
      */
     DefaultIterator(final RenderedImage renderedImage, final Rectangle subArea) {
         super(renderedImage, subArea);
-        tX = tileIndexArea.minx - 1;
-        tY = tileIndexArea.miny;
+        tileX = timeDomain.minx - 1;
+        tileY = timeDomain.miny;
     }
 
     /**
@@ -97,28 +98,27 @@ class DefaultIterator extends PixelIterator {
      */
     @Override
     public boolean next() {
-        if (++band == rasterNumBand) {
+        if (++band == numBands) {
             band = 0;
             if (++x == currentRasterMaxX) {
                 if (++y == currentRasterMaxY) {
-                    if (++tX == tileIndexArea.maxX) {
-                        tX = tileIndexArea.minx;
-                        if (++tY >= tileIndexArea.maxY) {
-                            {
-                                //-- initialize attribut with expected values to throw exception if another next() is  called.
-                                band = rasterNumBand - 1;
-                                x    = currentRasterMaxX - 1;
-                                y    = currentRasterMaxY - 1;
-                                tX   = tileIndexArea.maxY - 1;
-                            }
-
-                            if ((tY - 1) >= tileIndexArea.maxY)//-- at first out tY == tMaxY and with another next() tY = tMaxY + 1.
+                    if (++tileX == timeDomain.maxX) {
+                        tileX = timeDomain.minx;
+                        if (++tileY >= timeDomain.maxY) {
+                            //-- initialize attribut with expected values to throw exception if another next() is  called.
+                            band  = numBands - 1;
+                            x     = currentRasterMaxX - 1;
+                            y     = currentRasterMaxY - 1;
+                            tileX = timeDomain.maxY   - 1;
+                            if ((tileY - 1) >= timeDomain.maxY) {
+                                //-- at first out tY == tMaxY and with another next() tY = tMaxY + 1.
                                 throw new IllegalStateException("Out of raster boundary. Illegal next call, you should rewind iterator first.");
+                            }
                             return false;
                         }
                     }
                     //initialize from new tile(raster).
-                    updateCurrentRaster(tX, tY);
+                    updateCurrentRaster(tileX, tileY);
                 }
                 x = minX;
             }
@@ -134,16 +134,18 @@ class DefaultIterator extends PixelIterator {
      */
     protected void updateCurrentRaster(int tileX, int tileY) {
         //-- update traveled raster
-        this.currentRaster = this.renderedImage.getTile(tileX, tileY);
+        this.currentRaster = this.image.getTile(tileX, tileY);
 
         //-- update needed attibut to iter
         final int cRMinX       = this.currentRaster.getMinX();
         final int cRMinY       = this.currentRaster.getMinY();
-        this.minX = this.x     = Math.max(areaIterate.minx, cRMinX);
-        this.y                 = Math.max(areaIterate.miny, cRMinY);
-        this.currentRasterMaxX = Math.min(areaIterate.maxX, cRMinX + tileWidth);
-        this.currentRasterMaxY = Math.min(areaIterate.maxY, cRMinY + tileHeight);
-        this.rasterNumBand     = this.currentRaster.getNumBands(); //-- ??? what is this attributs
+        this.minX = this.x     = Math.max(domain.minx, cRMinX);
+        this.y                 = Math.max(domain.miny, cRMinY);
+        this.currentRasterMaxX = Math.min(domain.maxX, cRMinX + tileWidth);
+        this.currentRasterMaxY = Math.min(domain.maxY, cRMinY + tileHeight);
+        if (currentRaster.getNumBands() != numBands) {
+            throw new RasterFormatException("Mismatched number of bands.");
+        }
     }
 
     /**
@@ -186,46 +188,23 @@ class DefaultIterator extends PixelIterator {
         return currentRaster.getSampleDouble(x, y, band);
     }
 
-    /**
-     * {@inheritDoc }.
-     */
-    @Override
-    public void rewind() {
-        if (renderedImage == null) {
-            band = -1; x = minX; y = areaIterate.miny;
-            tX = tY = 0;
-//            tMaxX = tMaxY = 1;
-        } else {
-            this.x    = this.y    = this.band    = 0;
-            this.currentRasterMaxX = this.currentRasterMaxY = this.rasterNumBand = 1;
-            this.tX   = tileIndexArea.minx - 1;
-            this.tY   = tileIndexArea.miny;
-        }
-    }
-
-    /**
-     * {@inheritDoc }.
-     */
-    @Override
-    public void close() {}
-
     @Override
     public void moveTo(final int x, final int y, final int b) {
         super.moveTo(x, y, b);
-        if (renderedImage != null) {
-            final int riMinX = renderedImage.getMinX();
-            final int riMinY = renderedImage.getMinY();
-            final int tmpTX = (x - riMinX) / tileWidth  + renderedImage.getMinTileX();
-            final int tmpTY = (y - riMinY) / tileHeight + renderedImage.getMinTileY();
-            if (tmpTX != tX || tmpTY != tY) {
-                tX = tmpTX;
-                tY = tmpTY;
-                updateCurrentRaster(tX, tY);
+        if (image != null) {
+            final int riMinX = image.getMinX();
+            final int riMinY = image.getMinY();
+            final int tmpTX = (x - riMinX) / tileWidth  + image.getMinTileX();
+            final int tmpTY = (y - riMinY) / tileHeight + image.getMinTileY();
+            if (tmpTX != tileX || tmpTY != tileY) {
+                tileX = tmpTX;
+                tileY = tmpTY;
+                updateCurrentRaster(tileX, tileY);
             }
         }
         this.x = x;
         this.y = y;
-        this.band = b;// - 1;
+        this.band = b;
     }
 
     /**
@@ -233,9 +212,26 @@ class DefaultIterator extends PixelIterator {
      */
     @Override
     public SequenceType getIterationDirection() {
-        if (renderedImage == null) return SequenceType.LINEAR;//1 raster seul
-        if (renderedImage.getNumXTiles() <=1 && renderedImage.getNumYTiles() <= 1)
+        if (image == null) return SequenceType.LINEAR;//1 raster seul
+        if (image.getNumXTiles() <=1 && image.getNumYTiles() <= 1)
             return SequenceType.LINEAR;
         return null;
+    }
+
+    /**
+     * {@inheritDoc }.
+     */
+    @Override
+    public void rewind() {
+        if (image == null) {
+            band = -1; x = minX; y = domain.miny;
+            tileX = tileY = 0;
+//          tMaxX = tMaxY = 1;
+        } else {
+            x    = y    = band    = 0;
+            currentRasterMaxX = currentRasterMaxY = 1;
+            tileX   = timeDomain.minx - 1;
+            tileY   = timeDomain.miny;
+        }
     }
 }

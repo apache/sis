@@ -32,15 +32,14 @@ import java.awt.image.PixelInterleavedSampleModel;
 import java.awt.image.BandedSampleModel;
 import java.awt.image.WritableRaster;
 import java.awt.image.WritableRenderedImage;
-import java.io.Closeable;
 import org.opengis.coverage.grid.SequenceType;
 import org.apache.sis.util.ArgumentChecks;
 
 
 /**
- * An iterator over sample values in a raster or an image. This iterator simplifies accesses to sample values
- * by hiding the {@linkplain SampleModel sample model} and tiling complexity. Iteration may be done on a full
- * image or on only a sub-area of it. Iteration order is implementation specific.
+ * An iterator over sample values in a raster or an image. This iterator simplifies accesses to pixel or sample values
+ * by hiding {@linkplain SampleModel sample model} and tiling complexity. Iteration may be performed on full image or
+ * on image sub-region. Iteration order is implementation specific.
  *
  * @author  Rémi Marechal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
@@ -48,145 +47,123 @@ import org.apache.sis.util.ArgumentChecks;
  * @since   0.8
  * @module
  */
-public abstract class PixelIterator implements Closeable {
+public abstract class PixelIterator {
     /**
-     * Define boundary, in pixel coordinates, of area traveled by this PixeIterator.
-     *
-     * @see #getDomain()
+     * The image in which iteration is occurring, or {@code null} if none.
+     * If {@code null}, then {@link #currentRaster} must be non-null.
      */
-    final RectIter areaIterate;
+    final RenderedImage image;
 
     /**
-     * Define boundary, in pixel coordinates, of iterated object.
-     */
-    private final Rectangle objectBoundary;
-
-    /**
-     * Tile index of iterated object.
-     * note : raster is considered as image of one tile.
-     */
-    final RectIter tileIndexArea;
-
-    /**
-     * Size of tiles from iterated object.
-     */
-    final int tileWidth, tileHeight;
-
-    /**
-     * Current raster which is followed by Iterator.
+     * The current raster in which iteration is occurring. This may change when the iterator
+     * reaches a new {@link #image} tile. May be {@code null} if not yet determined.
      */
     Raster currentRaster;
 
     /**
-     * RenderedImage which is followed by Iterator.
+     * The sample model for all tiles in the {@linkplain #image}.
+     * The {@link #currentRaster} shall always have this sample model.
      */
-    final RenderedImage renderedImage;
+    private final SampleModel sampleModel;
 
     /**
-     * Number of band.
+     * Number of bands in all tiles in the {@linkplain #image}.
+     * The {@link #currentRaster} shall always have this number of bands.
      */
-    private final int fixedNumBand;
+    final int numBands;
 
     /**
-     * Number of raster band.
-     * WARNING ! this is used a bit everywhere in iterator as a 'updateTileRaster' flag.
+     * Coordinates of upper-left corner in the complete image or raster.
      */
-    int rasterNumBand;
+    private final int xmin, ymin;
 
     /**
-     * Current band position in this current raster.
+     * Size of all tiles in the {@link #image}.
+     * The {@link #currentRaster} shall always have this exact size.
+     */
+    final int tileWidth, tileHeight;
+
+    /**
+     * Domain, in pixel coordinates, of the region traversed by this pixel iterator.
+     *
+     * @see #getDomain()
+     */
+    final RectIter domain;
+
+    /**
+     * Domain, in tile coordinates, of the region traversed by this pixel iterator.
+     */
+    final RectIter timeDomain;
+
+    /**
+     * Current band position in current raster.
      */
     int band;
 
     /**
-     * {@link SampleModel} from the iterate object.
+     * Coordinates of lower-right corner of current raster.
+     * When iteration reaches this coordinates, the iterator needs to move to next tile.
      */
-    private final SampleModel currentSampleModel;
-
-    //-- Iteration attributs
-    /**
-     * Stored position of upper right corner of current traveled raster.
-     * Generally when this values are reach an update of the current
-     * traveled raster is effectuate.
-     */
-    int currentRasterMaxX;
-    int currentRasterMaxY;
+    int currentRasterMaxX, currentRasterMaxY;
 
     /**
-     * Current Tile index of current traveled raster.
+     * Current <var>x</var> or <var>y</var> coordinates of current tile.
      */
-    int tX;
-    int tY;
+    int tileX, tileY;
 
     /**
-     * Create raster iterator to follow from minX, minY raster and rectangle intersection coordinate.
+     * Creates an iterator for the given region in the given raster.
      *
-     * @param raster will be followed by this iterator.
-     * @param subArea {@code Rectangle} which define read iterator area.
-     * @throws IllegalArgumentException if subArea don't intersect raster boundary.
+     * @param  data     the raster which contains the sample values on which to iterate.
+     * @param  subArea  the raster region where to perform the iteration, or {@code null}
+     *                  for iterating over all the raster domain.
      */
-    PixelIterator(final Raster raster, final Rectangle subArea) {
-        ArgumentChecks.ensureNonNull("raster", raster);
-        objectBoundary     = new Rectangle(raster.getMinX(), raster.getMinY(), raster.getWidth(), raster.getHeight());
-        currentRaster      = raster;
-        renderedImage      = null;
-        tileWidth          = objectBoundary.width;
-        tileHeight         = objectBoundary.height;
-        currentSampleModel = raster.getSampleModel();
-        areaIterate        = new RectIter((subArea != null)
-                             ? subArea.intersection(objectBoundary)
-                             : objectBoundary);
-
-        if (areaIterate.isEmpty())
-            throw new IllegalArgumentException("No intersection between subArea and raster.\n "
-                    + "Raster boundary  = " + objectBoundary + "\n "
-                    + "subArea boundary = " + subArea);
-
-        //-- in our case only one raster -> tile index 0 -> 1
-        tileIndexArea      = new RectIter(0, 0, 1, 1);
-
-        this.rasterNumBand = raster.getNumBands();
-        this.fixedNumBand  = this.rasterNumBand; //-- je pense que c uniquement utilisé pour les direct iterators
-        this.band = -1;
+    PixelIterator(final Raster data, final Rectangle subArea) {
+        ArgumentChecks.ensureNonNull("data", data);
+        final Rectangle bounds;
+        image         = null;
+        currentRaster = data;
+        sampleModel   = data.getSampleModel();
+        xmin          = data.getMinX();
+        ymin          = data.getMinY();
+        tileWidth     = data.getWidth();
+        tileHeight    = data.getHeight();
+        bounds        = new Rectangle(xmin, ymin, tileWidth, tileHeight);
+        domain        = new RectIter(subArea != null ? bounds.intersection(subArea) : bounds);
+        timeDomain    = new RectIter(0, 0, 1, 1);  // In this case only one raster: tile index = 0 … 1
+        numBands      = data.getNumBands();
+        band          = -1;
     }
 
     /**
-     * Create default rendered image iterator.
+     * Creates an iterator for the given region in the given image.
      *
-     * @param renderedImage image which will be follow by iterator.
-     * @param subArea {@code Rectangle} which represent image sub area iteration.
-     * @throws IllegalArgumentException if subArea don't intersect image boundary.
+     * @param  data     the image which contains the sample values on which to iterate.
+     * @param  subArea  the image region where to perform the iteration, or {@code null}
+     *                  for iterating over all the image domain.
      */
-    PixelIterator(final RenderedImage renderedImage, final Rectangle subArea) {
-        ArgumentChecks.ensureNonNull("renderedImage", renderedImage);
-        this.renderedImage = renderedImage;
-        objectBoundary     = new Rectangle(renderedImage.getMinX(), renderedImage.getMinY(), renderedImage.getWidth(), renderedImage.getHeight());
-        tileWidth          = renderedImage.getTileWidth();
-        tileHeight         = renderedImage.getTileHeight();
-        currentSampleModel = renderedImage.getSampleModel();
-        areaIterate        = new RectIter((subArea != null)
-                                         ? subArea.intersection(objectBoundary)
-                                         : objectBoundary);
-        if (areaIterate.isEmpty())
-            throw new IllegalArgumentException("No intersection between subArea and raster.\n "
-                    + "RenderedImage boundary  = " + objectBoundary + "\n "
-                    + "subArea boundary = " + subArea);
-
-        //--tiles index attributs computing
+    PixelIterator(final RenderedImage data, final Rectangle subArea) {
+        ArgumentChecks.ensureNonNull("data", data);
+        final Rectangle bounds;
+        image         = data;
+        sampleModel   = data.getSampleModel();
+        xmin          = data.getMinX();
+        ymin          = data.getMinY();
+        tileWidth     = data.getTileWidth();
+        tileHeight    = data.getTileHeight();
+        bounds        = new Rectangle(xmin, ymin, data.getWidth(), data.getHeight());
+        domain        = new RectIter(subArea != null ? bounds.intersection(subArea) : bounds);
         {
-            final int offTX = renderedImage.getTileGridXOffset();
-            final int offTY = renderedImage.getTileGridYOffset();
-            final int tMinX = (areaIterate.minx - objectBoundary.x) / tileWidth  + offTX;
-            final int tMinY = (areaIterate.miny - objectBoundary.y) / tileHeight + offTY;
-            final int tMaxX = (areaIterate.maxX - objectBoundary.x + tileWidth  - 1) / tileWidth  + offTX;
-            final int tMaxY = (areaIterate.maxY - objectBoundary.y + tileHeight - 1) / tileHeight + offTY;
-            tileIndexArea = new RectIter(tMinX, tMinY, tMaxX - tMinX, tMaxY - tMinY);
+            final int offTX = data.getTileGridXOffset();
+            final int offTY = data.getTileGridYOffset();
+            final int tMinX = (domain.minx - xmin) / tileWidth  + offTX;
+            final int tMinY = (domain.miny - ymin) / tileHeight + offTY;
+            final int tMaxX = (domain.maxX - xmin + tileWidth  - 1) / tileWidth  + offTX;
+            final int tMaxY = (domain.maxY - ymin + tileHeight - 1) / tileHeight + offTY;
+            timeDomain = new RectIter(tMinX, tMinY, tMaxX - tMinX, tMaxY - tMinY);
         }
-
-        //initialize attributs to first iteration
-        this.band = -1;
-        this.rasterNumBand = 1;
-        this.fixedNumBand  = currentSampleModel.getNumBands();
+        numBands = sampleModel.getNumBands();
+        band = -1;
     }
 
     /**
@@ -237,18 +214,6 @@ public abstract class PixelIterator implements Closeable {
     public abstract double getSampleDouble();
 
     /**
-     * Initializes iterator.
-     * Carry back iterator at its initial position like iterator is just build.
-     */
-    public abstract void rewind();
-
-    /**
-     * To release last tiles iteration from writable rendered image tiles array.
-     * if this method is invoked in read-only iterator, method is idempotent (has no effect).
-     */
-    public abstract void close();
-
-    /**
      * Return type of sequence iteration direction.
      *
      * @return type of sequence.
@@ -274,12 +239,13 @@ public abstract class PixelIterator implements Closeable {
      * @throws IllegalArgumentException if coordinates are out of iteration area boundary.
      */
     public void moveTo(int x, int y, int b){
-        if (x < areaIterate.minx || x >= areaIterate.maxX
-            ||  y < areaIterate.miny || y >= areaIterate.maxY)
-                throw new IllegalArgumentException("coordinate out of iteration area define by : ("+areaIterate+") \n "
-                        + "given coordinates are : "+x+" "+y);
-        if (b<0 || b>=fixedNumBand)
-            throw new IllegalArgumentException("band index out of numband border define by: [0;"+fixedNumBand+"]");
+        if (x < domain.minx || x >= domain.maxX ||  y < domain.miny || y >= domain.maxY) {
+            throw new IllegalArgumentException("coordinate out of iteration area define by: (" + domain + ")\n "
+                    + "given coordinates are: " + x + " " + y);
+        }
+        if (b < 0 || b >= numBands) {
+            throw new IllegalArgumentException("band index out of numband border define by: [0;" + numBands + "]");
+        }
     }
 
     /**
@@ -288,7 +254,7 @@ public abstract class PixelIterator implements Closeable {
      * @return the number of bands (samples per pixel) from current raster or Image.
      */
     public int getNumBands() {
-        return fixedNumBand;
+        return numBands;
     }
 
     /**
@@ -297,14 +263,14 @@ public abstract class PixelIterator implements Closeable {
      * @return pixel coordinates of the iteration area.
      */
     public Rectangle getDomain() {
-        return areaIterate.toRectangle();
+        return domain.toRectangle();
     }
 
     //-- TODO : methodes suivantes a refactorer (code duplication) + mettre ailleur + static + package private
     /**
      * Check that the two input rasters are compatible for coupling in a {@link WritablePixelIterator}
      */
-    public static void checkRasters(final Raster readableRaster, final WritableRaster writableRaster){
+    static void checkRasters(final Raster readableRaster, final WritableRaster writableRaster){
         //raster dimension
         if (readableRaster.getMinX()     != writableRaster.getMinX()
          || readableRaster.getMinY()     != writableRaster.getMinY()
@@ -320,7 +286,7 @@ public abstract class PixelIterator implements Closeable {
     /**
      * Verify Rendered image conformity.
      */
-    public static void checkRenderedImage(final RenderedImage renderedImage, final WritableRenderedImage writableRI) {
+    static void checkRenderedImage(final RenderedImage renderedImage, final WritableRenderedImage writableRI) {
         //image dimensions
         if (renderedImage.getMinX()   != writableRI.getMinX()
          || renderedImage.getMinY()   != writableRI.getMinY()
@@ -354,15 +320,15 @@ public abstract class PixelIterator implements Closeable {
     /**
      * Verify raster conformity.
      */
-    protected void checkRasters(final Raster readableRaster, final WritableRaster writableRaster, final Rectangle subArea) {
+    final void checkRasters(final Raster readableRaster, final WritableRaster writableRaster, final Rectangle subArea) {
         final int wRmx = writableRaster.getMinX();
         final int wRmy = writableRaster.getMinY();
         final int wRw  = writableRaster.getWidth();
         final int wRh  = writableRaster.getHeight();
-        if ((wRmx != areaIterate.minx)
-          || wRmy != areaIterate.miny
-          || wRw  != areaIterate.width
-          || wRh  != areaIterate.height)
+        if ((wRmx != domain.minx)
+          || wRmy != domain.miny
+          || wRw  != domain.width
+          || wRh  != domain.height)
 
         //raster dimension
         if ((readableRaster.getMinX()   != wRmx)
@@ -381,7 +347,7 @@ public abstract class PixelIterator implements Closeable {
     /**
      * Verify Rendered image conformity.
      */
-    protected void checkRenderedImage(final RenderedImage renderedImage, final WritableRenderedImage writableRI, final Rectangle subArea) {
+    final void checkRenderedImage(final RenderedImage renderedImage, final WritableRenderedImage writableRI, final Rectangle subArea) {
         if (renderedImage.getSampleModel().getNumBands() != writableRI.getSampleModel().getNumBands())
             throw new IllegalArgumentException("renderedImage and writableRenderedImage haven't got same band number");
         final int riMinX   = renderedImage.getMinX();
@@ -406,14 +372,14 @@ public abstract class PixelIterator implements Closeable {
             throw new IllegalArgumentException("rendered image and writable rendered image tiles configuration are not conform"+renderedImage+writableRI);
 
         //verifier les index de tuiles au depart
-        final boolean minTileX = (wrimtx == (areaIterate.minx - riMinX)/ riTileWidth  + rimtx);
-        final boolean minTileY = (wrimty == (areaIterate.miny - riMinY)/ riTileHeight + rimty);
+        final boolean minTileX = (wrimtx == (domain.minx - riMinX)/ riTileWidth  + rimtx);
+        final boolean minTileY = (wrimty == (domain.miny - riMinY)/ riTileHeight + rimty);
 
         //writable image correspond with iteration area
-        if (writableRI.getMinX()  != areaIterate.minx    //areaiteration
-         || writableRI.getMinY()  != areaIterate.miny    //areaiteration
-         || writableRI.getWidth() != areaIterate.width//longueuriteration
-         || writableRI.getHeight()!= areaIterate.height//largeuriteration
+        if (writableRI.getMinX()  != domain.minx    //areaiteration
+         || writableRI.getMinY()  != domain.miny    //areaiteration
+         || writableRI.getWidth() != domain.width//longueuriteration
+         || writableRI.getHeight()!= domain.height//largeuriteration
          || !minTileX || !minTileY )
 
         //image dimensions
@@ -441,11 +407,11 @@ public abstract class PixelIterator implements Closeable {
 
         final int minTX, minTY, maxTX, maxTY;
 
-        if (renderedImage != null) {
-            minTX = tileIndexArea.minx + (area.x - objectBoundary.x) / tileWidth;
-            minTY = tileIndexArea.miny + (area.y - objectBoundary.y) / tileHeight;
-            maxTX = tileIndexArea.minx + (area.x + area.width + tileWidth - 1) / tileWidth;
-            maxTY = tileIndexArea.miny + (area.y + area.height + tileHeight - 1) / tileHeight;
+        if (image != null) {
+            minTX = timeDomain.minx + (area.x - xmin) / tileWidth;
+            minTY = timeDomain.miny + (area.y - ymin) / tileHeight;
+            maxTX = timeDomain.minx + (area.x + area.width + tileWidth - 1) / tileWidth;
+            maxTY = timeDomain.miny + (area.y + area.height + tileHeight - 1) / tileHeight;
         } else {
             minTX = minTY = 0;
             maxTX = maxTY = 1;
@@ -455,7 +421,7 @@ public abstract class PixelIterator implements Closeable {
             for (int tx = minTX; tx < maxTX; tx++) {
 
                 //-- intersection sur
-                final Raster rast = (renderedImage != null) ? renderedImage.getTile(tx, ty) : currentRaster;
+                final Raster rast = (image != null) ? image.getTile(tx, ty) : currentRaster;
                 final int minX = Math.max(rast.getMinX(), area.x);
                 final int minY = Math.max(rast.getMinY(), area.y);
                 final int maxX = Math.min(rast.getMinX() + tileWidth, area.x + area.width);
@@ -522,11 +488,11 @@ public abstract class PixelIterator implements Closeable {
 
         final int minTX, minTY, maxTX, maxTY;
 
-        if (renderedImage != null) {
-            minTX = tileIndexArea.minx + (area.x - objectBoundary.x) / tileWidth;
-            minTY = tileIndexArea.miny + (area.y - objectBoundary.y) / tileHeight;
-            maxTX = tileIndexArea.minx + (area.x + area.width + tileWidth - 1) / tileWidth;
-            maxTY = tileIndexArea.miny + (area.y + area.height + tileHeight - 1) / tileHeight;
+        if (image != null) {
+            minTX = timeDomain.minx + (area.x - xmin) / tileWidth;
+            minTY = timeDomain.miny + (area.y - ymin) / tileHeight;
+            maxTX = timeDomain.minx + (area.x + area.width + tileWidth - 1) / tileWidth;
+            maxTY = timeDomain.miny + (area.y + area.height + tileHeight - 1) / tileHeight;
         } else {
             minTX = minTY = 0;
             maxTX = maxTY = 1;
@@ -536,7 +502,7 @@ public abstract class PixelIterator implements Closeable {
             for (int tx = minTX; tx < maxTX; tx++) {
 
                 //-- intersection sur
-                final Raster rast = (renderedImage != null) ? renderedImage.getTile(tx, ty) : currentRaster;
+                final Raster rast = (image != null) ? image.getTile(tx, ty) : currentRaster;
                 final int minX = Math.max(rast.getMinX(), area.x);
                 final int minY = Math.max(rast.getMinY(), area.y);
                 final int maxX = Math.min(rast.getMinX() + tileWidth, area.x + area.width);
@@ -598,7 +564,7 @@ public abstract class PixelIterator implements Closeable {
      */
     private void getAreaByBanded (final Rectangle area, final Object[] buffer) {
 
-        final ComponentSampleModel compSM = (ComponentSampleModel) currentSampleModel;
+        final ComponentSampleModel compSM = (ComponentSampleModel) sampleModel;
         final int[] bankIndices = compSM.getBankIndices();
         assert bankIndices.length == getNumBands();
         final int[] bandOffsets = compSM.getBandOffsets();
@@ -608,11 +574,11 @@ public abstract class PixelIterator implements Closeable {
 
         final int minTX, minTY, maxTX, maxTY;
 
-        if (renderedImage != null) {
-            minTX = tileIndexArea.minx + (area.x - objectBoundary.x) / tileWidth;
-            minTY = tileIndexArea.miny + (area.y - objectBoundary.y) / tileHeight;
-            maxTX = tileIndexArea.minx + (area.x + area.width + tileWidth - 1) / tileWidth;
-            maxTY = tileIndexArea.miny + (area.y + area.height + tileHeight - 1) / tileHeight;
+        if (image != null) {
+            minTX = timeDomain.minx + (area.x - xmin) / tileWidth;
+            minTY = timeDomain.miny + (area.y - ymin) / tileHeight;
+            maxTX = timeDomain.minx + (area.x + area.width + tileWidth - 1) / tileWidth;
+            maxTY = timeDomain.miny + (area.y + area.height + tileHeight - 1) / tileHeight;
         } else {
             minTX = minTY = 0;
             maxTX = maxTY = 1;
@@ -622,7 +588,7 @@ public abstract class PixelIterator implements Closeable {
                 for (int tx = minTX; tx < maxTX; tx++) {
 
                     //-- intersection sur
-                    final Raster rast = (renderedImage != null) ? renderedImage.getTile(tx, ty) : currentRaster;
+                    final Raster rast = (image != null) ? image.getTile(tx, ty) : currentRaster;
                     final int minX = Math.max(rast.getMinX(), area.x);
                     final int minY = Math.max(rast.getMinY(), area.y);
                     final int maxX = Math.min(rast.getMinX() + tileWidth, area.x + area.width);
@@ -724,8 +690,8 @@ public abstract class PixelIterator implements Closeable {
             }
         }
 
-        if (currentSampleModel instanceof ComponentSampleModel) {
-            if (((ComponentSampleModel) currentSampleModel).getPixelStride() == 1) {
+        if (sampleModel instanceof ComponentSampleModel) {
+            if (((ComponentSampleModel) sampleModel).getPixelStride() == 1) {
                 getAreaByBanded(area, buffer, band);
                 return;
             }
@@ -742,7 +708,7 @@ public abstract class PixelIterator implements Closeable {
      * @param band the interest band.
      */
     public void getAreaByBanded(final Rectangle area, final Object buffer, final int band) {
-        final ComponentSampleModel compSM = (ComponentSampleModel) currentSampleModel;
+        final ComponentSampleModel compSM = (ComponentSampleModel) sampleModel;
         final int bankIndices = compSM.getBankIndices()[band];
         final int bandOffsets = compSM.getBandOffsets()[band];
 
@@ -750,11 +716,11 @@ public abstract class PixelIterator implements Closeable {
 
         final int minTX, minTY, maxTX, maxTY;
 
-        if (renderedImage != null) {
-            minTX = tileIndexArea.minx + (area.x - objectBoundary.x) / tileWidth;
-            minTY = tileIndexArea.miny + (area.y - objectBoundary.y) / tileHeight;
-            maxTX = tileIndexArea.minx + (area.x + area.width + tileWidth - 1) / tileWidth;
-            maxTY = tileIndexArea.miny + (area.y + area.height + tileHeight - 1) / tileHeight;
+        if (image != null) {
+            minTX = timeDomain.minx + (area.x - xmin) / tileWidth;
+            minTY = timeDomain.miny + (area.y - ymin) / tileHeight;
+            maxTX = timeDomain.minx + (area.x + area.width + tileWidth - 1) / tileWidth;
+            maxTY = timeDomain.miny + (area.y + area.height + tileHeight - 1) / tileHeight;
         } else {
             minTX = minTY = 0;
             maxTX = maxTY = 1;
@@ -763,7 +729,7 @@ public abstract class PixelIterator implements Closeable {
             for (int tx = minTX; tx < maxTX; tx++) {
 
                 //-- intersection sur
-                final Raster rast = (renderedImage != null) ? renderedImage.getTile(tx, ty) : currentRaster;
+                final Raster rast = (image != null) ? image.getTile(tx, ty) : currentRaster;
                 final int minX = Math.max(rast.getMinX(), area.x);
                 final int minY = Math.max(rast.getMinY(), area.y);
                 final int maxX = Math.min(rast.getMinX() + tileWidth, area.x + area.width);
@@ -864,8 +830,8 @@ public abstract class PixelIterator implements Closeable {
             }
         }
 
-        if (currentSampleModel instanceof ComponentSampleModel) {
-            if (((ComponentSampleModel) currentSampleModel).getPixelStride() == 1) {
+        if (sampleModel instanceof ComponentSampleModel) {
+            if (((ComponentSampleModel) sampleModel).getPixelStride() == 1) {
                 getAreaByBanded(area, buffer);
                 return;
             }
@@ -878,7 +844,7 @@ public abstract class PixelIterator implements Closeable {
      * @return type data from iterate source.
      */
     public int getSourceDatatype() {
-        return (renderedImage == null) ? currentRaster.getSampleModel().getDataType() : renderedImage.getSampleModel().getDataType();
+        return (image != null ? image.getSampleModel() : currentRaster.getSampleModel()).getDataType();
     }
 
     /**
@@ -896,4 +862,10 @@ public abstract class PixelIterator implements Closeable {
         }
         return bandSteps;
     }
+
+    /**
+     * Restores the iterator to the start position. After this method has been invoked,
+     * the iterator is in the same state than after construction.
+     */
+    public abstract void rewind();
 }
