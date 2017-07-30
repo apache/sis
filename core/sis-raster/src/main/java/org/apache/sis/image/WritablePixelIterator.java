@@ -16,6 +16,8 @@
  */
 package org.apache.sis.image;
 
+import java.io.Closeable;
+import java.io.IOException;
 import java.awt.Rectangle;
 import java.awt.image.WritableRaster;
 import java.awt.image.WritableRenderedImage;
@@ -24,7 +26,7 @@ import java.awt.image.WritableRenderedImage;
  *
  * @author Remi Marechal (Geomatys).
  */
-abstract class WritablePixelIterator extends PixelIterator {
+abstract class WritablePixelIterator extends PixelIterator implements Closeable {
 
     private final WritableRaster wRaster;
 
@@ -63,4 +65,10 @@ abstract class WritablePixelIterator extends PixelIterator {
      */
     public abstract void setSampleDouble(final double value);
 
+    /**
+     * Releases any resources hold by this iterator.
+     * Invoking this method may flush some tiles content to disk.
+     */
+    @Override
+    public abstract void close() throws IOException;
 }
