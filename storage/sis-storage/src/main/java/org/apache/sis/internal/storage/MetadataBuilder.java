@@ -122,7 +122,7 @@ import org.opengis.metadata.citation.Responsibility;
  * API of this class may change in any future SIS versions.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @author  Rémi Marechal (Geomatys)
+ * @author  Rémi Maréchal (Geomatys)
  * @version 0.8
  * @since   0.8
  * @module

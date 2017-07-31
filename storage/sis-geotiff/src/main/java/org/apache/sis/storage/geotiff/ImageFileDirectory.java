@@ -47,7 +47,7 @@ import org.apache.sis.measure.Units;
 /**
  * An Image File Directory (FID) in a TIFF image.
  *
- * @author  Rémi Marechal (Geomatys)
+ * @author  Rémi Maréchal (Geomatys)
  * @author  Alexis Manin (Geomatys)
  * @author  Johann Sorel (Geomatys)
  * @author  Thi Phuong Hao Nguyen (VNSC)

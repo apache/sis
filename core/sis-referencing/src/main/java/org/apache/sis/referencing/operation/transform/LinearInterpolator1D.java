@@ -40,7 +40,7 @@ import org.apache.sis.util.resources.Errors;
  * then concatenating this transform with a transform that multiply all output values by -1.</p>
  *
  * @author  Johann Sorel (Geomatys)
- * @author  Remi Marechal (Geomatys)
+ * @author  Rémi Maréchal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.7
  * @since   0.7
