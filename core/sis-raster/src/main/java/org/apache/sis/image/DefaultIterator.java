@@ -16,6 +16,7 @@
  */
 package org.apache.sis.image;
 
+import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.image.Raster;
 import java.awt.image.RenderedImage;
@@ -24,214 +25,264 @@ import org.opengis.coverage.grid.SequenceType;
 
 
 /**
- * An Iterator for traversing anyone rendered Image.
- * <p>
- * Iteration transverse each tiles(raster) from rendered image or raster source one by one in order.
- * Iteration to follow tiles(raster) begin by raster bands, next, raster x coordinates,
- * and to finish raster y coordinates.
- * <p>
- * Iteration follow this scheme :
- * tiles band --&gt; tiles x coordinates --&gt; tiles y coordinates --&gt; next rendered image tiles.
+ * Default iterator used when no specialized implementation is available.
+ * This iterator uses the {@link Raster} API for traversing the pixels in each tile.
+ * Calls to {@link #next()} move the current position by increasing the following values, in order:
  *
- * Moreover iterator traversing a read-only each rendered image tiles(raster) in top-to-bottom, left-to-right order.
+ * <ol>
+ *   <li>Column index in a single tile varies fastest (from left to right)</li>
+ *   <li>Then, row index in a single tile varies from top to bottom.</li>
+ *   <li>Then, {@code tileX} index from left to right.</li>
+ *   <li>Then, {@code tileY} index from top to bottom.</li>
+ * </ol>
  *
- *
- * /// TODO !!!!!!!!!
- * Code example :
- * {@code
- *                  final PixelIterator dRII = PixelIteratorFactory.create(Iterator(renderedImage, rectangleAreaIterate));
- *                  while (dRII.next()) {
- *                      dRii.getSample();
- *                  }
- * }
- *
- * @author Rémi Marechal       (Geomatys).
- * @author Martin Desruisseaux (Geomatys).
+ * @author  Rémi Maréchal (Geomatys)
+ * @author  Martin Desruisseaux (Geomatys)
+ * @version 0.8
+ * @since   0.8
+ * @module
  */
-class DefaultIterator extends PixelIterator {
-
+final class DefaultIterator extends PixelIterator {
     /**
-     * Current X pixel coordinate in this current raster.
+     * Current tile coordinate of current raster.
      */
-    protected int x;
+    private int tileX, tileY;
 
     /**
-     * Current Y pixel coordinate in this current raster.
+     * Current column index in current raster.
      */
-    protected int y;
+    private int x;
 
     /**
-     * The X coordinate of the upper-left pixel of this current raster.
+     * Current row index in current raster.
      */
-    private int minX;
+    private int y;
 
     /**
-     * Create raster iterator to follow from minX, minY raster and rectangle intersection coordinate.
+     * Bounds of the region traversed by the iterator in current raster.
+     * When iteration reaches the upper coordinates, the iterator needs to move to next tile.
+     */
+    private int currentLowerX, currentUpperX, currentUpperY;
+
+    /**
+     * Creates an iterator for the given region in the given raster.
      *
-     * @param raster will be followed by this iterator.
-     * @param subArea {@code Rectangle} which define read iterator area.
-     * @throws IllegalArgumentException if subArea don't intersect raster boundary.
+     * @param  data     the raster which contains the sample values on which to iterate.
+     * @param  subArea  the raster region where to perform the iteration, or {@code null}
+     *                  for iterating over all the raster domain.
      */
-    DefaultIterator(final Raster raster, final Rectangle subArea) {
-        super(raster, subArea);
-        x = minX          = domain.minx;
-        y                 = domain.miny;
-        currentRasterMaxX = domain.maxX;
-        currentRasterMaxY = domain.maxY;
+    DefaultIterator(final Raster data, final Rectangle subArea) {
+        super(data, subArea);
+        currentLowerX = lowerX;
+        currentUpperX = upperX;
+        currentUpperY = upperY;
+        x = Math.decrementExact(lowerX);        // Set the position before first pixel.
+        y = lowerY;
     }
 
     /**
-     * Create default rendered image iterator.
+     * Creates an iterator for the given region in the given image.
      *
-     * @param renderedImage image which will be follow by iterator.
-     * @param subArea {@code Rectangle} which represent image sub area iteration.
-     * @throws IllegalArgumentException if subArea don't intersect image boundary.
+     * @param  data     the image which contains the sample values on which to iterate.
+     * @param  subArea  the image region where to perform the iteration, or {@code null}
+     *                  for iterating over all the image domain.
      */
-    DefaultIterator(final RenderedImage renderedImage, final Rectangle subArea) {
-        super(renderedImage, subArea);
-        tileX = timeDomain.minx - 1;
-        tileY = timeDomain.miny;
+    DefaultIterator(final RenderedImage data, final Rectangle subArea) {
+        super(data, subArea);
+        tileX = Math.decrementExact(tileLowerX);
+        tileY = tileLowerY;
+        currentLowerX = lowerX;
+        currentUpperX = lowerX;                 // Really 'lower', so the position is the tile before the first tile.
+        currentUpperY = lowerY;
+        x = Math.decrementExact(lowerX);        // Set the position before first pixel.
+        y = lowerY;
     }
 
     /**
-     * {@inheritDoc }.
+     * Restores this iterator to the same state it was after construction.
+     */
+    @Override
+    public void rewind() {
+        if (image == null) {
+            tileX = 0;
+            tileY = 0;
+            currentUpperX = upperX;
+            currentUpperY = upperY;
+        } else {
+            tileX = tileLowerX - 1;     // Note: no need for decrementExact(…) because already checked by constructor.
+            tileY = tileLowerY;
+            currentUpperX = lowerX;     // Really 'lower', so the position is the tile before the first tile.
+        }
+        currentLowerX = lowerX;
+        currentUpperY = lowerY;
+        x = lowerX - 1;                 // Set the position before first pixel.
+        y = lowerY;
+    }
+
+    /**
+     * Returns the order in which pixels are traversed.
+     */
+    @Override
+    public SequenceType getIterationOrder() {
+        if (image == null || image.getNumXTiles() <=1 && image.getNumYTiles() <= 1) {
+            return SequenceType.LINEAR;
+        } else {
+            return null;            // Undefined order.
+        }
+    }
+
+    /**
+     * Returns the column (x) and row (y) indices of the current pixel.
+     *
+     * @return column and row indices of current iterator position.
+     * @throws IllegalStateException if this method is invoked before the first call to {@link #next()}
+     *         or after {@code next()} returned {@code false}.
+     */
+    @Override
+    public Point getPosition() {
+        final String message;
+        if (x < lowerX) {
+            message = "Iteration did not started.";
+        } else if (x >= upperX) {
+            message = "Iteration is finished.";
+        } else {
+            return new Point(x,y);
+        }
+        throw new IllegalStateException(message);       // TODO: localize
+    }
+
+    /**
+     * Moves the pixel iterator to the given column (x) and row (y) indices.
+     *
+     * @param  px  the column index of the pixel to make current.
+     * @param  py  the row index of the pixel to make current.
+     * @throws IndexOutOfBoundsException if the given indices are outside the iteration domain.
+     */
+    @Override
+    public void moveTo(final int px, final int py) {
+        if (px < lowerX || px >= upperX ||  py < lowerY || py >= upperY) {
+            throw new IndexOutOfBoundsException("Coordinate is outside iterator domain.");      // TODO: localize
+        }
+        if (image != null) {
+            final int tx = Math.floorDiv(px - tileGridXOffset, tileWidth);
+            final int ty = Math.floorDiv(py - tileGridYOffset, tileHeight);
+            if (tx != tileX || ty != tileY) {
+                tileX = tx;
+                tileY = ty;
+                fetchTile();
+            }
+        }
+        x = px;
+        y = py;
+    }
+
+    /**
+     * Moves the iterator to the next pixel.
+     *
+     * @return {@code true} if the current pixel is valid, or {@code false} if there is no more pixels.
+     * @throws IllegalStateException if this iterator already reached end of iteration in a previous call
+     *         to {@code next()}, and {@link #rewind()} or {@link #moveTo(int,int)} have not been invoked.
      */
     @Override
     public boolean next() {
-        if (++band == numBands) {
-            band = 0;
-            if (++x == currentRasterMaxX) {
-                if (++y == currentRasterMaxY) {
-                    if (++tileX == timeDomain.maxX) {
-                        tileX = timeDomain.minx;
-                        if (++tileY >= timeDomain.maxY) {
-                            //-- initialize attribut with expected values to throw exception if another next() is  called.
-                            band  = numBands - 1;
-                            x     = currentRasterMaxX - 1;
-                            y     = currentRasterMaxY - 1;
-                            tileX = timeDomain.maxY   - 1;
-                            if ((tileY - 1) >= timeDomain.maxY) {
-                                //-- at first out tY == tMaxY and with another next() tY = tMaxY + 1.
-                                throw new IllegalStateException("Out of raster boundary. Illegal next call, you should rewind iterator first.");
-                            }
-                            return false;
+        if (++x == currentUpperX) {
+            if (++y == currentUpperY) {
+                if (++tileX == tileUpperX) {
+                    if (Math.incrementExact(tileY) >= tileUpperY) {
+                        /*
+                         * Paranoiac safety: keep the x, y and tileX values before their maximal values
+                         * in order to avoid overflow. The 'tileY' value is used for checking if next()
+                         * is invoked again, in order to avoid a common misuse pattern.
+                         */
+                        x =  currentUpperX - 1;
+                        y =  currentUpperY - 1;
+                        tileX = tileUpperX - 1;
+                        if (tileY > tileUpperY) {
+                            throw new IllegalStateException("Iteration is finished.");      // TODO: localize
                         }
+                        return false;
                     }
-                    //initialize from new tile(raster).
-                    updateCurrentRaster(tileX, tileY);
+                    tileX = tileLowerX;
                 }
-                x = minX;
+                fetchTile();
             }
+            x = currentLowerX;
         }
         return true;
     }
 
     /**
-     * Update current raster from tiles array coordinates.
-     *
-     * @param tileX current X coordinate from rendered image tiles array.
-     * @param tileY current Y coordinate from rendered image tiles array.
+     * Fetches from the image a tile for the current {@link #tileX} and {@link #tileY} coordinates.
+     * All fields prefixed by {@code current} are updated by this method.
      */
-    protected void updateCurrentRaster(int tileX, int tileY) {
-        //-- update traveled raster
-        this.currentRaster = this.image.getTile(tileX, tileY);
-
-        //-- update needed attibut to iter
-        final int cRMinX       = this.currentRaster.getMinX();
-        final int cRMinY       = this.currentRaster.getMinY();
-        this.minX = this.x     = Math.max(domain.minx, cRMinX);
-        this.y                 = Math.max(domain.miny, cRMinY);
-        this.currentRasterMaxX = Math.min(domain.maxX, cRMinX + tileWidth);
-        this.currentRasterMaxY = Math.min(domain.maxY, cRMinY + tileHeight);
+    private void fetchTile() {
+        currentRaster  = image.getTile(tileX, tileY);
+        final int minX = currentRaster.getMinX();
+        final int minY = currentRaster.getMinY();
+        currentLowerX  = Math.max(lowerX, minX);
+        y              = Math.max(lowerY, minY);
+        currentUpperX  = Math.min(upperX, minX + tileWidth);
+        currentUpperY  = Math.min(upperY, minY + tileHeight);
+        x = currentLowerX - 1;
         if (currentRaster.getNumBands() != numBands) {
-            throw new RasterFormatException("Mismatched number of bands.");
+            throw new RasterFormatException("Mismatched number of bands.");     // TODO: localize
         }
     }
 
     /**
-     * {@inheritDoc }.
+     * Returns the sample value in the specified band of current pixel, without precision lost.
      */
     @Override
-    public int getX() {
-        return x;
+    public double getSample(final int band) {
+        return currentRaster.getSampleDouble(x, y, band);
     }
 
     /**
-     * {@inheritDoc }.
+     * Returns the sample value in the specified band of current pixel,
+     * casted to a single-precision floating point number.
      */
     @Override
-    public int getY() {
-        return y;
-    }
-
-    /**
-     * {@inheritDoc }.
-     */
-    @Override
-    public int getSample() {
-        return currentRaster.getSample(x, y, band);
-    }
-
-    /**
-     * {@inheritDoc }.
-     */
-    @Override
-    public float getSampleFloat() {
+    public float getSampleFloat(final int band) {
         return currentRaster.getSampleFloat(x, y, band);
     }
 
     /**
-     * {@inheritDoc }.
+     * Returns the sample value in the specified band of current pixel, casted to an integer.
      */
     @Override
-    public double getSampleDouble() {
-        return currentRaster.getSampleDouble(x, y, band);
-    }
-
-    @Override
-    public void moveTo(final int x, final int y, final int b) {
-        super.moveTo(x, y, b);
-        if (image != null) {
-            final int riMinX = image.getMinX();
-            final int riMinY = image.getMinY();
-            final int tmpTX = (x - riMinX) / tileWidth  + image.getMinTileX();
-            final int tmpTY = (y - riMinY) / tileHeight + image.getMinTileY();
-            if (tmpTX != tileX || tmpTY != tileY) {
-                tileX = tmpTX;
-                tileY = tmpTY;
-                updateCurrentRaster(tileX, tileY);
-            }
-        }
-        this.x = x;
-        this.y = y;
-        this.band = b;
+    public int getSampleInt(final int band) {
+        return currentRaster.getSample(x, y, band);
     }
 
     /**
-     * {@inheritDoc }.
+     * Returns the sample values of current pixel for all bands.
      */
     @Override
-    public SequenceType getIterationDirection() {
-        if (image == null) return SequenceType.LINEAR;//1 raster seul
-        if (image.getNumXTiles() <=1 && image.getNumYTiles() <= 1)
-            return SequenceType.LINEAR;
-        return null;
+    public double[] getPixel​(double[] dest) {
+        return currentRaster.getPixel(x, y, dest);
     }
 
     /**
-     * {@inheritDoc }.
+     * Returns the sample values of current pixel for all bands.
      */
     @Override
-    public void rewind() {
-        if (image == null) {
-            band = -1; x = minX; y = domain.miny;
-            tileX = tileY = 0;
-//          tMaxX = tMaxY = 1;
-        } else {
-            x    = y    = band    = 0;
-            currentRasterMaxX = currentRasterMaxY = 1;
-            tileX   = timeDomain.minx - 1;
-            tileY   = timeDomain.miny;
-        }
+    public float[] getPixel​(float[] dest) {
+        return currentRaster.getPixel(x, y, dest);
+    }
+
+    /**
+     * Returns the sample values of current pixel for all bands.
+     */
+    @Override
+    public int[] getPixel​(int[] dest) {
+        return currentRaster.getPixel(x, y, dest);
+    }
+
+    /**
+     * Returns the sample values in a region of the given size starting at the current pixel position.
+     */
+    @Override
+    public Region region(final int width, final int height) {
+        throw new UnsupportedOperationException();              // TODO
     }
 }

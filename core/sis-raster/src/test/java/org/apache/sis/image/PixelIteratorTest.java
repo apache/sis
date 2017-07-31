@@ -16,8 +16,6 @@
  */
 package org.apache.sis.image;
 
-import org.apache.sis.image.PixelIteratorFactory;
-import org.apache.sis.image.PixelIterator;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.image.DataBuffer;
@@ -238,7 +236,7 @@ public strictfp class PixelIteratorTest extends TestCase {
      */
     void createPixelIterator(WritableRaster raster) {
         iterator = PixelIteratorFactory.createReadOnlyIterator(raster);
-        assertEquals("getIterationDirection()", SequenceType.LINEAR, iterator.getIterationDirection());
+        assertEquals("getIterationOrder()", SequenceType.LINEAR, iterator.getIterationOrder());
     }
 
     /**
@@ -253,7 +251,7 @@ public strictfp class PixelIteratorTest extends TestCase {
      */
     void createPixelIterator(WritableRaster raster, Rectangle subArea) {
         iterator = PixelIteratorFactory.createReadOnlyIterator(raster, subArea);
-        assertEquals("getIterationDirection()", SequenceType.LINEAR, iterator.getIterationDirection());
+        assertEquals("getIterationOrder()", SequenceType.LINEAR, iterator.getIterationOrder());
     }
 
     /**
@@ -286,21 +284,24 @@ public strictfp class PixelIteratorTest extends TestCase {
     /**
      * Iterates over all values returned by the current {@link #iterator} and compares with expected values.
      *
-     * @param verifyIndices  whether to verify also iterator {@code getX()} and {@code getY()} return values.
+     * @param verifyIndices  whether to verify also iterator {@code getPosition()} return values.
      *                       This is usually {@code true} if an only if the iterator cover the full raster area.
      */
     private void verifyIteration(final boolean verifyIndices) {
         int i = 0;
         while (iterator.next()) {
-            final float e = expected[i++];
-            final float a = iterator.getSampleFloat();
-            if (Float.floatToRawIntBits(a) != Float.floatToRawIntBits(e)) {
-                fail("Pixel iteration at index " + i + ": expected " + e + " but got " + a);
-            }
-            if (verifyIndices) {
-                final int p = i / numBands;
-                assertEquals("x", (p % width) + xmin, iterator.getX());
-                assertEquals("y", (p / width) + ymin, iterator.getY());
+            for (int b=0; b<numBands; b++) {
+                final float e = expected[i++];
+                final float a = iterator.getSampleFloat(b);
+                if (Float.floatToRawIntBits(a) != Float.floatToRawIntBits(e)) {
+                    fail("Pixel iteration at index " + i + ": expected " + e + " but got " + a);
+                }
+                if (verifyIndices) {
+                    final int p = i / numBands;
+                    final Point position = iterator.getPosition();
+                    assertEquals("x", (p % width) + xmin, position.x);
+                    assertEquals("y", (p / width) + ymin, position.y);
+                }
             }
         }
         assertEquals("Too few elements in iteration.", expected.length, i);
@@ -485,7 +486,7 @@ public strictfp class PixelIteratorTest extends TestCase {
     }
 
     /**
-     * Verifies that invoking {@link PixelIterator#moveTo(int, int, int)} with illegal indices causes
+     * Verifies that invoking {@link PixelIterator#moveTo(int, int)} with illegal indices causes
      * an exception to be thrown.
      */
     @Test
@@ -499,19 +500,19 @@ public strictfp class PixelIteratorTest extends TestCase {
         createPixelIterator(createRaster(null));
         assertTrue("Expected a non-empty set of values.", expected.length != 0);
         try {
-            iterator.moveTo(2, 3, 0);
+            iterator.moveTo(2, 3);
             fail("Expected IllegalArgumentException.");
         } catch (IllegalArgumentException e) {
             // ok
         }
         try {
-            iterator.moveTo(9, 10, -1);
+            iterator.moveTo(9, 3);
             fail("Expected IllegalArgumentException.");
         } catch (IllegalArgumentException e) {
             // ok
         }
         try {
-            iterator.moveTo(9, 10, 500);
+            iterator.moveTo(2, 10);
             fail("Expected IllegalArgumentException.");
         } catch (IllegalArgumentException e) {
             // ok
@@ -535,13 +536,13 @@ public strictfp class PixelIteratorTest extends TestCase {
         tileHeight =   5;
         numBands   =   3;
         createPixelIterator(createImage(null));
-        assertNull("getIterationDirection()", iterator.getIterationDirection());
+        assertNull("getIterationOrder()", iterator.getIterationOrder());
         verifyIteration(false);
 
         xmin =   1;
         ymin = -50;
         createPixelIterator(createImage(null));
-        assertNull("getIterationDirection()", iterator.getIterationDirection());
+        assertNull("getIterationOrder()", iterator.getIterationOrder());
         verifyIteration(false);
 
         iterator.rewind();
@@ -567,7 +568,7 @@ public strictfp class PixelIteratorTest extends TestCase {
         final Rectangle subArea = new Rectangle(-10, -20, 10, 30);
         createPixelIterator(createImage(subArea), subArea);
         assertTrue("Expected a non-empty set of values.", expected.length != 0);
-        assertEquals("getIterationDirection()", SequenceType.LINEAR, iterator.getIterationDirection());
+        assertEquals("getIterationOrder()", SequenceType.LINEAR, iterator.getIterationOrder());
         verifyIteration(false);
     }
 
@@ -590,7 +591,7 @@ public strictfp class PixelIteratorTest extends TestCase {
         final Rectangle subArea = new Rectangle(90, -20, 30, 31);
         createPixelIterator(createImage(subArea), subArea);
         assertTrue("Expected a non-empty set of values.", expected.length != 0);
-        assertEquals("getIterationDirection()", SequenceType.LINEAR, iterator.getIterationDirection());
+        assertEquals("getIterationOrder()", SequenceType.LINEAR, iterator.getIterationOrder());
         verifyIteration(false);
     }
 
@@ -613,7 +614,7 @@ public strictfp class PixelIteratorTest extends TestCase {
         final Rectangle subArea = new Rectangle(97, 40, 50, 50);
         createPixelIterator(createImage(subArea), subArea);
         assertTrue("Expected a non-empty set of values.", expected.length != 0);
-        assertEquals("getIterationDirection()", SequenceType.LINEAR, iterator.getIterationDirection());
+        assertEquals("getIterationOrder()", SequenceType.LINEAR, iterator.getIterationOrder());
         verifyIteration(false);
     }
 
@@ -636,7 +637,7 @@ public strictfp class PixelIteratorTest extends TestCase {
         final Rectangle subArea = new Rectangle(0, 34, 5, 50);
         createPixelIterator(createImage(subArea), subArea);
         assertTrue("Expected a non-empty set of values.", expected.length != 0);
-        assertEquals("getIterationDirection()", SequenceType.LINEAR, iterator.getIterationDirection());
+        assertEquals("getIterationOrder()", SequenceType.LINEAR, iterator.getIterationOrder());
         verifyIteration(false);
     }
 
@@ -658,7 +659,7 @@ public strictfp class PixelIteratorTest extends TestCase {
         final Rectangle subArea = new Rectangle(16, 18, 8, 3);
         createPixelIterator(createImage(subArea), subArea);
         assertTrue("Expected a non-empty set of values.", expected.length != 0);
-        assertEquals("getIterationDirection()", SequenceType.LINEAR, iterator.getIterationDirection());
+        assertEquals("getIterationOrder()", SequenceType.LINEAR, iterator.getIterationOrder());
         verifyIteration(false);
     }
 
@@ -681,7 +682,7 @@ public strictfp class PixelIteratorTest extends TestCase {
         final Rectangle subArea = new Rectangle(-10, -20, 40, 30);
         createPixelIterator(createImage(subArea), subArea);
         assertTrue("Expected a non-empty set of values.", expected.length != 0);
-        assertNull("getIterationDirection()", iterator.getIterationDirection());
+        assertNull("getIterationOrder()", iterator.getIterationOrder());
         verifyIteration(false);
     }
 
@@ -704,7 +705,7 @@ public strictfp class PixelIteratorTest extends TestCase {
         final Rectangle subArea = new Rectangle(80, -20, 30, 50);
         createPixelIterator(createImage(subArea), subArea);
         assertTrue("Expected a non-empty set of values.", expected.length != 0);
-        assertNull("getIterationDirection()", iterator.getIterationDirection());
+        assertNull("getIterationOrder()", iterator.getIterationOrder());
         verifyIteration(false);
     }
 
@@ -727,7 +728,7 @@ public strictfp class PixelIteratorTest extends TestCase {
         final Rectangle subArea = new Rectangle(80, 30, 50, 50);
         createPixelIterator(createImage(subArea), subArea);
         assertTrue("Expected a non-empty set of values.", expected.length != 0);
-        assertNull("getIterationDirection()", iterator.getIterationDirection());
+        assertNull("getIterationOrder()", iterator.getIterationOrder());
         verifyIteration(false);
     }
 
@@ -750,7 +751,7 @@ public strictfp class PixelIteratorTest extends TestCase {
         final Rectangle subArea = new Rectangle(-20, 30, 50, 50);
         createPixelIterator(createImage(subArea), subArea);
         assertTrue("Expected a non-empty set of values.", expected.length != 0);
-        assertNull("getIterationDirection()", iterator.getIterationDirection());
+        assertNull("getIterationOrder()", iterator.getIterationOrder());
         verifyIteration(false);
     }
 
@@ -772,7 +773,7 @@ public strictfp class PixelIteratorTest extends TestCase {
         final Rectangle subArea = new Rectangle(20, 10, 10, 10);
         createPixelIterator(createImage(subArea), subArea);
         assertTrue("Expected a non-empty set of values.", expected.length != 0);
-        assertNull("getIterationDirection()", iterator.getIterationDirection());
+        assertNull("getIterationOrder()", iterator.getIterationOrder());
         verifyIteration(false);
     }
 
@@ -794,7 +795,7 @@ public strictfp class PixelIteratorTest extends TestCase {
         final Rectangle subArea = new Rectangle(-10, -10, 150, 80);
         createPixelIterator(createImage(subArea), subArea);
         assertTrue("Expected a non-empty set of values.", expected.length != 0);
-        assertNull("getIterationDirection()", iterator.getIterationDirection());
+        assertNull("getIterationOrder()", iterator.getIterationOrder());
         verifyIteration(false);
     }
 
@@ -819,7 +820,7 @@ public strictfp class PixelIteratorTest extends TestCase {
     }
 
     /**
-     * Verifies that invoking {@link PixelIterator#moveTo(int, int, int)} with illegal indices causes
+     * Verifies that invoking {@link PixelIterator#moveTo(int, int)} with illegal indices causes
      * an exception to be thrown.
      */
     @Test
@@ -836,7 +837,7 @@ public strictfp class PixelIteratorTest extends TestCase {
         createPixelIterator(createImage(null));
         assertTrue("Expected a non-empty set of values.", expected.length != 0);
         try {
-            iterator.moveTo(102, 53, 0);
+            iterator.moveTo(102, 53);
             fail("Expected IllegalArgumentException.");
         } catch (IllegalArgumentException e) {
             // ok
@@ -870,11 +871,11 @@ public strictfp class PixelIteratorTest extends TestCase {
     }
 
     /**
-     * Tests {@link PixelIterator#getX()} and {@link PixelIterator#getY()}.
+     * Tests {@link PixelIterator#getPosition()}.
      */
     @Test
     @Ignore
-    public void testGetXY() {
+    public void testGetPosition() {
         xmin       =  56;
         ymin       =   1;
         width      =  40;
@@ -890,12 +891,11 @@ public strictfp class PixelIteratorTest extends TestCase {
                 for (int y = 0; y<tileHeight; y++) {
                     for (int x = 0; x<tileWidth; x++) {
                         assertTrue(iterator.next());
-                        assertEquals("x", tx*tileWidth  + x + xmin, iterator.getX());
-                        assertEquals("y", ty*tileHeight + y + ymin, iterator.getY());
-                        assertEquals(expected[i], iterator.getSampleFloat(), 0f);
-                        for (int b=1; b<numBands; b++) {
-                            assertTrue(iterator.next());
-                            assertEquals(expected[i], iterator.getSampleFloat(), 0f);
+                        final Point position = iterator.getPosition();
+                        assertEquals("x", tx*tileWidth  + x + xmin, position.x);
+                        assertEquals("y", ty*tileHeight + y + ymin, position.y);
+                        for (int b=0; b<numBands; b++) {
+                            assertEquals(expected[i], iterator.getSampleFloat(b), 0f);
                         }
                     }
                 }
@@ -909,7 +909,7 @@ public strictfp class PixelIteratorTest extends TestCase {
      * This method is used for implementation of {@code testMoveXXX()} methods.
      */
     private void moveTo(int x, int y) {
-        iterator.moveTo(x, y, 0);
+        iterator.moveTo(x, y);
         x -= xmin;
         y -= ymin;
         final int pixelIndex;
@@ -925,7 +925,7 @@ public strictfp class PixelIteratorTest extends TestCase {
     }
 
     /**
-     * Tests iteration after a call to {@link PixelIterator#moveTo(int, int, int)} in a raster.
+     * Tests iteration after a call to {@link PixelIterator#moveTo(int, int)} in a raster.
      */
     @Test
     @Ignore
@@ -941,7 +941,7 @@ public strictfp class PixelIteratorTest extends TestCase {
     }
 
     /**
-     * Tests iteration after a call to {@link PixelIterator#moveTo(int, int, int)} in a tiled image.
+     * Tests iteration after a call to {@link PixelIterator#moveTo(int, int)} in a tiled image.
      */
     @Test
     @Ignore
@@ -960,7 +960,7 @@ public strictfp class PixelIteratorTest extends TestCase {
     }
 
     /**
-     * Tests iteration after a call to {@link PixelIterator#moveTo(int, int, int)} in a tiled image.
+     * Tests iteration after a call to {@link PixelIterator#moveTo(int, int)} in a tiled image.
      */
     @Test
     @Ignore
@@ -979,7 +979,7 @@ public strictfp class PixelIteratorTest extends TestCase {
     }
 
     /**
-     * Tests iteration after a call to {@link PixelIterator#moveTo(int, int, int)} in a tiled image.
+     * Tests iteration after a call to {@link PixelIterator#moveTo(int, int)} in a tiled image.
      */
     @Test
     @Ignore
@@ -998,7 +998,7 @@ public strictfp class PixelIteratorTest extends TestCase {
     }
 
     /**
-     * Tests iteration after a call to {@link PixelIterator#moveTo(int, int, int)} in a tiled image.
+     * Tests iteration after a call to {@link PixelIterator#moveTo(int, int)} in a tiled image.
      */
     @Test
     @Ignore
@@ -1017,7 +1017,7 @@ public strictfp class PixelIteratorTest extends TestCase {
     }
 
     /**
-     * Tests iteration after a call to {@link PixelIterator#moveTo(int, int, int)} in a tiled image.
+     * Tests iteration after a call to {@link PixelIterator#moveTo(int, int)} in a tiled image.
      */
     @Test
     @Ignore

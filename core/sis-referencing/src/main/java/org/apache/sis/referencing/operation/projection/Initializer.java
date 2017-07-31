@@ -56,7 +56,7 @@ import static org.apache.sis.internal.util.DoubleDouble.verbatim;
  * in some relatively rare scenarios like 1 ± x where <var>x</var> is much smaller than 1.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @author  Rémi Marechal (Geomatys)
+ * @author  Rémi Maréchal (Geomatys)
  * @version 0.7
  * @since   0.6
  * @module

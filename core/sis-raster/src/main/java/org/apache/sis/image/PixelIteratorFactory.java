@@ -22,7 +22,7 @@ import java.awt.image.*;
 /**
  * Create an appropriate iterator.
  *
- * @author Rémi Marechal (Geomatys).
+ * @author  Rémi Maréchal (Geomatys)
  */
 final class PixelIteratorFactory {
 
