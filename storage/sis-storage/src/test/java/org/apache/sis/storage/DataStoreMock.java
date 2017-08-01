@@ -52,7 +52,7 @@ final strictfp class DataStoreMock extends DataStore {
     public Metadata getMetadata() {
         return null;
     }
-    
+
     @Override
     public Resource getRootResource() throws DataStoreException {
         return null;

@@ -21,7 +21,7 @@ import org.opengis.metadata.Metadata;
 
 /**
  * A resource is an accessor to geospatial data.
- * The user should test if the resource is a {@link CoverageResource} or {@link FeatureResource}.
+ * The user should test if the resource is a {@code CoverageResource} or {@code FeatureResource}.
  *
  * @author Johann Sorel (Geomatys)
  */
