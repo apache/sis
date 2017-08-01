@@ -161,6 +161,7 @@ public strictfp class PixelIteratorTest extends TestCase {
                     value++;
                 }
             }
+            value += 10;                // Arbitrary offset.
         }
         assertEquals("Number of expected values", expected.length, n);
         return raster;
@@ -178,6 +179,8 @@ public strictfp class PixelIteratorTest extends TestCase {
      * @return an image filled with arbitrary sample values.
      */
     private WritableRenderedImage createImage(final Rectangle subArea) {
+        assertEquals(0, width  % tileWidth);
+        assertEquals(0, height % tileHeight);
         final int numXTiles = (width  + tileWidth -1) / tileWidth;
         final int numYTiles = (height + tileHeight-1) / tileHeight;
         final int xmax = xmin + width;                                  // Maximum value is exclusive.
@@ -194,7 +197,7 @@ public strictfp class PixelIteratorTest extends TestCase {
             subMaxX = StrictMath.min(xmax, subArea.x + subArea.width);
             subMaxY = StrictMath.min(ymax, subArea.y + subArea.height);
         }
-        expected = new float[(subMaxX - subMinX) * (subMaxY - subMinY) * numBands];
+        expected = new float[StrictMath.max(subMaxX - subMinX, 0) * StrictMath.max(subMaxY - subMinY, 0) * numBands];
         final TiledImage image = new TiledImage(dataType, numBands, xmin, ymin, width, height, tileWidth, tileHeight, 0, 0);
         /*
          * At this point, all data structures have been created an initialized to zero sample values.
@@ -218,8 +221,11 @@ public strictfp class PixelIteratorTest extends TestCase {
                             value++;
                         }
                     }
+                    value += 4;         // Arbitrary offset.
                 }
+                value += 7;             // Arbitrary offset.
             }
+            value += 10;                // Arbitrary offset.
         }
         assertEquals("Number of expected values", expected.length, n);
         return image;
@@ -675,17 +681,16 @@ public strictfp class PixelIteratorTest extends TestCase {
      * The sub-area is large enough for covering more than one tile.
      */
     @Test
-    @Ignore
     @DependsOnMethod("testOnTileUpperLeft")
     public void testOnImageUpperLeft() {
         xmin       = -5;
         ymin       =  5;
-        width      = 90;
-        height     = 50;
-        tileWidth  = 10;
+        width      = 27;
+        height     = 20;
+        tileWidth  =  9;
         tileHeight =  5;
         numBands   =  3;
-        final Rectangle subArea = new Rectangle(-10, -20, 40, 30);
+        final Rectangle subArea = new Rectangle(-10, -5, 25, 22);
         createPixelIterator(createImage(subArea), subArea);
         assertTrue("Expected a non-empty set of values.", expected.length != 0);
         assertNull("getIterationOrder()", iterator.getIterationOrder());
@@ -698,17 +703,16 @@ public strictfp class PixelIteratorTest extends TestCase {
      * The sub-area is large enough for covering more than one tile.
      */
     @Test
-    @Ignore
     @DependsOnMethod("testOnTileUpperRight")
     public void testOnImageUpperRight() {
         xmin       = 20;
         ymin       =  0;
-        width      = 80;
-        height     = 50;
-        tileWidth  = 10;
-        tileHeight =  5;
-        numBands   =  3;
-        final Rectangle subArea = new Rectangle(80, -20, 30, 50);
+        width      = 25;
+        height     = 24;
+        tileWidth  =  5;
+        tileHeight =  6;
+        numBands   =  2;
+        final Rectangle subArea = new Rectangle(27, -20, 30, 37);
         createPixelIterator(createImage(subArea), subArea);
         assertTrue("Expected a non-empty set of values.", expected.length != 0);
         assertNull("getIterationOrder()", iterator.getIterationOrder());
@@ -721,17 +725,16 @@ public strictfp class PixelIteratorTest extends TestCase {
      * The sub-area is large enough for covering more than one tile.
      */
     @Test
-    @Ignore
     @DependsOnMethod("testOnTileLowerRight")
     public void testOnImageLowerRight() {
         xmin       = 30;
-        ymin       =  0;
-        width      = 70;
-        height     = 50;
-        tileWidth  = 10;
-        tileHeight =  5;
-        numBands   =  3;
-        final Rectangle subArea = new Rectangle(80, 30, 50, 50);
+        ymin       =  1;
+        width      = 15;
+        height     = 12;
+        tileWidth  =  3;
+        tileHeight =  4;
+        numBands   =  4;
+        final Rectangle subArea = new Rectangle(36, 8, 12, 20);
         createPixelIterator(createImage(subArea), subArea);
         assertTrue("Expected a non-empty set of values.", expected.length != 0);
         assertNull("getIterationOrder()", iterator.getIterationOrder());
@@ -744,17 +747,16 @@ public strictfp class PixelIteratorTest extends TestCase {
      * The sub-area is large enough for covering more than one tile.
      */
     @Test
-    @Ignore
     @DependsOnMethod("testOnTileLowerLeft")
     public void testOnImageLowerLeft() {
-        xmin       =  0;
-        ymin       =  0;
-        width      = 70;
-        height     = 50;
-        tileWidth  = 10;
-        tileHeight =  5;
-        numBands   =  3;
-        final Rectangle subArea = new Rectangle(-20, 30, 50, 50);
+        xmin       = -2;
+        ymin       = -7;
+        width      = 15;
+        height     = 16;
+        tileWidth  =  5;
+        tileHeight =  4;
+        numBands   =  1;
+        final Rectangle subArea = new Rectangle(-20, -1, 30, 20);
         createPixelIterator(createImage(subArea), subArea);
         assertTrue("Expected a non-empty set of values.", expected.length != 0);
         assertNull("getIterationOrder()", iterator.getIterationOrder());
@@ -766,17 +768,16 @@ public strictfp class PixelIteratorTest extends TestCase {
      * The sub-area is large enough for covering more than one tile.
      */
     @Test
-    @Ignore
     @DependsOnMethod("testOnTileSubArea")
     public void testOnImageSubArea() {
         xmin       =  -5;
         ymin       =   7;
-        width      = 100;
-        height     =  50;
-        tileWidth  =  10;
-        tileHeight =   5;
-        numBands   =   3;
-        final Rectangle subArea = new Rectangle(20, 10, 10, 10);
+        width      =  70;
+        height     =  48;
+        tileWidth  =   7;
+        tileHeight =   4;
+        numBands   =   2;
+        final Rectangle subArea = new Rectangle(20, 10, 30, 25);
         createPixelIterator(createImage(subArea), subArea);
         assertTrue("Expected a non-empty set of values.", expected.length != 0);
         assertNull("getIterationOrder()", iterator.getIterationOrder());
@@ -784,20 +785,18 @@ public strictfp class PixelIteratorTest extends TestCase {
     }
 
     /**
-     * Tests iteration over a sub-area in a tiled image.
-     * The sub-area is large enough for covering more than one tile.
+     * Tests iteration over a all the region of a tiled image.
      */
     @Test
-    @Ignore
     @DependsOnMethod({"testOnImage", "testOnRasterFullArea"})
     public void testOnImageFullArea() {
-        xmin       =   0;
-        ymin       =   0;
-        width      = 100;
+        xmin       =  -5;
+        ymin       =  -3;
+        width      =  60;
         height     =  50;
-        tileWidth  =  10;
+        tileWidth  =   6;
         tileHeight =   5;
-        numBands   =   3;
+        numBands   =   1;
         final Rectangle subArea = new Rectangle(-10, -10, 150, 80);
         createPixelIterator(createImage(subArea), subArea);
         assertTrue("Expected a non-empty set of values.", expected.length != 0);
@@ -809,16 +808,15 @@ public strictfp class PixelIteratorTest extends TestCase {
      * Tests iteration over a sub-area that do not intersect the image area.
      */
     @Test
-    @Ignore
     @DependsOnMethod("testOnRasterEmptyArea")
     public void testOnImageEmptyArea() {
-        xmin       = 0;
-        ymin       = 0;
-        width      = 20;
-        height     = 10;
-        tileWidth  = 15;
-        tileHeight =  5;
-        numBands   =  3;
+        xmin       = 5;
+        ymin       = 6;
+        width      = 8;
+        height     = 9;
+        tileWidth  = 2;
+        tileHeight = 3;
+        numBands   = 2;
         final Rectangle subArea = new Rectangle(-100, -50, 5, 17);
         createPixelIterator(createImage(subArea), subArea);
         assertEquals("Expected an empty set of values.", 0, expected.length);
@@ -830,23 +828,22 @@ public strictfp class PixelIteratorTest extends TestCase {
      * an exception to be thrown.
      */
     @Test
-    @Ignore
     @DependsOnMethod("testIllegalMoveOnRaster")
     public void testIllegalMoveOnImage() {
         xmin       =  0;
         ymin       =  0;
-        width      = 20;
-        height     = 10;
-        tileWidth  = 15;
-        tileHeight =  5;
-        numBands   =  3;
+        width      =  8;
+        height     =  6;
+        tileWidth  =  4;
+        tileHeight =  3;
+        numBands   =  1;
         createPixelIterator(createImage(null));
         assertTrue("Expected a non-empty set of values.", expected.length != 0);
         try {
             iterator.moveTo(102, 53);
-            fail("Expected IllegalArgumentException.");
-        } catch (IllegalArgumentException e) {
-            // ok
+            fail("Expected IndexOutOfBoundsException.");
+        } catch (IndexOutOfBoundsException e) {
+            assertNotNull(e.getMessage());
         }
     }
 
@@ -854,25 +851,23 @@ public strictfp class PixelIteratorTest extends TestCase {
      * Verifies that invoking {@link PixelIterator#next()} after iteration end causes an exception to be thrown.
      */
     @Test
-    @Ignore
     @DependsOnMethod("testOnImage")
     public void testIllegalNext() {
-        xmin       =  0;
-        ymin       =  0;
-        width      = 20;
-        height     = 15;
-        tileWidth  = 10;
-        tileHeight =  5;
-        numBands   =  3;
-        final Rectangle subArea = new Rectangle(-10, -10, 150, 80);
-        createPixelIterator(createImage(subArea), subArea);
+        xmin       = -1;
+        ymin       =  3;
+        width      =  8;
+        height     =  6;
+        tileWidth  =  4;
+        tileHeight =  3;
+        numBands   =  1;
+        createPixelIterator(createImage(null));
         assertTrue("Expected a non-empty set of values.", expected.length != 0);
         verifyIteration(false);
         try {
             iterator.next();
             fail("Expected IllegalStateException.");
         } catch (IllegalStateException e) {
-            // ok
+            assertNotNull(e.getMessage());
         }
     }
 
@@ -880,15 +875,14 @@ public strictfp class PixelIteratorTest extends TestCase {
      * Tests {@link PixelIterator#getPosition()}.
      */
     @Test
-    @Ignore
     public void testGetPosition() {
         xmin       =  56;
         ymin       =   1;
-        width      =  40;
-        height     =  32;
-        tileWidth  =  10;
+        width      =  20;
+        height     =  24;
+        tileWidth  =   5;
         tileHeight =   8;
-        numBands   =   3;
+        numBands   =   2;
         createPixelIterator(createImage(null));
         assertTrue("Expected a non-empty set of values.", expected.length != 0);
         int i = 0;
@@ -901,7 +895,7 @@ public strictfp class PixelIteratorTest extends TestCase {
                         assertEquals("x", tx*tileWidth  + x + xmin, position.x);
                         assertEquals("y", ty*tileHeight + y + ymin, position.y);
                         for (int b=0; b<numBands; b++) {
-                            assertEquals(expected[i], iterator.getSampleFloat(b), 0f);
+                            assertEquals(expected[i++], iterator.getSampleFloat(b), 0f);
                         }
                     }
                 }
