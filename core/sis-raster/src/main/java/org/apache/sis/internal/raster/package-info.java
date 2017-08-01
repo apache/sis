@@ -16,26 +16,16 @@
  */
 
 /**
- * Provides helper classes for handling Java2D rendered images together with some operations.
- * This package does not provide any geospatial functionalities;
- * it works only on sample or pixel values stored in {@link java.awt.image.RenderedImage}s.
- * Those rendered images have the following capabilities:
+ * A set of helper classes for the SIS implementation.
  *
- * <ul>
- *   <li>Images may have an arbitrary number of bands (not necessarily RGB).</li>
- *   <li>Sample values can be bytes, shorts (signed or unsigned), integers or floating-point values.</li>
- *   <li>Images can be tiled.</li>
- * </ul>
+ * <p><strong>Do not use!</strong></p>
  *
- * This package is used as a basis for
- * {@linkplain org.apache.sis.metadata.iso.spatial.DefaultGeorectified georectified} or
- * {@linkplain org.apache.sis.metadata.iso.spatial.DefaultGeoreferenceable georeferenceable}
- * <cite>grid coverages</cite>.
+ * This package is for internal use by SIS only. Classes in this package
+ * may change in incompatible ways in any future version without notice.
  *
- * @author  Rémi Maréchal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
  * @since   0.8
  * @module
  */
-package org.apache.sis.image;
+package org.apache.sis.internal.raster;

@@ -24,6 +24,7 @@ import java.awt.image.RasterFormatException;
 import java.awt.image.RenderedImage;
 import java.awt.image.WritableRaster;
 import java.awt.image.WritableRenderedImage;
+import org.apache.sis.internal.raster.Resources;
 
 
 /**
@@ -57,40 +58,40 @@ abstract class WritablePixelIterator extends PixelIterator implements Closeable 
      * Ensures that the given output raster has the same grid geometry than the input raster.
      */
     private static void checkCompatibility(final Raster input, final WritableRaster output) {
-        final String message;
+        final short message;
         if (!input.getSampleModel().equals(output.getSampleModel())) {
-            message = "Incompatible sample model.";
+            message = Resources.Keys.MismatchedSampleModel;
         } else if (!input.getBounds().equals(output.getBounds())) {
-            message = "Mismatched location.";
+            message = Resources.Keys.MismatchedImageLocation;
         } else {
             return;
         }
-        throw new RasterFormatException(message);       // TODO: localize
+        throw new RasterFormatException(Resources.format(message));
     }
 
     /**
      * Ensures that the given output image has the same grid geometry than the input image.
      */
     private static void checkCompatibility(final RenderedImage input, final WritableRenderedImage output) {
-        final String message;
+        final short message;
         if (!input.getSampleModel().equals(output.getSampleModel())) {
-            message = "Incompatible sample model.";
-        } else if (input.getMinX()   != output.getMinX()   ||
-                   input.getMinY()   != output.getMinY()   ||
-                   input.getWidth()  != output.getWidth()  ||
+            message = Resources.Keys.MismatchedSampleModel;
+        } else if (input.getMinX()   != output.getMinX()  ||
+                   input.getMinY()   != output.getMinY()  ||
+                   input.getWidth()  != output.getWidth() ||
                    input.getHeight() != output.getHeight())
         {
-            message = "Mismatched location.";
+            message = Resources.Keys.MismatchedImageLocation;
         } else if (input.getMinTileX()   != output.getMinTileX()  ||
                    input.getMinTileY()   != output.getMinTileY()  ||
                    input.getTileWidth()  != output.getTileWidth() ||
                    input.getTileHeight() != output.getTileHeight())
         {
-            message = "Mismatched tile grid.";
+            message = Resources.Keys.MismatchedTileGrid;
         } else {
             return;
         }
-        throw new RasterFormatException(message);       // TODO: localize
+        throw new RasterFormatException(Resources.format(message));
     }
 
     /**

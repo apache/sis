@@ -175,8 +175,7 @@ final class TiledImage implements WritableRenderedImage {
         final int i = tileY * numXTiles + tileX;
         WritableRaster raster = tiles[i];
         if (raster == null) {
-            tiles[i] = raster = Raster.createInterleavedRaster(sampleModel.getDataType(),
-                    tileWidth, tileHeight, sampleModel.getNumBands(),
+            tiles[i] = raster = Raster.createWritableRaster(sampleModel,
                     new Point(tileX * tileWidth  + minX,
                               tileY * tileHeight + minY));
         }
