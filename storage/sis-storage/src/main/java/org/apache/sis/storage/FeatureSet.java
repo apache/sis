@@ -34,7 +34,7 @@ public interface FeatureSet extends DataSet {
      * <li>description</li>
      * <li>primitive type</li>
      * <li>cardinality</li>
-     * <li>{@link CoordinateReferenceSystem}</li>
+     * <li>{@link org.opengis.referencing.crs.CoordinateReferenceSystem}</li>
      * </ul>
      *
      * @return the feature type, never null.
