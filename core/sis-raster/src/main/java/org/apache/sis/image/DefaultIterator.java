@@ -22,6 +22,7 @@ import java.awt.image.Raster;
 import java.awt.image.RenderedImage;
 import java.awt.image.RasterFormatException;
 import org.opengis.coverage.grid.SequenceType;
+import org.apache.sis.internal.raster.Resources;
 
 
 /**
@@ -30,8 +31,8 @@ import org.opengis.coverage.grid.SequenceType;
  * Calls to {@link #next()} move the current position by increasing the following values, in order:
  *
  * <ol>
- *   <li>Column index in a single tile varies fastest (from left to right)</li>
- *   <li>Then, row index in a single tile varies from top to bottom.</li>
+ *   <li>Column index in a single tile (from left to right)</li>
+ *   <li>Row index in a single tile (from top to bottom).</li>
  *   <li>Then, {@code tileX} index from left to right.</li>
  *   <li>Then, {@code tileY} index from top to bottom.</li>
  * </ol>
@@ -41,6 +42,8 @@ import org.opengis.coverage.grid.SequenceType;
  * @version 0.8
  * @since   0.8
  * @module
+ *
+ * @todo Change iteration order on tiles for using Hilbert iterator.
  */
 final class DefaultIterator extends PixelIterator {
     /**
@@ -112,9 +115,9 @@ final class DefaultIterator extends PixelIterator {
             tileX = tileLowerX - 1;     // Note: no need for decrementExact(…) because already checked by constructor.
             tileY = tileLowerY;
             currentUpperX = lowerX;     // Really 'lower', so the position is the tile before the first tile.
+            currentUpperY = lowerY;
         }
         currentLowerX = lowerX;
-        currentUpperY = lowerY;
         x = lowerX - 1;                 // Set the position before first pixel.
         y = lowerY;
     }
@@ -136,19 +139,19 @@ final class DefaultIterator extends PixelIterator {
      *
      * @return column and row indices of current iterator position.
      * @throws IllegalStateException if this method is invoked before the first call to {@link #next()}
-     *         or after {@code next()} returned {@code false}.
+     *         or {@link #moveTo(int, int)}, or after {@code next()} returned {@code false}.
      */
     @Override
     public Point getPosition() {
-        final String message;
+        final short message;
         if (x < lowerX) {
-            message = "Iteration did not started.";
+            message = Resources.Keys.IterationNotStarted;
         } else if (x >= upperX) {
-            message = "Iteration is finished.";
+            message = Resources.Keys.IterationIsFinished;
         } else {
             return new Point(x,y);
         }
-        throw new IllegalStateException(message);       // TODO: localize
+        throw new IllegalStateException(Resources.format(message));
     }
 
     /**
@@ -161,7 +164,7 @@ final class DefaultIterator extends PixelIterator {
     @Override
     public void moveTo(final int px, final int py) {
         if (px < lowerX || px >= upperX ||  py < lowerY || py >= upperY) {
-            throw new IndexOutOfBoundsException("Coordinate is outside iterator domain.");      // TODO: localize
+            throw new IndexOutOfBoundsException(Resources.format(Resources.Keys.CoordinateOutsideDomain_2, px, py));
         }
         if (image != null) {
             final int tx = Math.floorDiv(px - tileGridXOffset, tileWidth);
@@ -185,10 +188,11 @@ final class DefaultIterator extends PixelIterator {
      */
     @Override
     public boolean next() {
-        if (++x == currentUpperX) {
-            if (++y == currentUpperY) {
-                if (++tileX == tileUpperX) {
-                    if (Math.incrementExact(tileY) >= tileUpperY) {
+        if (++x >= currentUpperX) {
+            if (++y >= currentUpperY) {
+                if (++tileX >= tileUpperX) {
+                    tileY = Math.incrementExact(tileY);
+                    if (tileY >= tileUpperY) {
                         /*
                          * Paranoiac safety: keep the x, y and tileX values before their maximal values
                          * in order to avoid overflow. The 'tileY' value is used for checking if next()
@@ -198,7 +202,7 @@ final class DefaultIterator extends PixelIterator {
                         y =  currentUpperY - 1;
                         tileX = tileUpperX - 1;
                         if (tileY > tileUpperY) {
-                            throw new IllegalStateException("Iteration is finished.");      // TODO: localize
+                            throw new IllegalStateException(Resources.format(Resources.Keys.IterationIsFinished));
                         }
                         return false;
                     }
@@ -213,7 +217,8 @@ final class DefaultIterator extends PixelIterator {
 
     /**
      * Fetches from the image a tile for the current {@link #tileX} and {@link #tileY} coordinates.
-     * All fields prefixed by {@code current} are updated by this method.
+     * All fields prefixed by {@code current} are updated by this method. This method also updates
+     * the {@link #y} field, but caller is responsible for updating the {@link #x} field.
      */
     private void fetchTile() {
         currentRaster  = image.getTile(tileX, tileY);
@@ -223,23 +228,21 @@ final class DefaultIterator extends PixelIterator {
         y              = Math.max(lowerY, minY);
         currentUpperX  = Math.min(upperX, minX + tileWidth);
         currentUpperY  = Math.min(upperY, minY + tileHeight);
-        x = currentLowerX - 1;
         if (currentRaster.getNumBands() != numBands) {
-            throw new RasterFormatException("Mismatched number of bands.");     // TODO: localize
+            throw new RasterFormatException(Resources.format(Resources.Keys.IncompatibleTile_2, tileX, tileY));
         }
     }
 
     /**
-     * Returns the sample value in the specified band of current pixel, without precision lost.
+     * Returns the sample value in the specified band of current pixel, rounded toward zero.
      */
     @Override
-    public double getSample(final int band) {
-        return currentRaster.getSampleDouble(x, y, band);
+    public int getSample(final int band) {
+        return currentRaster.getSample(x, y, band);
     }
 
     /**
-     * Returns the sample value in the specified band of current pixel,
-     * casted to a single-precision floating point number.
+     * Returns the sample value in the specified band of current pixel as a single-precision floating point number.
      */
     @Override
     public float getSampleFloat(final int band) {
@@ -247,11 +250,11 @@ final class DefaultIterator extends PixelIterator {
     }
 
     /**
-     * Returns the sample value in the specified band of current pixel, casted to an integer.
+     * Returns the sample value in the specified band of current pixel, without precision lost.
      */
     @Override
-    public int getSampleInt(final int band) {
-        return currentRaster.getSample(x, y, band);
+    public double getSampleDouble(final int band) {
+        return currentRaster.getSampleDouble(x, y, band);
     }
 
     /**

@@ -16,6 +16,7 @@
  */
 package org.apache.sis.image;
 
+import java.util.Arrays;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.image.DataBuffer;
@@ -23,7 +24,6 @@ import java.awt.image.PixelInterleavedSampleModel;
 import java.awt.image.Raster;
 import java.awt.image.WritableRaster;
 import java.awt.image.WritableRenderedImage;
-import java.util.Arrays;
 import org.opengis.coverage.grid.SequenceType;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestCase;
@@ -35,7 +35,7 @@ import static org.junit.Assert.*;
 
 /**
  * Base class of {@link PixelIterator} tests. This base class tests the default read-only iterator
- * on integer values. Subclasses will test variants, for example the read-write iterator.
+ * on signed short integer values. Subclasses will test variants, for example the read-write iterator.
  *
  * @author  Rémi Maréchal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
@@ -111,7 +111,7 @@ public strictfp class PixelIteratorTest extends TestCase {
      * Creates a new test case.
      */
     public PixelIteratorTest() {
-        this(DataBuffer.TYPE_INT);
+        this(DataBuffer.TYPE_SHORT);
     }
 
     /**
@@ -140,7 +140,7 @@ public strictfp class PixelIteratorTest extends TestCase {
             subMaxX = StrictMath.min(xmax, subArea.x + subArea.width);
             subMaxY = StrictMath.min(ymax, subArea.y + subArea.height);
         }
-        expected = new float[(subMaxX - subMinX) * (subMaxY - subMinY) * numBands];
+        expected = new float[StrictMath.max(subMaxX - subMinX, 0) * StrictMath.max(subMaxY - subMinY, 0) * numBands];
         final WritableRaster raster = Raster.createWritableRaster(new PixelInterleavedSampleModel(dataType,
                 width, height, numBands, width * numBands, TiledImage.bandOffsets(numBands)), new Point(xmin, ymin));
         /*
@@ -148,7 +148,7 @@ public strictfp class PixelIteratorTest extends TestCase {
          * Now fill the data structures with arbitrary values.
          */
         int n = 0;
-        float value = (dataType == DataBuffer.TYPE_FLOAT) ? -2000.5f : 0f;
+        float value = (dataType == DataBuffer.TYPE_FLOAT) ? -100.5f : 100f;
         for (int y=ymin; y<ymax; y++) {
             final boolean rowIncluded = (y >= subMinY && y < subMaxY);
             for (int x=xmin; x<xmax; x++) {
@@ -195,13 +195,13 @@ public strictfp class PixelIteratorTest extends TestCase {
             subMaxY = StrictMath.min(ymax, subArea.y + subArea.height);
         }
         expected = new float[(subMaxX - subMinX) * (subMaxY - subMinY) * numBands];
-        final TiledImage image = new TiledImage(dataType, numBands, xmin, ymin, width, height, tileWidth, tileHeight, -1, 2);
+        final TiledImage image = new TiledImage(dataType, numBands, xmin, ymin, width, height, tileWidth, tileHeight, 0, 0);
         /*
          * At this point, all data structures have been created an initialized to zero sample values.
          * Now fill the data structures with arbitrary values. We fill them tile-by-tile.
          */
         int n = 0;
-        float value = (dataType == DataBuffer.TYPE_FLOAT) ? -200.5f : 0f;
+        float value = (dataType == DataBuffer.TYPE_FLOAT) ? -100.5f : 100f;
         for (int j=0; j<numYTiles; j++) {
             for (int i=0; i<numXTiles; i++) {
                 final int yNextTile = ymin + (j+1) * tileHeight;
@@ -235,7 +235,7 @@ public strictfp class PixelIteratorTest extends TestCase {
      * @param  raster  the data on which to perform iteration.
      */
     void createPixelIterator(WritableRaster raster) {
-        iterator = PixelIteratorFactory.createReadOnlyIterator(raster);
+        iterator = new DefaultIterator(raster, null);
         assertEquals("getIterationOrder()", SequenceType.LINEAR, iterator.getIterationOrder());
     }
 
@@ -250,7 +250,7 @@ public strictfp class PixelIteratorTest extends TestCase {
      * @param  subArea  the boundary of the raster sub-area where to perform iteration.
      */
     void createPixelIterator(WritableRaster raster, Rectangle subArea) {
-        iterator = PixelIteratorFactory.createReadOnlyIterator(raster, subArea);
+        iterator = new DefaultIterator(raster, subArea);
         assertEquals("getIterationOrder()", SequenceType.LINEAR, iterator.getIterationOrder());
     }
 
@@ -264,7 +264,7 @@ public strictfp class PixelIteratorTest extends TestCase {
      * @param  image  the data on which to perform iteration.
      */
     void createPixelIterator(WritableRenderedImage image) {
-        iterator = PixelIteratorFactory.createReadOnlyIterator(image);
+        iterator = new DefaultIterator(image, null);
     }
 
     /**
@@ -278,7 +278,7 @@ public strictfp class PixelIteratorTest extends TestCase {
      * @param  subArea  the boundary of the image sub-area where to perform iteration.
      */
     void createPixelIterator(WritableRenderedImage image, Rectangle subArea) {
-        iterator = PixelIteratorFactory.createReadOnlyIterator(image, subArea);
+        iterator = new DefaultIterator(image, subArea);
     }
 
     /**
@@ -291,7 +291,7 @@ public strictfp class PixelIteratorTest extends TestCase {
         int i = 0;
         while (iterator.next()) {
             for (int b=0; b<numBands; b++) {
-                final float e = expected[i++];
+                final float e = expected[i];
                 final float a = iterator.getSampleFloat(b);
                 if (Float.floatToRawIntBits(a) != Float.floatToRawIntBits(e)) {
                     fail("Pixel iteration at index " + i + ": expected " + e + " but got " + a);
@@ -302,6 +302,7 @@ public strictfp class PixelIteratorTest extends TestCase {
                     assertEquals("x", (p % width) + xmin, position.x);
                     assertEquals("y", (p / width) + ymin, position.y);
                 }
+                i++;
             }
         }
         assertEquals("Too few elements in iteration.", expected.length, i);
@@ -310,39 +311,27 @@ public strictfp class PixelIteratorTest extends TestCase {
     /**
      * Tests iteration over all pixels in a single raster.
      * This method uses different (<var>x</var>,<var>y</var>) origins.
-     * Tests also {@link PixelIterator#rewind()}.
      */
     @Test
-    @Ignore
     public void testOnRaster() {
-        xmin     =  0;
-        ymin     =  0;
-        width    = 10;
-        height   = 12;
+        width    =  7;
+        height   = 10;
         numBands =  3;
         createPixelIterator(createRaster(null));
         verifyIteration(true);
+    }
 
-        xmin = 3;
-        ymin = 5;
-        createPixelIterator(createRaster(null));
-        verifyIteration(true);
-
-        xmin   = -3;
-        ymin   =  5;
-        height =  9;
-        createPixelIterator(createRaster(null));
-        verifyIteration(true);
-
-        xmin   =  3;
-        ymin   = -5;
-        height =  7;
-        createPixelIterator(createRaster(null));
-        verifyIteration(true);
-
-        xmin  = -3;
-        ymin  = -5;
-        width =  7;
+    /**
+     * Tests {@link PixelIterator#rewind()}.
+     */
+    @Test
+    @DependsOnMethod("testOnRaster")
+    public void testRasterRewind() {
+        xmin     = -3;
+        ymin     = -5;
+        width    =  8;
+        height   =  7;
+        numBands =  3;
         createPixelIterator(createRaster(null));
         verifyIteration(true);
 
@@ -355,13 +344,12 @@ public strictfp class PixelIteratorTest extends TestCase {
      * This test iterates in the upper-left corner of the raster.
      */
     @Test
-    @Ignore
     @DependsOnMethod("testOnRaster")
     public void testOnRasterUpperLeft() {
         xmin     =  5;
         ymin     =  7;
-        width    = 12;
-        height   = 15;
+        width    =  9;
+        height   =  8;
         numBands =  3;
         final Rectangle subArea = new Rectangle(4, 6, 5, 4);
         createPixelIterator(createRaster(subArea), subArea);
@@ -374,15 +362,14 @@ public strictfp class PixelIteratorTest extends TestCase {
      * This test iterates in the upper-right corner of the raster.
      */
     @Test
-    @Ignore
     @DependsOnMethod("testOnRaster")
     public void testOnRasterUpperRight() {
-        width    = 15;
-        height   = 14;
-        xmin     = 6;
-        ymin     = 9;
-        numBands = 3;
-        final Rectangle subArea = new Rectangle(16, 6, 10, 6);
+        xmin     = 11;
+        ymin     = 12;
+        width    = 10;
+        height   = 11;
+        numBands =  3;
+        final Rectangle subArea = new Rectangle(16, 9, 10, 6);
         createPixelIterator(createRaster(subArea), subArea);
         assertTrue("Expected a non-empty set of values.", expected.length != 0);
         verifyIteration(false);
@@ -393,15 +380,14 @@ public strictfp class PixelIteratorTest extends TestCase {
      * This test iterates in the lower-right corner of the raster.
      */
     @Test
-    @Ignore
     @DependsOnMethod("testOnRaster")
     public void testOnRasterLowerRight() {
-        xmin     =  6;
-        ymin     =  7;
-        width    = 15;
-        height   = 16;
+        xmin     = -4;
+        ymin     = -6;
+        width    =  8;
+        height   =  8;
         numBands =  3;
-        final Rectangle subArea = new Rectangle(14, 20, 15, 9);
+        final Rectangle subArea = new Rectangle(2, -2, 10, 12);
         createPixelIterator(createRaster(subArea), subArea);
         assertTrue("Expected a non-empty set of values.", expected.length != 0);
         verifyIteration(false);
@@ -412,15 +398,14 @@ public strictfp class PixelIteratorTest extends TestCase {
      * This test iterates in the lower-left corner of the raster.
      */
     @Test
-    @Ignore
     @DependsOnMethod("testOnRaster")
     public void testOnRasterLowerLeft() {
-        xmin     =  4;
-        ymin     =  6;
-        width    = 16;
-        height   = 15;
+        xmin     =  6;
+        ymin     =  7;
+        width    =  5;
+        height   =  9;
         numBands =  3;
-        final Rectangle subArea = new Rectangle(2, 12, 10, 6);
+        final Rectangle subArea = new Rectangle(3, 10, 4, 9);
         createPixelIterator(createRaster(subArea), subArea);
         assertTrue("Expected a non-empty set of values.", expected.length != 0);
         verifyIteration(false);
@@ -431,8 +416,7 @@ public strictfp class PixelIteratorTest extends TestCase {
      * Tests also {@link PixelIterator#rewind()}.
      */
     @Test
-    @Ignore
-    @DependsOnMethod("testOnRaster")
+    @DependsOnMethod({"testOnRaster", "testRasterRewind"})
     public void testOnRasterSubArea() {
         xmin     =  5;
         ymin     =  7;
@@ -453,36 +437,41 @@ public strictfp class PixelIteratorTest extends TestCase {
      * Tests also {@link PixelIterator#rewind()}.
      */
     @Test
-    @Ignore
-    @DependsOnMethod("testOnRaster")
+    @DependsOnMethod({"testOnRaster", "testRasterRewind"})
     public void testOnRasterFullArea() {
         xmin     =  7;
         ymin     =  9;
         width    = 11;
-        height   = 13;
+        height   = 17;
         numBands =  3;
         final Rectangle subArea = new Rectangle(2, 3, 25, 17);
         createPixelIterator(createRaster(subArea), subArea);
         assertTrue("Expected a non-empty set of values.", expected.length != 0);
         verifyIteration(true);
+
+        iterator.rewind();
+        verifyIteration(false);
     }
 
     /**
      * Tests iteration over a sub-area that do not intersect the raster area.
+     * Tests also {@link PixelIterator#rewind()}.
      */
     @Test
-    @Ignore
-    @DependsOnMethod("testOnRaster")
+    @DependsOnMethod({"testOnRaster", "testRasterRewind"})
     public void testOnRasterEmptyArea() {
-        width    = 7;
-        height   = 10;
         xmin     = 6;
         ymin     = 5;
+        width    = 3;
+        height   = 2;
         numBands = 3;
         final Rectangle subArea = new Rectangle(-17, -20, 5, 15);
         createPixelIterator(createRaster(subArea), subArea);
         assertEquals("Expected an empty set of values.", 0, expected.length);
         verifyIteration(true);
+
+        iterator.rewind();
+        verifyIteration(false);
     }
 
     /**
@@ -490,33 +479,50 @@ public strictfp class PixelIteratorTest extends TestCase {
      * an exception to be thrown.
      */
     @Test
-    @Ignore
     public void testIllegalMoveOnRaster() {
         xmin     =  4;
         ymin     =  7;
-        width    = 13;
-        height   = 10;
+        width    =  5;
+        height   =  4;
         numBands =  3;
         createPixelIterator(createRaster(null));
         assertTrue("Expected a non-empty set of values.", expected.length != 0);
         try {
             iterator.moveTo(2, 3);
-            fail("Expected IllegalArgumentException.");
-        } catch (IllegalArgumentException e) {
-            // ok
+            fail("Expected IndexOutOfBoundsException.");
+        } catch (IndexOutOfBoundsException e) {
+            assertNotNull(e.getMessage());
         }
         try {
             iterator.moveTo(9, 3);
-            fail("Expected IllegalArgumentException.");
-        } catch (IllegalArgumentException e) {
-            // ok
+            fail("Expected IndexOutOfBoundsException.");
+        } catch (IndexOutOfBoundsException e) {
+            assertNotNull(e.getMessage());
         }
         try {
             iterator.moveTo(2, 10);
-            fail("Expected IllegalArgumentException.");
-        } catch (IllegalArgumentException e) {
-            // ok
+            fail("Expected IndexOutOfBoundsException.");
+        } catch (IndexOutOfBoundsException e) {
+            assertNotNull(e.getMessage());
         }
+    }
+
+    /**
+     * Tests iteration over all pixels in a tiled image.
+     * This method uses different (<var>x</var>,<var>y</var>) origins.
+     * Tests also {@link PixelIterator#rewind()}.
+     */
+    @Test
+    @DependsOnMethod("testOnRaster")
+    public void testOnImage() {
+        width      =  40;
+        height     =  50;
+        tileWidth  =   8;
+        tileHeight =   5;
+        numBands   =   3;
+        createPixelIterator(createImage(null));
+        assertNull("getIterationOrder()", iterator.getIterationOrder());
+        verifyIteration(false);
     }
 
     /**
@@ -527,12 +533,12 @@ public strictfp class PixelIteratorTest extends TestCase {
     @Test
     @Ignore
     @DependsOnMethod("testOnRaster")
-    public void testOnImage() {
-        xmin       =   0;
-        ymin       =   0;
-        width      = 100;
+    public void testImageRewind() {
+        xmin       =   1;
+        ymin       = -50;
+        width      =  40;
         height     =  50;
-        tileWidth  =  10;
+        tileWidth  =   8;
         tileHeight =   5;
         numBands   =   3;
         createPixelIterator(createImage(null));

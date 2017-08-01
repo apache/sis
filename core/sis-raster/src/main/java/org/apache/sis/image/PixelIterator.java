@@ -20,7 +20,6 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.image.Raster;
 import java.awt.image.RenderedImage;
-import java.awt.image.SampleModel;
 import java.util.NoSuchElementException;
 import org.opengis.coverage.grid.SequenceType;
 import org.apache.sis.util.ArgumentChecks;
@@ -29,9 +28,22 @@ import static java.lang.Math.floorDiv;
 
 
 /**
- * An iterator over sample values in a raster or an image. This iterator simplifies accesses to pixel or sample values
- * by hiding {@linkplain SampleModel sample model} and tiling complexity. Iteration may be performed on full image or
- * on image sub-region. Iteration order is implementation specific.
+ * An iterator over sample values in a raster or an image.  This iterator makes easier to read and write efficiently
+ * pixel or sample values. The iterator {@linkplain RenderedImage#getTile(int,int) acquires tiles} and releases them
+ * automatically. Unless otherwise specified, iterators are free to use an {@linkplain #getIterationOrder() iteration
+ * order} that minimize the "acquire / release tile" operations (in other words, iterations are not necessarily from
+ * left to right). Iteration can be performed on a complete image or only a sub-region of it. Some optimized iterator
+ * implementations exist for a few commonly used {@linkplain java.awt.image.SampleModel sample models}.
+ *
+ * <p>Usage example:</p>
+ * {@preformat java
+ *     PixelIterator it = PixelIterator.create(image, null);
+ *     double[] samples = null;
+ *     while (it.next()) {
+ *         samples = it.getPixel(samples);      // Get values in all bands.
+ *         // Perform computation here...
+ *     }
+ * }
  *
  * @author  Rémi Maréchal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
@@ -92,7 +104,7 @@ public abstract class PixelIterator {
      * @param  subArea  the raster region where to perform the iteration, or {@code null}
      *                  for iterating over all the raster domain.
      */
-    protected PixelIterator(final Raster data, final Rectangle subArea) {
+    PixelIterator(final Raster data, final Rectangle subArea) {
         ArgumentChecks.ensureNonNull("data", data);
         image           = null;
         currentRaster   = data;
@@ -108,6 +120,8 @@ public abstract class PixelIterator {
         Rectangle bounds = new Rectangle(tileGridXOffset, tileGridYOffset, tileWidth, tileHeight);
         if (subArea != null) {
             bounds = bounds.intersection(subArea);
+            if (bounds.width  < 0) bounds.width  = 0;
+            if (bounds.height < 0) bounds.height = 0;
         }
         lowerX = bounds.x;
         lowerY = bounds.y;
@@ -122,7 +136,7 @@ public abstract class PixelIterator {
      * @param  subArea  the image region where to perform the iteration, or {@code null}
      *                  for iterating over all the image domain.
      */
-    protected PixelIterator(final RenderedImage data, final Rectangle subArea) {
+    PixelIterator(final RenderedImage data, final Rectangle subArea) {
         ArgumentChecks.ensureNonNull("data", data);
         image            = data;
         numBands         = data.getSampleModel().getNumBands();
@@ -153,6 +167,8 @@ public abstract class PixelIterator {
 
     /**
      * Returns the pixel coordinates of the region where this iterator is doing the iteration.
+     * If no region was specified at construction time, then this method returns the image or
+     * raster bounds.
      *
      * @return pixel coordinates of the iteration region.
      */
@@ -171,20 +187,21 @@ public abstract class PixelIterator {
 
     /**
      * Returns the column (x) and row (y) indices of the current pixel.
-     * The {@link #next()} method must have been invoked before this method.
+     * The {@link #next()} or {@link #moveTo(int,int)} method must have been invoked before this method.
      * Indices of the first pixel are not necessarily zero; they can even be negative.
      *
      * @return column and row indices of current iterator position.
      * @throws IllegalStateException if this method is invoked before the first call to {@link #next()}
-     *         or after {@code next()} returned {@code false}.
+     *         or {@link #moveTo(int,int)}, or after {@code next()} returned {@code false}.
      */
     public abstract Point getPosition();
 
     /**
      * Moves the pixel iterator to the given column (x) and row (y) indices. After this method invocation,
      * the iterator state is as if the {@link #next()} method has been invoked just before to reach the
-     * specified position. Usage example:
+     * specified position.
      *
+     * <div class="note"><b>Usage example:</b>
      * {@preformat java
      *     iterator.moveTo(x, y);
      *     do {
@@ -192,6 +209,7 @@ public abstract class PixelIterator {
      *         // Use sample value here...
      *     } while (iterator.next());
      * }
+     * </div>
      *
      * @param  x  the column index of the pixel to make current.
      * @param  y  the row index of the pixel to make current.
@@ -216,18 +234,25 @@ public abstract class PixelIterator {
     public abstract boolean next();
 
     /**
-     * Returns the sample value in the specified band of current pixel, without precision lost.
+     * Returns the sample value in the specified band of current pixel, rounded toward zero.
+     * The {@link #next()} method must have returned {@code true}, or the {@link #moveTo(int,int)} method must have
+     * been invoked successfully, before this {@code getSample(int)} method is invoked. If above condition is not met,
+     * then this method behavior is undefined: it may throw any runtime exception or return a meaningless value
+     * (there is no explicit bounds check for performance reasons).
      *
      * @param  band  the band for which to get the sample value.
      * @return sample value in specified band of current pixel.
      *
-     * @see Raster#getSampleDouble(int, int, int)
+     * @see Raster#getSample(int, int, int)
      */
-    public abstract double getSample(int band);
+    public abstract int getSample(int band);
 
     /**
-     * Returns the sample value in the specified band of current pixel,
-     * casted to a single-precision floating point number.
+     * Returns the sample value in the specified band of current pixel as a single-precision floating point number.
+     * The {@link #next()} method must have returned {@code true}, or the {@link #moveTo(int,int)} method must have
+     * been invoked successfully, before this {@code getSampleFloat(int)} method is invoked. If above condition is
+     * not met, then this method behavior is undefined: it may throw any runtime exception or return a meaningless
+     * value (there is no explicit bounds check for performance reasons).
      *
      * @param  band  the band for which to get the sample value.
      * @return sample value in specified band of current pixel.
@@ -237,18 +262,25 @@ public abstract class PixelIterator {
     public abstract float getSampleFloat(int band);
 
     /**
-     * Returns the sample value in the specified band of current pixel, casted to an integer.
-     * Floating-point values are rounded toward zero.
+     * Returns the sample value in the specified band of current pixel, without precision lost.
+     * The {@link #next()} method must have returned {@code true}, or the {@link #moveTo(int,int)} method must have
+     * been invoked successfully, before this {@code getSampleDouble(int)} method is invoked. If above condition is
+     * not met, then this method behavior is undefined: it may throw any runtime exception or return a meaningless
+     * value (there is no explicit bounds check for performance reasons).
      *
      * @param  band  the band for which to get the sample value.
      * @return sample value in specified band of current pixel.
      *
-     * @see Raster#getSample(int, int, int)
+     * @see Raster#getSampleDouble(int, int, int)
      */
-    public abstract int getSampleInt(int band);
+    public abstract double getSampleDouble(int band);
 
     /**
      * Returns the sample values of current pixel for all bands.
+     * The {@link #next()} method must have returned {@code true}, or the {@link #moveTo(int,int)} method must have
+     * been invoked successfully, before this {@code getPixel(…)} method is invoked. If above condition is not met,
+     * then this method behavior is undefined: it may throw any runtime exception or return a meaningless value
+     * (there is no explicit bounds check for performance reasons).
      *
      * @param  dest  a pre-allocated array where to store the sample values, or {@code null} if none.
      * @return the sample values for current pixel.
@@ -259,6 +291,10 @@ public abstract class PixelIterator {
 
     /**
      * Returns the sample values of current pixel for all bands.
+     * The {@link #next()} method must have returned {@code true}, or the {@link #moveTo(int,int)} method must have
+     * been invoked successfully, before this {@code getPixel(…)} method is invoked. If above condition is not met,
+     * then this method behavior is undefined: it may throw any runtime exception or return a meaningless value
+     * (there is no explicit bounds check for performance reasons).
      *
      * @param  dest  a pre-allocated array where to store the sample values, or {@code null} if none.
      * @return the sample values for current pixel.
@@ -269,6 +305,10 @@ public abstract class PixelIterator {
 
     /**
      * Returns the sample values of current pixel for all bands.
+     * The {@link #next()} method must have returned {@code true}, or the {@link #moveTo(int,int)} method must have
+     * been invoked successfully, before this {@code getPixel(…)} method is invoked. If above condition is not met,
+     * then this method behavior is undefined: it may throw any runtime exception or return a meaningless value
+     * (there is no explicit bounds check for performance reasons).
      *
      * @param  dest  a pre-allocated array where to store the sample values, or {@code null} if none.
      * @return the sample values for current pixel.
@@ -316,7 +356,7 @@ public abstract class PixelIterator {
      * in the second column of the first row, <i>etc.</i></div>
      *
      * Regions are created by call to {@link PixelIterator#region(int, int)}.
-     * Once created, the same instance can be used for all regions traversed during iteration.
+     * Once created, the same instance can be used for all regions of the given size traversed during iteration.
      */
     public abstract static class Region {
         /**
