@@ -106,6 +106,7 @@ public abstract class PixelIterator {
      */
     PixelIterator(final Raster data, final Rectangle subArea) {
         ArgumentChecks.ensureNonNull("data", data);
+        final Rectangle bounds;
         image           = null;
         currentRaster   = data;
         numBands        = data.getNumBands();
@@ -117,16 +118,11 @@ public abstract class PixelIterator {
         tileLowerY      = 0;
         tileUpperX      = 1;
         tileUpperY      = 1;
-        Rectangle bounds = new Rectangle(tileGridXOffset, tileGridYOffset, tileWidth, tileHeight);
-        if (subArea != null) {
-            bounds = bounds.intersection(subArea);
-            if (bounds.width  < 0) bounds.width  = 0;
-            if (bounds.height < 0) bounds.height = 0;
-        }
-        lowerX = bounds.x;
-        lowerY = bounds.y;
-        upperX = Math.addExact(lowerX, bounds.width);
-        upperY = Math.addExact(lowerY, bounds.height);
+        bounds          = intersection(tileGridXOffset, tileGridYOffset, tileWidth, tileHeight, subArea);
+        lowerX          = bounds.x;
+        lowerY          = bounds.y;
+        upperX          = Math.addExact(lowerX, bounds.width);
+        upperY          = Math.addExact(lowerY, bounds.height);
     }
 
     /**
@@ -138,24 +134,22 @@ public abstract class PixelIterator {
      */
     PixelIterator(final RenderedImage data, final Rectangle subArea) {
         ArgumentChecks.ensureNonNull("data", data);
-        image            = data;
-        numBands         = data.getSampleModel().getNumBands();
-        tileWidth        = data.getTileWidth();
-        tileHeight       = data.getTileHeight();
-        tileGridXOffset  = data.getTileGridXOffset();
-        tileGridYOffset  = data.getTileGridYOffset();
-        Rectangle bounds = new Rectangle(data.getMinX(), data.getMinY(), data.getWidth(), data.getHeight());
-        if (subArea != null) {
-            bounds = bounds.intersection(subArea);
-        }
-        lowerX     = bounds.x;
-        lowerY     = bounds.y;
-        upperX     = Math.addExact(lowerX, bounds.width);
-        upperY     = Math.addExact(lowerY, bounds.height);
-        tileLowerX = floorDiv(Math.subtractExact(lowerX, tileGridXOffset), tileWidth);
-        tileLowerY = floorDiv(Math.subtractExact(lowerY, tileGridYOffset), tileHeight);
-        tileUpperX =  ceilDiv(Math.subtractExact(upperX, tileGridXOffset), tileWidth);
-        tileUpperY =  ceilDiv(Math.subtractExact(upperY, tileGridYOffset), tileHeight);
+        final Rectangle bounds;
+        image           = data;
+        numBands        = data.getSampleModel().getNumBands();
+        tileWidth       = data.getTileWidth();
+        tileHeight      = data.getTileHeight();
+        tileGridXOffset = data.getTileGridXOffset();
+        tileGridYOffset = data.getTileGridYOffset();
+        bounds          = intersection(data.getMinX(), data.getMinY(), data.getWidth(), data.getHeight(), subArea);
+        lowerX          = bounds.x;
+        lowerY          = bounds.y;
+        upperX          = Math.addExact(lowerX, bounds.width);
+        upperY          = Math.addExact(lowerY, bounds.height);
+        tileLowerX      = floorDiv(Math.subtractExact(lowerX, tileGridXOffset), tileWidth);
+        tileLowerY      = floorDiv(Math.subtractExact(lowerY, tileGridYOffset), tileHeight);
+        tileUpperX      =  ceilDiv(Math.subtractExact(upperX, tileGridXOffset), tileWidth);
+        tileUpperY      =  ceilDiv(Math.subtractExact(upperY, tileGridYOffset), tileHeight);
     }
 
     /**
@@ -163,6 +157,20 @@ public abstract class PixelIterator {
      */
     private static int ceilDiv(final int numerator, final int denominator) {
         return -floorDiv(-numerator, denominator);
+    }
+
+    /**
+     * Computes the intersection between the given bounds and and {@code subArea} if {@code subArea} is non-null.
+     * If the result is empty, then the width and/or height are set to zero (not negative).
+     */
+    private static Rectangle intersection(int x, int y, int width, int height, Rectangle subArea) {
+        Rectangle bounds = new Rectangle(x, y, width, height);
+        if (subArea != null) {
+            bounds = bounds.intersection(subArea);
+            if (bounds.width  < 0) bounds.width  = 0;
+            if (bounds.height < 0) bounds.height = 0;
+        }
+        return bounds;
     }
 
     /**

@@ -189,19 +189,21 @@ final class DefaultIterator extends PixelIterator {
     @Override
     public boolean next() {
         if (++x >= currentUpperX) {
-            if (++y >= currentUpperY) {
-                if (++tileX >= tileUpperX) {
-                    tileY = Math.incrementExact(tileY);
+            if (++y >= currentUpperY) {                     // Strict equality (==) would work, but use >= as a safety.
+                if (++tileX >= tileUpperX) {                // Strict equality (==) would work, but use >= as a safety.
+                    tileY = Math.incrementExact(tileY);     // 'incrementExact' because 'tileY > tileUpperY' is allowed.
                     if (tileY >= tileUpperY) {
                         /*
                          * Paranoiac safety: keep the x, y and tileX values before their maximal values
                          * in order to avoid overflow. The 'tileY' value is used for checking if next()
-                         * is invoked again, in order to avoid a common misuse pattern.
+                         * is invoked again, in order to avoid a common misuse pattern. In principle
+                         * 'tileY' needs to be compared only to 'tileUpperY', but we also compare to
+                         * 'tileLowerY + 1' for handling the empty iterator case.
                          */
                         x =  currentUpperX - 1;
                         y =  currentUpperY - 1;
                         tileX = tileUpperX - 1;
-                        if (tileY > tileUpperY) {
+                        if (tileY > Math.max(tileUpperY, tileLowerY + 1)) {
                             throw new IllegalStateException(Resources.format(Resources.Keys.IterationIsFinished));
                         }
                         return false;
