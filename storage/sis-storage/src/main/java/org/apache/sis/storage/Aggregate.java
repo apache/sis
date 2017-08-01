@@ -16,49 +16,20 @@
  */
 package org.apache.sis.storage;
 
-import org.opengis.metadata.Metadata;
-
+import java.util.Collection;
 
 /**
- * A dummy data store
+ * An Aggregate is a resources which references a list of children resources.
  *
- * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
- * @since   0.8
- * @module
+ * @author Johann Sorel (Geomatys)
  */
-final strictfp class DataStoreMock extends DataStore {
-    /**
-     * The display name.
-     */
-    private final String name;
+public interface Aggregate extends Resource {
 
     /**
-     * Creates a new data store mock with the given display name.
+     * List children resources of this aggregate.
+     *
+     * @return collection of children {@link Resource}, never null, can be empty
      */
-    DataStoreMock(final String name) {
-        this.name = name;
-    }
+    Collection<Resource> components();
 
-    /**
-     * Returns the display name specified at construction time.
-     */
-    @Override
-    public String getDisplayName() {
-        return name;
-    }
-
-    @Override
-    public Metadata getMetadata() {
-        return null;
-    }
-    
-    @Override
-    public Resource getRootResource() throws DataStoreException {
-        return null;
-    }
-
-    @Override
-    public void close() {
-    }
 }

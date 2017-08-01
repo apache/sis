@@ -16,13 +16,20 @@
  */
 package org.apache.sis.storage;
 
+import java.util.Collection;
 import java.util.Locale;
 import java.util.NoSuchElementException;
+import java.util.Objects;
+import java.util.function.Function;
+import org.apache.sis.internal.metadata.NameToIdentifier;
 import org.opengis.metadata.Metadata;
 import org.apache.sis.util.Localized;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.logging.WarningListener;
 import org.apache.sis.util.logging.WarningListeners;
+import org.opengis.metadata.Identifier;
+import org.opengis.metadata.citation.Citation;
+import org.opengis.metadata.identification.Identification;
 
 
 /**
@@ -172,6 +179,71 @@ public abstract class DataStore implements Localized, AutoCloseable {
      * @throws DataStoreException if an error occurred while reading the data.
      */
     public abstract Metadata getMetadata() throws DataStoreException;
+
+    /**
+     * Get root data store resource.
+     *
+     * @return Resource, may be null
+     * @throws DataStoreException if an I/O or decoding error occurs.
+     */
+    public abstract Resource getRootResource() throws DataStoreException;
+
+    /**
+     * Search for a resource identified by given name.
+     *
+     * @param  name  identifier of the data to acquire. Must be non-null.
+     * @return resource associated to the given input name, never null.
+     * @throws DataStoreException if an I/O error occurs
+     * @throws IllegalNameException if input name is not found.
+     */
+    public Resource findResource(final String name) throws DataStoreException, IllegalNameException {
+        ArgumentChecks.ensureNonEmpty("Name of the searched resource", name);
+
+        final Resource root = getRootResource();
+        if (root==null) throw new IllegalNameException("No resource found for name : "+name);
+
+        //recursive search
+        Object res = new Function<Resource,Object>() {
+            @Override
+            public Object apply(final Resource candidate) {
+
+                final Metadata metadata;
+                try { metadata = candidate.getMetadata(); }
+                catch (DataStoreException ex) { return ex; }
+
+                final boolean match = metadata.getIdentificationInfo().stream()
+                   .map(Identification::getCitation)
+                   .filter(Objects::nonNull)
+                   .map(Citation::getIdentifiers)
+                   .anyMatch((Collection<? extends Identifier> t) -> NameToIdentifier.isHeuristicMatchForIdentifier(t, name));
+
+                Object result = match ? candidate : null;
+
+                if (candidate instanceof Aggregate) {
+                    final Aggregate agg = (Aggregate) candidate;
+                    for (Resource comp : agg.components()) {
+                        Object rr = apply(comp);
+                        if (rr instanceof DataStoreException) {
+                            return rr;
+                        } else if (rr instanceof Resource) {
+                            if (result!=null) {
+                                return new IllegalNameException("Multiple resources match the name : "+name);
+                            }
+                            result = rr;
+                        }
+                    }
+                }
+                return result;
+            }
+        }.apply(root);
+
+        if (res==null) {
+            throw new IllegalNameException("No resource found for name : "+name);
+        } else if (res instanceof DataStoreException) {
+            throw (DataStoreException) res;
+        }
+        return (Resource) res;
+    }
 
     /**
      * Adds a listener to be notified when a warning occurred while reading from or writing to the storage.

@@ -26,6 +26,7 @@ import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.internal.netcdf.Decoder;
 import org.apache.sis.metadata.ModifiableMetadata;
 import org.apache.sis.setup.OptionKey;
+import org.apache.sis.storage.Resource;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.Version;
 import ucar.nc2.constants.CDM;
@@ -114,6 +115,14 @@ public class NetcdfStore extends DataStore {
             throw new DataStoreException(e);
         }
         return metadata;
+    }
+
+    /**
+     * This implementation do not provide any resource yet.
+     */
+    @Override
+    public Resource getRootResource() throws DataStoreException {
+        return null;
     }
 
     /**
