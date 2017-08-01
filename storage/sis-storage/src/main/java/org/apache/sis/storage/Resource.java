@@ -16,49 +16,31 @@
  */
 package org.apache.sis.storage;
 
+import org.opengis.geometry.Envelope;
 import org.opengis.metadata.Metadata;
 
-
 /**
- * A dummy data store
+ * A resource is an accessor to geospatial data.
+ * The user should test if the resource is a {@link CoverageResource} or {@link FeatureResource}.
  *
- * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
- * @since   0.8
- * @module
+ * @author Johann Sorel (Geomatys)
  */
-final strictfp class DataStoreMock extends DataStore {
-    /**
-     * The display name.
-     */
-    private final String name;
+public interface Resource {
 
     /**
-     * Creates a new data store mock with the given display name.
+     * Gets resource metadata object.
+     *
+     * @return metadata about the resource, never null.
+     * @throws DataStoreException if an I/O error occurs.
      */
-    DataStoreMock(final String name) {
-        this.name = name;
-    }
+    Metadata getMetadata() throws DataStoreException;
 
     /**
-     * Returns the display name specified at construction time.
+     * Returns the spatio-temporal envelope of this resource.
+     *
+     * @return the spatio-temporal envelope, never null.
+     * @throws DataStoreException if an I/O or decoding error occurs.
      */
-    @Override
-    public String getDisplayName() {
-        return name;
-    }
+    Envelope getEnvelope() throws DataStoreException;
 
-    @Override
-    public Metadata getMetadata() {
-        return null;
-    }
-    
-    @Override
-    public Resource getRootResource() throws DataStoreException {
-        return null;
-    }
-
-    @Override
-    public void close() {
-    }
 }

@@ -40,6 +40,7 @@ import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.internal.referencing.DefinitionVerifier;
 
 import static java.util.Collections.singleton;
+import org.apache.sis.storage.Resource;
 
 
 /**
@@ -205,6 +206,14 @@ final class Store extends DataStore {
             }
         }
         return metadata;
+    }
+
+    /**
+     * This implementation do not provide any resource.
+     */
+    @Override
+    public Resource getRootResource() throws DataStoreException {
+        return null;
     }
 
     /**

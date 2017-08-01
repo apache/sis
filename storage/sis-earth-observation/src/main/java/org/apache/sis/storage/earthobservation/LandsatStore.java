@@ -28,6 +28,7 @@ import org.apache.sis.storage.DataStoreReferencingException;
 import org.apache.sis.storage.UnsupportedStorageException;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.setup.OptionKey;
+import org.apache.sis.storage.Resource;
 import org.apache.sis.util.Debug;
 
 
@@ -117,6 +118,14 @@ public class LandsatStore extends DataStore {
             throw new DataStoreReferencingException(e);
         }
         return metadata;
+    }
+
+    /**
+     * This implementation do not provide any resource yet.
+     */
+    @Override
+    public Resource getRootResource() throws DataStoreException {
+        return null;
     }
 
     /**

@@ -68,6 +68,7 @@ import java.time.Instant;
 import java.time.DateTimeException;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
+import org.apache.sis.storage.Resource;
 import org.opengis.feature.Feature;
 import org.opengis.feature.FeatureType;
 import org.opengis.feature.PropertyType;
@@ -601,6 +602,14 @@ public final class Store extends FeatureStore {
             metadata = builder.build(true);
         }
         return metadata;
+    }
+
+    /**
+     * This implementation do not provide any resource yet.
+     */
+    @Override
+    public Resource getRootResource() throws DataStoreException {
+        return null;
     }
 
     /**

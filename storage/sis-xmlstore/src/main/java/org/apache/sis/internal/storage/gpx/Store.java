@@ -42,6 +42,7 @@ import org.apache.sis.metadata.iso.distribution.DefaultFormat;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 import java.io.UncheckedIOException;
+import org.apache.sis.storage.Resource;
 import org.opengis.feature.Feature;
 import org.opengis.feature.FeatureType;
 
@@ -164,6 +165,14 @@ public final class Store extends StaxDataStore {
             throw new DataStoreException(e);
         }
         return metadata;
+    }
+
+    /**
+     * This implementation do not provide any resource yet.
+     */
+    @Override
+    public Resource getRootResource() throws DataStoreException {
+        return null;
     }
 
     /**
