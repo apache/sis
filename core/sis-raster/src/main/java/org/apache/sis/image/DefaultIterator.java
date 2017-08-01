@@ -127,7 +127,7 @@ final class DefaultIterator extends PixelIterator {
      */
     @Override
     public SequenceType getIterationOrder() {
-        if (image == null || image.getNumXTiles() <=1 && image.getNumYTiles() <= 1) {
+        if (image == null || (tileUpperX - tileLowerX) <=1 && (tileUpperY - tileLowerY) <= 1) {
             return SequenceType.LINEAR;
         } else {
             return null;            // Undefined order.

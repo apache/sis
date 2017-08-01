@@ -146,12 +146,14 @@ final class TiledImage implements WritableRenderedImage {
      * This is a helper method for testing purpose on small images only,
      * since invoking this method in a loop is inefficient.
      */
-    final void setSample(int x, int y, final int b, final double value) {
-        if ((x -= minX) < 0 || x >= width || (y -= minY) < 0 || y >= height) {
+    final void setSample(final int x, final int y, final int b, final double value) {
+        final int ox = x - minX;
+        final int oy = y - minY;
+        if (ox < 0 || ox >= width || oy < 0 || oy >= height) {
             throw new IndexOutOfBoundsException();
         }
-        getWritableTile(x / tileWidth  + minTileX,
-                        y / tileHeight + minTileY).setSample(x, y, b, value);
+        getWritableTile(ox / tileWidth  + minTileX,
+                        oy / tileHeight + minTileY).setSample(x, y, b, value);
     }
 
     /**
