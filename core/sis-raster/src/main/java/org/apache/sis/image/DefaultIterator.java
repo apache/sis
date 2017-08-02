@@ -308,46 +308,57 @@ final class DefaultIterator extends PixelIterator {
             transfer = new double[window.length /*- numBands * Math.min(windowWidth, windowHeight)*/];
             // 'transfer' will always have at least one row or one column less than 'window'.
         }
-        int subX         = x;                       // Upper-left corner of a sub-window inside the window.
-        int subY         = y;
+        Raster  raster    = currentRaster;
+        int     subEndX   = (raster.getMinX() - x) + raster.getWidth();
+        int     subEndY   = (raster.getMinY() - y) + raster.getHeight();
+        int     subWidth  = Math.min(windowWidth,  subEndX);
+        int     subHeight = Math.min(windowHeight, subEndY);
+        boolean fullWidth = (subWidth == windowWidth);
+        if (fullWidth && subHeight == windowHeight) {
+            /*
+             * Optimization for the case where the full window is inside current raster.
+             * This is the vast majority of cases, so we perform this check soon before
+             * to compute more internal variables.
+             */
+            return raster.getPixels(x, y, subWidth, subHeight, window);
+        }
+        /*
+         * At this point, we determined that the window is overlapping two or more tiles.
+         * We will need more variables for iterating over the tiles around 'currentRaster'.
+         */
+        int destOffset   = 0;                       // Index in 'window' array where to copy the sample values.
+        int subX         = 0;                       // Upper-left corner of a sub-window inside the window.
+        int subY         = 0;
         int tileSubX     = tileX;                   // The tile where is located the (subX, subY) coordinate.
         int tileSubY     = tileY;
-        final int endX   = subX + windowWidth;      // Upper limit of the full window. May be located in another tile.
-        final int endY   = subY + windowHeight;
         final int stride = windowWidth * numBands;  // Number of samples between two rows in the 'windows' array.
-        Raster raster    = currentRaster;
-        int subEndX      = raster.getMinX() + raster.getWidth();
-        int subEndY      = raster.getMinY() + raster.getHeight();
         final int rewind = subEndX;
-        int destOffset   = 0;                       // Index in 'window' array where to copy the sample values.
         for (;;) {
-            final int subWidth  = Math.min(endX, subEndX) - subX;
-            final int subHeight = Math.min(endY, subEndY) - subY;
             if (subWidth > 0 && subHeight > 0) {
-                final boolean fullWidth = (subWidth == windowWidth);
-                if (fullWidth && subHeight == windowHeight) {
-//                    return raster.getPixels(subX, subY, subWidth, subHeight, window);
-                }
-                transfer = raster.getPixels(subX, subY, subWidth, subHeight, transfer);
-                final int  rowLength = numBands  * subWidth;
-                final int fullLength = rowLength * subHeight;
-                for (int srcOffset=0; srcOffset < fullLength; srcOffset += rowLength) {
-                    System.arraycopy(transfer, srcOffset, window, destOffset, rowLength);
-                    destOffset += stride;
+                final double[] data = raster.getPixels(x + subX, y + subY, subWidth, subHeight, transfer);
+                if (fullWidth) {
+                    final int fullLength = stride * subHeight;
+                    System.arraycopy(data, 0, window, destOffset, fullLength);
+                    destOffset += fullLength;
+                } else {
+                    final int  rowLength = numBands  * subWidth;
+                    final int fullLength = rowLength * subHeight;
+                    for (int srcOffset=0; srcOffset < fullLength; srcOffset += rowLength) {
+                        System.arraycopy(data, srcOffset, window, destOffset, rowLength);
+                        destOffset += stride;
+                    }
                 }
             }
             /*
              * At this point, we copied all sample values that we could obtain from the current tile.
-             * In most cases we will be done, since the window size should be much smaller than the tile size.
-             * However in a few cases the window overlaps more than one tile, in which case we need to move to
-             * next tile.
+             * Move to the next tile on current row, or if we reached the end of row move to the next row.
              */
-            if (subEndX < endX) {
+            if (subEndX < windowWidth) {
                 subX     = subEndX;
                 subEndX += tileWidth;                       // Next tile on the same row.
                 tileSubX++;
             } else {
-                if (subEndY >= endY) {
+                if (subEndY >= windowHeight) {
                     return window;                          // Completed last row of tiles.
                 }
                 subY     = subEndY;
@@ -355,10 +366,13 @@ final class DefaultIterator extends PixelIterator {
                 tileSubY++;
                 tileSubX = tileX;
                 subEndX  = rewind;
-                subX     = x;                               // Move x position back to the window left border.
+                subX     = 0;                               // Move x position back to the window left border.
             }
-            raster = image.getTile(tileSubX, tileSubY);
-            destOffset = ((subY - y) * windowWidth + (subX - x)) * numBands;
+            raster     = image.getTile(tileSubX, tileSubY);
+            destOffset = (subY * windowWidth + subX) * numBands;
+            subWidth   = Math.min(windowWidth,  subEndX) - subX;
+            subHeight  = Math.min(windowHeight, subEndY) - subY;
+            fullWidth  = (subWidth == windowWidth);
         }
     }
 }
