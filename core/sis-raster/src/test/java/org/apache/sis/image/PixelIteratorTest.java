@@ -92,6 +92,11 @@ public strictfp class PixelIteratorTest extends TestCase {
     private int tileHeight;
 
     /**
+     * The minimum tile index.
+     */
+    private int minTileX, minTileY;
+
+    /**
      * The expected values as a flat, row-major array. The content of this array is a copy
      * of the sample values stored in the raster or image used as a source of test data.
      */
@@ -197,7 +202,7 @@ public strictfp class PixelIteratorTest extends TestCase {
             subMaxY = StrictMath.min(ymax, subArea.y + subArea.height);
         }
         expected = new float[StrictMath.max(subMaxX - subMinX, 0) * StrictMath.max(subMaxY - subMinY, 0) * numBands];
-        final TiledImage image = new TiledImage(dataType, numBands, xmin, ymin, width, height, tileWidth, tileHeight, 0, 0);
+        final TiledImage image = new TiledImage(dataType, numBands, xmin, ymin, width, height, tileWidth, tileHeight, minTileX, minTileY);
         /*
          * At this point, all data structures have been created an initialized to zero sample values.
          * Now fill the data structures with arbitrary values. We fill them tile-by-tile.
@@ -577,6 +582,7 @@ public strictfp class PixelIteratorTest extends TestCase {
         tileWidth  =  4;
         tileHeight =  5;
         numBands   =  1;
+        minTileX   = -1;
         final Rectangle subArea = new Rectangle(-10, -20, 8, 28);
         createPixelIterator(createImage(subArea), subArea);
         assertTrue("Expected a non-empty set of values.", expected.length != 0);
@@ -600,6 +606,7 @@ public strictfp class PixelIteratorTest extends TestCase {
         tileWidth  =  5;
         tileHeight =  3;
         numBands   =  3;
+        minTileY   = -2;
         final Rectangle subArea = new Rectangle(45, -20, 30, 29);
         createPixelIterator(createImage(subArea), subArea);
         assertTrue("Expected a non-empty set of values.", expected.length != 0);
@@ -623,6 +630,8 @@ public strictfp class PixelIteratorTest extends TestCase {
         tileWidth  =  6;
         tileHeight =  4;
         numBands   =  2;
+        minTileX   = 12;
+        minTileY   = 20;
         final Rectangle subArea = new Rectangle(68, 5, 4, 4);
         createPixelIterator(createImage(subArea), subArea);
         assertTrue("Expected a non-empty set of values.", expected.length != 0);
@@ -646,6 +655,8 @@ public strictfp class PixelIteratorTest extends TestCase {
         tileWidth  =   7;
         tileHeight =   5;
         numBands   =   3;
+        minTileX   = -12;
+        minTileY   =  20;
         final Rectangle subArea = new Rectangle(0, 0, 9, 50);
         createPixelIterator(createImage(subArea), subArea);
         assertTrue("Expected a non-empty set of values.", expected.length != 0);
@@ -667,6 +678,8 @@ public strictfp class PixelIteratorTest extends TestCase {
         tileWidth  =  5;
         tileHeight =  6;
         numBands   =  2;
+        minTileX   =  2;
+        minTileY   =  3;
         final Rectangle subArea = new Rectangle(6, 20, 4, 5);
         createPixelIterator(createImage(subArea), subArea);
         assertTrue("Expected a non-empty set of values.", expected.length != 0);
@@ -689,6 +702,8 @@ public strictfp class PixelIteratorTest extends TestCase {
         tileWidth  =  9;
         tileHeight =  5;
         numBands   =  3;
+        minTileX   =  8;
+        minTileY   =  8;
         final Rectangle subArea = new Rectangle(-10, -5, 25, 22);
         createPixelIterator(createImage(subArea), subArea);
         assertTrue("Expected a non-empty set of values.", expected.length != 0);
@@ -711,6 +726,8 @@ public strictfp class PixelIteratorTest extends TestCase {
         tileWidth  =  5;
         tileHeight =  6;
         numBands   =  2;
+        minTileX   = -2;
+        minTileY   = 20;
         final Rectangle subArea = new Rectangle(27, -20, 30, 37);
         createPixelIterator(createImage(subArea), subArea);
         assertTrue("Expected a non-empty set of values.", expected.length != 0);
@@ -733,6 +750,8 @@ public strictfp class PixelIteratorTest extends TestCase {
         tileWidth  =  3;
         tileHeight =  4;
         numBands   =  4;
+        minTileX   =  1;
+        minTileY   =  2;
         final Rectangle subArea = new Rectangle(36, 8, 12, 20);
         createPixelIterator(createImage(subArea), subArea);
         assertTrue("Expected a non-empty set of values.", expected.length != 0);
@@ -755,6 +774,8 @@ public strictfp class PixelIteratorTest extends TestCase {
         tileWidth  =  5;
         tileHeight =  4;
         numBands   =  1;
+        minTileX   = -9;
+        minTileY   = -9;
         final Rectangle subArea = new Rectangle(-20, -1, 30, 20);
         createPixelIterator(createImage(subArea), subArea);
         assertTrue("Expected a non-empty set of values.", expected.length != 0);
@@ -776,6 +797,8 @@ public strictfp class PixelIteratorTest extends TestCase {
         tileWidth  =   7;
         tileHeight =   4;
         numBands   =   2;
+        minTileX   = -12;
+        minTileY   = -20;
         final Rectangle subArea = new Rectangle(20, 10, 30, 25);
         createPixelIterator(createImage(subArea), subArea);
         assertTrue("Expected a non-empty set of values.", expected.length != 0);
@@ -796,6 +819,8 @@ public strictfp class PixelIteratorTest extends TestCase {
         tileWidth  =   6;
         tileHeight =   5;
         numBands   =   1;
+        minTileX   = 999;
+        minTileY   = -99;
         final Rectangle subArea = new Rectangle(-10, -10, 150, 80);
         createPixelIterator(createImage(subArea), subArea);
         assertTrue("Expected a non-empty set of values.", expected.length != 0);
@@ -882,6 +907,8 @@ public strictfp class PixelIteratorTest extends TestCase {
         tileWidth  =   5;
         tileHeight =   8;
         numBands   =   2;
+        minTileX   =  10;
+        minTileY   = 100;
         createPixelIterator(createImage(null));
         assertTrue("Expected a non-empty set of values.", expected.length != 0);
         int i = 0;
@@ -970,6 +997,8 @@ public strictfp class PixelIteratorTest extends TestCase {
         tileWidth  =   4;
         tileHeight =   5;
         numBands   =   1;
+        minTileX   = 120;
+        minTileY   = 200;
         createPixelIterator(createImage(null));
         verifyIterationAfterMove(7, 5);
     }
