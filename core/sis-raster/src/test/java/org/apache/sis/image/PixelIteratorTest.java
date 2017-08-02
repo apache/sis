@@ -16,8 +16,8 @@
  */
 package org.apache.sis.image;
 
-import java.util.Arrays;
 import java.awt.Point;
+import java.awt.Dimension;
 import java.awt.Rectangle;
 import java.awt.image.DataBuffer;
 import java.awt.image.PixelInterleavedSampleModel;
@@ -236,20 +236,6 @@ public strictfp class PixelIteratorTest extends TestCase {
     }
 
     /**
-     * Creates a {@code PixelIterator} for the full area of given raster.
-     * The iterator shall be assigned to the {@link #iterator} field.
-     *
-     * <p>The default implementation creates read-only iterators.
-     * Tests for read-write iterators need to override.</p>
-     *
-     * @param  raster  the data on which to perform iteration.
-     */
-    void createPixelIterator(WritableRaster raster) {
-        iterator = new DefaultIterator(raster, null);
-        assertEquals("getIterationOrder()", SequenceType.LINEAR, iterator.getIterationOrder());
-    }
-
-    /**
      * Creates a {@code PixelIterator} for a sub-area of given raster.
      * The iterator shall be assigned to the {@link #iterator} field.
      *
@@ -260,25 +246,12 @@ public strictfp class PixelIteratorTest extends TestCase {
      * @param  subArea  the boundary of the raster sub-area where to perform iteration.
      */
     void createPixelIterator(WritableRaster raster, Rectangle subArea) {
-        iterator = new DefaultIterator(raster, subArea);
+        iterator = new DefaultIterator(raster, subArea, null);
         assertEquals("getIterationOrder()", SequenceType.LINEAR, iterator.getIterationOrder());
     }
 
     /**
-     * Creates a {@code PixelIterator} for the full area of given image.
-     * The iterator shall be assigned to the {@link #iterator} field.
-     *
-     * <p>The default implementation creates read-only iterators.
-     * Tests for read-write iterators need to override.</p>
-     *
-     * @param  image  the data on which to perform iteration.
-     */
-    void createPixelIterator(WritableRenderedImage image) {
-        iterator = new DefaultIterator(image, null);
-    }
-
-    /**
-     * Creates a {@code PixelIterator} for the full area of given image.
+     * Creates a {@code PixelIterator} for a sub-area of given image.
      * The iterator shall be assigned to the {@link #iterator} field.
      *
      * <p>The default implementation creates read-only iterators.
@@ -288,7 +261,35 @@ public strictfp class PixelIteratorTest extends TestCase {
      * @param  subArea  the boundary of the image sub-area where to perform iteration.
      */
     void createPixelIterator(WritableRenderedImage image, Rectangle subArea) {
-        iterator = new DefaultIterator(image, subArea);
+        iterator = new DefaultIterator(image, subArea, null);
+    }
+
+    /**
+     * Creates a {@code PixelIterator} for a window in the given image.
+     * The iterator shall be assigned to the {@link #iterator} field.
+     *
+     * <p>The default implementation creates read-only iterators.
+     * Tests for read-write iterators need to override.</p>
+     *
+     * @param  image    the data on which to perform iteration.
+     * @param  window   size of the window to use in {@link PixelIterator#window()} method.
+     */
+    void createWindowIterator(WritableRenderedImage image, Dimension window) {
+        iterator = new DefaultIterator(image, null, window);
+    }
+
+    /**
+     * Verifies the sample value at current iterator position.
+     *
+     * @param i  index in {@link #expected} array.
+     * @param b  band number at current iterator position.
+     */
+    private void verifySample(final int i, final int b) {
+        final float e = expected[i];
+        final float a = iterator.getSampleFloat(b);
+        if (Float.floatToRawIntBits(a) != Float.floatToRawIntBits(e)) {
+            fail("Pixel iteration at index " + i + ": expected " + e + " but got " + a);
+        }
     }
 
     /**
@@ -296,16 +297,15 @@ public strictfp class PixelIteratorTest extends TestCase {
      *
      * @param verifyIndices  whether to verify also iterator {@code getPosition()} return values.
      *                       This is usually {@code true} if an only if the iterator cover the full raster area.
+     *
+     * @see #verifyIterationAfterMove(int, int)
+     * @see #verifyWindow(Dimension)
      */
     private void verifyIteration(final boolean verifyIndices) {
         int i = 0;
         while (iterator.next()) {
             for (int b=0; b<numBands; b++) {
-                final float e = expected[i];
-                final float a = iterator.getSampleFloat(b);
-                if (Float.floatToRawIntBits(a) != Float.floatToRawIntBits(e)) {
-                    fail("Pixel iteration at index " + i + ": expected " + e + " but got " + a);
-                }
+                verifySample(i, b);
                 if (verifyIndices) {
                     final int p = i / numBands;
                     final Point position = iterator.getPosition();
@@ -327,7 +327,7 @@ public strictfp class PixelIteratorTest extends TestCase {
         width    =  7;
         height   = 10;
         numBands =  3;
-        createPixelIterator(createRaster(null));
+        createPixelIterator(createRaster(null), null);
         verifyIteration(true);
     }
 
@@ -343,7 +343,7 @@ public strictfp class PixelIteratorTest extends TestCase {
         width    =  8;
         height   =  7;
         numBands =  2;
-        createPixelIterator(createRaster(null));
+        createPixelIterator(createRaster(null), null);
         verifyIteration(true);
 
         iterator.rewind();
@@ -503,7 +503,7 @@ public strictfp class PixelIteratorTest extends TestCase {
         width    =  5;
         height   =  4;
         numBands =  1;
-        createPixelIterator(createRaster(null));
+        createPixelIterator(createRaster(null), null);
         assertTrue("Expected a non-empty set of values.", expected.length != 0);
         try {
             iterator.moveTo(2, 3);
@@ -538,7 +538,7 @@ public strictfp class PixelIteratorTest extends TestCase {
         tileWidth  =   8;
         tileHeight =   5;
         numBands   =   3;
-        createPixelIterator(createImage(null));
+        createPixelIterator(createImage(null), null);
         assertNull("getIterationOrder()", iterator.getIterationOrder());
         verifyIteration(false);
     }
@@ -558,7 +558,7 @@ public strictfp class PixelIteratorTest extends TestCase {
         tileWidth  =   8;
         tileHeight =   5;
         numBands   =   2;
-        createPixelIterator(createImage(null));
+        createPixelIterator(createImage(null), null);
         assertNull("getIterationOrder()", iterator.getIterationOrder());
         verifyIteration(false);
 
@@ -861,7 +861,7 @@ public strictfp class PixelIteratorTest extends TestCase {
         tileWidth  =  4;
         tileHeight =  3;
         numBands   =  1;
-        createPixelIterator(createImage(null));
+        createPixelIterator(createImage(null), null);
         assertTrue("Expected a non-empty set of values.", expected.length != 0);
         try {
             iterator.moveTo(102, 53);
@@ -884,7 +884,7 @@ public strictfp class PixelIteratorTest extends TestCase {
         tileWidth  =  4;
         tileHeight =  3;
         numBands   =  1;
-        createPixelIterator(createImage(null));
+        createPixelIterator(createImage(null), null);
         assertTrue("Expected a non-empty set of values.", expected.length != 0);
         verifyIteration(false);
         try {
@@ -909,7 +909,7 @@ public strictfp class PixelIteratorTest extends TestCase {
         numBands   =   2;
         minTileX   =  10;
         minTileY   = 100;
-        createPixelIterator(createImage(null));
+        createPixelIterator(createImage(null), null);
         assertTrue("Expected a non-empty set of values.", expected.length != 0);
         int i = 0;
         for (int ty = 0; ty < height/tileHeight; ty++) {
@@ -931,39 +931,44 @@ public strictfp class PixelIteratorTest extends TestCase {
     }
 
     /**
-     * Moves the iterator to the given position and discards the {@link #expected} values prior that position.
-     * Then, verifies the iteration. This method is used for implementation of {@code testMoveXXX()} methods.
+     * Moves the iterator to the given position and verifies the iteration.
+     * This method is used for implementation of {@code testMoveXXX()} methods.
+     *
+     * @see #verifyIteration(boolean)
+     * @see #verifyWindow(Dimension)
      */
     private void verifyIterationAfterMove(int x, int y) {
+        /*
+         * Move the iterator and verify location after the move.
+         */
         iterator.moveTo(x, y);
         final Point p = iterator.getPosition();
         assertEquals("x", x, p.x);
         assertEquals("y", y, p.y);
+        /*
+         * Compute index of the (x,y) position in the array of expected values.
+         * Iteration verification will need to begin at that value.
+         */
         x -= xmin;
         y -= ymin;
-        final int pixelIndex;
+        int i;
         if (tileWidth == 0 && tileHeight == 0) {
-            pixelIndex = y*width + x;
+            i = y * width + x;
         } else {
             final int tx = x / tileWidth;
             final int ty = y / tileHeight;
             final int numTileX = (width + tileWidth - 1) / tileWidth;
-            pixelIndex = ((ty * (numTileX - 1) + tx) * tileHeight + y - tx) * tileWidth + x;
+            i = ((ty * (numTileX - 1) + tx) * tileHeight + y - tx) * tileWidth + x;
         }
-        expected = Arrays.copyOfRange(expected, pixelIndex * numBands, expected.length);
+        i *= numBands;
         /*
-         * Following is a copy of 'verifyIteration(boolean)' except that we use a do … while loop
-         * instead than a while loop. See PixelIterator.moveTo(int,int) documentation.
+         * Iteration verification happens here. Note that contrarily to 'verifyIteration(boolean)' method,
+         * we use a do … while loop instead than a while loop because the call to 'moveTo(x, y)' should be
+         * understood as an implicit 'next()' method call.
          */
-        int i = 0;
         do {
             for (int b=0; b<numBands; b++) {
-                final float e = expected[i];
-                final float a = iterator.getSampleFloat(b);
-                if (Float.floatToRawIntBits(a) != Float.floatToRawIntBits(e)) {
-                    fail("Pixel iteration at index " + i + ": expected " + e + " but got " + a);
-                }
-                i++;
+                verifySample(i++, b);
             }
         } while (iterator.next());
         assertEquals("Too few elements in iteration.", expected.length, i);
@@ -980,7 +985,7 @@ public strictfp class PixelIteratorTest extends TestCase {
         width    =  8;
         height   =  9;
         numBands =  2;
-        createPixelIterator(createRaster(null));
+        createPixelIterator(createRaster(null), null);
         verifyIterationAfterMove(8, 10);
     }
 
@@ -999,7 +1004,90 @@ public strictfp class PixelIteratorTest extends TestCase {
         numBands   =   1;
         minTileX   = 120;
         minTileY   = 200;
-        createPixelIterator(createImage(null));
+        createPixelIterator(createImage(null), null);
         verifyIterationAfterMove(7, 5);
+    }
+
+    /**
+     * Verifies {@link PixelIterator#window()}.
+     * This method assumes that the iterator traverses the full image (no sub-area).
+     *
+     * @see #verifyIteration(boolean)
+     * @see #verifyIterationAfterMove(int, int)
+     */
+    private void verifyWindow(final Dimension window) {
+        final int tileSize   = tileWidth * tileHeight;
+        final int tileStride = tileSize * (width / tileWidth);
+        while (iterator.next()) {
+            final Point pos = iterator.getPosition();
+            pos.translate(-xmin, -ymin);
+            final double[] values = iterator.window();
+            int i = 0;
+            for (int y=0; y<window.height; y++) {
+                int p,t;
+                p  = pos.y + y;
+                t  = p / tileHeight;
+                p %=     tileHeight;
+                final int start = t * tileStride + p * tileWidth;
+                for (int x=0; x<window.width; x++) {
+                    p  = pos.x + x;
+                    t  = p / tileWidth;
+                    p %=     tileWidth;
+                    int offset = (start + t * tileSize + p) * numBands;
+                    for (int b=0; b<numBands; b++) {
+                        final double e = expected[offset++];
+                        final double a = values[i++];
+                        if (Double.doubleToRawLongBits(a) != Double.doubleToRawLongBits(e)) {
+                            fail("Index (" + x + ", " + y + ") in window starting at index ("
+                                    + pos.x + ", " + pos.y + "), band " + b + ": expected " + e + " but got " + a);
+                        }
+                    }
+                }
+            }
+            assertEquals("window().length", i, values.length);
+            java.util.Arrays.fill(iterator.window, Double.NaN);
+        }
+    }
+
+    /**
+     * Tests {@link PixelIterator#window()} on a single tile.
+     */
+    @Test
+    @DependsOnMethod("testMoveIntoImage")
+    public void testWindowOnTile() {
+        xmin       =   1;
+        ymin       =  -2;
+        width      =   8;
+        height     =  10;
+        numBands   =   2;
+        tileWidth  = width;
+        tileHeight = height;
+        final Dimension window = new Dimension(3, 4);
+        createWindowIterator(createImage(null), window);
+        assertTrue("Expected a non-empty set of values.", expected.length != 0);
+        assertEquals("getIterationOrder()", SequenceType.LINEAR, iterator.getIterationOrder());
+        verifyWindow(window);
+    }
+
+    /**
+     * Tests {@link PixelIterator#window()} on a tiled image.
+     */
+    @Test
+    @DependsOnMethod("testWindowOnTile")
+    public void testWindowOnImage() {
+        xmin       =   1;
+        ymin       =  -2;
+        width      =   9;
+        height     =  12;
+        tileWidth  =   3;
+        tileHeight =   4;
+        numBands   =   2;
+        minTileX   = 100;
+        minTileY   = 200;
+        final Dimension window = new Dimension(2, 3);
+        createWindowIterator(createImage(null), window);
+        assertTrue("Expected a non-empty set of values.", expected.length != 0);
+        assertNull("getIterationOrder()", iterator.getIterationOrder());
+        verifyWindow(window);
     }
 }

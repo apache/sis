@@ -43,13 +43,13 @@ abstract class WritablePixelIterator extends PixelIterator implements Closeable 
     private final WritableRenderedImage wRenderedImage;
 
     public WritablePixelIterator(WritableRaster raster, Rectangle subArea) {
-        super(raster, subArea);
+        super(raster, subArea, null);
         wRaster        = raster;
         wRenderedImage = null;
     }
 
     public WritablePixelIterator(WritableRenderedImage renderedImage, Rectangle subArea) {
-        super(renderedImage, subArea);
+        super(renderedImage, subArea, null);
         wRaster        = null;
         wRenderedImage = renderedImage;
     }

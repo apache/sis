@@ -58,7 +58,7 @@ final class PixelIteratorFactory {
 //                }
 //            }
 //        }
-        return new DefaultIterator(raster, subReadArea);
+        return new DefaultIterator(raster, subReadArea, null);
     }
 
     /**
@@ -93,7 +93,7 @@ final class PixelIteratorFactory {
 //                }
 //            }
 //        }
-        return new DefaultIterator(renderedImage, subReadArea);
+        return new DefaultIterator(renderedImage, subReadArea, null);
     }
 
     //-- NOT IMPLEMENTED YET
