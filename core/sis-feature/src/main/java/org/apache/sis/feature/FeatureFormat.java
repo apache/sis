@@ -39,9 +39,11 @@ import org.apache.sis.util.Deprecable;
 import org.apache.sis.util.Characters;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.internal.util.CollectionsExt;
+import org.apache.sis.internal.system.Modules;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.math.MathFunctions;
 
@@ -525,8 +527,13 @@ public class FeatureFormat extends TabularFormat<Object> {
                                                 t.setLength(0);
                                                 t.append("NaN");
                                             }
-                                            final int n = MathFunctions.toNanOrdinal(f);
-                                            if (n > 0) buffer.append(" #").append(n);
+                                            try {
+                                                final int n = MathFunctions.toNanOrdinal(f);
+                                                if (n > 0) buffer.append(" #").append(n);
+                                            } catch (IllegalArgumentException e) {
+                                                // May happen if the NaN is a signaling NaN instead than a quiet NaN.
+                                                Logging.recoverableException(Logging.getLogger(Modules.FEATURE), FeatureFormat.class, "format", e);
+                                            }
                                         }
                                     }
                                     value = t;

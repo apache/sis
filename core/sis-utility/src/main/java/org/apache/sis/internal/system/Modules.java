@@ -60,6 +60,11 @@ public final class Modules {
     /**
      * The {@value} module name.
      */
+    public static final String FEATURE = "org.apache.sis.feature";
+
+    /**
+     * The {@value} module name.
+     */
     public static final String STORAGE = "org.apache.sis.storage";
 
     /**
