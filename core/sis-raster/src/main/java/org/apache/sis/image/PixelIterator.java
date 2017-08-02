@@ -17,6 +17,7 @@
 package org.apache.sis.image;
 
 import java.awt.Point;
+import java.awt.Dimension;
 import java.awt.Rectangle;
 import java.awt.image.Raster;
 import java.awt.image.RenderedImage;
@@ -98,13 +99,25 @@ public abstract class PixelIterator {
     final int tileLowerX, tileLowerY, tileUpperX, tileUpperY;
 
     /**
+     * Size of the window to use in {@link #window()} method, or {@code 0} if none.
+     */
+    final int windowWidth, windowHeight;
+
+    /**
+     * Sample values in the window, or {@code null} if not yet extracted.
+     * Current sample values. This array is overwritten when {@link #window()} is invoked.
+     */
+    transient double[] window;
+
+    /**
      * Creates an iterator for the given region in the given raster.
      *
      * @param  data     the raster which contains the sample values on which to iterate.
      * @param  subArea  the raster region where to perform the iteration, or {@code null}
      *                  for iterating over all the raster domain.
+     * @param  window   size of the window to use in {@link #window()} method, or {@code null} if none.
      */
-    PixelIterator(final Raster data, final Rectangle subArea) {
+    PixelIterator(final Raster data, final Rectangle subArea, final Dimension window) {
         ArgumentChecks.ensureNonNull("data", data);
         final Rectangle bounds;
         image           = null;
@@ -118,11 +131,13 @@ public abstract class PixelIterator {
         tileLowerY      = 0;
         tileUpperX      = 1;
         tileUpperY      = 1;
-        bounds          = intersection(tileGridXOffset, tileGridYOffset, tileWidth, tileHeight, subArea);
+        bounds          = intersection(tileGridXOffset, tileGridYOffset, tileWidth, tileHeight, subArea, window);
         lowerX          = bounds.x;
         lowerY          = bounds.y;
         upperX          = Math.addExact(lowerX, bounds.width);
         upperY          = Math.addExact(lowerY, bounds.height);
+        windowWidth     = (window != null) ? window.width  : 0;
+        windowHeight    = (window != null) ? window.height : 0;
     }
 
     /**
@@ -131,8 +146,9 @@ public abstract class PixelIterator {
      * @param  data     the image which contains the sample values on which to iterate.
      * @param  subArea  the image region where to perform the iteration, or {@code null}
      *                  for iterating over all the image domain.
+     * @param  window   size of the window to use in {@link #window()} method, or {@code null} if none.
      */
-    PixelIterator(final RenderedImage data, final Rectangle subArea) {
+    PixelIterator(final RenderedImage data, final Rectangle subArea, final Dimension window) {
         ArgumentChecks.ensureNonNull("data", data);
         final Rectangle bounds;
         image           = data;
@@ -141,7 +157,7 @@ public abstract class PixelIterator {
         tileHeight      = data.getTileHeight();
         tileGridXOffset = data.getTileGridXOffset();
         tileGridYOffset = data.getTileGridYOffset();
-        bounds          = intersection(data.getMinX(), data.getMinY(), data.getWidth(), data.getHeight(), subArea);
+        bounds          = intersection(data.getMinX(), data.getMinY(), data.getWidth(), data.getHeight(), subArea, window);
         lowerX          = bounds.x;
         lowerY          = bounds.y;
         upperX          = Math.addExact(lowerX, bounds.width);
@@ -150,6 +166,8 @@ public abstract class PixelIterator {
         tileLowerY      = floorDiv(Math.subtractExact(lowerY, tileGridYOffset), tileHeight);
         tileUpperX      =  ceilDiv(Math.subtractExact(upperX, tileGridXOffset), tileWidth);
         tileUpperY      =  ceilDiv(Math.subtractExact(upperY, tileGridYOffset), tileHeight);
+        windowWidth     = (window != null) ? window.width  : 0;
+        windowHeight    = (window != null) ? window.height : 0;
     }
 
     /**
@@ -163,7 +181,13 @@ public abstract class PixelIterator {
      * Computes the intersection between the given bounds and and {@code subArea} if {@code subArea} is non-null.
      * If the result is empty, then the width and/or height are set to zero (not negative).
      */
-    private static Rectangle intersection(int x, int y, int width, int height, Rectangle subArea) {
+    private static Rectangle intersection(int x, int y, int width, int height, Rectangle subArea, Dimension window) {
+        if (window != null) {
+            ArgumentChecks.ensureBetween("window.width",  1, width,  window.width);
+            ArgumentChecks.ensureBetween("window.height", 1, height, window.height);
+            width  -= (window.width  - 1);
+            height -= (window.height - 1);
+        }
         Rectangle bounds = new Rectangle(x, y, width, height);
         if (subArea != null) {
             bounds = bounds.intersection(subArea);
@@ -326,88 +350,40 @@ public abstract class PixelIterator {
     public abstract int[] getPixel​(int[] dest);
 
     /**
-     * Returns the sample values in a region of the given size starting at the current pixel position.
-     * The returned region will be live: calls to {@link #next()} followed by {@link Region#values()}
-     * returns an updated array with values starting at the new iterator position.
-     * This method is designed for use like below:
-     *
-     * {@preformat java
-     *     Region r = iterator.getRegion(width, height);
-     *     while (iterator.next()) {
-     *         double[] samples = r.values();
-     *         // Do some computation here...
-     *     }
-     * }
-     *
-     * Arrays returned by {@code Region.values()} shall be considered read-only. This constraint exists
-     * for performance reasons because {@code Region} will recycle the same array in a way that avoid
-     * fetching existing values.
-     *
-     * @param  width   number of pixel columns to store in the region.
-     * @param  height  number of pixel rows to store in the region.
-     * @return an accessor for sample values in a region of the given size.
-     *
-     * @see Raster#getPixels(int, int, int, int, double[])
-     */
-    public abstract Region region(final int width, final int height);
-
-    /**
-     * Holds sample values in a rectangular region of the image traversed by the iterator.
+     * Returns the sample values in a rectangular region starting at the current pixel position.
+     * The region size is the <cite>window size</cite> specified at {@code PixelIterator} construction time.
+     * The length of the returned array will be
+     * <var>(number of bands)</var> × <var>(window width)</var> × <var>(window height)</var>.
      * Values are always stored with band index varying fastest, then column index, then row index.
      * Columns are traversed from left to right and rows are traversed from top to bottom
      * ({@link SequenceType#LINEAR} iteration order).
-     * This order is the same regardless iteration order of the enclosing pixel iterator.
+     * That order is the same regardless the {@linkplain #getIterationOrder() iteration order} of this iterator.
      *
      * <div class="note"><b>Example:</b>
-     * for an RGB image, the 3 first values are the red, green and blue components of the first pixel
-     * (first column of first row). The 3 next values are the red, green and blue components of the pixel
-     * in the second column of the first row, <i>etc.</i></div>
+     * for an RGB image, the 3 first values are the red, green and blue components of the pixel at
+     * {@linkplain #getPosition() current iterator position}. The 3 next values are the red, green
+     * and blue components of the pixel at the right of current iterator position, <i>etc.</i></div>
      *
-     * Regions are created by call to {@link PixelIterator#region(int, int)}.
-     * Once created, the same instance can be used for all regions of the given size traversed during iteration.
+     * The returned region will be live: calls to {@link #next()} followed by {@code window()} returns an array
+     * (potentially the same array instance than previous call) updated with values starting at the new iterator
+     * position. The returned array is valid only until the next call to {@code window()}. The array shall only
+     * be read; behavior of this method become unspecified if caller modifies any values in the array.
+     *
+     * <div class="note"><b>Rational:</b>
+     * the read-only constraint on the returned array exists for performance reasons.
+     * This method may recycle the same array in a way that avoid fetching existing values.
+     * </div>
+     *
+     * The {@link #next()} method must have returned {@code true}, or the {@link #moveTo(int,int)} method must have
+     * been invoked successfully, before this {@code window()} method is invoked. If above condition is not met,
+     * then this method behavior is undefined: it may throw any runtime exception or return meaningless values
+     * (there is no explicit bounds check for performance reasons).
+     *
+     * @return the sample values in the region starting at current iterator position.
+     *
+     * @see Raster#getPixels(int, int, int, int, double[])
      */
-    public abstract static class Region {
-        /**
-         * Number of pixel columns stored in this region.
-         */
-        private final int width;
-
-        /**
-         * Number of pixel rows stored in this region.
-         */
-        private final int height;
-
-        /**
-         * Current sample values. This array is overwritten when {@link #values()} is invoked.
-         */
-        private final double[] values;
-
-        /**
-         * Creates a new region of the specified size.
-         *
-         * @param  width   number of pixel columns to store in the region.
-         * @param  height  number of pixel rows to store in the region.
-         */
-        protected Region(final int width, final int height) {
-            ArgumentChecks.ensureStrictlyPositive("width",  width);
-            ArgumentChecks.ensureStrictlyPositive("height", height);
-            this.width  = width;
-            this.height = height;
-            this.values = new double[width * height];
-        }
-
-        /**
-         * Returns sample values in the region starting at current iterator position.
-         * Values in the returned array are stored with band index varying fastest,
-         * then column index (from left to right), then row index (from top to bottom).
-         * The returned array is valid only until the next call to {@code values()}.
-         * The array shall only be read; behavior of this method become unspecified
-         * if caller modifies any values in the array.
-         *
-         * @return the sample values in the region starting at current iterator position.
-         */
-        public abstract double[] values();
-    }
+    public abstract double[] window();
 
     /**
      * Restores the iterator to the start position. After this method has been invoked,

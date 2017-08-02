@@ -17,6 +17,7 @@
 package org.apache.sis.image;
 
 import java.awt.Point;
+import java.awt.Dimension;
 import java.awt.Rectangle;
 import java.awt.image.Raster;
 import java.awt.image.RenderedImage;
@@ -68,14 +69,20 @@ final class DefaultIterator extends PixelIterator {
     private int currentLowerX, currentUpperX, currentUpperY;
 
     /**
+     * A temporary array used by {@link #window} for transferring data.
+     */
+    private transient double[] transfer;
+
+    /**
      * Creates an iterator for the given region in the given raster.
      *
      * @param  data     the raster which contains the sample values on which to iterate.
      * @param  subArea  the raster region where to perform the iteration, or {@code null}
      *                  for iterating over all the raster domain.
+     * @param  window   size of the window to use in {@link #window()} method, or {@code null} if none.
      */
-    DefaultIterator(final Raster data, final Rectangle subArea) {
-        super(data, subArea);
+    DefaultIterator(final Raster data, final Rectangle subArea, final Dimension window) {
+        super(data, subArea, window);
         currentLowerX = lowerX;
         currentUpperX = upperX;
         currentUpperY = upperY;
@@ -89,9 +96,10 @@ final class DefaultIterator extends PixelIterator {
      * @param  data     the image which contains the sample values on which to iterate.
      * @param  subArea  the image region where to perform the iteration, or {@code null}
      *                  for iterating over all the image domain.
+     * @param  window   size of the window to use in {@link #window()} method, or {@code null} if none.
      */
-    DefaultIterator(final RenderedImage data, final Rectangle subArea) {
-        super(data, subArea);
+    DefaultIterator(final RenderedImage data, final Rectangle subArea, final Dimension window) {
+        super(data, subArea, window);
         tileX = Math.decrementExact(tileLowerX);
         tileY = tileLowerY;
         currentLowerX = lowerX;
@@ -237,6 +245,7 @@ final class DefaultIterator extends PixelIterator {
 
     /**
      * Returns the sample value in the specified band of current pixel, rounded toward zero.
+     * This method assumes that {@link #next()} or {@link #moveTo(int,int)} has been invoked.
      */
     @Override
     public int getSample(final int band) {
@@ -245,6 +254,7 @@ final class DefaultIterator extends PixelIterator {
 
     /**
      * Returns the sample value in the specified band of current pixel as a single-precision floating point number.
+     * This method assumes that {@link #next()} or {@link #moveTo(int,int)} has been invoked.
      */
     @Override
     public float getSampleFloat(final int band) {
@@ -253,6 +263,7 @@ final class DefaultIterator extends PixelIterator {
 
     /**
      * Returns the sample value in the specified band of current pixel, without precision lost.
+     * This method assumes that {@link #next()} or {@link #moveTo(int,int)} has been invoked.
      */
     @Override
     public double getSampleDouble(final int band) {
@@ -261,6 +272,7 @@ final class DefaultIterator extends PixelIterator {
 
     /**
      * Returns the sample values of current pixel for all bands.
+     * This method assumes that {@link #next()} or {@link #moveTo(int,int)} has been invoked.
      */
     @Override
     public double[] getPixel​(double[] dest) {
@@ -269,6 +281,7 @@ final class DefaultIterator extends PixelIterator {
 
     /**
      * Returns the sample values of current pixel for all bands.
+     * This method assumes that {@link #next()} or {@link #moveTo(int,int)} has been invoked.
      */
     @Override
     public float[] getPixel​(float[] dest) {
@@ -277,6 +290,7 @@ final class DefaultIterator extends PixelIterator {
 
     /**
      * Returns the sample values of current pixel for all bands.
+     * This method assumes that {@link #next()} or {@link #moveTo(int,int)} has been invoked.
      */
     @Override
     public int[] getPixel​(int[] dest) {
@@ -284,10 +298,67 @@ final class DefaultIterator extends PixelIterator {
     }
 
     /**
-     * Returns the sample values in a region of the given size starting at the current pixel position.
+     * Returns the sample values in a region of the window size starting at the current pixel position.
+     * This method assumes that {@link #next()} or {@link #moveTo(int,int)} has been invoked.
      */
     @Override
-    public Region region(final int width, final int height) {
-        throw new UnsupportedOperationException();              // TODO
+    public double[] window() {
+        if (window == null) {
+            window   = new double[numBands * windowWidth * windowHeight];
+            transfer = new double[window.length /*- numBands * Math.min(windowWidth, windowHeight)*/];
+            // 'transfer' will always have at least one row or one column less than 'window'.
+        }
+        int subX         = x;                       // Upper-left corner of a sub-window inside the window.
+        int subY         = y;
+        int tileSubX     = tileX;                   // The tile where is located the (subX, subY) coordinate.
+        int tileSubY     = tileY;
+        final int endX   = subX + windowWidth;      // Upper limit of the full window. May be located in another tile.
+        final int endY   = subY + windowHeight;
+        final int stride = windowWidth * numBands;  // Number of samples between two rows in the 'windows' array.
+        Raster raster    = currentRaster;
+        int subEndX      = raster.getMinX() + raster.getWidth();
+        int subEndY      = raster.getMinY() + raster.getHeight();
+        final int rewind = subEndX;
+        int destOffset   = 0;                       // Index in 'window' array where to copy the sample values.
+        for (;;) {
+            final int subWidth  = Math.min(endX, subEndX) - subX;
+            final int subHeight = Math.min(endY, subEndY) - subY;
+            if (subWidth > 0 && subHeight > 0) {
+                final boolean fullWidth = (subWidth == windowWidth);
+                if (fullWidth && subHeight == windowHeight) {
+//                    return raster.getPixels(subX, subY, subWidth, subHeight, window);
+                }
+                transfer = raster.getPixels(subX, subY, subWidth, subHeight, transfer);
+                final int  rowLength = numBands  * subWidth;
+                final int fullLength = rowLength * subHeight;
+                for (int srcOffset=0; srcOffset < fullLength; srcOffset += rowLength) {
+                    System.arraycopy(transfer, srcOffset, window, destOffset, rowLength);
+                    destOffset += stride;
+                }
+            }
+            /*
+             * At this point, we copied all sample values that we could obtain from the current tile.
+             * In most cases we will be done, since the window size should be much smaller than the tile size.
+             * However in a few cases the window overlaps more than one tile, in which case we need to move to
+             * next tile.
+             */
+            if (subEndX < endX) {
+                subX     = subEndX;
+                subEndX += tileWidth;                       // Next tile on the same row.
+                tileSubX++;
+            } else {
+                if (subEndY >= endY) {
+                    return window;                          // Completed last row of tiles.
+                }
+                subY     = subEndY;
+                subEndY += tileHeight;                      // Tile on the next row.
+                tileSubY++;
+                tileSubX = tileX;
+                subEndX  = rewind;
+                subX     = x;                               // Move x position back to the window left border.
+            }
+            raster = image.getTile(tileSubX, tileSubY);
+            destOffset = ((subY - y) * windowWidth + (subX - x)) * numBands;
+        }
     }
 }
