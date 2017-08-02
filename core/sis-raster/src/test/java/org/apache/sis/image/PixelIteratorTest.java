@@ -27,7 +27,6 @@ import java.awt.image.WritableRenderedImage;
 import org.opengis.coverage.grid.SequenceType;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestCase;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
@@ -906,10 +905,13 @@ public strictfp class PixelIteratorTest extends TestCase {
 
     /**
      * Moves the iterator to the given position and discards the {@link #expected} values prior that position.
-     * This method is used for implementation of {@code testMoveXXX()} methods.
+     * Then, verifies the iteration. This method is used for implementation of {@code testMoveXXX()} methods.
      */
-    private void moveTo(int x, int y) {
+    private void verifyIterationAfterMove(int x, int y) {
         iterator.moveTo(x, y);
+        final Point p = iterator.getPosition();
+        assertEquals("x", x, p.x);
+        assertEquals("y", y, p.y);
         x -= xmin;
         y -= ymin;
         final int pixelIndex;
@@ -922,116 +924,53 @@ public strictfp class PixelIteratorTest extends TestCase {
             pixelIndex = ((ty * (numTileX - 1) + tx) * tileHeight + y - tx) * tileWidth + x;
         }
         expected = Arrays.copyOfRange(expected, pixelIndex * numBands, expected.length);
+        /*
+         * Following is a copy of 'verifyIteration(boolean)' except that we use a do … while loop
+         * instead than a while loop. See PixelIterator.moveTo(int,int) documentation.
+         */
+        int i = 0;
+        do {
+            for (int b=0; b<numBands; b++) {
+                final float e = expected[i];
+                final float a = iterator.getSampleFloat(b);
+                if (Float.floatToRawIntBits(a) != Float.floatToRawIntBits(e)) {
+                    fail("Pixel iteration at index " + i + ": expected " + e + " but got " + a);
+                }
+                i++;
+            }
+        } while (iterator.next());
+        assertEquals("Too few elements in iteration.", expected.length, i);
     }
 
     /**
      * Tests iteration after a call to {@link PixelIterator#moveTo(int, int)} in a raster.
      */
     @Test
-    @Ignore
+    @DependsOnMethod("testOnRaster")
     public void testMoveIntoRaster() {
         xmin     =  5;
         ymin     =  7;
-        width    = 16;
-        height   = 13;
-        numBands =  3;
+        width    =  8;
+        height   =  9;
+        numBands =  2;
         createPixelIterator(createRaster(null));
-        moveTo(17, 15);
-        verifyIteration(false);
+        verifyIterationAfterMove(8, 10);
     }
 
     /**
      * Tests iteration after a call to {@link PixelIterator#moveTo(int, int)} in a tiled image.
      */
     @Test
-    @Ignore
     @DependsOnMethod({"testOnImage", "testMoveIntoRaster"})
     public void testMoveIntoImage() {
         xmin       =  -1;
         ymin       =   3;
-        width      =  60;
-        height     =  50;
-        tileWidth  =  10;
+        width      =  12;
+        height     =  15;
+        tileWidth  =   4;
         tileHeight =   5;
-        numBands   =   3;
+        numBands   =   1;
         createPixelIterator(createImage(null));
-        moveTo(17, 15);
-        verifyIteration(false);
-    }
-
-    /**
-     * Tests iteration after a call to {@link PixelIterator#moveTo(int, int)} in a tiled image.
-     */
-    @Test
-    @Ignore
-    @DependsOnMethod("testMoveIntoImage")
-    public void testMoveToUpperLeft() {
-        xmin       = -1;
-        ymin       =  3;
-        width      = 30;
-        height     = 25;
-        tileWidth  = 10;
-        tileHeight =  5;
-        numBands   =  3;
-        createPixelIterator(createImage(null));
-        moveTo(-1, 3);
-        verifyIteration(false);
-    }
-
-    /**
-     * Tests iteration after a call to {@link PixelIterator#moveTo(int, int)} in a tiled image.
-     */
-    @Test
-    @Ignore
-    @DependsOnMethod("testMoveIntoImage")
-    public void testMoveToUpperRight() {
-        xmin       = 69;
-        ymin       =  3;
-        width      = 30;
-        height     = 25;
-        tileWidth  = 10;
-        tileHeight =  5;
-        numBands   =  3;
-        createPixelIterator(createImage(null));
-        moveTo(98, 3);
-        verifyIteration(false);
-    }
-
-    /**
-     * Tests iteration after a call to {@link PixelIterator#moveTo(int, int)} in a tiled image.
-     */
-    @Test
-    @Ignore
-    @DependsOnMethod("testMoveIntoImage")
-    public void testMoveToLowerRight() {
-        xmin       = 69;
-        ymin       = 28;
-        width      = 30;
-        height     = 25;
-        tileWidth  = 10;
-        tileHeight =  5;
-        numBands   =  3;
-        createPixelIterator(createImage(null));
-        moveTo(98, 52);
-        verifyIteration(false);
-    }
-
-    /**
-     * Tests iteration after a call to {@link PixelIterator#moveTo(int, int)} in a tiled image.
-     */
-    @Test
-    @Ignore
-    @DependsOnMethod("testMoveIntoImage")
-    public void testMoveToLowerLeft() {
-        xmin       = -1;
-        ymin       = 28;
-        width      = 30;
-        height     = 25;
-        tileWidth  = 10;
-        tileHeight =  5;
-        numBands   =  3;
-        createPixelIterator(createImage(null));
-        moveTo(-1, 52);
-        verifyIteration(false);
+        verifyIterationAfterMove(7, 5);
     }
 }
