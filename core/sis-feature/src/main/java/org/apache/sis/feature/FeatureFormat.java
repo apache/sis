@@ -124,6 +124,12 @@ public class FeatureFormat extends TabularFormat<Object> {
     private static final int MAXIMAL_VALUE_LENGTH = 40;
 
     /**
+     * The bit patterns of the last {@link Float#NaN} value for which {@link MathFunctions#toNanOrdinal(float)} could
+     * not get the ordinal value. We use this information for avoiding flooding the logger with the same message.
+     */
+    private transient int illegalNaN;
+
+    /**
      * Creates a new formatter for the default locale and timezone.
      */
     public FeatureFormat() {
@@ -532,7 +538,11 @@ public class FeatureFormat extends TabularFormat<Object> {
                                                 if (n > 0) buffer.append(" #").append(n);
                                             } catch (IllegalArgumentException e) {
                                                 // May happen if the NaN is a signaling NaN instead than a quiet NaN.
-                                                Logging.recoverableException(Logging.getLogger(Modules.FEATURE), FeatureFormat.class, "format", e);
+                                                final int bits = Float.floatToRawIntBits(f);
+                                                if (bits != illegalNaN) {
+                                                    illegalNaN = bits;
+                                                    Logging.recoverableException(Logging.getLogger(Modules.FEATURE), FeatureFormat.class, "format", e);
+                                                }
                                             }
                                         }
                                     }
