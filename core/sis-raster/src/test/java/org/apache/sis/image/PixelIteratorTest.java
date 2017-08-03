@@ -24,6 +24,7 @@ import java.awt.image.PixelInterleavedSampleModel;
 import java.awt.image.Raster;
 import java.awt.image.WritableRaster;
 import java.awt.image.WritableRenderedImage;
+import java.nio.FloatBuffer;
 import org.opengis.coverage.grid.SequenceType;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestCase;
@@ -272,7 +273,7 @@ public strictfp class PixelIteratorTest extends TestCase {
      * Tests for read-write iterators need to override.</p>
      *
      * @param  image    the data on which to perform iteration.
-     * @param  window   size of the window to use in {@link PixelIterator#window()} method.
+     * @param  window   size of the window to use in {@link PixelIterator#createWindow(TransferType)} method.
      */
     void createWindowIterator(WritableRenderedImage image, Dimension window) {
         iterator = new DefaultIterator(image, null, window);
@@ -1009,20 +1010,21 @@ public strictfp class PixelIteratorTest extends TestCase {
     }
 
     /**
-     * Verifies {@link PixelIterator#window()}.
+     * Verifies {@link PixelIterator#createWindow(TransferType)}.
      * This method assumes that the iterator traverses the full image (no sub-area).
      *
      * @see #verifyIteration(boolean)
      * @see #verifyIterationAfterMove(int, int)
      */
     private void verifyWindow(final Dimension window) {
+        final PixelIterator.Window<FloatBuffer> w = iterator.createWindow(TransferType.FLOAT);
+        final FloatBuffer values = w.values;
         final int tileSize   = tileWidth * tileHeight;
         final int tileStride = tileSize * (width / tileWidth);
         while (iterator.next()) {
             final Point pos = iterator.getPosition();
             pos.translate(-xmin, -ymin);
-            final double[] values = iterator.window();
-            int i = 0;
+            w.update();
             for (int y=0; y<window.height; y++) {
                 int p,t;
                 p  = pos.y + y;
@@ -1035,22 +1037,21 @@ public strictfp class PixelIteratorTest extends TestCase {
                     p %=     tileWidth;
                     int offset = (start + t * tileSize + p) * numBands;
                     for (int b=0; b<numBands; b++) {
-                        final double e = expected[offset++];
-                        final double a = values[i++];
-                        if (Double.doubleToRawLongBits(a) != Double.doubleToRawLongBits(e)) {
+                        final float e = expected[offset++];
+                        final float a = values.get();
+                        if (Float.floatToRawIntBits(a) != Float.floatToRawIntBits(e)) {
                             fail("Index (" + x + ", " + y + ") in window starting at index ("
                                     + pos.x + ", " + pos.y + "), band " + b + ": expected " + e + " but got " + a);
                         }
                     }
                 }
             }
-            assertEquals("window().length", i, values.length);
-            java.util.Arrays.fill(iterator.window, Double.NaN);
+            assertEquals("buffer.remaining()", 0, values.remaining());
         }
     }
 
     /**
-     * Tests {@link PixelIterator#window()} on a single tile.
+     * Tests {@link PixelIterator#createWindow(TransferType)} on a single tile.
      */
     @Test
     @DependsOnMethod("testMoveIntoImage")
@@ -1070,7 +1071,7 @@ public strictfp class PixelIteratorTest extends TestCase {
     }
 
     /**
-     * Tests {@link PixelIterator#window()} on a tiled image.
+     * Tests {@link PixelIterator#createWindow(TransferType)} on a tiled image.
      */
     @Test
     @DependsOnMethod("testWindowOnTile")

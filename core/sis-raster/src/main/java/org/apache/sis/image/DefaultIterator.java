@@ -19,11 +19,17 @@ package org.apache.sis.image;
 import java.awt.Point;
 import java.awt.Dimension;
 import java.awt.Rectangle;
+import java.awt.image.DataBuffer;
 import java.awt.image.Raster;
 import java.awt.image.RenderedImage;
 import java.awt.image.RasterFormatException;
+import java.nio.Buffer;
+import java.nio.IntBuffer;
+import java.nio.FloatBuffer;
+import java.nio.DoubleBuffer;
 import org.opengis.coverage.grid.SequenceType;
 import org.apache.sis.internal.raster.Resources;
+import org.apache.sis.util.ArgumentChecks;
 
 
 /**
@@ -69,17 +75,12 @@ final class DefaultIterator extends PixelIterator {
     private int currentLowerX, currentUpperX, currentUpperY;
 
     /**
-     * A temporary array used by {@link #window} for transferring data.
-     */
-    private transient double[] transfer;
-
-    /**
      * Creates an iterator for the given region in the given raster.
      *
      * @param  data     the raster which contains the sample values on which to iterate.
      * @param  subArea  the raster region where to perform the iteration, or {@code null}
      *                  for iterating over all the raster domain.
-     * @param  window   size of the window to use in {@link #window()} method, or {@code null} if none.
+     * @param  window   size of the window to use in {@link #createWindow(TransferType)} method, or {@code null} if none.
      */
     DefaultIterator(final Raster data, final Rectangle subArea, final Dimension window) {
         super(data, subArea, window);
@@ -96,7 +97,7 @@ final class DefaultIterator extends PixelIterator {
      * @param  data     the image which contains the sample values on which to iterate.
      * @param  subArea  the image region where to perform the iteration, or {@code null}
      *                  for iterating over all the image domain.
-     * @param  window   size of the window to use in {@link #window()} method, or {@code null} if none.
+     * @param  window   size of the window to use in {@link #createWindow(TransferType)} method, or {@code null} if none.
      */
     DefaultIterator(final RenderedImage data, final Rectangle subArea, final Dimension window) {
         super(data, subArea, window);
@@ -298,16 +299,176 @@ final class DefaultIterator extends PixelIterator {
     }
 
     /**
-     * Returns the sample values in a region of the window size starting at the current pixel position.
-     * This method assumes that {@link #next()} or {@link #moveTo(int,int)} has been invoked.
+     * Returns a moving window over the sample values in a rectangular region starting at iterator position.
      */
     @Override
-    public double[] window() {
-        if (window == null) {
-            window   = new double[numBands * windowWidth * windowHeight];
-            transfer = new double[window.length /*- numBands * Math.min(windowWidth, windowHeight)*/];
-            // 'transfer' will always have at least one row or one column less than 'window'.
+    @SuppressWarnings("unchecked")
+    public <T extends Buffer> Window<T> createWindow(final TransferType<T> type) {
+        ArgumentChecks.ensureNonNull("type", type);
+        final int length = numBands * windowWidth * windowHeight;
+        final int transferLength = length - numBands * Math.min(windowWidth, windowHeight);
+        // 'transfer' will always have at least one row or one column less than 'data'.
+        switch (type.dataBufferType) {
+            case DataBuffer.TYPE_INT:    return (Window<T>) new IntWindow   (new int   [length], new int   [transferLength]);
+            case DataBuffer.TYPE_FLOAT:  return (Window<T>) new FloatWindow (new float [length], new float [transferLength]);
+            case DataBuffer.TYPE_DOUBLE: return (Window<T>) new DoubleWindow(new double[length], new double[transferLength]);
+            default: throw new AssertionError(type);  // Should never happen unless we updated TransferType and forgot to update this method.
         }
+    }
+
+    /**
+     * The base class of all {@link Window} implementations provided by {@link DefaultIterator}.
+     * This iterator defines a callback method required by {@link DefaultIterator#update(WindowBase, Object)}.
+     *
+     * @todo keep trace of last location and use {@code System#arraycopy(…)} for moving the values that we already have.
+     */
+    private abstract static class WindowBase<T extends Buffer> extends Window<T> {
+        /**
+         * Creates a new window which will store the sample values in the given buffer.
+         */
+        WindowBase(final T buffer) {
+            super(buffer);
+        }
+
+        /**
+         * Returns an array containing all samples for a rectangle of pixels in the given raster, one sample
+         * per array element. Subclasses shall delegate to one of the {@code Raster#getPixels(…)} methods
+         * depending on the buffer data type.
+         *
+         * @param  raster     the raster from which to get the pixel values.
+         * @param  subX       the X coordinate of the upper-left pixel location.
+         * @param  subY       the Y coordinate of the upper-left pixel location.
+         * @param  subWidth   width of the pixel rectangle.
+         * @param  subHeight  height of the pixel rectangle.
+         * @param  direct     {@code true} for storing directly in the final array,
+         *                     or {@code false} for using the transfer array.
+         * @return the array in which sample values have been stored.
+         */
+        abstract Object getPixels(Raster raster, int subX, int subY, int subWidth, int subHeight, boolean direct);
+    }
+
+    /**
+     * {@link Window} implementation backed by an array of {@code int[]}.
+     */
+    private final class IntWindow extends WindowBase<IntBuffer> {
+        /**
+         * Sample values in the window ({@code data}) and a temporary array ({@code transfer}).
+         * Those arrays are overwritten when {@link #update()} is invoked.
+         */
+        private final int[] data, transfer;
+
+        /**
+         * Creates a new window which will store the sample values in the given {@code data} array.
+         */
+        IntWindow(final int[] data, final int[] transfer) {
+            super(IntBuffer.wrap(data).asReadOnlyBuffer());
+            this.data = data;
+            this.transfer = transfer;
+        }
+
+        /**
+         * Performs the transfer between the underlying raster and this window.
+         */
+        @Override
+        Object getPixels(Raster raster, int subX, int subY, int subWidth, int subHeight, boolean direct) {
+            return raster.getPixels(subX, subY, subWidth, subHeight, direct ? data : transfer);
+        }
+
+        /**
+         * Updates this window with the sample values in the region starting at current iterator position.
+         * This method assumes that {@link #next()} or {@link #moveTo(int,int)} has been invoked.
+         */
+        @Override
+        public void update() {
+            values.clear();
+            DefaultIterator.this.update(this, data);
+        }
+    }
+
+    /**
+     * {@link Window} implementation backed by an array of {@code float[]}.
+     */
+    private final class FloatWindow extends WindowBase<FloatBuffer> {
+        /**
+         * Sample values in the window ({@code data}) and a temporary array ({@code transfer}).
+         * Those arrays are overwritten when {@link #update()} is invoked.
+         */
+        private final float[] data, transfer;
+
+        /**
+         * Creates a new window which will store the sample values in the given {@code data} array.
+         */
+        FloatWindow(final float[] data, final float[] transfer) {
+            super(FloatBuffer.wrap(data).asReadOnlyBuffer());
+            this.data = data;
+            this.transfer = transfer;
+        }
+
+        /**
+         * Performs the transfer between the underlying raster and this window.
+         */
+        @Override
+        Object getPixels(Raster raster, int subX, int subY, int subWidth, int subHeight, boolean direct) {
+            return raster.getPixels(subX, subY, subWidth, subHeight, direct ? data : transfer);
+        }
+
+        /**
+         * Updates this window with the sample values in the region starting at current iterator position.
+         * This method assumes that {@link #next()} or {@link #moveTo(int,int)} has been invoked.
+         */
+        @Override
+        public void update() {
+            values.clear();
+            DefaultIterator.this.update(this, data);
+        }
+    }
+
+    /**
+     * {@link Window} implementation backed by an array of {@code double[]}.
+     */
+    private final class DoubleWindow extends WindowBase<DoubleBuffer> {
+        /**
+         * Sample values in the window ({@code data}) and a temporary array ({@code transfer}).
+         * Those arrays are overwritten when {@link #update()} is invoked.
+         */
+        private final double[] data, transfer;
+
+        /**
+         * Creates a new window which will store the sample values in the given {@code data} array.
+         */
+        DoubleWindow(final double[] data, final double[] transfer) {
+            super(DoubleBuffer.wrap(data).asReadOnlyBuffer());
+            this.data = data;
+            this.transfer = transfer;
+        }
+
+        /**
+         * Performs the transfer between the underlying raster and this window.
+         */
+        @Override
+        Object getPixels(Raster raster, int subX, int subY, int subWidth, int subHeight, boolean direct) {
+            return raster.getPixels(subX, subY, subWidth, subHeight, direct ? data : transfer);
+        }
+
+        /**
+         * Updates this window with the sample values in the region starting at current iterator position.
+         * This method assumes that {@link #next()} or {@link #moveTo(int,int)} has been invoked.
+         */
+        @Override
+        public void update() {
+            values.clear();
+            DefaultIterator.this.update(this, data);
+        }
+    }
+
+    /**
+     * Updates the content of given window with the sample values in the region starting at current iterator position.
+     *
+     * @param window  the window to update.
+     * @param data    the array of primitive type where sample values are stored.
+     */
+    @SuppressWarnings("SuspiciousSystemArraycopy")
+    final void update(final WindowBase<?> window, final Object data) {
         Raster  raster    = currentRaster;
         int     subEndX   = (raster.getMinX() - x) + raster.getWidth();
         int     subEndY   = (raster.getMinY() - y) + raster.getHeight();
@@ -320,7 +481,11 @@ final class DefaultIterator extends PixelIterator {
              * This is the vast majority of cases, so we perform this check soon before
              * to compute more internal variables.
              */
-            return raster.getPixels(x, y, subWidth, subHeight, window);
+            final Object transfer = window.getPixels(raster, x, y, subWidth, subHeight, true);
+            if (transfer != data) {     // Paranoiac check (arrays should always be same).
+                System.arraycopy(transfer, 0, data, 0, numBands * subWidth * subHeight);
+            }
+            return;
         }
         /*
          * At this point, we determined that the window is overlapping two or more tiles.
@@ -335,16 +500,16 @@ final class DefaultIterator extends PixelIterator {
         final int rewind = subEndX;
         for (;;) {
             if (subWidth > 0 && subHeight > 0) {
-                final double[] data = raster.getPixels(x + subX, y + subY, subWidth, subHeight, transfer);
+                final Object transfer = window.getPixels(raster, x + subX, y + subY, subWidth, subHeight, false);
                 if (fullWidth) {
                     final int fullLength = stride * subHeight;
-                    System.arraycopy(data, 0, window, destOffset, fullLength);
+                    System.arraycopy(transfer, 0, data, destOffset, fullLength);
                     destOffset += fullLength;
                 } else {
                     final int  rowLength = numBands  * subWidth;
                     final int fullLength = rowLength * subHeight;
                     for (int srcOffset=0; srcOffset < fullLength; srcOffset += rowLength) {
-                        System.arraycopy(data, srcOffset, window, destOffset, rowLength);
+                        System.arraycopy(transfer, srcOffset, data, destOffset, rowLength);
                         destOffset += stride;
                     }
                 }
@@ -359,7 +524,7 @@ final class DefaultIterator extends PixelIterator {
                 tileSubX++;
             } else {
                 if (subEndY >= windowHeight) {
-                    return window;                          // Completed last row of tiles.
+                    return;                                 // Completed last row of tiles.
                 }
                 subY     = subEndY;
                 subEndY += tileHeight;                      // Tile on the next row.
