@@ -24,6 +24,7 @@ import java.awt.image.Raster;
 import java.awt.image.RenderedImage;
 import java.util.NoSuchElementException;
 import org.opengis.coverage.grid.SequenceType;
+import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ArgumentChecks;
 
 import static java.lang.Math.floorDiv;
@@ -39,7 +40,7 @@ import static java.lang.Math.floorDiv;
  *
  * <p>Usage example:</p>
  * {@preformat java
- *     PixelIterator it = PixelIterator.create(image, null);
+ *     PixelIterator it = PixelIterator.create(image);
  *     double[] samples = null;
  *     while (it.next()) {
  *         samples = it.getPixel(samples);      // Get values in all bands.
@@ -113,7 +114,6 @@ public abstract class PixelIterator {
      * @param  window   size of the window to use in {@link #createWindow(TransferType)} method, or {@code null} if none.
      */
     PixelIterator(final Raster data, final Rectangle subArea, final Dimension window) {
-        ArgumentChecks.ensureNonNull("data", data);
         final Rectangle bounds;
         image           = null;
         currentRaster   = data;
@@ -144,7 +144,6 @@ public abstract class PixelIterator {
      * @param  window   size of the window to use in {@link #createWindow(TransferType)} method, or {@code null} if none.
      */
     PixelIterator(final RenderedImage data, final Rectangle subArea, final Dimension window) {
-        ArgumentChecks.ensureNonNull("data", data);
         final Rectangle bounds;
         image           = data;
         numBands        = data.getSampleModel().getNumBands();
@@ -190,6 +189,91 @@ public abstract class PixelIterator {
             if (bounds.height < 0) bounds.height = 0;
         }
         return bounds;
+    }
+
+    /**
+     * Creates an iterator for all pixels in the given raster.
+     *
+     * @param  data  the raster which contains the sample values on which to iterate.
+     * @return a new iterator traversing all pixels in the given raster, in arbitrary order.
+     */
+    public static PixelIterator create(Raster data) {
+        return create(data, null, null, null);
+    }
+
+    /**
+     * Creates an iterator for all pixels in the given image.
+     *
+     * @param  data  the image which contains the sample values on which to iterate.
+     * @return a new iterator traversing all pixels in the given image, in arbitrary order.
+     */
+    public static PixelIterator create(RenderedImage data) {
+        return create(data, null, null, null);
+    }
+
+    /**
+     * Creates an iterator for the given region in the given raster.
+     * The {@code order} argument can have the following values:
+     *
+     * <table class="sis">
+     *   <caption>Supported iteration order</caption>
+     *   <tr><th>Value</th>                         <th>Iteration order</th></tr>
+     *   <tr><td>{@code null}</td>                  <td>Most efficient iteration order.</td></tr>
+     *   <tr><td>{@link SequenceType#LINEAR}</td>   <td>From left to right, then from top to bottom.</td></tr>
+     * </table>
+     *
+     * Any other {@code order} value will cause an {@link IllegalArgumentException} to be thrown.
+     * More iteration orders may be supported in future Apache SIS versions.
+     *
+     * @param  data     the raster which contains the sample values on which to iterate.
+     * @param  subArea  the raster region where to perform the iteration, or {@code null}
+     *                  for iterating over all the raster domain.
+     * @param  window   size of the window to use in {@link #createWindow(TransferType)} method, or {@code null} if none.
+     * @param  order    the desired iteration order, or {@code null} for a default order.
+     * @return a new iterator.
+     */
+    public static PixelIterator create(Raster data, Rectangle subArea, Dimension window, SequenceType order) {
+        ArgumentChecks.ensureNonNull("data", data);
+
+        // TODO: check here for cases that we can optimize (after we ported corresponding implementations).
+
+        if (order == null || order.equals(SequenceType.LINEAR)) {
+            return new DefaultIterator(data, subArea, window);
+        } else {
+            throw new IllegalArgumentException(Errors.format(Errors.Keys.UnsupportedType_1, order));
+        }
+    }
+
+    /**
+     * Creates an iterator for the given region in the given image.
+     * The {@code order} argument can have the following values:
+     *
+     * <table class="sis">
+     *   <caption>Supported iteration order</caption>
+     *   <tr><th>Value</th>                         <th>Iteration order</th></tr>
+     *   <tr><td>{@code null}</td>                  <td>Most efficient iteration order.</td></tr>
+     * </table>
+     *
+     * Any other {@code order} value will cause an {@link IllegalArgumentException} to be thrown.
+     * More iteration orders may be supported in future Apache SIS versions.
+     *
+     * @param  data     the raster which contains the sample values on which to iterate.
+     * @param  subArea  the raster region where to perform the iteration, or {@code null}
+     *                  for iterating over all the image domain.
+     * @param  window   size of the window to use in {@link #createWindow(TransferType)} method, or {@code null} if none.
+     * @param  order    the desired iteration order, or {@code null} for a default order.
+     * @return a new iterator.
+     */
+    public static PixelIterator create(RenderedImage data, Rectangle subArea, Dimension window, SequenceType order) {
+        ArgumentChecks.ensureNonNull("data", data);
+
+        // TODO: check here for cases that we can optimize (after we ported corresponding implementations).
+
+        if (order == null) {
+            return new DefaultIterator(data, subArea, window);
+        } else {
+            throw new IllegalArgumentException(Errors.format(Errors.Keys.UnsupportedType_1, order));
+        }
     }
 
     /**
@@ -386,7 +470,7 @@ public abstract class PixelIterator {
      * in {@linkplain SequenceType#LINEAR linear order} regardless the iteration order.
      *
      * {@preformat java
-     *     PixelIterator it = create(image, null, new Dimension(5, 5));     // Windows size will be 5×5 pixels.
+     *     PixelIterator it = create(image, null, new Dimension(5, 5), null);     // Windows size will be 5×5 pixels.
      *     PixelIterator<FloatBuffer> window = it.createWindow(TransferType.FLOAT);
      *     FloatBuffer values = window.values;
      *     while (it.next()) {
