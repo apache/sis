@@ -16,6 +16,7 @@
  */
 package org.apache.sis.image;
 
+import java.nio.Buffer;
 import java.awt.Point;
 import java.awt.Dimension;
 import java.awt.Rectangle;
@@ -99,15 +100,9 @@ public abstract class PixelIterator {
     final int tileLowerX, tileLowerY, tileUpperX, tileUpperY;
 
     /**
-     * Size of the window to use in {@link #window()} method, or {@code 0} if none.
+     * Size of the window to use in {@link #createWindow(TransferType)} method, or {@code 0} if none.
      */
     final int windowWidth, windowHeight;
-
-    /**
-     * Sample values in the window, or {@code null} if not yet extracted.
-     * Current sample values. This array is overwritten when {@link #window()} is invoked.
-     */
-    transient double[] window;
 
     /**
      * Creates an iterator for the given region in the given raster.
@@ -115,7 +110,7 @@ public abstract class PixelIterator {
      * @param  data     the raster which contains the sample values on which to iterate.
      * @param  subArea  the raster region where to perform the iteration, or {@code null}
      *                  for iterating over all the raster domain.
-     * @param  window   size of the window to use in {@link #window()} method, or {@code null} if none.
+     * @param  window   size of the window to use in {@link #createWindow(TransferType)} method, or {@code null} if none.
      */
     PixelIterator(final Raster data, final Rectangle subArea, final Dimension window) {
         ArgumentChecks.ensureNonNull("data", data);
@@ -146,7 +141,7 @@ public abstract class PixelIterator {
      * @param  data     the image which contains the sample values on which to iterate.
      * @param  subArea  the image region where to perform the iteration, or {@code null}
      *                  for iterating over all the image domain.
-     * @param  window   size of the window to use in {@link #window()} method, or {@code null} if none.
+     * @param  window   size of the window to use in {@link #createWindow(TransferType)} method, or {@code null} if none.
      */
     PixelIterator(final RenderedImage data, final Rectangle subArea, final Dimension window) {
         ArgumentChecks.ensureNonNull("data", data);
@@ -198,14 +193,20 @@ public abstract class PixelIterator {
     }
 
     /**
-     * Returns the pixel coordinates of the region where this iterator is doing the iteration.
-     * If no region was specified at construction time, then this method returns the image or
-     * raster bounds.
+     * Returns the most efficient type ({@code int}, {@code float} or {@code double}) for transferring data between the
+     * underlying rasters and this iterator. The transfer type is not necessarily the storage type used by the rasters.
+     * For example {@code int} values will be used for transferring data even if the underlying rasters store all sample
+     * values as {@code byte}s.
      *
-     * @return pixel coordinates of the iteration region.
+     * <p>The transfer type is only a hint since all iterator methods work for any type (conversions are applied as needed).
+     * However if this method returns {@link TransferType#INT}, then {@link #getSample(int)} and {@link #getPixel(int[])}
+     * will be slightly more efficient than equivalent methods for other types. Conversely if this method returns
+     * {@link TransferType#DOUBLE}, then {@link #getSampleDouble(int)} will be both more efficient and avoid accuracy lost.</p>
+     *
+     * @return the most efficient data type for transferring data.
      */
-    public Rectangle getDomain() {
-        return new Rectangle(lowerX, lowerY, upperX - lowerX, upperY - lowerY);
+    public TransferType<?> getTransferType() {
+        return TransferType.valueOf(image != null ? image.getSampleModel().getTransferType() : currentRaster.getTransferType());
     }
 
     /**
@@ -216,6 +217,16 @@ public abstract class PixelIterator {
      * @return order in which pixels are traversed, or {@code null} if unspecified.
      */
     public abstract SequenceType getIterationOrder();
+
+    /**
+     * Returns the pixel coordinates of the region where this iterator is doing the iteration.
+     * If no region was specified at construction time, then this method returns the image or raster bounds.
+     *
+     * @return pixel coordinates of the iteration region.
+     */
+    public Rectangle getDomain() {
+        return new Rectangle(lowerX, lowerY, upperX - lowerX, upperY - lowerY);
+    }
 
     /**
      * Returns the column (x) and row (y) indices of the current pixel.
@@ -350,9 +361,9 @@ public abstract class PixelIterator {
     public abstract int[] getPixel​(int[] dest);
 
     /**
-     * Returns the sample values in a rectangular region starting at the current pixel position.
-     * The region size is the <cite>window size</cite> specified at {@code PixelIterator} construction time.
-     * The length of the returned array will be
+     * Returns a moving window over the sample values in a rectangular region starting at iterator position.
+     * The <cite>window size</cite> must have been specified at {@code PixelIterator} construction time.
+     * Sample values are stored in a sequence of length
      * <var>(number of bands)</var> × <var>(window width)</var> × <var>(window height)</var>.
      * Values are always stored with band index varying fastest, then column index, then row index.
      * Columns are traversed from left to right and rows are traversed from top to bottom
@@ -362,28 +373,88 @@ public abstract class PixelIterator {
      * <div class="note"><b>Example:</b>
      * for an RGB image, the 3 first values are the red, green and blue components of the pixel at
      * {@linkplain #getPosition() current iterator position}. The 3 next values are the red, green
-     * and blue components of the pixel at the right of current iterator position, <i>etc.</i></div>
+     * and blue components of the pixel at the right of current iterator position (not necessarily
+     * the position where a call to {@link #next()} would have go), <i>etc.</i></div>
      *
-     * The returned region will be live: calls to {@link #next()} followed by {@code window()} returns an array
-     * (potentially the same array instance than previous call) updated with values starting at the new iterator
-     * position. The returned array is valid only until the next call to {@code window()}. The array shall only
-     * be read; behavior of this method become unspecified if caller modifies any values in the array.
+     * Calls to {@link #next()} or {@link #moveTo(int,int)} followed by {@link Window#update()}
+     * replaces the window content with values starting at the new iterator position.
+     * Before the first {@link Window#update()} invocation, the window is filled with zero values.
      *
-     * <div class="note"><b>Rational:</b>
-     * the read-only constraint on the returned array exists for performance reasons.
-     * This method may recycle the same array in a way that avoid fetching existing values.
+     * <div class="note"><b>Usage example:</b>
+     * following code creates an iterator over the full area of given image, then a window of 5×5 pixels.
+     * The window is moved over all the image area in iteration order. Inside the window, data are copied
+     * in {@linkplain SequenceType#LINEAR linear order} regardless the iteration order.
+     *
+     * {@preformat java
+     *     PixelIterator it = create(image, null, new Dimension(5, 5));     // Windows size will be 5×5 pixels.
+     *     PixelIterator<FloatBuffer> window = it.createWindow(TransferType.FLOAT);
+     *     FloatBuffer values = window.values;
+     *     while (it.next()) {
+     *         window.update();
+     *         while (buffer.hasRemaining()) {
+     *             float sample = buffer.get();
+     *             // use the sample value here.
+     *         }
+     *     }
+     * }
      * </div>
      *
-     * The {@link #next()} method must have returned {@code true}, or the {@link #moveTo(int,int)} method must have
-     * been invoked successfully, before this {@code window()} method is invoked. If above condition is not met,
-     * then this method behavior is undefined: it may throw any runtime exception or return meaningless values
-     * (there is no explicit bounds check for performance reasons).
-     *
-     * @return the sample values in the region starting at current iterator position.
+     * @param  <T>   the type of the data buffer to use for transferring data.
+     * @param  type  the desired type of values ({@code int}, {@code float} or {@code double}).
+     *               Use {@link #getTransferType()} if the most efficient type is desired.
+     * @return a window over the sample values in the underlying image or raster.
      *
      * @see Raster#getPixels(int, int, int, int, double[])
      */
-    public abstract double[] window();
+    public abstract <T extends Buffer> Window<T> createWindow(TransferType<T> type);
+
+    /**
+     * Contains the sample values in a moving window over the image. Windows are created by calls to
+     * {@link PixelIterator#createWindow(TransferType)} and sample values are stored in {@link Buffer}s.
+     * The buffer content is replaced ever time {@link #update()} is invoked.
+     *
+     * @author  Martin Desruisseaux (Geomatys)
+     * @version 0.8
+     *
+     * @param  <T>  the type of buffer which can be used for transferring data.
+     *
+     * @since 0.8
+     * @module
+     */
+    public abstract static class Window<T extends Buffer> {
+        /**
+         * A buffer containing all sample values fetched by the last call to {@link #update()}. The buffer
+         * capacity is <var>(number of bands)</var> × <var>(window width)</var> × <var>(window height)</var>.
+         * Values are always stored with band index varying fastest, then column index, then row index.
+         * Columns are traversed from left to right and rows are traversed from top to bottom
+         * ({@link SequenceType#LINEAR} iteration order).
+         * That order is the same regardless the {@linkplain PixelIterator#getIterationOrder() iteration order}
+         * of enclosing iterator.
+         *
+         * <p>Every time that {@link #update()} is invoked, the buffer content is replaced by sample values
+         * starting at the {@linkplain PixelIterator#getPosition() current iterator position}.
+         * Before the first {@code update()} invocation, the buffer is filled with zero values.</p>
+         */
+        public final T values;
+
+        /**
+         * Creates a new window which will store the sample values in the given buffer.
+         */
+        Window(final T buffer) {
+            values = buffer;
+        }
+
+        /**
+         * Updates this window with the sample values in the region starting at current iterator position.
+         * The buffer position, limit and mark are {@linkplain Buffer#clear() cleared}.
+         *
+         * <p>The {@link #next()} method must have returned {@code true}, or the {@link #moveTo(int,int)} method must have
+         * been invoked successfully, before this {@code update()} method is invoked. If above condition is not met,
+         * then this method behavior is undefined: it may throw any runtime exception or return meaningless values
+         * (there is no explicit bounds check for performance reasons).</p>
+         */
+        public abstract void update();
+    }
 
     /**
      * Restores the iterator to the start position. After this method has been invoked,
