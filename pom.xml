@@ -574,7 +574,7 @@ Apache SIS is a free software, Java language library for developing geospatial a
       <!-- Compile -->
       <plugin>
         <artifactId>maven-compiler-plugin</artifactId>
-        <version>3.6.1</version>
+        <version>3.6.2</version>
         <configuration>
           <source>${maven.compile.source}</source>
           <target>${maven.compile.target}</target>
@@ -820,6 +820,10 @@ Apache SIS is a free software, Java language library for developing geospatial a
             <group>
               <title>Data storage</title>
               <packages>org.apache.sis.storage*:org.apache.sis.index*</packages>
+            </group>
+            <group>
+              <title>Coverage and raster</title>
+              <packages>org.apache.sis.coverage*:org.apache.sis.raster*</packages>
             </group>
             <group>
               <title>Feature and Geometry</title>
