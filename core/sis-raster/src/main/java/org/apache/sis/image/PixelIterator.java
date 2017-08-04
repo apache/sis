@@ -259,8 +259,8 @@ public abstract class PixelIterator {
      * Any other {@code order} value will cause an {@link IllegalArgumentException} to be thrown.
      * More iteration orders may be supported in future Apache SIS versions.
      *
-     * @param  data     the raster which contains the sample values on which to iterate.
-     * @param  subArea  the raster region where to perform the iteration, or {@code null}
+     * @param  data     the image which contains the sample values on which to iterate.
+     * @param  subArea  the image region where to perform the iteration, or {@code null}
      *                  for iterating over all the image domain.
      * @param  window   size of the window to use in {@link #createWindow(TransferType)} method, or {@code null} if none.
      * @param  order    the desired iteration order, or {@code null} for a default order.
