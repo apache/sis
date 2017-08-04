@@ -45,7 +45,10 @@ import org.opengis.metadata.FeatureTypeList;
  * @version 0.3
  * @since   0.3
  * @module
+ *
+ * @deprecated Not anymore part of ISO 19115.
  */
+@Deprecated                                     // TODO: after deletion, search "FeatureTypeList" on the whole code base.
 @SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(propOrder = {
     "spatialObject",
