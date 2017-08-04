@@ -247,7 +247,7 @@ public strictfp class PixelIteratorTest extends TestCase {
      * @param  subArea  the boundary of the raster sub-area where to perform iteration.
      */
     void createPixelIterator(WritableRaster raster, Rectangle subArea) {
-        iterator = new DefaultIterator(raster, subArea, null);
+        iterator = new DefaultIterator(raster, null, subArea, null);
         assertEquals("getIterationOrder()", SequenceType.LINEAR, iterator.getIterationOrder());
     }
 
@@ -262,7 +262,7 @@ public strictfp class PixelIteratorTest extends TestCase {
      * @param  subArea  the boundary of the image sub-area where to perform iteration.
      */
     void createPixelIterator(WritableRenderedImage image, Rectangle subArea) {
-        iterator = new DefaultIterator(image, subArea, null);
+        iterator = new DefaultIterator(image, null, subArea, null);
     }
 
     /**
@@ -276,7 +276,7 @@ public strictfp class PixelIteratorTest extends TestCase {
      * @param  window   size of the window to use in {@link PixelIterator#createWindow(TransferType)} method.
      */
     void createWindowIterator(WritableRenderedImage image, Dimension window) {
-        iterator = new DefaultIterator(image, null, window);
+        iterator = new DefaultIterator(image, null, null, window);
     }
 
     /**

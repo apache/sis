@@ -22,6 +22,8 @@ import java.awt.Rectangle;
 import java.awt.image.DataBuffer;
 import java.awt.image.Raster;
 import java.awt.image.RenderedImage;
+import java.awt.image.WritableRaster;
+import java.awt.image.WritableRenderedImage;
 import java.awt.image.RasterFormatException;
 import java.nio.Buffer;
 import java.nio.IntBuffer;
@@ -52,9 +54,9 @@ import org.apache.sis.util.ArgumentChecks;
  *
  * @todo Change iteration order on tiles for using Hilbert iterator.
  */
-final class DefaultIterator extends PixelIterator {
+final class DefaultIterator extends WritablePixelIterator {
     /**
-     * Current tile coordinate of current raster.
+     * Tile coordinate of {@link #currentRaster}.
      */
     private int tileX, tileY;
 
@@ -77,13 +79,14 @@ final class DefaultIterator extends PixelIterator {
     /**
      * Creates an iterator for the given region in the given raster.
      *
-     * @param  data     the raster which contains the sample values on which to iterate.
+     * @param  input    the raster which contains the sample values to read.
+     * @param  output   the raster where to write the sample values, or {@code null} for read-only iterator.
      * @param  subArea  the raster region where to perform the iteration, or {@code null}
      *                  for iterating over all the raster domain.
      * @param  window   size of the window to use in {@link #createWindow(TransferType)} method, or {@code null} if none.
      */
-    DefaultIterator(final Raster data, final Rectangle subArea, final Dimension window) {
-        super(data, subArea, window);
+    DefaultIterator(final Raster input, final WritableRaster output, final Rectangle subArea, final Dimension window) {
+        super(input, output, subArea, window);
         currentLowerX = lowerX;
         currentUpperX = upperX;
         currentUpperY = upperY;
@@ -94,13 +97,14 @@ final class DefaultIterator extends PixelIterator {
     /**
      * Creates an iterator for the given region in the given image.
      *
-     * @param  data     the image which contains the sample values on which to iterate.
+     * @param  input    the image which contains the sample values to read.
+     * @param  output   the image where to write the sample values, or {@code null} for read-only iterator.
      * @param  subArea  the image region where to perform the iteration, or {@code null}
      *                  for iterating over all the image domain.
      * @param  window   size of the window to use in {@link #createWindow(TransferType)} method, or {@code null} if none.
      */
-    DefaultIterator(final RenderedImage data, final Rectangle subArea, final Dimension window) {
-        super(data, subArea, window);
+    DefaultIterator(final RenderedImage input, final WritableRenderedImage output, final Rectangle subArea, final Dimension window) {
+        super(input, output, subArea, window);
         tileX = Math.decrementExact(tileLowerX);
         tileY = tileLowerY;
         currentLowerX = lowerX;
@@ -115,6 +119,7 @@ final class DefaultIterator extends PixelIterator {
      */
     @Override
     public void rewind() {
+        close();                        // Release current writable raster, if any.
         if (image == null) {
             tileX = 0;
             tileY = 0;
@@ -179,6 +184,7 @@ final class DefaultIterator extends PixelIterator {
             final int tx = Math.floorDiv(px - tileGridXOffset, tileWidth);
             final int ty = Math.floorDiv(py - tileGridYOffset, tileHeight);
             if (tx != tileX || ty != tileY) {
+                close();                                    // Release current writable raster, if any.
                 tileX = tx;
                 tileY = ty;
                 fetchTile();
@@ -199,6 +205,7 @@ final class DefaultIterator extends PixelIterator {
     public boolean next() {
         if (++x >= currentUpperX) {
             if (++y >= currentUpperY) {                     // Strict equality (==) would work, but use >= as a safety.
+                close();                                    // Release current writable raster, if any.
                 if (++tileX >= tileUpperX) {                // Strict equality (==) would work, but use >= as a safety.
                     tileY = Math.incrementExact(tileY);     // 'incrementExact' because 'tileY > tileUpperY' is allowed.
                     if (tileY >= tileUpperY) {
@@ -232,7 +239,16 @@ final class DefaultIterator extends PixelIterator {
      * the {@link #y} field, but caller is responsible for updating the {@link #x} field.
      */
     private void fetchTile() {
-        currentRaster  = image.getTile(tileX, tileY);
+        currentRaster = null;
+        if (destination != null) {
+            destRaster = destination.getWritableTile(tileX, tileY);
+            if (destination == image) {
+                currentRaster = destRaster;
+            }
+        }
+        if (currentRaster == null) {
+            currentRaster = image.getTile(tileX, tileY);
+        }
         final int minX = currentRaster.getMinX();
         final int minY = currentRaster.getMinY();
         currentLowerX  = Math.max(lowerX, minX);
@@ -272,11 +288,38 @@ final class DefaultIterator extends PixelIterator {
     }
 
     /**
+     * Writes a sample value in the specified band of current pixel.
+     * This method assumes that {@link #next()} or {@link #moveTo(int,int)} has been invoked.
+     */
+    @Override
+    public void setSample(final int band, final int value) {
+        destRaster.setSample(x, y, band, value);
+    }
+
+    /**
+     * Writes a sample value in the specified band of current pixel.
+     * This method assumes that {@link #next()} or {@link #moveTo(int,int)} has been invoked.
+     */
+    @Override
+    public void setSample(final int band, final float value) {
+        destRaster.setSample(x, y, band, value);
+    }
+
+    /**
+     * Writes a sample value in the specified band of current pixel.
+     * This method assumes that {@link #next()} or {@link #moveTo(int,int)} has been invoked.
+     */
+    @Override
+    public void setSample(final int band, final double value) {
+        destRaster.setSample(x, y, band, value);
+    }
+
+    /**
      * Returns the sample values of current pixel for all bands.
      * This method assumes that {@link #next()} or {@link #moveTo(int,int)} has been invoked.
      */
     @Override
-    public double[] getPixel​(double[] dest) {
+    public int[] getPixel​(int[] dest) {
         return currentRaster.getPixel(x, y, dest);
     }
 
@@ -294,8 +337,35 @@ final class DefaultIterator extends PixelIterator {
      * This method assumes that {@link #next()} or {@link #moveTo(int,int)} has been invoked.
      */
     @Override
-    public int[] getPixel​(int[] dest) {
+    public double[] getPixel​(double[] dest) {
         return currentRaster.getPixel(x, y, dest);
+    }
+
+    /**
+     * Sets the sample values of current pixel for all bands.
+     * This method assumes that {@link #next()} or {@link #moveTo(int,int)} has been invoked.
+     */
+    @Override
+    public void setPixel​(int[] dest) {
+        destRaster.setPixel(x, y, dest);
+    }
+
+    /**
+     * Sets the sample values of current pixel for all bands.
+     * This method assumes that {@link #next()} or {@link #moveTo(int,int)} has been invoked.
+     */
+    @Override
+    public void setPixel​(float[] dest) {
+        destRaster.setPixel(x, y, dest);
+    }
+
+    /**
+     * Sets the sample values of current pixel for all bands.
+     * This method assumes that {@link #next()} or {@link #moveTo(int,int)} has been invoked.
+     */
+    @Override
+    public void setPixel​(double[] dest) {
+        destRaster.setPixel(x, y, dest);
     }
 
     /**
@@ -538,6 +608,18 @@ final class DefaultIterator extends PixelIterator {
             subWidth   = Math.min(windowWidth,  subEndX) - subX;
             subHeight  = Math.min(windowHeight, subEndY) - subY;
             fullWidth  = (subWidth == windowWidth);
+        }
+    }
+
+    /**
+     * Releases the tiles acquired by this iterator, if any.
+     * This method does nothing if the iterator is read-only.
+     */
+    @Override
+    public void close() {
+        if (destination != null && destRaster != null) {
+            destRaster = null;
+            destination.releaseWritableTile(tileX, tileY);
         }
     }
 }
