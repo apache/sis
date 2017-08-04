@@ -64,6 +64,8 @@ public abstract class PixelIterator {
     /**
      * The current raster in which iteration is occurring. This may change when the iterator
      * reaches a new {@link #image} tile. May be {@code null} if not yet determined.
+     *
+     * @see RenderedImage#getTile(int, int)
      */
     Raster currentRaster;
 
@@ -238,7 +240,7 @@ public abstract class PixelIterator {
         // TODO: check here for cases that we can optimize (after we ported corresponding implementations).
 
         if (order == null || order.equals(SequenceType.LINEAR)) {
-            return new DefaultIterator(data, subArea, window);
+            return new DefaultIterator(data, null, subArea, window);
         } else {
             throw new IllegalArgumentException(Errors.format(Errors.Keys.UnsupportedType_1, order));
         }
@@ -270,7 +272,7 @@ public abstract class PixelIterator {
         // TODO: check here for cases that we can optimize (after we ported corresponding implementations).
 
         if (order == null) {
-            return new DefaultIterator(data, subArea, window);
+            return new DefaultIterator(data, null, subArea, window);
         } else {
             throw new IllegalArgumentException(Errors.format(Errors.Keys.UnsupportedType_1, order));
         }
@@ -412,9 +414,9 @@ public abstract class PixelIterator {
      * @param  dest  a pre-allocated array where to store the sample values, or {@code null} if none.
      * @return the sample values for current pixel.
      *
-     * @see Raster#getPixel(int, int, double[])
+     * @see Raster#getPixel(int, int, int[])
      */
-    public abstract double[] getPixel​(double[] dest);
+    public abstract int[] getPixel​(int[] dest);
 
     /**
      * Returns the sample values of current pixel for all bands.
@@ -440,9 +442,9 @@ public abstract class PixelIterator {
      * @param  dest  a pre-allocated array where to store the sample values, or {@code null} if none.
      * @return the sample values for current pixel.
      *
-     * @see Raster#getPixel(int, int, int[])
+     * @see Raster#getPixel(int, int, double[])
      */
-    public abstract int[] getPixel​(int[] dest);
+    public abstract double[] getPixel​(double[] dest);
 
     /**
      * Returns a moving window over the sample values in a rectangular region starting at iterator position.
