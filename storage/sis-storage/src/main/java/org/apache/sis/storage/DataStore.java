@@ -171,20 +171,28 @@ public abstract class DataStore implements Localized, AutoCloseable {
     }
 
     /**
-     * Returns information about the dataset as a whole. The returned metadata object, if any, can contain
-     * information such as the spatiotemporal extent of the dataset, contact information about the creator
-     * or distributor, data quality, update frequency, usage constraints and more.
+     * Returns information about the data store as a whole. The returned metadata object can contain
+     * information such as the spatiotemporal extent of all contained {@linkplain Resource resources},
+     * contact information about the creator or distributor, data quality, update frequency, usage constraints,
+     * file format and more.
      *
-     * @return information about the dataset, or {@code null} if none.
+     * @return information about resources in the data store, or {@code null} if none.
      * @throws DataStoreException if an error occurred while reading the data.
+     *
+     * @see Resource#getMetadata()
      */
     public abstract Metadata getMetadata() throws DataStoreException;
 
     /**
-     * Get root data store resource.
+     * Returns the starting point from which all resources in this data store can be accessed.
+     * A resource can be for example a air temperature map or the set of all bridges in a city.
+     * If this data store contains only one resource, then that resource is returned directly.
+     * Otherwise if this data store contains more than one resource, then this method returns
+     * an {@link Aggregate} from which other resources can be accessed.
      *
-     * @return Resource, may be null
-     * @throws DataStoreException if an I/O or decoding error occurs.
+     * @return the starting point of all resources in this data store,
+     *         or {@code null} if this data store does not contains any resources.
+     * @throws DataStoreException if an error occurred while reading the data.
      */
     public abstract Resource getRootResource() throws DataStoreException;
 
@@ -193,7 +201,7 @@ public abstract class DataStore implements Localized, AutoCloseable {
      *
      * @param  name  identifier of the data to acquire. Must be non-null.
      * @return resource associated to the given input name, never null.
-     * @throws DataStoreException if an I/O error occurs
+     * @throws DataStoreException if an error occurred while reading the data.
      * @throws IllegalNameException if input name is not found.
      */
     public Resource findResource(final String name) throws DataStoreException, IllegalNameException {

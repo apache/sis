@@ -535,7 +535,7 @@ public class FeatureFormat extends TabularFormat<Object> {
                                             }
                                             try {
                                                 final int n = MathFunctions.toNanOrdinal(f);
-                                                if (n > 0) buffer.append(" #").append(n);
+                                                if (n > 0) t.append(" #").append(n);
                                             } catch (IllegalArgumentException e) {
                                                 // May happen if the NaN is a signaling NaN instead than a quiet NaN.
                                                 final int bits = Float.floatToRawIntBits(f);

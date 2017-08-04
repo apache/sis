@@ -19,28 +19,100 @@ package org.apache.sis.storage;
 import org.opengis.geometry.Envelope;
 import org.opengis.metadata.Metadata;
 
+
 /**
- * A resource is an accessor to geospatial data.
- * The user should test if the resource is a {@code CoverageResource} or {@code FeatureResource}.
+ * Provides access to geospatial data in a {@code DataStore}. The ISO 19115 specification defines resource as
+ * an <cite>“identifiable asset or means that fulfills a requirement”</cite>. For example a resource can be a
+ * coverage of Sea Surface Temperature, or a coverage of water salinity, or the set of all buoys in a harbor,
+ * or an aggregation of all the above. A resource is not necessarily digital; it can be a paper document or an
+ * organization, in which case only metadata are provided. If the resource is digital, then {@code Resource}s
+ * should be instances of sub-types like {@link Aggregate} or {@link FeatureSet}.
  *
- * @author Johann Sorel (Geomatys)
+ * <p>The resources contained in a data store can be obtained by a call to {@link DataStore#getRootResource()}.
+ * If the data store contains resources for many feature types or coverages, then the root resource will be an
+ * instance of {@link Aggregate}. The {@linkplain Aggregate#components() components} of an aggregate can be
+ * themselves other aggregates, thus forming a tree.</p>
+ *
+ * <div class="note"><b>Relationship with ISO 19115:</b>
+ * this type is closely related to the {@code DS_Resource} type defined by ISO 19115.
+ * The Apache SIS type differs from the ISO type by being more closely related to data extraction,
+ * as can been seen from the checked {@link DataStoreException} thrown by most methods.
+ * Convenience methods for frequently requested information – for example {@link #getEnvelope()} – were added.
+ * The sub-types performing the actual data extraction – for example {@link FeatureSet} – are specific to Apache SIS.
+ * </div>
+ *
+ * @author  Johann Sorel (Geomatys)
+ * @version 0.8
+ *
+ * @see DataStore#getRootResource()
+ * @see org.apache.sis.metadata.iso.identification.AbstractIdentification#getAssociatedResources()
+ *
+ * @since 0.8
+ * @module
  */
 public interface Resource {
-
     /**
-     * Gets resource metadata object.
+     * Returns information about this resource.
+     * If this resource is the {@linkplain DataStore#getRootResource() data store root resource},
+     * then this method may return the same metadata instance than {@link DataStore#getMetadata()}.
      *
-     * @return metadata about the resource, never null.
-     * @throws DataStoreException if an I/O error occurs.
+     * <p>Some relationships between metadata and resources are:</p>
+     * <ul class="verbose">
+     *   <li>{@code metadata} /
+     *       {@link org.apache.sis.metadata.iso.DefaultMetadata#getParentMetadata() parentMetadata} /
+     *       {@link org.apache.sis.metadata.iso.citation.DefaultCitation#getTitle() title}:<br>
+     *       a human-readable caption for {@link DataStore#getMetadata()} (if not redundant with this metadata).</li>
+     *   <li>{@code metadata} /
+     *       {@link org.apache.sis.metadata.iso.DefaultMetadata#getIdentificationInfo() identificationInfo} /
+     *       {@link org.apache.sis.metadata.iso.identification.AbstractIdentification#getCitation() citation} /
+     *       {@link org.apache.sis.metadata.iso.citation.DefaultCitation#getTitle() title}:<br>
+     *       a human-readable designation for this resource.</li>
+     *   <li>{@code metadata} /
+     *       {@link org.apache.sis.metadata.iso.DefaultMetadata#getIdentificationInfo() identificationInfo} /
+     *       {@link org.apache.sis.metadata.iso.identification.AbstractIdentification#getAssociatedResources() associatedResource} /
+     *       {@link org.apache.sis.metadata.iso.identification.DefaultAssociatedResource#getName() name} /
+     *       {@link org.apache.sis.metadata.iso.citation.DefaultCitation#getTitle() title}:<br>
+     *       a human-readable designation for parent, children or other related resources.</li>
+     *   <li>{@code metadata} /
+     *       {@link org.apache.sis.metadata.iso.DefaultMetadata#getContentInfo() contentInfo} /
+     *       {@link org.apache.sis.metadata.iso.content.DefaultFeatureCatalogueDescription#getFeatureTypeInfo() featureType} /
+     *       {@link org.apache.sis.metadata.iso.content.DefaultFeatureTypeInfo#getFeatureTypeName() featureTypeName}:<br>
+     *       names of feature types included in this resource. Example: “bridge”, “road”, “river”. <i>etc.</i></li>
+     *   <li>{@code metadata} /
+     *       {@link org.apache.sis.metadata.iso.DefaultMetadata#getContentInfo() contentInfo} /
+     *       {@link org.apache.sis.metadata.iso.content.DefaultCoverageDescription#getAttributeGroups() attributeGroup} /
+     *       {@link org.apache.sis.metadata.iso.content.DefaultAttributeGroup#getAttributes() attribute} /
+     *       {@link org.apache.sis.metadata.iso.content.DefaultRangeDimension#getSequenceIdentifier() sequenceIdentifier}:<br>
+     *       sample dimension names (or band numbers in simpler cases) of coverages or rasters included in this resource.</li>
+     * </ul>
+     *
+     * @return information about this resource. Should not be {@code null}.
+     * @throws DataStoreException if an error occurred while reading the metadata.
+     *
+     * @see DataStore#getMetadata()
      */
     Metadata getMetadata() throws DataStoreException;
 
     /**
-     * Returns the spatio-temporal envelope of this resource.
+     * Returns the spatio-temporal extent of this resource in its most natural coordinate reference system.
+     * The following relationship to {@linkplain #getMetadata()} should hold:
      *
-     * @return the spatio-temporal envelope, never null.
-     * @throws DataStoreException if an I/O or decoding error occurs.
+     * <ul>
+     *   <li>The envelope should be contained in the geographic, vertical or temporal extents described by {@code metadata} /
+     *       {@link org.apache.sis.metadata.iso.DefaultMetadata#getIdentificationInfo() identificationInfo} /
+     *       {@link org.apache.sis.metadata.iso.identification.AbstractIdentification#getExtents() extent}.</li>
+     *   <li>The coordinate reference system should be one of the instances returned by
+     *       {@link org.apache.sis.metadata.iso.DefaultMetadata#getReferenceSystemInfo() referenceSystemInfo}.</li>
+     * </ul>
+     *
+     * The envelope should use the coordinate reference system (CRS)
+     * that most closely matches the geometry of the resource storage. It is often a
+     * {@linkplain org.apache.sis.referencing.crs.DefaultProjectedCRS projected CRS}, but other types like
+     * {@linkplain org.apache.sis.referencing.crs.DefaultEngineeringCRS engineering CRS} are also allowed.
+     * The envelope may contain supplemental dimensions after the spatio-temporal ones.
+     *
+     * @return the spatio-temporal resource extent. Should not be {@code null}.
+     * @throws DataStoreException if an error occurred while reading the metadata.
      */
     Envelope getEnvelope() throws DataStoreException;
-
 }
