@@ -45,7 +45,7 @@ import org.opengis.metadata.Metadata;
  * @version 0.8
  *
  * @see DataStore#getRootResource()
- * @see org.apache.sis.metadata.iso.identification.AbstractIdentification#getAssociatedResources()
+ * @see Aggregate#components()
  *
  * @since 0.8
  * @module
@@ -55,6 +55,12 @@ public interface Resource {
      * Returns information about this resource.
      * If this resource is the {@linkplain DataStore#getRootResource() data store root resource},
      * then this method may return the same metadata instance than {@link DataStore#getMetadata()}.
+     * If this resource is an {@link Aggregate}, then the metadata may enumerate characteristics
+     * (spatio-temporal extents, feature types, range dimensions, <i>etc.</i>) of all
+     * {@linkplain Aggregate#components() components} in the aggregate, or summarize them (for example by omitting
+     * {@linkplain org.apache.sis.metadata.iso.extent.DefaultExtent extents} that are fully included in larger extents).
+     * If this resource is a {@link DataSet}, then the metadata shall contain only the information that apply to that
+     * particular dataset, optionally with a reference to the parent metadata (see below).
      *
      * <p>Some relationships between metadata and resources are:</p>
      * <ul class="verbose">
@@ -72,7 +78,16 @@ public interface Resource {
      *       {@link org.apache.sis.metadata.iso.identification.AbstractIdentification#getAssociatedResources() associatedResource} /
      *       {@link org.apache.sis.metadata.iso.identification.DefaultAssociatedResource#getName() name} /
      *       {@link org.apache.sis.metadata.iso.citation.DefaultCitation#getTitle() title}:<br>
-     *       a human-readable designation for parent, children or other related resources.</li>
+     *       a human-readable designation for parent, children or other related resources.
+     *       May be omitted if too expensive to compute.</li>
+     *   <li>{@code metadata} /
+     *       {@link org.apache.sis.metadata.iso.DefaultMetadata#getMetadataScopes() metadataScope} /
+     *       {@link org.apache.sis.metadata.iso.DefaultMetadataScope#getResourceScope() resourceScope}:<br>
+     *       {@link org.opengis.metadata.maintenance.ScopeCode#DATASET} if the resource is a {@link DataSet}, or
+     *       {@link org.opengis.metadata.maintenance.ScopeCode#SERVICE} if the resource is a web service, or
+     *       {@link org.opengis.metadata.maintenance.ScopeCode#SERIES} or
+     *       {@link org.opengis.metadata.maintenance.ScopeCode#INITIATIVE}
+     *       if the resource is an {@link Aggregate} other than a transfer aggregate.</li>
      *   <li>{@code metadata} /
      *       {@link org.apache.sis.metadata.iso.DefaultMetadata#getContentInfo() contentInfo} /
      *       {@link org.apache.sis.metadata.iso.content.DefaultFeatureCatalogueDescription#getFeatureTypeInfo() featureType} /
@@ -98,7 +113,8 @@ public interface Resource {
      * The following relationship to {@linkplain #getMetadata()} should hold:
      *
      * <ul>
-     *   <li>The envelope should be contained in the geographic, vertical or temporal extents described by {@code metadata} /
+     *   <li>The envelope should be contained in the union of all geographic, vertical or temporal extents
+     *       described by {@code metadata} /
      *       {@link org.apache.sis.metadata.iso.DefaultMetadata#getIdentificationInfo() identificationInfo} /
      *       {@link org.apache.sis.metadata.iso.identification.AbstractIdentification#getExtents() extent}.</li>
      *   <li>The coordinate reference system should be one of the instances returned by
@@ -109,10 +125,11 @@ public interface Resource {
      * that most closely matches the geometry of the resource storage. It is often a
      * {@linkplain org.apache.sis.referencing.crs.DefaultProjectedCRS projected CRS}, but other types like
      * {@linkplain org.apache.sis.referencing.crs.DefaultEngineeringCRS engineering CRS} are also allowed.
-     * The envelope may contain supplemental dimensions after the spatio-temporal ones.
+     * If this resource uses many different CRS with none of them covering all data, then the envelope should use a
+     * global system (typically a {@linkplain org.apache.sis.referencing.crs.DefaultGeocentricCRS geographic CRS}).
      *
      * @return the spatio-temporal resource extent. Should not be {@code null}.
-     * @throws DataStoreException if an error occurred while reading the metadata.
+     * @throws DataStoreException if an error occurred while reading or computing the envelope.
      */
     Envelope getEnvelope() throws DataStoreException;
 }
