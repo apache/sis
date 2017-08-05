@@ -197,14 +197,25 @@ public abstract class DataStore implements Localized, AutoCloseable {
     public abstract Resource getRootResource() throws DataStoreException;
 
     /**
-     * Search for a resource identified by given name.
+     * Searches for a resource identified by the given identifier.
+     * The given identifier should match the following metadata element of a resource:
+     *
+     * <blockquote>{@link Resource#getMetadata() metadata} /
+     * {@link org.apache.sis.metadata.iso.DefaultMetadata#getIdentificationInfo() identificationInfo} /
+     * {@link org.apache.sis.metadata.iso.identification.AbstractIdentification#getCitation() citation} /
+     * {@link org.apache.sis.metadata.iso.citation.DefaultCitation#getIdentifiers() identifier}</blockquote>
+     *
+     * The default implementation verifies the {@linkplain #getRootResource() root resource}, then iterates over all
+     * components of all {@link Aggregate}s. If exactly one match is found, the associated resource is returned.
+     * Otherwise an exception is thrown. Subclasses are encouraged to override this method with a more efficient
+     * implementation.
      *
      * @param  name  identifier of the data to acquire. Must be non-null.
-     * @return resource associated to the given input name, never null.
-     * @throws DataStoreException if an error occurred while reading the data.
-     * @throws IllegalNameException if input name is not found.
+     * @return resource associated to the given identifier (never {@code null}).
+     * @throws IllegalNameException if no resource is found for the given identifier, or if more than one resource is found.
+     * @throws DataStoreException if another kind of error occurred while searching resources.
      */
-    public Resource findResource(final String name) throws DataStoreException, IllegalNameException {
+    public Resource findResource(final String name) throws DataStoreException {
         ArgumentChecks.ensureNonEmpty("Name of the searched resource", name);
 
         final Resource root = getRootResource();

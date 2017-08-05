@@ -20,34 +20,62 @@ import java.util.stream.Stream;
 import org.opengis.feature.Feature;
 import org.opengis.feature.FeatureType;
 
+
 /**
- * Specialized type of DataSet which manage features.
+ * A dataset providing access to a stream of features.
+ * All features share a common set of properties described by {@link #getType()}.
+ * Each {@linkplain org.apache.sis.feature.AbstractFeature feature instance} can be associated to a geometry,
+ * but not necessarily. The geometries (if any) may or may not be parts of a coverage.
  *
- * @author Johann Sorel (Geomatys)
+ * @author  Johann Sorel (Geomatys)
+ * @version 0.8
+ * @since   0.8
+ * @module
  */
 public interface FeatureSet extends DataSet {
-
     /**
-     * Get dataset feature type.
-     * The feature type contains the definition of all fields, including but not only :
+     * Returns a description of properties that are common to all features in this dataset.
+     * The feature type contains the definition of all properties, including but not only:
      * <ul>
-     * <li>description</li>
-     * <li>primitive type</li>
-     * <li>cardinality</li>
-     * <li>{@link org.opengis.referencing.crs.CoordinateReferenceSystem}</li>
+     *   <li>Name to use for accessing the property</li>
+     *   <li>Human-readable description</li>
+     *   <li>Type of values</li>
+     *   <li>Cardinality (minimum and maximum number of occurrences)</li>
+     *   <li>{@linkplain org.opengis.referencing.crs.CoordinateReferenceSystem Coordinate Reference System}.</li>
      * </ul>
      *
-     * @return the feature type, never null.
-     * @throws DataStoreException if an I/O or decoding error occurs.
+     * @return description of common properties (never {@code null}).
+     * @throws DataStoreException if an error occurred while reading definitions from the underlying data store.
      */
     FeatureType getType() throws DataStoreException;
 
     /**
-     * Reads features from the dataset.
+     * Returns a stream of all features contained in this dataset.
+     * For all features, the following condition shall be true:
      *
-     * @return stream of features.
-     * @throws DataStoreException if an I/O or decoding error occurs.
+     * <blockquote><code>{@linkplain #getType()}.{@linkplain org.apache.sis.feature.DefaultFeatureType#isAssignableFrom
+     * isAssignableFrom}(feature.{@linkplain org.apache.sis.feature.AbstractFeature#getType() getType()})</code></blockquote>
+     *
+     * Most implementations will create {@code Feature} instances on-the-fly when the stream terminal operation is executed.
+     * A {@code try} … {@code finally} block should be used for releasing {@link DataStore} resources used by the operation.
+     * If an error happen during stream execution, an unchecked {@link org.apache.sis.util.collection.BackingStoreException}
+     * will be thrown. The following code shows how this stream can be used:
+     *
+     * {@preformat java
+     *     void myReadOperation() throws DataStoreException {
+     *         try (Stream<Feature> features = myDataStore.features()) {
+     *             // Use the stream here.
+     *         } catch (BackingStoreException e) {
+     *             throw e.unwrapOrRethrow(DataStoreException.class);
+     *         }
+     *     }
+     * }
+     *
+     * For performance reasons, some {@code Feature} instances may be recycled during stream execution.
+     * Consequently if the caller needs to keep property values, (s)he should copy the data in her own structure.
+     *
+     * @return all features contained in this dataset.
+     * @throws DataStoreException if an error occurred while creating the stream.
      */
     Stream<Feature> features() throws DataStoreException;
-
 }
