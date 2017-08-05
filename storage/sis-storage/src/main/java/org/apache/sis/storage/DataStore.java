@@ -16,20 +16,19 @@
  */
 package org.apache.sis.storage;
 
-import java.util.Collection;
 import java.util.Locale;
+import java.util.Map;
+import java.util.IdentityHashMap;
 import java.util.NoSuchElementException;
-import java.util.Objects;
-import java.util.function.Function;
-import org.apache.sis.internal.metadata.NameToIdentifier;
 import org.opengis.metadata.Metadata;
+import org.opengis.metadata.citation.Citation;
+import org.opengis.metadata.identification.Identification;
 import org.apache.sis.util.Localized;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.logging.WarningListener;
 import org.apache.sis.util.logging.WarningListeners;
-import org.opengis.metadata.Identifier;
-import org.opengis.metadata.citation.Citation;
-import org.opengis.metadata.identification.Identification;
+import org.apache.sis.internal.metadata.NameToIdentifier;
+import org.apache.sis.internal.storage.Resources;
 
 
 /**
@@ -191,7 +190,7 @@ public abstract class DataStore implements Localized, AutoCloseable {
      * an {@link Aggregate} from which other resources can be accessed.
      *
      * @return the starting point of all resources in this data store,
-     *         or {@code null} if this data store does not contains any resources.
+     *         or {@code null} if this data store does not contain any resources.
      * @throws DataStoreException if an error occurred while reading the data.
      */
     public abstract Resource getRootResource() throws DataStoreException;
@@ -205,63 +204,67 @@ public abstract class DataStore implements Localized, AutoCloseable {
      * {@link org.apache.sis.metadata.iso.identification.AbstractIdentification#getCitation() citation} /
      * {@link org.apache.sis.metadata.iso.citation.DefaultCitation#getIdentifiers() identifier}</blockquote>
      *
-     * The default implementation verifies the {@linkplain #getRootResource() root resource}, then iterates over all
-     * components of all {@link Aggregate}s. If exactly one match is found, the associated resource is returned.
+     * The default implementation verifies the {@linkplain #getRootResource() root resource}, then iterates over
+     * components of {@link Aggregate}s. If a match is found without ambiguity, the associated resource is returned.
      * Otherwise an exception is thrown. Subclasses are encouraged to override this method with a more efficient
      * implementation.
      *
-     * @param  name  identifier of the data to acquire. Must be non-null.
+     * @param  identifier  identifier of the resource to fetch. Must be non-null.
      * @return resource associated to the given identifier (never {@code null}).
      * @throws IllegalNameException if no resource is found for the given identifier, or if more than one resource is found.
      * @throws DataStoreException if another kind of error occurred while searching resources.
      */
-    public Resource findResource(final String name) throws DataStoreException {
-        ArgumentChecks.ensureNonEmpty("Name of the searched resource", name);
+    public Resource findResource(final String identifier) throws DataStoreException {
+        ArgumentChecks.ensureNonEmpty("identifier", identifier);
+        final Resource resource = findResource(identifier, getRootResource(), new IdentityHashMap<>());
+        if (resource != null) {
+            return resource;
+        }
+        throw new IllegalNameException(Resources.forLocale(getLocale())
+                .getString(Resources.Keys.ResourceNotFound_2, getDisplayName(), identifier));
+    }
 
-        final Resource root = getRootResource();
-        if (root==null) throw new IllegalNameException("No resource found for name : "+name);
-
-        //recursive search
-        Object res = new Function<Resource,Object>() {
-            @Override
-            public Object apply(final Resource candidate) {
-
-                final Metadata metadata;
-                try { metadata = candidate.getMetadata(); }
-                catch (DataStoreException ex) { return ex; }
-
-                final boolean match = metadata.getIdentificationInfo().stream()
-                   .map(Identification::getCitation)
-                   .filter(Objects::nonNull)
-                   .map(Citation::getIdentifiers)
-                   .anyMatch((Collection<? extends Identifier> t) -> NameToIdentifier.isHeuristicMatchForIdentifier(t, name));
-
-                Object result = match ? candidate : null;
-
-                if (candidate instanceof Aggregate) {
-                    final Aggregate agg = (Aggregate) candidate;
-                    for (Resource comp : agg.components()) {
-                        Object rr = apply(comp);
-                        if (rr instanceof DataStoreException) {
-                            return rr;
-                        } else if (rr instanceof Resource) {
-                            if (result!=null) {
-                                return new IllegalNameException("Multiple resources match the name : "+name);
-                            }
-                            result = rr;
+    /**
+     * Recursively searches for a resource identified by the given identifier.
+     * This is the implementation of {@link #findResource(String)}.
+     *
+     * @param  identifier  identifier of the resource to fetch.
+     * @param  candidate   a resource to compare against the identifier.
+     * @param  visited     resources visited so-far, for avoiding never-ending loops if cycles exist.
+     * @return resource associated to the given identifier, or {@code null} if not found.
+     */
+    private Resource findResource(final String identifier, final Resource candidate,
+            final Map<Resource,Boolean> visited) throws DataStoreException
+    {
+        if (candidate != null && visited.put(candidate, Boolean.TRUE) == null) {
+            final Metadata metadata = candidate.getMetadata();
+            if (metadata != null) {
+                for (final Identification identification : metadata.getIdentificationInfo()) {
+                    if (identification != null) {                                                   // Paranoiac check.
+                        final Citation citation = identification.getCitation();
+                        if (citation != null && NameToIdentifier.isHeuristicMatchForIdentifier(citation.getIdentifiers(), identifier)) {
+                            return candidate;
+                        }
+                    }
+                }
+            }
+            if (candidate instanceof Aggregate) {
+                Resource result = null;
+                for (final Resource child : ((Aggregate) candidate).components()) {
+                    final Resource match = findResource(identifier, child, visited);
+                    if (match != null) {
+                        if (result == null) {
+                            result = match;
+                        } else {
+                            throw new IllegalNameException(Resources.forLocale(getLocale())
+                                    .getString(Resources.Keys.ResourceIdentifierCollision_2, getDisplayName(), identifier));
                         }
                     }
                 }
                 return result;
             }
-        }.apply(root);
-
-        if (res==null) {
-            throw new IllegalNameException("No resource found for name : "+name);
-        } else if (res instanceof DataStoreException) {
-            throw (DataStoreException) res;
         }
-        return (Resource) res;
+        return null;
     }
 
     /**

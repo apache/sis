@@ -149,6 +149,16 @@ public final class Resources extends IndexedResourceBundle {
         public static final short ProcessingExecutedOn_1 = 12;
 
         /**
+         * More than one resource have the “{1}” identifier in the “{0}” data store.
+         */
+        public static final short ResourceIdentifierCollision_2 = 23;
+
+        /**
+         * No resource found for the “{1}” identifier in the “{0}” data store.
+         */
+        public static final short ResourceNotFound_2 = 24;
+
+        /**
          * The “{1}” element must be declared before “{0}”.
          */
         public static final short ShallBeDeclaredBefore_2 = 22;

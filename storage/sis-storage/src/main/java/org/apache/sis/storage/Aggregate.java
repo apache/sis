@@ -81,6 +81,7 @@ public interface Aggregate extends Resource {
      * {@link org.apache.sis.metadata.iso.citation.DefaultCitation#getTitle() title}</blockquote>
      *
      * @return all children resources that are components of this aggregate. Never {@code null}.
+     * @throws DataStoreException if an error occurred while fetching the components.
      */
-    Collection<Resource> components();
+    Collection<Resource> components() throws DataStoreException;
 }
