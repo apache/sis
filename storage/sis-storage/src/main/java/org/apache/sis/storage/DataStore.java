@@ -21,14 +21,13 @@ import java.util.Map;
 import java.util.IdentityHashMap;
 import java.util.NoSuchElementException;
 import org.opengis.metadata.Metadata;
-import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.identification.Identification;
 import org.apache.sis.util.Localized;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.logging.WarningListener;
 import org.apache.sis.util.logging.WarningListeners;
-import org.apache.sis.internal.metadata.NameToIdentifier;
 import org.apache.sis.internal.storage.Resources;
+import org.apache.sis.internal.util.Citations;
 
 
 /**
@@ -241,8 +240,7 @@ public abstract class DataStore implements Localized, AutoCloseable {
             if (metadata != null) {
                 for (final Identification identification : metadata.getIdentificationInfo()) {
                     if (identification != null) {                                                   // Paranoiac check.
-                        final Citation citation = identification.getCitation();
-                        if (citation != null && NameToIdentifier.isHeuristicMatchForIdentifier(citation.getIdentifiers(), identifier)) {
+                        if (Citations.identifierMatches(identification.getCitation(), null, identifier)) {
                             return candidate;
                         }
                     }

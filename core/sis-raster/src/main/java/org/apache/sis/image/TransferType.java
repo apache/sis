@@ -140,6 +140,9 @@ public final class TransferType<T extends Buffer> implements Serializable {
 
     /**
      * Returns a unique instance on deserialization.
+     *
+     * @return the object to use after deserialization.
+     * @throws ObjectStreamException if the serialized object defines an unknown data type.
      */
     Object readResolve() throws ObjectStreamException {
         try {
