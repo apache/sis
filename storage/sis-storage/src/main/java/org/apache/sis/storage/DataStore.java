@@ -203,10 +203,14 @@ public abstract class DataStore implements Localized, AutoCloseable {
      * {@link org.apache.sis.metadata.iso.identification.AbstractIdentification#getCitation() citation} /
      * {@link org.apache.sis.metadata.iso.citation.DefaultCitation#getIdentifiers() identifier}</blockquote>
      *
-     * The default implementation verifies the {@linkplain #getRootResource() root resource}, then iterates over
+     * Implementation may also accept aliases for convenience. For example if the full name of a resource
+     * is {@code "foo:bar"}, then this method may accept {@code "bar"} as a synonymous of {@code "foo:bar"}
+     * provided that it does not introduce ambiguity.
+     *
+     * <p>The default implementation verifies the {@linkplain #getRootResource() root resource}, then iterates over
      * components of {@link Aggregate}s. If a match is found without ambiguity, the associated resource is returned.
      * Otherwise an exception is thrown. Subclasses are encouraged to override this method with a more efficient
-     * implementation.
+     * implementation.</p>
      *
      * @param  identifier  identifier of the resource to fetch. Must be non-null.
      * @return resource associated to the given identifier (never {@code null}).

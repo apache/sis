@@ -21,6 +21,7 @@ import org.opengis.util.NameFactory;
 import org.opengis.util.FactoryException;
 import org.opengis.metadata.Metadata;
 import org.opengis.metadata.distribution.Format;
+import org.apache.sis.storage.Resource;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreContentException;
@@ -42,7 +43,6 @@ import org.apache.sis.metadata.iso.distribution.DefaultFormat;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 import java.io.UncheckedIOException;
-import org.apache.sis.storage.Resource;
 import org.opengis.feature.Feature;
 import org.opengis.feature.FeatureType;
 
@@ -168,11 +168,13 @@ public final class Store extends StaxDataStore {
     }
 
     /**
-     * This implementation do not provide any resource yet.
+     * Returns the {@code FeatureSet} from which all features in this data store can be accessed.
+     *
+     * @return the starting point of all features in this data store.
      */
     @Override
-    public Resource getRootResource() throws DataStoreException {
-        return null;
+    public Resource getRootResource() {
+        return new FeatureAccess(this, listeners);
     }
 
     /**
@@ -182,21 +184,22 @@ public final class Store extends StaxDataStore {
      * @param  name  the name or alias of the feature type to get.
      * @return the feature type of the given name or alias (never {@code null}).
      * @throws IllegalNameException if the given name was not found or is ambiguous.
+     *
+     * @deprecated We are not sure yet if we will keep this method. Decision is pending acquisition of
+     *             more experience with the API proposed by {@link org.apache.sis.storage.FeatureSet}.
      */
-    @Override
-    public FeatureType getFeatureType(final String name) throws IllegalNameException {
+    @Deprecated
+    final FeatureType getFeatureType(final String name) throws IllegalNameException {
         return types.names.get(this, name);
     }
 
     /**
      * Returns the stream of features.
      *
-     * @param  parallel  ignored in current implementation.
      * @return a stream over all features in the XML file.
      * @throws DataStoreException if an error occurred while creating the feature stream.
      */
-    @Override
-    public synchronized Stream<Feature> features(final boolean parallel) throws DataStoreException {
+    final synchronized Stream<Feature> features() throws DataStoreException {
         Reader r = reader;
         reader = null;
         if (r == null) try {

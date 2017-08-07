@@ -43,7 +43,7 @@ public abstract class AbstractResource implements Resource {
     /**
      * The data store which contains this resource.
      */
-    protected final DataStore owner;
+    protected final DataStore store;
 
     /**
      * The set of registered warning listeners for the data store.
@@ -56,11 +56,11 @@ public abstract class AbstractResource implements Resource {
     /**
      * Creates a new resource.
      *
-     * @param owner      the data store which contains this resource.
+     * @param store      the data store which contains this resource.
      * @param listeners  the set of registered warning listeners for the data store.
      */
-    protected AbstractResource(final DataStore owner, final WarningListeners<DataStore> listeners) {
-        this.owner     = owner;
+    protected AbstractResource(final DataStore store, final WarningListeners<DataStore> listeners) {
+        this.store     = store;
         this.listeners = listeners;
     }
 
