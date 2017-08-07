@@ -823,7 +823,7 @@ Apache SIS is a free software, Java language library for developing geospatial a
             </group>
             <group>
               <title>Coverage and raster</title>
-              <packages>org.apache.sis.coverage*:org.apache.sis.raster*</packages>
+              <packages>org.apache.sis.coverage*:org.apache.sis.image*</packages>
             </group>
             <group>
               <title>Feature and Geometry</title>

@@ -133,7 +133,11 @@ public class GeoTiffStore extends DataStore {
     }
 
     /**
-     * This implementation do not provide any resource yet.
+     * Current implementation does not provide any resource yet.
+     * A future version will return the raster data in a coverage resource.
+     *
+     * @return the starting point of all resources in this data store.
+     * @throws DataStoreException if an error occurred while reading the data.
      */
     @Override
     public Resource getRootResource() throws DataStoreException {

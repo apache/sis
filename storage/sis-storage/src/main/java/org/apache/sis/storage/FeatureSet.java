@@ -24,8 +24,9 @@ import org.opengis.feature.FeatureType;
 /**
  * A dataset providing access to a stream of features.
  * All features share a common set of properties described by {@link #getType()}.
- * Each {@linkplain org.apache.sis.feature.AbstractFeature feature instance} can be associated to a geometry,
- * but not necessarily. The geometries (if any) may or may not be parts of a coverage.
+ * The common set of properties does not need to enumerate all possible properties since additional properties
+ * can be defined in subtypes. In many cases at least one property is a geometry, but features without geometry
+ * are also allowed.
  *
  * @author  Johann Sorel (Geomatys)
  * @version 0.8
@@ -44,6 +45,24 @@ public interface FeatureSet extends DataSet {
      *   <li>{@linkplain org.opengis.referencing.crs.CoordinateReferenceSystem Coordinate Reference System}.</li>
      * </ul>
      *
+     * All features returned by {@link #features(boolean)} will be either of that type, or a sub-type of it.
+     *
+     * <div class="note"><b>Relationship with metadata:</b>
+     * if subtypes exist, their list may be obtained from the {@linkplain #getMetadata() metadata} like below
+     * (if the {@code FeatureSet} implementation provides that information):
+     *
+     * {@preformat java
+     *     for (ContentInformation content : metadata.getContentInfo()) {
+     *         if (content instanceof FeatureCatalogueDescription) {
+     *             for (FeatureTypeInfo info : ((FeatureCatalogueDescription) content).getFeatureTypeInfo()) {
+     *                 GenericName name = info.getFeatureTypeName();
+     *                 // ... add the name to some list ...
+     *             }
+     *         }
+     *     }
+     * }
+     * </div>
+     *
      * @return description of common properties (never {@code null}).
      * @throws DataStoreException if an error occurred while reading definitions from the underlying data store.
      */
@@ -58,12 +77,13 @@ public interface FeatureSet extends DataSet {
      *
      * Most implementations will create {@code Feature} instances on-the-fly when the stream terminal operation is executed.
      * A {@code try} … {@code finally} block should be used for releasing {@link DataStore} resources used by the operation.
-     * If an error happen during stream execution, an unchecked {@link org.apache.sis.util.collection.BackingStoreException}
-     * will be thrown. The following code shows how this stream can be used:
+     * If a checked exception happens during stream execution, that exception will be wrapped in an unchecked
+     * {@link org.apache.sis.util.collection.BackingStoreException}.
+     * The following code shows how this stream can be used:
      *
      * {@preformat java
      *     void myReadOperation() throws DataStoreException {
-     *         try (Stream<Feature> features = myDataStore.features()) {
+     *         try (Stream<Feature> features = myDataStore.features(false)) {
      *             // Use the stream here.
      *         } catch (BackingStoreException e) {
      *             throw e.unwrapOrRethrow(DataStoreException.class);
@@ -71,11 +91,13 @@ public interface FeatureSet extends DataSet {
      *     }
      * }
      *
-     * For performance reasons, some {@code Feature} instances may be recycled during stream execution.
-     * Consequently if the caller needs to keep property values, (s)he should copy the data in her own structure.
+     * The {@code parallel} argument specifies whether a parallelized stream is desired. If {@code false}, the stream
+     * is guaranteed to be sequential. If {@code true}, the stream may or may not be parallel; implementations are free
+     * to ignore this argument if they do not support parallelism.
      *
+     * @param  parallel  {@code true} for a parallel stream (if supported), or {@code false} for a sequential stream.
      * @return all features contained in this dataset.
      * @throws DataStoreException if an error occurred while creating the stream.
      */
-    Stream<Feature> features() throws DataStoreException;
+    Stream<Feature> features(boolean parallel) throws DataStoreException;
 }

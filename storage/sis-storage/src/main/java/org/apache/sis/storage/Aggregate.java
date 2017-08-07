@@ -69,9 +69,7 @@ public interface Aggregate extends Resource {
      * <blockquote><code><b>this</b>.metadata</code> /
      * {@link org.apache.sis.metadata.iso.DefaultMetadata#getIdentificationInfo() identificationInfo} /
      * {@link org.apache.sis.metadata.iso.identification.AbstractIdentification#getAssociatedResources() associatedResource}
-     * with {@link org.opengis.metadata.identification.AssociationType#IS_COMPOSED_OF} /
-     * {@link org.apache.sis.metadata.iso.identification.DefaultAssociatedResource#getName() name} /
-     * {@link org.apache.sis.metadata.iso.citation.DefaultCitation#getTitle() title}</blockquote>
+     * with {@link org.opengis.metadata.identification.AssociationType#IS_COMPOSED_OF}</blockquote>
      *
      * The name of each child resource in the returned collection is given by the following metadata element:
      *
