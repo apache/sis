@@ -118,7 +118,10 @@ public class NetcdfStore extends DataStore {
     }
 
     /**
-     * This implementation do not provide any resource yet.
+     * This implementation does not provide any resource yet.
+     *
+     * @return currently {@code null} (will be implemented in future Apache SIS version).
+     * @throws DataStoreException if an error occurred while reading the data.
      */
     @Override
     public Resource getRootResource() throws DataStoreException {

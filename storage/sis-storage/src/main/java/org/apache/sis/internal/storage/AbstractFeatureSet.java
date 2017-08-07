@@ -35,10 +35,10 @@ public abstract class AbstractFeatureSet extends AbstractResource implements Fea
     /**
      * Creates a new resource.
      *
-     * @param owner      the data store which contains this resource.
+     * @param store      the data store which contains this resource.
      * @param listeners  the set of registered warning listeners for the data store.
      */
-    protected AbstractFeatureSet(final DataStore owner, final WarningListeners<DataStore> listeners) {
-        super(owner, listeners);
+    protected AbstractFeatureSet(final DataStore store, final WarningListeners<DataStore> listeners) {
+        super(store, listeners);
     }
 }
