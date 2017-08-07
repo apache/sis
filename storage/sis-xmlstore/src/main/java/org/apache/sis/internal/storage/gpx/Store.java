@@ -189,7 +189,7 @@ public final class Store extends StaxDataStore {
      *             more experience with the API proposed by {@link org.apache.sis.storage.FeatureSet}.
      */
     @Deprecated
-    final FeatureType getFeatureType(final String name) throws IllegalNameException {
+    public FeatureType getFeatureType(final String name) throws IllegalNameException {
         return types.names.get(this, name);
     }
 
