@@ -23,10 +23,7 @@ import java.awt.image.Raster;
 import java.awt.image.RenderedImage;
 import java.awt.image.WritableRaster;
 import java.awt.image.WritableRenderedImage;
-import org.opengis.coverage.grid.SequenceType;
 import org.apache.sis.internal.raster.Resources;
-import org.apache.sis.util.resources.Errors;
-import org.apache.sis.util.ArgumentChecks;
 
 
 /**
@@ -84,10 +81,19 @@ public abstract class WritablePixelIterator extends PixelIterator implements Clo
      *                  for iterating over all the raster domain.
      * @param  window   size of the window to use in {@link #createWindow(TransferType)} method, or {@code null} if none.
      */
-    WritablePixelIterator(Raster input, WritableRaster output, Rectangle subArea, Dimension window) {
+    WritablePixelIterator(final Raster input, final WritableRaster output,
+                          final Rectangle subArea, final Dimension window)
+    {
         super(input, subArea, window);
         destRaster  = output;
         destination = null;
+        if (output != null) {
+            if (!input.getSampleModel().equals(output.getSampleModel())) {
+                throw new IllegalArgumentException(Resources.format(Resources.Keys.MismatchedSampleModel));
+            } else if (!input.getBounds().equals(output.getBounds())) {
+                throw new IllegalArgumentException(Resources.format(Resources.Keys.MismatchedImageLocation));
+            }
+        }
     }
 
     /**
@@ -99,123 +105,40 @@ public abstract class WritablePixelIterator extends PixelIterator implements Clo
      *                  for iterating over all the image domain.
      * @param  window   size of the window to use in {@link #createWindow(TransferType)} method, or {@code null} if none.
      */
-    WritablePixelIterator(RenderedImage input, WritableRenderedImage output, Rectangle subArea, Dimension window) {
+    WritablePixelIterator(final RenderedImage input, final WritableRenderedImage output,
+                          final Rectangle subArea, final Dimension window)
+    {
         super(input, subArea, window);
         destRaster  = null;
         destination = output;
-    }
-
-    /**
-     * Creates an iterator for all pixels in the given raster.
-     *
-     * @param  data  the raster which contains the sample values on which to iterate.
-     * @return a new iterator traversing all pixels in the given raster, in arbitrary order.
-     */
-    public static WritablePixelIterator create(WritableRaster data) {
-        return create(data, null, null, null, null);
+        if (output != null) {
+            if (!input.getSampleModel().equals(output.getSampleModel())) {
+                throw new IllegalArgumentException(Resources.format(Resources.Keys.MismatchedSampleModel));
+            } else if (input.getMinX()   != output.getMinX()  ||
+                       input.getMinY()   != output.getMinY()  ||
+                       input.getWidth()  != output.getWidth() ||
+                       input.getHeight() != output.getHeight())
+            {
+                throw new IllegalArgumentException(Resources.format(Resources.Keys.MismatchedImageLocation));
+            } else if (input.getMinTileX()   != output.getMinTileX()  ||
+                       input.getMinTileY()   != output.getMinTileY()  ||
+                       input.getTileWidth()  != output.getTileWidth() ||
+                       input.getTileHeight() != output.getTileHeight())
+            {
+                throw new IllegalArgumentException(Resources.format(Resources.Keys.MismatchedTileGrid));
+            }
+        }
     }
 
     /**
      * Creates an iterator for all pixels in the given image.
+     * This is a convenience method for {@code new Builder().createWritable(data)}.
      *
      * @param  data  the image which contains the sample values on which to iterate.
      * @return a new iterator traversing all pixels in the given image, in arbitrary order.
      */
     public static WritablePixelIterator create(WritableRenderedImage data) {
-        return create(data, null, null, null, null);
-    }
-
-    /**
-     * Creates an iterator for the given region in the given rasters.
-     * The {@code order} argument can have the following values:
-     *
-     * <table class="sis">
-     *   <caption>Supported iteration order</caption>
-     *   <tr><th>Value</th>                         <th>Iteration order</th></tr>
-     *   <tr><td>{@code null}</td>                  <td>Most efficient iteration order.</td></tr>
-     *   <tr><td>{@link SequenceType#LINEAR}</td>   <td>From left to right, then from top to bottom.</td></tr>
-     * </table>
-     *
-     * Any other {@code order} value will cause an {@link IllegalArgumentException} to be thrown.
-     * More iteration orders may be supported in future Apache SIS versions.
-     *
-     * @param  input    the raster which contains the sample values to read.
-     * @param  output   the raster where to write the sample values. Can be the same than {@code input}.
-     * @param  subArea  the raster region where to perform the iteration, or {@code null}
-     *                  for iterating over all the raster domain.
-     * @param  window   size of the window to use in {@link #createWindow(TransferType)} method, or {@code null} if none.
-     * @param  order    the desired iteration order, or {@code null} for a default order.
-     * @return a new writable iterator.
-     */
-    public static WritablePixelIterator create(Raster input, WritableRaster output,
-            Rectangle subArea, Dimension window, SequenceType order)
-    {
-        ArgumentChecks.ensureNonNull("input",  input);
-        ArgumentChecks.ensureNonNull("output", output);
-        if (!input.getSampleModel().equals(output.getSampleModel())) {
-            throw new IllegalArgumentException(Resources.format(Resources.Keys.MismatchedSampleModel));
-        } else if (!input.getBounds().equals(output.getBounds())) {
-            throw new IllegalArgumentException(Resources.format(Resources.Keys.MismatchedImageLocation));
-        }
-
-        // TODO: check here for cases that we can optimize (after we ported corresponding implementations).
-
-        if (order == null || order.equals(SequenceType.LINEAR)) {
-            return new DefaultIterator(input, output, subArea, window);
-        } else {
-            throw new IllegalArgumentException(Errors.format(Errors.Keys.UnsupportedType_1, order));
-        }
-    }
-
-    /**
-     * Creates an iterator for the given region in the given image.
-     * The {@code order} argument can have the following values:
-     *
-     * <table class="sis">
-     *   <caption>Supported iteration order</caption>
-     *   <tr><th>Value</th>                         <th>Iteration order</th></tr>
-     *   <tr><td>{@code null}</td>                  <td>Most efficient iteration order.</td></tr>
-     * </table>
-     *
-     * Any other {@code order} value will cause an {@link IllegalArgumentException} to be thrown.
-     * More iteration orders may be supported in future Apache SIS versions.
-     *
-     * @param  input    the image which contains the sample values to read.
-     * @param  output   the image where to write the sample values. Can be the same than {@code input}.
-     * @param  subArea  the image region where to perform the iteration, or {@code null}
-     *                  for iterating over all the image domain.
-     * @param  window   size of the window to use in {@link #createWindow(TransferType)} method, or {@code null} if none.
-     * @param  order    the desired iteration order, or {@code null} for a default order.
-     * @return a new iterator.
-     */
-    public static WritablePixelIterator create(RenderedImage input, WritableRenderedImage output,
-            Rectangle subArea, Dimension window, SequenceType order)
-    {
-        ArgumentChecks.ensureNonNull("input",  input);
-        ArgumentChecks.ensureNonNull("output", output);
-        if (!input.getSampleModel().equals(output.getSampleModel())) {
-            throw new IllegalArgumentException(Resources.format(Resources.Keys.MismatchedSampleModel));
-        } else if (input.getMinX()   != output.getMinX()  ||
-                   input.getMinY()   != output.getMinY()  ||
-                   input.getWidth()  != output.getWidth() ||
-                   input.getHeight() != output.getHeight())
-        {
-            throw new IllegalArgumentException(Resources.format(Resources.Keys.MismatchedImageLocation));
-        } else if (input.getMinTileX()   != output.getMinTileX()  ||
-                   input.getMinTileY()   != output.getMinTileY()  ||
-                   input.getTileWidth()  != output.getTileWidth() ||
-                   input.getTileHeight() != output.getTileHeight())
-        {
-            throw new IllegalArgumentException(Resources.format(Resources.Keys.MismatchedTileGrid));
-        }
-
-        // TODO: check here for cases that we can optimize (after we ported corresponding implementations).
-
-        if (order == null) {
-            return new DefaultIterator(input, output, subArea, window);
-        } else {
-            throw new IllegalArgumentException(Errors.format(Errors.Keys.UnsupportedType_1, order));
-        }
+        return new Builder().createWritable(data);
     }
 
     /**

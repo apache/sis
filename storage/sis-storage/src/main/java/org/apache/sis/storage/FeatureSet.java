@@ -16,11 +16,10 @@
  */
 package org.apache.sis.storage;
 
-import org.opengis.feature.Feature;
-import org.opengis.feature.FeatureType;
-
 // Branch-dependent imports
 import org.apache.sis.internal.jdk8.Stream;
+import org.opengis.feature.Feature;
+import org.opengis.feature.FeatureType;
 
 
 /**
