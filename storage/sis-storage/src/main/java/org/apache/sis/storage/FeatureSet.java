@@ -16,6 +16,7 @@
  */
 package org.apache.sis.storage;
 
+// Branch-dependent imports
 import java.util.stream.Stream;
 import org.opengis.feature.Feature;
 import org.opengis.feature.FeatureType;
