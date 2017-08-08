@@ -36,6 +36,7 @@ import org.apache.sis.internal.storage.MetadataBuilder;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.metadata.sql.MetadataStoreException;
 import org.apache.sis.storage.DataStoreClosedException;
+import org.apache.sis.storage.Resource;
 import org.apache.sis.util.resources.Errors;
 
 
@@ -129,6 +130,18 @@ public class GeoTiffStore extends DataStore {
             }
         }
         return metadata;
+    }
+
+    /**
+     * Current implementation does not provide any resource yet.
+     * A future version will return the raster data in a coverage resource.
+     *
+     * @return the starting point of all resources in this data store.
+     * @throws DataStoreException if an error occurred while reading the data.
+     */
+    @Override
+    public Resource getRootResource() throws DataStoreException {
+        return null;
     }
 
     /**

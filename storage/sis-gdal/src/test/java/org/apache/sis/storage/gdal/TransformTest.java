@@ -24,6 +24,7 @@ import org.opengis.util.NoSuchIdentifierException;
 import org.opengis.test.referencing.ParameterizedTransformTest;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
+import org.junit.BeforeClass;
 import org.junit.AfterClass;
 
 import static org.apache.sis.test.Assert.*;
@@ -64,6 +65,14 @@ public class TransformTest extends ParameterizedTransformTest {
     }
 
     /**
+     * Verifies if the {@literal Proj.4} library is available.
+     */
+    @BeforeClass
+    public static void verifyNativeLibraryAvailability() {
+        PJTest.verifyNativeLibraryAvailability();
+    }
+
+    /**
      * Invoked after all the tests have been run for comparing the list of failures with the expected list.
      * This method checks for the exact same content, so this method detects both unexpected failures and
      * "unexpected" successes. Note that a failure is not necessarily because Proj.4 does not support the
@@ -72,22 +81,28 @@ public class TransformTest extends ParameterizedTransformTest {
      */
     @AfterClass
     public static void verifyFailureList() {
-        assertSetEquals(Arrays.asList(
-                "Abridged Molodensky",
-                "Cassini-Soldner",                          // No OperationMethod in SIS yet.
-                "Hotine Oblique Mercator (variant B)",
-                "Krovak",                                   // No OperationMethod in SIS yet.
-                "Lambert Azimuthal Equal Area",             // No OperationMethod in SIS yet.
-                "Lambert Conic Conformal (1SP)",
-                "Lambert Conic Conformal (2SP Belgium)",
-                "Lambert Conic Conformal (2SP Michigan)",
-                "Mercator (Spherical)",
-                "Mercator (variant C)",
-                "Polar Stereographic (variant B)",
-                "Polar Stereographic (variant C)",
-                "Popular Visualisation Pseudo Mercator",
-                "Polyconic",                                // No OperationMethod in SIS yet.
-                "Transverse Mercator (South Orientated)"), FAILURES);
-        FAILURES.clear();
+        /*
+         * The list of failires is empty if verifyNativeLibraryAvailability() failed,
+         * in which case no test have been run.
+         */
+        if (!FAILURES.isEmpty()) {
+            assertSetEquals(Arrays.asList(
+                    "Abridged Molodensky",
+                    "Cassini-Soldner",                          // No OperationMethod in SIS yet.
+                    "Hotine Oblique Mercator (variant B)",
+                    "Krovak",                                   // No OperationMethod in SIS yet.
+                    "Lambert Azimuthal Equal Area",             // No OperationMethod in SIS yet.
+                    "Lambert Conic Conformal (1SP)",
+                    "Lambert Conic Conformal (2SP Belgium)",
+                    "Lambert Conic Conformal (2SP Michigan)",
+                    "Mercator (Spherical)",
+                    "Mercator (variant C)",
+                    "Polar Stereographic (variant B)",
+                    "Polar Stereographic (variant C)",
+                    "Popular Visualisation Pseudo Mercator",
+                    "Polyconic",                                // No OperationMethod in SIS yet.
+                    "Transverse Mercator (South Orientated)"), FAILURES);
+            FAILURES.clear();
+        }
     }
 }

@@ -173,10 +173,30 @@ public final class JDK8 {
      */
     public static int toIntExact(final long value) {
         final int vi = (int) value;
-        if (vi != value) {
-            throw new ArithmeticException();
-        }
-        return vi;
+        if (vi == value) return vi;
+        throw new ArithmeticException();
+    }
+
+    /**
+     * Returns the given value + 1, throwing an exception if the result overflows.
+     *
+     * @param  a  the value to increment.
+     * @return {@code a+1}.
+     */
+    public static int incrementExact(int a) {
+        if (a != Integer.MAX_VALUE) return a+1;
+        throw new ArithmeticException();
+    }
+
+    /**
+     * Returns the given value - 1, throwing an exception if the result underflows.
+     *
+     * @param  a  the value to increment.
+     * @return {@code a-1}.
+     */
+    public static int decrementExact(int a) {
+        if (a != Integer.MIN_VALUE) return a-1;
+        throw new ArithmeticException();
     }
 
     /**
@@ -190,9 +210,7 @@ public final class JDK8 {
      * @since 0.8
      */
     public static int addExact(final int x, final int y) {
-        final long r = x + y;
-        if ((r & 0xFFFFFFFF00000000L) == 0) return (int) r;
-        throw new ArithmeticException();
+        return toIntExact(x + (long) y);
     }
 
     /**
@@ -201,14 +219,12 @@ public final class JDK8 {
      * @param  x  first value to add.
      * @param  y  second value to add.
      * @return the sum.
-     * @throws ArithmeticException if the result overflows.
+     * @throws ArithmeticException if the result overflows (Note: not implemented in this placeholder).
      *
      * @since 0.8
      */
     public static long addExact(final long x, final long y) {
-        final long r = x + y;
-        if (((x ^ r) & (y ^ r)) >= 0) return r;
-        throw new ArithmeticException();
+        return x + y;   // Check for overflow not implemented in this placeholder.
     }
 
     /**
@@ -221,10 +237,36 @@ public final class JDK8 {
      *
      * @since 0.8
      */
+    public static int subtractExact(final int x, final int y) {
+        return toIntExact(x - (long) y);
+    }
+
+    /**
+     * Safe subtraction of the given numbers.
+     *
+     * @param  x  first value.
+     * @param  y  second value to subtract.
+     * @return the difference.
+     * @throws ArithmeticException if the result underflows (Note: not implemented in this placeholder).
+     *
+     * @since 0.8
+     */
     public static long subtractExact(final long x, final long y) {
-        final long r = x - y;
-        if (((x ^ r) & (y ^ r)) >= 0) return r;
-        throw new ArithmeticException();
+        return x - y;   // Check for underflow not implemented in this placeholder.
+    }
+
+    /**
+     * Safe product of the arguments.
+     *
+     * @param  x  the first value.
+     * @param  y  the second value.
+     * @return the product.
+     * @throws ArithmeticException if the value overflows.
+     *
+     * @since 0.7
+     */
+    public static int multiplyExact(final int x, final int y) {
+        return toIntExact(x * (long) y);
     }
 
     /**
@@ -242,17 +284,16 @@ public final class JDK8 {
     }
 
     /**
-     * Safe product of the arguments.
+     * Divides two values, rounding toward negative infinity.
      *
-     * @param  x  the first value.
-     * @param  y  the second value.
-     * @return the product.
-     * @throws ArithmeticException if the value overflows.
-     *
-     * @since 0.7
+     * @param  x  numerator.
+     * @param  y  denominator.
+     * @return x/y rounded toward negative infinity.
      */
-    public static int multiplyExact(final int x, final int y) {
-        return toIntExact(x * (long) y);
+    public static int floorDiv(int x, int y) {
+        int r = x / y;
+        if ((x % y != 0) && (x < 0) != (y < 0)) r--;
+        return r;
     }
 
     /**
