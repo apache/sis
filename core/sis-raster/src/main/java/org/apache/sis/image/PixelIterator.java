@@ -279,6 +279,18 @@ public abstract class PixelIterator {
     }
 
     /**
+     * Returns {@code true} if this iterator can write pixel values (after cast to {@code WritablePixelIterator}).
+     * This method should be used instead than {@code instanceof} check because, for some implementations, being
+     * an instance of {@code WritablePixelIterator} is not a sufficient condition.
+     *
+     * @return {@code true} if this iterator can safely be casted to {@link WritablePixelIterator} and used for
+     *         writing pixel values.
+     */
+    public boolean isWritable() {
+        return false;
+    }
+
+    /**
      * Returns the most efficient type ({@code int}, {@code float} or {@code double}) for transferring data between the
      * underlying rasters and this iterator. The transfer type is not necessarily the storage type used by the rasters.
      * For example {@code int} values will be used for transferring data even if the underlying rasters store all sample
