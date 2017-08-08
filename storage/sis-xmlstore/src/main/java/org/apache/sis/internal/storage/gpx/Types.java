@@ -64,6 +64,11 @@ import org.apache.sis.feature.DefaultAttributeType;
  */
 final class Types {
     /**
+     * The parent of all other feature types.
+     */
+    final DefaultFeatureType parent;
+
+    /**
      * Way point GPX feature type.
      */
     final DefaultFeatureType wayPoint;
@@ -91,7 +96,11 @@ final class Types {
     /**
      * Binding from names to feature type instances.
      * Shall not be modified after construction.
+     *
+     * @deprecated We are not sure yet if we will keep this field. Decision is pending acquisition of
+     *             more experience with the API proposed by {@link org.apache.sis.storage.FeatureSet}.
      */
+    @Deprecated
     final FeatureNaming<DefaultFeatureType> names;
 
     /**
@@ -143,7 +152,7 @@ final class Types {
         final FeatureTypeBuilder builder = new FeatureTypeBuilder(factory, library, locale);
         builder.setNameSpace(Tags.PREFIX).setName("GPXEntity").setAbstract(true);
         builder.addAttribute(Integer.class).setName(AttributeConvention.IDENTIFIER_PROPERTY);
-        final DefaultFeatureType parent = builder.build();
+        parent = builder.build();
         /*
          * WayPoint ⇾ GPXEntity
          * ┌──────────────────┬────────────────┬────────────────────────┬─────────────┐

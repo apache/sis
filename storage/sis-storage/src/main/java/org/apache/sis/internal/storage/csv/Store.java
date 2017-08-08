@@ -44,17 +44,17 @@ import org.apache.sis.internal.referencing.GeodeticObjectBuilder;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
 import org.apache.sis.internal.storage.MetadataBuilder;
 import org.apache.sis.internal.storage.io.IOUtilities;
-import org.apache.sis.internal.storage.FeatureStore;
 import org.apache.sis.internal.feature.Geometries;
 import org.apache.sis.internal.feature.MovingFeature;
 import org.apache.sis.internal.storage.Resources;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.metadata.iso.DefaultMetadata;
 import org.apache.sis.metadata.sql.MetadataStoreException;
+import org.apache.sis.storage.Resource;
+import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.storage.DataStoreReferencingException;
-import org.apache.sis.storage.IllegalNameException;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.setup.OptionKey;
 import org.apache.sis.util.ArraysExt;
@@ -80,7 +80,7 @@ import org.apache.sis.feature.AbstractIdentifiedType;
  * @since   0.7
  * @module
  */
-public final class Store extends FeatureStore {
+public final class Store extends DataStore {
     /**
      * The character at the beginning of lines to ignore in the header.
      * Note that this is not part of OGC Moving Feature Specification.
@@ -601,28 +601,13 @@ public final class Store extends FeatureStore {
     }
 
     /**
-     * Returns the feature type for the given name. The {@code name} argument should be the
-     * value specified at the following path (only one such value exists for a CSV data store):
+     * Returns the {@code FeatureSet} from which all features in this data store can be accessed.
      *
-     * <blockquote>
-     * {@link #getMetadata()} /
-     * {@link org.apache.sis.metadata.iso.DefaultMetadata#getContentInfo() contentInfo} /
-     * {@link org.apache.sis.metadata.iso.content.DefaultFeatureCatalogueDescription#getFeatureTypeInfo() featureTypes} /
-     * {@link org.apache.sis.metadata.iso.content.DefaultFeatureTypeInfo#getFeatureTypeName() featureTypeName}
-     * </blockquote>
-     *
-     * @param  name  the name of the feature type to get.
-     * @return the feature type of the given name (never {@code null}).
-     * @throws IllegalNameException if the given name was not found.
-     *
-     * @since 0.8
+     * @return the starting point of all features in this data store.
      */
     @Override
-    public DefaultFeatureType getFeatureType(String name) throws IllegalNameException {
-        if (featureType.getName().toString().equals(name)) {
-            return featureType;
-        }
-        throw new IllegalNameException(getLocale(), getDisplayName(), name);
+    public Resource getRootResource() {
+        return new FeatureAccess(this, listeners);
     }
 
     /**
@@ -635,8 +620,7 @@ public final class Store extends FeatureStore {
      * @todo Needs to reset the position when doing another pass on the features.
      * @todo If sequential order, publish Feature as soon as identifier changed.
      */
-    @Override
-    public synchronized Stream<AbstractFeature> features(final boolean parallel) throws DataStoreException {
+    final synchronized Stream<AbstractFeature> features(final boolean parallel) throws DataStoreException {
         /*
          * If the user asks for one feature instance per line, then we can return a FeatureIter instance directly.
          * Since each feature is fully constructed from a single line and each line are read atomically, we can

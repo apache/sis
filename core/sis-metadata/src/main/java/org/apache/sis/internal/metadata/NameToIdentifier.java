@@ -208,9 +208,17 @@ public final class NameToIdentifier implements ReferenceIdentifier {
      */
     public static boolean isHeuristicMatchForIdentifier(final Iterable<? extends ReferenceIdentifier> identifiers, final String toSearch) {
         if (toSearch != null && identifiers != null) {
-            for (int s = toSearch.indexOf(DefaultNameSpace.DEFAULT_SEPARATOR); s >= 0;
-                     s = toSearch.indexOf(DefaultNameSpace.DEFAULT_SEPARATOR, s))
-            {
+            int s = toSearch.indexOf(DefaultNameSpace.DEFAULT_SEPARATOR);
+            if (s < 0) {
+                // no codespace in searched name
+                for (final Identifier id : identifiers) {
+                    if (toSearch.equalsIgnoreCase(id.getCode())) {
+                        return true;
+                    }
+                }
+                return false;
+            }
+            do {
                 final String codespace = toSearch.substring(0, s).trim();
                 final String code = toSearch.substring(++s).trim();
                 for (final ReferenceIdentifier id : identifiers) {
@@ -218,7 +226,8 @@ public final class NameToIdentifier implements ReferenceIdentifier {
                         return true;
                     }
                 }
-            }
+                s = toSearch.indexOf(DefaultNameSpace.DEFAULT_SEPARATOR, s);
+            } while (s >= 0);
         }
         return false;
     }

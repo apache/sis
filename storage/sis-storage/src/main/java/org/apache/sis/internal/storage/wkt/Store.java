@@ -17,8 +17,8 @@
 package org.apache.sis.internal.storage.wkt;
 
 import java.util.List;
-import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.io.Reader;
@@ -33,12 +33,13 @@ import org.apache.sis.internal.storage.Resources;
 import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.io.wkt.WKTFormat;
 import org.apache.sis.io.wkt.Warnings;
+import org.apache.sis.storage.Resource;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.internal.referencing.DefinitionVerifier;
-import org.apache.sis.metadata.iso.DefaultMetadata;
+import org.apache.sis.internal.storage.MetadataBuilder;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.CharSequences;
 
@@ -171,7 +172,7 @@ final class Store extends DataStore {
     /**
      * Returns the metadata associated to the parsed objects, or {@code null} if none.
      * The current implementation retains only instances of {@link ReferenceSystem}
-     * and ignore other cases.
+     * and ignore other objects.
      *
      * @return the metadata associated to the parsed object, or {@code null} if none.
      * @throws DataStoreException if an error occurred during the parsing process.
@@ -180,16 +181,25 @@ final class Store extends DataStore {
     public synchronized Metadata getMetadata() throws DataStoreException {
         if (metadata == null) {
             parse();
-            DefaultMetadata md = null;
+            final MetadataBuilder builder = new MetadataBuilder();
+            builder.addTitle(getDisplayName());
             for (final Object object : objects) {
                 if (object instanceof ReferenceSystem) {
-                    if (md == null) md = new DefaultMetadata();
-                    md.getReferenceSystemInfo().add((ReferenceSystem) object);
+                    builder.addReferenceSystem((ReferenceSystem) object);
                 }
             }
-            metadata = md;
+            metadata = builder.build(true);
         }
         return metadata;
+    }
+
+    /**
+     * There is currently no resource associated to Well Known Text format since we parse only CRS.
+     * Future versions may return resources if we parse also geometries.
+     */
+    @Override
+    public Resource getRootResource() throws DataStoreException {
+        return null;
     }
 
     /**

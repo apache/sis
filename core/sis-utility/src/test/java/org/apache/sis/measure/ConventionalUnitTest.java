@@ -186,9 +186,9 @@ public final strictfp class ConventionalUnitTest extends TestCase {
         verify    (Units.CUBIC_METRE,  Units.CUBIC_METRE .divide  (1E+9), "mm³", 1E-9);
 
         assertSame(Units.HOUR,        Units.SECOND.multiply(3600));
-        assertSame(Units.DEGREE,      Units.RADIAN.multiply(Math.PI/180));
-        assertSame(Units.GRAD,        Units.RADIAN.multiply(Math.PI/200));
-        assertSame(Units.ARC_SECOND,  Units.RADIAN.multiply(Math.PI / (180*60*60)));
+        assertSame(Units.DEGREE,      Units.RADIAN.multiply(StrictMath.PI/180));
+        assertSame(Units.GRAD,        Units.RADIAN.multiply(StrictMath.PI/200));
+        assertSame(Units.ARC_SECOND,  Units.RADIAN.multiply(StrictMath.PI / (180*60*60)));
         assertSame(Units.MICRORADIAN, Units.RADIAN.divide(1E6));
 
         assertSame(Units.GRAM, Units.KILOGRAM.divide(1E+3));

@@ -17,12 +17,17 @@
 package org.apache.sis.storage;
 
 import java.util.Locale;
+import java.util.Map;
+import java.util.IdentityHashMap;
 import java.util.NoSuchElementException;
 import org.opengis.metadata.Metadata;
+import org.opengis.metadata.identification.Identification;
 import org.apache.sis.util.Localized;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.logging.WarningListener;
 import org.apache.sis.util.logging.WarningListeners;
+import org.apache.sis.internal.storage.Resources;
+import org.apache.sis.internal.util.Citations;
 
 
 /**
@@ -164,14 +169,105 @@ public abstract class DataStore implements Localized, AutoCloseable {
     }
 
     /**
-     * Returns information about the dataset as a whole. The returned metadata object, if any, can contain
-     * information such as the spatiotemporal extent of the dataset, contact information about the creator
-     * or distributor, data quality, update frequency, usage constraints and more.
+     * Returns information about the data store as a whole. The returned metadata object can contain
+     * information such as the spatiotemporal extent of all contained {@linkplain Resource resources},
+     * contact information about the creator or distributor, data quality, update frequency, usage constraints,
+     * file format and more.
      *
-     * @return information about the dataset, or {@code null} if none.
+     * @return information about resources in the data store, or {@code null} if none.
      * @throws DataStoreException if an error occurred while reading the data.
+     *
+     * @see Resource#getMetadata()
      */
     public abstract Metadata getMetadata() throws DataStoreException;
+
+    /**
+     * Returns the starting point from which all resources in this data store can be accessed.
+     * A resource can be for example a air temperature map or the set of all bridges in a city.
+     * If this data store contains only one resource, then that resource is returned directly.
+     * Otherwise if this data store contains more than one resource, then this method returns
+     * an {@link Aggregate} from which other resources can be accessed.
+     *
+     * @return the starting point of all resources in this data store,
+     *         or {@code null} if this data store does not contain any resources.
+     * @throws DataStoreException if an error occurred while reading the data.
+     */
+    public abstract Resource getRootResource() throws DataStoreException;
+
+    /**
+     * Searches for a resource identified by the given identifier.
+     * The given identifier should match the following metadata element of a resource:
+     *
+     * <blockquote>{@link Resource#getMetadata() metadata} /
+     * {@link org.apache.sis.metadata.iso.DefaultMetadata#getIdentificationInfo() identificationInfo} /
+     * {@link org.apache.sis.metadata.iso.identification.AbstractIdentification#getCitation() citation} /
+     * {@link org.apache.sis.metadata.iso.citation.DefaultCitation#getIdentifiers() identifier}</blockquote>
+     *
+     * Implementation may also accept aliases for convenience. For example if the full name of a resource
+     * is {@code "foo:bar"}, then this method may accept {@code "bar"} as a synonymous of {@code "foo:bar"}
+     * provided that it does not introduce ambiguity.
+     *
+     * <p>The default implementation verifies the {@linkplain #getRootResource() root resource}, then iterates over
+     * components of {@link Aggregate}s. If a match is found without ambiguity, the associated resource is returned.
+     * Otherwise an exception is thrown. Subclasses are encouraged to override this method with a more efficient
+     * implementation.</p>
+     *
+     * @param  identifier  identifier of the resource to fetch. Must be non-null.
+     * @return resource associated to the given identifier (never {@code null}).
+     * @throws IllegalNameException if no resource is found for the given identifier, or if more than one resource is found.
+     * @throws DataStoreException if another kind of error occurred while searching resources.
+     */
+    public Resource findResource(final String identifier) throws DataStoreException {
+        ArgumentChecks.ensureNonEmpty("identifier", identifier);
+        final Resource resource = findResource(identifier, getRootResource(), new IdentityHashMap<Resource,Boolean>());
+        if (resource != null) {
+            return resource;
+        }
+        throw new IllegalNameException(Resources.forLocale(getLocale())
+                .getString(Resources.Keys.ResourceNotFound_2, getDisplayName(), identifier));
+    }
+
+    /**
+     * Recursively searches for a resource identified by the given identifier.
+     * This is the implementation of {@link #findResource(String)}.
+     *
+     * @param  identifier  identifier of the resource to fetch.
+     * @param  candidate   a resource to compare against the identifier.
+     * @param  visited     resources visited so-far, for avoiding never-ending loops if cycles exist.
+     * @return resource associated to the given identifier, or {@code null} if not found.
+     */
+    private Resource findResource(final String identifier, final Resource candidate,
+            final Map<Resource,Boolean> visited) throws DataStoreException
+    {
+        if (candidate != null && visited.put(candidate, Boolean.TRUE) == null) {
+            final Metadata metadata = candidate.getMetadata();
+            if (metadata != null) {
+                for (final Identification identification : metadata.getIdentificationInfo()) {
+                    if (identification != null) {                                                   // Paranoiac check.
+                        if (Citations.identifierMatches(identification.getCitation(), null, identifier)) {
+                            return candidate;
+                        }
+                    }
+                }
+            }
+            if (candidate instanceof Aggregate) {
+                Resource result = null;
+                for (final Resource child : ((Aggregate) candidate).components()) {
+                    final Resource match = findResource(identifier, child, visited);
+                    if (match != null) {
+                        if (result == null) {
+                            result = match;
+                        } else {
+                            throw new IllegalNameException(Resources.forLocale(getLocale())
+                                    .getString(Resources.Keys.ResourceIdentifierCollision_2, getDisplayName(), identifier));
+                        }
+                    }
+                }
+                return result;
+            }
+        }
+        return null;
+    }
 
     /**
      * Adds a listener to be notified when a warning occurred while reading from or writing to the storage.

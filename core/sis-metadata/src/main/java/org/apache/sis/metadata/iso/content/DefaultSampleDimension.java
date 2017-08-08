@@ -62,7 +62,7 @@ import static org.opengis.annotation.Specification.ISO_19115;
  *       same version of Apache SIS. For long term storage, use {@link org.apache.sis.xml.XML} instead.</li>
  * </ul>
  *
- * @author  Remi Marechal (geomatys)
+ * @author  Rémi Maréchal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.5
  * @since   0.5
