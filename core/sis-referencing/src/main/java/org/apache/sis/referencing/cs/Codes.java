@@ -33,7 +33,7 @@ import static org.apache.sis.internal.util.Constants.EPSG_PROJECTED_CS;
  * objects defined in the EPSG database.
  * Current version uses hard-coded mapping.
  *
- * @author  Rémi Marechal (Geomatys)
+ * @author  Rémi Maréchal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
  * @since   0.8

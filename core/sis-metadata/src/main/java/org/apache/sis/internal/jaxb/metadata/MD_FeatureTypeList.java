@@ -31,7 +31,10 @@ import org.apache.sis.internal.jaxb.gco.PropertyType;
  * @version 0.3
  * @since   0.3
  * @module
+ *
+ * @deprecated Not anymore part of ISO 19115.
  */
+@Deprecated
 public final class MD_FeatureTypeList extends PropertyType<MD_FeatureTypeList, FeatureTypeList> {
     /**
      * Empty constructor for JAXB only.

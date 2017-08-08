@@ -30,6 +30,7 @@ import org.opengis.util.FactoryException;
 import org.opengis.referencing.ReferenceSystem;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.xml.XML;
+import org.apache.sis.storage.Resource;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.DataStoreException;
@@ -37,9 +38,8 @@ import org.apache.sis.metadata.iso.DefaultMetadata;
 import org.apache.sis.util.logging.WarningListener;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.internal.system.Loggers;
+import org.apache.sis.internal.storage.MetadataBuilder;
 import org.apache.sis.internal.referencing.DefinitionVerifier;
-
-import static java.util.Collections.singleton;
 
 
 /**
@@ -199,12 +199,22 @@ final class Store extends DataStore {
             if (object instanceof Metadata) {
                 metadata = (Metadata) object;
             } else if (object instanceof ReferenceSystem) {
-                final DefaultMetadata md = new DefaultMetadata();
-                md.setReferenceSystemInfo(singleton((ReferenceSystem) object));
-                metadata = md;
+                final MetadataBuilder builder = new MetadataBuilder();
+                builder.addReferenceSystem((ReferenceSystem) object);
+                builder.addTitle(getDisplayName());
+                metadata = builder.build(true);
             }
         }
         return metadata;
+    }
+
+    /**
+     * Current implementation does not provide any resource since it is only about metadata.
+     * Futures versions may return resources if Apache SIS provides a wider GML support.
+     */
+    @Override
+    public Resource getRootResource() throws DataStoreException {
+        return null;
     }
 
     /**
