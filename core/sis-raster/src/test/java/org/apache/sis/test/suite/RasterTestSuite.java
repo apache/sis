@@ -30,7 +30,7 @@ import org.junit.BeforeClass;
  * @module
  */
 @Suite.SuiteClasses({
-    org.apache.sis.image.PixelIteratorTest.class
+    org.apache.sis.image.DefaultIteratorTest.class
 })
 public final strictfp class RasterTestSuite extends TestSuite {
     /**

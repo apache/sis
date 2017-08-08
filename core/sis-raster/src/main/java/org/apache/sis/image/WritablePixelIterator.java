@@ -32,9 +32,11 @@ import org.apache.sis.util.ArgumentChecks;
 /**
  * A pixel iterator capable to write sample values. This iterator can edit pixel values in place,
  * or write values in a different destination image than the source image. Source and destination
- * images must use the same sample model,
+ * images must use the same sample model and the same coordinates (both for pixels and tiles).
  *
- * <p>Usage example:</p>
+ * <p>Contrarily to {@code PixelIterator}, {@code WritablePixelIterator} needs to be closed after
+ * iteration in order to release tiles. Example:</p>
+ *
  * {@preformat java
  *     try (WritablePixelIterator it = WritablePixelIterator.create(image)) {
  *         double[] samples = null;
@@ -45,6 +47,10 @@ import org.apache.sis.util.ArgumentChecks;
  *         }
  *     }
  * }
+ *
+ * <div class="section">Casting a {@code PixelIterator}</div>
+ * To check if a {@code PixelIterator} can be used for writing pixels, a {@code … instanceof WritablePixelIterator}
+ * check is not sufficient. The {@link PixelIterator#isWritable()} method should be invoked instead.
  *
  * @author  Rémi Maréchal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
@@ -210,6 +216,19 @@ public abstract class WritablePixelIterator extends PixelIterator implements Clo
         } else {
             throw new IllegalArgumentException(Errors.format(Errors.Keys.UnsupportedType_1, order));
         }
+    }
+
+    /**
+     * Returns {@code true} if this iterator can write pixel values.
+     * This method should be used instead than {@code instanceof} check because, for some implementations, being an
+     * instance of {@code WritablePixelIterator} is not a sufficient condition. However this method is guaranteed to
+     * return {@code true} for any iterator created by {@code WritablePixelIterator.create(…)} methods.
+     *
+     * @return {@code true} if this iterator can be used for writing pixel values.
+     */
+    @Override
+    public boolean isWritable() {
+        return (destination != null) || (destRaster != null);
     }
 
     /**

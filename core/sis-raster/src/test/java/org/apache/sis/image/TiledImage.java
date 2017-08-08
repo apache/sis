@@ -29,6 +29,8 @@ import java.awt.image.WritableRaster;
 import java.awt.image.WritableRenderedImage;
 import java.util.Vector;
 
+import static org.junit.Assert.*;
+
 
 /**
  * A rendered image which can contain an arbitrary number of tiles. Tiles are stored in memory.
@@ -77,6 +79,16 @@ final class TiledImage implements WritableRenderedImage {
      * The sample model to use for creating the tiles.
      */
     private final SampleModel sampleModel;
+
+    /**
+     * Indices of acquired tiles. Those indices are valid only if {@link #isTileAcquired} is {@code true}.
+     */
+    private int acquiredTileX, acquiredTileY;
+
+    /**
+     * Whether a tile has been acquired by a call to {@link #getWritableTile(int, int)} and not yet released.
+     */
+    private boolean isTileAcquired;
 
     /**
      * Creates a new tiled image.
@@ -152,23 +164,41 @@ final class TiledImage implements WritableRenderedImage {
         if (ox < 0 || ox >= width || oy < 0 || oy >= height) {
             throw new IndexOutOfBoundsException();
         }
-        getWritableTile(ox / tileWidth  + minTileX,
-                        oy / tileHeight + minTileY).setSample(x, y, b, value);
+        tile(ox / tileWidth  + minTileX,
+             oy / tileHeight + minTileY).setSample(x, y, b, value);
     }
 
     /**
      * Returns the tile at the given location in tile coordinates.
+     * This method verifies that no writable raster have been acquired. Actually this conditions is not part of
+     * {@link WritableRenderedImage} contract, since a readable and writable rasters can be used in same time.
+     * But we add this condition because they way {@link PixelIterator} are currently implemented, it would be
+     * a bug if we ask for a readable tile while we already have a writable one. This condition may change in
+     * any future Apache SIS version.
      */
     @Override
     public Raster getTile(final int tileX, final int tileY) {
-        return getWritableTile(tileX, tileY);
+        assertFalse("isTileAcquired", isTileAcquired);              // See javadoc.
+        return tile(tileX, tileY);
     }
 
     /**
      * Returns the tile at the given location tile coordinates.
      */
     @Override
-    public WritableRaster getWritableTile(int tileX, int tileY) {
+    public WritableRaster getWritableTile(final int tileX, final int tileY) {
+        assertFalse("isTileAcquired", isTileAcquired);
+        isTileAcquired = true;
+        acquiredTileX  = tileX;
+        acquiredTileY  = tileY;
+        return tile(tileX, tileY);
+    }
+
+    /**
+     * Returns the tile at the given index without any verification. It is caller responsibility to verify if this
+     * method is invoked in a consistent context (for example after a writable raster has been properly acquired).
+     */
+    private WritableRaster tile(int tileX, int tileY) {
         if ((tileX -= minTileX) < 0 || tileX >= numXTiles ||
             (tileY -= minTileY) < 0 || tileY >= numYTiles)
         {
@@ -185,19 +215,23 @@ final class TiledImage implements WritableRenderedImage {
     }
 
     /**
-     * Ignored since this implementation does not need to be informed
-     * about when the user is doing with the {@link WritableRaster}.
+     * Verifies that the given tile has been acquired.
      */
     @Override
-    public void releaseWritableTile(int tileX, int tileY) {
+    public void releaseWritableTile(final int tileX, final int tileY) {
+        assertTrue("isTileAcquired", isTileAcquired);
+        assertEquals("tileX", acquiredTileX, tileX);
+        assertEquals("tileY", acquiredTileY, tileY);
+        isTileAcquired = false;
     }
 
     /**
-     * Returns {@code false} since we do not keep track of who called {@link #getWritableTile(int,int)}.
+     * Returns {@code true} if the given tile indices are the one given to the last call to
+     * {@link #getWritableTile(int, int)} and that tile has not yet been released.
      */
     @Override
-    public boolean isTileWritable(int tileX, int tileY) {
-        return false;
+    public boolean isTileWritable(final int tileX, final int tileY) {
+        return isTileAcquired && (tileX == acquiredTileX) && (tileY == acquiredTileY);
     }
 
     /**
@@ -205,15 +239,15 @@ final class TiledImage implements WritableRenderedImage {
      */
     @Override
     public boolean hasTileWriters() {
-        return false;
+        return isTileAcquired;
     }
 
     /**
-     * Returns {@code null} since we do not keep track of who called {@link #getWritableTile(int,int)}.
+     * Returns the indices of acquired tile, or {@code null} if none.
      */
     @Override
     public Point[] getWritableTileIndices() {
-        return null;
+        return isTileAcquired ? new Point[] {new Point(acquiredTileX, acquiredTileY)} : null;
     }
 
     /**
