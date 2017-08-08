@@ -54,6 +54,11 @@ final strictfp class DataStoreMock extends DataStore {
     }
 
     @Override
+    public Resource getRootResource() throws DataStoreException {
+        return null;
+    }
+
+    @Override
     public void close() {
     }
 }

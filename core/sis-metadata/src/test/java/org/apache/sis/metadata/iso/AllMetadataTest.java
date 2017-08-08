@@ -58,7 +58,6 @@ public final strictfp class AllMetadataTest extends MetadataTestCase {
             org.opengis.metadata.ApplicationSchemaInformation.class,
             org.opengis.metadata.Datatype.class,
             org.opengis.metadata.ExtendedElementInformation.class,
-            org.opengis.metadata.FeatureTypeList.class,
             org.opengis.metadata.Identifier.class,
             org.opengis.metadata.Metadata.class,
             org.opengis.metadata.MetadataExtensionInformation.class,
@@ -276,10 +275,6 @@ public final strictfp class AllMetadataTest extends MetadataTestCase {
     protected String getExpectedXmlTypeForElement(final Class<?> type, final Class<?> impl) {
         final String rootName = type.getAnnotation(UML.class).identifier();
         switch (rootName) {
-            // We don't know yet what is the type of this one.
-            case "MD_FeatureTypeList": {
-                return null;
-            }
             // Following prefix was changed in ISO 19115 corrigendum,
             // but ISO 19139 still use the old prefix.
             case "SV_ServiceIdentification": {

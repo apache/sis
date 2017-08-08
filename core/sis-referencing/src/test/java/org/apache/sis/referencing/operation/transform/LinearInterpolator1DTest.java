@@ -28,7 +28,7 @@ import static org.opengis.test.Assert.*;
 /**
  * Test {@link LinearInterpolator1D} class.
  *
- * @author  Remi Marechal (Geomatys).
+ * @author  Rémi Maréchal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys).
  * @version 0.7
  * @since   0.7

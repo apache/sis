@@ -52,8 +52,8 @@ import org.opengis.metadata.identification.TopicCategory;
 import org.opengis.metadata.distribution.Format;
 import org.opengis.metadata.quality.Element;
 import org.opengis.geometry.DirectPosition;
+import org.opengis.referencing.ReferenceSystem;
 import org.opengis.referencing.crs.VerticalCRS;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.geometry.AbstractEnvelope;
 import org.apache.sis.metadata.iso.DefaultMetadata;
@@ -125,7 +125,7 @@ import org.apache.sis.metadata.iso.citation.DefaultResponsibleParty;
  * API of this class may change in any future SIS versions.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @author  Rémi Marechal (Geomatys)
+ * @author  Rémi Maréchal (Geomatys)
  * @version 0.8
  * @since   0.8
  * @module
@@ -1623,7 +1623,7 @@ parse:      for (int i = 0; i < length;) {
      *
      * @param  crs  the coordinate reference system to add to the metadata, or {@code null} for no-operation.
      */
-    public final void addReferenceSystem(final CoordinateReferenceSystem crs) {
+    public final void addReferenceSystem(final ReferenceSystem crs) {
         if (crs != null) {
             addIfNotPresent(metadata().getReferenceSystemInfo(), crs);
         }

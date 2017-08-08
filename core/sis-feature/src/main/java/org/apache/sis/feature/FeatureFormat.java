@@ -39,9 +39,11 @@ import org.apache.sis.util.Deprecable;
 import org.apache.sis.util.Characters;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.internal.util.CollectionsExt;
+import org.apache.sis.internal.system.Modules;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.math.MathFunctions;
 
@@ -110,6 +112,12 @@ public class FeatureFormat extends TabularFormat<Object> {
      * exceeded by a few characters if the overflow happen while appending the list separator.</p>
      */
     private static final int MAXIMAL_VALUE_LENGTH = 40;
+
+    /**
+     * The bit patterns of the last {@link Float#NaN} value for which {@link MathFunctions#toNanOrdinal(float)} could
+     * not get the ordinal value. We use this information for avoiding flooding the logger with the same message.
+     */
+    private transient int illegalNaN;
 
     /**
      * Creates a new formatter for the default locale and timezone.
@@ -504,8 +512,17 @@ public class FeatureFormat extends TabularFormat<Object> {
                                                 t.setLength(0);
                                                 t.append("NaN");
                                             }
-                                            final int n = MathFunctions.toNanOrdinal(f);
-                                            if (n > 0) buffer.append(" #").append(n);
+                                            try {
+                                                final int n = MathFunctions.toNanOrdinal(f);
+                                                if (n > 0) t.append(" #").append(n);
+                                            } catch (IllegalArgumentException e) {
+                                                // May happen if the NaN is a signaling NaN instead than a quiet NaN.
+                                                final int bits = Float.floatToRawIntBits(f);
+                                                if (bits != illegalNaN) {
+                                                    illegalNaN = bits;
+                                                    Logging.recoverableException(Logging.getLogger(Modules.FEATURE), FeatureFormat.class, "format", e);
+                                                }
+                                            }
                                         }
                                     }
                                     value = t;

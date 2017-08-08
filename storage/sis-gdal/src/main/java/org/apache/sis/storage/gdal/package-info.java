@@ -40,10 +40,16 @@
  * }
  *
  * Calls to {@link org.apache.sis.referencing.CRS#findOperation CRS.findOperation(…)} will delegate the coordinate
- * transformation to Proj.4 if an only if {@code sourceCRS} and {@code targetCRS} were both obtained from a code
- * in {@code "Proj4"} namespace or by a method in this package. If at least one CRS were obtained by another way,
- * then Apache SIS will use its own referencing engine. The backing referencing engine can be seen by printing
- * the {@code CoordinateOperation}.
+ * transformation to Proj.4 if {@code sourceCRS} and {@code targetCRS} were both obtained from a code in {@code "Proj4"}
+ * namespace or by a method in this package. Otherwise, Apache SIS will use its own referencing engine.
+ * The backing referencing engine can be seen by printing the {@code MathTransform}:
+ * a transform backed by Proj.4 have a <cite>Well Known Text 1</cite> representation like below:
+ *
+ * {@preformat wkt
+ *   PARAM_MT["pj_transform",
+ *     PARAMETER["srcdefn", "+proj=…"],
+ *     PARAMETER["dstdefn", "+proj=…"]]
+ * }
  *
  * <div class="section">Note on Proj.4 definition strings</div>
  * Proj.4 unconditionally requires 3 letters for the {@code "+axis="} parameter — for example {@code "neu"} for

@@ -39,7 +39,7 @@ import org.apache.sis.feature.DefaultFeatureType;
  * @since 0.8
  * @module
  */
-public class FeatureCatalogBuilder extends MetadataBuilder {
+public final class FeatureCatalogBuilder extends MetadataBuilder {
     /**
      * The data store for which the metadata will be created, or {@code null} if unknown.
      * This is used for producing error message if an exception is thrown.

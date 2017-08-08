@@ -30,7 +30,7 @@ import org.apache.sis.internal.geotiff.Resources;
  * Those readers and writers are <strong>not</strong> thread safe.
  * The {@link GeoTiffStore} class is responsible for synchronization if needed.
  *
- * @author  Rémi Marechal (Geomatys)
+ * @author  Rémi Maréchal (Geomatys)
  * @author  Alexis Manin (Geomatys)
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)

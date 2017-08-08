@@ -50,6 +50,9 @@
       <fileset dir="${project.root}/core/sis-feature/target/generated-resources">
         <include name="**/*.utf"/>
       </fileset>
+      <fileset dir="${project.root}/core/sis-raster/target/generated-resources">
+        <include name="**/*.utf"/>
+      </fileset>
       <fileset dir="${project.root}/storage/sis-storage/target/generated-resources">
         <include name="**/*.utf"/>
       </fileset>
