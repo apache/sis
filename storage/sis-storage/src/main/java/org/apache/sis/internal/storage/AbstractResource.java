@@ -19,6 +19,7 @@ package org.apache.sis.internal.storage;
 import org.opengis.geometry.Envelope;
 import org.opengis.metadata.Metadata;
 import org.opengis.metadata.extent.Extent;
+import org.opengis.metadata.extent.GeographicExtent;
 import org.opengis.metadata.extent.GeographicBoundingBox;
 import org.opengis.metadata.identification.Identification;
 import org.apache.sis.storage.Resource;
@@ -26,7 +27,6 @@ import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.util.logging.WarningListeners;
-import org.opengis.metadata.extent.GeographicExtent;
 
 // Branch-dependent imports
 import org.opengis.metadata.identification.DataIdentification;

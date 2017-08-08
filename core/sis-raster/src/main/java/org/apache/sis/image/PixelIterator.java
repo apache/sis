@@ -22,6 +22,8 @@ import java.awt.Dimension;
 import java.awt.Rectangle;
 import java.awt.image.Raster;
 import java.awt.image.RenderedImage;
+import java.awt.image.WritableRaster;
+import java.awt.image.WritableRenderedImage;
 import java.util.NoSuchElementException;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.internal.jdk8.JDK8;
@@ -37,7 +39,7 @@ import static org.apache.sis.internal.jdk8.JDK8.floorDiv;
  * left to right). Iteration can be performed on a complete image or only a sub-region of it. Some optimized iterator
  * implementations exist for a few commonly used {@linkplain java.awt.image.SampleModel sample models}.
  *
- * <p>Usage example:</p>
+ * <div class="note"><b>Example:</b>
  * {@preformat java
  *     PixelIterator it = PixelIterator.create(image);
  *     double[] samples = null;
@@ -46,6 +48,7 @@ import static org.apache.sis.internal.jdk8.JDK8.floorDiv;
  *         // Perform computation here...
  *     }
  * }
+ * </div>
  *
  * @author  Rémi Maréchal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
@@ -193,57 +196,143 @@ public abstract class PixelIterator {
     }
 
     /**
-     * Creates an iterator for all pixels in the given raster.
+     * Builds pixel iterators for specified region of interest, window size or iteration order.
+     * By default, the builder creates iterators for all pixels in the given raster or image,
+     * with unspecified iteration order. Users can invoke setter methods for specifying
+     * desired behavior for the iterators to create.
      *
-     * @param  data  the raster which contains the sample values on which to iterate.
-     * @return a new iterator traversing all pixels in the given raster, in arbitrary order.
+     * <div class="note"><b>Example:</b>
+     * {@preformat java
+     *     PixelIterator iterator = new PixelIterator.Builder().setRegionOfInterest(new Rectangle(10, 10, 5, 5).create(image);
+     * }
+     * </div>
      */
-    public static PixelIterator create(Raster data) {
-        return create(data, null, null);
+    public static class Builder {
+        /**
+         * The region where to perform the iteration, or {@code null} for iterating over all the domain.
+         */
+        private Rectangle subArea;
+
+        /**
+         * Size of the window to use in {@link PixelIterator#createWindow(TransferType)} method,
+         * or {@code null} if none.
+         */
+        private Dimension window;
+
+        /**
+         * Creates a new iterator builder with no region of interest, no window size and default iterator order.
+         */
+        public Builder() {
+        }
+
+        /**
+         * Sets the region (in pixel coordinates) where to perform the iteration.
+         * By default, iterators will traverse all pixels in the given image or raster.
+         *
+         * @param  subArea  region where to iterator, or {@code null} for iterating over all image domain.
+         * @return {@code this} for method call chaining.
+         */
+        public Builder setRegionOfInterest(final Rectangle subArea) {
+            this.subArea = subArea;
+            return this;
+        }
+
+        /**
+         * Sets the size of the window to use in {@link PixelIterator#createWindow(TransferType)} method.
+         * By default, iterators do not create windows.
+         *
+         * @param  window  the window size, or {@code null} if no window will be created.
+         * @return {@code this} for method call chaining.
+         */
+        public Builder setWindowSize(final Dimension window) {
+            this.window = window;
+            return this;
+        }
+
+        /**
+         * Creates a read-only iterator for the given raster.
+         *
+         * @param  data  the raster which contains the sample values on which to iterate.
+         * @return a new iterator traversing pixels in the given raster.
+         */
+        public PixelIterator create(final Raster data) {
+            ArgumentChecks.ensureNonNull("data", data);
+            // TODO: check here for cases that we can optimize (after we ported corresponding implementations).
+            return new DefaultIterator(data, null, subArea, window);
+        }
+
+        /**
+         * Creates a read-only iterator for the given image.
+         *
+         * @param  data  the image which contains the sample values on which to iterate.
+         * @return a new iterator traversing pixels in the given image.
+         */
+        public PixelIterator create(final RenderedImage data) {
+            ArgumentChecks.ensureNonNull("data", data);
+            // TODO: check here for cases that we can optimize (after we ported corresponding implementations).
+            return new DefaultIterator(data, null, subArea, window);
+        }
+
+        /**
+         * Creates a read/write iterator for the given raster.
+         *
+         * @param  data  the raster which contains the sample values on which to iterate.
+         * @return a new iterator traversing pixels in the given raster.
+         */
+        public WritablePixelIterator createWritable(final WritableRaster data) {
+            ArgumentChecks.ensureNonNull("data", data);
+            return createWritable(data, data);
+        }
+
+        /**
+         * Creates a read/write iterator for the given image.
+         *
+         * @param  data  the image which contains the sample values on which to iterate.
+         * @return a new iterator traversing pixels in the given image.
+         */
+        public WritablePixelIterator createWritable(final WritableRenderedImage data) {
+            ArgumentChecks.ensureNonNull("data", data);
+            return createWritable(data, data);
+        }
+
+        /**
+         * Creates an iterator which will read and write in two different rasters.
+         *
+         * @param  input    the raster which contains the sample values to read.
+         * @param  output   the raster where to write the sample values. Can be the same than {@code input}.
+         * @return a new writable iterator.
+         */
+        public WritablePixelIterator createWritable(final Raster input, final WritableRaster output) {
+            ArgumentChecks.ensureNonNull("input",  input);
+            ArgumentChecks.ensureNonNull("output", output);
+            // TODO: check here for cases that we can optimize (after we ported corresponding implementations).
+            return new DefaultIterator(input, output, subArea, window);
+        }
+
+        /**
+         * Creates an iterator which will read and write in two different images.
+         *
+         * @param  input    the image which contains the sample values to read.
+         * @param  output   the image where to write the sample values. Can be the same than {@code input}.
+         * @return a new writable iterator.
+         */
+        public WritablePixelIterator createWritable(final RenderedImage input, final WritableRenderedImage output) {
+            ArgumentChecks.ensureNonNull("input",  input);
+            ArgumentChecks.ensureNonNull("output", output);
+            // TODO: check here for cases that we can optimize (after we ported corresponding implementations).
+            return new DefaultIterator(input, output, subArea, window);
+        }
     }
 
     /**
      * Creates an iterator for all pixels in the given image.
+     * This is a convenience method for {@code new Builder().create(data)}.
      *
      * @param  data  the image which contains the sample values on which to iterate.
      * @return a new iterator traversing all pixels in the given image, in arbitrary order.
      */
-    public static PixelIterator create(RenderedImage data) {
-        return create(data, null, null);
-    }
-
-    /**
-     * Creates an iterator for the given region in the given raster.
-     *
-     * @param  data     the raster which contains the sample values on which to iterate.
-     * @param  subArea  the raster region where to perform the iteration, or {@code null}
-     *                  for iterating over all the raster domain.
-     * @param  window   size of the window to use in {@link #createWindow(TransferType)} method, or {@code null} if none.
-     * @return a new iterator.
-     */
-    public static PixelIterator create(Raster data, Rectangle subArea, Dimension window) {
-        ArgumentChecks.ensureNonNull("data", data);
-
-        // TODO: check here for cases that we can optimize (after we ported corresponding implementations).
-
-        return new DefaultIterator(data, null, subArea, window);
-    }
-
-    /**
-     * Creates an iterator for the given region in the given image.
-     *
-     * @param  data     the image which contains the sample values on which to iterate.
-     * @param  subArea  the image region where to perform the iteration, or {@code null}
-     *                  for iterating over all the image domain.
-     * @param  window   size of the window to use in {@link #createWindow(TransferType)} method, or {@code null} if none.
-     * @return a new iterator.
-     */
-    public static PixelIterator create(RenderedImage data, Rectangle subArea, Dimension window) {
-        ArgumentChecks.ensureNonNull("data", data);
-
-        // TODO: check here for cases that we can optimize (after we ported corresponding implementations).
-
-        return new DefaultIterator(data, null, subArea, window);
+    public static PixelIterator create(final RenderedImage data) {
+        return new Builder().create(data);
     }
 
     /**
