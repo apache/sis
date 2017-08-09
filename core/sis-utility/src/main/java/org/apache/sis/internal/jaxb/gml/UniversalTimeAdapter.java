@@ -32,7 +32,7 @@ import static org.apache.sis.internal.jaxb.XmlUtilities.getDatatypeFactory;
 
 /**
  * JAXB adapter wrapping the date value (as milliseconds elapsed since January 1st, 1970) in a
- * {@link XMLGregorianCalendar} for the {@code xsd:dateTime} type with the timezone forced to UTC.
+ * {@link XMLGregorianCalendar} for the {@code xs:dateTime} type with the timezone forced to UTC.
  * The milliseconds are omitted if not different than zero.
  *
  * @author  Martin Desruisseaux (Geomatys)
