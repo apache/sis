@@ -46,14 +46,14 @@ public final class Utilities extends Static {
      *
      * <div class="section">Relationship with {@code gml:id}</div>
      * This method may be invoked for building {@code gml:id} values. Strictly speaking this is not appropriate
-     * since the {@code xsd:ID} type defines valid identifiers as containing only letters, digits, underscores,
+     * since the {@code xs:ID} type defines valid identifiers as containing only letters, digits, underscores,
      * hyphens, and periods. This differ from Unicode identifier in two ways:
      *
      * <ul>
      *   <li>Unicode identifiers accept Japanese or Chinese ideograms for instance, which are considered as letters.</li>
      *   <li>Unicode identifiers do not accept the {@code '-'} and {@code ':'} characters. However this restriction
      *       fits well our need, since those characters are typical values for the {@code separator} argument.</li>
-     *   <li>Note that {@code '_'} is valid both in {@code xsd:ID} and Unicode identifier.</li>
+     *   <li>Note that {@code '_'} is valid both in {@code xs:ID} and Unicode identifier.</li>
      * </ul>
      *
      * @param  appendTo     the buffer where to append the valid characters.
