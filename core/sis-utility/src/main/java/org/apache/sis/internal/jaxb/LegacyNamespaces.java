@@ -23,7 +23,7 @@ import org.apache.sis.util.Version;
  * Legacy XML namespaces, and {@link Version} constants for identifying when those namespaces were used.
  *
  * @author  Guilhem Legal (Geomatys)
- * @version 0.4
+ * @version 1.0
  *
  * @see org.apache.sis.xml.Namespaces
  *
@@ -50,6 +50,45 @@ public final class LegacyNamespaces {
      * legacy GML version. Instead, namespace replacements are applied on-the-fly at marshalling time.
      */
     public static final String GML = "http://www.opengis.net/gml";
+
+    /**
+     * The <code>{@value}</code> URL, used in ISO 19139.
+     * The usual prefix for this namespace is {@code "gmd"}.
+     */
+    public static final String GMD = "http://www.isotc211.org/2005/gmd";
+
+    /**
+     * The <code>{@value}</code> URL.
+     * The usual prefix for this namespace is {@code "gmi"}.
+     */
+    public static final String GMI = "http://www.isotc211.org/2005/gmi";
+
+    /**
+     * The <code>{@value}</code> URL, used in ISO 19139.
+     * The usual prefix for this namespace is {@code "gmx"}.
+     */
+    public static final String GMX = "http://www.isotc211.org/2005/gmx";
+
+    /**
+     * The <code>{@value}</code> URL, used in ISO 19139.
+     * The usual prefix for this namespace is {@code "gco"}.
+     * Replaced by {@link org.apache.sis.xml.Namespaces#GCO}.
+     */
+    public static final String GCO = "http://www.isotc211.org/2005/gco";
+
+    /**
+     * The <code>{@value}</code> URL, used in ISO 19139.
+     * The usual prefix for this namespace is {@code "srv"}.
+     * Replaced by {@link org.apache.sis.xml.Namespaces#SRV}.
+     */
+    public static final String SRV = "http://www.isotc211.org/2005/srv";
+
+    /**
+     * The <code>{@value}</code> URL, used in ISO 19110.
+     * The usual prefix for this namespace is {@code "gfc"}.
+     * Replaced by {@link org.apache.sis.xml.Namespaces#GFC}.
+     */
+    public static final String GFC = "http://www.isotc211.org/2005/gfc";
 
     /**
      * A non-public (un)marshaller property for controlling usage of {@code org.apache.sis.xml.FilteredNamespaces}.
