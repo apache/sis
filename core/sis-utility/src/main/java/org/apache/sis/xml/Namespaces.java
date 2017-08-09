@@ -22,6 +22,7 @@ import java.util.Locale;
 import javax.xml.XMLConstants;
 import org.apache.sis.util.Static;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.internal.jaxb.LegacyNamespaces;
 
 
 /**
@@ -33,21 +34,44 @@ import org.apache.sis.util.ArgumentChecks;
  * URLs determined by the SIS version available at compile-time, not runtime, because the
  * {@code javac} compiler inlines string constants.</p>
  *
- * <p>The following table lists the URLs, their usual prefix, and the SIS versions when each URL changed.</p>
+ * <p>The following table lists some URLs, their usual prefix, and the SIS versions when each URL changed.</p>
  * <table class="sis">
  *   <caption>Namespaces and change log</caption>
- *   <tr><th>Prefix</th> <th>XML Namespace</th>   <th>Changes history</th></tr>
- *   <tr><td>gco</td>    <td>{@value #GCO}</td>   <td></td></tr>
- *   <tr><td>gfc</td>    <td>{@value #GFC}</td>   <td></td></tr>
- *   <tr><td>gmd</td>    <td>{@value #GMD}</td>   <td></td></tr>
- *   <tr><td>gmi</td>    <td>{@value #GMI}</td>   <td></td></tr>
- *   <tr><td>srv</td>    <td>{@value #SRV}</td>   <td></td></tr>
- *   <tr><td>gts</td>    <td>{@value #GTS}</td>   <td></td></tr>
- *   <tr><td>gmx</td>    <td>{@value #GMX}</td>   <td></td></tr>
- *   <tr><td>gml</td>    <td>{@value #GML}</td>   <td>SIS 0.4</td></tr>
- *   <tr><td>csw</td>    <td>{@value #CSW}</td>   <td></td></tr>
- *   <tr><td>xsi</td>    <td>{@value #XSI}</td>   <td></td></tr>
- *   <tr><td>xlink</td>  <td>{@value #XLINK}</td> <td></td></tr>
+ *   <tr><th>Prefix</th> <th>Meaning</th>                                    <th>XML Namespace</th>   <th>Changes history</th></tr>
+ *   <tr><td>lan</td>    <td>Language localization</td>                      <td>{@value #LAN}</td>   <td></td></tr>
+ *   <tr><td>gco</td>    <td>Geographic COmmon</td>                          <td>{@value #GCO}</td>   <td>SIS 1.0</td></tr>
+ *   <tr><td>mcc</td>    <td>Metadata Common Classes</td>                    <td>{@value #MCC}</td>   <td></td></tr>
+ *   <tr><td>fcc</td>    <td>Feature Catalog Common</td>                     <td>{@value #FCC}</td>   <td></td></tr>
+ *   <tr><td>gfc</td>    <td>General Feature Catalog</td>                    <td>{@value #GFC}</td>   <td>SIS 1.0</td></tr>
+ *   <tr><td>cat</td>    <td>CATalogue</td>                                  <td>{@value #CAT}</td>   <td></td></tr>
+ *   <tr><td>mdb</td>    <td>Metadata Base</td>                              <td>{@value #MDB}</td>   <td></td></tr>
+ *   <tr><td>cit</td>    <td>Citation and responsible party information</td> <td>{@value #CIT}</td>   <td></td></tr>
+ *   <tr><td>gex</td>    <td>Geospatial EXtent</td>                          <td>{@value #GEX}</td>   <td></td></tr>
+ *   <tr><td>mrs</td>    <td>Metadata for Reference System</td>              <td>{@value #MRS}</td>   <td></td></tr>
+ *   <tr><td>rce</td>    <td>Referencing By Coordinates Common</td>          <td>{@value #RCE}</td>   <td></td></tr>
+ *   <tr><td>msr</td>    <td>Metadata for Spatial Representation</td>        <td>{@value #MSR}</td>   <td></td></tr>
+ *   <tr><td>mrc</td>    <td>Metadata for Resource Content</td>              <td>{@value #MRC}</td>   <td></td></tr>
+ *   <tr><td>mri</td>    <td>Metadata for Resource Identification</td>       <td>{@value #MRI}</td>   <td></td></tr>
+ *   <tr><td>mrd</td>    <td>Metadata for Resource Distribution</td>         <td>{@value #MRD}</td>   <td></td></tr>
+ *   <tr><td>mdt</td>    <td>Metadata for Data Transfer</td>                 <td>{@value #MDT}</td>   <td></td></tr>
+ *   <tr><td>mco</td>    <td>Metadata for Constraints</td>                   <td>{@value #MCO}</td>   <td></td></tr>
+ *   <tr><td>mac</td>    <td>Metadata for Acquisition</td>                   <td>{@value #MAC}</td>   <td></td></tr>
+ *   <tr><td>mrl</td>    <td>Metadata for Resource Lineage</td>              <td>{@value #MRL}</td>   <td></td></tr>
+ *   <tr><td>mmi</td>    <td>Metadata for Maintenance Information</td>       <td>{@value #MMI}</td>   <td></td></tr>
+ *   <tr><td>dqc</td>    <td>Data Quality Common Classes</td>                <td>{@value #DQC}</td>   <td></td></tr>
+ *   <tr><td>mdq</td>    <td>Metadata for Data Quality</td>                  <td>{@value #MDQ}</td>   <td></td></tr>
+ *   <tr><td>mds</td>    <td>Metadata for Data and Services</td>             <td>{@value #MDS}</td>   <td></td></tr>
+ *   <tr><td>srv</td>    <td>Metadata for Services</td>                      <td>{@value #SRV}</td>   <td>SIS 1.0</td></tr>
+ *   <tr><td>mpc</td>    <td>Metadata for Portrayal Catalog</td>             <td>{@value #MPC}</td>   <td></td></tr>
+ *   <tr><td>mda</td>    <td>MetaData Application</td>                       <td>{@value #MDA}</td>   <td></td></tr>
+ *   <tr><td>mas</td>    <td>Metadata for Application Schema</td>            <td>{@value #MAS}</td>   <td></td></tr>
+ *   <tr><td>mex</td>    <td>Metadata with Schema Extensions</td>            <td>{@value #MEX}</td>   <td></td></tr>
+ *   <tr><td>gcx</td>    <td>Geospatial Common eXtension</td>                <td>{@value #GCX}</td>   <td></td></tr>
+ *   <tr><td>gmw</td>    <td>Geographic Markup Wrappers</td>                 <td>{@value #GMW}</td>   <td></td></tr>
+ *   <tr><td>gml</td>    <td>Geographic Markup Language</td>                 <td>{@value #GML}</td>   <td>SIS 0.4</td></tr>
+ *   <tr><td>csw</td>    <td>Catalog Service for the Web</td>                <td>{@value #CSW}</td>   <td></td></tr>
+ *   <tr><td>xsi</td>    <td>XML Schema Instance information</td>            <td>{@value #XSI}</td>   <td></td></tr>
+ *   <tr><td>xlink</td>  <td>Link</td>                                       <td>{@value #XLINK}</td> <td></td></tr>
  * </table>
  *
  * <div class="section">Profiles</div>
@@ -61,8 +85,9 @@ import org.apache.sis.util.ArgumentChecks;
  *
  * @author  Cédric Briançon (Geomatys)
  * @author  Quentin Boileau (Geomatys)
- * @author  Guilhem Legal (Geomatys)
- * @version 0.4
+ * @author  Guilhem Legal   (Geomatys)
+ * @author  Cullen Rombach  (Image Matters)
+ * @version 1.0
  * @since   0.3
  * @module
  */
@@ -74,44 +99,376 @@ public final class Namespaces extends Static {
     }
 
     /**
-     * The <code>{@value}</code> URL.
-     * The usual prefix for this namespace is {@code "gco"}.
+     * The <code>{@value}</code> URL. This is the namespace of
+     * <a href="http://standards.iso.org/iso/19115/-3/lan/1.0/index.html">Language localization (LAN) version 1.0</a>.
+     * The usual prefix for this namespace is {@code "lan"}.
      *
      * @category ISO
+     * @since 1.0
      */
-    public static final String GCO = "http://www.isotc211.org/2005/gco";
+    public static final String LAN = "http://standards.iso.org/iso/19115/-3/lan/1.0";
 
     /**
-     * The <code>{@value}</code> URL.
-     * The usual prefix for this namespace is {@code "gfc"}.
+     * The <code>{@value}</code> URL. This is the namespace of
+     * <a href="http://standards.iso.org/iso/19115/-3/gco/1.0/index.html">Geographic COmmon (GCO) version 1.0</a>.
+     * The usual prefix for this namespace is {@code "gco"}.
+     *
+     * <p>History</p>
+     * <table class="sis">
+     *   <caption>Change log</caption>
+     *   <tr><th>SIS version</th> <th>URL</th></tr>
+     *   <tr><td>0.3 to 0.8</td>  <td>http://www.isotc211.org/2005/gco</td></tr>
+     * </table>
      *
      * @category ISO
      */
-    public static final String GFC = "http://www.isotc211.org/2005/gfc";
+    public static final String GCO = "http://standards.iso.org/iso/19115/-3/gco/1.0";
+
+    /**
+     * The <code>{@value}</code> URL. This is the namespace of
+     * <a href="http://standards.iso.org/iso/19115/-3/mcc/1.0/index.html">Metadata Common Classes (MCC) version 1.0</a>.
+     * The usual prefix for this namespace is {@code "mcc"}.
+     *
+     * @category ISO
+     * @since 1.0
+     */
+    public static final String MCC = "http://standards.iso.org/iso/19115/-3/mcc/1.0";
+
+    /**
+     * The <code>{@value}</code> URL. This is the namespace of
+     * <a href="http://standards.iso.org/iso/19110/fcc/1.0/index.html">Feature Catalog Common (FCC) version 1.0</a>.
+     * The usual prefix for this namespace is {@code "fcc"}.
+     *
+     * @category ISO
+     * @since 1.0
+     */
+    public static final String FCC = "http://standards.iso.org/iso/19110/fcc/1.0";
+
+    /**
+     * The <code>{@value}</code> URL. This is the namespace of
+     * <a href="http://standards.iso.org/iso/19110/gfc/1.1/index.html">General Feature Catalog (GFC) version 1.1</a>.
+     * The usual prefix for this namespace is {@code "gfc"}.
+     *
+     * <p>History</p>
+     * <table class="sis">
+     *   <caption>Change log</caption>
+     *   <tr><th>SIS version</th> <th>URL</th></tr>
+     *   <tr><td>0.3 to 0.8</td>  <td>http://www.isotc211.org/2005/gfc</td></tr>
+     * </table>
+     *
+     * @category ISO
+     */
+    public static final String GFC = "http://standards.iso.org/iso/19110/gfc/1.1";
+
+    /**
+     * The <code>{@value}</code> URL. This is the namespace of
+     * <a href="http://standards.iso.org/iso/19115/-3/cat/1.0/index.html">CATalogue (CAT) version 1.0</a>.
+     * The usual prefix for this namespace is {@code "cat"}.
+     *
+     * @category ISO
+     * @since 1.0
+     */
+    public static final String CAT = "http://standards.iso.org/iso/19115/-3/cat/1.0";
+
+    /**
+     * The <code>{@value}</code> URL. This is the namespace of
+     * <a href="http://standards.iso.org/iso/19115/-3/mdb/1.0/index.html">Metadata Base (MDB) version 1.0</a>.
+     * The usual prefix for this namespace is {@code "mdb"}.
+     *
+     * @category ISO
+     * @since 1.0
+     */
+    public static final String MDB = "http://standards.iso.org/iso/19115/-3/mdb/1.0";
+
+    /**
+     * The <code>{@value}</code> URL. This is the namespace of
+     * <a href="http://standards.iso.org/iso/19115/-3/cit/1.0/index.html">Citation and responsible party information (CIT) version 1.0</a>.
+     * The usual prefix for this namespace is {@code "cit"}.
+     *
+     * @category ISO
+     * @since 1.0
+     */
+    public static final String CIT = "http://standards.iso.org/iso/19115/-3/cit/1.0";
+
+    /**
+     * The <code>{@value}</code> URL. This is the namespace of
+     * <a href="http://standards.iso.org/iso/19115/-3/gex/1.0/index.html">Geospatial EXtent (GEX) version 1.0</a>.
+     * The usual prefix for this namespace is {@code "gex"}.
+     *
+     * @category ISO
+     * @since 1.0
+     */
+    public static final String GEX = "http://standards.iso.org/iso/19115/-3/gex/1.0";
+
+    /**
+     * The <code>{@value}</code> URL. This is the namespace of
+     * <a href="http://standards.iso.org/iso/19115/-3/mrs/1.0/index.html">Metadata for Reference System (MRS) version 1.0</a>.
+     * The usual prefix for this namespace is {@code "mrs"}.
+     *
+     * @category ISO
+     * @since 1.0
+     */
+    public static final String MRS = "http://standards.iso.org/iso/19115/-3/mrs/1.0";
+
+    /**
+     * The <code>{@value}</code> URL. This is the namespace of
+     * <a href="http://standards.iso.org/iso/19111/rce/1.0/index.html">Referencing By Coordinates Common (RCE) version 1.0</a>.
+     * The usual prefix for this namespace is {@code "rce"}.
+     *
+     * @category ISO
+     * @since 1.0
+     */
+    public static final String RCE = "http://standards.iso.org/iso/19111/rce/1.0";
+
+    /**
+     * The <code>{@value}</code> URL. This is the namespace of
+     * <a href="http://standards.iso.org/iso/19115/-3/msr/1.0/index.html">Metadata for Spatial Representation (MSR) version 1.0</a>.
+     * The usual prefix for this namespace is {@code "msr"}.
+     *
+     * @category ISO
+     * @since 1.0
+     */
+    public static final String MSR = "http://standards.iso.org/iso/19115/-3/msr/1.0";
+
+    /**
+     * The <code>{@value}</code> URL. This is the namespace of
+     * <a href="http://standards.iso.org/iso/19115/-3/mrc/1.0/index.html">Metadata for Resource Content (MRC) version 1.0</a>.
+     * The usual prefix for this namespace is {@code "mrc"}.
+     *
+     * @category ISO
+     * @since 1.0
+     */
+    public static final String MRC = "http://standards.iso.org/iso/19115/-3/mrc/1.0";
+
+    /**
+     * The <code>{@value}</code> URL. This is the namespace of
+     * <a href="http://standards.iso.org/iso/19115/-3/mri/1.0/index.html">Metadata for Resource Identification (MRI) version 1.0</a>.
+     * The usual prefix for this namespace is {@code "mri"}.
+     *
+     * @category ISO
+     * @since 1.0
+     */
+    public static final String MRI = "http://standards.iso.org/iso/19115/-3/mri/1.0";
+
+    /**
+     * The <code>{@value}</code> URL. This is the namespace of
+     * <a href="http://standards.iso.org/iso/19115/-3/mrd/1.0/index.html">Metadata for Resource Distribution (MRD) version 1.0</a>.
+     * The usual prefix for this namespace is {@code "mrd"}.
+     *
+     * @category ISO
+     * @since 1.0
+     */
+    public static final String MRD = "http://standards.iso.org/iso/19115/-3/mrd/1.0";
+
+    /**
+     * The <code>{@value}</code> URL. This is the namespace of
+     * <a href="http://standards.iso.org/iso/19115/-3/mdt/1.0/index.html">Metadata for Data Transfer (MDT) version 1.0</a>.
+     * The usual prefix for this namespace is {@code "mdt"}.
+     *
+     * @category ISO
+     * @since 1.0
+     */
+    public static final String MDT = "http://standards.iso.org/iso/19115/-3/mdt/1.0";
+
+    /**
+     * The <code>{@value}</code> URL. This is the namespace of
+     * <a href="http://standards.iso.org/iso/19115/-3/mco/1.0/index.html">Metadata for Constraints (MCO) version 1.0</a>.
+     * The usual prefix for this namespace is {@code "mco"}.
+     *
+     * @category ISO
+     * @since 1.0
+     */
+    public static final String MCO = "http://standards.iso.org/iso/19115/-3/mco/1.0";
+
+    /**
+     * The <code>{@value}</code> URL. This is the namespace of
+     * <a href="http://standards.iso.org/iso/19115/-3/mac/1.0/index.html">Metadata for Acquisition (MAC) version 1.0</a>.
+     * The usual prefix for this namespace is {@code "mac"}.
+     *
+     * @category ISO
+     * @since 1.0
+     */
+    public static final String MAC = "http://standards.iso.org/iso/19115/-3/mac/1.0";
+
+    /**
+     * The <code>{@value}</code> URL. This is the namespace of
+     * <a href="http://standards.iso.org/iso/19115/-3/mrl/1.0/index.html">Metadata for Resource Lineage (MRL) version 1.0</a>.
+     * The usual prefix for this namespace is {@code "mrl"}.
+     *
+     * @category ISO
+     * @since 1.0
+     */
+    public static final String MRL = "http://standards.iso.org/iso/19115/-3/mrl/1.0";
+
+    /**
+     * The <code>{@value}</code> URL. This is the namespace of
+     * <a href="http://standards.iso.org/iso/19115/-3/mmi/1.0/index.html">Metadata for Maintenance Information (MMI) version 1.0</a>.
+     * The usual prefix for this namespace is {@code "mmi"}.
+     *
+     * @category ISO
+     * @since 1.0
+     */
+    public static final String MMI = "http://standards.iso.org/iso/19115/-3/mmi/1.0";
+
+    /**
+     * The <code>{@value}</code> URL. This is the namespace of
+     * <a href="http://standards.iso.org/iso/19157/-2/dqc/1.0/index.html">Data Quality Common Classes (DQC) version 1.0</a>.
+     * The usual prefix for this namespace is {@code "dqc"}.
+     *
+     * @category ISO
+     * @since 1.0
+     */
+    public static final String DQC = "http://standards.iso.org/iso/19157/-2/dqc/1.0";
+
+    /**
+     * The <code>{@value}</code> URL. This is the namespace of
+     * <a href="http://standards.iso.org/iso/19157/-2/mdq/1.0/index.html">Metadata for Data Quality (MDQ) version 1.0</a>.
+     * The usual prefix for this namespace is {@code "mdq"}.
+     *
+     * @category ISO
+     * @since 1.0
+     */
+    public static final String MDQ = "http://standards.iso.org/iso/19157/-2/mdq/1.0";
+
+    /**
+     * The <code>{@value}</code> URL. This is the namespace of
+     * <a href="http://standards.iso.org/iso/19115/-3/mds/1.0/index.html">Metadata for Data and Services (MDS) version 1.0</a>.
+     * The usual prefix for this namespace is {@code "mds"}.
+     *
+     * @category ISO
+     * @since 1.0
+     */
+    public static final String MDS = "http://standards.iso.org/iso/19115/-3/mds/1.0";
+
+    /**
+     * The <code>{@value}</code> URL. This is the namespace of
+     * <a href="http://standards.iso.org/iso/19115/-3/srv/2.0/index.html">Metadata for Services (SRV) version 2.0</a>.
+     * The usual prefix for this namespace is {@code "srv"}.
+     *
+     * <p>History</p>
+     * <table class="sis">
+     *   <caption>Change log</caption>
+     *   <tr><th>SIS version</th> <th>URL</th></tr>
+     *   <tr><td>0.3 to 0.8</td>  <td>http://www.isotc211.org/2005/srv</td></tr>
+     * </table>
+     *
+     * @category ISO
+     * @since 1.0
+     */
+    public static final String SRV = "http://standards.iso.org/iso/19115/-3/srv/2.0";
+
+    /**
+     * The <code>{@value}</code> URL. This is the namespace of
+     * <a href="http://standards.iso.org/iso/19115/-3/mpc/1.0/index.html">Metadata for Portrayal Catalog (MPC) version 1.0</a>.
+     * The usual prefix for this namespace is {@code "mpc"}.
+     *
+     * @category ISO
+     * @since 1.0
+     */
+    public static final String MPC = "http://standards.iso.org/iso/19115/-3/mpc/1.0";
+
+    /**
+     * The <code>{@value}</code> URL. This is the namespace of
+     * <a href="http://standards.iso.org/iso/19115/-3/mda/1.0/index.html">MetaData Application (MDA) version 1.0</a>.
+     * The usual prefix for this namespace is {@code "mda"}.
+     *
+     * @category ISO
+     * @since 1.0
+     */
+    public static final String MDA = "http://standards.iso.org/iso/19115/-3/mda/1.0";
+
+    /**
+     * The <code>{@value}</code> URL. This is the namespace of
+     * <a href="http://standards.iso.org/iso/19115/-3/mas/1.0/index.html">Metadata for Application Schema (MAS) version 1.0</a>.
+     * The usual prefix for this namespace is {@code "mas"}.
+     *
+     * @category ISO
+     * @since 1.0
+     */
+    public static final String MAS = "http://standards.iso.org/iso/19115/-3/mas/1.0";
+
+    /**
+     * The <code>{@value}</code> URL. This is the namespace of
+     * <a href="http://standards.iso.org/iso/19115/-3/mex/1.0/index.html">Metadata with Schema Extensions (MEX) version 1.0</a>.
+     * The usual prefix for this namespace is {@code "mex"}.
+     *
+     * @category ISO
+     * @since 1.0
+     */
+    public static final String MEX = "http://standards.iso.org/iso/19115/-3/mex/1.0";
+
+    /**
+     * The <code>{@value}</code> URL. This is the namespace of
+     * <a href="http://standards.iso.org/iso/19115/-3/gcx/1.0/index.html">Geospatial Common eXtension (GCX) version 1.0</a>.
+     * The usual prefix for this namespace is {@code "gcx"}.
+     *
+     * @category ISO
+     * @since 1.0
+     */
+    public static final String GCX = "http://standards.iso.org/iso/19115/-3/gcx/1.0";
+
+    /**
+     * The <code>{@value}</code> URL. This is the namespace of
+     * <a href="http://standards.iso.org/iso/19115/-3/md1/1.0/index.html">Metadata for Data and Services with Geospatial Common Extensions (MD1) version 1.0</a>.
+     * The usual prefix for this namespace is {@code "md1"}.
+     *
+     * @category ISO
+     * @since 1.0
+     */
+    public static final String MD1 = "http://standards.iso.org/iso/19115/-3/md1/1.0";
+
+    /**
+     * The <code>{@value}</code> URL. This is the namespace of
+     * <a href="http://standards.iso.org/iso/19115/-3/md2/1.0/index.html">Metadata for Data and Services with Geospatial Common Extensions (MD2) version 1.0</a>.
+     * The usual prefix for this namespace is {@code "md2"}.
+     *
+     * @category ISO
+     * @since 1.0
+     */
+    public static final String MD2 = "http://standards.iso.org/iso/19115/-3/md2/1.0";
+
+    /**
+     * The <code>{@value}</code> URL. This is the namespace of
+     * <a href="http://standards.iso.org/iso/19115/-3/gmw/1.0/index.html">Geographic Markup Wrappers (GMW) version 1.0</a>.
+     * The usual prefix for this namespace is {@code "gmw"}.
+     *
+     * @category ISO
+     * @since 1.0
+     */
+    public static final String GMW = "http://standards.iso.org/iso/19115/-3/gmw/1.0";
 
     /**
      * The <code>{@value}</code> URL.
      * The usual prefix for this namespace is {@code "gmd"}.
      *
      * @category ISO
+     *
+     * @deprecated as of ISO 19115-3, splitted in many different namespaces.
      */
-    public static final String GMD = "http://www.isotc211.org/2005/gmd";
+    @Deprecated
+    public static final String GMD = LegacyNamespaces.GMD;
 
     /**
      * The <code>{@value}</code> URL.
      * The usual prefix for this namespace is {@code "gmi"}.
      *
      * @category ISO
+     *
+     * @deprecated as of ISO 19115-4, splitted in many different namespaces.
      */
-    public static final String GMI = "http://www.isotc211.org/2005/gmi";
+    @Deprecated
+    public static final String GMI = LegacyNamespaces.GMI;
 
     /**
      * The <code>{@value}</code> URL.
-     * The usual prefix for this namespace is {@code "srv"}.
+     * The usual prefix for this namespace is {@code "gmx"}.
      *
      * @category ISO
+     *
+     * @deprecated as of ISO 19115-3, splitted in many different namespaces.
      */
-    public static final String SRV = "http://www.isotc211.org/2005/srv";
+    @Deprecated
+    public static final String GMX = LegacyNamespaces.GMX;
 
     /**
      * The <code>{@value}</code> URL.
@@ -120,14 +477,6 @@ public final class Namespaces extends Static {
      * @category ISO
      */
     public static final String GTS = "http://www.isotc211.org/2005/gts";
-
-    /**
-     * The <code>{@value}</code> URL.
-     * The usual prefix for this namespace is {@code "gmx"}.
-     *
-     * @category ISO
-     */
-    public static final String GMX = "http://www.isotc211.org/2005/gmx";
 
     /**
      * The <code>{@value}</code> URL.
@@ -175,6 +524,10 @@ public final class Namespaces extends Static {
      * URLs for which the prefix to use directly follows them.
      */
     private static final String[] GENERIC_URLS = {
+        "http://standards.iso.org/iso/19115/-3/",
+        "http://standards.iso.org/iso/19157/-2/",
+        "http://standards.iso.org/iso/19111/",
+        "http://standards.iso.org/iso/19110/",
         "http://www.isotc211.org/2005/",
         "http://www.opengis.net/",
         "http://www.w3.org/1999/",
@@ -189,7 +542,7 @@ public final class Namespaces extends Static {
     private static final Map<String,String> SPECIFIC_URLS;
     static {
         final Map<String,String> p = new HashMap<>(40);
-        p.put(XMLConstants.W3C_XML_SCHEMA_NS_URI,                         "xsd");   // TODO: should be "xs".
+        p.put(XMLConstants.W3C_XML_SCHEMA_NS_URI,                          "xs");
         p.put(XMLConstants.W3C_XML_SCHEMA_INSTANCE_NS_URI,                "xsi");
         p.put("http://www.w3.org/2004/02/skos/core#",                    "skos");
         p.put("http://www.w3.org/1999/02/22-rdf-syntax-ns#",              "rdf");
