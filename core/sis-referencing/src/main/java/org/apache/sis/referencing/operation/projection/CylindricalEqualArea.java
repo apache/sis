@@ -242,12 +242,12 @@ public class CylindricalEqualArea extends EqualAreaProjection {
                           final double[] dstPts, int dstOff, int numPts)
             throws TransformException
     {
-        if (srcPts != dstPts || srcOff != dstOff) {
+        if (srcPts != dstPts || srcOff != dstOff || getClass() != CylindricalEqualArea.class) {
             super.transform(srcPts, srcOff, dstPts, dstOff, numPts);
         } else {
             dstOff--;
             while (--numPts >= 0) {
-                final double φ = dstPts[dstOff += 2];                   // Same as srcPts[srcOff + 1].
+                final double φ = dstPts[dstOff += DIMENSION];           // Same as srcPts[srcOff + 1].
                 dstPts[dstOff] = qm_ellipsoid(sin(φ));                  // Part of Synder equation (10-15)
             }
         }
@@ -299,7 +299,7 @@ public class CylindricalEqualArea extends EqualAreaProjection {
          */
         Spherical(final CylindricalEqualArea other) {
             super(other);
-            context.getMatrix(ContextualParameters.MatrixRole.DENORMALIZATION).convertAfter(1, 2, null);
+            context.getMatrix(ContextualParameters.MatrixRole.DENORMALIZATION).convertAfter(1, DIMENSION, null);
         }
 
         /**
@@ -335,7 +335,7 @@ public class CylindricalEqualArea extends EqualAreaProjection {
             } else {
                 dstOff--;
                 while (--numPts >= 0) {
-                    final double φ = dstPts[dstOff += 2];           // Same as srcPts[srcOff + 1].
+                    final double φ = dstPts[dstOff += DIMENSION];       // Same as srcPts[srcOff + 1].
                     dstPts[dstOff] = sin(φ);
                 }
             }

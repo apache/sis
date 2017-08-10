@@ -308,7 +308,7 @@ public final class Proj4 extends Static {
      * Creates a new CRS from the given {@literal Proj.4} definition string.
      * Some examples of definition strings are:
      * <ul>
-     *   <li>{@code "+init=epsg:3395"} (see warning below)</li>
+     *   <li>{@code "+init=epsg:3395 +over"} (see warning below)</li>
      *   <li>{@code "+proj=latlong +datum=WGS84 +ellps=WGS84 +towgs84=0,0,0"}</li>
      *   <li>{@code "+proj=merc +lon_0=0 +k=1 +x_0=0 +y_0=0 +datum=WGS84 +units=m +ellps=WGS84 +towgs84=0,0,0"}</li>
      * </ul>

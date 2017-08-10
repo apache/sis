@@ -792,7 +792,7 @@ public abstract class AbstractMathTransform extends FormattableObject
     }
 
     /**
-     * Concatenates or pre-concatenates in an optimized way this math transform with the given one.
+     * Concatenates or pre-concatenates in an optimized way this math transform with the given one, if possible.
      * A new math transform is created to perform the combined transformation.
      * The {@code applyOtherFirst} value determines the transformation order as bellow:
      *
@@ -807,7 +807,7 @@ public abstract class AbstractMathTransform extends FormattableObject
      *
      * If no special optimization is available for the combined transform, then this method returns {@code null}.
      * In the later case, the concatenation will be prepared by {@link DefaultMathTransformFactory} using a generic
-     * {@link ConcatenatedTransform}.
+     * implementation.
      *
      * <p>The default implementation always returns {@code null}. This method is ought to be overridden
      * by subclasses capable of concatenating some combination of transforms in a special way.</p>
@@ -816,7 +816,7 @@ public abstract class AbstractMathTransform extends FormattableObject
      *                          {@code false} if the transformation order is {@code this} followed by {@code other}.
      * @param  other            the other math transform to (pre-)concatenate with this transform.
      * @param  factory          the factory which is (indirectly) invoking this method, or {@code null} if none.
-     * @return the combined math transform, or {@code null} if no optimized combined transform is available.
+     * @return the math transforms combined in an optimized way, or {@code null} if no such optimization is available.
      * @throws FactoryException if an error occurred while combining the transforms.
      *
      * @see DefaultMathTransformFactory#createConcatenatedTransform(MathTransform, MathTransform)
