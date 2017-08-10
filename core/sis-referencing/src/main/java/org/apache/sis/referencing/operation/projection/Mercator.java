@@ -32,6 +32,7 @@ import org.apache.sis.internal.referencing.provider.PseudoMercator;
 import org.apache.sis.internal.util.DoubleDouble;
 import org.apache.sis.referencing.operation.matrix.Matrix2;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
+import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.referencing.operation.transform.ContextualParameters;
 import org.apache.sis.parameter.Parameters;
 import org.apache.sis.util.Workaround;
@@ -69,7 +70,7 @@ import static org.apache.sis.internal.util.DoubleDouble.verbatim;
  * @author  Rueben Schulz (UBC)
  * @author  Simon Reynard (Geomatys)
  * @author  Rémi Maréchal (Geomatys)
- * @version 0.6
+ * @version 0.8
  *
  * @see TransverseMercator
  *
@@ -386,12 +387,12 @@ public class Mercator extends ConformalProjection {
                           final double[] dstPts, int dstOff, int numPts)
             throws TransformException
     {
-        if (srcPts != dstPts || srcOff != dstOff) {
+        if (srcPts != dstPts || srcOff != dstOff || getClass() != Mercator.class) {
             super.transform(srcPts, srcOff, dstPts, dstOff, numPts);
         } else {
             dstOff--;
             while (--numPts >= 0) {
-                final double φ = dstPts[dstOff += 2];                           // Same as srcPts[srcOff + 1].
+                final double φ = dstPts[dstOff += DIMENSION];                   // Same as srcPts[srcOff + 1].
                 if (φ != 0) {
                     /*
                      * See the javadoc of the Spherical inner class for a note
@@ -426,6 +427,26 @@ public class Mercator extends ConformalProjection {
         final double y   = srcPts[srcOff+1];            // Must be before writing x.
         dstPts[dstOff  ] = srcPts[srcOff  ];            // Must be before writing y.
         dstPts[dstOff+1] = φ(exp(-y));
+    }
+
+    /**
+     * Inverse converts an arbitrary amount of coordinates. This method is provided as an optimization only.
+     * Formula shall be a copy of the formula used in {@link #inverseTransform(double[], int, double[], int)},
+     * except for the copy of {@code x} which can be skipped if the target array overwrites the source array.
+     */
+    @Override
+    final void inverseTransform(final double[] srcPts, int srcOff,
+                                final double[] dstPts, int dstOff, int numPts) throws ProjectionException
+    {
+        if (srcPts != dstPts || srcOff != dstOff || getClass() != Mercator.class) {
+            super.inverseTransform(srcPts, srcOff, dstPts, dstOff, numPts);
+        } else {
+            dstOff--;
+            while (--numPts >= 0) {
+                dstOff += DIMENSION;
+                dstPts[dstOff] = φ(exp(-dstPts[dstOff]));
+            }
+        }
     }
 
 
@@ -521,7 +542,7 @@ public class Mercator extends ConformalProjection {
             } else {
                 dstOff--;
                 while (--numPts >= 0) {
-                    final double φ = dstPts[dstOff += 2];                       // Same as srcPts[srcOff + 1].
+                    final double φ = dstPts[dstOff += DIMENSION];               // Same as srcPts[srcOff + 1].
                     if (φ != 0) {
                         // See class javadoc for a note about explicit check for poles.
                         final double a = abs(φ);
@@ -551,5 +572,28 @@ public class Mercator extends ConformalProjection {
             dstPts[dstOff  ] = srcPts[srcOff];                      // Must be before writing y.
             dstPts[dstOff+1] = PI/2 - 2*atan(exp(-y));              // Part of Snyder (7-4);
         }
+    }
+
+    /**
+     * Invoked when {@link #tryConcatenate(boolean, MathTransform, MathTransformFactory)} detected a
+     * (inverse) → (affine) → (this) transforms sequence.
+     */
+    @Override
+    final MathTransform tryConcatenate(boolean projectedSpace, Matrix affine, MathTransformFactory factory)
+            throws FactoryException
+    {
+        /*
+         * Verify that the latitude row is an identity conversion except for the sign which is allowed to change
+         * (but no scale and no translation are allowed).  Ignore the longitude row because it just pass through
+         * this Mercator projection with no impact on any calculation.
+         */
+        if (affine.getElement(1,0) == 0 && affine.getElement(1, DIMENSION) == 0 && Math.abs(affine.getElement(1,1)) == 1) {
+            if (factory != null) {
+                return factory.createAffineTransform(affine);
+            } else {
+                return MathTransforms.linear(affine);
+            }
+        }
+        return super.tryConcatenate(projectedSpace, affine, factory);
     }
 }
