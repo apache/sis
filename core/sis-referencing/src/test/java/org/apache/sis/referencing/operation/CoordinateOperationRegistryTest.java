@@ -57,12 +57,16 @@ import static org.junit.Assume.*;
  * <ul>
  *   <li><cite>"NTF (Paris) to WGS 84 (1)"</cite> operation (EPSG:8094), which implies a longitude rotation
  *       followed by a geocentric translation in the geographic domain.</li>
+ *   <li><cite>"Martinique 1938 to RGAF09 (1)"</cite> operation (EPSG:5491), which implies a datum shift
+ *       that does not go through WGS84. Furthermore since the EPSG database defines (λ,φ) axis order in
+ *       addition to the usual (φ,λ) order for the target CRS, this tests allows us to verify we can find
+ *       this operation despite different axis order.</li>
  * </ul>
  *
  * The operations are tested with various axis order and dimension in source and target CRS.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.7
+ * @version 0.8
  * @since   0.7
  * @module
  */
@@ -94,6 +98,11 @@ public final strictfp class CoordinateOperationRegistryTest extends MathTransfor
     private static WKTFormat parser;
 
     /**
+     * The EPSG authority factory for CRS objects. Can be used as an alternative to {@link #parser}.
+     */
+    private final CRSAuthorityFactory crsFactory;
+
+    /**
      * The instance on which to execute the tests.
      */
     private final CoordinateOperationRegistry registry;
@@ -104,7 +113,7 @@ public final strictfp class CoordinateOperationRegistryTest extends MathTransfor
      * @throws FactoryException if an error occurred while creating the factory to be tested.
      */
     public CoordinateOperationRegistryTest() throws FactoryException {
-        final CRSAuthorityFactory crsFactory = CRS.getAuthorityFactory("EPSG");
+        crsFactory = CRS.getAuthorityFactory("EPSG");
         assumeTrue("EPSG factory required.", crsFactory instanceof CoordinateOperationAuthorityFactory);
         registry = new CoordinateOperationRegistry((CoordinateOperationAuthorityFactory) crsFactory, factory, null);
     }
@@ -362,5 +371,40 @@ public final strictfp class CoordinateOperationRegistryTest extends MathTransfor
         for (final Identifier id : object.getIdentifiers()) {
             assertFalse("EPSG identifier not allowed for modified objects.", "EPSG".equalsIgnoreCase(id.getCodeSpace()));
         }
+    }
+
+    /**
+     * Tests <cite>"Martinique 1938 to RGAF09 (1)"</cite> operation with a target CRS fixed to EPSG:7086
+     * instead of EPSG:5489. Both are <cite>"RGAF09"</cite>, but the former use (longitude, latitude) axis
+     * order instead than the usual (latitude, longitude) order. The source CRS stay fixed to EPSG:4625.
+     *
+     * @throws FactoryException if an error occurred while creating a CRS or operation.
+     */
+    @Test
+    public void testFindDespiteDifferentAxisOrder() throws FactoryException {
+        CoordinateReferenceSystem sourceCRS = crsFactory.createGeographicCRS("EPSG:4625");
+        CoordinateReferenceSystem targetCRS = crsFactory.createGeographicCRS("EPSG:5489");
+        CoordinateOperation operation = registry.createOperation(sourceCRS, targetCRS);
+        assertEpsgNameAndIdentifierEqual("Martinique 1938 to RGAF09 (1)", 5491, operation);
+        /*
+         * Above was only a verification using the source and target CRS expected by EPSG dataset.
+         * Now the interesting test: use a target CRS with different axis order.
+         */
+        targetCRS = crsFactory.createGeographicCRS("EPSG:7086");
+        operation = registry.createOperation(sourceCRS, targetCRS);
+        assertEpsgNameWithoutIdentifierEqual("Martinique 1938 to RGAF09 (1)", operation);
+        final ParameterValueGroup p = ((SingleOperation) operation).getParameterValues();
+        /*
+         * Values below are copied from EPSG geodetic dataset 9.1. They may need
+         * to be adjusted if a future version of EPSG dataset modify those values.
+         */
+        assertEquals("X-axis translation", 127.744,  p.parameter("X-axis translation").doubleValue(), STRICT);
+        assertEquals("Y-axis translation", 547.069,  p.parameter("Y-axis translation").doubleValue(), STRICT);
+        assertEquals("Z-axis translation", 118.359,  p.parameter("Z-axis translation").doubleValue(), STRICT);
+        assertEquals("X-axis rotation",     -3.1116, p.parameter("X-axis rotation")   .doubleValue(), STRICT);
+        assertEquals("Y-axis rotation",      4.9509, p.parameter("Y-axis rotation")   .doubleValue(), STRICT);
+        assertEquals("Z-axis rotation",     -0.8837, p.parameter("Z-axis rotation")   .doubleValue(), STRICT);
+        assertEquals("Scale difference",    14.1012, p.parameter("Scale difference")  .doubleValue(), STRICT);
+        assertEquals("linearAccuracy",       0.1,    CRS.getLinearAccuracy(operation),                STRICT);
     }
 }
