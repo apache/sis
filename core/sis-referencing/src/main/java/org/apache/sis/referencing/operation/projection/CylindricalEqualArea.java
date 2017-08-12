@@ -228,23 +228,23 @@ public class CylindricalEqualArea extends EqualAreaProjection {
     }
 
     /**
-     * Converts a list of coordinate point ordinal values.
-     *
-     * <div class="note"><b>Note:</b>
-     * We override the super-class method only as an optimization in the special case where the target coordinates
-     * are written at the same locations than the source coordinates. In such case, we can take advantage of the
-     * fact that the λ values are not modified by the normalized Cylindrical Equal Area projection.</div>
+     * Converts a list of coordinate points. This method performs the same calculation than above
+     * {@link #transform(double[], int, double[], int, boolean)} method, but is overridden for efficiency.
      *
      * @throws TransformException if a point can not be converted.
      */
     @Override
     public void transform(final double[] srcPts, int srcOff,
-                          final double[] dstPts, int dstOff, int numPts)
-            throws TransformException
+                          final double[] dstPts, int dstOff, int numPts) throws TransformException
     {
         if (srcPts != dstPts || srcOff != dstOff || getClass() != CylindricalEqualArea.class) {
             super.transform(srcPts, srcOff, dstPts, dstOff, numPts);
         } else {
+            /*
+             * Override the super-class method only as an optimization in the special case where the target coordinates
+             * are written at the same locations than the source coordinates. In such case, we can take advantage of
+             * the fact that the λ values are not modified by the normalized Cylindrical Equal Area projection.
+             */
             dstOff--;
             while (--numPts >= 0) {
                 final double φ = dstPts[dstOff += DIMENSION];           // Same as srcPts[srcOff + 1].
@@ -322,8 +322,8 @@ public class CylindricalEqualArea extends EqualAreaProjection {
          * {@inheritDoc}
          *
          * <div class="note"><b>Note:</b>
-         * This method must be overridden because the {@link Mercator} class overrides the {@link NormalizedProjection}
-         * default implementation.</div>
+         * This method must be overridden because the {@link CylindricalEqualArea} class
+         * overrides the {@link NormalizedProjection} default implementation.</div>
          */
         @Override
         public void transform(final double[] srcPts, int srcOff,

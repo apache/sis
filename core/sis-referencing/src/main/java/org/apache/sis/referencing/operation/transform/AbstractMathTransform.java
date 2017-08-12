@@ -357,8 +357,8 @@ public abstract class AbstractMathTransform extends FormattableObject
             throws TransformException;
 
     /**
-     * Transforms a list of coordinate point ordinal values. This method is provided for efficiently
-     * transforming many points. The supplied array of ordinal values will contain packed ordinal values.
+     * Transforms a list of coordinate points. This method is provided for efficiently transforming many points.
+     * The supplied array of coordinate values will contain packed coordinate values.
      *
      * <div class="note"><b>Example:</b> if the source dimension is 3, then the ordinates will be packed in this order:
      * (<var>x₀</var>,<var>y₀</var>,<var>z₀</var>,
@@ -477,7 +477,7 @@ public abstract class AbstractMathTransform extends FormattableObject
     }
 
     /**
-     * Transforms a list of coordinate point ordinal values. The default implementation delegates
+     * Transforms a list of coordinate points. The default implementation delegates
      * to {@link #transform(double[], int, double[], int, int)} using a temporary array of doubles.
      *
      * <div class="note"><b>Implementation note:</b> see {@link IterationStrategy} javadoc for a method skeleton.</div>
@@ -607,7 +607,7 @@ public abstract class AbstractMathTransform extends FormattableObject
     }
 
     /**
-     * Transforms a list of coordinate point ordinal values. The default implementation delegates
+     * Transforms a list of coordinate points. The default implementation delegates
      * to {@link #transform(double[], int, double[], int, int)} using a temporary array of doubles.
      *
      * @param  srcPts  the array containing the source point coordinates.
@@ -670,7 +670,7 @@ public abstract class AbstractMathTransform extends FormattableObject
     }
 
     /**
-     * Transforms a list of coordinate point ordinal values. The default implementation delegates
+     * Transforms a list of coordinate points. The default implementation delegates
      * to {@link #transform(double[], int, double[], int, int)} using a temporary array of doubles
      * if necessary.
      *

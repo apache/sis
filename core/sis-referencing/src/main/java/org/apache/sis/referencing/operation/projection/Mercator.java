@@ -373,12 +373,8 @@ public class Mercator extends ConformalProjection {
     }
 
     /**
-     * Converts a list of coordinate point ordinal values.
-     *
-     * <div class="note"><b>Note:</b>
-     * We override the super-class method only as an optimization in the special case where the target coordinates
-     * are written at the same locations than the source coordinates. In such case, we can take advantage of the
-     * fact that the λ values are not modified by the normalized Mercator projection.</div>
+     * Converts a list of coordinate points. This method performs the same calculation than above
+     * {@link #transform(double[], int, double[], int, boolean)} method, but is overridden for efficiency.
      *
      * @throws TransformException if a point can not be converted.
      */
@@ -390,6 +386,11 @@ public class Mercator extends ConformalProjection {
         if (srcPts != dstPts || srcOff != dstOff || getClass() != Mercator.class) {
             super.transform(srcPts, srcOff, dstPts, dstOff, numPts);
         } else {
+            /*
+             * Override the super-class method only as an optimization in the special case where the target coordinates
+             * are written at the same locations than the source coordinates. In such case, we can take advantage of
+             * the fact that the λ values are not modified by the normalized Mercator projection.
+             */
             dstOff--;
             while (--numPts >= 0) {
                 final double φ = dstPts[dstOff += DIMENSION];                   // Same as srcPts[srcOff + 1].
@@ -427,26 +428,6 @@ public class Mercator extends ConformalProjection {
         final double y   = srcPts[srcOff+1];            // Must be before writing x.
         dstPts[dstOff  ] = srcPts[srcOff  ];            // Must be before writing y.
         dstPts[dstOff+1] = φ(exp(-y));
-    }
-
-    /**
-     * Inverse converts an arbitrary amount of coordinates. This method is provided as an optimization only.
-     * Formula shall be a copy of the formula used in {@link #inverseTransform(double[], int, double[], int)},
-     * except for the copy of {@code x} which can be skipped if the target array overwrites the source array.
-     */
-    @Override
-    final void inverseTransform(final double[] srcPts, int srcOff,
-                                final double[] dstPts, int dstOff, int numPts) throws ProjectionException
-    {
-        if (srcPts != dstPts || srcOff != dstOff || getClass() != Mercator.class) {
-            super.inverseTransform(srcPts, srcOff, dstPts, dstOff, numPts);
-        } else {
-            dstOff--;
-            while (--numPts >= 0) {
-                dstOff += DIMENSION;
-                dstPts[dstOff] = φ(exp(-dstPts[dstOff]));
-            }
-        }
     }
 
 
