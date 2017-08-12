@@ -710,22 +710,6 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
             throws ProjectionException;
 
     /**
-     * Inverse converts an arbitrary amount of coordinates. This method is invoked only if the conversions can be
-     * applied by a loop with indices in increasing order, without the need to copy an array in a temporary buffer.
-     * The default implementation delegates to {@link #inverseTransform(double[], int, double[], int)} in a loop,
-     * but subclasses can override.
-     */
-    void inverseTransform(final double[] srcPts, int srcOff,
-                          final double[] dstPts, int dstOff, int numPts) throws ProjectionException
-    {
-        while (--numPts >= 0) {
-            inverseTransform(srcPts, srcOff, dstPts, dstOff);
-            srcOff += DIMENSION;
-            dstOff += DIMENSION;
-        }
-    }
-
-    /**
      * Returns the inverse of this map projection.
      * Subclasses do not need to override this method, as they should override
      * {@link #inverseTransform(double[], int, double[], int) inverseTransform(…)} instead.
@@ -781,18 +765,19 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
         }
 
         /**
-         * Inverse transforms an arbitrary amount of coordinates. This method delegates to the optimized
-         * {@link NormalizedProjection#inverseTransform(double[], int, double[], int, int)} method if possible,
-         * or to the default implementation otherwise.
+         * Inverse transforms an arbitrary amount of coordinates. This method optimizes the
+         * case where conversions can be applied by a loop with indices in increasing order.
          */
         @Override
         public void transform(final double[] srcPts, int srcOff,
                               final double[] dstPts, int dstOff, int numPts) throws TransformException
         {
-            if (srcPts != dstPts || srcOff >= dstOff) {
-                inverseTransform(srcPts, srcOff, dstPts, dstOff, numPts);
-            } else {
+            if (srcPts == dstPts && srcOff < dstOff) {
                 super.transform(srcPts, srcOff, dstPts, dstOff, numPts);
+            } else while (--numPts >= 0) {
+                inverseTransform(srcPts, srcOff, dstPts, dstOff);
+                srcOff += DIMENSION;
+                dstOff += DIMENSION;
             }
         }
 

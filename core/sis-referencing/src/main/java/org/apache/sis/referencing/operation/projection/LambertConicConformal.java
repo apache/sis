@@ -21,7 +21,6 @@ import org.opengis.util.FactoryException;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
-import org.opengis.referencing.operation.TransformException;
 import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.referencing.operation.Matrix;
 import org.apache.sis.measure.Latitude;
@@ -446,36 +445,6 @@ public class LambertConicConformal extends ConformalProjection {
     }
 
     /**
-     * Converts a list of coordinate point ordinal values. This method is overridden as an optimization only.
-     * It performs the exact same calculation than {@link #transform(double[], int, double[], int, boolean)}.
-     *
-     * @throws TransformException if a point can not be converted.
-     */
-    @Override
-    public void transform(final double[] srcPts, int srcOff,
-                          final double[] dstPts, int dstOff, int numPts)
-            throws TransformException
-    {
-        if (srcPts == dstPts && srcOff < dstOff || getClass() != LambertConicConformal.class) {
-            super.transform(srcPts, srcOff, dstPts, dstOff, numPts);
-        } else while (--numPts >= 0) {
-            final double θ    = srcPts[srcOff++];
-            final double φ    = srcPts[srcOff++];
-            final double absφ = abs(φ);
-            final double ρ;
-            if (absφ < PI/2) {
-                ρ = pow(expOfNorthing(φ, eccentricity*sin(φ)), n);
-            } else if (absφ < PI/2 + ANGULAR_TOLERANCE) {
-                ρ = (φ*n >= 0) ? POSITIVE_INFINITY : 0;
-            } else {
-                ρ = NaN;
-            }
-            dstPts[dstOff++] = ρ * sin(θ);
-            dstPts[dstOff++] = ρ * cos(θ);
-        }
-    }
-
-    /**
      * Converts the specified (<var>x</var>,<var>y</var>) coordinates and stores the (θ,φ) result in {@code dstPts}.
      *
      * @throws ProjectionException if the point can not be converted.
@@ -494,24 +463,6 @@ public class LambertConicConformal extends ConformalProjection {
          */
         dstPts[dstOff  ] = atan2(x, y);                 // Really (x,y), not (y,x)
         dstPts[dstOff+1] = -φ(pow(hypot(x, y), 1/n));   // Equivalent to φ(pow(hypot(x,y), -1/n)) but more accurate for n>0.
-    }
-
-    /**
-     * Inverse converts an arbitrary amount of coordinates. This method is provided as an optimization only.
-     * Formula shall be a copy of the formula used in {@link #inverseTransform(double[], int, double[], int)}.
-     */
-    @Override
-    final void inverseTransform(final double[] srcPts, int srcOff,
-                                final double[] dstPts, int dstOff, int numPts) throws ProjectionException
-    {
-        if (getClass() != LambertConicConformal.class) {
-            super.inverseTransform(srcPts, srcOff, dstPts, dstOff, numPts);
-        } else while (--numPts >= 0) {
-            final double x = srcPts[srcOff++];
-            final double y = srcPts[srcOff++];
-            dstPts[dstOff++] = atan2(x, y);
-            dstPts[dstOff++] = -φ(pow(hypot(x, y), 1/n));
-        }
     }
 
 
