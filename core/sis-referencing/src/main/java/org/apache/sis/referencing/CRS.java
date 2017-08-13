@@ -667,6 +667,10 @@ public final class CRS extends Static {
      * associated with the given operation. If more than one geographic bounding box is found, then this method
      * computes their {@linkplain DefaultGeographicBoundingBox#add(GeographicBoundingBox) union}.
      *
+     * <p><b>Fallback:</b> if the given operation does not declare explicitely a domain of validity, then this
+     * method computes the intersection of the domain of validity declared by source and target CRS. If no CRS
+     * declare a domain of validity, then this method returns {@code null}.</p>
+     *
      * @param  operation  the coordinate operation for which to get the domain of validity, or {@code null}.
      * @return the geographic area where the operation is valid, or {@code null} if unspecified.
      *
@@ -678,7 +682,15 @@ public final class CRS extends Static {
      * @since 0.7
      */
     public static GeographicBoundingBox getGeographicBoundingBox(final CoordinateOperation operation) {
-        return (operation != null) ? Extents.getGeographicBoundingBox(operation.getDomainOfValidity()) : null;
+        if (operation == null) {
+            return null;
+        }
+        GeographicBoundingBox bbox = Extents.getGeographicBoundingBox(operation.getDomainOfValidity());
+        if (bbox == null) {
+            bbox = Extents.intersection(getGeographicBoundingBox(operation.getSourceCRS()),
+                                        getGeographicBoundingBox(operation.getTargetCRS()));
+        }
+        return bbox;
     }
 
     /**
