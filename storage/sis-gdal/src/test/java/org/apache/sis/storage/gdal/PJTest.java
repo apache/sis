@@ -60,7 +60,7 @@ public final strictfp class PJTest extends TestCase {
      * Ensures that the given object is the WGS84 definition.
      */
     private static void assertIsWGS84(final PJ pj) {
-        assertEquals("+proj=latlong +datum=WGS84 +ellps=WGS84 +towgs84=0,0,0", pj.getCode().trim());
+        assertEquals("+proj=latlong +datum=WGS84 +ellps=WGS84 +towgs84=0,0,0", pj.getCode());
         assertEquals("Proj4",            pj.getCodeSpace());
         assertSame  (Citations.PROJ4,    pj.getAuthority());
         assertTrue  (Character.isDigit(  pj.getVersion().codePointAt(0)));
