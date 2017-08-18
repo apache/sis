@@ -54,13 +54,15 @@ abstract class EqualAreaProjection extends NormalizedProjection {
      *
      *
      * <p><b>BENCHMARK AND ANALYSIS:</b>
-     * as of July 2016, benchmarking shows no benefit in using trigonometric identities for {@code EqualAreaProjection}
-     * (contrarily to {@link ConformalProjection} where we did measured a benefit). This may be because in this class,
+     * as of July 2016, benchmarking shows small benefit in using trigonometric identities for {@code EqualAreaProjection}
+     * (contrarily to {@link ConformalProjection} where we measured a greater benefit). This may be because in this class,
      * the series expansion is unconditionally followed by iterative method in order to reach the centimetric precision.
      * We observe that the original series expansion allows convergence in only one iteration, while the formulas using
-     * trigonometric identifies often requires two iterations. Consequently we disallow those modifications for now.</p>
+     * trigonometric identifies often requires two iterations.</p>
+     *
+     * @todo Redo the benchmark with JDK9, since {@code sin} seems much faster.
      */
-    private static final boolean ALLOW_TRIGONOMETRIC_IDENTITIES = false;
+    private static final boolean ALLOW_TRIGONOMETRIC_IDENTITIES = true;
 
     /**
      * Coefficients in the series expansion of the inverse projection,
