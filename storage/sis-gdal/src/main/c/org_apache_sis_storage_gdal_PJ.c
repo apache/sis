@@ -106,7 +106,9 @@ JNIEXPORT jstring JNICALL Java_org_apache_sis_storage_gdal_PJ_getCode
     if (pj) {
         const char *desc = pj_get_def(pj, 0);
         if (desc) {
-            jstring str = (*env)->NewStringUTF(env, desc);
+            const char *trim = desc;
+            if (*trim == ' ') trim++;
+            jstring str = (*env)->NewStringUTF(env, trim);
             pj_dalloc((char*) desc);
             return str;
         }
