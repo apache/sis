@@ -281,12 +281,14 @@ JNIEXPORT void JNICALL Java_org_apache_sis_storage_gdal_PJ_transform
 JNIEXPORT jstring JNICALL Java_org_apache_sis_storage_gdal_PJ_getLastError
   (JNIEnv *env, jobject object)
 {
-    projPJ pj = getPJ(env, object);
-    if (pj) {
-        int err = *pj_get_errno_ref();
-        if (err) {
-            return (*env)->NewStringUTF(env, pj_strerrno(err));
-        }
+    /*
+     * For now we ignore the object reference, but a future version may use it if
+     * we make this method thread-safe with the use of a Proj.4 context parameter.
+     * Note that this method needs to work even if getPJ(env, object) returns NULL.
+     */
+    int err = *pj_get_errno_ref();
+    if (err) {
+        return (*env)->NewStringUTF(env, pj_strerrno(err));
     }
     return NULL;
 }
