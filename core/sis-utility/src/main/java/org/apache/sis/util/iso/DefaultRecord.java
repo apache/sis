@@ -104,19 +104,25 @@ public class DefaultRecord implements Record, Serializable {
      *
      * @since 0.8
      */
+    @SuppressWarnings("SuspiciousSystemArraycopy")
     public DefaultRecord(final Record record) {
         this(record.getRecordType());
-        for (final Map.Entry<MemberName,Integer> entry : definition.memberIndices().entrySet()) {
-            final MemberName name = entry.getKey();
-            final Object value = record.locate(name);
-            if (value != null) {
-                final int index = entry.getValue();
-                final Class<?> valueClass = definition.getValueClass(index);
-                if (valueClass != null && !valueClass.isInstance(value)) {
-                    throw new ClassCastException(Errors.format(Errors.Keys.IllegalPropertyValueClass_3,
-                            name, valueClass, value.getClass()));
+        if (record instanceof DefaultRecord) {
+            final Object source = ((DefaultRecord) record).values;
+            System.arraycopy(source, 0, values, 0, Array.getLength(source));
+        } else {
+            for (final Map.Entry<MemberName,Integer> entry : definition.memberIndices().entrySet()) {
+                final MemberName name = entry.getKey();
+                final Object value = record.locate(name);
+                if (value != null) {
+                    final int index = entry.getValue();
+                    final Class<?> valueClass = definition.getValueClass(index);
+                    if (valueClass != null && !valueClass.isInstance(value)) {
+                        throw new ClassCastException(Errors.format(Errors.Keys.IllegalPropertyValueClass_3,
+                                name, valueClass, value.getClass()));
+                    }
+                    Array.set(values, index, value);
                 }
-                Array.set(values, index, value);
             }
         }
     }
