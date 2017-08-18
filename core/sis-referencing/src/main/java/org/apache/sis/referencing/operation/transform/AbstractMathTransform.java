@@ -443,8 +443,8 @@ public abstract class AbstractMathTransform extends FormattableObject
                     throw failure;
                 }
                 /*
-                 * Otherwise fills the ordinate values to NaN and count the number of exceptions,
-                 * so we known when to give up if there is too much of them. The first exception
+                 * Otherwise set the ordinate values to NaN and count the number of exceptions,
+                 * so we know when to give up if there is too much of them. The first exception
                  * will be propagated at the end of this method.
                  */
                 Arrays.fill(dstPts, dstOff, dstOff + Math.abs(dstInc), Double.NaN);
