@@ -26,7 +26,7 @@ project logo are trademarks of The Apache Software Foundation.
 Getting Started
 ===============
 
-SIS requires Java 6 and uses the Maven 3 <http://maven.apache.org/>
+SIS requires Java 7 and uses the Maven 3 <http://maven.apache.org/>
 build system. To build SIS, use the following command in this directory:
 
     mvn clean package

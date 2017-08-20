@@ -28,6 +28,7 @@ import org.apache.sis.storage.DataStoreReferencingException;
 import org.apache.sis.storage.UnsupportedStorageException;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.setup.OptionKey;
+import org.apache.sis.storage.Resource;
 import org.apache.sis.util.Debug;
 
 
@@ -106,7 +107,7 @@ public class LandsatStore extends DataStore {
     public synchronized Metadata getMetadata() throws DataStoreException {
         if (metadata == null && source != null) try {
             try (BufferedReader reader = (source instanceof BufferedReader) ? (BufferedReader) source : new LineNumberReader(source)) {
-                source = null;      // Will be closed at the end of this try-catch block.
+                source = null;      // Will be closed at the end of this try-finally block.
                 final LandsatReader parser = new LandsatReader(getDisplayName(), listeners);
                 parser.read(reader);
                 metadata = parser.getMetadata();
@@ -117,6 +118,18 @@ public class LandsatStore extends DataStore {
             throw new DataStoreReferencingException(e);
         }
         return metadata;
+    }
+
+    /**
+     * Current implementation does not provide any resource yet.
+     * Future versions may return an aggregate of all raster data in the GeoTIFF files associated with this metadata.
+     *
+     * @return the starting point of all resources in this data store.
+     * @throws DataStoreException if an error occurred while reading the data.
+     */
+    @Override
+    public Resource getRootResource() throws DataStoreException {
+        return null;
     }
 
     /**

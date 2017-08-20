@@ -33,7 +33,7 @@ import static org.opengis.test.Assert.*;
 /**
  * Tests the {@link Initializer} class.
  *
- * @author  Rémi Marechal (Geomatys)
+ * @author  Rémi Maréchal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.7
  * @since   0.7

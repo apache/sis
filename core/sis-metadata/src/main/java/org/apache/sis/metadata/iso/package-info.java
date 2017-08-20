@@ -39,7 +39,6 @@
  * {@code  ├─} {@linkplain org.apache.sis.metadata.iso.DefaultApplicationSchemaInformation Application schema information}<br>
  * {@code  ├─} {@linkplain org.apache.sis.metadata.iso.DefaultMetadataExtensionInformation Metadata extension information}<br>
  * {@code  ├─} {@linkplain org.apache.sis.metadata.iso.DefaultExtendedElementInformation   Extended element information}<br>
- * {@code  ├─} {@linkplain org.apache.sis.metadata.iso.DefaultFeatureTypeList              Feature type list}<br>
  * {@code  └─} {@linkplain org.apache.sis.metadata.iso.DefaultIdentifier                   Identifier}<br>
  * {@linkplain org.opengis.util.CodeList Code list}<br>
  * {@code  ├─} {@linkplain org.opengis.metadata.Datatype   Data type}<br>
@@ -53,7 +52,6 @@
  * {@code  │   └─}     {@linkplain org.apache.sis.metadata.iso.DefaultExtendedElementInformation   Extended element information}<br>
  * {@code  │       ├─} {@linkplain org.opengis.metadata.Datatype                                   Data type} «code list»<br>
  * {@code  │       └─} {@linkplain org.opengis.metadata.Obligation                                 Obligation} «code list»<br>
- * {@code  ├─}         {@linkplain org.apache.sis.metadata.iso.DefaultFeatureTypeList              Feature type list}<br>
  * {@code  └─}         {@linkplain org.apache.sis.metadata.iso.DefaultIdentifier                   Identifier}<br>
  * </td></tr></table>
  *

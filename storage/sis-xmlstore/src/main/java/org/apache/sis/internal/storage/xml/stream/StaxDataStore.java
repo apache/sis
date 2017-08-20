@@ -38,7 +38,6 @@ import org.apache.sis.setup.OptionKey;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.DataStoreException;
-import org.apache.sis.internal.storage.FeatureStore;
 import org.apache.sis.internal.storage.io.ChannelFactory;
 import org.apache.sis.internal.storage.io.IOUtilities;
 import org.apache.sis.internal.storage.io.Markable;
@@ -65,7 +64,7 @@ import org.apache.sis.util.Debug;
  * @since   0.8
  * @module
  */
-public abstract class StaxDataStore extends FeatureStore {
+public abstract class StaxDataStore extends DataStore {
     /**
      * The locale to use for locale-sensitive data (<strong>not</strong> for logging or warning messages),
      * or {@code null} if unspecified.

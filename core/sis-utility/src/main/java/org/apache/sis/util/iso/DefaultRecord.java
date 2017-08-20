@@ -53,7 +53,8 @@ import org.apache.sis.internal.util.AbstractMapEntry;
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.5
+ * @author  Cullen Rombach (Image Matters)
+ * @version 0.8
  *
  * @see DefaultRecordType
  * @see DefaultRecordSchema
@@ -93,6 +94,59 @@ public class DefaultRecord implements Record, Serializable {
             definition = new RecordDefinition.Adapter(type);
         }
         values = Array.newInstance(definition.baseValueClass(), definition.size());
+    }
+
+    /**
+     * Creates a new record initialized to a shallow copy of the given record.
+     * The members contained in the given record are <strong>not</strong> recursively copied.
+     *
+     * @param  record  the record to copy (can not be null).
+     *
+     * @since 0.8
+     */
+    public DefaultRecord(final Record record) {
+        this(record.getRecordType());
+        for (final Map.Entry<MemberName,Integer> entry : definition.memberIndices().entrySet()) {
+            final MemberName name = entry.getKey();
+            final Object value = record.locate(name);
+            if (value != null) {
+                final int index = entry.getValue();
+                final Class<?> valueClass = definition.getValueClass(index);
+                if (valueClass != null && !valueClass.isInstance(value)) {
+                    throw new ClassCastException(Errors.format(Errors.Keys.IllegalPropertyValueClass_3,
+                            name, valueClass, value.getClass()));
+                }
+                Array.set(values, index, value);
+            }
+        }
+    }
+
+    /**
+     * Returns a SIS implementation with the name and members of the given arbitrary implementation.
+     * This method performs the first applicable action in the following choices:
+     *
+     * <ul>
+     *   <li>If the given object is {@code null}, then this method returns {@code null}.</li>
+     *   <li>Otherwise if the given object is already an instance of {@code DefaultRecord},
+     *       then it is returned unchanged.</li>
+     *   <li>Otherwise a new {@code DefaultRecord} instance is created using the
+     *       {@linkplain #DefaultRecord(Record) copy constructor} and returned.
+     *       Note that this is a shallow copy operation, since the members contained
+     *       in the given object are not recursively copied.</li>
+     * </ul>
+     *
+     * @param  other The object to get as a SIS implementation, or {@code null} if none.
+     * @return A SIS implementation containing the members of the given object
+     *         (may be the given object itself), or {@code null} if the argument was {@code null}.
+     *
+     * @since 0.8
+     */
+    public static DefaultRecord castOrCopy(final Record other) {
+        if (other == null || other instanceof DefaultRecord) {
+            return (DefaultRecord) other;
+        } else {
+            return new DefaultRecord(other);
+        }
     }
 
     /**

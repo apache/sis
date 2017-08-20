@@ -21,6 +21,7 @@ import java.util.Locale;
 import java.util.Objects;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlValue;
+import javax.xml.bind.annotation.XmlRootElement;
 import org.opengis.util.InternationalString;
 import org.apache.sis.xml.XLink;
 
@@ -36,11 +37,13 @@ import org.apache.sis.xml.XLink;
  *
  * @author  Guilhem Legal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.3
+ * @author  Cullen Rombach (Image Matters)
+ * @version 0.8
  * @since   0.3
  * @module
  */
 @XmlType(name = "Anchor_Type")
+@XmlRootElement(name = "Anchor")
 public final class Anchor extends XLink implements InternationalString {
     /**
      * Defined as a matter of principle (this class is not expected to be serialized).

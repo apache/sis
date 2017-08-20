@@ -170,9 +170,9 @@ public final strictfp class MilitaryGridReferenceSystemTest extends TestCase {
              * The lowest 4 bits are the number of the row cycle (a cycle of 2000 km). The remaining bits tell which
              * rows are valid in that latitude band.
              */
-            final int rowCycle = (int) Math.floor(ymin / (MilitaryGridReferenceSystem.GRID_SQUARE_SIZE * MilitaryGridReferenceSystem.GRID_ROW_COUNT));
-            final int lowerRow = (int) Math.floor(ymin /  MilitaryGridReferenceSystem.GRID_SQUARE_SIZE);    // Inclusive
-            final int upperRow = (int) Math.ceil (ymax /  MilitaryGridReferenceSystem.GRID_SQUARE_SIZE);    // Exclusive
+            final int rowCycle = (int) StrictMath.floor(ymin / (MilitaryGridReferenceSystem.GRID_SQUARE_SIZE * MilitaryGridReferenceSystem.GRID_ROW_COUNT));
+            final int lowerRow = (int) StrictMath.floor(ymin /  MilitaryGridReferenceSystem.GRID_SQUARE_SIZE);    // Inclusive
+            final int upperRow = (int) StrictMath.ceil (ymax /  MilitaryGridReferenceSystem.GRID_SQUARE_SIZE);    // Exclusive
             assertTrue("rowCycle", rowCycle >= 0 && rowCycle <= MilitaryGridReferenceSystem.Decoder.NORTHING_BITS_MASK);
             assertTrue("lowerRow", lowerRow >= 0);
             assertTrue("upperRow", upperRow >= 0);

@@ -224,7 +224,7 @@ public final strictfp class ReaderTest extends TestCase {
         try (Store reader = create("1.0/waypoint.xml")) {
             verifyAlmostEmptyMetadata((Metadata) reader.getMetadata());
             assertEquals("version", StoreProvider.V1_0, reader.getVersion());
-            try (Stream<AbstractFeature> features = reader.features(false)) {
+            try (Stream<AbstractFeature> features = reader.features()) {
                 final Iterator<AbstractFeature> it = features.iterator();
                 verifyPoint(it.next(), 0, false);
                 verifyPoint(it.next(), 1, false);
@@ -245,7 +245,7 @@ public final strictfp class ReaderTest extends TestCase {
         try (Store reader = create("1.1/waypoint.xml")) {
             verifyAlmostEmptyMetadata((Metadata) reader.getMetadata());
             assertEquals("version", StoreProvider.V1_1, reader.getVersion());
-            try (Stream<AbstractFeature> features = reader.features(false)) {
+            try (Stream<AbstractFeature> features = reader.features()) {
                 final Iterator<AbstractFeature> it = features.iterator();
                 verifyPoint(it.next(), 0, true);
                 verifyPoint(it.next(), 1, true);
@@ -266,7 +266,7 @@ public final strictfp class ReaderTest extends TestCase {
         try (Store reader = create("1.0/route.xml")) {
             verifyAlmostEmptyMetadata((Metadata) reader.getMetadata());
             assertEquals("version", StoreProvider.V1_0, reader.getVersion());
-            try (Stream<AbstractFeature> features = reader.features(false)) {
+            try (Stream<AbstractFeature> features = reader.features()) {
                 final Iterator<AbstractFeature> it = features.iterator();
                 verifyRoute(it.next(), false, 1);
                 verifyEmpty(it.next(), "rtept");
@@ -295,7 +295,7 @@ public final strictfp class ReaderTest extends TestCase {
      * This verification is shared by {@link #testRoute110()} and {@link #testSequentialReads()}.
      */
     static void verifyRoute110(final Store reader) throws DataStoreException {
-        try (Stream<AbstractFeature> features = reader.features(false)) {
+        try (Stream<AbstractFeature> features = reader.features()) {
             final Iterator<AbstractFeature> it = features.iterator();
             verifyRoute(it.next(), true, 3);
             verifyEmpty(it.next(), "rtept");
@@ -373,7 +373,7 @@ public final strictfp class ReaderTest extends TestCase {
         try (Store reader = create("1.0/track.xml")) {
             verifyAlmostEmptyMetadata((Metadata) reader.getMetadata());
             assertEquals("version", StoreProvider.V1_0, reader.getVersion());
-            try (Stream<AbstractFeature> features = reader.features(false)) {
+            try (Stream<AbstractFeature> features = reader.features()) {
                 final Iterator<AbstractFeature> it = features.iterator();
                 verifyTrack(it.next(), false, 1);
                 verifyEmpty(it.next(), "trkseg");
@@ -393,7 +393,7 @@ public final strictfp class ReaderTest extends TestCase {
         try (Store reader = create("1.1/track.xml")) {
             verifyAlmostEmptyMetadata((Metadata) reader.getMetadata());
             assertEquals("version", StoreProvider.V1_1, reader.getVersion());
-            try (Stream<AbstractFeature> features = reader.features(false)) {
+            try (Stream<AbstractFeature> features = reader.features()) {
                 final Iterator<AbstractFeature> it = features.iterator();
                 verifyTrack(it.next(), true, 3);
                 verifyEmpty(it.next(), "trkseg");
@@ -610,13 +610,13 @@ public final strictfp class ReaderTest extends TestCase {
     @DependsOnMethod("testSequentialReads")
     public void testConcurrentReads() throws DataStoreException {
         try (Store reader = createFromURL()) {
-            final Stream<AbstractFeature>   f1 = reader.features(false);
+            final Stream<AbstractFeature>   f1 = reader.features();
             final Iterator<AbstractFeature> i1 = f1.iterator();
             verifyRoute(i1.next(), true, 3);
-            final Stream<AbstractFeature>   f2 = reader.features(false);
+            final Stream<AbstractFeature>   f2 = reader.features();
             final Iterator<AbstractFeature> i2 = f2.iterator();
             verifyEmpty(i1.next(), "rtept");
-            final Stream<AbstractFeature>   f3 = reader.features(false);
+            final Stream<AbstractFeature>   f3 = reader.features();
             final Iterator<AbstractFeature> i3 = f3.iterator();
             verifyRoute(i2.next(), true, 3);
             verifyRoute(i3.next(), true, 3);

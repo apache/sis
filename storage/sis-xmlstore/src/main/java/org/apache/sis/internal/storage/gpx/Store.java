@@ -21,6 +21,7 @@ import org.opengis.util.NameFactory;
 import org.opengis.util.FactoryException;
 import org.opengis.metadata.Metadata;
 import org.opengis.metadata.distribution.Format;
+import org.apache.sis.storage.Resource;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreContentException;
@@ -167,14 +168,27 @@ public final class Store extends StaxDataStore {
     }
 
     /**
+     * Returns the {@code FeatureSet} from which all features in this data store can be accessed.
+     *
+     * @return the starting point of all features in this data store.
+     */
+    @Override
+    public Resource getRootResource() {
+        return new FeatureAccess(this, listeners);
+    }
+
+    /**
      * Returns the feature type for the given name. The {@code name} argument should be the result of calling
      * {@link org.opengis.util.GenericName#toString()} on the name of one of the feature types in this data store.
      *
      * @param  name  the name or alias of the feature type to get.
      * @return the feature type of the given name or alias (never {@code null}).
      * @throws IllegalNameException if the given name was not found or is ambiguous.
+     *
+     * @deprecated We are not sure yet if we will keep this method. Decision is pending acquisition of
+     *             more experience with the API proposed by {@link org.apache.sis.storage.FeatureSet}.
      */
-    @Override
+    @Deprecated
     public DefaultFeatureType getFeatureType(final String name) throws IllegalNameException {
         return types.names.get(this, name);
     }
@@ -182,12 +196,10 @@ public final class Store extends StaxDataStore {
     /**
      * Returns the stream of features.
      *
-     * @param  parallel  ignored in current implementation.
      * @return a stream over all features in the XML file.
      * @throws DataStoreException if an error occurred while creating the feature stream.
      */
-    @Override
-    public synchronized Stream<AbstractFeature> features(final boolean parallel) throws DataStoreException {
+    final synchronized Stream<AbstractFeature> features() throws DataStoreException {
         Reader r = reader;
         reader = null;
         if (r == null) try {

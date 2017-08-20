@@ -26,7 +26,7 @@ import org.apache.sis.internal.jaxb.XmlUtilities;
 
 /**
  * JAXB adapter wrapping the date value (as milliseconds elapsed since January 1st, 1970) in a
- * {@link XMLGregorianCalendar} for the {@code xsd:date} type. Hours, minutes and seconds are
+ * {@link XMLGregorianCalendar} for the {@code xs:date} type. Hours, minutes and seconds are
  * discarded.
  *
  * <p>Using this adapter is equivalent to apply the following annotation on a {@code Date} field:</p>
@@ -81,7 +81,7 @@ public final class DateAdapter extends XmlAdapter<XMLGregorianCalendar, Date> {
             final Context context = Context.current();
             try {
                 final XMLGregorianCalendar gc = XmlUtilities.toXML(context, value);
-                XmlUtilities.trimTime(gc, true);        // Type is xsd:date without time.
+                XmlUtilities.trimTime(gc, true);        // Type is xs:date without time.
                 return gc;
             } catch (DatatypeConfigurationException e) {
                 Context.warningOccured(context, XmlAdapter.class, "marshal", e, true);

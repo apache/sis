@@ -14,51 +14,31 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.storage;
+package org.apache.sis.internal.storage;
 
-import org.opengis.metadata.Metadata;
+import org.apache.sis.storage.DataStore;
+import org.apache.sis.storage.FeatureSet;
+import org.apache.sis.util.logging.WarningListeners;
 
 
 /**
- * A dummy data store
+ * Base implementation of feature sets contained in data stores.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
  * @since   0.8
  * @module
+ *
+ * @todo this class may be removed if we refactor {@link FeatureSet} as an abstract class.
  */
-final strictfp class DataStoreMock extends DataStore {
+public abstract class AbstractFeatureSet extends AbstractResource implements FeatureSet {
     /**
-     * The display name.
+     * Creates a new resource.
+     *
+     * @param store      the data store which contains this resource.
+     * @param listeners  the set of registered warning listeners for the data store.
      */
-    private final String name;
-
-    /**
-     * Creates a new data store mock with the given display name.
-     */
-    DataStoreMock(final String name) {
-        this.name = name;
-    }
-
-    /**
-     * Returns the display name specified at construction time.
-     */
-    @Override
-    public String getDisplayName() {
-        return name;
-    }
-
-    @Override
-    public Metadata getMetadata() {
-        return null;
-    }
-
-    @Override
-    public Resource getRootResource() throws DataStoreException {
-        return null;
-    }
-
-    @Override
-    public void close() {
+    protected AbstractFeatureSet(final DataStore store, final WarningListeners<DataStore> listeners) {
+        super(store, listeners);
     }
 }
