@@ -30,7 +30,7 @@ import static org.junit.Assert.*;
  * Tests the {@link Locales} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.4
+ * @version 0.8
  * @since   0.3
  * @module
  */
@@ -82,6 +82,7 @@ public final strictfp class LocalesTest extends TestCase {
         assertSame(Locale.CANADA_FRENCH, Locales.parse("fr_CAN"));
         assertSame(Locale.CANADA_FRENCH, Locales.parse("fra_CAN"));
         assertSame(Locale.JAPAN,         Locales.parse("ja_JP"));
+        assertSame(Locale.US,            Locales.parse("en; USA"));
 
         assertEquals(new Locale("de", "DE"),            Locales.parse("de_DE"));
         assertEquals(new Locale("",   "GB"),            Locales.parse("_GB"));

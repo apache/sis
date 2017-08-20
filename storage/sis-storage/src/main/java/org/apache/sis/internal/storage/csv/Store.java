@@ -110,10 +110,22 @@ public final class Store extends DataStore {
     static final char ORDINATE_SEPARATOR = ' ';
 
     /**
-     * The prefix for elements in the {@code @columns} line that specify the data type.
+     * The prefix for elements in the {@code @columns} line that specify the data type,
+     * as required by the OGC CSV encoding specification.
      * Examples: {@code xsd:boolean}, {@code xsd:decimal}, {@code xsd:integer}, <i>etc</i>.
+     *
+     * <p>Note that this prefix is slightly different than the {@code "xs:"} prefix used
+     * in {@code https://www.w3.org/2009/XMLSchema/XMLSchema.xsd} file. This data store
+     * implementation accepts both.</p>
      */
     private static final String TYPE_PREFIX = "xsd:";
+
+    /**
+     * The prefix used in {@code https://www.w3.org/2009/XMLSchema/XMLSchema.xsd} file.
+     * This is not the same prefix than the one specified by OGC CSV encoding, but this
+     * implementation accepts both.
+     */
+    private static final String XS_PREFIX = "xs:";
 
     /**
      * The reader, set by the constructor and cleared when no longer needed.
@@ -472,8 +484,11 @@ public final class Store extends DataStore {
             Class<?> type = null;
             if (++i < size) {
                 String tn = elements.get(i);
-                if (!tn.isEmpty() && tn.regionMatches(true, 0, TYPE_PREFIX, 0, TYPE_PREFIX.length())) {
-                    String st = tn.substring(TYPE_PREFIX.length()).toLowerCase(Locale.US);
+                int length;
+                if (tn.regionMatches(true, 0, TYPE_PREFIX, 0, length = TYPE_PREFIX.length()) ||
+                    tn.regionMatches(true, 0,   XS_PREFIX, 0, length =   XS_PREFIX.length()))
+                {
+                    String st = tn.substring(length).toLowerCase(Locale.US);
                     switch (st) {
                         case "boolean":  type = Boolean.class; break;
                         case "decimal":  type = Double .class; break;
