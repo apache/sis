@@ -16,6 +16,7 @@
  */
 package org.apache.sis.storage.gdal;
 
+import java.util.Arrays;
 import java.util.Map;
 import java.util.Set;
 import java.util.HashMap;
@@ -274,7 +275,7 @@ public class Proj4Factory extends GeodeticAuthorityFactory implements CRSAuthori
     /**
      * Returns the set of authority codes for objects of the given type.
      * Current implementation can not return complete Proj.4 definition strings.
-     * Instead, this method currently returns only fragments (e.g. {@code "+init="}).
+     * Instead, this method currently returns only fragments (e.g. {@code "+proj=lcc"}).
      *
      * @param  type  the spatial reference objects type.
      * @return fragments of definition strings for spatial reference objects of the given type.
@@ -282,19 +283,21 @@ public class Proj4Factory extends GeodeticAuthorityFactory implements CRSAuthori
      */
     @Override
     public Set<String> getAuthorityCodes(Class<? extends IdentifiedObject> type) throws FactoryException {
-        final String method;
-        if (type.isAssignableFrom(ProjectedCRS.class)) {                // Must be tested first.
-            method = "";
-        } else if (type.isAssignableFrom(GeographicCRS.class)) {        // Should be tested before GeocentricCRS.
-            method = "latlon";
-        } else if (type.isAssignableFrom(GeocentricCRS.class)) {
-            method = "geocent";
-        } else {
-            return Collections.emptySet();
+        final Set<String> codes = new LinkedHashSet<>(10);
+        if (type.isAssignableFrom(GeographicCRS.class)) {
+            codes.add("latlon");
         }
-        final Set<String> codes = new LinkedHashSet<>(4);
-        codes.add("+init=");
-        codes.add(PROJ_PARAM.concat(method));
+        if (type.isAssignableFrom(GeocentricCRS.class)) {
+            codes.add("geocent");
+        }
+        if (type.isAssignableFrom(ProjectedCRS.class)) {
+            codes.addAll(Arrays.asList("lcc", "merc", "tmerc", "stere"));   // Only a subset of supported projections.
+        }
+        final String[] methods = codes.toArray(new String[codes.size()]);
+        codes.clear();
+        for (final String method : methods) {
+            codes.add(PROJ_PARAM.concat(method));
+        }
         return codes;
     }
 
@@ -582,16 +585,22 @@ public class Proj4Factory extends GeodeticAuthorityFactory implements CRSAuthori
     private CoordinateReferenceSystem createCRS(final PJ pj, final boolean withHeight) throws FactoryException {
         final PJ.Type type = pj.getType();
         final boolean geographic = PJ.Type.GEOGRAPHIC.equals(type);
+        final boolean geocentric = PJ.Type.GEOCENTRIC.equals(type);
         final Proj4Parser parser = new Proj4Parser(pj.getCode());
         final String dir = parser.value("axis", "enu");
-        final CoordinateSystemAxis[] axes = new CoordinateSystemAxis[withHeight ? dir.length() : 2];
+        final CoordinateSystemAxis[] axes = new CoordinateSystemAxis[geocentric | withHeight ? dir.length() : 2];
         for (int i=0; i<axes.length; i++) {
             final char d = Character.toLowerCase(dir.charAt(i));
             char abbreviation = Character.toUpperCase(d);
             boolean vertical = false;
             final AxisDirection c;
             final String name;
-            switch (d) {
+            if (geocentric) switch (d) {
+                case 'e': c = AxisDirection.GEOCENTRIC_X;  name = "Geocentric X";  break;
+                case 'n': c = AxisDirection.GEOCENTRIC_Y;  name = "Geocentric Y";  break;
+                case 'u': c = AxisDirection.GEOCENTRIC_Z;  name = "Geocentric Z";  break;
+                default:  c = AxisDirection.OTHER;         name = "Unknown";       break;
+            } else switch (d) {
                 case 'e': c = AxisDirection.EAST;  name = geographic ? "Geodetic longitude" : "Easting";  break;
                 case 'w': c = AxisDirection.WEST;  name = geographic ? "Geodetic longitude" : "Westing";  break;
                 case 'n': c = AxisDirection.NORTH; name = geographic ? "Geodetic latitude"  : "Northing"; break;

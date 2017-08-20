@@ -46,7 +46,8 @@ import static org.apache.sis.util.collection.Containers.hashMapCapacity;
  * }
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 0.4
+ * @author  Cullen Rombach (Image Matters)
+ * @version 0.8
  * @since   0.3
  * @module
  */
@@ -275,11 +276,11 @@ filter: for (final Locale locale : locales) {
             return unique(new Locale.Builder().setLanguageTag(code).build());
         }
         /*
-         * Old syntax (e.g. "en_US"). Split in (language, country, variant) components,
+         * Old syntax (e.g. "en_US" or "eng; USA"). Split in (language, country, variant) components,
          * then convert the 3-letters codes to the 2-letters ones.
          */
         String language, country = "", variant = "";
-        if (p1 < 0) {
+        if (p1 < 0 && (p1 = code.indexOf(';', fromIndex)) < 0) {
             p1 = code.length();
         } else {
             final int s = p1 + 1;

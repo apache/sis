@@ -64,8 +64,10 @@ public final strictfp class Proj4FactoryTest extends TestCase {
     @Test
     public void testGetAuthorityCodes() throws FactoryException {
         final Proj4Factory factory = Proj4Factory.INSTANCE;
-        assertTrue(factory.getAuthorityCodes(GeographicCRS.class).containsAll(Arrays.asList("+init=", "+proj=latlon")));
-        assertTrue(factory.getAuthorityCodes(CoordinateReferenceSystem.class).containsAll(Arrays.asList("+init=", "+proj=")));
+        assertTrue(factory.getAuthorityCodes(GeographicCRS.class).containsAll(Arrays.asList("+proj=latlon")));
+        assertTrue(factory.getAuthorityCodes(ProjectedCRS.class).containsAll(Arrays.asList("+proj=merc", "+proj=lcc")));
+        assertTrue(factory.getAuthorityCodes(CoordinateReferenceSystem.class).containsAll(
+                Arrays.asList("+proj=latlon", "+proj=merc", "+proj=lcc")));
     }
 
     /**
