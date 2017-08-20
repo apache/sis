@@ -554,6 +554,9 @@ public final class CRS extends Static {
      * Finds a mathematical operation that transforms or converts coordinates from the given source to the
      * given target coordinate reference system. If an estimation of the geographic area containing the points
      * to transform is known, it can be specified for helping this method to find a better suited operation.
+     * If no area of interest is specified, then the current default is the widest
+     * {@linkplain AbstractCoordinateOperation#getDomainOfValidity() domain of validity}.
+     * A future Apache SIS version may also take the country of current locale in account.
      *
      * <div class="note"><b>Note:</b>
      * the area of interest is just one aspect that may affect the coordinate operation.
