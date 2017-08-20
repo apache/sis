@@ -64,6 +64,6 @@ public final strictfp class TestConfiguration extends Static {
      * @return {@code true} if tests that may depend on garbage collector activity are allowed.
      */
     public static boolean allowGarbageCollectorDependentTests() {
-        return true;
+        return false;
     }
 }

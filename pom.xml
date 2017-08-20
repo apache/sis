@@ -1006,6 +1006,7 @@ Apache SIS is a free software, Java language library for developing geospatial a
   </repositories>
 
 
+
   <!-- ==============================================================
          Group of modules to build in approximate dependency order.
        ============================================================== -->

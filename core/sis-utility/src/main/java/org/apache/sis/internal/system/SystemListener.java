@@ -94,7 +94,6 @@ public abstract class SystemListener implements EventListener {
 
     /**
      * Removes all listeners for the module of the given name.
-     * This method is invoked by {@link OSGiActivator}.
      *
      * @param  name  the name of the module for which to remove listeners, or {@code null} if the module
      *         to uninstall does not have symbolic name (in which case it is probably not a SIS module).
