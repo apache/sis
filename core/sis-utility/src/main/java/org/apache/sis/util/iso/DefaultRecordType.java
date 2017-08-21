@@ -446,6 +446,7 @@ public class DefaultRecordType extends RecordDefinition implements RecordType, S
     /**
      * Empty constructor only used by JAXB.
      */
+    @SuppressWarnings("unused")
     private DefaultRecordType() {
         typeName  = null;
         container = null;

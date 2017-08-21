@@ -16,6 +16,7 @@
  */
 package org.apache.sis.storage.gdal;
 
+import java.util.Arrays;
 import java.util.Map;
 import java.util.Set;
 import java.util.HashMap;
@@ -93,6 +94,20 @@ public class Proj4Factory extends GeodeticAuthorityFactory implements CRSAuthori
      * The {@literal Proj.4} parameter used for projection name.
      */
     static final String PROJ_PARAM = '+' + Proj4Parser.PROJ + '=';
+
+    /**
+     * Options to be added in any {@literal Proj.4} definition strings.
+     * <ul>
+     *   <li>The {@code "+over"} option is for disabling the default wrapping of output longitudes in the -180 to 180 range.
+     *     We do that for having the same behavior between Proj.4 and Apache SIS. No wrapping reduce discontinuity problems
+     *     with geometries that cross the anti-meridian.</li>
+     *   <li>The {@code "+no_defs"} option is for ensuring that no defaults are read from {@code "/usr/share/proj/proj_def.dat"} file.
+     *     That file contains default values for various map projections, for example {@code "+lat_1=29.5"} and {@code "+lat_2=45.5"}
+     *     for the {@code "aea"} projection. Those defaults are assuming that users want Conterminous U.S. map.
+     *     This may cause surprising behavior for users outside USA.</li>
+     * </ul>
+     */
+    static String STANDARD_OPTIONS = " +over +no_defs";
 
     /**
      * The {@literal Proj.4} parameter used for declaration of axis order.  Proj.4 expects the axis parameter
@@ -271,7 +286,7 @@ public class Proj4Factory extends GeodeticAuthorityFactory implements CRSAuthori
     /**
      * Returns the set of authority codes for objects of the given type.
      * Current implementation can not return complete Proj.4 definition strings.
-     * Instead, this method currently returns only fragments (e.g. {@code "+init="}).
+     * Instead, this method currently returns only fragments (e.g. {@code "+proj=lcc"}).
      *
      * @param  type  the spatial reference objects type.
      * @return fragments of definition strings for spatial reference objects of the given type.
@@ -279,19 +294,21 @@ public class Proj4Factory extends GeodeticAuthorityFactory implements CRSAuthori
      */
     @Override
     public Set<String> getAuthorityCodes(Class<? extends IdentifiedObject> type) throws FactoryException {
-        final String method;
-        if (type.isAssignableFrom(ProjectedCRS.class)) {                // Must be tested first.
-            method = "";
-        } else if (type.isAssignableFrom(GeographicCRS.class)) {        // Should be tested before GeocentricCRS.
-            method = "latlon";
-        } else if (type.isAssignableFrom(GeocentricCRS.class)) {
-            method = "geocent";
-        } else {
-            return Collections.emptySet();
+        final Set<String> codes = new LinkedHashSet<>(10);
+        if (type.isAssignableFrom(GeographicCRS.class)) {
+            codes.add("latlon");
         }
-        final Set<String> codes = new LinkedHashSet<>(4);
-        codes.add("+init=");
-        codes.add(PROJ_PARAM.concat(method));
+        if (type.isAssignableFrom(GeocentricCRS.class)) {
+            codes.add("geocent");
+        }
+        if (type.isAssignableFrom(ProjectedCRS.class)) {
+            codes.addAll(Arrays.asList("lcc", "merc", "tmerc", "stere"));   // Only a subset of supported projections.
+        }
+        final String[] methods = codes.toArray(new String[codes.size()]);
+        codes.clear();
+        for (final String method : methods) {
+            codes.add(PROJ_PARAM.concat(method));
+        }
         return codes;
     }
 
@@ -421,7 +438,7 @@ public class Proj4Factory extends GeodeticAuthorityFactory implements CRSAuthori
      */
     public MathTransform createParameterizedTransform(final ParameterValueGroup parameters) throws FactoryException {
         final String proj = name(parameters.getDescriptor(), Errors.Keys.UnsupportedOperation_1);
-        final StringBuilder buffer = new StringBuilder(100).append(PROJ_PARAM).append(proj);
+        final StringBuilder buffer = new StringBuilder(100).append(PROJ_PARAM).append(proj).append(STANDARD_OPTIONS);
         for (final GeneralParameterValue p : parameters.values()) {
             /*
              * Unconditionally ask the parameter name in order to throw an exception
@@ -573,16 +590,22 @@ public class Proj4Factory extends GeodeticAuthorityFactory implements CRSAuthori
     private CoordinateReferenceSystem createCRS(final PJ pj, final boolean withHeight) throws FactoryException {
         final PJ.Type type = pj.getType();
         final boolean geographic = PJ.Type.GEOGRAPHIC.equals(type);
+        final boolean geocentric = PJ.Type.GEOCENTRIC.equals(type);
         final Proj4Parser parser = new Proj4Parser(pj.getCode());
         final String dir = parser.value("axis", "enu");
-        final CoordinateSystemAxis[] axes = new CoordinateSystemAxis[withHeight ? dir.length() : 2];
+        final CoordinateSystemAxis[] axes = new CoordinateSystemAxis[geocentric | withHeight ? dir.length() : 2];
         for (int i=0; i<axes.length; i++) {
             final char d = Character.toLowerCase(dir.charAt(i));
             char abbreviation = Character.toUpperCase(d);
             boolean vertical = false;
             final AxisDirection c;
             final String name;
-            switch (d) {
+            if (geocentric) switch (d) {
+                case 'e': c = AxisDirection.GEOCENTRIC_X;  name = "Geocentric X";  break;
+                case 'n': c = AxisDirection.GEOCENTRIC_Y;  name = "Geocentric Y";  break;
+                case 'u': c = AxisDirection.GEOCENTRIC_Z;  name = "Geocentric Z";  break;
+                default:  c = AxisDirection.OTHER;         name = "Unknown";       break;
+            } else switch (d) {
                 case 'e': c = AxisDirection.EAST;  name = geographic ? "Geodetic longitude" : "Easting";  break;
                 case 'w': c = AxisDirection.WEST;  name = geographic ? "Geodetic longitude" : "Westing";  break;
                 case 'n': c = AxisDirection.NORTH; name = geographic ? "Geodetic latitude"  : "Northing"; break;

@@ -44,7 +44,7 @@ import org.apache.sis.util.resources.Errors;
  * <p>The TIFF format specification version 6.0 (June 3, 1992) is available
  * <a href="https://partners.adobe.com/public/developer/en/tiff/TIFF6.pdf">here</a>.</p>
  *
- * @author  Rémi Marechal (Geomatys)
+ * @author  Rémi Maréchal (Geomatys)
  * @author  Alexis Manin (Geomatys)
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)

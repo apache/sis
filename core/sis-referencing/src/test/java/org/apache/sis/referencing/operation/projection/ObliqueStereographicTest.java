@@ -39,7 +39,7 @@ import static org.junit.Assert.*;
 /**
  * Tests the {@link ObliqueStereographic} class.
  *
- * @author  Rémi Marechal (Geomatys)
+ * @author  Rémi Maréchal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
  * @since   0.7

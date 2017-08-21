@@ -38,6 +38,13 @@ import org.apache.sis.util.ComparisonMode;
 
 /**
  * A math transform which delegate its work to the {@literal Proj.4} native library.
+ * The WKT for this math transform looks like the following fragment:
+ *
+ * {@preformat wkt
+ *   PARAM_MT["pj_transform",
+ *     PARAMETER["srcdefn", "+proj=…"],
+ *     PARAMETER["dstdefn", "+proj=…"]]
+ * }
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8

@@ -58,7 +58,7 @@ import org.apache.sis.measure.Units;
  *   <gml:semiMajorAxis uom="urn:ogc:def:uom:EPSG::9001">6378137</gml:semiMajorAxis>
  * }
  *
- * Both have a value of type {@code xsd:double} and a {@code uom} attribute (without namespace)
+ * Both have a value of type {@code xs:double} and a {@code uom} attribute (without namespace)
  * of type {@code gml:UomIdentifier}. Those two informations are represented by this class.
  *
  * @author  Cédric Briançon (Geomatys)

@@ -143,6 +143,7 @@ public final strictfp class CoordinateReferenceSystems extends AuthorityCodesRep
         rd("Deutsches Haupthoehennetz 1912",                              "Deutsches Haupthoehennetz");
         rd("Deutsches Haupthoehennetz 1985",                              "Deutsches Haupthoehennetz");
         rd("Deutsches Haupthoehennetz 1992",                              "Deutsches Haupthoehennetz");
+        rd("Deutsches Haupthoehennetz 2016",                              "Deutsches Haupthoehennetz");
         rd("Douala 1948",                                                 "Douala");
         rd("Dunedin 1958",                                                "Dunedin");
         rd("Dunedin-Bluff 1960",                                          "Dunedin");
@@ -159,6 +160,15 @@ public final strictfp class CoordinateReferenceSystems extends AuthorityCodesRep
         rd("European Datum 1950(1977)",                                   "European Datum");
         rd("European Datum 1979",                                         "European Datum");
         rd("European Datum 1987",                                         "European Datum");
+        rd("European Terrestrial Reference Frame 1989",                   "European Terrestrial Reference Frame");
+        rd("European Terrestrial Reference Frame 1990",                   "European Terrestrial Reference Frame");
+        rd("European Terrestrial Reference Frame 1991",                   "European Terrestrial Reference Frame");
+        rd("European Terrestrial Reference Frame 1992",                   "European Terrestrial Reference Frame");
+        rd("European Terrestrial Reference Frame 1993",                   "European Terrestrial Reference Frame");
+        rd("European Terrestrial Reference Frame 1994",                   "European Terrestrial Reference Frame");
+        rd("European Terrestrial Reference Frame 1996",                   "European Terrestrial Reference Frame");
+        rd("European Terrestrial Reference Frame 1997",                   "European Terrestrial Reference Frame");
+        rd("European Terrestrial Reference Frame 2000",                   "European Terrestrial Reference Frame");
         rd("European Vertical Reference Frame 2000",                      "European Vertical Reference Frame");
         rd("European Vertical Reference Frame 2007",                      "European Vertical Reference Frame");
         rd("Fahud Height Datum",                                          "Fahud");
@@ -220,8 +230,11 @@ public final strictfp class CoordinateReferenceSystems extends AuthorityCodesRep
         rd("International Terrestrial Reference Frame 2000",              "International Terrestrial Reference Frame");
         rd("International Terrestrial Reference Frame 2005",              "International Terrestrial Reference Frame");
         rd("International Terrestrial Reference Frame 2008",              "International Terrestrial Reference Frame");
+        rd("International Terrestrial Reference Frame 2014",              "International Terrestrial Reference Frame");
         rd("Islands Net 1993",                                            "Islands Net");
         rd("Islands Net 2004",                                            "Islands Net");
+        rd("Israeli Geodetic Datum 2005",                                 "Israeli Geodetic Datum");
+        rd("Israeli Geodetic Datum 2005(2012)",                           "Israeli Geodetic Datum");
         rd("Jamaica 1875",                                                "Jamaica");
         rd("Jamaica 1969",                                                "Jamaica");
         rd("Jamaica 2001",                                                "Jamaica");
@@ -294,16 +307,24 @@ public final strictfp class CoordinateReferenceSystems extends AuthorityCodesRep
         rd("NAD83 (National Spatial Reference System 2011)",              "North American Datum 1983 — National Spatial Reference System 2011");
         rd("NAD83 (National Spatial Reference System MA11)",              "North American Datum 1983 — National Spatial Reference System MA11 / PA11");
         rd("NAD83 (National Spatial Reference System PA11)",              "North American Datum 1983 — National Spatial Reference System MA11 / PA11");
+        rd("New Zealand Vertical Datum 2009",                             "New Zealand Vertical Datum");
+        rd("New Zealand Vertical Datum 2016",                             "New Zealand Vertical Datum");
         rd("Norway Normal Null 1954",                                     "Norway Normal Null");
         rd("Norway Normal Null 2000",                                     "Norway Normal Null");
+        rd("Ordnance Datum Newlyn (Offshore)",                            "Ordnance Datum Newlyn");
         rd("Ordnance Datum Newlyn (Orkney Isles)",                        "Ordnance Datum Newlyn");
         rd("OSGB 1936",                                                   "OSGB");
         rd("OSGB 1970 (SN)",                                              "OSGB");
         rd("Padang 1884 (Jakarta)",                                       "Padang 1884");
+        rd("Parametry Zemli 1990",                                        "Parametry Zemli 1990");
+        rd("Parametry Zemli 1990.02",                                     "Parametry Zemli 1990");
+        rd("Parametry Zemli 1990.11",                                     "Parametry Zemli 1990");
         rd("PDO Height Datum 1993",                                       "PDO Survey / Height Datum 1993");
         rd("PDO Survey Datum 1993",                                       "PDO Survey / Height Datum 1993");
         rd("Pitcairn 1967",                                               "Pitcairn");
         rd("Pitcairn 2006",                                               "Pitcairn");
+        rd("Port Moresby 1996",                                           "Port Moresby");
+        rd("Port Moresby 2008",                                           "Port Moresby");
         rd("Porto Santo 1936",                                            "Porto Santo");
         rd("Porto Santo 1995",                                            "Porto Santo");
         rd("Posiciones Geodésicas Argentinas 1994",                       "Posiciones Geodésicas Argentinas");
@@ -423,10 +444,10 @@ public final strictfp class CoordinateReferenceSystems extends AuthorityCodesRep
         " tm",                      // "ETRS89 / TM35FIN(E,N)" — we want to not interleave them between "TM35" and "TM36".
         " dktm",                    // "ETRS89 / DKTM1 + DVR90 height"
         "-gk",                      // "ETRS89 / ETRS-GK19FIN"
-//      " philippines zone ",       // "Luzon 1911 / Philippines zone IV"
-//      " california zone ",        // "NAD27 / California zone V"
-//      " ngo zone ",               // "NGO 1948 (Oslo) / NGO zone I"
-//      " lambert zone ",           // "NTF (Paris) / Lambert zone II + NGF IGN69 height"
+        " philippines zone ",       // "Luzon 1911 / Philippines zone IV"
+        " california zone ",        // "NAD27 / California zone V"
+        " ngo zone ",               // "NGO 1948 (Oslo) / NGO zone I"
+        " lambert zone ",           // "NTF (Paris) / Lambert zone II + NGF IGN69 height"
         "fiji 1956 / utm zone "     // Two zones: 60S and 1S with 60 before 1.
     };
 
@@ -459,7 +480,7 @@ public final strictfp class CoordinateReferenceSystems extends AuthorityCodesRep
         properties.setProperty("PRODUCT.URL",     "http://sis.apache.org");
         properties.setProperty("JAVADOC.GEOAPI",  "http://www.geoapi.org/snapshot/javadoc");
         properties.setProperty("FACTORY.NAME",    "EPSG");
-        properties.setProperty("FACTORY.VERSION", "9.0");
+        properties.setProperty("FACTORY.VERSION", "9.1");
         properties.setProperty("FACTORY.VERSION.SUFFIX", ", together with other sources");
         properties.setProperty("PRODUCT.VERSION.SUFFIX", " (provided that <a href=\"http://sis.apache.org/epsg.html\">a connection to an EPSG database exists</a>)");
         properties.setProperty("DESCRIPTION", "<p><b>Notation:</b></p>\n" +
@@ -469,7 +490,7 @@ public final strictfp class CoordinateReferenceSystems extends AuthorityCodesRep
                 "  <li>The <del>codes with a strike</del> (${PERCENT.DEPRECATED} of them) identify deprecated CRS." +
                 " In some cases, the remarks column indicates the replacement.</li>\n" +
                 "</ul>");
-        factory = org.apache.sis.referencing.CRS.getAuthorityFactory(null);
+        factory = CRS.getAuthorityFactory(null);
         add(factory);
     }
 
