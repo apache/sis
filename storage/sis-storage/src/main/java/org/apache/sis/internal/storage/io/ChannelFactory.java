@@ -357,7 +357,7 @@ public abstract class ChannelFactory {
      * A factory used as a fallback when we failed to convert a {@link File} to a {@link Path}.
      * This is used only if the conversion attempt threw an {@link InvalidPathException}. Such
      * failure is unlikely to happen, but if it happens anyway we try to open the channel in a
-     * way less surprising for the user (closer to the object he has specified).
+     * less surprising way for the user (i.e. closer to the object (s)he has specified).
      */
     private static final class Fallback extends ChannelFactory {
         /**

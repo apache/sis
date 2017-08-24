@@ -166,7 +166,7 @@ public class StorageConnector implements Serializable {
      * @see #getOption(OptionKey)
      * @see #setOption(OptionKey, Object)
      */
-    private transient Map<OptionKey<?>, Object> options;
+    private Map<OptionKey<?>, Object> options;
 
     /**
      * Creates a new data store connection wrapping the given input/output object.
@@ -432,14 +432,29 @@ public class StorageConnector implements Serializable {
     /**
      * Assuming that {@link #storage} is an instance of {@link InputStream}, resets its position. This method
      * is the converse of the marks performed at the beginning of {@link #createChannelDataInput(boolean)}.
+     *
+     * <div class="note"><b>Rational:</b>
+     * {@link DataStoreProvider#probeContent(StorageConnector)} contract requires that implementors reset the
+     * input stream themselves. However if the last {@code DataStoreProvider} instance that we tried worked on
+     * {@code ChannelDataInput}, then the provider performed a call to {@link ChannelDataInput#reset()}, which
+     * did not reseted the underlying input stream. So we need to perform the missing {@link InputStream#reset()}
+     * here, then synchronize the {@code ChannelDataInput} position accordingly.</div>
      */
     private void resetInputStream() throws IOException {
         final ChannelDataInput channel = getView(ChannelDataInput.class);
         if (channel != null) {
+            /*
+             * Note on InputStream.reset() behavior documented in java.io:
+             *
+             *  - It does not discard the mark, so it is okay if reset() is invoked twice.
+             *  - If mark is unsupported, may either throw IOException or reset the stream
+             *    to an implementation-dependent fixed state.
+             */
             ((InputStream) storage).reset();        // May throw an exception if mark is unsupported.
             channel.buffer.limit(0);                // Must be after storage.reset().
             channel.setStreamPosition(0);           // Must be after buffer.limit(0).
         }
+        removeView(Reader.class);                   // Reader will need to be recreated from scratch.
     }
 
     /**
@@ -451,7 +466,7 @@ public class StorageConnector implements Serializable {
      */
     private void createChannelDataInput(final boolean asImageInputStream) throws IOException {
         /*
-         * Before to try to open an InputStream, mark its position so we can rewind if the user asks for
+         * Before to try to wrap an InputStream, mark its position so we can rewind if the user asks for
          * the InputStream directly. We need to reset because ChannelDataInput may have read some bytes.
          * Note that if mark is unsupported, the default InputStream.mark() implementation does nothing.
          * See above 'resetInputStream()' method.
@@ -461,7 +476,7 @@ public class StorageConnector implements Serializable {
         }
         /*
          * Following method call recognizes ReadableByteChannel, InputStream (with special case for FileInputStream),
-         * URL, URI, File, Path or other types that may be added in future SIS versions.
+         * URL, URI, File, Path or other types that may be added in future Apache SIS versions.
          */
         final ChannelFactory factory = ChannelFactory.prepare(storage,
                 getOption(OptionKey.URL_ENCODING), false, getOption(OptionKey.OPEN_OPTIONS));
@@ -534,7 +549,7 @@ public class StorageConnector implements Serializable {
     /**
      * Creates a {@link ByteBuffer} from the {@link ChannelDataInput} if possible, or from the
      * {@link ImageInputStream} otherwise. The buffer will be initialized with an arbitrary amount
-     * of bytes read from the input. This amount is not sufficient, it can be increased by a call
+     * of bytes read from the input. If this amount is not sufficient, it can be increased by a call
      * to {@link #prefetch()}.
      *
      * @throws IOException if an error occurred while opening a stream for the input.
@@ -624,7 +639,7 @@ public class StorageConnector implements Serializable {
      * @throws IllegalArgumentException if the given {@code type} argument is not a supported type.
      * @throws Exception if an error occurred while opening a stream or database connection.
      */
-    private Object createView(final Class<?> type) throws IllegalArgumentException, Exception {
+    private Object createView(final Class<?> type) throws Exception {
         if (type == String.class) {
             return IOUtilities.toString(storage);
         }
@@ -680,7 +695,7 @@ public class StorageConnector implements Serializable {
                  * 2) InputStreamReader does not support mark/reset, which is a desired limitation for now.
                  *    This is because reseting the Reader would not reset the underlying InputStream, which
                  *    would cause other DataStoreProvider.probeContent(…) methods to fail if they try to use
-                 *    the InputStream. For now we let the InputStreamReader.mark() to throws an IOException,
+                 *    the InputStream. For now we let the InputStreamReader.mark() to throw an IOException,
                  *    but we may need to provide our own subclass of BufferedReader in a future SIS version
                  *    if mark/reset support is needed here.
                  */
@@ -718,6 +733,18 @@ public class StorageConnector implements Serializable {
     }
 
     /**
+     * Removes the given view from the cache.
+     * This method is invoked for forcing the view to be recreated if requested again.
+     *
+     * @param type  the view type to remove.
+     */
+    private void removeView(final Class<?> type) {
+        if (views.remove(type) != null) {
+            viewsToClose.remove(type);
+        }
+    }
+
+    /**
      * Declares that the given {@code input} will need to be closed by the {@link #closeAllExcept(Object)} method.
      * The {@code input} argument is always a new instance wrapping, directly or indirectly, the {@link #storage}.
      * Callers must specify the wrapped object in the {@code delegate} argument.
@@ -730,7 +757,8 @@ public class StorageConnector implements Serializable {
             viewsToClose = new IdentityHashMap<>(4);
         }
         if (viewsToClose.put(input, delegate) != null) {
-            throw new AssertionError(input);
+            // Should never happen, unless someone used this StorageConnector in another thread.
+            throw new ConcurrentModificationException();
         }
     }
 
