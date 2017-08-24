@@ -170,6 +170,19 @@ public abstract class DataStore implements Localized, AutoCloseable {
     }
 
     /**
+     * Returns the factory that created this {@code DataStore} instance, or {@code null} if unspecified.
+     *
+     * <p>The provider provide additional informations on this {@code DataStore} such as
+     * a format description and the possible parameters usable to configure this store.
+     * </p>
+     *
+     * @return provider parent, can be null
+     */
+    public DataStoreProvider getProvider() {
+        return provider;
+    }
+
+    /**
      * Returns the parameters used to open this data store.
      * The description of those parameters are defined by {@link DataStoreProvider#getOpenParameters() }.
      *

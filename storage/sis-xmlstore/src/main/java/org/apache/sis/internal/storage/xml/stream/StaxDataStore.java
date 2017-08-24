@@ -380,7 +380,7 @@ public abstract class StaxDataStore extends DataStore {
     /**
      * Returns the factory that created this {@code DataStore} instance, or {@code null} if unspecified.
      */
-    final StaxDataStoreProvider getProvider() {
+    public StaxDataStoreProvider getProvider() {
         return (StaxDataStoreProvider) provider;
     }
 
