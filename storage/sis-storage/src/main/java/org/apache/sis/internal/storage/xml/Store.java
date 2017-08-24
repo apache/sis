@@ -23,6 +23,7 @@ import java.io.Closeable;
 import java.io.Reader;
 import java.io.InputStream;
 import java.io.IOException;
+import java.net.URI;
 import javax.xml.bind.JAXBException;
 import javax.xml.transform.stream.StreamSource;
 import org.opengis.metadata.Metadata;
@@ -40,6 +41,8 @@ import org.apache.sis.util.resources.Errors;
 import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.internal.storage.MetadataBuilder;
 import org.apache.sis.internal.referencing.DefinitionVerifier;
+import org.apache.sis.parameter.Parameters;
+import org.opengis.parameter.ParameterValueGroup;
 
 
 /**
@@ -64,6 +67,7 @@ final class Store extends DataStore {
      * The input stream or reader, set by the constructor and cleared when no longer needed.
      */
     private StreamSource source;
+    private URI sourceUri;
 
     /**
      * The unmarshalled object, initialized only when first needed.
@@ -86,6 +90,11 @@ final class Store extends DataStore {
     public Store(final StoreProvider provider, final StorageConnector connector) throws DataStoreException {
         super(provider, connector);
         final InputStream in = connector.getStorageAs(InputStream.class);
+        try {
+            sourceUri = connector.getStorageAs(URI.class);
+        } catch (IllegalArgumentException ex) {
+            //open parameters will be null.
+        }
         if (in != null) {
             source = new StreamSource(in);
         } else {
@@ -206,6 +215,17 @@ final class Store extends DataStore {
             }
         }
         return metadata;
+    }
+
+    /**
+     * {@inheritDoc }
+     */
+    @Override
+    public ParameterValueGroup getOpenParameters() {
+        if (sourceUri==null) return null;
+        final Parameters parameters = Parameters.castOrWrap(StoreProvider.OPEN_DESCRIPTOR.createValue());
+        parameters.getOrCreate(StoreProvider.PARAM_LOCATION).setValue(sourceUri);
+        return parameters;
     }
 
     /**

@@ -17,6 +17,7 @@
 package org.apache.sis.storage.netcdf;
 
 import java.io.IOException;
+import java.net.URI;
 import org.opengis.metadata.Metadata;
 import org.apache.sis.util.Debug;
 import org.apache.sis.storage.DataStore;
@@ -25,10 +26,12 @@ import org.apache.sis.storage.UnsupportedStorageException;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.internal.netcdf.Decoder;
 import org.apache.sis.metadata.ModifiableMetadata;
+import org.apache.sis.parameter.Parameters;
 import org.apache.sis.setup.OptionKey;
 import org.apache.sis.storage.Resource;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.Version;
+import org.opengis.parameter.ParameterValueGroup;
 import ucar.nc2.constants.CDM;
 
 
@@ -50,6 +53,7 @@ public class NetcdfStore extends DataStore {
      * depending on whether we are using the embedded SIS decoder or a wrapper around the UCAR library.
      */
     private final Decoder decoder;
+    private URI sourceUri;
 
     /**
      * The object returned by {@link #getMetadata()}, created when first needed and cached.
@@ -85,6 +89,11 @@ public class NetcdfStore extends DataStore {
     public NetcdfStore(final NetcdfStoreProvider provider, final StorageConnector connector) throws DataStoreException {
         super(provider, connector);
         try {
+            sourceUri = connector.getStorageAs(URI.class);
+        } catch (IllegalArgumentException ex) {
+            //open parameters will be null.
+        }
+        try {
             decoder = NetcdfStoreProvider.decoder(listeners, connector);
         } catch (IOException e) {
             throw new DataStoreException(e);
@@ -115,6 +124,17 @@ public class NetcdfStore extends DataStore {
             throw new DataStoreException(e);
         }
         return metadata;
+    }
+
+    /**
+     * {@inheritDoc }
+     */
+    @Override
+    public ParameterValueGroup getOpenParameters() {
+        if (sourceUri==null) return null;
+        final Parameters parameters = Parameters.castOrWrap(NetcdfStoreProvider.OPEN_DESCRIPTOR.createValue());
+        parameters.getOrCreate(NetcdfStoreProvider.PARAM_LOCATION).setValue(sourceUri);
+        return parameters;
     }
 
     /**

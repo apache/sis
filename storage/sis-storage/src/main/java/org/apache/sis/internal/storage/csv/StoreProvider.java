@@ -16,6 +16,7 @@
  */
 package org.apache.sis.internal.storage.csv;
 
+import java.net.URI;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreProvider;
@@ -24,6 +25,10 @@ import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.internal.storage.Capability;
 import org.apache.sis.internal.storage.Capabilities;
 import org.apache.sis.internal.storage.wkt.FirstKeywordPeek;
+import org.apache.sis.parameter.ParameterBuilder;
+import static org.apache.sis.storage.DataStoreProvider.LOCATION;
+import org.opengis.parameter.ParameterDescriptor;
+import org.opengis.parameter.ParameterDescriptorGroup;
 
 
 /**
@@ -41,6 +46,18 @@ import org.apache.sis.internal.storage.wkt.FirstKeywordPeek;
  */
 @Capabilities(Capability.READ)
 public final class StoreProvider extends DataStoreProvider {
+
+    /**
+     * CSV source.
+     */
+    static final ParameterDescriptor<URI> PARAM_LOCATION = new ParameterBuilder()
+            .addName(LOCATION)
+            .setRequired(true)
+            .create(URI.class, null);
+
+    static final ParameterDescriptorGroup OPEN_DESCRIPTOR =
+            new ParameterBuilder().addName("CSV").createGroup(PARAM_LOCATION);
+
     /**
      * The format names for static features and moving features.
      */
@@ -114,6 +131,14 @@ public final class StoreProvider extends DataStoreProvider {
     @Override
     public String getShortName() {
         return NAME;
+    }
+
+    /**
+     * {@inheritDoc }
+     */
+    @Override
+    public ParameterDescriptorGroup getOpenParameters() {
+        return OPEN_DESCRIPTOR;
     }
 
     /**

@@ -16,6 +16,7 @@
  */
 package org.apache.sis.internal.storage.gpx;
 
+import java.net.URI;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import org.apache.sis.storage.DataStore;
@@ -25,7 +26,11 @@ import org.apache.sis.internal.storage.Capability;
 import org.apache.sis.internal.storage.Capabilities;
 import org.apache.sis.internal.storage.xml.stream.StaxDataStoreProvider;
 import org.apache.sis.measure.Range;
+import org.apache.sis.parameter.ParameterBuilder;
+import static org.apache.sis.storage.DataStoreProvider.LOCATION;
 import org.apache.sis.util.Version;
+import org.opengis.parameter.ParameterDescriptor;
+import org.opengis.parameter.ParameterDescriptorGroup;
 
 
 /**
@@ -40,6 +45,16 @@ import org.apache.sis.util.Version;
  */
 @Capabilities({Capability.READ, Capability.WRITE})
 public final class StoreProvider extends StaxDataStoreProvider {
+    /**
+     * XML source.
+     */
+    static final ParameterDescriptor<URI> PARAM_LOCATION = new ParameterBuilder()
+            .addName(LOCATION)
+            .setRequired(true)
+            .create(URI.class, null);
+
+    static final ParameterDescriptorGroup OPEN_DESCRIPTOR =
+            new ParameterBuilder().addName("GPX").createGroup(PARAM_LOCATION);
     /**
      * The "1.0" version.
      */
@@ -72,6 +87,14 @@ public final class StoreProvider extends StaxDataStoreProvider {
     @Override
     public Range<Version> getSupportedVersions() {
         return VERSIONS;
+    }
+
+    /**
+     * {@inheritDoc }
+     */
+    @Override
+    public ParameterDescriptorGroup getOpenParameters() {
+        return OPEN_DESCRIPTOR;
     }
 
     /**

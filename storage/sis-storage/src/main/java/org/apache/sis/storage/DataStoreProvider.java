@@ -21,7 +21,12 @@ import org.apache.sis.internal.simple.SimpleFormat;
 import org.apache.sis.metadata.iso.citation.DefaultCitation;
 import org.apache.sis.metadata.iso.distribution.DefaultFormat;
 import org.apache.sis.measure.Range;
+import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Version;
+import org.opengis.parameter.ParameterDescriptorGroup;
+import org.opengis.parameter.ParameterNotFoundException;
+import org.opengis.parameter.ParameterValue;
+import org.opengis.parameter.ParameterValueGroup;
 
 
 /**
@@ -57,6 +62,19 @@ import org.apache.sis.util.Version;
  * @module
  */
 public abstract class DataStoreProvider {
+
+    /**
+     * Name of the parameter used to create StorageConnector instances.
+     *
+     * <p>Implementors are encouraged to define a parameter with this name
+     * to ensure a common and consistent definition among providers.
+     * The parameter should be defined as mandatory and declared with a
+     * very common java class such as URI, Path, stream, JDBC connection, <i>etc</i>.
+     * </p>
+     */
+    public static final String LOCATION = "location";
+
+
     /**
      * Creates a new provider.
      */
@@ -130,6 +148,22 @@ public abstract class DataStoreProvider {
     }
 
     /**
+     * Returns a description of all opening parameters accepted by this provider.
+     *
+     * <p>Implementors are responsible for declaring all parameters and there mandatory states.
+     * It is recommended to use at least the LOCATION parameter name. This parameter will
+     * be recognized by the default datastore provider methods and used whenever a
+     * {@link StorageConnector} is required.</p>
+     *
+     * <p>This description can be used to dynamically generate user configuration interfaces
+     * and provide fine grain control over the store general behavior such as caching,
+     * time-outs, encoding, <i>etc</i>.</p>
+     *
+     * @return Description of the parameters required for opening a {@link org.apache.sis.storage.DataStore}.
+     */
+    public abstract ParameterDescriptorGroup getOpenParameters();
+
+    /**
      * Indicates if the given storage appears to be supported by the {@code DataStore}s created by this provider.
      * The most typical return values are:
      *
@@ -199,4 +233,35 @@ public abstract class DataStoreProvider {
      * @see DataStores#open(Object)
      */
     public abstract DataStore open(StorageConnector connector) throws DataStoreException;
+
+    /**
+     * Returns a data store implementation associated with this provider.
+     *
+     * <div class="section">Implementation note</div>
+     * Implementors shall invoke {@link StorageConnector#closeAllExcept(Object)} after {@code DataStore}
+     * creation, keeping open only the needed resource.
+     *
+     * <div class="section">Implementation note</div>
+     * The default implementation of this method searches for the {@link #LOCATION} parameter
+     * to create a StorageConnector which is then passed to {@link #open(org.apache.sis.storage.StorageConnector) }.
+     *
+     * @param  parameters opening parameters as defined by {@link #getOpenParameters() }
+     * @return a data store implementation associated with this provider for the given storage.
+     * @throws DataStoreException if an error occurred while creating the data store instance.
+     *
+     * @see DataStores#open(Object)
+     */
+    public DataStore open(ParameterValueGroup parameters) throws DataStoreException {
+        ArgumentChecks.ensureNonNull("parameter", parameters);
+
+        final ParameterValue<?> locationParameter;
+        try {
+            locationParameter = parameters.parameter(LOCATION);
+        } catch (ParameterNotFoundException ex) {
+            throw new DataStoreException("Location parameter not defined.",ex);
+        }
+        final StorageConnector connector = new StorageConnector(locationParameter.getValue());
+        return open(connector);
+    }
+
 }

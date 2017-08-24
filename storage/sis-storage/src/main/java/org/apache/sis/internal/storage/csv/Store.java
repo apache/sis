@@ -68,10 +68,12 @@ import java.time.Instant;
 import java.time.DateTimeException;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
+import org.apache.sis.parameter.Parameters;
 import org.opengis.feature.Feature;
 import org.opengis.feature.FeatureType;
 import org.opengis.feature.PropertyType;
 import org.opengis.feature.AttributeType;
+import org.opengis.parameter.ParameterValueGroup;
 
 
 /**
@@ -134,6 +136,7 @@ public final class Store extends DataStore {
      * @see #readLine()
      */
     private BufferedReader source;
+    private URI sourceUri;
 
     /**
      * The character encoding, or {@code null} if unspecified (in which case the platform default is assumed).
@@ -229,6 +232,11 @@ public final class Store extends DataStore {
     {
         super(provider, connector);
         final Reader r = connector.getStorageAs(Reader.class);
+        try {
+            sourceUri = connector.getStorageAs(URI.class);
+        } catch (IllegalArgumentException ex) {
+            //open parameters will be null.
+        }
         connector.closeAllExcept(r);
         if (r == null) {
             throw new DataStoreException(Errors.format(Errors.Keys.CanNotOpen_1, super.getDisplayName()));
@@ -616,6 +624,17 @@ public final class Store extends DataStore {
             metadata = builder.build(true);
         }
         return metadata;
+    }
+
+    /**
+     * {@inheritDoc }
+     */
+    @Override
+    public ParameterValueGroup getOpenParameters() {
+        if (sourceUri==null) return null;
+        final Parameters parameters = Parameters.castOrWrap(StoreProvider.OPEN_DESCRIPTOR.createValue());
+        parameters.getOrCreate(StoreProvider.PARAM_LOCATION).setValue(sourceUri);
+        return parameters;
     }
 
     /**

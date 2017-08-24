@@ -16,6 +16,7 @@
  */
 package org.apache.sis.internal.storage.wkt;
 
+import java.net.URI;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
@@ -27,7 +28,10 @@ import org.apache.sis.storage.ProbeResult;
 import org.apache.sis.internal.storage.Capability;
 import org.apache.sis.internal.storage.Capabilities;
 import org.apache.sis.internal.metadata.WKTKeywords;
+import org.apache.sis.parameter.ParameterBuilder;
 import org.apache.sis.util.Version;
+import org.opengis.parameter.ParameterDescriptor;
+import org.opengis.parameter.ParameterDescriptorGroup;
 
 
 /**
@@ -40,6 +44,18 @@ import org.apache.sis.util.Version;
  */
 @Capabilities(Capability.READ)
 public final class StoreProvider extends DataStoreProvider {
+
+    /**
+     * WKT source.
+     */
+    static final ParameterDescriptor<URI> PARAM_LOCATION = new ParameterBuilder()
+            .addName(LOCATION)
+            .setRequired(true)
+            .create(URI.class, null);
+
+    static final ParameterDescriptorGroup OPEN_DESCRIPTOR =
+            new ParameterBuilder().addName("WKT").createGroup(PARAM_LOCATION);
+
     /**
      * The {@value} MIME type.
      */
@@ -153,6 +169,14 @@ public final class StoreProvider extends DataStoreProvider {
     @Override
     public String getShortName() {
         return "WKT";
+    }
+
+    /**
+     * {@inheritDoc }
+     */
+    @Override
+    public ParameterDescriptorGroup getOpenParameters() {
+        return OPEN_DESCRIPTOR;
     }
 
     /**

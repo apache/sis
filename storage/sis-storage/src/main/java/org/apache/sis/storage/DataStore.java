@@ -28,6 +28,7 @@ import org.apache.sis.util.logging.WarningListener;
 import org.apache.sis.util.logging.WarningListeners;
 import org.apache.sis.internal.storage.Resources;
 import org.apache.sis.internal.util.Citations;
+import org.opengis.parameter.ParameterValueGroup;
 
 
 /**
@@ -167,6 +168,21 @@ public abstract class DataStore implements Localized, AutoCloseable {
         ArgumentChecks.ensureNonNull("locale", locale);
         this.locale = locale;
     }
+
+    /**
+     * Returns the parameters used to open this data store.
+     * The description of those parameters are defined by {@link DataStoreProvider#getOpenParameters() }.
+     *
+     * <p>In the event a store must be closed and reopened later. Those parameters
+     * can be stored in a file or database and used to create a new store later.</p>
+     *
+     * <p>In some cases, for store created with data in memory or with initialization
+     * parameters to complex to be expressed as a ParameterValueGroup, this methid may
+     * return null.</p>
+     *
+     * @return parameters used when opening this {@link org.apache.sis.storage.DataStore} or null.
+     */
+    public abstract ParameterValueGroup getOpenParameters();
 
     /**
      * Returns information about the data store as a whole. The returned metadata object can contain

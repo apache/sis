@@ -43,8 +43,10 @@ import org.apache.sis.metadata.iso.distribution.DefaultFormat;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 import java.io.UncheckedIOException;
+import org.apache.sis.parameter.Parameters;
 import org.opengis.feature.Feature;
 import org.opengis.feature.FeatureType;
+import org.opengis.parameter.ParameterValueGroup;
 
 
 /**
@@ -165,6 +167,17 @@ public final class Store extends StaxDataStore {
             throw new DataStoreException(e);
         }
         return metadata;
+    }
+
+    /**
+     * {@inheritDoc }
+     */
+    @Override
+    public ParameterValueGroup getOpenParameters() {
+        if (sourceUri==null) return null;
+        final Parameters parameters = Parameters.castOrWrap(StoreProvider.OPEN_DESCRIPTOR.createValue());
+        parameters.getOrCreate(StoreProvider.PARAM_LOCATION).setValue(sourceUri);
+        return parameters;
     }
 
     /**

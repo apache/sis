@@ -23,6 +23,7 @@ import java.util.logging.LogRecord;
 import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URI;
 import java.nio.file.Path;
 import java.nio.charset.Charset;
 import java.nio.file.StandardOpenOption;
@@ -114,6 +115,7 @@ public abstract class StaxDataStore extends DataStore {
      * @see StorageConnector#getStorage()
      */
     private Object storage;
+    protected URI sourceUri;
 
     /**
      * The underlying stream to close when this {@code StaxDataStore} is closed, or {@code null} if none.
@@ -230,6 +232,11 @@ public abstract class StaxDataStore extends DataStore {
             stream = (AutoCloseable) storage;
         }
         channelFactory = connector.getStorageAs(ChannelFactory.class);  // Must be last before 'closeAllExcept'.
+        try {
+            sourceUri = connector.getStorageAs(URI.class);
+        } catch (IllegalArgumentException ex) {
+            //open parameters will be null.
+        }
         connector.closeAllExcept(stream);
         /*
          * If possible, remember the position where data begin in the stream in order to allow reading

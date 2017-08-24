@@ -17,6 +17,7 @@
 package org.apache.sis.storage;
 
 import org.opengis.metadata.Metadata;
+import org.opengis.parameter.ParameterValueGroup;
 
 
 /**
@@ -55,6 +56,11 @@ final strictfp class DataStoreMock extends DataStore {
 
     @Override
     public Resource getRootResource() throws DataStoreException {
+        return null;
+    }
+
+    @Override
+    public ParameterValueGroup getOpenParameters() {
         return null;
     }
 

@@ -16,6 +16,7 @@
  */
 package org.apache.sis.storage.earthobservation;
 
+import java.net.URI;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreProvider;
 import org.apache.sis.storage.DataStoreException;
@@ -24,6 +25,10 @@ import org.apache.sis.storage.ProbeResult;
 import org.apache.sis.internal.storage.Capability;
 import org.apache.sis.internal.storage.Capabilities;
 import org.apache.sis.internal.storage.wkt.FirstKeywordPeek;
+import org.apache.sis.parameter.ParameterBuilder;
+import static org.apache.sis.storage.DataStoreProvider.LOCATION;
+import org.opengis.parameter.ParameterDescriptor;
+import org.opengis.parameter.ParameterDescriptorGroup;
 
 
 /**
@@ -41,6 +46,18 @@ import org.apache.sis.internal.storage.wkt.FirstKeywordPeek;
  */
 @Capabilities(Capability.READ)
 public class LandsatStoreProvider extends DataStoreProvider {
+
+    /**
+     * Landsat location.
+     */
+    static final ParameterDescriptor<URI> PARAM_LOCATION = new ParameterBuilder()
+            .addName(LOCATION)
+            .setRequired(true)
+            .create(URI.class, null);
+
+    static final ParameterDescriptorGroup OPEN_DESCRIPTOR =
+            new ParameterBuilder().addName("Landsat").createGroup(PARAM_LOCATION);
+
     /**
      * The object to use for verifying if the first keyword is the expected one.
      */
@@ -133,6 +150,14 @@ public class LandsatStoreProvider extends DataStoreProvider {
     @Override
     public String getShortName() {
         return "Landsat";
+    }
+
+    /**
+     * {@inheritDoc }
+     */
+    @Override
+    public ParameterDescriptorGroup getOpenParameters() {
+        return OPEN_DESCRIPTOR;
     }
 
     /**
