@@ -20,6 +20,8 @@ import java.io.Reader;
 import java.io.BufferedReader;
 import java.io.LineNumberReader;
 import java.io.IOException;
+import java.net.URI;
+import org.apache.sis.parameter.Parameters;
 import org.opengis.metadata.Metadata;
 import org.opengis.util.FactoryException;
 import org.apache.sis.storage.DataStore;
@@ -30,6 +32,7 @@ import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.setup.OptionKey;
 import org.apache.sis.storage.Resource;
 import org.apache.sis.util.Debug;
+import org.opengis.parameter.ParameterValueGroup;
 
 
 /**
@@ -70,6 +73,7 @@ public class LandsatStore extends DataStore {
      * The reader, or {@code null} if closed.
      */
     private Reader source;
+    private URI sourceUri;
 
     /**
      * The object returned by {@link #getMetadata()}, created when first needed and cached.
@@ -88,6 +92,11 @@ public class LandsatStore extends DataStore {
     public LandsatStore(final LandsatStoreProvider provider, final StorageConnector connector) throws DataStoreException {
         super(provider, connector);
         source = connector.getStorageAs(Reader.class);
+        try {
+            sourceUri = connector.getStorageAs(URI.class);
+        } catch (IllegalArgumentException ex) {
+            //open parameters will be null.
+        }
         connector.closeAllExcept(source);
         if (source == null) {
             throw new UnsupportedStorageException(super.getLocale(), "Landsat",
@@ -118,6 +127,17 @@ public class LandsatStore extends DataStore {
             throw new DataStoreReferencingException(e);
         }
         return metadata;
+    }
+
+    /**
+     * {@inheritDoc }
+     */
+    @Override
+    public ParameterValueGroup getOpenParameters() {
+        if (sourceUri==null) return null;
+        final Parameters parameters = Parameters.castOrWrap(LandsatStoreProvider.OPEN_DESCRIPTOR.createValue());
+        parameters.getOrCreate(LandsatStoreProvider.PARAM_LOCATION).setValue(sourceUri);
+        return parameters;
     }
 
     /**

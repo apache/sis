@@ -18,6 +18,7 @@ package org.apache.sis.storage.geotiff;
 
 import java.util.Locale;
 import java.io.IOException;
+import java.net.URI;
 import java.nio.charset.Charset;
 import java.util.logging.LogRecord;
 import java.nio.charset.StandardCharsets;
@@ -35,9 +36,11 @@ import org.apache.sis.internal.storage.io.ChannelDataInput;
 import org.apache.sis.internal.storage.MetadataBuilder;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.metadata.sql.MetadataStoreException;
+import org.apache.sis.parameter.Parameters;
 import org.apache.sis.storage.DataStoreClosedException;
 import org.apache.sis.storage.Resource;
 import org.apache.sis.util.resources.Errors;
+import org.opengis.parameter.ParameterValueGroup;
 
 
 /**
@@ -61,6 +64,7 @@ public class GeoTiffStore extends DataStore {
      * The GeoTIFF reader implementation, or {@code null} if the store has been closed.
      */
     private Reader reader;
+    private URI sourceUri;
 
     /**
      * The metadata, or {@code null} if not yet created.
@@ -88,6 +92,11 @@ public class GeoTiffStore extends DataStore {
                     connector.getStorage(), connector.getOption(OptionKey.OPEN_OPTIONS));
         }
         connector.closeAllExcept(input);
+        try {
+            sourceUri = connector.getStorageAs(URI.class);
+        } catch (IllegalArgumentException ex) {
+            //open parameters will be null.
+        }
         try {
             reader = new Reader(this, input);
         } catch (IOException e) {
@@ -130,6 +139,17 @@ public class GeoTiffStore extends DataStore {
             }
         }
         return metadata;
+    }
+
+    /**
+     * {@inheritDoc }
+     */
+    @Override
+    public ParameterValueGroup getOpenParameters() {
+        if (sourceUri==null) return null;
+        final Parameters parameters = Parameters.castOrWrap(GeoTiffStoreProvider.OPEN_DESCRIPTOR.createValue());
+        parameters.getOrCreate(GeoTiffStoreProvider.PARAM_LOCATION).setValue(sourceUri);
+        return parameters;
     }
 
     /**

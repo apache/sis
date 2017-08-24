@@ -26,6 +26,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.UndeclaredThrowableException;
+import java.net.URI;
 import org.apache.sis.internal.netcdf.Decoder;
 import org.apache.sis.internal.netcdf.Resources;
 import org.apache.sis.internal.netcdf.impl.ChannelDecoder;
@@ -35,6 +36,7 @@ import org.apache.sis.internal.storage.Capabilities;
 import org.apache.sis.internal.storage.Capability;
 import org.apache.sis.internal.system.SystemListener;
 import org.apache.sis.internal.system.Modules;
+import org.apache.sis.parameter.ParameterBuilder;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreProvider;
 import org.apache.sis.storage.StorageConnector;
@@ -43,6 +45,8 @@ import org.apache.sis.storage.ProbeResult;
 import org.apache.sis.util.logging.WarningListeners;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.Version;
+import org.opengis.parameter.ParameterDescriptor;
+import org.opengis.parameter.ParameterDescriptorGroup;
 
 
 /**
@@ -66,6 +70,18 @@ import org.apache.sis.util.Version;
  */
 @Capabilities(Capability.READ)
 public class NetcdfStoreProvider extends DataStoreProvider {
+
+    /**
+     * NetCDF location.
+     */
+    static final ParameterDescriptor<URI> PARAM_LOCATION = new ParameterBuilder()
+            .addName(LOCATION)
+            .setRequired(true)
+            .create(URI.class, null);
+
+    static final ParameterDescriptorGroup OPEN_DESCRIPTOR =
+            new ParameterBuilder().addName("NetCDF").createGroup(PARAM_LOCATION);
+
     /**
      * The MIME type for NetCDF files.
      */
@@ -127,6 +143,14 @@ public class NetcdfStoreProvider extends DataStoreProvider {
     @Override
     public String getShortName() {
         return "NetCDF";
+    }
+
+    /**
+     * {@inheritDoc }
+     */
+    @Override
+    public ParameterDescriptorGroup getOpenParameters() {
+        return OPEN_DESCRIPTOR;
     }
 
     /**

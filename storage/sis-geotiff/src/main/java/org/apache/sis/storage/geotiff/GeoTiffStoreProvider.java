@@ -16,6 +16,7 @@
  */
 package org.apache.sis.storage.geotiff;
 
+import java.net.URI;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import org.apache.sis.util.Version;
@@ -27,6 +28,10 @@ import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.internal.storage.Capabilities;
 import org.apache.sis.internal.storage.Capability;
 import org.apache.sis.internal.util.Constants;
+import org.apache.sis.parameter.ParameterBuilder;
+import static org.apache.sis.storage.DataStoreProvider.LOCATION;
+import org.opengis.parameter.ParameterDescriptor;
+import org.opengis.parameter.ParameterDescriptorGroup;
 
 
 /**
@@ -47,6 +52,18 @@ import org.apache.sis.internal.util.Constants;
  */
 @Capabilities(Capability.READ)
 public class GeoTiffStoreProvider extends DataStoreProvider {
+
+    /**
+     * Geotiff location.
+     */
+    static final ParameterDescriptor<URI> PARAM_LOCATION = new ParameterBuilder()
+            .addName(LOCATION)
+            .setRequired(true)
+            .create(URI.class, null);
+
+    static final ParameterDescriptorGroup OPEN_DESCRIPTOR =
+            new ParameterBuilder().addName(Constants.GEOTIFF).createGroup(PARAM_LOCATION);
+
     /**
      * The MIME type for GeoTIFF files.
      */
@@ -71,6 +88,14 @@ public class GeoTiffStoreProvider extends DataStoreProvider {
     @Override
     public String getShortName() {
         return Constants.GEOTIFF;
+    }
+
+    /**
+     * {@inheritDoc }
+     */
+    @Override
+    public ParameterDescriptorGroup getOpenParameters() {
+        return OPEN_DESCRIPTOR;
     }
 
     /**
