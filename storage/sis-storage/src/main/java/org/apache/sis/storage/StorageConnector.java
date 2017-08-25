@@ -35,12 +35,14 @@ import java.nio.channels.ReadableByteChannel;
 import javax.imageio.ImageIO;
 import javax.imageio.stream.ImageInputStream;
 import java.sql.Connection;
+import java.sql.SQLException;
 import javax.sql.DataSource;
 import org.apache.sis.util.Debug;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ObjectConverters;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.util.CorruptedObjectException;
 import org.apache.sis.internal.storage.io.IOUtilities;
 import org.apache.sis.internal.storage.io.ChannelFactory;
 import org.apache.sis.internal.storage.io.ChannelDataInput;
@@ -95,6 +97,43 @@ public class StorageConnector implements Serializable {
      * for temporary buffers that are unlikely to be used for the actual reading process.
      */
     static final int MINIMAL_BUFFER_SIZE = 256;
+
+    /**
+     * Handler to {@code StorageConnector.createFoo()} methods associated to given storage types.
+     * Each {@code createFoo()} method may be invoked once for opening an input stream, character
+     * reader, database connection, <i>etc</i> from user-supplied path, URI, <i>etc</i>.
+     *
+     * @param  <T>  the type of input created by this {@code Opener} instance.
+     */
+    @FunctionalInterface
+    private interface Opener<T> {
+        /**
+         * Invoked when first needed for creating an input of the requested type.
+         * The enclosing {@link StorageConnector} is responsible for caching the result.
+         */
+        T open(StorageConnector c) throws Exception;
+    }
+
+    /** Helper method for {@link #OPENERS} static initialization. */
+    private static <T> void add(final Class<T> type, final Opener<T> op) {
+        if (OPENERS.put(type, op) != null) throw new AssertionError(type);
+    }
+
+    /**
+     * List of types recognized by {@link #getStorageAs(Class)}, associated to the methods for opening stream
+     * of those types. This map shall contain every types documented in {@link #getStorageAs(Class)} javadoc.
+     */
+    private static final Map<Class<?>, Opener<?>> OPENERS = new IdentityHashMap<>(8);
+    static {
+        add(String.class,           StorageConnector::createString);
+        add(ByteBuffer.class,       StorageConnector::createByteBuffer);
+        add(DataInput.class,        StorageConnector::createDataInput);
+        add(ImageInputStream.class, StorageConnector::createImageInputStream);
+        add(InputStream.class,      StorageConnector::createInputStream);
+        add(Reader.class,           StorageConnector::createReader);
+        add(Connection.class,       StorageConnector::createConnection);
+        add(ChannelDataInput.class, (s) -> s.createChannelDataInput(false));    // Undocumented case (SIS internal)
+    }
 
     /**
      * The input/output object given at construction time.
@@ -369,63 +408,59 @@ public class StorageConnector implements Serializable {
      */
     public <T> T getStorageAs(final Class<T> type) throws IllegalArgumentException, DataStoreException {
         ArgumentChecks.ensureNonNull("type", type);
-        if (views != null) {
-            final Object view = views.get(type);
-            if (view != null) {
-                if (view == storage && view instanceof InputStream) try {
-                    resetInputStream();
-                } catch (IOException e) {
-                    throw new DataStoreException(Errors.format(Errors.Keys.CanNotRead_1, getStorageName()), e);
-                }
-                return (view != Void.TYPE) ? type.cast(view) : null;
-            }
+        /*
+         * Verify if the cache contains an instance created by a previous invocation of this method.
+         * Note that InputStream may need to be reset if it has been used indirectly by other kind
+         * of stream (for example a java.io.Reader); this will be done at the end of this method.
+         */
+        Object value;
+        final T view;
+        if (views != null && (value = views.get(type)) != null) {
+            if (value == Void.TYPE) return null;
+            view = type.cast(value);
         } else {
-            views = new IdentityHashMap<>();
-        }
-        /*
-         * Special case for DataInput and ByteBuffer, because those values are created together.
-         * In addition, ImageInputStream creation assigns a value to the 'streamOrigin' field.
-         * The ChannelDataInput case is an undocumented (SIS internal) type for avoiding the
-         * potential call to ImageIO.createImageInputStream(…) when we do not need it.
-         */
-        boolean done = false;
-        try {
-            if (type == ByteBuffer.class) {
-                createByteBuffer();
-                done = true;
-            } else if (type == DataInput.class) {
-                createDataInput();
-                done = true;
-            } else if (type == ChannelDataInput.class) {                // Undocumented case (SIS internal)
-                createChannelDataInput(false);
-                done = true;
-            } else if (type == ChannelFactory.class) {                  // Undocumented case (SIS internal)
+            value = storage;
+            if (!type.isInstance(value)) {
                 /*
-                 * ChannelFactory may have been created as a side effect of creating a ReadableByteChannel.
-                 * Caller should have asked for another type (e.g. InputStream) before to ask for this type.
+                 * No instance has been created previously for the requested type. Open the stream now,
+                 * then cache it for future reuse. Note that we may cache 'null' value if no stream of
+                 * the given type can be created.
                  */
-                done = true;
+                final Opener<?> method = OPENERS.get(type);
+                if (method != null) try {
+                    value = method.open(this);
+                } catch (RuntimeException | DataStoreException e) {
+                    throw e;
+                } catch (Exception e) {
+                    throw new DataStoreException(Errors.format(Errors.Keys.CanNotOpen_1, getStorageName()), e);
+                } else if (type == ChannelFactory.class) {                 // Undocumented case (SIS internal).
+                    /*
+                     * ChannelFactory may have been created as a side effect of creating a ReadableByteChannel.
+                     * Caller should have asked for another type (e.g. InputStream) before to ask for this type.
+                     */
+                    return null;                    // Do not cache since the instance may be created later.
+                } else {
+                    /*
+                     * If the type is not one of the types listed in OPENERS, we delegate to ObjectConverter.
+                     * It will throw UnconvertibleObjectException (an IllegalArgumentException subtype) if
+                     * the given type is unrecognized.
+                     */
+                    value = ObjectConverters.convert(storage, type);
+                }
             }
-        } catch (IOException e) {
-            throw new DataStoreException(Errors.format(Errors.Keys.CanNotOpen_1, getStorageName()), e);
-        }
-        if (done) {
-            // Want to exit this method even if the value is null.
-            return getView(type);
+            view = type.cast(value);
+            addView(type, view);                // Cache the result for future reuse.
         }
         /*
-         * All other cases.
+         * If the user asked an InputStream, we may return the storage as-is if it was already an InputStream.
+         * However before doing so, we may need to reset the InputStream position if the stream has been used
+         * by a ChannelDataInput.
          */
-        final Object value;
-        try {
-            value = createView(type);
-        } catch (RuntimeException | DataStoreException e) {
-            throw e;
-        } catch (Exception e) {
-            throw new DataStoreException(Errors.format(Errors.Keys.CanNotOpen_1, getStorageName()), e);
+        if (view == storage && view instanceof InputStream) try {
+            resetInputStream();
+        } catch (IOException e) {
+            throw new DataStoreException(Errors.format(Errors.Keys.CanNotRead_1, getStorageName()), e);
         }
-        final T view = type.cast(value);
-        addView(type, view);
         return view;
     }
 
@@ -459,12 +494,14 @@ public class StorageConnector implements Serializable {
 
     /**
      * Creates a view for the input as a {@link ChannelDataInput} if possible.
-     * If the view can not be created, remember that fact in order to avoid new attempts.
+     * This is also a starting point for {@link #createDataInput()} and {@link #createByteBuffer()}.
+     * This method is one of the {@link #OPENERS} methods and should be invoked at most once per
+     * {@code StorageConnector} instance.
      *
      * @param  asImageInputStream  whether the {@code ChannelDataInput} needs to be {@link ChannelImageInputStream} subclass.
      * @throws IOException if an error occurred while opening a channel for the input.
      */
-    private void createChannelDataInput(final boolean asImageInputStream) throws IOException {
+    private ChannelDataInput createChannelDataInput(final boolean asImageInputStream) throws IOException {
         /*
          * Before to try to wrap an InputStream, mark its position so we can rewind if the user asks for
          * the InputStream directly. We need to reset because ChannelDataInput may have read some bytes.
@@ -480,31 +517,35 @@ public class StorageConnector implements Serializable {
          */
         final ChannelFactory factory = ChannelFactory.prepare(storage,
                 getOption(OptionKey.URL_ENCODING), false, getOption(OptionKey.OPEN_OPTIONS));
-
-        ChannelDataInput asDataInput = null;
-        if (factory != null) {
-            final String name = getStorageName();
-            final ReadableByteChannel channel = factory.reader(name);
-            addViewToClose(channel, storage);
-            ByteBuffer buffer = getOption(OptionKey.BYTE_BUFFER);
-            if (buffer == null) {
-                buffer = ByteBuffer.allocate(DEFAULT_BUFFER_SIZE);
-            }
-            if (asImageInputStream) {
-                asDataInput = new ChannelImageInputStream(name, channel, buffer, false);
-            } else {
-                asDataInput = new ChannelDataInput(name, channel, buffer, false);
-            }
-            addViewToClose(asDataInput, channel);
-            /*
-             * Following is an undocumented mechanism for allowing some Apache SIS implementations of DataStore
-             * to re-open the same channel or input stream another time, typically for re-reading the same data.
-             */
-            if (factory.canOpen()) {
-                addView(ChannelFactory.class, factory);
-            }
+        if (factory == null) {
+            return null;
         }
-        addView(ChannelDataInput.class, asDataInput);
+        /*
+         * ChannelDataInput depends on ReadableByteChannel, which itself depends on storage
+         * (potentially an InputStream). We need to remember this chain in 'viewsToClose' map.
+         */
+        final String name = getStorageName();
+        final ReadableByteChannel channel = factory.reader(name);
+        addViewToClose(channel, storage);
+        ByteBuffer buffer = getOption(OptionKey.BYTE_BUFFER);       // User-supplied buffer.
+        if (buffer == null) {
+            buffer = ByteBuffer.allocate(DEFAULT_BUFFER_SIZE);      // Default buffer if user did not specified any.
+        }
+        final ChannelDataInput asDataInput;
+        if (asImageInputStream) {
+            asDataInput = new ChannelImageInputStream(name, channel, buffer, false);
+        } else {
+            asDataInput = new ChannelDataInput(name, channel, buffer, false);
+        }
+        addViewToClose(asDataInput, channel);
+        /*
+         * Following is an undocumented mechanism for allowing some Apache SIS implementations of DataStore
+         * to re-open the same channel or input stream another time, typically for re-reading the same data.
+         */
+        if (factory.canOpen()) {
+            addView(ChannelFactory.class, factory);
+        }
+        return asDataInput;
     }
 
     /**
@@ -513,37 +554,39 @@ public class StorageConnector implements Serializable {
      * data input may imply creating a {@link ByteBuffer}, in which case the buffer will be stored under
      * the {@code ByteBuffer.class} key together with the {@code DataInput.class} case.
      *
+     * <p>This method is one of the {@link #OPENERS} methods and should be invoked at most once per
+     * {@code StorageConnector} instance.</p>
+     *
      * @throws IOException if an error occurred while opening a stream for the input.
      */
-    private void createDataInput() throws IOException {
+    private DataInput createDataInput() throws IOException {
+        /*
+         * Creates a ChannelImageInputStream instance. We really need that specific type because some
+         * SIS data stores will want to access directly the channel and the buffer. We will fallback
+         * on the ImageIO.createImageInputStream(Object) method only in last resort.
+         */
+        if (views == null || !views.containsKey(ChannelDataInput.class)) {
+            addView(ChannelDataInput.class, createChannelDataInput(true));
+        }
+        final ChannelDataInput c = getView(ChannelDataInput.class);
         final DataInput asDataInput;
-        if (storage instanceof DataInput) {
-            asDataInput = (DataInput) storage;
+        if (c == null) {
+            asDataInput = ImageIO.createImageInputStream(storage);
+            addViewToClose(asDataInput, storage);
+        } else if (c instanceof DataInput) {
+            asDataInput = (DataInput) c;
+            // No call to 'addViewToClose' because it has already be done by createChannelDataInput(…).
         } else {
-            /*
-             * Creates a ChannelImageInputStream instance. We really need that specific type because some
-             * SIS data stores will want to access directly the channel and the buffer. We will fallback
-             * on the ImageIO.createImageInputStream(Object) method only in last resort.
-             */
-            if (!views.containsKey(ChannelDataInput.class)) {
-                createChannelDataInput(true);
+            asDataInput = new ChannelImageInputStream(c);                       // Upgrade existing instance.
+            if (views.put(ChannelDataInput.class, asDataInput) != c) {          // Replace the previous instance.
+                throw new ConcurrentModificationException();
             }
-            final ChannelDataInput c = getView(ChannelDataInput.class);
-            if (c == null) {
-                asDataInput = ImageIO.createImageInputStream(storage);
-                addViewToClose(asDataInput, storage);
-            } else if (c instanceof DataInput) {
-                asDataInput = (DataInput) c;
-                // No call to 'addViewToClose' because the instance already exists.
-            } else {
-                asDataInput = new ChannelImageInputStream(c);
-                if (views.put(ChannelDataInput.class, asDataInput) != c) {          // Replace the previous instance.
-                    throw new ConcurrentModificationException();
-                }
-                addViewToClose(asDataInput, c.channel);
+            addViewToClose(asDataInput, c.channel);
+            if (viewsToClose.remove(c) != c.channel) {                          // Shall be after 'addViewToClose'.
+                throw new CorruptedObjectException();
             }
         }
-        addView(DataInput.class, asDataInput);
+        return asDataInput;
     }
 
     /**
@@ -552,41 +595,43 @@ public class StorageConnector implements Serializable {
      * of bytes read from the input. If this amount is not sufficient, it can be increased by a call
      * to {@link #prefetch()}.
      *
+     * <p>This method is one of the {@link #OPENERS} methods and should be invoked at most once per
+     * {@code StorageConnector} instance.</p>
+     *
      * @throws IOException if an error occurred while opening a stream for the input.
      */
-    private void createByteBuffer() throws IOException, DataStoreException {
+    private ByteBuffer createByteBuffer() throws IOException, DataStoreException {
         /*
          * First, try to create the ChannelDataInput if it does not already exists.
          * If successful, this will create a ByteBuffer companion as a side effect.
          */
-        if (!views.containsKey(ChannelDataInput.class)) {
-            createChannelDataInput(false);
+        if (views == null || !views.containsKey(ChannelDataInput.class)) {
+            addView(ChannelDataInput.class, createChannelDataInput(false));
         }
-        ByteBuffer asByteBuffer = null;
         final ChannelDataInput c = getView(ChannelDataInput.class);
         if (c != null) {
-            asByteBuffer = c.buffer.asReadOnlyBuffer();
-        } else {
-            /*
-             * If no ChannelDataInput has been create by the above code, get the input as an ImageInputStream and
-             * read an arbitrary amount of bytes. Read only a small amount of bytes because, at the contrary of the
-             * buffer created in createChannelDataInput(boolean), the buffer created here is unlikely to be used for
-             * the reading process after the recognition of the file format.
-             */
-            final ImageInputStream in = getStorageAs(ImageInputStream.class);
-            if (in != null) {
-                in.mark();
-                final byte[] buffer = new byte[MINIMAL_BUFFER_SIZE];
-                final int n = in.read(buffer);
-                in.reset();
-                if (n >= 1) {
-                    asByteBuffer = ByteBuffer.wrap(buffer).order(in.getByteOrder());
-                    asByteBuffer.limit(n);
-                    // Can not invoke asReadOnly() because 'prefetch()' need to be able to write in it.
-                }
+            return c.buffer.asReadOnlyBuffer();
+        }
+        /*
+         * If no ChannelDataInput has been create by the above code, get the input as an ImageInputStream and
+         * read an arbitrary amount of bytes. Read only a small amount of bytes because, at the contrary of the
+         * buffer created in createChannelDataInput(boolean), the buffer created here is unlikely to be used for
+         * the reading process after the recognition of the file format.
+         */
+        final ImageInputStream in = getStorageAs(ImageInputStream.class);
+        if (in != null) {
+            in.mark();
+            final byte[] buffer = new byte[MINIMAL_BUFFER_SIZE];
+            final int n = in.read(buffer);
+            in.reset();
+            if (n >= 1) {
+                final ByteBuffer asByteBuffer = ByteBuffer.wrap(buffer).order(in.getByteOrder());
+                asByteBuffer.limit(n);
+                return asByteBuffer;
+                // Can not invoke asReadOnly() because 'prefetch()' need to be able to write in it.
             }
         }
-        addView(ByteBuffer.class, asByteBuffer);
+        return null;
     }
 
     /**
@@ -604,7 +649,7 @@ public class StorageConnector implements Serializable {
         try {
             final ChannelDataInput c = getView(ChannelDataInput.class);
             if (c != null) {
-                return c.prefetch() >= 0;
+                return c.prefetch() > 0;
             }
             /*
              * The above code is the usual case. The code below this point is the fallback used when only
@@ -616,8 +661,11 @@ public class StorageConnector implements Serializable {
                 final ByteBuffer buffer = getView(ByteBuffer.class);
                 if (buffer != null) {
                     final int p = buffer.limit();
+                    final long mark = input.getStreamPosition();
+                    input.seek(Math.addExact(mark, p));
                     final int n = input.read(buffer.array(), p, buffer.capacity() - p);
-                    if (n >= 0) {
+                    input.seek(mark);
+                    if (n > 0) {
                         buffer.limit(p + n);
                         return true;
                     }
@@ -630,81 +678,90 @@ public class StorageConnector implements Serializable {
     }
 
     /**
-     * Creates a storage view of the given type if possible, or returns {@code null} otherwise.
-     * This method is invoked by {@link #getStorageAs(Class)} when first needed, and the result
-     * is cached by the caller.
+     * Creates an {@link ImageInputStream} from the {@link DataInput} if possible. This method simply
+     * casts {@code DataInput} is such cast is allowed. Since {@link #createDataInput()} instantiates
+     * {@link ChannelImageInputStream}, this cast is usually possible.
      *
-     * @param  type  the type of the view to create.
-     * @return the storage as a view of the given type, or {@code null} if no view can be created for the given type.
-     * @throws IllegalArgumentException if the given {@code type} argument is not a supported type.
-     * @throws Exception if an error occurred while opening a stream or database connection.
+     * <p>This method is one of the {@link #OPENERS} methods and should be invoked at most once per
+     * {@code StorageConnector} instance.</p>
      */
-    private Object createView(final Class<?> type) throws Exception {
-        if (type == String.class) {
-            return IOUtilities.toString(storage);
+    private ImageInputStream createImageInputStream() throws DataStoreException {
+        final DataInput input = getStorageAs(DataInput.class);
+        return (input instanceof ImageInputStream) ? (ImageInputStream) input : null;
+    }
+
+    /**
+     * Creates an input stream from {@link ReadableByteChannel} if possible, or from {@link ImageInputStream}
+     * otherwise.
+     *
+     * <p>This method is one of the {@link #OPENERS} methods and should be invoked at most once per
+     * {@code StorageConnector} instance.</p>
+     */
+    private InputStream createInputStream() throws IOException, DataStoreException {
+        final DataInput input = getStorageAs(DataInput.class);
+        if (input instanceof InputStream) {
+            return (InputStream) input;
         }
-        if (type == Connection.class) {
-            if (storage instanceof Connection) {
-                return storage;
-            }
-            if (storage instanceof DataSource) {
-                final Connection c = ((DataSource) storage).getConnection();
-                addViewToClose(c, storage);
-                return c;
-            }
-            return null;
+        if (input instanceof ImageInputStream) {
+            final InputStream c = new InputStreamAdapter((ImageInputStream) input);
+            addViewToClose(c, input);
+            return c;
         }
-        if (type == ImageInputStream.class) {
-            final DataInput input = getStorageAs(DataInput.class);
-            return (input instanceof ImageInputStream) ? input : null;
+        return null;
+    }
+
+    /**
+     * Creates a character reader if possible.
+     *
+     * <p>This method is one of the {@link #OPENERS} methods and should be invoked at most once per
+     * {@code StorageConnector} instance.</p>
+     */
+    private Reader createReader() throws DataStoreException {
+        final InputStream input = getStorageAs(InputStream.class);
+        if (input != null) {
+            final Charset encoding = getOption(OptionKey.ENCODING);
+            final Reader c = (encoding != null) ? new InputStreamReader(input, encoding)
+                                                : new InputStreamReader(input);
+            /*
+             * Current implementation does not wrap the above Reader in a BufferedReader because:
+             *
+             * 1) InputStreamReader already uses a buffer internally.
+             * 2) InputStreamReader does not support mark/reset, which is a desired limitation for now.
+             *    This is because reseting the Reader would not reset the underlying InputStream, which
+             *    would cause other DataStoreProvider.probeContent(…) methods to fail if they try to use
+             *    the InputStream. For now we let the InputStreamReader.mark() to throw an IOException,
+             *    but we may need to provide our own subclass of BufferedReader in a future SIS version
+             *    if mark/reset support is needed here.
+             */
+            addViewToClose(c, input);
+            return c;
         }
-        /*
-         * If the user asked an InputStream, we may return the storage as-is if it was already an InputStream.
-         * However before doing so, we may need to reset the InputStream position if the stream has been used
-         * by a ChannelDataInput.
-         */
-        if (type == InputStream.class) {
-            if (storage instanceof InputStream) {
-                resetInputStream();
-                return storage;
-            }
-            final DataInput input = getStorageAs(DataInput.class);
-            if (input instanceof InputStream) {
-                return input;
-            }
-            if (input instanceof ImageInputStream) {
-                final InputStream c = new InputStreamAdapter((ImageInputStream) input);
-                addViewToClose(c, input);
-                return c;
-            }
-            return null;
+        return null;
+    }
+
+    /**
+     * Creates a database connection if possible.
+     *
+     * <p>This method is one of the {@link #OPENERS} methods and should be invoked at most once per
+     * {@code StorageConnector} instance.</p>
+     */
+    private Connection createConnection() throws SQLException {
+        if (storage instanceof DataSource) {
+            final Connection c = ((DataSource) storage).getConnection();
+            addViewToClose(c, storage);
+            return c;
         }
-        if (type == Reader.class) {
-            if (storage instanceof Reader) {
-                return storage;
-            }
-            final InputStream input = getStorageAs(InputStream.class);
-            if (input != null) {
-                final Charset encoding = getOption(OptionKey.ENCODING);
-                final Reader c = (encoding != null) ? new InputStreamReader(input, encoding)
-                                                    : new InputStreamReader(input);
-                /*
-                 * Current implementation does not wrap the above Reader in a BufferedReader because:
-                 *
-                 * 1) InputStreamReader already uses a buffer internally.
-                 * 2) InputStreamReader does not support mark/reset, which is a desired limitation for now.
-                 *    This is because reseting the Reader would not reset the underlying InputStream, which
-                 *    would cause other DataStoreProvider.probeContent(…) methods to fail if they try to use
-                 *    the InputStream. For now we let the InputStreamReader.mark() to throw an IOException,
-                 *    but we may need to provide our own subclass of BufferedReader in a future SIS version
-                 *    if mark/reset support is needed here.
-                 */
-                addViewToClose(c, input);
-                return c;
-            }
-            return null;
-        }
-        return ObjectConverters.convert(storage, type);
+        return null;
+    }
+
+    /**
+     * Returns the storage as a path if possible, or {@code null} otherwise.
+     *
+     * <p>This method is one of the {@link #OPENERS} methods and should be invoked at most once per
+     * {@code StorageConnector} instance.</p>
+     */
+    private String createString() {
+        return IOUtilities.toString(storage);
     }
 
     /**
@@ -715,7 +772,11 @@ public class StorageConnector implements Serializable {
      * @param  view  the view, or {@code null} if none.
      */
     private <T> void addView(final Class<T> type, final T view) {
+        if (views == null) {
+            views = new IdentityHashMap<>();
+        }
         if (views.put(type, (view != null) ? view : Void.TYPE) != null) {
+            // Should never happen, unless someone used this StorageConnector in another thread.
             throw new ConcurrentModificationException();
         }
     }
@@ -728,6 +789,7 @@ public class StorageConnector implements Serializable {
      * @return the view, or {@code null} if none.
      */
     private <T> T getView(final Class<T> type) {
+        // Note: this method is always invoked in a context where 'views' can not be null.
         final Object view = views.get(type);
         return (view != Void.TYPE) ? type.cast(view) : null;
     }
