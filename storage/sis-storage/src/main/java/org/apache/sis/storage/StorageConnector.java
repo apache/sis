@@ -32,6 +32,7 @@ import java.io.Serializable;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 import java.nio.channels.ReadableByteChannel;
+import java.nio.channels.SeekableByteChannel;
 import javax.imageio.ImageIO;
 import javax.imageio.stream.ImageInputStream;
 import java.sql.Connection;
@@ -43,12 +44,16 @@ import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ObjectConverters;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.CorruptedObjectException;
+import org.apache.sis.internal.storage.Resources;
 import org.apache.sis.internal.storage.io.IOUtilities;
 import org.apache.sis.internal.storage.io.ChannelFactory;
 import org.apache.sis.internal.storage.io.ChannelDataInput;
 import org.apache.sis.internal.storage.io.ChannelImageInputStream;
 import org.apache.sis.internal.storage.io.InputStreamAdapter;
 import org.apache.sis.setup.OptionKey;
+
+// Branch-dependent imports
+import java.util.function.Consumer;
 
 
 /**
@@ -155,6 +160,14 @@ public class StorageConnector implements Serializable {
     private transient String extension;
 
     /**
+     * The options, created only when first needed.
+     *
+     * @see #getOption(OptionKey)
+     * @see #setOption(OptionKey, Object)
+     */
+    private Map<OptionKey<?>, Object> options;
+
+    /**
      * Views of {@link #storage} as some of the following supported types:
      *
      * <ul>
@@ -189,6 +202,27 @@ public class StorageConnector implements Serializable {
     private transient Map<Class<?>, Object> views;
 
     /**
+     * The views that need to be synchronized if {@link #storage} is used independently. They are views
+     * that may advance {@code storage} position, but not necessarily in same time than the view position
+     * (typically because the view reads some bytes in advance and stores them in a buffer). This map may
+     * be non-null when the storage is an {@link InputStream}, {@link java.io.OutputStream} or a
+     * {@link java.nio.channels.Channel}. Those views can be:
+     *
+     * <ul>
+     *   <li>{@link Reader} that are wrappers around {@code InputStream}.</li>
+     *   <li>{@link ChannelDataInput} when the channel come from an {@code InputStream}.</li>
+     *   <li>{@link ChannelDataInput} when the channel has been explicitely given to the constructor.</li>
+     * </ul>
+     *
+     * Note that we do <strong>not</strong> include {@link InputStreamAdapter} because it does not use buffer;
+     * {@code InputStreamAdapter} positions are synchronized with wrapped {@link ImageInputStream} positions.
+     *
+     * <p>Values are cleanup actions to execute after the {@link #storage} has been reseted to its original position.
+     * A {@code null} value means that the view can not be synchronized and consequently should be discarded.</p>
+     */
+    private transient Map<Class<?>, Consumer<StorageConnector>> viewsToSync;
+
+    /**
      * Objects which will need to be closed by the {@link #closeAllExcept(Object)} method.
      * For each (<var>key</var>, <var>value</var>) entry, if the object to close (the key)
      * is a wrapper around an other object (e.g. an {@link InputStreamReader} wrapping an
@@ -200,12 +234,11 @@ public class StorageConnector implements Serializable {
     private transient Map<Object, Object> viewsToClose;
 
     /**
-     * The options, created only when first needed.
+     * The view returned by the last call to {@link #getStorageAs(Class)}.
      *
-     * @see #getOption(OptionKey)
-     * @see #setOption(OptionKey, Object)
+     * @see #storage
      */
-    private Map<OptionKey<?>, Object> options;
+    private transient Object lastView;
 
     /**
      * Creates a new data store connection wrapping the given input/output object.
@@ -254,10 +287,15 @@ public class StorageConnector implements Serializable {
      * The object can be of any type, but the class javadoc lists the most typical ones.
      *
      * @return the input/output object as a URL, file, image input stream, <i>etc.</i>.
+     * @throws DataStoreException if an error occurred while reseting the input stream or channel to its original position.
      *
      * @see #getStorageAs(Class)
      */
-    public Object getStorage() {
+    public Object getStorage() throws DataStoreException {
+        if (viewsToSync != null && storage != lastView) {
+            resetStorage();
+        }
+        lastView = storage;
         return storage;
     }
 
@@ -414,11 +452,12 @@ public class StorageConnector implements Serializable {
          * of stream (for example a java.io.Reader); this will be done at the end of this method.
          */
         Object value;
-        final T view;
+        final boolean cache;
         if (views != null && (value = views.get(type)) != null) {
             if (value == Void.TYPE) return null;
-            view = type.cast(value);
+            cache = false;
         } else {
+            cache = true;
             value = storage;
             if (!type.isInstance(value)) {
                 /*
@@ -448,48 +487,116 @@ public class StorageConnector implements Serializable {
                     value = ObjectConverters.convert(storage, type);
                 }
             }
-            view = type.cast(value);
-            addView(type, view);                // Cache the result for future reuse.
         }
         /*
          * If the user asked an InputStream, we may return the storage as-is if it was already an InputStream.
          * However before doing so, we may need to reset the InputStream position if the stream has been used
-         * by a ChannelDataInput.
+         * by a ChannelDataInput or an InputStreamReader.
          */
-        if (view == storage && view instanceof InputStream) try {
-            resetInputStream();
-        } catch (IOException e) {
-            throw new DataStoreException(Errors.format(Errors.Keys.CanNotRead_1, getStorageName()), e);
+        final T view = type.cast(value);
+        if (viewsToSync != null && view != lastView && (view == storage || viewsToSync.containsKey(type))) {
+            resetStorage();
         }
+        if (cache) {
+            addView(type, view);                // Shall be after 'resetStorage()'.
+        }
+        lastView = view;
         return view;
     }
 
     /**
-     * Assuming that {@link #storage} is an instance of {@link InputStream}, resets its position. This method
-     * is the converse of the marks performed at the beginning of {@link #createChannelDataInput(boolean)}.
+     * Mark the storage position before to create a view that may be a wrapper around that storage.
+     */
+    private void markStorage() {
+        if (storage instanceof InputStream) {
+            ((InputStream) storage).mark(DEFAULT_BUFFER_SIZE);
+        }
+    }
+
+    /**
+     * Assuming that {@link #storage} is an instance of {@link InputStream}, {@link ReadableByteChannel} or other
+     * objects that may be affected by views operations, resets the storage position. This method is the converse
+     * of {@link #markStorage()}.
      *
      * <div class="note"><b>Rational:</b>
      * {@link DataStoreProvider#probeContent(StorageConnector)} contract requires that implementors reset the
-     * input stream themselves. However if the last {@code DataStoreProvider} instance that we tried worked on
-     * {@code ChannelDataInput}, then the provider performed a call to {@link ChannelDataInput#reset()}, which
-     * did not reseted the underlying input stream. So we need to perform the missing {@link InputStream#reset()}
-     * here, then synchronize the {@code ChannelDataInput} position accordingly.</div>
+     * input stream themselves. However if {@link ChannelDataInput} or {@link InputStreamReader} has been used,
+     * then the user performed a call to {@link ChannelDataInput#reset()} (for instance), which did not reseted
+     * the underlying input stream. So we need to perform the missing {@link InputStream#reset()} here, then
+     * synchronize the {@code ChannelDataInput} position accordingly.</div>
      */
-    private void resetInputStream() throws IOException {
-        final ChannelDataInput channel = getView(ChannelDataInput.class);
-        if (channel != null) {
+    private <T> void resetStorage() throws DataStoreException {
+        if (lastView != null) {
             /*
+             * We must reset InputStream or ReadableChannel position before to run cleanup code.
              * Note on InputStream.reset() behavior documented in java.io:
              *
              *  - It does not discard the mark, so it is okay if reset() is invoked twice.
              *  - If mark is unsupported, may either throw IOException or reset the stream
              *    to an implementation-dependent fixed state.
              */
-            ((InputStream) storage).reset();        // May throw an exception if mark is unsupported.
-            channel.buffer.limit(0);                // Must be after storage.reset().
-            channel.setStreamPosition(0);           // Must be after buffer.limit(0).
+            boolean isReset = false;
+            IOException cause = null;
+            try {
+                if (storage instanceof InputStream) {
+                    ((InputStream) storage).reset();
+                    isReset = true;
+                } else if (storage instanceof SeekableByteChannel) {
+                    ((SeekableByteChannel) storage).position(getView(ChannelDataInput.class).channelOffset);
+                    isReset = true;
+                }
+            } catch (IOException e) {
+                cause = e;
+            }
+            if (!isReset) {
+                throw new ForwardOnlyStorageException(Resources.format(
+                        Resources.Keys.StreamIsReadOnce_1, getStorageName()), cause);
+            }
+            /*
+             * At this point the InputStream or ReadableChannel has been reset.
+             * Now reset or remove any view that depend on it.
+             */
+            for (final Map.Entry<Class<?>, Consumer<StorageConnector>> entry : viewsToSync.entrySet()) {
+                final Consumer<StorageConnector> sync = entry.getValue();
+                if (sync != null) {
+                    sync.accept(this);
+                } else {
+                    removeView(entry.getKey());             // Reader will need to be recreated from scratch.
+                }
+            }
         }
-        removeView(Reader.class);                   // Reader will need to be recreated from scratch.
+    }
+
+    /**
+     * Resets {@link ChannelDataInput} after the {@link InputStream} has been reseted.
+     * This method is registered in {@link #viewsToSync} when a {@link ChannelDataInput} is created.
+     */
+    private void resetChannelDataInput() {
+        ChannelDataInput channel = getView(ChannelDataInput.class);     // Should never be null.
+        channel.buffer.limit(0);                                        // Must be after storage.reset().
+        channel.setStreamPosition(0);                                   // Must be after buffer.limit(0).
+    }
+
+    /**
+     * Gets or creates a view for the input as a {@link ChannelDataInput} if possible. If {@code ChannelDataInput}
+     * instance already exists, then this method returns it as-is (this method does <strong>not</strong> verify if
+     * the {@code ChannelDataInput} instance is an image input stream). Otherwise a new {@code ChannelDataInput}
+     * is created (if possible), cached and returned.
+     *
+     * @param  asImageInputStream  whether new {@code ChannelDataInput} should be {@link ChannelImageInputStream}.
+     *         This argument is ignored if a {@code ChannelDataInput} instance already exists.
+     * @return the existing or new {@code ChannelDataInput}, or {@code null} if none can be created.
+     */
+    private ChannelDataInput getChannelDataInput(final boolean asImageInputStream) throws IOException, DataStoreException {
+        if (views != null) {
+            final Object view = views.get(ChannelDataInput.class);
+            if (view != null) {
+                return (view != Void.TYPE) ? (ChannelDataInput) view : null;
+            }
+        }
+        final ChannelDataInput view = createChannelDataInput(asImageInputStream);       // May be null.
+        addView(ChannelDataInput.class, view);                                          // Cache even if null.
+        return view;
     }
 
     /**
@@ -501,16 +608,14 @@ public class StorageConnector implements Serializable {
      * @param  asImageInputStream  whether the {@code ChannelDataInput} needs to be {@link ChannelImageInputStream} subclass.
      * @throws IOException if an error occurred while opening a channel for the input.
      */
-    private ChannelDataInput createChannelDataInput(final boolean asImageInputStream) throws IOException {
+    private ChannelDataInput createChannelDataInput(final boolean asImageInputStream) throws IOException, DataStoreException {
         /*
          * Before to try to wrap an InputStream, mark its position so we can rewind if the user asks for
          * the InputStream directly. We need to reset because ChannelDataInput may have read some bytes.
          * Note that if mark is unsupported, the default InputStream.mark() implementation does nothing.
-         * See above 'resetInputStream()' method.
+         * See above 'resetStorage()' method.
          */
-        if (storage instanceof InputStream) {
-            ((InputStream) storage).mark(DEFAULT_BUFFER_SIZE);
-        }
+        markStorage();
         /*
          * Following method call recognizes ReadableByteChannel, InputStream (with special case for FileInputStream),
          * URL, URI, File, Path or other types that may be added in future Apache SIS versions.
@@ -545,6 +650,14 @@ public class StorageConnector implements Serializable {
         if (factory.canOpen()) {
             addView(ChannelFactory.class, factory);
         }
+        /*
+         * If the channels to be created by ChannelFactory are wrappers around InputStream or any other object
+         * that may be affected when read operations will occur, we need to remember that fact in order to keep
+         * the storage synchronized with the view.
+         */
+        if (factory.isCoupled()) {
+            addViewToSync(ChannelDataInput.class, StorageConnector::resetChannelDataInput);
+        }
         return asDataInput;
     }
 
@@ -559,20 +672,24 @@ public class StorageConnector implements Serializable {
      *
      * @throws IOException if an error occurred while opening a stream for the input.
      */
-    private DataInput createDataInput() throws IOException {
+    private DataInput createDataInput() throws IOException, DataStoreException {
         /*
          * Creates a ChannelImageInputStream instance. We really need that specific type because some
          * SIS data stores will want to access directly the channel and the buffer. We will fallback
          * on the ImageIO.createImageInputStream(Object) method only in last resort.
          */
-        if (views == null || !views.containsKey(ChannelDataInput.class)) {
-            addView(ChannelDataInput.class, createChannelDataInput(true));
-        }
-        final ChannelDataInput c = getView(ChannelDataInput.class);
+        final ChannelDataInput c = getChannelDataInput(true);
         final DataInput asDataInput;
         if (c == null) {
             asDataInput = ImageIO.createImageInputStream(storage);
             addViewToClose(asDataInput, storage);
+            /*
+             * Note: Java Image I/O wrappers for Input/OutputStream do NOT close the underlying streams.
+             * This is a complication for us. We could mitigate the problem by subclassing the standard
+             * FileCacheImageInputStream and related classes, but we don't do that for now because this
+             * code should never be executed for InputStream storage. Instead getChannelDataInput(true)
+             * should have created a ChannelImageInputStream or ChannelDataInput.
+             */
         } else if (c instanceof DataInput) {
             asDataInput = (DataInput) c;
             // No call to 'addViewToClose' because it has already be done by createChannelDataInput(…).
@@ -605,10 +722,7 @@ public class StorageConnector implements Serializable {
          * First, try to create the ChannelDataInput if it does not already exists.
          * If successful, this will create a ByteBuffer companion as a side effect.
          */
-        if (views == null || !views.containsKey(ChannelDataInput.class)) {
-            addView(ChannelDataInput.class, createChannelDataInput(false));
-        }
-        final ChannelDataInput c = getView(ChannelDataInput.class);
+        final ChannelDataInput c = getChannelDataInput(false);
         if (c != null) {
             return c.buffer.asReadOnlyBuffer();
         }
@@ -718,25 +832,27 @@ public class StorageConnector implements Serializable {
      */
     private Reader createReader() throws DataStoreException {
         final InputStream input = getStorageAs(InputStream.class);
-        if (input != null) {
-            final Charset encoding = getOption(OptionKey.ENCODING);
-            final Reader c = (encoding != null) ? new InputStreamReader(input, encoding)
-                                                : new InputStreamReader(input);
-            /*
-             * Current implementation does not wrap the above Reader in a BufferedReader because:
-             *
-             * 1) InputStreamReader already uses a buffer internally.
-             * 2) InputStreamReader does not support mark/reset, which is a desired limitation for now.
-             *    This is because reseting the Reader would not reset the underlying InputStream, which
-             *    would cause other DataStoreProvider.probeContent(…) methods to fail if they try to use
-             *    the InputStream. For now we let the InputStreamReader.mark() to throw an IOException,
-             *    but we may need to provide our own subclass of BufferedReader in a future SIS version
-             *    if mark/reset support is needed here.
-             */
-            addViewToClose(c, input);
-            return c;
+        if (input == null) {
+            return null;
         }
-        return null;
+        markStorage();
+        final Charset encoding = getOption(OptionKey.ENCODING);
+        final Reader c = (encoding != null) ? new InputStreamReader(input, encoding)
+                                            : new InputStreamReader(input);
+        /*
+         * Current implementation does not wrap the above Reader in a BufferedReader because:
+         *
+         * 1) InputStreamReader already uses a buffer internally.
+         * 2) InputStreamReader does not support mark/reset, which is a desired limitation for now.
+         *    This is because reseting the Reader would not reset the underlying InputStream, which
+         *    would cause other DataStoreProvider.probeContent(…) methods to fail if they try to use
+         *    the InputStream. For now we let the InputStreamReader.mark() to throw an IOException,
+         *    but we may need to provide our own subclass of BufferedReader in a future SIS version
+         *    if mark/reset support is needed here.
+         */
+        addViewToClose(c, input);
+        addViewToSync(Reader.class, null);
+        return c;
     }
 
     /**
@@ -803,6 +919,24 @@ public class StorageConnector implements Serializable {
     private void removeView(final Class<?> type) {
         if (views.remove(type) != null) {
             viewsToClose.remove(type);
+        }
+    }
+
+    /**
+     * Declares that the view of the given type is coupled with {@link #storage}.
+     * A change of view position will change storage position, and vis-versa.
+     * See {@link #viewsToSync} for more information.
+     *
+     * @param  sync  action to execute after {@link #storage} has been reset,
+     *               or {@code null} if the view should be removed.
+     */
+    private void addViewToSync(final Class<?> type, final Consumer<StorageConnector> sync) {
+        if (viewsToSync == null) {
+            viewsToSync = new IdentityHashMap<>(4);
+        }
+        if (viewsToSync.put(type, sync) != null) {
+            // Should never happen, unless someone used this StorageConnector in another thread.
+            throw new ConcurrentModificationException();
         }
     }
 

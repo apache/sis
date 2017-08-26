@@ -62,8 +62,11 @@ public abstract class ChannelData implements Markable {
      * The position of the channel when this {@code ChannelData} has been created.
      * This is almost always 0, but we allow other values in case the data to read
      * or write are part of a bigger file.
+     *
+     * <p>This value is added to the argument given to the {@link #seek(long)} method. Users can ignore
+     * this field, unless they want to invoke {@link SeekableByteChannel#position(long)} directly.</p>
      */
-    final long channelOffset;
+    public final long channelOffset;
 
     /**
      * The channel position where is located the {@link #buffer} value at index 0.

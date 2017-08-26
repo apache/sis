@@ -607,7 +607,7 @@ public class ChannelDataOutput extends ChannelData implements Flushable {
      */
     @Override
     public final void seek(final long position) throws IOException {
-        long p = position - bufferOffset;
+        long p = Math.subtractExact(position, bufferOffset);
         if (p >= 0 && p <= buffer.limit()) {
             /*
              * Requested position is inside the current limits of the buffer.
@@ -620,7 +620,7 @@ public class ChannelDataOutput extends ChannelData implements Flushable {
              * but we can set the new position directly in the channel.
              */
             flush();
-            ((SeekableByteChannel) channel).position(channelOffset + position);
+            ((SeekableByteChannel) channel).position(Math.addExact(channelOffset, position));
             bufferOffset = position;
         } else if (p >= 0) {
             /*

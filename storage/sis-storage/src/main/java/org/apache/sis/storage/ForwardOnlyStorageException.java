@@ -58,7 +58,17 @@ public class ForwardOnlyStorageException extends DataStoreException {
     }
 
     /**
-     * Creates a localized exception with a default message saying that the stream is read-once.
+     * Creates an exception with the specified details message and cause.
+     *
+     * @param message  the detail message in the default locale.
+     * @param cause    the cause for this exception.
+     */
+    public ForwardOnlyStorageException(final String message, final Throwable cause) {
+        super(message, cause);
+    }
+
+    /**
+     * Creates a localized exception with a default message saying that the stream is read-once or write-once.
      *
      * @param locale    the locale of the message to be returned by {@link #getLocalizedMessage()}, or {@code null}.
      * @param filename  name of the file or data store where the error occurred.
