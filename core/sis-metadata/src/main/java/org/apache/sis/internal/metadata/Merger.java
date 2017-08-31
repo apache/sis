@@ -264,6 +264,7 @@ public class Merger {
                     if (!success) {
                         if (dryRun) break;
                         unmerged(target, propertyName, sourceValue, targetValue);
+                        success = true;  // If no exception has been thrown by 'unmerged', assume the conflict solved.
                     }
                 }
             }
