@@ -24,14 +24,17 @@ import java.io.Reader;
 import java.io.DataInput;
 import java.io.InputStream;
 import java.io.IOException;
+import java.io.LineNumberReader;
 import java.io.InputStreamReader;
+import java.io.BufferedInputStream;
 import java.io.Serializable;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
+import java.nio.channels.Channel;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.SeekableByteChannel;
-import javax.imageio.ImageIO;
 import javax.imageio.stream.ImageInputStream;
+import javax.imageio.ImageIO;
 import java.sql.Connection;
 import java.sql.SQLException;
 import javax.sql.DataSource;
@@ -47,6 +50,7 @@ import org.apache.sis.internal.storage.io.ChannelDataInput;
 import org.apache.sis.internal.storage.io.ChannelImageInputStream;
 import org.apache.sis.internal.storage.io.InputStreamAdapter;
 import org.apache.sis.internal.util.Utilities;
+import org.apache.sis.io.InvalidSeekException;
 import org.apache.sis.setup.OptionKey;
 
 
@@ -98,6 +102,36 @@ public class StorageConnector implements Serializable {
     static final int MINIMAL_BUFFER_SIZE = 256;
 
     /**
+     * A flag for <code>{@linkplain #addView(Class, Object, Class, byte) addView}(…, view, source, flags)</code>
+     * telling that after closing the {@code view}, we also need to close the {@code source}.
+     * This flag should be set when the view is an {@link ImageInputStream} because Java I/O
+     * {@link javax.imageio.stream.FileCacheImageInputStream#close()} does not close the underlying stream.
+     * For most other kinds of view, this flag should not be set.
+     *
+     * @see Coupled#cascadeOnClose()
+     */
+    private static final byte CASCADE_ON_CLOSE = 1;
+
+    /**
+     * A flag for <code>{@linkplain #addView(Class, Object, Class, byte) addView}(…, view, source, flags)</code>
+     * telling that before reseting the {@code view}, we need to reset the {@code source} first. This flag should
+     * can be unset if any change in the position of {@code view} is immediately reflected in the position of
+     * {@code source}, and vis-versa.
+     *
+     * @see Coupled#cascadeOnReset()
+     */
+    private static final byte CASCADE_ON_RESET = 2;
+
+    /**
+     * A flag for <code>{@linkplain #addView(Class, Object, Class, byte) addView}(…, view, source, flags)</code>
+     * telling that {@code view} can not be reseted, so it should be set to {@code null} instead. This implies
+     * that a new view of the same type will be recreated next time it will be requested.
+     *
+     * <p>When this flag is set, the {@link #CASCADE_ON_RESET} should usually be set in same time.</p>
+     */
+    private static final byte CLEAR_ON_RESET = 4;
+
+    /**
      * Handler to {@code StorageConnector.createFoo()} methods associated to given storage types.
      * Each {@code createFoo()} method may be invoked once for opening an input stream, character
      * reader, database connection, <i>etc</i> from user-supplied path, URI, <i>etc</i>.
@@ -108,7 +142,7 @@ public class StorageConnector implements Serializable {
     private interface Opener<T> {
         /**
          * Invoked when first needed for creating an input of the requested type.
-         * This method should invoke {@link #addView(Class, Object, Class, boolean, boolean)}
+         * This method should invoke {@link #addView(Class, Object, Class, byte)}
          * for caching the result before to return the view.
          */
         T open(StorageConnector c) throws Exception;
@@ -181,7 +215,7 @@ public class StorageConnector implements Serializable {
      *   <li>By convention, the {@code null} key is associated to the {@link #storage} value.</li>
      * </ul>
      *
-     * @see #addView(Class, Object, Class, boolean, boolean)
+     * @see #addView(Class, Object, Class, byte)
      * @see #getView(Class)
      * @see #getStorageAs(Class)
      */
@@ -253,19 +287,9 @@ public class StorageConnector implements Serializable {
         private Coupled[] wrappedBy;
 
         /**
-         * {@code true} if calls to {@link #reset()} should cascade to {@link #wrapperFor}.
-         * This field can be {@code false} if any change in the position of {@link #view}
-         * is immediately reflected in the position of {@link #wrapperFor}, and vis-versa.
+         * Bitwise combination of {@link #CASCADE_ON_CLOSE}, {@link #CASCADE_ON_RESET} or {@link #CLEAR_ON_RESET}.
          */
-        final boolean cascadeOnReset;
-
-        /**
-         * {@code true} if after closing the {@link #view}, we need to also close the {@link #wrapperFor}.
-         * This field should be {@code true} when the view is an {@link ImageInputStream} because Java I/O
-         * {@link javax.imageio.stream.FileCacheImageInputStream#close()} does not close the underlying stream.
-         * For most other kinds of view, this field should be {@code false}.
-         */
-        final boolean cascadeOnClose;
+        final byte cascade;
 
         /**
          * {@code true} if the position of {@link #view} is synchronized with the position of {@link #wrapperFor}.
@@ -277,26 +301,24 @@ public class StorageConnector implements Serializable {
          * a {@code Coupled} instance for another view wrapping {@code storage}.
          */
         Coupled(final Object storage) {
-            view           = storage;
-            wrapperFor     = null;
-            cascadeOnReset = false;
-            cascadeOnClose = false;
-            isValid        = true;
+            view       = storage;
+            wrapperFor = null;
+            cascade    = 0;
+            isValid    = true;
         }
 
         /**
          * Creates a wrapper for a view wrapping the given {@code Coupled} instance.
          * Caller is responsible to set the {@link #view} field after this constructor call.
          *
-         * @param  wrapperFor      the object that {@link #view} will wrap, or {@code null} if none.
-         * @param  cascadeOnReset  whether calls to {@link #reset()} shall cascade.
-         * @param  cascadeOnClose  whether calls to {@link AutoCloseable#close()} shall cascade.
+         * @param  wrapperFor  the object that {@link #view} will wrap, or {@code null} if none.
+         * @param  cascade     bitwise combination of {@link #CASCADE_ON_CLOSE}, {@link #CASCADE_ON_RESET}
+         *                     or {@link #CLEAR_ON_RESET}.
          */
         @SuppressWarnings("ThisEscapedInObjectConstruction")
-        Coupled(final Coupled wrapperFor, final boolean cascadeOnReset, final boolean cascadeOnClose) {
-            this.wrapperFor     = wrapperFor;
-            this.cascadeOnReset = cascadeOnReset;
-            this.cascadeOnClose = cascadeOnClose;
+        Coupled(final Coupled wrapperFor, final byte cascade) {
+            this.wrapperFor = wrapperFor;
+            this.cascade    = cascade;
             if (wrapperFor != null) {
                 final Coupled[] w = wrapperFor.wrappedBy;
                 final int n = (w != null) ? w.length : 0;
@@ -308,15 +330,34 @@ public class StorageConnector implements Serializable {
         }
 
         /**
+         * {@code true} if after closing the {@link #view}, we need to also close the {@link #wrapperFor}.
+         * Should be {@code true} when the view is an {@link ImageInputStream} because Java I/O
+         * {@link javax.imageio.stream.FileCacheImageInputStream#close()} does not close the underlying stream.
+         * For most other kinds of view, should be {@code false}.
+         */
+        final boolean cascadeOnClose() {
+            return (cascade & CASCADE_ON_CLOSE) != 0;
+        }
+
+        /**
+         * {@code true} if calls to {@link #reset()} should cascade to {@link #wrapperFor}.
+         * This is {@code false} if any change in the position of {@link #view} is immediately
+         * reflected in the position of {@link #wrapperFor}, and vis-versa.
+         */
+        final boolean cascadeOnReset() {
+            return (cascade & CASCADE_ON_RESET) != 0;
+        }
+
+        /**
          * Declares as invalid all unsynchronized {@code Coupled} instances which are used, directly or indirectly,
          * by this instance. This method is invoked before {@link StorageConnector#getStorageAs(Class)} returns a
          * view, in order to remember which views would need to be resynchronized if they are requested.
          */
         final void invalidateSources() {
-            boolean sync = cascadeOnReset;
+            boolean sync = cascadeOnReset();
             for (Coupled c = wrapperFor; sync; c = c.wrapperFor) {
                 c.isValid = false;
-                sync = c.cascadeOnReset;
+                sync = c.cascadeOnReset();
             }
         }
 
@@ -328,7 +369,7 @@ public class StorageConnector implements Serializable {
         final void invalidateUsages() {
             if (wrappedBy != null) {
                 for (final Coupled c : wrappedBy) {
-                    if (c.cascadeOnReset) {
+                    if (c.cascadeOnReset()) {
                         c.isValid = false;
                         c.invalidateUsages();
                     }
@@ -348,7 +389,7 @@ public class StorageConnector implements Serializable {
         final void protect(final Map<AutoCloseable,Boolean> toClose) {
             if (wrappedBy != null) {
                 for (final Coupled c : wrappedBy) {
-                    if (!c.cascadeOnClose) {
+                    if (!c.cascadeOnClose()) {
                         if (c.view instanceof AutoCloseable) {
                             toClose.put((AutoCloseable) c.view, Boolean.FALSE);
                         }
@@ -364,20 +405,26 @@ public class StorageConnector implements Serializable {
          * @return {@code true} if some kind of reset has been performed.
          *         Note that it does means that the view {@link #isValid} is {@code true}.
          */
-        final boolean reset() throws Exception {
+        final boolean reset() throws IOException {
             if (isValid) {
                 return false;
             }
-            isValid = true;             // Set first as a safety against infinite recursivity.
             /*
              * We need to reset the sources before to reset the view of this Coupled instance.
              * For example if this Coupled instance contains a ChannelDataInput, we need to
              * reset the underlying InputStream before to reset the ChannelDataInput.
              */
-            if (cascadeOnReset) {
+            if (cascadeOnReset()) {
                 wrapperFor.reset();
             }
-            if (view instanceof InputStream) {
+            if ((cascade & CLEAR_ON_RESET) != 0) {
+                /*
+                 * If the view can not be reset, in some cases we can discard it and recreate a new view when
+                 * first needed. The 'isValid' flag is left to false for telling that a new value is requested.
+                 */
+                view = null;
+                return true;
+            } else if (view instanceof InputStream) {
                 /*
                  * Note on InputStream.reset() behavior documented in java.io:
                  *
@@ -387,37 +434,49 @@ public class StorageConnector implements Serializable {
                  */
                 ((InputStream) view).reset();
             } else if (view instanceof Reader) {
-                ((Reader) view).reset();
-            } else if (view instanceof SeekableByteChannel) {
                 /*
-                 * This case should be rare. If it happen anyway, searches for a ChannelDataInput wrapping
-                 * the channel, because it contains the original position (note: StorageConnector tries to
-                 * instantiate ChannelDataInput in priority to all other types). If we don't find any, the
-                 * original position is assumed to be zero (which is the case most of the time).
+                 * Defined as a matter of principle but should not be needed since we do not wrap java.io.Reader
+                 * (except in BufferedReader if the original storage does not support mark/reset).
                  */
-                long p = 0;
+                ((Reader) view).reset();
+            } else if (view instanceof ChannelDataInput) {
+                /*
+                 * ChannelDataInput can be recycled without the need to discard and recreate them. Note that
+                 * this code requires that SeekableByteChannel has been seek to the channel beginning first.
+                 * This should be done by the above 'wrapperFor.reset()' call.
+                 */
+                final ChannelDataInput input = (ChannelDataInput) view;
+                input.buffer.limit(0);                                      // Must be after channel reset.
+                input.setStreamPosition(0);                                 // Must be after buffer.limit(0).
+            } else if (view instanceof Channel) {
+                /*
+                 * Searches for a ChannelDataInput wrapping the channel, because it contains the original position
+                 * (note: StorageConnector tries to instantiate ChannelDataInput in priority to all other types).
+                 * If we don't find any, this is considered as a non-seekable channel (we do not assume that the
+                 * channel original position was 0 when the user gave it to StorageConnector).
+                 */
+                String name = null;
                 if (wrappedBy != null) {
                     for (Coupled c : wrappedBy) {
                         if (c.view instanceof ChannelDataInput) {
-                            p = ((ChannelDataInput) c.view).channelOffset;
-                            break;
+                            final ChannelDataInput in = ((ChannelDataInput) c.view);
+                            if (view instanceof SeekableByteChannel) {
+                                ((SeekableByteChannel) view).position(in.channelOffset);
+                                return true;
+                            }
+                            name = in.filename;                                     // For the error message.
                         }
                     }
                 }
-                ((SeekableByteChannel) view).position(p);
-            } else if (view instanceof ChannelDataInput) {
-                /*
-                 * ChannelDataInput can be recycled without the need to discard and recreate them.
-                 */
-                final ChannelDataInput input = (ChannelDataInput) view;
-                input.buffer.limit(0);                                      // Must be after stream.reset().
-                input.setStreamPosition(0);                                 // Must be after buffer.limit(0).
+                if (name == null) name = Classes.getShortClassName(view);
+                throw new InvalidSeekException(Resources.format(Resources.Keys.StreamIsForwardOnly_1, name));
             } else {
                 /*
                  * For any other kind of object, we don't know how to recycle them. Current implementation
                  * does nothing on the assumption that the object can be reused (example: NetcdfFile).
                  */
             }
+            isValid = true;
             return true;
         }
 
@@ -428,11 +487,10 @@ public class StorageConnector implements Serializable {
         @Override
         public String toString() {
             return Utilities.toString(getClass(),
-                    "view",           Classes.getShortClassName(view),
-                    "wrapperFor",     (wrapperFor != null) ? Classes.getShortClassName(wrapperFor.view) : null,
-                    "cascadeOnReset", cascadeOnReset,
-                    "cascadeOnClose", cascadeOnClose,
-                    "isValid",        isValid);
+                    "view",       Classes.getShortClassName(view),
+                    "wrapperFor", (wrapperFor != null) ? Classes.getShortClassName(wrapperFor.view) : null,
+                    "cascade",    cascade,
+                    "isValid",    isValid);
         }
     }
 
@@ -658,12 +716,27 @@ public class StorageConnector implements Serializable {
         /*
          * If the storage is already an instance of the requested type, returns the storage as-is.
          * We check if the storage needs to be reseted in the same way than in getStorage() method.
+         * As a special case, we ensure that InputStream and Reader can be marked.
          */
         if (type.isInstance(storage)) {
             @SuppressWarnings("unchecked")
-            final T view = (T) storage;
+            T view = (T) storage;
             reset();
-            addView(type, view);
+            byte cascade = 0;
+            if (type == InputStream.class) {
+                final InputStream in = (InputStream) view;
+                if (!in.markSupported()) {
+                    view = type.cast(new BufferedInputStream(in));
+                    cascade = (byte) (CLEAR_ON_RESET | CASCADE_ON_RESET);
+                }
+            } else if (type == Reader.class) {
+                final Reader in = (Reader) view;
+                if (!in.markSupported()) {
+                    view = type.cast(new LineNumberReader(in));
+                    cascade = (byte) (CLEAR_ON_RESET | CASCADE_ON_RESET);
+                }
+            }
+            addView(type, view, null, cascade);
             return view;
         }
         /*
@@ -696,24 +769,9 @@ public class StorageConnector implements Serializable {
     }
 
     /**
-     * Marks the current position of the given view. This method should be invoked at the beginning of
-     * {@code createFoo()}} methods that may wrap {@link InputStream} in {@link InputStreamReader} or
-     * other objects. It is caller's responsibility to {@link #reset(Coupled)} first, if needed.
-     */
-    private static void mark(final Object view) throws IOException {
-        if (view instanceof InputStream) {
-            ((InputStream) view).mark(DEFAULT_BUFFER_SIZE);
-        } else if (view instanceof Reader) {
-            ((Reader) view).mark(DEFAULT_BUFFER_SIZE);
-        } else if (view instanceof ReadableByteChannel) {
-            // TODO
-        }
-    }
-
-    /**
      * Resets the given view. If the view is an instance of {@link InputStream}, {@link ReadableByteChannel} or
      * other objects that may be affected by views operations, this method will reset the storage position.
-     * The view must have been previously marked by {@link #mark(Object)}.
+     * The view must have been previously marked by {@link InputStream#mark(int)} or equivalent method.
      *
      * <p>This method is <strong>not</strong> a substitute for the requirement that users leave the
      * {@link #getStorageAs(Class)} return value in the same state as they found it. This method is
@@ -736,9 +794,7 @@ public class StorageConnector implements Serializable {
             return false;
         } else try {
             done = c.reset();
-        } catch (DataStoreException e) {
-            throw e;
-        } catch (Exception e) {
+        } catch (IOException e) {
             throw new ForwardOnlyStorageException(Resources.format(
                         Resources.Keys.StreamIsReadOnce_1, getStorageName()), e);
         }
@@ -774,10 +830,12 @@ public class StorageConnector implements Serializable {
         /*
          * Before to try to wrap an InputStream, mark its position so we can rewind if the user asks for
          * the InputStream directly. We need to reset because ChannelDataInput may have read some bytes.
-         * Note that if mark is unsupported, the default InputStream.mark() implementation does nothing.
+         * Note that if mark is unsupported, the default InputStream.mark(…) implementation does nothing.
          */
         reset();
-        mark(storage);
+        if (storage instanceof InputStream) {
+            ((InputStream) storage).mark(DEFAULT_BUFFER_SIZE);
+        }
         /*
          * Following method call recognizes ReadableByteChannel, InputStream (with special case for FileInputStream),
          * URL, URI, File, Path or other types that may be added in future Apache SIS versions.
@@ -794,7 +852,7 @@ public class StorageConnector implements Serializable {
          */
         final String name = getStorageName();
         final ReadableByteChannel channel = factory.reader(name);
-        addView(ReadableByteChannel.class, channel, null, factory.isCoupled(), false);
+        addView(ReadableByteChannel.class, channel, null, factory.isCoupled() ? CASCADE_ON_RESET : 0);
         ByteBuffer buffer = getOption(OptionKey.BYTE_BUFFER);       // User-supplied buffer.
         if (buffer == null) {
             buffer = ByteBuffer.allocate(DEFAULT_BUFFER_SIZE);      // Default buffer if user did not specified any.
@@ -805,7 +863,7 @@ public class StorageConnector implements Serializable {
         } else {
             asDataInput = new ChannelDataInput(name, channel, buffer, false);
         }
-        addView(ChannelDataInput.class, asDataInput, ReadableByteChannel.class, true, false);
+        addView(ChannelDataInput.class, asDataInput, ReadableByteChannel.class, CASCADE_ON_RESET);
         /*
          * Following is an undocumented mechanism for allowing some Apache SIS implementations of DataStore
          * to re-open the same channel or input stream another time, typically for re-reading the same data.
@@ -853,7 +911,7 @@ public class StorageConnector implements Serializable {
         } else {
             reset();
             asDataInput = ImageIO.createImageInputStream(storage);
-            addView(DataInput.class, asDataInput, null, true, true);
+            addView(DataInput.class, asDataInput, null, (byte) (CASCADE_ON_RESET | CASCADE_ON_CLOSE));
             /*
              * Note: Java Image I/O wrappers for Input/OutputStream do NOT close the underlying streams.
              * This is a complication for us. We could mitigate the problem by subclassing the standard
@@ -996,8 +1054,13 @@ public class StorageConnector implements Serializable {
             views.put(InputStream.class, views.get(source));                    // Share the same Coupled instance.
             return (InputStream) input;
         } else if (input instanceof ImageInputStream) {
+            /*
+             * Wrap the ImageInputStream as an ordinary InputStream. We avoid setting CASCADE_ON_RESET (unless
+             * reset() needs to propagate further than ImageInputStream) because changes in InputStreamAdapter
+             * position are immediately reflected by corresponding changes in ImageInputStream position.
+             */
             final InputStream in = new InputStreamAdapter((ImageInputStream) input);
-            addView(InputStream.class, in, source, true, false);
+            addView(InputStream.class, in, source, (byte) (getView(source).cascade & CASCADE_ON_RESET));
             return in;
         } else {
             addView(InputStream.class, null);                                   // Remember that there is no view.
@@ -1017,22 +1080,12 @@ public class StorageConnector implements Serializable {
             addView(Reader.class, null);                                        // Remember that there is no view.
             return null;
         }
-        mark(input);
+        input.mark(DEFAULT_BUFFER_SIZE);
         final Charset encoding = getOption(OptionKey.ENCODING);
-        final Reader in = (encoding != null) ? new InputStreamReader(input, encoding)
-                                             : new InputStreamReader(input);
-        /*
-         * Current implementation does not wrap the above Reader in a BufferedReader because:
-         *
-         * 1) InputStreamReader already uses a buffer internally.
-         * 2) InputStreamReader does not support mark/reset, which is a desired limitation for now.
-         *    This is because reseting the Reader would not reset the underlying InputStream, which
-         *    would cause other DataStoreProvider.probeContent(…) methods to fail if they try to use
-         *    the InputStream. For now we let the InputStreamReader.mark() to throw an IOException,
-         *    but we may need to provide our own subclass of BufferedReader in a future SIS version
-         *    if mark/reset support is needed here.
-         */
-        addView(Reader.class, in, InputStream.class, true, false);
+        Reader in = (encoding != null) ? new InputStreamReader(input, encoding)
+                                       : new InputStreamReader(input);
+        in = new LineNumberReader(in);
+        addView(Reader.class, in, InputStream.class, (byte) (CLEAR_ON_RESET | CASCADE_ON_RESET));
         return in;
     }
 
@@ -1045,7 +1098,7 @@ public class StorageConnector implements Serializable {
     private Connection createConnection() throws SQLException {
         if (storage instanceof DataSource) {
             final Connection c = ((DataSource) storage).getConnection();
-            addView(Connection.class, c, null, true, false);
+            addView(Connection.class, c, null, (byte) 0);
             return c;
         }
         return null;
@@ -1069,7 +1122,7 @@ public class StorageConnector implements Serializable {
      * @param  view  the view, or {@code null} if none.
      */
     private <T> void addView(final Class<T> type, final T view) {
-        addView(type, view, null, false, false);
+        addView(type, view, null, (byte) 0);
     }
 
     /**
@@ -1077,16 +1130,13 @@ public class StorageConnector implements Serializable {
      * For example {@link InputStreamReader} is a wrapper for a {@link InputStream}: read operations
      * from the later may change position of the former, and closing the later also close the former.
      *
-     * @param  <T>             the compile-time type of the {@code type} argument.
-     * @param  type            the view type.
-     * @param  view            the view, or {@code null} if none.
-     * @param  source          the type of input that {@code view} is wrapping, or {@code null} for {@link #storage}.
-     * @param  cascadeOnReset  whether calls to {@link #reset(Coupled)} shall cascade.
-     * @param  cascadeOnClose  whether calls to {@link AutoCloseable#close()} shall cascade.
+     * @param  <T>      the compile-time type of the {@code type} argument.
+     * @param  type     the view type.
+     * @param  view     the view, or {@code null} if none.
+     * @param  source   the type of input that {@code view} is wrapping, or {@code null} for {@link #storage}.
+     * @param  cascade  bitwise combination of {@link #CASCADE_ON_CLOSE}, {@link #CASCADE_ON_RESET} or {@link #CLEAR_ON_RESET}.
      */
-    private <T> void addView(final Class<T> type, final T view, final Class<?> source,
-            final boolean cascadeOnReset, final boolean cascadeOnClose)
-    {
+    private <T> void addView(final Class<T> type, final T view, final Class<?> source, final byte cascade) {
         if (views == null) {
             views = new IdentityHashMap<>();
             views.put(null, new Coupled(storage));
@@ -1097,14 +1147,14 @@ public class StorageConnector implements Serializable {
                 c = views.get(null);
                 c.invalidateUsages();
             } else {
-                c = new Coupled((cascadeOnReset | cascadeOnClose) ? views.get(source) : null, cascadeOnReset, cascadeOnClose);
+                c = new Coupled(cascade != 0 ? views.get(source) : null, cascade);
                 // Newly created objects are not yet used by anyone, so no need to invoke c.invalidateUsages().
             }
             views.put(type, c);
         } else {
             assert c.view == null || c.view == view : c;
-            assert c.cascadeOnReset == cascadeOnReset && c.cascadeOnClose == cascadeOnClose : type;
-            assert c.wrapperFor == ((cascadeOnReset | cascadeOnClose) ? views.get(source) : null) : c;
+            assert c.cascade == cascade : cascade;
+            assert c.wrapperFor == (cascade != 0 ? views.get(source) : null) : c;
             c.invalidateUsages();
         }
         c.view = view;
@@ -1206,10 +1256,10 @@ public class StorageConnector implements Serializable {
          */
         if (!toClose.isEmpty()) {
             for (Coupled c : views.values()) {
-                if (!c.cascadeOnClose && toClose.containsKey(c.view)) {     // Keep (do not remove) the "top level" view.
+                if (!c.cascadeOnClose() && toClose.containsKey(c.view)) {   // Keep (do not remove) the "top level" view.
                     while ((c = c.wrapperFor) != null) {
                         toClose.remove(c.view);                             // Remove all views below the "top level" one.
-                        if (c.cascadeOnClose) break;
+                        if (c.cascadeOnClose()) break;
                     }
                 }
             }
