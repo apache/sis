@@ -30,6 +30,7 @@ import org.opengis.metadata.Metadata;
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.ReferenceSystem;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.opengis.parameter.ParameterValueGroup;
 import org.apache.sis.internal.storage.Resources;
 import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.io.wkt.WKTFormat;
@@ -39,12 +40,12 @@ import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreContentException;
+import org.apache.sis.storage.UnsupportedStorageException;
 import org.apache.sis.internal.referencing.DefinitionVerifier;
 import org.apache.sis.internal.storage.MetadataBuilder;
 import org.apache.sis.parameter.Parameters;
-import org.apache.sis.util.resources.Errors;
+import org.apache.sis.setup.OptionKey;
 import org.apache.sis.util.CharSequences;
-import org.opengis.parameter.ParameterValueGroup;
 
 
 /**
@@ -98,7 +99,8 @@ final class Store extends DataStore {
         }
         connector.closeAllExcept(source);
         if (source == null) {
-            throw new DataStoreException(Errors.format(Errors.Keys.CanNotOpen_1, super.getDisplayName()));
+            throw new UnsupportedStorageException(super.getLocale(), "WKT",
+                    connector.getStorage(), connector.getOption(OptionKey.OPEN_OPTIONS));
         }
     }
 

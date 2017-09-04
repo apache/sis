@@ -189,6 +189,11 @@ public final class Resources extends IndexedResourceBundle {
         public static final short StreamIsWriteOnce_1 = 21;
 
         /**
+         * Can not open {0} data store without “{1}” parameter.
+         */
+        public static final short UndefinedParameter_2 = 27;
+
+        /**
          * Format of “{0}” is not recognized.
          */
         public static final short UnknownFormatFor_1 = 14;

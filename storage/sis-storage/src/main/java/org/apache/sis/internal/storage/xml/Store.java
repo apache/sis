@@ -30,11 +30,13 @@ import org.opengis.metadata.Metadata;
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.ReferenceSystem;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.opengis.parameter.ParameterValueGroup;
 import org.apache.sis.xml.XML;
 import org.apache.sis.storage.Resource;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.DataStoreException;
+import org.apache.sis.storage.UnsupportedStorageException;
 import org.apache.sis.metadata.iso.DefaultMetadata;
 import org.apache.sis.util.logging.WarningListener;
 import org.apache.sis.util.resources.Errors;
@@ -42,7 +44,7 @@ import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.internal.storage.MetadataBuilder;
 import org.apache.sis.internal.referencing.DefinitionVerifier;
 import org.apache.sis.parameter.Parameters;
-import org.opengis.parameter.ParameterValueGroup;
+import org.apache.sis.setup.OptionKey;
 
 
 /**
@@ -106,7 +108,8 @@ final class Store extends DataStore {
         final Closeable c = input(source);
         connector.closeAllExcept(c);
         if (c == null) {
-            throw new DataStoreException(Errors.format(Errors.Keys.CanNotOpen_1, super.getDisplayName()));
+            throw new UnsupportedStorageException(super.getLocale(), "XML",
+                    connector.getStorage(), connector.getOption(OptionKey.OPEN_OPTIONS));
         }
     }
 

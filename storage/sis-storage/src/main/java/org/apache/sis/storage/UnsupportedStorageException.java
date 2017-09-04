@@ -25,8 +25,8 @@ import org.apache.sis.internal.storage.io.IOUtilities;
 
 /**
  * Thrown when no {@link DataStoreProvider} is found for a given storage object.
- * May also be thrown if a {@code DataStore} is instantiated directly (without {@code DataStoreProvider}
- * for verifying the input) but the data store can not handle the given input or output object.
+ * May also be thrown if a {@code DataStore} is instantiated directly but the data store
+ * can not handle the given input or output object.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
