@@ -19,6 +19,8 @@ package org.apache.sis.storage.geotiff;
 import java.net.URI;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import org.opengis.parameter.ParameterDescriptor;
+import org.opengis.parameter.ParameterDescriptorGroup;
 import org.apache.sis.util.Version;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreException;
@@ -29,9 +31,6 @@ import org.apache.sis.internal.storage.Capabilities;
 import org.apache.sis.internal.storage.Capability;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.parameter.ParameterBuilder;
-import static org.apache.sis.storage.DataStoreProvider.LOCATION;
-import org.opengis.parameter.ParameterDescriptor;
-import org.opengis.parameter.ParameterDescriptorGroup;
 
 
 /**
@@ -52,6 +51,15 @@ import org.opengis.parameter.ParameterDescriptorGroup;
  */
 @Capabilities(Capability.READ)
 public class GeoTiffStoreProvider extends DataStoreProvider {
+    /**
+     * The MIME type for GeoTIFF files.
+     */
+    private static final String MIME_TYPE = "image/tiff";
+
+    /**
+     * The TIFF version.
+     */
+    private static final Version VERSION = new Version("6.0");
 
     /**
      * Geotiff location.
@@ -63,16 +71,6 @@ public class GeoTiffStoreProvider extends DataStoreProvider {
 
     static final ParameterDescriptorGroup OPEN_DESCRIPTOR =
             new ParameterBuilder().addName(Constants.GEOTIFF).createGroup(PARAM_LOCATION);
-
-    /**
-     * The MIME type for GeoTIFF files.
-     */
-    private static final String MIME_TYPE = "image/tiff";
-
-    /**
-     * The TIFF version.
-     */
-    private static final Version VERSION = new Version("6.0");
 
     /**
      * Creates a new provider.

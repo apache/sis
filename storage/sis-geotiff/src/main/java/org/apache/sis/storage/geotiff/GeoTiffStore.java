@@ -26,6 +26,7 @@ import java.nio.file.StandardOpenOption;
 import org.opengis.util.FactoryException;
 import org.opengis.metadata.Metadata;
 import org.opengis.metadata.maintenance.ScopeCode;
+import org.opengis.parameter.ParameterValueGroup;
 import org.apache.sis.setup.OptionKey;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.StorageConnector;
@@ -40,7 +41,6 @@ import org.apache.sis.parameter.Parameters;
 import org.apache.sis.storage.DataStoreClosedException;
 import org.apache.sis.storage.Resource;
 import org.apache.sis.util.resources.Errors;
-import org.opengis.parameter.ParameterValueGroup;
 
 
 /**
@@ -88,7 +88,7 @@ public class GeoTiffStore extends DataStore {
         this.encoding = (encoding != null) ? encoding : StandardCharsets.US_ASCII;
         final ChannelDataInput input = connector.getStorageAs(ChannelDataInput.class);
         if (input == null) {
-            throw new UnsupportedStorageException(super.getLocale(), "TIFF",
+            throw new UnsupportedStorageException(super.getLocale(), Constants.GEOTIFF,
                     connector.getStorage(), connector.getOption(OptionKey.OPEN_OPTIONS));
         }
         connector.closeAllExcept(input);
@@ -135,7 +135,7 @@ public class GeoTiffStore extends DataStore {
             } catch (IOException e) {
                 throw new DataStoreException(errors().getString(Errors.Keys.CanNotRead_1, reader.input.filename), e);
             } catch (FactoryException | ArithmeticException e) {
-                throw new DataStoreContentException(getLocale(), "TIFF", reader.input.filename, null).initCause(e);
+                throw new DataStoreContentException(getLocale(), Constants.GEOTIFF, reader.input.filename, null).initCause(e);
             }
         }
         return metadata;

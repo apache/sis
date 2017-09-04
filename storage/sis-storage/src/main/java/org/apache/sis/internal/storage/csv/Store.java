@@ -31,12 +31,13 @@ import java.net.URI;
 import java.nio.charset.Charset;
 import javax.measure.Unit;
 import javax.measure.quantity.Time;
-import org.opengis.metadata.Metadata;
 import org.opengis.util.FactoryException;
+import org.opengis.metadata.Metadata;
 import org.opengis.metadata.maintenance.ScopeCode;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.crs.TemporalCRS;
 import org.opengis.referencing.operation.TransformException;
+import org.opengis.parameter.ParameterValueGroup;
 import org.apache.sis.feature.DefaultAttributeType;
 import org.apache.sis.feature.DefaultFeatureType;
 import org.apache.sis.referencing.CRS;
@@ -58,6 +59,7 @@ import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.storage.DataStoreReferencingException;
 import org.apache.sis.storage.UnsupportedStorageException;
 import org.apache.sis.storage.StorageConnector;
+import org.apache.sis.parameter.Parameters;
 import org.apache.sis.setup.OptionKey;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.CharSequences;
@@ -69,12 +71,10 @@ import java.time.Instant;
 import java.time.DateTimeException;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
-import org.apache.sis.parameter.Parameters;
 import org.opengis.feature.Feature;
 import org.opengis.feature.FeatureType;
 import org.opengis.feature.PropertyType;
 import org.opengis.feature.AttributeType;
-import org.opengis.parameter.ParameterValueGroup;
 
 
 /**
@@ -240,7 +240,7 @@ public final class Store extends DataStore {
         }
         connector.closeAllExcept(r);
         if (r == null) {
-            throw new UnsupportedStorageException(super.getLocale(), "CSV",
+            throw new UnsupportedStorageException(super.getLocale(), StoreProvider.NAME,
                     connector.getStorage(), connector.getOption(OptionKey.OPEN_OPTIONS));
         }
         source = (r instanceof BufferedReader) ? (BufferedReader) r : new LineNumberReader(r);

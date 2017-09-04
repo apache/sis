@@ -19,6 +19,7 @@ package org.apache.sis.storage.netcdf;
 import java.io.IOException;
 import java.net.URI;
 import org.opengis.metadata.Metadata;
+import org.opengis.parameter.ParameterValueGroup;
 import org.apache.sis.util.Debug;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreException;
@@ -31,7 +32,6 @@ import org.apache.sis.setup.OptionKey;
 import org.apache.sis.storage.Resource;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.Version;
-import org.opengis.parameter.ParameterValueGroup;
 import ucar.nc2.constants.CDM;
 
 
@@ -99,7 +99,7 @@ public class NetcdfStore extends DataStore {
             throw new DataStoreException(e);
         }
         if (decoder == null) {
-            throw new UnsupportedStorageException(super.getLocale(), "NetCDF",
+            throw new UnsupportedStorageException(super.getLocale(), NetcdfStoreProvider.NAME,
                     connector.getStorage(), connector.getOption(OptionKey.OPEN_OPTIONS));
         }
     }

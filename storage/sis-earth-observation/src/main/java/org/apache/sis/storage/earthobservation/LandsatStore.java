@@ -21,18 +21,18 @@ import java.io.BufferedReader;
 import java.io.LineNumberReader;
 import java.io.IOException;
 import java.net.URI;
-import org.apache.sis.parameter.Parameters;
 import org.opengis.metadata.Metadata;
 import org.opengis.util.FactoryException;
+import org.opengis.parameter.ParameterValueGroup;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreReferencingException;
 import org.apache.sis.storage.UnsupportedStorageException;
 import org.apache.sis.storage.StorageConnector;
-import org.apache.sis.setup.OptionKey;
 import org.apache.sis.storage.Resource;
+import org.apache.sis.parameter.Parameters;
+import org.apache.sis.setup.OptionKey;
 import org.apache.sis.util.Debug;
-import org.opengis.parameter.ParameterValueGroup;
 
 
 /**
@@ -99,7 +99,7 @@ public class LandsatStore extends DataStore {
         }
         connector.closeAllExcept(source);
         if (source == null) {
-            throw new UnsupportedStorageException(super.getLocale(), "Landsat",
+            throw new UnsupportedStorageException(super.getLocale(), LandsatStoreProvider.NAME,
                     connector.getStorage(), connector.getOption(OptionKey.OPEN_OPTIONS));
         }
     }

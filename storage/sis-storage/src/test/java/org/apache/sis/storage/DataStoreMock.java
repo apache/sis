@@ -50,17 +50,17 @@ final strictfp class DataStoreMock extends DataStore {
     }
 
     @Override
+    public ParameterValueGroup getOpenParameters() {
+        return null;
+    }
+
+    @Override
     public Metadata getMetadata() {
         return null;
     }
 
     @Override
     public Resource getRootResource() throws DataStoreException {
-        return null;
-    }
-
-    @Override
-    public ParameterValueGroup getOpenParameters() {
         return null;
     }
 
