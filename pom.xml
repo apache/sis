@@ -783,7 +783,7 @@ Apache SIS is a free software, Java language library for developing geospatial a
       <!-- JavaDoc configuration. -->
       <plugin>
         <artifactId>maven-javadoc-plugin</artifactId>
-        <version>3.0.0-M1</version>
+        <version>2.10.4</version> <!-- 3.0.0-M1 is required for JDK9, but contains a regression that prevent javadoc:aggregate to work. -->
         <configuration>
           <source>${maven.compile.source}</source>              <!-- Enables javadoc to handle language constructs present in target JDK. -->
           <encoding>${project.build.sourceEncoding}</encoding>  <!-- Encoding of Java source file. -->
