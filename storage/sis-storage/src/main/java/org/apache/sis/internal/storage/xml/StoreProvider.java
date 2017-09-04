@@ -17,6 +17,8 @@
 package org.apache.sis.internal.storage.xml;
 
 import java.net.URI;
+import org.opengis.parameter.ParameterDescriptor;
+import org.opengis.parameter.ParameterDescriptorGroup;
 import org.apache.sis.xml.Namespaces;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreException;
@@ -24,8 +26,6 @@ import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.internal.storage.Capabilities;
 import org.apache.sis.internal.storage.Capability;
 import org.apache.sis.parameter.ParameterBuilder;
-import org.opengis.parameter.ParameterDescriptor;
-import org.opengis.parameter.ParameterDescriptorGroup;
 
 
 /**
@@ -38,6 +38,10 @@ import org.opengis.parameter.ParameterDescriptorGroup;
  */
 @Capabilities(Capability.READ)
 public final class StoreProvider extends AbstractProvider {
+    /**
+     * The format name.
+     */
+    static final String NAME = "XML";
 
     /**
      * XML source.
@@ -48,7 +52,7 @@ public final class StoreProvider extends AbstractProvider {
             .create(URI.class, null);
 
     static final ParameterDescriptorGroup OPEN_DESCRIPTOR =
-            new ParameterBuilder().addName("XML").createGroup(PARAM_LOCATION);
+            new ParameterBuilder().addName(NAME).createGroup(PARAM_LOCATION);
 
     /**
      * Creates a new provider.
@@ -68,7 +72,7 @@ public final class StoreProvider extends AbstractProvider {
      */
     @Override
     public String getShortName() {
-        return "XML";
+        return NAME;
     }
 
     /**

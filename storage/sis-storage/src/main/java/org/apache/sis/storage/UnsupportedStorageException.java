@@ -33,7 +33,7 @@ import org.apache.sis.internal.storage.io.IOUtilities;
  * @since   0.4
  * @module
  */
-public class UnsupportedStorageException extends DataStoreException {
+public class UnsupportedStorageException extends IllegalOpenParameterException {
     /**
      * For cross-version compatibility.
      */

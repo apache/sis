@@ -22,13 +22,13 @@ import java.util.IdentityHashMap;
 import java.util.NoSuchElementException;
 import org.opengis.metadata.Metadata;
 import org.opengis.metadata.identification.Identification;
+import org.opengis.parameter.ParameterValueGroup;
 import org.apache.sis.util.Localized;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.logging.WarningListener;
 import org.apache.sis.util.logging.WarningListeners;
 import org.apache.sis.internal.storage.Resources;
 import org.apache.sis.internal.util.Citations;
-import org.opengis.parameter.ParameterValueGroup;
 
 
 /**
@@ -54,6 +54,8 @@ public abstract class DataStore implements Localized, AutoCloseable {
      * instances of the same class.
      *
      * @since 0.8
+     *
+     * @see #getProvider()
      */
     protected final DataStoreProvider provider;
 
@@ -110,6 +112,21 @@ public abstract class DataStore implements Localized, AutoCloseable {
          * Above locale is NOT OptionKey.LOCALE because we are not talking about the same locale.
          * The one in this DataStore is for warning and exception messages, not for parsing data.
          */
+    }
+
+    /**
+     * Returns the factory that created this {@code DataStore} instance.
+     * The provider gives additional information on this {@code DataStore} such as a format description
+     * and a list of parameters that can be used for opening data stores of the same class.
+     *
+     * @return the factory that created this {@code DataStore} instance, or {@code null} if unspecified.
+     *
+     * @see #provider
+     *
+     * @since 0.8
+     */
+    public DataStoreProvider getProvider() {
+        return provider;
     }
 
     /**
@@ -170,30 +187,25 @@ public abstract class DataStore implements Localized, AutoCloseable {
     }
 
     /**
-     * Returns the factory that created this {@code DataStore} instance, or {@code null} if unspecified.
-     *
-     * <p>The provider provide additional informations on this {@code DataStore} such as
-     * a format description and the possible parameters usable to configure this store.
-     * </p>
-     *
-     * @return provider parent, can be null
-     */
-    public DataStoreProvider getProvider() {
-        return provider;
-    }
-
-    /**
      * Returns the parameters used to open this data store.
-     * The description of those parameters are defined by {@link DataStoreProvider#getOpenParameters() }.
+     * The collection of legal parameters is implementation-dependent
+     * ({@linkplain org.apache.sis.parameter.DefaultParameterValue#getDescriptor() their description}
+     * is given by {@link DataStoreProvider#getOpenParameters()}),
+     * but should contain at least a parameter named {@value DataStoreProvider#LOCATION}
+     * with a {@link java.net.URI}, {@link java.nio.file.Path} or {@link javax.sql.DataSource} value.
      *
-     * <p>In the event a store must be closed and reopened later. Those parameters
-     * can be stored in a file or database and used to create a new store later.</p>
+     * <p>In the event a data store must be closed and reopened later, those parameters can be stored in a file or
+     * database and used for {@linkplain DataStoreProvider#open(ParameterValueGroup) creating a new store} later.</p>
      *
-     * <p>In some cases, for store created with data in memory or with initialization
-     * parameters to complex to be expressed as a ParameterValueGroup, this methid may
-     * return null.</p>
+     * <p>In some cases, for stores reading in-memory data or other inputs that can not fit with
+     * {@code ParameterDescriptorGroup} requirements (for example an {@link java.io.InputStream}
+     * connected to unknown or no {@link java.net.URL}), this method may return null.</p>
      *
-     * @return parameters used when opening this {@link org.apache.sis.storage.DataStore} or null.
+     * @return parameters used for opening this {@code DataStore}, or {@code null} if not available.
+     *
+     * @see DataStoreProvider#getOpenParameters()
+     *
+     * @since 0.8
      */
     public abstract ParameterValueGroup getOpenParameters();
 

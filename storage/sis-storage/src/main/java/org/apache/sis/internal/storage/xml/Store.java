@@ -108,7 +108,7 @@ final class Store extends DataStore {
         final Closeable c = input(source);
         connector.closeAllExcept(c);
         if (c == null) {
-            throw new UnsupportedStorageException(super.getLocale(), "XML",
+            throw new UnsupportedStorageException(super.getLocale(), StoreProvider.NAME,
                     connector.getStorage(), connector.getOption(OptionKey.OPEN_OPTIONS));
         }
     }

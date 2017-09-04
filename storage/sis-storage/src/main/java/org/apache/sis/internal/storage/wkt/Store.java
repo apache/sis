@@ -99,7 +99,7 @@ final class Store extends DataStore {
         }
         connector.closeAllExcept(source);
         if (source == null) {
-            throw new UnsupportedStorageException(super.getLocale(), "WKT",
+            throw new UnsupportedStorageException(super.getLocale(), StoreProvider.NAME,
                     connector.getStorage(), connector.getOption(OptionKey.OPEN_OPTIONS));
         }
     }

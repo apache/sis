@@ -27,6 +27,8 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.UndeclaredThrowableException;
 import java.net.URI;
+import org.opengis.parameter.ParameterDescriptor;
+import org.opengis.parameter.ParameterDescriptorGroup;
 import org.apache.sis.internal.netcdf.Decoder;
 import org.apache.sis.internal.netcdf.Resources;
 import org.apache.sis.internal.netcdf.impl.ChannelDecoder;
@@ -45,8 +47,6 @@ import org.apache.sis.storage.ProbeResult;
 import org.apache.sis.util.logging.WarningListeners;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.Version;
-import org.opengis.parameter.ParameterDescriptor;
-import org.opengis.parameter.ParameterDescriptorGroup;
 
 
 /**
@@ -70,6 +70,15 @@ import org.opengis.parameter.ParameterDescriptorGroup;
  */
 @Capabilities(Capability.READ)
 public class NetcdfStoreProvider extends DataStoreProvider {
+    /**
+     * The format name.
+     */
+    static final String NAME = "NetCDF";
+
+    /**
+     * The MIME type for NetCDF files.
+     */
+    static final String MIME_TYPE = "application/x-netcdf";
 
     /**
      * NetCDF location.
@@ -80,12 +89,7 @@ public class NetcdfStoreProvider extends DataStoreProvider {
             .create(URI.class, null);
 
     static final ParameterDescriptorGroup OPEN_DESCRIPTOR =
-            new ParameterBuilder().addName("NetCDF").createGroup(PARAM_LOCATION);
-
-    /**
-     * The MIME type for NetCDF files.
-     */
-    static final String MIME_TYPE = "application/x-netcdf";
+            new ParameterBuilder().addName(NAME).createGroup(PARAM_LOCATION);
 
     /**
      * The name of the {@link ucar.nc2.NetcdfFile} class, which is {@value}.
@@ -142,7 +146,7 @@ public class NetcdfStoreProvider extends DataStoreProvider {
      */
     @Override
     public String getShortName() {
-        return "NetCDF";
+        return NAME;
     }
 
     /**

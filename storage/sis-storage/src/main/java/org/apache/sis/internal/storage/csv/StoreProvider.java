@@ -17,6 +17,8 @@
 package org.apache.sis.internal.storage.csv;
 
 import java.net.URI;
+import org.opengis.parameter.ParameterDescriptor;
+import org.opengis.parameter.ParameterDescriptorGroup;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreProvider;
@@ -26,9 +28,6 @@ import org.apache.sis.internal.storage.Capability;
 import org.apache.sis.internal.storage.Capabilities;
 import org.apache.sis.internal.storage.wkt.FirstKeywordPeek;
 import org.apache.sis.parameter.ParameterBuilder;
-import static org.apache.sis.storage.DataStoreProvider.LOCATION;
-import org.opengis.parameter.ParameterDescriptor;
-import org.opengis.parameter.ParameterDescriptorGroup;
 
 
 /**
@@ -46,6 +45,10 @@ import org.opengis.parameter.ParameterDescriptorGroup;
  */
 @Capabilities(Capability.READ)
 public final class StoreProvider extends DataStoreProvider {
+    /**
+     * The format names for static features and moving features.
+     */
+    static final String NAME = "CSV", MOVING = "CSV-MF";
 
     /**
      * CSV source.
@@ -56,12 +59,7 @@ public final class StoreProvider extends DataStoreProvider {
             .create(URI.class, null);
 
     static final ParameterDescriptorGroup OPEN_DESCRIPTOR =
-            new ParameterBuilder().addName("CSV").createGroup(PARAM_LOCATION);
-
-    /**
-     * The format names for static features and moving features.
-     */
-    static final String NAME = "CSV", MOVING = "CSV-MF";
+            new ParameterBuilder().addName(NAME).createGroup(PARAM_LOCATION);
 
     /**
      * The object to use for verifying if the first keyword is the expected one.

@@ -177,6 +177,8 @@ public abstract class DataStoreProvider {
      *
      * @see #open(ParameterValueGroup)
      * @see DataStore#getOpenParameters()
+     *
+     * @since 0.8
      */
     public abstract ParameterDescriptorGroup getOpenParameters();
 
@@ -280,6 +282,8 @@ public abstract class DataStoreProvider {
      * @throws DataStoreException if an error occurred while creating the data store instance.
      *
      * @see #getOpenParameters()
+     *
+     * @since 0.8
      */
     public DataStore open(final ParameterValueGroup parameters) throws DataStoreException {
         ArgumentChecks.ensureNonNull("parameter", parameters);

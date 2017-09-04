@@ -16,9 +16,13 @@
  */
 package org.apache.sis.storage;
 
+import java.util.Locale;
+
 
 /**
  * Thrown when a {@code DataStore} can not be opened because of invalid parameters.
+ * This may be a missing {@value DataStoreProvider#LOCATION} parameter value,
+ * or an unsupported object given to {@link StorageConnector} constructor.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
@@ -63,5 +67,16 @@ public class IllegalOpenParameterException extends DataStoreException {
      */
     public IllegalOpenParameterException(final String message, final Throwable cause) {
         super(message, cause);
+    }
+
+    /**
+     * Creates a new exception which will format a localized message in the given locale.
+     *
+     * @param locale      the locale for the message to be returned by {@link #getLocalizedMessage()}.
+     * @param key         one of {@link org.apache.sis.internal.storage.Resources.Keys} constants.
+     * @param parameters  parameters to use for formatting the messages.
+     */
+    IllegalOpenParameterException(final Locale locale, final short key, final Object... parameters) {
+        super(locale, key, parameters);
     }
 }
