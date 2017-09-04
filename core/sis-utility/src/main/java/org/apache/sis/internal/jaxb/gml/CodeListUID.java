@@ -32,7 +32,7 @@ import org.apache.sis.util.iso.Types;
  */
 public final class CodeListUID {
     /**
-     * The code space of the {@link #value} as an URI, or {@code null}.
+     * The code space of the {@link #value} as a URI, or {@code null}.
      */
     @XmlAttribute
     String codeSpace;

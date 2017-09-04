@@ -237,7 +237,7 @@ public final class IOUtilities extends Static {
             return null;
         }
         /*
-         * Convert the URL to an URI, taking in account the encoding if any.
+         * Convert the URL to a URI, taking in account the encoding if any.
          *
          * Note: URL.toURI() is implemented as new URI(URL.toString()) where toString()
          * delegates to toExternalForm(), and all those methods are final. So we really
