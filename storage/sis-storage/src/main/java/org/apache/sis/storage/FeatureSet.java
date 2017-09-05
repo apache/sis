@@ -128,9 +128,10 @@ public interface FeatureSet extends DataSet {
      * the given predicate.
      *
      * @param predicate matching predicate
+     * @return true if any elements were removed
      * @throws DataStoreException if an error occurred while removing features.
      */
-    default void removeIf(Predicate<? super Feature> predicate) throws DataStoreException {
+    default boolean removeIf(Predicate<? super Feature> predicate) throws DataStoreException {
         throw new ReadOnlyDataStoreException(null,Resources.Keys.StoreIsReadOnly);
     }
 
