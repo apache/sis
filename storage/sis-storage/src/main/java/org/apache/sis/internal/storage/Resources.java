@@ -164,6 +164,11 @@ public final class Resources extends IndexedResourceBundle {
         public static final short ShallBeDeclaredBefore_2 = 22;
 
         /**
+         * Writing operations not supported.
+         */
+        public static final short StoreIsReadOnly = 28;
+
+        /**
          * Can not move backward in the “{0}” stream.
          */
         public static final short StreamIsForwardOnly_1 = 13;
