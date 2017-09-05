@@ -130,7 +130,7 @@ public interface FeatureSet extends DataSet {
      * @param predicate matching predicate
      * @throws DataStoreException if an error occurred while removing features.
      */
-    default void removeIf(Predicate<? extends Feature> predicate) throws DataStoreException {
+    default void removeIf(Predicate<? super Feature> predicate) throws DataStoreException {
         throw new ReadOnlyDataStoreException(null,Resources.Keys.StoreIsReadOnly);
     }
 
@@ -151,7 +151,7 @@ public interface FeatureSet extends DataSet {
      * @param updater operation called for each matching {@link Feature}
      * @throws DataStoreException
      */
-    default void replaceIf(Predicate<? extends Feature> predicate, UnaryOperator<Feature> updater) throws DataStoreException {
+    default void replaceIf(Predicate<? super Feature> predicate, UnaryOperator<Feature> updater) throws DataStoreException {
         throw new ReadOnlyDataStoreException(null,Resources.Keys.StoreIsReadOnly);
     }
 
