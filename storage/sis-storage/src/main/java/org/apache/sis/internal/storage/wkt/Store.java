@@ -35,7 +35,6 @@ import org.apache.sis.internal.storage.Resources;
 import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.io.wkt.WKTFormat;
 import org.apache.sis.io.wkt.Warnings;
-import org.apache.sis.storage.Resource;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.DataStoreException;
@@ -43,7 +42,6 @@ import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.storage.UnsupportedStorageException;
 import org.apache.sis.internal.referencing.DefinitionVerifier;
 import org.apache.sis.internal.storage.MetadataBuilder;
-import org.apache.sis.parameter.Parameters;
 import org.apache.sis.setup.OptionKey;
 import org.apache.sis.util.CharSequences;
 
@@ -205,14 +203,16 @@ final class Store extends DataStore {
     }
 
     /**
-     * {@inheritDoc }
+     * Returns the parameters used to open this data store.
+     *
+     * @return parameters used for opening this {@code DataStore}, or {@code null} if not available.
      */
     @Override
     public ParameterValueGroup getOpenParameters() {
-        if (sourceUri==null) return null;
-        final Parameters parameters = Parameters.castOrWrap(StoreProvider.OPEN_DESCRIPTOR.createValue());
-        parameters.getOrCreate(StoreProvider.PARAM_LOCATION).setValue(sourceUri);
-        return parameters;
+        if (sourceUri == null) return null;
+        final ParameterValueGroup pg = StoreProvider.OPEN_DESCRIPTOR.createValue();
+        pg.parameter(StoreProvider.LOCATION).setValue(sourceUri);
+        return pg;
     }
 
     /**

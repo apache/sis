@@ -16,24 +16,35 @@
  */
 package org.apache.sis.storage;
 
-import java.util.Locale;
+import org.apache.sis.util.Localized;
+
 
 /**
- * Thrown when a writing operation on a {@code DataStore} is not supported.
+ * Thrown when a {@code DataStore} can not perform a write operations.
+ * This exception may occur either because:
  *
- * @author Johann Sorel (Geomatys)
+ * <ul>
+ *   <li>the data store does not support write operations, or</li>
+ *   <li>write operations are supported but the channel is read-only.</li>
+ * </ul>
+ *
+ * @author  Johann Sorel (Geomatys)
  * @version 0.8
  * @since   0.8
  * @module
+ *
+ * @see ForwardOnlyStorageException
  */
-public class ReadOnlyDataStoreException extends DataStoreException {
-
+public class ReadOnlyStorageException extends DataStoreException {
+    /**
+     * For cross-version compatibility.
+     */
     private static final long serialVersionUID = 5710116172772560023L;
 
     /**
      * Creates an exception with no cause and no details message.
      */
-    public ReadOnlyDataStoreException() {
+    public ReadOnlyStorageException() {
     }
 
     /**
@@ -41,7 +52,7 @@ public class ReadOnlyDataStoreException extends DataStoreException {
      *
      * @param message  the detail message.
      */
-    public ReadOnlyDataStoreException(final String message) {
+    public ReadOnlyStorageException(final String message) {
         super(message);
     }
 
@@ -50,7 +61,7 @@ public class ReadOnlyDataStoreException extends DataStoreException {
      *
      * @param cause  the cause for this exception.
      */
-    public ReadOnlyDataStoreException(final Throwable cause) {
+    public ReadOnlyStorageException(final Throwable cause) {
         super(cause);
     }
 
@@ -60,18 +71,18 @@ public class ReadOnlyDataStoreException extends DataStoreException {
      * @param message  the detail message.
      * @param cause    the cause for this exception.
      */
-    public ReadOnlyDataStoreException(final String message, final Throwable cause) {
+    public ReadOnlyStorageException(final String message, final Throwable cause) {
         super(message, cause);
     }
 
     /**
-     * Creates a new exception which will format a localized message in the given locale.
+     * Creates a new exception which will format a localized message in the resource locale.
      *
-     * @param locale      the locale for the message to be returned by {@link #getLocalizedMessage()}.
+     * @param originator  the instance throwing this exception, or {@code null} if unknown.
      * @param key         one of {@link org.apache.sis.internal.storage.Resources.Keys} constants.
      * @param parameters  parameters to use for formatting the messages.
      */
-    ReadOnlyDataStoreException(final Locale locale, final short key, final Object... parameters) {
-        super(locale, key, parameters);
+    ReadOnlyStorageException(final Resource originator, final short key, final Object... parameters) {
+        super((originator instanceof Localized) ? ((Localized) originator).getLocale() : null, key, parameters);
     }
 }

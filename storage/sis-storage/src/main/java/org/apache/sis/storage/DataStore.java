@@ -236,8 +236,10 @@ public abstract class DataStore implements Resource, Localized, AutoCloseable {
      * is {@code "foo:bar"}, then this method may accept {@code "bar"} as a synonymous of {@code "foo:bar"}
      * provided that it does not introduce ambiguity.
      *
-     * <p>The default implementation verifies the {@linkplain #getRootResource() root resource}, then iterates over
-     * components of {@link Aggregate}s. If a match is found without ambiguity, the associated resource is returned.
+     * <p>The default implementation verifies if above criterion matches to this {@code DataStore}
+     * (which is itself a resource), then iterates recursively over {@link Aggregate} components
+     * if this data store is an aggregate.
+     * If a match is found without ambiguity, the associated resource is returned.
      * Otherwise an exception is thrown. Subclasses are encouraged to override this method with a more efficient
      * implementation.</p>
      *

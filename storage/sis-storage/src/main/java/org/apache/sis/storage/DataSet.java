@@ -47,7 +47,6 @@ import org.opengis.geometry.Envelope;
  * @module
  */
 public interface DataSet extends Resource {
-
     /**
      * Returns the spatio-temporal extent of this resource in its most natural coordinate reference system.
      * The following relationship to {@linkplain #getMetadata()} should hold:
@@ -72,5 +71,4 @@ public interface DataSet extends Resource {
      * @throws DataStoreException if an error occurred while reading or computing the envelope.
      */
     Envelope getEnvelope() throws DataStoreException;
-
 }

@@ -16,28 +16,29 @@
  */
 package org.apache.sis.internal.storage;
 
-import org.apache.sis.geometry.GeneralEnvelope;
-import org.apache.sis.storage.DataStoreException;
-import org.apache.sis.storage.DataSet;
-import org.apache.sis.storage.DataStore;
-import org.apache.sis.util.logging.WarningListeners;
 import org.opengis.geometry.Envelope;
 import org.opengis.metadata.Metadata;
 import org.opengis.metadata.extent.Extent;
 import org.opengis.metadata.extent.GeographicBoundingBox;
 import org.opengis.metadata.extent.GeographicExtent;
 import org.opengis.metadata.identification.Identification;
+import org.apache.sis.geometry.GeneralEnvelope;
+import org.apache.sis.storage.DataStoreException;
+import org.apache.sis.storage.DataSet;
+import org.apache.sis.storage.DataStore;
+import org.apache.sis.util.logging.WarningListeners;
+
 
 /**
  * Base implementation of data sets contained in data stores.
  *
- * @author Johann Sorel (Geomatys)
+ * @author  Johann Sorel (Geomatys)
  * @version 0.8
  * @since   0.8
  * @module
  */
 public abstract class AbstractDataSet extends AbstractResource implements DataSet {
- /**
+    /**
      * Creates a new resource.
      *
      * @param store      the data store which contains this resource.
@@ -53,12 +54,22 @@ public abstract class AbstractDataSet extends AbstractResource implements DataSe
      * assuming the {@linkplain org.apache.sis.referencing.CommonCRS#defaultGeographic() default geographic CRS}
      * (usually WGS 84).
      *
-     * @return the spatio-temporal resource extent.
+     * @return the spatio-temporal resource extent, or {@code null} if none.
      * @throws DataStoreException if an error occurred while reading or computing the envelope.
      */
     @Override
     public Envelope getEnvelope() throws DataStoreException {
-        final Metadata metadata = getMetadata();
+        return envelope(getMetadata());
+    }
+
+    /**
+     * Implementation of {@link #getEnvelope()}, provided as a separated method for {@link DataSet}
+     * implementations that do not extend {@code AbstractDataSet}.
+     *
+     * @param  metadata  the metadata from which to compute the envelope, or {@code null}.
+     * @return the spatio-temporal resource extent, or {@code null} if none.
+     */
+    public static Envelope envelope(final Metadata metadata) {
         GeneralEnvelope bounds = null;
         if (metadata != null) {
             for (final Identification identification : metadata.getIdentificationInfo()) {
@@ -82,5 +93,4 @@ public abstract class AbstractDataSet extends AbstractResource implements DataSe
         }
         return bounds;
     }
-
 }

@@ -35,6 +35,8 @@ import org.apache.sis.internal.storage.io.IOUtilities;
  * @version 0.8
  * @since   0.8
  * @module
+ *
+ * @see ReadOnlyStorageException
  */
 public class ForwardOnlyStorageException extends DataStoreException {
     /**

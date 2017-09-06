@@ -17,9 +17,9 @@
 package org.apache.sis.storage;
 
 import java.util.Collection;
-import org.apache.sis.internal.storage.Resources;
 import org.opengis.metadata.Metadata;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.apache.sis.internal.storage.Resources;
 
 
 /**
@@ -45,7 +45,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
  *
  * The same resource may be part of more than one aggregate. For example the same resource could be part of
  * a <cite>production series</cite> and a <cite>transfer aggregate</cite>. In Apache SIS implementation,
- * those two kinds of aggregate will usually be created by different {@link DataStore} instances.
+ * those two kinds of aggregate will usually be implemented by different {@link DataStore} instances.
  *
  * <div class="section">Metadata</div>
  * Aggregates should have {@link #getMetadata() metadata} /
@@ -87,46 +87,45 @@ public interface Aggregate extends Resource {
     Collection<Resource> components() throws DataStoreException;
 
     /**
-     * Add a new {@link Resource} in this {@link Aggregate}.
-     * The given {@link Resource} will be copied and the newly created one
-     * returned.
-     *
-     * <p>It is important to be warned that copying informations between stores
-     * may produce differences on many aspects, the range of changes depends
-     * both on the original {@link Resource} format and the target {@link Resource} format.
-     * If the differences are too great, then this {@link Aggregate} may throw
-     * an exception.
-     * </p>
-     *
-     * The possible changes may include the followings but not only :
+     * Adds a new {@code Resource} in this {@code Aggregate}.
+     * The given {@link Resource} will be copied, and the <cite>effectively added</cite> resource returned.
+     * The effectively added resource may differ from the given resource in many aspects.
+     * The possible changes may include the followings but not only:
      * <ul>
      *  <li>types and properties names</li>
      *  <li>{@link CoordinateReferenceSystem}</li>
      *  <li>{@link Metadata}</li>
      * </ul>
      *
+     * <div class="note"><b>Warning:</b>
+     * copying informations between stores may produce differences in many aspects.
+     * The range of changes depends both on the original {@link Resource} structure
+     * and the target {@code Resource} structure. If the differences are too large,
+     * then this {@code Aggregate} may throw an exception.
+     * </div>
      *
-     * @param resource {@link Resource} to copy in this {@link Aggregate}
-     * @return newly created resource
-     * @throws DataStoreException if given resource can not be stored in this {@link Aggregate} or the copy operation failed.
-     * @throws ReadOnlyDataStoreException if this instance does not support writing operations
+     * <p>The default implementation throws {@link ReadOnlyStorageException}.</p>
+     *
+     * @param  resource  the resource to copy in this {@code Aggregate}.
+     * @return the effectively added resource. May be {@code resource} itself if it has been added verbatim.
+     * @throws ReadOnlyStorageException if this instance does not support write operations.
+     * @throws DataStoreException if the given resource can not be stored in this {@code Aggregate} for another reason.
      */
-    default Resource add(Resource resource) throws DataStoreException, ReadOnlyDataStoreException {
-        throw new ReadOnlyDataStoreException(null, Resources.Keys.StoreIsReadOnly);
+    default Resource add(Resource resource) throws ReadOnlyStorageException, DataStoreException {
+        throw new ReadOnlyStorageException(this, Resources.Keys.StoreIsReadOnly);
     }
 
     /**
-     * Remove a {@link Resource} from this {@link Aggregate}.
+     * Removes a {@code Resource} from this {@code Aggregate}.
+     * This operation is destructive: the {@link Resource} and it's related data will be removed.
      *
-     * <p>This operation is destructive, the {@link Resource} and it's related
-     * datas will be removed.</p>
+     * <p>The default implementation throws {@link ReadOnlyStorageException}.</p>
      *
-     * @param resource child {@link Resource} to remove, should not be null
-     * @throws DataStoreException if the {@link Resource} could not be removed
-     * @throws ReadOnlyDataStoreException if this instance does not support writing operations
+     * @param  resource  child resource to remove, should not be null.
+     * @throws ReadOnlyStorageException if this instance does not support write operations.
+     * @throws DataStoreException if the given resource could not be removed for another reason.
      */
-    default void remove(Resource resource) throws DataStoreException, ReadOnlyDataStoreException {
-        throw new ReadOnlyDataStoreException(null, Resources.Keys.StoreIsReadOnly);
+    default void remove(Resource resource) throws ReadOnlyStorageException, DataStoreException {
+        throw new ReadOnlyStorageException(this, Resources.Keys.StoreIsReadOnly);
     }
-
 }

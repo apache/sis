@@ -16,12 +16,13 @@
  */
 package org.apache.sis.storage;
 
-// Branch-dependent imports
 import java.util.Iterator;
+import org.apache.sis.internal.storage.Resources;
+
+// Branch-dependent imports
 import java.util.function.Predicate;
 import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
-import org.apache.sis.internal.storage.Resources;
 import org.opengis.feature.Feature;
 import org.opengis.feature.FeatureType;
 
@@ -107,53 +108,60 @@ public interface FeatureSet extends DataSet {
     Stream<Feature> features(boolean parallel) throws DataStoreException;
 
     /**
-     * Insert new features in the {@link FeatureSet}.
+     * Inserts new features in this {@code FeatureSet}.
      * Any feature already present in the {@link FeatureSet} will remain unmodified.
      *
-     * <p>The method expect an {@link Iterator} rather then a Stream to ease the user
-     * mapping work with various API. Implementing a custom {@link Iterator} require
-     * considerably less efforts then a {@link Stream}. On the other side if the user
-     * has a {@link Stream}, obtaining an {@link Iterator} can be done by a single
-     * call to {@link Stream#iterator() }.</p>
+     * <div class="note"><b>API note:</b>
+     * this method expects an {@link Iterator} rather then a {@link java.util.stream.Stream} for easing
+     * inter-operability with various API. Implementing a custom {@link Iterator} requires less effort
+     * than implementing a {@link Stream}. On the other side if the user has a {@link Stream},
+     * obtaining an {@link Iterator} can be done by a call to {@link Stream#iterator()}.</div>
      *
-     * @param features features to append in the {@link FeatureSet}
-     * @throws DataStoreException if an error occurred while storing new features.
+     * <p>The default implementation throws {@link ReadOnlyStorageException}.</p>
+     *
+     * @param  features features to insert in this {@code FeatureSet}.
+     * @throws ReadOnlyStorageException if this instance does not support write operations.
+     * @throws DataStoreException if another error occurred while storing new features.
      */
-    default void add(Iterator<? extends Feature> features) throws DataStoreException {
-        throw new ReadOnlyDataStoreException(null,Resources.Keys.StoreIsReadOnly);
+    default void add(Iterator<? extends Feature> features) throws ReadOnlyStorageException, DataStoreException {
+        throw new ReadOnlyStorageException(this, Resources.Keys.StoreIsReadOnly);
     }
 
     /**
-     * Remove all {@link Feature} from the {@link FeatureSet} which match
-     * the given predicate.
+     * Removes all features from this {@code FeatureSet} which matches the given predicate.
      *
-     * @param predicate matching predicate
-     * @return true if any elements were removed
-     * @throws DataStoreException if an error occurred while removing features.
+     * <p>The default implementation throws {@link ReadOnlyStorageException}.</p>
+     *
+     * @param  filter  a predicate which returns true for resources to be removed.
+     * @return {@code true} if any elements were removed.
+     * @throws ReadOnlyStorageException if this instance does not support write operations.
+     * @throws DataStoreException if another error occurred while removing features.
      */
-    default boolean removeIf(Predicate<? super Feature> predicate) throws DataStoreException {
-        throw new ReadOnlyDataStoreException(null,Resources.Keys.StoreIsReadOnly);
+    default boolean removeIf(Predicate<? super Feature> filter) throws ReadOnlyStorageException, DataStoreException {
+        throw new ReadOnlyStorageException(this, Resources.Keys.StoreIsReadOnly);
     }
 
     /**
-     * Update all {@link Feature} from the {@link FeatureSet} which match
-     * the given predicate.
-     *
-     * <p>For each {@link Feature} matching the {@link Predicate} the {@link UnaryOperator}
-     * will be called. Two behaviors are possible.</p>
+     * Updates all features from this {@code FeatureSet} which matches the given predicate.
+     * For each {@link Feature} instance matching the given {@link Predicate},
+     * the <code>{@linkplain UnaryOperator#apply UnaryOperator.apply(Feature)}</code> method
+     * will be invoked. Two behaviors are possible:
      * <ul>
-     *  <li>If it returns the {@link Feature}, then the updated feature is store with
-     *  all the modifications.</li>
-     *  <li> If it returns a null, then the feature will be removed from the
-     *  {@link FeatureSet}.</li>
+     *   <li>If the operator returns a non-null {@link Feature}, then the modified feature is stored
+     *       in replacement of the previous feature. There is no guarantee that order is preserved.</li>
+     *   <li>If the operator returns {@code null}, then the feature will be removed from the {@code FeatureSet}.</li>
      * </ul>
      *
-     * @param predicate matching predicate
-     * @param updater operation called for each matching {@link Feature}
-     * @throws DataStoreException
+     * <p>The default implementation throws {@link ReadOnlyStorageException}.</p>
+     *
+     * @param  filter   a predicate which returns true for resources to be updated.
+     * @param  updater  operation called for each matching {@link Feature}.
+     * @throws ReadOnlyStorageException if this instance does not support write operations.
+     * @throws DataStoreException if another error occurred while replacing features.
      */
-    default void replaceIf(Predicate<? super Feature> predicate, UnaryOperator<Feature> updater) throws DataStoreException {
-        throw new ReadOnlyDataStoreException(null,Resources.Keys.StoreIsReadOnly);
+    default void replaceIf(Predicate<? super Feature> filter, UnaryOperator<Feature> updater)
+            throws ReadOnlyStorageException, DataStoreException
+    {
+        throw new ReadOnlyStorageException(this, Resources.Keys.StoreIsReadOnly);
     }
-
 }
