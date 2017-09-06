@@ -43,6 +43,9 @@ import org.apache.sis.util.Classes;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ObjectConverters;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.util.collection.TreeTable;
+import org.apache.sis.util.collection.TableColumn;
+import org.apache.sis.util.collection.DefaultTreeTable;
 import org.apache.sis.internal.storage.Resources;
 import org.apache.sis.internal.storage.io.IOUtilities;
 import org.apache.sis.internal.storage.io.ChannelFactory;
@@ -491,6 +494,32 @@ public class StorageConnector implements Serializable {
                     "wrapperFor", (wrapperFor != null) ? Classes.getShortClassName(wrapperFor.view) : null,
                     "cascade",    cascade,
                     "isValid",    isValid);
+        }
+
+        /**
+         * Formats the current {@code Coupled} and all its children as a tree in the given tree table node.
+         * This method is used for {@link StorageConnector#toString()} implementation only and may change
+         * in any future version.
+         *
+         * @param appendTo  where to write name, value and children.
+         * @param views     reference to the {@link StorageConnector#views} map. Will be read only.
+         */
+        @Debug
+        final void append(final TreeTable.Node appendTo, final Map<Class<?>, Coupled> views) {
+            Class<?> type = null;
+            for (final Map.Entry<Class<?>, Coupled> entry : views.entrySet()) {
+                if (entry.getValue() == this) {
+                    final Class<?> t = Classes.findCommonClass(type, entry.getKey());
+                    if (t != Object.class) type = t;
+                }
+            }
+            appendTo.setValue(TableColumn.NAME,  Classes.getShortName(type));
+            appendTo.setValue(TableColumn.VALUE, Classes.getShortClassName(view));
+            if (wrappedBy != null) {
+                for (final Coupled c : wrappedBy) {
+                    c.append(appendTo.newChild(), views);
+                }
+            }
         }
     }
 
@@ -1288,15 +1317,25 @@ public class StorageConnector implements Serializable {
 
     /**
      * Returns a string representation of this {@code StorageConnector} for debugging purpose.
+     * This string representation is for debugging purpose only and may change in any future version.
+     *
+     * @return a string representation of this {@code StorageConnector} for debugging purpose.
      */
     @Debug
     @Override
     public String toString() {
-        final StringBuilder buffer = new StringBuilder(40);
-        buffer.append(Classes.getShortClassName(this)).append("[“").append(getStorageName()).append('”');
+        final TreeTable table = new DefaultTreeTable(TableColumn.NAME, TableColumn.VALUE);
+        final TreeTable.Node root = table.getRoot();
+        root.setValue(TableColumn.NAME,  Classes.getShortClassName(this));
+        root.setValue(TableColumn.VALUE, getStorageName());
         if (options != null) {
-            buffer.append(", options=").append(options);
+            final TreeTable.Node op = root.newChild();
+            op.setValue(TableColumn.NAME,  "options");
+            op.setValue(TableColumn.VALUE,  options);
         }
-        return buffer.append(']').toString();
+        if (views != null) {
+            views.get(null).append(root.newChild(), views);
+        }
+        return table.toString();
     }
 }
