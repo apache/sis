@@ -164,7 +164,7 @@ public final class Resources extends IndexedResourceBundle {
         public static final short ShallBeDeclaredBefore_2 = 22;
 
         /**
-         * Writing operations not supported.
+         * Write operations are not supported.
          */
         public static final short StoreIsReadOnly = 28;
 

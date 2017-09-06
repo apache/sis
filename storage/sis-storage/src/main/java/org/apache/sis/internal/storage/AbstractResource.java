@@ -28,8 +28,6 @@ import org.apache.sis.util.logging.WarningListeners;
  * @version 0.8
  * @since   0.8
  * @module
- *
- * @todo this class may be removed if we refactor {@link Resource} as an abstract class.
  */
 public abstract class AbstractResource implements Resource {
     /**

@@ -32,6 +32,7 @@ import java.nio.charset.Charset;
 import javax.measure.Unit;
 import javax.measure.quantity.Time;
 import org.opengis.util.FactoryException;
+import org.opengis.geometry.Envelope;
 import org.opengis.metadata.Metadata;
 import org.opengis.metadata.maintenance.ScopeCode;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
@@ -50,6 +51,7 @@ import org.apache.sis.internal.feature.Geometries;
 import org.apache.sis.internal.feature.MovingFeature;
 import org.apache.sis.internal.storage.Resources;
 import org.apache.sis.geometry.GeneralEnvelope;
+import org.apache.sis.geometry.ImmutableEnvelope;
 import org.apache.sis.metadata.iso.DefaultMetadata;
 import org.apache.sis.metadata.sql.MetadataStoreException;
 import org.apache.sis.storage.DataStore;
@@ -58,7 +60,7 @@ import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.storage.DataStoreReferencingException;
 import org.apache.sis.storage.UnsupportedStorageException;
 import org.apache.sis.storage.StorageConnector;
-import org.apache.sis.parameter.Parameters;
+import org.apache.sis.storage.FeatureSet;
 import org.apache.sis.setup.OptionKey;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.CharSequences;
@@ -70,13 +72,10 @@ import java.time.Instant;
 import java.time.DateTimeException;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
-import org.apache.sis.geometry.ImmutableEnvelope;
-import org.apache.sis.storage.FeatureSet;
 import org.opengis.feature.Feature;
 import org.opengis.feature.FeatureType;
 import org.opengis.feature.PropertyType;
 import org.opengis.feature.AttributeType;
-import org.opengis.geometry.Envelope;
 
 
 /**
@@ -159,8 +158,9 @@ public final class Store extends DataStore implements FeatureSet {
      * and a temporal component if the CSV file contains a start time and end time.
      *
      * @see #parseEnvelope(List)
+     * @see #getEnvelope()
      */
-    private final GeneralEnvelope envelope;
+    private final ImmutableEnvelope envelope;
 
     /**
      * Description of the columns found in the CSV file.
@@ -310,7 +310,7 @@ public final class Store extends DataStore implements FeatureSet {
             throw new DataStoreContentException(getLocale(), StoreProvider.NAME, super.getDisplayName(), source).initCause(e);
         }
         this.encoding    = connector.getOption(OptionKey.ENCODING);
-        this.envelope    = envelope;
+        this.envelope    = new ImmutableEnvelope(envelope);
         this.featureType = featureType;
         this.foliation   = foliation;
         this.dissociate |= (timeEncoding == null);
@@ -631,22 +631,24 @@ public final class Store extends DataStore implements FeatureSet {
     }
 
     /**
-     * {@inheritDoc }
+     * Returns the spatio-temporal extent of CSV data in coordinate reference system of the CSV file.
      */
     @Override
     public Envelope getEnvelope() throws DataStoreException {
-        return new ImmutableEnvelope(envelope);
+        return envelope;
     }
 
     /**
-     * {@inheritDoc }
+     * Returns the parameters used to open this data store.
+     *
+     * @return parameters used for opening this {@code DataStore}, or {@code null} if not available.
      */
     @Override
     public ParameterValueGroup getOpenParameters() {
-        if (sourceUri==null) return null;
-        final Parameters parameters = Parameters.castOrWrap(StoreProvider.OPEN_DESCRIPTOR.createValue());
-        parameters.getOrCreate(StoreProvider.PARAM_LOCATION).setValue(sourceUri);
-        return parameters;
+        if (sourceUri == null) return null;
+        final ParameterValueGroup pg = StoreProvider.OPEN_DESCRIPTOR.createValue();
+        pg.parameter(StoreProvider.LOCATION).setValue(sourceUri);
+        return pg;
     }
 
     /**

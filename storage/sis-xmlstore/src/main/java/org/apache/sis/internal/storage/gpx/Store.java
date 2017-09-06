@@ -19,14 +19,18 @@ package org.apache.sis.internal.storage.gpx;
 import java.net.URISyntaxException;
 import org.opengis.util.NameFactory;
 import org.opengis.util.FactoryException;
+import org.opengis.geometry.Envelope;
+import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.metadata.Metadata;
 import org.opengis.metadata.distribution.Format;
+import org.apache.sis.storage.FeatureSet;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.storage.ConcurrentReadException;
 import org.apache.sis.storage.IllegalNameException;
 import org.apache.sis.internal.system.DefaultFactories;
+import org.apache.sis.internal.storage.AbstractDataSet;
 import org.apache.sis.internal.storage.xml.stream.StaxDataStore;
 import org.apache.sis.util.collection.BackingStoreException;
 import org.apache.sis.util.ArgumentChecks;
@@ -42,17 +46,8 @@ import org.apache.sis.metadata.iso.distribution.DefaultFormat;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 import java.io.UncheckedIOException;
-import org.apache.sis.geometry.GeneralEnvelope;
-import org.apache.sis.parameter.Parameters;
-import org.apache.sis.storage.FeatureSet;
 import org.opengis.feature.Feature;
 import org.opengis.feature.FeatureType;
-import org.opengis.geometry.Envelope;
-import org.opengis.metadata.extent.Extent;
-import org.opengis.metadata.extent.GeographicBoundingBox;
-import org.opengis.metadata.extent.GeographicExtent;
-import org.opengis.metadata.identification.Identification;
-import org.opengis.parameter.ParameterValueGroup;
 
 
 /**
@@ -177,49 +172,26 @@ public final class Store extends StaxDataStore implements FeatureSet {
 
     /**
      * Returns the spatio-temporal envelope of this resource.
-     * The default implementation computes the union of all {@link GeographicBoundingBox} in the resource metadata,
-     * assuming the {@linkplain org.apache.sis.referencing.CommonCRS#defaultGeographic() default geographic CRS}
-     * (usually WGS 84).
      *
      * @return the spatio-temporal resource extent.
      * @throws DataStoreException if an error occurred while reading or computing the envelope.
      */
     @Override
     public Envelope getEnvelope() throws DataStoreException {
-        final Metadata metadata = getMetadata();
-        GeneralEnvelope bounds = null;
-        if (metadata != null) {
-            for (final Identification identification : metadata.getIdentificationInfo()) {
-                if (identification != null) {                                               // Paranoiac check.
-                    for (final Extent extent : identification.getExtents()) {
-                        if (extent != null) {                                               // Paranoiac check.
-                            for (final GeographicExtent ge : extent.getGeographicElements()) {
-                                if (ge instanceof GeographicBoundingBox) {
-                                    final GeneralEnvelope env = new GeneralEnvelope((GeographicBoundingBox) ge);
-                                    if (bounds == null) {
-                                        bounds = env;
-                                    } else {
-                                        bounds.add(env);
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        return bounds;
+        return AbstractDataSet.envelope(getMetadata());
     }
 
     /**
-     * {@inheritDoc }
+     * Returns the parameters used to open this data store.
+     *
+     * @return parameters used for opening this {@code DataStore}, or {@code null} if not available.
      */
     @Override
     public ParameterValueGroup getOpenParameters() {
-        if (sourceUri==null) return null;
-        final Parameters parameters = Parameters.castOrWrap(StoreProvider.OPEN_DESCRIPTOR.createValue());
-        parameters.getOrCreate(StoreProvider.PARAM_LOCATION).setValue(sourceUri);
-        return parameters;
+        if (sourceUri == null) return null;
+        final ParameterValueGroup pg = StoreProvider.OPEN_DESCRIPTOR.createValue();
+        pg.parameter(StoreProvider.LOCATION).setValue(sourceUri);
+        return pg;
     }
 
     /**
@@ -251,9 +223,11 @@ public final class Store extends StaxDataStore implements FeatureSet {
     /**
      * Returns the stream of features.
      *
+     * @param  parallel  ignored in current implementation.
      * @return a stream over all features in the XML file.
      * @throws DataStoreException if an error occurred while creating the feature stream.
      */
+    @Override
     public final synchronized Stream<Feature> features(boolean parallel) throws DataStoreException {
         Reader r = reader;
         reader = null;
