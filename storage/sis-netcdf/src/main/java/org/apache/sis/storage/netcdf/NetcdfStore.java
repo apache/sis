@@ -138,17 +138,6 @@ public class NetcdfStore extends DataStore {
     }
 
     /**
-     * This implementation does not provide any resource yet.
-     *
-     * @return currently {@code null} (will be implemented in future Apache SIS version).
-     * @throws DataStoreException if an error occurred while reading the data.
-     */
-    @Override
-    public Resource getRootResource() throws DataStoreException {
-        return null;
-    }
-
-    /**
      * Returns the version number of the Climate and Forecast (CF) conventions used in the NetCDF file.
      * The use of CF convention is mandated by the OGC 11-165r2 standard
      * (<cite>CF-netCDF3 Data Model Extension standard</cite>).

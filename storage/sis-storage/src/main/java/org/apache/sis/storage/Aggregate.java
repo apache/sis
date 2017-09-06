@@ -17,6 +17,9 @@
 package org.apache.sis.storage;
 
 import java.util.Collection;
+import org.apache.sis.internal.storage.Resources;
+import org.opengis.metadata.Metadata;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 
 /**
@@ -82,4 +85,48 @@ public interface Aggregate extends Resource {
      * @throws DataStoreException if an error occurred while fetching the components.
      */
     Collection<Resource> components() throws DataStoreException;
+
+    /**
+     * Add a new {@link Resource} in this {@link Aggregate}.
+     * The given {@link Resource} will be copied and the newly created one
+     * returned.
+     *
+     * <p>It is important to be warned that copying informations between stores
+     * may produce differences on many aspects, the range of changes depends
+     * both on the original {@link Resource} format and the target {@link Resource} format.
+     * If the differences are too great, then this {@link Aggregate} may throw
+     * an exception.
+     * </p>
+     *
+     * The possible changes may include the followings but not only :
+     * <ul>
+     *  <li>types and properties names</li>
+     *  <li>{@link CoordinateReferenceSystem}</li>
+     *  <li>{@link Metadata}</li>
+     * </ul>
+     *
+     *
+     * @param resource {@link Resource} to copy in this {@link Aggregate}
+     * @return newly created resource
+     * @throws DataStoreException if given resource can not be stored in this {@link Aggregate} or the copy operation failed.
+     * @throws ReadOnlyDataStoreException if this instance does not support writing operations
+     */
+    default Resource add(Resource resource) throws DataStoreException, ReadOnlyDataStoreException {
+        throw new ReadOnlyDataStoreException(null, Resources.Keys.StoreIsReadOnly);
+    }
+
+    /**
+     * Remove a {@link Resource} from this {@link Aggregate}.
+     *
+     * <p>This operation is destructive, the {@link Resource} and it's related
+     * datas will be removed.</p>
+     *
+     * @param resource child {@link Resource} to remove, should not be null
+     * @throws DataStoreException if the {@link Resource} could not be removed
+     * @throws ReadOnlyDataStoreException if this instance does not support writing operations
+     */
+    default void remove(Resource resource) throws DataStoreException, ReadOnlyDataStoreException {
+        throw new ReadOnlyDataStoreException(null, Resources.Keys.StoreIsReadOnly);
+    }
+
 }

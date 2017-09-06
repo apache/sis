@@ -21,7 +21,6 @@ import org.opengis.util.NameFactory;
 import org.opengis.util.FactoryException;
 import org.opengis.metadata.Metadata;
 import org.opengis.metadata.distribution.Format;
-import org.apache.sis.storage.Resource;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreContentException;
@@ -43,9 +42,16 @@ import org.apache.sis.metadata.iso.distribution.DefaultFormat;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 import java.io.UncheckedIOException;
+import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.parameter.Parameters;
+import org.apache.sis.storage.FeatureSet;
 import org.opengis.feature.Feature;
 import org.opengis.feature.FeatureType;
+import org.opengis.geometry.Envelope;
+import org.opengis.metadata.extent.Extent;
+import org.opengis.metadata.extent.GeographicBoundingBox;
+import org.opengis.metadata.extent.GeographicExtent;
+import org.opengis.metadata.identification.Identification;
 import org.opengis.parameter.ParameterValueGroup;
 
 
@@ -58,7 +64,7 @@ import org.opengis.parameter.ParameterValueGroup;
  * @since   0.8
  * @module
  */
-public final class Store extends StaxDataStore {
+public final class Store extends StaxDataStore implements FeatureSet {
     /**
      * Version of the GPX file, or {@code null} if unknown.
      */
@@ -170,6 +176,42 @@ public final class Store extends StaxDataStore {
     }
 
     /**
+     * Returns the spatio-temporal envelope of this resource.
+     * The default implementation computes the union of all {@link GeographicBoundingBox} in the resource metadata,
+     * assuming the {@linkplain org.apache.sis.referencing.CommonCRS#defaultGeographic() default geographic CRS}
+     * (usually WGS 84).
+     *
+     * @return the spatio-temporal resource extent.
+     * @throws DataStoreException if an error occurred while reading or computing the envelope.
+     */
+    @Override
+    public Envelope getEnvelope() throws DataStoreException {
+        final Metadata metadata = getMetadata();
+        GeneralEnvelope bounds = null;
+        if (metadata != null) {
+            for (final Identification identification : metadata.getIdentificationInfo()) {
+                if (identification != null) {                                               // Paranoiac check.
+                    for (final Extent extent : identification.getExtents()) {
+                        if (extent != null) {                                               // Paranoiac check.
+                            for (final GeographicExtent ge : extent.getGeographicElements()) {
+                                if (ge instanceof GeographicBoundingBox) {
+                                    final GeneralEnvelope env = new GeneralEnvelope((GeographicBoundingBox) ge);
+                                    if (bounds == null) {
+                                        bounds = env;
+                                    } else {
+                                        bounds.add(env);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return bounds;
+    }
+
+    /**
      * {@inheritDoc }
      */
     @Override
@@ -181,13 +223,13 @@ public final class Store extends StaxDataStore {
     }
 
     /**
-     * Returns the {@code FeatureSet} from which all features in this data store can be accessed.
+     * Returns the base type of all GPX types.
      *
-     * @return the starting point of all features in this data store.
+     * @return base type of all GPX types.
      */
     @Override
-    public Resource getRootResource() {
-        return new FeatureAccess(this, listeners);
+    public FeatureType getType() {
+        return types.parent;
     }
 
     /**
@@ -212,7 +254,7 @@ public final class Store extends StaxDataStore {
      * @return a stream over all features in the XML file.
      * @throws DataStoreException if an error occurred while creating the feature stream.
      */
-    final synchronized Stream<Feature> features() throws DataStoreException {
+    public final synchronized Stream<Feature> features(boolean parallel) throws DataStoreException {
         Reader r = reader;
         reader = null;
         if (r == null) try {
