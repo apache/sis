@@ -16,16 +16,8 @@
  */
 package org.apache.sis.internal.storage;
 
-import org.opengis.geometry.Envelope;
-import org.opengis.metadata.Metadata;
-import org.opengis.metadata.extent.Extent;
-import org.opengis.metadata.extent.GeographicExtent;
-import org.opengis.metadata.extent.GeographicBoundingBox;
-import org.opengis.metadata.identification.Identification;
 import org.apache.sis.storage.Resource;
 import org.apache.sis.storage.DataStore;
-import org.apache.sis.storage.DataStoreException;
-import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.util.logging.WarningListeners;
 
 
@@ -62,42 +54,6 @@ public abstract class AbstractResource implements Resource {
     protected AbstractResource(final DataStore store, final WarningListeners<DataStore> listeners) {
         this.store     = store;
         this.listeners = listeners;
-    }
-
-    /**
-     * Returns the spatio-temporal envelope of this resource.
-     * The default implementation computes the union of all {@link GeographicBoundingBox} in the resource metadata,
-     * assuming the {@linkplain org.apache.sis.referencing.CommonCRS#defaultGeographic() default geographic CRS}
-     * (usually WGS 84).
-     *
-     * @return the spatio-temporal resource extent.
-     * @throws DataStoreException if an error occurred while reading or computing the envelope.
-     */
-    @Override
-    public Envelope getEnvelope() throws DataStoreException {
-        final Metadata metadata = getMetadata();
-        GeneralEnvelope bounds = null;
-        if (metadata != null) {
-            for (final Identification identification : metadata.getIdentificationInfo()) {
-                if (identification != null) {                                               // Paranoiac check.
-                    for (final Extent extent : identification.getExtents()) {
-                        if (extent != null) {                                               // Paranoiac check.
-                            for (final GeographicExtent ge : extent.getGeographicElements()) {
-                                if (ge instanceof GeographicBoundingBox) {
-                                    final GeneralEnvelope env = new GeneralEnvelope((GeographicBoundingBox) ge);
-                                    if (bounds == null) {
-                                        bounds = env;
-                                    } else {
-                                        bounds.add(env);
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        return bounds;
     }
 
     /**

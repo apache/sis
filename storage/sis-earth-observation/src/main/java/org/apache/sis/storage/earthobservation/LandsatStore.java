@@ -141,18 +141,6 @@ public class LandsatStore extends DataStore {
     }
 
     /**
-     * Current implementation does not provide any resource yet.
-     * Future versions may return an aggregate of all raster data in the GeoTIFF files associated with this metadata.
-     *
-     * @return the starting point of all resources in this data store.
-     * @throws DataStoreException if an error occurred while reading the data.
-     */
-    @Override
-    public Resource getRootResource() throws DataStoreException {
-        return null;
-    }
-
-    /**
      * Closes this Landsat store and releases any underlying resources.
      *
      * @throws DataStoreException if an error occurred while closing the Landsat file.

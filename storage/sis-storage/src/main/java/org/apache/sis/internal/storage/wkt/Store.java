@@ -216,15 +216,6 @@ final class Store extends DataStore {
     }
 
     /**
-     * There is currently no resource associated to Well Known Text format since we parse only CRS.
-     * Future versions may return resources if we parse also geometries.
-     */
-    @Override
-    public Resource getRootResource() throws DataStoreException {
-        return null;
-    }
-
-    /**
      * Closes this data store and releases any underlying resources.
      *
      * @throws DataStoreException if an error occurred while closing this data store.

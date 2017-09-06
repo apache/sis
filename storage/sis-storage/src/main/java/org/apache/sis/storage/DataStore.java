@@ -47,7 +47,7 @@ import org.apache.sis.internal.util.Citations;
  * @since 0.3
  * @module
  */
-public abstract class DataStore implements Localized, AutoCloseable {
+public abstract class DataStore implements Resource, Localized, AutoCloseable {
     /**
      * The factory that created this {@code DataStore} instance, or {@code null} if unspecified.
      * This information can be useful for fetching information common to all {@code DataStore}
@@ -220,20 +220,8 @@ public abstract class DataStore implements Localized, AutoCloseable {
      *
      * @see Resource#getMetadata()
      */
+    @Override
     public abstract Metadata getMetadata() throws DataStoreException;
-
-    /**
-     * Returns the starting point from which all resources in this data store can be accessed.
-     * A resource can be for example a air temperature map or the set of all bridges in a city.
-     * If this data store contains only one resource, then that resource is returned directly.
-     * Otherwise if this data store contains more than one resource, then this method returns
-     * an {@link Aggregate} from which other resources can be accessed.
-     *
-     * @return the starting point of all resources in this data store,
-     *         or {@code null} if this data store does not contain any resources.
-     * @throws DataStoreException if an error occurred while reading the data.
-     */
-    public abstract Resource getRootResource() throws DataStoreException;
 
     /**
      * Searches for a resource identified by the given identifier.
@@ -260,7 +248,7 @@ public abstract class DataStore implements Localized, AutoCloseable {
      */
     public Resource findResource(final String identifier) throws DataStoreException {
         ArgumentChecks.ensureNonEmpty("identifier", identifier);
-        final Resource resource = findResource(identifier, getRootResource(), new IdentityHashMap<>());
+        final Resource resource = findResource(identifier, this, new IdentityHashMap<>());
         if (resource != null) {
             return resource;
         }
