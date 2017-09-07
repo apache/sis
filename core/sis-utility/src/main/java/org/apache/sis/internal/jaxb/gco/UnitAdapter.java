@@ -66,7 +66,7 @@ public class UnitAdapter extends XmlAdapter<String, Unit<?>> {
     }
 
     /**
-     * A variant of {@link UnitAdapter} which marshal units as an URN for Coordinate System (CS) axes.
+     * A variant of {@link UnitAdapter} which marshal units as a URN for Coordinate System (CS) axes.
      * Example: {@code "urn:ogc:def:uom:EPSG::9001"}.
      *
      * The difference between coordinate system axis and other uses (prime meridian, etc.) is in the choice of EPSG

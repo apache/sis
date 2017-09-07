@@ -47,19 +47,19 @@ import org.apache.sis.internal.jdk8.JDK8;
  *   <li>Otherwise if the target value is a collection, then:
  *     <ul>
  *       <li>For each element of the source collection, a corresponding element of the target collection is searched.
- *         A pair of source and target elements is established if the pair meet all of the following conditions:
+ *         A pair of source and target elements is established if the pair meets all of the following conditions:
  *         <ul>
  *           <li>The {@linkplain MetadataStandard#getInterface(Class) standard type} of the source element
  *               is assignable to the type of the target element.</li>
- *           <li>There is no conflict, i.e. no property value that are not collection and not equal
- *               (note: this condition is disabled if {@link #avoidConflicts} is {@code false}).</li>
+ *           <li>There is no conflict, i.e. no property value that are not collection and not equal.
+ *               This condition can be modified by overriding {@link #resolve(Object, ModifiableMetadata)}.</li>
  *         </ul>
  *         If such pair is found, then the merge operation if performed recursively
  *         for that pair of source and target elements.</li>
  *       <li>All other source elements will be added as new elements in the target collection.</li>
  *     </ul>
  *   </li>
- *   <li>Otherwise the {@link #unmerged unmerged(…)} method is invoked.</li>
+ *   <li>Otherwise the {@link #copy(Object, ModifiableMetadata) copy(…)} method is invoked.</li>
  * </ul>
  *
  * @author  Johann Sorel (Geomatys)
@@ -80,14 +80,6 @@ public class Merger {
      * The locale to use for formatting error messages, or {@code null} for the default locale.
      */
     protected final Locale locale;
-
-    /**
-     * {@code true} for performing a greater effort of avoiding merge conflicts.
-     * The default value is {@code false}, which may cause {@link #unmerged unmerged(…)} to be invoked in
-     * situation where it could have been avoided. Setting this value to {@code true} increase the chances
-     * of merge success at the expense of more computations.
-     */
-    public boolean avoidConflicts;
 
     /**
      * Creates a new merger.
@@ -125,15 +117,15 @@ public class Merger {
      *         for example because the source class is a more specialized type than the target class.
      * @throws IllegalArgumentException if this method detects a cross-reference between source and target metadata.
      */
-    public final void merge(final Object source, final ModifiableMetadata target) {
-        if (!merge(source, target, false)) {
+    public final void copy(final Object source, final ModifiableMetadata target) {
+        if (!copy(source, target, false)) {
             throw new InvalidMetadataException(errors().getString(Errors.Keys.IllegalArgumentClass_3, "target",
                     target.getStandard().getInterface(source.getClass()), Classes.getClass(target)));
         }
     }
 
     /**
-     * Implementation of {@link #merge(Object, ModifiableMetadata)} method,
+     * Implementation of {@link #copy(Object, ModifiableMetadata)} method,
      * to be invoked recursively for all child properties to merge.
      *
      * @param  dryRun  {@code true} for executing the merge operation in "dry run" mode instead than performing the
@@ -142,7 +134,8 @@ public class Merger {
      * @return {@code true} if the merge operation is valid, or {@code false} if the given arguments are valid
      *         metadata but the merge operation can nevertheless not be executed because it could cause data lost.
      */
-    private boolean merge(final Object source, final ModifiableMetadata target, final boolean dryRun) {
+    @SuppressWarnings("fallthrough")
+    private boolean copy(final Object source, final ModifiableMetadata target, final boolean dryRun) {
         /*
          * Verify if the given source can be merged with the target. If this is not the case, action
          * taken will depend on the caller: it may either skips the value or throws an exception.
@@ -194,7 +187,7 @@ public class Merger {
                                                : JDK8.putIfAbsentConservative(targetMap, propertyName, sourceValue);
             if (targetValue != null) {
                 if (targetValue instanceof ModifiableMetadata) {
-                    success = merge(sourceValue, (ModifiableMetadata) targetValue, dryRun);
+                    success = copy(sourceValue, (ModifiableMetadata) targetValue, dryRun);
                     if (!success) {
                         /*
                          * This exception may happen if the source is a subclass of the target. This is the converse
@@ -226,17 +219,22 @@ public class Merger {
                     for (final Object element : targetList) {
                         if (element instanceof ModifiableMetadata) {
                             final Iterator<?> it = sourceList.iterator();
-                            while (it.hasNext()) {
+distribute:                 while (it.hasNext()) {
                                 final Object value = it.next();
-                                if (!avoidConflicts || merge(value, (ModifiableMetadata) element, true)) {
-                                    /*
-                                     * If enabled, above 'merge' call verified that the merge can be done, including
-                                     * by recursive checks in all children. The intend is to have a "all or nothing"
-                                     * behavior, before the 'merge' call below starts to modify the values.
-                                     */
-                                    if (merge(value, (ModifiableMetadata) element, false)) {
+                                switch (resolve(value, (ModifiableMetadata) element)) {
+                                //  case SEPARATE: do nothing.
+                                    case MERGE: {
+                                        /*
+                                         * If enabled, copy(…, true) call verified that the merge can be done, including
+                                         * by recursive checks in all children. The intend is to have a "all or nothing"
+                                         * behavior, before the copy(…, false) call below starts to modify the values.
+                                         */
+                                        if (!copy(value, (ModifiableMetadata) element, false)) break;
+                                        // Fall through
+                                    }
+                                    case IGNORE: {
                                         it.remove();
-                                        break;          // Merge at most one source element to each target element.
+                                        break distribute;   // Merge at most one source element to each target element.
                                     }
                                 }
                             }
@@ -266,7 +264,8 @@ public class Merger {
                     success = targetValue.equals(sourceValue);
                     if (!success) {
                         if (dryRun) break;
-                        unmerged(target, propertyName, sourceValue, targetValue);
+                        merge(target, propertyName, sourceValue, targetValue);
+                        success = true;  // If no exception has been thrown by 'merged', assume the conflict solved.
                     }
                 }
             }
@@ -280,19 +279,74 @@ public class Merger {
     }
 
     /**
-     * Invoked when a metadata value can not be merged.
+     * The action to perform when a <var>source</var> metadata element is about to be written in an existing
+     * <var>target</var> element. Many metadata elements defined by ISO 19115 allows multi-occurrence, i.e.
+     * are stored in {@link Collection}. When a value <var>A</var> is about to be added in an existing collection
+     * which already contains values <var>B</var> and <var>C</var>, then different scenarios are possible.
+     *
+     * <p>For <var>A</var> ⟶ {<var>B</var>, <var>C</var>}:</p>
+     * <ul>
+     *   <li>Value <var>A</var> may overwrite some values of <var>B</var>. This action is executed if
+     *       <code>{@linkplain Merger#resolve Merger.resolve}(A, B)</code> returns {@link #MERGE}.</li>
+     *   <li>Value <var>A</var> may overwrite some values of <var>C</var>. This action is executed if
+     *       <code>{@linkplain Merger#resolve Merger.resolve}(A, B)</code> returns {@link #SEPARATE},
+     *       then {@code Merger.resolve(A, C)} returns {@link #MERGE}.</li>
+     *   <li>Value <var>A</var> may be added as a new value after <var>B</var> and <var>C</var>.
+     *       This action is executed if <code>{@linkplain Merger#resolve Merger.resolve}(A, B)</code>
+     *       <strong>and</strong> {@code Merger.resolve(A, C)} return {@link #SEPARATE}.</li>
+     *   <li>Value <var>A</var> may be discarded. This action is executed if
+     *       <code>{@linkplain Merger#resolve Merger.resolve}(A, B)</code>
+     *       <strong>or</strong> {@code Merger.resolve(A, C)} return {@link #IGNORE}.</li>
+     * </ul>
+     *
+     * @see Merger#resolve(Object, ModifiableMetadata)
+     */
+    public enum Resolution {
+        /**
+         * Indicates that <var>source</var> values should be written in <var>target</var> attributes of existing
+         * metadata element. No new metadata object is created. If a value already exists in the target metadata,
+         * then the {@link Merger#merge(ModifiableMetadata, String, Object, Object) merge(…)} method will be invoked.
+         */
+        MERGE,
+
+        /**
+         * Indicates that <var>source</var> values should be written in another metadata element.
+         */
+        SEPARATE,
+
+        /**
+         * Indicates that <var>source</var> values should be discarded.
+         */
+        IGNORE
+    }
+
+    /**
+     * Invoked when a source metadata element is about to be written in an existing target element.
+     * The default implementation returns {@link Resolution#MERGE} if writing in the given target
+     * would only fill holes, without overwriting any existing value. Otherwise this method returns
+     * {@code Resolution#SEPARATE}.
+     *
+     * @param  source  the source metadata to copy.
+     * @param  target  where the source metadata would be copied if this method returns {@link Resolution#MERGE}.
+     * @return {@link Resolution#MERGE} for writing {@code source} into {@code target}, or
+     *         {@link Resolution#SEPARATE} for writing {@code source} in a separated metadata element, or
+     *         {@link Resolution#IGNORE} for discarding {@code source}.
+     */
+    protected Resolution resolve(Object source, ModifiableMetadata target) {
+        return copy(source, target, true) ? Resolution.MERGE : Resolution.SEPARATE;
+    }
+
+    /**
+     * Invoked when {@code Merger} can not merge a metadata value by itself.
      * The default implementation throws an {@link InvalidMetadataException}.
      * Subclasses can override this method if they want to perform a different processing.
-     *
-     * <p><b>Tip:</b> to reduce the risks that this method is invoked, consider setting the
-     * {@link #avoidConflicts} flag to {@code true} before invoking {@link #merge merge(…)}.</p>
      *
      * @param target        the metadata instance in which the value should have been written.
      * @param propertyName  the name of the property to write.
      * @param sourceValue   the value to write.
      * @param targetValue   the value that already exist in the target metadata.
      */
-    protected void unmerged(ModifiableMetadata target, String propertyName, Object sourceValue, Object targetValue) {
+    protected void merge(ModifiableMetadata target, String propertyName, Object sourceValue, Object targetValue) {
         throw new InvalidMetadataException(errors().getString(Errors.Keys.ValueAlreadyDefined_1, name(target, propertyName)));
     }
 }

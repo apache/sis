@@ -27,12 +27,10 @@ import org.opengis.metadata.citation.Citation;
 import org.opengis.referencing.datum.Ellipsoid;
 import org.opengis.referencing.datum.GeodeticDatum;
 import org.opengis.referencing.datum.PrimeMeridian;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.referencing.factory.InvalidGeodeticParameterException;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.metadata.iso.citation.Citations;
-import org.apache.sis.util.resources.Errors;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.internal.system.OS;
 
@@ -81,8 +79,8 @@ final class PJ implements ReferenceIdentifier, Serializable {
         Objects.requireNonNull(definition);
         ptr = allocatePJ(definition);
         if (ptr == 0) {
-            throw new InvalidGeodeticParameterException(Errors.format(Errors.Keys.UnparsableStringForClass_2,
-                    CoordinateReferenceSystem.class, definition));
+            // Note: our getLastError() implementation is safe even if pts == 0.
+            throw new InvalidGeodeticParameterException(getLastError());
         }
     }
 
@@ -285,6 +283,7 @@ final class PJ implements ReferenceIdentifier, Serializable {
      * @return the last error that occurred, or {@code null}.
      *
      * @todo this method is not thread-safe. Proj.4 provides a better alternative using a context parameter.
+     *       Note that this method needs to be safe even if {@link #ptr} is 0.
      */
     native String getLastError();
 

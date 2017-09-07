@@ -99,8 +99,7 @@ public final strictfp class MergerTest extends TestCase {
         final DefaultMetadata source = createSample1();
         final DefaultMetadata target = createSample2();
         final Merger merger = new Merger(null);
-        merger.avoidConflicts = true;
-        merger.merge(source, target);
+        merger.copy(source, target);
 
         assertSetEquals(Arrays.asList(Locale.JAPANESE, Locale.FRENCH),  target.getLanguages());
         assertSetEquals(Collections.singleton(StandardCharsets.UTF_16), target.getCharacterSets());

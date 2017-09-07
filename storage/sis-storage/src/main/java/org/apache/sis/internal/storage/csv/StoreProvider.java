@@ -18,11 +18,11 @@ package org.apache.sis.internal.storage.csv;
 
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreException;
-import org.apache.sis.storage.DataStoreProvider;
 import org.apache.sis.storage.ProbeResult;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.internal.storage.Capability;
 import org.apache.sis.internal.storage.Capabilities;
+import org.apache.sis.internal.storage.URIDataStore;
 import org.apache.sis.internal.storage.wkt.FirstKeywordPeek;
 
 
@@ -40,7 +40,7 @@ import org.apache.sis.internal.storage.wkt.FirstKeywordPeek;
  * @module
  */
 @Capabilities(Capability.READ)
-public final class StoreProvider extends DataStoreProvider {
+public final class StoreProvider extends URIDataStore.Provider {
     /**
      * The format names for static features and moving features.
      */

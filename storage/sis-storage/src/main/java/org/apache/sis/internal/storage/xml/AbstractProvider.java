@@ -25,6 +25,7 @@ import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.ProbeResult;
+import org.apache.sis.internal.storage.io.IOUtilities;
 import org.apache.sis.internal.storage.DocumentedStoreProvider;
 
 
@@ -138,7 +139,7 @@ public abstract class AbstractProvider extends DocumentedStoreProvider {
             final ProbeResult result = new MimeTypeDetector(types) {
                 private int remaining = READ_AHEAD_LIMIT;
                 @Override int read() throws IOException {
-                    return (--remaining >= 0) ? reader.read() : -1;
+                    return (--remaining >= 0) ? IOUtilities.readCodePoint(reader) : -1;
                 }
             }.probeContent();
             reader.reset();

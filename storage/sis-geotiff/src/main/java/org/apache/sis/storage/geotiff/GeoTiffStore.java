@@ -18,6 +18,7 @@ package org.apache.sis.storage.geotiff;
 
 import java.util.Locale;
 import java.io.IOException;
+import java.net.URI;
 import java.nio.charset.Charset;
 import java.util.logging.LogRecord;
 import java.nio.charset.StandardCharsets;
@@ -25,6 +26,7 @@ import java.nio.file.StandardOpenOption;
 import org.opengis.util.FactoryException;
 import org.opengis.metadata.Metadata;
 import org.opengis.metadata.maintenance.ScopeCode;
+import org.opengis.parameter.ParameterValueGroup;
 import org.apache.sis.setup.OptionKey;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.StorageConnector;
@@ -33,10 +35,10 @@ import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.storage.UnsupportedStorageException;
 import org.apache.sis.internal.storage.io.ChannelDataInput;
 import org.apache.sis.internal.storage.MetadataBuilder;
+import org.apache.sis.internal.storage.URIDataStore;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.metadata.sql.MetadataStoreException;
 import org.apache.sis.storage.DataStoreClosedException;
-import org.apache.sis.storage.Resource;
 import org.apache.sis.util.resources.Errors;
 
 
@@ -63,6 +65,11 @@ public class GeoTiffStore extends DataStore {
     private Reader reader;
 
     /**
+     * The {@link GeoTiffStoreProvider#LOCATION} parameter value, or {@code null} if none.
+     */
+    private final URI location;
+
+    /**
      * The metadata, or {@code null} if not yet created.
      *
      * @see #getMetadata()
@@ -84,9 +91,10 @@ public class GeoTiffStore extends DataStore {
         this.encoding = (encoding != null) ? encoding : StandardCharsets.US_ASCII;
         final ChannelDataInput input = connector.getStorageAs(ChannelDataInput.class);
         if (input == null) {
-            throw new UnsupportedStorageException(super.getLocale(), "TIFF",
+            throw new UnsupportedStorageException(super.getLocale(), Constants.GEOTIFF,
                     connector.getStorage(), connector.getOption(OptionKey.OPEN_OPTIONS));
         }
+        location = connector.getStorageAs(URI.class);
         connector.closeAllExcept(input);
         try {
             reader = new Reader(this, input);
@@ -126,22 +134,26 @@ public class GeoTiffStore extends DataStore {
             } catch (IOException e) {
                 throw new DataStoreException(errors().getString(Errors.Keys.CanNotRead_1, reader.input.filename), e);
             } catch (FactoryException | ArithmeticException e) {
-                throw new DataStoreContentException(getLocale(), "TIFF", reader.input.filename, null).initCause(e);
+                throw new DataStoreContentException(getLocale(), Constants.GEOTIFF, reader.input.filename, null).initCause(e);
             }
         }
         return metadata;
     }
 
     /**
-     * Current implementation does not provide any resource yet.
-     * A future version will return the raster data in a coverage resource.
+     * Returns the parameters used to open this GeoTIFF data store.
+     * If non-null, the parameters are described by {@link GeoTiffStoreProvider#getOpenParameters()}
+     * and contains at least a parameter named {@value GeoTiffStoreProvider#LOCATION} with a {@link URI} value.
+     * This method may return {@code null} if the storage input can not be described by a URI
+     * (for example a GeoTIFF file reading directly from a {@link java.nio.channels.ReadableByteChannel}).
      *
-     * @return the starting point of all resources in this data store.
-     * @throws DataStoreException if an error occurred while reading the data.
+     * @return parameters used for opening this data store, or {@code null} if not available.
+     *
+     * @since 0.8
      */
     @Override
-    public Resource getRootResource() throws DataStoreException {
-        return null;
+    public ParameterValueGroup getOpenParameters() {
+        return URIDataStore.parameters(provider, location);
     }
 
     /**
