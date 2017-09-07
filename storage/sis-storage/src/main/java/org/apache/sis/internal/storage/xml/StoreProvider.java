@@ -16,16 +16,12 @@
  */
 package org.apache.sis.internal.storage.xml;
 
-import java.net.URI;
-import org.opengis.parameter.ParameterDescriptor;
-import org.opengis.parameter.ParameterDescriptorGroup;
 import org.apache.sis.xml.Namespaces;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.internal.storage.Capabilities;
 import org.apache.sis.internal.storage.Capability;
-import org.apache.sis.parameter.ParameterBuilder;
 
 
 /**
@@ -42,17 +38,6 @@ public final class StoreProvider extends AbstractProvider {
      * The format name.
      */
     static final String NAME = "XML";
-
-    /**
-     * XML source.
-     */
-    static final ParameterDescriptor<URI> PARAM_LOCATION = new ParameterBuilder()
-            .addName(LOCATION)
-            .setRequired(true)
-            .create(URI.class, null);
-
-    static final ParameterDescriptorGroup OPEN_DESCRIPTOR =
-            new ParameterBuilder().addName(NAME).createGroup(PARAM_LOCATION);
 
     /**
      * Creates a new provider.
@@ -73,14 +58,6 @@ public final class StoreProvider extends AbstractProvider {
     @Override
     public String getShortName() {
         return NAME;
-    }
-
-    /**
-     * {@inheritDoc }
-     */
-    @Override
-    public ParameterDescriptorGroup getOpenParameters() {
-        return OPEN_DESCRIPTOR;
     }
 
     /**

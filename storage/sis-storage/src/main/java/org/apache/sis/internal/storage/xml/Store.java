@@ -23,16 +23,13 @@ import java.io.Closeable;
 import java.io.Reader;
 import java.io.InputStream;
 import java.io.IOException;
-import java.net.URI;
 import javax.xml.bind.JAXBException;
 import javax.xml.transform.stream.StreamSource;
 import org.opengis.metadata.Metadata;
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.ReferenceSystem;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.opengis.parameter.ParameterValueGroup;
 import org.apache.sis.xml.XML;
-import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.UnsupportedStorageException;
@@ -40,6 +37,7 @@ import org.apache.sis.metadata.iso.DefaultMetadata;
 import org.apache.sis.util.logging.WarningListener;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.internal.system.Loggers;
+import org.apache.sis.internal.storage.URIDataStore;
 import org.apache.sis.internal.storage.MetadataBuilder;
 import org.apache.sis.internal.referencing.DefinitionVerifier;
 import org.apache.sis.setup.OptionKey;
@@ -62,12 +60,11 @@ import org.apache.sis.setup.OptionKey;
  * @since   0.4
  * @module
  */
-final class Store extends DataStore {
+final class Store extends URIDataStore {
     /**
      * The input stream or reader, set by the constructor and cleared when no longer needed.
      */
     private StreamSource source;
-    private URI sourceUri;
 
     /**
      * The unmarshalled object, initialized only when first needed.
@@ -90,11 +87,6 @@ final class Store extends DataStore {
     public Store(final StoreProvider provider, final StorageConnector connector) throws DataStoreException {
         super(provider, connector);
         final InputStream in = connector.getStorageAs(InputStream.class);
-        try {
-            sourceUri = connector.getStorageAs(URI.class);
-        } catch (IllegalArgumentException ex) {
-            //open parameters will be null.
-        }
         if (in != null) {
             source = new StreamSource(in);
         } else {
@@ -216,19 +208,6 @@ final class Store extends DataStore {
             }
         }
         return metadata;
-    }
-
-    /**
-     * Returns the parameters used to open this data store.
-     *
-     * @return parameters used for opening this {@code DataStore}, or {@code null} if not available.
-     */
-    @Override
-    public ParameterValueGroup getOpenParameters() {
-        if (sourceUri == null) return null;
-        final ParameterValueGroup pg = StoreProvider.OPEN_DESCRIPTOR.createValue();
-        pg.parameter(StoreProvider.LOCATION).setValue(sourceUri);
-        return pg;
     }
 
     /**

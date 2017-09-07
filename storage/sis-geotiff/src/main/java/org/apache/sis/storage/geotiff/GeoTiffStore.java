@@ -35,11 +35,10 @@ import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.storage.UnsupportedStorageException;
 import org.apache.sis.internal.storage.io.ChannelDataInput;
 import org.apache.sis.internal.storage.MetadataBuilder;
+import org.apache.sis.internal.storage.URIDataStore;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.metadata.sql.MetadataStoreException;
-import org.apache.sis.parameter.Parameters;
 import org.apache.sis.storage.DataStoreClosedException;
-import org.apache.sis.storage.Resource;
 import org.apache.sis.util.resources.Errors;
 
 
@@ -64,7 +63,11 @@ public class GeoTiffStore extends DataStore {
      * The GeoTIFF reader implementation, or {@code null} if the store has been closed.
      */
     private Reader reader;
-    private URI sourceUri;
+
+    /**
+     * The {@link GeoTiffStoreProvider#LOCATION} parameter value, or {@code null} if none.
+     */
+    private final URI location;
 
     /**
      * The metadata, or {@code null} if not yet created.
@@ -91,12 +94,8 @@ public class GeoTiffStore extends DataStore {
             throw new UnsupportedStorageException(super.getLocale(), Constants.GEOTIFF,
                     connector.getStorage(), connector.getOption(OptionKey.OPEN_OPTIONS));
         }
+        location = connector.getStorageAs(URI.class);
         connector.closeAllExcept(input);
-        try {
-            sourceUri = connector.getStorageAs(URI.class);
-        } catch (IllegalArgumentException ex) {
-            //open parameters will be null.
-        }
         try {
             reader = new Reader(this, input);
         } catch (IOException e) {
@@ -142,14 +141,19 @@ public class GeoTiffStore extends DataStore {
     }
 
     /**
-     * {@inheritDoc }
+     * Returns the parameters used to open this GeoTIFF data store.
+     * If non-null, the parameters are described by {@link GeoTiffStoreProvider#getOpenParameters()}
+     * and contains at least a parameter named {@value GeoTiffStoreProvider#LOCATION} with a {@link URI} value.
+     * This method may return {@code null} if the storage input can not be described by a URI
+     * (for example a GeoTIFF file reading directly from a {@link java.nio.channels.ReadableByteChannel}).
+     *
+     * @return parameters used for opening this data store, or {@code null} if not available.
+     *
+     * @since 0.8
      */
     @Override
     public ParameterValueGroup getOpenParameters() {
-        if (sourceUri==null) return null;
-        final Parameters parameters = Parameters.castOrWrap(GeoTiffStoreProvider.OPEN_DESCRIPTOR.createValue());
-        parameters.getOrCreate(GeoTiffStoreProvider.PARAM_LOCATION).setValue(sourceUri);
-        return parameters;
+        return URIDataStore.parameters(provider, location);
     }
 
     /**

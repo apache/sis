@@ -33,6 +33,13 @@ import org.apache.sis.internal.util.Citations;
 
 /**
  * Manages a series of features, coverages or sensor data.
+ * Different {@code DataStore} subclasses exist for different formats (netCDF, GeoTIFF, <i>etc.</i>).
+ * The supported format can be identifier by the {@linkplain #getProvider() provider}.
+ *
+ * <p>Each data store is itself a {@link Resource}. The data store subclasses should implement
+ * a more specialized {@code Resource} interface depending on the format characteristics.
+ * For example a {@code DataStore} for ShapeFiles will implement the {@link FeatureSet} interface,
+ * while a {@code DataStore} for netCDF files will implement the {@link Aggregate} interface.</p>
  *
  * <div class="section">Thread safety policy</div>
  * This {@code DataStore} base class is thread-safe. However subclasses do not need to be thread-safe.

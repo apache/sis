@@ -20,7 +20,6 @@ import java.net.URISyntaxException;
 import org.opengis.util.NameFactory;
 import org.opengis.util.FactoryException;
 import org.opengis.geometry.Envelope;
-import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.metadata.Metadata;
 import org.opengis.metadata.distribution.Format;
 import org.apache.sis.storage.FeatureSet;
@@ -179,19 +178,6 @@ public final class Store extends StaxDataStore implements FeatureSet {
     @Override
     public Envelope getEnvelope() throws DataStoreException {
         return AbstractDataSet.envelope(getMetadata());
-    }
-
-    /**
-     * Returns the parameters used to open this data store.
-     *
-     * @return parameters used for opening this {@code DataStore}, or {@code null} if not available.
-     */
-    @Override
-    public ParameterValueGroup getOpenParameters() {
-        if (sourceUri == null) return null;
-        final ParameterValueGroup pg = StoreProvider.OPEN_DESCRIPTOR.createValue();
-        pg.parameter(StoreProvider.LOCATION).setValue(sourceUri);
-        return pg;
     }
 
     /**

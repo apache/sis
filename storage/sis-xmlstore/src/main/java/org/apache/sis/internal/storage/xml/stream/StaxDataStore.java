@@ -23,7 +23,6 @@ import java.util.logging.LogRecord;
 import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URI;
 import java.nio.file.Path;
 import java.nio.charset.Charset;
 import java.nio.file.StandardOpenOption;
@@ -39,6 +38,7 @@ import org.apache.sis.setup.OptionKey;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.DataStoreException;
+import org.apache.sis.internal.storage.URIDataStore;
 import org.apache.sis.internal.storage.io.ChannelFactory;
 import org.apache.sis.internal.storage.io.IOUtilities;
 import org.apache.sis.internal.storage.io.Markable;
@@ -65,7 +65,7 @@ import org.apache.sis.util.Debug;
  * @since   0.8
  * @module
  */
-public abstract class StaxDataStore extends DataStore {
+public abstract class StaxDataStore extends URIDataStore {
     /**
      * The locale to use for locale-sensitive data (<strong>not</strong> for logging or warning messages),
      * or {@code null} if unspecified.
@@ -115,7 +115,6 @@ public abstract class StaxDataStore extends DataStore {
      * @see StorageConnector#getStorage()
      */
     private Object storage;
-    protected URI sourceUri;
 
     /**
      * The underlying stream to close when this {@code StaxDataStore} is closed, or {@code null} if none.
@@ -232,11 +231,6 @@ public abstract class StaxDataStore extends DataStore {
             stream = (AutoCloseable) storage;
         }
         channelFactory = connector.getStorageAs(ChannelFactory.class);  // Must be last before 'closeAllExcept'.
-        try {
-            sourceUri = connector.getStorageAs(URI.class);
-        } catch (IllegalArgumentException ex) {
-            //open parameters will be null.
-        }
         connector.closeAllExcept(stream);
         /*
          * If possible, remember the position where data begin in the stream in order to allow reading
@@ -379,8 +373,11 @@ public abstract class StaxDataStore extends DataStore {
 
     /**
      * Returns the factory that created this {@code DataStore} instance, or {@code null} if unspecified.
+     *
+     * @return the factory that created this {@code DataStore} instance, or {@code null} if unspecified.
      */
-    public StaxDataStoreProvider getProvider() {
+    @Override
+    public final StaxDataStoreProvider getProvider() {
         return (StaxDataStoreProvider) provider;
     }
 

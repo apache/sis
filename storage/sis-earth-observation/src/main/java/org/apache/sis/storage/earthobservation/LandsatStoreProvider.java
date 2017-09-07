@@ -16,8 +16,6 @@
  */
 package org.apache.sis.storage.earthobservation;
 
-import java.net.URI;
-import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreProvider;
@@ -26,8 +24,8 @@ import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.ProbeResult;
 import org.apache.sis.internal.storage.Capability;
 import org.apache.sis.internal.storage.Capabilities;
+import org.apache.sis.internal.storage.URIDataStore;
 import org.apache.sis.internal.storage.wkt.FirstKeywordPeek;
-import org.apache.sis.parameter.ParameterBuilder;
 
 
 /**
@@ -51,15 +49,9 @@ public class LandsatStoreProvider extends DataStoreProvider {
     static final String NAME = "Landsat";
 
     /**
-     * Landsat location.
+     * The parameter descriptor to be returned by {@link #getOpenParameters()}.
      */
-    static final ParameterDescriptor<URI> PARAM_LOCATION = new ParameterBuilder()
-            .addName(LOCATION)
-            .setRequired(true)
-            .create(URI.class, null);
-
-    static final ParameterDescriptorGroup OPEN_DESCRIPTOR =
-            new ParameterBuilder().addName(NAME).createGroup(PARAM_LOCATION);
+    private static final ParameterDescriptorGroup OPEN_DESCRIPTOR = URIDataStore.Provider.descriptor(NAME);
 
     /**
      * The object to use for verifying if the first keyword is the expected one.
@@ -156,7 +148,11 @@ public class LandsatStoreProvider extends DataStoreProvider {
     }
 
     /**
-     * {@inheritDoc }
+     * Returns a description of all parameters accepted by this provider for opening a Landsat file.
+     *
+     * @return description of available parameters for opening a Landsat file.
+     *
+     * @since 0.8
      */
     @Override
     public ParameterDescriptorGroup getOpenParameters() {

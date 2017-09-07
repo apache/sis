@@ -38,7 +38,6 @@ import org.opengis.metadata.maintenance.ScopeCode;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.crs.TemporalCRS;
 import org.opengis.referencing.operation.TransformException;
-import org.opengis.parameter.ParameterValueGroup;
 import org.apache.sis.feature.DefaultAttributeType;
 import org.apache.sis.feature.DefaultFeatureType;
 import org.apache.sis.referencing.CRS;
@@ -50,11 +49,11 @@ import org.apache.sis.internal.storage.io.IOUtilities;
 import org.apache.sis.internal.feature.Geometries;
 import org.apache.sis.internal.feature.MovingFeature;
 import org.apache.sis.internal.storage.Resources;
+import org.apache.sis.internal.storage.URIDataStore;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.geometry.ImmutableEnvelope;
 import org.apache.sis.metadata.iso.DefaultMetadata;
 import org.apache.sis.metadata.sql.MetadataStoreException;
-import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.storage.DataStoreReferencingException;
@@ -87,7 +86,7 @@ import org.opengis.feature.AttributeType;
  * @since   0.7
  * @module
  */
-public final class Store extends DataStore implements FeatureSet {
+public final class Store extends URIDataStore implements FeatureSet {
     /**
      * The character at the beginning of lines to ignore in the header.
      * Note that this is not part of OGC Moving Feature Specification.
@@ -138,7 +137,6 @@ public final class Store extends DataStore implements FeatureSet {
      * @see #readLine()
      */
     private BufferedReader source;
-    private URI sourceUri;
 
     /**
      * The character encoding, or {@code null} if unspecified (in which case the platform default is assumed).
@@ -235,11 +233,6 @@ public final class Store extends DataStore implements FeatureSet {
     {
         super(provider, connector);
         final Reader r = connector.getStorageAs(Reader.class);
-        try {
-            sourceUri = connector.getStorageAs(URI.class);
-        } catch (IllegalArgumentException ex) {
-            //open parameters will be null.
-        }
         connector.closeAllExcept(r);
         if (r == null) {
             throw new UnsupportedStorageException(super.getLocale(), StoreProvider.NAME,
@@ -636,19 +629,6 @@ public final class Store extends DataStore implements FeatureSet {
     @Override
     public Envelope getEnvelope() throws DataStoreException {
         return envelope;
-    }
-
-    /**
-     * Returns the parameters used to open this data store.
-     *
-     * @return parameters used for opening this {@code DataStore}, or {@code null} if not available.
-     */
-    @Override
-    public ParameterValueGroup getOpenParameters() {
-        if (sourceUri == null) return null;
-        final ParameterValueGroup pg = StoreProvider.OPEN_DESCRIPTOR.createValue();
-        pg.parameter(StoreProvider.LOCATION).setValue(sourceUri);
-        return pg;
     }
 
     /**
