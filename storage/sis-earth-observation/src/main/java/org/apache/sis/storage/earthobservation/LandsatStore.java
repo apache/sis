@@ -29,8 +29,7 @@ import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreReferencingException;
 import org.apache.sis.storage.UnsupportedStorageException;
 import org.apache.sis.storage.StorageConnector;
-import org.apache.sis.storage.Resource;
-import org.apache.sis.parameter.Parameters;
+import org.apache.sis.internal.storage.URIDataStore;
 import org.apache.sis.setup.OptionKey;
 import org.apache.sis.util.Debug;
 
@@ -73,7 +72,11 @@ public class LandsatStore extends DataStore {
      * The reader, or {@code null} if closed.
      */
     private Reader source;
-    private URI sourceUri;
+
+    /**
+     * The {@link LandsatStoreProvider#LOCATION} parameter value, or {@code null} if none.
+     */
+    private final URI location;
 
     /**
      * The object returned by {@link #getMetadata()}, created when first needed and cached.
@@ -91,12 +94,8 @@ public class LandsatStore extends DataStore {
      */
     public LandsatStore(final LandsatStoreProvider provider, final StorageConnector connector) throws DataStoreException {
         super(provider, connector);
+        location = connector.getStorageAs(URI.class);
         source = connector.getStorageAs(Reader.class);
-        try {
-            sourceUri = connector.getStorageAs(URI.class);
-        } catch (IllegalArgumentException ex) {
-            //open parameters will be null.
-        }
         connector.closeAllExcept(source);
         if (source == null) {
             throw new UnsupportedStorageException(super.getLocale(), LandsatStoreProvider.NAME,
@@ -130,14 +129,19 @@ public class LandsatStore extends DataStore {
     }
 
     /**
-     * {@inheritDoc }
+     * Returns the parameters used to open this Landsat data store.
+     * If non-null, the parameters are described by {@link LandsatStoreProvider#getOpenParameters()}
+     * and contains at least a parameter named {@value LandsatStoreProvider#LOCATION} with a {@link URI} value.
+     * This method may return {@code null} if the storage input can not be described by a URI
+     * (for example a Landsat file reading directly from a {@link java.nio.channels.ReadableByteChannel}).
+     *
+     * @return parameters used for opening this data store, or {@code null} if not available.
+     *
+     * @since 0.8
      */
     @Override
     public ParameterValueGroup getOpenParameters() {
-        if (sourceUri==null) return null;
-        final Parameters parameters = Parameters.castOrWrap(LandsatStoreProvider.OPEN_DESCRIPTOR.createValue());
-        parameters.getOrCreate(LandsatStoreProvider.PARAM_LOCATION).setValue(sourceUri);
-        return parameters;
+        return URIDataStore.parameters(provider, location);
     }
 
     /**

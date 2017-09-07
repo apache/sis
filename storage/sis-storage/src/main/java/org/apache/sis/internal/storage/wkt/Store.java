@@ -23,25 +23,23 @@ import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.io.Reader;
 import java.io.IOException;
-import java.net.URI;
 import java.text.ParsePosition;
 import java.text.ParseException;
 import org.opengis.metadata.Metadata;
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.ReferenceSystem;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.opengis.parameter.ParameterValueGroup;
 import org.apache.sis.internal.storage.Resources;
 import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.io.wkt.WKTFormat;
 import org.apache.sis.io.wkt.Warnings;
-import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.storage.UnsupportedStorageException;
 import org.apache.sis.internal.referencing.DefinitionVerifier;
 import org.apache.sis.internal.storage.MetadataBuilder;
+import org.apache.sis.internal.storage.URIDataStore;
 import org.apache.sis.setup.OptionKey;
 import org.apache.sis.util.CharSequences;
 
@@ -54,7 +52,7 @@ import org.apache.sis.util.CharSequences;
  * @since   0.7
  * @module
  */
-final class Store extends DataStore {
+final class Store extends URIDataStore {
     /**
      * Arbitrary size limit. Files that big are likely to be something else than WKT,
      * so this limit allows earlier error reporting than loading huge amount of data
@@ -66,7 +64,6 @@ final class Store extends DataStore {
      * The reader, set by the constructor and cleared when no longer needed.
      */
     private Reader source;
-    private URI sourceUri;
 
     /**
      * The parsed objects, filled only when first needed.
@@ -90,11 +87,6 @@ final class Store extends DataStore {
         super(provider, connector);
         objects = new ArrayList<>();
         source  = connector.getStorageAs(Reader.class);
-        try {
-            sourceUri = connector.getStorageAs(URI.class);
-        } catch (IllegalArgumentException ex) {
-            //open parameters will be null.
-        }
         connector.closeAllExcept(source);
         if (source == null) {
             throw new UnsupportedStorageException(super.getLocale(), StoreProvider.NAME,
@@ -200,19 +192,6 @@ final class Store extends DataStore {
             metadata = builder.build(true);
         }
         return metadata;
-    }
-
-    /**
-     * Returns the parameters used to open this data store.
-     *
-     * @return parameters used for opening this {@code DataStore}, or {@code null} if not available.
-     */
-    @Override
-    public ParameterValueGroup getOpenParameters() {
-        if (sourceUri == null) return null;
-        final ParameterValueGroup pg = StoreProvider.OPEN_DESCRIPTOR.createValue();
-        pg.parameter(StoreProvider.LOCATION).setValue(sourceUri);
-        return pg;
     }
 
     /**

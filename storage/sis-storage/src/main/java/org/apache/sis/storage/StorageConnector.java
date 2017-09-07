@@ -43,15 +43,18 @@ import org.apache.sis.util.Classes;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ObjectConverters;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.collection.TreeTable;
 import org.apache.sis.util.collection.TableColumn;
 import org.apache.sis.util.collection.DefaultTreeTable;
+import org.apache.sis.util.UnconvertibleObjectException;
 import org.apache.sis.internal.storage.Resources;
 import org.apache.sis.internal.storage.io.IOUtilities;
 import org.apache.sis.internal.storage.io.ChannelFactory;
 import org.apache.sis.internal.storage.io.ChannelDataInput;
 import org.apache.sis.internal.storage.io.ChannelImageInputStream;
 import org.apache.sis.internal.storage.io.InputStreamAdapter;
+import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.util.Utilities;
 import org.apache.sis.io.InvalidSeekException;
 import org.apache.sis.setup.OptionKey;
@@ -159,8 +162,9 @@ public class StorageConnector implements Serializable {
     /**
      * List of types recognized by {@link #getStorageAs(Class)}, associated to the methods for opening stream
      * of those types. This map shall contain every types documented in {@link #getStorageAs(Class)} javadoc.
+     * {@code null} values means to use {@link ObjectConverters} for that particular type.
      */
-    private static final Map<Class<?>, Opener<?>> OPENERS = new IdentityHashMap<>(12);
+    private static final Map<Class<?>, Opener<?>> OPENERS = new IdentityHashMap<>(13);
     static {
         add(String.class,           StorageConnector::createString);
         add(ByteBuffer.class,       StorageConnector::createByteBuffer);
@@ -176,7 +180,15 @@ public class StorageConnector implements Serializable {
          * Caller should have asked for another type (e.g. InputStream) before to ask for that type.
          * Consequently null value for ChannelFactory shall not be cached since the actual value may
          * be computed later.
+         *
+         * Following classes will be converted using ObjectConverters, but without throwing an
+         * exception if the conversion fail. Instead, getStorageAs(Class) will return null.
+         * Classes not listed here will let the UnconvertibleObjectException propagates.
          */
+        add(java.net.URI.class,       null);
+        add(java.net.URL.class,       null);
+        add(java.io.File.class,       null);
+        add(java.nio.file.Path.class, null);
     }
 
     /**
@@ -640,6 +652,15 @@ public class StorageConnector implements Serializable {
      *       <li>Otherwise this method returns {@code null}.</li>
      *     </ul>
      *   </li>
+     *   <li>{@link java.nio.file.Path}, {@link java.net.URI}, {@link java.net.URL}, {@link java.io.File}:
+     *     <ul>
+     *       <li>If the {@linkplain #getStorage() storage} object is an instance of the {@link java.nio.file.Path},
+     *           {@link java.io.File}, {@link java.net.URL}, {@link java.net.URI} or {@link CharSequence} types and
+     *           that type can be converted to the requested type, returned the conversion result.</li>
+     *
+     *       <li>Otherwise this method returns {@code null}.</li>
+     *     </ul>
+     *   </li>
      *   <li>{@link ByteBuffer}:
      *     <ul>
      *       <li>If the {@linkplain #getStorage() storage} object can be obtained as described in bullet 2 of the
@@ -704,6 +725,14 @@ public class StorageConnector implements Serializable {
      *           when first needed and returned.</li>
      *
      *       <li>Otherwise this method returns {@code null}.</li>
+     *     </ul>
+     *   </li>
+     *   <li>Any other types:
+     *     <ul>
+     *       <li>If the storage given at construction time is already an instance of the requested type,
+     *           returns it <i>as-is</i>.</li>
+     *
+     *       <li>Otherwise this method throws {@link IllegalArgumentException}.</li>
      *     </ul>
      *   </li>
      * </ul>
@@ -776,7 +805,14 @@ public class StorageConnector implements Serializable {
          */
         final Opener<?> method = OPENERS.get(type);
         if (method == null) {
-            final T view = ObjectConverters.convert(storage, type);
+            T view;
+            try {
+                view = ObjectConverters.convert(storage, type);
+            } catch (UnconvertibleObjectException e) {
+                if (!OPENERS.containsKey(type)) throw e;
+                Logging.recoverableException(Logging.getLogger(Modules.STORAGE), StorageConnector.class, "getStorageAs", e);
+                view = null;
+            }
             addView(type, view);
             return view;
         }

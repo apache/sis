@@ -144,11 +144,12 @@ public interface FeatureSet extends DataSet {
     /**
      * Updates all features from this {@code FeatureSet} which matches the given predicate.
      * For each {@link Feature} instance matching the given {@link Predicate},
-     * the <code>{@linkplain UnaryOperator#apply UnaryOperator.apply(Feature)}</code> method
-     * will be invoked. Two behaviors are possible:
+     * the <code>{@linkplain UnaryOperator#apply UnaryOperator.apply(Feature)}</code> method will be invoked.
+     * {@code UnaryOperator}s are free to modify the given {@code Feature} <i>in-place</i> or to return a
+     * different feature instance. Two behaviors are possible:
      * <ul>
      *   <li>If the operator returns a non-null {@link Feature}, then the modified feature is stored
-     *       in replacement of the previous feature. There is no guarantee that order is preserved.</li>
+     *       in replacement of the previous feature (not necessarily at the same location).</li>
      *   <li>If the operator returns {@code null}, then the feature will be removed from the {@code FeatureSet}.</li>
      * </ul>
      *

@@ -26,10 +26,9 @@ import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.UnsupportedStorageException;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.internal.netcdf.Decoder;
+import org.apache.sis.internal.storage.URIDataStore;
 import org.apache.sis.metadata.ModifiableMetadata;
-import org.apache.sis.parameter.Parameters;
 import org.apache.sis.setup.OptionKey;
-import org.apache.sis.storage.Resource;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.Version;
 import ucar.nc2.constants.CDM;
@@ -53,7 +52,11 @@ public class NetcdfStore extends DataStore {
      * depending on whether we are using the embedded SIS decoder or a wrapper around the UCAR library.
      */
     private final Decoder decoder;
-    private URI sourceUri;
+
+    /**
+     * The {@link NetcdfStoreProvider#LOCATION} parameter value, or {@code null} if none.
+     */
+    private final URI location;
 
     /**
      * The object returned by {@link #getMetadata()}, created when first needed and cached.
@@ -88,11 +91,7 @@ public class NetcdfStore extends DataStore {
      */
     public NetcdfStore(final NetcdfStoreProvider provider, final StorageConnector connector) throws DataStoreException {
         super(provider, connector);
-        try {
-            sourceUri = connector.getStorageAs(URI.class);
-        } catch (IllegalArgumentException ex) {
-            //open parameters will be null.
-        }
+        location = connector.getStorageAs(URI.class);
         try {
             decoder = NetcdfStoreProvider.decoder(listeners, connector);
         } catch (IOException e) {
@@ -127,14 +126,19 @@ public class NetcdfStore extends DataStore {
     }
 
     /**
-     * {@inheritDoc }
+     * Returns the parameters used to open this netCDF data store.
+     * If non-null, the parameters are described by {@link NetcdfStoreProvider#getOpenParameters()}
+     * and contains at least a parameter named {@value NetcdfStoreProvider#LOCATION} with a {@link URI} value.
+     * This method may return {@code null} if the storage input can not be described by a URI
+     * (for example a netCDF file reading directly from a {@link java.nio.channels.ReadableByteChannel}).
+     *
+     * @return parameters used for opening this data store, or {@code null} if not available.
+     *
+     * @since 0.8
      */
     @Override
     public ParameterValueGroup getOpenParameters() {
-        if (sourceUri==null) return null;
-        final Parameters parameters = Parameters.castOrWrap(NetcdfStoreProvider.OPEN_DESCRIPTOR.createValue());
-        parameters.getOrCreate(NetcdfStoreProvider.PARAM_LOCATION).setValue(sourceUri);
-        return parameters;
+        return URIDataStore.parameters(provider, location);
     }
 
     /**

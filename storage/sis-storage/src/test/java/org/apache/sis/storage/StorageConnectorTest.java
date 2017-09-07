@@ -16,6 +16,7 @@
  */
 package org.apache.sis.storage;
 
+import java.net.URI;
 import java.io.DataInput;
 import java.io.InputStream;
 import java.io.Reader;
@@ -27,6 +28,7 @@ import javax.imageio.stream.ImageInputStream;
 import javax.imageio.ImageIO;
 import java.sql.Connection;
 import org.apache.sis.setup.OptionKey;
+import org.apache.sis.util.UnconvertibleObjectException;
 import org.apache.sis.internal.storage.io.ChannelDataInput;
 import org.apache.sis.internal.storage.io.ChannelImageInputStream;
 import org.apache.sis.internal.storage.io.InputStreamAdapter;
@@ -346,6 +348,28 @@ public final strictfp class StorageConnectorTest extends TestCase {
     public void testGetAsConnection() throws DataStoreException, IOException {
         final StorageConnector connection = create(false);
         assertNull(connection.getStorageAs(Connection.class));
+        connection.closeAllExcept(null);
+    }
+
+    /**
+     * Verifies that {@link StorageConnector#getStorageAs(Class)} returns {@code null} for unavailable
+     * target classes, and throws an exception for illegal target classes.
+     *
+     * @throws DataStoreException if an error occurred while using the storage connector.
+     */
+    @Test
+    public void testGetInvalidObject() throws DataStoreException {
+        final StorageConnector connection = create(true);
+        assertNotNull("getStorageAs(InputStream.class)", connection.getStorageAs(InputStream.class));
+        assertNull   ("getStorageAs(URI.class)",         connection.getStorageAs(URI.class));
+        assertNull   ("getStorageAs(String.class)",      connection.getStorageAs(String.class));
+        try {
+            connection.getStorageAs(Float.class);       // Any unconvertible type.
+            fail("Should not have accepted Float.class");
+        } catch (UnconvertibleObjectException e) {
+            final String message = e.getMessage();
+            assertTrue(message, message.contains("Float"));
+        }
         connection.closeAllExcept(null);
     }
 

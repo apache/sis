@@ -16,10 +16,8 @@
  */
 package org.apache.sis.storage.geotiff;
 
-import java.net.URI;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.apache.sis.util.Version;
 import org.apache.sis.storage.DataStore;
@@ -29,8 +27,8 @@ import org.apache.sis.storage.ProbeResult;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.internal.storage.Capabilities;
 import org.apache.sis.internal.storage.Capability;
+import org.apache.sis.internal.storage.URIDataStore;
 import org.apache.sis.internal.util.Constants;
-import org.apache.sis.parameter.ParameterBuilder;
 
 
 /**
@@ -62,15 +60,9 @@ public class GeoTiffStoreProvider extends DataStoreProvider {
     private static final Version VERSION = new Version("6.0");
 
     /**
-     * Geotiff location.
+     * The parameter descriptor to be returned by {@link #getOpenParameters()}.
      */
-    static final ParameterDescriptor<URI> PARAM_LOCATION = new ParameterBuilder()
-            .addName(LOCATION)
-            .setRequired(true)
-            .create(URI.class, null);
-
-    static final ParameterDescriptorGroup OPEN_DESCRIPTOR =
-            new ParameterBuilder().addName(Constants.GEOTIFF).createGroup(PARAM_LOCATION);
+    private static final ParameterDescriptorGroup OPEN_DESCRIPTOR = URIDataStore.Provider.descriptor(Constants.GEOTIFF);
 
     /**
      * Creates a new provider.
@@ -89,7 +81,11 @@ public class GeoTiffStoreProvider extends DataStoreProvider {
     }
 
     /**
-     * {@inheritDoc }
+     * Returns a description of all parameters accepted by this provider for opening a GeoTIFF file.
+     *
+     * @return description of available parameters for opening a GeoTIFF file.
+     *
+     * @since 0.8
      */
     @Override
     public ParameterDescriptorGroup getOpenParameters() {
