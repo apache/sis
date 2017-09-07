@@ -26,6 +26,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.UndeclaredThrowableException;
+import org.opengis.parameter.ParameterDescriptorGroup;
 import org.apache.sis.internal.netcdf.Decoder;
 import org.apache.sis.internal.netcdf.Resources;
 import org.apache.sis.internal.netcdf.impl.ChannelDecoder;
@@ -33,6 +34,7 @@ import org.apache.sis.internal.netcdf.ucar.DecoderWrapper;
 import org.apache.sis.internal.storage.io.ChannelDataInput;
 import org.apache.sis.internal.storage.Capabilities;
 import org.apache.sis.internal.storage.Capability;
+import org.apache.sis.internal.storage.URIDataStore;
 import org.apache.sis.internal.system.SystemListener;
 import org.apache.sis.internal.system.Modules;
 import org.apache.sis.storage.DataStore;
@@ -67,9 +69,19 @@ import org.apache.sis.util.Version;
 @Capabilities(Capability.READ)
 public class NetcdfStoreProvider extends DataStoreProvider {
     /**
+     * The format name.
+     */
+    static final String NAME = "NetCDF";
+
+    /**
      * The MIME type for NetCDF files.
      */
     static final String MIME_TYPE = "application/x-netcdf";
+
+    /**
+     * The parameter descriptor to be returned by {@link #getOpenParameters()}.
+     */
+    private static final ParameterDescriptorGroup OPEN_DESCRIPTOR = URIDataStore.Provider.descriptor(NAME);
 
     /**
      * The name of the {@link ucar.nc2.NetcdfFile} class, which is {@value}.
@@ -126,7 +138,19 @@ public class NetcdfStoreProvider extends DataStoreProvider {
      */
     @Override
     public String getShortName() {
-        return "NetCDF";
+        return NAME;
+    }
+
+    /**
+     * Returns a description of all parameters accepted by this provider for opening a netCDF file.
+     *
+     * @return description of available parameters for opening a netCDF file.
+     *
+     * @since 0.8
+     */
+    @Override
+    public ParameterDescriptorGroup getOpenParameters() {
+        return OPEN_DESCRIPTOR;
     }
 
     /**

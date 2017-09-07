@@ -45,6 +45,8 @@ import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.storage.Resources;
+import org.apache.sis.storage.DataStoreException;
+import org.apache.sis.storage.ForwardOnlyStorageException;
 
 
 /**
@@ -244,6 +246,18 @@ public abstract class ChannelFactory {
     }
 
     /**
+     * Returns whether the streams or channels created by this factory is coupled with the {@code storage} argument
+     * given to the {@link #prepare prepare(…)} method. This is {@code true} if the storage is an {@link InputStream},
+     * {@link OutputStream} or {@link Channel}, and {@code false} if the storage is a {@link Path}, {@link File},
+     * {@link URL}, {@link URI} or equivalent.
+     *
+     * @return whether using the streams or channels will affect the original {@code storage} object.
+     */
+    public boolean isCoupled() {
+        return false;
+    }
+
+    /**
      * Returns {@code true} if this factory is capable to create another reader. This method returns {@code false}
      * if this factory is capable to create only one channel and {@link #reader(String)} has already been invoked.
      *
@@ -259,9 +273,10 @@ public abstract class ChannelFactory {
      *
      * @param  filename  data store name to report in case of failure.
      * @return the input stream.
+     * @throws DataStoreException if the channel is read-once.
      * @throws IOException if the input stream or its underlying byte channel can not be created.
      */
-    public InputStream inputStream(final String filename) throws IOException {
+    public InputStream inputStream(final String filename) throws DataStoreException, IOException {
         return Channels.newInputStream(reader(filename));
     }
 
@@ -271,9 +286,10 @@ public abstract class ChannelFactory {
      *
      * @param  filename  data store name to report in case of failure.
      * @return the output stream.
+     * @throws DataStoreException if the channel is write-once.
      * @throws IOException if the output stream or its underlying byte channel can not be created.
      */
-    public OutputStream outputStream(final String filename) throws IOException {
+    public OutputStream outputStream(final String filename) throws DataStoreException, IOException {
         return Channels.newOutputStream(writer(filename));
     }
 
@@ -284,9 +300,10 @@ public abstract class ChannelFactory {
      *
      * @param  filename  data store name to report in case of failure.
      * @return the channel for the given input.
+     * @throws DataStoreException if the channel is read-once.
      * @throws IOException if an error occurred while opening the channel.
      */
-    public abstract ReadableByteChannel reader(String filename) throws IOException;
+    public abstract ReadableByteChannel reader(String filename) throws DataStoreException, IOException;
 
     /**
      * Returns a byte channel from the output given to the {@link #prepare prepare(…)} method.
@@ -295,9 +312,10 @@ public abstract class ChannelFactory {
      *
      * @param  filename  data store name to report in case of failure.
      * @return the channel for the given output.
+     * @throws DataStoreException if the channel is write-once.
      * @throws IOException if an error occurred while opening the channel.
      */
-    public abstract WritableByteChannel writer(String filename) throws IOException;
+    public abstract WritableByteChannel writer(String filename) throws DataStoreException, IOException;
 
     /**
      * A factory that returns an existing channel <cite>as-is</cite>.
@@ -317,6 +335,14 @@ public abstract class ChannelFactory {
         }
 
         /**
+         * Returns {@code true} since use of channels or streams will affect the original storage object.
+         */
+        @Override
+        public boolean isCoupled() {
+            return true;
+        }
+
+        /**
          * Returns whether {@link #reader(String)} or {@link #writer(String)} can be invoked.
          */
         @Override
@@ -329,13 +355,19 @@ public abstract class ChannelFactory {
          * throws an exception on all subsequent invocations.
          */
         @Override
-        public ReadableByteChannel reader(final String filename) throws IOException {
+        public ReadableByteChannel reader(final String filename) throws DataStoreException, IOException {
             final Channel in = channel;
             if (in instanceof ReadableByteChannel) {
                 channel = null;
                 return (ReadableByteChannel) in;
             }
-            throw new IOException(Resources.format(Resources.Keys.StreamIsReadOnce_1, filename));
+            String message = Resources.format(in != null ? Resources.Keys.StreamIsNotReadable_1
+                                                         : Resources.Keys.StreamIsReadOnce_1, filename);
+            if (in != null) {
+                throw new IOException(message);                     // Stream is not readable.
+            } else {
+                throw new ForwardOnlyStorageException(message);     // Stream has already been read.
+            }
         }
 
         /**
@@ -343,13 +375,19 @@ public abstract class ChannelFactory {
          * throws an exception on all subsequent invocations.
          */
         @Override
-        public WritableByteChannel writer(final String filename) throws IOException {
-            final Channel in = channel;
-            if (in instanceof WritableByteChannel) {
+        public WritableByteChannel writer(final String filename) throws DataStoreException, IOException {
+            final Channel out = channel;
+            if (out instanceof WritableByteChannel) {
                 channel = null;
-                return (WritableByteChannel) in;
+                return (WritableByteChannel) out;
             }
-            throw new IOException(Resources.format(Resources.Keys.StreamIsWriteOnce_1, filename));
+            String message = Resources.format(out != null ? Resources.Keys.StreamIsNotWritable_1
+                                                          : Resources.Keys.StreamIsWriteOnce_1, filename);
+            if (out != null) {
+                throw new IOException(message);                     // Stream is not writable.
+            } else {
+                throw new ForwardOnlyStorageException(message);     // Stream has already been written.
+            }
         }
     }
 
@@ -357,7 +395,7 @@ public abstract class ChannelFactory {
      * A factory used as a fallback when we failed to convert a {@link File} to a {@link Path}.
      * This is used only if the conversion attempt threw an {@link InvalidPathException}. Such
      * failure is unlikely to happen, but if it happens anyway we try to open the channel in a
-     * way less surprising for the user (closer to the object he has specified).
+     * less surprising way for the user (i.e. closer to the object (s)he has specified).
      */
     private static final class Fallback extends ChannelFactory {
         /**

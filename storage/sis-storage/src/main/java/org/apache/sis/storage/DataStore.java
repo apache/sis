@@ -22,6 +22,7 @@ import java.util.IdentityHashMap;
 import java.util.NoSuchElementException;
 import org.opengis.metadata.Metadata;
 import org.opengis.metadata.identification.Identification;
+import org.opengis.parameter.ParameterValueGroup;
 import org.apache.sis.util.Localized;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.logging.WarningListener;
@@ -32,6 +33,13 @@ import org.apache.sis.internal.util.Citations;
 
 /**
  * Manages a series of features, coverages or sensor data.
+ * Different {@code DataStore} subclasses exist for different formats (netCDF, GeoTIFF, <i>etc.</i>).
+ * The supported format can be identifier by the {@linkplain #getProvider() provider}.
+ *
+ * <p>Each data store is itself a {@link Resource}. The data store subclasses should implement
+ * a more specialized {@code Resource} interface depending on the format characteristics.
+ * For example a {@code DataStore} for ShapeFiles will implement the {@link FeatureSet} interface,
+ * while a {@code DataStore} for netCDF files will implement the {@link Aggregate} interface.</p>
  *
  * <div class="section">Thread safety policy</div>
  * This {@code DataStore} base class is thread-safe. However subclasses do not need to be thread-safe.
@@ -46,13 +54,15 @@ import org.apache.sis.internal.util.Citations;
  * @since 0.3
  * @module
  */
-public abstract class DataStore implements Localized, AutoCloseable {
+public abstract class DataStore implements Resource, Localized, AutoCloseable {
     /**
      * The factory that created this {@code DataStore} instance, or {@code null} if unspecified.
      * This information can be useful for fetching information common to all {@code DataStore}
      * instances of the same class.
      *
      * @since 0.8
+     *
+     * @see #getProvider()
      */
     protected final DataStoreProvider provider;
 
@@ -109,6 +119,21 @@ public abstract class DataStore implements Localized, AutoCloseable {
          * Above locale is NOT OptionKey.LOCALE because we are not talking about the same locale.
          * The one in this DataStore is for warning and exception messages, not for parsing data.
          */
+    }
+
+    /**
+     * Returns the factory that created this {@code DataStore} instance.
+     * The provider gives additional information on this {@code DataStore} such as a format description
+     * and a list of parameters that can be used for opening data stores of the same class.
+     *
+     * @return the factory that created this {@code DataStore} instance, or {@code null} if unspecified.
+     *
+     * @see #provider
+     *
+     * @since 0.8
+     */
+    public DataStoreProvider getProvider() {
+        return provider;
     }
 
     /**
@@ -169,6 +194,29 @@ public abstract class DataStore implements Localized, AutoCloseable {
     }
 
     /**
+     * Returns the parameters used to open this data store.
+     * The collection of legal parameters is implementation-dependent
+     * ({@linkplain org.apache.sis.parameter.DefaultParameterValue#getDescriptor() their description}
+     * is given by {@link DataStoreProvider#getOpenParameters()}),
+     * but should contain at least a parameter named {@value DataStoreProvider#LOCATION}
+     * with a {@link java.net.URI}, {@link java.nio.file.Path} or {@link javax.sql.DataSource} value.
+     *
+     * <p>In the event a data store must be closed and reopened later, those parameters can be stored in a file or
+     * database and used for {@linkplain DataStoreProvider#open(ParameterValueGroup) creating a new store} later.</p>
+     *
+     * <p>In some cases, for stores reading in-memory data or other inputs that can not fit with
+     * {@code ParameterDescriptorGroup} requirements (for example an {@link java.io.InputStream}
+     * connected to unknown or no {@link java.net.URL}), this method may return null.</p>
+     *
+     * @return parameters used for opening this {@code DataStore}, or {@code null} if not available.
+     *
+     * @see DataStoreProvider#getOpenParameters()
+     *
+     * @since 0.8
+     */
+    public abstract ParameterValueGroup getOpenParameters();
+
+    /**
      * Returns information about the data store as a whole. The returned metadata object can contain
      * information such as the spatiotemporal extent of all contained {@linkplain Resource resources},
      * contact information about the creator or distributor, data quality, update frequency, usage constraints,
@@ -179,20 +227,8 @@ public abstract class DataStore implements Localized, AutoCloseable {
      *
      * @see Resource#getMetadata()
      */
+    @Override
     public abstract Metadata getMetadata() throws DataStoreException;
-
-    /**
-     * Returns the starting point from which all resources in this data store can be accessed.
-     * A resource can be for example a air temperature map or the set of all bridges in a city.
-     * If this data store contains only one resource, then that resource is returned directly.
-     * Otherwise if this data store contains more than one resource, then this method returns
-     * an {@link Aggregate} from which other resources can be accessed.
-     *
-     * @return the starting point of all resources in this data store,
-     *         or {@code null} if this data store does not contain any resources.
-     * @throws DataStoreException if an error occurred while reading the data.
-     */
-    public abstract Resource getRootResource() throws DataStoreException;
 
     /**
      * Searches for a resource identified by the given identifier.
@@ -207,8 +243,10 @@ public abstract class DataStore implements Localized, AutoCloseable {
      * is {@code "foo:bar"}, then this method may accept {@code "bar"} as a synonymous of {@code "foo:bar"}
      * provided that it does not introduce ambiguity.
      *
-     * <p>The default implementation verifies the {@linkplain #getRootResource() root resource}, then iterates over
-     * components of {@link Aggregate}s. If a match is found without ambiguity, the associated resource is returned.
+     * <p>The default implementation verifies if above criterion matches to this {@code DataStore}
+     * (which is itself a resource), then iterates recursively over {@link Aggregate} components
+     * if this data store is an aggregate.
+     * If a match is found without ambiguity, the associated resource is returned.
      * Otherwise an exception is thrown. Subclasses are encouraged to override this method with a more efficient
      * implementation.</p>
      *
@@ -219,7 +257,7 @@ public abstract class DataStore implements Localized, AutoCloseable {
      */
     public Resource findResource(final String identifier) throws DataStoreException {
         ArgumentChecks.ensureNonEmpty("identifier", identifier);
-        final Resource resource = findResource(identifier, getRootResource(), new IdentityHashMap<>());
+        final Resource resource = findResource(identifier, this, new IdentityHashMap<>());
         if (resource != null) {
             return resource;
         }

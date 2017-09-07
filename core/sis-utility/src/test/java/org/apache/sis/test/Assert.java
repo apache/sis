@@ -384,6 +384,7 @@ public strictfp class Assert extends org.opengis.test.Assert {
      * @return the deserialized object.
      */
     public static <T> T assertSerializedEquals(final T object) {
+        Objects.requireNonNull(object);
         final Object deserialized;
         try {
             final ByteArrayOutputStream buffer = new ByteArrayOutputStream();
@@ -402,7 +403,10 @@ public strictfp class Assert extends org.opengis.test.Assert {
         } catch (IOException e) {
             throw new AssertionError(e.toString(), e);
         }
-        // Compares with the original object and returns it.
+        assertNotNull("Deserialized object shall not be null.", deserialized);
+        /*
+         * Compare with the original object and return it.
+         */
         @SuppressWarnings("unchecked")
         final Class<? extends T> type = (Class<? extends T>) object.getClass();
         assertEquals("Deserialized object not equal to the original one.", object, deserialized);
