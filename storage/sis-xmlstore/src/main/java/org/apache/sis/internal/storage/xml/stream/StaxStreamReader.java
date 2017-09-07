@@ -338,12 +338,12 @@ public abstract class StaxStreamReader extends StaxStreamIO implements XMLStream
     }
 
     /**
-     * Returns the current value of {@link XMLStreamReader#getElementText()} as an URI,
+     * Returns the current value of {@link XMLStreamReader#getElementText()} as a URI,
      * or {@code null} if that value is null or empty.
      *
-     * @return the current text element as an URI, or {@code null} if empty.
+     * @return the current text element as a URI, or {@code null} if empty.
      * @throws XMLStreamException if a text element can not be returned.
-     * @throws URISyntaxException if the text can not be parsed as an URI.
+     * @throws URISyntaxException if the text can not be parsed as a URI.
      */
     protected final URI getElementAsURI() throws XMLStreamException, URISyntaxException {
         final Context context = Context.current();

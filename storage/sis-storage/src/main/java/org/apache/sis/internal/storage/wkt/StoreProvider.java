@@ -20,12 +20,12 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 import org.apache.sis.storage.DataStore;
-import org.apache.sis.storage.DataStoreProvider;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.ProbeResult;
 import org.apache.sis.internal.storage.Capability;
 import org.apache.sis.internal.storage.Capabilities;
+import org.apache.sis.internal.storage.URIDataStore;
 import org.apache.sis.internal.metadata.WKTKeywords;
 import org.apache.sis.util.Version;
 
@@ -39,7 +39,12 @@ import org.apache.sis.util.Version;
  * @module
  */
 @Capabilities(Capability.READ)
-public final class StoreProvider extends DataStoreProvider {
+public final class StoreProvider extends URIDataStore.Provider {
+    /**
+     * The format name.
+     */
+    static final String NAME = "WKT";
+
     /**
      * The {@value} MIME type.
      */
@@ -152,7 +157,7 @@ public final class StoreProvider extends DataStoreProvider {
      */
     @Override
     public String getShortName() {
-        return "WKT";
+        return NAME;
     }
 
     /**

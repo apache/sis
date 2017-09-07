@@ -58,7 +58,7 @@ import static org.apache.sis.internal.util.DoubleDouble.verbatim;
  * @author  André Gosselin (MPO)
  * @author  Rueben Schulz (UBC)
  * @author  Rémi Maréchal (Geomatys)
- * @version 0.6
+ * @version 0.8
  * @since   0.6
  * @module
  */

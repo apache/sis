@@ -1,0 +1,3 @@
+The purpose of this file is to test StorageConnector capability
+to create Reader, DataInput or other kind of objects from a URL
+or an InputStream.

@@ -145,7 +145,7 @@ public final class NilReason implements Serializable {
 
     /**
      * Either the XML value as a {@code String} (including the explanation if the prefix
-     * is "{@code other}", or an {@link URI}.
+     * is "{@code other}", or a {@link URI}.
      */
     private final Object reason;
 

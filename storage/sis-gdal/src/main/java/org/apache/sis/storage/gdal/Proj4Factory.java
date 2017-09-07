@@ -99,6 +99,20 @@ public class Proj4Factory extends GeodeticAuthorityFactory implements CRSAuthori
     static final String PROJ_PARAM = '+' + Proj4Parser.PROJ + '=';
 
     /**
+     * Options to be added in any {@literal Proj.4} definition strings.
+     * <ul>
+     *   <li>The {@code "+over"} option is for disabling the default wrapping of output longitudes in the -180 to 180 range.
+     *     We do that for having the same behavior between Proj.4 and Apache SIS. No wrapping reduce discontinuity problems
+     *     with geometries that cross the anti-meridian.</li>
+     *   <li>The {@code "+no_defs"} option is for ensuring that no defaults are read from {@code "/usr/share/proj/proj_def.dat"} file.
+     *     That file contains default values for various map projections, for example {@code "+lat_1=29.5"} and {@code "+lat_2=45.5"}
+     *     for the {@code "aea"} projection. Those defaults are assuming that users want Conterminous U.S. map.
+     *     This may cause surprising behavior for users outside USA.</li>
+     * </ul>
+     */
+    static String STANDARD_OPTIONS = " +over +no_defs";
+
+    /**
      * The {@literal Proj.4} parameter used for declaration of axis order.  Proj.4 expects the axis parameter
      * to be exactly 3 characters long, but Apache SIS accepts 2 characters as well. We relax the Proj.4 rule
      * because we use the number of characters for determining the number of dimensions.
@@ -431,7 +445,7 @@ public class Proj4Factory extends GeodeticAuthorityFactory implements CRSAuthori
      */
     public MathTransform createParameterizedTransform(final ParameterValueGroup parameters) throws FactoryException {
         final String proj = name(parameters.getDescriptor(), Errors.Keys.UnsupportedOperation_1);
-        final StringBuilder buffer = new StringBuilder(100).append(PROJ_PARAM).append(proj);
+        final StringBuilder buffer = new StringBuilder(100).append(PROJ_PARAM).append(proj).append(STANDARD_OPTIONS);
         for (final GeneralParameterValue p : parameters.values()) {
             /*
              * Unconditionally ask the parameter name in order to throw an exception

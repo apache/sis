@@ -16,11 +16,16 @@
  */
 package org.apache.sis.storage;
 
+import org.opengis.parameter.ParameterValueGroup;
+import org.opengis.parameter.ParameterDescriptorGroup;
+import org.opengis.parameter.ParameterNotFoundException;
 import org.opengis.metadata.distribution.Format;
 import org.apache.sis.internal.simple.SimpleFormat;
+import org.apache.sis.internal.storage.Resources;
 import org.apache.sis.metadata.iso.citation.DefaultCitation;
 import org.apache.sis.metadata.iso.distribution.DefaultFormat;
 import org.apache.sis.measure.Range;
+import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Version;
 
 
@@ -52,11 +57,28 @@ import org.apache.sis.util.Version;
  * However the {@code DataStore} instances created by the providers do not need to be thread-safe.
  *
  * @author  Martin Desruisseaux (Geomatys)
+ * @author  Johann Sorel (Geomatys)
  * @version 0.8
  * @since   0.3
  * @module
  */
 public abstract class DataStoreProvider {
+    /**
+     * Name of the parameter that specifies the data store location.
+     * A parameter named {@value} should be included in the group of parameters returned by {@link #getOpenParameters()}.
+     * The parameter value is often a {@link java.net.URI} or a {@link java.nio.file.Path}, but other types are allowed.
+     *
+     * <p>Implementors are encouraged to define a parameter with this name
+     * to ensure a common and consistent definition among providers.
+     * The parameter should be defined as mandatory and declared with a well-known Java class such as
+     * {@link java.net.URI}, {@link java.nio.file.Path}, JDBC {@linkplain javax.sql.DataSource}, <i>etc</i>.
+     * The type should have a compact textual representation, for serialization in XML or configuration files.
+     * Consequently {@link java.io.InputStream} and {@link java.nio.channels.Channel} should be avoided.</p>
+     *
+     * @see #getOpenParameters()
+     */
+    public static final String LOCATION = "location";
+
     /**
      * Creates a new provider.
      */
@@ -130,6 +152,37 @@ public abstract class DataStoreProvider {
     }
 
     /**
+     * Returns a description of all parameters accepted by this provider for opening a data store.
+     * Those parameters provide an alternative to {@link StorageConnector} for opening a {@link DataStore}
+     * from a path or URL, together with additional information like character encoding.
+     *
+     * <p>Implementors are responsible for declaring all parameters and whether they are mandatory or optional.
+     * It is recommended to define at least a parameter named {@value #LOCATION}.
+     * That parameter will be recognized by the default {@code DataStoreProvider} methods and used whenever a
+     * {@link StorageConnector} is required.</p>
+     *
+     * <div class="note"><b>Alternative:</b>
+     * the main differences between the use of {@code StorageConnector} and parameters are:
+     * <ul class="verbose">
+     *   <li>{@code StorageConnector} is designed for use with file or stream of unknown format;
+     *       the format is automatically detected. By contrast, the use of parameters require to
+     *       determine the format first (i.e. select a {@code DataStoreProvider}).</li>
+     *   <li>Parameters can be used to dynamically generate user configuration interfaces
+     *       and provide fine grain control over the store general behavior such as caching,
+     *       time-outs, encoding, <i>etc</i>.</li>
+     *   <li>Parameters can more easily be serialized in XML or configuration files.</li>
+     * </ul></div>
+     *
+     * @return description of the parameters required for opening a {@link DataStore}.
+     *
+     * @see #open(ParameterValueGroup)
+     * @see DataStore#getOpenParameters()
+     *
+     * @since 0.8
+     */
+    public abstract ParameterDescriptorGroup getOpenParameters();
+
+    /**
      * Indicates if the given storage appears to be supported by the {@code DataStore}s created by this provider.
      * The most typical return values are:
      *
@@ -187,6 +240,10 @@ public abstract class DataStoreProvider {
 
     /**
      * Returns a data store implementation associated with this provider.
+     * This method is typically invoked when the format is not known in advance
+     * (the {@link #probeContent(StorageConnector)} method can be tested on many providers)
+     * or when the input is not a type accepted by {@link #open(ParameterValueGroup)}
+     * (for example an {@link java.io.InputStream}).
      *
      * <div class="section">Implementation note</div>
      * Implementors shall invoke {@link StorageConnector#closeAllExcept(Object)} after {@code DataStore}
@@ -199,4 +256,50 @@ public abstract class DataStoreProvider {
      * @see DataStores#open(Object)
      */
     public abstract DataStore open(StorageConnector connector) throws DataStoreException;
+
+    /**
+     * Returns a data store implementation associated with this provider for the given parameters.
+     * The {@code DataStoreProvider} instance needs to be known before parameters are initialized,
+     * since the parameters are implementation-dependent. Example:
+     *
+     * {@preformat java
+     *     DataStoreProvider provider = ...;
+     *     ParameterValueGroup pg = provider.getOpenParameters().createValue();
+     *     pg.parameter(DataStoreProvider.LOCATION, myURL);
+     *     // Set any other parameters if desired.
+     *     try (DataStore ds = provider.open(pg)) {
+     *         // Use the data store.
+     *     }
+     * }
+     *
+     * <div class="section">Implementation note</div>
+     * The default implementation gets the value of a parameter named {@value #LOCATION}.
+     * That value (typically a path or URL) is given to {@link StorageConnector} constructor,
+     * which is then passed to {@link #open(StorageConnector)}.
+     *
+     * @param  parameters  opening parameters as defined by {@link #getOpenParameters()}.
+     * @return a data store implementation associated with this provider for the given parameters.
+     * @throws DataStoreException if an error occurred while creating the data store instance.
+     *
+     * @see #getOpenParameters()
+     *
+     * @since 0.8
+     */
+    public DataStore open(final ParameterValueGroup parameters) throws DataStoreException {
+        ArgumentChecks.ensureNonNull("parameter", parameters);
+        ParameterNotFoundException cause = null;
+        Object location;
+        try {
+            location = parameters.parameter(LOCATION).getValue();
+        } catch (ParameterNotFoundException e) {
+            location = null;
+            cause = e;
+        }
+        if (location == null) {
+            throw new IllegalOpenParameterException(Resources.format(Resources.Keys.UndefinedParameter_2,
+                    getShortName(), LOCATION), cause);
+        }
+        final StorageConnector connector = new StorageConnector(location);
+        return open(connector);
+    }
 }

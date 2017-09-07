@@ -30,8 +30,9 @@ import java.net.URI;
 import java.nio.charset.Charset;
 import javax.measure.Unit;
 import javax.measure.quantity.Time;
-import org.opengis.metadata.Metadata;
 import org.opengis.util.FactoryException;
+import org.opengis.geometry.Envelope;
+import org.opengis.metadata.Metadata;
 import org.opengis.metadata.maintenance.ScopeCode;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.crs.TemporalCRS;
@@ -47,15 +48,17 @@ import org.apache.sis.internal.storage.io.IOUtilities;
 import org.apache.sis.internal.feature.Geometries;
 import org.apache.sis.internal.feature.MovingFeature;
 import org.apache.sis.internal.storage.Resources;
+import org.apache.sis.internal.storage.URIDataStore;
 import org.apache.sis.geometry.GeneralEnvelope;
+import org.apache.sis.geometry.ImmutableEnvelope;
 import org.apache.sis.metadata.iso.DefaultMetadata;
 import org.apache.sis.metadata.sql.MetadataStoreException;
-import org.apache.sis.storage.Resource;
-import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.storage.DataStoreReferencingException;
+import org.apache.sis.storage.UnsupportedStorageException;
 import org.apache.sis.storage.StorageConnector;
+import org.apache.sis.storage.FeatureSet;
 import org.apache.sis.setup.OptionKey;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.CharSequences;
@@ -82,7 +85,7 @@ import org.opengis.feature.AttributeType;
  * @since   0.7
  * @module
  */
-public final class Store extends DataStore {
+public final class Store extends URIDataStore implements FeatureSet {
     /**
      * The character at the beginning of lines to ignore in the header.
      * Note that this is not part of OGC Moving Feature Specification.
@@ -152,8 +155,9 @@ public final class Store extends DataStore {
      * and a temporal component if the CSV file contains a start time and end time.
      *
      * @see #parseEnvelope(List)
+     * @see #getEnvelope()
      */
-    private final GeneralEnvelope envelope;
+    private final ImmutableEnvelope envelope;
 
     /**
      * Description of the columns found in the CSV file.
@@ -230,7 +234,8 @@ public final class Store extends DataStore {
         final Reader r = connector.getStorageAs(Reader.class);
         connector.closeAllExcept(r);
         if (r == null) {
-            throw new DataStoreException(Errors.format(Errors.Keys.CanNotOpen_1, super.getDisplayName()));
+            throw new UnsupportedStorageException(super.getLocale(), StoreProvider.NAME,
+                    connector.getStorage(), connector.getOption(OptionKey.OPEN_OPTIONS));
         }
         source = (r instanceof BufferedReader) ? (BufferedReader) r : new LineNumberReader(r);
         geometries = Geometries.implementation(connector.getOption(OptionKey.GEOMETRY_LIBRARY));
@@ -297,7 +302,7 @@ public final class Store extends DataStore {
             throw new DataStoreContentException(getLocale(), StoreProvider.NAME, super.getDisplayName(), source).initCause(e);
         }
         this.encoding    = connector.getOption(OptionKey.ENCODING);
-        this.envelope    = envelope;
+        this.envelope    = new ImmutableEnvelope(envelope);
         this.featureType = featureType;
         this.foliation   = foliation;
         this.dissociate |= (timeEncoding == null);
@@ -618,13 +623,29 @@ public final class Store extends DataStore {
     }
 
     /**
-     * Returns the {@code FeatureSet} from which all features in this data store can be accessed.
-     *
-     * @return the starting point of all features in this data store.
+     * Returns the spatio-temporal extent of CSV data in coordinate reference system of the CSV file.
      */
     @Override
-    public Resource getRootResource() {
-        return new FeatureAccess(this, listeners);
+    public Envelope getEnvelope() throws DataStoreException {
+        return envelope;
+    }
+
+    /**
+     * Returns the type of features in the CSV file. The feature type name will be the value
+     * specified at the following path (only one such value exists for a CSV data store):
+     *
+     * <blockquote>
+     * {@link #getMetadata()} /
+     * {@link org.apache.sis.metadata.iso.DefaultMetadata#getContentInfo() contentInfo} /
+     * {@link org.apache.sis.metadata.iso.content.DefaultFeatureCatalogueDescription#getFeatureTypeInfo() featureTypes} /
+     * {@link org.apache.sis.metadata.iso.content.DefaultFeatureTypeInfo#getFeatureTypeName() featureTypeName}
+     * </blockquote>
+     *
+     * @return type of features in the CSV file.
+     */
+    @Override
+    public FeatureType getType() {
+        return featureType;
     }
 
     /**
@@ -637,7 +658,8 @@ public final class Store extends DataStore {
      * @todo Needs to reset the position when doing another pass on the features.
      * @todo If sequential order, publish Feature as soon as identifier changed.
      */
-    final synchronized Stream<Feature> features(final boolean parallel) throws DataStoreException {
+    @Override
+    public final synchronized Stream<Feature> features(final boolean parallel) throws DataStoreException {
         /*
          * If the user asks for one feature instance per line, then we can return a FeatureIter instance directly.
          * Since each feature is fully constructed from a single line and each line are read atomically, we can

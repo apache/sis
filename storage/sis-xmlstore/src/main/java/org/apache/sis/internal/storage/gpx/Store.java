@@ -19,15 +19,17 @@ package org.apache.sis.internal.storage.gpx;
 import java.net.URISyntaxException;
 import org.opengis.util.NameFactory;
 import org.opengis.util.FactoryException;
+import org.opengis.geometry.Envelope;
 import org.opengis.metadata.Metadata;
 import org.opengis.metadata.distribution.Format;
-import org.apache.sis.storage.Resource;
+import org.apache.sis.storage.FeatureSet;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.storage.ConcurrentReadException;
 import org.apache.sis.storage.IllegalNameException;
 import org.apache.sis.internal.system.DefaultFactories;
+import org.apache.sis.internal.storage.AbstractDataSet;
 import org.apache.sis.internal.storage.xml.stream.StaxDataStore;
 import org.apache.sis.util.collection.BackingStoreException;
 import org.apache.sis.util.ArgumentChecks;
@@ -56,7 +58,7 @@ import org.opengis.feature.FeatureType;
  * @since   0.8
  * @module
  */
-public final class Store extends StaxDataStore {
+public final class Store extends StaxDataStore implements FeatureSet {
     /**
      * Version of the GPX file, or {@code null} if unknown.
      */
@@ -168,13 +170,24 @@ public final class Store extends StaxDataStore {
     }
 
     /**
-     * Returns the {@code FeatureSet} from which all features in this data store can be accessed.
+     * Returns the spatio-temporal envelope of this resource.
      *
-     * @return the starting point of all features in this data store.
+     * @return the spatio-temporal resource extent.
+     * @throws DataStoreException if an error occurred while reading or computing the envelope.
      */
     @Override
-    public Resource getRootResource() {
-        return new FeatureAccess(this, listeners);
+    public Envelope getEnvelope() throws DataStoreException {
+        return AbstractDataSet.envelope(getMetadata());
+    }
+
+    /**
+     * Returns the base type of all GPX types.
+     *
+     * @return base type of all GPX types.
+     */
+    @Override
+    public FeatureType getType() {
+        return types.parent;
     }
 
     /**
@@ -196,10 +209,12 @@ public final class Store extends StaxDataStore {
     /**
      * Returns the stream of features.
      *
+     * @param  parallel  ignored in current implementation.
      * @return a stream over all features in the XML file.
      * @throws DataStoreException if an error occurred while creating the feature stream.
      */
-    final synchronized Stream<Feature> features() throws DataStoreException {
+    @Override
+    public final synchronized Stream<Feature> features(boolean parallel) throws DataStoreException {
         Reader r = reader;
         reader = null;
         if (r == null) try {
