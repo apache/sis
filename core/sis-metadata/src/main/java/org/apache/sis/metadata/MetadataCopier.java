@@ -47,8 +47,8 @@ import org.apache.sis.util.collection.CodeListSet;
  * <p>This class is not thread-safe.
  * In multi-threads environment, each thread should use its own {@code MetadataCopier} instance.</p>
  *
- * <div class="section">Recommended alternative</div>
- * Deep metadata copies are sometime useful when using an existing metadata as a template.
+ * <div class="note"><b>Recommended alternative:</b>
+ * deep metadata copies are sometime useful when using an existing metadata as a template.
  * But the {@link ModifiableMetadata#unmodifiable()} method may provide a better way to use a metadata as a template,
  * as it returns a snapshot and allows the caller to continue to modify the original metadata object and create new
  * snapshots. Example:
@@ -77,6 +77,7 @@ import org.apache.sis.util.collection.CodeListSet;
  * result of a call to {@link org.apache.sis.metadata.sql.MetadataSource#lookup(Class, String)}) into instances of the
  * public {@link AbstractMetadata} subclasses. But note that shallow copies as provided by the {@code castOrCopy(…)}
  * static methods in each {@code AbstractMetadata} subclass are sometime sufficient.</p>
+ * </div>
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8

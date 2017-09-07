@@ -16,7 +16,6 @@
  */
 package org.apache.sis.storage;
 
-import org.opengis.geometry.Envelope;
 import org.opengis.metadata.Metadata;
 
 
@@ -28,8 +27,8 @@ import org.opengis.metadata.Metadata;
  * organization, in which case only metadata are provided. If the resource is digital, then {@code Resource}s
  * should be instances of sub-types like {@link Aggregate} or {@link FeatureSet}.
  *
- * <p>The resources contained in a data store can be obtained by a call to {@link DataStore#getRootResource()}.
- * If the data store contains resources for many feature types or coverages, then the root resource will be an
+ * <p>{@code DataStore}s are themselves closeable resources.
+ * If the data store contains resources for many feature types or coverages, then the data store will be an
  * instance of {@link Aggregate}. The {@linkplain Aggregate#components() components} of an aggregate can be
  * themselves other aggregates, thus forming a tree.</p>
  *
@@ -37,14 +36,13 @@ import org.opengis.metadata.Metadata;
  * this type is closely related to the {@code DS_Resource} type defined by ISO 19115.
  * The Apache SIS type differs from the ISO type by being more closely related to data extraction,
  * as can been seen from the checked {@link DataStoreException} thrown by most methods.
- * Convenience methods for frequently requested information – for example {@link #getEnvelope()} – were added.
+ * Convenience methods for frequently requested information – for example {@link DataSet#getEnvelope()} – were added.
  * The sub-types performing the actual data extraction – for example {@link FeatureSet} – are specific to Apache SIS.
  * </div>
  *
  * @author  Johann Sorel (Geomatys)
  * @version 0.8
  *
- * @see DataStore#getRootResource()
  * @see Aggregate#components()
  *
  * @since 0.8
@@ -53,8 +51,6 @@ import org.opengis.metadata.Metadata;
 public interface Resource {
     /**
      * Returns information about this resource.
-     * If this resource is the {@linkplain DataStore#getRootResource() data store root resource},
-     * then this method may return the same metadata instance than {@link DataStore#getMetadata()}.
      * If this resource is an {@link Aggregate}, then the metadata may enumerate characteristics
      * (spatio-temporal extents, feature types, range dimensions, <i>etc.</i>) of all
      * {@linkplain Aggregate#components() components} in the aggregate, or summarize them (for example by omitting
@@ -107,29 +103,4 @@ public interface Resource {
      * @see DataStore#getMetadata()
      */
     Metadata getMetadata() throws DataStoreException;
-
-    /**
-     * Returns the spatio-temporal extent of this resource in its most natural coordinate reference system.
-     * The following relationship to {@linkplain #getMetadata()} should hold:
-     *
-     * <ul>
-     *   <li>The envelope should be contained in the union of all geographic, vertical or temporal extents
-     *       described by {@code metadata} /
-     *       {@link org.apache.sis.metadata.iso.DefaultMetadata#getIdentificationInfo() identificationInfo} /
-     *       {@link org.apache.sis.metadata.iso.identification.AbstractIdentification#getExtents() extent}.</li>
-     *   <li>The coordinate reference system should be one of the instances returned by
-     *       {@link org.apache.sis.metadata.iso.DefaultMetadata#getReferenceSystemInfo() referenceSystemInfo}.</li>
-     * </ul>
-     *
-     * The envelope should use the coordinate reference system (CRS)
-     * that most closely matches the geometry of the resource storage. It is often a
-     * {@linkplain org.apache.sis.referencing.crs.DefaultProjectedCRS projected CRS}, but other types like
-     * {@linkplain org.apache.sis.referencing.crs.DefaultEngineeringCRS engineering CRS} are also allowed.
-     * If this resource uses many different CRS with none of them covering all data, then the envelope should use a
-     * global system (typically a {@linkplain org.apache.sis.referencing.crs.DefaultGeocentricCRS geographic CRS}).
-     *
-     * @return the spatio-temporal resource extent. Should not be {@code null}.
-     * @throws DataStoreException if an error occurred while reading or computing the envelope.
-     */
-    Envelope getEnvelope() throws DataStoreException;
 }

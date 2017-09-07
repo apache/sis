@@ -17,16 +17,18 @@
 package org.apache.sis.storage.netcdf;
 
 import java.io.IOException;
+import java.net.URI;
 import org.opengis.metadata.Metadata;
+import org.opengis.parameter.ParameterValueGroup;
 import org.apache.sis.util.Debug;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.UnsupportedStorageException;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.internal.netcdf.Decoder;
+import org.apache.sis.internal.storage.URIDataStore;
 import org.apache.sis.metadata.ModifiableMetadata;
 import org.apache.sis.setup.OptionKey;
-import org.apache.sis.storage.Resource;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.Version;
 import ucar.nc2.constants.CDM;
@@ -50,6 +52,11 @@ public class NetcdfStore extends DataStore {
      * depending on whether we are using the embedded SIS decoder or a wrapper around the UCAR library.
      */
     private final Decoder decoder;
+
+    /**
+     * The {@link NetcdfStoreProvider#LOCATION} parameter value, or {@code null} if none.
+     */
+    private final URI location;
 
     /**
      * The object returned by {@link #getMetadata()}, created when first needed and cached.
@@ -84,13 +91,14 @@ public class NetcdfStore extends DataStore {
      */
     public NetcdfStore(final NetcdfStoreProvider provider, final StorageConnector connector) throws DataStoreException {
         super(provider, connector);
+        location = connector.getStorageAs(URI.class);
         try {
             decoder = NetcdfStoreProvider.decoder(listeners, connector);
         } catch (IOException e) {
             throw new DataStoreException(e);
         }
         if (decoder == null) {
-            throw new UnsupportedStorageException(super.getLocale(), "NetCDF",
+            throw new UnsupportedStorageException(super.getLocale(), NetcdfStoreProvider.NAME,
                     connector.getStorage(), connector.getOption(OptionKey.OPEN_OPTIONS));
         }
     }
@@ -118,14 +126,19 @@ public class NetcdfStore extends DataStore {
     }
 
     /**
-     * This implementation does not provide any resource yet.
+     * Returns the parameters used to open this netCDF data store.
+     * If non-null, the parameters are described by {@link NetcdfStoreProvider#getOpenParameters()}
+     * and contains at least a parameter named {@value NetcdfStoreProvider#LOCATION} with a {@link URI} value.
+     * This method may return {@code null} if the storage input can not be described by a URI
+     * (for example a netCDF file reading directly from a {@link java.nio.channels.ReadableByteChannel}).
      *
-     * @return currently {@code null} (will be implemented in future Apache SIS version).
-     * @throws DataStoreException if an error occurred while reading the data.
+     * @return parameters used for opening this data store, or {@code null} if not available.
+     *
+     * @since 0.8
      */
     @Override
-    public Resource getRootResource() throws DataStoreException {
-        return null;
+    public ParameterValueGroup getOpenParameters() {
+        return URIDataStore.parameters(provider, location);
     }
 
     /**

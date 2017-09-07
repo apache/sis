@@ -90,6 +90,7 @@ public final strictfp class UnitFormatTest extends TestCase {
         verify(declared, "WEEK",                "T",            "wk",    "week",                    Units.WEEK);
         verify(declared, "TROPICAL_YEAR",       "T",            "a",     "year",                    Units.TROPICAL_YEAR);
         verify(declared, "HERTZ",               "∕T",           "Hz",    "hertz",                   Units.HERTZ);
+        verify(declared, "RADIANS_PER_SECOND",  "∕T",           "rad∕s", "radians per second",      Units.RADIANS_PER_SECOND);
         verify(declared, "METRES_PER_SECOND",   "L∕T",          "m∕s",   "metres per second",       Units.METRES_PER_SECOND);
         verify(declared, "KILOMETRES_PER_HOUR", "L∕T",          "km∕h",  "kilometres per hour",     Units.KILOMETRES_PER_HOUR);
         verify(declared, "PASCAL",              "M∕(L⋅T²)",     "Pa",    "pascal",                  Units.PASCAL);

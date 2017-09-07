@@ -33,14 +33,14 @@ import org.apache.sis.internal.storage.Resources;
 import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.io.wkt.WKTFormat;
 import org.apache.sis.io.wkt.Warnings;
-import org.apache.sis.storage.Resource;
-import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreContentException;
+import org.apache.sis.storage.UnsupportedStorageException;
 import org.apache.sis.internal.referencing.DefinitionVerifier;
 import org.apache.sis.internal.storage.MetadataBuilder;
-import org.apache.sis.util.resources.Errors;
+import org.apache.sis.internal.storage.URIDataStore;
+import org.apache.sis.setup.OptionKey;
 import org.apache.sis.util.CharSequences;
 
 
@@ -52,7 +52,7 @@ import org.apache.sis.util.CharSequences;
  * @since   0.7
  * @module
  */
-final class Store extends DataStore {
+final class Store extends URIDataStore {
     /**
      * Arbitrary size limit. Files that big are likely to be something else than WKT,
      * so this limit allows earlier error reporting than loading huge amount of data
@@ -89,7 +89,8 @@ final class Store extends DataStore {
         source  = connector.getStorageAs(Reader.class);
         connector.closeAllExcept(source);
         if (source == null) {
-            throw new DataStoreException(Errors.format(Errors.Keys.CanNotOpen_1, super.getDisplayName()));
+            throw new UnsupportedStorageException(super.getLocale(), StoreProvider.NAME,
+                    connector.getStorage(), connector.getOption(OptionKey.OPEN_OPTIONS));
         }
     }
 
@@ -191,15 +192,6 @@ final class Store extends DataStore {
             metadata = builder.build(true);
         }
         return metadata;
-    }
-
-    /**
-     * There is currently no resource associated to Well Known Text format since we parse only CRS.
-     * Future versions may return resources if we parse also geometries.
-     */
-    @Override
-    public Resource getRootResource() throws DataStoreException {
-        return null;
     }
 
     /**

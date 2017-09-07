@@ -33,6 +33,9 @@ import org.apache.sis.internal.storage.Resources;
 
 import static org.apache.sis.util.ArgumentChecks.ensureBetween;
 
+// Branch-dependent imports
+import org.apache.sis.internal.jdk8.JDK8;
+
 
 /**
  * Provides convenience methods for working with a ({@link WritableByteChannel}, {@link ByteBuffer}) pair.
@@ -607,7 +610,7 @@ public class ChannelDataOutput extends ChannelData implements Flushable {
      */
     @Override
     public final void seek(final long position) throws IOException {
-        long p = position - bufferOffset;
+        long p = JDK8.subtractExact(position, bufferOffset);
         if (p >= 0 && p <= buffer.limit()) {
             /*
              * Requested position is inside the current limits of the buffer.
@@ -620,7 +623,7 @@ public class ChannelDataOutput extends ChannelData implements Flushable {
              * but we can set the new position directly in the channel.
              */
             flush();
-            ((SeekableByteChannel) channel).position(channelOffset + position);
+            ((SeekableByteChannel) channel).position(JDK8.addExact(channelOffset, position));
             bufferOffset = position;
         } else if (p >= 0) {
             /*

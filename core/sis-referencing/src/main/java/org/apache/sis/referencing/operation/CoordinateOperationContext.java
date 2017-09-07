@@ -57,6 +57,9 @@ import org.apache.sis.internal.jdk8.Predicate;
  * @version 0.7
  * @since   0.7
  * @module
+ *
+ * @todo Should also take the country of a {@link java.util.Locale}. The EPSG database contains ISO2 and ISO3
+ *       identifiers that we can use.
  */
 public class CoordinateOperationContext implements Serializable {
     /**
