@@ -30,16 +30,17 @@ import org.opengis.util.FactoryException;
 import org.opengis.referencing.ReferenceSystem;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.xml.XML;
-import org.apache.sis.storage.Resource;
-import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.DataStoreException;
+import org.apache.sis.storage.UnsupportedStorageException;
 import org.apache.sis.metadata.iso.DefaultMetadata;
 import org.apache.sis.util.logging.WarningListener;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.internal.system.Loggers;
+import org.apache.sis.internal.storage.URIDataStore;
 import org.apache.sis.internal.storage.MetadataBuilder;
 import org.apache.sis.internal.referencing.DefinitionVerifier;
+import org.apache.sis.setup.OptionKey;
 
 
 /**
@@ -59,7 +60,7 @@ import org.apache.sis.internal.referencing.DefinitionVerifier;
  * @since   0.4
  * @module
  */
-final class Store extends DataStore {
+final class Store extends URIDataStore {
     /**
      * The input stream or reader, set by the constructor and cleared when no longer needed.
      */
@@ -97,7 +98,8 @@ final class Store extends DataStore {
         final Closeable c = input(source);
         connector.closeAllExcept(c);
         if (c == null) {
-            throw new DataStoreException(Errors.format(Errors.Keys.CanNotOpen_1, super.getDisplayName()));
+            throw new UnsupportedStorageException(super.getLocale(), StoreProvider.NAME,
+                    connector.getStorage(), connector.getOption(OptionKey.OPEN_OPTIONS));
         }
     }
 
@@ -206,15 +208,6 @@ final class Store extends DataStore {
             }
         }
         return metadata;
-    }
-
-    /**
-     * Current implementation does not provide any resource since it is only about metadata.
-     * Futures versions may return resources if Apache SIS provides a wider GML support.
-     */
-    @Override
-    public Resource getRootResource() throws DataStoreException {
-        return null;
     }
 
     /**

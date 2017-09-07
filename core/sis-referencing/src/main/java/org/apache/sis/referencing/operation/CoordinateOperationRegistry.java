@@ -258,19 +258,27 @@ class CoordinateOperationRegistry {
     }
 
     /**
-     * Finds the authority code for the given coordinate reference system.
+     * Finds the authority codes for the given coordinate reference system.
      * This method does not trust the code given by the user in its CRS - we verify it.
-     * This method may return a code even if the axis order does not match;
+     * This method may return codes even if the axis order does not match;
      * it will be caller's responsibility to make necessary adjustments.
      */
-    private String findCode(final CoordinateReferenceSystem crs) throws FactoryException {
+    private List<String> findCode(final CoordinateReferenceSystem crs) throws FactoryException {
+        final List<String> codes = new ArrayList<>();
         if (codeFinder != null) {
-            final Identifier identifier = IdentifiedObjects.getIdentifier(codeFinder.findSingleton(crs), null);
-            if (identifier != null) {
-                return identifier.getCode();
+            for (final IdentifiedObject candidate : codeFinder.find(crs)) {
+                final Identifier identifier = IdentifiedObjects.getIdentifier(candidate, registry.getAuthority());
+                if (identifier != null) {
+                    final String code = identifier.getCode();
+                    if (Utilities.deepEquals(candidate, crs, ComparisonMode.APPROXIMATIVE)) {
+                        codes.add(0, code);     // If axis order match, give precedence to that CRS.
+                    } else {
+                        codes.add(code);
+                    }
+                }
             }
         }
-        return null;
+        return codes;
     }
 
     /**
@@ -367,56 +375,58 @@ class CoordinateOperationRegistry {
                                        final CoordinateReferenceSystem targetCRS)
             throws IllegalArgumentException, IncommensurableException, FactoryException
     {
-        final String sourceID = findCode(sourceCRS);
-        if (sourceID == null) {
-            return null;
-        }
-        final String targetID = findCode(targetCRS);
-        if (targetID == null) {
-            return null;
-        }
-        if (sourceID.equals(targetID)) {
-            /*
-             * Above check is necessary because this method may be invoked in some situations where the code
-             * are equal while the CRS are not. Such situation should be illegal, but unfortunately it still
-             * happen because many softwares are not compliant with EPSG definition of axis order.   In such
-             * cases we will need to compute a transform from sourceCRS to targetCRS ignoring the source and
-             * target codes. The CoordinateOperationFinder class can do that, providing that we prevent this
-             * CoordinateOperationRegistry to (legitimately) claims that the operation from sourceCode to
-             * targetCode is the identity transform.
-             */
-            return null;
-        }
-        final boolean inverse;
-        Collection<CoordinateOperation> operations;
-        boolean mdOnly = Semaphores.queryAndSet(Semaphores.METADATA_ONLY);    // See comment for the same call inside the loop.
-        try {
-            try {
-                operations = registry.createFromCoordinateReferenceSystemCodes(sourceID, targetID);
-                inverse = Containers.isNullOrEmpty(operations);
-                if (inverse) {
+        final List<String> sources = findCode(sourceCRS); if (sources.isEmpty()) return null;
+        final List<String> targets = findCode(targetCRS); if (targets.isEmpty()) return null;
+        Collection<CoordinateOperation> operations = null;
+        boolean inverse = false;
+        for (final String sourceID : sources) {
+            for (final String targetID : targets) {
+                if (sourceID.equals(targetID)) {
                     /*
-                     * No operation from 'source' to 'target' available. But maybe there is an inverse operation.
-                     * This is typically the case when the user wants to convert from a projected to a geographic CRS.
-                     * The EPSG database usually contains transformation paths for geographic to projected CRS only.
+                     * Above check is necessary because this method may be invoked in some situations where the code
+                     * are equal while the CRS are not. Such situation should be illegal, but unfortunately it still
+                     * happen because many softwares are not compliant with EPSG definition of axis order.   In such
+                     * cases we will need to compute a transform from sourceCRS to targetCRS ignoring the source and
+                     * target codes. The CoordinateOperationFinder class can do that, providing that we prevent this
+                     * CoordinateOperationRegistry to (legitimately) claims that the operation from sourceCode to
+                     * targetCode is the identity transform.
                      */
-                    operations = registry.createFromCoordinateReferenceSystemCodes(targetID, sourceID);
-                    if (Containers.isNullOrEmpty(operations)) {
-                        return null;
+                    return null;
+                }
+                final boolean mdOnly = Semaphores.queryAndSet(Semaphores.METADATA_ONLY);
+                try {
+                    try {
+                        operations = registry.createFromCoordinateReferenceSystemCodes(sourceID, targetID);
+                        inverse = Containers.isNullOrEmpty(operations);
+                        if (inverse) {
+                            /*
+                             * No operation from 'source' to 'target' available. But maybe there is an inverse operation.
+                             * This is typically the case when the user wants to convert from a projected to a geographic CRS.
+                             * The EPSG database usually contains transformation paths for geographic to projected CRS only.
+                             */
+                            operations = registry.createFromCoordinateReferenceSystemCodes(targetID, sourceID);
+                            if (Containers.isNullOrEmpty(operations)) {
+                                continue;
+                            }
+                        }
+                    } finally {
+                        if (!mdOnly) {
+                            Semaphores.clear(Semaphores.METADATA_ONLY);
+                        }
                     }
+                } catch (NoSuchAuthorityCodeException | MissingFactoryResourceException e) {
+                    /*
+                     * sourceCode or targetCode is unknown to the underlying authority factory.
+                     * Ignores the exception and fallback on the generic algorithm provided by
+                     * CoordinateOperationFinder.
+                     */
+                    log(null, e);
+                    continue;
                 }
-            } finally {
-                if (!mdOnly) {
-                    Semaphores.clear(Semaphores.METADATA_ONLY);
-                }
+                break;          // Stop on the first non-empty set of operations that we find.
             }
-        } catch (NoSuchAuthorityCodeException | MissingFactoryResourceException e) {
-            /*
-             * sourceCode or targetCode is unknown to the underlying authority factory.
-             * Ignores the exception and fallback on the generic algorithm provided by
-             * CoordinateOperationFinder.
-             */
-            log(null, e);
+        }
+        if (operations == null) {
             return null;
         }
         /*
@@ -444,7 +454,7 @@ class CoordinateOperationRegistry {
                  * The non-public Semaphores.METADATA_ONLY mechanism instructs EPSGDataAccess to
                  * instantiate DeferredCoordinateOperation instead of full coordinate operations.
                  */
-                mdOnly = Semaphores.queryAndSet(Semaphores.METADATA_ONLY);
+                final boolean mdOnly = Semaphores.queryAndSet(Semaphores.METADATA_ONLY);
                 try {
                     try {
                         if (!it.hasNext()) break;

@@ -844,7 +844,7 @@ public class ChannelDataInput extends ChannelData {
      */
     @Override
     public final void seek(final long position) throws IOException {
-        long p = position - bufferOffset;
+        long p = JDK8.subtractExact(position, bufferOffset);
         if (p >= 0 && p <= buffer.limit()) {
             /*
              * Requested position is inside the current limits of the buffer.
@@ -857,7 +857,7 @@ public class ChannelDataInput extends ChannelData {
              * that StorageConnector.rewind() needs the buffer content to be
              * valid as a result of this seek, so we reload it immediately.
              */
-            ((SeekableByteChannel) channel).position(channelOffset + position);
+            ((SeekableByteChannel) channel).position(JDK8.addExact(channelOffset, position));
             bufferOffset = position;
             buffer.clear().limit(0);
         } else if (p >= 0) {

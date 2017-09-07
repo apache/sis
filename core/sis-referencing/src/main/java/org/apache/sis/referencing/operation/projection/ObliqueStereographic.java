@@ -263,11 +263,14 @@ public class ObliqueStereographic extends NormalizedProjection {
         /*
          * Convert the geodetic coordinates (φ,λ) to conformal coordinates (χ,Λ) before to apply the
          * actual stereographic projection.  The geodetic and conformal coordinates will be the same
-         * if the ellipsoid is already a sphere.
+         * if the ellipsoid is already a sphere.  The original formulas were:
+         *
+         *    χ = asin((w - 1) / (w + 1))
+         *
+         * But since the projection needs only sin(χ) and cos(χ), we avoid the costly asin(…) function.
          */
-        final double χ    = asin((w - 1) / (w + 1));
-        final double cosχ = cos(χ);
-        final double sinχ = sin(χ);
+        final double sinχ = (w - 1) / (w + 1);
+        final double cosχ = sqrt(1 - sinχ*sinχ);
         /*
          * The conformal longitude is  Λ = n⋅(λ - λ₀) + Λ₀  where λ is the geodetic longitude.
          * But in Apache SIS implementation, the multiplication by  n  has been merged in the

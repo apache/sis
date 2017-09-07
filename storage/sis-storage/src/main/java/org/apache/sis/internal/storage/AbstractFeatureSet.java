@@ -28,10 +28,8 @@ import org.apache.sis.util.logging.WarningListeners;
  * @version 0.8
  * @since   0.8
  * @module
- *
- * @todo this class may be removed if we refactor {@link FeatureSet} as an abstract class.
  */
-public abstract class AbstractFeatureSet extends AbstractResource implements FeatureSet {
+public abstract class AbstractFeatureSet extends AbstractDataSet implements FeatureSet {
     /**
      * Creates a new resource.
      *

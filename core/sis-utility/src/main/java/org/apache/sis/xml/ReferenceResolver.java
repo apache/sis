@@ -112,7 +112,7 @@ public class ReferenceResolver {
      * The default implementation performs the following lookups:
      *
      * <ul>
-     *   <li>If the {@link XLink#getHRef() xlink:href} attribute is an {@linkplain URI#getFragment() URI fragment}
+     *   <li>If the {@link XLink#getHRef() xlink:href} attribute is a {@linkplain URI#getFragment() URI fragment}
      *       of the form {@code "#foo"} and if an object of class {@code type} with the {@code gml:id="foo"} attribute
      *       has previously been seen in the same XML document, then that object is returned.</li>
      *   <li>Otherwise returns {@code null}.</li>

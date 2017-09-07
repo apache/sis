@@ -57,7 +57,7 @@ public class TransformTest extends ParameterizedTransformTest {
                     return super.getDefaultParameters(method);
                 } catch (NoSuchIdentifierException e) {
                     FAILURES.add(method);
-                    throw e;
+                    throw e;                            // Instructs ParameterizedTransformTest to skip the test.
                 }
             }
         });
@@ -82,7 +82,7 @@ public class TransformTest extends ParameterizedTransformTest {
     @AfterClass
     public static void verifyFailureList() {
         /*
-         * The list of failires is empty if verifyNativeLibraryAvailability() failed,
+         * The list of failures is empty if verifyNativeLibraryAvailability() failed,
          * in which case no test have been run.
          */
         if (!FAILURES.isEmpty()) {

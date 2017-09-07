@@ -86,7 +86,7 @@ import static org.apache.sis.util.ArgumentChecks.*;
  * recommended to provide also {@linkplain #getIdentifiers() identifiers} (e.g. “EPSG:9804” in the above example)
  * since names can sometime be ambiguous or be spelled in different ways.
  *
- * <div class="note"><b>Departure from the ISO 19111 standard</b><br>
+ * <div class="section">Departure from the ISO 19111 standard</div>
  * The following properties are mandatory according ISO 19111,
  * but may be missing under some conditions in Apache SIS:
  * <ul>
@@ -95,7 +95,7 @@ import static org.apache.sis.util.ArgumentChecks.*;
  *     can not be {@linkplain #DefaultOperationMethod(MathTransform) inferred from the given math transform}.</li>
  *   <li>The {@linkplain #getParameters() parameters} if the {@link #DefaultOperationMethod(MathTransform)}
  *     constructor can not infer them.</li>
- * </ul></div>
+ * </ul>
  *
  * <div class="section">Relationship with other classes or interfaces</div>
  * {@code OperationMethod} describes parameters without providing any value (except sometime default values).

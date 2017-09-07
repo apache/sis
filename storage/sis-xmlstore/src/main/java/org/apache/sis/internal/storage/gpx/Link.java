@@ -116,7 +116,7 @@ public final class Link implements OnlineResource {
      *   </link>
      * }
      *
-     * If we fail to convert the text to an URI, we will leave the object state as-is.
+     * If we fail to convert the text to a URI, we will leave the object state as-is.
      */
     final void afterUnmarshal(Unmarshaller um, Object parent) {
         if (uri == null && text != null) {

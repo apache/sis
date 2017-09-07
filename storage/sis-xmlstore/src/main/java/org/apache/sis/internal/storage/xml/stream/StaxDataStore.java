@@ -38,6 +38,7 @@ import org.apache.sis.setup.OptionKey;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.DataStoreException;
+import org.apache.sis.internal.storage.URIDataStore;
 import org.apache.sis.internal.storage.io.ChannelFactory;
 import org.apache.sis.internal.storage.io.IOUtilities;
 import org.apache.sis.internal.storage.io.Markable;
@@ -64,7 +65,7 @@ import org.apache.sis.util.Debug;
  * @since   0.8
  * @module
  */
-public abstract class StaxDataStore extends DataStore {
+public abstract class StaxDataStore extends URIDataStore {
     /**
      * The locale to use for locale-sensitive data (<strong>not</strong> for logging or warning messages),
      * or {@code null} if unspecified.
@@ -372,8 +373,11 @@ public abstract class StaxDataStore extends DataStore {
 
     /**
      * Returns the factory that created this {@code DataStore} instance, or {@code null} if unspecified.
+     *
+     * @return the factory that created this {@code DataStore} instance, or {@code null} if unspecified.
      */
-    final StaxDataStoreProvider getProvider() {
+    @Override
+    public final StaxDataStoreProvider getProvider() {
         return (StaxDataStoreProvider) provider;
     }
 

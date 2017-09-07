@@ -164,9 +164,24 @@ public final class Resources extends IndexedResourceBundle {
         public static final short ShallBeDeclaredBefore_2 = 22;
 
         /**
+         * Write operations are not supported.
+         */
+        public static final short StoreIsReadOnly = 28;
+
+        /**
          * Can not move backward in the “{0}” stream.
          */
         public static final short StreamIsForwardOnly_1 = 13;
+
+        /**
+         * Stream “{0}” is not readable.
+         */
+        public static final short StreamIsNotReadable_1 = 25;
+
+        /**
+         * Stream “{0}” is not writable.
+         */
+        public static final short StreamIsNotWritable_1 = 26;
 
         /**
          * The “{0}” data store can be read only once.
@@ -177,6 +192,11 @@ public final class Resources extends IndexedResourceBundle {
          * Can not modify previously written data in “{0}”.
          */
         public static final short StreamIsWriteOnce_1 = 21;
+
+        /**
+         * Can not open {0} data store without “{1}” parameter.
+         */
+        public static final short UndefinedParameter_2 = 27;
 
         /**
          * Format of “{0}” is not recognized.

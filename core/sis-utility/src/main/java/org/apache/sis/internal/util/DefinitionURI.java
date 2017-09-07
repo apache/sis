@@ -557,7 +557,7 @@ loop:   for (int p=0; ; p++) {
 
     /**
      * Returns a string representation of this URI. If the URI were originally a GML's URL, then this method formats
-     * the URI in the {@code "http://www.opengis.net/gml/srs/"} namespace. Otherwise the URI were originally an URL,
+     * the URI in the {@code "http://www.opengis.net/gml/srs/"} namespace. Otherwise the URI were originally a URL,
      * then this method formats the URI in the {@code "http://www.opengis.net/"} namespace.
      * Otherwise this method formats the URI as a URN.
      *

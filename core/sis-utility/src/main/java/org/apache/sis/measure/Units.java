@@ -371,7 +371,7 @@ public final class Units extends Static {
      * <table class="compact" summary="Related units" style="margin-left:30px; line-height:1.25">
      *   <tr><td>SI angle units:</td>   <td style="word-spacing:1em">{@link #MICRORADIAN}, <u><b>{@code RADIAN}</b></u>.</td></tr>
      *   <tr><td>In other systems:</td> <td style="word-spacing:1em">{@link #DEGREE}, {@link #ARC_MINUTE}, {@link #ARC_SECOND}, {@link #GRAD}.</td></tr>
-     *   <tr><td>Derived units:</td>    <td style="word-spacing:1em">{@link #STERADIAN}.</td></tr>
+     *   <tr><td>Derived units:</td>    <td style="word-spacing:1em">{@link #STERADIAN}, {@link #RADIANS_PER_SECOND}.</td></tr>
      * </table></div>
      *
      * @since 0.8
@@ -580,6 +580,19 @@ public final class Units extends Static {
      * @since 0.8
      */
     public static final Unit<Frequency> HERTZ;
+
+    /**
+     * The unit for angular velocity (rad/s).
+     * The identifier is EPSG:1035.
+     *
+     * <div class="note"><p class="simpleTagLabel" style="margin-bottom:0">Related units:</p>
+     * <table class="compact" summary="Related units" style="margin-left:30px; line-height:1.25">
+     *   <tr><td>Components:</td> <td style="word-spacing:0.5em">{@link #RADIAN} ∕ {@link #SECOND}</td></tr>
+     * </table></div>
+     *
+     * @since 0.8
+     */
+    public static final Unit<AngularVelocity> RADIANS_PER_SECOND;
 
     /**
      * The SI derived unit for speed (m/s).
@@ -1020,10 +1033,9 @@ public final class Units extends Static {
      * Salinity measured using PSS-78. While this is a dimensionless measurement, the {@code "psu"} symbol
      * is sometime added to PSS-78 measurement. However this is officially discouraged.
      *
-     * <p>If we make this field public in a future SIS version, we should consider introducing a
-     * {@code Salinity} quantity type.</p>
+     * @since 0.8
      */
-    static final Unit<Dimensionless> PSU;
+    public static final Unit<Salinity> PSU;
 
     /**
      * Sigma-level, used in oceanography. This is a way to measure a depth as a fraction of the sea floor depth.
@@ -1069,6 +1081,7 @@ public final class Units extends Static {
         final UnitDimension temperature   = new UnitDimension('Θ');
         final UnitDimension amount        = new UnitDimension('N');
         final UnitDimension luminous      = new UnitDimension('J');
+        final UnitDimension frequency     = time.pow(-1);
         final UnitDimension area          = length.pow(2);
         final UnitDimension speed         = length.divide(time);
         final UnitDimension force         = mass.multiply(speed).divide(time);
@@ -1145,11 +1158,19 @@ public final class Units extends Static {
         WEEK           = add(s, LinearConverter.scale( 7*24*60*60,      1), "wk",  OTHER,    (short) 0);
         TROPICAL_YEAR  = add(s, LinearConverter.scale(31556925445.0, 1000), "a",   OTHER,    (short) 1029);
         /*
-         * All Unit<Speed>.
+         * All Unit<Speed>, Unit<AngularVelocity> and Unit<ScaleRateOfChange>.
+         * The 'unityPerSecond' unit is not added to the registry because it is specific to the EPSG database,
+         * has no clear symbol and is easy to confuse with Hertz. We create that unit only for allowing us to
+         * create the "ppm/a" units.
          */
+        final SystemUnit<ScaleRateOfChange> unityPerSecond;
+        unityPerSecond = new SystemUnit<>(ScaleRateOfChange.class, frequency, null, OTHER, (short) 1036, null);
+        unityPerSecond.related(1);
         mps.related(1);
         METRES_PER_SECOND   = mps;
-        KILOMETRES_PER_HOUR = add(mps, LinearConverter.scale(10, 36), "km∕h", ACCEPTED, (short) 0);
+        KILOMETRES_PER_HOUR = add(mps, LinearConverter.scale(10, 36),     "km∕h",  ACCEPTED, (short) 0);
+        RADIANS_PER_SECOND  = add(AngularVelocity.class, null, frequency, "rad∕s", SI,       (short) 1035);
+        add(unityPerSecond, LinearConverter.scale(1, 31556925445E6),      "ppm∕a", OTHER,    (short) 1030);
         /*
          * All Unit<Pressure>.
          */
@@ -1179,12 +1200,14 @@ public final class Units extends Static {
         GRAM         = add(kg, milli, "g", (byte) (ACCEPTED | PREFIXABLE), (short) 0);
         /*
          * Force, energy, electricity, magnetism and other units.
+         * Frequency must be defined after angular velocities.
+         *
          * Note: JDK8 branch uses method references instead than inner classes.
          */
-        HERTZ      = add(Frequency.class, new ScalarFactory<Frequency>() {@Override public Frequency create(double value, Unit<Frequency> unit) {return new Scalar.Frequency(value, unit);}}, time.pow(-1), "Hz", (byte) (SI | PREFIXABLE), (short) 0);
-        NEWTON     = add(Force.class,     new ScalarFactory<Force>    () {@Override public Force     create(double value, Unit<Force>     unit) {return new Scalar.Force    (value, unit);}}, force,        "N",  (byte) (SI | PREFIXABLE), (short) 0);
-        JOULE      = add(Energy.class,    new ScalarFactory<Energy>   () {@Override public Energy    create(double value, Unit<Energy>    unit) {return new Scalar.Energy   (value, unit);}}, energy,       "J",  (byte) (SI | PREFIXABLE), (short) 0);
-        WATT       = add(Power.class,     new ScalarFactory<Power>    () {@Override public Power     create(double value, Unit<Power>     unit) {return new Scalar.Power    (value, unit);}}, power,        "W",  (byte) (SI | PREFIXABLE), (short) 0);
+        HERTZ      = add(Frequency.class, new ScalarFactory<Frequency>() {@Override public Frequency create(double value, Unit<Frequency> unit) {return new Scalar.Frequency(value, unit);}}, frequency, "Hz", (byte) (SI | PREFIXABLE), (short) 0);
+        NEWTON     = add(Force.class,     new ScalarFactory<Force>    () {@Override public Force     create(double value, Unit<Force>     unit) {return new Scalar.Force    (value, unit);}}, force,     "N",  (byte) (SI | PREFIXABLE), (short) 0);
+        JOULE      = add(Energy.class,    new ScalarFactory<Energy>   () {@Override public Energy    create(double value, Unit<Energy>    unit) {return new Scalar.Energy   (value, unit);}}, energy,    "J",  (byte) (SI | PREFIXABLE), (short) 0);
+        WATT       = add(Power.class,     new ScalarFactory<Power>    () {@Override public Power     create(double value, Unit<Power>     unit) {return new Scalar.Power    (value, unit);}}, power,     "W",  (byte) (SI | PREFIXABLE), (short) 0);
         AMPERE     = add(ElectricCurrent.class,     null,                  current,                      "A",   (byte) (SI | PREFIXABLE), (short) 0);
         COULOMB    = add(ElectricCharge.class,      null,                  charge,                       "C",   (byte) (SI | PREFIXABLE), (short) 0);
         VOLT       = add(ElectricPotential.class,   null,                  potential,                    "V",   (byte) (SI | PREFIXABLE), (short) 0);
@@ -1205,7 +1228,7 @@ public final class Units extends Static {
          */
         PERCENT = add(one, centi,                                               "%",     OTHER, (short) 0);
         PPM     = add(one, micro,                                               "ppm",   OTHER, (short) 9202);
-        PSU     = add(Dimensionless.class, dimensionlessFactory, dimensionless, "psu",   OTHER, (short) 0);
+        PSU     = add(Salinity.class,      null,                 dimensionless, "psu",   OTHER, (short) 0);
         SIGMA   = add(Dimensionless.class, dimensionlessFactory, dimensionless, "sigma", OTHER, (short) 0);
         PIXEL   = add(Dimensionless.class, dimensionlessFactory, dimensionless, "px",    OTHER, (short) 0);
         UNITY   = UnitRegistry.init(one);  // Must be last in order to take precedence over all other units associated to UnitDimension.NONE.
