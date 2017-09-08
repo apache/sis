@@ -51,7 +51,12 @@ Client application for JavaFX.
        =========================================================== -->
   <developers>
     <developer>
-      <name>Roshan Lakmal</name>
+      <name>Johann Sorel</name>
+      <id>jsorel</id>
+      <email>johann.sorel@geomatys.com</email>
+      <organization>Geomatys</organization>
+      <organizationUrl>http://www.geomatys.com</organizationUrl>
+      <timezone>+1</timezone>
       <roles>
         <role>developer</role>
       </roles>
