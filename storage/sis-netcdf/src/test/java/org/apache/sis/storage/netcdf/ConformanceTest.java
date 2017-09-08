@@ -175,7 +175,10 @@ public final strictfp class ConformanceTest extends NetcdfMetadataTest {
     @Test
     @Override
     public void testLandsat() throws IOException {
-        addCommonProperties(expectedProperties, false);
+        final Map<String,Object> expected = expectedProperties;
+        addCommonProperties(expected, false);
+        assertNull(expected.put("identificationInfo.citation.title", "Landsat-GDAL"));
+        assertNull(expected.put("metadataIdentifier.code", "Landsat-GDAL"));
         super.testLandsat();
         assertSame("metadataScope", ScopeCode.DATASET, getSingleton(metadata.getMetadataScopes()).getResourceScope());
 
@@ -193,6 +196,8 @@ public final strictfp class ConformanceTest extends NetcdfMetadataTest {
     public void testCIP() throws IOException {
         final Map<String,Object> expected = expectedProperties;
         addCommonProperties(expected, true);
+        assertNull(expected.put("identificationInfo.citation.title", "CIP"));
+        assertNull(expected.put("metadataIdentifier.code", "CIP"));
         super.testCIP();
         assertSame("metadataScope", ScopeCode.DATASET, getSingleton(metadata.getMetadataScopes()).getResourceScope());
         /*

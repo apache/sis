@@ -592,8 +592,10 @@ public class StorageConnector implements Serializable {
     }
 
     /**
-     * Returns a short name of the input/output object. The default implementation performs
-     * the following choices based on the type of the {@linkplain #getStorage() storage} object:
+     * Returns a short name of the input/output object. For example if the storage is a file,
+     * this method returns the filename without the path (but including the file extension).
+     * The default implementation performs the following choices based on the type of the
+     * {@linkplain #getStorage() storage} object:
      *
      * <ul>
      *   <li>For {@link java.nio.file.Path}, {@link java.io.File}, {@link java.net.URI} or {@link java.net.URL}

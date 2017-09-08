@@ -16,6 +16,7 @@
  */
 package org.apache.sis.internal.netcdf.ucar;
 
+import java.io.File;
 import java.util.Date;
 import java.util.List;
 import java.util.EnumSet;
@@ -121,13 +122,24 @@ public final class DecoderWrapper extends Decoder implements CancelTask {
     }
 
     /**
-     * Returns a filename for information purpose only. This is used for formatting error messages.
+     * Returns a filename for formatting error message and for information purpose.
+     * The filename should not contain path.
      *
      * @return a filename to report in warning or error messages.
      */
     @Override
     public String getFilename() {
-        return file.getLocation();
+        String filename = file.getLocation();
+        if (filename != null) {
+            int s = filename.lastIndexOf(File.separatorChar);
+            if (s < 0 && File.separatorChar != '/') {
+                s = filename.lastIndexOf('/');
+            }
+            if (s >= 0) {
+                filename = filename.substring(s+1);
+            }
+        }
+        return filename;
     }
 
     /**

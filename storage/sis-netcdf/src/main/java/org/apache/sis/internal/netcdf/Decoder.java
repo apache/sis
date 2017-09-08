@@ -63,7 +63,8 @@ public abstract class Decoder implements Closeable {
     }
 
     /**
-     * Returns a filename for information purpose only. This is used for formatting error messages.
+     * Returns a filename for formatting error message and for information purpose.
+     * The filename should not contain path.
      *
      * @return a filename to report in warning or error messages.
      */

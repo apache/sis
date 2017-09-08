@@ -189,6 +189,7 @@ final class Store extends URIDataStore {
                     builder.addReferenceSystem((ReferenceSystem) object);
                 }
             }
+            addTitleOrIdentifier(builder);
             metadata = builder.build(true);
         }
         return metadata;

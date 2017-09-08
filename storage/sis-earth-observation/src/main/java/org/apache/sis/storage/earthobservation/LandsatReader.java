@@ -465,7 +465,7 @@ final class LandsatReader {
              * Example: "LC81230522014071LGN00".
              */
             case "LANDSAT_SCENE_ID": {
-                metadata.addIdentifier(null, value, MetadataBuilder.Scope.ALL);
+                metadata.addTitleOrIdentifier(value, MetadataBuilder.Scope.ALL);
                 break;
             }
             /*

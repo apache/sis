@@ -41,9 +41,9 @@ public final strictfp class CRSBuilderTest extends TestCase {
     @Test
     public void testSplitName() {
         final String[] names = CRSBuilder.splitName("GCS Name = wgs84|Datum = unknown|Ellipsoid = WGS_1984|Primem = Greenwich|");
-        assertEquals("GCRS",      "wgs84",    names[CRSBuilder.GCRS]);
-        assertEquals("DATUM",     "unknown",  names[CRSBuilder.DATUM]);
-        assertEquals("ELLIPSOID", "WGS_1984", names[CRSBuilder.ELLIPSOID]);
+        assertEquals("GCRS",      "wgs84",     names[CRSBuilder.GCRS]);
+        assertEquals("DATUM",     "unknown",   names[CRSBuilder.DATUM]);
+        assertEquals("ELLIPSOID", "WGS_1984",  names[CRSBuilder.ELLIPSOID]);
         assertEquals("PRIMEM",    "Greenwich", names[CRSBuilder.PRIMEM]);
     }
 

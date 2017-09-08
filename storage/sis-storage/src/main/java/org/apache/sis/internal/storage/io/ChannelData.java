@@ -49,7 +49,8 @@ public abstract class ChannelData implements Markable {
     private static final int BIT_OFFSET_SIZE = 3;
 
     /**
-     * A file identifier used only for formatting error message.
+     * A short identifier (typically a filename without path) used for formatting error message.
+     * This is often the value given by {@link org.apache.sis.storage.StorageConnector#getStorageName()}.
      */
     public final String filename;
 
@@ -114,7 +115,7 @@ public abstract class ChannelData implements Markable {
      * Creates a new instance for the given channel and using the given buffer.
      * The channel is not stored by this class - it shall be stored by the subclass.
      *
-     * @param  filename  a file identifier used only for formatting error message.
+     * @param  filename  a short identifier (typically a filename without path) used for formatting error message.
      * @param  channel   the channel from where data are read or where to wrote.
      * @param  buffer    the buffer where to store the data.
      * @throws IOException if an error occurred while reading the channel.
