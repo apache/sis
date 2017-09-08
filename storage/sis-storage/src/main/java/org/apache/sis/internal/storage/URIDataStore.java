@@ -25,6 +25,7 @@ import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreProvider;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.StorageConnector;
+import org.apache.sis.internal.storage.io.IOUtilities;
 
 
 /**
@@ -158,6 +159,25 @@ public abstract class URIDataStore extends DataStore {
          */
         public static ParameterDescriptorGroup descriptor(final String name) {
             return new ParameterBuilder().addName(name).createGroup(LOCATION_PARAM);
+        }
+    }
+
+    /**
+     * Adds the filename (without extension) as the citation title if there is no title, or as the identifier otherwise.
+     * This method should be invoked last, after {@code DataStore} implementation did its best effort for adding a title.
+     * The intend is actually to provide an identifier, but since the title is mandatory in ISO 19115 metadata, providing
+     * only an identifier without title would be invalid.
+     *
+     * @param  builder  where to add the title or identifier.
+     */
+    protected final void addTitleOrIdentifier(final MetadataBuilder builder) {
+        if (location != null) {
+            /*
+             * The getDisplayName() contract does not allow us to use it as an identifier. However current implementation
+             * in super.getDisplayName() returns the filename provided that the input was a URI, URL, File or Path. Since
+             * all those types are convertibles to URI, we can use (location != null) as a criterion.
+             */
+            builder.addTitleOrIdentifier(IOUtilities.filenameWithoutExtension(super.getDisplayName()), MetadataBuilder.Scope.ALL);
         }
     }
 }

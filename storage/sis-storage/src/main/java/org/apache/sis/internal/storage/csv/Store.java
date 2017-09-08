@@ -618,6 +618,7 @@ public final class Store extends URIDataStore implements FeatureSet {
                 listeners.warning(null, e);
             }
             builder.addFeatureType(featureType, null);
+            addTitleOrIdentifier(builder);
             metadata = builder.build(true);
         }
         return metadata;

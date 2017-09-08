@@ -76,7 +76,7 @@ public class ChannelDataInput extends ChannelData {
      * If the buffer already contains some data, then the {@code filled} argument shall be {@code true}.
      * Otherwise (e.g. if it is a newly created buffer), then {@code filled} shall be {@code false}.
      *
-     * @param  filename  a file identifier used only for formatting error message.
+     * @param  filename  a short identifier (typically a filename without path) used for formatting error message.
      * @param  channel   the channel from where data are read.
      * @param  buffer    the buffer where to copy the data.
      * @param  filled    {@code true} if the buffer already contains data, or {@code false} if it needs

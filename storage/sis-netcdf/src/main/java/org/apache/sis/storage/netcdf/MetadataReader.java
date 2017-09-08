@@ -59,6 +59,7 @@ import org.apache.sis.internal.netcdf.Axis;
 import org.apache.sis.internal.netcdf.Decoder;
 import org.apache.sis.internal.netcdf.Variable;
 import org.apache.sis.internal.netcdf.GridGeometry;
+import org.apache.sis.internal.storage.io.IOUtilities;
 import org.apache.sis.internal.storage.MetadataBuilder;
 import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.internal.util.CollectionsExt;
@@ -861,18 +862,32 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
      *
      * <ul>
      *   <li>{@value AttributeNames#NAMING_AUTHORITY} used as the {@linkplain Identifier#getAuthority() authority}.</li>
-     *   <li>{@value AttributeNames#IDENTIFIER}, or {@link ucar.nc2.NetcdfFile#getId()} if no identifier attribute was found.</li>
+     *   <li>{@value AttributeNames#IDENTIFIER}, or {@link ucar.nc2.NetcdfFile#getId()} if no identifier attribute was found,
+     *       or the filename without extension if {@code getId()} returned nothing.</li>
      * </ul>
+     *
+     * This method should be invoked last, after we made our best effort to set the title.
      */
     private void addFileIdentifier() {
         String identifier = stringValue(IDENTIFIER);
-        if (identifier == null) {
+        String authority;
+        if (identifier != null) {
+            authority = stringValue(NAMING_AUTHORITY);
+        } else {
             identifier = decoder.getId();
             if (identifier == null) {
-                return;
+                identifier = IOUtilities.filenameWithoutExtension(decoder.getFilename());
+                if (identifier == null) {
+                    return;
+                }
             }
+            authority = null;
         }
-        addIdentifier(stringValue(NAMING_AUTHORITY), identifier, Scope.ALL);
+        if (authority == null) {
+            addTitleOrIdentifier(identifier, Scope.ALL);
+        } else {
+            addIdentifier(authority, identifier, Scope.ALL);
+        }
     }
 
     /**
@@ -883,7 +898,6 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
      * @throws DataStoreException if a logical error occurred.
      */
     public Metadata read() throws IOException, DataStoreException {
-        addFileIdentifier();
         addResourceScope(ScopeCode.DATASET, null);
         Set<InternationalString> publisher = addCitation();
         addIdentificationInfo(publisher);
@@ -905,6 +919,7 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
                 addSpatialRepresentationInfo(cs);
             }
         }
+        addFileIdentifier();
         /*
          * Add history in Metadata.dataQualityInfo.lineage.statement as specified by UnidataDD2MI.xsl.
          * However Metadata.resourceLineage.statement could be a more appropriate place.
