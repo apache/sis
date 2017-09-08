@@ -120,6 +120,18 @@ public class WarningListeners<S> implements Localized {
     }
 
     /**
+     * Returns the source declared source of warnings.
+     * This value is specified at construction time.
+     *
+     * @return the declared source of warnings.
+     *
+     * @since 0.8
+     */
+    public S getSource() {
+        return source;
+    }
+
+    /**
      * The locale to use for formatting warning messages, or {@code null} for the default locale.
      * If the {@code source} object given to the constructor implements the {@link Localized} interface,
      * then this method delegates to its {@code getLocale()} method. Otherwise this method returns {@code null}.

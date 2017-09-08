@@ -1371,8 +1371,9 @@ public class StorageConnector implements Serializable {
             op.setValue(TableColumn.NAME,  "options");
             op.setValue(TableColumn.VALUE,  options);
         }
-        if (views != null) {
-            views.get(null).append(root.newChild(), views);
+        final Coupled c = getView(null);
+        if (c != null) {
+            c.append(root.newChild(), views);
         }
         return table.toString();
     }

@@ -34,6 +34,7 @@ import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStores;
 import org.apache.sis.storage.ReadOnlyStorageException;
 import org.apache.sis.storage.Resource;
+import org.apache.sis.util.logging.WarningListeners;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.Metadata;
 import org.opengis.metadata.citation.Citation;
@@ -73,15 +74,19 @@ class FolderAggregate extends AbstractResource implements Aggregate {
         }
     };
 
-    private final FolderStore store;
+    /**
+     * The set of registered warning listeners for the folder data store.
+     */
+    private final WarningListeners<DataStore> listeners;
+
     private final FolderAggregate parent;
     private final Path path;
     private final Metadata metadata;
     private List<Resource> resources;
 
-    FolderAggregate(FolderStore store, FolderAggregate parent, Path path) {
-        super(store);
-        this.store = store;
+    FolderAggregate(final WarningListeners<DataStore> listeners, FolderAggregate parent, Path path) {
+        super(listeners);
+        this.listeners = listeners;
         this.parent = parent;
         this.path = path;
 
@@ -105,7 +110,7 @@ class FolderAggregate extends AbstractResource implements Aggregate {
                 while (ite.hasNext()) {
                     final Path candidate = ite.next();
                     if (Files.isDirectory(candidate)) {
-                        resources.add(new FolderAggregate(store, this, candidate));
+                        resources.add(new FolderAggregate(listeners, this, candidate));
                     } else {
                         //test it
                         try {
