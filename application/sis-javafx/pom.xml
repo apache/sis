@@ -88,6 +88,11 @@ Client application for JavaFX.
       <artifactId>sis-metadata</artifactId>
       <version>${project.version}</version>
     </dependency>
+    <dependency>
+      <groupId>org.webjars</groupId>
+      <artifactId>material-design-icons</artifactId>
+      <version>3.0.1</version>
+    </dependency>
   </dependencies>
 
 </project>
