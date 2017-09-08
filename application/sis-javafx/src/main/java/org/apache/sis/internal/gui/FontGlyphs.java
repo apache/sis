@@ -26,6 +26,8 @@ import java.awt.RenderingHints;
 import java.awt.geom.RoundRectangle2D;
 import java.awt.image.BufferedImage;
 import java.io.InputStream;
+import javafx.embed.swing.SwingFXUtils;
+import javafx.scene.image.Image;
 import org.apache.sis.util.ArgumentChecks;
 
 /**
@@ -62,8 +64,8 @@ public final class FontGlyphs {
      * @param textColor glyph color
      * @return glyph image
      */
-    public static BufferedImage createImage(String text, float size, Color textColor) {
-        return createImage(text, textColor, FONT.deriveFont(size), null, null, true, false);
+    public static Image createImage(String text, float size, Color textColor) {
+        return SwingFXUtils.toFXImage(createImage(text, textColor, FONT.deriveFont(size), null, null, true, false),null);
     }
 
     private static BufferedImage createImage(String text, Color textColor, Font font, Color bgColor, Insets insets, final boolean squareWanted, final boolean removeLeading) {
