@@ -61,9 +61,9 @@ public final strictfp class ChannelDecoderTest extends DecoderTest {
      *
      * <ul>
      *   <li>{@link #THREDDS} for a NcML file.</li>
-     *   <li>{@link #NCEP}    for a NetCDF binary file.</li>
-     *   <li>{@link #CIP}     for a NetCDF binary file.</li>
-     *   <li>{@link #LANDSAT} for a NetCDF binary file.</li>
+     *   <li>{@link #NCEP}    for a netCDF binary file.</li>
+     *   <li>{@link #CIP}     for a netCDF binary file.</li>
+     *   <li>{@link #LANDSAT} for a netCDF binary file.</li>
      * </ul>
      *
      * @param  name  the file name as one of the above-cited constants.
@@ -81,7 +81,7 @@ public final strictfp class ChannelDecoderTest extends DecoderTest {
 
     /**
      * Unconditionally returns {@code false} since {@link ChannelDecoder}
-     * supports only the classic and 64 bits NetCDF formats.
+     * supports only the classic and 64 bits netCDF formats.
      *
      * @return {@code false}.
      */

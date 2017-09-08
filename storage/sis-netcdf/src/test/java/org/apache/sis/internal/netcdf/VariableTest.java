@@ -164,7 +164,7 @@ public strictfp class VariableTest extends TestCase {
     /**
      * Tests {@link Variable#read()} on a one-dimensional variable.
      *
-     * @throws IOException if an error occurred while reading the NetCDF file.
+     * @throws IOException if an error occurred while reading the netCDF file.
      * @throws DataStoreException if a logical error occurred.
      */
     @Test

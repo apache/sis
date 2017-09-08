@@ -36,7 +36,7 @@ import static org.junit.Assert.*;
 
 
 /**
- * Base class of NetCDF tests. Subclasses shall override the {@link #createDecoder(String)}.
+ * Base class of netCDF tests. Subclasses shall override the {@link #createDecoder(String)}.
  *
  * <p>This class is <strong>not</strong> thread safe - do not run subclasses in parallel.</p>
  *
@@ -77,7 +77,7 @@ public abstract strictfp class TestCase extends IOTestCase {
     /**
      * Returns {@code true} if the given supplemental formats (THREDDS, HDF5) is supported.
      * The default implementation returns {@code true} since the UCAR library supports all
-     * supplemental formats tested in this suite. Subclasses working only with the NetCDF
+     * supplemental formats tested in this suite. Subclasses working only with the netCDF
      * classic or 64-bits format can unconditionally returns {@code false}.
      *
      * @param  format  either {@code "THREDDS"} or {@code "HDF5"}.
@@ -93,9 +93,9 @@ public abstract strictfp class TestCase extends IOTestCase {
      *
      * <ul>
      *   <li>{@link #THREDDS} for a NcML file.</li>
-     *   <li>{@link #NCEP}    for a NetCDF binary file.</li>
-     *   <li>{@link #CIP}     for a NetCDF binary file.</li>
-     *   <li>{@link #LANDSAT} for a NetCDF binary file.</li>
+     *   <li>{@link #NCEP}    for a netCDF binary file.</li>
+     *   <li>{@link #CIP}     for a netCDF binary file.</li>
+     *   <li>{@link #LANDSAT} for a netCDF binary file.</li>
      * </ul>
      *
      * The default implementation first delegates to {@link #open(String)}, then wraps the result
@@ -140,7 +140,7 @@ public abstract strictfp class TestCase extends IOTestCase {
 
     /**
      * Invoked after all tests in a class have been executed.
-     * This method closes all NetCDF files.
+     * This method closes all netCDF files.
      *
      * @throws IOException if an error occurred while closing a file.
      */
@@ -188,7 +188,7 @@ public abstract strictfp class TestCase extends IOTestCase {
      *
      * @param  expected       the expected attribute value.
      * @param  attributeName  the name of the attribute to test.
-     * @throws IOException if an error occurred while reading the NetCDF file.
+     * @throws IOException if an error occurred while reading the netCDF file.
      */
     protected final void assertAttributeEquals(final String expected, final String attributeName) throws IOException {
         assertEquals(attributeName, expected, decoder.stringValue(attributeName));
@@ -200,7 +200,7 @@ public abstract strictfp class TestCase extends IOTestCase {
      *
      * @param  expected       the expected attribute value.
      * @param  attributeName  the name of the attribute to test.
-     * @throws IOException if an error occurred while reading the NetCDF file.
+     * @throws IOException if an error occurred while reading the netCDF file.
      */
     protected final void assertAttributeEquals(final Number expected, final String attributeName) throws IOException {
         assertEquals(attributeName, expected, decoder.numericValue(attributeName));
@@ -212,7 +212,7 @@ public abstract strictfp class TestCase extends IOTestCase {
      *
      * @param  expected       the expected attribute value.
      * @param  attributeName  the name of the attribute to test.
-     * @throws IOException if an error occurred while reading the NetCDF file.
+     * @throws IOException if an error occurred while reading the netCDF file.
      */
     protected final void assertAttributeEquals(final Date expected, final String attributeName) throws IOException {
         assertEquals(attributeName, expected, decoder.dateValue(attributeName));

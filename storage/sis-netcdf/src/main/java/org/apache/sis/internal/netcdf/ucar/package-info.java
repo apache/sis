@@ -17,7 +17,7 @@
 
 /**
  * Implementation of the {@link org.apache.sis.internal.netcdf} API
- * as wrappers around the UCAR NetCDF library.
+ * as wrappers around the UCAR netCDF library.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 0.8

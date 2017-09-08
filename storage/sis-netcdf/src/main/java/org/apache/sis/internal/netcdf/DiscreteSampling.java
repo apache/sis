@@ -26,8 +26,8 @@ import org.apache.sis.util.resources.Errors;
 
 
 /**
- * Returns the features encoded in the NetCDF files when they are encoded as discrete sampling.
- * The NetCDF attributes shall be conform to the "Discrete Sampling Geometries" chapter of
+ * Returns the features encoded in the netCDF files when they are encoded as discrete sampling.
+ * The netCDF attributes shall be conform to the "Discrete Sampling Geometries" chapter of
  * <a href="http://cfconventions.org/">CF conventions</a>. Some examples are trajectories
  * and profiles.
  *

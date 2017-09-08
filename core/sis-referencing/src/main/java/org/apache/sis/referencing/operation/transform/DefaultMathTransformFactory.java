@@ -128,7 +128,7 @@ import org.apache.sis.util.resources.Errors;
  * </ul>
  *
  * <p>The main purpose of those dynamic parameters is to support some less commonly used conventions
- * without duplicating the most commonly used conventions. The alternative ways are used in NetCDF
+ * without duplicating the most commonly used conventions. The alternative ways are used in netCDF
  * files for example, which often use spherical models instead than ellipsoidal ones.</p>
  *
  *
