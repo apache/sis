@@ -18,6 +18,7 @@ package org.apache.sis.internal.storage;
 
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.FeatureSet;
+import org.apache.sis.util.logging.WarningListeners;
 
 
 /**
@@ -28,13 +29,13 @@ import org.apache.sis.storage.FeatureSet;
  * @since   0.8
  * @module
  */
-public abstract class AbstractFeatureSet extends AbstractDataSet implements FeatureSet {
+public abstract class AbstractFeatureSet extends AbstractResource implements FeatureSet {
     /**
      * Creates a new resource.
      *
-     * @param store  the data store which contains this resource.
+     * @param listeners  the set of registered warning listeners for the data store.
      */
-    protected AbstractFeatureSet(final DataStore store) {
-        super(store);
+    protected AbstractFeatureSet(final WarningListeners<DataStore> listeners) {
+        super(listeners);
     }
 }

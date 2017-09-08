@@ -380,7 +380,7 @@ public final class DecoderWrapper extends Decoder implements CancelTask {
         final FeaturesWrapper[] wrappers = new FeaturesWrapper[(fc != null) ? fc.size() : 0];
         try {
             for (int i=0; i<wrappers.length; i++) {
-                wrappers[i] = new FeaturesWrapper(fc.get(i), geomlib);
+                wrappers[i] = new FeaturesWrapper(fc.get(i), geomlib, listeners);
             }
         } catch (IllegalArgumentException e) {
             throw new DataStoreException(e.getLocalizedMessage(), e);

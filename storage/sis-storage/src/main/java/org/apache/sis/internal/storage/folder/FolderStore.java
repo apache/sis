@@ -64,7 +64,7 @@ public class FolderStore extends DataStore implements Aggregate {
     public FolderStore(ParameterValueGroup params) {
         this.params = params;
         final URI uri = URI.class.cast(params.parameter(DataStoreProvider.LOCATION).getValue());
-        root = new FolderAggregate(this, null, Paths.get(uri));
+        root = new FolderAggregate(listeners, null, Paths.get(uri));
     }
 
     private static ParameterValueGroup toParameters(final URI uri) {

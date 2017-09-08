@@ -18,6 +18,7 @@ package org.apache.sis.storage.netcdf;
 
 import java.io.IOException;
 import java.net.URI;
+import java.util.List;
 import java.util.Collection;
 import org.opengis.metadata.Metadata;
 import org.opengis.parameter.ParameterValueGroup;
@@ -29,6 +30,7 @@ import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.Aggregate;
 import org.apache.sis.internal.netcdf.Decoder;
 import org.apache.sis.internal.storage.URIDataStore;
+import org.apache.sis.internal.util.UnmodifiableArrayList;
 import org.apache.sis.metadata.ModifiableMetadata;
 import org.apache.sis.setup.OptionKey;
 import org.apache.sis.storage.Resource;
@@ -65,6 +67,13 @@ public class NetcdfStore extends DataStore implements Aggregate {
      * The object returned by {@link #getMetadata()}, created when first needed and cached.
      */
     private Metadata metadata;
+
+    /**
+     * The data (raster or features) found in the netCDF file. This list is created when first needed.
+     *
+     * @see #components()
+     */
+    private List<Resource> components;
 
     /**
      * Creates a new NetCDF store from the given file, URL, stream or {@link ucar.nc2.NetcdfFile} object.
@@ -172,8 +181,14 @@ public class NetcdfStore extends DataStore implements Aggregate {
      * @since 0.8
      */
     @Override
-    public Collection<Resource> components() throws DataStoreException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    @SuppressWarnings("ReturnOfCollectionOrArrayField")
+    public synchronized Collection<Resource> components() throws DataStoreException {
+        if (components == null) try {
+            components = UnmodifiableArrayList.wrap(decoder.getDiscreteSampling());
+        } catch (IOException e) {
+            throw new DataStoreException(e);
+        }
+        return components;
     }
 
     /**

@@ -385,10 +385,14 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
                 throw new DataStoreContentException(unknownType());
             }
             long length = 1;
+            boolean overflow = false;
             for (final Dimension dimension : dimensions) {
                 length *= dimension.length();
+                if (length > Integer.MAX_VALUE) {
+                    overflow = true;
+                }
             }
-            if (length > Integer.MAX_VALUE) {
+            if (overflow) {
                 throw new DataStoreContentException(Errors.format(Errors.Keys.ExcessiveListSize_2, name, length));
             }
             final int dimension = dimensions.length;

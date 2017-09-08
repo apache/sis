@@ -28,10 +28,12 @@ import org.apache.sis.internal.netcdf.DataType;
 import org.apache.sis.internal.netcdf.DiscreteSampling;
 import org.apache.sis.internal.netcdf.Resources;
 import org.apache.sis.internal.feature.MovingFeature;
+import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.feature.DefaultFeatureType;
 import org.apache.sis.feature.DefaultAttributeType;
 import org.apache.sis.util.collection.BackingStoreException;
+import org.apache.sis.util.logging.WarningListeners;
 import org.apache.sis.setup.GeometryLibrary;
 import ucar.nc2.constants.CF;
 
@@ -94,14 +96,15 @@ final class FeaturesInfo extends DiscreteSampling {
      * @param  counts       the count of instances per feature.
      * @param  identifiers  the feature identifiers.
      * @param  library      the library for geometric objects, or {@code null} for the default.
+     * @param  listeners    the set of registered warning listeners for the data store.
      * @throws IllegalArgumentException if the given library is non-null but not available.
      */
     @SuppressWarnings("rawtypes")                               // Because of generic array creation.
     private FeaturesInfo(final Vector counts, final VariableInfo identifiers, final VariableInfo time,
             final Collection<VariableInfo> coordinates, final Collection<VariableInfo> properties,
-            final GeometryLibrary library)
+            final GeometryLibrary library, final WarningListeners<DataStore> listeners)
     {
-        super(library);
+        super(library, listeners);
         this.counts      = counts;
         this.identifiers = identifiers;
         this.coordinates = coordinates.toArray(new VariableInfo[coordinates.size()]);
@@ -270,8 +273,8 @@ search: for (final VariableInfo counts : decoder.variables) {
                     }
                     final VariableInfo time = coordinates.remove("T");
                     if (time != null) {
-                        features.add(new FeaturesInfo(counts.read().compress(0), identifiers,
-                                time, coordinates.values(), properties, decoder.geomlib));
+                        features.add(new FeaturesInfo(counts.read(), identifiers, time, coordinates.values(),
+                                properties, decoder.geomlib, decoder.listeners));
                     }
                 }
             }
@@ -280,15 +283,25 @@ search: for (final VariableInfo counts : decoder.variables) {
     }
 
     /**
-     * Returns the stream of features.
+     * Returns the type of all features to be read by this {@code FeaturesInfo}.
      */
     @Override
-    public Stream<Feature> features() {
+    public FeatureType getType() {
+        return type;
+    }
+
+    /**
+     * Returns the stream of features.
+     *
+     * @param  parallel  ignored, since current version does not support parallelism.
+     */
+    @Override
+    public Stream<Feature> features(boolean parallel) {
         return StreamSupport.stream(new Iter(), false);
     }
 
     /**
-     * Implementation of the iterator returned by {@link #features()}.
+     * Implementation of the iterator returned by {@link #features(boolean)}.
      */
     private final class Iter implements Spliterator<Feature> {
         /**
@@ -381,12 +394,5 @@ search: for (final VariableInfo counts : decoder.variables) {
         public int characteristics() {
             return ORDERED | NONNULL | IMMUTABLE | SIZED;
         }
-    }
-
-    /**
-     * Returns the error message for a file that can not be read.
-     */
-    final String canNotReadFile() {
-        return null;    // TODO
     }
 }
