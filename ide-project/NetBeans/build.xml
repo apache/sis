@@ -62,6 +62,9 @@
         <include name="**/*.utf"/>
       </fileset>
       -->
+      <fileset dir="${project.root}/application/sis-javafx/target/generated-resources">
+        <include name="**/*.utf"/>
+      </fileset>
 
       <!-- Other resources (properties files, SQL scripts, native libraries). -->
       <fileset dir="${project.root}/core/sis-utility/src/main/resources">
@@ -79,6 +82,10 @@
       <fileset dir="${project.root}/storage/sis-gdal/src/main/resources">
         <include name="**/*.dll"/>
         <include name="**/*.so"/>
+      </fileset>
+      <fileset dir="${project.root}/application/sis-javafx/src/main/resources">
+        <include name="**/*.fxml"/>
+        <include name="**/*.png"/>
       </fileset>
       <fileset dir="${project.root}/application/sis-console/src/main/resources">
         <include name="**/*.properties"/>
