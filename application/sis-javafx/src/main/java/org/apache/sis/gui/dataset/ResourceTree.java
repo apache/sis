@@ -24,7 +24,6 @@ import java.util.List;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.ObservableList;
-import javafx.embed.swing.SwingFXUtils;
 import javafx.geometry.Pos;
 import javafx.scene.control.ContentDisplay;
 import javafx.scene.control.TreeItem;
@@ -57,10 +56,10 @@ import org.opengis.metadata.identification.Identification;
  */
 public class ResourceTree extends TreeTableView<Resource> {
 
-    private static final Image ICON_VECTOR = SwingFXUtils.toFXImage(FontGlyphs.createImage("\uE922",18,Color.GRAY),null);
-    private static final Image ICON_FOLDER = SwingFXUtils.toFXImage(FontGlyphs.createImage("\uE2C8",18,Color.GRAY),null);
-    private static final Image ICON_STORE = SwingFXUtils.toFXImage(FontGlyphs.createImage("\uE2C7",18,Color.GRAY),null);
-    private static final Image ICON_OTHER = SwingFXUtils.toFXImage(FontGlyphs.createImage("\uE24D",18,Color.GRAY),null);
+    private static final Image ICON_VECTOR = FontGlyphs.createImage("\uE922",18,Color.GRAY);
+    private static final Image ICON_FOLDER = FontGlyphs.createImage("\uE2C8",18,Color.GRAY);
+    private static final Image ICON_STORE = FontGlyphs.createImage("\uE2C7",18,Color.GRAY);
+    private static final Image ICON_OTHER = FontGlyphs.createImage("\uE24D",18,Color.GRAY);
 
     public ResourceTree() {
         getColumns().add(new ResourceNameColumn());
