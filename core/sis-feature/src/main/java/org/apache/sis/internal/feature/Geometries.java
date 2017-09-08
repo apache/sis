@@ -93,7 +93,7 @@ public abstract class Geometries<G> {
         this.pointClass    = pointClass;
         this.polylineClass = polylineClass;
         this.polygonClass  = polygonClass;
-        fallback = implementation;
+        this.fallback      = implementation;
     }
 
     /**

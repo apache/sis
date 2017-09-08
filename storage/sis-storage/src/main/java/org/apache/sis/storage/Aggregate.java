@@ -64,7 +64,7 @@ import org.apache.sis.internal.storage.Resources;
  */
 public interface Aggregate extends Resource {
     /**
-     * Returns the children resources of this aggregate. The returned collection contains at least all
+     * Returns the children resources of this aggregate. The returned collection contains
      * the resources listed by their name in the following {@linkplain #getMetadata() metadata} elements.
      * The returned collection may contain more resources if the metadata are incomplete,
      * and the resources do not need to be in the same order:

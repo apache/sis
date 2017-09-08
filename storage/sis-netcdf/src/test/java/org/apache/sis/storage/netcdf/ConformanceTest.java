@@ -31,6 +31,7 @@ import org.apache.sis.internal.netcdf.Decoder;
 import org.apache.sis.internal.netcdf.ucar.DecoderWrapper;
 import org.apache.sis.internal.netcdf.TestCase;
 import org.apache.sis.storage.DataStoreException;
+import org.apache.sis.setup.GeometryLibrary;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestUtilities;
 import org.junit.Test;
@@ -68,7 +69,7 @@ public final strictfp class ConformanceTest extends NetcdfMetadataTest {
      */
     @Override
     protected Metadata wrap(final NetcdfFile file) throws IOException {
-        final Decoder decoder = new DecoderWrapper(TestCase.LISTENERS, file);
+        final Decoder decoder = new DecoderWrapper(file, GeometryLibrary.JAVA2D, TestCase.LISTENERS);
         final MetadataReader ncISO = new MetadataReader(decoder);
         try {
             return ncISO.read();

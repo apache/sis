@@ -26,7 +26,6 @@ import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataSet;
 import org.apache.sis.storage.DataStore;
-import org.apache.sis.util.logging.WarningListeners;
 
 
 /**
@@ -41,11 +40,10 @@ public abstract class AbstractDataSet extends AbstractResource implements DataSe
     /**
      * Creates a new resource.
      *
-     * @param store      the data store which contains this resource.
-     * @param listeners  the set of registered warning listeners for the data store.
+     * @param store  the data store which contains this resource.
      */
-    protected AbstractDataSet(final DataStore store, final WarningListeners<DataStore> listeners) {
-        super(store, listeners);
+    protected AbstractDataSet(final DataStore store) {
+        super(store);
     }
 
     /**

@@ -24,6 +24,7 @@ import java.io.IOException;
 import javax.measure.Unit;
 import javax.measure.format.ParserException;
 import org.apache.sis.measure.Units;
+import org.apache.sis.setup.GeometryLibrary;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.util.logging.WarningListeners;
@@ -42,6 +43,13 @@ import org.apache.sis.util.logging.WarningListeners;
  */
 public abstract class Decoder implements Closeable {
     /**
+     * The library for geometric objects, or {@code null} for the default.
+     * This will be used only if there is geometric objects to create.
+     * If the netCDF file contains only raster data, this value is ignored.
+     */
+    public final GeometryLibrary geomlib;
+
+    /**
      * Where to send the warnings.
      */
     public final WarningListeners<DataStore> listeners;
@@ -55,10 +63,12 @@ public abstract class Decoder implements Closeable {
     /**
      * Creates a new decoder.
      *
+     * @param  geomlib    the library for geometric objects, or {@code null} for the default.
      * @param  listeners  where to send the warnings.
      */
-    protected Decoder(final WarningListeners<DataStore> listeners) {
+    protected Decoder(final GeometryLibrary geomlib, final WarningListeners<DataStore> listeners) {
         Objects.requireNonNull(listeners);
+        this.geomlib   = geomlib;
         this.listeners = listeners;
     }
 

@@ -18,6 +18,7 @@ package org.apache.sis.storage.netcdf;
 
 import java.io.IOException;
 import java.net.URI;
+import java.util.Collection;
 import org.opengis.metadata.Metadata;
 import org.opengis.parameter.ParameterValueGroup;
 import org.apache.sis.util.Debug;
@@ -25,10 +26,12 @@ import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.UnsupportedStorageException;
 import org.apache.sis.storage.StorageConnector;
+import org.apache.sis.storage.Aggregate;
 import org.apache.sis.internal.netcdf.Decoder;
 import org.apache.sis.internal.storage.URIDataStore;
 import org.apache.sis.metadata.ModifiableMetadata;
 import org.apache.sis.setup.OptionKey;
+import org.apache.sis.storage.Resource;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.Version;
 import ucar.nc2.constants.CDM;
@@ -46,7 +49,7 @@ import ucar.nc2.constants.CDM;
  * @since 0.3
  * @module
  */
-public class NetcdfStore extends DataStore {
+public class NetcdfStore extends DataStore implements Aggregate {
     /**
      * The object to use for decoding the NetCDF file content. There is two different implementations,
      * depending on whether we are using the embedded SIS decoder or a wrapper around the UCAR library.
@@ -158,6 +161,19 @@ public class NetcdfStore extends DataStore {
             }
         }
         return null;
+    }
+
+    /**
+     * Returns the resources (features or coverages) in this netCDF file.
+     *
+     * @return children resources that are components of this netCDF.
+     * @throws DataStoreException if an error occurred while fetching the components.
+     *
+     * @since 0.8
+     */
+    @Override
+    public Collection<Resource> components() throws DataStoreException {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     /**

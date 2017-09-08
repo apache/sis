@@ -16,6 +16,9 @@
  */
 package org.apache.sis.internal.netcdf;
 
+import org.apache.sis.setup.GeometryLibrary;
+import org.apache.sis.internal.feature.Geometries;
+
 // Branch-dependent imports
 import java.util.stream.Stream;
 import org.opengis.feature.Feature;
@@ -34,9 +37,18 @@ import org.opengis.feature.Feature;
  */
 public abstract class DiscreteSampling {
     /**
-     * Creates a new discrete sampling parser.
+     * The factory to use for creating geometries.
      */
-    protected DiscreteSampling() {
+    protected final Geometries<?> factory;
+
+    /**
+     * Creates a new discrete sampling parser.
+     *
+     * @param  library  the library for geometric objects, or {@code null} for the default.
+     * @throws IllegalArgumentException if the given library is non-null but not available.
+     */
+    protected DiscreteSampling(final GeometryLibrary library) {
+        factory = Geometries.implementation(library);
     }
 
     /**

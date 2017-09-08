@@ -80,7 +80,7 @@ class FolderAggregate extends AbstractResource implements Aggregate {
     private List<Resource> resources;
 
     FolderAggregate(FolderStore store, FolderAggregate parent, Path path) {
-        super(store, null);
+        super(store);
         this.store = store;
         this.parent = parent;
         this.path = path;

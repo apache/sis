@@ -55,6 +55,7 @@ import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.logging.WarningListeners;
 import org.apache.sis.util.Debug;
+import org.apache.sis.setup.GeometryLibrary;
 import org.apache.sis.measure.Units;
 import ucar.nc2.constants.CF;
 
@@ -220,15 +221,16 @@ public final class ChannelDecoder extends Decoder {
      *   <li>List of variables          (see {@link #readVariables(int, Dimension[])})</li>
      * </ul>
      *
-     * @param  listeners  where to send the warnings.
+     * @param  geomlib    the library for geometric objects, or {@code null} for the default.
      * @param  input      the channel and the buffer from where data are read.
+     * @param  listeners  where to send the warnings.
      * @throws IOException if an error occurred while reading the channel.
      * @throws DataStoreException if the content of the given channel is not a NetCDF file.
      */
-    public ChannelDecoder(final WarningListeners<DataStore> listeners, final ChannelDataInput input)
+    public ChannelDecoder(final ChannelDataInput input, final GeometryLibrary geomlib, final WarningListeners<DataStore> listeners)
             throws IOException, DataStoreException
     {
-        super(listeners);
+        super(geomlib, listeners);
         this.input = input;
         /*
          * Check the magic number, which is expected to be exactly 3 bytes forming the "CDF" string.
@@ -769,8 +771,10 @@ public final class ChannelDecoder extends Decoder {
      */
     @Override
     public DiscreteSampling[] getDiscreteSampling() throws IOException, DataStoreException {
-        if ("trajectory".equalsIgnoreCase(stringValue(CF.FEATURE_TYPE))) {
+        if ("trajectory".equalsIgnoreCase(stringValue(CF.FEATURE_TYPE))) try {
             return FeaturesInfo.create(this);
+        } catch (IllegalArgumentException e) {
+            throw new DataStoreException(e.getLocalizedMessage(), e);
         }
         return new FeaturesInfo[0];
     }
