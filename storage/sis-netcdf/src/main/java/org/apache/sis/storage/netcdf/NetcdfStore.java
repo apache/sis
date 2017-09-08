@@ -40,7 +40,7 @@ import ucar.nc2.constants.CDM;
 
 
 /**
- * A data store backed by NetCDF files.
+ * A data store backed by netCDF files.
  * Instances of this data store are created by {@link NetcdfStoreProvider#open(StorageConnector)}.
  *
  * @author  Martin Desruisseaux (Geomatys)
@@ -53,7 +53,7 @@ import ucar.nc2.constants.CDM;
  */
 public class NetcdfStore extends DataStore implements Aggregate {
     /**
-     * The object to use for decoding the NetCDF file content. There is two different implementations,
+     * The object to use for decoding the netCDF file content. There is two different implementations,
      * depending on whether we are using the embedded SIS decoder or a wrapper around the UCAR library.
      */
     private final Decoder decoder;
@@ -76,12 +76,12 @@ public class NetcdfStore extends DataStore implements Aggregate {
     private List<Resource> components;
 
     /**
-     * Creates a new NetCDF store from the given file, URL, stream or {@link ucar.nc2.NetcdfFile} object.
+     * Creates a new netCDF store from the given file, URL, stream or {@link ucar.nc2.NetcdfFile} object.
      * This constructor invokes {@link StorageConnector#closeAllExcept(Object)}, keeping open only the
      * needed resource.
      *
      * @param  connector information about the storage (URL, stream, {@link ucar.nc2.NetcdfFile} instance, <i>etc</i>).
-     * @throws DataStoreException if an error occurred while opening the NetCDF file.
+     * @throws DataStoreException if an error occurred while opening the netCDF file.
      *
      * @deprecated Replaced by {@link #NetcdfStore(NetcdfStoreProvider, StorageConnector)}.
      */
@@ -91,13 +91,13 @@ public class NetcdfStore extends DataStore implements Aggregate {
     }
 
     /**
-     * Creates a new NetCDF store from the given file, URL, stream or {@link ucar.nc2.NetcdfFile} object.
+     * Creates a new netCDF store from the given file, URL, stream or {@link ucar.nc2.NetcdfFile} object.
      * This constructor invokes {@link StorageConnector#closeAllExcept(Object)}, keeping open only the
      * needed resource.
      *
      * @param  provider   the factory that created this {@code DataStore} instance, or {@code null} if unspecified.
      * @param  connector  information about the storage (URL, stream, {@link ucar.nc2.NetcdfFile} instance, <i>etc</i>).
-     * @throws DataStoreException if an error occurred while opening the NetCDF file.
+     * @throws DataStoreException if an error occurred while opening the netCDF file.
      *
      * @since 0.8
      */
@@ -154,7 +154,7 @@ public class NetcdfStore extends DataStore implements Aggregate {
     }
 
     /**
-     * Returns the version number of the Climate and Forecast (CF) conventions used in the NetCDF file.
+     * Returns the version number of the Climate and Forecast (CF) conventions used in the netCDF file.
      * The use of CF convention is mandated by the OGC 11-165r2 standard
      * (<cite>CF-netCDF3 Data Model Extension standard</cite>).
      *
@@ -192,9 +192,9 @@ public class NetcdfStore extends DataStore implements Aggregate {
     }
 
     /**
-     * Closes this NetCDF store and releases any underlying resources.
+     * Closes this netCDF store and releases any underlying resources.
      *
-     * @throws DataStoreException if an error occurred while closing the NetCDF file.
+     * @throws DataStoreException if an error occurred while closing the netCDF file.
      */
     @Override
     public synchronized void close() throws DataStoreException {
@@ -207,10 +207,10 @@ public class NetcdfStore extends DataStore implements Aggregate {
     }
 
     /**
-     * Returns a string representation of this NetCDF store for debugging purpose.
+     * Returns a string representation of this netCDF store for debugging purpose.
      * The content of the string returned by this method may change in any future SIS version.
      *
-     * @return a string representation of this datastore for debugging purpose.
+     * @return a string representation of this data store for debugging purpose.
      */
     @Debug
     @Override

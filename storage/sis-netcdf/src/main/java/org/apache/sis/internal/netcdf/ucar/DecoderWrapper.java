@@ -51,7 +51,7 @@ import org.apache.sis.storage.DataStoreException;
 
 
 /**
- * Provides NetCDF decoding services based on the NetCDF library.
+ * Provides netCDF decoding services based on the netCDF library.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
@@ -60,7 +60,7 @@ import org.apache.sis.storage.DataStoreException;
  */
 public final class DecoderWrapper extends Decoder implements CancelTask {
     /**
-     * The NetCDF file to read.
+     * The netCDF file to read.
      * This file is set at construction time.
      *
      * <p>This {@code DecoderWrapper} class does <strong>not</strong> close this file.
@@ -98,12 +98,12 @@ public final class DecoderWrapper extends Decoder implements CancelTask {
     private transient GridGeometry[] geometries;
 
     /**
-     * Creates a new decoder for the given NetCDF file. While this constructor accepts arbitrary
+     * Creates a new decoder for the given netCDF file. While this constructor accepts arbitrary
      * {@link NetcdfFile} instance, the {@link NetcdfDataset} subclass is necessary in order to
      * get coordinate system information.
      *
      * @param geomlib    the library for geometric objects, or {@code null} for the default.
-     * @param file       the NetCDF file from which to read data.
+     * @param file       the netCDF file from which to read data.
      * @param listeners  where to send the warnings.
      */
     public DecoderWrapper(final NetcdfFile file, final GeometryLibrary geomlib, final WarningListeners<DataStore> listeners) {
@@ -115,9 +115,9 @@ public final class DecoderWrapper extends Decoder implements CancelTask {
      * Creates a new decoder for the given filename.
      *
      * @param  geomlib    the library for geometric objects, or {@code null} for the default.
-     * @param  filename   the name of the NetCDF file from which to read data.
+     * @param  filename   the name of the netCDF file from which to read data.
      * @param  listeners  where to send the warnings.
-     * @throws IOException if an error occurred while opening the NetCDF file.
+     * @throws IOException if an error occurred while opening the netCDF file.
      */
     @SuppressWarnings("ThisEscapedInObjectConstruction")
     public DecoderWrapper(final String filename, final GeometryLibrary geomlib, final WarningListeners<DataStore> listeners)
@@ -172,7 +172,7 @@ public final class DecoderWrapper extends Decoder implements CancelTask {
     /**
      * Returns the path which is currently set. The array returned by this method may be only
      * a subset of the array given to {@link #setSearchPath(String[])} since only the name of
-     * groups which have been found in the NetCDF file are returned by this method.
+     * groups which have been found in the netCDF file are returned by this method.
      *
      * @return the current search path.
      */
@@ -199,7 +199,7 @@ public final class DecoderWrapper extends Decoder implements CancelTask {
     }
 
     /**
-     * Returns the NetCDF attribute of the given name in the given group, or {@code null} if none.
+     * Returns the netCDF attribute of the given name in the given group, or {@code null} if none.
      * This method is invoked for every global and group attributes to be read by this class (but
      * not {@linkplain ucar.nc2.VariableSimpleIF variable} attributes), thus providing a single point
      * where we can filter the attributes to be read - if we want to do that in a future version.
@@ -341,7 +341,7 @@ public final class DecoderWrapper extends Decoder implements CancelTask {
     }
 
     /**
-     * Returns all variables found in the NetCDF file.
+     * Returns all variables found in the netCDF file.
      * This method returns a direct reference to an internal array - do not modify.
      *
      * @return all variables, or an empty array if none.
@@ -389,7 +389,7 @@ public final class DecoderWrapper extends Decoder implements CancelTask {
     }
 
     /**
-     * Returns all grid geometries (related to coordinate systems) found in the NetCDF file.
+     * Returns all grid geometries (related to coordinate systems) found in the netCDF file.
      * This method returns a direct reference to an internal array - do not modify.
      *
      * @return all grid geometries, or an empty array if none.
@@ -417,7 +417,7 @@ public final class DecoderWrapper extends Decoder implements CancelTask {
     }
 
     /**
-     * Invoked by the UCAR NetCDF library for checking if the reading process has been canceled.
+     * Invoked by the UCAR netCDF library for checking if the reading process has been canceled.
      * This method returns the {@link #canceled} flag.
      *
      * @return the {@link #canceled} flag.
@@ -438,7 +438,7 @@ public final class DecoderWrapper extends Decoder implements CancelTask {
     }
 
     /**
-     * Invoked by the UCAR NetCDF library when an error occurred.
+     * Invoked by the UCAR netCDF library when an error occurred.
      *
      * @param  message  the error message.
      */
@@ -448,7 +448,7 @@ public final class DecoderWrapper extends Decoder implements CancelTask {
     }
 
     /**
-     * Closes the NetCDF file.
+     * Closes the netCDF file.
      *
      * @throws IOException if an error occurred while closing the file.
      */

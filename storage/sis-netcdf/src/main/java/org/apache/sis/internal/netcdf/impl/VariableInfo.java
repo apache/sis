@@ -38,9 +38,9 @@ import org.apache.sis.math.Vector;
 
 
 /**
- * Description of a variable found in a NetCDF file.
+ * Description of a variable found in a netCDF file.
  * The natural ordering of {@code VariableInfo} is the order in which the variables appear in the stream of bytes
- * that make the NetCDF file. Reading variables in natural order reduces the amount of channel seek operations.
+ * that make the netCDF file. Reading variables in natural order reduces the amount of channel seek operations.
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
@@ -103,7 +103,7 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
     private final Map<String,Object> attributes;
 
     /**
-     * The NetCDF type of data, or {@code null} if unknown.
+     * The netCDF type of data, or {@code null} if unknown.
      */
     private final DataType dataType;
 
@@ -115,7 +115,7 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
 
     /**
      * {@code true} if this variable seems to be a coordinate system axis, as determined by comparing its name
-     * with the name of all dimensions in the NetCDF file. This information is computed at construction time
+     * with the name of all dimensions in the netCDF file. This information is computed at construction time
      * because requested more than once.
      *
      * @see #isCoordinateSystemAxis()
@@ -136,9 +136,9 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
      * @param  name        the variable name.
      * @param  dimensions  the dimensions of this variable.
      * @param  attributes  the attributes associates to the variable, or an empty map if none.
-     * @param  dataType    the NetCDF type of data, or {@code null} if unknown.
+     * @param  dataType    the netCDF type of data, or {@code null} if unknown.
      * @param  size        the variable size, used for verification purpose only.
-     * @param  offset      the offset where the variable data begins in the NetCDF file.
+     * @param  offset      the offset where the variable data begins in the netCDF file.
      */
     VariableInfo(final ChannelDataInput      input,
                  final String                name,
@@ -157,7 +157,7 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
         this.attributes = attributes;
         this.dataType   = dataType;
         /*
-         * The 'size' value is provided in the NetCDF files, but doesn't need to be stored since it
+         * The 'size' value is provided in the netCDF files, but doesn't need to be stored since it
          * is redundant with the dimension lengths and is not large enough for big variables anyway.
          */
         if (dataType != null && dataType.number >= Numbers.BYTE && dataType.number <= Numbers.DOUBLE) {
@@ -229,7 +229,7 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
 
     /**
      * Returns {@code true} if this variable seems to be a coordinate system axis,
-     * determined by comparing its name with the name of all dimensions in the NetCDF file.
+     * determined by comparing its name with the name of all dimensions in the netCDF file.
      */
     @Override
     public boolean isCoordinateSystemAxis() {
@@ -464,8 +464,8 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
     }
 
     /**
-     * Returns -1 if this variable is located before the other variable in the streal of bytes that make
-     * the NetCDF file, or +1 if it is located after.
+     * Returns -1 if this variable is located before the other variable in the stream of bytes that make
+     * the netCDF file, or +1 if it is located after.
      */
     @Override
     public int compareTo(final VariableInfo other) {

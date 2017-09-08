@@ -37,7 +37,7 @@ import static org.junit.Assert.*;
 @DependsOn(CommandRunnerTest.class)
 public final strictfp class MetadataCommandTest extends TestCase {
     /**
-     * Tests the sub-command on a NetCDF file.
+     * Tests the sub-command on a netCDF file.
      *
      * @throws Exception if an error occurred while creating the command.
      */
@@ -51,7 +51,7 @@ public final strictfp class MetadataCommandTest extends TestCase {
     }
 
     /**
-     * Verifies the NetCDF metadata. The given string can be either a text format or XML format.
+     * Verifies the netCDF metadata. The given string can be either a text format or XML format.
      * This method will check only for some keyword - this is not an extensive check of the result.
      */
     private static void verifyNetCDF(final String expectedHeader, final String result) {

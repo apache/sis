@@ -308,14 +308,14 @@ public final class Citations extends Static {
      * <a href="http://www.unidata.ucar.edu/software/netcdf-java">NetCDF</a> specification.
      * The {@linkplain IdentifierSpace#getName() name} of this identifier space is fixed to {@code "NetCDF"}.
      * This citation is used as the authority for some map projection method and parameter names
-     * as used in NetCDF files.
+     * as used in netCDF files.
      *
      * <div class="note"><b>Example</b>
-     * the Mercator projection can be defined in a NetCDF file with the following parameters:
+     * the Mercator projection can be defined in a netCDF file with the following parameters:
      *
      * <table class="sis">
-     * <caption>Example of identifiers in NetCDF name space</caption>
-     * <tr><th>Name in NetCDF namespace</th>                           <th>Name in default namespace (EPSG)</th></tr>
+     * <caption>Example of identifiers in netCDF name space</caption>
+     * <tr><th>Name in netCDF namespace</th>                           <th>Name in default namespace (EPSG)</th></tr>
      * <tr><td>{@code "NetCDF:semi_major_axis"}</td>                   <td></td></tr>
      * <tr><td>{@code "NetCDF:semi_minor_axis"}</td>                   <td></td></tr>
      * <tr><td>{@code "NetCDF:latitude_of_projection_origin"}</td>     <td>Latitude of natural origin</td></tr>

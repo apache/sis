@@ -78,7 +78,7 @@ import static org.apache.sis.internal.util.CollectionsExt.first;
 
 
 /**
- * Mapping from NetCDF metadata to ISO 19115-2 metadata. The {@link String} constants declared in
+ * Mapping from netCDF metadata to ISO 19115-2 metadata. The {@link String} constants declared in
  * the {@linkplain AttributeNames parent class} are the name of attributes examined by this class.
  * The current implementation searches the attribute values in the following places, in that order:
  *
@@ -144,7 +144,7 @@ final class MetadataReader extends MetadataBuilder {
     private static final VerticalCRS VERTICAL_CRS = null;
 
     /**
-     * The source of NetCDF attributes from which to infer ISO metadata.
+     * The source of netCDF attributes from which to infer ISO metadata.
      * This source is set at construction time.
      *
      * <p>This {@code MetadataReader} class does <strong>not</strong> close this source.
@@ -168,7 +168,7 @@ final class MetadataReader extends MetadataBuilder {
      * more than once.
      *
      * <p>The point of contact is stored in the two following places. The semantic of those two
-     * contacts is not strictly identical, but the distinction is not used in NetCDF file:</p>
+     * contacts is not strictly identical, but the distinction is not used in netCDF file:</p>
      *
      * <ul>
      *   <li>{@link DefaultMetadata#getContacts()}</li>
@@ -181,9 +181,9 @@ final class MetadataReader extends MetadataBuilder {
     private transient Responsibility pointOfContact;
 
     /**
-     * Creates a new <cite>NetCDF to ISO</cite> mapper for the given source.
+     * Creates a new <cite>netCDF to ISO</cite> mapper for the given source.
      *
-     * @param  decoder  the source of NetCDF attributes.
+     * @param  decoder  the source of netCDF attributes.
      */
     MetadataReader(final Decoder decoder) {
         this.decoder = decoder;
@@ -328,22 +328,22 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
     }
 
     /**
-     * Returns {@code true} if the given NetCDF attribute is either null or equals to the
+     * Returns {@code true} if the given netCDF attribute is either null or equals to the
      * string value of the given metadata value.
      *
      * @param metadata  The value stored in the metadata object.
-     * @param attribute The value parsed from the NetCDF file.
+     * @param attribute The value parsed from the netCDF file.
      */
     private static boolean canShare(final CharSequence metadata, final String attribute) {
         return (attribute == null) || (metadata != null && metadata.toString().equals(attribute));
     }
 
     /**
-     * Returns {@code true} if the given NetCDF attribute is either null or equals to one
+     * Returns {@code true} if the given netCDF attribute is either null or equals to one
      * of the values in the given collection.
      *
      * @param  metadata   the value stored in the metadata object.
-     * @param  attribute  the value parsed from the NetCDF file.
+     * @param  attribute  the value parsed from the netCDF file.
      */
     private static boolean canShare(final Collection<String> metadata, final String attribute) {
         return (attribute == null) || metadata.contains(attribute);
@@ -353,7 +353,7 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
      * Returns {@code true} if the given URL is null, or if the given resource contains that URL.
      *
      * @param  resource  the value stored in the metadata object.
-     * @param  url       the value parsed from the NetCDF file.
+     * @param  url       the value parsed from the netCDF file.
      */
     private static boolean canShare(final OnlineResource resource, final String url) {
         return (url == null) || (resource != null && canShare(resource.getLinkage().toString(), url));
@@ -363,7 +363,7 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
      * Returns {@code true} if the given email is null, or if the given address contains that email.
      *
      * @param  address  the value stored in the metadata object.
-     * @param  email    the value parsed from the NetCDF file.
+     * @param  email    the value parsed from the netCDF file.
      */
     private static boolean canShare(final Address address, final String email) {
         return (email == null) || (address != null && canShare(address.getElectronicMailAddresses(), email));
@@ -548,7 +548,7 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
             }
         }
         /*
-         * There is no distinction in NetCDF files between "point of contact" and "creator".
+         * There is no distinction in netCDF files between "point of contact" and "creator".
          * We take the first one as the data originator.
          */
         addCitedResponsibleParty(pointOfContact, Role.ORIGINATOR);
@@ -602,7 +602,7 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
             addSpatialRepresentation(forCodeName(SpatialRepresentationType.class, stringValue(DATA_TYPE)));
             if (!hasExtent) {
                 /*
-                 * Takes only ONE extent, because a NetCDF file may declare many time the same
+                 * Takes only ONE extent, because a netCDF file may declare many time the same
                  * extent with different precision. The groups are ordered in such a way that
                  * the first extent should be the most accurate one.
                  */
@@ -629,7 +629,7 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
      * Adds information about axes and cell geometry.
      * This is the {@code <gmd:spatialRepresentationInfo>} element in XML.
      *
-     * @param  cs  the grid geometry (related to the NetCDF coordinate system).
+     * @param  cs  the grid geometry (related to the netCDF coordinate system).
      */
     private void addSpatialRepresentationInfo(final GridGeometry cs) throws IOException, DataStoreException {
         final Axis[] axes = cs.getAxes();
@@ -637,7 +637,7 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
             final int dim = axes.length - i;
             final Axis axis = axes[--i];
             /*
-             * Axes usually have exactly one dimension. However some NetCDF axes are backed by a two-dimensional
+             * Axes usually have exactly one dimension. However some netCDF axes are backed by a two-dimensional
              * conversion grid. In such case, our Axis constructor should have ensured that the first element in
              * the 'sourceDimensions' and 'sourceSizes' arrays are for the grid dimension which is most closely
              * oriented toward the axis direction.
@@ -757,7 +757,7 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
     }
 
     /**
-     * Adds information about all NetCDF variables. This is the {@code <gmd:contentInfo>} element in XML.
+     * Adds information about all netCDF variables. This is the {@code <gmd:contentInfo>} element in XML.
      * This method groups variables by their domains, i.e. variables having the same set of axes are grouped together.
      */
     private void addContentInfo() {
@@ -771,7 +771,7 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
         final String processingLevel = stringValue(PROCESSING_LEVEL);
         for (final List<Variable> group : contents.values()) {
             /*
-             * Instantiate a CoverageDescription for each distinct set of NetCDF dimensions
+             * Instantiate a CoverageDescription for each distinct set of netCDF dimensions
              * (e.g. longitude,latitude,time). This separation is based on the fact that a
              * coverage has only one domain for every range of values.
              */
@@ -799,7 +799,7 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
      * Adds metadata about a sample dimension (or band) from the given variable.
      * This is the {@code <gmd:dimension>} element in XML.
      *
-     * @param  variable  the NetCDF variable.
+     * @param  variable  the netCDF variable.
      */
     private void addSampleDimension(final Variable variable) {
         newSampleDimension();
@@ -842,7 +842,7 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
      * <p><b>Note:</b> ISO 19115 range elements are approximatively equivalent to
      * {@code org.apache.sis.coverage.Category} in the {@code sis-coverage} module.</p>
      *
-     * @param  variable  the NetCDF variable.
+     * @param  variable  the netCDF variable.
      * @param  name      one of the elements in the {@link AttributeNames#FLAG_NAMES} attribute, or {@code null}.
      * @param  meaning   one of the elements in the {@link AttributeNames#FLAG_MEANINGS} attribute or {@code null}.
      * @param  mask      one of the elements in the {@link AttributeNames#FLAG_MASKS} attribute or {@code null}.
@@ -857,7 +857,7 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
     }
 
     /**
-     * Adds a globally unique identifier for the current NetCDF {@linkplain #decoder}.
+     * Adds a globally unique identifier for the current netCDF {@linkplain #decoder}.
      * The current implementation builds the identifier from the following attributes:
      *
      * <ul>
@@ -891,7 +891,7 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
     }
 
     /**
-     * Creates an ISO {@code Metadata} object from the information found in the NetCDF file.
+     * Creates an ISO {@code Metadata} object from the information found in the netCDF file.
      *
      * @return the ISO metadata object.
      * @throws IOException if an I/O operation was necessary but failed.
@@ -910,7 +910,7 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
         addContentInfo();
         /*
          * Add the dimension information, if any. This metadata node
-         * is built from the NetCDF CoordinateSystem objects.
+         * is built from the netCDF CoordinateSystem objects.
          */
         for (final GridGeometry cs : decoder.getGridGeometries()) {
             if (cs.getSourceDimensions() >= Variable.MIN_DIMENSION &&

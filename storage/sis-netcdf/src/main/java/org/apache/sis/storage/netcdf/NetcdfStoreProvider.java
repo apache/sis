@@ -51,7 +51,7 @@ import org.apache.sis.util.Version;
 
 /**
  * The provider of {@link NetcdfStore} instances. Given a {@link StorageConnector} input,
- * this class tries to instantiate a {@code NetcdfStore} using the embedded NetCDF decoder.
+ * this class tries to instantiate a {@code NetcdfStore} using the embedded netCDF decoder.
  * If the embedded decoder can not decode the given input and the UCAR library is reachable
  * on the classpath, then this class tries to instantiate a {@code NetcdfStore} backed by
  * the UCAR library.
@@ -76,7 +76,7 @@ public class NetcdfStoreProvider extends DataStoreProvider {
     static final String NAME = "NetCDF";
 
     /**
-     * The MIME type for NetCDF files.
+     * The MIME type for netCDF files.
      */
     static final String MIME_TYPE = "application/x-netcdf";
 
@@ -105,7 +105,7 @@ public class NetcdfStoreProvider extends DataStoreProvider {
 
     /**
      * If the {@link #netcdfFileClass} has been found, then the {@link DecoderWrapper} constructor receiving
-     * in argument the name of the NetCDF file as a {@link String} object. Otherwise {@code null}.
+     * in argument the name of the netCDF file as a {@link String} object. Otherwise {@code null}.
      */
     private static volatile Constructor<? extends Decoder> createFromPath;
 
@@ -260,7 +260,7 @@ public class NetcdfStoreProvider extends DataStoreProvider {
      * @param  listeners  where to send the warnings.
      * @param  connector  information about the input (file, input stream, <i>etc.</i>)
      * @return the decoder for the given input, or {@code null} if the input type is not recognized.
-     * @throws IOException if an error occurred while opening the NetCDF file.
+     * @throws IOException if an error occurred while opening the netCDF file.
      * @throws DataStoreException if a logical error (other than I/O) occurred.
      */
     static Decoder decoder(final WarningListeners<DataStore> listeners, final StorageConnector connector)
@@ -291,17 +291,17 @@ public class NetcdfStoreProvider extends DataStoreProvider {
     }
 
     /**
-     * Creates a new NetCDF decoder as a wrapper around the UCAR library. This decoder is used only when we can
-     * not create our embedded NetCDF decoder. This method uses reflection for creating the wrapper, in order
+     * Creates a new netCDF decoder as a wrapper around the UCAR library. This decoder is used only when we can
+     * not create our embedded netCDF decoder. This method uses reflection for creating the wrapper, in order
      * to keep the UCAR dependency optional.
      *
-     * @param  input      the NetCDF file object of filename string from which to read data.
+     * @param  input      the netCDF file object of filename string from which to read data.
      * @param  isUCAR     {@code true} if {@code input} is an instance of the UCAR {@link ucar.nc2.NetcdfFile} object,
      *                    or {@code false} if it is the filename as a {@code String}.
      * @param  geomlib    the library for geometric objects, or {@code null} for the default.
      * @param  listeners  where to send the warnings.
      * @return the {@link DecoderWrapper} instance for the given input, or {@code null} if the input type is not recognized.
-     * @throws IOException if an error occurred while opening the NetCDF file.
+     * @throws IOException if an error occurred while opening the netCDF file.
      * @throws DataStoreException if a logical error (other than I/O) occurred.
      */
     private static Decoder createByReflection(final Object input, final boolean isUCAR,
@@ -385,7 +385,7 @@ public class NetcdfStoreProvider extends DataStoreProvider {
                      *
                      * ReflectiveOperationException should never happen because API compatibility shall be verified
                      * by the JUnit tests. If it happen anyway  (for example because the user puts on his classpath
-                     * a different version of the NetCDF library than the one we tested), report a warning.
+                     * a different version of the netCDF library than the one we tested), report a warning.
                      */
                     severity = Level.WARNING;
                     cause = e;

@@ -50,7 +50,7 @@ import org.opengis.feature.AttributeType;
 
 /**
  * Implementations of the discrete sampling features decoder. This implementation shall be able to decode at least the
- * NetCDF files encoded as specified in the OGC 16-114 (OGC Moving Features Encoding Extension: NetCDF) specification.
+ * netCDF files encoded as specified in the OGC 16-114 (OGC Moving Features Encoding Extension: netCDF) specification.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
@@ -383,12 +383,12 @@ search: for (final VariableInfo counts : decoder.variables) {
 
         /**
          * Returns the characteristics of the iteration over feature instances.
-         * The iteration is assumed {@link #ORDERED} in the declaration order in the NetCDF file.
+         * The iteration is assumed {@link #ORDERED} in the declaration order in the netCDF file.
          * The iteration is {@link #NONNULL} (i.e. {@link #tryAdvance(Consumer)} is not allowed
          * to return null value) and {@link #IMMUTABLE} (i.e. we do not support modification of
-         * the NetCDF file while an iteration is in progress).
+         * the netCDF file while an iteration is in progress).
          *
-         * @return characteristics of iteration over the features in the NetCDF file.
+         * @return characteristics of iteration over the features in the netCDF file.
          */
         @Override
         public int characteristics() {

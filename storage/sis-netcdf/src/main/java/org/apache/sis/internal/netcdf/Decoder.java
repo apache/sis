@@ -31,7 +31,7 @@ import org.apache.sis.util.logging.WarningListeners;
 
 
 /**
- * The API used internally by Apache SIS for fetching variables and attribute values from a NetCDF file.
+ * The API used internally by Apache SIS for fetching variables and attribute values from a netCDF file.
  *
  * <p>This {@code Decoder} class and subclasses are <strong>not</strong> thread-safe.
  * Synchronizations are caller's responsibility.</p>
@@ -91,7 +91,7 @@ public abstract class Decoder implements Closeable {
     /**
      * Returns the path which is currently set. The array returned by this method may be only
      * a subset of the array given to {@link #setSearchPath(String[])} since only the name of
-     * groups which have been found in the NetCDF file are returned by this method.
+     * groups which have been found in the netCDF file are returned by this method.
      *
      * @return the current search path.
      */
@@ -212,7 +212,7 @@ public abstract class Decoder implements Closeable {
     }
 
     /**
-     * Returns all variables found in the NetCDF file.
+     * Returns all variables found in the netCDF file.
      * This method may return a direct reference to an internal array - do not modify.
      *
      * @return all variables, or an empty array if none.
@@ -231,7 +231,7 @@ public abstract class Decoder implements Closeable {
     public abstract DiscreteSampling[] getDiscreteSampling() throws IOException, DataStoreException;
 
     /**
-     * Returns all grid geometries (related to coordinate systems) found in the NetCDF file.
+     * Returns all grid geometries (related to coordinate systems) found in the netCDF file.
      * This method may return a direct reference to an internal array - do not modify.
      *
      * @return all grid geometries, or an empty array if none.
