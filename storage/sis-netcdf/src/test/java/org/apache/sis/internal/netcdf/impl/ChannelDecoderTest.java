@@ -25,6 +25,7 @@ import org.apache.sis.internal.netcdf.Decoder;
 import org.apache.sis.internal.netcdf.DecoderTest;
 import org.apache.sis.internal.storage.io.ChannelDataInput;
 import org.apache.sis.storage.DataStoreException;
+import org.apache.sis.setup.GeometryLibrary;
 import org.apache.sis.test.DependsOn;
 
 import static org.junit.Assert.*;
@@ -75,7 +76,7 @@ public final strictfp class ChannelDecoderTest extends DecoderTest {
         assertNotNull(name, in);
         final ChannelDataInput input = new ChannelDataInput(name,
                 Channels.newChannel(in), ByteBuffer.allocate(4096), false);
-        return new ChannelDecoder(LISTENERS, input);
+        return new ChannelDecoder(input, GeometryLibrary.JAVA2D, LISTENERS);
     }
 
     /**

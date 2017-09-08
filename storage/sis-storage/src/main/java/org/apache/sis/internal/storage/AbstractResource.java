@@ -16,6 +16,7 @@
  */
 package org.apache.sis.internal.storage;
 
+import java.lang.reflect.Field;
 import org.apache.sis.storage.Resource;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.util.logging.WarningListeners;
@@ -31,35 +32,44 @@ import org.apache.sis.util.logging.WarningListeners;
  */
 public abstract class AbstractResource implements Resource {
     /**
+     * An accessor to the {@code DataStore.listeners} protected field.
+     * This hack will be removed if we move {@code AbstractResource} to the {@code org.apache.sis.storage} package.
+     */
+    private static final Field LISTENERS;
+    static {
+        try {
+            LISTENERS = DataStore.class.getDeclaredField("listeners");
+        } catch (NoSuchFieldException e) {
+            throw new AssertionError(e);
+        }
+        LISTENERS.setAccessible(true);
+    }
+
+    /**
      * The data store which contains this resource.
      */
     protected final DataStore store;
 
     /**
-     * The set of registered warning listeners for the data store.
-     *
-     * @todo Remove this field if we move {@code AbstractResource} to the {@code org.apache.sis.storage} package,
-     *       since we would be able to access {@code DataStore.listeners} directly.
-     */
-    private final WarningListeners<DataStore> listeners;
-
-    /**
      * Creates a new resource.
      *
-     * @param store      the data store which contains this resource.
-     * @param listeners  the set of registered warning listeners for the data store.
+     * @param store  the data store which contains this resource.
      */
-    protected AbstractResource(final DataStore store, final WarningListeners<DataStore> listeners) {
-        this.store     = store;
-        this.listeners = listeners;
+    protected AbstractResource(final DataStore store) {
+        this.store = store;
     }
 
     /**
-     * The set of registered warning listeners for the data store.
+     * Returns the set of registered warning listeners for the data store.
      *
      * @return the registered warning listeners for the data store.
      */
+    @SuppressWarnings("unchecked")
     protected final WarningListeners<DataStore> listeners() {
-        return listeners;
+        try {
+            return (WarningListeners<DataStore>) LISTENERS.get(store);
+        } catch (IllegalAccessException e) {
+            throw new AssertionError(e);        // Should never happen since we have made the field accessible.
+        }
     }
 }

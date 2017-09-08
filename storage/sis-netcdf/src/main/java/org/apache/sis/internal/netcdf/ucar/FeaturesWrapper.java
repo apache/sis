@@ -16,6 +16,7 @@
  */
 package org.apache.sis.internal.netcdf.ucar;
 
+import org.apache.sis.setup.GeometryLibrary;
 import org.apache.sis.internal.netcdf.DiscreteSampling;
 import ucar.nc2.ft.FeatureCollection;
 
@@ -40,8 +41,12 @@ final class FeaturesWrapper extends DiscreteSampling {
 
     /**
      * Creates a new discrete sampling parser.
+     *
+     * @param  factory  the library for geometric objects, or {@code null} for the default.
+     * @throws IllegalArgumentException if the given library is non-null but not available.
      */
-    FeaturesWrapper(final FeatureCollection features) {
+    FeaturesWrapper(final FeatureCollection features, final GeometryLibrary factory) {
+        super(factory);
         this.features = features;
     }
 

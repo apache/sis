@@ -26,6 +26,7 @@ import org.apache.sis.internal.netcdf.ucar.DecoderWrapper;
 import org.apache.sis.internal.netcdf.impl.ChannelDecoderTest;
 import org.apache.sis.metadata.iso.DefaultMetadata;
 import org.apache.sis.storage.DataStoreException;
+import org.apache.sis.setup.GeometryLibrary;
 import org.apache.sis.test.DependsOn;
 import org.junit.Test;
 
@@ -82,7 +83,7 @@ public final strictfp class MetadataReaderTest extends IOTestCase {
     @Test
     public void testUCAR() throws IOException, DataStoreException {
         final Metadata metadata;
-        try (Decoder input = new DecoderWrapper(TestCase.LISTENERS, new NetcdfDataset(open(NCEP)))) {
+        try (Decoder input = new DecoderWrapper(new NetcdfDataset(open(NCEP)), GeometryLibrary.JAVA2D, TestCase.LISTENERS)) {
             metadata = new MetadataReader(input).read();
         }
         compareToExpected(metadata);

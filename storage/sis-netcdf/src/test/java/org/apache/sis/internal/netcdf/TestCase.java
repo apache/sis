@@ -27,6 +27,7 @@ import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.util.logging.EmptyWarningListeners;
 import org.apache.sis.internal.netcdf.ucar.DecoderWrapper;
 import org.apache.sis.internal.system.Modules;
+import org.apache.sis.setup.GeometryLibrary;
 import org.opengis.wrapper.netcdf.IOTestCase;
 import ucar.nc2.dataset.NetcdfDataset;
 import org.junit.AfterClass;
@@ -108,7 +109,7 @@ public abstract strictfp class TestCase extends IOTestCase {
      * @throws DataStoreException if a logical error occurred.
      */
     protected Decoder createDecoder(final String name) throws IOException, DataStoreException {
-        return new DecoderWrapper(LISTENERS, new NetcdfDataset(open(name)));
+        return new DecoderWrapper(new NetcdfDataset(open(name)), GeometryLibrary.JAVA2D, LISTENERS);
     }
 
     /**

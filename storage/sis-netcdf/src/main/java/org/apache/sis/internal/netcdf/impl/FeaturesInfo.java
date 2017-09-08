@@ -27,12 +27,12 @@ import org.apache.sis.math.Vector;
 import org.apache.sis.internal.netcdf.DataType;
 import org.apache.sis.internal.netcdf.DiscreteSampling;
 import org.apache.sis.internal.netcdf.Resources;
-import org.apache.sis.internal.feature.Geometries;
 import org.apache.sis.internal.feature.MovingFeature;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.feature.DefaultFeatureType;
 import org.apache.sis.feature.DefaultAttributeType;
 import org.apache.sis.util.collection.BackingStoreException;
+import org.apache.sis.setup.GeometryLibrary;
 import ucar.nc2.constants.CF;
 
 // Branch-dependent imports
@@ -88,18 +88,20 @@ final class FeaturesInfo extends DiscreteSampling {
      */
     private final FeatureType type;
 
-    private final Geometries<?> factory = Geometries.implementation(null);          // TODO: shall be given by the store.
-
     /**
      * Creates a new discrete sampling parser for features identified by the given variable.
      *
      * @param  counts       the count of instances per feature.
      * @param  identifiers  the feature identifiers.
+     * @param  library      the library for geometric objects, or {@code null} for the default.
+     * @throws IllegalArgumentException if the given library is non-null but not available.
      */
     @SuppressWarnings("rawtypes")                               // Because of generic array creation.
     private FeaturesInfo(final Vector counts, final VariableInfo identifiers, final VariableInfo time,
-            final Collection<VariableInfo> coordinates, final Collection<VariableInfo> properties)
+            final Collection<VariableInfo> coordinates, final Collection<VariableInfo> properties,
+            final GeometryLibrary library)
     {
+        super(library);
         this.counts      = counts;
         this.identifiers = identifiers;
         this.coordinates = coordinates.toArray(new VariableInfo[coordinates.size()]);
@@ -154,6 +156,8 @@ final class FeaturesInfo extends DiscreteSampling {
 
     /**
      * Creates new discrete sampling parsers from the attribute values found in the given decoder.
+     *
+     * @throws IllegalArgumentException if the geometric object library is not available.
      */
     static FeaturesInfo[] create(final ChannelDecoder decoder) throws IOException, DataStoreException {
         final List<FeaturesInfo> features = new ArrayList<>(3);     // Will usually contain at most one element.
@@ -266,7 +270,8 @@ search: for (final VariableInfo counts : decoder.variables) {
                     }
                     final VariableInfo time = coordinates.remove("T");
                     if (time != null) {
-                        features.add(new FeaturesInfo(counts.read().compress(0), identifiers, time, coordinates.values(), properties));
+                        features.add(new FeaturesInfo(counts.read().compress(0), identifiers,
+                                time, coordinates.values(), properties, decoder.geomlib));
                     }
                 }
             }

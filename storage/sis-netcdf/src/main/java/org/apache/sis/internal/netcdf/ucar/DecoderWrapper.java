@@ -45,7 +45,9 @@ import org.apache.sis.internal.netcdf.Decoder;
 import org.apache.sis.internal.netcdf.Variable;
 import org.apache.sis.internal.netcdf.GridGeometry;
 import org.apache.sis.internal.netcdf.DiscreteSampling;
+import org.apache.sis.setup.GeometryLibrary;
 import org.apache.sis.storage.DataStore;
+import org.apache.sis.storage.DataStoreException;
 
 
 /**
@@ -100,24 +102,28 @@ public final class DecoderWrapper extends Decoder implements CancelTask {
      * {@link NetcdfFile} instance, the {@link NetcdfDataset} subclass is necessary in order to
      * get coordinate system information.
      *
-     * @param listeners  where to send the warnings.
+     * @param geomlib    the library for geometric objects, or {@code null} for the default.
      * @param file       the NetCDF file from which to read data.
+     * @param listeners  where to send the warnings.
      */
-    public DecoderWrapper(final WarningListeners<DataStore> listeners, final NetcdfFile file) {
-        super(listeners);
+    public DecoderWrapper(final NetcdfFile file, final GeometryLibrary geomlib, final WarningListeners<DataStore> listeners) {
+        super(geomlib, listeners);
         this.file = file;
     }
 
     /**
      * Creates a new decoder for the given filename.
      *
-     * @param  listeners  where to send the warnings.
+     * @param  geomlib    the library for geometric objects, or {@code null} for the default.
      * @param  filename   the name of the NetCDF file from which to read data.
+     * @param  listeners  where to send the warnings.
      * @throws IOException if an error occurred while opening the NetCDF file.
      */
     @SuppressWarnings("ThisEscapedInObjectConstruction")
-    public DecoderWrapper(final WarningListeners<DataStore> listeners, final String filename) throws IOException {
-        super(listeners);
+    public DecoderWrapper(final String filename, final GeometryLibrary geomlib, final WarningListeners<DataStore> listeners)
+            throws IOException
+    {
+        super(geomlib, listeners);
         file = NetcdfDataset.openDataset(filename, false, this);
     }
 
@@ -358,10 +364,11 @@ public final class DecoderWrapper extends Decoder implements CancelTask {
      *
      * @return {@inheritDoc}
      * @throws IOException if an I/O operation was necessary but failed.
+     * @throws DataStoreException if the library of geometric objects is not available.
      */
     @Override
     @SuppressWarnings("null")
-    public DiscreteSampling[] getDiscreteSampling() throws IOException {
+    public DiscreteSampling[] getDiscreteSampling() throws IOException, DataStoreException {
         if (features == null && file instanceof NetcdfDataset) {
             features = FeatureDatasetFactoryManager.wrap(null, (NetcdfDataset) file, this,
                     new Formatter(new LogAdapter(listeners), listeners.getLocale()));
@@ -371,8 +378,12 @@ public final class DecoderWrapper extends Decoder implements CancelTask {
             fc = ((FeatureDatasetPoint) features).getPointFeatureCollectionList();
         }
         final FeaturesWrapper[] wrappers = new FeaturesWrapper[(fc != null) ? fc.size() : 0];
-        for (int i=0; i<wrappers.length; i++) {
-            wrappers[i] = new FeaturesWrapper(fc.get(i));
+        try {
+            for (int i=0; i<wrappers.length; i++) {
+                wrappers[i] = new FeaturesWrapper(fc.get(i), geomlib);
+            }
+        } catch (IllegalArgumentException e) {
+            throw new DataStoreException(e.getLocalizedMessage(), e);
         }
         return wrappers;
     }

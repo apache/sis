@@ -18,7 +18,6 @@ package org.apache.sis.internal.storage;
 
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.FeatureSet;
-import org.apache.sis.util.logging.WarningListeners;
 
 
 /**
@@ -33,10 +32,9 @@ public abstract class AbstractFeatureSet extends AbstractDataSet implements Feat
     /**
      * Creates a new resource.
      *
-     * @param store      the data store which contains this resource.
-     * @param listeners  the set of registered warning listeners for the data store.
+     * @param store  the data store which contains this resource.
      */
-    protected AbstractFeatureSet(final DataStore store, final WarningListeners<DataStore> listeners) {
-        super(store, listeners);
+    protected AbstractFeatureSet(final DataStore store) {
+        super(store);
     }
 }
