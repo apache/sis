@@ -184,11 +184,24 @@ public class LazySet<E> extends SetOfUnknownSize<E> {
     public final int size() {
         if (canPullMore()) {
             while (sourceIterator.hasNext()) {
-                cache(sourceIterator.next());
+                cache(next(sourceIterator));
             }
             sourceIterator = null;
         }
         return numCached;
+    }
+
+    /**
+     * Returns the next element from the given iterator. Default implementation returns {@link Iterator#next()}.
+     * Subclasses may override if they need to apply additional processing. For example this method can be used
+     * for skipping data, but this approach works only if we have the guarantee that another element exists after
+     * the skipped one (because {@code LazySet} will not invoke {@link Iterator#hasNext()} again).
+     *
+     * @param  it  the iterator from which to get a next value.
+     * @return the next value (may be {@code null}).
+     */
+    protected E next(final Iterator<? extends E> it) {
+        return it.next();
     }
 
     /**
@@ -238,7 +251,7 @@ public class LazySet<E> extends SetOfUnknownSize<E> {
         assert index <= numCached : index;
         if (index >= numCached) {
             if (canPullMore()) {
-                cache(sourceIterator.next());
+                cache(next(sourceIterator));
             } else {
                 throw new NoSuchElementException();
             }
