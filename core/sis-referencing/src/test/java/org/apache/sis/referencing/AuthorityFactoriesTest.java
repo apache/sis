@@ -17,6 +17,7 @@
 package org.apache.sis.referencing;
 
 import java.util.Collection;
+import java.util.ServiceLoader;
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.NoSuchAuthorityCodeException;
 import org.opengis.referencing.IdentifiedObject;
@@ -26,7 +27,9 @@ import org.opengis.referencing.crs.GeographicCRS;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.internal.util.Constants;
+import org.apache.sis.internal.referencing.EPSGFactoryProxy;
 import org.apache.sis.referencing.crs.HardCodedCRS;
+import org.apache.sis.referencing.factory.CommonAuthorityFactory;
 import org.apache.sis.referencing.factory.IdentifiedObjectFinder;
 import org.apache.sis.referencing.factory.NoSuchAuthorityFactoryException;
 
@@ -63,6 +66,28 @@ public final strictfp class AuthorityFactoriesTest extends TestCase {
     @After
     public void assertNoUnexpectedLog() {
         loggings.assertNoUnexpectedLog();
+    }
+
+    /**
+     * Ensures that {@link EPSGFactoryProxy} is declared before {@link CommonAuthorityFactory}.
+     * This is preferable (but not mandatory) because of the way we implemented {@link AuthorityFactories}.
+     */
+    @Test
+    public void testFactoryOrder() {
+        boolean foundProxy  = false;
+        boolean foundCommon = false;
+        for (CRSAuthorityFactory factory : ServiceLoader.load(CRSAuthorityFactory.class, AuthorityFactories.class.getClassLoader())) {
+            if (factory instanceof CommonAuthorityFactory) {
+                foundCommon = true;
+                assertTrue("Should not have found EPSGFactoryProxy after CommonAuthorityFactory.", foundProxy);
+            }
+            if (factory instanceof EPSGFactoryProxy) {
+                foundProxy = true;
+                assertFalse("Should not have found EPSGFactoryProxy after CommonAuthorityFactory.", foundCommon);
+            }
+        }
+        assertTrue("Factory not found.", foundCommon);
+        assertTrue("Factory not found.", foundProxy);
     }
 
     /**
