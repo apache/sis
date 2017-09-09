@@ -26,6 +26,7 @@ import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.setup.GeometryLibrary;
 import org.apache.sis.internal.referencing.j2d.ShapeUtilities;
 import org.apache.sis.math.Vector;
+import org.apache.sis.util.Classes;
 
 
 /**
@@ -45,6 +46,21 @@ final class Java2D extends Geometries<Shape> {
      */
     Java2D() {
         super(GeometryLibrary.JAVA2D, Shape.class, Point2D.class, Shape.class, Shape.class);
+    }
+
+    /**
+     * If the given geometry is a Java2D geometry, returns a short string representation the class name,
+     * ignoring the primitive type specialization. For example if the class is {@code Rectangle2D.Float},
+     * then this method returns {@code "Rectangle2D"}.
+     */
+    @Override
+    final String tryGetLabel(Object geometry) {
+        if (geometry instanceof Shape) {
+            Class<?> c = geometry.getClass();
+            Class<?> e = c.getEnclosingClass();
+            return Classes.getShortName(e != null ? e : c);
+        }
+        return null;
     }
 
     /**
