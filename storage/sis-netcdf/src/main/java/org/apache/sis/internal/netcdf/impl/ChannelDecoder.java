@@ -32,6 +32,8 @@ import java.util.Locale;
 import java.util.regex.Pattern;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.nio.channels.ReadableByteChannel;
 import javax.measure.UnitConverter;
 import javax.measure.IncommensurableException;
@@ -95,13 +97,13 @@ public final class ChannelDecoder extends Decoder {
     public static final int MAX_VERSION = 2;
 
     /**
-     * The encoding of dimension, variable and attribute names. This is fixed to {@value} by the
-     * netCDF specification. Note however that the encoding of attribute values may be different.
+     * The encoding of dimension, variable and attribute names. This is fixed to UTF-8 by the netCDF specification.
+     * Note however that the encoding of attribute values may be different.
      *
      * @see #encoding
      * @see #readName()
      */
-    private static final String NAME_ENCODING = "UTF-8";
+    private static final Charset NAME_ENCODING = StandardCharsets.UTF_8;
 
     /**
      * The locale of dimension, variable and attribute names. This is used for the conversion to
@@ -166,12 +168,12 @@ public final class ChannelDecoder extends Decoder {
      * character data may use other encodings. The variable attribute “_Encoding” is reserved for this
      * purpose in future implementations."
      *
-     * @todo Fixed to ISO-LATIN-1 for now, needs to be determined in a better way.
+     * @todo "_Encoding" attribute not yet parsed.
      *
      * @see #NAME_ENCODING
      * @see #readValues(DataType, int)
      */
-    private final String encoding = "ISO-8859-1";
+    private final Charset encoding;
 
     /**
      * The variables found in the netCDF file.
@@ -213,7 +215,7 @@ public final class ChannelDecoder extends Decoder {
      * This constructor parses immediately the header, which shall have the following structure:
      *
      * <ul>
-     *   <li>Magic number:   'C','D','F'</li>
+     *   <li>Magic number: 'C','D','F'</li>
      *   <li>Version number: 1 or 2</li>
      *   <li>Number of records</li>
      *   <li>List of netCDF dimensions  (see {@link #readDimensions(int)})</li>
@@ -221,17 +223,19 @@ public final class ChannelDecoder extends Decoder {
      *   <li>List of variables          (see {@link #readVariables(int, Dimension[])})</li>
      * </ul>
      *
-     * @param  geomlib    the library for geometric objects, or {@code null} for the default.
      * @param  input      the channel and the buffer from where data are read.
+     * @param  encoding   the encoding of attribute value, or {@code null} for the default value.
+     * @param  geomlib    the library for geometric objects, or {@code null} for the default.
      * @param  listeners  where to send the warnings.
      * @throws IOException if an error occurred while reading the channel.
      * @throws DataStoreException if the content of the given channel is not a netCDF file.
      */
-    public ChannelDecoder(final ChannelDataInput input, final GeometryLibrary geomlib, final WarningListeners<DataStore> listeners)
-            throws IOException, DataStoreException
+    public ChannelDecoder(final ChannelDataInput input, final Charset encoding, final GeometryLibrary geomlib,
+            final WarningListeners<DataStore> listeners) throws IOException, DataStoreException
     {
         super(geomlib, listeners);
         this.input = input;
+        this.encoding = (encoding != null) ? encoding : StandardCharsets.UTF_8;
         /*
          * Check the magic number, which is expected to be exactly 3 bytes forming the "CDF" string.
          * The 4th byte is the version number, which we opportunistically use after the magic number check.
@@ -362,7 +366,7 @@ public final class ChannelDecoder extends Decoder {
     }
 
     /**
-     * Reads a string from the channel in the {@value #NAME_ENCODING}. This is suitable for the dimension,
+     * Reads a string from the channel in the {@link #NAME_ENCODING}. This is suitable for the dimension,
      * variable and attribute names in the header. Note that attribute value may have a different encoding.
      */
     private String readName() throws IOException, DataStoreException {

@@ -20,6 +20,7 @@ import java.util.Map;
 import java.util.List;
 import java.util.Collection;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.io.IOException;
@@ -134,8 +135,9 @@ final class FeaturesInfo extends DiscreteSampling {
                     break;
                 }
                 default: {
+                    // TODO: use more accurate Number subtype for value class.
                     variable        = this.properties[i-2];
-                    valueClass      = Number.class;           // TODO: use more accurate value class.
+                    valueClass      = (variable.meaning(0) != null) ? String.class : Number.class;
                     minOccurs       = 0;
                     maxOccurs       = Integer.MAX_VALUE;
                     break;
@@ -334,7 +336,7 @@ search: for (final VariableInfo counts : decoder.variables) {
             final int[] step   = {1};
             final Vector   id, t;
             final Vector[] coords = new Vector[coordinates.length];
-            final Vector[] props  = new Vector[properties.length];
+            final Object[] props  = new Object[properties.length];
             try {
                 id = identifiers.read();                    // Efficiency should be okay because of cached value.
                 t = time.read(lower, upper, step);
@@ -342,7 +344,18 @@ search: for (final VariableInfo counts : decoder.variables) {
                     coords[i] = coordinates[i].read(lower, upper, step);
                 }
                 for (int i=0; i<properties.length; i++) {
-                    props[i] = properties[i].read(lower, upper, step);
+                    final VariableInfo p = properties[i];
+                    final Vector data = p.read(lower, upper, step);
+                    if (p.isEnumeration()) {
+                        final String[] meanings = new String[data.size()];
+                        for (int j=0; j<meanings.length; j++) {
+                            String m = p.meaning(data.intValue(j));
+                            meanings[j] = (m != null) ? m : "";
+                        }
+                        props[i] = Arrays.asList(meanings);
+                    } else {
+                        props[i] = data;
+                    }
                 }
             } catch (IOException | DataStoreException e) {
                 throw new BackingStoreException(canNotReadFile(), e);

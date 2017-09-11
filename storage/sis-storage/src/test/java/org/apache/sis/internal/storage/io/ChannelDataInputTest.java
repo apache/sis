@@ -21,6 +21,7 @@ import java.io.DataInputStream;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
@@ -146,7 +147,7 @@ public final strictfp class ChannelDataInputTest extends ChannelDataTestCase {
         final ChannelDataInput input = new ChannelDataInput("testReadString",
                 new DripByteChannel(array, random, 1, 32),
                 ByteBuffer.allocate(array.length + 4), false);
-        assertEquals(expected, input.readString(array.length, "UTF-8"));
+        assertEquals(expected, input.readString(array.length, StandardCharsets.UTF_8));
         assertFalse(input.buffer.hasRemaining());
     }
 

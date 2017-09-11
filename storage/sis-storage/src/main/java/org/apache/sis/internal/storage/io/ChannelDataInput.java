@@ -26,6 +26,7 @@ import java.nio.IntBuffer;
 import java.nio.LongBuffer;
 import java.nio.FloatBuffer;
 import java.nio.DoubleBuffer;
+import java.nio.charset.Charset;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.SeekableByteChannel;
 import org.apache.sis.internal.storage.Resources;
@@ -822,7 +823,7 @@ public class ChannelDataInput extends ChannelData {
      * @return the string decoded from the {@code length} next bytes.
      * @throws IOException if an error occurred while reading the bytes, or if the given encoding is invalid.
      */
-    public final String readString(final int length, final String encoding) throws IOException {
+    public final String readString(final int length, final Charset encoding) throws IOException {
         if (buffer.hasArray() && length <= buffer.capacity()) {
             ensureBufferContains(length);
             final int position = buffer.position(); // Must be after 'ensureBufferContains(int)'.
