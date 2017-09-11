@@ -31,6 +31,7 @@ import org.apache.sis.internal.storage.io.HyperRectangleReader;
 import org.apache.sis.internal.storage.io.Region;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreContentException;
+import org.apache.sis.storage.netcdf.AttributeNames;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.Numbers;
@@ -130,6 +131,15 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
     private transient Vector values;
 
     /**
+     * The {@code flag_meanings} values (used for enumeration values), or {@code null} if this variable is not
+     * an enumeration.
+     *
+     * @see #isEnumeration()
+     * @see #meaning(int)
+     */
+    private final String[] meanings;
+
+    /**
      * Creates a new variable.
      *
      * @param  input       the channel together with a buffer for reading the variable data.
@@ -182,6 +192,16 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
         } else {
             isCoordinateSystemAxis = false;
         }
+        /*
+         * Verify if this variable is an enumeration. If yes, we remove the attributes that define the
+         * enumeration since those attributes may be verbose and "pollute" the variable definition.
+         */
+        String[] meanings = stringValues(attributes.remove(AttributeNames.FLAG_MEANINGS));
+        switch (meanings.length) {
+            case 0: meanings = null; break;
+            case 1: meanings = (String[]) CharSequences.split(meanings[0], ' '); break;
+        }
+        this.meanings = meanings;
     }
 
     /**
@@ -225,6 +245,13 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
     @Override
     public DataType getDataType() {
         return dataType;
+    }
+
+    /**
+     * Returns {@code true} if this variable is an enumeration.
+     */
+    public boolean isEnumeration() {
+        return meanings != null;
     }
 
     /**
@@ -454,6 +481,18 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
             size [i] = dimensions[j].length();
         }
         return Vector.create(reader.read(new Region(size, lower, upper, sub)), dataType.isUnsigned);
+    }
+
+    /**
+     * Returns the meaning of the given ordinal value, or {@code null} if none.
+     * Callers must have verified that {@link #isEnumeration()} returned {@code true}
+     * before to invoke this method
+     *
+     * @param  ordinal  the ordinal of the enumeration for which to get the value.
+     * @return the value associated to the given ordinal, or {@code null} if none.
+     */
+    public String meaning(final int ordinal) {
+        return (ordinal >= 0 && ordinal < meanings.length) ? meanings[ordinal] : null;
     }
 
     /**

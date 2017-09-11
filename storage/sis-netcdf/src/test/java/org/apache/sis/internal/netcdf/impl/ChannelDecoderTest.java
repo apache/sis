@@ -76,7 +76,7 @@ public final strictfp class ChannelDecoderTest extends DecoderTest {
         assertNotNull(name, in);
         final ChannelDataInput input = new ChannelDataInput(name,
                 Channels.newChannel(in), ByteBuffer.allocate(4096), false);
-        return new ChannelDecoder(input, GeometryLibrary.JAVA2D, LISTENERS);
+        return new ChannelDecoder(input, null, GeometryLibrary.JAVA2D, LISTENERS);
     }
 
     /**
