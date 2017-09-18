@@ -360,7 +360,7 @@ public final class Logging extends Static {
         }
         /*
          * Now prepare the log message. If we have been unable to figure out a source class and
-         * method name, we will fallback on JDK logging default mechanism, which may returns a
+         * method name, we will fallback on JDK logging default mechanism, which may return a
          * less relevant name than our attempt to use the logger name as the package name.
          *
          * The message is fetched using Exception.getMessage() instead than getLocalizedMessage()

@@ -918,7 +918,7 @@ public class StorageConnector implements Serializable {
          * (potentially an InputStream). We need to remember this chain in 'Coupled' objects.
          */
         final String name = getStorageName();
-        final ReadableByteChannel channel = factory.reader(name);
+        final ReadableByteChannel channel = factory.reader(name, null);
         addView(ReadableByteChannel.class, channel, null, factory.isCoupled() ? CASCADE_ON_RESET : 0);
         ByteBuffer buffer = getOption(OptionKey.BYTE_BUFFER);       // User-supplied buffer.
         if (buffer == null) {

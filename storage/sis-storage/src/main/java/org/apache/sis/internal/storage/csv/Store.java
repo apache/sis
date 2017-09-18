@@ -86,7 +86,7 @@ import org.opengis.feature.AttributeType;
  * @since   0.7
  * @module
  */
-public final class Store extends URIDataStore implements FeatureSet {
+final class Store extends URIDataStore implements FeatureSet {
     /**
      * The character at the beginning of lines to ignore in the header.
      * Note that this is not part of OGC Moving Feature Specification.
