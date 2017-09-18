@@ -135,7 +135,7 @@ public final strictfp class ChannelDataInputTest extends ChannelDataTestCase {
     }
 
     /**
-     * Tests the {@link ChannelDataInput#readString(int, String)} method.
+     * Tests the {@link ChannelDataInput#readString(int, Charset)} method.
      *
      * @throws IOException should never happen since we read and write in memory only.
      */

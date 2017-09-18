@@ -18,7 +18,6 @@ package org.apache.sis.gui.dataset;
 
 import java.awt.Color;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import javafx.beans.property.SimpleObjectProperty;
@@ -36,15 +35,18 @@ import javafx.scene.image.ImageView;
 import javafx.scene.text.TextAlignment;
 import javafx.util.Callback;
 import org.apache.sis.internal.gui.FontGlyphs;
+import org.apache.sis.internal.util.Citations;
+import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.storage.Aggregate;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.FeatureSet;
 import org.apache.sis.storage.Resource;
-import org.opengis.metadata.Identifier;
 import org.opengis.metadata.Metadata;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.identification.Identification;
+import org.opengis.util.InternationalString;
+
 
 /**
  * Tree viewer displaying a {@link Resource} hierarchy.
@@ -108,17 +110,44 @@ public class ResourceTree extends TreeTableView<Resource> {
         }
     }
 
-    private static String getIdentifier(Metadata metadata) {
-        final Collection<? extends Identification> identifications = metadata.getIdentificationInfo();
-        for (Identification identification : identifications) {
-            final Citation citation = identification.getCitation();
-            if (citation != null) {
-                for (Identifier identifier : citation.getIdentifiers()) {
-                    return identifier.getCode();
+    /**
+     * Returns a label for a resource. Current implementation builds a string containing the resource title
+     * if non-ambiguous, followed by filename in order to resolve ambiguity that may be caused by different
+     * files having the same resource identification in their metadata.
+     *
+     * @param  name      the result of {@link DataStore#getDisplayName()}, or {@code null} if unknown.
+     * @param  metadata  the result of {@link DataStore#getMetadata()} (may be {@code null}).
+     */
+    private static String getTitle(final String name, final Metadata metadata) {
+        if (metadata != null) {
+            String title = null;
+            for (final Identification identification : CollectionsExt.nonNull(metadata.getIdentificationInfo())) {
+                final Citation citation = identification.getCitation();
+                if (citation != null) {
+                    final InternationalString i18n = citation.getTitle();
+                    String id;
+                    if (i18n != null) {
+                        id = i18n.toString();                   // TODO: use display locale.
+                    } else {
+                        id = Citations.getIdentifier(identification.getCitation(), false);
+                    }
+                    if (id != null && !(id = id.trim()).isEmpty()) {
+                        if (title == null) {
+                            title = id;
+                        } else if (!title.equals(id)) {
+                            return name;                        // Ambiguity - will use the filename instead.
+                        }
+                    }
                 }
             }
+            if (title != null) {
+                if (name != null) {
+                    title += " (" + name + ')';
+                }
+                return title;
+            }
         }
-        return null;
+        return name;
     }
 
 
@@ -132,6 +161,7 @@ public class ResourceTree extends TreeTableView<Resource> {
             this.resource = res;
         }
 
+        @Override
         public ObservableList<TreeItem<Resource>> getChildren() {
             if (isFirstTimeChildren) {
                 isFirstTimeChildren = false;
@@ -169,8 +199,10 @@ public class ResourceTree extends TreeTableView<Resource> {
             setCellValueFactory(new Callback<CellDataFeatures<Resource, String>, javafx.beans.value.ObservableValue<java.lang.String>>() {
                 @Override
                 public ObservableValue<String> call(CellDataFeatures<Resource, String> param) {
+                    final Resource res = param.getValue().getValue();
+                    final String name = (res instanceof DataStore) ? ((DataStore) res).getDisplayName() : null;
                     try {
-                        return new SimpleObjectProperty<>(getIdentifier(param.getValue().getValue().getMetadata()));
+                        return new SimpleObjectProperty<>(getTitle(name, res.getMetadata()));
                     } catch (DataStoreException ex) {
                        return new SimpleObjectProperty<>(ex.getMessage());
                     }
@@ -211,5 +243,4 @@ public class ResourceTree extends TreeTableView<Resource> {
             setGraphic(new ImageView(getTypeIcon(resource)));
         }
     }
-
 }

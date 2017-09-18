@@ -125,9 +125,9 @@ public abstract class StaxDataStore extends URIDataStore {
      * <p>We keep this reference as long as possible in order to use {@link #mark()} and {@link #reset()}
      * instead than creating new streams for re-reading the data.  If we can not reset the stream but can
      * create a new one, then this field will become a reference to the new stream. This change should be
-     * done only in last resort, when there is no way to reuse the existing stream.  This is because the
-     * streams created by {@link ChannelFactory#inputStream(String)} are not of the same kind than the
-     * streams created by {@link StorageConnector}.</p>
+     * done only in last resort, when there is no way to reuse the existing stream. This is because the
+     * streams created by {@link ChannelFactory#inputStream(String, WarningListeners)} are not of the same
+     * kind than the streams created by {@link StorageConnector}.</p>
      *
      * @see #close()
      */
@@ -473,7 +473,7 @@ public abstract class StaxDataStore extends URIDataStore {
                     if (channelFactory == null) {
                         throw new ForwardOnlyStorageException(getLocale(), name, StandardOpenOption.READ);
                     }
-                    inputOrFile = input = channelFactory.inputStream(name);
+                    inputOrFile = input = channelFactory.inputStream(name, listeners);
                     type = InputType.STREAM;
                     if (stream == null) {
                         stream = input;

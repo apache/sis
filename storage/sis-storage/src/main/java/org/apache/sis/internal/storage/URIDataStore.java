@@ -99,7 +99,8 @@ public abstract class URIDataStore extends DataStore {
         /**
          * Description of the location parameter.
          */
-        protected static final ParameterDescriptor<URI> LOCATION_PARAM = new ParameterBuilder()
+        public static final ParameterDescriptor<URI> LOCATION_PARAM = new ParameterBuilder()
+                .setDescription(Resources.formatInternational(Resources.Keys.DataStoreLocation))
                 .addName(LOCATION)
                 .setRequired(true)
                 .create(URI.class, null);
@@ -121,7 +122,7 @@ public abstract class URIDataStore extends DataStore {
          * This method creates the descriptor only when first needed. Subclasses can override the
          * {@link #build(ParameterBuilder)} method if they need to modify the descriptor to create.
          *
-         * @return description of the parameters required for opening a {@link DataStore}.
+         * @return description of the parameters required or accepted for opening a {@link DataStore}.
          */
         @Override
         public final ParameterDescriptorGroup getOpenParameters() {
