@@ -29,7 +29,6 @@ import java.io.InputStreamReader;
 import java.io.BufferedInputStream;
 import java.io.Serializable;
 import java.nio.ByteBuffer;
-import java.nio.charset.Charset;
 import java.nio.channels.Channel;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.SeekableByteChannel;
@@ -54,6 +53,7 @@ import org.apache.sis.internal.storage.io.ChannelFactory;
 import org.apache.sis.internal.storage.io.ChannelDataInput;
 import org.apache.sis.internal.storage.io.ChannelImageInputStream;
 import org.apache.sis.internal.storage.io.InputStreamAdapter;
+import org.apache.sis.internal.storage.io.RewindableLineReader;
 import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.util.Utilities;
 import org.apache.sis.io.InvalidSeekException;
@@ -98,6 +98,11 @@ public class StorageConnector implements Serializable {
     /**
      * The default size of the {@link ByteBuffer} to be created.
      * Users can override this value by providing a value for {@link OptionKey#BYTE_BUFFER}.
+     * Note that it usually don't need to be very large, since {@link RewindableLineReader}
+     * will have its own buffer (which may be larger) and {@link ChannelDataInput} methods
+     * writing in existing destination arrays will bypass the buffer.
+     *
+     * @see RewindableLineReader#BUFFER_SIZE
      */
     static final int DEFAULT_BUFFER_SIZE = 4096;
 
@@ -918,7 +923,7 @@ public class StorageConnector implements Serializable {
          * (potentially an InputStream). We need to remember this chain in 'Coupled' objects.
          */
         final String name = getStorageName();
-        final ReadableByteChannel channel = factory.reader(name, null);
+        final ReadableByteChannel channel = factory.readable(name, null);
         addView(ReadableByteChannel.class, channel, null, factory.isCoupled() ? CASCADE_ON_RESET : 0);
         ByteBuffer buffer = getOption(OptionKey.BYTE_BUFFER);       // User-supplied buffer.
         if (buffer == null) {
@@ -1148,10 +1153,7 @@ public class StorageConnector implements Serializable {
             return null;
         }
         input.mark(DEFAULT_BUFFER_SIZE);
-        final Charset encoding = getOption(OptionKey.ENCODING);
-        Reader in = (encoding != null) ? new InputStreamReader(input, encoding)
-                                       : new InputStreamReader(input);
-        in = new LineNumberReader(in);
+        final Reader in = new RewindableLineReader(input, getOption(OptionKey.ENCODING));
         addView(Reader.class, in, InputStream.class, (byte) (CLEAR_ON_RESET | CASCADE_ON_RESET));
         return in;
     }

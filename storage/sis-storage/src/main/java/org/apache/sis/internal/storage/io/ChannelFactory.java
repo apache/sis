@@ -57,14 +57,14 @@ import org.apache.sis.storage.ForwardOnlyStorageException;
  * Opens a readable channel for a given input object (URL, input stream, <i>etc</i>).
  * The {@link #prepare prepare(…)} method analyzes the given input {@link Object} and tries to return a factory instance
  * capable to open at least one {@link ReadableByteChannel} for that input. For some kinds of input like {@link Path} or
- * {@link URL}, the {@link #reader reader(…)} method can be invoked an arbitrary amount of times for creating as many
+ * {@link URL}, the {@link #readable readable(…)} method can be invoked an arbitrary amount of times for creating as many
  * channels as needed. But for other kinds of input like {@link InputStream}, only one channel can be returned.
- * In such case, only the first {@link #reader reader(…)} method invocation will succeed and all subsequent ones
+ * In such case, only the first {@link #readable readable(…)} method invocation will succeed and all subsequent ones
  * will throw an exception.
  *
  * <div class="section">Multi-threading</div>
  * This class is not thread-safe, except for the static {@link #prepare prepare(…)} method.
- * Callers are responsible for synchronizing their call to any member methods ({@link #reader reader(…)}, <i>etc</i>).
+ * Callers are responsible for synchronizing their call to any member methods ({@link #readable readable(…)}, <i>etc</i>).
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Johann Sorel (Geomatys)
@@ -230,10 +230,10 @@ public abstract class ChannelFactory {
         if (storage instanceof URL) {
             final URL file = (URL) storage;
             return new ChannelFactory() {
-                @Override public ReadableByteChannel reader(String filename, WarningListeners<DataStore> listeners) throws IOException {
+                @Override public ReadableByteChannel readable(String filename, WarningListeners<DataStore> listeners) throws IOException {
                     return Channels.newChannel(file.openStream());
                 }
-                @Override public WritableByteChannel writer(String filename, WarningListeners<DataStore> listeners) throws IOException {
+                @Override public WritableByteChannel writable(String filename, WarningListeners<DataStore> listeners) throws IOException {
                     return Channels.newChannel(file.openConnection().getOutputStream());
                 }
             };
@@ -242,10 +242,10 @@ public abstract class ChannelFactory {
             final Path path = (Path) storage;
             if (Files.isRegularFile(path)) {
                 return new ChannelFactory() {
-                    @Override public ReadableByteChannel reader(String filename, WarningListeners<DataStore> listeners) throws IOException {
+                    @Override public ReadableByteChannel readable(String filename, WarningListeners<DataStore> listeners) throws IOException {
                         return Files.newByteChannel(path, optionSet);
                     }
-                    @Override public WritableByteChannel writer(String filename, WarningListeners<DataStore> listeners) throws IOException {
+                    @Override public WritableByteChannel writable(String filename, WarningListeners<DataStore> listeners) throws IOException {
                         return Files.newByteChannel(path, optionSet);
                     }
                 };
@@ -267,10 +267,11 @@ public abstract class ChannelFactory {
     }
 
     /**
-     * Returns {@code true} if this factory is capable to create another reader. This method returns {@code false}
-     * if this factory is capable to create only one channel and {@link #reader reader(…)} has already been invoked.
+     * Returns {@code true} if this factory is capable to create another readable byte channel.
+     * This method returns {@code false} if this factory is capable to create only one channel
+     * and {@link #readable readable(…)} has already been invoked.
      *
-     * @return whether {@link #reader reader(…)} or {@link #writer writer(…)} can be invoked.
+     * @return whether {@link #readable readable(…)} or {@link #writable writable(…)} can be invoked.
      */
     public boolean canOpen() {
         return true;
@@ -289,7 +290,7 @@ public abstract class ChannelFactory {
     public InputStream inputStream(String filename, WarningListeners<DataStore> listeners)
             throws DataStoreException, IOException
     {
-        return Channels.newInputStream(reader(filename, listeners));
+        return Channels.newInputStream(readable(filename, listeners));
     }
 
     /**
@@ -305,7 +306,7 @@ public abstract class ChannelFactory {
     public OutputStream outputStream(String filename, WarningListeners<DataStore> listeners)
             throws DataStoreException, IOException
     {
-        return Channels.newOutputStream(writer(filename, listeners));
+        return Channels.newOutputStream(writable(filename, listeners));
     }
 
     /**
@@ -319,7 +320,7 @@ public abstract class ChannelFactory {
      * @throws DataStoreException if the channel is read-once.
      * @throws IOException if an error occurred while opening the channel.
      */
-    public abstract ReadableByteChannel reader(String filename, WarningListeners<DataStore> listeners)
+    public abstract ReadableByteChannel readable(String filename, WarningListeners<DataStore> listeners)
             throws DataStoreException, IOException;
 
     /**
@@ -333,7 +334,7 @@ public abstract class ChannelFactory {
      * @throws DataStoreException if the channel is write-once.
      * @throws IOException if an error occurred while opening the channel.
      */
-    public abstract WritableByteChannel writer(String filename, WarningListeners<DataStore> listeners)
+    public abstract WritableByteChannel writable(String filename, WarningListeners<DataStore> listeners)
             throws DataStoreException, IOException;
 
     /**
@@ -362,7 +363,7 @@ public abstract class ChannelFactory {
         }
 
         /**
-         * Returns whether {@link #reader reader(…)} or {@link #writer writer(…)} can be invoked.
+         * Returns whether {@link #readable readable(…)} or {@link #writable writable(…)} can be invoked.
          */
         @Override
         public boolean canOpen() {
@@ -374,7 +375,7 @@ public abstract class ChannelFactory {
          * throws an exception on all subsequent invocations.
          */
         @Override
-        public ReadableByteChannel reader(final String filename, final WarningListeners<DataStore> listeners)
+        public ReadableByteChannel readable(final String filename, final WarningListeners<DataStore> listeners)
                 throws DataStoreException, IOException
         {
             final Channel in = channel;
@@ -396,7 +397,7 @@ public abstract class ChannelFactory {
          * throws an exception on all subsequent invocations.
          */
         @Override
-        public WritableByteChannel writer(final String filename, final WarningListeners<DataStore> listeners)
+        public WritableByteChannel writable(final String filename, final WarningListeners<DataStore> listeners)
                 throws DataStoreException, IOException
         {
             final Channel out = channel;
@@ -520,7 +521,7 @@ public abstract class ChannelFactory {
          * Opens a new channel for the file given at construction time.
          */
         @Override
-        public ReadableByteChannel reader(String filename, WarningListeners<DataStore> listeners) throws IOException {
+        public ReadableByteChannel readable(String filename, WarningListeners<DataStore> listeners) throws IOException {
             return inputStream(filename, listeners).getChannel();
         }
 
@@ -528,7 +529,7 @@ public abstract class ChannelFactory {
          * Opens a new channel for the file given at construction time.
          */
         @Override
-        public WritableByteChannel writer(String filename, WarningListeners<DataStore> listeners) throws IOException {
+        public WritableByteChannel writable(String filename, WarningListeners<DataStore> listeners) throws IOException {
             return outputStream(filename, listeners).getChannel();
         }
     }
