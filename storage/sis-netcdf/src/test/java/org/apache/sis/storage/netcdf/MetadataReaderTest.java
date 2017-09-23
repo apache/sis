@@ -26,6 +26,7 @@ import org.apache.sis.internal.netcdf.ucar.DecoderWrapper;
 import org.apache.sis.internal.netcdf.impl.ChannelDecoderTest;
 import org.apache.sis.metadata.iso.DefaultMetadata;
 import org.apache.sis.storage.DataStoreException;
+import org.apache.sis.setup.GeometryLibrary;
 import org.apache.sis.test.DependsOn;
 import org.junit.Test;
 
@@ -35,7 +36,7 @@ import static org.apache.sis.test.TestUtilities.formatNameAndValue;
 
 /**
  * Tests {@link MetadataReader}. This tests uses the SIS embedded implementation and the UCAR library
- * for reading NetCDF attributes.
+ * for reading netCDF attributes.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
@@ -57,7 +58,7 @@ public final strictfp class MetadataReaderTest extends IOTestCase {
     }
 
     /**
-     * Reads the metadata using the NetCDF decoder embedded with SIS,
+     * Reads the metadata using the netCDF decoder embedded with SIS,
      * and compares its string representation with the expected one.
      *
      * @throws IOException if an I/O error occurred while opening the file.
@@ -82,7 +83,7 @@ public final strictfp class MetadataReaderTest extends IOTestCase {
     @Test
     public void testUCAR() throws IOException, DataStoreException {
         final Metadata metadata;
-        try (Decoder input = new DecoderWrapper(TestCase.LISTENERS, new NetcdfDataset(open(NCEP)))) {
+        try (Decoder input = new DecoderWrapper(new NetcdfDataset(open(NCEP)), GeometryLibrary.JAVA2D, TestCase.LISTENERS)) {
             metadata = new MetadataReader(input).read();
         }
         compareToExpected(metadata);

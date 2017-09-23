@@ -25,6 +25,7 @@ import org.apache.sis.internal.netcdf.Decoder;
 import org.apache.sis.internal.netcdf.DecoderTest;
 import org.apache.sis.internal.storage.io.ChannelDataInput;
 import org.apache.sis.storage.DataStoreException;
+import org.apache.sis.setup.GeometryLibrary;
 import org.apache.sis.test.DependsOn;
 
 import static org.junit.Assert.*;
@@ -60,9 +61,9 @@ public final strictfp class ChannelDecoderTest extends DecoderTest {
      *
      * <ul>
      *   <li>{@link #THREDDS} for a NcML file.</li>
-     *   <li>{@link #NCEP}    for a NetCDF binary file.</li>
-     *   <li>{@link #CIP}     for a NetCDF binary file.</li>
-     *   <li>{@link #LANDSAT} for a NetCDF binary file.</li>
+     *   <li>{@link #NCEP}    for a netCDF binary file.</li>
+     *   <li>{@link #CIP}     for a netCDF binary file.</li>
+     *   <li>{@link #LANDSAT} for a netCDF binary file.</li>
      * </ul>
      *
      * @param  name  the file name as one of the above-cited constants.
@@ -75,12 +76,12 @@ public final strictfp class ChannelDecoderTest extends DecoderTest {
         assertNotNull(name, in);
         final ChannelDataInput input = new ChannelDataInput(name,
                 Channels.newChannel(in), ByteBuffer.allocate(4096), false);
-        return new ChannelDecoder(LISTENERS, input);
+        return new ChannelDecoder(input, null, GeometryLibrary.JAVA2D, LISTENERS);
     }
 
     /**
      * Unconditionally returns {@code false} since {@link ChannelDecoder}
-     * supports only the classic and 64 bits NetCDF formats.
+     * supports only the classic and 64 bits netCDF formats.
      *
      * @return {@code false}.
      */

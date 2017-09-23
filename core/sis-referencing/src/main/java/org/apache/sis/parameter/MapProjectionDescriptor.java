@@ -43,7 +43,7 @@ import org.apache.sis.util.Workaround;
  *       {@code "standard_parallel_1"} and {@code "standard_parallel_2"}</li>
  * </ul>
  *
- * The main purpose of this class is to support transparently the NetCDF ways to express some parameter values.
+ * The main purpose of this class is to support transparently the netCDF ways to express some parameter values.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.6

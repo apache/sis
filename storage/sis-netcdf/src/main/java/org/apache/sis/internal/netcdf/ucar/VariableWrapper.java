@@ -34,7 +34,7 @@ import org.apache.sis.storage.DataStoreContentException;
 
 
 /**
- * A {@link Variable} backed by the UCAR NetCDF library.
+ * A {@link Variable} backed by the UCAR netCDF library.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Johann Sorel (Geomatys)
@@ -44,12 +44,12 @@ import org.apache.sis.storage.DataStoreContentException;
  */
 final class VariableWrapper extends Variable {
     /**
-     * The NetCDF variable.
+     * The netCDF variable.
      */
     private final VariableIF variable;
 
     /**
-     * Creates a new variable wrapping the given NetCDF interface.
+     * Creates a new variable wrapping the given netCDF interface.
      */
     VariableWrapper(final VariableIF variable) {
         this.variable = variable;

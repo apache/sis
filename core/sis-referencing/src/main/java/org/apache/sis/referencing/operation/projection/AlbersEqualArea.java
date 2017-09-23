@@ -63,11 +63,11 @@ public class AlbersEqualArea extends EqualAreaProjection {
      *
      * <p>In Apache SIS implementation, we use modified formulas in which the (1 - ℯ²) factor is omitted in
      * {@link #qm(double)} calculation. Consequently what we get is a modified value <var>nm</var> which is
-     * related to Synder's <var>n</var> value by {@literal n = nm / (1 - ℯ²)}.  The omitted (1 - ℯ²) factor
+     * related to Snyder's <var>n</var> value by {@literal n = nm / (1 - ℯ²)}.  The omitted (1 - ℯ²) factor
      * is either taken in account by the (de)normalization matrix, or cancels with other (1 - ℯ²) factors
      * when we develop the formulas.</p>
      *
-     * <p>Note that in the spherical case, <var>nm</var> = Synder's <var>n</var>.</p>
+     * <p>Note that in the spherical case, <var>nm</var> = Snyder's <var>n</var>.</p>
      */
     final double nm;
 
@@ -136,7 +136,7 @@ public class AlbersEqualArea extends EqualAreaProjection {
         }
         C = m1*m1 + nm*α1;                  // Omitted (1-ℯ²) term in nm cancels with omitted (1-ℯ²) term in α₁.
         /*
-         * Compute rn = (1-ℯ²)/nm, which is the reciprocal of the "real" n used in Synder and EPSG guidance note.
+         * Compute rn = (1-ℯ²)/nm, which is the reciprocal of the "real" n used in Snyder and EPSG guidance note.
          * We opportunistically use double-double arithmetic since the MatrixSIS operations use them anyway, but
          * we do not really have that accuracy because of the limited precision of 'nm'. The intend is rather to
          * increase the chances term cancellations happen during concatenation of coordinate operations.
@@ -260,14 +260,14 @@ public class AlbersEqualArea extends EqualAreaProjection {
         final double x = srcPts[srcOff  ];
         final double y = srcPts[srcOff+1];
         /*
-         * Note: Synder suggests to reverse the sign of x, y and ρ₀ if n is negative. It should not done in Apache SIS
+         * Note: Snyder suggests to reverse the sign of x, y and ρ₀ if n is negative. It should not done in Apache SIS
          * implementation because (x,y) are premultiplied by n (by the normalization affine transform) before to enter
          * in this method, so if n was negative those values have already their sign reverted.
          */
         dstPts[dstOff  ] = atan2(x, y);
         dstPts[dstOff+1] = φ((C - (x*x + y*y)) / nm);
         /*
-         * Note: Synder 14-19 gives  q = (C - ρ²n²/a²)/n  where  ρ = √(x² + (ρ₀ - y)²).
+         * Note: Snyder 14-19 gives  q = (C - ρ²n²/a²)/n  where  ρ = √(x² + (ρ₀ - y)²).
          * But in Apache SIS implementation, ρ₀ has already been subtracted by the matrix before we reach this point.
          * So we can simplify by ρ² = x² + y². Furthermore the matrix also divided x and y by a (the semi-major axis
          * length) before this method, and multiplied by n. so what we have is actually (ρ⋅n/a)² = x² + y².
@@ -318,10 +318,10 @@ public class AlbersEqualArea extends EqualAreaProjection {
             final double cosθ = cos(θ);
             final double sinθ = sin(θ);
             final double sinφ = sin(φ);
-            final double ρ = sqrt(C - 2*nm*sinφ);           // Synder 14-3 with radius and division by n omitted.
+            final double ρ = sqrt(C - 2*nm*sinφ);           // Snyder 14-3 with radius and division by n omitted.
             if (dstPts != null) {
-                dstPts[dstOff  ] = ρ * sinθ;                // Synder 14-1
-                dstPts[dstOff+1] = ρ * cosθ;                // Synder 14-2
+                dstPts[dstOff  ] = ρ * sinθ;                // Snyder 14-1
+                dstPts[dstOff+1] = ρ * cosθ;                // Snyder 14-2
             }
             if (!derivate) {
                 return null;
@@ -341,8 +341,8 @@ public class AlbersEqualArea extends EqualAreaProjection {
         {
             final double x = srcPts[srcOff];
             final double y = srcPts[srcOff + 1];
-            dstPts[dstOff  ] = atan2(x, y);                         // Part of Synder 14-11
-            dstPts[dstOff+1] = asin((C - (x*x + y*y)) / (nm*2));    // Synder 14-8 modified
+            dstPts[dstOff  ] = atan2(x, y);                         // Part of Snyder 14-11
+            dstPts[dstOff+1] = asin((C - (x*x + y*y)) / (nm*2));    // Snyder 14-8 modified
         }
     }
 }

@@ -22,7 +22,7 @@ import org.apache.sis.util.logging.WarningListeners;
 
 
 /**
- * Forwards NetCDF logging to the Apache SIS warning listeners.
+ * Forwards netCDF logging to the Apache SIS warning listeners.
  * NetCDF sends message to a user-specified {@link java.util.Formatter} with one message per line.
  * This class intercepts the characters and send them to the {@link WarningListeners} every time
  * that a complete line has been received.
@@ -34,7 +34,7 @@ import org.apache.sis.util.logging.WarningListeners;
  */
 final class LogAdapter implements Appendable {
     /**
-     * Temporary buffer where to append the NetCDF logging messages.
+     * Temporary buffer where to append the netCDF logging messages.
      */
     private final StringBuilder buffer = new StringBuilder();
 

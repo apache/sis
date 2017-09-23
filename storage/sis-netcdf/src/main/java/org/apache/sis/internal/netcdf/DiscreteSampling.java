@@ -17,13 +17,18 @@
 package org.apache.sis.internal.netcdf;
 
 // Branch-dependent imports
-import org.apache.sis.internal.jdk8.Stream;
-import org.opengis.feature.Feature;
+import org.opengis.metadata.Metadata;
+import org.apache.sis.storage.DataStore;
+import org.apache.sis.setup.GeometryLibrary;
+import org.apache.sis.internal.feature.Geometries;
+import org.apache.sis.internal.storage.AbstractFeatureSet;
+import org.apache.sis.util.logging.WarningListeners;
+import org.apache.sis.util.resources.Errors;
 
 
 /**
- * Returns the features encoded in the NetCDF files when they are encoded as discrete sampling.
- * The NetCDF attributes shall be conform to the "Discrete Sampling Geometries" chapter of
+ * Returns the features encoded in the netCDF files when they are encoded as discrete sampling.
+ * The netCDF attributes shall be conform to the "Discrete Sampling Geometries" chapter of
  * <a href="http://cfconventions.org/">CF conventions</a>. Some examples are trajectories
  * and profiles.
  *
@@ -32,17 +37,42 @@ import org.opengis.feature.Feature;
  * @since   0.8
  * @module
  */
-public abstract class DiscreteSampling {
+public abstract class DiscreteSampling extends AbstractFeatureSet {
+    /**
+     * The factory to use for creating geometries.
+     */
+    protected final Geometries<?> factory;
+
     /**
      * Creates a new discrete sampling parser.
+     *
+     * @param  library    the library for geometric objects, or {@code null} for the default.
+     * @param  listeners  the set of registered warning listeners for the data store.
+     * @throws IllegalArgumentException if the given library is non-null but not available.
      */
-    protected DiscreteSampling() {
+    protected DiscreteSampling(final GeometryLibrary library, final WarningListeners<DataStore> listeners) {
+        super(listeners);
+        factory = Geometries.implementation(library);
     }
 
     /**
-     * Returns the stream of features.
+     * Returns information about this resource.
      *
-     * @return the stream of features.
+     * @return information about this resource, or {@code null} if none.
+     *
+     * @todo Not yet implemented.
      */
-    public abstract Stream<Feature> features();
+    @Override
+    public Metadata getMetadata() {
+        return null;
+    }
+
+    /**
+     * Returns the error message for a file that can not be read.
+     *
+     * @return default error message to use in exceptions.
+     */
+    protected final String canNotReadFile() {
+        return Errors.getResources(getLocale()).getString(Errors.Keys.CanNotRead_1, getStoreName());
+    }
 }

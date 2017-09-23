@@ -24,7 +24,7 @@ import java.util.logging.LogRecord;
  * A log record to be logged without stack trace, unless the user specified it explicitely.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.3
+ * @version 0.8
  * @since   0.3
  * @module
  */
@@ -43,8 +43,8 @@ final class QuietLogRecord extends LogRecord {
     /**
      * Creates a new log record for the given message and exception.
      */
-    QuietLogRecord(final String message, final Exception exception) {
-        super(Level.WARNING, message);
+    QuietLogRecord(final Level level, final String message, final Exception exception) {
+        super(level, message);
         super.setThrown(exception);
     }
 

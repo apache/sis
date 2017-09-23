@@ -52,10 +52,10 @@ import org.opengis.metadata.extent.GeographicDescription;
 
 
 /**
- * Name of attributes used in the mapping from/to NetCDF metadata to ISO 19115 metadata.
+ * Name of attributes used in the mapping from/to netCDF metadata to ISO 19115 metadata.
  * The attributes recognized by SIS are listed below:
  *
- * <blockquote><table class="compact" summary="List of all NetCDF attributes.">
+ * <blockquote><table class="compact" summary="List of all netCDF attributes.">
  * <tr valign="top"><td style="width: 25%">
  * {@value     #ACCESS_CONSTRAINT}<br>
  * {@value     #ACKNOWLEDGEMENT}<br>
@@ -376,7 +376,7 @@ public class AttributeNames {
      * class and the other cells give the values assigned in this class fields for those constants.
      *
      * <table class="sis">
-     * <caption>Names of NetCDF attributes describing a responsible party</caption>
+     * <caption>Names of netCDF attributes describing a responsible party</caption>
      * <tr>
      *   <th            >Field in this class</th>
      *   <th class="sep">{@link AttributeNames#CREATOR     CREATOR}</th>
@@ -419,7 +419,7 @@ public class AttributeNames {
      * For example {@code AttributeNames.CREATOR.EMAIL} maps exactly to the {@code "creator_email"} string
      * and nothing else. A lower-case {@code email} member name could be misleading since it would suggest
      * that the field contains the actual name value rather than the key by which the value is identified
-     * in a NetCDF file.</div>
+     * in a netCDF file.</div>
      *
      * @author  Martin Desruisseaux (Geomatys)
      * @version 0.3
@@ -669,7 +669,7 @@ public class AttributeNames {
      * class and the other cells give the values assigned in this class fields for those constants.
      *
      * <table class="sis">
-     * <caption>Names of NetCDF attributes describing an extent</caption>
+     * <caption>Names of netCDF attributes describing an extent</caption>
      * <tr>
      *   <th            >Field in this class</th>
      *   <th class="sep">{@link AttributeNames#LATITUDE  LATITUDE}</th>
@@ -725,7 +725,7 @@ public class AttributeNames {
      * For example {@code AttributeNames.LATITUDE.MINIMUM} maps exactly to the {@code "geospatial_lat_min"}
      * string and nothing else. A lower-case {@code minimum} member name could be misleading since it would
      * suggest that the field contains the actual name value rather than the key by which the value is
-     * identified in a NetCDF file.</div>
+     * identified in a netCDF file.</div>
      *
      * @author  Martin Desruisseaux (Geomatys)
      * @version 0.3
@@ -785,12 +785,12 @@ public class AttributeNames {
         /**
          * The default ISO-19115 dimension name type, or {@code null} if none.
          * By default, {@link DimensionNameType#COLUMN} is associated to longitudes and {@link DimensionNameType#ROW}
-         * to latitudes since geographic maps in NetCDF files are typically shown horizontally.
+         * to latitudes since geographic maps in netCDF files are typically shown horizontally.
          *
          * <p>The default associations may not be always correct since the columns and rows can be anything.
          * Strictly speaking, the dimension name types shall be associated to the <em>grid axes</em> rather
          * than the <em>coordinate system axes</em>. However the default association is correct in the common case
-         * (for NetCDF files) where there is no axis swapping in the <cite>grid to CRS</cite> conversion.</p>
+         * (for netCDF files) where there is no axis swapping in the <cite>grid to CRS</cite> conversion.</p>
          */
         public final DimensionNameType DEFAULT_NAME_TYPE;
 

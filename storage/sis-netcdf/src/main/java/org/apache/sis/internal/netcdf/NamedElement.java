@@ -25,7 +25,7 @@ import org.opengis.parameter.InvalidParameterCardinalityException;
 
 
 /**
- * Base class of NetCDF dimension, variable or attribute.
+ * Base class of netCDF dimension, variable or attribute.
  * All those objects share in common a {@link #getName()} method.
  *
  * @author  Martin Desruisseaux (Geomatys)
