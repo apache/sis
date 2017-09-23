@@ -260,8 +260,10 @@ abstract class Pooled {
         switch (xmlnsReplaceCode) {
             case 0: {
                 // Apply namespace replacements only for older versions than the one supported natively by SIS.
-                if (versionGML != null && versionGML.compareTo(LegacyNamespaces.VERSION_3_2_1) < 0) {
-                    return FilterVersion.GML31;
+                if (versionGML != null) {
+                    if (versionGML.compareTo(LegacyNamespaces.VERSION_3_2_1) < 0) {
+                        return FilterVersion.GML31;
+                    }
                 }
                 break;
             }

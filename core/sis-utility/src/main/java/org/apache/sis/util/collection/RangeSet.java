@@ -412,7 +412,7 @@ public class RangeSet<E extends Comparable<? super E>> extends AbstractSet<Range
         if (array == null) {
             return true;
         }
-        final boolean strict = isMinIncluded || isMaxIncluded;
+        final boolean strict = isMinIncluded | isMaxIncluded;
         switch (elementCode) {
             case DOUBLE:    return ArraysExt.isSorted((double[]) array, strict);
             case FLOAT:     return ArraysExt.isSorted((float[])  array, strict);
