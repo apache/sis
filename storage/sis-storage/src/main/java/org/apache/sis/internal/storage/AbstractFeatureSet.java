@@ -29,14 +29,13 @@ import org.apache.sis.util.logging.WarningListeners;
  * @since   0.8
  * @module
  */
-public abstract class AbstractFeatureSet extends AbstractDataSet implements FeatureSet {
+public abstract class AbstractFeatureSet extends AbstractResource implements FeatureSet {
     /**
      * Creates a new resource.
      *
-     * @param store      the data store which contains this resource.
      * @param listeners  the set of registered warning listeners for the data store.
      */
-    protected AbstractFeatureSet(final DataStore store, final WarningListeners<DataStore> listeners) {
-        super(store, listeners);
+    protected AbstractFeatureSet(final WarningListeners<DataStore> listeners) {
+        super(listeners);
     }
 }

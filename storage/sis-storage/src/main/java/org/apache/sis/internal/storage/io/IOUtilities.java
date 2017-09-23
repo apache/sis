@@ -164,6 +164,29 @@ public final class IOUtilities extends Static {
     }
 
     /**
+     * Returns the given path without the directories and without the extension.
+     * For example if the given path is {@code "/Users/name/Map.png"}, then this
+     * method returns {@code "Map"}.
+     *
+     * @param  path  the path from which to get the filename without extension, or {@code null}.
+     * @return the filename without extension, or {@code null} if none.
+     */
+    public static String filenameWithoutExtension(String path) {
+        if (path != null) {
+            int s = path.lastIndexOf(File.separatorChar);
+            if (s < 0 && File.separatorChar != '/') {
+                s = path.lastIndexOf('/');
+            }
+            int e = path.lastIndexOf('.');
+            if (e <= ++s) {
+                e = path.length();
+            }
+            path = path.substring(s, e);
+        }
+        return path;
+    }
+
+    /**
      * Encodes the characters that are not legal for the {@link URI#URI(String)} constructor.
      * Note that in addition to unreserved characters ("{@code _-!.~'()*}"), the reserved
      * characters ("{@code ?/[]@}") and the punctuation characters ("{@code ,;:$&+=}")

@@ -154,16 +154,16 @@ public final strictfp class FeatureFormatTest extends TestCase {
         final FeatureFormat format = create();
         final String text = format.format(feature);
         assertMultilinesEquals("World metropolis\n" +
-                "┌──────────────┬─────────────────────┬─────────────┬──────────────┬─────────────────┐\n" +
-                "│ Name         │ Type                │ Cardinality │ Value        │ Characteristics │\n" +
-                "├──────────────┼─────────────────────┼─────────────┼──────────────┼─────────────────┤\n" +
-                "│ city         │ String              │ 1 ∈ [1 … 1] │ Tokyo        │                 │\n" +
-                "│ population   │ Integer             │ 1 ∈ [1 … 1] │ 13,185,502   │                 │\n" +
-                "│ region       │ InternationalString │ 0 ∉ [1 … 1] │              │                 │\n" +
-                "│ isGlobal     │ Boolean             │ 0 ∉ [1 … 1] │              │                 │\n" +
-                "│ universities │ String              │ 2 ∈ [0 … ∞] │ Waseda, Keio │                 │\n" +
-                "│ temperature  │ Float               │ 1 ∈ [1 … 1] │ NaN          │ accuracy, units │\n" +
-                "└──────────────┴─────────────────────┴─────────────┴──────────────┴─────────────────┘\n", text);
+                "┌──────────────┬─────────────────────┬─────────────┬──────────────┬────────────────────────────┐\n" +
+                "│ Name         │ Type                │ Cardinality │ Value        │ Characteristics            │\n" +
+                "├──────────────┼─────────────────────┼─────────────┼──────────────┼────────────────────────────┤\n" +
+                "│ city         │ String              │ 1 ∈ [1 … 1] │ Tokyo        │                            │\n" +
+                "│ population   │ Integer             │ 1 ∈ [1 … 1] │ 13,185,502   │                            │\n" +
+                "│ region       │ InternationalString │ 0 ∉ [1 … 1] │              │                            │\n" +
+                "│ isGlobal     │ Boolean             │ 0 ∉ [1 … 1] │              │                            │\n" +
+                "│ universities │ String              │ 2 ∈ [0 … ∞] │ Waseda, Keio │                            │\n" +
+                "│ temperature  │ Float               │ 1 ∈ [1 … 1] │ NaN          │ accuracy = 0.1, units = °C │\n" +
+                "└──────────────┴─────────────────────┴─────────────┴──────────────┴────────────────────────────┘\n", text);
     }
 
     /**

@@ -40,10 +40,10 @@ import static org.opengis.test.Assert.*;
 })
 public final strictfp class NetcdfStoreTest extends IOTestCase {
     /**
-     * Returns a new NetCDF store to test.
+     * Returns a new netCDF store to test.
      *
      * @param  dataset the name of the datastore to load.
-     * @throws DataStoreException if an error occurred while reading the NetCDF file.
+     * @throws DataStoreException if an error occurred while reading the netCDF file.
      */
     private static NetcdfStore create(final String dataset) throws DataStoreException {
         return new NetcdfStore(null, new StorageConnector(IOTestCase.getResource(dataset)));
@@ -52,7 +52,7 @@ public final strictfp class NetcdfStoreTest extends IOTestCase {
     /**
      * Tests {@link NetcdfStore#getMetadata()}.
      *
-     * @throws DataStoreException if an error occurred while reading the NetCDF file.
+     * @throws DataStoreException if an error occurred while reading the netCDF file.
      */
     @Test
     public void testGetMetadata() throws DataStoreException {

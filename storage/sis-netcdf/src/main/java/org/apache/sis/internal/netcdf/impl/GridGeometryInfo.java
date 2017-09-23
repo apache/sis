@@ -28,9 +28,9 @@ import org.apache.sis.util.resources.Errors;
 
 
 /**
- * Description of a grid geometry found in a NetCDF file.
+ * Description of a grid geometry found in a netCDF file.
  *
- * <p>In this class, the words "domain" and "range" are used in the NetCDF sense: they are the input
+ * <p>In this class, the words "domain" and "range" are used in the netCDF sense: they are the input
  * (domain) and output (range) of the function that convert grid indices to geodetic coordinates.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
@@ -96,25 +96,25 @@ final class GridGeometryInfo extends GridGeometry {
     }
 
     /**
-     * Returns all axes of the NetCDF coordinate system, together with the grid dimension to which the axis
+     * Returns all axes of the netCDF coordinate system, together with the grid dimension to which the axis
      * is associated. See {@code org.apache.sis.internal.netcdf.ucar.GridGeometryWrapper.getAxes()} for a
      * closer look on the relationship between this algorithm and the UCAR library.
      *
-     * <p>In this method, the words "domain" and "range" are used in the NetCDF sense: they are the input
+     * <p>In this method, the words "domain" and "range" are used in the netCDF sense: they are the input
      * (domain) and output (range) of the function that convert grid indices to geodetic coordinates.</p>
      *
      * <p>The domain of all axes is often the same than the domain of the variable, but not necessarily.
      * In particular, the relationship is not straightforward when the coordinate system contains
      * "two-dimensional axes" (in {@link ucar.nc2.dataset.CoordinateAxis2D} sense).</p>
      *
-     * @return the CRS axes, in NetCDF order (reverse of "natural" order).
+     * @return the CRS axes, in netCDF order (reverse of "natural" order).
      * @throws IOException if an I/O operation was necessary but failed.
      * @throws DataStoreException if a logical error occurred.
      */
     @Override
     public Axis[] getAxes() throws IOException, DataStoreException {
         /*
-         * Process the variables in the order the appear in the sequence of bytes that make the NetCDF files.
+         * Process the variables in the order the appear in the sequence of bytes that make the netCDF files.
          * This is often the same order than the indices, but not necessarily. The intend is to reduce the
          * amount of disk seek operations.
          */
@@ -150,7 +150,7 @@ final class GridGeometryInfo extends GridGeometry {
             /*
              * Get the grid dimensions (part of the "domain" in UCAR terminology) used for computing
              * the ordinate values along the current axis. There is exactly 1 such grid dimension in
-             * straightforward NetCDF files. However some more complex files may have 2 dimensions.
+             * straightforward netCDF files. However some more complex files may have 2 dimensions.
              */
             int i = 0;
             final Dimension[] axisDomain = axis.dimensions;

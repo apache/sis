@@ -21,9 +21,9 @@ import org.apache.sis.util.Debug;
 
 
 /**
- * A dimension in a NetCDF file. A dimension can been seen as an axis in the grid space
+ * A dimension in a netCDF file. A dimension can been seen as an axis in the grid space
  * (not the geodetic space). Dimension are referenced by their index in other parts of
- * the NetCDF file header.
+ * the netCDF file header.
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
@@ -54,7 +54,7 @@ final class Dimension extends NamedElement {
     }
 
     /**
-     * Returns the name of this NetCDF dimension.
+     * Returns the name of this netCDF dimension.
      */
     @Override
     public String getName() {

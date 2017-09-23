@@ -20,6 +20,7 @@ import java.util.Map;
 import java.util.List;
 import java.util.Collection;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.io.IOException;
@@ -27,10 +28,12 @@ import org.apache.sis.math.Vector;
 import org.apache.sis.internal.netcdf.DataType;
 import org.apache.sis.internal.netcdf.DiscreteSampling;
 import org.apache.sis.internal.netcdf.Resources;
-import org.apache.sis.internal.feature.Geometries;
 import org.apache.sis.internal.feature.MovingFeature;
+import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.util.collection.BackingStoreException;
+import org.apache.sis.util.logging.WarningListeners;
+import org.apache.sis.setup.GeometryLibrary;
 import ucar.nc2.constants.CF;
 
 // Branch-dependent imports
@@ -47,7 +50,7 @@ import org.apache.sis.feature.AbstractIdentifiedType;
 
 /**
  * Implementations of the discrete sampling features decoder. This implementation shall be able to decode at least the
- * NetCDF files encoded as specified in the OGC 16-114 (OGC Moving Features Encoding Extension: NetCDF) specification.
+ * netCDF files encoded as specified in the OGC 16-114 (OGC Moving Features Encoding Extension: netCDF) specification.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
@@ -87,18 +90,21 @@ final class FeaturesInfo extends DiscreteSampling {
      */
     private final DefaultFeatureType type;
 
-    private final Geometries<?> factory = Geometries.implementation(null);          // TODO: shall be given by the store.
-
     /**
      * Creates a new discrete sampling parser for features identified by the given variable.
      *
      * @param  counts       the count of instances per feature.
      * @param  identifiers  the feature identifiers.
+     * @param  library      the library for geometric objects, or {@code null} for the default.
+     * @param  listeners    the set of registered warning listeners for the data store.
+     * @throws IllegalArgumentException if the given library is non-null but not available.
      */
     @SuppressWarnings("rawtypes")                               // Because of generic array creation.
     private FeaturesInfo(final Vector counts, final VariableInfo identifiers, final VariableInfo time,
-            final Collection<VariableInfo> coordinates, final Collection<VariableInfo> properties)
+            final Collection<VariableInfo> coordinates, final Collection<VariableInfo> properties,
+            final GeometryLibrary library, final WarningListeners<DataStore> listeners)
     {
+        super(library, listeners);
         this.counts      = counts;
         this.identifiers = identifiers;
         this.coordinates = coordinates.toArray(new VariableInfo[coordinates.size()]);
@@ -128,8 +134,9 @@ final class FeaturesInfo extends DiscreteSampling {
                     break;
                 }
                 default: {
+                    // TODO: use more accurate Number subtype for value class.
                     variable        = this.properties[i-2];
-                    valueClass      = Number.class;           // TODO: use more accurate value class.
+                    valueClass      = (variable.meaning(0) != null) ? String.class : Number.class;
                     minOccurs       = 0;
                     maxOccurs       = Integer.MAX_VALUE;
                     break;
@@ -153,6 +160,8 @@ final class FeaturesInfo extends DiscreteSampling {
 
     /**
      * Creates new discrete sampling parsers from the attribute values found in the given decoder.
+     *
+     * @throws IllegalArgumentException if the geometric object library is not available.
      */
     static FeaturesInfo[] create(final ChannelDecoder decoder) throws IOException, DataStoreException {
         final List<FeaturesInfo> features = new ArrayList<>(3);     // Will usually contain at most one element.
@@ -265,7 +274,8 @@ search: for (final VariableInfo counts : decoder.variables) {
                     }
                     final VariableInfo time = coordinates.remove("T");
                     if (time != null) {
-                        features.add(new FeaturesInfo(counts.read().compress(0), identifiers, time, coordinates.values(), properties));
+                        features.add(new FeaturesInfo(counts.read(), identifiers, time, coordinates.values(),
+                                properties, decoder.geomlib, decoder.listeners));
                     }
                 }
             }
@@ -274,15 +284,25 @@ search: for (final VariableInfo counts : decoder.variables) {
     }
 
     /**
-     * Returns the stream of features.
+     * Returns the type of all features to be read by this {@code FeaturesInfo}.
      */
     @Override
-    public Stream<AbstractFeature> features() {
+    public DefaultFeatureType getType() {
+        return type;
+    }
+
+    /**
+     * Returns the stream of features.
+     *
+     * @param  parallel  ignored, since current version does not support parallelism.
+     */
+    @Override
+    public Stream<AbstractFeature> features(boolean parallel) {
         return StreamSupport.stream(new Iter(), false);
     }
 
     /**
-     * Implementation of the iterator returned by {@link #features()}.
+     * Implementation of the iterator returned by {@link #features(boolean)}.
      */
     private final class Iter implements Spliterator<AbstractFeature> {
         /**
@@ -320,7 +340,7 @@ search: for (final VariableInfo counts : decoder.variables) {
             final int[] step   = {1};
             final Vector   id, t;
             final Vector[] coords = new Vector[coordinates.length];
-            final Vector[] props  = new Vector[properties.length];
+            final Object[] props  = new Object[properties.length];
             try {
                 id = identifiers.read();                    // Efficiency should be okay because of cached value.
                 t = time.read(lower, upper, step);
@@ -328,7 +348,18 @@ search: for (final VariableInfo counts : decoder.variables) {
                     coords[i] = coordinates[i].read(lower, upper, step);
                 }
                 for (int i=0; i<properties.length; i++) {
-                    props[i] = properties[i].read(lower, upper, step);
+                    final VariableInfo p = properties[i];
+                    final Vector data = p.read(lower, upper, step);
+                    if (p.isEnumeration()) {
+                        final String[] meanings = new String[data.size()];
+                        for (int j=0; j<meanings.length; j++) {
+                            String m = p.meaning(data.intValue(j));
+                            meanings[j] = (m != null) ? m : "";
+                        }
+                        props[i] = Arrays.asList(meanings);
+                    } else {
+                        props[i] = data;
+                    }
                 }
             } catch (IOException | DataStoreException e) {
                 throw new BackingStoreException(canNotReadFile(), e);
@@ -369,23 +400,16 @@ search: for (final VariableInfo counts : decoder.variables) {
 
         /**
          * Returns the characteristics of the iteration over feature instances.
-         * The iteration is assumed {@link #ORDERED} in the declaration order in the NetCDF file.
+         * The iteration is assumed {@link #ORDERED} in the declaration order in the netCDF file.
          * The iteration is {@link #NONNULL} (i.e. {@link #tryAdvance(Consumer)} is not allowed
          * to return null value) and {@link #IMMUTABLE} (i.e. we do not support modification of
-         * the NetCDF file while an iteration is in progress).
+         * the netCDF file while an iteration is in progress).
          *
-         * @return characteristics of iteration over the features in the NetCDF file.
+         * @return characteristics of iteration over the features in the netCDF file.
          */
         @Override
         public int characteristics() {
             return ORDERED | NONNULL | IMMUTABLE | SIZED;
         }
-    }
-
-    /**
-     * Returns the error message for a file that can not be read.
-     */
-    final String canNotReadFile() {
-        return null;    // TODO
     }
 }

@@ -18,6 +18,8 @@ package org.apache.sis.storage.netcdf;
 
 import java.io.IOException;
 import java.net.URI;
+import java.util.List;
+import java.util.Collection;
 import org.opengis.metadata.Metadata;
 import org.opengis.parameter.ParameterValueGroup;
 import org.apache.sis.util.Debug;
@@ -25,17 +27,23 @@ import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.UnsupportedStorageException;
 import org.apache.sis.storage.StorageConnector;
+import org.apache.sis.storage.Aggregate;
 import org.apache.sis.internal.netcdf.Decoder;
 import org.apache.sis.internal.storage.URIDataStore;
+import org.apache.sis.internal.util.UnmodifiableArrayList;
 import org.apache.sis.metadata.ModifiableMetadata;
 import org.apache.sis.setup.OptionKey;
+import org.apache.sis.storage.Resource;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.Version;
 import ucar.nc2.constants.CDM;
 
+// Branch-dependent imports
+import org.apache.sis.storage.ReadOnlyStorageException;
+
 
 /**
- * A data store backed by NetCDF files.
+ * A data store backed by netCDF files.
  * Instances of this data store are created by {@link NetcdfStoreProvider#open(StorageConnector)}.
  *
  * @author  Martin Desruisseaux (Geomatys)
@@ -46,9 +54,9 @@ import ucar.nc2.constants.CDM;
  * @since 0.3
  * @module
  */
-public class NetcdfStore extends DataStore {
+public class NetcdfStore extends DataStore implements Aggregate {
     /**
-     * The object to use for decoding the NetCDF file content. There is two different implementations,
+     * The object to use for decoding the netCDF file content. There is two different implementations,
      * depending on whether we are using the embedded SIS decoder or a wrapper around the UCAR library.
      */
     private final Decoder decoder;
@@ -64,12 +72,19 @@ public class NetcdfStore extends DataStore {
     private Metadata metadata;
 
     /**
-     * Creates a new NetCDF store from the given file, URL, stream or {@link ucar.nc2.NetcdfFile} object.
+     * The data (raster or features) found in the netCDF file. This list is created when first needed.
+     *
+     * @see #components()
+     */
+    private List<Resource> components;
+
+    /**
+     * Creates a new netCDF store from the given file, URL, stream or {@link ucar.nc2.NetcdfFile} object.
      * This constructor invokes {@link StorageConnector#closeAllExcept(Object)}, keeping open only the
      * needed resource.
      *
      * @param  connector information about the storage (URL, stream, {@link ucar.nc2.NetcdfFile} instance, <i>etc</i>).
-     * @throws DataStoreException if an error occurred while opening the NetCDF file.
+     * @throws DataStoreException if an error occurred while opening the netCDF file.
      *
      * @deprecated Replaced by {@link #NetcdfStore(NetcdfStoreProvider, StorageConnector)}.
      */
@@ -79,13 +94,13 @@ public class NetcdfStore extends DataStore {
     }
 
     /**
-     * Creates a new NetCDF store from the given file, URL, stream or {@link ucar.nc2.NetcdfFile} object.
+     * Creates a new netCDF store from the given file, URL, stream or {@link ucar.nc2.NetcdfFile} object.
      * This constructor invokes {@link StorageConnector#closeAllExcept(Object)}, keeping open only the
      * needed resource.
      *
      * @param  provider   the factory that created this {@code DataStore} instance, or {@code null} if unspecified.
      * @param  connector  information about the storage (URL, stream, {@link ucar.nc2.NetcdfFile} instance, <i>etc</i>).
-     * @throws DataStoreException if an error occurred while opening the NetCDF file.
+     * @throws DataStoreException if an error occurred while opening the netCDF file.
      *
      * @since 0.8
      */
@@ -142,7 +157,7 @@ public class NetcdfStore extends DataStore {
     }
 
     /**
-     * Returns the version number of the Climate and Forecast (CF) conventions used in the NetCDF file.
+     * Returns the version number of the Climate and Forecast (CF) conventions used in the netCDF file.
      * The use of CF convention is mandated by the OGC 11-165r2 standard
      * (<cite>CF-netCDF3 Data Model Extension standard</cite>).
      *
@@ -161,9 +176,44 @@ public class NetcdfStore extends DataStore {
     }
 
     /**
-     * Closes this NetCDF store and releases any underlying resources.
+     * Returns the resources (features or coverages) in this netCDF file.
      *
-     * @throws DataStoreException if an error occurred while closing the NetCDF file.
+     * @return children resources that are components of this netCDF.
+     * @throws DataStoreException if an error occurred while fetching the components.
+     *
+     * @since 0.8
+     */
+    @Override
+    @SuppressWarnings("ReturnOfCollectionOrArrayField")
+    public synchronized Collection<Resource> components() throws DataStoreException {
+        if (components == null) try {
+            components = UnmodifiableArrayList.<Resource>wrap(decoder.getDiscreteSampling());
+        } catch (IOException e) {
+            throw new DataStoreException(e);
+        }
+        return components;
+    }
+
+    /**
+     * Unsupported operation in current version.
+     */
+    @Override
+    public Resource add(Resource resource) throws ReadOnlyStorageException {
+        throw new ReadOnlyStorageException();
+    }
+
+    /**
+     * Unsupported operation in current version.
+     */
+    @Override
+    public void remove(Resource resource) throws ReadOnlyStorageException {
+        throw new ReadOnlyStorageException();
+    }
+
+    /**
+     * Closes this netCDF store and releases any underlying resources.
+     *
+     * @throws DataStoreException if an error occurred while closing the netCDF file.
      */
     @Override
     public synchronized void close() throws DataStoreException {
@@ -176,10 +226,10 @@ public class NetcdfStore extends DataStore {
     }
 
     /**
-     * Returns a string representation of this NetCDF store for debugging purpose.
+     * Returns a string representation of this netCDF store for debugging purpose.
      * The content of the string returned by this method may change in any future SIS version.
      *
-     * @return a string representation of this datastore for debugging purpose.
+     * @return a string representation of this data store for debugging purpose.
      */
     @Debug
     @Override

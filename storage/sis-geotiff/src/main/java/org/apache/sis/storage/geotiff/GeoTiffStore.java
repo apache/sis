@@ -34,6 +34,7 @@ import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.storage.UnsupportedStorageException;
 import org.apache.sis.internal.storage.io.ChannelDataInput;
+import org.apache.sis.internal.storage.io.IOUtilities;
 import org.apache.sis.internal.storage.MetadataBuilder;
 import org.apache.sis.internal.storage.URIDataStore;
 import org.apache.sis.internal.util.Constants;
@@ -130,12 +131,21 @@ public class GeoTiffStore extends DataStore {
                 while ((dir = reader.getImageFileDirectory(n++)) != null) {
                     dir.completeMetadata(builder, locale);
                 }
-                metadata = builder.build(true);
             } catch (IOException e) {
                 throw new DataStoreException(errors().getString(Errors.Keys.CanNotRead_1, reader.input.filename), e);
             } catch (FactoryException | ArithmeticException e) {
                 throw new DataStoreContentException(getLocale(), Constants.GEOTIFF, reader.input.filename, null).initCause(e);
             }
+            /*
+             * Add the filename as an identifier only if the input was something convertible to URI (URL, File or Path),
+             * otherwise reader.input.filename may not be useful; it may be just the InputStream classname. If the TIFF
+             * file did not specified any ImageDescription tag, then we will had the filename as a title instead than an
+             * identifier because the title is mandatory in ISO 19115 metadata.
+             */
+            if (location != null) {
+                builder.addTitleOrIdentifier(IOUtilities.filenameWithoutExtension(reader.input.filename), MetadataBuilder.Scope.ALL);
+            }
+            metadata = builder.build(true);
         }
         return metadata;
     }

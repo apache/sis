@@ -883,6 +883,7 @@ public class MetadataBuilder {
      * @param  scope      whether the date applies to data, to metadata or to both.
      *
      * @see #addTitle(CharSequence)
+     * @see #addTitleOrIdentifier(String, Scope)
      */
     public final void addIdentifier(final CharSequence authority, String code, final Scope scope) {
         ArgumentChecks.ensureNonNull("scope", scope);
@@ -1086,7 +1087,7 @@ public class MetadataBuilder {
      * Storage location is:
      *
      * <ul>
-     *   <li>{@code metadata/identificationInfo/citation/title} if available</li>
+     *   <li>{@code metadata/identificationInfo/citation/title} if not yet used</li>
      *   <li>{@code metadata/identificationInfo/citation/alternateTitle} otherwise</li>
      * </ul>
      *
@@ -1105,6 +1106,31 @@ public class MetadataBuilder {
                 addIfNotPresent(citation.getAlternateTitles(), i18n);
             }
         }
+    }
+
+    /**
+     * Adds the given code as a title if the current citation has no title, or as an identifier otherwise.
+     * This method is invoked when adding an identifier to a metadata that may have no title. Because the
+     * title is mandatory, adding only an identifier would make an invalid metadata.
+     *
+     * @param  code   the identifier code, or {@code null} for no-operation.
+     * @param  scope  whether the date applies to data, to metadata or to both.
+     *
+     * @see #addTitle(CharSequence)
+     * @see #addIdentifier(CharSequence, String, Scope)
+     */
+    public final void addTitleOrIdentifier(final String code, Scope scope) {
+        ArgumentChecks.ensureNonNull("scope", scope);
+        if (scope != Scope.METADATA) {
+            if (citation == null || citation.getTitle() == null) {
+                addTitle(code);
+                if (scope == Scope.RESOURCE) {
+                    return;
+                }
+                scope = Scope.METADATA;
+            }
+        }
+        addIdentifier(null, code, scope);
     }
 
     /**

@@ -67,6 +67,11 @@ public final class Resources extends IndexedResourceBundle {
         public static final short AmbiguousName_4 = 15;
 
         /**
+         * Can not read “{0}” directory.
+         */
+        public static final short CanNotReadDirectory_1 = 34;
+
+        /**
          * Can not read “{1}” as a file in the {0} format.
          */
         public static final short CanNotReadFile_2 = 1;
@@ -100,6 +105,31 @@ public final class Resources extends IndexedResourceBundle {
          * A write operation is in progress in the “{0}” data store.
          */
         public static final short ConcurrentWrite_1 = 20;
+
+        /**
+         * Character encoding used by the data store.
+         */
+        public static final short DataStoreEncoding = 29;
+
+        /**
+         * Formating conventions of dates and numbers.
+         */
+        public static final short DataStoreLocale = 30;
+
+        /**
+         * Data store location as a file or URL.
+         */
+        public static final short DataStoreLocation = 31;
+
+        /**
+         * Timezone of dates in the data store.
+         */
+        public static final short DataStoreTimeZone = 32;
+
+        /**
+         * Content of “{0}” directory.
+         */
+        public static final short DirectoryContent_1 = 35;
 
         /**
          * Character string in the “{0}” file is too long. The string has {2} characters while the
@@ -164,6 +194,11 @@ public final class Resources extends IndexedResourceBundle {
         public static final short ShallBeDeclaredBefore_2 = 22;
 
         /**
+         * The “{0}” directory is used more than once because of symbolic links.
+         */
+        public static final short SharedDirectory_1 = 36;
+
+        /**
          * Write operations are not supported.
          */
         public static final short StoreIsReadOnly = 28;
@@ -202,6 +237,11 @@ public final class Resources extends IndexedResourceBundle {
          * Format of “{0}” is not recognized.
          */
         public static final short UnknownFormatFor_1 = 14;
+
+        /**
+         * Used only if this information is not encoded with the data.
+         */
+        public static final short UsedOnlyIfNotEncoded = 33;
     }
 
     /**

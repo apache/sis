@@ -597,8 +597,10 @@ public class StorageConnector implements Serializable {
     }
 
     /**
-     * Returns a short name of the input/output object. The default implementation performs
-     * the following choices based on the type of the {@linkplain #getStorage() storage} object:
+     * Returns a short name of the input/output object. For example if the storage is a file,
+     * this method returns the filename without the path (but including the file extension).
+     * The default implementation performs the following choices based on the type of the
+     * {@linkplain #getStorage() storage} object:
      *
      * <ul>
      *   <li>For {@link java.nio.file.Path}, {@link java.io.File}, {@link java.net.URI} or {@link java.net.URL}
@@ -921,7 +923,7 @@ public class StorageConnector implements Serializable {
          * (potentially an InputStream). We need to remember this chain in 'Coupled' objects.
          */
         final String name = getStorageName();
-        final ReadableByteChannel channel = factory.reader(name);
+        final ReadableByteChannel channel = factory.reader(name, null);
         addView(ReadableByteChannel.class, channel, null, factory.isCoupled() ? CASCADE_ON_RESET : 0);
         ByteBuffer buffer = getOption(OptionKey.BYTE_BUFFER);       // User-supplied buffer.
         if (buffer == null) {
@@ -1374,8 +1376,9 @@ public class StorageConnector implements Serializable {
             op.setValue(TableColumn.NAME,  "options");
             op.setValue(TableColumn.VALUE,  options);
         }
-        if (views != null) {
-            views.get(null).append(root.newChild(), views);
+        final Coupled c = getView(null);
+        if (c != null) {
+            c.append(root.newChild(), views);
         }
         return table.toString();
     }

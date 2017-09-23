@@ -61,12 +61,12 @@ public final strictfp class AlbersEqualAreaTest extends MapProjectionTestCase {
     @Test
     public void testSphere() throws FactoryException, TransformException {
         createCompleteProjection(new org.apache.sis.internal.referencing.provider.AlbersEqualArea(),
-                6370997,    // Semi-major axis from Synder table 15
+                6370997,    // Semi-major axis from Snyder table 15
                 6370997,    // Semi-minor axis
                 0,          // Central meridian
                 0,          // Latitude of origin
-                29.5,       // Standard parallel 1 (from Synder table 15)
-                45.5,       // Standard parallel 2 (from Synder table 15)
+                29.5,       // Standard parallel 1 (from Snyder table 15)
+                45.5,       // Standard parallel 2 (from Snyder table 15)
                 NaN,        // Scale factor (none)
                 0,          // False easting
                 0);         // False northing
@@ -76,10 +76,10 @@ public final strictfp class AlbersEqualAreaTest extends MapProjectionTestCase {
         tolerance = Formulas.LINEAR_TOLERANCE;
         final AlbersEqualArea kernel = (AlbersEqualArea) getKernel();
         assertTrue("isSpherical", isSpherical(kernel));
-        assertEquals("n", 0.6028370, kernel.nm, 0.5E-7);                    // Expected 'n' value from Synder table 15.
+        assertEquals("n", 0.6028370, kernel.nm, 0.5E-7);                    // Expected 'n' value from Snyder table 15.
         /*
          * When stepping into the AlbersEqualArea.Sphere.transform(…) method with a debugger, the
-         * expected value of 6370997*ρ/n is 6910941 (value taken from ρ column in Synder table 15).
+         * expected value of 6370997*ρ/n is 6910941 (value taken from ρ column in Snyder table 15).
          */
         verifyTransform(new double[] {0, 50}, new double[] {0, 5373933.180});
         /*
@@ -109,12 +109,12 @@ public final strictfp class AlbersEqualAreaTest extends MapProjectionTestCase {
     @DependsOnMethod("testSphere")
     public void testEllipse() throws FactoryException, TransformException {
         createCompleteProjection(new org.apache.sis.internal.referencing.provider.AlbersEqualArea(),
-                6378206.4,  // Semi-major axis from Synder table 15
+                6378206.4,  // Semi-major axis from Snyder table 15
                 6356583.8,  // Semi-minor axis
                 0,          // Central meridian
                 0,          // Latitude of origin
-                29.5,       // Standard parallel 1 (from Synder table 15)
-                45.5,       // Standard parallel 2 (from Synder table 15)
+                29.5,       // Standard parallel 1 (from Snyder table 15)
+                45.5,       // Standard parallel 2 (from Snyder table 15)
                 NaN,        // Scale factor (none)
                 0,          // False easting
                 0);         // False northing
@@ -125,13 +125,13 @@ public final strictfp class AlbersEqualAreaTest extends MapProjectionTestCase {
         final AlbersEqualArea kernel = (AlbersEqualArea) getKernel();
         assertFalse("isSpherical", isSpherical(kernel));
         /*
-         * Expected 'n' value from Synder table 15. The division by (1-ℯ²) is because Apache SIS omits this factor
+         * Expected 'n' value from Snyder table 15. The division by (1-ℯ²) is because Apache SIS omits this factor
          * in its calculation of n (we rather take it in account in (de)normalization matrices and elsewhere).
          */
         assertEquals("n", 0.6029035, kernel.nm / (1 - kernel.eccentricitySquared), 0.5E-7);
         /*
          * When stepping into the AlbersEqualArea.Sphere.transform(…) method with a debugger, the expected
-         * value of 6378206.4*ρ/(nm/(1-ℯ²)) is 6931335 (value taken from ρ column in Synder table 15).
+         * value of 6378206.4*ρ/(nm/(1-ℯ²)) is 6931335 (value taken from ρ column in Snyder table 15).
          */
         verifyTransform(new double[] {0, 50}, new double[] {0, 5356698.435});
         /*
