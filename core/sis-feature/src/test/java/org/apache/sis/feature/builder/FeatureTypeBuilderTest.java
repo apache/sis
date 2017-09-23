@@ -350,18 +350,14 @@ public final strictfp class FeatureTypeBuilderTest extends TestCase {
 
     @Ignore("Obviously a bug.")
     @Test
-    public void testToStringInternalThrowsNullPointerException() {
+    public void testToStringInternalIsNotNull() {
         FeatureTypeBuilder featureTypeBuilder = new FeatureTypeBuilder(null);
         DefaultFeatureType[] defaultFeatureTypeArray = new DefaultFeatureType[6];
         featureTypeBuilder.setSuperTypes(defaultFeatureTypeArray);
         StringBuilder stringBuilder = new StringBuilder("");
+        featureTypeBuilder.toStringInternal(stringBuilder);
 
-        try {
-            featureTypeBuilder.toStringInternal(stringBuilder);
-            fail("Expecting exception: NullPointerException");
-        } catch(NullPointerException e) {
-            assertEquals(FeatureTypeBuilder.class.getName(), e.getStackTrace()[0].getClassName());
-        }
+        assertNotNull(stringBuilder.toString());
     }
 
     @Test
