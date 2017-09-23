@@ -23,10 +23,12 @@ import static org.junit.Assert.*;
 /**
  * Unit tests for class {@link ArrayEnvelope}.
  *
- * @date 2017-09-22
+ * @version 0.8
+ * @since   0.8
+ * @author  Michael Hauseggeer, <hausegger.michael@googlemail.com>
  * @see ArrayEnvelope
  *
- **/
+ */
 public class ArrayEnvelopeTest{
   @Test
   public void testIsEmptyReturningTrue() {

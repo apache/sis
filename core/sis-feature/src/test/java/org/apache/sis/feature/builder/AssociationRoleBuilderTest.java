@@ -33,23 +33,25 @@ import org.opengis.util.InternationalString;
 /**
  * Unit tests for class {@link AssociationRoleBuilder}.
  *
- * @date 2017-09-22
+ * @version 0.8
+ * @since   0.8
+ * @author  Michael Hauseggeer, <hausegger.michael@googlemail.com>
  * @see AssociationRoleBuilder
  *
- **/
+ */
 public class AssociationRoleBuilderTest{
   @Test
   public void testSetDescription() {
       DefaultNameFactory defaultNameFactory = new DefaultNameFactory();
       GeometryLibrary geometryLibrary = GeometryLibrary.JAVA2D;
-      Locale locale = new Locale("`$v5w*nd");
+      Locale locale = new Locale("de");
       FeatureTypeBuilder featureTypeBuilder = new FeatureTypeBuilder(defaultNameFactory, geometryLibrary, locale);
       CharSequence[] charSequenceArray = new CharSequence[3];
-      charSequenceArray[0] = (CharSequence) "`$v5w*nd 1";
-      charSequenceArray[1] = (CharSequence) "`$v5w*nd 2";
-      charSequenceArray[2] = (CharSequence) "`$v5w*nd 3";
+      charSequenceArray[0] = "`$v5w*nd 1";
+      charSequenceArray[1] = "`$v5w*nd 2";
+      charSequenceArray[2] = "`$v5w*nd 3";
       FeatureTypeBuilder featureTypeBuilderTwo = featureTypeBuilder.setName(charSequenceArray);
-      CitationConstant.Authority<Object> citationConstant_Authority = new CitationConstant.Authority<Object>("Mojo `$v5w*nd");
+      CitationConstant.Authority<Object> citationConstant_Authority = new CitationConstant.Authority<>("Mojo `$v5w*nd");
       InternationalString internationalString = citationConstant_Authority.getTitle();
       DefaultFeatureType defaultFeatureType = featureTypeBuilderTwo.build();
       IdentifierSpace<XLink> identifierSpace = IdentifierSpace.XLINK;
