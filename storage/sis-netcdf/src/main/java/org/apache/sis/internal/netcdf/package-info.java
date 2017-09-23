@@ -16,9 +16,9 @@
  */
 
 /**
- * The API used internally by Apache SIS for fetching all data from NetCDF files.
+ * The API used internally by Apache SIS for fetching all data from netCDF files.
  * We use this API for isolating Apache SIS from the library used for reading the
- * NetCDF file: it can be either the UCAR library, or our own internal library.
+ * netCDF file: it can be either the UCAR library, or our own internal library.
  *
  * <p>We do not use systematically the UCAR library because it is quite large (especially when including
  * all dependencies) while SIS uses only a fraction of it. This is because the UCAR library provides some
@@ -27,13 +27,13 @@
  * its raw format, while the UCAR high level API provides the values converted by the offset and scale
  * factors.</p>
  *
- * <p>A side effect of this isolation layer is also to adapt NetCDF vocabulary to Apache SIS one.
- * For example what NetCDF calls <cite>"coordinate system"</cite> is actually a mix of what OGC/ISO
+ * <p>A side effect of this isolation layer is also to adapt netCDF vocabulary to Apache SIS one.
+ * For example what netCDF calls <cite>"coordinate system"</cite> is actually a mix of what OGC/ISO
  * specifications call <cite>"coordinate system"</cite>, <cite>"coordinate reference system"</cite>
- * and <cite>"grid geometry"</cite>. The NetCDF coordinate system <cite>"range"</cite> is closer to
- * ISO 19123 <cite>"domain"</cite>, the NetCDF coordinate system <cite>"domain"</cite> is closer to
+ * and <cite>"grid geometry"</cite>. The netCDF coordinate system <cite>"range"</cite> is closer to
+ * ISO 19123 <cite>"domain"</cite>, the netCDF coordinate system <cite>"domain"</cite> is closer to
  * ISO 19123 <cite>"grid envelope"</cite> and the ISO 19123 <cite>"range"</cite> is rather related
- * to the NetCDF variable minimum and maximum values. Trying to use OGC/ISO and NetCDF objects in
+ * to the netCDF variable minimum and maximum values. Trying to use OGC/ISO and netCDF objects in
  * the same code appears to be <strong>very</strong> confusing. This isolation layer allows our code
  * to use a more consistent vocabulary (compared to the rest of Apache SIS).</p>
  *

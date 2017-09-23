@@ -76,6 +76,7 @@
         <executions>
           <execution>
             <goals>
+              <goal>compile-resources</goal>
               <goal>collect-jars</goal>
             </goals>
           </execution>

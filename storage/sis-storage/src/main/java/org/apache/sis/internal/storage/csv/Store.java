@@ -83,7 +83,7 @@ import org.apache.sis.feature.AbstractIdentifiedType;
  * @since   0.7
  * @module
  */
-public final class Store extends URIDataStore implements FeatureSet {
+final class Store extends URIDataStore implements FeatureSet {
     /**
      * The character at the beginning of lines to ignore in the header.
      * Note that this is not part of OGC Moving Feature Specification.
@@ -615,6 +615,7 @@ public final class Store extends URIDataStore implements FeatureSet {
                 listeners.warning(null, e);
             }
             builder.addFeatureType(featureType, null);
+            addTitleOrIdentifier(builder);
             metadata = builder.build(true);
         }
         return metadata;

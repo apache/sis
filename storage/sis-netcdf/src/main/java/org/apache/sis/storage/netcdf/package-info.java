@@ -17,7 +17,7 @@
 
 /**
  * Maps ISO metadata elements from/to the <a href="http://www.cfconventions.org">Climate and Forecast (CF)</a>
- * attributes in a NetCDF file. The mapping is defined in the following web pages:
+ * attributes in a netCDF file. The mapping is defined in the following web pages:
  *
  * <ul>
  *   <li><a href="http://wiki.esipfed.org/index.php/Category:Attribute_Conventions_Dataset_Discovery">NetCDF
@@ -25,7 +25,7 @@
  *   <li><a href="https://github.com/Unidata/threddsIso/blob/master/src/main/resources/xsl/nciso/UnidataDD2MI.xsl">UnidataDD2MI.xsl</a> file.</li>
  * </ul>
  *
- * The NetCDF attributes recognized by this package are listed in the
+ * The netCDF attributes recognized by this package are listed in the
  * {@link org.apache.sis.storage.netcdf.AttributeNames} class.
  *
  * <div class="section">Note on the definition of terms</div>
@@ -42,7 +42,7 @@
  *       but is rather related to <cite>grid envelope</cite>.</li>
  *   <li>ISO 19123 coverage <cite>domain</cite> is related to UCAR coordinate system <cite>"range"</cite>.</li>
  *   <li>ISO 19123 coverage <cite>range</cite> is not equivalent to UCAR <cite>"range"</cite>,
- *       but is rather related to the NetCDF variable's minimum and maximum values.</li>
+ *       but is rather related to the netCDF variable's minimum and maximum values.</li>
  * </ul>
  *
  * Care must be taken for avoiding confusion when using SIS and UCAR libraries together.

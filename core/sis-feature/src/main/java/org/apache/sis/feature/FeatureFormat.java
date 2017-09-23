@@ -43,6 +43,7 @@ import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.internal.util.CollectionsExt;
+import org.apache.sis.internal.feature.Geometries;
 import org.apache.sis.internal.system.Modules;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.math.MathFunctions;
@@ -86,6 +87,11 @@ public class FeatureFormat extends TabularFormat<Object> {
      * For cross-version compatibility.
      */
     private static final long serialVersionUID = -5792086817264884947L;
+
+    /**
+     * The separator to use in comma-separated lists.
+     */
+    private static final String SEPARATOR = ", ";
 
     /**
      * An instance created when first needed and potentially shared.
@@ -340,7 +346,7 @@ public class FeatureFormat extends TabularFormat<Object> {
             String separator = " ⇾ ";                                       // UML symbol for inheritance.
             for (final FeatureType parent : featureType.getSuperTypes()) {
                 toAppendTo.append(separator).append(toString(parent.getName()));
-                separator = ", ";
+                separator = SEPARATOR;
             }
         }
         toAppendTo.append(getLineSeparator());
@@ -442,19 +448,37 @@ public class FeatureFormat extends TabularFormat<Object> {
                 if (!isFirstColumn) nextColumn(table);
                 isFirstColumn = false;
                 switch (column) {
+                    /*
+                     * Human-readable name of the property. May contains any characters (spaces, ideographs, etc).
+                     * In many cases, this information is not provided and the whole column is skipped.
+                     */
                     case DESIGNATION: {
                         final InternationalString d = propertyType.getDesignation();
                         if (d != null) table.append(d.toString(displayLocale));
                         break;
                     }
+                    /*
+                     * Machine-readable name of the property (identifier). This information is mandatory.
+                     * This name is usually shorter than the designation and should contain only valid
+                     * Unicode identifier characters (e.g. no spaces).
+                     */
                     case NAME: {
                         table.append(toString(propertyType.getName()));
                         break;
                     }
+                    /*
+                     * The base class or interface for all values in properties of the same type.
+                     * This is typically String, Number, Integer, Geometry or URL.
+                     */
                     case TYPE: {
                         table.append(valueType);
                         break;
                     }
+                    /*
+                     * Minimum and maximum number of occurrences allowed for this property.
+                     * If we are formatting a Feature instead than a FeatureType, then the
+                     * actual number of values is also formatted. Example: 42 ∈ [0 … ∞]
+                     */
                     case CARDINALITY: {
                         table.setCellAlignment(TableAppender.ALIGN_RIGHT);
                         if (cardinality >= 0) {
@@ -480,6 +504,12 @@ public class FeatureFormat extends TabularFormat<Object> {
                         }
                         break;
                     }
+                    /*
+                     * If formatting a FeatureType, the default value. If formatting a Feature, the actual value.
+                     * A java.text.Format instance dedicated to the value class is used if possible. In addition
+                     * to types for which a java.text.Format may be available, we also have to check for other
+                     * special cases. If there is more than one value, they are formatted as a coma-separated list.
+                     */
                     case VALUE: {
                         table.setCellAlignment(TableAppender.ALIGN_LEFT);
                         final Format format = getFormat(valueClass);                            // Null if valueClass is null.
@@ -534,28 +564,62 @@ public class FeatureFormat extends TabularFormat<Object> {
                                 length = formatValue(value, table.append(separator), length);
                                 buffer.setLength(0);
                                 if (length < 0) break;      // Value is too long, abandon remaining iterations.
-                                separator = ", ";
-                                length += 2;
+                                separator = SEPARATOR;
+                                length += SEPARATOR.length();
                             }
                         }
                         break;
                     }
+                    /*
+                     * Characteristics are optional information attached to some values. For example if a property
+                     * value is a temperature measurement, a characteritic of that value may be the unit of measure.
+                     * Characteristics are handled as "attributes of attributes".
+                     */
                     case CHARACTERISTICS: {
                         if (propertyType instanceof DefaultAttributeType<?>) {
+                            int length = 0;
                             String separator = "";
-                            for (final DefaultAttributeType<?> attribute : ((DefaultAttributeType<?>) propertyType).characteristics().values()) {
-                                table.append(separator).append(toString(attribute.getName()));
-                                Object c = attribute.getDefaultValue();
+format:                     for (final DefaultAttributeType<?> ct : ((DefaultAttributeType<?>) propertyType).characteristics().values()) {
+                                /*
+                                 * Format the characteristic name. We will append the value(s) later.
+                                 * We keep trace of the text length in order to stop formatting if the
+                                 * text become too long.
+                                 */
+                                final GenericName cn = ct.getName();
+                                final String cs = toString(cn);
+                                table.append(separator).append(cs);
+                                length += separator.length() + cs.length();
+                                Collection<?> cv = CollectionsExt.singletonOrEmpty(ct.getDefaultValue());
                                 if (feature != null) {
-                                    final Object p = feature.getProperty(propertyType.getName().toString());
-                                    if (p instanceof AbstractAttribute<?>) {    // Should always be true, but we are paranoiac.
-                                        c = ((AbstractAttribute<?>) p).characteristics().get(attribute.getName().toString());
+                                    /*
+                                     * Usually, the property 'cp' below is null because all features use the same
+                                     * characteristic value (for example the same unit of measurement),  which is
+                                     * given by the default value 'cv'.  Nevertheless we have to check if current
+                                     * feature overrides this characteristic.
+                                     */
+                                    final Object cp = feature.getProperty(propertyType.getName().toString());
+                                    if (cp instanceof AbstractAttribute<?>) {            // Should always be true, but we are paranoiac.
+                                        AbstractAttribute<?> ca = ((AbstractAttribute<?>) cp).characteristics().get(cn.toString());
+                                        if (ca != null) cv = ca.getValues();
                                     }
                                 }
-                                if (c != null) {
-                                    formatValue(c, table.append(" = "), 0);
+                                /*
+                                 * Now format the value, separated from the name with " = ". Example: unit = m/s
+                                 * If the value accepts multi-occurrences, we will format the value between {…}.
+                                 * We use {…} because we may have more than one characteristic in the same cell,
+                                 * so we need a way to distinguish multi-values from multi-characteristics.
+                                 */
+                                final boolean multi = ct.getMaximumOccurs() > 1;
+                                String sep = multi ? " = {" : " = ";
+                                for (Object c : cv) {
+                                    length = formatValue(c, table.append(sep), length += sep.length());
+                                    if (length < 0) break format;   // Value is too long, abandon remaining iterations.
+                                    sep = SEPARATOR;
                                 }
-                                separator = ", ";
+                                separator = SEPARATOR;
+                                if (multi && sep == SEPARATOR) {
+                                    table.append('}');
+                                }
                             }
                         }
                         break;
@@ -614,7 +678,7 @@ public class FeatureFormat extends TabularFormat<Object> {
      *         the length exceed the maximal length (in which case the caller should break iteration).
      */
     private int formatValue(final Object value, final TableAppender table, final int length) {
-        final String text;
+        String text;
         if (value instanceof InternationalString) {
             text = ((InternationalString) value).toString(displayLocale);
         } else if (value instanceof GenericName) {
@@ -623,7 +687,7 @@ public class FeatureFormat extends TabularFormat<Object> {
             text = toString(((AbstractIdentifiedType) value).getName());
         } else if (value instanceof IdentifiedObject) {
             text = IdentifiedObjects.getIdentifierOrName((IdentifiedObject) value);
-        } else {
+        } else if ((text = Geometries.toString(value)) == null) {
             text = value.toString();
         }
         final int remaining = MAXIMAL_VALUE_LENGTH - length;

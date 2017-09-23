@@ -33,7 +33,7 @@ import org.apache.sis.storage.DataStoreException;
  * @since   0.4
  * @module
  */
-public class StoreTypeDetector extends FileTypeDetector {
+public final class StoreTypeDetector extends FileTypeDetector {
     /**
      * Constructor for {@link java.util.ServiceLoader}.
      */
