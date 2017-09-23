@@ -173,7 +173,7 @@ public abstract class DataStoreProvider {
      *   <li>Parameters can more easily be serialized in XML or configuration files.</li>
      * </ul></div>
      *
-     * @return description of the parameters required for opening a {@link DataStore}.
+     * @return description of the parameters required or accepted for opening a {@link DataStore}.
      *
      * @see #open(ParameterValueGroup)
      * @see DataStore#getOpenParameters()
@@ -299,7 +299,6 @@ public abstract class DataStoreProvider {
             throw new IllegalOpenParameterException(Resources.format(Resources.Keys.UndefinedParameter_2,
                     getShortName(), LOCATION), cause);
         }
-        final StorageConnector connector = new StorageConnector(location);
-        return open(connector);
+        return open(new StorageConnector(location));
     }
 }

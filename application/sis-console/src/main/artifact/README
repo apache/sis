@@ -44,7 +44,7 @@ encoding to UTF-8:
     export SIS_OPTS="--encoding UTF-8"
 
 Optional dependencies can be added to the 'lib' folder. For example adding the
-UCAR NetCDF library in the 'lib' folder will cause Apache SIS to decode a
+UCAR netCDF library in the 'lib' folder will cause Apache SIS to decode a
 wider range of file formats like NcML files.
 
 

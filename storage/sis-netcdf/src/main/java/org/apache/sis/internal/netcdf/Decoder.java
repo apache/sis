@@ -24,13 +24,14 @@ import java.io.IOException;
 import javax.measure.Unit;
 import javax.measure.format.ParserException;
 import org.apache.sis.measure.Units;
+import org.apache.sis.setup.GeometryLibrary;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.util.logging.WarningListeners;
 
 
 /**
- * The API used internally by Apache SIS for fetching variables and attribute values from a NetCDF file.
+ * The API used internally by Apache SIS for fetching variables and attribute values from a netCDF file.
  *
  * <p>This {@code Decoder} class and subclasses are <strong>not</strong> thread-safe.
  * Synchronizations are caller's responsibility.</p>
@@ -41,6 +42,13 @@ import org.apache.sis.util.logging.WarningListeners;
  * @module
  */
 public abstract class Decoder implements Closeable {
+    /**
+     * The library for geometric objects, or {@code null} for the default.
+     * This will be used only if there is geometric objects to create.
+     * If the netCDF file contains only raster data, this value is ignored.
+     */
+    public final GeometryLibrary geomlib;
+
     /**
      * Where to send the warnings.
      */
@@ -55,15 +63,18 @@ public abstract class Decoder implements Closeable {
     /**
      * Creates a new decoder.
      *
+     * @param  geomlib    the library for geometric objects, or {@code null} for the default.
      * @param  listeners  where to send the warnings.
      */
-    protected Decoder(final WarningListeners<DataStore> listeners) {
+    protected Decoder(final GeometryLibrary geomlib, final WarningListeners<DataStore> listeners) {
         Objects.requireNonNull(listeners);
+        this.geomlib   = geomlib;
         this.listeners = listeners;
     }
 
     /**
-     * Returns a filename for information purpose only. This is used for formatting error messages.
+     * Returns a filename for formatting error message and for information purpose.
+     * The filename should not contain path.
      *
      * @return a filename to report in warning or error messages.
      */
@@ -80,7 +91,7 @@ public abstract class Decoder implements Closeable {
     /**
      * Returns the path which is currently set. The array returned by this method may be only
      * a subset of the array given to {@link #setSearchPath(String[])} since only the name of
-     * groups which have been found in the NetCDF file are returned by this method.
+     * groups which have been found in the netCDF file are returned by this method.
      *
      * @return the current search path.
      */
@@ -201,7 +212,7 @@ public abstract class Decoder implements Closeable {
     }
 
     /**
-     * Returns all variables found in the NetCDF file.
+     * Returns all variables found in the netCDF file.
      * This method may return a direct reference to an internal array - do not modify.
      *
      * @return all variables, or an empty array if none.
@@ -220,7 +231,7 @@ public abstract class Decoder implements Closeable {
     public abstract DiscreteSampling[] getDiscreteSampling() throws IOException, DataStoreException;
 
     /**
-     * Returns all grid geometries (related to coordinate systems) found in the NetCDF file.
+     * Returns all grid geometries (related to coordinate systems) found in the netCDF file.
      * This method may return a direct reference to an internal array - do not modify.
      *
      * @return all grid geometries, or an empty array if none.

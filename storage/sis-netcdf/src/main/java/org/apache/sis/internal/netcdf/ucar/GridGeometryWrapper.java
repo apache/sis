@@ -31,7 +31,7 @@ import org.apache.sis.util.ArraysExt;
 
 
 /**
- * Information about NetCDF coordinate system, which include information about grid geometries.
+ * Information about netCDF coordinate system, which include information about grid geometries.
  * In OGC/ISO specifications, the coordinate system and the grid geometries are distinct entities.
  * However the UCAR model takes a different point of view where the coordinate system holds some
  * of the grid geometry information.
@@ -43,14 +43,14 @@ import org.apache.sis.util.ArraysExt;
  */
 final class GridGeometryWrapper extends GridGeometry {
     /**
-     * The NetCDF coordinate system to wrap.
+     * The netCDF coordinate system to wrap.
      */
     private final CoordinateSystem netcdfCS;
 
     /**
-     * Creates a new grid geometry for the given NetCDF coordinate system.
+     * Creates a new grid geometry for the given netCDF coordinate system.
      *
-     * @param  cs  the NetCDF coordinate system, or {@code null} if none.
+     * @param  cs  the netCDF coordinate system, or {@code null} if none.
      */
     GridGeometryWrapper(final CoordinateSystem cs) {
         netcdfCS = cs;
@@ -77,10 +77,10 @@ final class GridGeometryWrapper extends GridGeometry {
     }
 
     /**
-     * Returns all axes of the NetCDF coordinate system, together with the grid dimension to which the axis
+     * Returns all axes of the netCDF coordinate system, together with the grid dimension to which the axis
      * is associated.
      *
-     * <p>In this method, the words "domain" and "range" are used in the NetCDF sense: they are the input
+     * <p>In this method, the words "domain" and "range" are used in the netCDF sense: they are the input
      * (domain) and output (range) of the function that convert grid indices to geodetic coordinates.</p>
      *
      * <p>The domain of all axes (or the {@linkplain CoordinateSystem#getDomain() coordinate system domain})
@@ -88,7 +88,7 @@ final class GridGeometryWrapper extends GridGeometry {
      * In particular, the relationship is not straightforward when the coordinate system contains instances
      * of {@link CoordinateAxis2D}.</p>
      *
-     * @return the CRS axes, in NetCDF order (reverse of "natural" order).
+     * @return the CRS axes, in netCDF order (reverse of "natural" order).
      * @throws IOException if an I/O operation was necessary but failed.
      * @throws DataStoreException if a logical error occurred.
      */
@@ -121,7 +121,7 @@ final class GridGeometryWrapper extends GridGeometry {
             /*
              * Get the grid dimensions (part of the "domain" in UCAR terminology) used for computing
              * the ordinate values along the current axis. There is exactly 1 such grid dimension in
-             * straightforward NetCDF files. However some more complex files may have 2 dimensions.
+             * straightforward netCDF files. However some more complex files may have 2 dimensions.
              */
             int i = 0;
             final List<Dimension> axisDomain = axis.getDimensions();
@@ -135,7 +135,7 @@ final class GridGeometryWrapper extends GridGeometry {
                 }
                 /*
                  * If the axis dimension has not been found in the coordinate system (sourceDim < 0),
-                 * then there is maybe a problem with the NetCDF file. However for the purpose of this
+                 * then there is maybe a problem with the netCDF file. However for the purpose of this
                  * package, we can proceed as if the dimension does not exist ('i' not incremented).
                  */
             }

@@ -25,7 +25,7 @@ import org.apache.sis.util.Debug;
 
 
 /**
- * A NetCDF variable created by {@link Decoder}.
+ * A netCDF variable created by {@link Decoder}.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Johann Sorel (Geomatys)
@@ -129,28 +129,28 @@ public abstract class Variable extends NamedElement {
 
     /**
      * Returns {@code true} if this variable seems to be a coordinate system axis instead than the actual data.
-     * By NetCDF convention, coordinate system axes have the name of one of the dimensions defined in the NetCDF header.
+     * By netCDF convention, coordinate system axes have the name of one of the dimensions defined in the netCDF header.
      *
      * @return {@code true} if this variable seems to be a coordinate system axis.
      */
     public abstract boolean isCoordinateSystemAxis();
 
     /**
-     * Returns the names of the dimensions of this variable, in the order they are declared in the NetCDF file.
+     * Returns the names of the dimensions of this variable, in the order they are declared in the netCDF file.
      * The dimensions are those of the grid, not the dimensions of the coordinate system.
      *
-     * @return the names of all dimension of the grid, in NetCDF order (reverse of "natural" order).
+     * @return the names of all dimension of the grid, in netCDF order (reverse of "natural" order).
      */
     public abstract String[] getGridDimensionNames();
 
     /**
-     * Returns the length (number of cells) of each grid dimension, in the order they are declared in the NetCDF file.
+     * Returns the length (number of cells) of each grid dimension, in the order they are declared in the netCDF file.
      * The length of this array shall be equals to the length of the {@link #getGridDimensionNames()} array.
      *
      * <p>In ISO 19123 terminology, this method returns the upper corner of the grid envelope plus one.
      * The lower corner is always (0, 0, …, 0).</p>
      *
-     * @return the number of grid cells for each dimension, in NetCDF order (reverse of "natural" order).
+     * @return the number of grid cells for each dimension, in netCDF order (reverse of "natural" order).
      */
     public abstract int[] getGridEnvelope();
 

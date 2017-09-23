@@ -38,11 +38,11 @@
   <groupId>org.apache.sis.storage</groupId>
   <artifactId>sis-netcdf</artifactId>
   <packaging>bundle</packaging>
-  <name>Apache SIS NetCDF storage</name>
+  <name>Apache SIS netCDF storage</name>
   <description>
   <!-- Left alignment because this description will be copied in META-INF/MANIFEST.MF
        The leading space after the first line is necessary for proper formatting. -->
-Bridge between NetCDF Climate and Forecast (CF) convention and ISO 19115 metadata.
+Bridge between netCDF Climate and Forecast (CF) convention and ISO 19115 metadata.
   </description>
 
 
@@ -153,7 +153,7 @@ Bridge between NetCDF Climate and Forecast (CF) convention and ISO 19115 metadat
     </dependency>
   </dependencies>
 
-  <!--  UCAR repository from which to download the NetCDF library. -->
+  <!--  UCAR repository from which to download the netCDF library. -->
   <repositories>
     <repository>
       <id>UCAR</id>

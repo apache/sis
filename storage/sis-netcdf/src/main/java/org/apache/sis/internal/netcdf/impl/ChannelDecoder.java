@@ -32,6 +32,8 @@ import java.util.Locale;
 import java.util.regex.Pattern;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.nio.channels.ReadableByteChannel;
 import javax.measure.UnitConverter;
 import javax.measure.IncommensurableException;
@@ -55,6 +57,7 @@ import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.logging.WarningListeners;
 import org.apache.sis.util.Debug;
+import org.apache.sis.setup.GeometryLibrary;
 import org.apache.sis.measure.Units;
 import ucar.nc2.constants.CF;
 
@@ -64,7 +67,7 @@ import org.apache.sis.internal.jdk8.DateTimeException;
 
 
 /**
- * Provides NetCDF decoding services as a standalone library.
+ * Provides netCDF decoding services as a standalone library.
  * The javadoc in this class uses the "file" word for the source of data, but
  * this implementation actually works with arbitrary {@link ReadableByteChannel}.
  *
@@ -79,7 +82,7 @@ import org.apache.sis.internal.jdk8.DateTimeException;
  */
 public final class ChannelDecoder extends Decoder {
     /**
-     * The NetCDF magic number expected in the first integer of the stream.
+     * The netCDF magic number expected in the first integer of the stream.
      * The comparison shall ignore the 8 lowest bits, as in the following example:
      *
      * {@preformat java
@@ -95,13 +98,13 @@ public final class ChannelDecoder extends Decoder {
     public static final int MAX_VERSION = 2;
 
     /**
-     * The encoding of dimension, variable and attribute names. This is fixed to {@value} by the
-     * NetCDF specification. Note however that the encoding of attribute values may be different.
+     * The encoding of dimension, variable and attribute names. This is fixed to UTF-8 by the netCDF specification.
+     * Note however that the encoding of attribute values may be different.
      *
      * @see #encoding
      * @see #readName()
      */
-    private static final String NAME_ENCODING = "UTF-8";
+    private static final Charset NAME_ENCODING = StandardCharsets.UTF_8;
 
     /**
      * The locale of dimension, variable and attribute names. This is used for the conversion to
@@ -121,7 +124,7 @@ public final class ChannelDecoder extends Decoder {
 
     /*
      * NOTE: the names of the static constants below this point match the names used in the Backus-Naur Form (BNF)
-     *       definitions in the NetCDF Classic and 64-bit Offset Format (1.0) specification (link in class javdoc),
+     *       definitions in the netCDF Classic and 64-bit Offset Format (1.0) specification (link in class javdoc),
      *       with NC_ prefix omitted. The types of those constants match the expected type in the file.
      */
 
@@ -160,21 +163,21 @@ public final class ChannelDecoder extends Decoder {
 
     /**
      * The character encoding of attribute values. This encoding does <strong>not</strong> apply to
-     * dimension, variable and attribute names, which are fixed to UTF-8 as of NetCDF specification.
+     * dimension, variable and attribute names, which are fixed to UTF-8 as of netCDF specification.
      *
      * The specification said: "Although the characters used in netCDF names must be encoded as UTF-8,
      * character data may use other encodings. The variable attribute “_Encoding” is reserved for this
      * purpose in future implementations."
      *
-     * @todo Fixed to ISO-LATIN-1 for now, needs to be determined in a better way.
+     * @todo "_Encoding" attribute not yet parsed.
      *
      * @see #NAME_ENCODING
      * @see #readValues(DataType, int)
      */
-    private final String encoding = "ISO-8859-1";
+    private final Charset encoding;
 
     /**
-     * The variables found in the NetCDF file.
+     * The variables found in the netCDF file.
      *
      * @see #getVariables()
      */
@@ -186,7 +189,7 @@ public final class ChannelDecoder extends Decoder {
     private final Map<String,VariableInfo> variableMap;
 
     /**
-     * The attributes found in the NetCDF file.
+     * The attributes found in the netCDF file.
      * Values in this map give directly the attribute value (there is no {@code Attribute} object).
      *
      * @see #findAttribute(String)
@@ -194,7 +197,7 @@ public final class ChannelDecoder extends Decoder {
     private final Map<String,Object> attributeMap;
 
     /**
-     * All dimensions in the NetCDF files.
+     * All dimensions in the netCDF files.
      *
      * @see #readDimensions(int)
      * @see #findDimension(String)
@@ -213,31 +216,34 @@ public final class ChannelDecoder extends Decoder {
      * This constructor parses immediately the header, which shall have the following structure:
      *
      * <ul>
-     *   <li>Magic number:   'C','D','F'</li>
+     *   <li>Magic number: 'C','D','F'</li>
      *   <li>Version number: 1 or 2</li>
      *   <li>Number of records</li>
-     *   <li>List of NetCDF dimensions  (see {@link #readDimensions(int)})</li>
+     *   <li>List of netCDF dimensions  (see {@link #readDimensions(int)})</li>
      *   <li>List of global attributes  (see {@link #readAttributes(int)})</li>
      *   <li>List of variables          (see {@link #readVariables(int, Dimension[])})</li>
      * </ul>
      *
-     * @param  listeners  where to send the warnings.
      * @param  input      the channel and the buffer from where data are read.
+     * @param  encoding   the encoding of attribute value, or {@code null} for the default value.
+     * @param  geomlib    the library for geometric objects, or {@code null} for the default.
+     * @param  listeners  where to send the warnings.
      * @throws IOException if an error occurred while reading the channel.
-     * @throws DataStoreException if the content of the given channel is not a NetCDF file.
+     * @throws DataStoreException if the content of the given channel is not a netCDF file.
      */
-    public ChannelDecoder(final WarningListeners<DataStore> listeners, final ChannelDataInput input)
-            throws IOException, DataStoreException
+    public ChannelDecoder(final ChannelDataInput input, final Charset encoding, final GeometryLibrary geomlib,
+            final WarningListeners<DataStore> listeners) throws IOException, DataStoreException
     {
-        super(listeners);
+        super(geomlib, listeners);
         this.input = input;
+        this.encoding = (encoding != null) ? encoding : StandardCharsets.UTF_8;
         /*
          * Check the magic number, which is expected to be exactly 3 bytes forming the "CDF" string.
          * The 4th byte is the version number, which we opportunistically use after the magic number check.
          */
         int version = input.readInt();
         if ((version & 0xFFFFFF00) != MAGIC_NUMBER) {
-            throw new DataStoreContentException(errors().getString(Errors.Keys.UnexpectedFileFormat_2, "NetCDF", getFilename()));
+            throw new DataStoreContentException(errors().getString(Errors.Keys.UnexpectedFileFormat_2, "netCDF", getFilename()));
         }
         /*
          * Check the version number.
@@ -246,7 +252,7 @@ public final class ChannelDecoder extends Decoder {
         switch (version) {
             case 1:  is64bits = false; break;
             case 2:  is64bits = true;  break;
-            default: throw new DataStoreContentException(errors().getString(Errors.Keys.UnsupportedFormatVersion_2, "NetCDF", version));
+            default: throw new DataStoreContentException(errors().getString(Errors.Keys.UnsupportedFormatVersion_2, "netCDF", version));
             // If more cases are added, remember to increment the MAX_VERSION constant.
         }
         numrecs = input.readInt();
@@ -308,7 +314,7 @@ public final class ChannelDecoder extends Decoder {
     }
 
     /**
-     * Returns the NetCDF-specific resource bundle for the locale given by {@link WarningListeners#getLocale()}.
+     * Returns the netCDF-specific resource bundle for the locale given by {@link WarningListeners#getLocale()}.
      *
      * @return the localized error resource bundle.
      */
@@ -318,10 +324,10 @@ public final class ChannelDecoder extends Decoder {
 
     /**
      * Returns an exception for a malformed header. This is used only after we have determined
-     * that the file should be a NetCDF one, but we found some inconsistency or unknown tags.
+     * that the file should be a netCDF one, but we found some inconsistency or unknown tags.
      */
     private DataStoreException malformedHeader() {
-        return new DataStoreContentException(listeners.getLocale(), "NetCDF", getFilename(), null);
+        return new DataStoreContentException(listeners.getLocale(), "netCDF", getFilename(), null);
     }
 
     /**
@@ -338,7 +344,7 @@ public final class ChannelDecoder extends Decoder {
      * Aligns position in the stream after reading the given amount of bytes.
      * This method should be invoked only for {@link DataType#BYTE} and {@link DataType#CHAR}.
      *
-     * <p>The NetCDF format adds padding after bytes, characters and short integers in order to align the data
+     * <p>The netCDF format adds padding after bytes, characters and short integers in order to align the data
      * on multiple of 4 bytes. This method is used for adding such padding to the number of bytes to read.</p>
      *
      * @param  length   number of byte reads.
@@ -361,7 +367,7 @@ public final class ChannelDecoder extends Decoder {
     }
 
     /**
-     * Reads a string from the channel in the {@value #NAME_ENCODING}. This is suitable for the dimension,
+     * Reads a string from the channel in the {@link #NAME_ENCODING}. This is suitable for the dimension,
      * variable and attribute names in the header. Note that attribute value may have a different encoding.
      */
     private String readName() throws IOException, DataStoreException {
@@ -453,7 +459,7 @@ public final class ChannelDecoder extends Decoder {
     }
 
     /**
-     * Reads dimensions from the NetCDF file header. The record structure is:
+     * Reads dimensions from the netCDF file header. The record structure is:
      *
      * <ul>
      *   <li>The dimension name     (use {@link #readName()})</li>
@@ -461,7 +467,7 @@ public final class ChannelDecoder extends Decoder {
      * </ul>
      *
      * @param  nelems  the number of dimensions to read.
-     * @return the dimensions in the order they are declared in the NetCDF file.
+     * @return the dimensions in the order they are declared in the netCDF file.
      */
     private Dimension[] readDimensions(final int nelems) throws IOException, DataStoreException {
         final Dimension[] dimensions = new Dimension[nelems];
@@ -481,8 +487,8 @@ public final class ChannelDecoder extends Decoder {
     }
 
     /**
-     * Reads attribute values from the NetCDF file header. Current implementation has no restriction on
-     * the location in the header where the NetCDF attribute can be declared. The record structure is:
+     * Reads attribute values from the netCDF file header. Current implementation has no restriction on
+     * the location in the header where the netCDF attribute can be declared. The record structure is:
      *
      * <ul>
      *   <li>The attribute name                             (use {@link #readName()})</li>
@@ -509,7 +515,7 @@ public final class ChannelDecoder extends Decoder {
     }
 
     /**
-     * Reads information (not data) about all variables from the NetCDF file header.
+     * Reads information (not data) about all variables from the netCDF file header.
      * The current implementation requires the dimensions to be read before the variables.
      * The record structure is:
      *
@@ -571,11 +577,12 @@ public final class ChannelDecoder extends Decoder {
 
 
     // --------------------------------------------------------------------------------------------
-    //  Decoder API begins below this point. Above code was specific to parsing of NetCDF header.
+    //  Decoder API begins below this point. Above code was specific to parsing of netCDF header.
     // --------------------------------------------------------------------------------------------
 
     /**
-     * Returns a filename for information purpose only. This is used for formatting error messages.
+     * Returns a filename for formatting error message and for information purpose.
+     * The filename does not contain path.
      *
      * @return a filename to report in warning or error messages.
      */
@@ -588,7 +595,7 @@ public final class ChannelDecoder extends Decoder {
      * Defines the groups where to search for named attributes, in preference order.
      * The {@code null} group name stands for the global attributes.
      *
-     * <p>Current implementation does nothing, since the NetCDF binary files that {@code ChannelDecoder}
+     * <p>Current implementation does nothing, since the netCDF binary files that {@code ChannelDecoder}
      * can read do not have groups anyway. Future SIS implementations may honor the given group names if
      * groups support is added.</p>
      */
@@ -599,7 +606,7 @@ public final class ChannelDecoder extends Decoder {
     /**
      * Returns the path which is currently set. The array returned by this method may be only
      * a subset of the array given to {@link #setSearchPath(String[])} since only the name of
-     * groups which have been found in the NetCDF file are returned by this method.
+     * groups which have been found in the netCDF file are returned by this method.
      *
      * @return {@inheritDoc}
      */
@@ -610,7 +617,7 @@ public final class ChannelDecoder extends Decoder {
 
     /**
      * Returns the dimension of the given name (eventually ignoring case), or {@code null} if none.
-     * This method searches in all dimensions found in the NetCDF file, regardless of variables.
+     * This method searches in all dimensions found in the netCDF file, regardless of variables.
      * The search will ignore case only if no exact match is found for the given name.
      *
      * @param  dimName  the name of the dimension to search.
@@ -628,7 +635,7 @@ public final class ChannelDecoder extends Decoder {
     }
 
     /**
-     * Returns the NetCDF variable of the given name, or {@code null} if none.
+     * Returns the netCDF variable of the given name, or {@code null} if none.
      *
      * @param  name  the name of the variable to search, or {@code null}.
      * @return the attribute value, or {@code null} if none.
@@ -646,7 +653,7 @@ public final class ChannelDecoder extends Decoder {
     }
 
     /**
-     * Returns the NetCDF attribute of the given name, or {@code null} if none.
+     * Returns the netCDF attribute of the given name, or {@code null} if none.
      * The {@code name} argument is typically (but is not restricted to) one of the constants
      * defined in the {@link org.apache.sis.storage.netcdf.AttributeNames} class.
      *
@@ -749,7 +756,7 @@ public final class ChannelDecoder extends Decoder {
     }
 
     /**
-     * Returns all variables found in the NetCDF file.
+     * Returns all variables found in the netCDF file.
      * This method returns a direct reference to an internal array - do not modify.
      *
      * @return {@inheritDoc}
@@ -769,14 +776,16 @@ public final class ChannelDecoder extends Decoder {
      */
     @Override
     public DiscreteSampling[] getDiscreteSampling() throws IOException, DataStoreException {
-        if ("trajectory".equalsIgnoreCase(stringValue(CF.FEATURE_TYPE))) {
+        if ("trajectory".equalsIgnoreCase(stringValue(CF.FEATURE_TYPE))) try {
             return FeaturesInfo.create(this);
+        } catch (IllegalArgumentException e) {
+            throw new DataStoreException(e.getLocalizedMessage(), e);
         }
         return new FeaturesInfo[0];
     }
 
     /**
-     * Returns all grid geometries found in the NetCDF file.
+     * Returns all grid geometries found in the netCDF file.
      * This method returns a direct reference to an internal array - do not modify.
      *
      * @return {@inheritDoc}
@@ -789,7 +798,7 @@ public final class ChannelDecoder extends Decoder {
              * First, find all variables which are used as coordinate system axis. The keys in the map are
              * the grid dimensions which are the domain of the variable (i.e. the sources of the conversion
              * from grid coordinates to CRS coordinates). For each key there is usually only one value, but
-             * we try to make this code robust to unusual NetCDF files.
+             * we try to make this code robust to unusual netCDF files.
              */
             final Map<Dimension, List<VariableInfo>> dimToAxes = new IdentityHashMap<>();
             for (final VariableInfo variable : variables) {

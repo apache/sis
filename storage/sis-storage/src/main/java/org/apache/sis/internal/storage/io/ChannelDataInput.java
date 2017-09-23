@@ -26,6 +26,7 @@ import java.nio.IntBuffer;
 import java.nio.LongBuffer;
 import java.nio.FloatBuffer;
 import java.nio.DoubleBuffer;
+import java.nio.charset.Charset;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.SeekableByteChannel;
 import org.apache.sis.internal.storage.Resources;
@@ -79,7 +80,7 @@ public class ChannelDataInput extends ChannelData {
      * If the buffer already contains some data, then the {@code filled} argument shall be {@code true}.
      * Otherwise (e.g. if it is a newly created buffer), then {@code filled} shall be {@code false}.
      *
-     * @param  filename  a file identifier used only for formatting error message.
+     * @param  filename  a short identifier (typically a filename without path) used for formatting error message.
      * @param  channel   the channel from where data are read.
      * @param  buffer    the buffer where to copy the data.
      * @param  filled    {@code true} if the buffer already contains data, or {@code false} if it needs
@@ -825,7 +826,7 @@ public class ChannelDataInput extends ChannelData {
      * @return the string decoded from the {@code length} next bytes.
      * @throws IOException if an error occurred while reading the bytes, or if the given encoding is invalid.
      */
-    public final String readString(final int length, final String encoding) throws IOException {
+    public final String readString(final int length, final Charset encoding) throws IOException {
         if (buffer.hasArray() && length <= buffer.capacity()) {
             ensureBufferContains(length);
             final int position = buffer.position(); // Must be after 'ensureBufferContains(int)'.

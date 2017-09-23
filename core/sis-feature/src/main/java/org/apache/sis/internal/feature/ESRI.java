@@ -26,6 +26,7 @@ import com.esri.core.geometry.Point;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.setup.GeometryLibrary;
 import org.apache.sis.math.Vector;
+import org.apache.sis.util.Classes;
 
 
 /**
@@ -45,6 +46,14 @@ final class ESRI extends Geometries<Geometry> {
      */
     ESRI() {
         super(GeometryLibrary.ESRI, Geometry.class, Point.class, Polyline.class, Polygon.class);
+    }
+
+    /**
+     * If the given object is a JTS geometry, returns a short string representation the class name.
+     */
+    @Override
+    final String tryGetLabel(Object geometry) {
+        return (geometry instanceof Geometry) ? Classes.getShortClassName(geometry) : null;
     }
 
     /**
