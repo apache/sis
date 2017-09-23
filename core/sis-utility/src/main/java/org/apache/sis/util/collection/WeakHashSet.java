@@ -146,7 +146,6 @@ public class WeakHashSet<E> extends AbstractSet<E> implements CheckedContainer<E
         @SuppressWarnings("unchecked")
         @Workaround(library="JDK", version="1.7")
         final Entry[] table = (Entry[]) Array.newInstance(Entry.class, MIN_CAPACITY);
-//      table = new Entry[size];
         this.table = table;
     }
 

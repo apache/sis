@@ -264,7 +264,6 @@ public class WeakValueHashMap<K,V> extends AbstractMap<K,V> {
         @SuppressWarnings("unchecked")
         @Workaround(library="JDK", version="1.7")
         final Entry[] table = (Entry[]) Array.newInstance(Entry.class, MIN_CAPACITY);
-//      table = new Entry[size];
         this.table = table;
     }
 
@@ -464,6 +463,7 @@ public class WeakValueHashMap<K,V> extends AbstractMap<K,V> {
      *
      * @since 0.7
      */
+    @Override
     public V putIfAbsent(final K key, final V value) throws NullArgumentException {
         if (key == null || value == null) {
             throw new NullArgumentException(Errors.format(key == null

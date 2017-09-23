@@ -260,10 +260,8 @@ abstract class Pooled {
         switch (xmlnsReplaceCode) {
             case 0: {
                 // Apply namespace replacements only for older versions than the one supported natively by SIS.
-                if (versionGML != null) {
-                    if (versionGML.compareTo(LegacyNamespaces.VERSION_3_2_1) < 0) {
-                        return FilterVersion.GML31;
-                    }
+                if (versionGML != null && versionGML.compareTo(LegacyNamespaces.VERSION_3_2_1) < 0) {
+                    return FilterVersion.GML31;
                 }
                 break;
             }
@@ -399,11 +397,9 @@ abstract class Pooled {
         if (internal) {
             name = Implementation.toInternal(name);
         }
-        if (!initialProperties.containsKey(name)) {
-            if (initialProperties.put(name, getStandardProperty(name)) != null) {
-                // Should never happen, unless on concurrent changes in a backgroung thread.
-                throw new ConcurrentModificationException(name);
-            }
+        if (!initialProperties.containsKey(name) && initialProperties.put(name, getStandardProperty(name)) != null) {
+            // Should never happen, unless on concurrent changes in a backgroung thread.
+            throw new ConcurrentModificationException(name);
         }
         setStandardProperty(name, value);
     }

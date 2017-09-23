@@ -412,7 +412,7 @@ public class RangeSet<E extends Comparable<? super E>> extends AbstractSet<Range
         if (array == null) {
             return true;
         }
-        final boolean strict = isMinIncluded | isMaxIncluded;
+        final boolean strict = isMinIncluded || isMaxIncluded;
         switch (elementCode) {
             case DOUBLE:    return ArraysExt.isSorted((double[]) array, strict);
             case FLOAT:     return ArraysExt.isSorted((float[])  array, strict);
@@ -1133,10 +1133,8 @@ public class RangeSet<E extends Comparable<? super E>> extends AbstractSet<Range
             if (object instanceof Range<?>) {
                 @SuppressWarnings("unchecked")              // Type will actally be checked on the line after.
                 final Range<E> range = (Range<E>) object;
-                if (range.getElementType() == elementType) {
-                    if (!subRange.contains(range)) {
-                        return false;
-                    }
+                if (range.getElementType() == elementType && !subRange.contains(range)) {
+                    return false;
                 }
             }
             return RangeSet.this.contains(object);

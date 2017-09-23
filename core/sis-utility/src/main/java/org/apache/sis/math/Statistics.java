@@ -310,7 +310,6 @@ public class Statistics implements DoubleConsumer, LongConsumer, Cloneable, Seri
     public void combine(final Statistics stats) {
         ArgumentChecks.ensureNonNull("stats", stats);
 
-        // "if (a < b)" is equivalent to "if (!isNaN(a) && a < b)".
         if (isNaN(minimum) || stats.minimum < minimum) minimum = stats.minimum;
         if (isNaN(maximum) || stats.maximum > maximum) maximum = stats.maximum;
 

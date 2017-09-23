@@ -89,9 +89,9 @@ public class DefaultScopedName extends AbstractName implements ScopedName {
     static AbstractName create(final UnmodifiableArrayList<? extends DefaultLocalName> names) {
         ArgumentChecks.ensureNonNull("names", names);
         switch (names.size()) {
-            default: return new DefaultScopedName(names);
             case 1:  return names.get(0);
             case 0:  throw new IllegalArgumentException(Errors.format(Errors.Keys.EmptyArgument_1, "names"));
+            default: return new DefaultScopedName(names);
         }
     }
 
@@ -293,10 +293,10 @@ public class DefaultScopedName extends AbstractName implements ScopedName {
         if (tail == null) {
             final int size = parsedNames.size();
             switch (size) {
-                default: tail = new DefaultScopedName(parsedNames.subList(1, size)); break;
                 case 2:  tail = parsedNames.get(1); break;
                 case 1:  // fall through
                 case 0:  throw new AssertionError(size);
+                default: tail = new DefaultScopedName(parsedNames.subList(1, size)); break;
             }
         }
         return tail;
@@ -313,10 +313,10 @@ public class DefaultScopedName extends AbstractName implements ScopedName {
         if (path == null) {
             final int size = parsedNames.size();
             switch (size) {
-                default: path = new DefaultScopedName(parsedNames.subList(0, size-1)); break;
                 case 2:  path = parsedNames.get(0); break;
                 case 1:  // fall through
                 case 0:  throw new AssertionError(size);
+                default: path = new DefaultScopedName(parsedNames.subList(0, size-1)); break;
             }
         }
         return path;
