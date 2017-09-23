@@ -21,6 +21,9 @@ import java.util.Collections;
 import com.esri.core.geometry.Geometry;
 import com.esri.core.geometry.Point;
 import org.apache.sis.feature.AbstractOperation;
+import org.apache.sis.setup.GeometryLibrary;
+import org.apache.sis.util.iso.DefaultNameFactory;
+import org.junit.Ignore;
 import org.opengis.geometry.Envelope;
 import org.apache.sis.internal.feature.AttributeConvention;
 import org.apache.sis.feature.DefaultFeatureTypeTest;
@@ -343,5 +346,96 @@ public final strictfp class FeatureTypeBuilderTest extends TestCase {
             property = ((AbstractOperation) property).getResult();
         }
         assertEquals("valueClass", valueClass, ((DefaultAttributeType<?>) property).getValueClass());
+    }
+
+    @Ignore("Obviously a bug.")
+    @Test
+    public void testToStringInternalIsNotNull() {
+        FeatureTypeBuilder featureTypeBuilder = new FeatureTypeBuilder(null);
+        DefaultFeatureType[] defaultFeatureTypeArray = new DefaultFeatureType[6];
+        featureTypeBuilder.setSuperTypes(defaultFeatureTypeArray);
+        StringBuilder stringBuilder = new StringBuilder("");
+        featureTypeBuilder.toStringInternal(stringBuilder);
+
+        assertNotNull(stringBuilder.toString());
+    }
+
+    @Test
+    public void testBuildThrowsRuntimeException() {
+        FeatureTypeBuilder featureTypeBuilder = new FeatureTypeBuilder();
+        FeatureTypeBuilder featureTypeBuilderTwo = featureTypeBuilder.setIdentifierDelimiters("[RML1*!JGC`fF+|u", "[RML1*!JGC`fF+|u", "[RML1*!JGC`fF+|u");
+        featureTypeBuilderTwo.identifierCount = 1;
+
+        try {
+            featureTypeBuilder.build();
+            fail("Expecting exception: RuntimeException");
+        } catch(RuntimeException e) {
+            assertEquals(FeatureTypeBuilder.class.getName(), e.getStackTrace()[0].getClassName());
+        }
+    }
+
+    @Test
+    public void testGetNameSpaceReturningCharSequenceWhereLengthIsPositive() {
+        FeatureTypeBuilder featureTypeBuilder = new FeatureTypeBuilder();
+        FeatureTypeBuilder featureTypeBuilderTwo = featureTypeBuilder.setNameSpace("java.awt.Point[x=98,y=98]");
+
+        assertEquals("java.awt.Point[x=98,y=98]", featureTypeBuilderTwo.getNameSpace());
+    }
+
+    @Test
+    public void testGetNameSpaceReturningNull() {
+        DefaultNameFactory defaultNameFactory = new DefaultNameFactory();
+        GeometryLibrary geometryLibrary = GeometryLibrary.JAVA2D;
+        FeatureTypeBuilder featureTypeBuilder = new FeatureTypeBuilder(defaultNameFactory, geometryLibrary, null);
+
+        assertNull(featureTypeBuilder.getNameSpace());
+    }
+
+    @Test
+    public void testSetAbstractReturningFeatureTypeBuilderWhereIsAbstractIsTrue() {
+        FeatureTypeBuilder featureTypeBuilder = new FeatureTypeBuilder(null);
+        featureTypeBuilder.setAbstract(true);
+        StringBuilder stringBuilder = new StringBuilder();
+        featureTypeBuilder.toStringInternal(stringBuilder);
+
+        assertTrue(featureTypeBuilder.isAbstract());
+    }
+
+    @Test
+    public void testSetAbstractReturningFeatureTypeBuilderWhereIsAbstractIsFalse() {
+        FeatureTypeBuilder featureTypeBuilder = new FeatureTypeBuilder(null);
+        FeatureTypeBuilder featureTypeBuilderTwo = featureTypeBuilder.setAbstract(false);
+
+        assertFalse(featureTypeBuilderTwo.isDeprecated());
+    }
+
+    @Test
+    public void testSetAll() {
+        FeatureTypeBuilder featureTypeBuilder = new FeatureTypeBuilder();
+        FeatureTypeBuilder featureTypeBuilderTwo = featureTypeBuilder.setName("name");
+        Class<AttributeRole> clasz = AttributeRole.class;
+        featureTypeBuilderTwo.addAttribute(clasz);
+        DefaultFeatureType defaultFeatureType = featureTypeBuilderTwo.build();
+        featureTypeBuilderTwo.setAll(defaultFeatureType);
+
+        assertTrue(defaultFeatureType.isSimple());
+        assertFalse(featureTypeBuilderTwo.isAbstract());
+    }
+
+    @Test
+    public void testSetAllWithNull() {
+        FeatureTypeBuilder featureTypeBuilder = new FeatureTypeBuilder(null);
+        DefaultFeatureType[] defaultFeatureTypeArray = new DefaultFeatureType[4];
+        FeatureTypeBuilder featureTypeBuilderTwo = featureTypeBuilder.setAll(defaultFeatureTypeArray[3]);
+
+        assertFalse(featureTypeBuilderTwo.isAbstract());
+    }
+
+    @Test
+    public void testSetDeprecated() {
+        FeatureTypeBuilder featureTypeBuilder = new FeatureTypeBuilder();
+        featureTypeBuilder.setDeprecated(true);
+
+        assertTrue(featureTypeBuilder.isDeprecated());
     }
 }

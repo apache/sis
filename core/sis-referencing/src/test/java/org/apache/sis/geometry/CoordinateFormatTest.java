@@ -16,18 +16,23 @@
  */
 package org.apache.sis.geometry;
 
+import org.apache.sis.measure.Angle;
+import org.apache.sis.referencing.crs.HardCodedCRS;
+import org.apache.sis.test.DependsOnMethod;
+import org.apache.sis.test.TestCase;
+import org.apache.sis.test.mock.VerticalCRSMock;
+import org.apache.sis.xml.XLink;
+import org.junit.Test;
+import org.opengis.geometry.DirectPosition;
+
+import java.io.IOException;
+import java.text.MessageFormat;
+import java.text.ParseException;
+import java.text.ParsePosition;
+import java.time.ZoneOffset;
 import java.util.Date;
 import java.util.Locale;
 import java.util.TimeZone;
-import java.text.ParsePosition;
-import java.text.ParseException;
-import org.opengis.geometry.DirectPosition;
-import org.apache.sis.measure.Angle;
-import org.apache.sis.referencing.crs.HardCodedCRS;
-import org.apache.sis.test.mock.VerticalCRSMock;
-import org.apache.sis.test.DependsOnMethod;
-import org.apache.sis.test.TestCase;
-import org.junit.Test;
 
 import static org.junit.Assert.*;
 
@@ -187,5 +192,77 @@ public final strictfp class CoordinateFormatTest extends TestCase {
             assertEquals("Les caractères « Foo » après « 23°46,8′E 12°44,4′S 127,9 » sont inattendus.",
                          e.getLocalizedMessage());  // In the language specified at CoordinateFormat construction time.
         }
+    }
+
+    @Test
+    public void testCreatesCoordinateFormatTaking2ArgumentsAndCallsClone() {
+        Locale locale = Locale.CANADA;
+        CoordinateFormat coordinateFormat = new CoordinateFormat(locale, null);
+        CoordinateFormat coordinateFormatTwo = coordinateFormat.clone();
+
+        assertNotSame(coordinateFormatTwo, coordinateFormat);
+    }
+
+    @Test
+    public void testParseAndFormatTaking2Arguments() throws IOException, ParseException {
+        CoordinateFormat coordinateFormat = new CoordinateFormat();
+        DirectPosition2D directPosition2D = new DirectPosition2D();
+        StringBuffer stringBuffer = new StringBuffer();
+        coordinateFormat.format(directPosition2D, stringBuffer);
+        ParsePosition parsePosition = new ParsePosition(0);
+        DirectPosition directPosition = coordinateFormat.parse(stringBuffer, parsePosition);
+
+        assertEquals(2, directPosition.getDimension());
+        assertEquals(2, directPosition.getCoordinate().length);
+        assertEquals(0.0, directPosition.getCoordinate()[0], 0.01);
+        assertEquals(0.0, directPosition.getCoordinate()[1], 0.01);
+    }
+
+    @Test
+    public void testParseAndSetDefaultCRSAndParse() throws ParseException {
+        CoordinateFormat coordinateFormat = new CoordinateFormat();
+        VerticalCRSMock verticalCRSMock = (VerticalCRSMock) VerticalCRSMock.BAROMETRIC_HEIGHT;
+        coordinateFormat.setDefaultCRS(verticalCRSMock);
+        ParsePosition parsePosition = new ParsePosition(4);
+        DirectPosition directPosition = coordinateFormat.parse("UTF-8", parsePosition);
+
+        assertEquals(1, directPosition.getDimension());
+        assertEquals(1, directPosition.getCoordinate().length);
+        assertEquals(8.0, directPosition.getCoordinate()[0], 0.01);
+    }
+
+    @Test
+    public void testApplyPatternReturningFalse() {
+        CoordinateFormat coordinateFormat = new CoordinateFormat();
+        Class<MessageFormat> clasz = MessageFormat.class;
+
+        assertFalse(coordinateFormat.applyPattern(clasz, "org.apache.sis.referencing.CommonCRS"));
+    }
+
+    @Test
+    public void testCreatesCoordinateFormatTaking2ArgumentsAndCallsGetPattern() {
+        Locale locale = Locale.UK;
+        ZoneOffset zoneOffset = ZoneOffset.MIN;
+        TimeZone timeZone = TimeZone.getTimeZone(zoneOffset);
+        CoordinateFormat coordinateFormat = new CoordinateFormat(locale, timeZone);
+        Class<Byte> clasz = Byte.class;
+
+        assertEquals("#,##0.###", coordinateFormat.getPattern(clasz));
+    }
+
+    @Test
+    public void testGetPatternReturningNull() {
+        CoordinateFormat coordinateFormat = new CoordinateFormat();
+        Class<XLink.Show> clasz = XLink.Show.class;
+
+        assertNull(coordinateFormat.getPattern(clasz));
+    }
+
+    @Test
+    public void testCreatesCoordinateFormatTakingNoArgumentsAndCallsSetSeparator() {
+        CoordinateFormat coordinateFormat = new CoordinateFormat();
+        coordinateFormat.setSeparator(" a - € ");
+
+        assertEquals(" a - € ", coordinateFormat.getSeparator());
     }
 }
