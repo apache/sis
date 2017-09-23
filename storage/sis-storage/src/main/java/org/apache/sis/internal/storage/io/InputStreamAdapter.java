@@ -27,6 +27,14 @@ import java.io.UncheckedIOException;
 /**
  * Wraps an {@link ImageInputStream} as a standard {@link InputStream}.
  *
+ * <div class="section">Thread-safety</div>
+ * This class is thread-safe only if the underlying {@link ImageInputStream} is itself thread-safe.
+ * For performance reasons, this class does not synchronize the frequently invoked {@code read(…)}
+ * methods since they do nothing else than delegating to {@code ImageInputStream}. This means that
+ * if the wrapped input is {@link ChannelImageInputStream}, then this class is <strong>not</strong>
+ * thread-safe. This is not necessarily a contradiction with Java API since input streams define no
+ * explicit synchronization lock (contrarily to {@link java.io.Reader}.
+ *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 0.8
  *
@@ -54,6 +62,13 @@ public final class InputStreamAdapter extends InputStream implements Markable {
      * there is no mark, and provides no API for letting us know if {@code reset()} worked.
      */
     private int nestedMarks;
+
+    /**
+     * Temporarily set to {@code true} if a call to {@link #close()} should not be propagated to the {@link #input}.
+     *
+     * @see RewindableLineReader#rewind()
+     */
+    boolean keepOpen;
 
     /**
      * Constructs a new input stream.
@@ -130,7 +145,7 @@ public final class InputStreamAdapter extends InputStream implements Markable {
      * @throws UncheckedIOException if the mark can not be set.
      */
     @Override
-    public void mark(final int readlimit) {
+    public synchronized void mark(final int readlimit) {
         try {
             markPosition = input.getStreamPosition();
             input.flushBefore(markPosition);
@@ -146,7 +161,7 @@ public final class InputStreamAdapter extends InputStream implements Markable {
      * It is okay to invoke this method after {@link #mark(int)} (but not before).
      */
     @Override
-    public void mark() {
+    public synchronized void mark() {
         input.mark();
         nestedMarks++;
     }
@@ -170,7 +185,7 @@ public final class InputStreamAdapter extends InputStream implements Markable {
      * @throws IOException if an I/O error occurs.
      */
     @Override
-    public void reset() throws IOException {
+    public synchronized void reset() throws IOException {
         if (--nestedMarks >= 0) {
             input.reset();
         } else {
@@ -195,7 +210,7 @@ public final class InputStreamAdapter extends InputStream implements Markable {
      * @throws IOException if an I/O error occurs.
      */
     @Override
-    public void close() throws IOException {
-        input.close();
+    public synchronized void close() throws IOException {
+        if (!keepOpen) input.close();
     }
 }
