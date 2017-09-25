@@ -234,6 +234,7 @@ import org.junit.BeforeClass;
     org.apache.sis.geometry.DirectPosition1DTest.class,
     org.apache.sis.geometry.DirectPosition2DTest.class,
     org.apache.sis.geometry.AbstractEnvelopeTest.class,
+    org.apache.sis.geometry.ArrayEnvelopeTest.class,
     org.apache.sis.geometry.GeneralEnvelopeTest.class,
     org.apache.sis.geometry.SubEnvelopeTest.class,
     org.apache.sis.geometry.ImmutableEnvelopeTest.class,
