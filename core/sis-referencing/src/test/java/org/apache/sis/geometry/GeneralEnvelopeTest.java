@@ -43,7 +43,7 @@ import static org.apache.sis.geometry.AbstractEnvelopeTest.WGS84;
  * @since   0.3
  * @module
  */
-@DependsOn(AbstractEnvelopeTest.class)
+@DependsOn(ArrayEnvelopeTest.class)
 public strictfp class GeneralEnvelopeTest extends TestCase {
     /**
      * Tolerance threshold for floating point comparisons.

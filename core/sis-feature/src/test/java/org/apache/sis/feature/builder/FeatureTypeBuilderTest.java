@@ -20,8 +20,8 @@ import java.util.Iterator;
 import java.util.Collections;
 import com.esri.core.geometry.Geometry;
 import com.esri.core.geometry.Point;
-import org.apache.sis.feature.AbstractOperation;
 import org.opengis.geometry.Envelope;
+import org.apache.sis.feature.AbstractOperation;
 import org.apache.sis.internal.feature.AttributeConvention;
 import org.apache.sis.feature.DefaultFeatureTypeTest;
 import org.apache.sis.feature.FeatureOperations;
@@ -47,6 +47,7 @@ import org.opengis.feature.Operation;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
+ * @author  Michael Hausegger
  * @version 0.8
  * @since   0.8
  * @module
@@ -54,9 +55,56 @@ import org.opengis.feature.Operation;
 @DependsOn(AttributeTypeBuilderTest.class)
 public final strictfp class FeatureTypeBuilderTest extends TestCase {
     /**
+     * Verifies that {@link FeatureTypeBuilder#setSuperTypes(FeatureType...)} ignores null parents.
+     * This method tests only the builder state without creating feature type.
+     */
+    @Test
+    public void testNullParents() {
+        final FeatureTypeBuilder builder = new FeatureTypeBuilder(null);
+        assertSame(builder, builder.setSuperTypes(new FeatureType[6]));
+        assertEquals(0, builder.getSuperTypes().length);
+    }
+
+    /**
+     * Verifies {@link FeatureTypeBuilder#setAbstract(boolean)}.
+     * This method tests only the builder state without creating feature type.
+     */
+    @Test
+    public void testSetAbstract() {
+        final FeatureTypeBuilder builder = new FeatureTypeBuilder(null);
+        assertFalse("isAbstract", builder.isAbstract());
+        assertSame (builder, builder.setAbstract(true));
+        assertTrue ("isAbstract", builder.isAbstract());
+    }
+
+    /**
+     * Verifies {@link FeatureTypeBuilder#setDeprecated(boolean)}.
+     * This method tests only the builder state without creating feature type.
+     */
+    @Test
+    public void testSetDeprecated() {
+        FeatureTypeBuilder builder = new FeatureTypeBuilder();
+        assertFalse("isDeprecated", builder.isDeprecated());
+        builder.setDeprecated(true);
+        assertTrue("isDeprecated", builder.isDeprecated());
+    }
+
+    /**
+     * Verifies {@link FeatureTypeBuilder#setNameSpace(CharSequence)}.
+     */
+    @Test
+    public void testSetNameSpace() {
+        final FeatureTypeBuilder builder = new FeatureTypeBuilder();
+        assertNull("nameSpace", builder.getNameSpace());
+        assertSame(builder, builder.setNameSpace("myNameSpace"));
+        assertEquals("nameSpace", "myNameSpace", builder.getNameSpace());
+    }
+
+    /**
      * Tests with the minimum number of parameters (no property and no super type).
      */
     @Test
+    @DependsOnMethod({"testSetAbstract", "testSetDeprecated", "testSetNameSpace"})
     public void testInitialization() {
         final FeatureTypeBuilder builder = new FeatureTypeBuilder();
         try {

@@ -103,6 +103,8 @@ public final class Envelopes extends Static {
 
     /**
      * Returns {@code true} if the given axis is of kind "Wrap Around".
+     *
+     * @see AbstractEnvelope#isWrapAround(CoordinateSystemAxis)
      */
     static boolean isWrapAround(final CoordinateSystemAxis axis) {
         return RangeMeaning.WRAPAROUND.equals(axis.getRangeMeaning());
