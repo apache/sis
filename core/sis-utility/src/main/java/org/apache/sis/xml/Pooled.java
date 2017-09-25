@@ -399,11 +399,9 @@ abstract class Pooled {
         if (internal) {
             name = Implementation.toInternal(name);
         }
-        if (!initialProperties.containsKey(name)) {
-            if (initialProperties.put(name, getStandardProperty(name)) != null) {
-                // Should never happen, unless on concurrent changes in a backgroung thread.
-                throw new ConcurrentModificationException(name);
-            }
+        if (!initialProperties.containsKey(name) && initialProperties.put(name, getStandardProperty(name)) != null) {
+            // Should never happen, unless on concurrent changes in a backgroung thread.
+            throw new ConcurrentModificationException(name);
         }
         setStandardProperty(name, value);
     }

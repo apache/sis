@@ -1133,10 +1133,8 @@ public class RangeSet<E extends Comparable<? super E>> extends AbstractSet<Range
             if (object instanceof Range<?>) {
                 @SuppressWarnings("unchecked")              // Type will actally be checked on the line after.
                 final Range<E> range = (Range<E>) object;
-                if (range.getElementType() == elementType) {
-                    if (!subRange.contains(range)) {
-                        return false;
-                    }
+                if (range.getElementType() == elementType && !subRange.contains(range)) {
+                    return false;
                 }
             }
             return RangeSet.this.contains(object);
