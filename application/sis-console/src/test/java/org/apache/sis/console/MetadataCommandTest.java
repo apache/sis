@@ -16,12 +16,18 @@
  */
 package org.apache.sis.console;
 
+import java.io.IOException;
 import java.net.URL;
+
+import org.apache.sis.metadata.MetadataStandard;
+import org.apache.sis.storage.DataStoreException;
 import org.opengis.wrapper.netcdf.IOTestCase;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
+
+import javax.xml.bind.JAXBException;
 
 import static org.junit.Assert.*;
 
@@ -74,5 +80,19 @@ public final strictfp class MetadataCommandTest extends TestCase {
         final MetadataCommand test = new MetadataCommand(0, CommandRunner.TEST, url.toString(), "--format", "XML");
         test.run();
         verifyNetCDF("<?xml", test.outputBuffer.toString());
+    }
+
+    @Test
+    public void testFormatThrowsClassCastException() throws JAXBException, IOException, DataStoreException, InvalidOptionException {
+        String[] stringArray = new String[0];
+        MetadataCommand metadataCommand = new MetadataCommand((-1351), stringArray);
+        Object object = new Object();
+
+        try {
+            metadataCommand.format(object);
+            fail("Expecting exception: ClassCastException");
+        } catch(ClassCastException e) {
+            assertEquals(MetadataStandard.class.getName(), e.getStackTrace()[0].getClassName());
+        }
     }
 }

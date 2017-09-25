@@ -17,9 +17,14 @@
 package org.apache.sis.feature.builder;
 
 import java.util.Arrays;
+import java.util.Locale;
 import java.util.Set;
 import java.util.Collections;
 import com.esri.core.geometry.Geometry;
+import org.apache.sis.referencing.crs.*;
+import org.apache.sis.setup.GeometryLibrary;
+import org.apache.sis.util.iso.DefaultNameFactory;
+import org.apache.sis.util.iso.SimpleInternationalString;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.internal.feature.AttributeConvention;
@@ -239,5 +244,83 @@ public final strictfp class AttributeTypeBuilderTest extends TestCase {
         assertTrue("remove(IDENTIFIER_COMPONENT)", roles.remove(AttributeRole.IDENTIFIER_COMPONENT));
         assertTrue("isEmpty", roles.isEmpty());
         assertFalse("remove(IDENTIFIER_COMPONENT)", roles.remove(AttributeRole.IDENTIFIER_COMPONENT));
+    }
+
+    @Test
+    public void testAddRole() {
+        FeatureTypeBuilder featureTypeBuilder = new FeatureTypeBuilder();
+        Class<DefaultCompoundCRS> clasz = DefaultCompoundCRS.class;
+        AttributeTypeBuilder<DefaultCompoundCRS> attributeTypeBuilder = featureTypeBuilder.addAttribute(clasz);
+        AttributeRole attributeRole = AttributeRole.IDENTIFIER_COMPONENT;
+
+        assertTrue(attributeTypeBuilder.addRole(attributeRole));
+    }
+
+    @Test
+    public void testAddRoleThrowsIllegalStateException() {
+        FeatureTypeBuilder featureTypeBuilder = new FeatureTypeBuilder(null);
+        AttributeRole attributeRole = AttributeRole.DEFAULT_GEOMETRY;
+        Class<Integer> clasz = Integer.class;
+        AttributeTypeBuilder<Integer> attributeTypeBuilder = new AttributeTypeBuilder<>(featureTypeBuilder, clasz);
+
+        try {
+            attributeTypeBuilder.addRole(attributeRole);
+            fail("Expecting exception: IllegalStateException");
+        } catch(IllegalStateException e) {
+            assertEquals(AttributeTypeBuilder.class.getName(), e.getStackTrace()[0].getClassName());
+        }
+    }
+
+    @Test
+    public void testSetDefaultValue() {
+        FeatureTypeBuilder featureTypeBuilder = new FeatureTypeBuilder();
+        Class<SimpleInternationalString> clasz = SimpleInternationalString.class;
+        AttributeTypeBuilder<SimpleInternationalString> attributeTypeBuilder = new AttributeTypeBuilder<>(featureTypeBuilder, clasz);
+        SimpleInternationalString simpleInternationalString = new SimpleInternationalString(" a 4423");
+
+        assertNull(attributeTypeBuilder.getDefaultValue());
+
+        attributeTypeBuilder.setDefaultValue(simpleInternationalString);
+
+        assertEqualsIgnoreMetadata(simpleInternationalString, attributeTypeBuilder.getDefaultValue());
+    }
+
+    @Test
+    public void testSetValueClassThrowsRuntimeException() {
+        DefaultNameFactory defaultNameFactory = new DefaultNameFactory();
+        GeometryLibrary geometryLibrary = GeometryLibrary.ESRI;
+        Locale locale = Locale.ITALIAN;
+        FeatureTypeBuilder featureTypeBuilder = new FeatureTypeBuilder(defaultNameFactory, geometryLibrary, locale);
+        Class<DefaultParametricCRS> clasz = DefaultParametricCRS.class;
+        AttributeTypeBuilder<DefaultParametricCRS> attributeTypeBuilder = new AttributeTypeBuilder<>(featureTypeBuilder, clasz);
+
+        try {
+            attributeTypeBuilder.setValueClass(AbstractCRS.class);
+            fail("Expecting exception: RuntimeException");
+        } catch(RuntimeException e) {
+            assertEquals(FeatureTypeBuilder.class.getName(), e.getStackTrace()[0].getClassName());
+        }
+    }
+
+    @Test
+    public void testSetMaximumOccurs() {
+        FeatureTypeBuilder featureTypeBuilder = new FeatureTypeBuilder(null);
+        Class<DefaultParametricCRS> clasz = DefaultParametricCRS.class;
+        AttributeTypeBuilder<DefaultParametricCRS> attributeTypeBuilder = new AttributeTypeBuilder<>(featureTypeBuilder, clasz);
+
+        assertEquals(1, attributeTypeBuilder.getMaximumOccurs());
+
+        attributeTypeBuilder.setMaximumOccurs(2);
+
+        assertEquals(2, attributeTypeBuilder.getMaximumOccurs());
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testSetMaximumOccursasd() {
+        FeatureTypeBuilder featureTypeBuilder = new FeatureTypeBuilder(null);
+        Class<DefaultParametricCRS> clasz = DefaultParametricCRS.class;
+        AttributeTypeBuilder<DefaultParametricCRS> attributeTypeBuilder = new AttributeTypeBuilder<>(featureTypeBuilder, clasz);
+
+        attributeTypeBuilder.setMaximumOccurs(-1);
     }
 }
