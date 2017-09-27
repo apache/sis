@@ -736,7 +736,7 @@ public final class Envelopes extends Static {
      *
      * <p>Example:</p>
      * <ul>
-     *   <li>{@code BOX(-180 -90, 180 90)} (not really a geometry, but understood by many softwares)</li>
+     *   <li>{@code BOX(-180 -90, 180 90)} (not really a geometry, but understood by many software products)</li>
      *   <li>{@code POINT(6 10)}</li>
      *   <li>{@code MULTIPOLYGON(((1 1, 5 1, 1 5, 1 1),(2 2, 3 2, 3 3, 2 2)))}</li>
      *   <li>{@code GEOMETRYCOLLECTION(POINT(4 6),LINESTRING(3 8,7 10))}</li>
@@ -773,7 +773,7 @@ public final class Envelopes extends Static {
      *
      * <div class="note"><b>Note:</b>
      * The {@code BOX} element is not part of the standard <cite>Well Known Text</cite> (WKT) format.
-     * However it is understood by many softwares, for example GDAL and PostGIS.</div>
+     * However it is understood by many software libraries, for example GDAL and PostGIS.</div>
      *
      * The string returned by this method can be {@linkplain GeneralEnvelope#GeneralEnvelope(CharSequence)
      * parsed} by the {@code GeneralEnvelope} constructor.

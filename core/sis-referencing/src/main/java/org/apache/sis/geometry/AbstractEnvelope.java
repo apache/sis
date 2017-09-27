@@ -1120,7 +1120,7 @@ public abstract class AbstractEnvelope implements Envelope, Emptiable {
      *
      * <div class="note"><b>Note:</b>
      * The {@code BOX} element is not part of the standard <cite>Well Known Text</cite> (WKT) format.
-     * However it is understood by many softwares, for example GDAL and PostGIS.</div>
+     * However it is understood by many software libraries, for example GDAL and PostGIS.</div>
      *
      * The string returned by this method can be {@linkplain GeneralEnvelope#GeneralEnvelope(CharSequence) parsed}
      * by the {@code GeneralEnvelope} constructor.

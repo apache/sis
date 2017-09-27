@@ -771,7 +771,7 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
              * Separate the version from the rest of the code. The version is optional. The code may have no room
              * for version (e.g. "EPSG:4326"), or specify an empty version (e.g. "EPSG::4326"). If the version is
              * equals to an empty string or to the "0" string, it will be considered as no version. Usage of 0 as
-             * a pseudo-version is a practice commonly found in other softwares.
+             * a pseudo-version is a practice commonly found in other software products.
              */
             int afterVersion = code.indexOf(DefaultNameSpace.DEFAULT_SEPARATOR, ++afterAuthority);
             start = CharSequences.skipLeadingWhitespaces(code, afterAuthority, afterVersion);

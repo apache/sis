@@ -400,7 +400,7 @@ public final class Person implements Responsibility, Party, Contact, Address {
 
     /**
      * Returns a string representation of this person statement.
-     * The statement is formatted in a way similar to the email address in client softwares.
+     * The statement is formatted in a way similar to the email address in client software applications.
      * Example:
      *
      * <blockquote>

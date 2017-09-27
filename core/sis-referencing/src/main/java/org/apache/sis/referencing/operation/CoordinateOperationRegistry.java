@@ -384,11 +384,11 @@ class CoordinateOperationRegistry {
                     /*
                      * Above check is necessary because this method may be invoked in some situations where the code
                      * are equal while the CRS are not. Such situation should be illegal, but unfortunately it still
-                     * happen because many softwares are not compliant with EPSG definition of axis order.   In such
-                     * cases we will need to compute a transform from sourceCRS to targetCRS ignoring the source and
-                     * target codes. The CoordinateOperationFinder class can do that, providing that we prevent this
-                     * CoordinateOperationRegistry to (legitimately) claims that the operation from sourceCode to
-                     * targetCode is the identity transform.
+                     * happen because many software products are not compliant with EPSG definition of axis order.
+                     * In such cases we will need to compute a transform from sourceCRS to targetCRS ignoring the
+                     * source and target codes. The CoordinateOperationFinder class can do that, providing that we
+                     * prevent this CoordinateOperationRegistry to (legitimately) claims that the operation from
+                     * sourceCode to targetCode is the identity transform.
                      */
                     return null;
                 }
