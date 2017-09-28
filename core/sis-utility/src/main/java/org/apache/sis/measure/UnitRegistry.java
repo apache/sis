@@ -154,10 +154,9 @@ final class UnitRegistry implements SystemOfUnits, Serializable {
      */
     static <Q extends Quantity<Q>> ConventionalUnit<Q> init(final ConventionalUnit<Q> unit) {
         assert !Units.initialized : unit;        // This assertion happens during Units initialization, but it is okay.
-        if (HARD_CODED.put(unit.getSymbol(), unit) == null) {
-            if (unit.epsg == 0 || HARD_CODED.put(unit.epsg, unit) == null) {
-                return unit;
-            }
+        if ((HARD_CODED.put(unit.getSymbol(), unit) == null) &&
+                (unit.epsg == 0 || HARD_CODED.put(unit.epsg, unit) == null)) {
+            return unit;
         }
         throw new AssertionError(unit);      // Shall not map the same unit twice.
     }

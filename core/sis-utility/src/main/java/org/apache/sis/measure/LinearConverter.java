@@ -124,8 +124,8 @@ final class LinearConverter extends AbstractConverter implements LenientComparab
      * Returns a linear converter for the given scale and offset.
      */
     private static LinearConverter create(final double scale, final double offset, final double divisor) {
-        if (offset == 0) {
-            if (scale == divisor) return IDENTITY;
+        if (offset == 0 && scale == divisor) {
+            return IDENTITY;
         }
         return new LinearConverter(scale, offset, divisor);
     }
