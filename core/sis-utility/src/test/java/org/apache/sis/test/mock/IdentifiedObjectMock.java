@@ -29,7 +29,7 @@ import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.referencing.IdentifiedObject;
 import org.apache.sis.internal.util.CollectionsExt;
-import org.apache.sis.internal.jaxb.name.GO_GenericName;
+import org.apache.sis.internal.jaxb.gco.GO_GenericName;
 
 
 /**

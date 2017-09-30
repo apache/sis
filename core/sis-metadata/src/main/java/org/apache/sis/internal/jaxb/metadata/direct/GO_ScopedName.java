@@ -19,7 +19,7 @@ package org.apache.sis.internal.jaxb.metadata.direct;
 import javax.xml.bind.annotation.adapters.XmlAdapter;
 import org.opengis.util.ScopedName;
 import org.opengis.util.GenericName;
-import org.apache.sis.internal.jaxb.name.NameValue;
+import org.apache.sis.internal.jaxb.gco.NameValue;
 
 
 /**
@@ -29,7 +29,7 @@ import org.apache.sis.internal.jaxb.name.NameValue;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.5
  *
- * @see org.apache.sis.internal.jaxb.name.GO_GenericName
+ * @see org.apache.sis.internal.jaxb.gco.GO_GenericName
  *
  * @since 0.5
  * @module
