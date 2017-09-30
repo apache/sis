@@ -87,25 +87,25 @@ Apache SIS is a free software, Java language library for developing geospatial a
 
   <mailingLists>
     <mailingList>
+      <name>User mailing list</name>
+      <subscribe>user-subscribe@sis.apache.org</subscribe>
+      <unsubscribe>user-unsubscribe@sis.apache.org</unsubscribe>
+      <post>user@sis.apache.org</post>
+      <archive>https://lists.apache.org/list.html?user@sis.apache.org</archive>
+    </mailingList>
+    <mailingList>
       <name>Development mailing list</name>
       <subscribe>dev-subscribe@sis.apache.org</subscribe>
       <unsubscribe>dev-unsubscribe@sis.apache.org</unsubscribe>
       <post>dev@sis.apache.org</post>
-      <archive>http://mail-archives.apache.org/mod_mbox/sis-dev/</archive>
+      <archive>https://lists.apache.org/list.html?dev@sis.apache.org</archive>
     </mailingList>
     <mailingList>
       <name>Commit mailing list</name>
       <subscribe>commits-subscribe@sis.apache.org</subscribe>
       <unsubscribe>commits-unsubscribe@sis.apache.org</unsubscribe>
       <post>commits@sis.apache.org</post>
-      <archive>http://mail-archives.apache.org/mod_mbox/sis-commits/</archive>
-    </mailingList>
-    <mailingList>
-      <name>User mailing list</name>
-      <subscribe>user-subscribe@sis.apache.org</subscribe>
-      <unsubscribe>user-unsubscribe@sis.apache.org</unsubscribe>
-      <post>user@sis.apache.org</post>
-      <archive>http://mail-archives.apache.org/mod_mbox/sis-user/</archive>
+      <archive>https://lists.apache.org/list.html?commits@sis.apache.org</archive>
     </mailingList>
   </mailingLists>
 
