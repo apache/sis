@@ -94,7 +94,7 @@ public class DefaultLocalName extends AbstractName implements LocalName {
      * The {@link XmlElement} annotation applied here is appropriate for subclasses only ({@link DefaultTypeName}
      * and {@link DefaultMemberName}). It is <strong>not</strong> appropriate when (un)marshalling directly this
      * {@code DefaultLocalName} class. In this later case, we will rather rely on the {@link String} conversion
-     * performed by {@link org.apache.sis.internal.jaxb.gco.GO_GenericName}.
+     * performed by {@link org.apache.sis.internal.jaxb.name.GO_GenericName}.
      */
     @XmlJavaTypeAdapter(CharSequenceAdapter.class)
     @XmlElement(name = "aName", namespace = Namespaces.GCO)

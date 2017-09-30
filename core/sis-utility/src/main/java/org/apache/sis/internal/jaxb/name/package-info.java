@@ -16,38 +16,35 @@
  */
 
 /**
- * Provides objects that simulate the behavior of complex or unavailable real objects.
- * Mocks are often used as a replacement for objects to be defined only in dependant modules.
+ * Adapters for (un)marshalling ISO 19103 generic names.
+ * For example, a {@link java.lang.String} value has to be marshalled this way:
+ * Classes prefixed by two letters, like {@code "GO_GenericName"}, are also wrappers around the actual
+ * object to be marshalled. See the {@link org.apache.sis.internal.jaxb.metadata} package for more
+ * explanation about wrappers. Note that the two-letters prefixes used in this package (not to be
+ * confused with the three-letters prefixes used in XML documents) are not defined by OGC/ISO
+ * specifications; they are used only for consistency with current practice in
+ * {@link org.apache.sis.internal.jaxb.metadata} and similar packages.
  *
- * <p>This package does not provide all mocks defined by SIS, but only the mocks that could not be put in
- * the right package for the interface that they implement. To get a list of all mocks used in SIS tests,
- * we need to search for classes ending in {@code *Mock}.</p>
- *
- * <p>Objects defined in this package are only for SIS testing purpose any many change
- * in any future version without notice.</p>
- *
+ * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.3
+ * @version 0.8
  * @since   0.3
  * @module
  */
-@XmlSchema(elementFormDefault = XmlNsForm.QUALIFIED, namespace = Namespaces.GML, xmlns = {
-    @XmlNs(prefix = "gml", namespaceURI = Namespaces.GML),
-    @XmlNs(prefix = "gmd", namespaceURI = Namespaces.GMD),
-    @XmlNs(prefix = "gco", namespaceURI = Namespaces.GCO)
+@XmlSchema(elementFormDefault = XmlNsForm.QUALIFIED, namespace = Namespaces.GCO, xmlns = {
+    @XmlNs(prefix = "gco", namespaceURI = Namespaces.GCO),
+    @XmlNs(prefix = "gml", namespaceURI = Namespaces.GML)
 })
 @XmlAccessorType(XmlAccessType.NONE)
-@XmlJavaTypeAdapters({
-    @XmlJavaTypeAdapter(GO_GenericName.class)
-})
-package org.apache.sis.test.mock;
+/*
+ * Do NOT define a package-level adapter for InternationalString,
+ * because such adapter shall NOT apply to GO_CharacterString.getAnchor().
+ */
+package org.apache.sis.internal.jaxb.name;
 
 import javax.xml.bind.annotation.XmlNs;
 import javax.xml.bind.annotation.XmlNsForm;
 import javax.xml.bind.annotation.XmlSchema;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
-import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapters;
-import org.apache.sis.internal.jaxb.name.GO_GenericName;
 import org.apache.sis.xml.Namespaces;

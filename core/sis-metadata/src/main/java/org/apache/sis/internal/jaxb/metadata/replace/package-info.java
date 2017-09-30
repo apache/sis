@@ -60,7 +60,7 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapters;
 import org.apache.sis.internal.jaxb.gco.GO_Boolean;
-import org.apache.sis.internal.jaxb.gco.GO_GenericName;
+import org.apache.sis.internal.jaxb.name.GO_GenericName;
 import org.apache.sis.internal.jaxb.gco.StringAdapter;
 import org.apache.sis.internal.jaxb.gco.InternationalStringAdapter;
 import org.apache.sis.internal.jaxb.metadata.RS_Identifier;
