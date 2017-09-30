@@ -18,7 +18,7 @@ package org.apache.sis.internal.referencing.provider;
 
 import java.util.List;
 import org.opengis.referencing.operation.OperationMethod;
-import org.apache.sis.internal.util.LazySet;
+import org.apache.sis.internal.referencing.LazySet;
 
 
 /**

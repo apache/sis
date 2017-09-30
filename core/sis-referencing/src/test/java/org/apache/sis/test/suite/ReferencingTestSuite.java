@@ -31,6 +31,7 @@ import org.junit.BeforeClass;
  */
 @Suite.SuiteClasses({
     org.apache.sis.internal.metadata.AxisDirectionsTest.class,
+    org.apache.sis.internal.referencing.LazySetTest.class,
     org.apache.sis.internal.referencing.FormulasTest.class,
     org.apache.sis.internal.referencing.j2d.ShapeUtilitiesTest.class,
     org.apache.sis.internal.referencing.PositionalAccuracyConstantTest.class,
