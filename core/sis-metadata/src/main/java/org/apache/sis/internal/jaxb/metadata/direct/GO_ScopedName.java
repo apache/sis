@@ -19,7 +19,7 @@ package org.apache.sis.internal.jaxb.metadata.direct;
 import javax.xml.bind.annotation.adapters.XmlAdapter;
 import org.opengis.util.ScopedName;
 import org.opengis.util.GenericName;
-import org.apache.sis.internal.jaxb.gml.CodeType;
+import org.apache.sis.internal.jaxb.name.NameValue;
 
 
 /**
@@ -29,12 +29,12 @@ import org.apache.sis.internal.jaxb.gml.CodeType;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.5
  *
- * @see org.apache.sis.internal.jaxb.gco.GO_GenericName
+ * @see org.apache.sis.internal.jaxb.name.GO_GenericName
  *
  * @since 0.5
  * @module
  */
-public final class GO_ScopedName extends XmlAdapter<CodeType.ScopedName, ScopedName> {
+public final class GO_ScopedName extends XmlAdapter<NameValue.Scoped, ScopedName> {
     /**
      * Converts a GeoAPI interface to the SIS implementation for XML marshalling.
      *
@@ -42,9 +42,9 @@ public final class GO_ScopedName extends XmlAdapter<CodeType.ScopedName, ScopedN
      * @return the adapter for the given value, here the SIS implementation.
      */
     @Override
-    public CodeType.ScopedName marshal(final ScopedName name) {
+    public NameValue.Scoped marshal(final ScopedName name) {
         if (name != null) {
-            final CodeType.ScopedName code = new CodeType.ScopedName();
+            final NameValue.Scoped code = new NameValue.Scoped();
             code.setName(name);
             return code;
         }
@@ -58,7 +58,7 @@ public final class GO_ScopedName extends XmlAdapter<CodeType.ScopedName, ScopedN
      * @return the value to marshal (which is the same).
      */
     @Override
-    public ScopedName unmarshal(final CodeType.ScopedName code) {
+    public ScopedName unmarshal(final NameValue.Scoped code) {
         if (code != null) {
             final GenericName parsed = code.getName();
             if (parsed instanceof ScopedName) {

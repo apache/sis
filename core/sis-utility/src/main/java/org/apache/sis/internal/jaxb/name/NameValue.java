@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.internal.jaxb.gml;
+package org.apache.sis.internal.jaxb.name;
 
 import javax.xml.bind.annotation.XmlValue;
 import javax.xml.bind.annotation.XmlAttribute;
@@ -41,15 +41,15 @@ import org.apache.sis.xml.Namespaces;
  *   </complexType>
  * }
  *
- * {@code CodeType}s are used for:
+ * {@code NameValue}s are used for:
  *
  * <ul>
- *   <li>{@code GenericName}</li>
- *   <li>{@link LocalName}</li>
- *   <li>{@link ScopedName}</li>
+ *   <li>{@code org.opengis.util.GenericName}</li>
+ *   <li>{@link org.opengis.util.LocalName}</li>
+ *   <li>{@link org.opengis.util.ScopedName}</li>
  * </ul>
  *
- * {@code CodeType}s are not used for {@code MemberName} and {@code TypeName}.
+ * {@code NameValue}s are not used for {@code MemberName} and {@code TypeName}.
  * The two later use a quite different XML structure, with an {@code aName} element instead than a XML value.
  *
  * @author  Martin Desruisseaux (Geomatys)
@@ -58,10 +58,10 @@ import org.apache.sis.xml.Namespaces;
  * @module
  */
 @XmlSeeAlso({
-    CodeType.LocalName.class,
-    CodeType.ScopedName.class
+    NameValue.Local.class,
+    NameValue.Scoped.class
 })
-public class CodeType {
+public class NameValue {
     /**
      * The term.
      */
@@ -73,13 +73,13 @@ public class CodeType {
      * or {@code null} if none.
      */
     @XmlAttribute
-    @XmlSchemaType(name = "anyURI")
+    @XmlSchemaType(name = "anyURI", namespace = Namespaces.GML)
     String codeSpace;
 
     /**
      * Invoked by reflection by JAXB on unmarshalling.
      */
-    public CodeType() {
+    public NameValue() {
     }
 
     /**
@@ -105,19 +105,19 @@ public class CodeType {
     }
 
     /**
-     * The {@code CodeType} as a {@code gco:LocalName}.
+     * The {@code NameValue} as a {@code gco:LocalName}.
      */
-    @XmlRootElement(name = "LocalName", namespace = Namespaces.GCO)
-    public static final class LocalName extends CodeType {
+    @XmlRootElement(name = "LocalName")
+    public static final class Local extends NameValue {
         @Override public GenericName getName() {
             return Names.createLocalName(codeSpace, null, value);
         }
     }
 
     /**
-     * The {@code CodeType} as a {@code gco:ScopedName}.
+     * The {@code NameValue} as a {@code gco:ScopedName}.
      */
-    @XmlRootElement(name = "ScopedName", namespace = Namespaces.GCO)
-    public static final class ScopedName extends CodeType {
+    @XmlRootElement(name = "ScopedName")
+    public static final class Scoped extends NameValue {
     }
 }

@@ -113,3 +113,4 @@ import org.apache.sis.internal.jaxb.Schemas;
 import org.apache.sis.internal.jaxb.gco.*;
 import org.apache.sis.internal.jaxb.code.*;
 import org.apache.sis.internal.jaxb.metadata.*;
+import org.apache.sis.internal.jaxb.name.GO_LocalName;

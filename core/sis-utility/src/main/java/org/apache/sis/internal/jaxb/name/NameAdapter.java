@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.internal.jaxb.gco;
+package org.apache.sis.internal.jaxb.name;
 
 import javax.xml.bind.annotation.XmlElementRef;
 import javax.xml.bind.annotation.adapters.XmlAdapter;
@@ -23,7 +23,6 @@ import org.opengis.util.LocalName;
 import org.opengis.util.ScopedName;
 import org.opengis.util.MemberName;
 import org.opengis.util.GenericName;
-import org.apache.sis.internal.jaxb.gml.CodeType;
 import org.apache.sis.util.iso.DefaultLocalName;
 import org.apache.sis.util.iso.DefaultTypeName;
 import org.apache.sis.util.iso.DefaultMemberName;
@@ -76,22 +75,27 @@ abstract class NameAdapter<ValueType extends NameAdapter<ValueType,BoundType>, B
 
     /**
      * Returns the {@code LocalName} or {@code ScopedName} to marshall. Returns {@code null} if the name
-     * is a {@link TypeName} or a {@link MemberName}, in order to use {@link #getNameType()} instead.
+     * is a {@link TypeName} or a {@link MemberName}, in order to use {@link #getName()} instead.
+     * Example:
+     *
+     * {@preformat xml
+     *   <gco:LocalName codeSpace=\"A code space\">A name in a scope</gco:LocalName>
+     * }
      *
      * @return the code for the current name, or {@code null} if none.
      */
     @XmlElementRef
-    public final CodeType getCodeType() {
+    public final NameValue getValue() {
         final GenericName name = this.name;
-        final CodeType code;
+        final NameValue code;
         if (name instanceof LocalName) {
             if (name instanceof TypeName || name instanceof MemberName) {
                 return null;
             } else {
-                code = new CodeType.LocalName();
+                code = new NameValue.Local();
             }
         } else if (name instanceof ScopedName) {
-            code = new CodeType.ScopedName();
+            code = new NameValue.Scoped();
         } else {
             return null;
         }
@@ -106,7 +110,7 @@ abstract class NameAdapter<ValueType extends NameAdapter<ValueType,BoundType>, B
      * @param  code  the new name.
      * @throws IllegalStateException if a name is already defined.
      */
-    public final void setCodeType(final CodeType code) throws IllegalStateException {
+    public final void setValue(final NameValue code) throws IllegalStateException {
         ensureUndefined();
         if (code != null) {
             name = code.getName();
@@ -115,12 +119,21 @@ abstract class NameAdapter<ValueType extends NameAdapter<ValueType,BoundType>, B
 
     /**
      * Returns the {@code TypeName} or {@code MemberName} to marshall. Returns {@code null} if the name
-     * is a {@link LocalName} or {@link ScopedName}, in order to use {@link #getCodeType()} instead.
+     * is a {@link LocalName} or {@link ScopedName}, in order to use {@link #getValue()} instead.
+     * Example:
+     *
+     * {@preformat xml
+     *   <gco:TypeName>
+     *     <gco:aName>
+     *       <gco:CharacterString>An other local name</gco:CharacterString>
+     *     </gco:aName>
+     *   </gco:TypeName>
+     * }
      *
      * @return the current name, or {@code null} if none.
      */
     @XmlElementRef
-    public final DefaultLocalName getNameType() {
+    public final DefaultLocalName getName() {
         final GenericName name = this.name;
         if (name instanceof TypeName) {
             return DefaultTypeName.castOrCopy((TypeName) name);
@@ -138,7 +151,7 @@ abstract class NameAdapter<ValueType extends NameAdapter<ValueType,BoundType>, B
      * @param  value  the new name.
      * @throws IllegalStateException if a name is already defined.
      */
-    public final void setNameType(final DefaultLocalName value) throws IllegalStateException {
+    public final void setName(final DefaultLocalName value) throws IllegalStateException {
         ensureUndefined();
         name = value;
     }
