@@ -44,7 +44,7 @@ import org.apache.sis.util.resources.Errors;
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Guilhem Legal (Geomatys)
- * @version 0.5
+ * @version 0.8
  * @since   0.3
  * @module
  */
@@ -79,7 +79,9 @@ abstract class NameAdapter<ValueType extends NameAdapter<ValueType,BoundType>, B
      * Example:
      *
      * {@preformat xml
-     *   <gco:LocalName codeSpace=\"A code space\">A name in a scope</gco:LocalName>
+     *   <gml:alias>
+     *     <gco:LocalName codeSpace=\"A code space\">A name in a scope</gco:LocalName>
+     *   </gml:alias>
      * }
      *
      * @return the code for the current name, or {@code null} if none.
@@ -104,30 +106,18 @@ abstract class NameAdapter<ValueType extends NameAdapter<ValueType,BoundType>, B
     }
 
     /**
-     * Sets the value for the {@code LocalName} or {@code ScopedName}.
-     * This method is called at unmarshalling-time by JAXB.
-     *
-     * @param  code  the new name.
-     * @throws IllegalStateException if a name is already defined.
-     */
-    public final void setValue(final NameValue code) throws IllegalStateException {
-        ensureUndefined();
-        if (code != null) {
-            name = code.getName();
-        }
-    }
-
-    /**
      * Returns the {@code TypeName} or {@code MemberName} to marshall. Returns {@code null} if the name
      * is a {@link LocalName} or {@link ScopedName}, in order to use {@link #getValue()} instead.
      * Example:
      *
      * {@preformat xml
-     *   <gco:TypeName>
-     *     <gco:aName>
-     *       <gco:CharacterString>An other local name</gco:CharacterString>
-     *     </gco:aName>
-     *   </gco:TypeName>
+     *   <gml:alias>
+     *     <gco:TypeName>
+     *       <gco:aName>
+     *         <gco:CharacterString>An other local name</gco:CharacterString>
+     *       </gco:aName>
+     *     </gco:TypeName>
+     *   </gml:alias>
      * }
      *
      * @return the current name, or {@code null} if none.
@@ -141,6 +131,20 @@ abstract class NameAdapter<ValueType extends NameAdapter<ValueType,BoundType>, B
             return DefaultMemberName.castOrCopy((MemberName) name);
         } else {
             return null;
+        }
+    }
+
+    /**
+     * Sets the value for the {@code LocalName} or {@code ScopedName}.
+     * This method is called at unmarshalling-time by JAXB.
+     *
+     * @param  code  the new name.
+     * @throws IllegalStateException if a name is already defined.
+     */
+    public final void setValue(final NameValue code) throws IllegalStateException {
+        ensureUndefined();
+        if (code != null) {
+            name = code.getName();
         }
     }
 
