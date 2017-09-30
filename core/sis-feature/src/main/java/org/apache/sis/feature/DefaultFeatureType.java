@@ -530,7 +530,7 @@ public class DefaultFeatureType extends AbstractIdentifiedType implements Featur
          */
         if (feature instanceof DefaultFeatureType) {
             final DefaultFeatureType dt = (DefaultFeatureType) feature;
-            return dt.isResolved = resolve(feature, dt.properties, previous, dt.isResolved);
+            return dt.isResolved = resolve(dt, dt.properties, previous, dt.isResolved);
         } else {
             return resolve(feature, feature.getProperties(false), previous, feature.isSimple());
         }
@@ -559,7 +559,7 @@ public class DefaultFeatureType extends AbstractIdentifiedType implements Featur
             for (final PropertyType property : toUpdate) {
                 if (property instanceof FeatureAssociationRole) {
                     if (property instanceof DefaultAssociationRole) {
-                        if (!((DefaultAssociationRole) property).resolve(this)) {
+                        if (!((DefaultAssociationRole) property).resolve(this, properties)) {
                             resolved = false;
                             continue;
                         }
