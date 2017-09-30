@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.internal.util;
+package org.apache.sis.internal.referencing;
 
 import java.util.List;
 import java.util.Arrays;
@@ -23,6 +23,8 @@ import java.util.Iterator;
 import java.util.ServiceLoader;
 import java.util.NoSuchElementException;
 import org.apache.sis.internal.system.DefaultFactories;
+import org.apache.sis.internal.util.SetOfUnknownSize;
+import org.apache.sis.internal.util.UnmodifiableArrayList;
 
 
 /**
@@ -37,7 +39,7 @@ import org.apache.sis.internal.system.DefaultFactories;
  *
  * <p>Some usages for this class are to prepend some values before the elements given by the source {@code Iterable},
  * or to replace some values when they are loaded. It may also be used for creating filtered sets when used together
- * with {@link CollectionsExt#filter CollectionsExt.filter(…)}.</p>
+ * with {@link org.apache.sis.internal.util.CollectionsExt#filter CollectionsExt.filter(…)}.</p>
  *
  * <p>This class is not thread-safe. Synchronization, if desired, shall be done by the caller.</p>
  *
