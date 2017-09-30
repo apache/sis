@@ -91,10 +91,25 @@ public class DefaultLocalName extends AbstractName implements LocalName {
      * The name, either as a {@link String} or an {@link InternationalString}.
      *
      * <div class="section">Note on JAXB annotation</div>
-     * The {@link XmlElement} annotation applied here is appropriate for subclasses only ({@link DefaultTypeName}
-     * and {@link DefaultMemberName}). It is <strong>not</strong> appropriate when (un)marshalling directly this
-     * {@code DefaultLocalName} class. In this later case, we will rather rely on the {@link String} conversion
-     * performed by {@link org.apache.sis.internal.jaxb.name.GO_GenericName}.
+     * The {@link XmlElement} annotation applied here is appropriate for {@code TypeName} and {@code MemberName}
+     * subtypes only. It is <strong>not</strong> appropriate when (un)marshalling directly a {@code LocalName}.
+     * The distinction between the two cases is done by {@link org.apache.sis.internal.jaxb.name.GO_LocalName},
+     * which replace the {@code LocalName} instance by an internal {@code NameValue} object (so the XML element
+     * declared here is never marshalled). Example:
+     *
+     * {@preformat xml
+     *   <gco:LocalName codeSpace=\"A code space\">A name in a scope</gco:LocalName>
+     * }
+     *
+     * versus
+     *
+     * {@preformat xml
+     *   <gco:TypeName>
+     *     <gco:aName>
+     *       <gco:CharacterString>An other local name</gco:CharacterString>
+     *     </gco:aName>
+     *   </gco:TypeName>
+     * }
      */
     @XmlJavaTypeAdapter(CharSequenceAdapter.class)
     @XmlElement(name = "aName", namespace = Namespaces.GCO)
