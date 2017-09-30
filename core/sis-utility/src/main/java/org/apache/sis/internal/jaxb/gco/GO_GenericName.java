@@ -14,9 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.internal.jaxb.name;
+package org.apache.sis.internal.jaxb.gco;
 
-import org.opengis.util.LocalName;
+import org.opengis.util.GenericName;
 
 
 /**
@@ -26,6 +26,7 @@ import org.opengis.util.LocalName;
  *
  * <ul>
  *   <li>{@code LocalName}</li>
+ *   <li>{@code ScopedName}</li>
  *   <li>{@code TypeName}</li>
  *   <li>{@code MemberName}</li>
  * </ul>
@@ -37,30 +38,30 @@ import org.opengis.util.LocalName;
  * @since   0.3
  * @module
  */
-public final class GO_LocalName extends NameAdapter<GO_LocalName, LocalName> {
+public final class GO_GenericName extends NameAdapter<GO_GenericName, GenericName> {
     /**
      * Empty constructor for JAXB only.
      */
-    public GO_LocalName() {
+    public GO_GenericName() {
     }
 
     /**
      * Wraps a name at marshalling-time.
      */
-    private GO_LocalName(final LocalName value) {
+    private GO_GenericName(final GenericName value) {
         name = value;
     }
 
     /**
-     * Does the link between an {@link org.apache.sis.util.iso.AbstractName} and the adapter associated.
+     * Does the link between an {@link GenericName} and the adapter associated.
      * JAXB calls automatically this method at marshalling-time.
      *
      * @param  value  the implementing class for this metadata value.
      * @return an wrapper which contains the metadata value.
      */
     @Override
-    public GO_LocalName marshal(final LocalName value) {
-        return (value != null) ? new GO_LocalName(value) : null;
+    public GO_GenericName marshal(final GenericName value) {
+        return (value != null) ? new GO_GenericName(value) : null;
     }
 
     /**
@@ -71,7 +72,7 @@ public final class GO_LocalName extends NameAdapter<GO_LocalName, LocalName> {
      * @return the implementing class.
      */
     @Override
-    public LocalName unmarshal(final GO_LocalName value) {
-        return (value != null) ? (LocalName) value.name : null;
+    public GenericName unmarshal(final GO_GenericName value) {
+        return (value != null) ? value.name : null;
     }
 }
