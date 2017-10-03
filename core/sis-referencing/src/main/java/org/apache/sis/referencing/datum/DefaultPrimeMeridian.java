@@ -326,8 +326,8 @@ public class DefaultPrimeMeridian extends AbstractIdentifiedObject implements Pr
      * If we were not formatting a base CRS, we would have many lines between {@code PrimeMeridian[…]} and
      * {@code AngleUnit[…]} in the above example, which would make less obvious that the angle unit applies
      * also to the prime meridian. It does not bring any ambiguity from an ISO 19162 standard point of view,
-     * but historically some other softwares interpreted the {@code PRIMEM[…]} units wrongly, which is why
-     * we try to find a compromise between keeping the WKT simple and avoiding an historical ambiguity.
+     * but historically some other software products interpreted the {@code PRIMEM[…]} units wrongly, which
+     * is why we try to find a compromise between keeping the WKT simple and avoiding an historical ambiguity.
      *
      * @see org.apache.sis.referencing.crs.AbstractCRS#isBaseCRS(Formatter)
      */

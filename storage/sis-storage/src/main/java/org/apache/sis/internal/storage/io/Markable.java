@@ -36,7 +36,10 @@ import java.io.IOException;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
- * @since   0.8
+ *
+ * @see Readable
+ *
+ * @since 0.8
  * @module
  */
 public interface Markable {

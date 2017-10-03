@@ -39,7 +39,7 @@
  *   <li>Apply syntactic coloring on terminal supporting <cite>ANSI escape codes</cite>
  *       (a.k.a. ECMA-48, ISO/IEC 6429 and X3.64).</li>
  *   <li>Alter the parsing in a way compatible with non-standard (but commonly used) WKT.
- *       For example some others softwares ignore the {@code AXIS[…]} elements at parsing time.</li>
+ *       For example some others software products ignore the {@code AXIS[…]} elements at parsing time.</li>
  *   <li>Report warnings that occurred during parsing or formatting.</li>
  * </ul>
  *
@@ -56,9 +56,9 @@
  * The WKT 1 format has been interpreted differently by various implementors.
  * One noticeable difference is the unit of measurement of prime meridians and projection parameters.
  * The WKT 2 format aims to solve the inter-operability problem caused by such mismatches,
- * but not all softwares support this new format. Consequently importing or exporting data from/to a software with
- * the WKT syntax require knowledge of the WKT variant used by that software. This variant can be specified by the
- * {@link org.apache.sis.io.wkt.Convention} enumeration.
+ * but not all software products support this new format. Consequently importing or exporting data from/to a software
+ * with the WKT syntax require knowledge of the WKT variant used by that software. This variant can be specified by
+ * the {@link org.apache.sis.io.wkt.Convention} enumeration.
  *
  * <div class="section">Geometry WKT</div>
  * The {@link org.apache.sis.geometry.GeneralEnvelope} and {@link org.apache.sis.geometry.GeneralDirectPosition} classes

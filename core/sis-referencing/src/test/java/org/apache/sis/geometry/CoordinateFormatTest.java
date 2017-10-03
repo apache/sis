@@ -21,6 +21,7 @@ import java.util.Locale;
 import java.util.TimeZone;
 import java.text.ParsePosition;
 import java.text.ParseException;
+import java.io.IOException;
 import org.opengis.geometry.DirectPosition;
 import org.apache.sis.measure.Angle;
 import org.apache.sis.referencing.crs.HardCodedCRS;
@@ -36,6 +37,8 @@ import static org.junit.Assert.*;
  * Tests the {@link CoordinateFormat} class.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
+ * @author  Michael Hausegger
+ *
  * @version 0.8
  *
  * @see org.apache.sis.measure.AngleFormatTest
@@ -63,6 +66,7 @@ public final strictfp class CoordinateFormatTest extends TestCase {
          * Try again with a different separator.
          */
         format.setSeparator("; ");
+        assertEquals("; ", format.getSeparator());
         assertEquals("4.64; 10.25; -3.12", format.format(position));
     }
 
@@ -75,30 +79,31 @@ public final strictfp class CoordinateFormatTest extends TestCase {
     @Test
     public void testParseUnknownCRS() throws ParseException {
         final CoordinateFormat format = new CoordinateFormat(null, null);
-        final ParsePosition index = new ParsePosition(0);
-        DirectPosition position = format.parse("23.78 -12.74 127.9 3.25", index);
+        final ParsePosition charPos = new ParsePosition(0);
+        DirectPosition position = format.parse("23.78 -12.74 127.9 3.25", charPos);
         assertArrayEquals(new double[] {23.78, -12.74, 127.9, 3.25}, position.getCoordinate(), STRICT);
-        assertEquals("ParsePosition.getErrorIndex()", -1, index.getErrorIndex());
-        assertEquals("ParsePosition.getIndex()",      23, index.getIndex());
+        assertEquals("ParsePosition.getErrorIndex()", -1, charPos.getErrorIndex());
+        assertEquals("ParsePosition.getIndex()",      23, charPos.getIndex());
         /*
          * Try another point having a different number of position
          * for verifying that no cached values are causing problem.
          */
-        index.setIndex(0);
-        position = format.parse("4.64 10.25 -3.12", index);
+        charPos.setIndex(0);
+        position = format.parse("4.64 10.25 -3.12", charPos);
         assertArrayEquals(new double[] {4.64, 10.25, -3.12}, position.getCoordinate(), STRICT);
-        assertEquals("ParsePosition.getErrorIndex()", -1, index.getErrorIndex());
-        assertEquals("ParsePosition.getIndex()",      16, index.getIndex());
+        assertEquals("ParsePosition.getErrorIndex()", -1, charPos.getErrorIndex());
+        assertEquals("ParsePosition.getIndex()",      16, charPos.getIndex());
         /*
          * Try again with a different separator. Also put or remove some spaces
          * around the separator for testing UnitFormat capabilities to ignore them.
          */
         format.setSeparator("; ");
-        index.setIndex(0);
-        position = format.parse("4.64;10.25 ;  -3.12", index);
+        assertEquals("; ", format.getSeparator());
+        charPos.setIndex(0);
+        position = format.parse("4.64;10.25 ;  -3.12", charPos);
         assertArrayEquals(new double[] {4.64, 10.25, -3.12}, position.getCoordinate(), STRICT);
-        assertEquals("ParsePosition.getErrorIndex()", -1, index.getErrorIndex());
-        assertEquals("ParsePosition.getIndex()",      19, index.getIndex());
+        assertEquals("ParsePosition.getErrorIndex()", -1, charPos.getErrorIndex());
+        assertEquals("ParsePosition.getIndex()",      19, charPos.getIndex());
     }
 
     /**
@@ -150,6 +155,7 @@ public final strictfp class CoordinateFormatTest extends TestCase {
          * Try again with the original CRS, but different separator.
          */
         format.setSeparator("; ");
+        assertEquals("; ", format.getSeparator());
         position.setCoordinateReferenceSystem(HardCodedCRS.GEOID_4D);
         assertEquals("getPattern(Angle)", anglePattern, format.getPattern(Angle.class));
         assertEquals("getPattern(Date)",   datePattern, format.getPattern(Date .class));
@@ -168,24 +174,97 @@ public final strictfp class CoordinateFormatTest extends TestCase {
         final CoordinateFormat format = new CoordinateFormat(Locale.FRANCE, TimeZone.getTimeZone("GMT+01:00"));
         format.applyPattern(Date.class, "dd-MM-yyyy HH:mm");
         format.setDefaultCRS(HardCodedCRS.GEOID_4D);
-        final ParsePosition index = new ParsePosition(11);
-        final DirectPosition pos = format.parse("(to skip); 23°46,8′E 12°44,4′S 127,9 m 22-09-2006 07:00 (ignore)", index);
+        final ParsePosition charPos = new ParsePosition(11);
+        final DirectPosition pos = format.parse("(to skip); 23°46,8′E 12°44,4′S 127,9 m 22-09-2006 07:00 (ignore)", charPos);
         assertArrayEquals(new double[] {23.78, -12.74, 127.90, 54000.25}, pos.getCoordinate(), STRICT);
-        assertEquals("ParsePosition.getErrorIndex()", -1, index.getErrorIndex());
-        assertEquals("ParsePosition.getIndex()",      55, index.getIndex());
+        assertEquals("ParsePosition.getErrorIndex()", -1, charPos.getErrorIndex());
+        assertEquals("ParsePosition.getIndex()",      55, charPos.getIndex());
         /*
          * Tests error message when parsing the same string but with unknown units of measurement.
          */
-        index.setIndex(11);
+        charPos.setIndex(11);
         try {
-            format.parse("(to skip); 23°46,8′E 12°44,4′S 127,9 Foo 22-09-2006 07:00", index);
+            format.parse("(to skip); 23°46,8′E 12°44,4′S 127,9 Foo 22-09-2006 07:00", charPos);
             fail("Should not have parsed a coordinate with unknown units.");
         } catch (ParseException e) {
-            assertEquals("ParsePosition.getIndex()",        11, index.getIndex());
-            assertEquals("ParsePosition.getErrorIndex()",   37, index.getErrorIndex());
+            assertEquals("ParsePosition.getIndex()",        11, charPos.getIndex());
+            assertEquals("ParsePosition.getErrorIndex()",   37, charPos.getErrorIndex());
             assertEquals("ParseException.getErrorOffset()", 37, e.getErrorOffset());
             assertEquals("Les caractères « Foo » après « 23°46,8′E 12°44,4′S 127,9 » sont inattendus.",
                          e.getLocalizedMessage());  // In the language specified at CoordinateFormat construction time.
         }
+    }
+
+    /**
+     * Tests formatting a coordinate in default locale, then parsing the result. This test verifies that the
+     * parsing is consistent with formatting in whatever locale used by the platform. This test does not verify
+     * if the formatted string is equal to any expected value since it is locale-dependent.
+     *
+     * @throws IOException    should never happen since we format into a {@link StringBuffer}.
+     * @throws ParseException if {@code CoordinateFormat} fails to parse the value that it formatted.
+     */
+    @Test
+    public void testParseInDefaultLocale() throws IOException, ParseException {
+        CoordinateFormat format = new CoordinateFormat();
+        StringBuffer     buffer = new StringBuffer();
+        format.format(new DirectPosition2D(-3, 4), buffer);
+
+        ParsePosition  charPos  = new ParsePosition(0);
+        DirectPosition position = format.parse(buffer, charPos);
+        assertEquals("Should have parsed the whole text.", buffer.length(), charPos.getIndex());
+        assertEquals("DirectPosition.getDimension()", 2, position.getDimension());
+        assertArrayEquals(new double[] {-3, 4}, position.getCoordinate(), STRICT);
+    }
+
+    /**
+     * Tests parsing from a position different then the beginning of the string.
+     *
+     * @throws ParseException if the parsing failed.
+     */
+    @Test
+    public void testParseFromOffset() throws ParseException {
+        CoordinateFormat coordinateFormat = new CoordinateFormat(Locale.CANADA, null);
+        coordinateFormat.setDefaultCRS(VerticalCRSMock.BAROMETRIC_HEIGHT);
+        ParsePosition  charPos  = new ParsePosition(7);
+        DirectPosition position = coordinateFormat.parse("[skip] 12", charPos);
+        assertEquals("Should have parsed the whole text.", 9, charPos.getIndex());
+        assertEquals("DirectPosition.getDimension()", 1, position.getDimension());
+        assertArrayEquals(new double[] {12}, position.getCoordinate(), STRICT);
+    }
+
+    /**
+     * Verifies the pattern returned by {@link CoordinateFormat#getPattern(Class)}. This includes verifying that
+     * the method returns {@code null} when invoked for an unknown type, or a type that does not support pattern.
+     */
+    @Test
+    public void testGetPattern() {
+        CoordinateFormat coordinateFormat = new CoordinateFormat(Locale.UK, null);
+        assertEquals("#,##0.###", coordinateFormat.getPattern(Byte.class));
+        assertNull(coordinateFormat.getPattern(Object.class));
+        assertNull(coordinateFormat.getPattern(Class.class));
+    }
+
+    /**
+     * Verifies that {@link CoordinateFormat#applyPattern(Class, String)} when
+     * invoked for an unknown type, or for a type that does not support patterns.
+     */
+    @Test
+    public void testApplyPattern() {
+        CoordinateFormat format = new CoordinateFormat();
+        assertFalse(format.applyPattern(Object.class, "A dummy pattern"));
+        assertFalse(format.applyPattern(Class.class,  "A dummy pattern"));
+    }
+
+    /**
+     * Tests {@link CoordinateFormat#clone()}, then verifies that the clone has the same configuration
+     * than the original object.
+     */
+    @Test
+    public void testClone() {
+        CoordinateFormat format = new CoordinateFormat(Locale.CANADA, null);
+        CoordinateFormat clone  = format.clone();
+        assertNotSame("clone()", clone, format);
+        assertEquals("getSeparator()",  format.getSeparator(),  clone.getSeparator());
+        assertEquals("getDefaultCRS()", format.getDefaultCRS(), clone.getDefaultCRS());
     }
 }

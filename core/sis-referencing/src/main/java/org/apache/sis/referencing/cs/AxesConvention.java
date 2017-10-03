@@ -88,13 +88,13 @@ import org.apache.sis.measure.Units;
  * and for some polar projections among others.
  *
  * <p>Recent OGC standards mandate the use of axis order as defined by the authority. Oldest OGC standards used the
- * (<var>x</var>,<var>y</var>) axis order instead, ignoring any authority specification. Many softwares still use the
- * old (<var>x</var>,<var>y</var>) axis order, because it is easier to implement. Apache SIS supports both conventions.
+ * (<var>x</var>,<var>y</var>) axis order instead, ignoring any authority specification. Many software products still use
+ * the old (<var>x</var>,<var>y</var>) axis order, because it is easier to implement. Apache SIS supports both conventions.
  * By default, SIS creates CRS with axis order as defined by the authority. Those CRS are created by calls to the
  * {@link org.apache.sis.referencing.CRS#forCode(String)} method. The actual axis order can be verified after the CRS
  * creation with {@code System.out.println(crs)}. If (<var>x</var>,<var>y</var>) axis order is wanted for compatibility
- * with older OGC specifications or other softwares, CRS forced to "longitude first" axis order can be created using the
- * {@link #CONVENTIONALLY_ORIENTED} or {@link #NORMALIZED} enumeration value.</p>
+ * with older OGC specifications or other software products, CRS forced to "longitude first" axis order can be created
+ * using the {@link #CONVENTIONALLY_ORIENTED} or {@link #NORMALIZED} enumeration value.</p>
  *
  * <div class="section">Range of longitude values</div>
  * Most geographic CRS have a longitude axis defined in the [-180 … +180]° range. All map projections in Apache SIS are

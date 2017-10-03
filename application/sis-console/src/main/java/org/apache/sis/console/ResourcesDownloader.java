@@ -35,7 +35,7 @@ import java.sql.Connection;                             // For javadoc.
 import org.apache.sis.internal.system.DataDirectory;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.internal.util.X364;
-import org.apache.sis.internal.util.Fallback;
+import org.apache.sis.internal.referencing.Fallback;
 import org.apache.sis.setup.InstallationResources;
 
 import static org.apache.sis.internal.util.Constants.EPSG;

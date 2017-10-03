@@ -23,7 +23,7 @@ import java.util.Iterator;
 import java.util.ServiceLoader;
 import org.apache.sis.internal.storage.Resources;
 import org.apache.sis.internal.system.DefaultFactories;
-import org.apache.sis.internal.util.LazySet;
+import org.apache.sis.internal.referencing.LazySet;
 import org.apache.sis.util.ArgumentChecks;
 
 

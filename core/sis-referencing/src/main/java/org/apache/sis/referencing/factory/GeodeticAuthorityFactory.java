@@ -138,7 +138,7 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      * @return the namespaces recognized by this factory, or an empty set if none.
      */
     public Set<String> getCodeSpaces() {
-        final String authority = Citations.getCodeSpace(getAuthority());
+        final String authority = org.apache.sis.metadata.iso.citation.Citations.getCodeSpace(getAuthority());
         return (authority != null) ? Collections.singleton(authority) : Collections.<String>emptySet();
     }
 
