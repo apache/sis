@@ -16,11 +16,9 @@
  */
 package org.apache.sis.test;
 
-import org.apache.sis.internal.system.DataDirectory;
-
-// Branch-specific imports
 import java.nio.file.Path;
 import java.nio.file.Files;
+import org.apache.sis.internal.system.DataDirectory;
 
 
 /**
