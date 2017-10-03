@@ -211,7 +211,17 @@ public abstract class AbstractEnvelope implements Envelope, Emptiable {
      * @return {@code true} if the range meaning is {@code WRAPAROUND}.
      */
     static boolean isWrapAround(final CoordinateReferenceSystem crs, final int dimension) {
-        final CoordinateSystemAxis axis = getAxis(crs, dimension);
+        return isWrapAround(getAxis(crs, dimension));
+    }
+
+    /**
+     * Returns {@code true} if the given axis is non-null and has the
+     * {@link RangeMeaning#WRAPAROUND WRAPAROUND} range meaning.
+     *
+     * @param  axis  the axis to test, or {@code null}.
+     * @return {@code true} if the range meaning is {@code WRAPAROUND}.
+     */
+    static boolean isWrapAround(final CoordinateSystemAxis axis) {
         return (axis != null) && RangeMeaning.WRAPAROUND.equals(axis.getRangeMeaning());
     }
 
@@ -223,7 +233,7 @@ public abstract class AbstractEnvelope implements Envelope, Emptiable {
      * @return the spanning of the given axis.
      */
     static double getSpan(final CoordinateSystemAxis axis) {
-        if (axis != null && RangeMeaning.WRAPAROUND.equals(axis.getRangeMeaning())) {
+        if (isWrapAround(axis)) {
             return axis.getMaximumValue() - axis.getMinimumValue();
         }
         return Double.NaN;
@@ -336,9 +346,10 @@ public abstract class AbstractEnvelope implements Envelope, Emptiable {
 
     /**
      * Returns the minimal ordinate value for the specified dimension. In the typical case
-     * of envelopes <em>not</em> spanning the anti-meridian, this method returns the
+     * of non-empty envelopes <em>not</em> spanning the anti-meridian, this method returns the
      * {@link #getLower(int)} value verbatim. In the case of envelope spanning the anti-meridian,
      * this method returns the {@linkplain CoordinateSystemAxis#getMinimumValue() axis minimum value}.
+     * If the range in the given dimension is invalid, then this method returns {@code NaN}.
      *
      * @param  dimension  the dimension for which to obtain the ordinate value.
      * @return the minimal ordinate value at the given dimension.
@@ -350,16 +361,17 @@ public abstract class AbstractEnvelope implements Envelope, Emptiable {
         double lower = getLower(dimension);
         if (isNegative(getUpper(dimension) - lower)) {              // Special handling for -0.0
             final CoordinateSystemAxis axis = getAxis(getCoordinateReferenceSystem(), dimension);
-            lower = (axis != null) ? axis.getMinimumValue() : Double.NEGATIVE_INFINITY;
+            lower = isWrapAround(axis) ? axis.getMinimumValue() : Double.NaN;
         }
         return lower;
     }
 
     /**
      * Returns the maximal ordinate value for the specified dimension. In the typical case
-     * of envelopes <em>not</em> spanning the anti-meridian, this method returns the
+     * of non-empty envelopes <em>not</em> spanning the anti-meridian, this method returns the
      * {@link #getUpper(int)} value verbatim. In the case of envelope spanning the anti-meridian,
      * this method returns the {@linkplain CoordinateSystemAxis#getMaximumValue() axis maximum value}.
+     * If the range in the given dimension is invalid, then this method returns {@code NaN}.
      *
      * @param  dimension  the dimension for which to obtain the ordinate value.
      * @return the maximal ordinate value at the given dimension.
@@ -371,7 +383,7 @@ public abstract class AbstractEnvelope implements Envelope, Emptiable {
         double upper = getUpper(dimension);
         if (isNegative(upper - getLower(dimension))) {              // Special handling for -0.0
             final CoordinateSystemAxis axis = getAxis(getCoordinateReferenceSystem(), dimension);
-            upper = (axis != null) ? axis.getMaximumValue() : Double.POSITIVE_INFINITY;
+            upper = isWrapAround(axis) ? axis.getMaximumValue() : Double.NaN;
         }
         return upper;
     }
@@ -415,7 +427,7 @@ public abstract class AbstractEnvelope implements Envelope, Emptiable {
      * If no shift can be applied, returns {@code NaN}.
      */
     static double fixMedian(final CoordinateSystemAxis axis, final double median) {
-        if (axis != null && RangeMeaning.WRAPAROUND.equals(axis.getRangeMeaning())) {
+        if (isWrapAround(axis)) {
             final double minimum = axis.getMinimumValue();
             final double maximum = axis.getMaximumValue();
             final double cycle   = maximum - minimum;
@@ -466,7 +478,7 @@ public abstract class AbstractEnvelope implements Envelope, Emptiable {
      * @return a positive span, or NaN if the span can not be fixed.
      */
     static double fixSpan(final CoordinateSystemAxis axis, double span) {
-        if (axis != null && RangeMeaning.WRAPAROUND.equals(axis.getRangeMeaning())) {
+        if (isWrapAround(axis)) {
             final double cycle = axis.getMaximumValue() - axis.getMinimumValue();
             if (cycle > 0 && cycle != Double.POSITIVE_INFINITY) {
                 span += cycle;
@@ -1106,7 +1118,7 @@ public abstract class AbstractEnvelope implements Envelope, Emptiable {
      *
      * <div class="note"><b>Note:</b>
      * The {@code BOX} element is not part of the standard <cite>Well Known Text</cite> (WKT) format.
-     * However it is understood by many softwares, for example GDAL and PostGIS.</div>
+     * However it is understood by many software libraries, for example GDAL and PostGIS.</div>
      *
      * The string returned by this method can be {@linkplain GeneralEnvelope#GeneralEnvelope(CharSequence) parsed}
      * by the {@code GeneralEnvelope} constructor.

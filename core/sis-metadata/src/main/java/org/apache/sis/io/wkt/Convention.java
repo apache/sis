@@ -28,7 +28,7 @@ import org.apache.sis.metadata.iso.citation.Citations;
  * (also known as “WKT 2”), or whether to use the format previously defined in OGC 01-009 (referenced as “WKT 1”).
  *
  * <div class="section">WKT 1 variants</div>
- * The WKT 2 format should be parsed and formatted consistently by all softwares.
+ * The WKT 2 format should be parsed and formatted consistently by all software products.
  * But the WKT 1 format has been interpreted differently by various implementors.
  * Apache SIS can adapt itself to different WKT variants, sometime automatically. But some aspects can not be guessed.
  * One noticeable source of confusion is the unit of measurement of {@code PRIMEM[…]} and {@code PARAMETER[…]} elements:
@@ -37,8 +37,8 @@ import org.apache.sis.metadata.iso.citation.Citations;
  *   <li>The unit of the Prime Meridian shall be the angular unit of the enclosing Geographic CRS
  *       according the OGC 01-009 (<cite>Coordinate transformation services</cite>) specification.</li>
  *   <li>An older specification — <cite>Simple Features</cite> — was unclear on this matter and has been
- *       interpreted by many softwares as fixing the unit to decimal degrees.</li>
- *   <li>Some softwares support only (<var>longitude</var>, <var>latitude</var>) axis order
+ *       interpreted by many software products as fixing the unit to decimal degrees.</li>
+ *   <li>Some software products support only (<var>longitude</var>, <var>latitude</var>) axis order
  *       and ignore completely all {@code AXIS[…]} elements in the WKT.</li>
  * </ul>
  *
@@ -172,7 +172,7 @@ public enum Convention {
      * <p>Note that {@code AXIS[…]} elements still need to be well formed even when parsing a text with this convention.
      * Malformed axis elements will continue to cause a {@link java.text.ParseException} despite their content being ignored.</p>
      *
-     * <p>This convention may be useful for compatibility with some other softwares that do not handle axis order correctly.
+     * <p>This convention may be useful for compatibility with some other software products that do not handle axis order correctly.
      * But except when imposed by such compatibility reasons, this convention should be avoided as much as possible.</p>
      *
      * @since 0.6

@@ -605,7 +605,7 @@ public class Symbols implements Localized, Cloneable, Serializable {
      * of confusion when processing geographic data. Some applications just ignore any declared axis order
      * in favor of their own hard-coded (<var>longitude</var>, <var>latitude</var>) axis order.
      * Consequently, the presence of {@code AXIS[…]} elements in a WKT is an indication that the encoded
-     * object may not be understood as intended by some external softwares.
+     * object may not be understood as intended by some external software products.
      *
      * @param  wkt  the WKT to inspect.
      * @return {@code true} if the given WKT contains at least one instance of the {@code AXIS[…]} element.

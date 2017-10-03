@@ -977,7 +977,7 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
             final double upper = ordinates[iUpper];
             if (isNegative(upper - lower)) {
                 final CoordinateSystemAxis axis = getAxis(crs, i);
-                if (axis != null && RangeMeaning.WRAPAROUND.equals(axis.getRangeMeaning())) {
+                if (isWrapAround(axis)) {
                     ordinates[iLower] = axis.getMinimumValue();
                     ordinates[iUpper] = axis.getMaximumValue();
                     changed = true;

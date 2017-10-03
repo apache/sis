@@ -45,6 +45,7 @@ import org.apache.sis.internal.referencing.GeodeticObjectBuilder;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
 import org.apache.sis.internal.storage.MetadataBuilder;
 import org.apache.sis.internal.storage.io.IOUtilities;
+import org.apache.sis.internal.storage.io.RewindableLineReader;
 import org.apache.sis.internal.feature.Geometries;
 import org.apache.sis.internal.feature.MovingFeature;
 import org.apache.sis.internal.storage.Resources;
@@ -63,6 +64,7 @@ import org.apache.sis.setup.OptionKey;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.io.InvalidSeekException;
 import org.apache.sis.measure.Units;
 
 // Branch-dependent imports
@@ -235,7 +237,7 @@ final class Store extends URIDataStore implements FeatureSet {
             throw new UnsupportedStorageException(super.getLocale(), StoreProvider.NAME,
                     connector.getStorage(), connector.getOption(OptionKey.OPEN_OPTIONS));
         }
-        source = (r instanceof BufferedReader) ? (BufferedReader) r : new LineNumberReader(r);
+        source     = (r instanceof BufferedReader) ? (BufferedReader) r : new LineNumberReader(r);
         geometries = Geometries.implementation(connector.getOption(OptionKey.GEOMETRY_LIBRARY));
         dissociate = immediate;
         GeneralEnvelope envelope    = null;
@@ -243,7 +245,7 @@ final class Store extends URIDataStore implements FeatureSet {
         Foliation       foliation   = null;
         try {
             final List<String> elements = new ArrayList<>();
-            source.mark(1024);
+            source.mark(RewindableLineReader.BUFFER_SIZE);
             String line;
             while ((line = source.readLine()) != null) {
                 line = line.trim();
@@ -289,9 +291,9 @@ final class Store extends URIDataStore implements FeatureSet {
                     }
                 }
                 elements.clear();
-                source.mark(1024);
+                source.mark(RewindableLineReader.BUFFER_SIZE);
             }
-            source.reset();
+            source.reset();                 // Restore position to the first line after the header.
         } catch (IOException e) {
             throw new DataStoreException(getLocale(), StoreProvider.NAME, super.getDisplayName(), source).initCause(e);
         } catch (FactoryException e) {
@@ -304,6 +306,33 @@ final class Store extends URIDataStore implements FeatureSet {
         this.featureType = featureType;
         this.foliation   = foliation;
         this.dissociate |= (timeEncoding == null);
+    }
+
+    /**
+     * Moves the reader position to beginning of file, if possible. We try to use the mark defined by the constructor,
+     * which is set after the last header line. If the mark is no longer valid, then we have to create a new line reader.
+     * In this later case, we have to skip the header lines (i.e. we reproduce the constructor loop, but without parsing
+     * metadata).
+     */
+    private void rewind() throws IOException {
+        final BufferedReader reader = source;
+        if (!(reader instanceof RewindableLineReader)) {
+            throw new InvalidSeekException(Resources.forLocale(getLocale())
+                    .getString(Resources.Keys.StreamIsForwardOnly_1, getDisplayName()));
+        }
+        source = ((RewindableLineReader) reader).rewind();
+        if (source != reader) {
+            String line;
+            while ((line = source.readLine()) != null) {
+                line = line.trim();
+                if (!line.isEmpty()) {
+                    final char c = line.charAt(0);
+                    if (c != COMMENT && c != METADATA) break;
+                }
+                source.mark(RewindableLineReader.BUFFER_SIZE);
+            }
+            source.reset();         // Restore position to the first line after the header.
+        }
     }
 
     /**
@@ -654,7 +683,7 @@ final class Store extends URIDataStore implements FeatureSet {
      * @return a stream over all features in the CSV file.
      * @throws DataStoreException if an error occurred while creating the feature stream.
      *
-     * @todo Needs to reset the position when doing another pass on the features.
+     * @todo Need to reset the position when doing another pass on the features. See {@link #rewind()}.
      * @todo If sequential order, publish Feature as soon as identifier changed.
      */
     @Override

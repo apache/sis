@@ -41,7 +41,7 @@
  *
  * <div class="section">Apache SIS specific behavior</div>
  * The following operations have a behavior in Apache SIS which may be different
- * than the behavior found in other softwares. Those particularities apply only when the math transform is
+ * than the behavior found in other software products. Those particularities apply only when the math transform is
  * {@linkplain org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory#createParameterizedTransform
  * created directly}. Users do not need to care about them when the coordinate operation is
  * {@linkplain org.apache.sis.referencing.operation.DefaultCoordinateOperationFactory#createOperation

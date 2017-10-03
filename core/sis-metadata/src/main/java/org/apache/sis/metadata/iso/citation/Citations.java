@@ -689,7 +689,29 @@ public final class Citations extends Static {
      *
      * @since 0.6
      */
+    @SuppressWarnings("deprecation")
     public static String getUnicodeIdentifier(final Citation citation) {
         return org.apache.sis.internal.util.Citations.getUnicodeIdentifier(citation);
+    }
+
+    /**
+     * Infers a code space from the given citation, or returns {@code null} if none.
+     * This method is very close to {@link #getUnicodeIdentifier(Citation)}, except that it looks for
+     * {@link IdentifierSpace#getName()} before to scan the identifiers and titles. The result should
+     * be the same in most cases, except some cases like the {@link org.apache.sis.metadata.iso.citation.Citations}
+     * constant for {@code "Proj.4"} in which case this method returns {@code "Proj4"} instead of {@code null}.
+     *
+     * @param  citation  the citation for which to infer the code space, or {@code null}.
+     * @return a non-empty code space for the given citation without leading or trailing whitespaces,
+     *         or {@code null} if the given citation is null or does not have any Unicode identifier or title.
+     *
+     * @since 0.8
+     */
+    public static String getCodeSpace(final Citation citation) {
+        if (citation instanceof IdentifierSpace<?>) {
+            return ((IdentifierSpace<?>) citation).getName();
+        } else {
+            return getUnicodeIdentifier(citation);
+        }
     }
 }

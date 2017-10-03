@@ -42,7 +42,7 @@ import org.apache.sis.internal.metadata.ReferencingServices;
 import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.internal.util.Constants;
-import org.apache.sis.internal.util.LazySet;
+import org.apache.sis.internal.referencing.LazySet;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.factory.InvalidGeodeticParameterException;
 import org.apache.sis.referencing.operation.transform.AbstractMathTransform;

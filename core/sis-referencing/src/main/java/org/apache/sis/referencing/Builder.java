@@ -32,7 +32,7 @@ import org.opengis.metadata.citation.Citation;
 import org.opengis.referencing.IdentifiedObject;
 import org.apache.sis.metadata.iso.ImmutableIdentifier;
 import org.apache.sis.internal.system.DefaultFactories;
-import org.apache.sis.internal.util.Citations;
+import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.internal.referencing.DeprecatedCode;
 import org.apache.sis.internal.referencing.DeprecatedName;
 import org.apache.sis.util.iso.Types;
