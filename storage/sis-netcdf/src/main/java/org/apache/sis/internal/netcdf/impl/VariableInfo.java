@@ -196,12 +196,16 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
          * Verify if this variable is an enumeration. If yes, we remove the attributes that define the
          * enumeration since those attributes may be verbose and "pollute" the variable definition.
          */
-        String[] meanings = stringValues(attributes.remove(AttributeNames.FLAG_MEANINGS));
-        switch (meanings.length) {
-            case 0: meanings = null; break;
-            case 1: meanings = (String[]) CharSequences.split(meanings[0], ' '); break;
+        if (!attributes.isEmpty()) {    // For avoiding UnsupportedOperationException if unmodifiable map.
+            String[] meanings = stringValues(attributes.remove(AttributeNames.FLAG_MEANINGS));
+            switch (meanings.length) {
+                case 0: meanings = null; break;
+                case 1: meanings = (String[]) CharSequences.split(meanings[0], ' '); break;
+            }
+            this.meanings = meanings;
+        } else {
+            meanings = null;
         }
-        this.meanings = meanings;
     }
 
     /**

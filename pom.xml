@@ -87,25 +87,25 @@ Apache SIS is a free software, Java language library for developing geospatial a
 
   <mailingLists>
     <mailingList>
+      <name>User mailing list</name>
+      <subscribe>user-subscribe@sis.apache.org</subscribe>
+      <unsubscribe>user-unsubscribe@sis.apache.org</unsubscribe>
+      <post>user@sis.apache.org</post>
+      <archive>https://lists.apache.org/list.html?user@sis.apache.org</archive>
+    </mailingList>
+    <mailingList>
       <name>Development mailing list</name>
       <subscribe>dev-subscribe@sis.apache.org</subscribe>
       <unsubscribe>dev-unsubscribe@sis.apache.org</unsubscribe>
       <post>dev@sis.apache.org</post>
-      <archive>http://mail-archives.apache.org/mod_mbox/sis-dev/</archive>
+      <archive>https://lists.apache.org/list.html?dev@sis.apache.org</archive>
     </mailingList>
     <mailingList>
       <name>Commit mailing list</name>
       <subscribe>commits-subscribe@sis.apache.org</subscribe>
       <unsubscribe>commits-unsubscribe@sis.apache.org</unsubscribe>
       <post>commits@sis.apache.org</post>
-      <archive>http://mail-archives.apache.org/mod_mbox/sis-commits/</archive>
-    </mailingList>
-    <mailingList>
-      <name>User mailing list</name>
-      <subscribe>user-subscribe@sis.apache.org</subscribe>
-      <unsubscribe>user-unsubscribe@sis.apache.org</unsubscribe>
-      <post>user@sis.apache.org</post>
-      <archive>http://mail-archives.apache.org/mod_mbox/sis-user/</archive>
+      <archive>https://lists.apache.org/list.html?commits@sis.apache.org</archive>
     </mailingList>
   </mailingLists>
 
@@ -408,7 +408,7 @@ Apache SIS is a free software, Java language library for developing geospatial a
       <dependency>
         <groupId>com.esri.geometry</groupId>
         <artifactId>esri-geometry-api</artifactId>
-        <version>1.2.1</version>
+        <version>2.0.0</version>
         <optional>true</optional>
       </dependency>
       <dependency>
@@ -439,7 +439,7 @@ Apache SIS is a free software, Java language library for developing geospatial a
       <dependency>
         <groupId>org.postgresql</groupId>
         <artifactId>postgresql</artifactId>
-        <version>42.1.1.jre7</version>
+        <version>42.1.4.jre7</version>
         <scope>test</scope>
       </dependency>
 
@@ -459,7 +459,7 @@ Apache SIS is a free software, Java language library for developing geospatial a
       <dependency>
         <groupId>org.slf4j</groupId>
         <artifactId>slf4j-jdk14</artifactId>
-        <version>1.7.7</version>                <!-- Must matches the version used by netCDF. -->
+        <version>1.7.22</version>               <!-- Must matches the version used by netCDF. -->
         <scope>runtime</scope>                  <!-- Should never be needed at compile time.  -->
       </dependency>
     </dependencies>
@@ -485,7 +485,7 @@ Apache SIS is a free software, Java language library for developing geospatial a
          The last properties in this list depend on the Apache SIS branch.
        =================================================================== -->
   <properties>
-    <netcdf.version>4.6.9</netcdf.version>
+    <netcdf.version>4.6.10</netcdf.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <website.encoding>UTF-8</website.encoding>
     <website.locale>en</website.locale>
@@ -591,7 +591,7 @@ Apache SIS is a free software, Java language library for developing geospatial a
       <!-- Compile -->
       <plugin>
         <artifactId>maven-compiler-plugin</artifactId>
-        <version>3.6.2</version>
+        <version>3.7.0</version>
         <configuration>
           <source>${maven.compile.source}</source>
           <target>${maven.compile.target}</target>
@@ -607,7 +607,7 @@ Apache SIS is a free software, Java language library for developing geospatial a
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
-        <version>2.20</version>
+        <version>2.20.1</version>
         <configuration>
           <includes>
             <include>**/*TestSuite.java</include>
@@ -894,7 +894,7 @@ Apache SIS is a free software, Java language library for developing geospatial a
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>findbugs-maven-plugin</artifactId>
-        <version>3.0.4</version>
+        <version>3.0.5</version>
         <dependencies>
           <dependency>
             <groupId>org.apache.sis.core</groupId>

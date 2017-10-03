@@ -31,8 +31,6 @@ import org.apache.sis.util.Emptiable;
 
 import static java.lang.Double.NaN;
 import static java.lang.Double.isNaN;
-import static java.lang.Double.POSITIVE_INFINITY;
-import static java.lang.Double.NEGATIVE_INFINITY;
 import static java.lang.Double.doubleToLongBits;
 import static org.apache.sis.math.MathFunctions.isPositive;
 import static org.apache.sis.math.MathFunctions.isNegative;
@@ -387,7 +385,7 @@ public class Envelope2D extends Rectangle2D.Double implements Envelope, Emptiabl
         }
         if (isNegative(span)) {                                         // Special handling for -0.0
             final CoordinateSystemAxis axis = getAxis(crs, dimension);
-            return (axis != null) ? axis.getMinimumValue() : NEGATIVE_INFINITY;
+            return isWrapAround(axis) ? axis.getMinimumValue() : NaN;
         }
         return value;
     }
@@ -411,7 +409,7 @@ public class Envelope2D extends Rectangle2D.Double implements Envelope, Emptiabl
         }
         if (isNegative(span)) {                                         // Special handling for -0.0
             final CoordinateSystemAxis axis = getAxis(crs, dimension);
-            return (axis != null) ? axis.getMaximumValue() : POSITIVE_INFINITY;
+            return isWrapAround(axis) ? axis.getMaximumValue() : NaN;
         }
         return value + span;
     }

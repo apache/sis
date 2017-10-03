@@ -63,7 +63,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  * centered by default on (0°,0°) with no scale factor and no false easting/northing.
  * The projection is valid from 80°S to 84°N and on all the longitude range (±180°).
  * In this example, the <cite>"Longitude of natural origin"</cite> parameter is giving different aliases
- * for illustrating the case of different softwares or standards using different conventions.
+ * for illustrating the case of different software libraries or standards using different conventions.
  *
  * {@preformat java
  *   ParameterBuilder builder = new ParameterBuilder();

@@ -28,7 +28,7 @@ import org.apache.sis.internal.metadata.NameMeaning;
 import org.apache.sis.referencing.NamedIdentifier;
 import org.apache.sis.metadata.iso.citation.Citations;
 
-import static org.apache.sis.internal.util.Citations.getCodeSpace;
+import static org.apache.sis.metadata.iso.citation.Citations.getCodeSpace;
 
 
 /**

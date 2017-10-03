@@ -23,7 +23,9 @@ import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.referencing.ReferenceIdentifier;
 import org.apache.sis.internal.simple.CitationConstant;
+import org.apache.sis.internal.simple.SimpleCitation;
 import org.apache.sis.internal.util.Constants;
+import org.apache.sis.xml.IdentifierSpace;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
@@ -132,27 +134,63 @@ public final strictfp class CitationsTest extends TestCase {
     }
 
     /**
-     * Tests {@link org.apache.sis.internal.util.Citations#getCodeSpace(Citation)} on the constants
+     * Tests {@link Citations#getCodeSpace(Citation)} with some ignorable characters.
+     * Ignorable character used in this test are:
+     *
+     * <ul>
+     *   <li>200B: zero width space</li>
+     *   <li>2060: word joiner</li>
+     * </ul>
+     */
+    @Test
+    @DependsOnMethod("testGetIdentifier")
+    public void testGetCodeSpace() {
+        final SimpleCitation citation = new SimpleCitation(" Valid\u2060Id\u200Bentifier ");
+        assertEquals("ValidIdentifier", Citations.getCodeSpace(citation));
+
+        assertNull("Shall not be taken as a valid identifier.",
+                Citations.getCodeSpace(new SimpleCitation("Proj.4")));
+        assertEquals("Shall fallback on the the identifier space name.",
+                "TheProj4Space", Citations.getCodeSpace(new Proj4()));
+    }
+
+    /**
+     * A citation which is also an {@link IdentifierSpace}, for {@link #testGetCodeSpace()} purpose.
+     */
+    @SuppressWarnings("serial")
+    private static final class Proj4 extends SimpleCitation implements IdentifierSpace<Integer> {
+        Proj4() {
+            super("Proj.4");
+        }
+
+        @Override
+        public String getName() {
+            return "TheProj4Space";         // Intentionally a very different name than "Proj4".
+        }
+    }
+
+    /**
+     * Tests {@link Citations#getCodeSpace(Citation)} on the constants
      * declared in the {@link Citations} class.
      */
     @Test
-    @DependsOnMethod("testGetUnicodeIdentifier")
-    public void testGetCodeSpace() {
-        assertEquals("SIS",         org.apache.sis.internal.util.Citations.getCodeSpace(SIS));
-        assertEquals("OGC",         org.apache.sis.internal.util.Citations.getCodeSpace(WMS));
-        assertEquals("OGC",         org.apache.sis.internal.util.Citations.getCodeSpace(OGC));
-        assertEquals("IOGP",        org.apache.sis.internal.util.Citations.getCodeSpace(IOGP));
-        assertEquals("EPSG",        org.apache.sis.internal.util.Citations.getCodeSpace(EPSG));
-        assertEquals("ESRI",        org.apache.sis.internal.util.Citations.getCodeSpace(ESRI));
-        assertEquals("NetCDF",      org.apache.sis.internal.util.Citations.getCodeSpace(NETCDF));
-        assertEquals("GeoTIFF",     org.apache.sis.internal.util.Citations.getCodeSpace(GEOTIFF));
-        assertEquals("MapInfo",     org.apache.sis.internal.util.Citations.getCodeSpace(MAP_INFO));
-        assertEquals("ISBN",        org.apache.sis.internal.util.Citations.getCodeSpace(ISBN));
-        assertEquals("ISSN",        org.apache.sis.internal.util.Citations.getCodeSpace(ISSN));
-        assertEquals("Proj4",       org.apache.sis.internal.util.Citations.getCodeSpace(PROJ4));
-        assertEquals("S57",         org.apache.sis.internal.util.Citations.getCodeSpace(S57));
-        assertNull  ("ISO_19115-1", org.apache.sis.internal.util.Citations.getCodeSpace(ISO_19115.get(0)));
-        assertNull  ("ISO_19115-2", org.apache.sis.internal.util.Citations.getCodeSpace(ISO_19115.get(1)));
+    @DependsOnMethod({"testGetUnicodeIdentifier", "testGetIdentifier"})
+    public void testGetConstantCodeSpace() {
+        assertEquals("SIS",         Citations.getCodeSpace(SIS));
+        assertEquals("OGC",         Citations.getCodeSpace(WMS));
+        assertEquals("OGC",         Citations.getCodeSpace(OGC));
+        assertEquals("IOGP",        Citations.getCodeSpace(IOGP));
+        assertEquals("EPSG",        Citations.getCodeSpace(EPSG));
+        assertEquals("ESRI",        Citations.getCodeSpace(ESRI));
+        assertEquals("NetCDF",      Citations.getCodeSpace(NETCDF));
+        assertEquals("GeoTIFF",     Citations.getCodeSpace(GEOTIFF));
+        assertEquals("MapInfo",     Citations.getCodeSpace(MAP_INFO));
+        assertEquals("ISBN",        Citations.getCodeSpace(ISBN));
+        assertEquals("ISSN",        Citations.getCodeSpace(ISSN));
+        assertEquals("Proj4",       Citations.getCodeSpace(PROJ4));
+        assertEquals("S57",         Citations.getCodeSpace(S57));
+        assertNull  ("ISO_19115-1", Citations.getCodeSpace(ISO_19115.get(0)));
+        assertNull  ("ISO_19115-2", Citations.getCodeSpace(ISO_19115.get(1)));
     }
 
     /**

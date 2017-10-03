@@ -19,6 +19,7 @@ package org.apache.sis.feature;
 import java.util.Map;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.IdentityHashMap;
 import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
@@ -206,10 +207,14 @@ public class DefaultAssociationRole extends FieldType {
      * to feature <var>B</var> which has an association back to <var>A</var>. It may also be <var>A</var>
      * having an association to itself, <i>etc.</i>
      *
-     * @param  creating  the feature type in process of being constructed.
+     * @param  creating    the feature type in process of being constructed.
+     * @param  properties  {@code creating.getProperties(false)} given as a direct reference to the internal field,
+     *         without invoking {@code getProperties(…)}. We do that because {@code resolve(…)} is invoked while the
+     *         given {@code DefaultFeatureType} is under creation. Since {@code getProperties(…)} can be overridden,
+     *         invoking that method on {@code creating} may cause a failure with user code.
      * @return {@code true} if this association references a resolved feature type after this method call.
      */
-    final boolean resolve(final DefaultFeatureType creating) {
+    final boolean resolve(final DefaultFeatureType creating, final Collection<AbstractIdentifiedType> properties) {
         final FeatureType type = valueType;
         if (type instanceof NamedFeatureType) {
             FeatureType resolved = ((NamedFeatureType) type).resolved;
@@ -224,7 +229,7 @@ public class DefaultAssociationRole extends FieldType {
                      * the 'creating' feature itself. This is a little bit unusual, but not illegal.
                      */
                     final List<DefaultFeatureType> deferred = new ArrayList<>();
-                    resolved = search(creating, name, deferred);
+                    resolved = search(creating, properties, name, deferred);
                     if (resolved == null) {
                         /*
                          * Did not found the desired FeatureType in the 'creating' instance.
@@ -251,21 +256,25 @@ public class DefaultAssociationRole extends FieldType {
      * <p>Current implementation does not check that there is no duplicated names.
      * See {@link #deepSearch(List, GenericName)} for a rational.</p>
      *
-     * @param  feature   the feature in which to search.
-     * @param  name      the name of the feature to search.
-     * @param  deferred  where to store {@code FeatureType}s to be eventually used for a deep search.
+     * @param  feature     the feature in which to search.
+     * @param  properties  {@code feature.getProperties(false)}, or {@code null} for letting this method performing the call.
+     * @param  name        the name of the feature to search.
+     * @param  deferred    where to store {@code FeatureType}s to be eventually used for a deep search.
      * @return the feature of the given name, or {@code null} if none.
      */
     @SuppressWarnings("null")
-    private static DefaultFeatureType search(final DefaultFeatureType feature, final GenericName name,
-            final List<DefaultFeatureType> deferred)
+    private static DefaultFeatureType search(final DefaultFeatureType feature, Collection<? extends AbstractIdentifiedType> properties,
+            final GenericName name, final List<DefaultFeatureType> deferred)
     {
         /*
          * Search only in associations declared in the given feature, not in inherited associations.
          * The inherited associations will be checked in a separated loop below if we did not found
          * the request feature type in explicitly declared associations.
          */
-        for (final AbstractIdentifiedType property : feature.getProperties(false)) {
+        if (properties == null) {
+            properties = feature.getProperties(false);
+        }
+        for (final AbstractIdentifiedType property : properties) {
             if (property instanceof DefaultAssociationRole) {
                 final FeatureType valueType;
                 valueType = ((DefaultAssociationRole) property).valueType;
@@ -288,7 +297,7 @@ public class DefaultAssociationRole extends FieldType {
             if (name.equals(type.getName())) {
                 return type;
             }
-            type = search(type, name, deferred);
+            type = search(type, null, name, deferred);
             if (type != null) {
                 return type;
             }
@@ -297,7 +306,7 @@ public class DefaultAssociationRole extends FieldType {
     }
 
     /**
-     * Potentially invoked after {@code search(FeatureType, GenericName, List)} for searching
+     * Potentially invoked after {@code search(FeatureType, Collection, GenericName, List)} for searching
      * in associations of associations.
      *
      * <p>Current implementation does not check that there is no duplicated names. Even if we did so,
@@ -305,7 +314,7 @@ public class DefaultAssociationRole extends FieldType {
      * later. We rather put a warning in {@link #DefaultAssociationRole(Map, GenericName, int, int)}
      * javadoc.</p>
      *
-     * @param  deferred  the feature types collected by {@code search(FeatureType, GenericName, List)}.
+     * @param  deferred  the feature types collected by {@code search(FeatureType, Collection, GenericName, List)}.
      * @param  name      the name of the feature to search.
      * @return the feature of the given name, or {@code null} if none.
      */
@@ -315,7 +324,7 @@ public class DefaultAssociationRole extends FieldType {
             DefaultFeatureType valueType = deferred.get(i++);
             if (done.put(valueType, Boolean.TRUE) == null) {
                 deferred.subList(0, i).clear();                 // Discard previous value for making more room.
-                valueType = search(valueType, name, deferred);
+                valueType = search(valueType, null, name, deferred);
                 if (valueType != null) {
                     return valueType;
                 }

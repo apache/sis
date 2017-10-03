@@ -324,7 +324,7 @@ public class ImmutableIdentifier extends FormattableObject implements ReferenceI
          */
         value = properties.get(CODESPACE_KEY);
         if (value == null) {
-            codeSpace = org.apache.sis.internal.util.Citations.getCodeSpace(authority);
+            codeSpace = Citations.getCodeSpace(authority);
         } else if (value instanceof String) {
             codeSpace = trimWhitespaces((String) value);
         } else {

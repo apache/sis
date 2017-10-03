@@ -45,9 +45,9 @@ final class NamedFeatureType implements FeatureType, Serializable {
 
     /**
      * The feature type to use instead of the {@code NamedFeatureType}. Initially null, then set to the "real"
-     * feature type after {@link DefaultAssociationRole#resolve(DefaultFeatureType)} has been able to create it.
-     * This information is stored in case the same {@code NamedFeatureType} instance has been used in more than
-     * one {@link DefaultFeatureType}.
+     * feature type after {@link DefaultAssociationRole#resolve(DefaultFeatureType, Collection)} has been able
+     * to create it. This information is stored in case the same {@code NamedFeatureType} instance has been used
+     * in more than one {@link DefaultFeatureType}.
      */
     volatile FeatureType resolved;
 

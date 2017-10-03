@@ -346,7 +346,8 @@ public final class Citations extends Static {
      * <ul>
      *   <li>For information purpose (e.g. some {@code toString()} methods), use {@code getIdentifier(…, false)}.</li>
      *   <li>For WKT formatting, use {@code getIdentifier(…, true)} in order to preserve formatting characters.</li>
-     *   <li>For assigning a value to a {@code codeSpace} field, use {@link #getUnicodeIdentifier(Citation)}.</li>
+     *   <li>For assigning a value to a {@code codeSpace} field, use
+     *       {@link org.apache.sis.metadata.iso.citation.Citations#getUnicodeIdentifier(Citation)}.</li>
      * </ul>
      *
      * @param  citation  the citation for which to get the identifier, or {@code null}.
@@ -469,6 +470,9 @@ public final class Citations extends Static {
      *         or {@code null} if the given citation is null or does not have any Unicode identifier or title.
      *
      * @since 0.6
+     *
+     * @deprecated Implementation will be moved to {@link org.apache.sis.metadata.iso.citation.Citations}
+     *             after we moved the {@code sis-utility} code that use this method.
      */
     public static String getUnicodeIdentifier(final Citation citation) {
         final String identifier = getIdentifier(citation, true);
@@ -531,6 +535,9 @@ public final class Citations extends Static {
      *         or {@code null} if the given citation is null or does not have any Unicode identifier or title.
      *
      * @since 0.6
+     *
+     * @deprecated Implementation will be moved to {@link org.apache.sis.metadata.iso.citation.Citations}
+     *             after we moved the {@code sis-utility} code that use this method.
      */
     public static String getCodeSpace(final Citation citation) {
         if (citation instanceof IdentifierSpace<?>) {

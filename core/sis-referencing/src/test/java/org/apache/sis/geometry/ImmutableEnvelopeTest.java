@@ -35,7 +35,7 @@ import static org.apache.sis.geometry.AbstractEnvelopeTest.WGS84;
  * @since   0.3
  * @module
  */
-@DependsOn(AbstractEnvelopeTest.class)
+@DependsOn(ArrayEnvelopeTest.class)
 public final strictfp class ImmutableEnvelopeTest extends TestCase {
     /**
      * Tests {@code ImmutableEnvelope} serialization.

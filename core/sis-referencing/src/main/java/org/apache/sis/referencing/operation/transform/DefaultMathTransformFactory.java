@@ -53,7 +53,7 @@ import org.opengis.util.FactoryException;
 import org.opengis.util.NoSuchIdentifierException;
 
 import org.apache.sis.io.wkt.Parser;
-import org.apache.sis.internal.util.LazySet;
+import org.apache.sis.internal.referencing.LazySet;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.internal.referencing.Formulas;
 import org.apache.sis.internal.metadata.ReferencingServices;

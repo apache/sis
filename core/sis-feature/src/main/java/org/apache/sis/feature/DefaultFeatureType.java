@@ -560,7 +560,7 @@ public class DefaultFeatureType extends AbstractIdentifiedType implements Featur
             }
             for (final AbstractIdentifiedType property : toUpdate) {
                 if (property instanceof DefaultAssociationRole) {
-                    if (!((DefaultAssociationRole) property).resolve(this)) {
+                    if (!((DefaultAssociationRole) property).resolve(this, properties)) {
                         resolved = false;
                         continue;
                     }
