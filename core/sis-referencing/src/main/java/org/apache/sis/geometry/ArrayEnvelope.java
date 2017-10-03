@@ -459,7 +459,7 @@ scanNumber: while ((i += Character.charCount(c)) < length) {
         double lower = ordinates[i];
         if (isNegative(ordinates[i + (ordinates.length >>> 1)] - lower)) {      // Special handling for -0.0
             final CoordinateSystemAxis axis = getAxis(crs, dimension);
-            lower = (axis != null) ? axis.getMinimumValue() : Double.NEGATIVE_INFINITY;
+            lower = isWrapAround(axis) ? axis.getMinimumValue() : Double.NaN;
         }
         return lower;
     }
@@ -474,7 +474,7 @@ scanNumber: while ((i += Character.charCount(c)) < length) {
         double upper = ordinates[i + (ordinates.length >>> 1)];
         if (isNegative(upper - ordinates[i])) {                                 // Special handling for -0.0
             final CoordinateSystemAxis axis = getAxis(crs, dimension);
-            upper = (axis != null) ? axis.getMaximumValue() : Double.POSITIVE_INFINITY;
+            upper = isWrapAround(axis) ? axis.getMaximumValue() : Double.NaN;
         }
         return upper;
     }

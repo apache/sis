@@ -67,7 +67,7 @@ final class TypeNames {
         m.put("Real",            Double.class);
         m.put("Decimal",         Double.class);
         m.put("Integer",         Integer.class);
-    };
+    }
 
     /**
      * The "OGC" namespace.

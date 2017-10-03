@@ -31,6 +31,7 @@ import org.junit.BeforeClass;
  */
 @Suite.SuiteClasses({
     org.apache.sis.internal.metadata.AxisDirectionsTest.class,
+    org.apache.sis.internal.referencing.LazySetTest.class,
     org.apache.sis.internal.referencing.FormulasTest.class,
     org.apache.sis.internal.referencing.j2d.ShapeUtilitiesTest.class,
     org.apache.sis.internal.referencing.PositionalAccuracyConstantTest.class,
@@ -234,6 +235,7 @@ import org.junit.BeforeClass;
     org.apache.sis.geometry.DirectPosition1DTest.class,
     org.apache.sis.geometry.DirectPosition2DTest.class,
     org.apache.sis.geometry.AbstractEnvelopeTest.class,
+    org.apache.sis.geometry.ArrayEnvelopeTest.class,
     org.apache.sis.geometry.GeneralEnvelopeTest.class,
     org.apache.sis.geometry.SubEnvelopeTest.class,
     org.apache.sis.geometry.ImmutableEnvelopeTest.class,

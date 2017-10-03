@@ -408,9 +408,10 @@ public class FeatureTypeBuilder extends TypeBuilder {
 
     /**
      * Sets the parent types (or super-type) from which to inherit properties.
-     * If this method is not invoked, then the default value is to have no parent.
+     * If this method is not invoked, then the default value is no parent.
      *
      * @param  parents  the parent types from which to inherit properties, or an empty array if none.
+     *                  Null elements are ignored.
      * @return {@code this} for allowing method calls chaining.
      */
     public FeatureTypeBuilder setSuperTypes(final FeatureType... parents) {
@@ -419,6 +420,11 @@ public class FeatureTypeBuilder extends TypeBuilder {
         if (!superTypes.equals(asList)) {
             superTypes.clear();
             superTypes.addAll(asList);
+            for (int i=superTypes.size(); --i >= 0;) {
+                if (superTypes.get(i) == null) {
+                    superTypes.remove(i);
+                }
+            }
             clearCache();
         }
         return this;

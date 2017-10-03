@@ -14,9 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.internal.util;
+package org.apache.sis.referencing.factory;
 
 import java.util.Iterator;
+import org.apache.sis.internal.util.AbstractIterator;
 
 
 /**
@@ -36,7 +37,7 @@ import java.util.Iterator;
  * @since 0.7
  * @module
  */
-public final class LazySynchronizedIterator<E> extends AbstractIterator<E> {
+final class LazySynchronizedIterator<E> extends AbstractIterator<E> {
     /**
      * The providers of iterators. This array shall not be modified by {@code LazySynchronizedSetIterator},
      * since this is a direct reference to the array given to the constructor (not a copy).

@@ -46,13 +46,12 @@ import org.opengis.util.FactoryException;
 import org.opengis.util.InternationalString;
 import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.internal.util.AbstractIterator;
-import org.apache.sis.internal.util.Citations;
 import org.apache.sis.internal.util.DefinitionURI;
 import org.apache.sis.internal.util.CollectionsExt;
-import org.apache.sis.internal.util.LazySet;
-import org.apache.sis.internal.util.LazySynchronizedIterator;
 import org.apache.sis.internal.util.SetOfUnknownSize;
+import org.apache.sis.internal.referencing.LazySet;
 import org.apache.sis.internal.referencing.Resources;
+import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ArgumentChecks;
@@ -774,7 +773,7 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
              * Separate the version from the rest of the code. The version is optional. The code may have no room
              * for version (e.g. "EPSG:4326"), or specify an empty version (e.g. "EPSG::4326"). If the version is
              * equals to an empty string or to the "0" string, it will be considered as no version. Usage of 0 as
-             * a pseudo-version is a practice commonly found in other softwares.
+             * a pseudo-version is a practice commonly found in other software products.
              */
             int afterVersion = code.indexOf(DefaultNameSpace.DEFAULT_SEPARATOR, ++afterAuthority);
             start = CharSequences.skipLeadingWhitespaces(code, afterAuthority, afterVersion);

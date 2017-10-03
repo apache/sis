@@ -23,7 +23,6 @@ import org.opengis.util.LocalName;
 import org.opengis.util.ScopedName;
 import org.opengis.util.MemberName;
 import org.opengis.util.GenericName;
-import org.apache.sis.internal.jaxb.gml.CodeType;
 import org.apache.sis.util.iso.DefaultLocalName;
 import org.apache.sis.util.iso.DefaultTypeName;
 import org.apache.sis.util.iso.DefaultMemberName;
@@ -45,7 +44,7 @@ import org.apache.sis.util.resources.Errors;
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Guilhem Legal (Geomatys)
- * @version 0.5
+ * @version 0.8
  * @since   0.3
  * @module
  */
@@ -76,22 +75,29 @@ abstract class NameAdapter<ValueType extends NameAdapter<ValueType,BoundType>, B
 
     /**
      * Returns the {@code LocalName} or {@code ScopedName} to marshall. Returns {@code null} if the name
-     * is a {@link TypeName} or a {@link MemberName}, in order to use {@link #getNameType()} instead.
+     * is a {@link TypeName} or a {@link MemberName}, in order to use {@link #getName()} instead.
+     * Example:
+     *
+     * {@preformat xml
+     *   <gml:alias>
+     *     <gco:LocalName codeSpace=\"A code space\">A name in a scope</gco:LocalName>
+     *   </gml:alias>
+     * }
      *
      * @return the code for the current name, or {@code null} if none.
      */
     @XmlElementRef
-    public final CodeType getCodeType() {
+    public final NameValue getValue() {
         final GenericName name = this.name;
-        final CodeType code;
+        final NameValue code;
         if (name instanceof LocalName) {
             if (name instanceof TypeName || name instanceof MemberName) {
                 return null;
             } else {
-                code = new CodeType.LocalName();
+                code = new NameValue.Local();
             }
         } else if (name instanceof ScopedName) {
-            code = new CodeType.ScopedName();
+            code = new NameValue.Scoped();
         } else {
             return null;
         }
@@ -100,27 +106,24 @@ abstract class NameAdapter<ValueType extends NameAdapter<ValueType,BoundType>, B
     }
 
     /**
-     * Sets the value for the {@code LocalName} or {@code ScopedName}.
-     * This method is called at unmarshalling-time by JAXB.
-     *
-     * @param  code  the new name.
-     * @throws IllegalStateException if a name is already defined.
-     */
-    public final void setCodeType(final CodeType code) throws IllegalStateException {
-        ensureUndefined();
-        if (code != null) {
-            name = code.getName();
-        }
-    }
-
-    /**
      * Returns the {@code TypeName} or {@code MemberName} to marshall. Returns {@code null} if the name
-     * is a {@link LocalName} or {@link ScopedName}, in order to use {@link #getCodeType()} instead.
+     * is a {@link LocalName} or {@link ScopedName}, in order to use {@link #getValue()} instead.
+     * Example:
+     *
+     * {@preformat xml
+     *   <gml:alias>
+     *     <gco:TypeName>
+     *       <gco:aName>
+     *         <gco:CharacterString>An other local name</gco:CharacterString>
+     *       </gco:aName>
+     *     </gco:TypeName>
+     *   </gml:alias>
+     * }
      *
      * @return the current name, or {@code null} if none.
      */
     @XmlElementRef
-    public final DefaultLocalName getNameType() {
+    public final DefaultLocalName getName() {
         final GenericName name = this.name;
         if (name instanceof TypeName) {
             return DefaultTypeName.castOrCopy((TypeName) name);
@@ -132,13 +135,27 @@ abstract class NameAdapter<ValueType extends NameAdapter<ValueType,BoundType>, B
     }
 
     /**
+     * Sets the value for the {@code LocalName} or {@code ScopedName}.
+     * This method is called at unmarshalling-time by JAXB.
+     *
+     * @param  code  the new name.
+     * @throws IllegalStateException if a name is already defined.
+     */
+    public final void setValue(final NameValue code) throws IllegalStateException {
+        ensureUndefined();
+        if (code != null) {
+            name = code.getName();
+        }
+    }
+
+    /**
      * Sets the value from the {@code TypeName} or {@code MemberName}.
      * This method is called at unmarshalling-time by JAXB.
      *
      * @param  value  the new name.
      * @throws IllegalStateException if a name is already defined.
      */
-    public final void setNameType(final DefaultLocalName value) throws IllegalStateException {
+    public final void setName(final DefaultLocalName value) throws IllegalStateException {
         ensureUndefined();
         name = value;
     }
