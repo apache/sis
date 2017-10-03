@@ -17,18 +17,16 @@
 package org.apache.sis.internal.system;
 
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.InvalidPathException;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Messages;
-
-// Branch-dependent imports
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.InvalidPathException;
 
 
 /**
