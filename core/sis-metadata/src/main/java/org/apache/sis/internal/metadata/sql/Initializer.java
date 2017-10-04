@@ -58,6 +58,15 @@ import org.apache.sis.util.logging.Logging;
  *   META-INF/services/org.apache.sis.internal.metadata.sql.Initializer
  * }
  *
+ * {@code Initializer} implementations should define the following methods:
+ *
+ * <ul>
+ *   <li>{@link #createSchema(Connection)} — invoked when a new database is created.</li>
+ *   <li>{@link #dataSourceChanged()} — invoked when the data source changed.</li>
+ * </ul>
+ *
+ * All other methods are related to getting the {@code DataSource} instance, through JNDI or otherwise.
+ *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
  * @since   0.7
@@ -67,8 +76,11 @@ public abstract class Initializer {
     /**
      * Name of the database to open in the {@code $SIS_DATA/Databases} directory or the directory given by
      * the {@code derby.system.home} property.
+     *
+     * <div class="note"><b>Note:</b>
+     * this field is public for the needs of {@code non-free:sis-embedded-data} module.</div>
      */
-    private static final String DATABASE = "SpatialMetadata";
+    public static final String DATABASE = "SpatialMetadata";
 
     /**
      * The property name for the home of Derby databases.
@@ -449,10 +461,13 @@ public abstract class Initializer {
     /**
      * Returns {@code true} if the given exception is the one that we expect in successful shutdown of a Derby database.
      *
+     * <div class="note"><b>Note:</b>
+     * this method is public for the needs of {@code non-free:sis-embedded-data} module.</div>
+     *
      * @param  e  the exception thrown by Derby.
      * @return {@code true} if the exception indicates a successful shutdown.
      */
-    static boolean isSuccessfulShutdown(final SQLException e) {
+    public static boolean isSuccessfulShutdown(final SQLException e) {
         final String state = e.getSQLState();
         return "08006".equals(state) ||     // Database 'SpatialMetadata' shutdown.
                "XJ004".equals(state);       // Database 'SpatialMetadata' not found (may happen if we failed to open it in the first place).
