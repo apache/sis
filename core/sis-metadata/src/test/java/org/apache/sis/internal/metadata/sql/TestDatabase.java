@@ -50,7 +50,7 @@ import static org.junit.Assume.*;
  *
  * <p><b>References:</b>
  * <ul>
- *   <li><a href="https://db.apache.org/derby/docs/10.2/adminguide/radminembeddedserverex.html">Embedded server example</a></li>
+ *   <li><a href="https://db.apache.org/derby/docs/10.13/adminguide/radminembeddedserverex.html">Embedded server example</a></li>
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)

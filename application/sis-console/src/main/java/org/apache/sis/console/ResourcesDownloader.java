@@ -51,7 +51,7 @@ import static org.apache.sis.internal.util.Constants.EPSG;
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.7
+ * @version 0.8
  * @since   0.7
  * @module
  */
@@ -261,6 +261,26 @@ public class ResourcesDownloader extends InstallationResources {
     @Override
     public String[] getResourceNames(final String authority) throws IOException {
         return provider(authority, true).getResourceNames(authority);
+    }
+
+    /**
+     * Returns an installation resource for the given authority.
+     * If that question has not already been asked, this method asks to the user if (s)he accepts
+     * EPSG terms of use. If (s)he refuses, an {@link AccessDeniedException} will be thrown.
+     *
+     * @param  authority  one of the values returned by {@link #getAuthorities()}.
+     * @param  index      index of the resource to get, from 0 inclusive to
+     *         <code>{@linkplain #getResourceNames(String) getResourceNames}(authority).length</code> exclusive.
+     * @return the resource as an URL or any other type, at implementation choice.
+     * @throws IllegalArgumentException if the given {@code authority} argument is not one of the expected values.
+     * @throws IndexOutOfBoundsException if the given {@code resource} argument is out of bounds.
+     * @throws IOException if an error occurred while fetching the resource.
+     *
+     * @since 0.8
+     */
+    @Override
+    public Object getResource(final String authority, final int index) throws IOException {
+        return provider(authority, true).getResource(authority, index);
     }
 
     /**
