@@ -433,7 +433,7 @@ Apache SIS is a free software, Java language library for developing geospatial a
       <dependency>
         <groupId>org.apache.derby</groupId>
         <artifactId>derby</artifactId>
-        <version>10.13.1.1</version>
+        <version>10.12.1.1</version>            <!-- Last version compatible with JDK7.-->
       </dependency>
       <dependency>
         <groupId>org.hsqldb</groupId>
