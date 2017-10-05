@@ -39,8 +39,6 @@ import java.text.DateFormat;
 import java.text.FieldPosition;
 import java.nio.file.Path;
 import java.nio.charset.Charset;
-import java.security.AccessController;
-import java.security.PrivilegedAction;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.Exceptions;
@@ -382,11 +380,7 @@ fill:   for (int i=0; ; i++) {
                     if (sections.contains(PATHS)) {
                         nameKey = Vocabulary.Keys.DataDirectory;
                         try {
-                            value = AccessController.doPrivileged(new PrivilegedAction<String>() {
-                                @Override public String run() {
-                                    return System.getenv(DataDirectory.ENV);
-                                }
-                            });
+                            value = DataDirectory.getenv();
                         } catch (SecurityException e) {
                             value = e.toString();
                         }
