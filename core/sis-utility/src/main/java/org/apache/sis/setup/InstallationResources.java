@@ -42,7 +42,7 @@ import java.io.BufferedReader;
  * The embedded database is provided as a convenience for avoiding the need to define a {@code SIS_DATA} directory
  * on the local machine.
  *
- * <table>
+ * <table class="sis">
  *   <caption>Authorities supported by Apache SIS</caption>
  *   <tr><th>Authority</th>          <th>Provided by Maven module</th>                          <th>Used by class</th></tr>
  *   <tr><td>{@code "EPSG"}</td>     <td>{@code org.apache.sis.non-free:sis-epsg}</td>          <td>{@link org.apache.sis.referencing.factory.sql.EPSGFactory}</td></tr>
@@ -79,7 +79,7 @@ public abstract class InstallationResources {
      * The values recognized by SIS are listed below
      * (note that this list may be expanded in any future SIS versions):
      *
-     * <table>
+     * <table class="sis">
      *   <caption>Authorities supported by Apache SIS</caption>
      *   <tr><th>Authority</th>          <th>Resources</th></tr>
      *   <tr><td>{@code "EPSG"}</td>     <td>SQL installation scripts for EPSG geodetic dataset.</td></tr>
@@ -104,7 +104,7 @@ public abstract class InstallationResources {
      * Returns the terms of use of the resources distributed by the specified authority, or {@code null} if none.
      * The terms of use can be returned in either plain text or HTML.
      *
-     * <table>
+     * <table class="sis">
      *   <caption>Licenses for some supported authorities</caption>
      *   <tr>
      *     <th>Authority</th>
@@ -133,11 +133,11 @@ public abstract class InstallationResources {
      * Examples:
      *
      * <ul class="verbose">
-     *   <li><b>{@code "EPSG"}</b> authority:<br>
+     *   <li><b>{@code "EPSG"} authority:</b>
      *     the resource names are the filenames of all SQL scripts to execute. One of the first script creates tables,
      *     followed by a script that populates tables with data, followed by a script that creates foreigner keys.
      *   </li>
-     *   <li><b>{@code "Embedded"}</b> pseudo-authority:<br>
+     *   <li><b>{@code "Embedded"} pseudo-authority:</b>
      *     the database name, which is {@code "SpatialMetadata"}.
      *     When embedded, this database is read-only.
      *   </li>
