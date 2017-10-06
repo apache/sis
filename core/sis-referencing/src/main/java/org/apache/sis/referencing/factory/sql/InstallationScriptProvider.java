@@ -38,6 +38,7 @@ import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.setup.InstallationResources;
 import org.apache.sis.internal.referencing.Resources;
+import org.apache.sis.internal.referencing.Fallback;
 import org.apache.sis.internal.system.DataDirectory;
 import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.internal.util.CollectionsExt;
@@ -205,6 +206,7 @@ public abstract class InstallationScriptProvider extends InstallationResources {
      * @return a reader for the content of SQL script to execute.
      * @throws IllegalArgumentException if the given {@code authority} argument is not the expected value.
      * @throws IndexOutOfBoundsException if the given {@code resource} argument is out of bounds.
+     * @throws FileNotFoundException if the SQL script of the given name has not been found.
      * @throws IOException if an error occurred while creating the reader.
      */
     @Override
@@ -294,6 +296,7 @@ public abstract class InstallationScriptProvider extends InstallationResources {
      * @since   0.7
      * @module
      */
+    @Fallback
     static final class Default extends InstallationScriptProvider {
         /**
          * The directory containing the scripts, or {@code null} if it does not exist.
@@ -308,6 +311,8 @@ public abstract class InstallationScriptProvider extends InstallationResources {
 
         /**
          * Creates a default provider.
+         *
+         * @param locale  the locale for warning messages, if any.
          */
         Default(final Locale locale) throws IOException {
             super(Constants.EPSG,
