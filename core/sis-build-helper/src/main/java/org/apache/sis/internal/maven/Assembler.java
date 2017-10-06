@@ -26,6 +26,7 @@ import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
+import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.apache.maven.project.MavenProject;
 import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
 import org.apache.commons.compress.archivers.zip.ZipArchiveOutputStream;
@@ -36,29 +37,35 @@ import static org.apache.sis.internal.maven.Filenames.*;
 /**
  * Creates a ZIP files containing the content of the <code>application/sis-console/src/main/artifact</code>
  * directory together with the Pack200 file created by <code>BundleCreator</code>.
- * This mojo can be invoked from the command line as below:
+ * This mojo can be invoked from the command line in the {@code sis-console} module as below:
  *
- * <blockquote><code>mvn org.apache.sis.core:sis-build-helper:dist --non-recursive</code></blockquote>
- *
- * Do not forget the <code>--non-recursive</code> option, otherwise the Mojo will be executed many time.
+ * <blockquote><code>mvn package org.apache.sis.core:sis-build-helper:dist</code></blockquote>
  *
  * <p><b>Current limitation:</b>
  * The current implementation uses some hard-coded paths and filenames.
- * See the <cite>Distribution file and Pack200 bundle</cite> section in the <code>src/site/apt/index.apt</code>
- * file for more information.</p>
+ * See the <cite>Distribution file and Pack200 bundle</cite> section in
+ * <a href="http://sis.apache.org/build.html">Build from source</a> page
+ * for more information.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.7
+ * @version 0.8
  * @since   0.4
  * @module
  */
-@Mojo(name = "dist", defaultPhase = LifecyclePhase.INSTALL)
-public class Assembler extends AbstractMojo implements FilenameFilter {
+@Mojo(name = "dist", defaultPhase = LifecyclePhase.INSTALL, requiresDependencyResolution = ResolutionScope.COMPILE)
+public final class Assembler extends AbstractMojo implements FilenameFilter {
     /**
      * Project information (name, version, URL).
      */
     @Parameter(property="project", required=true, readonly=true)
     private MavenProject project;
+
+    /**
+     * Base directory of the module to compile.
+     * Artifact content is expected in the {@code "src/main/artifact"} subdirectory.
+     */
+    @Parameter(property="basedir", required=true, readonly=true)
+    private String baseDirectory;
 
     /**
      * The root directory (without the "<code>target/binaries</code>" sub-directory) where JARs
@@ -80,7 +87,7 @@ public class Assembler extends AbstractMojo implements FilenameFilter {
      */
     @Override
     public void execute() throws MojoExecutionException {
-        final File sourceDirectory = new File(rootDirectory, ARTIFACT_PATH);
+        final File sourceDirectory = new File(baseDirectory, ARTIFACT_PATH);
         if (!sourceDirectory.isDirectory()) {
             throw new MojoExecutionException("Directory not found: " + sourceDirectory);
         }
@@ -97,7 +104,7 @@ public class Assembler extends AbstractMojo implements FilenameFilter {
                  * have been zipped.  Now generate the Pack200 file and zip it directly (without creating
                  * a temporary "sis.pack.gz" file).
                  */
-                final Packer packer = new Packer(project.getName(), version, targetDirectory);
+                final Packer packer = new Packer(project.getName(), version, BundleCreator.files(project), targetDirectory);
                 final ZipArchiveEntry entry = new ZipArchiveEntry(
                         artifactBase + '/' + LIB_DIRECTORY + '/' + FATJAR_FILE + PACK_EXTENSION);
                 entry.setMethod(ZipArchiveEntry.STORED);

@@ -18,11 +18,15 @@ package org.apache.sis.internal.maven;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.LinkedHashSet;
+import java.util.Set;
+import org.apache.maven.artifact.Artifact;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
+import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.apache.maven.project.MavenProject;
 
 import static org.apache.sis.internal.maven.Filenames.*;
@@ -38,16 +42,17 @@ import static org.apache.sis.internal.maven.Filenames.*;
  *
  * <p><b>Current limitation:</b>
  * The current implementation uses some hard-coded paths and filenames.
- * See the <cite>Distribution file and Pack200 bundle</cite> section in the <code>src/site/apt/index.apt</code>
- * file for more information.</p>
+ * See the <cite>Distribution file and Pack200 bundle</cite> section in
+ * <a href="http://sis.apache.org/build.html">Build from source</a> page
+ * for more information.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.7
+ * @version 0.8
  * @since   0.3
  * @module
  */
-@Mojo(name = "pack", defaultPhase = LifecyclePhase.INSTALL)
-public class BundleCreator extends AbstractMojo {
+@Mojo(name = "pack", defaultPhase = LifecyclePhase.INSTALL, requiresDependencyResolution = ResolutionScope.COMPILE)
+public final class BundleCreator extends AbstractMojo {
     /**
      * Project information (name, version, URL).
      */
@@ -80,10 +85,30 @@ public class BundleCreator extends AbstractMojo {
         }
         final String version = project.getVersion();
         try {
-            final Packer packer = new Packer(project.getName(), version, targetDirectory);
+            final Packer packer = new Packer(project.getName(), version, files(project), targetDirectory);
             packer.preparePack200(FINALNAME_PREFIX + version + ".jar").pack();
         } catch (IOException e) {
             throw new MojoExecutionException(e.getLocalizedMessage(), e);
         }
+    }
+
+    /**
+     * Returns all files to include for the given Maven project.
+     */
+    static Set<File> files(final MavenProject project) throws MojoExecutionException {
+        final Set<File> files = new LinkedHashSet<>();
+        files.add(project.getArtifact().getFile());
+        for (final Artifact dep : project.getArtifacts()) {
+            final String scope = dep.getScope();
+            if (Artifact.SCOPE_COMPILE.equalsIgnoreCase(scope) ||
+                Artifact.SCOPE_RUNTIME.equalsIgnoreCase(scope))
+            {
+                files.add(dep.getFile());
+            }
+        }
+        if (files.remove(null)) {
+            throw new MojoExecutionException("Invocation of this MOJO shall be done together with a \"package\" Maven phase.");
+        }
+        return files;
     }
 }

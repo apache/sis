@@ -18,11 +18,8 @@ package org.apache.sis.internal.maven;
 
 import java.util.Map;
 import java.util.Set;
-import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.io.File;
-import java.io.FilenameFilter;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 
 import static org.apache.sis.internal.maven.Filenames.*;
@@ -38,11 +35,16 @@ import static org.apache.sis.internal.maven.Filenames.*;
  * @since   0.3
  * @module
  */
-final class Packer implements FilenameFilter {
+final class Packer {
     /**
      * The project name and version to declare in the manifest file, or {@code null} if none.
      */
     private final String projectName, version;
+
+    /**
+     * JAR files of the main project together with its dependencies.
+     */
+    private final Set<File> files;
 
     /**
      * The Maven target directory. Shall contain the {@code "binaries"} sub-directory,
@@ -51,38 +53,18 @@ final class Packer implements FilenameFilter {
     private final File targetDirectory;
 
     /**
-     * The directory of input JAR files. Shall be {@code "target/binaries"}.
-     */
-    private final File binariesDirectory;
-
-    /**
      * Creates a packer.
      *
      * @param  projectName      the project name to declare in the manifest file, or {@code null} if none.
      * @param  version          the project version to declare in the manifest file, or {@code null} if none.
+     * @param  files            the JAR files of the main project together with its dependencies.
      * @param  targetDirectory  the Maven target directory.
-     * @throws FileNotFoundException if the {@code target/binaries} directory is not found.
      */
-    Packer(final String projectName, final String version, final File targetDirectory) throws FileNotFoundException {
-        this.projectName = projectName;
-        this.version     = version;
+    Packer(final String projectName, final String version, final Set<File> files, final File targetDirectory) {
+        this.projectName     = projectName;
+        this.version         = version;
+        this.files           = files;
         this.targetDirectory = targetDirectory;
-        this.binariesDirectory = new File(targetDirectory, BINARIES_DIRECTORY);
-        if (!binariesDirectory.isDirectory()) {
-            throw new FileNotFoundException("Directory not found: " + binariesDirectory);
-        }
-    }
-
-    /**
-     * Filter the input JAR files. This is for internal usage by {@link #createOutputJAR(String)} only.
-     *
-     * @param  directory  the directory (ignored).
-     * @param  name       the filename.
-     * @return {@code true} if the given filename ends with {@code ".jar"}.
-     */
-    @Override
-    public boolean accept(final File directory, final String name) {
-        return name.endsWith(".jar");
     }
 
     /**
@@ -90,14 +72,8 @@ final class Packer implements FilenameFilter {
      * All input JAR files are opened by this method. They will need to be closed by {@link PackInput#close()}.
      */
     private Map<File,PackInput> getInputJARs() throws IOException {
-        final Set<String> filenames = JarCollector.loadDependencyList(new File(binariesDirectory, CONTENT_FILE));
-        filenames.addAll(Arrays.asList(binariesDirectory.list(this)));
-        final Map<File,PackInput> inputJARs = new LinkedHashMap<>(filenames.size() * 4/3);
-        for (final String filename : filenames) {
-            File file = new File(filename);
-            if (!file.isAbsolute()) {
-                file = new File(binariesDirectory, filename);
-            }
+        final Map<File,PackInput> inputJARs = new LinkedHashMap<>(files.size() * 4/3);
+        for (final File file : files) {
             if (!file.isFile() || !file.canRead()) {
                 throw new IllegalArgumentException("Not a file or can not read: " + file);
             }
