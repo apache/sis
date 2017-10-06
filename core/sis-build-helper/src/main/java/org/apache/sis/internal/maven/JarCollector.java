@@ -262,10 +262,10 @@ public final class JarCollector extends AbstractMojo implements FileFilter {
 
     /**
      * Loads the {@value #CONTENT_FILE} from the given directory, if it exists.
-     * Otherwise returns an empty but modifiable set. This method is invoked only on
+     * Otherwise returns an empty but modifiable set. This method is invoked on
      * platforms that do not support hard links.
      */
-    static Set<String> loadDependencyList(final File dependenciesFile) throws IOException {
+    private static Set<String> loadDependencyList(final File dependenciesFile) throws IOException {
         final Set<String> dependencies = new LinkedHashSet<>();
         if (dependenciesFile.exists()) {
             try (BufferedReader in = new BufferedReader(new FileReader(dependenciesFile))) {

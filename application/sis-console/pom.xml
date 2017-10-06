@@ -129,6 +129,12 @@ Console application.
       <version>${project.version}</version>
       <scope>runtime</scope>
     </dependency>
+    <dependency>
+      <groupId>org.apache.sis.storage</groupId>
+      <artifactId>sis-gdal</artifactId>
+      <version>${project.version}</version>
+      <scope>runtime</scope>
+    </dependency>
 
     <!-- Test dependencies -->
     <dependency>
