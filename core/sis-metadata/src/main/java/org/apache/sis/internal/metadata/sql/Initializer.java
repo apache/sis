@@ -275,17 +275,16 @@ public abstract class Initializer {
              * Only if the SIS_DATA environment variable is not set, verify first if the 'sis-embedded-data' module is
              * on the classpath. Note that if SIS_DATA is defined and valid, it has precedence.
              */
-            final boolean create;
+            boolean create = false;
             final boolean isEnvClear = DataDirectory.isEnvClear();
-            if (isEnvClear && (source = embedded()) != null) {
-                create = false;
-            } else {
+            if (!isEnvClear || (source = embedded()) == null) {
                 final String home = AccessController.doPrivileged(new PrivilegedAction<String>() {
                     @Override public String run() {
                         return System.getProperty(DERBY_HOME_KEY);
                     }
                 });
                 final Path dir = DataDirectory.DATABASES.getDirectory();
+                final String dbURL;
                 if (dir != null) {
                     Path path = dir.resolve(DATABASE);
                     if (home != null) try {
@@ -301,25 +300,35 @@ public abstract class Initializer {
                         // The path can not be relativized. This is okay.
                         Logging.recoverableException(Logging.getLogger(Loggers.SQL), Initializer.class, "getDataSource", e);
                     }
+                    path   = path.normalize();
+                    create = !Files.exists(path);
+                    dbURL  = path.toString().replace(path.getFileSystem().getSeparator(), "/");
+                } else if (home != null) {
+                    final Path path = Paths.get(home);
+                    create = !Files.exists(path.resolve(DATABASE)) && Files.isDirectory(path);
+                    dbURL  = DATABASE;
+                } else {
+                    create = true;
+                    dbURL  = null;
+                }
+                /*
+                 * If we need to create the database, verify if an embedded database is available instead.
+                 * We perform this check only if we have not already checked for embedded database at the
+                 * beginning of this block.
+                 */
+                if (create & !isEnvClear) {
+                    source = embedded();
+                    create = (source == null);
+                }
+                if (source == null) {
+                    if (dbURL == null) {
+                        return null;
+                    }
                     /*
                      * Create the Derby data source using the context class loader if possible,
                      * or otherwise a URL class loader to the JavaDB distributed with the JDK.
                      */
-                    path   = path.normalize();
-                    create = !Files.exists(path);
-                    source = forJavaDB(path.toString().replace(path.getFileSystem().getSeparator(), "/"));
-                } else if (home != null) {
-                    final Path path = Paths.get(home);
-                    create = !Files.exists(path.resolve(DATABASE)) && Files.isDirectory(path);
-                    source = forJavaDB(DATABASE);
-                } else if (!isEnvClear) {
-                    create = false;
-                    source = embedded();        // Try only if we did not already tried after above JNDI check.
-                    if (source == null) {
-                        return null;
-                    }
-                } else {
-                    return null;
+                    source = forJavaDB(dbURL);
                 }
             }
             /*

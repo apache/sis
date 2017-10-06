@@ -26,6 +26,7 @@ import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
 import javax.sql.DataSource;
 import java.io.IOException;
+import java.io.FileNotFoundException;
 import org.opengis.util.NameFactory;
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.crs.CRSFactory;
@@ -366,7 +367,9 @@ public class EPSGFactory extends ConcurrentAuthorityFactory<EPSGDataAccess> impl
      * See <a href="https://issues.apache.org/jira/browse/LEGAL-183">LEGAL-183</a> for more information.</p>
      *
      * @param  connection  connection to the database where to create the EPSG schema.
-     * @throws IOException if the SQL script can not be found or an I/O error occurred while reading them.
+     * @throws FileNotFoundException if a SQL script has not been found,
+     *         typically because a required resource is not on the classpath.
+     * @throws IOException  if an I/O error occurred while reading a SQL script.
      * @throws SQLException if an error occurred while writing to the database.
      *
      * @see InstallationScriptProvider

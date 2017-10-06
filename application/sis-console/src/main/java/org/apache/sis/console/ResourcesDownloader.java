@@ -297,6 +297,7 @@ public class ResourcesDownloader extends InstallationResources {
      * @return a reader for the installation script content.
      * @throws IllegalArgumentException if the given {@code authority} argument is not one of the expected values.
      * @throws IndexOutOfBoundsException if the given {@code resource} argument is out of bounds.
+     * @throws FileNotFoundException if the SQL script of the given name has not been found.
      * @throws IOException if an error occurred while creating the reader.
      */
     @Override

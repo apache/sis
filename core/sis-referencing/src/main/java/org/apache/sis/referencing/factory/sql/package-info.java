@@ -35,6 +35,8 @@
  *       a JDBC connection for the {@code "jdbc:derby:$SIS_DATA/Databases/SpatialMetadata"} URL.</li>
  *   <li>If the {@code "derby.system.home"} {@linkplain java.lang.System#getProperty(String) property} is defined,
  *       a JDBC connection for the {@code "jdbc:derby:SpatialMetadata"} URL.</li>
+ *   <li>If the {@code org.apache.sis.non-free:sis-embedded-data} module is present on the classpath,
+ *       a read-only connection to the database in the JAR file.</li>
  * </ol>
  *
  * In choice 1, the JDBC driver must be provided by the application container (e.g. Apache Tomcat).
