@@ -31,7 +31,7 @@ import static org.apache.sis.internal.maven.Filenames.*;
  * or listed in the {@code target/binaries/content.txt} file.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.4
+ * @version 0.8
  * @since   0.3
  * @module
  */
