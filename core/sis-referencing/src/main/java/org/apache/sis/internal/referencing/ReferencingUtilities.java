@@ -33,6 +33,8 @@ import org.opengis.referencing.crs.*;
 import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.datum.Ellipsoid;
 import org.opengis.referencing.datum.PrimeMeridian;
+import org.opengis.referencing.datum.VerticalDatum;
+import org.opengis.referencing.datum.VerticalDatumType;
 import org.opengis.referencing.operation.CoordinateOperationFactory;
 import org.opengis.util.FactoryException;
 import org.apache.sis.internal.system.DefaultFactories;
@@ -170,6 +172,30 @@ public final class ReferencingUtilities extends Static {
             }
         }
         return sameContent;
+    }
+
+    /**
+     * Returns {@code true} if the type of the given datum is ellipsoidal. A vertical datum is not allowed
+     * to be ellipsoidal according ISO 19111, but Apache SIS relaxes this restriction in some limited cases,
+     * for example when parsing a string in the legacy WKT 1 format. Apache SIS should not expose those
+     * vertical heights as much as possible, and instead try to combine them with three-dimensional
+     * geographic or projected CRS as soon as it can.
+     *
+     * @param  datum  the datum to test, or {@code null} if none.
+     * @return {@code true} if the given datum is non null and of ellipsoidal type.
+     *
+     * @see org.apache.sis.internal.metadata.VerticalDatumTypes#ELLIPSOIDAL
+     *
+     * @since 0.8
+     */
+    public static boolean isEllipsoidalHeight(final VerticalDatum datum) {
+        if (datum != null) {
+            final VerticalDatumType type = datum.getVerticalDatumType();
+            if (type != null) {
+                return "ELLIPSOIDAL".equalsIgnoreCase(type.name());
+            }
+        }
+        return false;
     }
 
     /**
@@ -327,13 +353,16 @@ public final class ReferencingUtilities extends Static {
      */
     public static StringBuilder toPropertyName(final Class<?> base, final Class<?> type) {
         final UML uml = type.getAnnotation(UML.class);
-        if (uml != null && uml.specification() == Specification.ISO_19111) {
-            final String name = uml.identifier();
-            final int length = name.length();
-            final StringBuilder buffer = new StringBuilder(length).append(name, name.indexOf('_') + 1, length);
-            if (buffer.length() != 0) {
-                buffer.setCharAt(0, Character.toLowerCase(buffer.charAt(0)));
-                return buffer;
+        if (uml != null) {
+            final Specification spec = uml.specification();
+            if (spec == Specification.ISO_19111 || spec == Specification.ISO_19111_2) {
+                final String name = uml.identifier();
+                final int length = name.length();
+                final StringBuilder buffer = new StringBuilder(length).append(name, name.indexOf('_') + 1, length);
+                if (buffer.length() != 0) {
+                    buffer.setCharAt(0, Character.toLowerCase(buffer.charAt(0)));
+                    return buffer;
+                }
             }
         }
         for (final Class<?> c : type.getInterfaces()) {

@@ -215,7 +215,7 @@ public final strictfp class DefaultCoordinateOperationFactoryTest extends MathTr
                 "  VerticalCRS[“Ellipsoidal height”,\n" +
                 "    VerticalDatum[“Ellipsoid”],\n" +
                 "    CS[vertical, 1],\n" +
-                "      Axis[“Ellipsoidal height (h)”, up],\n" +
+                "      Axis[“Geoidal height (H)”, up],\n" +
                 "      Unit[“metre”, 1]],\n" +
                 "  TimeCRS[“Modified Julian”,\n" +
                 "    TimeDatum[“Modified Julian”, TimeOrigin[1858-11-17T00:00:00.0Z]],\n" +

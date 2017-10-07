@@ -35,6 +35,7 @@ import org.opengis.referencing.crs.ProjectedCRS;
 import org.opengis.referencing.crs.EngineeringCRS;
 import org.opengis.referencing.crs.VerticalCRS;
 import org.opengis.referencing.crs.TemporalCRS;
+import org.opengis.referencing.crs.ParametricCRS;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.apache.sis.referencing.cs.AxesConvention;
@@ -42,6 +43,7 @@ import org.apache.sis.referencing.cs.DefaultCompoundCS;
 import org.apache.sis.referencing.AbstractReferenceSystem;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.internal.metadata.WKTKeywords;
+import org.apache.sis.internal.referencing.Resources;
 import org.apache.sis.internal.referencing.WKTUtilities;
 import org.apache.sis.internal.referencing.ReferencingUtilities;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
@@ -107,7 +109,7 @@ import org.apache.sis.io.wkt.Convention;
  * SIS factories and static constants.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 0.7
+ * @version 0.8
  *
  * @see org.apache.sis.referencing.factory.GeodeticAuthorityFactory#createCompoundCRS(String)
  *
@@ -184,13 +186,58 @@ public class DefaultCompoundCRS extends AbstractCRS implements CompoundCRS {
      *
      * @param  properties  the properties to be given to the coordinate reference system.
      * @param  components  the sequence of coordinate reference systems making this compound CRS.
+     * @throws IllegalArgumentException if the given array does not contain at least two components,
+     *         or if two consecutive components are a geographic CRS with an ellipsoidal height.
      *
      * @see org.apache.sis.referencing.factory.GeodeticObjectFactory#createCompoundCRS(Map, CoordinateReferenceSystem...)
      */
     public DefaultCompoundCRS(final Map<String,?> properties, final CoordinateReferenceSystem... components) {
         super(properties, createCoordinateSystem(properties, components));
         setComponents(Arrays.asList(components));
-        // 'singles' is computed by the above method call.
+        /*
+         * 'singles' is computed by the above method call. Now verify that we do not have an ellipsoidal
+         * height with a geographic or projected CRS (see https://issues.apache.org/jira/browse/SIS-303).
+         * Note that this is already be done if the given array does not contain nested CompoundCRS.
+         */
+        if (singles != this.components) {
+            verify(properties, singles.toArray(new SingleCRS[singles.size()]));
+        }
+    }
+
+    /**
+     * Verifies that the given array does not contain duplicated horizontal or vertical components.
+     * Verifies also that if there is an horizontal component, then there is no ellipsoidal height
+     * defined separately.
+     *
+     * @param  properties  the user-specified properties, for determining the locale of error messages.
+     * @param  components  the components to verify.
+     */
+    private static void verify(final Map<String,?> properties, final CoordinateReferenceSystem[] components) {
+        int allTypes = 0;
+        int isProjected = 0;                            // 0 for false, 1 for true.
+        boolean isEllipsoidalHeight = false;
+        for (final CoordinateReferenceSystem component : components) {
+            final int type;
+            if (component instanceof GeodeticCRS) {
+                type = 1;   // Must match the number used in Resources.Keys.DuplicatedSpatialComponents_1.
+            } else if (component instanceof ProjectedCRS) {
+                isProjected = 1;
+                type = 1;   // Intentionally same number than for GeographicCRS case.
+            } else if (component instanceof VerticalCRS) {
+                isEllipsoidalHeight = ReferencingUtilities.isEllipsoidalHeight(((VerticalCRS) component).getDatum());
+                type = 2;   // Must match the number used in Resources.Keys.DuplicatedSpatialComponents_1.
+            } else {
+                continue;   // Skip other types. In particular, we allow 2 temporal CRS (used in meteorology).
+            }
+            if (allTypes == (allTypes |= type)) {
+                throw new IllegalArgumentException(Resources.forProperties(properties)
+                        .getString(Resources.Keys.DuplicatedSpatialComponents_1, type));
+            }
+        }
+        if (isEllipsoidalHeight && ((allTypes & 1) != 0)) {
+            throw new IllegalArgumentException(Resources.forProperties(properties)
+                    .getString(Resources.Keys.EllipsoidalHeightNotAllowed_1, isProjected));
+        }
     }
 
     /**
@@ -204,6 +251,7 @@ public class DefaultCompoundCRS extends AbstractCRS implements CompoundCRS {
             final CoordinateReferenceSystem[] components)
     {
         ArgumentChecks.ensureNonNull("components", components);
+        verify(properties, components);
         if (components.length < 2) {
             throw new IllegalArgumentException(Errors.getResources(properties).getString(
                     Errors.Keys.TooFewArguments_2, 2, components.length));
@@ -296,7 +344,6 @@ public class DefaultCompoundCRS extends AbstractCRS implements CompoundCRS {
      *
      * @see #getComponents()
      */
-    @SuppressWarnings("SuspiciousToArrayCall")
     private void setComponents(final List<? extends CoordinateReferenceSystem> crs) {
         if (setSingleComponents(crs)) {
             components = singles;                           // Shares the same list.
@@ -407,7 +454,7 @@ public class DefaultCompoundCRS extends AbstractCRS implements CompoundCRS {
                     return false;
                 }
                 case 1: {
-                    if (crs instanceof VerticalCRS) {   // TODO: accept also ParametricCRS here.
+                    if (crs instanceof VerticalCRS || crs instanceof ParametricCRS) {
                         state = 2; continue;    // Next CRS can only be temporal.
                     }
                     // Fallthrough (the current CRS may be temporal)
