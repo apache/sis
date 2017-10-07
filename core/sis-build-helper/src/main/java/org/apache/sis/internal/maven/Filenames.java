@@ -48,7 +48,8 @@ final class Filenames {
 
     /**
      * The name of the file inside {@value #BINARIES_DIRECTORY} where to list SIS JAR files and their
-     * dependencies on platforms that do not support hard links.
+     * dependencies on platforms that do not support hard links. Also the file to ignore when copying
+     * entries in a ZIP file.
      */
     static final String CONTENT_FILE = "content.txt";
 
