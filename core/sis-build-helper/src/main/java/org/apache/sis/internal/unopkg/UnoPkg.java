@@ -44,7 +44,7 @@ import static java.util.jar.Pack200.Packer;
  * @since   0.8
  * @module
  */
-@Mojo(name = "unopkg", defaultPhase = LifecyclePhase.PACKAGE, requiresDependencyResolution = ResolutionScope.COMPILE)
+@Mojo(name = "unopkg", defaultPhase = LifecyclePhase.PACKAGE, requiresDependencyResolution = ResolutionScope.COMPILE_PLUS_RUNTIME)
 public final class UnoPkg extends AbstractMojo implements FilenameFilter {
     /**
      * The subdirectory (relative to {@link #baseDirectory}) where the UNO files are expected.

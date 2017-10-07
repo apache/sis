@@ -53,18 +53,29 @@ final class Packer {
     private final File targetDirectory;
 
     /**
+     * The map where to store native files found during iteration over the JAR entries.
+     * Keys are filename without the {@value #NATIVE} prefix. Values are the actual data.
+     * If null, then no native files filtering is done.
+     */
+    private final Map<String,byte[]> nativeFiles;
+
+    /**
      * Creates a packer.
      *
      * @param  projectName      the project name to declare in the manifest file, or {@code null} if none.
      * @param  version          the project version to declare in the manifest file, or {@code null} if none.
      * @param  files            the JAR files of the main project together with its dependencies.
      * @param  targetDirectory  the Maven target directory.
+     * @param  nativeFiles      if non-null, where to store native files found during iteration over the JAR entries.
      */
-    Packer(final String projectName, final String version, final Set<File> files, final File targetDirectory) {
+    Packer(final String projectName, final String version, final Set<File> files, final File targetDirectory,
+            final Map<String,byte[]> nativeFiles)
+    {
         this.projectName     = projectName;
         this.version         = version;
         this.files           = files;
         this.targetDirectory = targetDirectory;
+        this.nativeFiles     = nativeFiles;
     }
 
     /**
@@ -77,7 +88,7 @@ final class Packer {
             if (!file.isFile() || !file.canRead()) {
                 throw new IllegalArgumentException("Not a file or can not read: " + file);
             }
-            if (inputJARs.put(file, new PackInput(file)) != null) {
+            if (inputJARs.put(file, new PackInput(file, nativeFiles)) != null) {
                 throw new IllegalArgumentException("Duplicated JAR: " + file);
             }
         }
