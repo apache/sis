@@ -17,6 +17,9 @@
 package org.apache.sis.referencing.crs;
 
 import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
+import java.util.Locale;
 import javax.xml.bind.JAXBException;
 import org.opengis.test.Validators;
 import org.opengis.referencing.cs.AxisDirection;
@@ -33,7 +36,7 @@ import org.apache.sis.test.XMLTestCase;
 import org.junit.Test;
 
 import static java.util.Collections.singletonMap;
-import static org.opengis.referencing.cs.CoordinateSystem.NAME_KEY;
+import static org.opengis.referencing.crs.CompoundCRS.NAME_KEY;
 import static org.apache.sis.test.ReferencingAssert.*;
 
 
@@ -41,7 +44,7 @@ import static org.apache.sis.test.ReferencingAssert.*;
  * Tests the {@link DefaultCompoundCRS} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.7
+ * @version 0.8
  * @since   0.4
  * @module
  */
@@ -65,6 +68,64 @@ public final strictfp class DefaultCompoundCRSTest extends XMLTestCase {
      * An XML file in this package containing a projected CRS definition.
      */
     private static final String XML_FILE = "CompoundCRS.xml";
+
+    /**
+     * Verifies that we do not allow construction with a duplicated horizontal or vertical component.
+     *
+     * @since 0.8
+     */
+    @Test
+    @SuppressWarnings("ResultOfObjectAllocationIgnored")
+    public void testDuplicatedComponent() {
+        final Map<String,Object> properties = new HashMap<>(4);
+        assertNull(properties.put(DefaultCompoundCRS.LOCALE_KEY, Locale.ENGLISH));
+        assertNull(properties.put(DefaultCompoundCRS.NAME_KEY,   "3D + illegal"));
+        try {
+            new DefaultCompoundCRS(properties, HardCodedCRS.WGS84, HEIGHT, HardCodedCRS.SPHERE);
+            fail("Should not allow construction with two horizontal components.");
+        } catch (IllegalArgumentException e) {
+            assertEquals("Compound coordinate reference systems can not contain two horizontal components.", e.getMessage());
+        }
+        /*
+         * Try again with duplicated vertical components, opportunistically
+         * testing localization in a different language.
+         */
+        properties.put(DefaultCompoundCRS.LOCALE_KEY, Locale.FRENCH);
+        try {
+            new DefaultCompoundCRS(properties, HardCodedCRS.WGS84, HEIGHT, HardCodedCRS.ELLIPSOIDAL_HEIGHT);
+            fail("Should not allow construction with two vertical components.");
+        } catch (IllegalArgumentException e) {
+            assertEquals("Un système de référence des coordonnées ne peut pas contenir deux composantes verticales.", e.getMessage());
+        }
+    }
+
+    /**
+     * Verifies that horizontal CRS + ellipsoidal height is disallowed.
+     *
+     * @see <a href="https://issues.apache.org/jira/browse/SIS-303">SIS-303</a>
+     *
+     * @since 0.8
+     */
+    @Test
+    @SuppressWarnings("ResultOfObjectAllocationIgnored")
+    public void testEllipsoidalHeight() {
+        final Map<String,Object> properties = new HashMap<>(4);
+        assertNull(properties.put(DefaultCompoundCRS.LOCALE_KEY, Locale.ENGLISH));
+        assertNull(properties.put(DefaultCompoundCRS.NAME_KEY,   "3D"));
+        try {
+            new DefaultCompoundCRS(properties, HardCodedCRS.WGS84, HardCodedCRS.ELLIPSOIDAL_HEIGHT);
+            fail("Should not allow construction with ellipsoidal height.");
+        } catch (IllegalArgumentException e) {
+            assertEquals("Compound coordinate reference systems should not contain ellipsoidal height. "
+                    + "Use a three-dimensional geographic system instead.", e.getMessage());
+        }
+        /*
+         * We allow an ellipsoidal height if there is no horizontal CRS.
+         * This is a departure from ISO 19111.
+         */
+        final DefaultCompoundCRS crs = new DefaultCompoundCRS(properties, HardCodedCRS.ELLIPSOIDAL_HEIGHT, TIME);
+        assertAxisDirectionsEqual("CompoundCRS", crs.getCoordinateSystem(), AxisDirection.UP, AxisDirection.FUTURE);
+    }
 
     /**
      * Tests construction and serialization of a {@link DefaultCompoundCRS}.
