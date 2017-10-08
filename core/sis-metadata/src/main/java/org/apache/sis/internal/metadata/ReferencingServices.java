@@ -32,7 +32,9 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.crs.SingleCRS;
 import org.opengis.referencing.crs.DerivedCRS;
 import org.opengis.referencing.crs.GeodeticCRS;
+import org.opengis.referencing.crs.GeographicCRS;
 import org.opengis.referencing.crs.VerticalCRS;
+import org.opengis.referencing.crs.ProjectedCRS;
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.CSFactory;
 import org.opengis.referencing.cs.CartesianCS;
@@ -459,14 +461,14 @@ public class ReferencingServices extends OptionalDependency {
                 final VerticalDatum datum = ((VerticalCRS) vertical).getDatum();
                 if (datum != null && datum.getVerticalDatumType() == VerticalDatumTypes.ELLIPSOIDAL) {
                     int axisPosition = 0;
-                    EllipsoidalCS cs = null;
+                    CoordinateSystem cs = null;
                     CoordinateReferenceSystem crs = null;
-                    if (i == 0 || (cs = getCsIfGeographic2D(crs = components[i - 1])) == null) {
+                    if (i == 0 || (cs = getCsIfHorizontal2D(crs = components[i - 1])) == null) {
                         /*
                          * GeographicCRS are normally before VerticalCRS. But Apache SIS is tolerant to the
                          * opposite order (note however that such ordering is illegal according ISO 19162).
                          */
-                        if (i+1 >= components.length || (cs = getCsIfGeographic2D(crs = components[i + 1])) == null) {
+                        if (i+1 >= components.length || (cs = getCsIfHorizontal2D(crs = components[i + 1])) == null) {
                             continue;
                         }
                         axisPosition = 1;
@@ -482,9 +484,20 @@ public class ReferencingServices extends OptionalDependency {
                     axes[axisPosition++   ] = cs.getAxis(0);
                     axes[axisPosition++   ] = cs.getAxis(1);
                     axes[axisPosition %= 3] = vertical.getCoordinateSystem().getAxis(0);
-                    cs = csFactory.createEllipsoidalCS(getProperties(cs), axes[0], axes[1], axes[2]);
-                    crs = crsFactory.createGeographicCRS((components.length == 2) ? properties : getProperties(crs),
-                            ((GeodeticCRS) crs).getDatum(), cs);
+                    final Map<String,?> csProps = getProperties(cs, false);
+                    final Map<String,?> crsProps = (components.length == 2) ? properties : getProperties(crs, false);
+                    if (crs instanceof GeodeticCRS) {
+                        cs = csFactory.createEllipsoidalCS(csProps, axes[0], axes[1], axes[2]);
+                        crs = crsFactory.createGeographicCRS(crsProps, ((GeodeticCRS) crs).getDatum(), (EllipsoidalCS) cs);
+                    } else {
+                        final ProjectedCRS proj = (ProjectedCRS) crs;
+                        GeographicCRS base = proj.getBaseCRS();
+                        if (base.getCoordinateSystem().getDimension() == 2) {
+                            base = (GeographicCRS) createCompoundCRS(crsFactory, csFactory, getProperties(base, false), base, vertical);
+                        }
+                        cs = csFactory.createCartesianCS(csProps, axes[0], axes[1], axes[2]);
+                        crs = crsFactory.createProjectedCRS(crsProps, base, proj.getConversionFromBase(), (CartesianCS) cs);
+                    }
                     /*
                      * Remove the VerticalCRS and store the three-dimensional GeographicCRS in place of the previous
                      * two-dimensional GeographicCRS. Then let the loop continues in case there is other CRS to merge
@@ -504,13 +517,22 @@ public class ReferencingServices extends OptionalDependency {
     }
 
     /**
-     * Returns the coordinate system if the given CRS is a two-dimensional geographic CRS, or {@code null} otherwise.
+     * Returns the coordinate system if the given CRS is a two-dimensional geographic or projected CRS,
+     * or {@code null} otherwise. The returned coordinate system is either ellipsoidal or Cartesian;
+     * no other type is returned.
      */
-    private static EllipsoidalCS getCsIfGeographic2D(final CoordinateReferenceSystem crs) {
-        if (crs instanceof GeodeticCRS) {
+    private static CoordinateSystem getCsIfHorizontal2D(final CoordinateReferenceSystem crs) {
+        final boolean isProjected = (crs instanceof ProjectedCRS);
+        if (isProjected || crs instanceof GeodeticCRS) {
             final CoordinateSystem cs = crs.getCoordinateSystem();
-            if (cs instanceof EllipsoidalCS && cs.getDimension() == 2) {
-                return (EllipsoidalCS) cs;
+            if (cs.getDimension() == 2 && (isProjected || cs instanceof EllipsoidalCS)) {
+                /*
+                 * ProjectedCRS are guaranteed to be associated to CartesianCS, so we do not test that.
+                 * GeodeticCRS may be associated to either CartesianCS or EllipsoidalCS, but this method
+                 * shall accept only EllipsoidalCS. Actually we should accept only GeographicCRS, but we
+                 * relax this condition by accepting GeodeticCRS with EllipsoidalCS.
+                 */
+                return cs;
             }
         }
         return null;
@@ -616,11 +638,12 @@ public class ReferencingServices extends OptionalDependency {
      * Returns the properties of the given object.
      *
      * @param  object  the object from which to get the properties.
+     * @param  keepId  {@code true} for preserving the identifiers, {@code false} for discarding them.
      * @return the properties of the given object.
      *
      * @since 0.6
      */
-    public Map<String,?> getProperties(final IdentifiedObject object) {
+    public Map<String,?> getProperties(final IdentifiedObject object, final boolean keepId) {
         return Collections.singletonMap(IdentifiedObject.NAME_KEY, object.getName());
     }
 

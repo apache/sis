@@ -1928,7 +1928,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
                 if (VerticalDatumType.OTHER_SURFACE.equals(datum.getVerticalDatumType())) {
                     final VerticalDatumType type = VerticalDatumTypes.guess(datum.getName().getCode(), datum.getAlias(), cs.getAxis(0));
                     if (!VerticalDatumType.OTHER_SURFACE.equals(type)) {
-                        datum = datumFactory.createVerticalDatum(referencing.getProperties(datum), type);
+                        datum = datumFactory.createVerticalDatum(referencing.getProperties(datum, true), type);
                     }
                 }
                 verticalCRS = crsFactory.createVerticalCRS(properties, datum, (VerticalCS) cs);

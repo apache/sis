@@ -31,6 +31,7 @@ import org.opengis.util.GenericName;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.parameter.ParameterNotFoundException;
+import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.operation.Projection;
@@ -127,6 +128,15 @@ public abstract class MapProjection extends AbstractProvider {
     }
 
     /**
+     * The three-dimensional counterpart of this two-dimensional map projection.
+     * This is created when first needed.
+     *
+     * @see #redimension(int, int)
+     * @see GeodeticOperation#redimensioned
+     */
+    private OperationMethod redimensioned;
+
+    /**
      * Constructs a math transform provider from a set of parameters. The provider
      * {@linkplain #getIdentifiers() identifiers} will be the same than the parameter ones.
      *
@@ -144,6 +154,26 @@ public abstract class MapProjection extends AbstractProvider {
     @Override
     public Class<? extends Projection> getOperationType() {
         return Projection.class;
+    }
+
+    /**
+     * Returns this operation method with the specified number of dimensions.
+     * The number of dimensions can be only 2 or 3, and must be the same for source and target CRS.
+     *
+     * @return the redimensioned projection method, or {@code this} if no change is needed.
+     *
+     * @since 0.8
+     */
+    @Override
+    public final OperationMethod redimension(final int sourceDimensions, final int targetDimensions) {
+        if (sourceDimensions != 3 || targetDimensions != 3) {
+            return super.redimension(sourceDimensions, targetDimensions);
+        } else synchronized (this) {
+            if (redimensioned == null) {
+                redimensioned = new MapProjection3D(this);
+            }
+            return redimensioned;
+        }
     }
 
     /**
