@@ -149,6 +149,18 @@ public final class Resources extends IndexedResourceBundle {
         public static final short DuplicatedParameterName_4 = 16;
 
         /**
+         * Compound coordinate reference systems can not contain two {0,choice,1#horizontal|2#vertical}
+         * components.
+         */
+        public static final short DuplicatedSpatialComponents_1 = 76;
+
+        /**
+         * Compound coordinate reference systems should not contain ellipsoidal height. Use a
+         * three-dimensional {0,choice,0#geographic|1#projected} system instead.
+         */
+        public static final short EllipsoidalHeightNotAllowed_1 = 77;
+
+        /**
          * There is no factory for version {1} of “{0}” authority. Fallback on default version for
          * objects creation.
          */

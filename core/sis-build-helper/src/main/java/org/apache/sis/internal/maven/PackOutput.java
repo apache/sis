@@ -215,7 +215,7 @@ final class PackOutput implements Closeable {
         final byte[] buffer = new byte[64 * 1024];
         for (final Iterator<Map.Entry<File,PackInput>> it = inputJARs.entrySet().iterator(); it.hasNext();) {
             final Map.Entry<File,PackInput> inputJAR = it.next();
-            it.remove(); // Needs to be removed before the inner loop below.
+            it.remove();                                  // Needs to be removed before the inner loop below.
             try (PackInput input = inputJAR.getValue()) {
                 for (JarEntry entry; (entry = input.nextEntry()) != null;) {
                     final String name = entry.getName();
@@ -253,7 +253,7 @@ final class PackOutput implements Closeable {
      * @param  buffer  temporary buffer to reuse at each method call.
      * @throws IOException if an error occurred during the copy.
      */
-    void copy(final InputStream in, final byte[] buffer) throws IOException {
+    private void copy(final InputStream in, final byte[] buffer) throws IOException {
         int n;
         while ((n = in.read(buffer)) >= 0) {
             outputStream.write(buffer, 0, n);

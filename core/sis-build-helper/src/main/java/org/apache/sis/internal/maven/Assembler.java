@@ -21,11 +21,14 @@ import java.io.IOException;
 import java.io.FilenameFilter;
 import java.io.FileInputStream;
 import java.io.FilterOutputStream;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
+import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.apache.maven.project.MavenProject;
 import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
 import org.apache.commons.compress.archivers.zip.ZipArchiveOutputStream;
@@ -36,29 +39,35 @@ import static org.apache.sis.internal.maven.Filenames.*;
 /**
  * Creates a ZIP files containing the content of the <code>application/sis-console/src/main/artifact</code>
  * directory together with the Pack200 file created by <code>BundleCreator</code>.
- * This mojo can be invoked from the command line as below:
+ * This MOJO can be invoked from the command line in the {@code sis-console} module as below:
  *
- * <blockquote><code>mvn org.apache.sis.core:sis-build-helper:dist --non-recursive</code></blockquote>
- *
- * Do not forget the <code>--non-recursive</code> option, otherwise the Mojo will be executed many time.
+ * <blockquote><code>mvn package org.apache.sis.core:sis-build-helper:dist</code></blockquote>
  *
  * <p><b>Current limitation:</b>
  * The current implementation uses some hard-coded paths and filenames.
- * See the <cite>Distribution file and Pack200 bundle</cite> section in the <code>src/site/apt/index.apt</code>
- * file for more information.</p>
+ * See the <cite>Distribution file and Pack200 bundle</cite> section in
+ * <a href="http://sis.apache.org/build.html">Build from source</a> page
+ * for more information.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.7
+ * @version 0.8
  * @since   0.4
  * @module
  */
-@Mojo(name = "dist", defaultPhase = LifecyclePhase.INSTALL)
-public class Assembler extends AbstractMojo implements FilenameFilter {
+@Mojo(name = "dist", defaultPhase = LifecyclePhase.INSTALL, requiresDependencyResolution = ResolutionScope.COMPILE_PLUS_RUNTIME)
+public final class Assembler extends AbstractMojo implements FilenameFilter {
     /**
      * Project information (name, version, URL).
      */
     @Parameter(property="project", required=true, readonly=true)
     private MavenProject project;
+
+    /**
+     * Base directory of the module to compile.
+     * Artifact content is expected in the {@code "src/main/artifact"} subdirectory.
+     */
+    @Parameter(property="basedir", required=true, readonly=true)
+    private String baseDirectory;
 
     /**
      * The root directory (without the "<code>target/binaries</code>" sub-directory) where JARs
@@ -80,13 +89,14 @@ public class Assembler extends AbstractMojo implements FilenameFilter {
      */
     @Override
     public void execute() throws MojoExecutionException {
-        final File sourceDirectory = new File(rootDirectory, ARTIFACT_PATH);
+        final File sourceDirectory = new File(baseDirectory, ARTIFACT_PATH);
         if (!sourceDirectory.isDirectory()) {
             throw new MojoExecutionException("Directory not found: " + sourceDirectory);
         }
         final File targetDirectory = new File(rootDirectory, TARGET_DIRECTORY);
         final String version = project.getVersion();
         final String artifactBase = FINALNAME_PREFIX + version;
+        final Map<String,byte[]> nativeFiles = new LinkedHashMap<>();
         try {
             final File targetFile = new File(distributionDirectory(targetDirectory), artifactBase + ".zip");
             try (ZipArchiveOutputStream zip = new ZipArchiveOutputStream(targetFile)) {
@@ -97,20 +107,28 @@ public class Assembler extends AbstractMojo implements FilenameFilter {
                  * have been zipped.  Now generate the Pack200 file and zip it directly (without creating
                  * a temporary "sis.pack.gz" file).
                  */
-                final Packer packer = new Packer(project.getName(), version, targetDirectory);
-                final ZipArchiveEntry entry = new ZipArchiveEntry(
-                        artifactBase + '/' + LIB_DIRECTORY + '/' + FATJAR_FILE + PACK_EXTENSION);
+                final Packer packer = new Packer(project.getName(), version, BundleCreator.files(project), targetDirectory, nativeFiles);
+                ZipArchiveEntry entry = new ZipArchiveEntry(artifactBase + '/' + LIB_DIRECTORY + '/' + FATJAR_FILE + PACK_EXTENSION);
                 entry.setMethod(ZipArchiveEntry.STORED);
                 zip.putArchiveEntry(entry);
                 packer.preparePack200(FATJAR_FILE + ".jar").pack(new FilterOutputStream(zip) {
-                    /*
-                     * Closes the archive entry, not the ZIP file.
-                     */
-                    @Override
-                    public void close() throws IOException {
+                    /** Closes the archive entry, not the ZIP file. */
+                    @Override public void close() throws IOException {
                         zip.closeArchiveEntry();
                     }
                 });
+                /*
+                 * At this point we finished creating all entries in the ZIP file, except native resources.
+                 * Copy them now.
+                 */
+                for (final Map.Entry<String,byte[]> nf : nativeFiles.entrySet()) {
+                    entry = new ZipArchiveEntry(artifactBase + '/' + LIB_DIRECTORY + '/' + nf.getKey());
+                    entry.setUnixMode(0555);        // Readable and executable for all, but not writable.
+                    zip.putArchiveEntry(entry);
+                    zip.write(nf.getValue());
+                    zip.closeArchiveEntry();
+                    nf.setValue(null);
+                }
             }
         } catch (IOException e) {
             throw new MojoExecutionException(e.getLocalizedMessage(), e);
@@ -136,6 +154,7 @@ public class Assembler extends AbstractMojo implements FilenameFilter {
         out.putArchiveEntry(entry);
         if (!entry.isDirectory()) {
             try (FileInputStream in = new FileInputStream(file)) {
+                // TODO: use InputStream.transferTo(OutputStream) with JDK9.
                 int n;
                 while ((n = in.read(buffer)) >= 0) {
                     out.write(buffer, 0, n);
@@ -159,6 +178,6 @@ public class Assembler extends AbstractMojo implements FilenameFilter {
      */
     @Override
     public boolean accept(final File directory, final String filename) {
-        return !filename.isEmpty() && filename.charAt(0) != '.';
+        return !filename.isEmpty() && filename.charAt(0) != '.' && !filename.equals(CONTENT_FILE);
     }
 }

@@ -814,7 +814,7 @@ public final strictfp class CoordinateOperationFinderTest extends MathTransformT
                 "  Id[“EPSG”, “3395”]]");
 
         CoordinateReferenceSystem sourceCRS = targetCRS;
-        sourceCRS = compound("Mercator 3D", sourceCRS, CommonCRS.Vertical.ELLIPSOIDAL.crs());
+        sourceCRS = compound("Mercator 3D", sourceCRS, CommonCRS.Vertical.MEAN_SEA_LEVEL.crs());
         sourceCRS = compound("Mercator 4D", sourceCRS, CommonCRS.Temporal.MODIFIED_JULIAN.crs());
 
         final CoordinateOperation operation = finder.createOperation(sourceCRS, targetCRS);
