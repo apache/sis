@@ -1044,10 +1044,7 @@ class CoordinateOperationRegistry {
             }
         }
         return toAuthorityDefinition(CoordinateReferenceSystem.class,
-                ReferencingServices.getInstance().createCompoundCRS(
-                        factorySIS.getCRSFactory(),
-                        factorySIS.getCSFactory(),
-                        derivedFrom(crs), crs, CommonCRS.Vertical.ELLIPSOIDAL.crs()));
+                new CompoundCRSBuilder(factory, factorySIS).createCompoundCRS(derivedFrom(crs), crs, CommonCRS.Vertical.ELLIPSOIDAL.crs()));
     }
 
     /**
