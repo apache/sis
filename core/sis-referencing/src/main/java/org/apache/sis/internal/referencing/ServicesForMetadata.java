@@ -91,6 +91,7 @@ import org.apache.sis.internal.metadata.ReferencingServices;
 import org.apache.sis.internal.referencing.provider.Affine;
 import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.internal.util.Constants;
+import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.collection.Containers;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.resources.Errors;
@@ -773,13 +774,15 @@ public final class ServicesForMetadata extends ReferencingServices {
      * Returns the properties of the given object.
      *
      * @param  object  the object from which to get the properties.
+     * @param  keepId  {@code true} for preserving the identifiers, {@code false} for discarding them.
      * @return the properties of the given object.
      *
      * @since 0.6
      */
     @Override
-    public Map<String,?> getProperties(final IdentifiedObject object) {
-        return IdentifiedObjects.getProperties(object);
+    public Map<String,?> getProperties(final IdentifiedObject object, final boolean keepId) {
+        return IdentifiedObjects.getProperties(object, keepId ? CharSequences.EMPTY_ARRAY
+                : new String[] {IdentifiedObject.IDENTIFIERS_KEY});
     }
 
     /**

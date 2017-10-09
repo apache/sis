@@ -1,0 +1,2 @@
+Placeholder for Windows "*.dll" files to be copied by the
+org.apache.sis.core:sis-build-helper:dist Maven plugin.
