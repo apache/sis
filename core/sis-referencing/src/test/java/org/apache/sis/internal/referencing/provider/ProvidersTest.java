@@ -109,7 +109,7 @@ public final strictfp class ProvidersTest extends TestCase {
 
     /**
      * Returns the subset of {@link #methods()} which are expected to support
-     * {@link AbstractProvider#redimension(int, int)}.
+     * {@link AbstractProvider#redimension(int, int)}, not including map projections.
      */
     private static Class<?>[] redimensionables() {
         return new Class<?>[] {
@@ -224,6 +224,13 @@ public final strictfp class ProvidersTest extends TestCase {
                         }
                     }
                 }
+            } else if (method instanceof MapProjection) {
+                final OperationMethod proj3D = ((MapProjection) method).redimension(sourceDimensions ^ 1, targetDimensions ^ 1);
+                assertNotSame("redimension(3,3) should return a new method.", method, proj3D);
+                assertSame("redimension(2,2) should give back the original method.", method,
+                        ((DefaultOperationMethod) proj3D).redimension(sourceDimensions, targetDimensions));
+                assertSame("Value of redimension(3,3) should have been cached.", proj3D,
+                        ((MapProjection) method).redimension(sourceDimensions ^ 1, targetDimensions ^ 1));
             } else try {
                 ((DefaultOperationMethod) method).redimension(sourceDimensions ^ 1, targetDimensions ^ 1);
                 fail("Type " + method.getClass().getName() + " is not in our list of redimensionable methods.");

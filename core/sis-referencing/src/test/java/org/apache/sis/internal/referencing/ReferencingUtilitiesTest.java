@@ -21,6 +21,7 @@ import org.opengis.referencing.cs.*;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.crs.GeographicCRS;
 import org.opengis.referencing.datum.PrimeMeridian;
+import org.opengis.referencing.datum.VerticalDatum;
 import org.opengis.referencing.IdentifiedObject;
 import org.apache.sis.referencing.datum.HardCodedDatum;
 import org.apache.sis.referencing.crs.HardCodedCRS;
@@ -53,6 +54,14 @@ public final strictfp class ReferencingUtilitiesTest extends TestCase {
         assertEquals(2.33722917, getGreenwichLongitude(HardCodedDatum.PARIS,     Units.DEGREE), 1E-12);
         assertEquals(2.33720833, getGreenwichLongitude(HardCodedDatum.PARIS_RGS, Units.DEGREE), 1E-8);
         assertEquals(2.596898,   getGreenwichLongitude(HardCodedDatum.PARIS_RGS, Units.GRAD),   1E-6);
+    }
+
+    /**
+     * Tests {@link ReferencingUtilities#isEllipsoidalHeight(VerticalDatum)}.
+     */
+    @Test
+    public void testEllipsoidalHeight() {
+        assertTrue(isEllipsoidalHeight(HardCodedDatum.ELLIPSOID));
     }
 
     /**
