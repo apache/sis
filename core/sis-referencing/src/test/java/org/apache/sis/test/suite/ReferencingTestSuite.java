@@ -229,7 +229,7 @@ import org.junit.BeforeClass;
     org.apache.sis.referencing.operation.builder.LinearTransformBuilderTest.class,
     org.apache.sis.referencing.operation.builder.LocalizationGridBuilderTest.class,
 
-    // Geometry
+    // Geometry and miscellaneous
     org.apache.sis.geometry.AbstractDirectPositionTest.class,
     org.apache.sis.geometry.GeneralDirectPositionTest.class,
     org.apache.sis.geometry.DirectPosition1DTest.class,
@@ -244,6 +244,7 @@ import org.junit.BeforeClass;
     org.apache.sis.geometry.Shapes2DTest.class,                 // Simpler than EnvelopesTest.
     org.apache.sis.geometry.EnvelopesTest.class,
     org.apache.sis.internal.referencing.ServicesForMetadataTest.class,
+    org.apache.sis.internal.metadata.EllipsoidalHeightCombinerTest.class,
     org.apache.sis.geometry.CoordinateFormatTest.class,
 
     org.apache.sis.distance.LatLonPointRadiusTest.class,        // Pending refactoring in a geometry package.

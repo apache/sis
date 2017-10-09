@@ -33,8 +33,6 @@ import org.opengis.metadata.Identifier;
 import org.opengis.metadata.extent.GeographicBoundingBox;
 import org.opengis.parameter.ParameterValueGroup;
 import org.apache.sis.internal.metadata.AxisDirections;
-import org.apache.sis.internal.metadata.VerticalDatumTypes;
-import org.apache.sis.internal.metadata.ReferencingServices;
 import org.apache.sis.internal.referencing.ReferencingUtilities;
 import org.apache.sis.internal.referencing.provider.Geographic2Dto3D;
 import org.apache.sis.internal.referencing.provider.Geographic3Dto2D;
@@ -629,7 +627,7 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
         VerticalCRS heightCRS = targetCRS;      // First candidate, will be replaced if it doesn't fit.
         VerticalCS  heightCS  = heightCRS.getCoordinateSystem();
         if (equalsIgnoreMetadata(heightCS.getAxis(0), expectedAxis)) {
-            isEllipsoidalHeight = VerticalDatumTypes.ELLIPSOIDAL.equals(heightCRS.getDatum().getVerticalDatumType());
+            isEllipsoidalHeight = ReferencingUtilities.isEllipsoidalHeight(heightCRS.getDatum());
         } else {
             heightCRS = CommonCRS.Vertical.ELLIPSOIDAL.crs();
             heightCS  = heightCRS.getCoordinateSystem();
@@ -840,8 +838,8 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
             } else if (stepComponents.length == 1) {
                 stepTargetCRS = target;                 // Slight optimization of the next block.
             } else {
-                stepTargetCRS = toAuthorityDefinition(CoordinateReferenceSystem.class, ReferencingServices.getInstance()
-                        .createCompoundCRS(factorySIS.getCRSFactory(), factorySIS.getCSFactory(), derivedFrom(target), stepComponents));
+                stepTargetCRS = toAuthorityDefinition(CoordinateReferenceSystem.class,
+                        new CompoundCRSBuilder(factory, factorySIS).createCompoundCRS(derivedFrom(target), stepComponents));
             }
             int delta = source.getCoordinateSystem().getDimension();
             final int startAtDimension = endAtDimension;

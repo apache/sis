@@ -212,10 +212,10 @@ public final strictfp class DefaultCoordinateOperationFactoryTest extends MathTr
         final CoordinateReferenceSystem sourceCRS = parse(
                 "CompoundCRS[“NTF 4D”," +
                 "  $NTF,\n" +
-                "  VerticalCRS[“Ellipsoidal height”,\n" +
-                "    VerticalDatum[“Ellipsoid”],\n" +
+                "  VerticalCRS[“Geoidal height”,\n" +
+                "    VerticalDatum[“Geoid”],\n" +
                 "    CS[vertical, 1],\n" +
-                "      Axis[“Ellipsoidal height (h)”, up],\n" +
+                "      Axis[“Geoidal height (H)”, up],\n" +
                 "      Unit[“metre”, 1]],\n" +
                 "  TimeCRS[“Modified Julian”,\n" +
                 "    TimeDatum[“Modified Julian”, TimeOrigin[1858-11-17T00:00:00.0Z]],\n" +
@@ -229,7 +229,7 @@ public final strictfp class DefaultCoordinateOperationFactoryTest extends MathTr
         assertSame      ("targetCRS", targetCRS, operation.getTargetCRS());
         assertInstanceOf("operation", ConcatenatedOperation.class, operation);
         /*
-         * The accuracy of the coordinate operation depends on whether a path as been found with the help
+         * The accuracy of the coordinate operation depends on whether a path has been found with the help
          * of the EPSG database. See testProjectionAndLongitudeRotation() for more information.
          */
         final boolean isUsingEpsgFactory = verifyParametersNTF(((ConcatenatedOperation) operation).getOperations(), 2);

@@ -70,6 +70,7 @@ import org.apache.sis.internal.metadata.WKTKeywords;
 import org.apache.sis.internal.metadata.VerticalDatumTypes;
 import org.apache.sis.internal.metadata.ReferencingServices;
 import org.apache.sis.internal.metadata.TransformationAccuracy;
+import org.apache.sis.internal.metadata.EllipsoidalHeightCombiner;
 import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.util.CharSequences;
@@ -1928,7 +1929,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
                 if (VerticalDatumType.OTHER_SURFACE.equals(datum.getVerticalDatumType())) {
                     final VerticalDatumType type = VerticalDatumTypes.guess(datum.getName().getCode(), datum.getAlias(), cs.getAxis(0));
                     if (!VerticalDatumType.OTHER_SURFACE.equals(type)) {
-                        datum = datumFactory.createVerticalDatum(referencing.getProperties(datum), type);
+                        datum = datumFactory.createVerticalDatum(referencing.getProperties(datum, true), type);
                     }
                 }
                 verticalCRS = crsFactory.createVerticalCRS(properties, datum, (VerticalCS) cs);
@@ -2179,8 +2180,9 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
             components.add(crs);
         }
         try {
-            return referencing.createCompoundCRS(crsFactory, csFactory, parseMetadataAndClose(element, name, null),
-                    components.toArray(new CoordinateReferenceSystem[components.size()]));
+            return new EllipsoidalHeightCombiner(crsFactory, csFactory, opFactory).createCompoundCRS(
+                            parseMetadataAndClose(element, name, null),
+                            components.toArray(new CoordinateReferenceSystem[components.size()]));
         } catch (FactoryException exception) {
             throw element.parseFailed(exception);
         }
