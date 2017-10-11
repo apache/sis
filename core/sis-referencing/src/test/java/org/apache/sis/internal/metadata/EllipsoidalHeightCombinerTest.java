@@ -32,6 +32,7 @@ import org.apache.sis.referencing.crs.HardCodedCRS;
 import org.apache.sis.referencing.factory.GeodeticObjectFactory;
 import org.apache.sis.referencing.operation.DefaultCoordinateOperationFactory;
 import org.apache.sis.referencing.operation.HardCodedConversions;
+import org.apache.sis.metadata.iso.extent.Extents;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
@@ -158,5 +159,16 @@ public final strictfp class EllipsoidalHeightCombinerTest extends TestCase {
         assertAxisDirectionsEqual("Shall be a three-dimensional projected CRS.",
                 ((CoordinateReferenceSystem) components[1]).getCoordinateSystem(),
                 AxisDirection.UP, AxisDirection.EAST, AxisDirection.NORTH);
+    }
+
+    /**
+     * Tests {@link EllipsoidalHeightCombiner#properties(CoordinateReferenceSystem...)}.
+     */
+    @Test
+    public void testProperties() {
+        final Map<String,?> properties = EllipsoidalHeightCombiner.properties(HardCodedCRS.WGS84, HardCodedCRS.GRAVITY_RELATED_HEIGHT, HardCodedCRS.TIME);
+        assertEquals("WGS 84 + MSL height + Time", properties.remove("name"));
+        assertEquals(Extents.WORLD, properties.remove("domainOfValidity"));
+        assertTrue("No other property expected.", properties.isEmpty());
     }
 }
