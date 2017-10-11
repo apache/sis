@@ -297,15 +297,14 @@ public final class ReferencingUtilities extends Static {
      * </ul></div>
      *
      * @param  object    the identified object to view as a properties map.
-     * @param  excludes  the keys of properties to exclude from the map.
      * @return a view of the identified object properties.
      *
      * @see IdentifiedObjects#getProperties(IdentifiedObject, String...)
      *
      * @since 0.7
      */
-    public static Map<String,?> getPropertiesForModifiedCRS(final IdentifiedObject object, final String... excludes) {
-        final Map<String,?> properties = IdentifiedObjects.getProperties(object, excludes);
+    public static Map<String,?> getPropertiesForModifiedCRS(final IdentifiedObject object) {
+        final Map<String,?> properties = IdentifiedObjects.getProperties(object, IdentifiedObject.IDENTIFIERS_KEY);
         final Identifier id = (Identifier) properties.get(IdentifiedObject.NAME_KEY);
         if (id != null) {
             String name = id.getCode();
