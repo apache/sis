@@ -93,7 +93,7 @@ public final strictfp class ReferencingUtilitiesTest extends TestCase {
     }
 
     /**
-     * Tests {@link ReferencingUtilities#getPropertiesForModifiedCRS(IdentifiedObject, String...)}.
+     * Tests {@link ReferencingUtilities#getPropertiesForModifiedCRS(IdentifiedObject)}.
      *
      * @since 0.7
      */

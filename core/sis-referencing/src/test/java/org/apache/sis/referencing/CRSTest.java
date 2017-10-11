@@ -19,6 +19,7 @@ package org.apache.sis.referencing;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Arrays;
+import java.util.Collections;
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.NoSuchAuthorityCodeException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
@@ -38,6 +39,7 @@ import org.apache.sis.util.Utilities;
 // Test imports
 import org.apache.sis.referencing.operation.HardCodedConversions;
 import org.apache.sis.referencing.crs.HardCodedCRS;
+import org.apache.sis.referencing.cs.HardCodedCS;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
@@ -277,6 +279,26 @@ public final strictfp class CRSTest extends TestCase {
 
         assertSame(HardCodedCRS.TIME, CRS.getTemporalComponent(HardCodedCRS.TIME));
         assertSame(HardCodedCRS.TIME, CRS.getTemporalComponent(HardCodedCRS.GEOID_4D));
+    }
+
+    /**
+     * Tests getting the horizontal and vertical components of a three-dimensional projected CRS.
+     *
+     * @since 0.8
+     */
+    @Test
+    public void testComponentsOfProjectedCRS() {
+        final ProjectedCRS volumetric = new DefaultProjectedCRS(Collections.singletonMap(ProjectedCRS.NAME_KEY, "3D"),
+                HardCodedCRS.WGS84_3D, HardCodedConversions.MERCATOR, HardCodedCS.PROJECTED_3D);
+
+        assertFalse("isHorizontalCRS", CRS.isHorizontalCRS(volumetric));
+        assertNull("getTemporalComponent", CRS.getTemporalComponent(volumetric));
+        assertNull("getVerticalComponent", CRS.getVerticalComponent(volumetric, false));
+        assertEqualsIgnoreMetadata(HardCodedCRS.ELLIPSOIDAL_HEIGHT, CRS.getVerticalComponent(volumetric, true));
+        final SingleCRS horizontal = CRS.getHorizontalComponent(volumetric);
+        assertInstanceOf("getHorizontalComponent", ProjectedCRS.class, horizontal);
+        assertEquals("dimension", 2, horizontal.getCoordinateSystem().getDimension());
+        assertTrue("isHorizontalCRS", CRS.isHorizontalCRS(horizontal));
     }
 
     /**
