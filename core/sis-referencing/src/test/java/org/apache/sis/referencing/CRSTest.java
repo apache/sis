@@ -310,6 +310,26 @@ public final strictfp class CRSTest extends TestCase {
     }
 
     /**
+     * Tests {@link CRS#compound(CoordinateReferenceSystem...)}.
+     *
+     * @throws FactoryException if an error occurred while creating a compound CRS.
+     *
+     * @since 0.8
+     */
+    @Test
+    public void testCompound() throws FactoryException {
+        try {
+            CRS.compound();
+            fail("Should not accept empty array.");
+        } catch (IllegalArgumentException e) {
+            final String message = e.getMessage();
+            assertTrue(message, message.contains("components"));
+        }
+        assertSame(HardCodedCRS.WGS84, CRS.compound(HardCodedCRS.WGS84));
+        assertEqualsIgnoreMetadata(HardCodedCRS.WGS84_3D, CRS.compound(HardCodedCRS.WGS84, HardCodedCRS.ELLIPSOIDAL_HEIGHT));
+    }
+
+    /**
      * Tests {@link CRS#getComponentAt(CoordinateReferenceSystem, int, int)} on a (x,y,z,t)
      * coordinate reference system having 4 dimensions. All arguments given to this method
      * except the last one are the expected components, which may be {@code null}.

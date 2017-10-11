@@ -29,6 +29,7 @@ import org.opengis.referencing.cs.EllipsoidalCS;
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
+import org.opengis.referencing.cs.CSFactory;
 import org.opengis.referencing.crs.CRSFactory;
 import org.opengis.referencing.crs.SingleCRS;
 import org.opengis.referencing.crs.CompoundCRS;
@@ -41,6 +42,7 @@ import org.opengis.referencing.crs.ProjectedCRS;
 import org.opengis.referencing.crs.TemporalCRS;
 import org.opengis.referencing.crs.VerticalCRS;
 import org.opengis.referencing.crs.EngineeringCRS;
+import org.opengis.referencing.operation.CoordinateOperationFactory;
 import org.opengis.referencing.operation.OperationNotFoundException;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.extent.Extent;
@@ -53,6 +55,7 @@ import org.apache.sis.measure.Units;
 import org.apache.sis.geometry.Envelopes;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.internal.metadata.AxisDirections;
+import org.apache.sis.internal.metadata.EllipsoidalHeightCombiner;
 import org.apache.sis.internal.referencing.PositionalAccuracyConstant;
 import org.apache.sis.internal.referencing.CoordinateOperations;
 import org.apache.sis.internal.referencing.ReferencingUtilities;
@@ -68,6 +71,7 @@ import org.apache.sis.referencing.crs.DefaultCompoundCRS;
 import org.apache.sis.referencing.operation.AbstractCoordinateOperation;
 import org.apache.sis.referencing.operation.CoordinateOperationContext;
 import org.apache.sis.referencing.operation.DefaultCoordinateOperationFactory;
+import org.apache.sis.referencing.factory.GeodeticObjectFactory;
 import org.apache.sis.referencing.factory.UnavailableFactoryException;
 import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
 import org.apache.sis.metadata.iso.extent.Extents;
@@ -805,6 +809,61 @@ public final class CRS extends Static {
     }
 
     /**
+     * Creates a compound coordinate reference system from an ordered list of CRS components.
+     * A CRS is inferred from the given components and the domain of validity is set to the
+     * {@linkplain org.apache.sis.metadata.iso.extent.DefaultExtent#intersect intersection}
+     * of the domain of validity of all components.
+     *
+     * <div class="section">Ellipsoidal height</div>
+     * If a two-dimensional geographic or projected CRS if followed or preceded by a vertical CRS with ellipsoidal
+     * {@linkplain org.apache.sis.referencing.datum.DefaultVerticalDatum#getVerticalDatumType() datum type}, then
+     * this method combines them in a single three-dimensional geographic or projected CRS.  Note that standalone
+     * ellipsoidal heights are not allowed according ISO 19111. But if such situation is nevertheless found, then
+     * the action described here fixes the issue. This is the reverse of <code>{@linkplain #getVerticalComponent
+     * getVerticalComponent}(crs, true)</code>.
+     *
+     * <div class="section">Components order</div>
+     * Apache SIS is permissive on the order of components that can be used in a compound CRS.
+     * However for better inter-operability, users are encouraged to follow the order mandated by ISO 19162:
+     *
+     * <ol>
+     *   <li>A mandatory horizontal CRS (only one of two-dimensional {@code GeographicCRS} or {@code ProjectedCRS} or {@code EngineeringCRS}).</li>
+     *   <li>Optionally followed by a {@code VerticalCRS} or a {@code ParametricCRS} (but not both).</li>
+     *   <li>Optionally followed by a {@code TemporalCRS}.</li>
+     * </ol>
+     *
+     * @param  components  the sequence of coordinate reference systems making the compound CRS.
+     * @return the compound CRS, or {@code components[0]} if the given array contains only one component.
+     * @throws IllegalArgumentException if the given array is empty or if the array contains incompatible components.
+     * @throws FactoryException if the geodetic factory failed to create the compound CRS.
+     *
+     * @since 0.8
+     *
+     * @see GeodeticObjectFactory#createCompoundCRS(Map, CoordinateReferenceSystem...)
+     */
+    public static CoordinateReferenceSystem compound(final CoordinateReferenceSystem... components) throws FactoryException {
+        ArgumentChecks.ensureNonNull("components", components);
+        switch (components.length) {
+            case 0: {
+                throw new IllegalArgumentException(Errors.format(Errors.Keys.EmptyArgument_1, "components"));
+            }
+            case 1: {
+                final CoordinateReferenceSystem crs = components[0];
+                if (crs != null) return crs;
+                break;
+            }
+        }
+        final Map<String,?> properties = EllipsoidalHeightCombiner.properties(components);
+        return new EllipsoidalHeightCombiner() {
+            @Override public void initialize(final int factoryTypes) {
+                if ((factoryTypes & CRS)       != 0) crsFactory = DefaultFactories.forBuildin(CRSFactory.class);
+                if ((factoryTypes & CS)        != 0) csFactory  = DefaultFactories.forBuildin(CSFactory.class);
+                if ((factoryTypes & OPERATION) != 0) opFactory  = DefaultFactories.forBuildin(CoordinateOperationFactory.class);
+            }
+        }.createCompoundCRS(properties, components);
+    }
+
+    /**
      * Returns {@code true} if the given CRS is horizontal. The current implementation considers a
      * CRS as horizontal if it is two-dimensional and comply with one of the following conditions:
      *
@@ -924,6 +983,8 @@ public final class CRS extends Static {
      * @param  allowCreateEllipsoidal {@code true} for allowing the creation of orphan CRS for ellipsoidal heights.
      *         The recommended value is {@code false}.
      * @return the first vertical CRS, or {@code null} if none.
+     *
+     * @see #compound(CoordinateReferenceSystem...)
      *
      * @category information
      */
