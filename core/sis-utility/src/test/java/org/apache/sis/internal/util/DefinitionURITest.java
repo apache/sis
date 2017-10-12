@@ -27,7 +27,7 @@ import static org.junit.Assert.*;
  * Tests {@link DefinitionURI}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.7
+ * @version 0.8
  * @since   0.4
  * @module
  */
@@ -140,6 +140,20 @@ public final strictfp class DefinitionURITest extends TestCase {
 
         assertNull("Should not parse if no '#' character.",
                 DefinitionURI.parse("http://www.opengis.net/gml/srs/epsg?4326"));
+    }
+
+    /**
+     * Tests comma-separated URNs in the {@code "urn:ogc:def"} namespace.
+     * Example: {@code "urn:ogc:def:crs,crs:EPSG:6.3:27700,crs:EPSG:6.3:5701"}.
+     */
+    @Test
+    public void testCompoundURN() {
+        final DefinitionURI parsed = DefinitionURI.parse("urn:ogc:def:crs, crs :EPSG:9.1:27700, crs:EPSG: 9.1 :5701");
+        assertNotNull("components", parsed.components);
+        assertEquals("components.length", 2, parsed.components.length);
+        assertEquals("urn:ogc:def:crs:EPSG:9.1:27700", parsed.components[0].toString());
+        assertEquals("urn:ogc:def:crs:EPSG:9.1:5701", parsed.components[1].toString());
+        assertEquals("urn:ogc:def:crs,crs:EPSG:9.1:27700,crs:EPSG:9.1:5701", parsed.toString());
     }
 
     /**

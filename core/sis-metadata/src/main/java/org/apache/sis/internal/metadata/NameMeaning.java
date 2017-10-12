@@ -35,7 +35,7 @@ import org.apache.sis.metadata.iso.citation.Citations;
 
 
 /**
- * The meaning of some part of URN in the {@code "ogc"} namespace.
+ * The meaning of some parts of URN in the {@code "ogc"} namespace.
  * The meaning are defined by <cite>OGC Naming Authority</cite> (OGCNA) or other OGC sources.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)

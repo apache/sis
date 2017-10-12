@@ -17,6 +17,8 @@
 package org.apache.sis.internal.util;
 
 import java.util.Map;
+import java.util.List;
+import java.util.ArrayList;
 import java.util.Collections;
 import org.apache.sis.util.CharSequences;
 
@@ -46,7 +48,7 @@ import static org.apache.sis.internal.util.Utilities.appendUnicodeIdentifier;
  *   <li>{@code http://www.opengis.net/def/uom/SI/0/m%2Fs}</li>
  * </ul>
  *
- * <div class="section">Components or URN</div>
+ * <div class="section">Parts of URN</div>
  * URN begins with {@code "urn:ogc:def:"} (formerly {@code "urn:x-ogc:def:"}) followed by:
  * <ul>
  *   <li>an object {@linkplain #type}</li>
@@ -103,7 +105,7 @@ import static org.apache.sis.internal.util.Utilities.appendUnicodeIdentifier;
  * {@code "urn:ogc:def:crs,crs:EPSG:6.3:27700,crs:EPSG:6.3:5701"}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.7
+ * @version 0.8
  *
  * @see org.apache.sis.internal.metadata.NameMeaning
  * @see <a href="http://portal.opengeospatial.org/files/?artifact_id=24045">Definition identifier URNs in OGC namespace</a>
@@ -122,6 +124,15 @@ public final class DefinitionURI {
      * The URN separator.
      */
     public static final char SEPARATOR = ':';
+
+    /**
+     * The separator between {@linkplain #components} in a URN.
+     *
+     * <div class="note"><b>Example:</b>
+     * in {@code "urn:ogc:def:crs,crs:EPSG:9.1:27700,crs:EPSG:9.1:5701"}, the components are
+     * {@code "crs:EPSG:9.1:27700"} and {@code "crs:EPSG:9.1:5701"}.</div>
+     */
+    private static final char COMPONENT_SEPARATOR = ',';
 
     /**
      * The domain of URLs in the OGC namespace.
@@ -204,6 +215,30 @@ public final class DefinitionURI {
     public String[] parameters;
 
     /**
+     * If the URI contains sub-components, those sub-components. Otherwise {@code null}.
+     *
+     * <div class="note"><b>URN example:</b>
+     * if the URI is {@code "urn:ogc:def:crs,crs:EPSG:9.1:27700,crs:EPSG:9.1:5701"}, then this
+     * {@code DefinitionURI} will contain the {@code "urn:ogc:def:crs"} header with two components:
+     * <ol>
+     *   <li>{@code "urn:ogc:def:crs:EPSG:9.1:27700"}</li>
+     *   <li>{@code "urn:ogc:def:crs:EPSG:9.1:5701"}</li>
+     * </ol></div>
+     *
+     * <div class="note"><b>HTTP example:</b> if the URI is
+     * {@code "http://www.opengis.net/def/crs-compound?1=(…)/crs/EPSG:9.1:27700&2=(…)/crs/EPSG:9.1:5701"},
+     * then this {@code DefinitionURI} will contain the {@code "http://www.opengis.net/def/crs-compound"}
+     * header with two components:
+     * <ol>
+     *   <li>{@code "http://http://www.opengis.net/def/crs/EPSG:9.1:27700"}</li>
+     *   <li>{@code "http://http://www.opengis.net/def/crs/EPSG:9.1:5701"}</li>
+     * </ol></div>
+     *
+     * Note that this array may contain {@code null} elements if we failed to parse the corresponding component.
+     */
+    public DefinitionURI[] components;
+
+    /**
      * For {@link #parse(String)} usage only.
      */
     private DefinitionURI() {
@@ -219,9 +254,28 @@ public final class DefinitionURI {
      */
     public static DefinitionURI parse(final String uri) {
         ensureNonNull("uri", uri);
+        return parse(uri, false, -1, uri.length(), SEPARATOR, COMPONENT_SEPARATOR);
+    }
+
+    /**
+     * Parses a sub-region of the given URI. This method can start parsing for an arbitrary URI part,
+     * no necessarily the root. The first URI part is identified by an ordinal number:
+     *
+     * This method may invoke itself recursively if the URI contains sub-components.
+     *
+     * @param  uri                 the URI to parse.
+     * @param  prefixIsOptional    {@code true} if {@value #PREFIX} may not be present.
+     * @param  upper               upper index of the previous URI part, or -1 if none.
+     * @param  stopAt              index (exclusive) where to stop parsing.
+     * @param  separator           separator character of URI parts.
+     * @param  componentSeparator  separator character of {@linkplain #components}.
+     * @return the parse result, or {@code null} if the URI is not recognized.
+     */
+    @SuppressWarnings("fallthrough")
+    private static DefinitionURI parse(final String uri, boolean prefixIsOptional,
+            int upper, int stopAt, char separator, char componentSeparator)
+    {
         DefinitionURI result = null;
-        char separator = SEPARATOR;
-        int upper = -1;
         /*
          * Loop on all parts that we expect in the URI. Those parts are:
          *
@@ -234,19 +288,19 @@ public final class DefinitionURI {
          *   6:  code
          *   7:  parameters, or null if none.
          */
-        for (int p=0; p<=6; p++) {
+        for (int part = 0; part <= 6; part++) {
             final int lower = upper + 1;
             upper = uri.indexOf(separator, lower);
-            if (upper < 0) {
-                upper = uri.length();
+            if (upper < 0 || upper >= stopAt) {
+                upper = stopAt;
                 if (lower > upper) {
-                    return result;        // Happen if a component is missing.
+                    return result;                      // Happen if a part is missing.
                 }
             }
-            switch (p) {
+            switch (part) {
                 /*
-                 * Verifies that the 3 first components are "urn:ogc:def:" or "http://www.opengis.net/def/"
-                 * without storing them. In the particular case of second component, we also accept "x-ogc"
+                 * Verifies that the 3 first parts are "urn:ogc:def:" or "http://www.opengis.net/def/"
+                 * without storing them. In the particular case of second part, we also accept "x-ogc"
                  * in addition to "ogc" in URN.
                  */
                 case 0: {
@@ -257,74 +311,123 @@ public final class DefinitionURI {
                             return result;
                         }
                         if (!uri.regionMatches(upper, "//", 0, 2)) {
-                            return null;
+                            return null;                // Prefix is never optional for HTTP.
                         }
                         upper++;
-                        separator = '/';    // Separator for the HTTP namespace.
-                    } else if (!regionMatches("urn", uri, lower, upper)) {
+                        separator = '/';                // Separator for the HTTP namespace.
+                        componentSeparator = '?';       // Separator for the query part in URL.
+                        prefixIsOptional = false;
+                        break;
+                    } else if (regionMatches("urn", uri, lower, upper)) {
+                        prefixIsOptional = false;
+                        break;
+                    } else if (!prefixIsOptional) {
                         return null;
                     }
-                    break;
+                    part++;
+                    // Part is not "urn" but its presence was optional. Maybe it is "ogc". Fall through for checking.
                 }
                 case 1: {
                     final boolean isHTTP = (separator != SEPARATOR);
-                    if (!regionMatches(isHTTP ? DOMAIN : "ogc", uri, lower, upper)) {
-                        if (isHTTP  ||  !regionMatches("x-ogc", uri, lower, upper)) {
-                            return null;
-                        }
-                    }
-                    break;
-                }
-                case 2: {
-                    if (!regionMatches("def", uri, lower, upper)) {
+                    if (regionMatches(isHTTP ? DOMAIN : "ogc", uri, lower, upper) ||
+                            (!isHTTP && regionMatches("x-ogc", uri, lower, upper)))
+                    {
+                        prefixIsOptional = false;
+                        break;
+                    } else if (!prefixIsOptional) {
                         return null;
                     }
-                    break;
+                    part++;
+                    // Part is not "ogc" but its presence was optional. Maybe it is "def". Fall through for checking.
+                }
+                case 2: {
+                    if (regionMatches("def", uri, lower, upper)) {
+                        prefixIsOptional = false;
+                        break;
+                    } else if (!prefixIsOptional) {
+                        return null;
+                    }
+                    part++;
+                    // Part is not "def" but its presence was optional. Maybe it is "crs". Fall through for checking.
                 }
                 /*
-                 * For all components after the first 3 ones, trim whitespaces and store non-empty values.
+                 * The forth part is the first one that we want to remember; all cases before this one were
+                 * only verification. This case is also the first part where component separator may appear,
+                 * for example as in "urn:ogc:def:crs,crs:EPSG:9.1:27700,crs:EPSG:9.1:5701". We verify here
+                 * if such components exist, and if so we parse them recursively.
                  */
-                default: {
-                    final String value = trimWhitespaces(uri, lower, upper).toString();
-                    if (!value.isEmpty() && (p != 5 || !NO_VERSION.equals(value))) {
+                case 3: {
+                    int splitAt = uri.indexOf(componentSeparator, lower);
+                    if (splitAt >= 0 && splitAt < stopAt) {
+                        final int componentsEnd = stopAt;
+                        stopAt = splitAt;                   // Upper limit of the DefinitionURI created in this method call.
+                        if (stopAt < upper) {
+                            upper = stopAt;
+                        }
+                        if (componentSeparator == '?') {
+                            componentSeparator = '&';       // E.g. http://(…)/crs-compound?1=(…)&2=(…)
+                        }
                         if (result == null) {
                             result = new DefinitionURI();
                         }
-                        switch (p) {
+                        final boolean isURN = !result.isHTTP;
+                        final List<DefinitionURI> cmp = new ArrayList<>(4);
+                        boolean hasMore;
+                        do {
+                            int next = uri.indexOf(componentSeparator, splitAt+1);
+                            hasMore = next >= 0 && next < componentsEnd;
+                            if (!hasMore) next = componentsEnd;
+                            cmp.add(parse(uri, isURN, splitAt, next, separator, componentSeparator));
+                            splitAt = next;
+                        } while (hasMore);
+                        result.components = cmp.toArray(new DefinitionURI[cmp.size()]);
+                    }
+                    // Fall through
+                }
+                /*
+                 * For all parts after the first 3 ones, trim whitespaces and store non-empty values.
+                 */
+                default: {
+                    final String value = trimWhitespaces(uri, lower, upper).toString();
+                    if (!value.isEmpty() && (part != 5 || !NO_VERSION.equals(value))) {
+                        if (result == null) {
+                            result = new DefinitionURI();
+                        }
+                        switch (part) {
                             case 3:  result.type      = value; break;
                             case 4:  result.authority = value; break;
                             case 5:  result.version   = value; break;
                             case 6:  result.code      = value; break;
-                            default: throw new AssertionError(p);
+                            default: throw new AssertionError(part);
                         }
                     }
                 }
             }
         }
         /*
-         * Take every remaining components as parameters.
+         * Take every remaining parts as parameters.
          */
-        if (result != null && ++upper < uri.length()) {
+        if (result != null && ++upper < stopAt) {
             result.parameters = (String[]) split(uri.substring(upper), separator);
         }
         return result;
     }
 
     /**
-     * Returns {@code true} if a sub-region of {@code urn} matches the given {@code component},
+     * Returns {@code true} if a sub-region of {@code urn} matches the given {@code part},
      * ignoring case, leading and trailing whitespaces.
      *
-     * @param  component  the expected component ({@code "urn"}, {@code "ogc"}, {@code "def"}, <i>etc.</i>)
+     * @param  part       the expected part ({@code "urn"}, {@code "ogc"}, {@code "def"}, <i>etc.</i>)
      * @param  urn        the URN for which to test a subregion.
      * @param  lower      index of the first character in {@code urn} to compare, after skipping whitespaces.
      * @param  upper      index after the last character in {@code urn} to compare, ignoring whitespaces.
-     * @return {@code true} if the given sub-region of {@code urn} match the given component.
+     * @return {@code true} if the given sub-region of {@code urn} match the given part.
      */
-    static boolean regionMatches(final String component, final String urn, int lower, int upper) {
+    static boolean regionMatches(final String part, final String urn, int lower, int upper) {
         lower = skipLeadingWhitespaces (urn, lower, upper);
         upper = skipTrailingWhitespaces(urn, lower, upper);
         final int length = upper - lower;
-        return (length == component.length()) && urn.regionMatches(true, lower, component, 0, length);
+        return (length == part.length()) && urn.regionMatches(true, lower, part, 0, length);
     }
 
     /**
@@ -406,38 +509,38 @@ public final class DefinitionURI {
          * Check for supported protocols: only "urn" and "http" at this time.
          * All other protocols are rejected as unrecognized.
          */
-        String component;
+        String part;
         switch (length) {
-            case 3:  component = "urn";  break;
-            case 4:  component = "http"; break;
+            case 3:  part = "urn";  break;
+            case 4:  part = "http"; break;
             default: return null;
         }
-        if (!uri.regionMatches(true, lower, component, 0, length)) {
+        if (!uri.regionMatches(true, lower, part, 0, length)) {
             return null;
         }
         if (length == 4) {
             return codeForGML(type, authority, uri, upper+1, null);
         }
         /*
-         * At this point we have determined that the protocol is URN. The next components after "urn"
+         * At this point we have determined that the protocol is URN. The next parts after "urn"
          * shall be "ogc" or "x-ogc", then "def", then the type and authority given in arguments.
          */
         for (int p=0; p!=4; p++) {
             lower = upper + 1;
             upper = uri.indexOf(SEPARATOR, lower);
             if (upper < 0) {
-                return null;                                                    // No more components.
+                return null;                                                    // No more parts.
             }
             switch (p) {
                 // "ogc" is tested before "x-ogc" because more common.
                 case 0: if (regionMatches("ogc", uri, lower, upper)) continue;
-                        component = "x-ogc";   break;       // Fallback if the component is not "ogc".
-                case 1: component = "def";     break;
-                case 2: component = type;      break;
-                case 3: component = authority; break;
+                        part = "x-ogc";   break;       // Fallback if the part is not "ogc".
+                case 1: part = "def";     break;
+                case 2: part = type;      break;
+                case 3: part = authority; break;
                 default: throw new AssertionError(p);
             }
-            if (!regionMatches(component, uri, lower, upper)) {
+            if (!regionMatches(part, uri, lower, upper)) {
                 return null;
             }
         }
@@ -534,15 +637,15 @@ public final class DefinitionURI {
     public static String format(final String type, final String authority, final String version, final String code) {
         final StringBuilder buffer = new StringBuilder(PREFIX);
 loop:   for (int p=0; ; p++) {
-            final String component;
+            final String part;
             switch (p) {
-                case 0:  component = type;      break;
-                case 1:  component = authority; break;
-                case 2:  component = version;   break;
-                case 3:  component = code;      break;
+                case 0:  part = type;      break;
+                case 1:  part = authority; break;
+                case 2:  part = version;   break;
+                case 3:  part = code;      break;
                 default: break loop;
             }
-            if (!appendUnicodeIdentifier(buffer.append(SEPARATOR), '\u0000', component, ".-", false)) {
+            if (!appendUnicodeIdentifier(buffer.append(SEPARATOR), '\u0000', part, ".-", false)) {
                 /*
                  * Only the version (p = 2) is optional. All other fields are mandatory.
                  * If no character has been added for a mandatory field, we can not build a URN.
@@ -571,10 +674,23 @@ loop:   for (int p=0; ; p++) {
                 return "http:" + path + authority + ".xml#" + code;
             }
         }
-        final StringBuilder buffer = new StringBuilder(PREFIX);
-        char separator = SEPARATOR;
+        final StringBuilder buffer = new StringBuilder(40);
+        if (!isHTTP) {
+            buffer.append(PREFIX);
+        }
+        toString(buffer, SEPARATOR);
+        return buffer.toString();
+    }
+
+    /**
+     * Formats the string representation of this URI into the given buffer. This method invoke itself recursively
+     * if this URI has {@linkplain #components}. The {@value #PREFIX} must be appended by the caller, if applicable.
+     *
+     * @param  buffer     where to format the string representation.
+     * @param  separator  first separator to append. Ignored if the URI is actually a URL.
+     */
+    private void toString(final StringBuilder buffer, char separator) {
         if (isHTTP) {
-            buffer.setLength(0);
             buffer.append("http://").append(DOMAIN).append("/def");
             separator = '/';
         }
@@ -583,21 +699,45 @@ loop:   for (int p=0; ; p++) {
             n += parameters.length;
         }
         for (int p=0; p<n; p++) {
-            String component;
+            String part;
             switch (p) {
-                case 0:  component = type;            break;
-                case 1:  component = authority;       break;
-                case 2:  component = version;         break;
-                case 3:  component = code;            break;
-                default: component = parameters[p-4]; break;
+                case 0:  part = type;            break;
+                case 1:  part = authority;       break;
+                case 2:  part = version;         break;
+                case 3:  part = code;            break;
+                default: part = parameters[p-4]; break;
             }
             buffer.append(separator);
-            if (component == null) {
-                if (!isHTTP) continue;
-                component = NO_VERSION;
+            if (isHTTP) {
+                if (part == null) {
+                    part = NO_VERSION;
+                }
+            } else {
+                separator = SEPARATOR;
+                if (part == null) {
+                    continue;
+                }
             }
-            buffer.append(component);
+            buffer.append(part);
         }
-        return buffer.toString();
+        /*
+         * Before to return the URI, trim trailing separators. For example if the URN has only a type
+         * (no authority, version, code, etc.), then we want to return only "urn:ogc:def:crs" instead
+         * of "urn:ogc:def:crs:::"). This happen with URN defining compound CRS for instance.
+         */
+        int length = buffer.length();
+        while (--length >= 0 && buffer.charAt(length) == separator) {
+            buffer.setLength(length);
+        }
+        /*
+         * If there is components, format them recursively. Note that the format is different depending if
+         * we are formatting URN or HTTP.  Example: "urn:ogc:def:crs,crs:EPSG:9.1:27700,crs:EPSG:9.1:5701"
+         * and "http://www.opengis.net/def/crs-compound?1=(…)/crs/EPSG:9.1:27700&2=(…)/crs/EPSG:9.1:5701".
+         */
+        if (components != null) {
+            for (final DefinitionURI c : components) {
+                c.toString(buffer, COMPONENT_SEPARATOR);
+            }
+        }
     }
 }
