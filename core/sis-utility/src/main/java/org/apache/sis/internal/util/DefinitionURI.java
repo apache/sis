@@ -17,10 +17,11 @@
 package org.apache.sis.internal.util;
 
 import java.util.Map;
-import java.util.List;
-import java.util.ArrayList;
+import java.util.TreeMap;
 import java.util.Collections;
 import org.apache.sis.util.CharSequences;
+import org.apache.sis.util.logging.Logging;
+import org.apache.sis.internal.system.Loggers;
 
 import static org.apache.sis.util.CharSequences.*;
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
@@ -135,6 +136,34 @@ public final class DefinitionURI {
     private static final char COMPONENT_SEPARATOR = ',';
 
     /**
+     * The separator between a URL and its first {@linkplain #components}.
+     * In URL syntax, this is the separator between URL path and the query.
+     *
+     * <div class="note"><b>Example:</b><code>
+     * http://www.opengis.net/def/crs-compound<u>?</u>1=…&amp;2=…
+     * </code></div>
+     */
+    private static final char COMPONENT_SEPARATOR_1 = '?';
+
+    /**
+     * The separator between {@linkplain #components} in a URL after the first component.
+     *
+     * <div class="note"><b>Example:</b><code>
+     * http://www.opengis.net/def/crs-compound?1=…<u>&amp;</u>2=…
+     * </code></div>
+     */
+    private static final char COMPONENT_SEPARATOR_2 = '&';
+
+    /**
+     * Separator between keys and values in the query part of a URL.
+     *
+     * <div class="note"><b>Example:</b><code>
+     * http://www.opengis.net/def/crs-compound?1<u>=</u>…&amp;2<u>=</u>…
+     * </code></div>
+     */
+    private static final char KEY_VALUE_SEPARATOR = '=';
+
+    /**
      * The domain of URLs in the OGC namespace.
      */
     public static final String DOMAIN = "www.opengis.net";
@@ -226,12 +255,12 @@ public final class DefinitionURI {
      * </ol></div>
      *
      * <div class="note"><b>HTTP example:</b> if the URI is
-     * {@code "http://www.opengis.net/def/crs-compound?1=(…)/crs/EPSG:9.1:27700&2=(…)/crs/EPSG:9.1:5701"},
+     * {@code "http://www.opengis.net/def/crs-compound?1=(…)/crs/EPSG/9.1/27700&2=(…)/crs/EPSG/9.1/5701"},
      * then this {@code DefinitionURI} will contain the {@code "http://www.opengis.net/def/crs-compound"}
      * header with two components:
      * <ol>
-     *   <li>{@code "http://http://www.opengis.net/def/crs/EPSG:9.1:27700"}</li>
-     *   <li>{@code "http://http://www.opengis.net/def/crs/EPSG:9.1:5701"}</li>
+     *   <li>{@code "http://http://www.opengis.net/def/crs/EPSG/9.1/27700"}</li>
+     *   <li>{@code "http://http://www.opengis.net/def/crs/EPSG/9.1/5701"}</li>
      * </ol></div>
      *
      * Note that this array may contain {@code null} elements if we failed to parse the corresponding component.
@@ -254,7 +283,7 @@ public final class DefinitionURI {
      */
     public static DefinitionURI parse(final String uri) {
         ensureNonNull("uri", uri);
-        return parse(uri, false, -1, uri.length(), SEPARATOR, COMPONENT_SEPARATOR);
+        return parse(uri, false, -1, uri.length());
     }
 
     /**
@@ -263,19 +292,17 @@ public final class DefinitionURI {
      *
      * This method may invoke itself recursively if the URI contains sub-components.
      *
-     * @param  uri                 the URI to parse.
-     * @param  prefixIsOptional    {@code true} if {@value #PREFIX} may not be present.
-     * @param  upper               upper index of the previous URI part, or -1 if none.
-     * @param  stopAt              index (exclusive) where to stop parsing.
-     * @param  separator           separator character of URI parts.
-     * @param  componentSeparator  separator character of {@linkplain #components}.
+     * @param  uri               the URI to parse.
+     * @param  prefixIsOptional  {@code true} if {@value #PREFIX} may not be present.
+     * @param  upper             upper index of the previous URI part, or -1 if none.
+     * @param  stopAt            index (exclusive) where to stop parsing.
      * @return the parse result, or {@code null} if the URI is not recognized.
      */
     @SuppressWarnings("fallthrough")
-    private static DefinitionURI parse(final String uri, boolean prefixIsOptional,
-            int upper, int stopAt, char separator, char componentSeparator)
-    {
-        DefinitionURI result = null;
+    private static DefinitionURI parse(final String uri, boolean prefixIsOptional, int upper, int stopAt) {
+        DefinitionURI result    = null;
+        char separator          = SEPARATOR;                    // Separator character of URI parts.
+        char componentSeparator = COMPONENT_SEPARATOR;          // Separator character of components.
         /*
          * Loop on all parts that we expect in the URI. Those parts are:
          *
@@ -311,11 +338,11 @@ public final class DefinitionURI {
                             return result;
                         }
                         if (!uri.regionMatches(upper, "//", 0, 2)) {
-                            return null;                // Prefix is never optional for HTTP.
+                            return null;                                // Prefix is never optional for HTTP.
                         }
                         upper++;
-                        separator = '/';                // Separator for the HTTP namespace.
-                        componentSeparator = '?';       // Separator for the query part in URL.
+                        separator = '/';                                // Separator for the HTTP namespace.
+                        componentSeparator = COMPONENT_SEPARATOR_1;     // Separator for the query part in URL.
                         prefixIsOptional = false;
                         break;
                     } else if (regionMatches("urn", uri, lower, upper)) {
@@ -364,23 +391,41 @@ public final class DefinitionURI {
                         if (stopAt < upper) {
                             upper = stopAt;
                         }
-                        if (componentSeparator == '?') {
-                            componentSeparator = '&';       // E.g. http://(…)/crs-compound?1=(…)&2=(…)
+                        if (componentSeparator == COMPONENT_SEPARATOR_1) {
+                            componentSeparator =  COMPONENT_SEPARATOR_2;    // E.g. http://(…)/crs-compound?1=(…)&2=(…)
                         }
                         if (result == null) {
                             result = new DefinitionURI();
                         }
                         final boolean isURN = !result.isHTTP;
-                        final List<DefinitionURI> cmp = new ArrayList<>(4);
+                        final Map<Integer,DefinitionURI> orderedComponents = new TreeMap<>();
                         boolean hasMore;
                         do {
+                            /*
+                             * Find indices of URI sub-component to parse. The sub-component will
+                             * go from 'splitAt' to 'next' exclusive ('splitAt' is exclusive too).
+                             */
                             int next = uri.indexOf(componentSeparator, splitAt+1);
                             hasMore = next >= 0 && next < componentsEnd;
                             if (!hasMore) next = componentsEnd;
-                            cmp.add(parse(uri, isURN, splitAt, next, separator, componentSeparator));
+                            /*
+                             * HTTP uses key-value pairs as in "http://something?1=...&2=...
+                             * URN uses a comma-separated value list without number.
+                             * We support both forms, regardless if HTTP or URN.
+                             */
+                            int sequenceNumber = orderedComponents.size() + 1;      // Default value if no explicit key.
+                            final int s = splitKeyValue(uri, splitAt+1, next);
+                            if (s >= 0) try {
+                                sequenceNumber = Integer.parseInt(trimWhitespaces(uri, splitAt+1, s).toString());
+                                splitAt = s;                      // Set only on success.
+                            } catch (NumberFormatException e) {
+                                // Ignore. The URN is likely to be invalid, but we let parse(…) determines that.
+                                Logging.recoverableException(Logging.getLogger(Loggers.CRS_FACTORY), DefinitionURI.class, "parse", e);
+                            }
+                            orderedComponents.put(sequenceNumber, parse(uri, isURN, splitAt, next));
                             splitAt = next;
                         } while (hasMore);
-                        result.components = cmp.toArray(new DefinitionURI[cmp.size()]);
+                        result.components = orderedComponents.values().toArray(new DefinitionURI[orderedComponents.size()]);
                     }
                     // Fall through
                 }
@@ -428,6 +473,23 @@ public final class DefinitionURI {
         upper = skipTrailingWhitespaces(urn, lower, upper);
         final int length = upper - lower;
         return (length == part.length()) && urn.regionMatches(true, lower, part, 0, length);
+    }
+
+    /**
+     * Returns the index of the {@code '='} character in the given sub-string, provided that all characters
+     * before it are spaces or decimal digits. Returns -1 if the key-value separator character is not found.
+     * Note that a positive return value does not guarantee that the number is parsable.
+     */
+    private static int splitKeyValue(final String uri, int lower, final int upper) {
+        while (lower < upper) {
+            int c = uri.codePointAt(lower);
+            if ((c < '0' || c > '9') && !Character.isWhitespace(c)) {
+                if (c == KEY_VALUE_SEPARATOR) return lower;
+                break;
+            }
+            lower += Character.charCount(c);
+        }
+        return -1;
     }
 
     /**
@@ -726,16 +788,24 @@ loop:   for (int p=0; ; p++) {
          * of "urn:ogc:def:crs:::"). This happen with URN defining compound CRS for instance.
          */
         int length = buffer.length();
-        while (--length >= 0 && buffer.charAt(length) == separator) {
+        n = isHTTP ? 2 : 1;
+        while ((length -= n) >= 0 && buffer.charAt(length) == separator) {
+            if (isHTTP && buffer.charAt(length + 1) != NO_VERSION.charAt(0)) break;
             buffer.setLength(length);
         }
         /*
          * If there is components, format them recursively. Note that the format is different depending if
          * we are formatting URN or HTTP.  Example: "urn:ogc:def:crs,crs:EPSG:9.1:27700,crs:EPSG:9.1:5701"
-         * and "http://www.opengis.net/def/crs-compound?1=(…)/crs/EPSG:9.1:27700&2=(…)/crs/EPSG:9.1:5701".
+         * and "http://www.opengis.net/def/crs-compound?1=(…)/crs/EPSG/9.1/27700&2=(…)/crs/EPSG/9.1/5701".
          */
         if (components != null) {
-            for (final DefinitionURI c : components) {
+            for (int i=0; i<components.length;) {
+                final DefinitionURI c = components[i++];
+                if (isHTTP) {
+                    buffer.append(i == 1 ? COMPONENT_SEPARATOR_1
+                                         : COMPONENT_SEPARATOR_2)
+                          .append(i).append(KEY_VALUE_SEPARATOR);
+                }
                 c.toString(buffer, COMPONENT_SEPARATOR);
             }
         }
