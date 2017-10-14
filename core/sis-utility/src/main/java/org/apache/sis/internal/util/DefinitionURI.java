@@ -132,7 +132,7 @@ public final class DefinitionURI {
      * in {@code "urn:ogc:def:crs,crs:EPSG:9.1:27700,crs:EPSG:9.1:5701"}, the components are
      * {@code "crs:EPSG:9.1:27700"} and {@code "crs:EPSG:9.1:5701"}.</div>
      */
-    private static final char COMPONENT_SEPARATOR = ',';
+    public static final char COMPONENT_SEPARATOR = ',';
 
     /**
      * The separator between a URL and its first {@linkplain #components}.
