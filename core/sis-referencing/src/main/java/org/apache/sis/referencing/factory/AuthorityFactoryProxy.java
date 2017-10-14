@@ -569,8 +569,9 @@ abstract class AuthorityFactoryProxy<T> {
      */
     private static final Map<String, AuthorityFactoryProxy<?>> BY_URN_TYPE;
     static {
-        final Map<String, AuthorityFactoryProxy<?>> map = new HashMap<>(14);
+        final Map<String, AuthorityFactoryProxy<?>> map = new HashMap<>(16);
         map.put("crs",                  CRS);
+        map.put("crs-compound",         CRS);
         map.put("datum",                DATUM);
         map.put("ellipsoid",            ELLIPSOID);
         map.put("meridian",             PRIME_MERIDIAN);
@@ -610,7 +611,7 @@ abstract class AuthorityFactoryProxy<T> {
      * The proxy to use for a given type declared in a URN.
      * For example in the {@code "urn:ogc:def:crs:EPSG::4326"} URN, the proxy to use is {@link #CRS}.
      *
-     * @param  typeName  the URN type.
+     * @param  typeName  the name of URN type.
      * @return the proxy for the given type, or {@code null} if the given type is illegal.
      */
     @SuppressWarnings("unchecked")
