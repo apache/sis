@@ -25,7 +25,6 @@ import org.apache.sis.internal.system.Loggers;
 
 import static org.apache.sis.util.CharSequences.*;
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
-import static org.apache.sis.internal.util.Utilities.appendUnicodeIdentifier;
 
 
 /**
@@ -681,43 +680,6 @@ public final class DefinitionURI {
             i += Character.charCount(c);
         }
         return i;
-    }
-
-    /**
-     * Formats the given identifier using the {@code "ogc:urn:def:"} syntax. The identifier code space,
-     * version and code are appended omitting any characters that are not valid for a Unicode identifier.
-     * If some information are missing in the given identifier, then this method returns {@code null}.
-     *
-     * @param  type       the object type as one of the types documented in class javadoc, or {@code null}.
-     * @param  authority  the authority as one of the values documented in class javadoc, or {@code null}.
-     * @param  version    the code version, or {@code null}. This is the only optional information.
-     * @param  code       the code, or {@code null}.
-     * @return an identifier using the URN syntax, or {@code null} if a mandatory information is missing.
-     *
-     * @see org.apache.sis.internal.metadata.NameMeaning#toURN(Class, String, String, String)
-     */
-    public static String format(final String type, final String authority, final String version, final String code) {
-        final StringBuilder buffer = new StringBuilder(PREFIX);
-loop:   for (int p=0; ; p++) {
-            final String part;
-            switch (p) {
-                case 0:  part = type;      break;
-                case 1:  part = authority; break;
-                case 2:  part = version;   break;
-                case 3:  part = code;      break;
-                default: break loop;
-            }
-            if (!appendUnicodeIdentifier(buffer.append(SEPARATOR), '\u0000', part, ".-", false)) {
-                /*
-                 * Only the version (p = 2) is optional. All other fields are mandatory.
-                 * If no character has been added for a mandatory field, we can not build a URN.
-                 */
-                if (p != 2) {
-                    return null;
-                }
-            }
-        }
-        return buffer.toString();
     }
 
     /**

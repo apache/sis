@@ -232,13 +232,4 @@ public final strictfp class DefinitionURITest extends TestCase {
         assertNull  (        DefinitionURI.codeOf("uom", "EPSG", "http://www.opengis.net/gml/srs/epsg.xml#4326"));
         assertNull  (        DefinitionURI.codeOf("uom", "EPSG", "http://schemas.opengis.net/iso/19139/20070417/resources/uom/gmxUom.xml#xpointer(//*[@gml:id='m'])"));
     }
-
-    /**
-     * Tests {@link DefinitionURI#format(String, String, String, String)}.
-     */
-    @Test
-    public void testToURN() {
-        assertEquals("urn:ogc:def:crs:EPSG::4326", DefinitionURI.format("crs", "EPSG", null, "4326"));
-        assertNull  ("Authority is not optional.", DefinitionURI.format("crs", null,   null, "4326"));
-    }
 }
