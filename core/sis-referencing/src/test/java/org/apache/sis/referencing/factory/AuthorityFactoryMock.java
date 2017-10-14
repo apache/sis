@@ -27,6 +27,7 @@ import org.opengis.referencing.crs.CRSAuthorityFactory;
 import org.opengis.referencing.crs.GeocentricCRS;
 import org.opengis.referencing.crs.GeographicCRS;
 import org.opengis.referencing.crs.VerticalCRS;
+import org.opengis.referencing.cs.EllipsoidalCS;
 import org.opengis.referencing.cs.CSAuthorityFactory;
 import org.opengis.referencing.datum.DatumAuthorityFactory;
 import org.opengis.referencing.datum.GeodeticDatum;
@@ -40,6 +41,7 @@ import org.apache.sis.measure.Units;
 import org.apache.sis.metadata.iso.extent.Extents;
 import org.apache.sis.referencing.datum.HardCodedDatum;
 import org.apache.sis.referencing.crs.HardCodedCRS;
+import org.apache.sis.referencing.cs.HardCodedCS;
 
 import static org.junit.Assert.*;
 
@@ -48,7 +50,7 @@ import static org.junit.Assert.*;
  * A pseudo-authority factory with hard-coded objects.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.7
+ * @version 0.8
  * @since   0.7
  * @module
  */
@@ -114,6 +116,7 @@ public final strictfp class AuthorityFactoryMock extends GeodeticAuthorityFactor
         if (type.isAssignableFrom(GeodeticDatum.class)) add(codes, 6326, 6322, 6807, 6301, 6612, 6047);
         if (type.isAssignableFrom(VerticalDatum.class)) add(codes, 5100);
         if (type.isAssignableFrom(VerticalCRS.class))   add(codes, 5714, 9905);
+        if (type.isAssignableFrom(EllipsoidalCS.class)) add(codes, 6422, 6424);
         return codes;
     }
 
@@ -147,6 +150,8 @@ public final strictfp class AuthorityFactoryMock extends GeodeticAuthorityFactor
             case 6612: return HardCodedDatum.JGD2000;
             case 6047: return HardCodedDatum.SPHERE;
             case 5100: return HardCodedDatum.MEAN_SEA_LEVEL;
+            case 6422: return HardCodedCS.GEODETIC_φλ;
+            case 6424: return HardCodedCS.GEODETIC_2D;
             default: throw new NoSuchAuthorityCodeException(code, authority.getTitle().toString(), code);
         }
     }

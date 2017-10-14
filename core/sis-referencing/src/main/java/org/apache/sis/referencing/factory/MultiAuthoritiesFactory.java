@@ -20,6 +20,7 @@ import java.util.ServiceLoader;
 import java.util.Collections;
 import java.util.Collection;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.Map;
@@ -49,9 +50,13 @@ import org.apache.sis.internal.util.AbstractIterator;
 import org.apache.sis.internal.util.DefinitionURI;
 import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.internal.util.SetOfUnknownSize;
+import org.apache.sis.internal.metadata.NameMeaning;
 import org.apache.sis.internal.referencing.LazySet;
 import org.apache.sis.internal.referencing.Resources;
+import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.metadata.iso.citation.Citations;
+import org.apache.sis.referencing.CRS;
+import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ArgumentChecks;
@@ -117,7 +122,7 @@ import org.apache.sis.util.collection.BackingStoreException;
  * do not need to be thread-safe. See constructor Javadoc for more information.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 0.7
+ * @version 0.8
  *
  * @see org.apache.sis.referencing.CRS#getAuthorityFactory(String)
  *
@@ -727,21 +732,47 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
      * @return the object from one of the authority factory specified at construction time.
      * @throws FactoryException if an error occurred while creating the object.
      */
-    final <T> T create(AuthorityFactoryProxy<? extends T> proxy, String code) throws FactoryException {
+    private <T> T create(AuthorityFactoryProxy<? extends T> proxy, String code) throws FactoryException {
         ArgumentChecks.ensureNonNull("code", code);
         final String authority, version;
         final String[] parameters;
         final DefinitionURI uri = DefinitionURI.parse(code);
         if (uri != null) {
-            if (uri.authority == null) {
-                throw new NoSuchAuthorityCodeException(Resources.format(Resources.Keys.MissingAuthority_1, code), null, uri.code, code);
+            Class<? extends T> type = proxy.type;
+            proxy = proxy.specialize(uri.type);
+            /*
+             * If the URN or URL contains combined references for compound coordinate reference systems,
+             * create the components. First we verify that all component references have been parsed
+             * before to start creating any object.
+             */
+            if (uri.code == null) {
+                final DefinitionURI[] components = uri.components;
+                if (components != null) {
+                    for (int i=0; i < components.length; i++) {
+                        if (components[i] == null) {
+                            throw new NoSuchAuthorityCodeException(Resources.format(
+                                    Resources.Keys.CanNotParseCombinedReference_2, i+1, uri.isHTTP ? 1 : 0),
+                                    uri.authority, null, uri.toString());
+                        }
+                    }
+                    if (proxy != null) type = proxy.type;       // Use the more specific type declared in the URN.
+                    return combine(type, components, uri.isHTTP);
+                }
             }
-            final Class<? extends T> type = proxy.type;
+            /*
+             * At this point we determined that the URN or URL references a single instance (not combined references).
+             * Example: "urn:ogc:def:crs:EPSG:9.1:4326". Verifies that the object type is recognized and that a code
+             * is present. The remainder steps are the same as if the user gave a simple code (e.g. "EPSG:4326").
+             */
+            if (uri.authority == null) {
+                // We want this check before the 'code' value is modified below.
+                throw new NoSuchAuthorityCodeException(
+                        Resources.format(Resources.Keys.MissingAuthority_1, code), null, uri.code, code);
+            }
             authority  = uri.authority;
             version    = uri.version;
             code       = uri.code;
             parameters = uri.parameters;
-            proxy      = proxy.specialize(uri.type);
             if (code == null || proxy == null) {
                 final String s = uri.toString();
                 final String message;
@@ -1483,6 +1514,195 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
             this.code = code;
             return opFactory(factory);
         }
+    }
+
+    /**
+     * Invoked when a {@code createFoo(…)} method is given a combined URI.
+     * A combined URI is a URN or URL referencing other components. For example if the given URI
+     * is {@code "urn:ogc:def:crs, crs:EPSG::27700, crs:EPSG::5701"}, then the components are:
+     * <ol>
+     *   <li>{@code "urn:ogc:def:crs:EPSG:9.1:27700"}</li>
+     *   <li>{@code "urn:ogc:def:crs:EPSG:9.1:5701"}</li>
+     * </ol>
+     *
+     * We do not require the components to be instance of CRS, since the "Definition identifier URNs in
+     * OGC namespace" best practice paper allows other kinds of combination (e.g. of coordinate operations).
+     *
+     * @param  <T>         compile-time value of {@code type} argument.
+     * @param  type        type of object to create.
+     * @param  references  parsed URI of the components.
+     * @param  isHTTP      whether the user URI is an URL (i.e. {@code "http://something"}) instead than a URN.
+     * @return the combined object.
+     * @throws FactoryException if an error occurred while creating the combined object.
+     */
+    private <T> T combine(final Class<T> type, final DefinitionURI[] references, final boolean isHTTP) throws FactoryException {
+        /*
+         * Identify the type requested by the user and create all components with the assumption that they will
+         * be of that type. This is the most common case. If during iteration we find an object of another kind,
+         * then the array type will be downgraded to IdentifiedObject[]. The 'componentType' variable will keep
+         * its non-null value only if the array stay of the expected sub-type.
+         */
+        final byte requestedType;
+        IdentifiedObject[] components;
+        Class<? extends IdentifiedObject> componentType;
+        if (CoordinateReferenceSystem.class.isAssignableFrom(type)) {
+            requestedType = AuthorityFactoryIdentifier.CRS;
+            componentType = CoordinateReferenceSystem.class;
+            components    = new CoordinateReferenceSystem[references.length];       // Intentional covariance.
+        } else if (CoordinateOperation.class.isAssignableFrom(type)) {
+            requestedType = AuthorityFactoryIdentifier.OPERATION;
+            componentType = CoordinateOperation.class;
+            components    = new CoordinateOperation[references.length];             // Intentional covariance.
+        } else {
+            throw new FactoryException(Resources.format(Resources.Keys.CanNotCombineUriAsType_1, type));
+        }
+        final String expected = NameMeaning.toObjectType(componentType);    // Note: "compound-crs" ⟶ "crs".
+        for (int i=0; i<references.length; i++) {
+            final DefinitionURI ref = references[i];
+            final IdentifiedObject component = createObject(ref.toString());
+            if (componentType != null && (!componentType.isInstance(component) || !expected.equalsIgnoreCase(ref.type))) {
+                componentType = null;
+                components = Arrays.copyOf(components, components.length, IdentifiedObject[].class);
+            }
+            components[i] = component;
+        }
+        /*
+         * At this point we have successfully created all components. The way to interpret those components
+         * depends mostly on the type of object requested by the user. For a given requested type, different
+         * rules apply depending on the type of components. Those rules are described in OGC 07-092r1 (2007):
+         * "Definition identifier URNs in OGC namespace".
+         */
+        IdentifiedObject combined = null;
+        switch (requestedType) {
+            case AuthorityFactoryIdentifier.OPERATION: {
+                if (componentType != null) {
+                    /*
+                     * URN combined references for concatenated operations. We build an operation name from
+                     * the operation identifiers (rather than CRS identifiers) because this is what the user
+                     * gave to us, and because source/target CRS are not guaranteed to be defined. We do not
+                     * yet support swapping roles of source and target CRS if an implied-reverse coordinate
+                     * operation is included.
+                     */
+                    final CoordinateOperation[] ops = (CoordinateOperation[]) components;
+                    String name = IdentifiedObjects.getIdentifierOrName(ops[0]) + " ⟶ "
+                                + IdentifiedObjects.getIdentifierOrName(ops[ops.length - 1]);
+                    combined = DefaultFactories.forBuildin(CoordinateOperationFactory.class)
+                            .createConcatenatedOperation(Collections.singletonMap(CoordinateOperation.NAME_KEY, name), ops);
+                }
+                break;
+            }
+            case AuthorityFactoryIdentifier.CRS: {
+                if (componentType != null) {
+                    /*
+                     * URN combined references for compound coordinate reference systems.
+                     * The URNs of the individual well-known CRSs are listed in the same order in which the
+                     * individual coordinate tuples are combined to form the CompoundCRS coordinate tuple.
+                     */
+                    combined = CRS.compound((CoordinateReferenceSystem[]) components);
+                } else if (!isHTTP) {
+                    final CoordinateSystem cs = remove(references, components, CoordinateSystem.class);
+                    if (cs != null) {
+                        final Datum datum = remove(references, components, Datum.class);
+                        if (datum != null) {
+                            /*
+                             * URN combined references for datum and coordinate system. In this case, the URN shall
+                             * concatenate the URNs of one well-known datum and one well-known coordinate system.
+                             */
+                            if (ArraysExt.allEquals(references, null)) {
+                                combined = combine((GeodeticDatum) datum, cs);
+                            }
+                        } else {
+                            /*
+                             * URN combined references for projected or derived CRSs. In this case, the URN shall
+                             * concatenate the URNs of the one well-known CRS, one well-known Conversion, and one
+                             * well-known CartesianCS. Similar action can be taken for derived CRS.
+                             */
+                            CoordinateReferenceSystem baseCRS = remove(references, components, CoordinateReferenceSystem.class);
+                            CoordinateOperation op = remove(references, components, CoordinateOperation.class);
+                            if (ArraysExt.allEquals(references, null) && op instanceof Conversion) {
+                                combined = combine(baseCRS, (Conversion) op, cs);
+                            }
+                        }
+                    }
+                }
+                break;
+            }
+        }
+        /*
+         * At this point the combined object has been created if we know how to create it.
+         * Maybe the result matches the definition of an existing object in the database,
+         * in which case we will use the existing definition for better metadata.
+         */
+        if (combined == null) {
+            throw new FactoryException(Resources.format(Resources.Keys.UnexpectedComponentInURI));
+        }
+        final IdentifiedObject existing = newIdentifiedObjectFinder().findSingleton(combined);
+        return type.cast(existing != null ? existing : combined);
+    }
+
+    /**
+     * If the given {@code type} is found in the given {@code references}, sets that reference element to {@code null}
+     * and returns the corresponding {@code components} element. Otherwise returns {@code null}. This is equivalent to
+     * {@link Map#remove(Object, Object)} where {@code references} are the keys and {@code components} are the values.
+     * We do not bother building that map because the arrays are very short (2 or 3 elements).
+     */
+    private static <T> T remove(final DefinitionURI[] references, final IdentifiedObject[] components, final Class<T> type) {
+        final String expected = NameMeaning.toObjectType(type);
+        for (int i=0; i<references.length; i++) {
+            final DefinitionURI ref = references[i];
+            if (ref != null && expected.equalsIgnoreCase(ref.type)) {
+                references[i] = null;
+                return type.cast(components[i]);
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Invoked when a {@code createFoo(…)} method is given a combined URI containing a datum and a coordinate system.
+     * If the given information are not sufficient or not applicable, then this method returns {@code null}.
+     *
+     * @param  datum  the datum, or {@code null} if missing.
+     * @param  cs     the coordinate system (never null).
+     * @return the combined CRS, or {@code null} if the given information are not sufficient.
+     * @throws FactoryException if an error occurred while creating the combined CRS.
+     */
+    private static GeodeticCRS combine(final GeodeticDatum datum, final CoordinateSystem cs) throws FactoryException {
+        final Map<String,?> properties = IdentifiedObjects.getProperties(datum, Datum.IDENTIFIERS_KEY);
+        final CRSFactory factory = DefaultFactories.forBuildin(CRSFactory.class);
+        if (datum instanceof GeodeticDatum) {
+            if (cs instanceof EllipsoidalCS) {
+                return factory.createGeographicCRS(properties, datum, (EllipsoidalCS) cs);
+            } else if (cs instanceof SphericalCS) {
+                return factory.createGeocentricCRS(properties, datum, (SphericalCS) cs);
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Invoked when a {@code createFoo(…)} method is given a combined URI containing a conversion and a coordinate
+     * system. If the given information are not sufficient or not applicable, then this method returns {@code null}.
+     *
+     * @param  baseCRS   the CRS on which the derived CRS will be based on, or {@code null} if missing.
+     * @param  fromBase  the conversion from {@code baseCRS} to the CRS to be created by this method.
+     * @param  cs        the coordinate system (never null).
+     * @return the combined CRS, or {@code null} if the given information are not sufficient.
+     * @throws FactoryException if an error occurred while creating the combined CRS.
+     */
+    private static GeneralDerivedCRS combine(final CoordinateReferenceSystem baseCRS, final Conversion fromBase,
+            final CoordinateSystem cs) throws FactoryException
+    {
+        if (baseCRS != null && fromBase.getSourceCRS() == null && fromBase.getTargetCRS() == null) {
+            final Map<String,?> properties = IdentifiedObjects.getProperties(fromBase, Datum.IDENTIFIERS_KEY);
+            final CRSFactory factory = DefaultFactories.forBuildin(CRSFactory.class);
+            if (baseCRS instanceof GeographicCRS && cs instanceof CartesianCS) {
+                return factory.createProjectedCRS(properties, (GeographicCRS) baseCRS, fromBase, (CartesianCS) cs);
+            } else {
+                return factory.createDerivedCRS(properties, baseCRS, fromBase, cs);
+            }
+        }
+        return null;
     }
 
     /**
