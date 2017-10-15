@@ -16,12 +16,9 @@
  */
 package org.apache.sis.internal.metadata.sql;
 
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.sql.SQLException;
 import javax.sql.DataSource;
 import org.apache.sis.util.Debug;
-import org.apache.sis.internal.system.DataDirectory;
 
 import static org.junit.Assume.*;
 
@@ -74,21 +71,6 @@ public final strictfp class TestDatabase {
      * Do not allow (for now) instantiation of this class.
      */
     private TestDatabase() {
-    }
-
-    /**
-     * Returns the path to the directory of the given name in {@code $SIS_DATA/Databases}.
-     * If the directory is not found, then the test will be interrupted by an {@code org.junit.Assume} statement.
-     *
-     * @param  name  the name of the sub-directory.
-     * @return the path to the given sub-directory.
-     */
-    public static Path directory(final String name) {
-        Path dir = DataDirectory.DATABASES.getDirectory();
-        assumeNotNull("$SIS_DATA/Databases directory not found.", dir);
-        dir = dir.resolve(name);
-        assumeTrue("Specified directory not found.", Files.isDirectory(dir));
-        return dir;
     }
 
     /**

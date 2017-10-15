@@ -184,7 +184,7 @@ public final class CRS extends Static {
      *   <tr><td>EPSG:5714</td> <td>{@link CommonCRS.Vertical#MEAN_SEA_LEVEL MEAN_SEA_LEVEL}</td> <td>Vertical</td> <td>Mean Sea Level height</td></tr>
      * </table></blockquote>
      *
-     * This method accepts also the URN and URL syntax.
+     * This method accepts also the URN and URL syntaxes.
      * For example the following codes are considered equivalent to {@code "EPSG:4326"}:
      * <ul>
      *   <li>{@code "EPSG::4326"}</li>
@@ -192,6 +192,26 @@ public final class CRS extends Static {
      *   <li>{@code "http://www.opengis.net/def/crs/epsg/0/4326"}</li>
      *   <li>{@code "http://www.opengis.net/gml/srs/epsg.xml#4326"}</li>
      * </ul>
+     *
+     * URIs can be combined for creating larger objects. For example the following URIs combine a
+     * two-dimensional WGS84 reference system (EPSG:4326) with a Mean Sea Level height (EPSG:5714).
+     * The result is a three-dimensional {@linkplain org.apache.sis.referencing.crs.DefaultCompoundCRS
+     * compound coordinate reference system}:
+     *
+     * <ul>
+     *   <li>{@code "urn:ogc:def:crs,crs:EPSG::4326,crs:EPSG::5714"}</li>
+     *   <li><code>"http://www.opengis.net/def/crs-compound?<br>
+     *            1=http://www.opengis.net/def/crs/epsg/0/4326&amp;<br>
+     *            2=http://www.opengis.net/def/crs/epsg/0/5714"</code></li>
+     * </ul>
+     *
+     * <p>URNs (but not URLs) can also combine a
+     * {@linkplain org.apache.sis.referencing.datum.DefaultGeodeticDatum geodetic datum} with an
+     * {@linkplain org.apache.sis.referencing.cs.DefaultEllipsoidalCS ellipsoidal coordinate system} for creating a new
+     * {@linkplain org.apache.sis.referencing.crs.DefaultGeographicCRS geographic CRS}, or a base geographic CRS with a
+     * {@linkplain org.apache.sis.referencing.operation.DefaultConversion conversion} and a
+     * {@linkplain org.apache.sis.referencing.cs.DefaultCartesianCS Cartesian coordinate system} for creating a new
+     * {@linkplain org.apache.sis.referencing.crs.DefaultProjectedCRS projected coordinate reference system}.</p>
      *
      * Note that the {@link IdentifiedObjects#lookupURN(IdentifiedObject, Citation)}
      * method can be seen as a converse of this method.
@@ -205,6 +225,7 @@ public final class CRS extends Static {
      *
      * @see #getAuthorityFactory(String)
      * @see org.apache.sis.referencing.factory.GeodeticAuthorityFactory
+     * @see <a href="http://epsg-registry.org/">EPSG Geodetic Registry</a>
      *
      * @category factory
      */

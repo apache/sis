@@ -19,11 +19,13 @@ package org.apache.sis.test.integration;
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.referencing.CRS;
+import org.apache.sis.referencing.factory.TestFactorySource;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
+import static org.junit.Assume.assumeNotNull;
 
 
 /**
@@ -48,8 +50,8 @@ public final strictfp class CoordinateReferenceSystemTest extends TestCase {
      * @throws FactoryException if an authority or a code is not recognized.
      */
     @Test
-    @org.junit.Ignore("Pending a mechanism for detecting if EPSG dataset is present.")
     public void testCreateFromCombinedURN() throws FactoryException {
+        assumeNotNull(TestFactorySource.getSharedFactory());
         CoordinateReferenceSystem crs = CRS.forCode("urn:ogc:def:crs, crs:EPSG::27700, crs:EPSG::5701");
         assertSame("OSGB 1936 / British National Grid + ODN height", CRS.forCode("EPSG:7405"), crs);
     }
