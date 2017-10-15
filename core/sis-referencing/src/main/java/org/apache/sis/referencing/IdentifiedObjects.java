@@ -386,8 +386,14 @@ public final class IdentifiedObjects extends Static {
      * Looks up a URN, such as {@code "urn:ogc:def:crs:EPSG:9.1:4326"}, of the specified object.
      * This method searches in all {@linkplain org.apache.sis.referencing.factory.GeodeticAuthorityFactory geodetic
      * authority factories} known to SIS for an object {@linkplain org.apache.sis.util.ComparisonMode#APPROXIMATIVE
-     * approximatively equals} to the specified object. If such an object is found, then the URN for the given
-     * authority is returned. Otherwise or if there is ambiguity, this method returns {@code null}.
+     * approximatively equals} to the specified object. Then there is a choice:
+     *
+     * <ul>
+     *   <li>If a single matching object is found in the specified authority factory, then its URN is returned.</li>
+     *   <li>Otherwise if the given object is a {@link CompoundCRS} or {@link ConcatenatedOperation}
+     *       and all components have an URN, then this method returns a combined URN.</li>
+     *   <li>Otherwise this method returns {@code null}.</li>
+     * </ul>
      *
      * <p><strong>Note that this method checks the identifier validity.</strong>
      * If the given object declares explicitly an identifier, then this method will instantiate an object from the

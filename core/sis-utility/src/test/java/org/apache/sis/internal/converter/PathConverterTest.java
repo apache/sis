@@ -30,7 +30,7 @@ import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
-import static org.junit.Assume.*;
+import static org.junit.Assume.assumeTrue;
 import static org.apache.sis.test.Assert.*;
 
 
@@ -49,7 +49,7 @@ public final strictfp class PathConverterTest extends TestCase {
      * Windows platform has driver letters instead, like "C:\\",
      * which are not correctly tested by this class.
      */
-    static void assumeUnixRoot() {
+    private static void assumeUnixRoot() {
         assumeTrue(ArraysExt.contains(File.listRoots(), new File("/")));
     }
 

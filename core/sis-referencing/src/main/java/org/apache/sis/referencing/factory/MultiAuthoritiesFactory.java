@@ -79,7 +79,7 @@ import org.apache.sis.util.collection.BackingStoreException;
  * then the work is delegated to that factory. Otherwise a {@link NoSuchAuthorityFactoryException} is thrown.</p>
  *
  * <div class="section">URI syntax</div>
- * This factory can also parse URNs of the following forms:
+ * This factory can also parse URNs or URLs of the following forms:
  *
  * <ul>
  *   <li>{@code "urn:ogc:def:}<var>type</var>{@code :}<var>authority</var>{@code :}<var>version</var>{@code :}<var>code</var>{@code "}</li>
@@ -98,6 +98,30 @@ import org.apache.sis.util.collection.BackingStoreException;
  * creation to {@link org.apache.sis.referencing.factory.sql.EPSGDataAccess#createCoordinateReferenceSystem(String)}
  * instead of {@link org.apache.sis.referencing.factory.sql.EPSGDataAccess#createObject(String)} because of the
  * {@code "crs"} part in the URN. The more specific method gives better performances and avoid ambiguities.</div>
+ *
+ * This class accepts also combined URIs of the following forms
+ * (only two components shown, but arbitrary number of components is allowed):
+ *
+ * <ul>
+ *   <li>{@code "urn:ogc:def:}<var>type</var>{@code ,}
+ *       <var>type₁</var>{@code :}<var>authority₁</var>{@code :}<var>version₁</var>{@code :}<var>code₁</var>{@code ,}
+ *       <var>type₂</var>{@code :}<var>authority₂</var>{@code :}<var>version₂</var>{@code :}<var>code₂</var>{@code "}</li>
+ *   <li>{@code  "http://www.opengis.net/def/crs-compound?}<br>
+ *       {@code 1=http://www.opengis.net/def/crs/}<var>authority₁</var>{@code /}<var>version₁</var>{@code /}<var>code₁</var>{@code &}<br>
+ *       {@code 2=http://www.opengis.net/def/crs/}<var>authority₂</var>{@code /}<var>version₂</var>{@code /}<var>code₂</var>{@code "}</li>
+ * </ul>
+ *
+ * Given such URIs, {@code MultiAuthoritiesFactory} invokes {@link #createObject(String)} for each component
+ * and combines the result as described by the {@link CRS#compound(CoordinateReferenceSystem...)} method.
+ * URNs (but not URLs) can also combine a
+ * {@linkplain org.apache.sis.referencing.datum.DefaultGeodeticDatum geodetic datum} with an
+ * {@linkplain org.apache.sis.referencing.cs.DefaultEllipsoidalCS ellipsoidal coordinate system} for creating a new
+ * {@linkplain org.apache.sis.referencing.crs.DefaultGeographicCRS geographic CRS}, or a base geographic CRS with a
+ * {@linkplain org.apache.sis.referencing.operation.DefaultConversion conversion} and a
+ * {@linkplain org.apache.sis.referencing.cs.DefaultCartesianCS Cartesian coordinate system} for creating a new
+ * {@linkplain org.apache.sis.referencing.crs.DefaultProjectedCRS projected coordinate reference system}, or
+ * {@linkplain org.apache.sis.referencing.operation.AbstractCoordinateOperation coordinate operations}
+ * for creating a concatenated operation.
  *
  * <div class="section">Multiple versions for the same authority</div>
  * {@code MultiAuthoritiesFactory} accepts an arbitrary amount of factories for the same authority, provided that
