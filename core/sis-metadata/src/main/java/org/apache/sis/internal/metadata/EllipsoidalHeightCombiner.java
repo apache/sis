@@ -17,6 +17,8 @@
 package org.apache.sis.internal.metadata;
 
 import java.util.Map;
+import java.util.HashMap;
+import org.opengis.metadata.extent.Extent;
 import org.opengis.referencing.crs.CRSFactory;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.crs.GeodeticCRS;
@@ -32,6 +34,8 @@ import org.opengis.referencing.datum.VerticalDatum;
 import org.opengis.referencing.operation.Conversion;
 import org.opengis.referencing.operation.CoordinateOperationFactory;
 import org.opengis.util.FactoryException;
+import org.apache.sis.metadata.iso.extent.Extents;
+import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ArraysExt;
 
 
@@ -203,5 +207,28 @@ public class EllipsoidalHeightCombiner {
             }
         }
         return null;
+    }
+
+    /**
+     * Suggests properties for a compound CRS made of the given elements.
+     * This method builds a default CRS name and domain of validity.
+     *
+     * @param  components  the components for which to get a default set of properties.
+     * @return suggested properties in a modifiable map. Callers can modify the returned map.
+     */
+    public static Map<String,Object> properties(final CoordinateReferenceSystem... components) {
+        final StringBuilder name = new StringBuilder(40);
+        Extent domain = null;
+        for (int i=0; i<components.length; i++) {
+            final CoordinateReferenceSystem crs = components[i];
+            ArgumentChecks.ensureNonNullElement("components", i, crs);
+            if (i != 0) name.append(" + ");
+            name.append(crs.getName().getCode());
+            domain = Extents.intersection(domain, crs.getDomainOfValidity());
+        }
+        final Map<String,Object> properties = new HashMap<>(2);
+        properties.put(CoordinateReferenceSystem.NAME_KEY, name.toString());
+        properties.put(CoordinateReferenceSystem.DOMAIN_OF_VALIDITY_KEY, domain);
+        return properties;
     }
 }

@@ -251,7 +251,7 @@ public final class Citations extends Static {
      * <ul>
      *   <li><a href="http://www.opengeospatial.org/standards/ct">Coordinate Transformation Service</a></li>
      *   <li><a href="http://www.opengeospatial.org/standards/wms">Web Map Service</a></li>
-     *   <li>Definition identifier URNs in OGC namespace</li>
+     *   <li><a href="http://portal.opengeospatial.org/files/?artifact_id=24045">Definition identifier URNs in OGC namespace</a></li>
      * </ul>
      *
      * We do not commit to a particular OGC specification in order to keep the flexibility to change the

@@ -50,11 +50,12 @@ public final strictfp class Assume extends org.junit.Assume {
      * @return the path to the given file.
      */
     public static Path assumeDataExists(final DataDirectory type, final String file) {
-        assumeNotNull(System.getenv(DataDirectory.ENV));
+        assumeNotNull("$SIS_DATA environment variable not set.", System.getenv(DataDirectory.ENV));
         Path path = type.getDirectory();
-        assumeNotNull(path);
+        assumeNotNull("$SIS_DATA/" + type + " directory not found.", path);
         path = path.resolve(file);
-        assumeTrue(Files.isReadable(path));
+        assumeTrue("Specified directory not found.", Files.isDirectory(path));
+        assumeTrue("Specified directory not readable.", Files.isReadable(path));
         return path;
     }
 }
