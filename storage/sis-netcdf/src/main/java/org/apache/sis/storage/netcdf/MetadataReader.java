@@ -425,8 +425,10 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
      * <p>Implementation note: this method tries to reuse the existing {@link #pointOfContact} instance,
      * or part of it, if it is suitable.</p>
      *
-     * @param  keys  the group of attribute names to use for fetching the values.
-     * @param  isPointOfContact {@code true} for forcing the role to {@link Role#POINT_OF_CONTACT}.
+     * @param  keys              the group of attribute names to use for fetching the values.
+     * @param  isPointOfContact  {@code true} if this responsible party is the "main" one. This will force the
+     *         role to {@link Role#POINT_OF_CONTACT} and enable the use of {@code "institution"} attribute as
+     *         a fallback if there is no value for {@link Responsible#INSTITUTION}.
      * @return the responsible party, or {@code null} if none.
      *
      * @see AttributeNames#CREATOR
@@ -434,12 +436,28 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
      * @see AttributeNames#PUBLISHER
      */
     private Responsibility createResponsibleParty(final Responsible keys, final boolean isPointOfContact) {
-        final String individualName   = stringValue(keys.NAME);
-        final String organisationName = stringValue(keys.INSTITUTION);
-        final String email            = stringValue(keys.EMAIL);
-        final String url              = stringValue(keys.URL);
+        String individualName   = stringValue(keys.NAME);
+        String organisationName = stringValue(keys.INSTITUTION);
+        final String email      = stringValue(keys.EMAIL);
+        final String url        = stringValue(keys.URL);
+        if (organisationName == null && isPointOfContact) {
+            organisationName = stringValue("institution");
+        }
         if (individualName == null && organisationName == null && email == null && url == null) {
             return null;
+        }
+        /*
+         * The "individual" name may actually be an institution name, either because a "*_type" attribute
+         * said so or because the "individual" name is the same than the institution name. In such cases,
+         * reorganize the names in order to avoid duplication.
+         */
+        if (organisationName == null) {
+            if (isOrganisation(keys)) {
+                organisationName = individualName;
+                individualName = null;
+            }
+        } else if (organisationName.equalsIgnoreCase(individualName)) {
+            individualName = null;
         }
         Role role = forCodeName(Role.class, stringValue(keys.ROLE));
         if (role == null) {
@@ -500,12 +518,22 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
                 AbstractParty party = null;
                 if (individualName   != null) party = new DefaultIndividual(individualName, null, null);
                 if (organisationName != null) party = new DefaultOrganisation(organisationName, null, (Individual) party, null);
-                if (party            == null) party = new AbstractParty(); // We don't know if this is an individual or an organisation.
+                if (party            == null) party = isOrganisation(keys) ? new DefaultOrganisation() : new DefaultIndividual();
                 if (contact          != null) party.setContactInfo(singleton(contact));
                 responsibility = new DefaultResponsibility(role, null, party);
             }
         }
         return responsibility;
+    }
+
+    /**
+     * Returns {@code true} if the responsible party described by the given keys is an organization.
+     * In case of doubt, this method returns {@code false}. This is consistent with ACDD recommendation,
+     * which set the default value to {@code "person"}.
+     */
+    private boolean isOrganisation(final Responsible keys) {
+        final String type = stringValue(keys.TYPE);
+        return "institution".equalsIgnoreCase(type) || "group".equalsIgnoreCase(type);
     }
 
     /**
@@ -768,6 +796,13 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
     }
 
     /**
+     * Adds information about acquisition (program, platform).
+     */
+    private void addAcquisitionInfo() {
+        addAcquisitionOperation(null, stringValue(PROGRAM));
+    }
+
+    /**
      * Adds information about all netCDF variables. This is the {@code <gmd:contentInfo>} element in XML.
      * This method groups variables by their domains, i.e. variables having the same set of axes are grouped together.
      */
@@ -918,6 +953,7 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
                 addResourceScope(ScopeCode.SERVICE, name);
             }
         }
+        addAcquisitionInfo();
         addContentInfo();
         /*
          * Add the dimension information, if any. This metadata node

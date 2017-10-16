@@ -77,16 +77,18 @@ public final class StoreFormat extends WKTFormat {
      * @param  geometry       the geometry to parse, or {@code null} if none.
      * @param  crs            the horizontal part of the WKT (2D or 3D), or {@code null} if none.
      * @param  additionalCRS  the vertical or temporal part of the WKT, or {@code null} if none.
-     * @return the geometry, or {@code null} if none.
+     * @return the geometry, or {@code null} if none or unparseable.
      */
     public Geometry parseGeometry(final String geometry, final String crs, final String additionalCRS) {
-        if (geometry != null) {
+        if (geometry != null) try {
             final Object obj = Geometries.implementation(library).parseWKT(geometry);
             final GeneralEnvelope envelope = Geometries.getEnvelope(geometry);
             if (envelope != null) {
                 envelope.setCoordinateReferenceSystem(parseCRS(crs, additionalCRS));
                 return new GeometryWrapper(obj, envelope);
             }
+        } catch (IllegalArgumentException | UnsupportedOperationException e) {
+            log(e);
         }
         return null;
     }
@@ -110,14 +112,13 @@ public final class StoreFormat extends WKTFormat {
                     components[n++] = (CoordinateReferenceSystem) crs;
                 }
             }
-            if (n == 0) {
-                return null;
+            if (n != 0) {
+                return CRS.compound(ArraysExt.resize(components, n));
             }
-            return CRS.compound(ArraysExt.resize(components, n));
         } catch (ParseException | ClassCastException | IllegalArgumentException | FactoryException e) {
             log(e);
-            return null;
         }
+        return null;
     }
 
     /**

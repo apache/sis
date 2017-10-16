@@ -57,7 +57,7 @@ public strictfp class DecoderTest extends TestCase {
         if (isSupplementalFormatSupported("HDF5")) {
             selectDataset(CIP);
             assertAttributeEquals(/* Only control character */ (String) null,   TITLE);
-            assertAttributeEquals("UCAR",                                       CREATOR.INSTITUTION);
+            assertAttributeEquals("UCAR",                                      "INSTITUTION");
             assertAttributeEquals("U.S. National Weather Service - NCEP (WMC)", HISTORY);
         }
     }
