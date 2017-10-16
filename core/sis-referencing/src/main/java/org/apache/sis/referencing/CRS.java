@@ -21,14 +21,17 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.logging.LogRecord;
+import javax.measure.Unit;
 import org.opengis.util.FactoryException;
 import org.opengis.geometry.Envelope;
 import org.opengis.referencing.NoSuchAuthorityCodeException;
 import org.opengis.referencing.IdentifiedObject;
+import org.opengis.referencing.cs.CartesianCS;
 import org.opengis.referencing.cs.EllipsoidalCS;
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
+import org.opengis.referencing.cs.CSFactory;
 import org.opengis.referencing.crs.CRSFactory;
 import org.opengis.referencing.crs.SingleCRS;
 import org.opengis.referencing.crs.CompoundCRS;
@@ -41,6 +44,8 @@ import org.opengis.referencing.crs.ProjectedCRS;
 import org.opengis.referencing.crs.TemporalCRS;
 import org.opengis.referencing.crs.VerticalCRS;
 import org.opengis.referencing.crs.EngineeringCRS;
+import org.opengis.referencing.operation.Conversion;
+import org.opengis.referencing.operation.CoordinateOperationFactory;
 import org.opengis.referencing.operation.OperationNotFoundException;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.extent.Extent;
@@ -51,6 +56,7 @@ import org.apache.sis.measure.Units;
 import org.apache.sis.geometry.Envelopes;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.internal.metadata.AxisDirections;
+import org.apache.sis.internal.metadata.EllipsoidalHeightCombiner;
 import org.apache.sis.internal.referencing.PositionalAccuracyConstant;
 import org.apache.sis.internal.referencing.CoordinateOperations;
 import org.apache.sis.internal.referencing.ReferencingUtilities;
@@ -58,14 +64,19 @@ import org.apache.sis.internal.referencing.DefinitionVerifier;
 import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.system.Loggers;
+import org.apache.sis.referencing.cs.AxisFilter;
+import org.apache.sis.referencing.cs.CoordinateSystems;
 import org.apache.sis.referencing.cs.DefaultVerticalCS;
-import org.apache.sis.referencing.cs.DefaultEllipsoidalCS;
 import org.apache.sis.referencing.crs.DefaultGeographicCRS;
+import org.apache.sis.referencing.crs.DefaultProjectedCRS;
 import org.apache.sis.referencing.crs.DefaultVerticalCRS;
 import org.apache.sis.referencing.crs.DefaultCompoundCRS;
+import org.apache.sis.referencing.crs.DefaultEngineeringCRS;
 import org.apache.sis.referencing.operation.AbstractCoordinateOperation;
 import org.apache.sis.referencing.operation.CoordinateOperationContext;
 import org.apache.sis.referencing.operation.DefaultCoordinateOperationFactory;
+import org.apache.sis.referencing.operation.DefaultConversion;
+import org.apache.sis.referencing.factory.GeodeticObjectFactory;
 import org.apache.sis.referencing.factory.UnavailableFactoryException;
 import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
 import org.apache.sis.metadata.iso.extent.Extents;
@@ -75,8 +86,6 @@ import org.apache.sis.util.logging.WarningListener;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Utilities;
 import org.apache.sis.util.Static;
-
-import static java.util.Collections.singletonMap;
 
 
 /**
@@ -171,7 +180,7 @@ public final class CRS extends Static {
      *   <tr><td>EPSG:5714</td> <td>{@link CommonCRS.Vertical#MEAN_SEA_LEVEL MEAN_SEA_LEVEL}</td> <td>Vertical</td> <td>Mean Sea Level height</td></tr>
      * </table></blockquote>
      *
-     * This method accepts also the URN and URL syntax.
+     * This method accepts also the URN and URL syntaxes.
      * For example the following codes are considered equivalent to {@code "EPSG:4326"}:
      * <ul>
      *   <li>{@code "EPSG::4326"}</li>
@@ -179,6 +188,26 @@ public final class CRS extends Static {
      *   <li>{@code "http://www.opengis.net/def/crs/epsg/0/4326"}</li>
      *   <li>{@code "http://www.opengis.net/gml/srs/epsg.xml#4326"}</li>
      * </ul>
+     *
+     * URIs can be combined for creating larger objects. For example the following URIs combine a
+     * two-dimensional WGS84 reference system (EPSG:4326) with a Mean Sea Level height (EPSG:5714).
+     * The result is a three-dimensional {@linkplain org.apache.sis.referencing.crs.DefaultCompoundCRS
+     * compound coordinate reference system}:
+     *
+     * <ul>
+     *   <li>{@code "urn:ogc:def:crs,crs:EPSG::4326,crs:EPSG::5714"}</li>
+     *   <li><code>"http://www.opengis.net/def/crs-compound?<br>
+     *            1=http://www.opengis.net/def/crs/epsg/0/4326&amp;<br>
+     *            2=http://www.opengis.net/def/crs/epsg/0/5714"</code></li>
+     * </ul>
+     *
+     * <p>URNs (but not URLs) can also combine a
+     * {@linkplain org.apache.sis.referencing.datum.DefaultGeodeticDatum geodetic datum} with an
+     * {@linkplain org.apache.sis.referencing.cs.DefaultEllipsoidalCS ellipsoidal coordinate system} for creating a new
+     * {@linkplain org.apache.sis.referencing.crs.DefaultGeographicCRS geographic CRS}, or a base geographic CRS with a
+     * {@linkplain org.apache.sis.referencing.operation.DefaultConversion conversion} and a
+     * {@linkplain org.apache.sis.referencing.cs.DefaultCartesianCS Cartesian coordinate system} for creating a new
+     * {@linkplain org.apache.sis.referencing.crs.DefaultProjectedCRS projected coordinate reference system}.</p>
      *
      * Note that the {@link IdentifiedObjects#lookupURN(IdentifiedObject, Citation)}
      * method can be seen as a converse of this method.
@@ -192,6 +221,7 @@ public final class CRS extends Static {
      *
      * @see #getAuthorityFactory(String)
      * @see org.apache.sis.referencing.factory.GeodeticAuthorityFactory
+     * @see <a href="http://epsg-registry.org/">EPSG Geodetic Registry</a>
      *
      * @category factory
      */
@@ -760,6 +790,61 @@ public final class CRS extends Static {
     }
 
     /**
+     * Creates a compound coordinate reference system from an ordered list of CRS components.
+     * A CRS is inferred from the given components and the domain of validity is set to the
+     * {@linkplain org.apache.sis.metadata.iso.extent.DefaultExtent#intersect intersection}
+     * of the domain of validity of all components.
+     *
+     * <div class="section">Ellipsoidal height</div>
+     * If a two-dimensional geographic or projected CRS if followed or preceded by a vertical CRS with ellipsoidal
+     * {@linkplain org.apache.sis.referencing.datum.DefaultVerticalDatum#getVerticalDatumType() datum type}, then
+     * this method combines them in a single three-dimensional geographic or projected CRS.  Note that standalone
+     * ellipsoidal heights are not allowed according ISO 19111. But if such situation is nevertheless found, then
+     * the action described here fixes the issue. This is the reverse of <code>{@linkplain #getVerticalComponent
+     * getVerticalComponent}(crs, true)</code>.
+     *
+     * <div class="section">Components order</div>
+     * Apache SIS is permissive on the order of components that can be used in a compound CRS.
+     * However for better inter-operability, users are encouraged to follow the order mandated by ISO 19162:
+     *
+     * <ol>
+     *   <li>A mandatory horizontal CRS (only one of two-dimensional {@code GeographicCRS} or {@code ProjectedCRS} or {@code EngineeringCRS}).</li>
+     *   <li>Optionally followed by a {@code VerticalCRS} or a {@code ParametricCRS} (but not both).</li>
+     *   <li>Optionally followed by a {@code TemporalCRS}.</li>
+     * </ol>
+     *
+     * @param  components  the sequence of coordinate reference systems making the compound CRS.
+     * @return the compound CRS, or {@code components[0]} if the given array contains only one component.
+     * @throws IllegalArgumentException if the given array is empty or if the array contains incompatible components.
+     * @throws FactoryException if the geodetic factory failed to create the compound CRS.
+     *
+     * @since 0.8
+     *
+     * @see GeodeticObjectFactory#createCompoundCRS(Map, CoordinateReferenceSystem...)
+     */
+    public static CoordinateReferenceSystem compound(final CoordinateReferenceSystem... components) throws FactoryException {
+        ArgumentChecks.ensureNonNull("components", components);
+        switch (components.length) {
+            case 0: {
+                throw new IllegalArgumentException(Errors.format(Errors.Keys.EmptyArgument_1, "components"));
+            }
+            case 1: {
+                final CoordinateReferenceSystem crs = components[0];
+                if (crs != null) return crs;
+                break;
+            }
+        }
+        final Map<String,?> properties = EllipsoidalHeightCombiner.properties(components);
+        return new EllipsoidalHeightCombiner() {
+            @Override public void initialize(final int factoryTypes) {
+                if ((factoryTypes & CRS)       != 0) crsFactory = DefaultFactories.forBuildin(CRSFactory.class);
+                if ((factoryTypes & CS)        != 0) csFactory  = DefaultFactories.forBuildin(CSFactory.class);
+                if ((factoryTypes & OPERATION) != 0) opFactory  = DefaultFactories.forBuildin(CoordinateOperationFactory.class);
+            }
+        }.createCompoundCRS(properties, components);
+    }
+
+    /**
      * Returns {@code true} if the given CRS is horizontal. The current implementation considers a
      * CRS as horizontal if it is two-dimensional and comply with one of the following conditions:
      *
@@ -786,20 +871,38 @@ public final class CRS extends Static {
      * @category information
      */
     public static boolean isHorizontalCRS(final CoordinateReferenceSystem crs) {
+        return horizontalCode(crs) == 2;
+    }
+
+    /**
+     * If the given CRS would quality as horizontal except for its number of dimensions, returns that number.
+     * Otherwise returns 0. The number of dimensions can only be 2 or 3.
+     */
+    private static int horizontalCode(final CoordinateReferenceSystem crs) {
         /*
          * In order to determine if the CRS is geographic, checking the CoordinateSystem type is more reliable
          * then checking if the CRS implements the GeographicCRS interface.  This is because the GeographicCRS
-         * interface is GeoAPI-specific, so a CRS may be OGC-compliant without implementing that interface.
+         * type did not existed in ISO 19111:2007, so a CRS could be standard-compliant without implementing
+         * the GeographicCRS interface.
          */
+        boolean isEngineering = false;
         final boolean isGeodetic = (crs instanceof GeodeticCRS);
-        if (isGeodetic || crs instanceof ProjectedCRS || crs instanceof EngineeringCRS) {
-            @SuppressWarnings("null")
+        if (isGeodetic || crs instanceof ProjectedCRS || (isEngineering = (crs instanceof EngineeringCRS))) {
             final CoordinateSystem cs = crs.getCoordinateSystem();
-            if (cs.getDimension() == 2) {
-                return !isGeodetic || (cs instanceof EllipsoidalCS);
+            final int dim = cs.getDimension();
+            if ((dim & ~1) == 2 && (!isGeodetic || (cs instanceof EllipsoidalCS))) {
+                if (isEngineering) {
+                    int n = 0;
+                    for (int i=0; i<dim; i++) {
+                        if (AxisDirections.isCompass(cs.getAxis(i).getDirection())) n++;
+                    }
+                    // If we don't have exactly 2 east, north, etc. directions, consider as non-horizontal.
+                    if (n != 2) return 0;
+                }
+                return dim;
             }
         }
-        return false;
+        return 0;
     }
 
     /**
@@ -809,8 +912,8 @@ public final class CRS extends Static {
      * first horizontal component in the order of the {@linkplain #getSingleComponents(CoordinateReferenceSystem)
      * single components list}.
      *
-     * <p>In the special case where a three-dimensional geographic CRS is found, this method will create a
-     * two-dimensional geographic CRS without the vertical axis.</p>
+     * <p>In the special case where a three-dimensional geographic or projected CRS is found, this method
+     * will create a two-dimensional geographic or projected CRS without the vertical axis.</p>
      *
      * @param  crs  the coordinate reference system, or {@code null}.
      * @return the first horizontal CRS, or {@code null} if none.
@@ -818,26 +921,63 @@ public final class CRS extends Static {
      * @category information
      */
     public static SingleCRS getHorizontalComponent(final CoordinateReferenceSystem crs) {
-        if (crs instanceof GeodeticCRS) {
-            CoordinateSystem cs = crs.getCoordinateSystem();
-            if (cs instanceof EllipsoidalCS) {                          // See comment in isHorizontalCRS(…) method.
-                final int i = AxisDirections.indexOfColinear(cs, AxisDirection.UP);
-                if (i < 0) {
-                    return (SingleCRS) crs;
+        switch (horizontalCode(crs)) {
+            /*
+             * If the CRS is already two-dimensional and horizontal, return as-is.
+             * We don't need to check if crs is an instance of SingleCRS since all
+             * CRS accepted by horizontalCode(…) are SingleCRS.
+             */
+            case 2: {
+                return (SingleCRS) crs;
+            }
+            case 3: {
+                /*
+                 * The CRS would be horizontal if we can remove the vertical axis. CoordinateSystems.replaceAxes(…)
+                 * will do this task for us. We can verify if the operation has been successful by checking that
+                 * the number of dimensions has been reduced by 1 (from 3 to 2).
+                 */
+                final CoordinateSystem cs = CoordinateSystems.replaceAxes(crs.getCoordinateSystem(), new AxisFilter() {
+                    @Override public boolean accept(final CoordinateSystemAxis axis) {
+                        return !AxisDirections.isVertical(axis.getDirection());
+                    }
+
+                    @Override
+                    public AxisDirection getDirectionReplacement(CoordinateSystemAxis axis, AxisDirection direction) {
+                        return direction;
+                    }
+
+                    @Override
+                    public Unit<?> getUnitReplacement(CoordinateSystemAxis axis, Unit<?> unit) {
+                        return unit;
+                    }
+                });
+                if (cs.getDimension() != 2) break;
+                /*
+                 * Most of the time, the CRS to rebuild will be geodetic. In such case we known that the
+                 * coordinate system is ellipsoidal because (i.e. the CRS is geographic) because it was
+                 * a condition verified by horizontalCode(…). A ClassCastException would be a bug.
+                 */
+                final Map<String, ?> properties = ReferencingUtilities.getPropertiesForModifiedCRS(crs);
+                if (crs instanceof GeodeticCRS) {
+                    return new DefaultGeographicCRS(properties, ((GeodeticCRS) crs).getDatum(), (EllipsoidalCS) cs);
                 }
-                final CoordinateSystemAxis xAxis = cs.getAxis(i > 0 ? 0 : 1);
-                final CoordinateSystemAxis yAxis = cs.getAxis(i > 1 ? 1 : 2);
-                cs = CommonCRS.DEFAULT.geographic().getCoordinateSystem();
-                if (!Utilities.equalsIgnoreMetadata(cs.getAxis(0), xAxis) ||
-                    !Utilities.equalsIgnoreMetadata(cs.getAxis(1), yAxis))
-                {
-                    // We can not reuse the name of the existing CS, because it typically
-                    // contains text about axes including the axis that we just dropped.
-                    cs = new DefaultEllipsoidalCS(singletonMap(EllipsoidalCS.NAME_KEY, "Ellipsoidal 2D"), xAxis, yAxis);
+                /*
+                 * In Apache SIS implementation, the Conversion contains the source and target CRS together with
+                 * a MathTransform.   We need to recreate the same conversion, but without CRS and MathTransform
+                 * for letting SIS create or associate new ones, which will be two-dimensional now.
+                 */
+                if (crs instanceof ProjectedCRS) {
+                    final ProjectedCRS  proj = (ProjectedCRS) crs;
+                    final GeographicCRS base = (GeographicCRS) getHorizontalComponent(proj.getBaseCRS());
+                    Conversion fromBase = proj.getConversionFromBase();
+                    fromBase = new DefaultConversion(IdentifiedObjects.getProperties(fromBase),
+                            fromBase.getMethod(), null, fromBase.getParameterValues());
+                    return new DefaultProjectedCRS(properties, base, fromBase, (CartesianCS) cs);
                 }
-                return new DefaultGeographicCRS(
-                        ReferencingUtilities.getPropertiesForModifiedCRS(crs, CoordinateReferenceSystem.IDENTIFIERS_KEY),
-                        ((GeodeticCRS) crs).getDatum(), (EllipsoidalCS) cs);
+                /*
+                 * If the CRS is neither geographic or projected, then it is engineering.
+                 */
+                return new DefaultEngineeringCRS(properties, ((EngineeringCRS) crs).getDatum(), cs);
             }
         }
         if (crs instanceof CompoundCRS) {
@@ -849,7 +989,7 @@ public final class CRS extends Static {
                 }
             }
         }
-        return isHorizontalCRS(crs) ? (SingleCRS) crs : null;
+        return null;
     }
 
     /**
@@ -880,6 +1020,8 @@ public final class CRS extends Static {
      *         The recommended value is {@code false}.
      * @return the first vertical CRS, or {@code null} if none.
      *
+     * @see #compound(CoordinateReferenceSystem...)
+     *
      * @category information
      */
     public static VerticalCRS getVerticalComponent(final CoordinateReferenceSystem crs,
@@ -900,19 +1042,17 @@ public final class CRS extends Static {
                 }
             } while ((a = !a) == allowCreateEllipsoidal);
         }
-        if (allowCreateEllipsoidal && crs instanceof GeodeticCRS) {
+        if (allowCreateEllipsoidal && horizontalCode(crs) == 3) {
             final CoordinateSystem cs = crs.getCoordinateSystem();
-            if (cs instanceof EllipsoidalCS) {                          // See comment in isHorizontalCRS(…) method.
-                final int i = AxisDirections.indexOfColinear(cs, AxisDirection.UP);
-                if (i >= 0) {
-                    final CoordinateSystemAxis axis = cs.getAxis(i);
-                    VerticalCRS c = CommonCRS.Vertical.ELLIPSOIDAL.crs();
-                    if (!c.getCoordinateSystem().getAxis(0).equals(axis)) {
-                        final Map<String,?> properties = IdentifiedObjects.getProperties(c);
-                        c = new DefaultVerticalCRS(properties, c.getDatum(), new DefaultVerticalCS(properties, axis));
-                    }
-                    return c;
+            final int i = AxisDirections.indexOfColinear(cs, AxisDirection.UP);
+            if (i >= 0) {
+                final CoordinateSystemAxis axis = cs.getAxis(i);
+                VerticalCRS c = CommonCRS.Vertical.ELLIPSOIDAL.crs();
+                if (!c.getCoordinateSystem().getAxis(0).equals(axis)) {
+                    final Map<String,?> properties = IdentifiedObjects.getProperties(c);
+                    c = new DefaultVerticalCRS(properties, c.getDatum(), new DefaultVerticalCS(properties, axis));
                 }
+                return c;
             }
         }
         return null;

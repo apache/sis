@@ -27,7 +27,7 @@ import static org.junit.Assert.*;
  * Tests {@link DefinitionURI}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.7
+ * @version 0.8
  * @since   0.4
  * @module
  */
@@ -143,6 +143,51 @@ public final strictfp class DefinitionURITest extends TestCase {
     }
 
     /**
+     * Tests comma-separated URNs in the {@code "urn:ogc:def"} namespace.
+     * Example: {@code "urn:ogc:def:crs,crs:EPSG:6.3:27700,crs:EPSG:6.3:5701"}.
+     */
+    @Test
+    @DependsOnMethod("testParse")
+    public void testCompoundURN() {
+        DefinitionURI parsed = DefinitionURI.parse("urn:ogc:def:crs, crs :EPSG:9.1:27700, crs:EPSG: 9.1 :5701");
+        assertNotNull("components",                    parsed.components);
+        assertEquals("components.length", 2,           parsed.components.length);
+        assertEquals("urn:ogc:def:crs:EPSG:9.1:27700", parsed.components[0].toString());
+        assertEquals("urn:ogc:def:crs:EPSG:9.1:5701",  parsed.components[1].toString());
+        assertEquals("urn:ogc:def:crs,crs:EPSG:9.1:27700,crs:EPSG:9.1:5701", parsed.toString());
+        /*
+         * The following URN is malformed, but Apache SIS should be tolerant to some errors.
+         *
+         *   - the "urn:ogc:def" prefix should be omitted in components, but SIS should be able to skip them.
+         *   - the "ogc:crs" parts should not be accepted because "def" is missing between "ogc" and "crs".
+         */
+        parsed = DefinitionURI.parse("urn:ogc:def:crs,urn:ogc:def:crs:EPSG:9.1:27700,ogc:crs:EPSG:9.1:5701,def:crs:OGC::AnsiDate");
+        assertNotNull("components",                    parsed.components);
+        assertEquals("components.length", 3,           parsed.components.length);
+        assertEquals("urn:ogc:def:crs:EPSG:9.1:27700", parsed.components[0].toString());
+        assertNull  ("urn:ogc:def:crs:EPSG:9.1:5701",  parsed.components[1]);
+        assertEquals("urn:ogc:def:crs:OGC::AnsiDate",  parsed.components[2].toString());
+    }
+
+    /**
+     * Tests compound CRS in HTTP URL.
+     */
+    @Test
+    @DependsOnMethod("testParseHTTP")
+    public void testCompoundHTTP() {
+        DefinitionURI parsed = DefinitionURI.parse("http://www.opengis.net/def/crs-compound?"
+                + "1=http://www.opengis.net/def/crs/EPSG/9.1/27700&"
+                + "2=http://www.opengis.net/def/crs/EPSG/9.1/5701");
+        assertEquals("type", "crs-compound", parsed.type);
+        assertEquals("components.length", 2, parsed.components.length);
+        assertEquals("http://www.opengis.net/def/crs/EPSG/9.1/27700", parsed.components[0].toString());
+        assertEquals("http://www.opengis.net/def/crs/EPSG/9.1/5701",  parsed.components[1].toString());
+        assertEquals("http://www.opengis.net/def/crs-compound?"
+                 + "1=http://www.opengis.net/def/crs/EPSG/9.1/27700&"
+                 + "2=http://www.opengis.net/def/crs/EPSG/9.1/5701", parsed.toString());
+    }
+
+    /**
      * Tests {@link DefinitionURI#codeOf(String, String, String)} with URI like {@code "EPSG:4326"}.
      */
     @Test
@@ -186,14 +231,5 @@ public final strictfp class DefinitionURITest extends TestCase {
         assertNull  (        DefinitionURI.codeOf("crs", "OGC",  "http://www.opengis.net/gml/srs/epsg.xml#4326"));
         assertNull  (        DefinitionURI.codeOf("uom", "EPSG", "http://www.opengis.net/gml/srs/epsg.xml#4326"));
         assertNull  (        DefinitionURI.codeOf("uom", "EPSG", "http://schemas.opengis.net/iso/19139/20070417/resources/uom/gmxUom.xml#xpointer(//*[@gml:id='m'])"));
-    }
-
-    /**
-     * Tests {@link DefinitionURI#format(String, String, String, String)}.
-     */
-    @Test
-    public void testToURN() {
-        assertEquals("urn:ogc:def:crs:EPSG::4326", DefinitionURI.format("crs", "EPSG", null, "4326"));
-        assertNull  ("Authority is not optional.", DefinitionURI.format("crs", null,   null, "4326"));
     }
 }

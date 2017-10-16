@@ -171,7 +171,7 @@ public final class Code {
             ReferenceIdentifier fallback = null;
             for (final ReferenceIdentifier identifier : identifiers) {
                 final String code = identifier.getCode();
-                if (code == null) continue; // Paranoiac check.
+                if (code == null) continue;                                                 // Paranoiac check.
                 if (code.regionMatches(true, 0, "urn:", 0, 4)) {
                     return new Code(identifier);
                 }

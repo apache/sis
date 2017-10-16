@@ -19,19 +19,14 @@ package org.apache.sis.referencing.cs;
 import java.util.Map;
 import javax.measure.Unit;
 import java.lang.reflect.Field;
-import org.opengis.util.FactoryException;
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.cs.CSAuthorityFactory;
-import org.opengis.referencing.crs.CRSAuthorityFactory;
-import org.apache.sis.referencing.factory.UnavailableFactoryException;
-import org.apache.sis.referencing.factory.sql.EPSGFactory;
-import org.apache.sis.referencing.CRS;
+import org.apache.sis.referencing.factory.TestFactorySource;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
-import static org.junit.Assume.*;
 
 
 /**
@@ -44,20 +39,6 @@ import static org.junit.Assume.*;
  */
 public final strictfp class CodesTest extends TestCase {
     /**
-     * Returns the EPSG factory, or skips the test if the factory is not available.
-     */
-    private static CSAuthorityFactory factory() throws FactoryException {
-        final CRSAuthorityFactory factory = CRS.getAuthorityFactory("EPSG");
-        assumeTrue("No connection to EPSG dataset.", factory instanceof EPSGFactory);
-        try {
-            assertNotNull(factory.createGeographicCRS("4326"));
-        } catch (UnavailableFactoryException e) {
-            assumeTrue("No connection to EPSG dataset.", false);
-        }
-        return (EPSGFactory) factory;
-    }
-
-    /**
      * Compares the axis directions and units with EPSG definitions.
      *
      * @throws Exception if an error occurred while fetching the codes or querying the database.
@@ -65,7 +46,7 @@ public final strictfp class CodesTest extends TestCase {
     @Test
     @SuppressWarnings("unchecked")
     public void verify() throws Exception {
-        final CSAuthorityFactory factory = factory();
+        final CSAuthorityFactory factory = TestFactorySource.getSharedFactory();
         final Field field = Codes.class.getDeclaredField("EPSG");
         field.setAccessible(true);
         for (final Codes c : ((Map<Codes,?>) field.get(null)).keySet()) {

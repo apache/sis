@@ -23,7 +23,10 @@ import javax.measure.Unit;
 import javax.measure.UnitConverter;
 import javax.measure.IncommensurableException;
 import org.opengis.geometry.DirectPosition;
+import org.opengis.metadata.extent.Extent;
+import org.opengis.metadata.extent.VerticalExtent;
 import org.opengis.metadata.extent.GeographicBoundingBox;
+import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.measure.Units;
 import org.apache.sis.measure.MeasurementRange;
 import org.apache.sis.test.mock.VerticalCRSMock;
@@ -47,7 +50,7 @@ import static org.junit.Assert.*;
  * @since   0.4
  * @module
  */
-@DependsOn(DefaultGeographicBoundingBoxTest.class)
+@DependsOn({DefaultGeographicBoundingBoxTest.class, DefaultExtentTest.class})
 public final strictfp class ExtentsTest extends TestCase {
     /**
      * One minute of angle, in degrees.
@@ -97,13 +100,45 @@ public final strictfp class ExtentsTest extends TestCase {
      * Tests {@link Extents#intersection(GeographicBoundingBox, GeographicBoundingBox)}.
      */
     @Test
-    public void testIntersection() {
+    public void testGeographicIntersection() {
         final GeographicBoundingBox b1 = new DefaultGeographicBoundingBox(10, 20, 30, 40);
         final GeographicBoundingBox b2 = new DefaultGeographicBoundingBox(15, 25, 26, 32);
-        assertEquals(new DefaultGeographicBoundingBox(15, 20, 30, 32), Extents.intersection(b1, b2));
-        assertSame(b1, Extents.intersection(b1,   null));
+        assertEquals("intersect",        new DefaultGeographicBoundingBox(15, 20, 30, 32), Extents.intersection(b1, b2));
+        assertSame(b1, Extents.intersection(b1, null));
         assertSame(b2, Extents.intersection(null, b2));
-        assertNull(    Extents.intersection(null, null));
+        assertNull(    Extents.intersection((GeographicBoundingBox) null, (GeographicBoundingBox) null));
+    }
+
+    /**
+     * Tests {@link Extents#intersection(VerticalExtent, VerticalExtent)}.
+     * This test does not perform any unit conversion, because it would require the use of different CRS.
+     * For a test with unit conversion, see {@code ServicesForMetadataTest.testVerticalIntersection()} in
+     * {@code sis-referencing} module.
+     *
+     * @throws TransformException should never happen since we do not test transformation in this class.
+     */
+    @Test
+    public void testVerticalIntersection() throws TransformException {
+        final VerticalExtent e1 = new DefaultVerticalExtent(10, 20, null);
+        final VerticalExtent e2 = new DefaultVerticalExtent(15, 25, null);
+        assertEquals("intersect", new DefaultVerticalExtent(15, 20, null), Extents.intersection(e1, e2));
+        assertSame(e1, Extents.intersection(e1, null));
+        assertSame(e2, Extents.intersection(null, e2));
+        assertNull(    Extents.intersection((VerticalExtent) null, (VerticalExtent) null));
+    }
+
+    /**
+     * Tests {@link Extents#intersection(Extent, Extent)}.
+     * This test is subject to the same limitation than {@link #testVerticalIntersection()}.
+     */
+    @Test
+    public void testExtentIntersection() {
+        final Extent e1 = new DefaultExtent(null, new DefaultGeographicBoundingBox(10, 20, 30, 40), new DefaultVerticalExtent(10, 20, null), null);
+        final Extent e2 = new DefaultExtent(null, new DefaultGeographicBoundingBox(15, 25, 26, 32), new DefaultVerticalExtent(15, 25, null), null);
+        assertEquals(     new DefaultExtent(null, new DefaultGeographicBoundingBox(15, 20, 30, 32), new DefaultVerticalExtent(15, 20, null), null), Extents.intersection(e1, e2));
+        assertSame(e1, Extents.intersection(e1, null));
+        assertSame(e2, Extents.intersection(null, e2));
+        assertNull(    Extents.intersection((Extent) null, (Extent) null));
     }
 
     /**

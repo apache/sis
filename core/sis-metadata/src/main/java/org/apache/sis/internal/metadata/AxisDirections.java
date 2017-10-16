@@ -429,22 +429,22 @@ public final class AxisDirections extends Static {
      * Returns the angular unit of the specified coordinate system.
      * The preference will be given to the longitude axis, if found.
      *
-     * @param  cs    the coordinate system from which to get the angular unit, or {@code null}.
-     * @param  unit  the default unit to return if no angular unit is found.
+     * @param  cs        the coordinate system from which to get the angular unit, or {@code null}.
+     * @param  fallback  the default unit to return if no angular unit is found.
      * @return the angular unit, of {@code unit} if no angular unit was found.
      *
      * @see org.apache.sis.internal.referencing.ReferencingUtilities#getUnit(CoordinateSystem)
      *
      * @since 0.6
      */
-    public static Unit<Angle> getAngularUnit(final CoordinateSystem cs, Unit<Angle> unit) {
+    public static Unit<Angle> getAngularUnit(final CoordinateSystem cs, Unit<Angle> fallback) {
         if (cs != null) {
             for (int i = cs.getDimension(); --i>=0;) {
                 final CoordinateSystemAxis axis = cs.getAxis(i);
                 if (axis != null) {                                                     // Paranoiac check.
                     final Unit<?> candidate = axis.getUnit();
                     if (Units.isAngular(candidate)) {
-                        unit = candidate.asType(Angle.class);
+                        fallback = candidate.asType(Angle.class);
                         if (AxisDirection.EAST.equals(absolute(axis.getDirection()))) {
                             break;                                                      // Found the longitude axis.
                         }
@@ -452,7 +452,7 @@ public final class AxisDirections extends Static {
                 }
             }
         }
-        return unit;
+        return fallback;
     }
 
     /**

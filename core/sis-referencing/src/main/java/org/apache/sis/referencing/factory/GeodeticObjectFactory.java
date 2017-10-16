@@ -1136,8 +1136,8 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
     }
 
     /**
-     * Creates a compound coordinate reference system from an ordered list of {@code CoordinateReferenceSystem} objects.
-     * Apache SIS puts no restriction on the components that can be used in a compound CRS.
+     * Creates a compound coordinate reference system from an ordered list of CRS components.
+     * Apache SIS is permissive on the order of components that can be used in a compound CRS.
      * However for better inter-operability, users are encouraged to follow the order mandated by ISO 19162:
      *
      * <ol>
@@ -1149,19 +1149,20 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
      * The default implementation creates a {@link DefaultCompoundCRS} instance.
      *
      * @param  properties  name and other properties to give to the new object.
-     * @param  elements   Ordered array of {@code CoordinateReferenceSystem} objects.
+     * @param  components  the sequence of coordinate reference systems making the compound CRS.
      * @throws FactoryException if the object creation failed.
      *
      * @see DefaultCompoundCRS#DefaultCompoundCRS(Map, CoordinateReferenceSystem...)
      * @see GeodeticAuthorityFactory#createCompoundCRS(String)
+     * @see org.apache.sis.referencing.CRS#compound(CoordinateReferenceSystem...)
      */
     @Override
     public CompoundCRS createCompoundCRS(final Map<String,?> properties,
-            final CoordinateReferenceSystem... elements) throws FactoryException
+            final CoordinateReferenceSystem... components) throws FactoryException
     {
         final DefaultCompoundCRS crs;
         try {
-            crs = new DefaultCompoundCRS(complete(properties), elements);
+            crs = new DefaultCompoundCRS(complete(properties), components);
         } catch (IllegalArgumentException exception) {
             throw new InvalidGeodeticParameterException(exception);
         }
