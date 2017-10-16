@@ -24,7 +24,7 @@ import java.nio.file.FileSystemNotFoundException;
 import org.apache.sis.test.TestCase;
 
 import static org.junit.Assert.*;
-import static org.junit.Assume.*;
+import static org.junit.Assume.assumeFalse;
 
 
 /**

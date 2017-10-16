@@ -68,6 +68,11 @@ public final class Resources extends IndexedResourceBundle {
         public static final short AmbiguousEllipsoid_1 = 1;
 
         /**
+         * Can not create objects of type ‘{0}’ from combined URI.
+         */
+        public static final short CanNotCombineUriAsType_1 = 79;
+
+        /**
          * Can not compute the coordinate operation derivative.
          */
         public static final short CanNotComputeDerivative = 2;
@@ -78,7 +83,7 @@ public final class Resources extends IndexedResourceBundle {
         public static final short CanNotConcatenateTransforms_2 = 3;
 
         /**
-         * Can not create an object of group “{1}” as an instance of class ‘{0}’.
+         * Can not create an object of type “{1}” as an instance of class ‘{0}’.
          */
         public static final short CanNotCreateObjectAsInstanceOf_2 = 4;
 
@@ -96,6 +101,11 @@ public final class Resources extends IndexedResourceBundle {
          * Can not map an axis from the specified coordinate system to the “{0}” direction.
          */
         public static final short CanNotMapAxisToDirection_1 = 6;
+
+        /**
+         * Can not parse component {1} in the combined {0,choice,0#URN|1#URL}.
+         */
+        public static final short CanNotParseCombinedReference_2 = 78;
 
         /**
          * Target dimension {0} depends on excluded source dimensions.
@@ -425,6 +435,11 @@ public final class Resources extends IndexedResourceBundle {
          * Matrix is singular.
          */
         public static final short SingularMatrix = 63;
+
+        /**
+         * Combined URI contains unexpected components.
+         */
+        public static final short UnexpectedComponentInURI = 80;
 
         /**
          * Unexpected dimension for a coordinate system of type ‘{0}’.

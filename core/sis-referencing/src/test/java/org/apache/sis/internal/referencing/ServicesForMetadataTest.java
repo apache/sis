@@ -16,6 +16,7 @@
  */
 package org.apache.sis.internal.referencing;
 
+import java.util.Date;
 import org.opengis.geometry.Envelope;
 import org.opengis.metadata.extent.GeographicBoundingBox;
 import org.opengis.metadata.extent.VerticalExtent;
@@ -23,6 +24,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
 import org.apache.sis.metadata.iso.extent.DefaultVerticalExtent;
+import org.apache.sis.metadata.iso.extent.DefaultTemporalExtent;
 import org.apache.sis.metadata.iso.extent.DefaultSpatialTemporalExtent;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.referencing.CommonCRS;
@@ -30,6 +32,8 @@ import org.apache.sis.referencing.crs.HardCodedCRS;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
+import org.apache.sis.test.TestUtilities;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import static org.apache.sis.test.Assert.*;
@@ -161,5 +165,43 @@ public final strictfp class ServicesForMetadataTest extends TestCase {
         extent.setBounds(createEnvelope(HardCodedCRS.GEOID_3D));
         verifySpatialExtent((GeographicBoundingBox) getSingleton(extent.getSpatialExtent()));
         verifyVerticalExtent(CommonCRS.Vertical.MEAN_SEA_LEVEL, extent.getVerticalExtent());
+    }
+
+    /**
+     * Tests {@link DefaultVerticalExtent#intersect(VerticalExtent)}.
+     *
+     * @throws TransformException if the transformation failed.
+     *
+     * @since 0.8
+     */
+    @Test
+    public void testVerticalIntersection() throws TransformException {
+        final DefaultVerticalExtent e1 = new DefaultVerticalExtent(1000, 2000, HardCodedCRS.ELLIPSOIDAL_HEIGHT_cm);
+        final DefaultVerticalExtent e2 = new DefaultVerticalExtent(15,   25,   HardCodedCRS.ELLIPSOIDAL_HEIGHT);
+        e1.intersect(e2);
+        assertEquals(new DefaultVerticalExtent(1500, 2000, HardCodedCRS.ELLIPSOIDAL_HEIGHT_cm), e1);
+    }
+
+    /**
+     * Tests {@link DefaultTemporalExtent#intersect(TemporalExtent)}.
+     *
+     * @throws TransformException if the transformation failed.
+     *
+     * @since 0.8
+     */
+    @Test
+    @Ignore("This operation requires the sis-temporal module.")
+    public void testTemporalIntersection() throws TransformException {
+        final DefaultTemporalExtent e1 = new DefaultTemporalExtent();
+        final DefaultTemporalExtent e2 = new DefaultTemporalExtent();
+        final Date t1 = TestUtilities.date("2016-12-05 19:45:20");
+        final Date t2 = TestUtilities.date("2017-02-18 02:12:50");
+        final Date t3 = TestUtilities.date("2017-11-30 23:50:00");
+        final Date t4 = TestUtilities.date("2018-05-20 12:30:45");
+        e1.setBounds(t1, t3);
+        e2.setBounds(t2, t4);
+        e1.intersect(e2);
+        assertEquals("startTime", t2, e1.getStartTime());
+        assertEquals("endTime",   t3, e1.getEndTime());
     }
 }

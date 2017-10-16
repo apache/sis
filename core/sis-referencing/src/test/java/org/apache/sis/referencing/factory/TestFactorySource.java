@@ -19,21 +19,52 @@ package org.apache.sis.referencing.factory;
 import java.util.Map;
 import java.util.HashMap;
 import org.opengis.util.FactoryException;
+import org.opengis.referencing.crs.CRSAuthorityFactory;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.internal.util.Constants;
+import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.factory.sql.EPSGFactory;
 
+import static org.junit.Assume.*;
 import static org.opengis.test.Assert.*;
 
 
 /**
- * Manages connection to the temporary database used by some Apache SIS tests.
+ * Provides an EPSG factory to use for testing purpose, or notifies if no factory is available.
+ * This is the common class used by all tests that need a full EPSG geodetic dataset to be installed.
+ * Use this class as below:
+ *
+ * {@preformat java
+ *     &#64;BeforeClass
+ *     public static void createFactory() throws FactoryException {
+ *         TestFactorySource.createFactory();
+ *     }
+ *
+ *     &#64;AfterClass
+ *     public static void close() throws FactoryException {
+ *         TestFactorySource.close();
+ *     }
+ *
+ *     &#64;Test
+ *     public void testFoo() {
+ *         assumeNotNull(TestFactorySource.factory);
+ *         // Test can happen now.
+ *     }
+ * }
+ *
+ * @author  Martin Desruisseaux (Geomatys)
+ * @version 0.8
+ * @since   0.8
+ * @module
  */
-public final strictfp class GIGS2001 {
+public final strictfp class TestFactorySource {
     /**
      * The factory instance to use for the tests, or {@code null} if not available.
      * This field is set by {@link #createFactory()} and cleared by {@link #close()}.
+     * Test classes using this field shall declare their own {@code createFactory()}
+     * and {@code close()} methods delegating their work to the corresponding methods
+     * in this {@code TestFactorySource} class.
      */
     public static EPSGFactory factory;
 
@@ -43,19 +74,41 @@ public final strictfp class GIGS2001 {
     private static boolean isUnavailable;
 
     /**
-     * Creates a new test using the default authority factory.
+     * Do not allow instantiation of this class.
      */
-    private GIGS2001() {
+    private TestFactorySource() {
     }
 
     /**
-     * Creates the factory to use for all tests in this class.
+     * Returns the system-wide EPSG factory, or interrupts the tests with {@link org.junit.Assume}
+     * if the EPSG factory is not available. Note that this method breaks isolation between tests.
+     * For more isolated tests, use {@link #createFactory()} and {@link #close()} instead.
+     *
+     * @return the system-wide EPSG factory.
+     * @throws FactoryException if an error occurred while fetching the factory.
+     */
+    public static synchronized EPSGFactory getSharedFactory() throws FactoryException {
+        assumeFalse("No connection to EPSG dataset.", isUnavailable);
+        final CRSAuthorityFactory factory = CRS.getAuthorityFactory(Constants.EPSG);
+        assumeTrue("No connection to EPSG dataset.", factory instanceof EPSGFactory);
+        try {
+            assertNotNull(factory.createGeographicCRS("4326"));
+        } catch (UnavailableFactoryException e) {
+            isUnavailable = true;
+            Logging.getLogger(Loggers.CRS_FACTORY).warning(e.toString());
+            assumeNoException("No connection to EPSG dataset.", e);
+        }
+        return (EPSGFactory) factory;
+    }
+
+    /**
+     * Creates the factory to use for all tests in a class.
      * If this method fails to create the factory, then {@link #factory} is left to {@code null} value.
      *
      * @throws FactoryException if an error occurred while creating the factory.
      */
     @SuppressWarnings("null")
-    public static void createFactory() throws FactoryException {
+    public static synchronized void createFactory() throws FactoryException {
         if (!isUnavailable) {
             EPSGFactory af = factory;
             if (af == null) {
@@ -88,11 +141,11 @@ public final strictfp class GIGS2001 {
     }
 
     /**
-     * Force releases of JDBC connections after the tests in this class.
+     * Forces release of JDBC connections after the tests in a class.
      *
      * @throws FactoryException if an error occurred while closing the connections.
      */
-    public static void close() throws FactoryException {
+    public static synchronized void close() throws FactoryException {
         final EPSGFactory af = factory;
         if (af != null) {
             factory = null;

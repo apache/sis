@@ -18,6 +18,7 @@ package org.apache.sis.referencing;
 
 import java.util.Map;
 import java.util.Set;
+import java.util.List;
 import java.util.LinkedHashSet;
 import java.util.Iterator;
 import java.util.Collection;
@@ -29,7 +30,9 @@ import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.ReferenceIdentifier;
+import org.opengis.referencing.crs.CompoundCRS;
 import org.opengis.referencing.operation.CoordinateOperation;
+import org.opengis.referencing.operation.ConcatenatedOperation;
 
 import org.apache.sis.util.Static;
 import org.apache.sis.util.CharSequences;
@@ -37,6 +40,7 @@ import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.iso.DefaultNameSpace;
 import org.apache.sis.internal.util.Constants;
+import org.apache.sis.internal.util.DefinitionURI;
 import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.metadata.NameMeaning;
 import org.apache.sis.internal.metadata.NameToIdentifier;
@@ -54,7 +58,7 @@ import static org.apache.sis.internal.util.Citations.identifierMatches;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Guilhem Legal (Geomatys)
- * @version 0.7
+ * @version 0.8
  *
  * @see CRS
  * @see org.apache.sis.geometry.Envelopes
@@ -380,11 +384,17 @@ public final class IdentifiedObjects extends Static {
     }
 
     /**
-     * Looks up a URN, such as {@code "urn:ogc:def:crs:EPSG:8.2:4326"}, of the specified object.
+     * Looks up a URN, such as {@code "urn:ogc:def:crs:EPSG:9.1:4326"}, of the specified object.
      * This method searches in all {@linkplain org.apache.sis.referencing.factory.GeodeticAuthorityFactory geodetic
      * authority factories} known to SIS for an object {@linkplain org.apache.sis.util.ComparisonMode#APPROXIMATIVE
-     * approximatively equals} to the specified object. If such an object is found, then the URN for the given
-     * authority is returned. Otherwise or if there is ambiguity, this method returns {@code null}.
+     * approximatively equals} to the specified object. Then there is a choice:
+     *
+     * <ul>
+     *   <li>If a single matching object is found in the specified authority factory, then its URN is returned.</li>
+     *   <li>Otherwise if the given object is a {@link CompoundCRS} or {@link ConcatenatedOperation}
+     *       and all components have an URN, then this method returns a combined URN.</li>
+     *   <li>Otherwise this method returns {@code null}.</li>
+     * </ul>
      *
      * <p><strong>Note that this method checks the identifier validity.</strong>
      * If the given object declares explicitly an identifier, then this method will instantiate an object from the
@@ -412,9 +422,59 @@ public final class IdentifiedObjects extends Static {
      * @since 0.7
      */
     public static String lookupURN(final IdentifiedObject object, final Citation authority) throws FactoryException {
+        if (object == null) {
+            return null;
+        }
+        IdentifiedObjectFinder finder;
+        try {
+            finder = newFinder(Citations.getCodeSpace(authority));
+        } catch (NoSuchAuthorityFactoryException e) {
+            warning("lookupURN", e);
+            finder = newFinder(null);
+        }
+        String urn = lookupURN(object, authority, finder);
+        if (urn != null) {
+            return urn;
+        }
+        /*
+         * If we didn't found a URN but the given object is made of smaller components, build a combined URN.
+         * Example: "urn:ogc:def:crs, crs:EPSG::27700, crs:EPSG::5701" (without spaces actually).
+         */
+        final List<? extends IdentifiedObject> components;
+        if (object instanceof CompoundCRS) {
+            components = CRS.getSingleComponents((CompoundCRS) object);
+        } else if (object instanceof ConcatenatedOperation) {
+            components = ((ConcatenatedOperation) object).getOperations();
+        } else {
+            return null;
+        }
+        StringBuilder buffer = null;
+        for (final IdentifiedObject component : components) {
+            urn = lookupURN(component, authority, finder);
+            if (urn == null) {
+                return null;
+            }
+            assert urn.startsWith(DefinitionURI.PREFIX) : urn;
+            if (buffer == null) {
+                buffer = new StringBuilder(40).append(DefinitionURI.PREFIX).append(DefinitionURI.SEPARATOR)
+                                              .append(NameMeaning.toObjectType(object.getClass()));
+            }
+            buffer.append(DefinitionURI.COMPONENT_SEPARATOR)
+                  .append(urn, DefinitionURI.PREFIX.length() + 1, urn.length());
+        }
+        return (buffer != null) ? buffer.toString() : null;
+    }
+
+    /**
+     * Implementation of {@link #lookupURN(IdentifiedObject, Citation)}, possibly invoked many times
+     * if the identified object is a {@link CompoundCRS} or {@link ConcatenatedOperation}.
+     */
+    private static String lookupURN(final IdentifiedObject object, final Citation authority,
+                                    final IdentifiedObjectFinder finder) throws FactoryException
+    {
         String urn = null;
         if (object != null) {
-            for (final IdentifiedObject candidate : newFinder(null).find(object)) {
+            for (final IdentifiedObject candidate : finder.find(object)) {
                 String c = toURN(candidate.getClass(), getIdentifier(candidate, authority));
                 if (c == null && authority == null) {
                     /*
@@ -427,6 +487,9 @@ public final class IdentifiedObjects extends Static {
                         if (c != null) break;
                     }
                 }
+                /*
+                 * We should find at most one URN. But if we find many, verify that all of them are consistent.
+                 */
                 if (c != null) {
                     if (urn != null && !urn.equals(c)) {
                         return null;
@@ -478,11 +541,18 @@ public final class IdentifiedObjects extends Static {
                         return null;
                     }
                 } catch (NumberFormatException e) {
-                    Logging.recoverableException(Logging.getLogger(Modules.REFERENCING), IdentifiedObjects.class, "lookupEPSG", e);
+                    warning("lookupEPSG", e);
                 }
             }
         }
         return code;
+    }
+
+    /**
+     * Logs a warning for a non-critical error. The callers should have a fallback.
+     */
+    private static void warning(final String method, final Exception e) {
+        Logging.recoverableException(Logging.getLogger(Modules.REFERENCING), IdentifiedObjects.class, method, e);
     }
 
     /**

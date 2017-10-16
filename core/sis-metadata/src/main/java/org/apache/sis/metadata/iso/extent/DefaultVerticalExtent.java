@@ -21,12 +21,19 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import org.opengis.geometry.Envelope;
+import org.opengis.util.FactoryException;
 import org.opengis.referencing.crs.VerticalCRS;
+import org.opengis.referencing.operation.MathTransform1D;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.metadata.extent.VerticalExtent;
 import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.internal.jaxb.gco.GO_Real;
 import org.apache.sis.internal.metadata.ReferencingServices;
+import org.apache.sis.math.MathFunctions;
+import org.apache.sis.util.resources.Errors;
+import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.Utilities;
+import org.apache.sis.xml.NilReason;
 
 
 /**
@@ -55,7 +62,7 @@ import org.apache.sis.internal.metadata.ReferencingServices;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Touraïvane (IRD)
  * @author  Cédric Briançon (Geomatys)
- * @version 0.3
+ * @version 0.8
  * @since   0.3
  * @module
  */
@@ -240,5 +247,119 @@ public class DefaultVerticalExtent extends ISOMetadata implements VerticalExtent
     public void setBounds(final Envelope envelope) throws TransformException {
         checkWritePermission();
         ReferencingServices.getInstance().setBounds(envelope, this);
+    }
+
+    /**
+     * Sets this vertical extent to the intersection of this extent with the specified one.
+     * The {@linkplain org.apache.sis.referencing.crs.DefaultVerticalCRS#getDatum() vertical datum}
+     * must be the same (ignoring metadata) for both extents; this method does not perform datum shift.
+     * However this method can perform unit conversions.
+     *
+     * <p>If there is no intersection between the two extents, then this method sets both minimum and
+     * maximum values to {@linkplain Double#NaN}. If either this extent or the specified extent has NaN
+     * bounds, then the corresponding bounds of the intersection result will also be NaN.</p>
+     *
+     * @param  other  the vertical extent to intersect with this extent.
+     * @throws IllegalArgumentException if the two extents do not use the same datum, ignoring metadata.
+     *
+     * @see Extents#intersection(VerticalExtent, VerticalExtent)
+     * @see org.apache.sis.geometry.GeneralEnvelope#intersect(Envelope)
+     *
+     * @since 0.8
+     */
+    public void intersect(final VerticalExtent other) throws IllegalArgumentException {
+        checkWritePermission();
+        ArgumentChecks.ensureNonNull("other", other);
+        Double min = other.getMinimumValue();
+        Double max = other.getMaximumValue();
+        try {
+            final MathTransform1D cv = getConversionFrom(other.getVerticalCRS());
+            if (isReversing(cv, min, max)) {
+                Double tmp = min;
+                min = max;
+                max = tmp;
+            }
+            /*
+             * If minimumValue is NaN, keep it unchanged (because x > minimumValue is false)
+             * in order to preserve the NilReason. Conversely if min is NaN, then we want to
+             * take it without conversion for preserving its NilReason.
+             */
+            if (min != null) {
+                if (minimumValue == null || min.isNaN() || (min = convert(cv, min)) > minimumValue) {
+                    minimumValue = min;
+                }
+            }
+            if (max != null) {
+                if (maximumValue == null || max.isNaN() || (max = convert(cv, max)) < maximumValue) {
+                    maximumValue = max;
+                }
+            }
+        } catch (UnsupportedOperationException | FactoryException | ClassCastException | TransformException e) {
+            throw new IllegalArgumentException(Errors.format(Errors.Keys.IncompatiblePropertyValue_1, "verticalCRS"), e);
+        }
+        if (minimumValue != null && maximumValue != null && minimumValue > maximumValue) {
+            minimumValue = maximumValue = NilReason.MISSING.createNilObject(Double.class);
+        }
+    }
+
+    /**
+     * Returns the conversion from the given CRS to the CRS of this extent, or {@code null} if none or unknown.
+     * The returned {@code MathTransform1D} may apply unit conversions or axis direction reversal, but usually
+     * not datum shift.
+     *
+     * @param  source  the CRS from which to perform the conversions, or {@code null} if unknown.
+     * @return the conversion from {@code source}, or {@code null} if none or unknown.
+     * @throws UnsupportedOperationException if the {@code sis-referencing} module is not on the classpath.
+     * @throws FactoryException if the coordinate operation factory is not available.
+     * @throws ClassCastException if the conversion is not an instance of {@link MathTransform1D}.
+     */
+    private MathTransform1D getConversionFrom(final VerticalCRS source) throws FactoryException {
+        if (!Utilities.equalsIgnoreMetadata(verticalCRS, source) && verticalCRS != null && source != null) {
+            final MathTransform1D cv = (MathTransform1D) ReferencingServices.getInstance()
+                    .getCoordinateOperationFactory(null, null, null, null)
+                    .createOperation(source, verticalCRS).getMathTransform();
+            if (!cv.isIdentity()) {
+                return cv;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Returns {@code true} if the given conversion seems to change the axis direction.
+     * This happen for example with conversions from "Elevation" axis to "Depth" axis.
+     * In case of doubt, this method returns {@code false}.
+     *
+     * <div class="note"><b>Note about alternatives:</b>
+     * we could compare axis directions instead, but it would not work with user-defined directions
+     * or user-defined unit conversions with negative scale factor (should never happen, but we are
+     * paranoiac). We could compare the minimum and maximum values after conversions, but it would
+     * not work if one or both values are {@code null} or {@code NaN}. Since we want to preserve
+     * {@link NilReason}, we still need to know if axes are reversed in order to put the nil reason
+     * in the right location.</div>
+     *
+     * @param  cv      the conversion computed by {@link #getConversionFrom(VerticalCRS)} (may be {@code null}).
+     * @param  sample  the minimum or the maximum value.
+     * @param  other   the minimum or maximum value at the opposite bound.
+     * @return {@code true} if the axis direction is reversed at the given value.
+     */
+    private static boolean isReversing(final MathTransform1D cv, Double sample, final Double other) throws TransformException {
+        if (cv == null) {
+            return false;
+        }
+        if (sample == null || sample.isNaN()) {
+            sample = other;
+        } else if (other != null && !other.isNaN()) {
+            sample = (sample + other) / 2;
+        }
+        return MathFunctions.isNegative(cv.derivative(sample != null ? sample : Double.NaN));
+    }
+
+    /**
+     * Converts the given value with the given transform if non-null. This converter can generally
+     * not perform datum shift; the operation is merely unit conversion and change of axis direction.
+     */
+    private static Double convert(MathTransform1D tr, Double value) throws TransformException {
+        return (tr != null) ? tr.transform(value) : value;
     }
 }

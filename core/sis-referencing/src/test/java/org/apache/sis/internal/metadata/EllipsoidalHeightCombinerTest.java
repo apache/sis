@@ -32,6 +32,7 @@ import org.apache.sis.referencing.crs.HardCodedCRS;
 import org.apache.sis.referencing.factory.GeodeticObjectFactory;
 import org.apache.sis.referencing.operation.DefaultCoordinateOperationFactory;
 import org.apache.sis.referencing.operation.HardCodedConversions;
+import org.apache.sis.metadata.iso.extent.Extents;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
@@ -81,11 +82,11 @@ public final strictfp class EllipsoidalHeightCombinerTest extends TestCase {
     public void testGeographicCRS() throws FactoryException {
         final EllipsoidalHeightCombiner services = create();
         final Map<String,String> properties = Collections.singletonMap(CoordinateReferenceSystem.NAME_KEY, "WGS 84 (4D)");
-        final GeographicCRS horizontal   = HardCodedCRS.WGS84;
-        final GeographicCRS horizontal3D = HardCodedCRS.WGS84_3D;
-        final VerticalCRS   vertical     = HardCodedCRS.ELLIPSOIDAL_HEIGHT;
-        final TemporalCRS   temporal     = HardCodedCRS.TIME;
-        final VerticalCRS   geoidal      = HardCodedCRS.GRAVITY_RELATED_HEIGHT;
+        final GeographicCRS horizontal = HardCodedCRS.WGS84;
+        final GeographicCRS volumetric = HardCodedCRS.WGS84_3D;
+        final VerticalCRS   vertical   = HardCodedCRS.ELLIPSOIDAL_HEIGHT;
+        final TemporalCRS   temporal   = HardCodedCRS.TIME;
+        final VerticalCRS   geoidal    = HardCodedCRS.GRAVITY_RELATED_HEIGHT;
         /*
          * createCompoundCRS(…) should not combine GeographicCRS with non-ellipsoidal height.
          */
@@ -95,12 +96,12 @@ public final strictfp class EllipsoidalHeightCombinerTest extends TestCase {
          * createCompoundCRS(…) should combine GeographicCRS with ellipsoidal height.
          */
         compound = services.createCompoundCRS(properties, horizontal, vertical);
-        assertArrayEqualsIgnoreMetadata(new SingleCRS[] {horizontal3D}, CRS.getSingleComponents(compound).toArray());
+        assertArrayEqualsIgnoreMetadata(new SingleCRS[] {volumetric}, CRS.getSingleComponents(compound).toArray());
         /*
          * createCompoundCRS(…) should combine GeographicCRS with ellipsoidal height and keep time.
          */
         compound = services.createCompoundCRS(properties, horizontal, vertical, temporal);
-        assertArrayEqualsIgnoreMetadata(new SingleCRS[] {horizontal3D, temporal}, CRS.getSingleComponents(compound).toArray());
+        assertArrayEqualsIgnoreMetadata(new SingleCRS[] {volumetric, temporal}, CRS.getSingleComponents(compound).toArray());
         /*
          * Non-standard feature: accept (VerticalCRS + GeodeticCRS) order.
          * The test below use the reverse order for all axes compared to the previous test.
@@ -127,11 +128,11 @@ public final strictfp class EllipsoidalHeightCombinerTest extends TestCase {
         final EllipsoidalHeightCombiner services = create();
         final GeodeticObjectFactory factory = new GeodeticObjectFactory();
         final Map<String,String> properties = Collections.singletonMap(CoordinateReferenceSystem.NAME_KEY, "World Mercator (4D)");
-        final ProjectedCRS horizontal   = factory.createProjectedCRS(properties, HardCodedCRS.WGS84,    HardCodedConversions.MERCATOR, HardCodedCS.PROJECTED);
-        final ProjectedCRS horizontal3D = factory.createProjectedCRS(properties, HardCodedCRS.WGS84_3D, HardCodedConversions.MERCATOR, HardCodedCS.PROJECTED_3D);
-        final VerticalCRS  vertical     = HardCodedCRS.ELLIPSOIDAL_HEIGHT;
-        final TemporalCRS  temporal     = HardCodedCRS.TIME;
-        final VerticalCRS  geoidal      = HardCodedCRS.GRAVITY_RELATED_HEIGHT;
+        final ProjectedCRS horizontal = factory.createProjectedCRS(properties, HardCodedCRS.WGS84,    HardCodedConversions.MERCATOR, HardCodedCS.PROJECTED);
+        final ProjectedCRS volumetric = factory.createProjectedCRS(properties, HardCodedCRS.WGS84_3D, HardCodedConversions.MERCATOR, HardCodedCS.PROJECTED_3D);
+        final VerticalCRS  vertical   = HardCodedCRS.ELLIPSOIDAL_HEIGHT;
+        final TemporalCRS  temporal   = HardCodedCRS.TIME;
+        final VerticalCRS  geoidal    = HardCodedCRS.GRAVITY_RELATED_HEIGHT;
         /*
          * createCompoundCRS(…) should not combine ProjectedCRS with non-ellipsoidal height.
          */
@@ -141,12 +142,12 @@ public final strictfp class EllipsoidalHeightCombinerTest extends TestCase {
          * createCompoundCRS(…) should combine ProjectedCRS with ellipsoidal height.
          */
         compound = services.createCompoundCRS(properties, horizontal, vertical);
-        assertArrayEqualsIgnoreMetadata(new SingleCRS[] {horizontal3D}, CRS.getSingleComponents(compound).toArray());
+        assertArrayEqualsIgnoreMetadata(new SingleCRS[] {volumetric}, CRS.getSingleComponents(compound).toArray());
         /*
          * createCompoundCRS(…) should combine ProjectedCRS with ellipsoidal height and keep time.
          */
         compound = services.createCompoundCRS(properties, horizontal, vertical, temporal);
-        assertArrayEqualsIgnoreMetadata(new SingleCRS[] {horizontal3D, temporal}, CRS.getSingleComponents(compound).toArray());
+        assertArrayEqualsIgnoreMetadata(new SingleCRS[] {volumetric, temporal}, CRS.getSingleComponents(compound).toArray());
         /*
          * Non-standard feature: accept (VerticalCRS + ProjectedCRS) order.
          */
@@ -158,5 +159,16 @@ public final strictfp class EllipsoidalHeightCombinerTest extends TestCase {
         assertAxisDirectionsEqual("Shall be a three-dimensional projected CRS.",
                 ((CoordinateReferenceSystem) components[1]).getCoordinateSystem(),
                 AxisDirection.UP, AxisDirection.EAST, AxisDirection.NORTH);
+    }
+
+    /**
+     * Tests {@link EllipsoidalHeightCombiner#properties(CoordinateReferenceSystem...)}.
+     */
+    @Test
+    public void testProperties() {
+        final Map<String,?> properties = EllipsoidalHeightCombiner.properties(HardCodedCRS.WGS84, HardCodedCRS.GRAVITY_RELATED_HEIGHT, HardCodedCRS.TIME);
+        assertEquals("WGS 84 + MSL height + Time", properties.remove("name"));
+        assertEquals(Extents.WORLD, properties.remove("domainOfValidity"));
+        assertTrue("No other property expected.", properties.isEmpty());
     }
 }

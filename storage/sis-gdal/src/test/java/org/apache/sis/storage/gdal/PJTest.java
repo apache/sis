@@ -23,7 +23,7 @@ import org.apache.sis.test.TestCase;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import static org.junit.Assume.*;
+import static org.junit.Assume.assumeTrue;
 import static org.apache.sis.test.Assert.*;
 
 

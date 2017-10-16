@@ -536,7 +536,7 @@ public class DefaultGeographicBoundingBox extends AbstractGeographicExtent imple
         ArgumentChecks.ensureNonNull("box", box);
         setBounds(box.getWestBoundLongitude(), box.getEastBoundLongitude(),
                   box.getSouthBoundLatitude(), box.getNorthBoundLatitude());
-        setInclusion(box.getInclusion()); // Set only on success.
+        setInclusion(box.getInclusion());                               // Set only on success.
     }
 
     /*
@@ -650,6 +650,7 @@ public class DefaultGeographicBoundingBox extends AbstractGeographicExtent imple
      */
     public void add(final GeographicBoundingBox box) {
         checkWritePermission();
+        ArgumentChecks.ensureNonNull("box", box);
         double λmin = box.getWestBoundLongitude();
         double λmax = box.getEastBoundLongitude();
         double φmin = box.getSouthBoundLatitude();
@@ -707,6 +708,7 @@ public class DefaultGeographicBoundingBox extends AbstractGeographicExtent imple
      */
     public void intersect(final GeographicBoundingBox box) throws IllegalArgumentException {
         checkWritePermission();
+        ArgumentChecks.ensureNonNull("box", box);
         if (getInclusion(getInclusion()) != getInclusion(box.getInclusion())) {
             throw new IllegalArgumentException(Errors.format(Errors.Keys.IncompatiblePropertyValue_1, "inclusion"));
         }
