@@ -122,10 +122,10 @@ final class CRSPair {
     }
 
     /**
-     * Return a string representation of this key.
+     * Returns a string representation of this key.
      */
     @Override
     public String toString() {
-        return label(sourceCRS) + " → " + label(targetCRS);
+        return label(sourceCRS) + " ⟶ " + label(targetCRS);
     }
 }

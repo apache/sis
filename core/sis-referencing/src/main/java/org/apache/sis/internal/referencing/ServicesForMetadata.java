@@ -664,6 +664,8 @@ public final class ServicesForMetadata extends ReferencingServices {
      * If the given properties are empty and the {@code mtFactory} is the system default, then this method
      * returns the system default {@code CoordinateOperationFactory} instead of creating a new one.
      *
+     * <p>It is okay to set all parameters to {@code null} in order to get the system default factory.</p>
+     *
      * @param  properties  the default properties.
      * @param  mtFactory   the math transform factory to use.
      * @param  crsFactory  the factory to use if the operation factory needs to create CRS for intermediate steps.

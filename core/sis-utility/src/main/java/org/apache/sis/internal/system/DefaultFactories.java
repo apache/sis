@@ -67,14 +67,15 @@ public final class DefaultFactories extends SystemListener {
 
     /**
      * Returns {@code true} if the default factory of the given type is the given instance.
+     * A {@code null} factory is interpreted as the default one.
      *
      * @param  <T>      the interface type.
      * @param  type     the interface type.
-     * @param  factory  the factory implementation to test.
+     * @param  factory  the factory implementation to test, or {@code null}.
      * @return {@code true} if the given factory implementation is the default instance.
      */
     public static synchronized <T> boolean isDefaultInstance(final Class<T> type, final T factory) {
-        return FACTORIES.get(type) == factory;
+        return (factory == null) || FACTORIES.get(type) == factory;
     }
 
     /**

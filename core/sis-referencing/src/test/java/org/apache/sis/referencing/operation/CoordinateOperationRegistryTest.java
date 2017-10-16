@@ -45,7 +45,7 @@ import org.junit.AfterClass;
 import org.junit.Test;
 
 import static org.apache.sis.test.ReferencingAssert.*;
-import static org.junit.Assume.*;
+import static org.junit.Assume.assumeTrue;
 
 
 /**

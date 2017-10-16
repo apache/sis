@@ -89,7 +89,7 @@ public final class PrimitiveTypeProperties {
         assert isValidKey(primitive) : primitive;
         synchronized (SENTINEL_VALUES) {
             final Object old = SENTINEL_VALUES.put(primitive, property);
-            if (old != null) { // Should never happen - this is rather debugging check.
+            if (old != null) {                          // Should never happen - this is rather debugging check.
                 SENTINEL_VALUES.put(primitive, old);
                 throw new AssertionError(primitive);
             }
@@ -103,8 +103,10 @@ public final class PrimitiveTypeProperties {
      * @return the property associated to the given instance, or {@code null} if none.
      */
     public static Object property(final Object primitive) {
-        // No 'assert isValidKey(primitive)' because this method is sometime invoked
-        // only after a brief inspection (e.g. 'NilReason.mayBeNil(Object)' method).
+        /*
+         * No 'assert isValidKey(primitive)' because this method is sometime invoked
+         * only after a brief inspection (e.g. 'NilReason.mayBeNil(Object)' method).
+         */
         synchronized (SENTINEL_VALUES) {
             return SENTINEL_VALUES.get(primitive);
         }

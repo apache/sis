@@ -31,6 +31,8 @@ import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.internal.util.TemporalUtilities;
 import org.apache.sis.internal.metadata.ReferencingServices;
+import org.apache.sis.xml.NilObject;
+import org.apache.sis.xml.NilReason;
 
 
 /**
@@ -60,7 +62,7 @@ import org.apache.sis.internal.metadata.ReferencingServices;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Touraïvane (IRD)
  * @author  Cédric Briançon (Geomatys)
- * @version 0.3
+ * @version 0.8
  * @since   0.3
  * @module
  */
@@ -241,5 +243,50 @@ public class DefaultTemporalExtent extends ISOMetadata implements TemporalExtent
     public void setBounds(final Envelope envelope) throws TransformException {
         checkWritePermission();
         ReferencingServices.getInstance().setBounds(envelope, this);
+    }
+
+    /**
+     * Sets this temporal extent to the intersection of this extent with the specified one.
+     * If there is no intersection between the two extents, then this method sets the temporal primitive to nil.
+     * If either this extent or the specified extent has nil primitive, then the intersection result will also be nil.
+     *
+     * @param  other  the temporal extent to intersect with this extent.
+     * @throws UnsupportedOperationException if no implementation of {@code TemporalFactory} has been found
+     *         on the classpath.
+     *
+     * @see Extents#intersection(TemporalExtent, TemporalExtent)
+     * @see org.apache.sis.geometry.GeneralEnvelope#intersect(Envelope)
+     *
+     * @since 0.8
+     */
+    public void intersect(final TemporalExtent other) {
+        checkWritePermission();
+        final TemporalPrimitive ot = other.getExtent();
+        if (ot != null && !(extent instanceof NilObject)) {
+            if (extent == null || (ot instanceof NilObject)) {
+                extent = ot;
+            } else {
+                Date t0 = getTime(extent, true);
+                Date t1 = getTime(extent, false);
+                Date h0 = getTime(ot,     true);
+                Date h1 = getTime(ot,     false);
+                boolean changed = false;
+                if (h0 != null && (t0 == null || h0.after(t0))) {
+                    t0 = h0;
+                    changed = true;
+                }
+                if (h1 != null && (t1 == null || h1.before(t1))) {
+                    t1 = h1;
+                    changed = true;
+                }
+                if (changed) {
+                    if (t0 != null && t1 != null && t0.after(t1)) {
+                        extent = NilReason.MISSING.createNilObject(TemporalPrimitive.class);
+                    } else {
+                        setBounds(t0, t1);
+                    }
+                }
+            }
+        }
     }
 }

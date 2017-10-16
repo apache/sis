@@ -29,19 +29,20 @@ import org.opengis.referencing.operation.*;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.citation.Citation;
 import org.apache.sis.util.Static;
+import org.apache.sis.internal.util.Utilities;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.internal.util.DefinitionURI;
 import org.apache.sis.metadata.iso.citation.Citations;
 
 
 /**
- * The meaning of some part of URN in the {@code "ogc"} namespace.
+ * The meaning of some parts of URN in the {@code "ogc"} namespace.
  * The meaning are defined by <cite>OGC Naming Authority</cite> (OGCNA) or other OGC sources.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 0.7
+ * @version 0.8
  *
- * @see org.apache.sis.internal.util.DefinitionURI
+ * @see DefinitionURI
  * @see <a href="http://www.opengeospatial.org/ogcna">http://www.opengeospatial.org/ogcna</a>
  * @see <a href="http://portal.opengeospatial.org/files/?artifact_id=24045">Definition identifier URNs in OGC namespace</a>
  *
@@ -71,7 +72,7 @@ public final class NameMeaning extends Static {
 
     /**
      * The object types for instances of {@link #CLASSES}.
-     * See {@link org.apache.sis.internal.util.DefinitionURI} javadoc for a list of object types in URN.
+     * See {@link DefinitionURI} javadoc for a list of object types in URN.
      *
      * <p>Types not yet listed (waiting to see if there is a use for them):</p>
      *
@@ -142,8 +143,10 @@ public final class NameMeaning extends Static {
 
     /**
      * Formats the given identifier using the {@code "ogc:urn:def:"} syntax with possible heuristic changes to
-     * the given values. This method delegates to {@link DefinitionURI#format(String, String, String, String)}
-     * after "fixing" the given values using some heuristic knowledge about the meaning of URN.
+     * the given values. The identifier code space, version and code are appended omitting any characters that
+     * are not valid for a Unicode identifier. If some information are missing in the given identifier, then
+     * this method returns {@code null}. This method tries to "fix" the given values using some heuristic
+     * knowledge about the meaning of URN.
      *
      * @param  type       the object type.
      * @param  authority  the authority as one of the values documented in {@link DefinitionURI} javadoc.
@@ -151,49 +154,67 @@ public final class NameMeaning extends Static {
      * @param  code       the code.
      * @return an identifier using the URN syntax, or {@code null} if a mandatory information is missing.
      *
-     * @see DefinitionURI#format(String, String, String, String)
-     *
      * @since 0.7
      */
     public static String toURN(final Class<?> type, final String authority, String version, String code) {
-        if (type != null && authority != null && code != null) {
-            final String key = authority.toUpperCase(Locale.US);
-            String codeSpace = AUTHORITIES.get(key);
-            if (codeSpace == null) {
+        if (type == null || authority == null || code == null) {
+            return null;
+        }
+        final String key = authority.toUpperCase(Locale.US);
+        String codeSpace = AUTHORITIES.get(key);
+        if (codeSpace == null) {
+            /*
+             * If the given authority is not one of the authorities that we expected for the OGC namespace,
+             * verify if we can related it to one of the specifications enumerated in the Citations class.
+             * For example if the user gave us "OGP" as the authority, we will replace that by "IOGP" (the
+             * new name for that organization).
+             */
+            final Citation c = Citations.fromName(key);
+            codeSpace = Citations.getCodeSpace(c);
+            if (AUTHORITIES.get(codeSpace) == null) {
+                return null;            // Not an authority that we recognize for the OGC namespace.
+            }
+            version = getVersion(c);    // Unconditionally overwrite the user-specified version.
+            /*
+             * If the above lines resulted in a change of codespace, we may need to concatenate the authority
+             * with the code for preserving information. The main use case is WMS codes like "CRS:84":
+             *
+             *   1) Citations.fromName("CRS") gave us Citations.WMS (version 1.3) as the authority.
+             *   2) getCodeSpace(Citations.WMS) gave us "OGC", which is indeed the codespace used in URN.
+             *   3) OGC Naming Authority – Procedures (OGC-09-046r2) said that "CRS:84" should be formatted
+             *      as "urn:ogc:def:crs:OGC:1.3:CRS84". We already got the "OGC" and "1.3" parts with above
+             *      steps, the last part is to replace "84" by "CRS84".
+             */
+            if (!authority.equals(codeSpace) && !code.startsWith(authority)) {
+                code = authority + code;    // Intentionally no ':' separator.
+            }
+        }
+        final StringBuilder buffer = new StringBuilder(DefinitionURI.PREFIX);
+loop:   for (int p=0; ; p++) {
+            final String part;
+            switch (p) {
+                case 0:  part = toObjectType(type); break;
+                case 1:  part = codeSpace;          break;
+                case 2:  part = version;            break;
+                case 3:  part = code;               break;
+                default: break loop;
+            }
+            if (!Utilities.appendUnicodeIdentifier(buffer.append(DefinitionURI.SEPARATOR), '\u0000', part, ".-", false)) {
                 /*
-                 * If the given authority is not one of the authorities that we expected for the OGC namespace,
-                 * verify if we can related it to one of the specifications enumerated in the Citations class.
-                 * For example if the user gave us "OGP" as the authority, we will replace that by "IOGP" (the
-                 * new name for that organization).
+                 * Only the version (p = 2) is optional. All other fields are mandatory.
+                 * If no character has been added for a mandatory field, we can not build a URN.
                  */
-                final Citation c = Citations.fromName(key);
-                codeSpace = Citations.getCodeSpace(c);
-                if (AUTHORITIES.get(codeSpace) == null) {
-                    return null;            // Not an authority that we recognize for the OGC namespace.
-                }
-                version = getVersion(c);    // Unconditionally overwrite the user-specified version.
-                /*
-                 * If the above lines resulted in a chance of codespace, we may need to concatenate the authority
-                 * with the code for preserving information. The main use case is WMS codes like "CRS:84":
-                 *
-                 *   1) Citations.fromName("CRS") gave us Citations.WMS (version 1.3) as the authority.
-                 *   2) getCodeSpace(Citations.WMS) gave us "OGC", which is indeed the codespace used in URN.
-                 *   3) OGC Naming Authority – Procedures (OGC-09-046r2) said that "CRS:84" should be formatted
-                 *      as "urn:ogc:def:crs:OGC:1.3:CRS84". We already got the "OGC" and "1.3" parts with above
-                 *      steps, the last part is to replace "84" by "CRS84".
-                 */
-                if (!authority.equals(codeSpace) && !code.startsWith(authority)) {
-                    code = authority + code;    // Intentionally no ':' separator.
+                if (p != 2) {
+                    return null;
                 }
             }
-            return DefinitionURI.format(toObjectType(type), codeSpace, version, code);
         }
-        return null;
+        return buffer.toString();
     }
 
     /**
      * Returns the "object type" part of an OGC URN for the given class, or {@code null} if unknown.
-     * See {@link org.apache.sis.internal.util.DefinitionURI} javadoc for a list of object types in URN.
+     * See {@link DefinitionURI} javadoc for a list of object types in URN.
      *
      * @param  type  the class for which to get the URN type.
      * @return the URN type, or {@code null} if unknown.
