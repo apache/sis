@@ -31,6 +31,8 @@ import org.opengis.metadata.Metadata;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.*;
 import org.opengis.metadata.content.*;
+import org.opengis.metadata.acquisition.AcquisitionInformation;
+import org.opengis.metadata.acquisition.Operation;
 import org.opengis.metadata.distribution.Distributor;
 import org.opengis.metadata.distribution.Distribution;
 import org.opengis.metadata.constraint.LegalConstraints;
@@ -68,6 +70,7 @@ import org.opengis.metadata.extent.GeographicDescription;
  * {@linkplain #CONTRIBUTOR "contributor_url"}<br>
  * {@linkplain #CREATOR     "creator_email"}<br>
  * {@linkplain #CREATOR     "creator_name"}<br>
+ * {@linkplain #CREATOR     "creator_type"}<br>
  * {@linkplain #CREATOR     "creator_url"}<br>
  * {@value     #DATA_TYPE}<br>
  * {@value     #DATE_CREATED}<br>
@@ -77,9 +80,12 @@ import org.opengis.metadata.extent.GeographicDescription;
  * {@value     #FLAG_MEANINGS}<br>
  * {@value     #FLAG_NAMES}<br>
  * {@value     #FLAG_VALUES}<br>
- * </td><td style="width: 25%">
  * {@linkplain #TITLE "full_name"}<br>
+ * </td><td style="width: 25%">
  * {@linkplain #GEOGRAPHIC_IDENTIFIER "geographic_identifier"}<br>
+ * {@value     #GEOSPATIAL_BOUNDS}<br>
+ * {@linkplain #GEOSPATIAL_BOUNDS "geospatial_bounds_crs"}<br>
+ * {@linkplain #GEOSPATIAL_BOUNDS "geospatial_bounds_vertical_crs"}<br>
  * {@linkplain #LATITUDE  "geospatial_lat_max"}<br>
  * {@linkplain #LATITUDE  "geospatial_lat_min"}<br>
  * {@linkplain #LATITUDE  "geospatial_lat_resolution"}<br>
@@ -104,9 +110,11 @@ import org.opengis.metadata.extent.GeographicDescription;
  * {@linkplain #TITLE "name"}<br>
  * {@value     #NAMING_AUTHORITY}<br>
  * {@value     #PROCESSING_LEVEL}<br>
+ * {@value     #PROGRAM}<br>
  * {@value     #PROJECT}<br>
  * {@linkplain #PUBLISHER "publisher_email"}<br>
  * {@linkplain #PUBLISHER "publisher_name"}<br>
+ * {@linkplain #PUBLISHER "publisher_type"}<br>
  * {@linkplain #PUBLISHER "publisher_url"}<br>
  * {@value     #PURPOSE}<br>
  * {@value     #REFERENCES}<br>
@@ -391,6 +399,22 @@ public class AttributeNames {
     public static final String DATE_ISSUED = "date_issued";
 
     /**
+     * The overarching program(s) of which the dataset is a part
+     * (<em>Suggested</em>).
+     *
+     * <p><b>Path in ISO 19115:</b></p> <ul><li>{@link Metadata} /
+     * {@link Metadata#getAcquisitionInformation() acquisitionInformation} /
+     * {@link AcquisitionInformation#getOperations() operation} /
+     * {@link Operation#getCitation() citation} /
+     * {@link Citation#getTitle() title}</li></ul>
+     *
+     * @see <a href="http://wiki.esipfed.org/index.php/Attribute_Convention_for_Data_Discovery#program">ESIP reference</a>
+     *
+     * @since 0.8
+     */
+    public static final String PROGRAM = "program";
+
+    /**
      * Holds the attribute names describing a responsible party.
      * In the following table, the header lists the constants defined in the {@link AttributeNames}
      * class and the other cells give the values assigned in this class fields for those constants.
@@ -408,10 +432,15 @@ public class AttributeNames {
      *   <td            >{@code "contributor_name"}</td>
      *   <td            >{@code "publisher_name"}</td>
      * </tr><tr>
+     *   <td            >{@link #TYPE}</td>
+     *   <td class="sep">{@code "creator_type"}</td>
+     *   <td            ></td>
+     *   <td            >{@code "publisher_type"}</td>
+     * </tr><tr>
      *   <td            >{@link #INSTITUTION}</td>
-     *   <td class="sep">{@code "institution"}</td>
+     *   <td class="sep">{@code "creator_institution"}</td>
      *   <td            ></td>
-     *   <td            ></td>
+     *   <td            >{@code "publisher_institution"}</td>
      * </tr><tr>
      *   <td            >{@link #URL}</td>
      *   <td class="sep">{@code "creator_url"}</td>
@@ -442,7 +471,7 @@ public class AttributeNames {
      * in a netCDF file.</div>
      *
      * @author  Martin Desruisseaux (Geomatys)
-     * @version 0.3
+     * @version 0.8
      *
      * @see org.apache.sis.storage.netcdf.AttributeNames.Dimension
      *
@@ -456,13 +485,20 @@ public class AttributeNames {
         private static final long serialVersionUID = 2680152633273321012L;
 
         /**
-         * The attribute name for the responsible's name. Possible values are
+         * The attribute name for the responsible's name. Possible values for this field are
          * {@code "creator_name"}, {@code "contributor_name"} or {@code "publisher_name"}.
          *
          * <p><b>Path in ISO 19115:</b></p> <ul><li>{@link ResponsibleParty} /
          * {@link ResponsibleParty#getIndividualName() individualName}</li></ul>
          */
         public final String NAME;
+
+        /**
+         * The attribute name for the responsible's type. Possible values for this field are
+         * {@code "creator_type"} or {@code "publisher_type"}. Possible values in a netCDF file
+         * are {@code "person"}, {@code "group"}, {@code "institution"} or {@code "position"}.
+         */
+        public final String TYPE;
 
         /**
          * The attribute name for the responsible's institution, or {@code null} if none.
@@ -512,19 +548,33 @@ public class AttributeNames {
         public final Role DEFAULT_ROLE;
 
         /**
-         * Creates a new set of attribute names. Any argument can be {@code null} if not applicable.
-         *
-         * @param name         the attribute name for the responsible's name.
-         * @param institution  the attribute name for the responsible's institution.
-         * @param url          the attribute name for the responsible's URL.
-         * @param email        the attribute name for the responsible's email address.
-         * @param role         the attribute name for the responsible's role.
-         * @param defaultRole  the role to use as a fallback if no attribute value is associated to the {@code role} key.
+         * @deprecated replaced by the constructor with one more argument (the type).
          */
+        @Deprecated
         public Responsible(final String name, final String institution, final String url, final String email,
                 final String role, final Role defaultRole)
         {
+            this(name, null, institution, url, email, role, defaultRole);
+        }
+
+        /**
+         * Creates a new set of attribute names. Any argument can be {@code null} if not applicable.
+         *
+         * @param name         the attribute name for the responsible's name.
+         * @param type         the attribute name for the responsible party type.
+         * @param institution  the attribute name for the responsible's institution.
+         * @param url          the attribute name for the responsible's URL.
+         * @param email        the attribute name for the responsible's email address.
+         * @param role         the attribute name for the responsible party role.
+         * @param defaultRole  the role to use as a fallback if no attribute value is associated to the {@code role} key.
+         *
+         * @since 0.8
+         */
+        public Responsible(final String name, final String type, final String institution, final String url,
+                final String email, final String role, final Role defaultRole)
+        {
             NAME         = name;
+            TYPE         = type;
             INSTITUTION  = institution;
             URL          = url;
             EMAIL        = email;
@@ -544,8 +594,8 @@ public class AttributeNames {
      * @see #PUBLISHER
      * @see <a href="http://wiki.esipfed.org/index.php/Attribute_Convention_for_Data_Discovery#creator_name">ESIP reference</a>
      */
-    public static final Responsible CREATOR = new Responsible(ACDD.creator_name,
-            "institution", ACDD.creator_url, ACDD.creator_email, null, Role.ORIGINATOR);
+    public static final Responsible CREATOR = new Responsible(ACDD.creator_name, "creator_type",
+            "creator_institution", ACDD.creator_url, ACDD.creator_email, null, Role.ORIGINATOR);
 
     /**
      * The set of attribute names for the contributor (<em>Suggested</em>).
@@ -558,7 +608,7 @@ public class AttributeNames {
      * @see #PUBLISHER
      * @see <a href="http://wiki.esipfed.org/index.php/Attribute_Convention_for_Data_Discovery#contributor_name">ESIP reference</a>
      */
-    public static final Responsible CONTRIBUTOR = new Responsible("contributor_name",
+    public static final Responsible CONTRIBUTOR = new Responsible("contributor_name", null,
             null, "contributor_url", "contributor_email", "contributor_role", null);
 
     /**
@@ -577,8 +627,8 @@ public class AttributeNames {
      * @see #CONTRIBUTOR
      * @see <a href="http://wiki.esipfed.org/index.php/Attribute_Convention_for_Data_Discovery#publisher_name">ESIP reference</a>
      */
-    public static final Responsible PUBLISHER = new Responsible(ACDD.publisher_name,
-            null, ACDD.publisher_url, ACDD.publisher_email, null, Role.PUBLISHER);
+    public static final Responsible PUBLISHER = new Responsible(ACDD.publisher_name, "publisher_type",
+            ACDD.publisher_institution, ACDD.publisher_url, ACDD.publisher_email, null, Role.PUBLISHER);
 
     /**
      * The {@value} attribute name for the scientific project that produced the data
@@ -685,12 +735,16 @@ public class AttributeNames {
 
     /**
      * Data's 2D or 3D geospatial extent in OGC's Well-Known Text (WKT) geometry format.
+     * The Coordinate Reference System is given by {@code "geospatial_bounds_crs"},
+     * possibly completed by {@code "geospatial_bounds_vertical_crs"}.
      *
      * <p><b>Path in ISO 19115:</b></p> <ul><li>{@link Metadata} /
      * {@link Metadata#getIdentificationInfo() identificationInfo} /
      * {@link DataIdentification#getExtents() extent} /
      * {@link Extent#getGeographicElements() geographicElement} /
      * {@link BoundingPolygon#getPolygons() polygon}</li></ul>
+     *
+     * @see <a href="http://wiki.esipfed.org/index.php/Attribute_Convention_for_Data_Discovery#geospatial_bounds">ESIP reference</a>
      *
      * @since 0.8
      */

@@ -2416,6 +2416,26 @@ parse:      for (int i = 0; i < length;) {
     }
 
     /**
+     * Adds the identifier of the operation used to acquire the dataset.
+     * Examples: "GHRSST", "NOAA CDR", "NASA EOS", "JPSS", "GOES-R".
+     * Storage location is:
+     *
+     * <ul>
+     *   <li>{@code metadata/acquisitionInformation/operation/identifier}</li>
+     * </ul>
+     *
+     * @param  program     identification of the mission, or {@code null} if none.
+     * @param  identifier  unique identification of the operation, or {@code null} for no-operation.
+     */
+    public final void addAcquisitionOperation(final CharSequence program, String identifier) {
+        if (identifier != null && !(identifier = identifier.trim()).isEmpty()) {
+            final DefaultOperation r = new DefaultOperation();
+            r.setIdentifier(sharedIdentifier(program, identifier));
+            addIfNotPresent(acquisition().getOperations(), r);
+        }
+    }
+
+    /**
      * Adds the identifier of the requirement to be satisfied by data acquisition.
      * Storage location is:
      *
