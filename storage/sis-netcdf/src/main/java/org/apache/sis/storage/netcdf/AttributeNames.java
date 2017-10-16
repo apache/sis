@@ -44,9 +44,11 @@ import org.opengis.metadata.identification.KeywordType;
 import org.opengis.metadata.identification.Keywords;
 import org.opengis.metadata.quality.DataQuality;
 import org.opengis.metadata.lineage.Lineage;
+import org.opengis.metadata.lineage.Source;
 import org.opengis.metadata.extent.Extent;
 import org.opengis.metadata.extent.VerticalExtent;
 import org.opengis.metadata.extent.TemporalExtent;
+import org.opengis.metadata.extent.BoundingPolygon;
 import org.opengis.metadata.extent.GeographicBoundingBox;
 import org.opengis.metadata.extent.GeographicDescription;
 
@@ -109,6 +111,7 @@ import org.opengis.metadata.extent.GeographicDescription;
  * {@value     #PURPOSE}<br>
  * {@value     #REFERENCES}<br>
  * </td><td style="width: 25%">
+ * {@value     #SOURCE}<br>
  * {@value     #STANDARD_NAME}<br>
  * {@value     #STANDARD_NAME_VOCABULARY}<br>
  * {@value     #SUMMARY}<br>
@@ -190,7 +193,8 @@ public class AttributeNames {
      * {@link Metadata#getIdentificationInfo() identificationInfo} /
      * {@link DataIdentification#getCitation() citation} /
      * {@link Citation#getIdentifiers() identifier} /
-     * {@link Identifier#getAuthority() authority}</li></ul>
+     * {@link Identifier#getAuthority() authority} /
+     * {@link Citation#getTitle() title}</li></ul>
      *
      * @see #IDENTIFIER
      * @see <a href="http://wiki.esipfed.org/index.php/Attribute_Convention_for_Data_Discovery#naming_authority">ESIP reference</a>
@@ -296,6 +300,7 @@ public class AttributeNames {
     /**
      * The {@value} attribute name for providing an audit trail for modifications to the
      * original data (<em>Recommended</em>).
+     * This is a character array with a line for each invocation of a program that has modified the dataset.
      *
      * <p><b>Path in ISO 19115:</b></p> <ul><li>{@link Metadata} /
      * {@link Metadata#getDataQualityInfo() dataQualityInfo} /
@@ -305,6 +310,21 @@ public class AttributeNames {
      * @see <a href="http://wiki.esipfed.org/index.php/Attribute_Convention_for_Data_Discovery#history">ESIP reference</a>
      */
     public static final String HISTORY = ACDD.history;
+
+    /**
+     * The {@value} attribute name for the method of production of the original data (<em>Recommended</em>).
+     *
+     * <p><b>Path in ISO 19115:</b></p> <ul><li>{@link Metadata} /
+     * {@link Metadata#getDataQualityInfo() dataQualityInfo} /
+     * {@link DataQuality#getLineage() lineage} /
+     * {@link Lineage#getSources() source} /
+     * {@link Source#getDescription() description}</li></ul>
+     *
+     * @see <a href="http://wiki.esipfed.org/index.php/Attribute_Convention_for_Data_Discovery#source">ESIP reference</a>
+     *
+     * @since 0.8
+     */
+    public static final String SOURCE = "source";
 
     /**
      * The {@value} attribute name for miscellaneous information about the data
@@ -664,6 +684,19 @@ public class AttributeNames {
     public static final String GEOGRAPHIC_IDENTIFIER = "geographic_identifier";
 
     /**
+     * Data's 2D or 3D geospatial extent in OGC's Well-Known Text (WKT) geometry format.
+     *
+     * <p><b>Path in ISO 19115:</b></p> <ul><li>{@link Metadata} /
+     * {@link Metadata#getIdentificationInfo() identificationInfo} /
+     * {@link DataIdentification#getExtents() extent} /
+     * {@link Extent#getGeographicElements() geographicElement} /
+     * {@link BoundingPolygon#getPolygons() polygon}</li></ul>
+     *
+     * @since 0.8
+     */
+    public static final String GEOSPATIAL_BOUNDS = "geospatial_bounds";
+
+    /**
      * Holds the attribute names describing a simple latitude, longitude, and vertical bounding box.
      * In the following table, the header lists the constants defined in the {@link AttributeNames}
      * class and the other cells give the values assigned in this class fields for those constants.
@@ -806,7 +839,7 @@ public class AttributeNames {
          * @param positive    the attribute name for indicating which direction is positive.
          */
         public Dimension(final DimensionNameType type, final String min, final String max, final String span,
-                final String resolution,final String units, final String positive)
+                final String resolution, final String units, final String positive)
         {
             DEFAULT_NAME_TYPE = type;
             MINIMUM           = min;

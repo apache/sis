@@ -29,6 +29,7 @@ import javax.measure.Unit;
 import org.opengis.util.MemberName;
 import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
+import org.opengis.geometry.Geometry;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Role;
 import org.opengis.metadata.citation.DateType;
@@ -62,6 +63,7 @@ import org.apache.sis.metadata.iso.DefaultMetadataScope;
 import org.apache.sis.metadata.iso.extent.DefaultExtent;
 import org.apache.sis.metadata.iso.extent.DefaultVerticalExtent;
 import org.apache.sis.metadata.iso.extent.DefaultTemporalExtent;
+import org.apache.sis.metadata.iso.extent.DefaultBoundingPolygon;
 import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
 import org.apache.sis.metadata.iso.extent.DefaultGeographicDescription;
 import org.apache.sis.metadata.iso.spatial.DefaultGridSpatialRepresentation;
@@ -1634,6 +1636,22 @@ parse:      for (int i = 0; i < length;) {
     public final void addReferenceSystem(final ReferenceSystem crs) {
         if (crs != null) {
             addIfNotPresent(metadata().getReferenceSystemInfo(), crs);
+        }
+    }
+
+    /**
+     * Adds the given geometry as a bounding polygon.
+     * Storage locations is:
+     *
+     * <ul>
+     *   <li>{@code metadata/identificationInfo/extent/geographicElement/polygon}</li>
+     * </ul>
+     *
+     * @param  bounds  the bounding polygon, or {@code null} if none.
+     */
+    public final void addBoundingPolygon(final Geometry bounds) {
+        if (bounds != null) {
+            addIfNotPresent(extent().getGeographicElements(), new DefaultBoundingPolygon(bounds));
         }
     }
 

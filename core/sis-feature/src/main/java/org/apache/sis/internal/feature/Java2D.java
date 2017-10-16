@@ -213,4 +213,12 @@ final class Java2D extends Geometries<Shape> {
         }
         return ShapeUtilities.toPrimitive(path);
     }
+
+    /**
+     * Parses the given WKT.
+     */
+    @Override
+    public Object parseWKT(final String wkt) {
+        throw unsupported(2);
+    }
 }
