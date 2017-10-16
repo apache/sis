@@ -47,7 +47,7 @@ import org.opengis.metadata.extent.BoundingPolygon;
  * @author  Touraïvane (IRD)
  * @author  Cédric Briançon (Geomatys)
  * @author  Guilhem Legal (Geomatys)
- * @version 0.3
+ * @version 0.8
  * @since   0.3
  * @module
  */
@@ -77,6 +77,7 @@ public class DefaultBoundingPolygon extends AbstractGeographicExtent implements 
      * @param polygon  the sets of points defining the bounding polygon.
      */
     public DefaultBoundingPolygon(final Geometry polygon) {
+        super(true);
         polygons = singleton(polygon, Geometry.class);
     }
 

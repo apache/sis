@@ -53,6 +53,7 @@ import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.metadata.iso.DefaultMetadata;
 import org.apache.sis.metadata.iso.citation.*;
 import org.apache.sis.metadata.iso.identification.*;
+import org.apache.sis.metadata.iso.lineage.DefaultSource;
 import org.apache.sis.metadata.iso.lineage.DefaultLineage;
 import org.apache.sis.metadata.iso.quality.DefaultDataQuality;
 import org.apache.sis.internal.netcdf.Axis;
@@ -61,6 +62,7 @@ import org.apache.sis.internal.netcdf.Variable;
 import org.apache.sis.internal.netcdf.GridGeometry;
 import org.apache.sis.internal.storage.io.IOUtilities;
 import org.apache.sis.internal.storage.MetadataBuilder;
+import org.apache.sis.internal.storage.wkt.StoreFormat;
 import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.util.resources.Errors;
@@ -623,6 +625,15 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
         addKeywords(keywords,  KeywordType.THEME,       stringValue(VOCABULARY));
         addKeywords(project,   KeywordType.PROJECT,     null);
         addKeywords(publisher, KeywordType.DATA_CENTRE, null);
+        /*
+         * Add geospatial bounds as a geometric object. This optional operation requires
+         * an external library (ESRI or JTS) to be present on the classpath.
+         */
+        final String wkt = stringValue(GEOSPATIAL_BOUNDS);
+        if (wkt != null) {
+            addBoundingPolygon(new StoreFormat(decoder.geomlib, decoder.listeners).parseGeometry(wkt,
+                    stringValue(GEOSPATIAL_BOUNDS + "_crs"), stringValue(GEOSPATIAL_BOUNDS + "_vertical_crs")));
+        }
     }
 
     /**
@@ -658,7 +669,7 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
     }
 
     /**
-     * Adds the extent declared in the given group. For more consistent results, the caller should restrict
+     * Adds the extent declared in the current group. For more consistent results, the caller should restrict
      * the {@linkplain Decoder#setSearchPath search path} to a single group before invoking this method.
      *
      * @return {@code true} if at least one numerical value has been added.
@@ -928,11 +939,19 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
         final DefaultMetadata metadata = build(false);
         for (final String path : searchPath) {
             decoder.setSearchPath(path);
-            final String history = stringValue(HISTORY);
-            if (history != null) {
+            DefaultLineage lineage = null;
+            String value = stringValue(HISTORY);
+            if (value != null) {
+                lineage = new DefaultLineage();
+                lineage.setStatement(new SimpleInternationalString(value));
+            }
+            value = stringValue(SOURCE);
+            if (value != null) {
+                if (lineage == null) lineage = new DefaultLineage();
+                addIfAbsent(lineage.getSources(), new DefaultSource(value));
+            }
+            if (lineage != null) {
                 final DefaultDataQuality quality = new DefaultDataQuality(ScopeCode.DATASET);
-                final DefaultLineage lineage = new DefaultLineage();
-                lineage.setStatement(new SimpleInternationalString(history));
                 quality.setLineage(lineage);
                 addIfAbsent(metadata.getDataQualityInfo(), quality);
             }
