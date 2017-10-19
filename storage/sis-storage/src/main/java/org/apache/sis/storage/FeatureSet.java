@@ -75,6 +75,30 @@ public interface FeatureSet extends DataSet {
     FeatureType getType() throws DataStoreException;
 
     /**
+     * Request a subset of features from this resource.
+     * <p>
+     * Using queries allow the {@link DataStore} implementation to optimize
+     * the overall processing by using the tool available in the format.
+     * BoundingBox filters are the most common case of optimization implemented
+     * by {@link DataStore}.
+     * </p>
+     * <p>
+     * The returned subset may not have the same capabilities as this {@link FeatureSet}.
+     * Particularly writing operations may become unsupported after complex queries.
+     * </p>
+     *
+     * @param query definition of operations applied at reading time, common queries
+     *          imply filtering features and transforming attributes.
+     * @return resulting subset of features (never {@code null}).
+     * @throws DataStoreException if processing or verifying the query failed
+     * @throws UnsupportedQueryException if query is not supported, this include
+     *          query validation errors.
+     */
+    default FeatureSet subset(Query query) throws DataStoreException, UnsupportedQueryException {
+        throw new UnsupportedQueryException();
+    }
+
+    /**
      * Returns a stream of all features contained in this dataset.
      * For all features, the following condition shall be true:
      *
