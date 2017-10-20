@@ -18,19 +18,21 @@ package org.apache.sis.storage;
 
 
 /**
- * Thrown when no {@link DataStoreProvider} is found for a given storage object.
- * May also be thrown if a {@code DataStore} is instantiated directly but the data store
- * can not handle the given input or output object.
+ * Thrown when a resources can not be filtered with a given query.
  *
  * @author  Johann Sorel (Geomatys)
  * @version 0.8
- * @since   0.8
+ *
+ * @see FeatureSet#subset(Query)
+ *
+ * @since 0.8
  * @module
  */
-public class UnsupportedQueryException extends IllegalOpenParameterException {
+public class UnsupportedQueryException extends DataStoreException {
     /**
      * For cross-version compatibility.
      */
+    private static final long serialVersionUID = -4593505566766684270L;
 
     /**
      * Creates an exception with no cause and no details message.
@@ -65,5 +67,4 @@ public class UnsupportedQueryException extends IllegalOpenParameterException {
     public UnsupportedQueryException(final String message, final Throwable cause) {
         super(message, cause);
     }
-
 }
