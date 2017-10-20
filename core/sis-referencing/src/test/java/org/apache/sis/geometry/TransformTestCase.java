@@ -29,6 +29,7 @@ import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.operation.DefaultConversion;
+import org.apache.sis.referencing.operation.HardCodedConversions;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
@@ -207,6 +208,29 @@ public abstract strictfp class TransformTestCase<G> extends TestCase {
         final G expected  = createFromExtremums(targetCRS,
                 40.50846282536367, -6.594124551832373,          // Computed by SIS (not validated by external authority).
                 41.52923550023067, -5.246186118392847);
+        final G actual = transform(conversion, rectangle);
+        assertGeometryEquals(expected, actual, ANGULAR_TOLERANCE, ANGULAR_TOLERANCE);
+    }
+
+    /**
+     * Tests transform of an envelope over the ±180° limit. The Mercator projection used in this test
+     * is not expected to wrap the longitude around Earth when using only the {@code MathTransform}.
+     * However when the target CRS is known, then "wrap around" should be applied.
+     *
+     * @throws TransformException if an error occurred while transforming the envelope.
+     *
+     * @since 0.8
+     */
+    @Test
+    @DependsOnMethod("testTransform")
+    public void testTransformOverAntiMeridian() throws TransformException {
+        final ProjectedCRS  sourceCRS  = HardCodedConversions.mercator();
+        final GeographicCRS targetCRS  = sourceCRS.getBaseCRS();
+        final Conversion    conversion = inverse(sourceCRS.getConversionFromBase());
+        final G expected  = createFromExtremums(targetCRS, 179, 40, 181, 50);
+        final G rectangle = createFromExtremums(sourceCRS,
+                19926188.852, 4838471.398,                      // Computed by SIS (not validated by external authority).
+                20148827.834, 6413524.594);
         final G actual = transform(conversion, rectangle);
         assertGeometryEquals(expected, actual, ANGULAR_TOLERANCE, ANGULAR_TOLERANCE);
     }

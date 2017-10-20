@@ -21,6 +21,7 @@ package org.apache.sis.geometry;
  * support Java2D (e.g. Android),  or applications that do not need it may want to avoid to
  * force installation of the Java2D module (e.g. JavaFX/SWT).
  */
+import java.util.List;
 import java.util.Arrays;
 import java.io.Serializable;
 import java.lang.reflect.Field;
@@ -887,13 +888,23 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
      * @see AbstractDirectPosition#normalize()
      */
     public boolean normalize() {
+        return normalize(null);
+    }
+
+    /**
+     * Normalizes only the dimensions in the given list, or all dimensions if the list is null.
+     * This is used for normalizing the result of a coordinate operation where a wrap around axis
+     * does not necessarily means that the ordinates need to be normalized along that axis.
+     */
+    final boolean normalize(final List<Integer> dimensions) {
         boolean changed = false;
         if (crs != null) {
             final int d = ordinates.length >>> 1;
             final int beginIndex = beginIndex();
-            final int dimension = endIndex() - beginIndex;
+            final int count = (dimensions != null) ? dimensions.size() : endIndex() - beginIndex;
             final CoordinateSystem cs = crs.getCoordinateSystem();
-            for (int i=0; i<dimension; i++) {
+            for (int j=0; j<count; j++) {
+                final int i = (dimensions != null) ? dimensions.get(j) : j;
                 final int iLower = beginIndex + i;
                 final int iUpper = iLower + d;
                 final CoordinateSystemAxis axis = cs.getAxis(i);
@@ -941,8 +952,6 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
         return changed;
     }
 
-    // Note: As of JDK 1.6.0_31, using {@linkplain #getLower(int)} in the first line crash the
-    // Javadoc tools, maybe because getLower/getUpper are defined in a non-public parent class.
     /**
      * Ensures that <var>lower</var> &lt;= <var>upper</var> for every dimensions.
      * If a {@linkplain #getUpper(int) upper ordinate value} is less than a

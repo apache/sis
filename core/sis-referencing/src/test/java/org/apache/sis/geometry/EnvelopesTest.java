@@ -19,13 +19,16 @@ package org.apache.sis.geometry;
 import java.util.Collections;
 import org.opengis.geometry.Envelope;
 import org.opengis.util.FactoryException;
+import org.opengis.referencing.crs.GeographicCRS;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.CoordinateOperation;
 import org.opengis.referencing.operation.MathTransform2D;
 import org.opengis.referencing.operation.TransformException;
+import org.apache.sis.referencing.operation.transform.MathTransformWrapper;
 import org.apache.sis.referencing.crs.DefaultCompoundCRS;
 import org.apache.sis.referencing.crs.HardCodedCRS;
-import org.apache.sis.referencing.operation.transform.MathTransformWrapper;
+import org.apache.sis.referencing.cs.AxesConvention;
+import org.apache.sis.referencing.CRS;
 import org.apache.sis.test.DependsOn;
 import org.junit.Test;
 
@@ -170,5 +173,23 @@ public final strictfp class EnvelopesTest extends TransformTestCase<GeneralEnvel
         assertEquals( 170, env2D.getMaximum(0), 0);
         assertEquals( -80, env2D.getMinimum(1), 0);
         assertEquals(  80, env2D.getMaximum(1), 0);
+    }
+
+    /**
+     * Tests a transformation where only the range of longitude axis is changed.
+     *
+     * @throws FactoryException if an error occurred while creating the operation.
+     * @throws TransformException if an error occurred while transforming the envelope.
+     *
+     * @since 0.8
+     */
+    @Test
+    public void testAxisRangeChange() throws FactoryException, TransformException {
+        final GeographicCRS sourceCRS = HardCodedCRS.WGS84;
+        final GeographicCRS targetCRS = HardCodedCRS.WGS84.forConvention(AxesConvention.POSITIVE_RANGE);
+        final GeneralEnvelope rectangle = createFromExtremums(sourceCRS, -178, -70, 165, 80);
+        final GeneralEnvelope expected  = createFromExtremums(targetCRS,  182, -70, 165, 80);
+        final GeneralEnvelope actual    = transform(CRS.findOperation(sourceCRS, targetCRS, null), rectangle);
+        assertGeometryEquals(expected, actual, STRICT, STRICT);
     }
 }

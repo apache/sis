@@ -317,7 +317,7 @@ public abstract class AbstractMathTransform extends FormattableObject
      *         double[] ordinates = Arrays.copyOfRange(srcPts, srcOff, srcOff + getSourceDimensions());
      *         derivative = this.derivative(new GeneralDirectPosition(ordinates));
      *     }
-     *     this.transform(srcPts, srcOff, dstPts, dstOff, 1);  // May overwrite srcPts.
+     *     this.transform(srcPts, srcOff, dstPts, dstOff, 1);                   // May overwrite srcPts.
      *     return derivative;
      * }
      *

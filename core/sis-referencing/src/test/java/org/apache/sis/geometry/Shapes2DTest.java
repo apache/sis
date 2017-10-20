@@ -17,11 +17,17 @@
 package org.apache.sis.geometry;
 
 import java.awt.geom.Rectangle2D;
+import org.opengis.util.FactoryException;
+import org.opengis.referencing.crs.GeographicCRS;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.CoordinateOperation;
 import org.opengis.referencing.operation.MathTransform2D;
 import org.opengis.referencing.operation.TransformException;
+import org.apache.sis.referencing.cs.AxesConvention;
+import org.apache.sis.referencing.CRS;
+import org.apache.sis.referencing.crs.HardCodedCRS;
 import org.apache.sis.test.DependsOn;
+import org.junit.Test;
 
 import static org.apache.sis.test.ReferencingAssert.*;
 
@@ -77,5 +83,23 @@ public final strictfp class Shapes2DTest extends TransformTestCase<Rectangle2D> 
     @Override
     void assertGeometryEquals(Rectangle2D expected, Rectangle2D actual, double tolx, double toly) {
         assertRectangleEquals(expected, actual, tolx, toly);
+    }
+
+    /**
+     * Tests a transformation where only the range of longitude axis is changed.
+     *
+     * @throws FactoryException if an error occurred while creating the operation.
+     * @throws TransformException if an error occurred while transforming the envelope.
+     *
+     * @since 0.8
+     */
+    @Test
+    public void testAxisRangeChange() throws FactoryException, TransformException {
+        final GeographicCRS sourceCRS = HardCodedCRS.WGS84;
+        final GeographicCRS targetCRS = HardCodedCRS.WGS84.forConvention(AxesConvention.POSITIVE_RANGE);
+        final Rectangle2D rectangle = createFromExtremums(sourceCRS, -178, -70, 165, 80);
+        final Rectangle2D expected  = createFromExtremums(targetCRS,    0, -70, 360, 80);
+        final Rectangle2D actual    = transform(CRS.findOperation(sourceCRS, targetCRS, null), rectangle);
+        assertGeometryEquals(expected, actual, STRICT, STRICT);
     }
 }
