@@ -221,6 +221,7 @@ import org.junit.BeforeClass;
     org.apache.sis.referencing.cs.CodesTest.class,
     org.apache.sis.referencing.CRSTest.class,
     org.apache.sis.internal.referencing.DefinitionVerifierTest.class,
+    org.apache.sis.internal.referencing.CoordinateOperationsTest.class,
 
     // Coordinate operation finders are last, since they need everything else.
     org.apache.sis.referencing.operation.CoordinateOperationRegistryTest.class,
