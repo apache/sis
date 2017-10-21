@@ -99,7 +99,7 @@ public final strictfp class IntegerListTest extends TestCase {
          * use the PrimitiveSpliterator.forEachRemaining(Consumer<? super Integer>) method. A more
          * specific test using forEachRemaining(IntConsumer) is done by the testInts() method.
          */
-        assertStreamEquals(copy.iterator(), list.stream());
+        assertSequentialStreamEquals(copy.iterator(), list.stream());
         /*
          * Tests cloning and removal of values in a range of indices. The IntegerList.removeRange(…)
          * method is invoked indirectly by subList(…).clear(). Again, we use ArrayList as a reference.
@@ -234,11 +234,12 @@ public final strictfp class IntegerListTest extends TestCase {
 
     /**
      * Tests that primitive stream traversal is coherent with its list value.
+     * This method tests sequential stream only.
      */
     @Test
     public void testInts() {
         list = createRandomlyFilled(42, 404);
-        list.ints().forEach(new IntConsumer() {
+        list.ints(false).forEach(new IntConsumer() {
             private int index = 0;
 
             @Override
@@ -249,13 +250,22 @@ public final strictfp class IntegerListTest extends TestCase {
     }
 
     /**
+     * Tests that primitive stream traversal with parallelization.
+     */
+    @Test
+    public void testIntsParallel() {
+        list = createRandomlyFilled(80, 321);
+        assertParallelStreamEquals(list.iterator(), list.stream().parallel());
+    }
+
+    /**
      * Ensures our stream is a fail-fast operator, i.e: it fails when the list has
      * been modified before the end of its iteration.
      */
     @Test
     public void testErrorOnCoModification() {
         list = createRandomlyFilled(4, 10);
-        final PrimitiveIterator.OfInt values = list.ints().iterator();
+        final PrimitiveIterator.OfInt values = list.ints(false).iterator();
 
         // Start iteration normally.
         assertEquals(list.getInt(0), values.nextInt());
