@@ -22,6 +22,7 @@ import java.util.Set;
 import java.util.HashSet;
 import java.util.Collections;
 import java.util.Random;
+import java.util.ConcurrentModificationException;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.TestUtilities;
 import org.junit.Test;
@@ -29,12 +30,18 @@ import org.junit.Test;
 import static java.lang.StrictMath.*;
 import static org.apache.sis.test.Assert.*;
 
+// Branch-dependent imports
+import java.util.function.IntConsumer;
+import java.util.PrimitiveIterator;
+import java.util.stream.IntStream;
+
 
 /**
  * Tests {@link IntegerList} implementations.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.7
+ * @author  Alexis Manin (Geomatys)
+ * @version 0.8
  * @since   0.7
  * @module
  */
@@ -191,5 +198,59 @@ public final strictfp class IntegerListTest extends TestCase {
     public void testMax() {
         testReadWrite(Integer.MAX_VALUE);
         testFill(17);
+    }
+
+    /**
+     * Tests that primitive stream traversal is coherent with its list value.
+     */
+    @Test
+    public void testInts() {
+        list = createRandomlyFilled(42, 404);
+        list.ints().forEach(new IntConsumer() {
+            private int index = 0;
+
+            @Override
+            public void accept(int value) {
+                assertEquals("Spliterator value differs from its original list", list.getInt(index++), value);
+            }
+        });
+    }
+
+    /**
+     * Ensures our stream is a fail-fast operator, i.e: it fails when the list has
+     * been modified before the end of its iteration.
+     */
+    @Test
+    public void testErrorOnCoModification() {
+        list = createRandomlyFilled(4, 10);
+        final PrimitiveIterator.OfInt values = list.ints().iterator();
+
+        // Start iteration normally.
+        assertEquals(list.getInt(0), values.nextInt());
+        assertEquals(list.getInt(1), values.nextInt());
+
+        // Now, if we alter the list and then try to use previously created stream, we should get an error.
+        list.add(0);
+        try {
+            values.next();
+            fail("Concurrent modification has not been detected.");
+        } catch (ConcurrentModificationException expected) {
+            // Expected behavior
+        }
+    }
+
+    /**
+     * Creates a new list whose capacity and value magnitude are defined as input.
+     * The list is filled by a random integer generator before return.
+     *
+     * @param  size      number of elements to insert in the list.
+     * @param  maxValue  maximum value to use for value insertion.
+     * @return a fresh and filled list.
+     */
+    private static IntegerList createRandomlyFilled(final int size, final int maxValue) {
+        final Random random = TestUtilities.createRandomNumberGenerator();
+        return IntStream.generate(() -> random.nextInt(maxValue))
+                .limit(size)
+                .collect(() -> new IntegerList(size, maxValue), IntegerList::addInt, null);
     }
 }
