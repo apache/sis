@@ -71,6 +71,7 @@ import org.apache.sis.measure.Units;
 
 // The following dependency is used only for static final String constants.
 // Consequently the compiled class files should not have this dependency.
+import ucar.nc2.constants.ACDD;
 import ucar.nc2.constants.CDM;
 import ucar.nc2.constants.CF;
 
@@ -111,6 +112,12 @@ import static org.apache.sis.internal.util.CollectionsExt.first;
  */
 final class MetadataReader extends MetadataBuilder {
     /**
+     * Whether the reader should include experimental fields.
+     * They are fields for which we are unsure of the proper ISO 19115 location.
+     */
+    private static final boolean EXPERIMENTAL = true;
+
+    /**
      * Names of groups where to search for metadata, in precedence order.
      * The {@code null} value stands for global attributes.
      *
@@ -125,7 +132,7 @@ final class MetadataReader extends MetadataBuilder {
 
     /**
      * The character to use as a separator in comma-separated list. This separator is used for parsing the
-     * {@value org.apache.sis.storage.netcdf.AttributeNames#KEYWORDS} attribute value for instance.
+     * {@link AttributeNames#KEYWORDS} attribute value for instance.
      */
     private static final char SEPARATOR = ',';
 
@@ -557,8 +564,10 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
             }
         }
         addTitle(title);
+        addEdition(stringValue(PRODUCT_VERSION));
         addOtherCitationDetails(stringValue(REFERENCES));
         addCitationDate(decoder.dateValue(METADATA_CREATION), DateType.CREATION,    Scope.ALL);
+        addCitationDate(decoder.dateValue(METADATA_MODIFIED), DateType.REVISION,    Scope.ALL);
         addCitationDate(decoder.dateValue(DATE_CREATED),      DateType.CREATION,    Scope.RESOURCE);
         addCitationDate(decoder.dateValue(DATE_MODIFIED),     DateType.REVISION,    Scope.RESOURCE);
         addCitationDate(decoder.dateValue(DATE_ISSUED),       DateType.PUBLICATION, Scope.RESOURCE);
@@ -622,8 +631,8 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
         final Set<String> keywords = new LinkedHashSet<>();
         for (final String path : searchPath) {
             decoder.setSearchPath(path);
-            keywords.addAll(split(stringValue(KEYWORDS)));
-            standard = addIfNonNull(standard, stringValue(STANDARD_NAME));
+            keywords.addAll(split(stringValue(KEYWORDS.TEXT)));
+            standard = addIfNonNull(standard, stringValue(STANDARD_NAME.TEXT));
             project  = addIfNonNull(project,  stringValue(PROJECT));
             for (final String keyword : split(stringValue(ACCESS_CONSTRAINT))) {
                 addAccessConstraint(forCodeName(Restriction.class, keyword));
@@ -649,8 +658,8 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
         addCredits                (stringValue(ACKNOWLEDGEMENT));
         addCredits                (stringValue("acknowledgment"));          // Legacy spelling.
         addUseLimitation          (stringValue(LICENSE));
-        addKeywords(standard,  KeywordType.THEME,       stringValue(STANDARD_NAME_VOCABULARY));
-        addKeywords(keywords,  KeywordType.THEME,       stringValue(VOCABULARY));
+        addKeywords(standard,  KeywordType.THEME,       stringValue(STANDARD_NAME.VOCABULARY));
+        addKeywords(keywords,  KeywordType.THEME,       stringValue(KEYWORDS.VOCABULARY));
         addKeywords(project,   KeywordType.PROJECT,     null);
         addKeywords(publisher, KeywordType.DATA_CENTRE, null);
         /*
@@ -799,7 +808,27 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
      * Adds information about acquisition (program, platform).
      */
     private void addAcquisitionInfo() {
-        addAcquisitionOperation(null, stringValue(PROGRAM));
+        final Keyword[] attributes = {
+            AttributeNames.PROGRAM,
+            AttributeNames.PLATFORM,
+            AttributeNames.INSTRUMENT
+        };
+        for (int i=0; i<attributes.length; i++) {
+            final Keyword at = attributes[i];
+            final String authority = stringValue(at.VOCABULARY);
+            for (final String keyword : split(stringValue(at.TEXT))) {
+                switch (i) {
+                    case 0: {
+                        if (EXPERIMENTAL) {
+                            addAcquisitionOperation(authority, keyword);
+                        }
+                        break;
+                    }
+                    case 1: addPlatform  (authority, keyword); break;
+                    case 2: addInstrument(authority, keyword); break;
+                }
+            }
+        }
     }
 
     /**
@@ -858,10 +887,10 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
             setBandIdentifier(nameFactory.createMemberName(null, name,
                     nameFactory.createTypeName(null, variable.getDataTypeName())));
         }
-        Object[] v = variable.getAttributeValues(STANDARD_NAME, false);
+        Object[] v = variable.getAttributeValues(CF.STANDARD_NAME, false);
         final String id = (v.length == 1) ? trim((String) v[0]) : null;
         if (id != null && !id.equals(name)) {
-            v = variable.getAttributeValues(STANDARD_NAME_VOCABULARY, false);
+            v = variable.getAttributeValues(ACDD.standard_name_vocabulary, false);
             addBandIdentifier(v.length == 1 ? (String) v[0] : null, id);
         }
         final String description = trim(variable.getDescription());
@@ -907,18 +936,18 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
      * The current implementation builds the identifier from the following attributes:
      *
      * <ul>
-     *   <li>{@value AttributeNames#NAMING_AUTHORITY} used as the {@linkplain Identifier#getAuthority() authority}.</li>
-     *   <li>{@value AttributeNames#IDENTIFIER}, or {@link ucar.nc2.NetcdfFile#getId()} if no identifier attribute was found,
+     *   <li>{@code AttributeNames.IDENTIFIER.VOCABULARY} used as the {@linkplain Identifier#getAuthority() authority}.</li>
+     *   <li>{@code AttributeNames.IDENTIFIER.TEXT}, or {@link ucar.nc2.NetcdfFile#getId()} if no identifier attribute was found,
      *       or the filename without extension if {@code getId()} returned nothing.</li>
      * </ul>
      *
      * This method should be invoked last, after we made our best effort to set the title.
      */
     private void addFileIdentifier() {
-        String identifier = stringValue(IDENTIFIER);
+        String identifier = stringValue(IDENTIFIER.TEXT);
         String authority;
         if (identifier != null) {
-            authority = stringValue(NAMING_AUTHORITY);
+            authority = stringValue(IDENTIFIER.VOCABULARY);
         } else {
             identifier = decoder.getId();
             if (identifier == null) {

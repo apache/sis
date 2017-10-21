@@ -31,8 +31,7 @@ import org.opengis.metadata.Metadata;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.*;
 import org.opengis.metadata.content.*;
-import org.opengis.metadata.acquisition.AcquisitionInformation;
-import org.opengis.metadata.acquisition.Operation;
+import org.opengis.metadata.acquisition.*;
 import org.opengis.metadata.distribution.Distributor;
 import org.opengis.metadata.distribution.Distribution;
 import org.opengis.metadata.constraint.LegalConstraints;
@@ -75,6 +74,7 @@ import org.opengis.metadata.extent.GeographicDescription;
  * {@value     #DATA_TYPE}<br>
  * {@value     #DATE_CREATED}<br>
  * {@value     #DATE_ISSUED}<br>
+ * {@value     #METADATA_MODIFIED}<br>
  * {@value     #DATE_MODIFIED}<br>
  * {@value     #FLAG_MASKS}<br>
  * {@value     #FLAG_MEANINGS}<br>
@@ -101,16 +101,17 @@ import org.opengis.metadata.extent.GeographicDescription;
  * {@linkplain #VERTICAL  "geospatial_vertical_units"}<br>
  * </td><td style="width: 25%">
  * {@value     #HISTORY}<br>
- * {@value     #IDENTIFIER}<br>
- * {@linkplain #CREATOR "institution"}<br>
- * {@value     #KEYWORDS}<br>
- * {@value     #VOCABULARY}<br>
+ * {@linkplain #IDENTIFIER               "id"}<br>
+ * {@linkplain #CREATOR                  "institution"}<br>
+ * {@linkplain #KEYWORDS                 "keywords"}<br>
+ * {@linkplain #KEYWORDS                 "keywords_vocabulary"}<br>
  * {@value     #LICENSE}<br>
  * {@value     #METADATA_CREATION}<br>
  * {@linkplain #TITLE "name"}<br>
  * {@value     #NAMING_AUTHORITY}<br>
  * {@value     #PROCESSING_LEVEL}<br>
- * {@value     #PROGRAM}<br>
+ * {@value     #PRODUCT_VERSION}<br>
+ * {@linkplain #PROGRAM   "program"}<br>
  * {@value     #PROJECT}<br>
  * {@linkplain #PUBLISHER "publisher_email"}<br>
  * {@linkplain #PUBLISHER "publisher_name"}<br>
@@ -120,14 +121,14 @@ import org.opengis.metadata.extent.GeographicDescription;
  * {@value     #REFERENCES}<br>
  * </td><td style="width: 25%">
  * {@value     #SOURCE}<br>
- * {@value     #STANDARD_NAME}<br>
- * {@value     #STANDARD_NAME_VOCABULARY}<br>
+ * {@linkplain #STANDARD_NAME "standard_name"}<br>
+ * {@linkplain #STANDARD_NAME "standard_name_vocabulary"}<br>
  * {@value     #SUMMARY}<br>
- * {@linkplain #TIME "time_coverage_duration"}<br>
- * {@linkplain #TIME "time_coverage_end"}<br>
- * {@linkplain #TIME "time_coverage_resolution"}<br>
- * {@linkplain #TIME "time_coverage_start"}<br>
- * {@linkplain #TIME "time_coverage_units"}<br>
+ * {@linkplain #TIME          "time_coverage_duration"}<br>
+ * {@linkplain #TIME          "time_coverage_end"}<br>
+ * {@linkplain #TIME          "time_coverage_resolution"}<br>
+ * {@linkplain #TIME          "time_coverage_start"}<br>
+ * {@linkplain #TIME          "time_coverage_units"}<br>
  * {@value     #TITLE}<br>
  * {@value     #TOPIC_CATEGORY}<br>
  * </td></tr></table></blockquote>
@@ -173,8 +174,101 @@ public class AttributeNames {
     public static final String SUMMARY = ACDD.summary;
 
     /**
-     * The {@value} attribute name for an identifier (<em>Recommended</em>).
-     * The combination of the {@value #NAMING_AUTHORITY} and the {@value}
+     * Holds the attribute names describing a word together with a vocabulary (or naming authority).
+     * In the following table, the header lists the constants defined in the {@link AttributeNames}
+     * class and the other cells give the values assigned in this class fields for those constants.
+     *
+     * <table class="sis">
+     * <caption>Names of netCDF attributes describing a keyword</caption>
+     * <tr>
+     *   <th            >Field in this class</th>
+     *   <th class="sep">{@link AttributeNames#IDENTIFIER    IDENTIFIER}</th>
+     *   <th class="sep">{@link AttributeNames#STANDARD_NAME STANDARD_NAME}</th>
+     *   <th            >{@link AttributeNames#KEYWORDS      KEYWORDS}</th>
+     *   <th            >{@link AttributeNames#PROGRAM       PROGRAM}</th>
+     *   <th            >{@link AttributeNames#PLATFORM      PLATFORM}</th>
+     *   <th            >{@link AttributeNames#INSTRUMENT    INSTRUMENT}</th>
+     * </tr><tr>
+     *   <td            >{@link #TEXT}</td>
+     *   <td class="sep">{@code "id"}</td>
+     *   <td class="sep">{@code "standard_name"}</td>
+     *   <td            >{@code "keywords"}</td>
+     *   <td            >{@code "program"}</td>
+     *   <td            >{@code "platform"}</td>
+     *   <td            >{@code "instrument"}</td>
+     * </tr><tr>
+     *   <td            >{@link #VOCABULARY}</td>
+     *   <td class="sep">{@code "naming_authority"}</td>
+     *   <td class="sep">{@code "standard_name_vocabulary"}</td>
+     *   <td            >{@code "keywords_vocabulary"}</td>
+     *   <td            ></td>
+     *   <td            >{@code "platform_vocabulary"}</td>
+     *   <td            >{@code "instrument_vocabulary"}</td>
+     * </tr></table>
+     *
+     * <div class="note"><b>Note:</b>
+     * The member names in this class are upper-cases because they should be considered as constants.
+     * For example {@code AttributeNames.KEYWORD.TEXT} maps exactly to the {@code "keywords"} string
+     * and nothing else. A lower-case {@code text} member name could be misleading since it would
+     * suggest that the field contains the actual text value rather than the key by which the value
+     * is identified in a netCDF file.</div>
+     *
+     * @author  Martin Desruisseaux (Geomatys)
+     * @version 0.8
+     * @since   0.8
+     * @module
+     */
+    public static class Keyword implements Serializable {
+        /**
+         * For cross-version compatibility.
+         */
+        private static final long serialVersionUID = 2625777878209548741L;
+
+        /**
+         * The keyword or the identifier code. Possible values for this field are
+         * {@code "id"}, {@code "standard_name"}, {@code "keywords"}, {@code "program"},
+         * {@code "platform"} or {@code "instrument"}.
+         *
+         * <p><b>Path in ISO 19115:</b></p> <ul><li>{@link Metadata} /
+         * {@link Metadata#getIdentificationInfo() identificationInfo} /
+         * {@link DataIdentification#getDescriptiveKeywords() descriptiveKeywords} /
+         * {@link Keywords#getKeywords() keyword}</li>
+         * <li>or {@link Identifier} / {@link Identifier#getCode() code}</li></ul>
+         */
+        public final String TEXT;
+
+        /**
+         * The vocabulary or identifier namespace, or {@code null} if none. Possible values for this field are
+         * {@code "naming_authority"}, {@code "standard_name_vocabulary"}, {@code "keywords_vocabulary"},
+         * {@code "platform_vocabulary"} or {@code "instrument_vocabulary"}.
+         *
+         * <p><b>Path in ISO 19115:</b></p> <ul><li>{@link Metadata} /
+         * {@link Metadata#getIdentificationInfo() identificationInfo} /
+         * {@link DataIdentification#getDescriptiveKeywords() descriptiveKeywords} /
+         * {@link Keywords#getThesaurusName() thesaurusName} /
+         * {@link Citation#getTitle() title}</li>
+         * <li>or {@link Identifier} / {@link Identifier#getAuthority() authority} /
+         * {@link Citation#getTitle() title}</li></ul>
+         */
+        public final String VOCABULARY;
+
+        /**
+         * Creates a new set of attribute names. Any argument can be {@code null} if not applicable.
+         *
+         * @param text        the keyword or the identifier code.
+         * @param vocabulary  the vocabulary or identifier namespace.
+         *
+         * @since 0.8
+         */
+        public Keyword(final String text, final String vocabulary) {
+            TEXT       = text;
+            VOCABULARY = vocabulary;
+        }
+    }
+
+    /**
+     * The set of attribute names for an identifier (<em>Recommended</em>).
+     * The combination of the {@code "naming_authority"} and the {@code "id"}
      * should be a globally unique identifier for the dataset.
      *
      * <p><b>Path in ISO 19115:</b></p> <ul><li>{@link Metadata} /
@@ -183,16 +277,22 @@ public class AttributeNames {
      * {@link Metadata#getIdentificationInfo() identificationInfo} /
      * {@link DataIdentification#getCitation() citation} /
      * {@link Citation#getIdentifiers() identifier} /
-     * {@link Identifier#getCode() code}</li></ul>
+     * {@link Identifier#getCode() code}</li>
+     * <li>{@link Metadata} /
+     * {@link Metadata#getIdentificationInfo() identificationInfo} /
+     * {@link DataIdentification#getCitation() citation} /
+     * {@link Citation#getIdentifiers() identifier} /
+     * {@link Identifier#getAuthority() authority} /
+     * {@link Citation#getTitle() title}</li></ul>
      *
      * @see NetcdfFile#getId()
      * @see <a href="http://wiki.esipfed.org/index.php/Attribute_Convention_for_Data_Discovery#id">ESIP reference</a>
      */
-    public static final String IDENTIFIER = ACDD.id;
+    public static final Keyword IDENTIFIER = new Keyword(ACDD.id, ACDD.naming_authority);
 
     /**
      * The {@value} attribute name for the identifier authority (<em>Recommended</em>).
-     * The combination of the {@value} and the {@value #IDENTIFIER} should be a globally
+     * The combination of the {@value} and the {@code "id"} should be a globally
      * unique identifier for the dataset.
      *
      * <p><b>Path in ISO 19115:</b></p> <ul><li>{@link Metadata} /
@@ -206,28 +306,35 @@ public class AttributeNames {
      *
      * @see #IDENTIFIER
      * @see <a href="http://wiki.esipfed.org/index.php/Attribute_Convention_for_Data_Discovery#naming_authority">ESIP reference</a>
+     *
+     * @deprecated Moved to {@code IDENTIFIER.VOCABULARY}.
      */
+    @Deprecated
     public static final String NAMING_AUTHORITY = ACDD.naming_authority;
 
     /**
-     * The {@value} attribute name for a long descriptive name for the variable taken from a controlled
+     * The set of attribute names for a long descriptive name for the variable taken from a controlled
      * vocabulary of variable names. This is actually a {@linkplain VariableSimpleIF variable} attribute,
      * but sometime appears also in {@linkplain NetcdfFile#findGlobalAttribute(String) global attributes}.
      *
      * <p><b>Path in ISO 19115:</b></p> <ul><li>{@link Metadata} /
      * {@link Metadata#getIdentificationInfo() identificationInfo} /
      * {@link DataIdentification#getDescriptiveKeywords() descriptiveKeywords} /
-     * {@link Keywords#getKeywords() keyword} with {@link KeywordType#THEME}</li></ul>
+     * {@link Keywords#getKeywords() keyword} with {@link KeywordType#THEME}</li>
+     * <li>{@link Metadata} /
+     * {@link Metadata#getIdentificationInfo() identificationInfo} /
+     * {@link DataIdentification#getDescriptiveKeywords() descriptiveKeywords} /
+     * {@link Keywords#getThesaurusName() thesaurusName} /
+     * {@link Citation#getTitle() title}</li></ul>
      *
-     * @see #STANDARD_NAME_VOCABULARY
      * @see #KEYWORDS
      * @see <a href="http://wiki.esipfed.org/index.php/Attribute_Convention_for_Data_Discovery#standard_name">ESIP reference</a>
      */
-    public static final String STANDARD_NAME = CF.STANDARD_NAME;
+    public static final Keyword STANDARD_NAME = new Keyword(CF.STANDARD_NAME, ACDD.standard_name_vocabulary);
 
     /**
      * The {@value} attribute name for indicating which controlled list of variable names has been
-     * used in the {@value #STANDARD_NAME} attribute.
+     * used in the {@code "standard_name"} attribute.
      *
      * <p><b>Path in ISO 19115:</b></p> <ul><li>{@link Metadata} /
      * {@link Metadata#getIdentificationInfo() identificationInfo} /
@@ -238,27 +345,34 @@ public class AttributeNames {
      * @see #STANDARD_NAME
      * @see #VOCABULARY
      * @see <a href="http://wiki.esipfed.org/index.php/Attribute_Convention_for_Data_Discovery#standard_name_vocabulary">ESIP reference</a>
+     *
+     * @deprecated Moved to {@code STANDARD_NAME.VOCABULARY}.
      */
+    @Deprecated
     public static final String STANDARD_NAME_VOCABULARY = ACDD.standard_name_vocabulary;
 
     /**
-     * The {@value} attribute name for a comma separated list of key words and phrases
+     * The set of attribute names for a comma separated list of key words and phrases
      * (<em>Highly Recommended</em>).
      *
      * <p><b>Path in ISO 19115:</b></p> <ul><li>{@link Metadata} /
      * {@link Metadata#getIdentificationInfo() identificationInfo} /
      * {@link DataIdentification#getDescriptiveKeywords() descriptiveKeywords} /
-     * {@link Keywords#getKeywords() keyword} with {@link KeywordType#THEME}</li></ul>
+     * {@link Keywords#getKeywords() keyword} with {@link KeywordType#THEME}</li>
+     * <li>{@link Metadata} /
+     * {@link Metadata#getIdentificationInfo() identificationInfo} /
+     * {@link DataIdentification#getDescriptiveKeywords() descriptiveKeywords} /
+     * {@link Keywords#getThesaurusName() thesaurusName} /
+     * {@link Citation#getTitle() title}</li></ul>
      *
-     * @see #VOCABULARY
      * @see #STANDARD_NAME
      * @see <a href="http://wiki.esipfed.org/index.php/Attribute_Convention_for_Data_Discovery#keywords">ESIP reference</a>
      */
-    public static final String KEYWORDS = ACDD.keywords;
+    public static final Keyword KEYWORDS = new Keyword(ACDD.keywords, ACDD.keywords_vocabulary);
 
     /**
      * The {@value} attribute name for the guideline for the words/phrases in the
-     * {@value #KEYWORDS} attribute (<em>Recommended</em>).
+     * {@code "keyword"} attribute (<em>Recommended</em>).
      *
      * <p><b>Path in ISO 19115:</b></p> <ul><li>{@link Metadata} /
      * {@link Metadata#getIdentificationInfo() identificationInfo} /
@@ -269,7 +383,10 @@ public class AttributeNames {
      * @see #KEYWORDS
      * @see #STANDARD_NAME_VOCABULARY
      * @see <a href="http://wiki.esipfed.org/index.php/Attribute_Convention_for_Data_Discovery#keywords_vocabulary">ESIP reference</a>
+     *
+     * @deprecated Moved to {@code KEYWORDS.VOCABULARY}.
      */
+    @Deprecated
     public static final String VOCABULARY = ACDD.keywords_vocabulary;
 
     /**
@@ -352,9 +469,22 @@ public class AttributeNames {
      * subgroup.
      *
      * <p><b>Path in ISO 19115:</b></p> <ul><li>{@link Metadata} /
-     * {@link Metadata#getDateStamp() dateStamp}</li></ul>
+     * {@link Metadata#getDateInfo() dateInfo}
+     * {@link CitationDate#getDate() date} with {@link DateType#CREATION}</li></ul>
      */
     public static final String METADATA_CREATION = "metadata_creation";
+
+    /**
+     * The {@value} attribute name for the date on which the metadata has been modified
+     * (<em>Suggested</em>).
+     *
+     * <p><b>Path in ISO 19115:</b></p> <ul><li>{@link Metadata} /
+     * {@link Metadata#getDateInfo() dateInfo}
+     * {@link CitationDate#getDate() date} with {@link DateType#REVISION}</li></ul>
+     *
+     * @since 0.8
+     */
+    public static final String METADATA_MODIFIED = "date_metadata_modified";
 
     /**
      * The {@value} attribute name for the date on which the data was created
@@ -399,20 +529,78 @@ public class AttributeNames {
     public static final String DATE_ISSUED = "date_issued";
 
     /**
-     * The overarching program(s) of which the dataset is a part
+     * The {@value} attribute for version identifier of the data file or product as assigned by the data creator
      * (<em>Suggested</em>).
+     *
+     * <p><b>Path in ISO 19115:</b></p> <ul><li>{@link Metadata} /
+     * {@link Metadata#getIdentificationInfo() identificationInfo} /
+     * {@link DataIdentification#getCitation() citation} /
+     * {@link Citation#getEdition() edition}</li></ul>
+     *
+     * @see <a href="http://wiki.esipfed.org/index.php/Attribute_Convention_for_Data_Discovery#product_version">ESIP reference</a>
+     */
+    public static final String PRODUCT_VERSION = "product_version";
+
+    /**
+     * The set of attribute names for the overarching program(s) of which the dataset is a part (<em>Suggested</em>).
+     * Examples: "GHRSST", "NOAA CDR", "NASA EOS", "JPSS", "GOES-R".
      *
      * <p><b>Path in ISO 19115:</b></p> <ul><li>{@link Metadata} /
      * {@link Metadata#getAcquisitionInformation() acquisitionInformation} /
      * {@link AcquisitionInformation#getOperations() operation} /
-     * {@link Operation#getCitation() citation} /
-     * {@link Citation#getTitle() title}</li></ul>
+     * {@link Operation#getIdentifier() identifier} /
+     * {@link Identifier#getCode() code}</li></ul>
      *
+     * <p><b>This attribute is not yet read by {@link NetcdfStore}</b>,
+     * because we are not sure what would be the most appropriate ISO 19115 location.
+     * The above-cited location is experimental and may change in any future Apache SIS version.</p>
+     *
+     * @see #PROJECT
      * @see <a href="http://wiki.esipfed.org/index.php/Attribute_Convention_for_Data_Discovery#program">ESIP reference</a>
      *
      * @since 0.8
      */
-    public static final String PROGRAM = "program";
+    public static final Keyword PROGRAM = new Keyword("program", null);
+
+    /**
+     * The set of attribute names for the platform(s) that supported the sensors used to create the resource(s).
+     *
+     * <p><b>Path in ISO 19115:</b></p> <ul><li>{@link Metadata} /
+     * {@link Metadata#getAcquisitionInformation() acquisitionInformation} /
+     * {@link AcquisitionInformation#getPlatforms() platform} /
+     * {@link Platform#getIdentifier() identifier} /
+     * {@link Identifier#getCode() code}</li>
+     * <li>{@link Metadata} /
+     * {@link Metadata#getAcquisitionInformation() acquisitionInformation} /
+     * {@link AcquisitionInformation#getPlatforms() platform} /
+     * {@link Platform#getIdentifier() identifier} /
+     * {@link Identifier#getAuthority() authority} /
+     * {@link Citation#getTitle() title}</li></ul>
+     *
+     * @since 0.8
+     */
+    public static final Keyword PLATFORM = new Keyword("platform", "platform_vocabulary");
+
+    /**
+     * The set of attribute names for the contributing instrument(s) or sensor(s) used to create the resource(s).
+     *
+     * <p><b>Path in ISO 19115:</b></p> <ul><li>{@link Metadata} /
+     * {@link Metadata#getAcquisitionInformation() acquisitionInformation} /
+     * {@link AcquisitionInformation#getPlatforms() platform} /
+     * {@link Platform#getInstruments() instrument} /
+     * {@link Instrument#getIdentifier() identifier} /
+     * {@link Identifier#getCode() code}</li>
+     * <li>{@link Metadata} /
+     * {@link Metadata#getAcquisitionInformation() acquisitionInformation} /
+     * {@link AcquisitionInformation#getPlatforms() platform} /
+     * {@link Platform#getInstruments() instrument} /
+     * {@link Instrument#getIdentifier() identifier} /
+     * {@link Identifier#getAuthority() authority} /
+     * {@link Citation#getTitle() title}</li></ul>
+     *
+     * @since 0.8
+     */
+    public static final Keyword INSTRUMENT = new Keyword("instrument", "instrument_vocabulary");
 
     /**
      * Holds the attribute names describing a responsible party.
@@ -639,6 +827,7 @@ public class AttributeNames {
      * {@link DataIdentification#getDescriptiveKeywords() descriptiveKeywords} /
      * {@link Keywords#getKeywords() keyword} with the {@code "project"} {@link KeywordType}</li></ul>
      *
+     * @see #PROGRAM
      * @see <a href="http://wiki.esipfed.org/index.php/Attribute_Convention_for_Data_Discovery#project">ESIP reference</a>
      */
     public static final String PROJECT = "project";
@@ -811,7 +1000,7 @@ public class AttributeNames {
      * The member names in this class are upper-cases because they should be considered as constants.
      * For example {@code AttributeNames.LATITUDE.MINIMUM} maps exactly to the {@code "geospatial_lat_min"}
      * string and nothing else. A lower-case {@code minimum} member name could be misleading since it would
-     * suggest that the field contains the actual name value rather than the key by which the value is
+     * suggest that the field contains the actual latitude value rather than the key by which the value is
      * identified in a netCDF file.</div>
      *
      * @author  Martin Desruisseaux (Geomatys)
