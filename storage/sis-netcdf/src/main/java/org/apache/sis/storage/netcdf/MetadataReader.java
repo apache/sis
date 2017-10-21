@@ -379,24 +379,39 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
     }
 
     /**
-     * Creates an {@code OnlineResource} element if the given URL is not null. Since ISO 19115
-     * declares the URL as a mandatory attribute, this method will ignore all other attributes
-     * if the given URL is null.
-     *
-     * @param  url  the URL (mandatory - if {@code null}, no resource will be created).
-     * @return the online resource, or {@code null} if the URL was null.
+     * Creates a URI form the given path, or returns {@code null} if the given URL is null or can not be parsed.
+     * In the later case, a warning will be emitted.
      */
-    private OnlineResource createOnlineResource(final String url) {
+    private URI createURI(final String url) {
         if (url != null) try {
-            final DefaultOnlineResource resource = new DefaultOnlineResource(new URI(url));
-            resource.setProtocol("http");
-            resource.setApplicationProfile("web browser");
-            resource.setFunction(OnLineFunction.INFORMATION);
-            return resource;
+            return new URI(url);
         } catch (URISyntaxException e) {
             warning(e);
         }
         return null;
+    }
+
+    /**
+     * Creates an {@code OnlineResource} element if the given URL is not null. Since ISO 19115
+     * declares the URL as a mandatory attribute, this method will ignore all other attributes
+     * if the given URL is null.
+     *
+     * @param  url   the URL (mandatory - if {@code null}, no resource will be created).
+     * @return the online resource, or {@code null} if the URL was null.
+     */
+    private OnlineResource createOnlineResource(final String url) {
+        final URI uri = createURI(url);
+        if (uri == null) {
+            return null;
+        }
+        final DefaultOnlineResource resource = new DefaultOnlineResource(uri);
+        final String protocol = uri.getScheme();
+        resource.setProtocol(protocol);
+        if ("http".equalsIgnoreCase(protocol) || "https".equalsIgnoreCase(protocol)) {
+            resource.setApplicationProfile("web browser");
+        }
+        resource.setFunction(OnLineFunction.INFORMATION);
+        return resource;
     }
 
     /**
@@ -891,7 +906,7 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
         final String id = (v.length == 1) ? trim((String) v[0]) : null;
         if (id != null && !id.equals(name)) {
             v = variable.getAttributeValues(ACDD.standard_name_vocabulary, false);
-            addBandIdentifier(v.length == 1 ? (String) v[0] : null, id);
+            addBandName(v.length == 1 ? (String) v[0] : null, id);
         }
         final String description = trim(variable.getDescription());
         if (description != null && !description.equals(name) && !description.equals(id)) {
@@ -908,6 +923,7 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
         v = variable.getAttributeValues(CDM.SCALE_FACTOR, true); if (v.length == 1) scale  = ((Number) v[0]).doubleValue();
         v = variable.getAttributeValues(CDM.ADD_OFFSET,   true); if (v.length == 1) offset = ((Number) v[0]).doubleValue();
         setTransferFunction(scale, offset);
+        addContentType(forCodeName(CoverageContentType.class, stringValue(ACDD.coverage_content_type)));
     }
 
     /**
@@ -1023,6 +1039,7 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
         }
         decoder.setSearchPath(searchPath);
         metadata.setMetadataStandards(Citations.ISO_19115);
+        addCompleteMetadata(createURI(stringValue(METADATA_LINK)));
         return metadata;
     }
 }
