@@ -20,11 +20,18 @@ import java.util.Arrays;
 import java.util.AbstractList;
 import java.util.RandomAccess;
 import java.util.NoSuchElementException;
+import java.util.ConcurrentModificationException;
 import java.io.IOException;
 import java.io.Serializable;
 import java.io.ObjectOutputStream;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.ArgumentChecks;
+
+// Branch-dependent imports
+import java.util.Spliterator;
+import java.util.function.IntConsumer;
+import java.util.stream.IntStream;
+import java.util.stream.StreamSupport;
 
 
 /**
@@ -34,7 +41,8 @@ import org.apache.sis.util.ArgumentChecks;
  * <p>This class is <strong>not</strong> thread-safe. Synchronizations (if wanted) are user's responsibility.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.7
+ * @author  Alexis Manin (Geomatys)
+ * @version 0.8
  *
  * @see org.apache.sis.math.Vector
  *
@@ -157,6 +165,7 @@ public class IntegerList extends AbstractList<Integer> implements RandomAccess, 
      */
     public void resize(final int size) {
         ArgumentChecks.ensurePositive("size", size);
+        modCount++;
         if (size > this.size) {
             int base = this.size * bitCount;
             final int offset = base & OFFSET_MASK;
@@ -183,6 +192,7 @@ public class IntegerList extends AbstractList<Integer> implements RandomAccess, 
     @SuppressWarnings("fallthrough")
     public void fill(int value) {
         ArgumentChecks.ensureBetween("value", 0, mask, value);
+        modCount++;
         final long p;
         if (value == 0) {
             p = 0;                              // All bits set to 0.
@@ -210,6 +220,7 @@ public class IntegerList extends AbstractList<Integer> implements RandomAccess, 
      */
     @Override
     public void clear() {
+        modCount++;
         size = 0;
     }
 
@@ -237,6 +248,7 @@ public class IntegerList extends AbstractList<Integer> implements RandomAccess, 
      */
     public void addInt(final int value) throws IllegalArgumentException {
         ArgumentChecks.ensureBetween("value", 0, mask, value);
+        modCount++;
         final int last = size;
         final int length = length(++size);
         if (length > values.length) {
@@ -318,6 +330,7 @@ public class IntegerList extends AbstractList<Integer> implements RandomAccess, 
     public void setInt(int index, int value) throws IndexOutOfBoundsException {
         ArgumentChecks.ensureValidIndex(size, index);
         ArgumentChecks.ensureBetween("value", 0, mask, value);
+        modCount++;
         setUnchecked(index, value);
     }
 
@@ -352,6 +365,7 @@ public class IntegerList extends AbstractList<Integer> implements RandomAccess, 
     @Override
     public Integer remove(final int index) throws IndexOutOfBoundsException {
         final Integer old = get(index);
+        modCount++;
         removeRange(index, index+1);
         return old;
     }
@@ -364,6 +378,7 @@ public class IntegerList extends AbstractList<Integer> implements RandomAccess, 
      */
     public int removeLast() throws NoSuchElementException {
         if (size != 0) {
+            modCount++;
             return getUnchecked(--size);
         }
         throw new NoSuchElementException();
@@ -443,6 +458,7 @@ public class IntegerList extends AbstractList<Integer> implements RandomAccess, 
             throw new AssertionError(e);
         }
         clone.values = clone.values.clone();
+        clone.modCount = 0;
         return clone;
     }
 
@@ -455,5 +471,95 @@ public class IntegerList extends AbstractList<Integer> implements RandomAccess, 
     private void writeObject(final ObjectOutputStream out) throws IOException {
         trimToSize();
         out.defaultWriteObject();
+    }
+
+    /**
+     * Returns a sequential stream of integers with this {@code IntegerList} as its source.
+     * This method is similar to {@link #stream()}, but does not box the values.
+     * The returned stream is <cite>fail-fast</cite>, meaning that any modification to the list
+     * while using the stream will cause a {@link ConcurrentModificationException} to be thrown.
+     *
+     * @return a stream of values in this list as primitive types.
+     *
+     * @since 0.8
+     */
+    public IntStream ints() {
+        return StreamSupport.intStream(new PrimitiveSpliterator(), false);
+    }
+
+    /**
+     * Same as {@link #spliterator()}, but without value boxing.
+     * This spliterator provides a fail-fast way to traverse list content, which means
+     * that any alteration to the list content causes a failure of the advance operation
+     * with a {@link ConcurrentModificationException}.
+     */
+    private final class PrimitiveSpliterator implements Spliterator.OfInt {
+        /**
+         * Index of the next element to be returned.
+         */
+        private int nextIdx;
+
+        /**
+         * The {@link IntegerList#modCount} value as iterator construction time.
+         * Used for detecting modification in the backing list during traversal.
+         */
+        private final int expectedModCount = modCount;
+
+        /**
+         * Creates a new iterator for the whole content of the backing list.
+         */
+        PrimitiveSpliterator() {
+        }
+
+        /**
+         * Declares that this split iterator does not return null elements, that all elements are
+         * traversed in a fixed order (which is increasing index values) and that {@link #size()}
+         * represents an exact count of elements.
+         */
+        @Override
+        public int characteristics() {
+            return NONNULL | ORDERED | SIZED;
+        }
+
+        /**
+         * Returns the number of values in the backing list.
+         */
+        @Override
+        public long estimateSize() {
+            return size();
+        }
+
+        /**
+         * @todo for now, we keep it simple and forbid parallelism. In the future,
+         *       we could use an approach as the one in java standard array lists.
+         */
+        @Override
+        public OfInt trySplit() {
+            return null;
+        }
+
+        /**
+         * If a remaining element exists, performs the given action on it and returns {@code true}.
+         * Otherwise returns {@code false}.
+         */
+        @Override
+        public boolean tryAdvance(IntConsumer action) {
+            checkForComodification();
+            final boolean canAdvance = nextIdx < size();
+            if (canAdvance) {
+                action.accept(getUnchecked(nextIdx++));
+            }
+            return canAdvance;
+        }
+
+        /**
+         * Ensures that no alteration has happened on the backing list since the
+         * spliterator creation.
+         */
+        private void checkForComodification() {
+            if (modCount != expectedModCount) {
+                throw new ConcurrentModificationException();
+            }
+        }
     }
 }
