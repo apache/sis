@@ -24,6 +24,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.net.URI;
 import java.nio.charset.Charset;
 import javax.measure.Unit;
 import org.opengis.util.MemberName;
@@ -35,6 +36,7 @@ import org.opengis.metadata.citation.Role;
 import org.opengis.metadata.citation.DateType;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.citation.CitationDate;
+import org.opengis.metadata.citation.OnLineFunction;
 import org.opengis.metadata.spatial.GCP;
 import org.opengis.metadata.spatial.Dimension;
 import org.opengis.metadata.spatial.DimensionNameType;
@@ -43,6 +45,7 @@ import org.opengis.metadata.spatial.PixelOrientation;
 import org.opengis.metadata.spatial.GeolocationInformation;
 import org.opengis.metadata.spatial.SpatialRepresentationType;
 import org.opengis.metadata.constraint.Restriction;
+import org.opengis.metadata.content.CoverageContentType;
 import org.opengis.metadata.content.TransferFunctionType;
 import org.opengis.metadata.maintenance.ScopeCode;
 import org.opengis.metadata.acquisition.Context;
@@ -85,6 +88,7 @@ import org.apache.sis.metadata.iso.citation.DefaultCitationDate;
 import org.apache.sis.metadata.iso.citation.DefaultResponsibility;
 import org.apache.sis.metadata.iso.citation.DefaultIndividual;
 import org.apache.sis.metadata.iso.citation.DefaultOrganisation;
+import org.apache.sis.metadata.iso.citation.DefaultOnlineResource;
 import org.apache.sis.metadata.iso.constraint.DefaultLegalConstraints;
 import org.apache.sis.metadata.iso.identification.DefaultKeywords;
 import org.apache.sis.metadata.iso.identification.DefaultResolution;
@@ -2063,6 +2067,22 @@ parse:      for (int i = 0; i < length;) {
     }
 
     /**
+     * Adds type of information represented in the cell.
+     * Storage location is:
+     *
+     * <ul>
+     *   <li>{@code metadata/contentInfo/attributeGroup/contentType}</li>
+     * </ul>
+     *
+     * @param  type  type of information represented in the cell, or {@code null} for no-operation.
+     */
+    public final void addContentType(final CoverageContentType type) {
+        if (type != null) {
+            attributeGroup().getContentTypes().add(type);
+        }
+    }
+
+    /**
      * Sets the name or number that uniquely identifies instances of bands of wavelengths on which a sensor operates.
      * If a coverage contains more than one band, additional bands can be created by calling
      * {@link #newSampleDimension()} before to call this method.
@@ -2122,7 +2142,7 @@ parse:      for (int i = 0; i < length;) {
      * @param  authority  identifies which controlled list of name is used, or {@code null} if none.
      * @param  name       the band name, or {@code null} for no-operation.
      */
-    public final void addBandIdentifier(final CharSequence authority, String name) {
+    public final void addBandName(final CharSequence authority, String name) {
         if (name != null && !(name = name.trim()).isEmpty()) {
             addIfNotPresent(sampleDimension().getNames(), sharedIdentifier(authority, name));
         }
@@ -2580,6 +2600,25 @@ parse:      for (int i = 0; i < length;) {
         if (i18n != null) {
             final DefaultFormat format = format();
             format.setFileDecompressionTechnique(append(format.getFileDecompressionTechnique(), i18n));
+        }
+    }
+
+    /**
+     * Adds a URL to a more complete description of the metadata.
+     *
+     * <ul>
+     *   <li>{@code metadata/metadataLinkage/linkage}
+     *     with {@code function} set to {@link OnLineFunction#COMPLETE_METADATA}</li>
+     * </ul>
+     *
+     * @param  link
+     */
+    public final void addCompleteMetadata(final URI link) {
+        if (link != null) {
+            final DefaultOnlineResource ln = new DefaultOnlineResource(link);
+            ln.setFunction(OnLineFunction.COMPLETE_METADATA);
+            ln.setProtocol(link.getScheme());
+            addIfNotPresent(metadata().getMetadataLinkages(), ln);
         }
     }
 

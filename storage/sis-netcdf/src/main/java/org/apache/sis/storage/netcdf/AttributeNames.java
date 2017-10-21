@@ -80,8 +80,8 @@ import org.opengis.metadata.extent.GeographicDescription;
  * {@value     #FLAG_MEANINGS}<br>
  * {@value     #FLAG_NAMES}<br>
  * {@value     #FLAG_VALUES}<br>
- * {@linkplain #TITLE "full_name"}<br>
  * </td><td style="width: 25%">
+ * {@linkplain #TITLE                 "full_name"}<br>
  * {@linkplain #GEOGRAPHIC_IDENTIFIER "geographic_identifier"}<br>
  * {@value     #GEOSPATIAL_BOUNDS}<br>
  * {@linkplain #GEOSPATIAL_BOUNDS "geospatial_bounds_crs"}<br>
@@ -99,14 +99,15 @@ import org.opengis.metadata.extent.GeographicDescription;
  * {@linkplain #VERTICAL  "geospatial_vertical_positive"}<br>
  * {@linkplain #VERTICAL  "geospatial_vertical_resolution"}<br>
  * {@linkplain #VERTICAL  "geospatial_vertical_units"}<br>
- * </td><td style="width: 25%">
  * {@value     #HISTORY}<br>
- * {@linkplain #IDENTIFIER               "id"}<br>
- * {@linkplain #CREATOR                  "institution"}<br>
- * {@linkplain #KEYWORDS                 "keywords"}<br>
- * {@linkplain #KEYWORDS                 "keywords_vocabulary"}<br>
+ * {@linkplain #IDENTIFIER "id"}<br>
+ * {@linkplain #CREATOR    "institution"}<br>
+ * </td><td style="width: 25%">
+ * {@linkplain #KEYWORDS "keywords"}<br>
+ * {@linkplain #KEYWORDS "keywords_vocabulary"}<br>
  * {@value     #LICENSE}<br>
  * {@value     #METADATA_CREATION}<br>
+ * {@value     #METADATA_LINK}<br>
  * {@linkplain #TITLE "name"}<br>
  * {@value     #NAMING_AUTHORITY}<br>
  * {@value     #PROCESSING_LEVEL}<br>
@@ -119,16 +120,16 @@ import org.opengis.metadata.extent.GeographicDescription;
  * {@linkplain #PUBLISHER "publisher_url"}<br>
  * {@value     #PURPOSE}<br>
  * {@value     #REFERENCES}<br>
- * </td><td style="width: 25%">
  * {@value     #SOURCE}<br>
  * {@linkplain #STANDARD_NAME "standard_name"}<br>
  * {@linkplain #STANDARD_NAME "standard_name_vocabulary"}<br>
  * {@value     #SUMMARY}<br>
- * {@linkplain #TIME          "time_coverage_duration"}<br>
- * {@linkplain #TIME          "time_coverage_end"}<br>
- * {@linkplain #TIME          "time_coverage_resolution"}<br>
- * {@linkplain #TIME          "time_coverage_start"}<br>
- * {@linkplain #TIME          "time_coverage_units"}<br>
+ * </td><td style="width: 25%">
+ * {@linkplain #TIME "time_coverage_duration"}<br>
+ * {@linkplain #TIME "time_coverage_end"}<br>
+ * {@linkplain #TIME "time_coverage_resolution"}<br>
+ * {@linkplain #TIME "time_coverage_start"}<br>
+ * {@linkplain #TIME "time_coverage_units"}<br>
  * {@value     #TITLE}<br>
  * {@value     #TOPIC_CATEGORY}<br>
  * </td></tr></table></blockquote>
@@ -180,31 +181,14 @@ public class AttributeNames {
      *
      * <table class="sis">
      * <caption>Names of netCDF attributes describing a keyword</caption>
-     * <tr>
-     *   <th            >Field in this class</th>
-     *   <th class="sep">{@link AttributeNames#IDENTIFIER    IDENTIFIER}</th>
-     *   <th class="sep">{@link AttributeNames#STANDARD_NAME STANDARD_NAME}</th>
-     *   <th            >{@link AttributeNames#KEYWORDS      KEYWORDS}</th>
-     *   <th            >{@link AttributeNames#PROGRAM       PROGRAM}</th>
-     *   <th            >{@link AttributeNames#PLATFORM      PLATFORM}</th>
-     *   <th            >{@link AttributeNames#INSTRUMENT    INSTRUMENT}</th>
-     * </tr><tr>
-     *   <td            >{@link #TEXT}</td>
-     *   <td class="sep">{@code "id"}</td>
-     *   <td class="sep">{@code "standard_name"}</td>
-     *   <td            >{@code "keywords"}</td>
-     *   <td            >{@code "program"}</td>
-     *   <td            >{@code "platform"}</td>
-     *   <td            >{@code "instrument"}</td>
-     * </tr><tr>
-     *   <td            >{@link #VOCABULARY}</td>
-     *   <td class="sep">{@code "naming_authority"}</td>
-     *   <td class="sep">{@code "standard_name_vocabulary"}</td>
-     *   <td            >{@code "keywords_vocabulary"}</td>
-     *   <td            ></td>
-     *   <td            >{@code "platform_vocabulary"}</td>
-     *   <td            >{@code "instrument_vocabulary"}</td>
-     * </tr></table>
+     * <tr><th>{@link AttributeNames} constant</th>                    <th>{@link #TEXT}</th>           <th>{@link #VOCABULARY}</th></tr>
+     * <tr><td>{@link AttributeNames#IDENTIFIER    IDENTIFIER}</td>    <td>{@code "id"}</td>            <td>{@code "naming_authority"}</td></tr>
+     * <tr><td>{@link AttributeNames#STANDARD_NAME STANDARD_NAME}</td> <td>{@code "standard_name"}</td> <td>{@code "standard_name_vocabulary"}</td></tr>
+     * <tr><td>{@link AttributeNames#KEYWORDS      KEYWORDS}</td>      <td>{@code "keywords"}</td>      <td>{@code "keywords_vocabulary"}</td></tr>
+     * <tr><td>{@link AttributeNames#PROGRAM       PROGRAM}</td>       <td>{@code "program"}</td>       <td></td></tr>
+     * <tr><td>{@link AttributeNames#PLATFORM      PLATFORM}</td>      <td>{@code "platform"}</td>      <td>{@code "platform_vocabulary"}</td></tr>
+     * <tr><td>{@link AttributeNames#INSTRUMENT    INSTRUMENT}</td>    <td>{@code "instrument"}</td>    <td>{@code "instrument_vocabulary"}</td></tr>
+     * </table>
      *
      * <div class="note"><b>Note:</b>
      * The member names in this class are upper-cases because they should be considered as constants.
@@ -1236,6 +1220,18 @@ public class AttributeNames {
      * {@link RangeElementDescription#getDefinition() definition}</li></ul>
      */
     public static final String FLAG_MEANINGS = "flag_meanings";
+
+    /**
+     * The {@value} attribute name for a URL that gives the location of more complete metadata.
+     * For example it may be the URL to an ISO 19115 metadata in XML format.
+     *
+     * <p><b>Path in ISO 19115:</b></p> <ul><li>{@link Metadata} /
+     * {@link Metadata#getMetadataLinkages() metadataLinkage} /
+     * {@link OnlineResource#getLinkage() linkage}</li></ul>
+     *
+     * @since 0.8
+     */
+    public static final String METADATA_LINK = "metadata_link";
 
     /**
      * For subclass constructors only. {@code AttributeNames} may be sub-classed by communities
