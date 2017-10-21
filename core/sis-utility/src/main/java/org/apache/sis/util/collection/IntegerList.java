@@ -470,19 +470,20 @@ public class IntegerList extends AbstractList<Integer> implements RandomAccess, 
     }
 
     /**
-     * Returns a sequential stream of integers with this {@code IntegerList} as its source.
+     * Returns a stream of integers with this {@code IntegerList} as its source.
      * This method is similar to {@link #stream()}, but does not box the values.
      * The returned stream is <cite>fail-fast</cite>, meaning that any modification to the list
      * while using the stream will cause a {@link ConcurrentModificationException} to be thrown.
      *
-     * <p>The default implementation creates a sequential stream from {@link #spliterator()}.</p>
+     * <p>The default implementation creates a parallel or sequential stream from {@link #spliterator()}.</p>
      *
+     * @param parallel  {@code true} for a parallel stream, or {@code false} for a sequential stream.
      * @return a stream of values in this list as primitive types.
      *
      * @since 0.8-jdk8
      */
-    public IntStream ints() {
-        return StreamSupport.intStream(spliterator(), false);
+    public IntStream ints(boolean parallel) {
+        return StreamSupport.intStream(spliterator(), parallel);
     }
 
     /**
@@ -496,6 +497,12 @@ public class IntegerList extends AbstractList<Integer> implements RandomAccess, 
      * API should be used on a given instance.</p>
      */
     private final class PrimitiveSpliterator implements Spliterator.OfInt, PrimitiveIterator.OfInt {
+        /**
+         * Index after the last element returned by this spliterator. This is initially {@link IntegerList#size},
+         * but may be set to a smaller value by call to {@link #trySplit()}.
+         */
+        private int stopAt;
+
         /**
          * Index of the next element to be returned.
          */
@@ -519,6 +526,19 @@ public class IntegerList extends AbstractList<Integer> implements RandomAccess, 
          */
         PrimitiveSpliterator() {
             expectedModCount = modCount;
+            stopAt           = size;
+        }
+
+        /**
+         * Creates the prefix spliterator in a call to {@link #trySplit()}.
+         *
+         * @param  suffix   the spliterator which will continue iteration after this spliterator.
+         * @param  startAt  index of the first element to be returned by this prefix spliterator.
+         */
+        private PrimitiveSpliterator(final PrimitiveSpliterator suffix, final int startAt) {
+            expectedModCount = suffix.expectedModCount;
+            stopAt           = suffix.nextIndex;
+            nextIndex        = startAt;
         }
 
         /**
@@ -528,15 +548,15 @@ public class IntegerList extends AbstractList<Integer> implements RandomAccess, 
          */
         @Override
         public int characteristics() {
-            return NONNULL | ORDERED | SIZED;
+            return NONNULL | ORDERED | SIZED | SUBSIZED;
         }
 
         /**
-         * Returns the exact number of values in the backing list.
+         * Returns the exact number of values to be encountered by a {@code forEachRemaining(…)} traversal.
          */
         @Override
         public long estimateSize() {
-            return size();
+            return stopAt - nextIndex;
         }
 
         /**
@@ -545,6 +565,12 @@ public class IntegerList extends AbstractList<Integer> implements RandomAccess, 
          */
         @Override
         public Spliterator.OfInt trySplit() {
+            final int startAt = nextIndex;
+            final int halfSize = (stopAt - startAt) >>> 1;
+            if (halfSize > 1) {
+                nextIndex += halfSize;
+                return new PrimitiveSpliterator(this, startAt);
+            }
             return null;
         }
 
@@ -556,7 +582,7 @@ public class IntegerList extends AbstractList<Integer> implements RandomAccess, 
         @Override
         public boolean hasNext() {
             if (modCount == expectedModCount) {
-                return nextIndex < size;
+                return nextIndex < stopAt;
             } else {
                 throw new ConcurrentModificationException();
             }
@@ -616,7 +642,7 @@ public class IntegerList extends AbstractList<Integer> implements RandomAccess, 
          */
         @Override
         public void remove() {
-            if (nextIndex < lastRemove || nextIndex > size) {
+            if (nextIndex < lastRemove || nextIndex > stopAt) {
                 throw new IllegalStateException();
             }
             if (modCount != expectedModCount) {
@@ -625,6 +651,7 @@ public class IntegerList extends AbstractList<Integer> implements RandomAccess, 
             expectedModCount = ++modCount;
             removeRange(nextIndex - 1, nextIndex);
             lastRemove = --nextIndex;
+            stopAt--;
         }
     }
 
