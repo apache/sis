@@ -1122,12 +1122,31 @@ public class MetadataBuilder {
     }
 
     /**
-     * Adds a brief narrative summary of the resource(s).
-     * If a summary already existed, the new one will be appended after a new line.
+     * Adds a version of the resource.
+     * If a version already exists, the new one will be appended after a new line.
      * Storage location is:
      *
      * <ul>
-     *   <li>{@code metadata/identificationInfo/abstract}
+     *   <li>{@code metadata/identificationInfo/citation/edition}</li>
+     * </ul>
+     *
+     * @param version  the version of resource(s), or {@code null} for no-operation.
+     */
+    public final void addEdition(final CharSequence version) {
+        final InternationalString i18n = trim(version);
+        if (i18n != null) {
+            final DefaultCitation citation = citation();
+            citation.setEdition(append(citation.getEdition(), i18n));
+        }
+    }
+
+    /**
+     * Adds a brief narrative summary of the resource(s).
+     * If a summary already exists, the new one will be appended after a new line.
+     * Storage location is:
+     *
+     * <ul>
+     *   <li>{@code metadata/identificationInfo/abstract}</li>
      * </ul>
      *
      * @param description  the summary of resource(s), or {@code null} for no-operation.
@@ -1145,7 +1164,7 @@ public class MetadataBuilder {
 
     /**
      * Adds a summary of the intentions with which the resource(s) was developed.
-     * If a purpose already existed, the new one will be appended after a new line.
+     * If a purpose already exists, the new one will be appended after a new line.
      * Storage location is:
      *
      * <ul>
@@ -1183,7 +1202,7 @@ public class MetadataBuilder {
 
     /**
      * Adds any other descriptive information about the resource.
-     * If information already existed, the new one will be appended after a new line.
+     * If information already exists, the new one will be appended after a new line.
      * Storage location is:
      *
      * <ul>
