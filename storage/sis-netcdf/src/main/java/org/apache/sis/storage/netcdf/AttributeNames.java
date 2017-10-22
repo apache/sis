@@ -80,8 +80,8 @@ import org.opengis.metadata.extent.GeographicDescription;
  * {@value     #FLAG_MEANINGS}<br>
  * {@value     #FLAG_NAMES}<br>
  * {@value     #FLAG_VALUES}<br>
+ * {@linkplain #TITLE "full_name"}<br>
  * </td><td style="width: 25%">
- * {@linkplain #TITLE                 "full_name"}<br>
  * {@linkplain #GEOGRAPHIC_IDENTIFIER "geographic_identifier"}<br>
  * {@value     #GEOSPATIAL_BOUNDS}<br>
  * {@linkplain #GEOSPATIAL_BOUNDS "geospatial_bounds_crs"}<br>
@@ -181,7 +181,7 @@ public class AttributeNames {
      *
      * <table class="sis">
      * <caption>Names of netCDF attributes describing a keyword</caption>
-     * <tr><th>{@link AttributeNames} constant</th>                    <th>{@link #TEXT}</th>           <th>{@link #VOCABULARY}</th></tr>
+     * <tr><th>{@link AttributeNames}</th>                             <th>{@link #TEXT}</th>           <th>{@link #VOCABULARY}</th></tr>
      * <tr><td>{@link AttributeNames#IDENTIFIER    IDENTIFIER}</td>    <td>{@code "id"}</td>            <td>{@code "naming_authority"}</td></tr>
      * <tr><td>{@link AttributeNames#STANDARD_NAME STANDARD_NAME}</td> <td>{@code "standard_name"}</td> <td>{@code "standard_name_vocabulary"}</td></tr>
      * <tr><td>{@link AttributeNames#KEYWORDS      KEYWORDS}</td>      <td>{@code "keywords"}</td>      <td>{@code "keywords_vocabulary"}</td></tr>
@@ -1228,6 +1228,8 @@ public class AttributeNames {
      * <p><b>Path in ISO 19115:</b></p> <ul><li>{@link Metadata} /
      * {@link Metadata#getMetadataLinkages() metadataLinkage} /
      * {@link OnlineResource#getLinkage() linkage}</li></ul>
+     *
+     * @see <a href="http://wiki.esipfed.org/index.php/Attribute_Convention_for_Data_Discovery#metadata_link">ESIP reference</a>
      *
      * @since 0.8
      */
