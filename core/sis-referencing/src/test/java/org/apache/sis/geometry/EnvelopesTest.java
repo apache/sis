@@ -30,6 +30,7 @@ import org.apache.sis.referencing.crs.HardCodedCRS;
 import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.test.DependsOn;
+import org.apache.sis.test.DependsOnMethod;
 import org.junit.Test;
 
 import static org.apache.sis.test.ReferencingAssert.*;
@@ -176,7 +177,10 @@ public final strictfp class EnvelopesTest extends TransformTestCase<GeneralEnvel
     }
 
     /**
-     * Tests a transformation where only the range of longitude axis is changed.
+     * Tests a transformation from a three-dimensional CRS where the range of longitude axis is changed.
+     * This is the same test than {@link #testAxisRangeChange()} but using a compound CRS as the source.
+     * Internally, this results in the concatenation of transforms. We want to ensure that information
+     * about axis range changes are not lost in this process.
      *
      * @throws FactoryException if an error occurred while creating the operation.
      * @throws TransformException if an error occurred while transforming the envelope.
@@ -184,12 +188,21 @@ public final strictfp class EnvelopesTest extends TransformTestCase<GeneralEnvel
      * @since 0.8
      */
     @Test
-    public void testAxisRangeChange() throws FactoryException, TransformException {
-        final GeographicCRS sourceCRS = HardCodedCRS.WGS84;
-        final GeographicCRS targetCRS = HardCodedCRS.WGS84.forConvention(AxesConvention.POSITIVE_RANGE);
-        final GeneralEnvelope rectangle = createFromExtremums(sourceCRS, -178, -70, 165, 80);
-        final GeneralEnvelope expected  = createFromExtremums(targetCRS,  182, -70, 165, 80);
-        final GeneralEnvelope actual    = transform(CRS.findOperation(sourceCRS, targetCRS, null), rectangle);
-        assertGeometryEquals(expected, actual, STRICT, STRICT);
+    @DependsOnMethod("testAxisRangeChange")
+    public void testAxisRangeChange3D() throws FactoryException, TransformException {
+        final GeneralEnvelope envelope  = new GeneralEnvelope(new double[] { -0.5, -90, 1000},
+                                                              new double[] {354.5, +90, 1002});
+        envelope.setCoordinateReferenceSystem(CRS.compound(
+                HardCodedCRS.WGS84.forConvention(AxesConvention.POSITIVE_RANGE), HardCodedCRS.TIME));
+        final GeographicCRS  targetCRS = HardCodedCRS.WGS84;
+        final GeneralEnvelope expected = createFromExtremums(targetCRS, -0.5, -90, -5.5, 90);
+        assertEnvelopeEquals(expected, Envelopes.transform(envelope, targetCRS), STRICT, STRICT);
+        /*
+         * When the envelope to transform span the full longitude range,
+         * target envelope should unconditionally be [-180 … +180]°.
+         */
+        envelope.setRange(0, -0.5, 359.5);
+        expected.setRange(0, -180, 180);
+        assertEnvelopeEquals(expected, Envelopes.transform(envelope, targetCRS), STRICT, STRICT);
     }
 }

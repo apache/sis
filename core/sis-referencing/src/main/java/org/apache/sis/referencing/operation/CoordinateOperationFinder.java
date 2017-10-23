@@ -33,6 +33,7 @@ import org.opengis.metadata.Identifier;
 import org.opengis.metadata.extent.GeographicBoundingBox;
 import org.opengis.parameter.ParameterValueGroup;
 import org.apache.sis.internal.metadata.AxisDirections;
+import org.apache.sis.internal.referencing.CoordinateOperations;
 import org.apache.sis.internal.referencing.ReferencingUtilities;
 import org.apache.sis.internal.referencing.provider.Geographic2Dto3D;
 import org.apache.sis.internal.referencing.provider.Geographic3Dto2D;
@@ -947,10 +948,13 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
          * trivial operations.
          */
         CoordinateOperation main = null;
-        final boolean isAxisChange1 = (step1.getName() == AXIS_CHANGES);
-        final boolean isAxisChange2 = (step2.getName() == AXIS_CHANGES);
+        final boolean isAxisChange1 = canHide(step1.getName());
+        final boolean isAxisChange2 = canHide(step2.getName());
         if (isAxisChange1 && isAxisChange2 && isAffine(step1) && isAffine(step2)) {
             main = step2;                                           // Arbitrarily take the last step.
+            if (main.getName() == IDENTITY && step1.getName() != IDENTITY) {
+                main = step1;
+            }
         } else {
             if (isAxisChange1 && mt1.getSourceDimensions() == mt1.getTargetDimensions()) main = step2;
             if (isAxisChange2 && mt2.getSourceDimensions() == mt2.getTargetDimensions()) main = step1;
@@ -1003,8 +1007,8 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
         if (isIdentity(step1)) return concatenate(step2, step3);
         if (isIdentity(step2)) return concatenate(step1, step3);
         if (isIdentity(step3)) return concatenate(step1, step2);
-        if (step1.getName() == AXIS_CHANGES) return concatenate(concatenate(step1, step2), step3);
-        if (step3.getName() == AXIS_CHANGES) return concatenate(step1, concatenate(step2, step3));
+        if (canHide(step1.getName())) return concatenate(concatenate(step1, step2), step3);
+        if (canHide(step3.getName())) return concatenate(step1, concatenate(step2, step3));
         final Map<String,?> properties = defaultName(step1.getSourceCRS(), step3.getTargetCRS());
         return factory.createConcatenatedOperation(properties, step1, step2, step3);
     }
@@ -1028,7 +1032,22 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
      * are usually datum shift and must be visible.
      */
     private static boolean isIdentity(final CoordinateOperation operation) {
-        return (operation == null) || ((operation instanceof Conversion) && operation.getMathTransform().isIdentity());
+        if (operation == null) {
+            return true;
+        }
+        if ((operation instanceof Conversion) && operation.getMathTransform().isIdentity()) {
+            return CoordinateOperations.wrapAroundChanges(operation).isEmpty();
+        }
+        return false;
+    }
+
+    /**
+     * Returns {@code true} if a coordinate operation of the given name can be hidden
+     * in the list of operations. Note that the {@code MathTransform} will still take
+     * the operation in account however.
+     */
+    private static boolean canHide(final Identifier id) {
+        return (id == AXIS_CHANGES) || (id == IDENTITY);
     }
 
     /**
