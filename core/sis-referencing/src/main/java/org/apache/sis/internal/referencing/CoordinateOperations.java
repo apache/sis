@@ -18,6 +18,7 @@ package org.apache.sis.internal.referencing;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.Collections;
 import javax.measure.UnitConverter;
 import javax.measure.IncommensurableException;
 import org.opengis.referencing.cs.RangeMeaning;
@@ -25,9 +26,11 @@ import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.crs.GeneralDerivedCRS;
-import org.apache.sis.internal.metadata.AxisDirections;
+import org.opengis.referencing.operation.CoordinateOperation;
 import org.opengis.referencing.operation.CoordinateOperationFactory;
 import org.apache.sis.referencing.operation.DefaultCoordinateOperationFactory;
+import org.apache.sis.referencing.operation.AbstractCoordinateOperation;
+import org.apache.sis.internal.metadata.AxisDirections;
 import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.system.SystemListener;
@@ -112,6 +115,30 @@ public final class CoordinateOperations extends SystemListener {
      */
     public static boolean isWrapAround(final CoordinateSystemAxis axis) {
         return RangeMeaning.WRAPAROUND.equals(axis.getRangeMeaning());
+    }
+
+    /**
+     * Returns indices of target dimensions where "wrap around" may happen as a result of a coordinate operation.
+     * This is usually the longitude axis when the source CRS uses the [-180 … +180]° range and the target CRS
+     * uses the [0 … 360]° range, or the converse.
+     *
+     * @param  op  the coordinate operation for which to get "wrap around" target dimensions.
+     * @return list of target dimensions where "wrap around" may happen, or an empty list if none.
+     *
+     * @see AbstractCoordinateOperation#getWrapAroundChanges()
+     */
+    public static List<Integer> wrapAroundChanges(final CoordinateOperation op) {
+        if (op instanceof AbstractCoordinateOperation) {
+            return ((AbstractCoordinateOperation) op).getWrapAroundChanges();
+        } else if (op != null) {
+            final CoordinateReferenceSystem source, target;
+            if ((source = op.getSourceCRS()) != null &&
+                (target = op.getTargetCRS()) != null)
+            {
+                return wrapAroundChanges(source, target.getCoordinateSystem());
+            }
+        }
+        return Collections.emptyList();
     }
 
     /**

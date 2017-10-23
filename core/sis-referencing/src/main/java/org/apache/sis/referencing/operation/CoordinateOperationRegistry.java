@@ -112,7 +112,7 @@ class CoordinateOperationRegistry {
     /**
      * The identifier for an identity operation.
      */
-    private static final Identifier IDENTITY = createIdentifier(Vocabulary.Keys.Identity);
+    static final Identifier IDENTITY = createIdentifier(Vocabulary.Keys.Identity);
 
     /**
      * The identifier for conversion using an affine transform for axis swapping and/or unit conversions.
