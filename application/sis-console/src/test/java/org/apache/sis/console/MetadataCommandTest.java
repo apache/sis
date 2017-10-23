@@ -84,8 +84,8 @@ public final strictfp class MetadataCommandTest extends TestCase {
 
     @Test
     public void testFormatThrowsClassCastException() throws JAXBException, IOException, DataStoreException, InvalidOptionException {
-        String[] stringArray = new String[0];
-        MetadataCommand metadataCommand = new MetadataCommand((-1351), stringArray);
+        String[] arguments = new String[0];
+        MetadataCommand metadataCommand = new MetadataCommand((-1351), arguments);
         Object object = new Object();
 
         try {

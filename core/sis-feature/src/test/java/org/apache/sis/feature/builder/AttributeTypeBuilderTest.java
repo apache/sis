@@ -316,7 +316,7 @@ public final strictfp class AttributeTypeBuilderTest extends TestCase {
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void testSetMaximumOccursasd() {
+    public void testSetMaximumOccursThrowsIllegalArgumentException() {
         FeatureTypeBuilder featureTypeBuilder = new FeatureTypeBuilder(null);
         Class<DefaultParametricCRS> clasz = DefaultParametricCRS.class;
         AttributeTypeBuilder<DefaultParametricCRS> attributeTypeBuilder = new AttributeTypeBuilder<>(featureTypeBuilder, clasz);
