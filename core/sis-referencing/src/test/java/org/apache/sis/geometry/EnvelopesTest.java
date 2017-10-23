@@ -16,22 +16,30 @@
  */
 package org.apache.sis.geometry;
 
-import java.util.Collections;
-import org.opengis.geometry.Envelope;
-import org.opengis.util.FactoryException;
-import org.opengis.referencing.crs.GeographicCRS;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.opengis.referencing.operation.CoordinateOperation;
-import org.opengis.referencing.operation.MathTransform2D;
-import org.opengis.referencing.operation.TransformException;
-import org.apache.sis.referencing.operation.transform.MathTransformWrapper;
+import org.apache.sis.internal.referencing.j2d.AffineTransform2D;
+import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
+import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.crs.DefaultCompoundCRS;
 import org.apache.sis.referencing.crs.HardCodedCRS;
 import org.apache.sis.referencing.cs.AxesConvention;
-import org.apache.sis.referencing.CRS;
+import org.apache.sis.referencing.operation.transform.MathTransformWrapper;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.DependsOnMethod;
+import org.apache.sis.test.mock.VerticalCRSMock;
+import org.apache.sis.util.iso.DefaultInternationalString;
 import org.junit.Test;
+import org.opengis.geometry.Envelope;
+import org.opengis.geometry.MismatchedDimensionException;
+import org.opengis.metadata.extent.GeographicBoundingBox;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.opengis.referencing.crs.GeographicCRS;
+import org.opengis.referencing.operation.CoordinateOperation;
+import org.opengis.referencing.operation.MathTransform2D;
+import org.opengis.referencing.operation.TransformException;
+import org.opengis.util.FactoryException;
+
+import java.awt.geom.AffineTransform;
+import java.util.Collections;
 
 import static org.apache.sis.test.ReferencingAssert.*;
 import static org.opengis.test.Validators.validate;
@@ -204,5 +212,85 @@ public final strictfp class EnvelopesTest extends TransformTestCase<GeneralEnvel
         envelope.setRange(0, -0.5, 359.5);
         expected.setRange(0, -180, 180);
         assertEnvelopeEquals(expected, Envelopes.transform(envelope, targetCRS), STRICT, STRICT);
+    }
+
+    @Test
+    public void testToPolygonWKTTwo() {
+        GeneralEnvelope generalEnvelope = new GeneralEnvelope(48);
+        String polygonWKTString = Envelopes.toPolygonWKT(generalEnvelope);
+
+        assertEquals("POLYGON((0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 " +
+                "0 0 0 0 0 0, 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 " +
+                "0, 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0, 0 0 0 " +
+                "0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0, 0 0 0 0 0 0 0 0 " +
+                "0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0))", polygonWKTString);
+    }
+
+    @Test
+    public void testToPolygonWKTThrowsIllegalArgumentException() {
+        DefaultGeographicBoundingBox defaultGeographicBoundingBox = new DefaultGeographicBoundingBox();
+        Envelope2D envelope2D = new Envelope2D(defaultGeographicBoundingBox);
+
+        try {
+            Envelopes.toPolygonWKT(envelope2D);
+            fail("Expecting exception: IllegalArgumentException");
+        } catch (IllegalArgumentException e) {
+            assertEquals(Envelopes.class.getName(), e.getStackTrace()[0].getClassName());
+        }
+    }
+
+    @Test
+    public void testTransformEnvelopesAreEqual() throws TransformException {
+        GeneralEnvelope generalEnvelope = new GeneralEnvelope(48);
+        AffineTransform affineTransform = new AffineTransform();
+        AffineTransform2D affineTransform2D = new AffineTransform2D(affineTransform);
+        GeneralEnvelope generalEnvelopeTwo = Envelopes.transform(affineTransform2D, generalEnvelope);
+
+        assertTrue(generalEnvelopeTwo.equals(generalEnvelope));
+    }
+
+    @Test
+    public void testTransformThrowsTransformException() {
+        DefaultGeographicBoundingBox defaultGeographicBoundingBox = new DefaultGeographicBoundingBox(null);
+        ImmutableEnvelope immutableEnvelope = new ImmutableEnvelope(defaultGeographicBoundingBox);
+        VerticalCRSMock verticalCRSMock = (VerticalCRSMock) VerticalCRSMock.SIGMA_LEVEL;
+
+        try {
+            Envelopes.transform(immutableEnvelope, verticalCRSMock);
+            fail("Expecting exception: TransformException");
+        } catch (TransformException e) {
+            assertEquals(Envelopes.class.getName(), e.getStackTrace()[0].getClassName());
+        }
+    }
+
+    @Test
+    public void testTransformWithNull() throws TransformException {
+        DefaultGeographicBoundingBox defaultGeographicBoundingBox = new DefaultGeographicBoundingBox((-307.0), 1545.8356931481892, 0.0, 1545.8356931481892);
+        Envelope2D envelope2D = new Envelope2D(defaultGeographicBoundingBox);
+        Envelope2D transformedEnvelope = (Envelope2D) Envelopes.transform(envelope2D, null);
+
+        assertEquals(90.0, transformedEnvelope.height, 0.01);
+    }
+
+    @Test
+    public void testTransformReturningNull() throws TransformException {
+        VerticalCRSMock verticalCRSMock = (VerticalCRSMock) VerticalCRSMock.SIGMA_LEVEL;
+        Envelope envelope = Envelopes.transform(null, verticalCRSMock);
+
+        assertNull(envelope);
+    }
+
+    @Test
+    public void testTransformThrowsMismatchedDimensionException() throws TransformException, FactoryException {
+        DefaultInternationalString defaultInternationalString = new DefaultInternationalString();
+        Envelope envelope = Envelopes.fromWKT(defaultInternationalString);
+        AffineTransform2D affineTransform2D = new AffineTransform2D((-1422.977998731559), (-1422.977998731559), (-1422.977998731559), (-55.61429126), Double.NEGATIVE_INFINITY, 0.0);
+
+        try {
+            Envelopes.transform(affineTransform2D, envelope);
+            fail("Expecting exception: MismatchedDimensionException");
+        } catch (MismatchedDimensionException e) {
+            assertEquals(Envelopes.class.getName(), e.getStackTrace()[0].getClassName());
+        }
     }
 }
