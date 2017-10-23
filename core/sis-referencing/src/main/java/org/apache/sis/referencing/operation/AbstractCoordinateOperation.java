@@ -1037,7 +1037,7 @@ check:      for (int isTarget=0; ; isTarget++) {        // 0 == source check; 1 
     private void setSource(final CoordinateReferenceSystem crs) {
         if (sourceCRS == null) {
             sourceCRS = crs;
-        } else {
+        } else if (!sourceCRS.equals(crs)) {                    // Could be defined by ConcatenatedOperation.
             MetadataUtilities.propertyAlreadySet(AbstractCoordinateOperation.class, "setSource", "sourceCRS");
         }
     }
@@ -1056,7 +1056,7 @@ check:      for (int isTarget=0; ; isTarget++) {        // 0 == source check; 1 
     private void setTarget(final CoordinateReferenceSystem crs) {
         if (targetCRS == null) {
             targetCRS = crs;
-        } else {
+        } else if (!targetCRS.equals(crs)) {                    // Could be defined by ConcatenatedOperation.
             MetadataUtilities.propertyAlreadySet(AbstractCoordinateOperation.class, "setTarget", "targetCRS");
         }
     }
@@ -1119,5 +1119,12 @@ check:      for (int isTarget=0; ; isTarget++) {        // 0 == source check; 1 
         } else {
             MetadataUtilities.propertyAlreadySet(AbstractCoordinateOperation.class, "setScope", "scope");
         }
+    }
+
+    /**
+     * Invoked by JAXB after unmarshalling.
+     */
+    void afterUnmarshal(Unmarshaller unmarshaller, Object parent) {
+        computeTransientFields();
     }
 }

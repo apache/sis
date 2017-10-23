@@ -70,7 +70,7 @@ import static org.apache.sis.util.Utilities.deepEquals;
  * {@link DefaultPassThroughOperation}.</p>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 0.7
+ * @version 0.8
  * @since   0.6
  * @module
  */
@@ -513,7 +513,9 @@ class AbstractSingleOperation extends AbstractCoordinateOperation implements Sin
      *
      * @see <a href="http://issues.apache.org/jira/browse/SIS-291">SIS-291</a>
      */
-    private void afterUnmarshal(Unmarshaller unmarshaller, Object parent) {
+    @Override
+    final void afterUnmarshal(Unmarshaller unmarshaller, Object parent) {
+        super.afterUnmarshal(unmarshaller, parent);
         final CoordinateReferenceSystem sourceCRS = super.getSourceCRS();
         final CoordinateReferenceSystem targetCRS = super.getTargetCRS();
         if (transform == null && sourceCRS != null && targetCRS != null && parameters != null) try {

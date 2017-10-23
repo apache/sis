@@ -190,11 +190,33 @@ public final strictfp class EnvelopesTest extends TransformTestCase<GeneralEnvel
     @Test
     @DependsOnMethod("testAxisRangeChange")
     public void testAxisRangeChange3D() throws FactoryException, TransformException {
+        testAxisRangeChange3D(HardCodedCRS.WGS84);
+    }
+
+    /**
+     * Tests a change of longitude axis range together with change of ellipsoid. This is the same test
+     * than {@link #testAxisRangeChange3D()} with an additional complexity: a change of ellipsoid.
+     * This causes the execution of different code branches in {@code ConcatenatedOperation} creation.
+     *
+     * @throws FactoryException if an error occurred while creating the operation.
+     * @throws TransformException if an error occurred while transforming the envelope.
+     *
+     * @since 0.8
+     */
+    @Test
+    @DependsOnMethod("testAxisRangeChange3D")
+    public void testAxisRangeChangeWithDatumShift() throws FactoryException, TransformException {
+        testAxisRangeChange3D(HardCodedCRS.SPHERE);
+    }
+
+    /**
+     * Implementation of {@link #testAxisRangeChange3D()} and {@link #testAxisRangeChangeWithDatumShift()}.
+     */
+    private void testAxisRangeChange3D(final GeographicCRS targetCRS) throws FactoryException, TransformException {
         final GeneralEnvelope envelope  = new GeneralEnvelope(new double[] { -0.5, -90, 1000},
                                                               new double[] {354.5, +90, 1002});
         envelope.setCoordinateReferenceSystem(CRS.compound(
                 HardCodedCRS.WGS84.forConvention(AxesConvention.POSITIVE_RANGE), HardCodedCRS.TIME));
-        final GeographicCRS  targetCRS = HardCodedCRS.WGS84;
         final GeneralEnvelope expected = createFromExtremums(targetCRS, -0.5, -90, -5.5, 90);
         assertEnvelopeEquals(expected, Envelopes.transform(envelope, targetCRS), STRICT, STRICT);
         /*
