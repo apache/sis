@@ -823,13 +823,13 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
      * Adds information about acquisition (program, platform).
      */
     private void addAcquisitionInfo() {
-        final Keyword[] attributes = {
+        final Term[] attributes = {
             AttributeNames.PROGRAM,
             AttributeNames.PLATFORM,
             AttributeNames.INSTRUMENT
         };
         for (int i=0; i<attributes.length; i++) {
-            final Keyword at = attributes[i];
+            final Term at = attributes[i];
             final String authority = stringValue(at.VOCABULARY);
             for (final String keyword : split(stringValue(at.TEXT))) {
                 switch (i) {
