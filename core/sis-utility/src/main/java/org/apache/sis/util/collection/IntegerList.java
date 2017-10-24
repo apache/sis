@@ -482,7 +482,7 @@ public class IntegerList extends AbstractList<Integer> implements RandomAccess, 
      *
      * @since 0.8-jdk8
      */
-    public IntStream ints(boolean parallel) {
+    public IntStream stream(boolean parallel) {
         return StreamSupport.intStream(spliterator(), parallel);
     }
 

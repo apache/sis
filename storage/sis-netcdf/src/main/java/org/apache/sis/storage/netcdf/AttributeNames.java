@@ -175,7 +175,8 @@ public class AttributeNames {
     public static final String SUMMARY = ACDD.summary;
 
     /**
-     * Holds the attribute names describing a word together with a vocabulary (or naming authority).
+     * Holds the attribute names describing a term together with a vocabulary (or naming authority).
+     * A term is a word or expression having a precise meaning in a domain identified by the vocabulary.
      * In the following table, the header lists the constants defined in the {@link AttributeNames}
      * class and the other cells give the values assigned in this class fields for those constants.
      *
@@ -202,7 +203,7 @@ public class AttributeNames {
      * @since   0.8
      * @module
      */
-    public static class Keyword implements Serializable {
+    public static class Term implements Serializable {
         /**
          * For cross-version compatibility.
          */
@@ -244,7 +245,7 @@ public class AttributeNames {
          *
          * @since 0.8
          */
-        public Keyword(final String text, final String vocabulary) {
+        public Term(final String text, final String vocabulary) {
             TEXT       = text;
             VOCABULARY = vocabulary;
         }
@@ -272,7 +273,7 @@ public class AttributeNames {
      * @see NetcdfFile#getId()
      * @see <a href="http://wiki.esipfed.org/index.php/Attribute_Convention_for_Data_Discovery#id">ESIP reference</a>
      */
-    public static final Keyword IDENTIFIER = new Keyword(ACDD.id, ACDD.naming_authority);
+    public static final Term IDENTIFIER = new Term(ACDD.id, ACDD.naming_authority);
 
     /**
      * The {@value} attribute name for the identifier authority (<em>Recommended</em>).
@@ -314,7 +315,7 @@ public class AttributeNames {
      * @see #KEYWORDS
      * @see <a href="http://wiki.esipfed.org/index.php/Attribute_Convention_for_Data_Discovery#standard_name">ESIP reference</a>
      */
-    public static final Keyword STANDARD_NAME = new Keyword(CF.STANDARD_NAME, ACDD.standard_name_vocabulary);
+    public static final Term STANDARD_NAME = new Term(CF.STANDARD_NAME, ACDD.standard_name_vocabulary);
 
     /**
      * The {@value} attribute name for indicating which controlled list of variable names has been
@@ -352,7 +353,7 @@ public class AttributeNames {
      * @see #STANDARD_NAME
      * @see <a href="http://wiki.esipfed.org/index.php/Attribute_Convention_for_Data_Discovery#keywords">ESIP reference</a>
      */
-    public static final Keyword KEYWORDS = new Keyword(ACDD.keywords, ACDD.keywords_vocabulary);
+    public static final Term KEYWORDS = new Term(ACDD.keywords, ACDD.keywords_vocabulary);
 
     /**
      * The {@value} attribute name for the guideline for the words/phrases in the
@@ -544,7 +545,7 @@ public class AttributeNames {
      *
      * @since 0.8
      */
-    public static final Keyword PROGRAM = new Keyword("program", null);
+    public static final Term PROGRAM = new Term("program", null);
 
     /**
      * The set of attribute names for the platform(s) that supported the sensors used to create the resource(s).
@@ -563,7 +564,7 @@ public class AttributeNames {
      *
      * @since 0.8
      */
-    public static final Keyword PLATFORM = new Keyword("platform", "platform_vocabulary");
+    public static final Term PLATFORM = new Term("platform", "platform_vocabulary");
 
     /**
      * The set of attribute names for the contributing instrument(s) or sensor(s) used to create the resource(s).
@@ -584,7 +585,7 @@ public class AttributeNames {
      *
      * @since 0.8
      */
-    public static final Keyword INSTRUMENT = new Keyword("instrument", "instrument_vocabulary");
+    public static final Term INSTRUMENT = new Term("instrument", "instrument_vocabulary");
 
     /**
      * Holds the attribute names describing a responsible party.

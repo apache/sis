@@ -237,9 +237,9 @@ public final strictfp class IntegerListTest extends TestCase {
      * This method tests sequential stream only.
      */
     @Test
-    public void testInts() {
+    public void testStream() {
         list = createRandomlyFilled(42, 404);
-        list.ints(false).forEach(new IntConsumer() {
+        list.stream(false).forEach(new IntConsumer() {
             private int index = 0;
 
             @Override
@@ -265,7 +265,7 @@ public final strictfp class IntegerListTest extends TestCase {
     @Test
     public void testErrorOnCoModification() {
         list = createRandomlyFilled(4, 10);
-        final PrimitiveIterator.OfInt values = list.ints(false).iterator();
+        final PrimitiveIterator.OfInt values = list.stream(false).iterator();
 
         // Start iteration normally.
         assertEquals(list.getInt(0), values.nextInt());
