@@ -774,6 +774,20 @@ check:      for (int isTarget=0; ; isTarget++) {        // 0 == source check; 1 
      * If such change exists, then this is usually the longitude axis when the source CRS uses the [-180 … +180]° range
      * and the target CRS uses the [0 … 360]° range, or the converse. If there is no change, then this is an empty list.
      *
+     * <div class="note"><b>Inverse relationship:</b>
+     * sometime the target dimensions returned by this method can be mapped directly to wraparound axes in source CRS,
+     * but this is not always the case. For example consider the following operation chain:
+     *
+     * <center>source projected CRS ⟶ base CRS ⟶ target geographic CRS</center>
+     *
+     * In this example, a wraparound axis in the target CRS (the longitude) can be mapped to a wraparound axis in
+     * the {@linkplain org.apache.sis.referencing.crs.DefaultProjectedCRS#getBaseCRS() base CRS}. But there is no
+     * corresponding wraparound axis in the source CRS because the <em>easting</em> axis in projected CRS does not
+     * have a wraparound range meaning. We could argue that
+     * {@linkplain org.apache.sis.referencing.cs.DefaultCoordinateSystemAxis#getDirection() axis directions} match,
+     * but such matching is not guaranteed to exist since {@code ProjectedCRS} is a special case of
+     * {@code GeneralDerivedCRS} and derived CRS can have rotations.</div>
+     *
      * <p>The default implementation infers this list by inspecting the source and target coordinate system axes.
      * It returns the indices of all target axes having {@link org.opengis.referencing.cs.RangeMeaning#WRAPAROUND}
      * and for which the following condition holds: a colinear source axis exists with compatible unit of measurement,
