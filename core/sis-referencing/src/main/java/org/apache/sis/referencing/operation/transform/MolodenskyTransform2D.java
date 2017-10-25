@@ -33,7 +33,7 @@ import org.opengis.referencing.operation.TransformException;
  * @since   0.7
  * @module
  */
-final class MolodenskyTransform2D extends MolodenskyTransform implements MathTransform2D {
+class MolodenskyTransform2D extends MolodenskyTransform implements MathTransform2D {
     /**
      * Serial number for compatibility with different versions.
      */
@@ -52,9 +52,9 @@ final class MolodenskyTransform2D extends MolodenskyTransform implements MathTra
     /**
      * Constructs the inverse of a 2D transform.
      *
-     * @param inverse The transform for which to create the inverse.
-     * @param source  The source ellipsoid of the given {@code inverse} transform.
-     * @param target  The target ellipsoid of the given {@code inverse} transform.
+     * @param inverse  the transform for which to create the inverse.
+     * @param source   the source ellipsoid of the given {@code inverse} transform.
+     * @param target   the target ellipsoid of the given {@code inverse} transform.
      */
     MolodenskyTransform2D(final MolodenskyTransform inverse, final Ellipsoid source, final Ellipsoid target) {
         super(inverse, source, target);
