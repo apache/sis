@@ -35,6 +35,8 @@ import org.opengis.parameter.ParameterValueGroup;
 import org.apache.sis.internal.metadata.AxisDirections;
 import org.apache.sis.internal.referencing.CoordinateOperations;
 import org.apache.sis.internal.referencing.ReferencingUtilities;
+import org.apache.sis.internal.referencing.provider.Affine;
+import org.apache.sis.internal.referencing.provider.DatumShiftMethod;
 import org.apache.sis.internal.referencing.provider.Geographic2Dto3D;
 import org.apache.sis.internal.referencing.provider.Geographic3Dto2D;
 import org.apache.sis.internal.referencing.provider.GeographicToGeocentric;
@@ -114,17 +116,6 @@ import static org.apache.sis.util.Utilities.equalsIgnoreMetadata;
  * @module
  */
 public class CoordinateOperationFinder extends CoordinateOperationRegistry {
-    /**
-     * The accuracy threshold (in metres) for allowing the use of Molodensky approximation instead than the
-     * Geocentric Translation method. The accuracy of datum shifts with Molodensky approximation is about 5
-     * or 10 metres. However for this constant, we are not interested in absolute accuracy but rather in the
-     * difference between Molodensky and Geocentric Translation methods, which is much lower (less than 1 m).
-     * We nevertheless use a relatively high threshold as a conservative approach.
-     *
-     * @see #desiredAccuracy
-     */
-    private static final double MOLODENSKY_ACCURACY = 5;
-
     /**
      * Identifiers used as the basis for identifier of CRS used as an intermediate step.
      * The values can be of two kinds:
@@ -441,7 +432,7 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
          * Actually we do not know if the longitude rotation should be before or after datum shift. But this ambiguity
          * can usually be ignored because Bursa-Wolf parameters are always used with source and target prime meridians
          * set to Greenwich in EPSG dataset 8.9.  For safety, the SIS's DefaultGeodeticDatum class ensures that if the
-         * prime meridian are not the same, then the target meridian must be Greenwich.
+         * prime meridians are not the same, then the target meridian must be Greenwich.
          */
         final DefaultMathTransformFactory.Context context = ReferencingUtilities.createTransformContext(
                 sourceCRS, targetCRS, new MathTransformContext(sourceDatum, targetDatum));
@@ -497,20 +488,31 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
         final DefaultMathTransformFactory mtFactory = factorySIS.getDefaultMathTransformFactory();
         MathTransform before = null, after = null;
         ParameterValueGroup parameters;
-        if (datumShift != null) {
+        if (identifier == DATUM_SHIFT || identifier == ELLIPSOID_CHANGE) {
             /*
              * If the transform can be represented by a single coordinate operation, returns that operation.
              * Possible operations are:
              *
-             *    - Geocentric translation         (in geocentric, geographic-2D or geographic-3D domains)
              *    - Position Vector transformation (in geocentric, geographic-2D or geographic-3D domains)
+             *    - Geocentric translation         (in geocentric, geographic-2D or geographic-3D domains)
+             *    - [Abridged] Molodensky          (as an approximation of geocentric translation)
+             *    - Identity                       (if the desired accuracy is so large than we can skip datum shift)
              *
-             * Otherwise, maybe we failed to create the operation because the coordinate system type were not the same.
-             * Convert unconditionally to XYZ geocentric coordinates and apply the datum shift in that coordinate space.
+             * TODO: if both CS are ellipsoidal but with different number of dimensions, then we should use
+             * an intermediate 3D geographic CRS in order to enable the use of Molodensky method if desired.
              */
-            parameters = GeocentricAffine.createParameters(sourceCS, targetCS, datumShift, desiredAccuracy >= MOLODENSKY_ACCURACY);
+            final DatumShiftMethod preferredMethod = DatumShiftMethod.forAccuracy(desiredAccuracy);
+            parameters = GeocentricAffine.createParameters(sourceCS, targetCS, datumShift, preferredMethod);
             if (parameters == null) {
-                parameters = TensorParameters.WKT1.createValueGroup(properties(Constants.AFFINE), datumShift);
+                /*
+                 * Failed to select a coordinate operation. Maybe because the coordinate system types are not the same.
+                 * Convert unconditionally to XYZ geocentric coordinates and apply the datum shift in that CS space.
+                 */
+                if (datumShift != null) {
+                    parameters = TensorParameters.WKT1.createValueGroup(properties(Constants.AFFINE), datumShift);
+                } else {
+                    parameters = Affine.identity(3);                        // Dimension of geocentric CRS.
+                }
                 final CoordinateSystem normalized = CommonCRS.WGS84.geocentric().getCoordinateSystem();
                 before = mtFactory.createCoordinateSystemChange(sourceCS, normalized, sourceDatum.getEllipsoid());
                 after  = mtFactory.createCoordinateSystemChange(normalized, targetCS, targetDatum.getEllipsoid());
@@ -521,18 +523,20 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
             parameters = (isGeographicToGeocentric ? GeographicToGeocentric.PARAMETERS
                                                    : GeocentricToGeographic.PARAMETERS).createValue();
         } else {
+            /*
+             * Coordinate system change (including change in the number of dimensions) without datum shift.
+             */
             final int sourceDim = sourceCS.getDimension();
             final int targetDim = targetCS.getDimension();
-            if ((sourceDim & ~1) == 2 && (sourceDim ^ targetDim) == 1    // sourceDim == 2 or 3 and difference with targetDim is 1.
+            if ((sourceDim & ~1) == 2                           // sourceDim == 2 or 3.
+                    && (sourceDim ^ targetDim) == 1             // abs(sourceDim - targetDim) == 1.
                     && (sourceCS instanceof EllipsoidalCS)
                     && (targetCS instanceof EllipsoidalCS))
             {
                 parameters = (sourceDim == 2 ? Geographic2Dto3D.PARAMETERS
                                              : Geographic3Dto2D.PARAMETERS).createValue();
             } else {
-                parameters = TensorParameters.WKT1.createValueGroup(properties(Constants.AFFINE));      // Initialized to identity.
-                parameters.parameter(Constants.NUM_COL).setValue(targetDim + 1);
-                parameters.parameter(Constants.NUM_ROW).setValue(targetDim + 1);
+                parameters = Affine.identity(targetDim);
                 /*
                  * createCoordinateSystemChange(…) needs the ellipsoid associated to the ellipsoidal coordinate system,
                  * if any. If none or both coordinate systems are ellipsoidal, then the ellipsoid will be ignored (see

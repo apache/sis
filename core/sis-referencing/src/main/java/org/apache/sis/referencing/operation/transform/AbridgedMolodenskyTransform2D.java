@@ -19,7 +19,6 @@ package org.apache.sis.referencing.operation.transform;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import org.opengis.referencing.datum.Ellipsoid;
-import org.opengis.referencing.operation.TransformException;
 
 import static java.lang.Math.*;
 
@@ -94,11 +93,9 @@ final class AbridgedMolodenskyTransform2D extends MolodenskyTransform2D {
      * than {@link MolodenskyTransform}, but the formulas are repeated and simplified here for performance reasons.
      * In addition of using abridged Molodensky formulas, this method assumes that {@link #tX}, {@link #tY} and
      * {@link #tZ} fields are zero.
-     *
-     * @throws TransformException if a point can not be transformed.
      */
     @Override
-    public void transform(double[] srcPts, int srcOff, double[] dstPts, int dstOff, int numPts) throws TransformException {
+    public void transform(double[] srcPts, int srcOff, double[] dstPts, int dstOff, int numPts) {
         System.arraycopy(srcPts, srcOff, dstPts, dstOff, numPts * 2);
         while (--numPts >= 0) {
             final double φ    = dstPts[++dstOff];
