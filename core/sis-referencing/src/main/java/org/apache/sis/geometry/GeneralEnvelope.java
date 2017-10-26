@@ -37,8 +37,9 @@ import org.opengis.metadata.extent.GeographicBoundingBox;
 import org.apache.sis.util.resources.Errors;
 
 import static org.apache.sis.util.ArgumentChecks.*;
-import static org.apache.sis.math.MathFunctions.isNegative;
 import static org.apache.sis.math.MathFunctions.isSameSign;
+import static org.apache.sis.math.MathFunctions.isNegative;
+import static org.apache.sis.math.MathFunctions.isNegativeZero;
 
 
 /**
@@ -112,7 +113,7 @@ import static org.apache.sis.math.MathFunctions.isSameSign;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Johann Sorel (Geomatys)
- * @version 0.5
+ * @version 0.8
  *
  * @see Envelope2D
  * @see org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox
@@ -808,10 +809,10 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
                          */
                         final double min, max;
                         final double csSpan = getSpan(getAxis(crs, i));
-                        if (span1 >= csSpan) {
+                        if (span1 >= csSpan || isNegativeZero(span1)) {
                             min = min0;
                             max = max0;
-                        } else if (span0 >= csSpan) {
+                        } else if (span0 >= csSpan || isNegativeZero(span0)) {
                             min = min1;
                             max = max1;
                         } else {
