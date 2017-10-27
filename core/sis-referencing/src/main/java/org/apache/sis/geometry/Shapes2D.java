@@ -16,7 +16,7 @@
  */
 package org.apache.sis.geometry;
 
-import java.util.List;
+import java.util.Set;
 import java.awt.geom.Point2D;
 import java.awt.geom.Line2D;
 import java.awt.geom.Ellipse2D;
@@ -582,7 +582,7 @@ public final class Shapes2D extends Static {
          * than what would be possible with GeneralEnvelope or Envelope2D, but we try to limit the situation where
          * this expansion is applied.
          */
-        final List<Integer> wrapAroundChanges;
+        final Set<Integer> wrapAroundChanges;
         if (operation instanceof AbstractCoordinateOperation) {
             wrapAroundChanges = ((AbstractCoordinateOperation) operation).getWrapAroundChanges();
         } else {
