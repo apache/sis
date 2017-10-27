@@ -284,6 +284,14 @@ public abstract class Geometries<G> {
     }
 
     /**
+     * Parses the given WKT.
+     *
+     * @param  wkt  the WKT to parse.
+     * @return the geometry object for the given WKT.
+     */
+    public abstract Object parseWKT(String wkt);
+
+    /**
      * Returns an error message for an unsupported geometry object.
      *
      * @param  dimension  number of dimensions (2 or 3) requested for the geometry object.

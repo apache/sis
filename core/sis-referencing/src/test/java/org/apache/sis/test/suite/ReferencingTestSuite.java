@@ -125,6 +125,7 @@ import org.junit.BeforeClass;
     org.apache.sis.referencing.operation.transform.ContextualParametersTest.class,
     org.apache.sis.referencing.operation.transform.EllipsoidToCentricTransformTest.class,
     org.apache.sis.referencing.operation.transform.MolodenskyTransformTest.class,
+    org.apache.sis.referencing.operation.transform.AbridgedMolodenskyTransformTest.class,
     org.apache.sis.referencing.operation.transform.SphericalToCartesianTest.class,
     org.apache.sis.referencing.operation.transform.CartesianToSphericalTest.class,
     org.apache.sis.referencing.operation.transform.PolarToCartesianTest.class,
@@ -221,6 +222,7 @@ import org.junit.BeforeClass;
     org.apache.sis.referencing.cs.CodesTest.class,
     org.apache.sis.referencing.CRSTest.class,
     org.apache.sis.internal.referencing.DefinitionVerifierTest.class,
+    org.apache.sis.internal.referencing.CoordinateOperationsTest.class,
 
     // Coordinate operation finders are last, since they need everything else.
     org.apache.sis.referencing.operation.CoordinateOperationRegistryTest.class,

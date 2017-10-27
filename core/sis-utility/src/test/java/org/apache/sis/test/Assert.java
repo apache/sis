@@ -42,7 +42,8 @@ import org.apache.sis.util.Classes;
  * Assertion methods used by the SIS project in addition of the JUnit and GeoAPI assertions.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.7
+ * @author  Alexis Manin (Geomatys)
+ * @version 0.8
  * @since   0.3
  * @module
  */

@@ -67,6 +67,11 @@ public final class Resources extends IndexedResourceBundle {
         public static final short AmbiguousName_4 = 15;
 
         /**
+         * Can not read the Coordinate Reference System (CRS) Well Known Text (WKT) in “{0}”.
+         */
+        public static final short CanNotReadCRS_WKT_1 = 37;
+
+        /**
          * Can not read “{0}” directory.
          */
         public static final short CanNotReadDirectory_1 = 34;
