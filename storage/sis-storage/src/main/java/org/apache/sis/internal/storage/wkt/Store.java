@@ -19,27 +19,22 @@ package org.apache.sis.internal.storage.wkt;
 import java.util.List;
 import java.util.Arrays;
 import java.util.ArrayList;
-import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.io.Reader;
 import java.io.IOException;
 import java.text.ParsePosition;
 import java.text.ParseException;
 import org.opengis.metadata.Metadata;
-import org.opengis.util.FactoryException;
 import org.opengis.referencing.ReferenceSystem;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.internal.storage.Resources;
 import org.apache.sis.internal.system.Loggers;
-import org.apache.sis.io.wkt.WKTFormat;
-import org.apache.sis.io.wkt.Warnings;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.storage.UnsupportedStorageException;
-import org.apache.sis.internal.referencing.DefinitionVerifier;
 import org.apache.sis.internal.storage.MetadataBuilder;
 import org.apache.sis.internal.storage.URIDataStore;
+import org.apache.sis.setup.GeometryLibrary;
 import org.apache.sis.setup.OptionKey;
 import org.apache.sis.util.CharSequences;
 
@@ -64,6 +59,11 @@ final class Store extends URIDataStore {
      * The reader, set by the constructor and cleared when no longer needed.
      */
     private Reader source;
+
+    /**
+     * The geometry library, or {@code null} for the default.
+     */
+    private final GeometryLibrary library;
 
     /**
      * The parsed objects, filled only when first needed.
@@ -92,6 +92,7 @@ final class Store extends URIDataStore {
             throw new UnsupportedStorageException(super.getLocale(), StoreProvider.NAME,
                     connector.getStorage(), connector.getOption(OptionKey.OPEN_OPTIONS));
         }
+        library = connector.getOption(OptionKey.GEOMETRY_LIBRARY);
     }
 
     /**
@@ -128,30 +129,12 @@ final class Store extends URIDataStore {
              * definitions.
              */
             final ParsePosition pos = new ParsePosition(0);
-            final WKTFormat parser = new WKTFormat(null, null);
+            final StoreFormat parser = new StoreFormat(library, listeners);
             do {
                 final Object obj = parser.parse(wkt, pos);
                 objects.add(obj);
                 pos.setIndex(CharSequences.skipLeadingWhitespaces(wkt, pos.getIndex(), wkt.length()));
-                final Warnings warnings = parser.getWarnings();
-                if (warnings != null) {
-                    log(new LogRecord(Level.WARNING, warnings.toString()));
-                }
-                /*
-                 * The WKT has been parsed. Below is a verification of whether the parsed WKT is conform with
-                 * the authority definition (if an authority code has been specified). This verification is not
-                 * really necessary since we will use the WKT definition anyway even if we find discrepancies.
-                 * But non-conform WKT definitions happen so often in practice that we are better to check.
-                 */
-                if (obj instanceof CoordinateReferenceSystem) try {
-                    final DefinitionVerifier v = DefinitionVerifier.withAuthority((CoordinateReferenceSystem) obj, null, false);
-                    if (v != null) {
-                        final LogRecord warning = v.warning(false);
-                        if (warning != null) log(warning);
-                    }
-                } catch (FactoryException e) {
-                    listeners.warning(null, e);
-                }
+                parser.validate(obj);
             } while (pos.getIndex() < wkt.length());
         } catch (ParseException e) {
             throw new DataStoreContentException(getLocale(), "WKT", getDisplayName(), in).initCause(e);

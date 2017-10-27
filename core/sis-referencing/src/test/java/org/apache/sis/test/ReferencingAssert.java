@@ -22,6 +22,7 @@ import java.awt.geom.RectangularShape;
 import java.awt.geom.AffineTransform;
 import javax.measure.Unit;
 import org.opengis.geometry.Envelope;
+import org.opengis.geometry.DirectPosition;
 import org.opengis.metadata.Identifier;
 import org.opengis.parameter.GeneralParameterValue;
 import org.opengis.parameter.ParameterDescriptor;
@@ -54,7 +55,7 @@ import org.apache.sis.internal.jdk8.JDK8;
  * from other modules and libraries.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.7
+ * @version 0.8
  * @since   0.3
  * @module
  */
@@ -284,15 +285,19 @@ public strictfp class ReferencingAssert extends MetadataAssert {
     public static void assertEnvelopeEquals(final Envelope expected, final Envelope actual, final double... tolerances) {
         final int dimension = expected.getDimension();
         assertEquals("dimension", dimension, actual.getDimension());
+        final DirectPosition expectedLower = expected.getLowerCorner();
+        final DirectPosition expectedUpper = expected.getUpperCorner();
+        final DirectPosition actualLower   = actual  .getLowerCorner();
+        final DirectPosition actualUpper   = actual  .getUpperCorner();
         double tolerance = 0;
         for (int i=0; i<dimension; i++) {
             if (i < tolerances.length) {
                 tolerance = tolerances[i];
             }
-            if (abs(expected.getMinimum(i) - actual.getMinimum(i)) > tolerance ||
-                abs(expected.getMaximum(i) - actual.getMaximum(i)) > tolerance)
+            if (abs(expectedLower.getOrdinate(i) - actualLower.getOrdinate(i)) > tolerance ||
+                abs(expectedUpper.getOrdinate(i) - actualUpper.getOrdinate(i)) > tolerance)
             {
-                fail("Envelopes are not equal:\n"
+                fail("Envelopes are not equal in dimension " + i + ":\n"
                         + "expected " + Envelopes.toString(expected) + "\n"
                         + " but got " + Envelopes.toString(actual));
             }

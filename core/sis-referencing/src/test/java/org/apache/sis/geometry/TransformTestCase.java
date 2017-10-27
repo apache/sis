@@ -28,7 +28,10 @@ import org.opengis.util.FactoryException;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.referencing.IdentifiedObjects;
+import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.referencing.operation.DefaultConversion;
+import org.apache.sis.referencing.operation.HardCodedConversions;
+import org.apache.sis.referencing.crs.HardCodedCRS;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
@@ -80,6 +83,12 @@ public abstract strictfp class TransformTestCase<G> extends TestCase {
      * Asserts that the given envelope or rectangle is equals to the expected value.
      */
     abstract void assertGeometryEquals(G expected, G actual, double tolx, double toly);
+
+    /**
+     * Allows sub-classing in same package only.
+     */
+    TransformTestCase() {
+    }
 
     /**
      * Tests the transformation of an envelope or rectangle. This is a relatively simple test case
@@ -212,6 +221,29 @@ public abstract strictfp class TransformTestCase<G> extends TestCase {
     }
 
     /**
+     * Tests transform of an envelope over the ±180° limit. The Mercator projection used in this test
+     * is not expected to wrap the longitude around Earth when using only the {@code MathTransform}.
+     * However when the target CRS is known, then "wrap around" should be applied.
+     *
+     * @throws TransformException if an error occurred while transforming the envelope.
+     *
+     * @since 0.8
+     */
+    @Test
+    @DependsOnMethod("testTransform")
+    public final void testTransformOverAntiMeridian() throws TransformException {
+        final ProjectedCRS  sourceCRS  = HardCodedConversions.mercator();
+        final GeographicCRS targetCRS  = sourceCRS.getBaseCRS();
+        final Conversion    conversion = inverse(sourceCRS.getConversionFromBase());
+        final G expected  = createFromExtremums(targetCRS, 179, 40, 181, 50);
+        final G rectangle = createFromExtremums(sourceCRS,
+                19926188.852, 4838471.398,                      // Computed by SIS (not validated by external authority).
+                20148827.834, 6413524.594);
+        final G actual = transform(conversion, rectangle);
+        assertGeometryEquals(expected, actual, ANGULAR_TOLERANCE, ANGULAR_TOLERANCE);
+    }
+
+    /**
      * Returns the inverse of the given conversion. This method is not strictly correct
      * since we reuse the properties (name, aliases, etc.) from the given conversion.
      * However those properties are not significant for the purpose of this test.
@@ -219,5 +251,23 @@ public abstract strictfp class TransformTestCase<G> extends TestCase {
     private static Conversion inverse(final Conversion conversion) throws NoninvertibleTransformException {
         return new DefaultConversion(IdentifiedObjects.getProperties(conversion), conversion.getTargetCRS(),
                 conversion.getSourceCRS(), null, conversion.getMethod(), conversion.getMathTransform().inverse());
+    }
+
+    /**
+     * Tests a transformation where only the range of longitude axis is changed.
+     *
+     * @throws FactoryException if an error occurred while creating the operation.
+     * @throws TransformException if an error occurred while transforming the envelope.
+     *
+     * @since 0.8
+     */
+    @Test
+    public final void testAxisRangeChange() throws FactoryException, TransformException {
+        final GeographicCRS sourceCRS = HardCodedCRS.WGS84;
+        final GeographicCRS targetCRS = HardCodedCRS.WGS84.forConvention(AxesConvention.POSITIVE_RANGE);
+        final G rectangle = createFromExtremums(sourceCRS, -178, -70, 165, 80);
+        final G expected  = createFromExtremums(targetCRS,  182, -70, 165, 80);
+        final G actual    = transform(CRS.findOperation(sourceCRS, targetCRS, null), rectangle);
+        assertGeometryEquals(expected, actual, STRICT, STRICT);
     }
 }

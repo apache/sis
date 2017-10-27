@@ -22,6 +22,7 @@ package org.apache.sis.geometry;
  * force installation of the Java2D module (e.g. JavaFX/SWT).
  */
 import java.util.Arrays;
+import java.util.Iterator;
 import java.io.Serializable;
 import java.lang.reflect.Field;
 import org.opengis.referencing.cs.RangeMeaning;
@@ -36,8 +37,9 @@ import org.opengis.metadata.extent.GeographicBoundingBox;
 import org.apache.sis.util.resources.Errors;
 
 import static org.apache.sis.util.ArgumentChecks.*;
-import static org.apache.sis.math.MathFunctions.isNegative;
 import static org.apache.sis.math.MathFunctions.isSameSign;
+import static org.apache.sis.math.MathFunctions.isNegative;
+import static org.apache.sis.math.MathFunctions.isNegativeZero;
 
 
 /**
@@ -111,7 +113,7 @@ import static org.apache.sis.math.MathFunctions.isSameSign;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Johann Sorel (Geomatys)
- * @version 0.5
+ * @version 0.8
  *
  * @see Envelope2D
  * @see org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox
@@ -807,10 +809,10 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
                          */
                         final double min, max;
                         final double csSpan = getSpan(getAxis(crs, i));
-                        if (span1 >= csSpan) {
+                        if (span1 >= csSpan || isNegativeZero(span1)) {       // Negative zero if [+0 … -0] range.
                             min = min0;
                             max = max0;
-                        } else if (span0 >= csSpan) {
+                        } else if (span0 >= csSpan || isNegativeZero(span0)) {
                             min = min1;
                             max = max1;
                         } else {
@@ -887,53 +889,68 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
      * @see AbstractDirectPosition#normalize()
      */
     public boolean normalize() {
+        if (crs == null) {
+            return false;
+        }
+        final int beginIndex = beginIndex();
+        return normalize(crs.getCoordinateSystem(), beginIndex, endIndex() - beginIndex, null);
+    }
+
+    /**
+     * Normalizes only the dimensions returned by the given iterator, or all dimensions if the iterator is null.
+     * This is used for normalizing the result of a coordinate operation where a wrap around axis does not
+     * necessarily means that the ordinates need to be normalized along that axis.
+     *
+     * @param  cs          the coordinate system of this envelope CRS (as an argument because sometime already known).
+     * @param  beginIndex  index of the first ordinate value in {@link #ordinates} array. Non-zero for sub-envelopes.
+     * @param  count       number of coordinates, i.e. this envelope dimensions.
+     * @param  dimensions  the dimensions to check for normalization, or {@code null} for all dimensions.
+     * @return {@code true} if this envelope has been modified as a result of this method call.
+     */
+    final boolean normalize(final CoordinateSystem cs, final int beginIndex, final int count, final Iterator<Integer> dimensions) {
         boolean changed = false;
-        if (crs != null) {
-            final int d = ordinates.length >>> 1;
-            final int beginIndex = beginIndex();
-            final int dimension = endIndex() - beginIndex;
-            final CoordinateSystem cs = crs.getCoordinateSystem();
-            for (int i=0; i<dimension; i++) {
-                final int iLower = beginIndex + i;
-                final int iUpper = iLower + d;
-                final CoordinateSystemAxis axis = cs.getAxis(i);
-                final double  minimum = axis.getMinimumValue();
-                final double  maximum = axis.getMaximumValue();
-                final RangeMeaning rm = axis.getRangeMeaning();
-                if (RangeMeaning.EXACT.equals(rm)) {
-                    if (ordinates[iLower] < minimum) {ordinates[iLower] = minimum; changed = true;}
-                    if (ordinates[iUpper] > maximum) {ordinates[iUpper] = maximum; changed = true;}
-                } else if (RangeMeaning.WRAPAROUND.equals(rm)) {
-                    final double csSpan = maximum - minimum;
-                    if (csSpan > 0 && csSpan < Double.POSITIVE_INFINITY) {
-                        double o1 = ordinates[iLower];
-                        double o2 = ordinates[iUpper];
-                        if (Math.abs(o2-o1) >= csSpan) {
-                            /*
-                             * If the range exceed the CS span, then we have to replace it by the
-                             * full span, otherwise the range computed by the "else" block is too
-                             * small. The full range will typically be [-180 … 180]°.  However we
-                             * make a special case if the two bounds are multiple of the CS span,
-                             * typically [0 … 360]°. In this case the [0 … -0]° range matches the
-                             * original values and is understood by GeneralEnvelope as a range
-                             * spanning all the world.
-                             */
-                            if (o1 != minimum || o2 != maximum) {
-                                if ((o1 % csSpan) == 0 && (o2 % csSpan) == 0) {
-                                    ordinates[iLower] = +0.0;
-                                    ordinates[iUpper] = -0.0;
-                                } else {
-                                    ordinates[iLower] = minimum;
-                                    ordinates[iUpper] = maximum;
-                                }
-                                changed = true;
+        final int d = ordinates.length >>> 1;
+        for (int j=0; j<count; j++) {
+            final int i = (dimensions != null) ? dimensions.next() : j;
+            final int iLower = beginIndex + i;
+            final int iUpper = iLower + d;
+            final CoordinateSystemAxis axis = cs.getAxis(i);
+            final double  minimum = axis.getMinimumValue();
+            final double  maximum = axis.getMaximumValue();
+            final RangeMeaning rm = axis.getRangeMeaning();
+            if (RangeMeaning.EXACT.equals(rm)) {
+                if (ordinates[iLower] < minimum) {ordinates[iLower] = minimum; changed = true;}
+                if (ordinates[iUpper] > maximum) {ordinates[iUpper] = maximum; changed = true;}
+            } else if (RangeMeaning.WRAPAROUND.equals(rm)) {
+                final double csSpan = maximum - minimum;
+                if (csSpan > 0 && csSpan < Double.POSITIVE_INFINITY) {
+                    double o1 = ordinates[iLower];
+                    double o2 = ordinates[iUpper];
+                    if (Math.abs(o2-o1) >= csSpan) {
+                        /*
+                         * If the range exceed the CS span, then we have to replace it by the
+                         * full span, otherwise the range computed by the "else" block is too
+                         * small. The full range will typically be [-180 … 180]°.  However we
+                         * make a special case if the two bounds are multiple of the CS span,
+                         * typically [0 … 360]°. In this case the [0 … -0]° range matches the
+                         * original values and is understood by GeneralEnvelope as a range
+                         * spanning all the world.
+                         */
+                        if (o1 != minimum || o2 != maximum) {
+                            if ((o1 % csSpan) == 0 && (o2 % csSpan) == 0) {
+                                ordinates[iLower] = +0.0;
+                                ordinates[iUpper] = -0.0;
+                            } else {
+                                ordinates[iLower] = minimum;
+                                ordinates[iUpper] = maximum;
                             }
-                        } else {
-                            o1 = Math.floor((o1 - minimum) / csSpan) * csSpan;
-                            o2 = Math.floor((o2 - minimum) / csSpan) * csSpan;
-                            if (o1 != 0) {ordinates[iLower] -= o1; changed = true;}
-                            if (o2 != 0) {ordinates[iUpper] -= o2; changed = true;}
+                            changed = true;
                         }
+                    } else {
+                        o1 = Math.floor((o1 - minimum) / csSpan) * csSpan;
+                        o2 = Math.floor((o2 - minimum) / csSpan) * csSpan;
+                        if (o1 != 0) {ordinates[iLower] -= o1; changed = true;}
+                        if (o2 != 0) {ordinates[iUpper] -= o2; changed = true;}
                     }
                 }
             }
@@ -941,8 +958,6 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
         return changed;
     }
 
-    // Note: As of JDK 1.6.0_31, using {@linkplain #getLower(int)} in the first line crash the
-    // Javadoc tools, maybe because getLower/getUpper are defined in a non-public parent class.
     /**
      * Ensures that <var>lower</var> &lt;= <var>upper</var> for every dimensions.
      * If a {@linkplain #getUpper(int) upper ordinate value} is less than a

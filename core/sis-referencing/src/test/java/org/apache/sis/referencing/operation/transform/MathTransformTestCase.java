@@ -314,6 +314,7 @@ public abstract strictfp class MathTransformTestCase extends TransformTestCase {
 
     /**
      * Generates random numbers that can be used for the current transform.
+     * The number of dimensions is given by {@code transform.getSourceDimensions()}.
      *
      * @param  domain   the domain of the numbers to be generated.
      * @param  propNaN  approximative percentage of NaN values as a fraction between 0 and 1, or 0 if none.

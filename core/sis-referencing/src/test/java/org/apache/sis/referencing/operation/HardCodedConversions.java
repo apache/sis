@@ -16,9 +16,15 @@
  */
 package org.apache.sis.referencing.operation;
 
+import java.util.Map;
 import java.util.Collections;
+import org.opengis.referencing.crs.GeographicCRS;
+import org.opengis.referencing.crs.ProjectedCRS;
 import org.opengis.referencing.operation.OperationMethod;
 import org.apache.sis.internal.referencing.provider.Mercator1SP;
+import org.apache.sis.referencing.crs.DefaultProjectedCRS;
+import org.apache.sis.referencing.crs.HardCodedCRS;
+import org.apache.sis.referencing.cs.HardCodedCS;
 
 
 /**
@@ -45,5 +51,53 @@ public final strictfp class HardCodedConversions {
      * Do not allow instantiation of this class.
      */
     private HardCodedConversions() {
+    }
+
+    /**
+     * A two-dimensional Mercator projection using the WGS84 datum.
+     * This CRS uses (<var>easting</var>, <var>northing</var>) ordinates in metres.
+     * The base CRS uses (<var>longitude</var>, <var>latitude</var>) axes
+     * and the prime meridian is Greenwich.
+     *
+     * <p>This CRS is equivalent to {@code EPSG:3395} except for base CRS axis order,
+     * since EPSG puts latitude before longitude.</p>
+     *
+     * @return two-dimensional Mercator projection.
+     */
+    public static DefaultProjectedCRS mercator() {
+        return new DefaultProjectedCRS(name("Mercator"),
+                HardCodedCRS.WGS84, HardCodedConversions.MERCATOR, HardCodedCS.PROJECTED);
+    }
+
+    /**
+     * A three-dimensional Mercator projection using the WGS84 datum.
+     * This CRS uses (<var>easting</var>, <var>northing</var>, <var>height</var>) ordinates in metres.
+     * The base CRS uses (<var>longitude</var>, <var>latitude</var>, <var>height</var>) axes
+     * and the prime meridian is Greenwich.
+     *
+     * @return three-dimensional Mercator projection.
+     */
+    public static DefaultProjectedCRS mercator3D() {
+        return new DefaultProjectedCRS(name("Mercator 3D"),
+                HardCodedCRS.WGS84_3D, HardCodedConversions.MERCATOR, HardCodedCS.PROJECTED_3D);
+    }
+
+    /**
+     * A two- or three-dimensional Mercator projection using the given base CRS.
+     * This CRS uses (<var>easting</var>, <var>northing</var>) ordinates in metres.
+     *
+     * @param  baseCRS  the two- or three-dimensional base CRS.
+     * @return two- or three-dimensional Mercator projection.
+     */
+    public static DefaultProjectedCRS mercator(final GeographicCRS baseCRS) {
+        return new DefaultProjectedCRS(name("Mercator (other)"), baseCRS, HardCodedConversions.MERCATOR,
+                baseCRS.getCoordinateSystem().getDimension() == 3 ? HardCodedCS.PROJECTED_3D : HardCodedCS.PROJECTED);
+    }
+
+    /**
+     * Puts the given name in a property map CRS constructors.
+     */
+    private static Map<String,?> name(final String name) {
+        return Collections.singletonMap(ProjectedCRS.NAME_KEY, name);
     }
 }

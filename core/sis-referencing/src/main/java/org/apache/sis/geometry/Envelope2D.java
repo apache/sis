@@ -33,9 +33,10 @@ import org.apache.sis.util.Emptiable;
 import static java.lang.Double.NaN;
 import static java.lang.Double.isNaN;
 import static java.lang.Double.doubleToLongBits;
+import static org.apache.sis.math.MathFunctions.isSameSign;
 import static org.apache.sis.math.MathFunctions.isPositive;
 import static org.apache.sis.math.MathFunctions.isNegative;
-import static org.apache.sis.math.MathFunctions.isSameSign;
+import static org.apache.sis.math.MathFunctions.isNegativeZero;
 import static org.apache.sis.util.ArgumentChecks.ensureDimensionMatches;
 import static org.apache.sis.internal.referencing.Formulas.isPoleToPole;
 
@@ -769,13 +770,15 @@ public class Envelope2D extends Rectangle2D.Double implements Envelope, Emptiabl
                 if (!isNegativeUnsafe(span1) || isNegativeUnsafe(span0)) {
                     continue;
                 }
-                if (span0 >= AbstractEnvelope.getSpan(getAxis(getCoordinateReferenceSystem(), i))) {
+                if (span0 >= AbstractEnvelope.getSpan(getAxis(crs, i))) {
                     continue;
                 }
             } else if (minCondition != maxCondition) {
                 if (isNegative(span0) && isPositive(span1)) {
                     continue;
                 }
+            } else if (isNegativeZero(span0)) {
+                continue;
             }
             return false;
         }
@@ -880,8 +883,13 @@ public class Envelope2D extends Rectangle2D.Double implements Envelope, Emptiabl
                 min1  = rect.getY();
                 span1 = (env != null) ? env.height : rect.getHeight();
             }
-            final double max0 = min0 + span0;
-            final double max1 = min1 + span1;
+            /*
+             * The purpose for (min != 0) test before addition is to preserve the sign of zero.
+             * In the [0 … -0] range, the span is -0. But computing max = 0 + -0 result in +0,
+             * while we need max = -0 in this case.
+             */
+            final double max0 = (min0 != 0) ? min0 + span0 : span0;
+            final double max1 = (min1 != 0) ? min1 + span1 : span1;
             double min = Math.max(min0, min1);
             double max = Math.min(max0, max1);
             /*
@@ -904,10 +912,10 @@ public class Envelope2D extends Rectangle2D.Double implements Envelope, Emptiabl
                 }
                 if (intersect == 0 || intersect == 3) {
                     final double csSpan = AbstractEnvelope.getSpan(getAxis(crs, i));
-                    if (span1 >= csSpan) {
+                    if (span1 >= csSpan || isNegativeZero(span1)) {
                         min = min0;
                         max = max0;
-                    } else if (span0 >= csSpan) {
+                    } else if (span0 >= csSpan || isNegativeZero(span0)) {
                         min = min1;
                         max = max1;
                     } else {

@@ -31,7 +31,7 @@ import org.apache.sis.util.ArgumentChecks;
  * used in double-double arithmetic.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.5
+ * @version 0.8
  * @since   0.5
  * @module
  */
@@ -178,6 +178,26 @@ final class AffineMatrix implements ExtendedPrecisionMatrix, Serializable, Clone
     @SuppressWarnings("CloneDoesntCallSuperClone")
     public final Matrix clone() {
         return Matrices.copy(this);
+    }
+
+    /**
+     * Compares this matrix with the given object for equality, including error terms (if any).
+     */
+    @Override
+    public boolean equals(final Object obj) {
+        if (obj instanceof AffineMatrix) {
+            final AffineMatrix other = (AffineMatrix) obj;
+            return transform.equals(other.transform) && Arrays.equals(errors, other.errors);
+        }
+        return false;
+    }
+
+    /**
+     * Returns a hash code value for this matrix.
+     */
+    @Override
+    public int hashCode() {
+        return (transform.hashCode() * 31 + Arrays.hashCode(errors)) ^ (int) serialVersionUID;
     }
 
     /**
