@@ -37,6 +37,7 @@ import javax.management.InstanceAlreadyExistsException;
 import java.lang.management.ManagementFactory;
 
 import org.apache.sis.setup.About;
+import org.apache.sis.util.Configuration;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.resources.Messages;
@@ -83,6 +84,7 @@ public final class Supervisor extends StandardMBean implements SupervisorMBean {
      * and the MBean will not be registered. This method does not propagate the exception
      * because the MBean is not a mandatory part of SIS library.</p>
      */
+    @Configuration
     public static synchronized void register() {
         if (name == null) {
             name = ObjectName.WILDCARD;                         // In case of failure.
@@ -113,6 +115,7 @@ public final class Supervisor extends StandardMBean implements SupervisorMBean {
      *
      * @throws JMException if an error occurred during unregistration.
      */
+    @Configuration
     static synchronized void unregister() throws JMException {
         final ObjectName n = name;
         if (n != null) {

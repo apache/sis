@@ -201,6 +201,10 @@ public class FeatureTypeBuilder extends TypeBuilder {
 
     /**
      * Creates a new builder instance using the given feature type as a template.
+     * This constructor initializes the list of {@linkplain #properties() properties}, the
+     * {@linkplain #getSuperTypes() super types} and {@link #isAbstract() isAbstract} flag
+     * to values inferred from the given template. The properties list will contain properties
+     * declared explicitely in the given template, not including properties inherited from super types.
      *
      * <div class="warning"><b>Warning:</b>
      * The {@code template} argument type will be changed to {@code FeatureType} if and when such interface
@@ -264,6 +268,7 @@ public class FeatureTypeBuilder extends TypeBuilder {
     /**
      * Sets all properties of this builder to the values of the given feature type.
      * This builder is {@linkplain #clear() cleared} before the properties of the given type are copied.
+     * The copy is performed as documented in the {@linkplain #FeatureTypeBuilder(DefaultFeatureType) constructor}.
      *
      * <div class="warning"><b>Warning:</b>
      * The {@code template} argument type will be changed to {@code FeatureType} if and when such interface
@@ -609,10 +614,12 @@ public class FeatureTypeBuilder extends TypeBuilder {
 
     /**
      * Returns a view of all attributes and associations added to the {@code FeatureType} to build.
+     * This list contains only properties declared explicitely to this builder;
+     * it does not include properties inherited from {@linkplain #getSuperTypes() super-types}.
      * The returned list is <cite>live</cite>: changes in this builder are reflected in that list and conversely.
      * However the returned list allows only {@linkplain List#remove(Object) remove} operations;
      * new attributes or associations can be added only by calls to one of the {@code addAttribute(…)}
-     * or {@code addAssociation(…)} methods.
+     * or {@code addAssociation(…)} methods. Removal operations never affect the super-types.
      *
      * @return a live list over the properties declared to this builder.
      *

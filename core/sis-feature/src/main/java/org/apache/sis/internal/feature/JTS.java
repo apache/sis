@@ -146,4 +146,12 @@ final class JTS extends Geometries<Object> {
     final Object tryMergePolylines(final Object first, final Iterator<?> polylines) {
         throw unsupported(2);   // TODO - see class javadoc
     }
+
+    /**
+     * Parses the given WKT.
+     */
+    @Override
+    public Object parseWKT(final String wkt) {
+        throw unsupported(2);
+    }
 }

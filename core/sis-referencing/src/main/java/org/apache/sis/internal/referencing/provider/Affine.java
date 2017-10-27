@@ -57,7 +57,7 @@ import org.apache.sis.referencing.operation.transform.MathTransforms;
  * </table>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 0.6
+ * @version 0.8
  * @since   0.5
  * @module
  */
@@ -280,6 +280,23 @@ public final class Affine extends AbstractProvider {
             }
         }
         return method;
+    }
+
+    /**
+     * Returns parameter values for an identity transform of the given input and output dimensions.
+     * Callers can modify the returned parameters if desired.
+     *
+     * @param  dimension  the number of source and target dimensions.
+     * @return parameters for an identity transform of the given dimensions.
+     *
+     * @since 0.8
+     */
+    public static ParameterValueGroup identity(int dimension) {
+        final ParameterValueGroup values = TensorParameters.WKT1.createValueGroup(
+                Collections.singletonMap(NAME_KEY, Constants.AFFINE));
+        values.parameter(Constants.NUM_COL).setValue(++dimension);
+        values.parameter(Constants.NUM_ROW).setValue(  dimension);
+        return values;
     }
 
     /**

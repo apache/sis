@@ -45,8 +45,9 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 import static org.apache.sis.util.ArgumentChecks.ensureDimensionMatches;
 import static org.apache.sis.util.StringBuilders.trimFractionalPart;
 import static org.apache.sis.math.MathFunctions.epsilonEqual;
-import static org.apache.sis.math.MathFunctions.isNegative;
 import static org.apache.sis.math.MathFunctions.isPositive;
+import static org.apache.sis.math.MathFunctions.isNegative;
+import static org.apache.sis.math.MathFunctions.isNegativeZero;
 
 
 /**
@@ -819,10 +820,12 @@ public abstract class AbstractEnvelope implements Envelope, Emptiable {
                     // Not the excluded case, go to next dimension.
                     continue;
                 }
-                // If this envelope does not span the anti-meridian but the given envelope
-                // does, we don't contain the given envelope except in the special case
-                // where the envelope spanning is equals or greater than the axis spanning
-                // (including the case where this envelope expands to infinities).
+                /*
+                 * If this envelope does not span the anti-meridian but the given envelope does,
+                 * then this envelope does not contain the given envelope except in the special
+                 * case where the envelope spanning is equals or greater than the axis spanning
+                 * (including the case where this envelope expands to infinities).
+                 */
                 if ((lower0 == Double.NEGATIVE_INFINITY && upper0 == Double.POSITIVE_INFINITY) ||
                     (upper0 - lower0 >= getSpan(getAxis(getCoordinateReferenceSystem(), i))))
                 {
@@ -846,6 +849,14 @@ public abstract class AbstractEnvelope implements Envelope, Emptiable {
                         continue;
                     }
                 }
+            } else if (isNegativeZero(upper0 - lower0)) {
+                /*      !upperCnd
+                 *  ────────┬────────
+                 *        ┌─┼────┐
+                 *        └─┼────┘
+                 *  ────────┴────────
+                 *      !lowerCnd */
+                continue;
             }
             return false;
         }

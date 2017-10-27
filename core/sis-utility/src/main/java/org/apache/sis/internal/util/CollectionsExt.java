@@ -336,6 +336,8 @@ public final class CollectionsExt extends Static {
      * @return a set containing the array elements, or {@code null} if the given array was null.
      *
      * @see Collections#unmodifiableSet(Set)
+     *
+     * @todo Consider replacing by {@code Set.of(...)} in JDK9.
      */
     @SafeVarargs
     @SuppressWarnings("fallthrough")

@@ -62,7 +62,6 @@ final class FeaturesWrapper extends DiscreteSampling {
     /**
      * Returns the stream of features.
      */
-    @Override
     public Stream<AbstractFeature> features(boolean parallel) {
         throw new UnsupportedOperationException();      // TODO
     }

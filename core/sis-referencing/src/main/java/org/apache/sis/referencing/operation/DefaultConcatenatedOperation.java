@@ -53,7 +53,7 @@ import org.opengis.referencing.operation.SingleOperation;
  * reference system associated with the concatenated operation.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 0.7
+ * @version 0.8
  * @since   0.6
  * @module
  */
@@ -114,20 +114,36 @@ final class DefaultConcatenatedOperation extends AbstractCoordinateOperation imp
             throw new IllegalArgumentException(Errors.getResources(properties).getString(
                     Errors.Keys.TooFewOccurrences_2, 2, CoordinateOperation.class));
         }
+        initialize(properties, operations, mtFactory);
+        checkDimensions(properties);
+    }
+
+    /**
+     * Initializes the {@link #sourceCRS}, {@link #targetCRS} and {@link #operations} fields.
+     * If the source or target CRS is already non-null (which may happen on JAXB unmarshalling),
+     * leaves that CRS unchanged.
+     *
+     * @param  properties   the properties specified at construction time, or {@code null} if unknown.
+     * @param  operations   the operations to concatenate.
+     * @param  mtFactory    the math transform factory to use, or {@code null} for not performing concatenation.
+     * @throws FactoryException if the factory can not concatenate the math transforms.
+     */
+    private void initialize(final Map<String,?>         properties,
+                            final CoordinateOperation[] operations,
+                            final MathTransformFactory  mtFactory)
+            throws FactoryException
+    {
         final List<CoordinateOperation> flattened = new ArrayList<>(operations.length);
-        initialize(properties, operations, flattened, mtFactory,
-                (coordinateOperationAccuracy == null), (domainOfValidity == null));
+        final CoordinateReferenceSystem crs = initialize(properties, operations, flattened, mtFactory,
+                (sourceCRS == null), (coordinateOperationAccuracy == null), (domainOfValidity == null));
+        if (targetCRS == null) {
+            targetCRS = crs;
+        }
         /*
          * At this point we should have flattened.size() >= 2, except if some operations
          * were omitted because their associated math transform were identity operation.
          */
-        // The array is of kind CoordinateOperation[] on GeoAPI 4.0-M03,
-        // but we have to restrict to SingleOperation[] on GeoAPI 3.x.
-        operations      = flattened.toArray(new SingleOperation[flattened.size()]);
-        this.operations = UnmodifiableArrayList.wrap((SingleOperation[]) operations);
-        this.sourceCRS  = operations[0].getSourceCRS();
-        this.targetCRS  = operations[operations.length - 1].getTargetCRS();
-        checkDimensions(properties);
+        this.operations = UnmodifiableArrayList.wrap(flattened.toArray(new SingleOperation[flattened.size()]));
     }
 
     /**
@@ -165,17 +181,20 @@ final class DefaultConcatenatedOperation extends AbstractCoordinateOperation imp
      * @param  operations   the operations to concatenate.
      * @param  flattened    the destination list in which to add the {@code SingleOperation} instances.
      * @param  mtFactory    the math transform factory to use, or {@code null} for not performing concatenation.
+     * @param  setSource    {@code true} for setting the {@link #sourceCRS} on the very first CRS (regardless if null or not).
      * @param  setAccuracy  {@code true} for setting the {@link #coordinateOperationAccuracy} field.
      * @param  setDomain    {@code true} for setting the {@link #domainOfValidity} field.
+     * @return the last target CRS, regardless if null or not.
      * @throws FactoryException if the factory can not concatenate the math transforms.
      */
-    private void initialize(final Map<String,?>             properties,
-                            final CoordinateOperation[]     operations,
-                            final List<CoordinateOperation> flattened,
-                            final MathTransformFactory      mtFactory,
-                            boolean                         setAccuracy,
-                            boolean                         setDomain)
-            throws FactoryException
+    private CoordinateReferenceSystem initialize(
+            final Map<String,?>             properties,
+            final CoordinateOperation[]     operations,
+            final List<CoordinateOperation> flattened,
+            final MathTransformFactory      mtFactory,
+            boolean                         setSource,
+            boolean                         setAccuracy,
+            boolean                         setDomain) throws FactoryException
     {
         CoordinateReferenceSystem previous = null;
         for (int i=0; i<operations.length; i++) {
@@ -185,16 +204,18 @@ final class DefaultConcatenatedOperation extends AbstractCoordinateOperation imp
              * Verify consistency of user argument: for each coordinate operation, the number of dimensions of the
              * source CRS shall be equals to the number of dimensions of the target CRS in the previous operation.
              */
-            if (previous != null) {
-                final CoordinateReferenceSystem next = op.getSourceCRS();
-                if (next != null) {
-                    final int dim1 = previous.getCoordinateSystem().getDimension();
-                    final int dim2 = next.getCoordinateSystem().getDimension();
-                    if (dim1 != dim2) {
-                        throw new IllegalArgumentException(Errors.getResources(properties).getString(
-                                Errors.Keys.MismatchedDimension_3, "operations[" + i + "].sourceCRS", dim1, dim2));
-                    }
+            final CoordinateReferenceSystem next = op.getSourceCRS();
+            if (previous != null && next != null) {
+                final int dim1 = previous.getCoordinateSystem().getDimension();
+                final int dim2 = next.getCoordinateSystem().getDimension();
+                if (dim1 != dim2) {
+                    throw new IllegalArgumentException(Errors.getResources(properties).getString(
+                            Errors.Keys.MismatchedDimension_3, "operations[" + i + "].sourceCRS", dim1, dim2));
                 }
+            }
+            if (setSource) {
+                setSource = false;
+                sourceCRS = next;                                               // Take even if null.
             }
             previous = op.getTargetCRS();                                       // For next iteration cycle.
             /*
@@ -210,11 +231,11 @@ final class DefaultConcatenatedOperation extends AbstractCoordinateOperation imp
                 final List<? extends CoordinateOperation> children = ((ConcatenatedOperation) op).getOperations();
                 @SuppressWarnings("SuspiciousToArrayCall")
                 final CoordinateOperation[] asArray = children.toArray(new CoordinateOperation[children.size()]);
-                initialize(properties, asArray, flattened, (step == null) ? mtFactory : null, setAccuracy, setDomain);
+                initialize(properties, asArray, flattened, (step == null) ? mtFactory : null, false, setAccuracy, setDomain);
             } else if (!step.isIdentity()) {
                 flattened.add(op);
             }
-            if (mtFactory != null) {
+            if (mtFactory != null && step != null) {
                 transform = (transform != null) ? mtFactory.createConcatenatedTransform(transform, step) : step;
             }
             /*
@@ -251,6 +272,7 @@ final class DefaultConcatenatedOperation extends AbstractCoordinateOperation imp
                 }
             }
         }
+        return previous;
     }
 
     /**
@@ -397,7 +419,6 @@ final class DefaultConcatenatedOperation extends AbstractCoordinateOperation imp
      * Returns the operations to marshal. We use this private methods instead than annotating
      * {@link #getOperations()} in order to force JAXB to invoke the setter method on unmarshalling.
      */
-    @SuppressWarnings("SuspiciousToArrayCall")
     @XmlElement(name = "coordOperation", required = true)
     private CoordinateOperation[] getSteps() {
         final List<? extends CoordinateOperation> operations = getOperations();
@@ -408,9 +429,6 @@ final class DefaultConcatenatedOperation extends AbstractCoordinateOperation imp
      * Invoked by JAXB for setting the operations.
      */
     private void setSteps(final CoordinateOperation[] steps) throws FactoryException {
-        final List<CoordinateOperation> flattened = new ArrayList<>(steps.length);
-        initialize(null, steps, flattened, DefaultFactories.forBuildin(MathTransformFactory.class),
-                (coordinateOperationAccuracy == null), (domainOfValidity == null));
-        operations = UnmodifiableArrayList.wrap(flattened.toArray(new SingleOperation[flattened.size()]));
+        initialize(null, steps, DefaultFactories.forBuildin(MathTransformFactory.class));
     }
 }
