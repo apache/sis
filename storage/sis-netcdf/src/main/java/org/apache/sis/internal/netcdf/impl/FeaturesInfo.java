@@ -298,7 +298,6 @@ search: for (final VariableInfo counts : decoder.variables) {
      *
      * @param  parallel  ignored, since current version does not support parallelism.
      */
-    @Override
     public Stream<Feature> features(boolean parallel) {
         return StreamSupport.stream(new Iter(), false);
     }

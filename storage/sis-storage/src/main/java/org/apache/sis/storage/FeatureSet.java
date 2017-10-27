@@ -17,8 +17,6 @@
 package org.apache.sis.storage;
 
 // Branch-dependent imports
-import org.apache.sis.internal.jdk8.Stream;
-import org.opengis.feature.Feature;
 import org.opengis.feature.FeatureType;
 
 
@@ -46,7 +44,7 @@ public interface FeatureSet extends DataSet {
      *   <li>{@linkplain org.opengis.referencing.crs.CoordinateReferenceSystem Coordinate Reference System}.</li>
      * </ul>
      *
-     * All features returned by {@link #features(boolean)} will be either of that type, or a sub-type of it.
+     * All features returned by {@code features(boolean)} will be either of that type, or a sub-type of it.
      *
      * <div class="note"><b>Relationship with metadata:</b>
      * if subtypes exist, their list may be obtained from the {@linkplain #getMetadata() metadata} like below
@@ -100,5 +98,5 @@ public interface FeatureSet extends DataSet {
      * @return all features contained in this dataset.
      * @throws DataStoreException if an error occurred while creating the stream.
      */
-    Stream<Feature> features(boolean parallel) throws DataStoreException;
+//  Stream<Feature> features(boolean parallel) throws DataStoreException;
 }

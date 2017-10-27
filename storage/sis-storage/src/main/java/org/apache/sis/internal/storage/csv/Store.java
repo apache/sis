@@ -688,7 +688,6 @@ final class Store extends URIDataStore implements FeatureSet {
      * @todo Need to reset the position when doing another pass on the features. See {@link #rewind()}.
      * @todo If sequential order, publish Feature as soon as identifier changed.
      */
-    @Override
     public final synchronized Stream<Feature> features(final boolean parallel) throws DataStoreException {
         /*
          * If the user asks for one feature instance per line, then we can return a FeatureIter instance directly.
