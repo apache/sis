@@ -21,10 +21,10 @@ package org.apache.sis.geometry;
  * support Java2D (e.g. Android),  or applications that do not need it may want to avoid to
  * force installation of the Java2D module (e.g. JavaFX/SWT).
  */
+import java.util.Set;
 import org.opengis.geometry.Envelope;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.geometry.MismatchedDimensionException;
-import org.opengis.referencing.cs.RangeMeaning;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
@@ -40,6 +40,7 @@ import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.referencing.CRS;
+import org.apache.sis.referencing.operation.AbstractCoordinateOperation;
 import org.apache.sis.referencing.operation.transform.AbstractMathTransform;
 import org.apache.sis.internal.referencing.CoordinateOperations;
 import org.apache.sis.internal.referencing.DirectPositionView;
@@ -86,7 +87,7 @@ import static org.apache.sis.util.StringBuilders.trimFractionalPart;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Johann Sorel (Geomatys)
- * @version 0.5
+ * @version 0.8
  *
  * @see org.apache.sis.metadata.iso.extent.Extents
  * @see CRS
@@ -99,15 +100,6 @@ public final class Envelopes extends Static {
      * Do not allow instantiation of this class.
      */
     private Envelopes() {
-    }
-
-    /**
-     * Returns {@code true} if the given axis is of kind "Wrap Around".
-     *
-     * @see AbstractEnvelope#isWrapAround(CoordinateSystemAxis)
-     */
-    static boolean isWrapAround(final CoordinateSystemAxis axis) {
-        return RangeMeaning.WRAPAROUND.equals(axis.getRangeMeaning());
     }
 
     /**
@@ -446,6 +438,7 @@ public final class Envelopes extends Static {
         if (envelope == null) {
             return null;
         }
+        boolean isOperationComplete = true;
         final CoordinateReferenceSystem sourceCRS = operation.getSourceCRS();
         if (sourceCRS != null) {
             final CoordinateReferenceSystem crs = envelope.getCoordinateReferenceSystem();
@@ -465,6 +458,7 @@ public final class Envelopes extends Static {
                     throw new TransformException(Errors.format(Errors.Keys.CanNotTransformEnvelope), e);
                 }
                 if (!mt.isIdentity()) {
+                    isOperationComplete = false;
                     envelope = transform(mt, envelope);
                 }
             }
@@ -575,7 +569,7 @@ public final class Envelopes extends Static {
         long isWrapAroundAxis = 0;
         long dimensionBitMask = 1;
         final int dimension = targetCS.getDimension();
-        for (int i=0; i<dimension; i++, dimensionBitMask <<= 1) {
+poles:  for (int i=0; i<dimension; i++, dimensionBitMask <<= 1) {
             final CoordinateSystemAxis axis = targetCS.getAxis(i);
             if (axis == null) {                 // Should never be null, but check as a paranoiac safety.
                 continue;
@@ -607,9 +601,9 @@ public final class Envelopes extends Static {
                          * lost dimensions. So we don't log any warning in this case.
                          */
                         if (dimension >= mt.getSourceDimensions()) {
-                            recoverableException(Envelopes.class, exception);
+                            warning = exception;
                         }
-                        return transformed;
+                        break poles;
                     }
                     targetPt = new GeneralDirectPosition(mt.getSourceDimensions());
                     for (int j=0; j<dimension; j++) {
@@ -646,7 +640,7 @@ public final class Envelopes extends Static {
              * axis have been included in the envelope  (in which case the next step after this
              * loop doesn't need to be executed for that axis).
              */
-            if ((includedMinValue & includedMaxValue & dimensionBitMask) == 0 && isWrapAround(axis)) {
+            if ((includedMinValue & includedMaxValue & dimensionBitMask) == 0 && CoordinateOperations.isWrapAround(axis)) {
                 isWrapAroundAxis |= dimensionBitMask;
             }
             // Restore 'targetPt' to its initial state, which is equals to 'centerPt'.
@@ -666,7 +660,7 @@ public final class Envelopes extends Static {
             while (isWrapAroundAxis != 0) {
                 final int wrapAroundDimension = Long.numberOfTrailingZeros(isWrapAroundAxis);
                 dimensionBitMask = 1 << wrapAroundDimension;
-                isWrapAroundAxis &= ~dimensionBitMask; // Clear now the bit, for the next iteration.
+                isWrapAroundAxis &= ~dimensionBitMask;              // Clear now the bit, for the next iteration.
                 final CoordinateSystemAxis wrapAroundAxis = targetCS.getAxis(wrapAroundDimension);
                 final double min = wrapAroundAxis.getMinimumValue();
                 final double max = wrapAroundAxis.getMaximumValue();
@@ -689,8 +683,8 @@ public final class Envelopes extends Static {
                     for (int c=0; c<4; c++) {
                         /*
                          * Set the ordinate value along the axis having the singularity point
-                         * (cases c=0 and c=2). If the envelope did not included that point,
-                         * then skip completly this case and the next one, i.e. skip c={0,1}
+                         * (cases c=0 and c=2).  If the envelope did not included that point,
+                         * then skip completely this case and the next one, i.e. skip c={0,1}
                          * or skip c={2,3}.
                          */
                         double value = max;
@@ -722,6 +716,21 @@ public final class Envelopes extends Static {
                 targetPt.setOrdinate(wrapAroundDimension, centerPt[wrapAroundDimension]);
             }
         }
+        /*
+         * At this point we finished envelope transformation. Verify if some ordinates need to be "wrapped around"
+         * as a result of the coordinate operation.  This is usually the longitude axis where the source CRS uses
+         * the [-180 … +180]° range and the target CRS uses the [0 … 360]° range, or the converse. We do not wrap
+         * around if the source and target axes use the same range (e.g. the longitude stay [-180 … +180]°) in order
+         * to reduce the risk of discontinuities. If the user really wants unconditional wrap around, (s)he can call
+         * GeneralEnvelope.normalize().
+         */
+        final Set<Integer> wrapAroundChanges;
+        if (isOperationComplete && operation instanceof AbstractCoordinateOperation) {
+            wrapAroundChanges = ((AbstractCoordinateOperation) operation).getWrapAroundChanges();
+        } else {
+            wrapAroundChanges = CoordinateOperations.wrapAroundChanges(sourceCRS, targetCS);
+        }
+        transformed.normalize(targetCS, 0, wrapAroundChanges.size(), wrapAroundChanges.iterator());
         if (warning != null) {
             recoverableException(Envelopes.class, warning);
         }

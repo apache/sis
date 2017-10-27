@@ -34,7 +34,8 @@ import org.apache.sis.util.ArgumentChecks;
  * <p>This class is <strong>not</strong> thread-safe. Synchronizations (if wanted) are user's responsibility.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.7
+ * @author  Alexis Manin (Geomatys)
+ * @version 0.8
  *
  * @see org.apache.sis.math.Vector
  *
@@ -154,9 +155,12 @@ public class IntegerList extends AbstractList<Integer> implements RandomAccess, 
      * the previous one, then the extra elements are initialized to 0.
      *
      * @param  size  the new size.
+     *
+     * @see #trimToSize()
      */
     public void resize(final int size) {
         ArgumentChecks.ensurePositive("size", size);
+        modCount++;
         if (size > this.size) {
             int base = this.size * bitCount;
             final int offset = base & OFFSET_MASK;
@@ -176,13 +180,14 @@ public class IntegerList extends AbstractList<Integer> implements RandomAccess, 
 
     /**
      * Fills the list with the given value.
-     * Every existing values are overwritten from index 0 inclusive up to {@link #size} exclusive.
+     * Every existing values are overwritten from index 0 inclusive up to {@link #size()} exclusive.
      *
      * @param  value  the value to set.
      */
     @SuppressWarnings("fallthrough")
     public void fill(int value) {
         ArgumentChecks.ensureBetween("value", 0, mask, value);
+        modCount++;
         final long p;
         if (value == 0) {
             p = 0;                              // All bits set to 0.
@@ -210,6 +215,7 @@ public class IntegerList extends AbstractList<Integer> implements RandomAccess, 
      */
     @Override
     public void clear() {
+        modCount++;
         size = 0;
     }
 
@@ -237,6 +243,7 @@ public class IntegerList extends AbstractList<Integer> implements RandomAccess, 
      */
     public void addInt(final int value) throws IllegalArgumentException {
         ArgumentChecks.ensureBetween("value", 0, mask, value);
+        modCount++;
         final int last = size;
         final int length = length(++size);
         if (length > values.length) {
@@ -271,7 +278,8 @@ public class IntegerList extends AbstractList<Integer> implements RandomAccess, 
 
     /**
      * Returns the element at the given index as the {@code int} primitive type.
-     * This argument does not check argument validity, since it is assumed already done.
+     * This argument does not check argument validity, since the verification is
+     * assumed already done.
      *
      * @param  index  the element index.
      * @return the value at the given index.
@@ -318,12 +326,14 @@ public class IntegerList extends AbstractList<Integer> implements RandomAccess, 
     public void setInt(int index, int value) throws IndexOutOfBoundsException {
         ArgumentChecks.ensureValidIndex(size, index);
         ArgumentChecks.ensureBetween("value", 0, mask, value);
+        modCount++;
         setUnchecked(index, value);
     }
 
     /**
      * Sets the element at the given index as the {@code int} primitive type.
-     * This argument does not check argument validity, since it is assumed already done.
+     * This argument does not check argument validity, since the verification
+     * is assumed already done.
      *
      * @param  index  the element index.
      * @param  value  the value at the given index.
@@ -352,6 +362,7 @@ public class IntegerList extends AbstractList<Integer> implements RandomAccess, 
     @Override
     public Integer remove(final int index) throws IndexOutOfBoundsException {
         final Integer old = get(index);
+        modCount++;
         removeRange(index, index+1);
         return old;
     }
@@ -364,6 +375,7 @@ public class IntegerList extends AbstractList<Integer> implements RandomAccess, 
      */
     public int removeLast() throws NoSuchElementException {
         if (size != 0) {
+            modCount++;
             return getUnchecked(--size);
         }
         throw new NoSuchElementException();
@@ -423,7 +435,21 @@ public class IntegerList extends AbstractList<Integer> implements RandomAccess, 
     }
 
     /**
+     * Invokes {@link #trimToSize()} before serialization in order to make the stream more compact.
+     *
+     * @param  out  the output stream where to serialize this list.
+     * @throws IOException if an I/O error occurred while writing.
+     */
+    private void writeObject(final ObjectOutputStream out) throws IOException {
+        trimToSize();
+        out.defaultWriteObject();
+    }
+
+    /**
      * Trims the capacity of this list to be its current size.
+     *
+     * @see #size()
+     * @see #resize(int)
      */
     public void trimToSize() {
         values = ArraysExt.resize(values, length(size));
@@ -442,18 +468,8 @@ public class IntegerList extends AbstractList<Integer> implements RandomAccess, 
         } catch (CloneNotSupportedException e) {
             throw new AssertionError(e);
         }
-        clone.values = clone.values.clone();
+        clone.values = Arrays.copyOf(values, length(size));
+        clone.modCount = 0;
         return clone;
-    }
-
-    /**
-     * Invokes {@link #trimToSize()} before serialization in order to make the stream more compact.
-     *
-     * @param  out  the output stream where to serialize this list.
-     * @throws IOException if an I/O error occurred while writing.
-     */
-    private void writeObject(final ObjectOutputStream out) throws IOException {
-        trimToSize();
-        out.defaultWriteObject();
     }
 }

@@ -33,7 +33,10 @@ import org.opengis.metadata.Identifier;
 import org.opengis.metadata.extent.GeographicBoundingBox;
 import org.opengis.parameter.ParameterValueGroup;
 import org.apache.sis.internal.metadata.AxisDirections;
+import org.apache.sis.internal.referencing.CoordinateOperations;
 import org.apache.sis.internal.referencing.ReferencingUtilities;
+import org.apache.sis.internal.referencing.provider.Affine;
+import org.apache.sis.internal.referencing.provider.DatumShiftMethod;
 import org.apache.sis.internal.referencing.provider.Geographic2Dto3D;
 import org.apache.sis.internal.referencing.provider.Geographic3Dto2D;
 import org.apache.sis.internal.referencing.provider.GeographicToGeocentric;
@@ -113,17 +116,6 @@ import static org.apache.sis.util.Utilities.equalsIgnoreMetadata;
  * @module
  */
 public class CoordinateOperationFinder extends CoordinateOperationRegistry {
-    /**
-     * The accuracy threshold (in metres) for allowing the use of Molodensky approximation instead than the
-     * Geocentric Translation method. The accuracy of datum shifts with Molodensky approximation is about 5
-     * or 10 metres. However for this constant, we are not interested in absolute accuracy but rather in the
-     * difference between Molodensky and Geocentric Translation methods, which is much lower (less than 1 m).
-     * We nevertheless use a relatively high threshold as a conservative approach.
-     *
-     * @see #desiredAccuracy
-     */
-    private static final double MOLODENSKY_ACCURACY = 5;
-
     /**
      * Identifiers used as the basis for identifier of CRS used as an intermediate step.
      * The values can be of two kinds:
@@ -440,7 +432,7 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
          * Actually we do not know if the longitude rotation should be before or after datum shift. But this ambiguity
          * can usually be ignored because Bursa-Wolf parameters are always used with source and target prime meridians
          * set to Greenwich in EPSG dataset 8.9.  For safety, the SIS's DefaultGeodeticDatum class ensures that if the
-         * prime meridian are not the same, then the target meridian must be Greenwich.
+         * prime meridians are not the same, then the target meridian must be Greenwich.
          */
         final DefaultMathTransformFactory.Context context = ReferencingUtilities.createTransformContext(
                 sourceCRS, targetCRS, new MathTransformContext(sourceDatum, targetDatum));
@@ -496,20 +488,34 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
         final DefaultMathTransformFactory mtFactory = factorySIS.getDefaultMathTransformFactory();
         MathTransform before = null, after = null;
         ParameterValueGroup parameters;
-        if (datumShift != null) {
+        if (identifier == DATUM_SHIFT || identifier == ELLIPSOID_CHANGE) {
             /*
              * If the transform can be represented by a single coordinate operation, returns that operation.
              * Possible operations are:
              *
-             *    - Geocentric translation         (in geocentric, geographic-2D or geographic-3D domains)
              *    - Position Vector transformation (in geocentric, geographic-2D or geographic-3D domains)
+             *    - Geocentric translation         (in geocentric, geographic-2D or geographic-3D domains)
+             *    - [Abridged] Molodensky          (as an approximation of geocentric translation)
+             *    - Identity                       (if the desired accuracy is so large than we can skip datum shift)
              *
-             * Otherwise, maybe we failed to create the operation because the coordinate system type were not the same.
-             * Convert unconditionally to XYZ geocentric coordinates and apply the datum shift in that coordinate space.
+             * TODO: if both CS are ellipsoidal but with different number of dimensions, then we should use
+             * an intermediate 3D geographic CRS in order to enable the use of Molodensky method if desired.
              */
-            parameters = GeocentricAffine.createParameters(sourceCS, targetCS, datumShift, desiredAccuracy >= MOLODENSKY_ACCURACY);
+            final DatumShiftMethod preferredMethod = DatumShiftMethod.forAccuracy(desiredAccuracy);
+            parameters = GeocentricAffine.createParameters(sourceCS, targetCS, datumShift, preferredMethod);
             if (parameters == null) {
-                parameters = TensorParameters.WKT1.createValueGroup(properties(Constants.AFFINE), datumShift);
+                /*
+                 * Failed to select a coordinate operation. Maybe because the coordinate system types are not the same.
+                 * Convert unconditionally to XYZ geocentric coordinates and apply the datum shift in that CS space.
+                 *
+                 * TODO: operation name should not be "Affine" if 'before' or 'after' transforms are not identity.
+                 *       Reminder: the parameter group name here determines the OperationMethod later in this method.
+                 */
+                if (datumShift != null) {
+                    parameters = TensorParameters.WKT1.createValueGroup(properties(Constants.AFFINE), datumShift);
+                } else {
+                    parameters = Affine.identity(3);                        // Dimension of geocentric CRS.
+                }
                 final CoordinateSystem normalized = CommonCRS.WGS84.geocentric().getCoordinateSystem();
                 before = mtFactory.createCoordinateSystemChange(sourceCS, normalized, sourceDatum.getEllipsoid());
                 after  = mtFactory.createCoordinateSystemChange(normalized, targetCS, targetDatum.getEllipsoid());
@@ -520,18 +526,26 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
             parameters = (isGeographicToGeocentric ? GeographicToGeocentric.PARAMETERS
                                                    : GeocentricToGeographic.PARAMETERS).createValue();
         } else {
+            /*
+             * Coordinate system change (including change in the number of dimensions) without datum shift.
+             */
             final int sourceDim = sourceCS.getDimension();
             final int targetDim = targetCS.getDimension();
-            if ((sourceDim & ~1) == 2 && (sourceDim ^ targetDim) == 1    // sourceDim == 2 or 3 and difference with targetDim is 1.
+            if ((sourceDim & ~1) == 2                           // sourceDim == 2 or 3.
+                    && (sourceDim ^ targetDim) == 1             // abs(sourceDim - targetDim) == 1.
                     && (sourceCS instanceof EllipsoidalCS)
                     && (targetCS instanceof EllipsoidalCS))
             {
                 parameters = (sourceDim == 2 ? Geographic2Dto3D.PARAMETERS
                                              : Geographic3Dto2D.PARAMETERS).createValue();
             } else {
-                parameters = TensorParameters.WKT1.createValueGroup(properties(Constants.AFFINE));      // Initialized to identity.
-                parameters.parameter(Constants.NUM_COL).setValue(targetDim + 1);
-                parameters.parameter(Constants.NUM_ROW).setValue(targetDim + 1);
+                /*
+                 * TODO: instead than creating parameters for an identity operation, we should create the
+                 *       CoordinateOperation directly from the MathTransform created by mtFactory below.
+                 *       The intend if to get the correct OperationMethod, which should not be "Affine"
+                 *       if there is a CS type change.
+                 */
+                parameters = Affine.identity(targetDim);
                 /*
                  * createCoordinateSystemChange(…) needs the ellipsoid associated to the ellipsoidal coordinate system,
                  * if any. If none or both coordinate systems are ellipsoidal, then the ellipsoid will be ignored (see
@@ -947,10 +961,13 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
          * trivial operations.
          */
         CoordinateOperation main = null;
-        final boolean isAxisChange1 = (step1.getName() == AXIS_CHANGES);
-        final boolean isAxisChange2 = (step2.getName() == AXIS_CHANGES);
+        final boolean isAxisChange1 = canHide(step1.getName());
+        final boolean isAxisChange2 = canHide(step2.getName());
         if (isAxisChange1 && isAxisChange2 && isAffine(step1) && isAffine(step2)) {
             main = step2;                                           // Arbitrarily take the last step.
+            if (main.getName() == IDENTITY && step1.getName() != IDENTITY) {
+                main = step1;
+            }
         } else {
             if (isAxisChange1 && mt1.getSourceDimensions() == mt1.getTargetDimensions()) main = step2;
             if (isAxisChange2 && mt2.getSourceDimensions() == mt2.getTargetDimensions()) main = step1;
@@ -1003,8 +1020,8 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
         if (isIdentity(step1)) return concatenate(step2, step3);
         if (isIdentity(step2)) return concatenate(step1, step3);
         if (isIdentity(step3)) return concatenate(step1, step2);
-        if (step1.getName() == AXIS_CHANGES) return concatenate(concatenate(step1, step2), step3);
-        if (step3.getName() == AXIS_CHANGES) return concatenate(step1, concatenate(step2, step3));
+        if (canHide(step1.getName())) return concatenate(concatenate(step1, step2), step3);
+        if (canHide(step3.getName())) return concatenate(step1, concatenate(step2, step3));
         final Map<String,?> properties = defaultName(step1.getSourceCRS(), step3.getTargetCRS());
         return factory.createConcatenatedOperation(properties, step1, step2, step3);
     }
@@ -1028,7 +1045,22 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
      * are usually datum shift and must be visible.
      */
     private static boolean isIdentity(final CoordinateOperation operation) {
-        return (operation == null) || ((operation instanceof Conversion) && operation.getMathTransform().isIdentity());
+        if (operation == null) {
+            return true;
+        }
+        if ((operation instanceof Conversion) && operation.getMathTransform().isIdentity()) {
+            return CoordinateOperations.wrapAroundChanges(operation).isEmpty();
+        }
+        return false;
+    }
+
+    /**
+     * Returns {@code true} if a coordinate operation of the given name can be hidden
+     * in the list of operations. Note that the {@code MathTransform} will still take
+     * the operation in account however.
+     */
+    private static boolean canHide(final Identifier id) {
+        return (id == AXIS_CHANGES) || (id == IDENTITY);
     }
 
     /**

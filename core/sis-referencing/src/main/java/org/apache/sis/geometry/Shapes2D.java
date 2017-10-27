@@ -16,6 +16,7 @@
  */
 package org.apache.sis.geometry;
 
+import java.util.Set;
 import java.awt.geom.Point2D;
 import java.awt.geom.Line2D;
 import java.awt.geom.Ellipse2D;
@@ -32,6 +33,9 @@ import org.opengis.referencing.operation.MathTransform2D;
 import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.internal.referencing.j2d.ShapeUtilities;
+import org.apache.sis.internal.referencing.j2d.IntervalRectangle;
+import org.apache.sis.internal.referencing.CoordinateOperations;
+import org.apache.sis.referencing.operation.AbstractCoordinateOperation;
 import org.apache.sis.referencing.operation.matrix.AffineTransforms2D;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ArgumentChecks;
@@ -351,9 +355,9 @@ public final class Shapes2D extends Static {
             D1=D2;
         }
         if (destination != null) {
-            destination.setRect(xmin, ymin, xmax-xmin, ymax-ymin);
+            destination.setRect(xmin, ymin, xmax - xmin, ymax - ymin);
         } else {
-            destination = new Rectangle2D.Double(xmin, ymin, xmax - xmin, ymax - ymin);
+            destination = new IntervalRectangle(xmin, ymin, xmax, ymax);
         }
         /*
          * Note: a previous version had an "assert" statement here comparing our calculation
@@ -539,8 +543,8 @@ public final class Shapes2D extends Static {
              * Forget any axes that are not of kind "WRAPAROUND". Then get the final
              * bit pattern indicating which points to test. Iterate over that bits.
              */
-            if ((toTest & 0x33333333) != 0 && !Envelopes.isWrapAround(targetCS.getAxis(0))) toTest &= 0xCCCCCCCC;
-            if ((toTest & 0xCCCCCCCC) != 0 && !Envelopes.isWrapAround(targetCS.getAxis(1))) toTest &= 0x33333333;
+            if ((toTest & 0x33333333) != 0 && !CoordinateOperations.isWrapAround(targetCS.getAxis(0))) toTest &= 0xCCCCCCCC;
+            if ((toTest & 0xCCCCCCCC) != 0 && !CoordinateOperations.isWrapAround(targetCS.getAxis(1))) toTest &= 0x33333333;
             while (toTest != 0) {
                 final int border = Integer.numberOfTrailingZeros(toTest);
                 final int bitMask = 1 << border;
@@ -566,6 +570,42 @@ public final class Shapes2D extends Static {
                 }
                 if (envelope.contains(sourcePt)) {
                     destination.add(targetPt);
+                }
+            }
+        }
+        /*
+         * At this point we finished envelope transformation. Verify if some ordinates need to be "wrapped around"
+         * as a result of the coordinate operation.   This is usually the longitude axis where the source CRS uses
+         * the [-180 … +180]° range and the target CRS uses the [0 … 360]° range, or the converse. In such case we
+         * set the rectangle to the full range (we do not use the mechanism documented in Envelope2D) because most
+         * Rectangle2D implementations do not support spanning the anti-meridian. This results in larger rectangle
+         * than what would be possible with GeneralEnvelope or Envelope2D, but we try to limit the situation where
+         * this expansion is applied.
+         */
+        final Set<Integer> wrapAroundChanges;
+        if (operation instanceof AbstractCoordinateOperation) {
+            wrapAroundChanges = ((AbstractCoordinateOperation) operation).getWrapAroundChanges();
+        } else {
+            wrapAroundChanges = CoordinateOperations.wrapAroundChanges(sourceCRS, targetCS);
+        }
+        for (int dim : wrapAroundChanges) {                               // Empty in the vast majority of cases.
+            final CoordinateSystemAxis axis = targetCS.getAxis(dim);
+            final double minimum = axis.getMinimumValue();
+            final double maximum = axis.getMaximumValue();
+            final double o1, o2;
+            if (dim == 0) {
+                o1 = destination.getMinX();
+                o2 = destination.getMaxX();
+            } else {
+                o1 = destination.getMinY();
+                o2 = destination.getMaxY();
+            }
+            if (o1 < minimum || o2 > maximum) {
+                final double span = maximum - minimum;
+                if (dim == 0) {
+                    destination.setRect(minimum, destination.getY(), span, destination.getHeight());
+                } else {
+                    destination.setRect(destination.getX(), minimum, destination.getWidth(), span);
                 }
             }
         }

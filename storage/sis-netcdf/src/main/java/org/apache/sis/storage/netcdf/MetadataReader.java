@@ -54,6 +54,7 @@ import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.metadata.iso.DefaultMetadata;
 import org.apache.sis.metadata.iso.citation.*;
 import org.apache.sis.metadata.iso.identification.*;
+import org.apache.sis.metadata.iso.lineage.DefaultSource;
 import org.apache.sis.metadata.iso.lineage.DefaultLineage;
 import org.apache.sis.metadata.iso.quality.DefaultDataQuality;
 import org.apache.sis.internal.netcdf.Axis;
@@ -62,6 +63,7 @@ import org.apache.sis.internal.netcdf.Variable;
 import org.apache.sis.internal.netcdf.GridGeometry;
 import org.apache.sis.internal.storage.io.IOUtilities;
 import org.apache.sis.internal.storage.MetadataBuilder;
+import org.apache.sis.internal.storage.wkt.StoreFormat;
 import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.util.resources.Errors;
@@ -70,6 +72,7 @@ import org.apache.sis.measure.Units;
 
 // The following dependency is used only for static final String constants.
 // Consequently the compiled class files should not have this dependency.
+import ucar.nc2.constants.ACDD;
 import ucar.nc2.constants.CDM;
 import ucar.nc2.constants.CF;
 
@@ -109,6 +112,12 @@ import static org.apache.sis.storage.netcdf.AttributeNames.*;
  */
 final class MetadataReader extends MetadataBuilder {
     /**
+     * Whether the reader should include experimental fields.
+     * They are fields for which we are unsure of the proper ISO 19115 location.
+     */
+    private static final boolean EXPERIMENTAL = true;
+
+    /**
      * Names of groups where to search for metadata, in precedence order.
      * The {@code null} value stands for global attributes.
      *
@@ -123,7 +132,7 @@ final class MetadataReader extends MetadataBuilder {
 
     /**
      * The character to use as a separator in comma-separated list. This separator is used for parsing the
-     * {@value org.apache.sis.storage.netcdf.AttributeNames#KEYWORDS} attribute value for instance.
+     * {@link AttributeNames#KEYWORDS} attribute value for instance.
      */
     private static final char SEPARATOR = ',';
 
@@ -369,24 +378,39 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
     }
 
     /**
-     * Creates an {@code OnlineResource} element if the given URL is not null. Since ISO 19115
-     * declares the URL as a mandatory attribute, this method will ignore all other attributes
-     * if the given URL is null.
-     *
-     * @param  url  the URL (mandatory - if {@code null}, no resource will be created).
-     * @return the online resource, or {@code null} if the URL was null.
+     * Creates a URI form the given path, or returns {@code null} if the given URL is null or can not be parsed.
+     * In the later case, a warning will be emitted.
      */
-    private OnlineResource createOnlineResource(final String url) {
+    private URI createURI(final String url) {
         if (url != null) try {
-            final DefaultOnlineResource resource = new DefaultOnlineResource(new URI(url));
-            resource.setProtocol("http");
-            resource.setApplicationProfile("web browser");
-            resource.setFunction(OnLineFunction.INFORMATION);
-            return resource;
+            return new URI(url);
         } catch (URISyntaxException e) {
             warning(e);
         }
         return null;
+    }
+
+    /**
+     * Creates an {@code OnlineResource} element if the given URL is not null. Since ISO 19115
+     * declares the URL as a mandatory attribute, this method will ignore all other attributes
+     * if the given URL is null.
+     *
+     * @param  url   the URL (mandatory - if {@code null}, no resource will be created).
+     * @return the online resource, or {@code null} if the URL was null.
+     */
+    private OnlineResource createOnlineResource(final String url) {
+        final URI uri = createURI(url);
+        if (uri == null) {
+            return null;
+        }
+        final DefaultOnlineResource resource = new DefaultOnlineResource(uri);
+        final String protocol = uri.getScheme();
+        resource.setProtocol(protocol);
+        if ("http".equalsIgnoreCase(protocol) || "https".equalsIgnoreCase(protocol)) {
+            resource.setApplicationProfile("web browser");
+        }
+        resource.setFunction(OnLineFunction.INFORMATION);
+        return resource;
     }
 
     /**
@@ -422,8 +446,10 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
      * <p>Implementation note: this method tries to reuse the existing {@link #pointOfContact} instance,
      * or part of it, if it is suitable.</p>
      *
-     * @param  keys  the group of attribute names to use for fetching the values.
-     * @param  isPointOfContact {@code true} for forcing the role to {@link Role#POINT_OF_CONTACT}.
+     * @param  keys              the group of attribute names to use for fetching the values.
+     * @param  isPointOfContact  {@code true} if this responsible party is the "main" one. This will force the
+     *         role to {@link Role#POINT_OF_CONTACT} and enable the use of {@code "institution"} attribute as
+     *         a fallback if there is no value for {@link Responsible#INSTITUTION}.
      * @return the responsible party, or {@code null} if none.
      *
      * @see AttributeNames#CREATOR
@@ -431,12 +457,28 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
      * @see AttributeNames#PUBLISHER
      */
     private ResponsibleParty createResponsibleParty(final Responsible keys, final boolean isPointOfContact) {
-        final String individualName   = stringValue(keys.NAME);
-        final String organisationName = stringValue(keys.INSTITUTION);
-        final String email            = stringValue(keys.EMAIL);
-        final String url              = stringValue(keys.URL);
+        String individualName   = stringValue(keys.NAME);
+        String organisationName = stringValue(keys.INSTITUTION);
+        final String email      = stringValue(keys.EMAIL);
+        final String url        = stringValue(keys.URL);
+        if (organisationName == null && isPointOfContact) {
+            organisationName = stringValue("institution");
+        }
         if (individualName == null && organisationName == null && email == null && url == null) {
             return null;
+        }
+        /*
+         * The "individual" name may actually be an institution name, either because a "*_type" attribute
+         * said so or because the "individual" name is the same than the institution name. In such cases,
+         * reorganize the names in order to avoid duplication.
+         */
+        if (organisationName == null) {
+            if (isOrganisation(keys)) {
+                organisationName = individualName;
+                individualName = null;
+            }
+        } else if (organisationName.equalsIgnoreCase(individualName)) {
+            individualName = null;
         }
         Role role = forCodeName(Role.class, stringValue(keys.ROLE));
         if (role == null) {
@@ -491,13 +533,23 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
                 AbstractParty party = null;
                 if (individualName   != null) party = new DefaultIndividual(individualName, null, null);
                 if (organisationName != null) party = new DefaultOrganisation(organisationName, null, (DefaultIndividual) party, null);
-                if (party            == null) party = new AbstractParty(); // We don't know if this is an individual or an organisation.
+                if (party            == null) party = isOrganisation(keys) ? new DefaultOrganisation() : new DefaultIndividual();
                 if (contact          != null) party.setContactInfo(singleton(contact));
                 responsibility = new DefaultResponsibleParty(role);
                 ((DefaultResponsibleParty) responsibility).setParties(singleton(party));
             }
         }
         return responsibility;
+    }
+
+    /**
+     * Returns {@code true} if the responsible party described by the given keys is an organization.
+     * In case of doubt, this method returns {@code false}. This is consistent with ACDD recommendation,
+     * which set the default value to {@code "person"}.
+     */
+    private boolean isOrganisation(final Responsible keys) {
+        final String type = stringValue(keys.TYPE);
+        return "institution".equalsIgnoreCase(type) || "group".equalsIgnoreCase(type);
     }
 
     /**
@@ -521,8 +573,10 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
             }
         }
         addTitle(title);
+        addEdition(stringValue(PRODUCT_VERSION));
         addOtherCitationDetails(stringValue(REFERENCES));
         addCitationDate(decoder.dateValue(METADATA_CREATION), DateType.CREATION,    Scope.ALL);
+        addCitationDate(decoder.dateValue(METADATA_MODIFIED), DateType.REVISION,    Scope.ALL);
         addCitationDate(decoder.dateValue(DATE_CREATED),      DateType.CREATION,    Scope.RESOURCE);
         addCitationDate(decoder.dateValue(DATE_MODIFIED),     DateType.REVISION,    Scope.RESOURCE);
         addCitationDate(decoder.dateValue(DATE_ISSUED),       DateType.PUBLICATION, Scope.RESOURCE);
@@ -585,8 +639,8 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
         final Set<String> keywords = new LinkedHashSet<>();
         for (final String path : searchPath) {
             decoder.setSearchPath(path);
-            keywords.addAll(split(stringValue(KEYWORDS)));
-            standard = addIfNonNull(standard, stringValue(STANDARD_NAME));
+            keywords.addAll(split(stringValue(KEYWORDS.TEXT)));
+            standard = addIfNonNull(standard, stringValue(STANDARD_NAME.TEXT));
             project  = addIfNonNull(project,  stringValue(PROJECT));
             for (final String keyword : split(stringValue(ACCESS_CONSTRAINT))) {
                 addAccessConstraint(forCodeName(Restriction.class, keyword));
@@ -612,10 +666,19 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
         addCredits                (stringValue(ACKNOWLEDGEMENT));
         addCredits                (stringValue("acknowledgment"));          // Legacy spelling.
         addUseLimitation          (stringValue(LICENSE));
-        addKeywords(standard,  KeywordType.THEME,       stringValue(STANDARD_NAME_VOCABULARY));
-        addKeywords(keywords,  KeywordType.THEME,       stringValue(VOCABULARY));
+        addKeywords(standard,  KeywordType.THEME,       stringValue(STANDARD_NAME.VOCABULARY));
+        addKeywords(keywords,  KeywordType.THEME,       stringValue(KEYWORDS.VOCABULARY));
         addKeywords(project,   KeywordType.valueOf("PROJECT"), null);
         addKeywords(publisher, KeywordType.valueOf("DATA_CENTRE"), null);
+        /*
+         * Add geospatial bounds as a geometric object. This optional operation requires
+         * an external library (ESRI or JTS) to be present on the classpath.
+         */
+        final String wkt = stringValue(GEOSPATIAL_BOUNDS);
+        if (wkt != null) {
+            addBoundingPolygon(new StoreFormat(decoder.geomlib, decoder.listeners).parseGeometry(wkt,
+                    stringValue(GEOSPATIAL_BOUNDS + "_crs"), stringValue(GEOSPATIAL_BOUNDS + "_vertical_crs")));
+        }
     }
 
     /**
@@ -651,7 +714,7 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
     }
 
     /**
-     * Adds the extent declared in the given group. For more consistent results, the caller should restrict
+     * Adds the extent declared in the current group. For more consistent results, the caller should restrict
      * the {@linkplain Decoder#setSearchPath search path} to a single group before invoking this method.
      *
      * @return {@code true} if at least one numerical value has been added.
@@ -750,6 +813,33 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
     }
 
     /**
+     * Adds information about acquisition (program, platform).
+     */
+    private void addAcquisitionInfo() {
+        final Term[] attributes = {
+            AttributeNames.PROGRAM,
+            AttributeNames.PLATFORM,
+            AttributeNames.INSTRUMENT
+        };
+        for (int i=0; i<attributes.length; i++) {
+            final Term at = attributes[i];
+            final String authority = stringValue(at.VOCABULARY);
+            for (final String keyword : split(stringValue(at.TEXT))) {
+                switch (i) {
+                    case 0: {
+                        if (EXPERIMENTAL) {
+                            addAcquisitionOperation(authority, keyword);
+                        }
+                        break;
+                    }
+                    case 1: addPlatform  (authority, keyword); break;
+                    case 2: addInstrument(authority, keyword); break;
+                }
+            }
+        }
+    }
+
+    /**
      * Adds information about all netCDF variables. This is the {@code <gmd:contentInfo>} element in XML.
      * This method groups variables by their domains, i.e. variables having the same set of axes are grouped together.
      */
@@ -805,11 +895,11 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
             setBandIdentifier(nameFactory.createMemberName(null, name,
                     nameFactory.createTypeName(null, variable.getDataTypeName())));
         }
-        Object[] v = variable.getAttributeValues(STANDARD_NAME, false);
+        Object[] v = variable.getAttributeValues(CF.STANDARD_NAME, false);
         final String id = (v.length == 1) ? trim((String) v[0]) : null;
         if (id != null && !id.equals(name)) {
-            v = variable.getAttributeValues(STANDARD_NAME_VOCABULARY, false);
-            addBandIdentifier(v.length == 1 ? (String) v[0] : null, id);
+            v = variable.getAttributeValues(ACDD.standard_name_vocabulary, false);
+            addBandName(v.length == 1 ? (String) v[0] : null, id);
         }
         final String description = trim(variable.getDescription());
         if (description != null && !description.equals(name) && !description.equals(id)) {
@@ -826,6 +916,7 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
         v = variable.getAttributeValues(CDM.SCALE_FACTOR, true); if (v.length == 1) scale  = ((Number) v[0]).doubleValue();
         v = variable.getAttributeValues(CDM.ADD_OFFSET,   true); if (v.length == 1) offset = ((Number) v[0]).doubleValue();
         setTransferFunction(scale, offset);
+        addContentType(forCodeName(CoverageContentType.class, stringValue(ACDD.coverage_content_type)));
     }
 
     /**
@@ -854,18 +945,18 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
      * The current implementation builds the identifier from the following attributes:
      *
      * <ul>
-     *   <li>{@value AttributeNames#NAMING_AUTHORITY} used as the {@linkplain Identifier#getAuthority() authority}.</li>
-     *   <li>{@value AttributeNames#IDENTIFIER}, or {@link ucar.nc2.NetcdfFile#getId()} if no identifier attribute was found,
+     *   <li>{@code AttributeNames.IDENTIFIER.VOCABULARY} used as the {@linkplain Identifier#getAuthority() authority}.</li>
+     *   <li>{@code AttributeNames.IDENTIFIER.TEXT}, or {@link ucar.nc2.NetcdfFile#getId()} if no identifier attribute was found,
      *       or the filename without extension if {@code getId()} returned nothing.</li>
      * </ul>
      *
      * This method should be invoked last, after we made our best effort to set the title.
      */
     private void addFileIdentifier() {
-        String identifier = stringValue(IDENTIFIER);
+        String identifier = stringValue(IDENTIFIER.TEXT);
         String authority;
         if (identifier != null) {
-            authority = stringValue(NAMING_AUTHORITY);
+            authority = stringValue(IDENTIFIER.VOCABULARY);
         } else {
             identifier = decoder.getId();
             if (identifier == null) {
@@ -900,6 +991,7 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
                 addResourceScope(ScopeCode.SERVICE, name);
             }
         }
+        addAcquisitionInfo();
         addContentInfo();
         /*
          * Add the dimension information, if any. This metadata node
@@ -921,17 +1013,26 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
         final DefaultMetadata metadata = build(false);
         for (final String path : searchPath) {
             decoder.setSearchPath(path);
-            final String history = stringValue(HISTORY);
-            if (history != null) {
+            DefaultLineage lineage = null;
+            String value = stringValue(HISTORY);
+            if (value != null) {
+                lineage = new DefaultLineage();
+                lineage.setStatement(new SimpleInternationalString(value));
+            }
+            value = stringValue(SOURCE);
+            if (value != null) {
+                if (lineage == null) lineage = new DefaultLineage();
+                addIfAbsent(lineage.getSources(), new DefaultSource(value));
+            }
+            if (lineage != null) {
                 final DefaultDataQuality quality = new DefaultDataQuality(ScopeCode.DATASET);
-                final DefaultLineage lineage = new DefaultLineage();
-                lineage.setStatement(new SimpleInternationalString(history));
                 quality.setLineage(lineage);
                 addIfAbsent(metadata.getDataQualityInfo(), quality);
             }
         }
         decoder.setSearchPath(searchPath);
         metadata.setMetadataStandards(Citations.ISO_19115);
+        addCompleteMetadata(createURI(stringValue(METADATA_LINK)));
         return metadata;
     }
 }
