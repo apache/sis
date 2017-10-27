@@ -507,6 +507,9 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
                 /*
                  * Failed to select a coordinate operation. Maybe because the coordinate system types are not the same.
                  * Convert unconditionally to XYZ geocentric coordinates and apply the datum shift in that CS space.
+                 *
+                 * TODO: operation name should not be "Affine" if 'before' or 'after' transforms are not identity.
+                 *       Reminder: the parameter group name here determines the OperationMethod later in this method.
                  */
                 if (datumShift != null) {
                     parameters = TensorParameters.WKT1.createValueGroup(properties(Constants.AFFINE), datumShift);
@@ -536,6 +539,12 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
                 parameters = (sourceDim == 2 ? Geographic2Dto3D.PARAMETERS
                                              : Geographic3Dto2D.PARAMETERS).createValue();
             } else {
+                /*
+                 * TODO: instead than creating parameters for an identity operation, we should create the
+                 *       CoordinateOperation directly from the MathTransform created by mtFactory below.
+                 *       The intend if to get the correct OperationMethod, which should not be "Affine"
+                 *       if there is a CS type change.
+                 */
                 parameters = Affine.identity(targetDim);
                 /*
                  * createCoordinateSystemChange(…) needs the ellipsoid associated to the ellipsoidal coordinate system,
