@@ -46,8 +46,6 @@ import org.opengis.feature.Feature;
  * @author Johann Sorel (Geomatys)
  * @version 0.8
  *
- * @see FeatureSet#subset(Query)
- *
  * @since 0.8
  * @module
  */
