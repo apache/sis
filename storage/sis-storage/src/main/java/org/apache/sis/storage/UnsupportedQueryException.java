@@ -23,8 +23,6 @@ package org.apache.sis.storage;
  * @author  Johann Sorel (Geomatys)
  * @version 0.8
  *
- * @see FeatureSet#subset(Query)
- *
  * @since 0.8
  * @module
  */
