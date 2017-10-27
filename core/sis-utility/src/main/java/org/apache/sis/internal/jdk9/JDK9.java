@@ -16,8 +16,11 @@
  */
 package org.apache.sis.internal.jdk9;
 
+import java.util.Arrays;
+import java.util.Set;
 import java.util.List;
 import java.util.Collections;
+import java.util.LinkedHashSet;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
 
 
@@ -50,6 +53,22 @@ public final class JDK9 {
             case 0:  return Collections.emptyList();
             case 1:  return Collections.singletonList(elements[0]);
             default: return UnmodifiableArrayList.wrap(elements);
+        }
+    }
+
+    /**
+     * Placeholder for {@code Set.of(...)}.
+     *
+     * @param  <E>       type of elements.
+     * @param  elements  the elements to put in an unmodifiable set.
+     * @return an unmodifiable set of the given elements.
+     */
+    @SafeVarargs
+    public static <E> Set<E> setOf(final E... elements) {
+        switch (elements.length) {
+            case 0:  return Collections.emptySet();
+            case 1:  return Collections.singleton(elements[0]);
+            default: return Collections.unmodifiableSet(new LinkedHashSet<>(Arrays.asList(elements)));
         }
     }
 }

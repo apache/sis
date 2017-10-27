@@ -17,7 +17,7 @@
 package org.apache.sis.referencing.operation;
 
 import java.util.Map;
-import java.util.List;
+import java.util.Set;
 import java.util.Objects;
 import java.util.Collection;
 import java.util.Collections;
@@ -213,12 +213,12 @@ public class AbstractCoordinateOperation extends AbstractIdentifiedObject implem
     /**
      * Indices of target dimensions where "wrap around" may happen as a result of this coordinate operation.
      * This is usually the longitude axis when the source CRS uses the [-180 … +180]° range and the target
-     * CRS uses the [0 … 360]° range, or the converse. If there is no change, then this is an empty list.
+     * CRS uses the [0 … 360]° range, or the converse. If there is no change, then this is an empty set.
      *
      * @see #getWrapAroundChanges()
      * @see #computeTransientFields()
      */
-    private transient List<Integer> wrapAroundChanges;
+    private transient Set<Integer> wrapAroundChanges;
 
     /**
      * Creates a new coordinate operation initialized from the given properties.
@@ -393,7 +393,7 @@ check:      for (int isTarget=0; ; isTarget++) {        // 0 == source check; 1 
         if (sourceCRS != null && targetCRS != null) {
             wrapAroundChanges = CoordinateOperations.wrapAroundChanges(sourceCRS, targetCRS.getCoordinateSystem());
         } else {
-            wrapAroundChanges = Collections.emptyList();
+            wrapAroundChanges = Collections.emptySet();
         }
     }
 
@@ -772,7 +772,7 @@ check:      for (int isTarget=0; ; isTarget++) {        // 0 == source check; 1 
     /**
      * Returns the indices of target dimensions where "wrap around" may happen as a result of this coordinate operation.
      * If such change exists, then this is usually the longitude axis when the source CRS uses the [-180 … +180]° range
-     * and the target CRS uses the [0 … 360]° range, or the converse. If there is no change, then this is an empty list.
+     * and the target CRS uses the [0 … 360]° range, or the converse. If there is no change, then this is an empty set.
      *
      * <div class="note"><b>Inverse relationship:</b>
      * sometime the target dimensions returned by this method can be mapped directly to wraparound axes in source CRS,
@@ -788,18 +788,18 @@ check:      for (int isTarget=0; ; isTarget++) {        // 0 == source check; 1 
      * but such matching is not guaranteed to exist since {@code ProjectedCRS} is a special case of
      * {@code GeneralDerivedCRS} and derived CRS can have rotations.</div>
      *
-     * <p>The default implementation infers this list by inspecting the source and target coordinate system axes.
+     * <p>The default implementation infers this set by inspecting the source and target coordinate system axes.
      * It returns the indices of all target axes having {@link org.opengis.referencing.cs.RangeMeaning#WRAPAROUND}
      * and for which the following condition holds: a colinear source axis exists with compatible unit of measurement,
-     * that source axis also have "wrap around" range, and the range of those source and target axes are not the same
-     * (taking unit conversions in account).</p>
+     * and the range (taking unit conversions in account) or range meaning of those source and target axes are not
+     * the same.</p>
      *
      * @return indices of target dimensions where "wrap around" may happen as a result of this coordinate operation.
      *
      * @since 0.8
      */
     @SuppressWarnings("ReturnOfCollectionOrArrayField")
-    public List<Integer> getWrapAroundChanges() {
+    public Set<Integer> getWrapAroundChanges() {
         return wrapAroundChanges;
     }
 

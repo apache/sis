@@ -21,7 +21,7 @@ package org.apache.sis.geometry;
  * support Java2D (e.g. Android),  or applications that do not need it may want to avoid to
  * force installation of the Java2D module (e.g. JavaFX/SWT).
  */
-import java.util.List;
+import java.util.Set;
 import org.opengis.geometry.Envelope;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.geometry.MismatchedDimensionException;
@@ -724,13 +724,13 @@ poles:  for (int i=0; i<dimension; i++, dimensionBitMask <<= 1) {
          * to reduce the risk of discontinuities. If the user really wants unconditional wrap around, (s)he can call
          * GeneralEnvelope.normalize().
          */
-        final List<Integer> wrapAroundChanges;
+        final Set<Integer> wrapAroundChanges;
         if (isOperationComplete && operation instanceof AbstractCoordinateOperation) {
             wrapAroundChanges = ((AbstractCoordinateOperation) operation).getWrapAroundChanges();
         } else {
             wrapAroundChanges = CoordinateOperations.wrapAroundChanges(sourceCRS, targetCS);
         }
-        transformed.normalize(wrapAroundChanges);
+        transformed.normalize(targetCS, 0, wrapAroundChanges.size(), wrapAroundChanges.iterator());
         if (warning != null) {
             recoverableException(Envelopes.class, warning);
         }

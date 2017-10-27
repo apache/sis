@@ -16,7 +16,7 @@
  */
 package org.apache.sis.internal.referencing;
 
-import java.util.List;
+import java.util.Set;
 import java.util.Objects;
 import java.util.Collections;
 import javax.measure.UnitConverter;
@@ -63,7 +63,7 @@ public final class CoordinateOperations extends SystemListener {
      * The last decimal value is 10 (binary {@code 1010}); we don't need to cache more.
      */
     @SuppressWarnings({"unchecked", "rawtypes"})
-    private static final List<Integer>[] CACHE = new List[11];
+    private static final Set<Integer>[] CACHE = new Set[11];
 
     /**
      * The system-wide default factory.
@@ -123,11 +123,11 @@ public final class CoordinateOperations extends SystemListener {
      * uses the [0 … 360]° range, or the converse.
      *
      * @param  op  the coordinate operation for which to get "wrap around" target dimensions.
-     * @return list of target dimensions where "wrap around" may happen, or an empty list if none.
+     * @return target dimensions where "wrap around" may happen, or an empty set if none.
      *
      * @see AbstractCoordinateOperation#getWrapAroundChanges()
      */
-    public static List<Integer> wrapAroundChanges(final CoordinateOperation op) {
+    public static Set<Integer> wrapAroundChanges(final CoordinateOperation op) {
         if (op instanceof AbstractCoordinateOperation) {
             return ((AbstractCoordinateOperation) op).getWrapAroundChanges();
         } else if (op != null) {
@@ -138,7 +138,7 @@ public final class CoordinateOperations extends SystemListener {
                 return wrapAroundChanges(source, target.getCoordinateSystem());
             }
         }
-        return Collections.emptyList();
+        return Collections.emptySet();
     }
 
     /**
@@ -148,9 +148,9 @@ public final class CoordinateOperations extends SystemListener {
      *
      * @param  source  the source of the coordinate operation.
      * @param  target  the target of the coordinate operation.
-     * @return list of target dimensions where "wrap around" may happen.
+     * @return target dimensions where "wrap around" may happen, or an empty set if none.
      */
-    public static List<Integer> wrapAroundChanges(CoordinateReferenceSystem source, final CoordinateSystem target) {
+    public static Set<Integer> wrapAroundChanges(CoordinateReferenceSystem source, final CoordinateSystem target) {
         long changes = changes(source.getCoordinateSystem(), target);
         while (source instanceof GeneralDerivedCRS) {
             source = ((GeneralDerivedCRS) source).getBaseCRS();
@@ -163,7 +163,7 @@ public final class CoordinateOperations extends SystemListener {
              * the object should be okay ("published" in memory model terminology) even if we did not synchronized.
              * The reference however may not be visible in the array, but we will check later in a synchronized block.
              */
-            final List<Integer> existing = CACHE[(int) changes];
+            final Set<Integer> existing = CACHE[(int) changes];
             if (existing != null) {
                 return existing;
             }
@@ -179,10 +179,10 @@ public final class CoordinateOperations extends SystemListener {
             indices[i] = dim;
             r &= ~(1L << dim);
         }
-        final List<Integer> dimensions = JDK9.listOf(indices);
+        final Set<Integer> dimensions = JDK9.setOf(indices);
         if (useCache) {
             synchronized (CACHE) {
-                final List<Integer> existing = CACHE[(int) changes];
+                final Set<Integer> existing = CACHE[(int) changes];
                 if (existing != null) {
                     return existing;
                 }
@@ -194,66 +194,65 @@ public final class CoordinateOperations extends SystemListener {
 
     /**
      * Returns the packed indices of target dimensions where ordinate values may need to be wrapped around.
-     * This method matches source and target coordinate system axes having {@link RangeMeaning#WRAPAROUND},
-     * then verifies if the range of values changed (taking unit conversions in account). A target dimension
-     * {@code i} may need to "wrap around" the coordinate values if the {@code 1 << i} bit is set.
+     * This method matches target coordinate system axes having {@link RangeMeaning#WRAPAROUND} with source
+     * axes, then verifies if the range of values changed (taking unit conversions in account). A target
+     * dimension {@code i} may need to "wrap around" the coordinate values if the {@code 1 << i} bit is set.
      * If there is no change, then the value is zero.
      */
     private static long changes(final CoordinateSystem source, final CoordinateSystem target) {
         long changes = 0;
         if (source != target) {                                 // Optimization for a common case.
             /*
-             * Get the dimensions of all "wrap around" axes in the source coordinate system.
+             * Get the dimensions of all axes in the source coordinate system as bit fields.
              * We create this list first because we may iterate more than once on those axes
              * and we want to clear the axes that we already matched. We use a bitmask for
-             * efficiency, with the bits of "wrap around" dimensions set to 1.
+             * efficiency, with the bits of dimensions to consider set to 1.
+             *
+             * Note: a previous version was creating a list of "wraparound" axes only. We removed that filter
+             * because a target wraparound axis may match a source infinite axis. For example when converting
+             * dates on a temporal axis (with infinite span toward past and future) to months on a climatology
+             * axis (January to December months without year), the same cycle is repeated after every 12 months
+             * even if the source axis had no cycle.
              */
-            long isWrapAroundAxis = 0;
-            for (int i=Math.min(Long.SIZE, source.getDimension()); --i >= 0;) {
-                if (isWrapAround(source.getAxis(i))) {
-                    isWrapAroundAxis |= (1 << i);
-                }
-            }
-            if (isWrapAroundAxis != 0) {                        // Loop below is useless otherwise.
-                /*
-                 * For each "wrap around" axis in the target CRS, search a matching axis in the source CRS
-                 * which is also "wrap around", is colinear and uses compatible unit of measurement. There
-                 * is usually at most one "wrap around" axis, but this code is nevertheless generic enough
-                 * for an arbitrary amount of axes.
-                 */
-                final int dim = Math.min(Long.SIZE, target.getDimension());
-compare:        for (int i=0; i<dim; i++) {
-                    final CoordinateSystemAxis axis = target.getAxis(i);
-                    if (isWrapAround(axis)) {
-                        long candidates = isWrapAroundAxis;
-                        do {
-                            final long mask = Long.lowestOneBit(candidates);
-                            final CoordinateSystemAxis src = source.getAxis(Long.numberOfTrailingZeros(mask));
-                            if (Objects.equals(AxisDirections.absolute(src .getDirection()),
-                                               AxisDirections.absolute(axis.getDirection())))
-                            {
-                                try {
-                                    final UnitConverter c  = src.getUnit().getConverterToAny(axis.getUnit());
-                                    final double minimum   = axis.getMinimumValue();
-                                    final double maximum   = axis.getMaximumValue();
-                                    final double tolerance = (maximum - minimum) * Numerics.COMPARISON_THRESHOLD;
-                                    if (!Numerics.epsilonEqual(c.convert(src.getMinimumValue()), minimum, tolerance) ||
-                                        !Numerics.epsilonEqual(c.convert(src.getMaximumValue()), maximum, tolerance))
-                                    {
-                                        changes |= (1 << i);
-                                    }
-                                    isWrapAroundAxis &= ~mask;      // We are done with this source axis.
-                                    if (isWrapAroundAxis == 0) {
-                                        break compare;              // Useless to continue if there is no more source axis.
-                                    }
-                                    continue compare;               // Match next pair of wrap around axes.
-                                } catch (IncommensurableException e) {
-                                    // Ignore (should not happen often). We will try to match another pair of axes.
+            long isWrapAroundAxis = (1 << source.getDimension()) - 1;
+            /*
+             * For each "wrap around" axis in the target CRS, search a matching axis in the source CRS
+             * which is also "wrap around", is colinear and uses compatible unit of measurement. There
+             * is usually at most one "wrap around" axis, but this code is nevertheless generic enough
+             * for an arbitrary amount of axes.
+             */
+            final int dim = Math.min(Long.SIZE, target.getDimension());
+compare:    for (int i=0; i<dim; i++) {
+                final CoordinateSystemAxis axis = target.getAxis(i);
+                if (isWrapAround(axis)) {
+                    long candidates = isWrapAroundAxis;
+                    do {
+                        final long mask = Long.lowestOneBit(candidates);
+                        final CoordinateSystemAxis src = source.getAxis(Long.numberOfTrailingZeros(mask));
+                        if (Objects.equals(AxisDirections.absolute(src .getDirection()),
+                                           AxisDirections.absolute(axis.getDirection())))
+                        {
+                            try {
+                                final UnitConverter c  = src.getUnit().getConverterToAny(axis.getUnit());
+                                final double minimum   = axis.getMinimumValue();
+                                final double maximum   = axis.getMaximumValue();
+                                final double tolerance = (maximum - minimum) * Numerics.COMPARISON_THRESHOLD;
+                                if (!Numerics.epsilonEqual(c.convert(src.getMinimumValue()), minimum, tolerance) ||
+                                    !Numerics.epsilonEqual(c.convert(src.getMaximumValue()), maximum, tolerance))
+                                {
+                                    changes |= (1 << i);
                                 }
+                                isWrapAroundAxis &= ~mask;      // We are done with this source axis.
+                                if (isWrapAroundAxis == 0) {
+                                    break compare;              // Useless to continue if there is no more source axis.
+                                }
+                                continue compare;               // Match next pair of wrap around axes.
+                            } catch (IncommensurableException e) {
+                                // Ignore (should not happen often). We will try to match another pair of axes.
                             }
-                            candidates &= ~mask;        // Unable to use that axis. Check if we can use another one.
-                        } while (candidates != 0);
-                    }
+                        }
+                        candidates &= ~mask;        // Unable to use that axis. Check if we can use another one.
+                    } while (candidates != 0);
                 }
             }
         }
