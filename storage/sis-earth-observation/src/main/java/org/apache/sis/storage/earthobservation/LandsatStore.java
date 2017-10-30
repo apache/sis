@@ -130,8 +130,8 @@ public class LandsatStore extends DataStore {
 
     /**
      * Returns the parameters used to open this Landsat data store.
-     * If non-null, the parameters are described by {@link LandsatStoreProvider#getOpenParameters()}
-     * and contains at least a parameter named {@value LandsatStoreProvider#LOCATION} with a {@link URI} value.
+     * If non-null, the parameters are described by {@link LandsatStoreProvider#getOpenParameters()} and contains at
+     * least a parameter named {@value org.apache.sis.storage.DataStoreProvider#LOCATION} with a {@link URI} value.
      * This method may return {@code null} if the storage input can not be described by a URI
      * (for example a Landsat file reading directly from a {@link java.nio.channels.ReadableByteChannel}).
      *

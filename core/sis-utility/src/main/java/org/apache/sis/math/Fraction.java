@@ -221,7 +221,7 @@ public final class Fraction extends Number implements Comparable<Fraction>, Seri
      * Returns this fraction rounded toward nearest integer. If the result is located
      * at equal distance from the two nearest integers, then rounds to the even one.
      *
-     * @return {@link #numerator} / {@link denominator} rounded toward nearest integer.
+     * @return {@link #numerator} / {@link #denominator} rounded toward nearest integer.
      */
     public int round() {
         if (denominator == Integer.MIN_VALUE) {
@@ -252,7 +252,7 @@ public final class Fraction extends Number implements Comparable<Fraction>, Seri
      * <p><b>Tip:</b> if the numerator and the denominator are both positive or both negative,
      * then the result is positive and identical to {@code numerator / denominator}.</p>
      *
-     * @return {@link #numerator} / {@link denominator} rounded toward negative infinity.
+     * @return {@link #numerator} / {@link #denominator} rounded toward negative infinity.
      */
     public int floor() {
         int n = numerator / denominator;
@@ -266,7 +266,7 @@ public final class Fraction extends Number implements Comparable<Fraction>, Seri
      * Returns this fraction rounded toward positive infinity.
      * This is different from the default operation on primitive types, which rounds toward zero.
      *
-     * @return {@link #numerator} / {@link denominator} rounded toward positive infinity.
+     * @return {@link #numerator} / {@link #denominator} rounded toward positive infinity.
      */
     public int ceil() {
         int n = numerator / denominator;
@@ -327,7 +327,7 @@ public final class Fraction extends Number implements Comparable<Fraction>, Seri
     /**
      * Returns this fraction rounded toward zero.
      *
-     * @return {@link #numerator} / {@link denominator} rounded toward zero.
+     * @return {@link #numerator} / {@link #denominator} rounded toward zero.
      *
      * @see #round()
      * @see #floor()
