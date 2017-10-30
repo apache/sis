@@ -541,7 +541,7 @@ public final class Units extends Static {
      * <div class="note"><p class="simpleTagLabel" style="margin-bottom:0">Related units:</p>
      * <table class="compact" summary="Related units" style="margin-left:30px; line-height:1.25">
      *   <tr><td>SI time units:</td>    <td style="word-spacing:1em">{@link #MILLISECOND}, <b>{@link #SECOND}</b>.</td></tr>
-     *   <tr><td>In other systems:</td> <td style="word-spacing:1em">{@link #MINUTE}, {@link #HOUR}, {@link #DAY}, <u>{@link WEEK}</u>, {@link #TROPICAL_YEAR}.</td></tr>
+     *   <tr><td>In other systems:</td> <td style="word-spacing:1em">{@link #MINUTE}, {@link #HOUR}, {@link #DAY}, <u>{@link #WEEK}</u>, {@link #TROPICAL_YEAR}.</td></tr>
      *   <tr><td>Derived units:</td>    <td style="word-spacing:1em">{@link #KILOMETRES_PER_HOUR}, {@link #HERTZ}.</td></tr>
      * </table></div>
      *
