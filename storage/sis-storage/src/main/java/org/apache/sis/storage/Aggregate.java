@@ -64,7 +64,7 @@ import org.apache.sis.internal.storage.Resources;
  */
 public interface Aggregate extends Resource {
     /**
-     * Returns the children resources of this aggregate. The returned collection contains at least all
+     * Returns the children resources of this aggregate. The returned collection contains
      * the resources listed by their name in the following {@linkplain #getMetadata() metadata} elements.
      * The returned collection may contain more resources if the metadata are incomplete,
      * and the resources do not need to be in the same order:
@@ -80,6 +80,11 @@ public interface Aggregate extends Resource {
      * {@link org.apache.sis.metadata.iso.DefaultMetadata#getIdentificationInfo() identificationInfo} /
      * {@link org.apache.sis.metadata.iso.identification.AbstractIdentification#getCitation() citation} /
      * {@link org.apache.sis.metadata.iso.citation.DefaultCitation#getTitle() title}</blockquote>
+     *
+     * <div class="section">Lazy resource instantiation</div>
+     * If the collection instantiates components only when first needed, and if a checked exception occurs
+     * during invocation of a {@link Collection} or {@link java.util.Iterator} method, then the collection
+     * or the iterator should wrap the exception in a {@link org.apache.sis.util.collection.BackingStoreException}.
      *
      * @return all children resources that are components of this aggregate. Never {@code null}.
      * @throws DataStoreException if an error occurred while fetching the components.

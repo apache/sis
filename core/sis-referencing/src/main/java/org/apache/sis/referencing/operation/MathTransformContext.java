@@ -18,6 +18,8 @@ package org.apache.sis.referencing.operation;
 
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.cs.CartesianCS;
+import org.opengis.referencing.cs.SphericalCS;
+import org.opengis.referencing.cs.EllipsoidalCS;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.datum.GeodeticDatum;
 import org.opengis.referencing.operation.Matrix;
@@ -102,7 +104,7 @@ final class MathTransformContext extends Context {
                 } else {
                     matrix = cm.multiply(rot);                  // Apply the rotation before normalization.
                 }
-            } else {
+            } else if (cs == null || cs instanceof EllipsoidalCS || cs instanceof SphericalCS) {
                 final Double value = rotation;
                 if (inverse) {
                     cm.convertBefore(0, null, value);           // Longitude is the first axis in normalized CS.
@@ -110,6 +112,8 @@ final class MathTransformContext extends Context {
                     cm.convertAfter(0, null, value);
                 }
                 matrix = cm;
+            } else {
+                throw new FactoryException(Errors.format(Errors.Keys.UnsupportedCoordinateSystem_1, cs.getName()));
             }
         }
         return matrix;

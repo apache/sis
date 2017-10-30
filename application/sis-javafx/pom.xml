@@ -51,7 +51,12 @@ Client application for JavaFX.
        =========================================================== -->
   <developers>
     <developer>
-      <name>Roshan Lakmal</name>
+      <name>Johann Sorel</name>
+      <id>jsorel</id>
+      <email>johann.sorel@geomatys.com</email>
+      <organization>Geomatys</organization>
+      <organizationUrl>http://www.geomatys.com</organizationUrl>
+      <timezone>+1</timezone>
       <roles>
         <role>developer</role>
       </roles>
@@ -87,6 +92,11 @@ Client application for JavaFX.
       <groupId>org.apache.sis.core</groupId>
       <artifactId>sis-metadata</artifactId>
       <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.webjars</groupId>
+      <artifactId>material-design-icons</artifactId>
+      <version>3.0.1</version>
     </dependency>
   </dependencies>
 

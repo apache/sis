@@ -107,7 +107,7 @@ public final class Constants extends Static {
     public static final byte CRS1 = 1;
 
     /**
-     * The NetCDF parameter name for the Earth radius.
+     * The netCDF parameter name for the Earth radius.
      */
     public static final String EARTH_RADIUS = "earth_radius";
 
@@ -118,7 +118,7 @@ public final class Constants extends Static {
                                SEMI_MINOR = "semi_minor";
 
     /**
-     * The NetCDF parameter name for inverse flattening, and whether that parameter is definitive.
+     * The netCDF parameter name for inverse flattening, and whether that parameter is definitive.
      * The later is specific to SIS.
      */
     public static final String INVERSE_FLATTENING = "inverse_flattening",
@@ -135,7 +135,7 @@ public final class Constants extends Static {
     public static final String LATITUDE_OF_ORIGIN = "latitude_of_origin";
 
     /**
-     * The NetCDF parameter name for the standard parallels.
+     * The netCDF parameter name for the standard parallels.
      */
     public static final String STANDARD_PARALLEL = "standard_parallel";
 

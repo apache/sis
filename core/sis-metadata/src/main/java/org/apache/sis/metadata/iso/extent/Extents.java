@@ -29,6 +29,8 @@ import org.opengis.metadata.extent.TemporalExtent;
 import org.opengis.metadata.extent.BoundingPolygon;
 import org.opengis.metadata.extent.GeographicExtent;
 import org.opengis.metadata.extent.GeographicBoundingBox;
+import org.opengis.metadata.extent.GeographicDescription;
+import org.opengis.geometry.MismatchedReferenceSystemException;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.crs.VerticalCRS;
@@ -45,6 +47,7 @@ import org.apache.sis.measure.Range;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.Static;
 
 import static java.lang.Math.*;
@@ -436,33 +439,6 @@ public final class Extents extends Static {
     }
 
     /**
-     * Returns the intersection of the given geographic bounding boxes. If any of the arguments is {@code null},
-     * then this method returns the other argument (which may be null). Otherwise this method returns a box which
-     * is the intersection of the two given boxes.
-     *
-     * <p>This method never modify the given boxes, but may return directly one of the given arguments if it
-     * already represents the intersection result.</p>
-     *
-     * @param  b1  the first bounding box, or {@code null}.
-     * @param  b2  the second bounding box, or {@code null}.
-     * @return the intersection (may be any of the {@code b1} or {@code b2} argument if unchanged),
-     *         or {@code null} if the two given boxes are null.
-     * @throws IllegalArgumentException if the {@linkplain DefaultGeographicBoundingBox#getInclusion() inclusion status}
-     *         is not the same for both boxes.
-     *
-     * @see DefaultGeographicBoundingBox#intersect(GeographicBoundingBox)
-     *
-     * @since 0.4
-     */
-    public static GeographicBoundingBox intersection(final GeographicBoundingBox b1, final GeographicBoundingBox b2) {
-        if (b1 == null) return b2;
-        if (b2 == null || b2 == b1) return b1;
-        final DefaultGeographicBoundingBox box = new DefaultGeographicBoundingBox(b1);
-        box.intersect(b2);
-        return box;
-    }
-
-    /**
      * Returns an <em>estimation</em> of the area (in square metres) of the given bounding box.
      * Since {@code GeographicBoundingBox} provides only approximative information (for example
      * it does not specify the datum), the value returned by this method is also approximative.
@@ -495,5 +471,146 @@ public final class Extents extends Static {
         return (AUTHALIC_RADIUS * AUTHALIC_RADIUS) * toRadians(Δλ) *
                max(0, sin(toRadians(box.getNorthBoundLatitude())) -
                       sin(toRadians(box.getSouthBoundLatitude())));
+    }
+
+    /**
+     * Returns the intersection of the given geographic bounding boxes. If any of the arguments is {@code null},
+     * then this method returns the other argument (which may be null). Otherwise this method returns a box which
+     * is the intersection of the two given boxes.
+     *
+     * <p>This method never modify the given boxes, but may return directly one of the given arguments if it
+     * already represents the intersection result.</p>
+     *
+     * @param  b1  the first bounding box, or {@code null}.
+     * @param  b2  the second bounding box, or {@code null}.
+     * @return the intersection (may be any of the {@code b1} or {@code b2} argument if unchanged),
+     *         or {@code null} if the two given boxes are null.
+     * @throws IllegalArgumentException if the {@linkplain DefaultGeographicBoundingBox#getInclusion() inclusion status}
+     *         is not the same for both boxes.
+     *
+     * @see DefaultGeographicBoundingBox#intersect(GeographicBoundingBox)
+     *
+     * @since 0.4
+     */
+    public static GeographicBoundingBox intersection(final GeographicBoundingBox b1, final GeographicBoundingBox b2) {
+        if (b1 == null) return b2;
+        if (b2 == null || b2 == b1) return b1;
+        final DefaultGeographicBoundingBox box = new DefaultGeographicBoundingBox(b1);
+        box.intersect(b2);
+        if (box.equals(b1, ComparisonMode.BY_CONTRACT)) return b1;
+        if (box.equals(b2, ComparisonMode.BY_CONTRACT)) return b2;
+        return box;
+    }
+
+    /**
+     * May compute an intersection between the given geographic extents.
+     * Current implementation supports only {@link GeographicBoundingBox};
+     * all other kinds are handled as if they were {@code null}.
+     *
+     * <p>We may improve this method in future Apache SIS version, but it is not yet clear how.
+     * For example how to handle {@link GeographicDescription} or {@link BoundingPolygon}?
+     * This method should not be public before we find a better contract.</p>
+     */
+    static GeographicExtent intersection(final GeographicExtent e1, final GeographicExtent e2) {
+        return intersection(e1 instanceof GeographicBoundingBox ? (GeographicBoundingBox) e1 : null,
+                            e2 instanceof GeographicBoundingBox ? (GeographicBoundingBox) e2 : null);
+    }
+
+    /**
+     * Returns the intersection of the given vertical extents. If any of the arguments is {@code null},
+     * then this method returns the other argument (which may be null). Otherwise this method returns a
+     * vertical extent which is the intersection of the two given extents.
+     *
+     * <p>This method never modify the given extents, but may return directly one of the given arguments
+     * if it already represents the intersection result.</p>
+     *
+     * <div class="section">Advantage and inconvenient of this method</div>
+     * This method can not intersect extents defined with different datums because height transformations
+     * generally require the geodetic positions (latitudes and longitudes) of the heights to transform.
+     * For more general transformations, it is better to convert all extent components into a single envelope,
+     * then {@linkplain org.apache.sis.geometry.Envelopes#transform(CoordinateOperation, Envelope) transform
+     * the envelope at once}. On the other hand, this {@code intersect(…)} method preserves better
+     * the {@link org.apache.sis.xml.NilReason} (if any).
+     *
+     * @param  e1  the first extent, or {@code null}.
+     * @param  e2  the second extent, or {@code null}.
+     * @return the intersection (may be any of the {@code e1} or {@code e2} argument if unchanged),
+     *         or {@code null} if the two given extents are null.
+     * @throws MismatchedReferenceSystemException if the two extents do not use the same datum, ignoring metadata.
+     *
+     * @see DefaultVerticalExtent#intersect(VerticalExtent)
+     *
+     * @since 0.8
+     */
+    public static VerticalExtent intersection(final VerticalExtent e1, final VerticalExtent e2) {
+        if (e1 == null) return e2;
+        if (e2 == null || e2 == e1) return e1;
+        final DefaultVerticalExtent extent = new DefaultVerticalExtent(e1);
+        extent.intersect(e2);
+        if (extent.equals(e1, ComparisonMode.BY_CONTRACT)) return e1;
+        if (extent.equals(e2, ComparisonMode.BY_CONTRACT)) return e2;
+        return extent;
+    }
+
+    /**
+     * Returns the intersection of the given temporal extents. If any of the arguments is {@code null},
+     * then this method returns the other argument (which may be null). Otherwise this method returns a
+     * temporal extent which is the intersection of the two given extents.
+     *
+     * <p>This method never modify the given extents, but may return directly one of the given arguments
+     * if it already represents the intersection result.</p>
+     *
+     * @param  e1  the first extent, or {@code null}.
+     * @param  e2  the second extent, or {@code null}.
+     * @return the intersection (may be any of the {@code e1} or {@code e2} argument if unchanged),
+     *         or {@code null} if the two given extents are null.
+     * @throws UnsupportedOperationException if no implementation of {@code TemporalFactory} has been found
+     *         on the classpath.
+     *
+     * @see DefaultTemporalExtent#intersect(TemporalExtent)
+     *
+     * @since 0.8
+     */
+    public static TemporalExtent intersection(final TemporalExtent e1, final TemporalExtent e2) {
+        if (e1 == null) return e2;
+        if (e2 == null || e2 == e1) return e1;
+        final DefaultTemporalExtent extent = new DefaultTemporalExtent(e1);
+        extent.intersect(e2);
+        if (extent.equals(e1, ComparisonMode.BY_CONTRACT)) return e1;
+        if (extent.equals(e2, ComparisonMode.BY_CONTRACT)) return e2;
+        return extent;
+    }
+
+    /**
+     * Returns the intersection of the given extents. If any of the arguments is {@code null},
+     * then this method returns the other argument (which may be null). Otherwise this method
+     * returns an extent which is the intersection of all geographic, vertical and temporal
+     * elements in the two given extents.
+     *
+     * <p>This method never modify the given extents, but may return directly one of the given
+     * arguments if it already represents the intersection result.</p>
+     *
+     * @param  e1  the first extent, or {@code null}.
+     * @param  e2  the second extent, or {@code null}.
+     * @return the intersection (may be any of the {@code e1} or {@code e2} argument if unchanged),
+     *         or {@code null} if the two given extents are null.
+     * @throws IllegalArgumentException if two elements to intersect are not compatible (e.g. mismatched
+     *         {@linkplain DefaultGeographicBoundingBox#getInclusion() bounding box inclusion status} or
+     *         mismatched {@linkplain DefaultVerticalExtent#getVerticalCRS() vertical datum}).
+     * @throws UnsupportedOperationException if a {@code TemporalFactory} is required but no implementation
+     *         has been found on the classpath.
+     *
+     * @see DefaultExtent#intersect(Extent)
+     *
+     * @since 0.8
+     */
+    public static Extent intersection(final Extent e1, final Extent e2) {
+        if (e1 == null) return e2;
+        if (e2 == null || e2 == e1) return e1;
+        final DefaultExtent extent = new DefaultExtent(e1);
+        extent.intersect(e2);
+        if (extent.equals(e1, ComparisonMode.BY_CONTRACT)) return e1;
+        if (extent.equals(e2, ComparisonMode.BY_CONTRACT)) return e2;
+        return extent;
     }
 }

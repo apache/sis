@@ -37,6 +37,8 @@ import org.apache.sis.internal.storage.Capability;
 import org.apache.sis.internal.storage.URIDataStore;
 import org.apache.sis.internal.system.SystemListener;
 import org.apache.sis.internal.system.Modules;
+import org.apache.sis.setup.GeometryLibrary;
+import org.apache.sis.setup.OptionKey;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreProvider;
 import org.apache.sis.storage.StorageConnector;
@@ -49,7 +51,7 @@ import org.apache.sis.util.Version;
 
 /**
  * The provider of {@link NetcdfStore} instances. Given a {@link StorageConnector} input,
- * this class tries to instantiate a {@code NetcdfStore} using the embedded NetCDF decoder.
+ * this class tries to instantiate a {@code NetcdfStore} using the embedded netCDF decoder.
  * If the embedded decoder can not decode the given input and the UCAR library is reachable
  * on the classpath, then this class tries to instantiate a {@code NetcdfStore} backed by
  * the UCAR library.
@@ -74,7 +76,7 @@ public class NetcdfStoreProvider extends DataStoreProvider {
     static final String NAME = "NetCDF";
 
     /**
-     * The MIME type for NetCDF files.
+     * The MIME type for netCDF files.
      */
     static final String MIME_TYPE = "application/x-netcdf";
 
@@ -103,7 +105,7 @@ public class NetcdfStoreProvider extends DataStoreProvider {
 
     /**
      * If the {@link #netcdfFileClass} has been found, then the {@link DecoderWrapper} constructor receiving
-     * in argument the name of the NetCDF file as a {@link String} object. Otherwise {@code null}.
+     * in argument the name of the netCDF file as a {@link String} object. Otherwise {@code null}.
      */
     private static volatile Constructor<? extends Decoder> createFromPath;
 
@@ -256,51 +258,54 @@ public class NetcdfStoreProvider extends DataStoreProvider {
      * {@link StorageConnector#closeAllExcept(Object)} after the decoder has been created.
      *
      * @param  listeners  where to send the warnings.
-     * @param  storage    information about the input (file, input stream, <i>etc.</i>)
+     * @param  connector  information about the input (file, input stream, <i>etc.</i>)
      * @return the decoder for the given input, or {@code null} if the input type is not recognized.
-     * @throws IOException if an error occurred while opening the NetCDF file.
+     * @throws IOException if an error occurred while opening the netCDF file.
      * @throws DataStoreException if a logical error (other than I/O) occurred.
      */
-    static Decoder decoder(final WarningListeners<DataStore> listeners, final StorageConnector storage)
+    static Decoder decoder(final WarningListeners<DataStore> listeners, final StorageConnector connector)
             throws IOException, DataStoreException
     {
+        final GeometryLibrary geomlib = connector.getOption(OptionKey.GEOMETRY_LIBRARY);
         Decoder decoder;
         Object keepOpen;
-        final ChannelDataInput input = storage.getStorageAs(ChannelDataInput.class);
+        final ChannelDataInput input = connector.getStorageAs(ChannelDataInput.class);
         if (input != null) try {
-            decoder = new ChannelDecoder(listeners, input);
+            decoder = new ChannelDecoder(input, connector.getOption(OptionKey.ENCODING), geomlib, listeners);
             keepOpen = input;
         } catch (DataStoreException e) {
-            final String path = storage.getStorageAs(String.class);
+            final String path = connector.getStorageAs(String.class);
             if (path != null) try {
-                decoder = createByReflection(listeners, path, false);
+                decoder = createByReflection(path, false, geomlib, listeners);
                 keepOpen = path;
             } catch (IOException | DataStoreException s) {
                 e.addSuppressed(s);
             }
             throw e;
         } else {
-            keepOpen = storage.getStorage();
-            decoder = createByReflection(listeners, keepOpen, true);
+            keepOpen = connector.getStorage();
+            decoder = createByReflection(keepOpen, true, geomlib, listeners);
         }
-        storage.closeAllExcept(keepOpen);
+        connector.closeAllExcept(keepOpen);
         return decoder;
     }
 
     /**
-     * Creates a new NetCDF decoder as a wrapper around the UCAR library. This decoder is used only when we can
-     * not create our embedded NetCDF decoder. This method uses reflection for creating the wrapper, in order
+     * Creates a new netCDF decoder as a wrapper around the UCAR library. This decoder is used only when we can
+     * not create our embedded netCDF decoder. This method uses reflection for creating the wrapper, in order
      * to keep the UCAR dependency optional.
      *
-     * @param  listeners  where to send the warnings.
-     * @param  input      the NetCDF file object of filename string from which to read data.
+     * @param  input      the netCDF file object of filename string from which to read data.
      * @param  isUCAR     {@code true} if {@code input} is an instance of the UCAR {@link ucar.nc2.NetcdfFile} object,
      *                    or {@code false} if it is the filename as a {@code String}.
+     * @param  geomlib    the library for geometric objects, or {@code null} for the default.
+     * @param  listeners  where to send the warnings.
      * @return the {@link DecoderWrapper} instance for the given input, or {@code null} if the input type is not recognized.
-     * @throws IOException if an error occurred while opening the NetCDF file.
+     * @throws IOException if an error occurred while opening the netCDF file.
      * @throws DataStoreException if a logical error (other than I/O) occurred.
      */
-    private static Decoder createByReflection(final WarningListeners<DataStore> listeners, final Object input, final boolean isUCAR)
+    private static Decoder createByReflection(final Object input, final boolean isUCAR,
+            final GeometryLibrary geomlib, final WarningListeners<DataStore> listeners)
             throws IOException, DataStoreException
     {
         ensureInitialized(true);
@@ -321,7 +326,7 @@ public class NetcdfStoreProvider extends DataStoreProvider {
             return null;
         }
         try {
-            return constructor.newInstance(listeners, input);
+            return constructor.newInstance(input, geomlib, listeners);
         } catch (InvocationTargetException e) {
             final Throwable cause = e.getCause();
             if (cause instanceof IOException)        throw (IOException)        cause;
@@ -360,9 +365,9 @@ public class NetcdfStoreProvider extends DataStoreProvider {
                          */
                         final Class<? extends Decoder> wrapper =
                                 Class.forName("org.apache.sis.internal.netcdf.ucar.DecoderWrapper").asSubclass(Decoder.class);
-                        final Class<?>[] parameterTypes = new Class<?>[] {WarningListeners.class, netcdfFileClass};
+                        final Class<?>[] parameterTypes = new Class<?>[] {netcdfFileClass, GeometryLibrary.class, WarningListeners.class};
                         createFromUCAR = wrapper.getConstructor(parameterTypes);
-                        parameterTypes[1] = String.class;
+                        parameterTypes[0] = String.class;
                         createFromPath = wrapper.getConstructor(parameterTypes);
                         return;                                                                         // Success
                     }
@@ -380,7 +385,7 @@ public class NetcdfStoreProvider extends DataStoreProvider {
                      *
                      * ReflectiveOperationException should never happen because API compatibility shall be verified
                      * by the JUnit tests. If it happen anyway  (for example because the user puts on his classpath
-                     * a different version of the NetCDF library than the one we tested), report a warning.
+                     * a different version of the netCDF library than the one we tested), report a warning.
                      */
                     severity = Level.WARNING;
                     cause = e;

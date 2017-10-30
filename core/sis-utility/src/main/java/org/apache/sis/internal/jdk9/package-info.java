@@ -14,33 +14,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.gui;
-
-import javafx.application.Application;
-import javafx.stage.Stage;
-
 
 /**
- * The starting point of SIS application for JavaFX.
+ * Place-holder for JDK9 classes that do not exist in JDK8.
  *
- * @author  Roshan Lakmal
- * @version 0.5
- * @since   0.5
+ * <STRONG>Do not use!</STRONG>
+ *
+ * This package is for internal use by SIS only. Classes in this package
+ * may change in incompatible ways in any future version without notice.
+ *
+ * @author  Martin Desruisseaux (Geomatys)
+ * @since   0.8
+ * @version 0.8
  * @module
  */
-public class ClientApplication extends Application {
-    /**
-     * Creates a new SIS application.
-     */
-    public ClientApplication() {
-    }
-
-    /**
-     * Creates and show the Graphical User Interface (GUI).
-     *
-     * @param stage The window where to display the GUI.
-     */
-    @Override
-    public void start(final Stage stage) {
-    }
-}
+package org.apache.sis.internal.jdk9;

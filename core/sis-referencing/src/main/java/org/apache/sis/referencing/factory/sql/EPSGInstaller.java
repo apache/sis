@@ -18,6 +18,7 @@ package org.apache.sis.referencing.factory.sql;
 
 import java.util.Locale;
 import java.io.IOException;
+import java.io.FileNotFoundException;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
@@ -31,7 +32,7 @@ import org.apache.sis.internal.metadata.sql.ScriptRunner;
 import org.apache.sis.internal.metadata.sql.SQLUtilities;
 import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.internal.util.StandardDateFormat;
-import org.apache.sis.internal.util.Fallback;
+import org.apache.sis.internal.referencing.Fallback;
 import org.apache.sis.util.Exceptions;
 import org.apache.sis.util.resources.Messages;
 import org.apache.sis.util.logging.PerformanceLevel;
@@ -230,7 +231,9 @@ final class EPSGInstaller extends ScriptRunner {
      * Processes to the creation of the EPSG database using the SQL scripts from the given provider.
      *
      * @param  scriptProvider  user-provided scripts, or {@code null} for automatic lookup.
-     * @throws IOException  if an error occurred while reading an input.
+     * @param  locale          the locale for information or warning messages, if any.
+     * @throws FileNotFoundException if a SQL script has not been found.
+     * @throws IOException  if another error occurred while reading an input.
      * @throws SQLException if an error occurred while executing a SQL statement.
      */
     public void run(InstallationResources scriptProvider, final Locale locale) throws SQLException, IOException {
@@ -255,12 +258,14 @@ final class EPSGInstaller extends ScriptRunner {
 
     /**
      * Searches for a SQL script provider on the classpath before to fallback on the default provider.
+     *
+     * @param  locale  the locale for information or warning messages, if any.
      */
     private static InstallationResources lookupProvider(final Locale locale) throws IOException {
         InstallationResources fallback = null;
         for (final InstallationResources provider : DefaultFactories.createServiceLoader(InstallationResources.class)) {
             if (provider.getAuthorities().contains(EPSG)) {
-                if (provider.getClass().isAnnotationPresent(Fallback.class)) {
+                if (!provider.getClass().isAnnotationPresent(Fallback.class)) {
                     return provider;
                 }
                 fallback = provider;

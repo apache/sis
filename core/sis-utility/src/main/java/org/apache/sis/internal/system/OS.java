@@ -17,6 +17,7 @@
 package org.apache.sis.internal.system;
 
 import java.net.URL;
+import java.net.URI;
 import java.net.URISyntaxException;
 import java.io.File;
 import java.io.InputStream;
@@ -122,7 +123,7 @@ public enum OS {
      */
     public static void load(final Class<?> caller, final String name) {
         try {
-            System.load(current().nativeLibrary(caller.getClassLoader(), name));
+            System.load(current().nativeLibrary(caller, name));
         } catch (IOException | SecurityException e) {
             throw (UnsatisfiedLinkError) new UnsatisfiedLinkError(e.getMessage()).initCause(e);
         }
@@ -133,7 +134,7 @@ public enum OS {
      * If the resources can not be accessed by an absolute path, then this method
      * copies the resource in a temporary file.
      *
-     * @param  loader  the loader of the JAR file where to look for native resources.
+     * @param  caller  a class in the JAR file where to look for native resources.
      * @param  name    the native library name without {@code ".so"} or {@code ".dll"} extension.
      * @return absolute path to the library (may be a temporary file).
      * @throws IOException if an error occurred while copying the library to a temporary file.
@@ -142,11 +143,40 @@ public enum OS {
      *
      * @see System#load(String)
      */
-    private String nativeLibrary(final ClassLoader loader, final String name) throws IOException {
+    private String nativeLibrary(final Class<?> caller, final String name) throws IOException {
         if (libdir != null) {
             final String ext = unix ? ".so" : ".dll";
-            final String path = "native/" + libdir + '/' + name + ext;
-            final URL res = loader.getResource(path);
+            final String path = libdir + '/' + name + ext;
+            final ClassLoader loader = caller.getClassLoader();
+            /*
+             * First, verify if the "linux", "darwin" or "windows" directory exists at the same level
+             * than the JAR file containing the caller class. If it exists, then we will use it. This
+             * check avoid the need to copy the ".so" or ".dll" file in a temporary location.  If the
+             * directory does not exist, then we do NOT create it in order to reduce the risk to mess
+             * with user's installation.
+             *
+             * Example of URL for a JAR entry: jar:file:/home/…/sis-gdal.jar!/org/apache/…/PJ.class
+             */
+            URL res = loader.getResource(caller.getName().replace('.', '/').concat(".class"));
+            if (res != null && "jar".equals(res.getProtocol())) {
+                String file = res.getPath();
+                final int s = file.indexOf('!');
+                if (s >= 0) try {
+                    File location = new File(new URI(file.substring(0, s)));
+                    location = new File(location.getParentFile(), path);
+                    if (location.canExecute()) {
+                        return location.getAbsolutePath();
+                    }
+                } catch (IllegalArgumentException | URISyntaxException e) {
+                    Logging.recoverableException(Logging.getLogger(Loggers.SYSTEM), OS.class, "nativeLibrary", e);
+                }
+            }
+            /*
+             * If we didn't found an existing "linux", "darwin" or "windows" directory with native library,
+             * copy the library in a temporary file. That file will be deleted on JVM exists, so a new file
+             * will be copied each time the application is executed.
+             */
+            res = loader.getResource("native/".concat(path));
             if (res != null) {
                 try {
                     return new File(res.toURI()).getAbsolutePath();

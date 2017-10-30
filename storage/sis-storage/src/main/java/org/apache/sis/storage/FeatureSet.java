@@ -75,6 +75,40 @@ public interface FeatureSet extends DataSet {
     FeatureType getType() throws DataStoreException;
 
     /**
+     * Requests a subset of features and feature properties from this resource.
+     * The filtering can be applied in two domains:
+     *
+     * <ul>
+     *   <li>The returned {@code FeatureSet} may contain a smaller number of {@link Feature} instances.</li>
+     *   <li>In each {@code Feature} instance of the returned set, the number of
+     *       {@linkplain org.apache.sis.feature.DefaultFeatureType#getProperty properties} may be smaller.</li>
+     * </ul>
+     *
+     * While it is technically possible to return a <em>transformed</em> feature set (i.e. containing feature
+     * properties not found in this original {@code FeatureSet}, for example as a result of some computation),
+     * such usages should be rare. Transformations should be the topic of a separated processing package.
+     * This {@code subset(Query)} method is rather for allowing {@link DataStore} implementations to optimize
+     * the overall filtering by using the tools available with their format (for example an R-tree).
+     * {@code BoundingBox} filters are the most common case of optimization implemented by {@link DataStore}.
+     *
+     * <p>The returned subset may be a <em>view</em> of this set, i.e. changes in this {@code FeatureSet}
+     * may be reflected immediately on the returned subset (and conversely), but not necessarily.
+     * However the returned subset may not have the same capabilities as this {@link FeatureSet}.
+     * In particular, write operations may become unsupported after complex queries.</p>
+     *
+     * <p>The default implementation throws {@link UnsupportedQueryException}.</p>
+     *
+     * @param  query  definition of feature and feature properties filtering applied at reading time.
+     * @return resulting subset of features (never {@code null}).
+     * @throws UnsupportedQueryException if this {@code FeatureSet} can not execute the given query.
+     *         This includes query validation errors.
+     * @throws DataStoreException if another error occurred while processing the query.
+     */
+    default FeatureSet subset(Query query) throws UnsupportedQueryException, DataStoreException {
+        throw new UnsupportedQueryException();
+    }
+
+    /**
      * Returns a stream of all features contained in this dataset.
      * For all features, the following condition shall be true:
      *

@@ -36,7 +36,7 @@ import org.apache.sis.internal.system.Modules;
  * ({@link org.apache.sis.storage.DataStore}, <i>etc</i>).
  * {@code OptionKey}s are used for aspects that usually do not need to be configured, except in a few specialized cases.
  * For example most data file formats read by SIS do not require the user to specify the character encoding, since the
- * encoding it is often given in the file header or in the format specification. However if SIS may have to read plain
+ * encoding it is often given in the file header or in the format specification. However if SIS needs to read plain
  * text files <em>and</em> the default platform encoding is not suitable, then the user can specify the desired encoding
  * explicitely using the {@link #ENCODING} option.
  *
@@ -77,8 +77,8 @@ public class OptionKey<T> implements Serializable {
     /**
      * The library to use for creating geometric objects at reading time.
      * Some libraries are the Java Topology Suite (JTS), ESRI geometry API and Java2D.
-     * If this option is not specified, then a library will be selected automatically
-     * among the libraries available in the runtime environment.
+     * If this option is not specified, then a default library will be selected among
+     * the libraries available in the runtime environment.
      *
      * @since 0.8
      */

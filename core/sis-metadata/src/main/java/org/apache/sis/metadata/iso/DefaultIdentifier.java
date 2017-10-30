@@ -23,7 +23,7 @@ import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.util.InternationalString;
 import org.apache.sis.metadata.TitleProperty;
-import org.apache.sis.internal.util.Citations;
+import org.apache.sis.metadata.iso.citation.Citations;
 
 
 /**

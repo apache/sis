@@ -59,7 +59,7 @@ public final class Resources extends IndexedResourceBundle {
         }
 
         /**
-         * Can not use UCAR library for NetCDF format. Fallback on Apache SIS implementation.
+         * Can not use UCAR library for netCDF format. Fallback on Apache SIS implementation.
          */
         public static final short CanNotUseUCAR = 4;
 

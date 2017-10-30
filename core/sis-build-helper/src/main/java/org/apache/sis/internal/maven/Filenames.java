@@ -48,7 +48,8 @@ final class Filenames {
 
     /**
      * The name of the file inside {@value #BINARIES_DIRECTORY} where to list SIS JAR files and their
-     * dependencies on platforms that do not support hard links.
+     * dependencies on platforms that do not support hard links. Also the file to ignore when copying
+     * entries in a ZIP file.
      */
     static final String CONTENT_FILE = "content.txt";
 
@@ -59,9 +60,9 @@ final class Filenames {
     static final String DISTRIBUTION_DIRECTORY = "distribution";
 
     /**
-     * The path to the directory (relative to the project root) to zip for creating the distribution ZIP file.
+     * The path to the directory (relative to the project directory) to zip for creating the distribution ZIP file.
      */
-    static final String ARTIFACT_PATH = "application/sis-console/src/main/artifact";
+    static final String ARTIFACT_PATH = "src/main/artifact";
 
     /**
      * The name of the sub-directory inside {@value #ARTIFACT_PATH} where the Pack200 file will be located.

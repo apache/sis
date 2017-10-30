@@ -153,7 +153,11 @@ public class MolodenskyTransform extends MolodenskyFormula {
         super(source, isSource3D, target, isTarget3D, tX, tY, tZ, null, isAbridged,
                 isAbridged ? AbridgedMolodensky.PARAMETERS : Molodensky.PARAMETERS);
         if (!isSource3D && !isTarget3D) {
-            inverse = new MolodenskyTransform2D(this, source, target);
+            if (isAbridged && tX == 0 && tY == 0 && tZ == 0) {
+                inverse = new AbridgedMolodenskyTransform2D(this, source, target);
+            } else {
+                inverse = new MolodenskyTransform2D(this, source, target);
+            }
         } else {
             inverse = new MolodenskyTransform(this, source, target);
         }
@@ -226,7 +230,11 @@ public class MolodenskyTransform extends MolodenskyFormula {
     {
         final MolodenskyTransform tr;
         if (!isSource3D && !isTarget3D) {
-            tr = new MolodenskyTransform2D(source, target, tX, tY, tZ, isAbridged);
+            if (isAbridged && tX == 0 && tY == 0 && tZ == 0) {
+                tr = new AbridgedMolodenskyTransform2D(source, target);
+            } else {
+                tr = new MolodenskyTransform2D(source, target, tX, tY, tZ, isAbridged);
+            }
         } else {
             tr = new MolodenskyTransform(source, isSource3D, target, isTarget3D, tX, tY, tZ, isAbridged);
         }

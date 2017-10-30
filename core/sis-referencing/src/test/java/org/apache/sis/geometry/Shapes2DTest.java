@@ -17,6 +17,7 @@
 package org.apache.sis.geometry;
 
 import java.awt.geom.Rectangle2D;
+import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.CoordinateOperation;
 import org.opengis.referencing.operation.MathTransform2D;
@@ -42,6 +43,12 @@ public final strictfp class Shapes2DTest extends TransformTestCase<Rectangle2D> 
      */
     @Override
     Rectangle2D createFromExtremums(CoordinateReferenceSystem crs, double xmin, double ymin, double xmax, double ymax) {
+        if (xmin > xmax) {
+            // This implementation does not support spanning anti-meridian.
+            final CoordinateSystemAxis axis = crs.getCoordinateSystem().getAxis(0);
+            xmin = axis.getMinimumValue();
+            xmax = axis.getMaximumValue();
+        }
         return new Rectangle2D.Double(xmin, ymin, xmax - xmin, ymax - ymin);
     }
 

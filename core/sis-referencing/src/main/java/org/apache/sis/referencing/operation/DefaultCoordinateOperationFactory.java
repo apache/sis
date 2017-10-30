@@ -20,6 +20,7 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.ServiceLoader;
 import org.opengis.util.FactoryException;
 import org.opengis.util.NoSuchIdentifierException;
@@ -42,8 +43,10 @@ import org.apache.sis.internal.metadata.ReferencingServices;
 import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.internal.util.Constants;
-import org.apache.sis.internal.util.LazySet;
+import org.apache.sis.internal.referencing.LazySet;
 import org.apache.sis.referencing.CRS;
+import org.apache.sis.referencing.IdentifiedObjects;
+import org.apache.sis.referencing.AbstractIdentifiedObject;
 import org.apache.sis.referencing.factory.InvalidGeodeticParameterException;
 import org.apache.sis.referencing.operation.transform.AbstractMathTransform;
 import org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory;
@@ -676,6 +679,13 @@ next:   for (int i=components.size(); --i >= 0;) {
     public CoordinateOperation createConcatenatedOperation(final Map<String,?> properties,
             final CoordinateOperation... operations) throws FactoryException
     {
+        /*
+         * If the user specified a single operation, there is no need to create a ConcatenatedOperation;
+         * the operation to return will be the specified one. The metadata given in argument are ignored
+         * on the assumption that the single operation has more complete metadata (in particular an EPSG
+         * code, in which case we do not want to modify any other metadata in order to stay compliant
+         * with EPSG definition).
+         */
         if (operations != null && operations.length == 1) {
             return operations[0];
         }
@@ -688,14 +698,39 @@ next:   for (int i=components.size(); --i >= 0;) {
         /*
          * Verifies again the number of single operations.  We may have a singleton if some operations
          * were omitted because their associated math transform were identity. This happen for example
-         * if a "Geographic 3D to 2D conversion" as been redimensioned to a "3D to 3D" operation.
+         * if a "Geographic 3D to 2D conversion" has been redimensioned to a "3D to 3D" operation.
          */
         final List<? extends CoordinateOperation> co = op.getOperations();
-        if (co.size() == 1) {
-            assert op.getMathTransform().equals(co.get(0).getMathTransform()) : op;
-            return co.get(0);
+        if (co.size() != 1) {
+            return pool.unique(op);
         }
-        return pool.unique(op);
+        final CoordinateOperation single = co.get(0);
+        assert op.getMathTransform().equals(single.getMathTransform()) : op;
+        if (!Objects.equals(single.getSourceCRS(), op.getSourceCRS()) ||
+            !Objects.equals(single.getTargetCRS(), op.getTargetCRS()))
+        {
+            /*
+             * The CRS of the single operation may be different than the CRS of the concatenated operation
+             * if the first or the last operation was an identity operation. It happens for example if the
+             * sole purpose of an operation step was to change the longitude range from [-180 … +180]° to
+             * [0 … 360]°: the MathTransform is identity (because Apache SIS does not handle those changes
+             * in MathTransform; we handle that elsewhere, for example in the Envelopes utility class),
+             * but omitting the transform should not cause the lost of the CRS with desired longitude range.
+             */
+            if (single instanceof SingleOperation) {
+                final Map<String,Object> merge = new HashMap<>(
+                        IdentifiedObjects.getProperties(single, CoordinateOperation.IDENTIFIERS_KEY));
+                merge.put(ReferencingServices.PARAMETERS_KEY, ((SingleOperation) single).getParameterValues());
+                if (single instanceof AbstractIdentifiedObject) {
+                    merge.put(ReferencingServices.OPERATION_TYPE_KEY, ((AbstractIdentifiedObject) single).getInterface());
+                }
+                merge.putAll(properties);
+                return createSingleOperation(merge, op.getSourceCRS(), op.getTargetCRS(),
+                        AbstractCoordinateOperation.getInterpolationCRS(op),
+                        ((SingleOperation) single).getMethod(), single.getMathTransform());
+            }
+        }
+        return single;
     }
 
     /**

@@ -17,12 +17,16 @@
 package org.apache.sis.metadata.iso.extent;
 
 import java.net.URL;
+import java.util.Arrays;
 import java.io.IOException;
 import javax.xml.bind.JAXBException;
+import org.opengis.metadata.extent.Extent;
+import org.apache.sis.util.iso.SimpleInternationalString;
 import org.apache.sis.xml.IdentifierSpace;
+import org.apache.sis.xml.Namespaces;
+import org.apache.sis.xml.NilObject;
 import org.apache.sis.test.XMLTestCase;
 import org.apache.sis.test.DependsOn;
-import org.apache.sis.xml.Namespaces;
 import org.junit.Test;
 
 import static org.apache.sis.test.Assert.*;
@@ -34,7 +38,7 @@ import static org.apache.sis.test.TestUtilities.date;
  *
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.6
+ * @version 0.8
  * @since   0.3
  * @module
  */
@@ -55,6 +59,40 @@ public final strictfp class DefaultExtentTest extends XMLTestCase {
         final URL resource = DefaultExtentTest.class.getResource(filename);
         assertNotNull(filename, resource);
         return resource;
+    }
+
+    /**
+     * Tests {@link DefaultExtent#intersect(Extent)}.
+     */
+    @Test
+    public void testIntersect() {
+        final DefaultGeographicBoundingBox bounds1   = new DefaultGeographicBoundingBox(10, 20, 30, 40);
+        final DefaultGeographicBoundingBox bounds2   = new DefaultGeographicBoundingBox(16, 18, 31, 42);
+        final DefaultGeographicBoundingBox clip      = new DefaultGeographicBoundingBox(15, 25, 26, 32);
+        final DefaultGeographicBoundingBox expected1 = new DefaultGeographicBoundingBox(15, 20, 30, 32);
+        final DefaultGeographicBoundingBox expected2 = new DefaultGeographicBoundingBox(16, 18, 31, 32);
+        final DefaultExtent e1 = new DefaultExtent("Somewhere", bounds1, null, null);
+        final DefaultExtent e2 = new DefaultExtent("Somewhere", clip, null, null);
+        e1.getGeographicElements().add(bounds2);
+        e1.intersect(e2);
+        assertEquals("description", "Somewhere", e1.getDescription().toString());
+        assertFalse("isNil(description)", e1.getDescription() instanceof NilObject);
+        assertArrayEquals("geographicElements", new DefaultGeographicBoundingBox[] {
+            expected1, expected2
+        }, e1.getGeographicElements().toArray());
+        /*
+         * Change the description and test again. That description should be considered missing
+         * because we have a mismatch. Also change abounding box in such a way that there is no
+         * intersection. That bounding box should be omitted.
+         */
+        bounds2.setBounds(8, 12, 33, 35);
+        e1.setGeographicElements(Arrays.asList(bounds1, bounds2));
+        e2.setDescription(new SimpleInternationalString("Somewhere else"));
+        e1.intersect(e2);
+        assertTrue("isNil(description)", e1.getDescription() instanceof NilObject);
+        assertArrayEquals("geographicElements", new DefaultGeographicBoundingBox[] {
+            expected1
+        }, e1.getGeographicElements().toArray());
     }
 
     /**

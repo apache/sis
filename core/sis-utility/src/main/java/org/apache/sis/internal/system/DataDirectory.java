@@ -17,6 +17,10 @@
 package org.apache.sis.internal.system;
 
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.InvalidPathException;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.security.AccessController;
@@ -24,18 +28,12 @@ import java.security.PrivilegedAction;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Messages;
 
-// Branch-dependent imports
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.InvalidPathException;
-
 
 /**
  * Sub-directories of {@code SIS_DATA} where SIS looks for EPSG database, datum shift grids and other resources.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.7
+ * @version 0.8
  * @since   0.7
  * @module
  */
@@ -108,6 +106,40 @@ public enum DataDirectory {
     }
 
     /**
+     * Returns the value of {@value #ENV} environment variable, or {@code null} if none.
+     * This method does not perform any logging and does not verify if the directory exists.
+     * If the intend is to perform I/O operations, use {@link #getRootDirectory()} instead.
+     *
+     * @return the {@value #ENV} environment variable, or {@code null} if none.
+     * @throws SecurityException if this method is not allowed to query the environment variable.
+     *
+     * @see System#getenv(String)
+     *
+     * @since 0.8
+     */
+    public static String getenv() throws SecurityException {
+        return AccessController.doPrivileged((PrivilegedAction<String>) () -> System.getenv(ENV));
+    }
+
+    /**
+     * Returns {@code true} if the {@value #ENV} environment variable is unset. In case of doubt, this method
+     * returns {@code false}. This method is used for avoiding or at leat delaying the log messages emitted by
+     * {@link #getRootDirectory()} when a fallback exists in absence of any user attempt to configure the system.
+     *
+     * @return {@code true} if the {@value #ENV} environment variable is unset.
+     *
+     * @since 0.8
+     */
+    public static synchronized boolean isEnvClear() {
+        if (rootDirectory == null) try {
+            return getenv() == null;
+        } catch (SecurityException e) {
+            Logging.recoverableException(Logging.getLogger(Loggers.SYSTEM), DataDirectory.class, "isEnvClear", e);
+        }
+        return false;
+    }
+
+    /**
      * Returns the root directory fetched from the {@code SIS_DATA} environment variable.
      * If the environment variable is not set or the directory does not exist, then this method returns {@code null}.
      *
@@ -115,7 +147,7 @@ public enum DataDirectory {
      */
     public static synchronized Path getRootDirectory() {
         if (rootDirectory == null) try {
-            final String dir = AccessController.doPrivileged((PrivilegedAction<String>) () -> System.getenv(ENV));
+            final String dir = getenv();
             if (dir == null || dir.isEmpty()) {
                 warning("getRootDirectory", null, Messages.Keys.DataDirectoryNotSpecified_1, ENV);
             } else try {

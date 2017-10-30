@@ -280,6 +280,24 @@ public final strictfp class CRSTest extends TestCase {
     }
 
     /**
+     * Tests getting the horizontal and vertical components of a three-dimensional projected CRS.
+     *
+     * @since 0.8
+     */
+    @Test
+    public void testComponentsOfProjectedCRS() {
+        final ProjectedCRS volumetric = HardCodedConversions.mercator3D();
+        assertFalse("isHorizontalCRS", CRS.isHorizontalCRS(volumetric));
+        assertNull("getTemporalComponent", CRS.getTemporalComponent(volumetric));
+        assertNull("getVerticalComponent", CRS.getVerticalComponent(volumetric, false));
+        assertEqualsIgnoreMetadata(HardCodedCRS.ELLIPSOIDAL_HEIGHT, CRS.getVerticalComponent(volumetric, true));
+        final SingleCRS horizontal = CRS.getHorizontalComponent(volumetric);
+        assertInstanceOf("getHorizontalComponent", ProjectedCRS.class, horizontal);
+        assertEquals("dimension", 2, horizontal.getCoordinateSystem().getDimension());
+        assertTrue("isHorizontalCRS", CRS.isHorizontalCRS(horizontal));
+    }
+
+    /**
      * Tests {@link CRS#getComponentAt(CoordinateReferenceSystem, int, int)}.
      *
      * @since 0.5
@@ -307,6 +325,26 @@ public final strictfp class CRSTest extends TestCase {
                 HardCodedCRS.GEOID_3D,
                 new DefaultCompoundCRS(IdentifiedObjects.getProperties(HardCodedCRS.GEOID_4D),
                         HardCodedCRS.GEOID_3D, HardCodedCRS.TIME));
+    }
+
+    /**
+     * Tests {@link CRS#compound(CoordinateReferenceSystem...)}.
+     *
+     * @throws FactoryException if an error occurred while creating a compound CRS.
+     *
+     * @since 0.8
+     */
+    @Test
+    public void testCompound() throws FactoryException {
+        try {
+            CRS.compound();
+            fail("Should not accept empty array.");
+        } catch (IllegalArgumentException e) {
+            final String message = e.getMessage();
+            assertTrue(message, message.contains("components"));
+        }
+        assertSame(HardCodedCRS.WGS84, CRS.compound(HardCodedCRS.WGS84));
+        assertEqualsIgnoreMetadata(HardCodedCRS.WGS84_3D, CRS.compound(HardCodedCRS.WGS84, HardCodedCRS.ELLIPSOIDAL_HEIGHT));
     }
 
     /**

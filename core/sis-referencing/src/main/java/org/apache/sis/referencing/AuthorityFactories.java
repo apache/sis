@@ -16,6 +16,7 @@
  */
 package org.apache.sis.referencing;
 
+import java.util.Iterator;
 import java.util.ServiceLoader;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
@@ -26,10 +27,11 @@ import org.opengis.referencing.cs.CSAuthorityFactory;
 import org.opengis.referencing.crs.CRSAuthorityFactory;
 import org.opengis.referencing.datum.DatumAuthorityFactory;
 import org.opengis.referencing.operation.CoordinateOperationAuthorityFactory;
-import org.apache.sis.internal.util.LazySet;
+import org.apache.sis.internal.referencing.LazySet;
 import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.system.SystemListener;
+import org.apache.sis.internal.referencing.EPSGFactoryProxy;
 import org.apache.sis.referencing.factory.MultiAuthoritiesFactory;
 import org.apache.sis.referencing.factory.GeodeticAuthorityFactory;
 import org.apache.sis.referencing.factory.UnavailableFactoryException;
@@ -58,7 +60,8 @@ final class AuthorityFactories<T extends AuthorityFactory> extends LazySet<T> {
 
     /**
      * The unique system-wide authority factory instance that contains all factories found on the classpath,
-     * plus the EPSG factory.
+     * plus the EPSG factory. The {@link EPSGFactoryProxy} most be excluded from this list, since the EPSG
+     * factory is handled in a special way.
      */
     static final MultiAuthoritiesFactory ALL = new MultiAuthoritiesFactory(
             new AuthorityFactories<>(CRSAuthorityFactory.class),
@@ -210,5 +213,19 @@ final class AuthorityFactories<T extends AuthorityFactory> extends LazySet<T> {
     protected T[] initialValues() {
         EPSG();                         // Force EPSGFactory instantiation if not already done.
         return (T[]) EPSG;
+    }
+
+    /**
+     * Invoked by {@link LazySet} for fetching the next element from the given iterator.
+     * Skips the {@link EPSGFactoryProxy} if possible, or returns {@code null} otherwise.
+     * Note that {@link MultiAuthoritiesFactory} is safe to null values.
+     */
+    @Override
+    protected T next(final Iterator<? extends T> it) {
+        T e = it.next();
+        if (e instanceof EPSGFactoryProxy) {
+            e = it.hasNext() ? it.next() : null;
+        }
+        return e;
     }
 }

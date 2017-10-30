@@ -163,6 +163,19 @@ public final strictfp class HardCodedCS {
             HardCodedAxes.NORTHING);
 
     /**
+     * A three-dimensional Cartesian CS with
+     * <var>{@linkplain HardCodedAxes#EASTING Easting}</var>,
+     * <var>{@linkplain HardCodedAxes#NORTHING Northing}</var>
+     * <var>{@linkplain HardCodedAxes#ELLIPSOIDAL_HEIGHT Height}</var>
+     * axes in metres.
+     */
+    public static final DefaultCartesianCS PROJECTED_3D = new DefaultCartesianCS(
+            singletonMap(NAME_KEY, "Projected"),
+            HardCodedAxes.EASTING,
+            HardCodedAxes.NORTHING,
+            HardCodedAxes.ELLIPSOIDAL_HEIGHT);
+
+    /**
      * A two-dimensional Cartesian CS with
      * <var>{@linkplain HardCodedAxes#X x}</var>,
      * <var>{@linkplain HardCodedAxes#Y y}</var>

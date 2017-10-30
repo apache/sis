@@ -39,7 +39,7 @@ abstract class EqualAreaProjection extends NormalizedProjection {
     private static final long serialVersionUID = -6175270149094989517L;
 
     /**
-     * {@code false} for using the original formulas as published by Synder, or {@code true} for using formulas
+     * {@code false} for using the original formulas as published by Snyder, or {@code true} for using formulas
      * modified using trigonometric identities. The use of trigonometric identities is for reducing the amount
      * of calls to the {@link Math#sin(double)} and similar methods. Some identities used are:
      *
@@ -193,7 +193,7 @@ abstract class EqualAreaProjection extends NormalizedProjection {
     }
 
     /**
-     * Computes the latitude using equation 3-18 from Synder, followed by iterative resolution of Synder 3-16.
+     * Computes the latitude using equation 3-18 from Snyder, followed by iterative resolution of Snyder 3-16.
      * In theory, the series expansion given by equation 3-18 (φ ≈ c₂⋅sin(2β) + c₄⋅sin(4β) + c₈⋅sin(8β)) should
      * be used in replacement of the iterative method. However in practice the series expansion seems to not
      * have a sufficient amount of terms for achieving the centimetric precision, so we "finish" it by the
@@ -210,7 +210,7 @@ abstract class EqualAreaProjection extends NormalizedProjection {
             φ = ci8 * sin(8*β)
               + ci4 * sin(4*β)
               + ci2 * sin(2*β)
-              + β;                                                                  // Synder 3-18
+              + β;                                                                  // Snyder 3-18
         } else {
             /*
              * Same formula than above, but rewriten using trigonometric identities in order to avoid
@@ -233,11 +233,11 @@ abstract class EqualAreaProjection extends NormalizedProjection {
          * Use the iterative method for reaching the last part of missing accuracy. Usually this loop
          * will perform exactly one iteration, no more, because φ is already quite close to the result.
          *
-         * Mathematical note: Synder 3-16 gives q/(1-ℯ²) instead of y in the calculation of Δφ below.
-         * For Cylindrical Equal Area projection, Synder 10-17 gives  q = (qPolar⋅sinβ), which simplifies
+         * Mathematical note: Snyder 3-16 gives q/(1-ℯ²) instead of y in the calculation of Δφ below.
+         * For Cylindrical Equal Area projection, Snyder 10-17 gives  q = (qPolar⋅sinβ), which simplifies
          * as y.
          *
-         * For Albers Equal Area projection, Synder 14-19 gives  q = (C - ρ²n²/a²)/n,  which we rewrite
+         * For Albers Equal Area projection, Snyder 14-19 gives  q = (C - ρ²n²/a²)/n,  which we rewrite
          * as  q = (C - ρ²)/n  (see comment in AlbersEqualArea.inverseTransform(…) for the mathematic).
          * The y value given to this method is y = (C - ρ²) / (n⋅(1-ℯ²)) = q/(1-ℯ²), the desired value.
          */
@@ -253,7 +253,7 @@ abstract class EqualAreaProjection extends NormalizedProjection {
             }
         }
         /*
-         * In the Albers Equal Area discussion, Synder said that above algorithm does not converge if
+         * In the Albers Equal Area discussion, Snyder said that above algorithm does not converge if
          *
          *   q = ±(1 - (1-ℯ²)/(2ℯ) ⋅ ln((1-ℯ)/(1+ℯ)))
          *
@@ -265,9 +265,9 @@ abstract class EqualAreaProjection extends NormalizedProjection {
          *
          *   y  =  ±(1/(1-ℯ²) + atanh(ℯ)/ℯ)  =  ±qmPolar
          *
-         * which implies  sinβ = ±1. This is consistent with Synder discussion of Cylndrical Equal Area
+         * which implies  sinβ = ±1. This is consistent with Snyder discussion of Cylndrical Equal Area
          * projection, where he said exactly that about the same formula (that it does not converge for
-         * β = ±90°). In both case, Synder said that the result is φ = β, with the same sign.
+         * β = ±90°). In both case, Snyder said that the result is φ = β, with the same sign.
          */
         final double as = abs(sinβ);
         if (abs(as - 1) < ANGULAR_TOLERANCE) {

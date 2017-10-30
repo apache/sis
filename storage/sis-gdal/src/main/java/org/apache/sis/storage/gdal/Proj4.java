@@ -188,9 +188,9 @@ public final class Proj4 extends Static {
                         }
                     }
                     final String pn = name(parameter.getDescriptor());
-                    hasSemiMajor |= pn.equals("+a");
-                    hasSemiMinor |= pn.equals("+b");
-                    definition.append(' ').append(pn).append('=').append(value);
+                    hasSemiMajor |= pn.equals("a");
+                    hasSemiMinor |= pn.equals("b");
+                    definition.append(" +").append(pn).append('=').append(value);
                 }
             }
         }

@@ -16,12 +16,16 @@
  */
 package org.apache.sis.internal.netcdf.ucar;
 
+import org.apache.sis.storage.DataStore;
+import org.apache.sis.setup.GeometryLibrary;
 import org.apache.sis.internal.netcdf.DiscreteSampling;
+import org.apache.sis.util.logging.WarningListeners;
 import ucar.nc2.ft.FeatureCollection;
 
 // Branch-dependent imports
 import java.util.stream.Stream;
 import org.opengis.feature.Feature;
+import org.opengis.feature.FeatureType;
 
 
 /**
@@ -40,17 +44,26 @@ final class FeaturesWrapper extends DiscreteSampling {
 
     /**
      * Creates a new discrete sampling parser.
+     *
+     * @param  factory    the library for geometric objects, or {@code null} for the default.
+     * @param  listeners  the set of registered warning listeners for the data store.
+     * @throws IllegalArgumentException if the given library is non-null but not available.
      */
-    FeaturesWrapper(final FeatureCollection features) {
+    FeaturesWrapper(final FeatureCollection features, final GeometryLibrary factory, final WarningListeners<DataStore> listeners) {
+        super(factory, listeners);
         this.features = features;
     }
 
+    @Override
+    public FeatureType getType() {
+        throw new UnsupportedOperationException();      // TODO
+    }
 
     /**
      * Returns the stream of features.
      */
     @Override
-    public Stream<Feature> features() {
+    public Stream<Feature> features(boolean parallel) {
         throw new UnsupportedOperationException();      // TODO
     }
 }

@@ -251,7 +251,7 @@ public final class Citations extends Static {
      * <ul>
      *   <li><a href="http://www.opengeospatial.org/standards/ct">Coordinate Transformation Service</a></li>
      *   <li><a href="http://www.opengeospatial.org/standards/wms">Web Map Service</a></li>
-     *   <li>Definition identifier URNs in OGC namespace</li>
+     *   <li><a href="http://portal.opengeospatial.org/files/?artifact_id=24045">Definition identifier URNs in OGC namespace</a></li>
      * </ul>
      *
      * We do not commit to a particular OGC specification in order to keep the flexibility to change the
@@ -308,14 +308,14 @@ public final class Citations extends Static {
      * <a href="http://www.unidata.ucar.edu/software/netcdf-java">NetCDF</a> specification.
      * The {@linkplain IdentifierSpace#getName() name} of this identifier space is fixed to {@code "NetCDF"}.
      * This citation is used as the authority for some map projection method and parameter names
-     * as used in NetCDF files.
+     * as used in netCDF files.
      *
      * <div class="note"><b>Example</b>
-     * the Mercator projection can be defined in a NetCDF file with the following parameters:
+     * the Mercator projection can be defined in a netCDF file with the following parameters:
      *
      * <table class="sis">
-     * <caption>Example of identifiers in NetCDF name space</caption>
-     * <tr><th>Name in NetCDF namespace</th>                           <th>Name in default namespace (EPSG)</th></tr>
+     * <caption>Example of identifiers in netCDF name space</caption>
+     * <tr><th>Name in netCDF namespace</th>                           <th>Name in default namespace (EPSG)</th></tr>
      * <tr><td>{@code "NetCDF:semi_major_axis"}</td>                   <td></td></tr>
      * <tr><td>{@code "NetCDF:semi_minor_axis"}</td>                   <td></td></tr>
      * <tr><td>{@code "NetCDF:latitude_of_projection_origin"}</td>     <td>Latitude of natural origin</td></tr>
@@ -689,7 +689,29 @@ public final class Citations extends Static {
      *
      * @since 0.6
      */
+    @SuppressWarnings("deprecation")
     public static String getUnicodeIdentifier(final Citation citation) {
         return org.apache.sis.internal.util.Citations.getUnicodeIdentifier(citation);
+    }
+
+    /**
+     * Infers a code space from the given citation, or returns {@code null} if none.
+     * This method is very close to {@link #getUnicodeIdentifier(Citation)}, except that it looks for
+     * {@link IdentifierSpace#getName()} before to scan the identifiers and titles. The result should
+     * be the same in most cases, except some cases like the {@link org.apache.sis.metadata.iso.citation.Citations}
+     * constant for {@code "Proj.4"} in which case this method returns {@code "Proj4"} instead of {@code null}.
+     *
+     * @param  citation  the citation for which to infer the code space, or {@code null}.
+     * @return a non-empty code space for the given citation without leading or trailing whitespaces,
+     *         or {@code null} if the given citation is null or does not have any Unicode identifier or title.
+     *
+     * @since 0.8
+     */
+    public static String getCodeSpace(final Citation citation) {
+        if (citation instanceof IdentifierSpace<?>) {
+            return ((IdentifierSpace<?>) citation).getName();
+        } else {
+            return getUnicodeIdentifier(citation);
+        }
     }
 }

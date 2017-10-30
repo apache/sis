@@ -16,10 +16,14 @@
  */
 package org.apache.sis.internal.metadata;
 
+import javax.measure.Unit;
 import org.opengis.referencing.cs.*;
 import org.opengis.referencing.crs.*;
 import org.opengis.referencing.datum.*;
 import org.opengis.referencing.ReferenceSystem;
+import org.opengis.referencing.operation.OperationMethod;
+import org.opengis.referencing.operation.CoordinateOperation;
+import org.opengis.parameter.ParameterDescriptor;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
@@ -41,19 +45,23 @@ public final strictfp class NameMeaningTest extends TestCase {
      */
     @Test
     public void testToObjectType() {
-        assertEquals("crs",             NameMeaning.toObjectType(GeographicCRS       .class));
-        assertEquals("crs",             NameMeaning.toObjectType(ProjectedCRS        .class));
-        assertEquals("crs",             NameMeaning.toObjectType(VerticalCRS         .class));
-        assertEquals("crs",             NameMeaning.toObjectType(TemporalCRS         .class));
-        assertEquals("datum",           NameMeaning.toObjectType(GeodeticDatum       .class));
-        assertEquals("datum",           NameMeaning.toObjectType(VerticalDatum       .class));
-        assertEquals("datum",           NameMeaning.toObjectType(TemporalDatum       .class));
-        assertEquals("ellipsoid",       NameMeaning.toObjectType(Ellipsoid           .class));
-        assertEquals("meridian",        NameMeaning.toObjectType(PrimeMeridian       .class));
-        assertEquals("cs",              NameMeaning.toObjectType(EllipsoidalCS       .class));
-        assertEquals("cs",              NameMeaning.toObjectType(CartesianCS         .class));
-        assertEquals("axis",            NameMeaning.toObjectType(CoordinateSystemAxis.class));
-        assertEquals("referenceSystem", NameMeaning.toObjectType(ReferenceSystem     .class));
+        assertEquals("crs",                 NameMeaning.toObjectType(GeographicCRS       .class));
+        assertEquals("crs",                 NameMeaning.toObjectType(ProjectedCRS        .class));
+        assertEquals("crs",                 NameMeaning.toObjectType(VerticalCRS         .class));
+        assertEquals("crs",                 NameMeaning.toObjectType(TemporalCRS         .class));
+        assertEquals("datum",               NameMeaning.toObjectType(GeodeticDatum       .class));
+        assertEquals("datum",               NameMeaning.toObjectType(VerticalDatum       .class));
+        assertEquals("datum",               NameMeaning.toObjectType(TemporalDatum       .class));
+        assertEquals("ellipsoid",           NameMeaning.toObjectType(Ellipsoid           .class));
+        assertEquals("meridian",            NameMeaning.toObjectType(PrimeMeridian       .class));
+        assertEquals("cs",                  NameMeaning.toObjectType(EllipsoidalCS       .class));
+        assertEquals("cs",                  NameMeaning.toObjectType(CartesianCS         .class));
+        assertEquals("axis",                NameMeaning.toObjectType(CoordinateSystemAxis.class));
+        assertEquals("referenceSystem",     NameMeaning.toObjectType(ReferenceSystem     .class));
+        assertEquals("coordinateOperation", NameMeaning.toObjectType(CoordinateOperation .class));
+        assertEquals("method",              NameMeaning.toObjectType(OperationMethod     .class));
+        assertEquals("parameter",           NameMeaning.toObjectType(ParameterDescriptor .class));
+        assertEquals("uom",                 NameMeaning.toObjectType(Unit                .class));
     }
 
     /**
@@ -64,7 +72,9 @@ public final strictfp class NameMeaningTest extends TestCase {
     @Test
     @DependsOnMethod("testToObjectType")
     public void testToURN() {
+        assertEquals("urn:ogc:def:crs:EPSG::4326",    NameMeaning.toURN(GeodeticCRS.class,   "EPSG", null, "4326"));
         assertEquals("urn:ogc:def:crs:OGC:1.3:CRS84", NameMeaning.toURN(GeographicCRS.class, "CRS",  null,   "84"));
         assertEquals("urn:ogc:def:datum:EPSG::6326",  NameMeaning.toURN(GeodeticDatum.class, "EPSG", null, "6326"));
+        assertNull  ("Authority is not optional.",    NameMeaning.toURN(GeographicCRS.class, null,   null, "4326"));
     }
 }

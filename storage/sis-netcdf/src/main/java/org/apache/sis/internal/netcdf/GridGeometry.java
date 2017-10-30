@@ -59,7 +59,7 @@ public abstract class GridGeometry {
      *
      * <p>This method is used mostly for producing ISO 19115 metadata. It is typically invoked only once.</p>
      *
-     * @return the CRS axes, in NetCDF order (reverse of "natural" order).
+     * @return the CRS axes, in netCDF order (reverse of "natural" order).
      * @throws IOException if an I/O operation was necessary but failed.
      * @throws DataStoreException if a logical error occurred.
      */
@@ -68,7 +68,7 @@ public abstract class GridGeometry {
     /**
      * Returns a coordinate for the given two-dimensional grid coordinate axis. This is (indirectly) a callback
      * method for {@link #getAxes()}. The (<var>i</var>, <var>j</var>) indices are grid indices <em>before</em>
-     * they get reordered by the {@link Axis} constructor. In the NetCDF UCAR API, this method maps directly to
+     * they get reordered by the {@link Axis} constructor. In the netCDF UCAR API, this method maps directly to
      * {@link ucar.nc2.dataset.CoordinateAxis2D#getCoordValue(int, int)}.
      *
      * @param  axis  an implementation-dependent object representing the two-dimensional axis, or {@code null} if none.

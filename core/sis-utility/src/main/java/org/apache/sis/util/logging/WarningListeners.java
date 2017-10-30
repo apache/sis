@@ -120,6 +120,18 @@ public class WarningListeners<S> implements Localized {
     }
 
     /**
+     * Returns the source declared source of warnings.
+     * This value is specified at construction time.
+     *
+     * @return the declared source of warnings.
+     *
+     * @since 0.8
+     */
+    public S getSource() {
+        return source;
+    }
+
+    /**
      * The locale to use for formatting warning messages, or {@code null} for the default locale.
      * If the {@code source} object given to the constructor implements the {@link Localized} interface,
      * then this method delegates to its {@code getLocale()} method. Otherwise this method returns {@code null}.
@@ -191,6 +203,24 @@ public class WarningListeners<S> implements Localized {
      * Reports a warning represented by the given message and exception.
      * At least one of {@code message} and {@code exception} shall be non-null.
      * If both are non-null, then the exception message will be concatenated after the given message.
+     * If the exception is non-null, its stack trace will be omitted at logging time for avoiding to
+     * pollute console output (keeping in mind that this method should be invoked only for non-fatal
+     * warnings). See {@linkplain #warning(Level, String, Exception) below} for more explanation.
+     *
+     * <p>This method is a shortcut for <code>{@linkplain #warning(Level, String, Exception)
+     * warning}({@linkplain Level#WARNING}, message, exception)</code>.
+     *
+     * @param message    the message to log, or {@code null} if none.
+     * @param exception  the exception to log, or {@code null} if none.
+     */
+    public void warning(String message, Exception exception) {
+        warning(Level.WARNING, message, exception);
+    }
+
+    /**
+     * Reports a warning at the given level represented by the given message and exception.
+     * At least one of {@code message} and {@code exception} shall be non-null.
+     * If both are non-null, then the exception message will be concatenated after the given message.
      *
      * <div class="section">Stack trace omission</div>
      * If there is no registered listener, then the {@link #warning(LogRecord)} method will send the record to the
@@ -204,10 +234,12 @@ public class WarningListeners<S> implements Localized {
      *   <li>register a listener which will log the record itself.</li>
      * </ul>
      *
+     * @param level      the warning level.
      * @param message    the message to log, or {@code null} if none.
      * @param exception  the exception to log, or {@code null} if none.
      */
-    public void warning(String message, final Exception exception) {
+    public void warning(final Level level, String message, final Exception exception) {
+        ArgumentChecks.ensureNonNull("level", level);
         final LogRecord record;
         final StackTraceElement[] trace;
         if (exception != null) {
@@ -216,11 +248,11 @@ public class WarningListeners<S> implements Localized {
             if (message == null) {
                 message = exception.toString();
             }
-            record = new QuietLogRecord(message, exception);
+            record = new QuietLogRecord(level, message, exception);
         } else {
             ArgumentChecks.ensureNonEmpty("message", message);
             trace = Thread.currentThread().getStackTrace();
-            record = new LogRecord(Level.WARNING, message);
+            record = new LogRecord(level, message);
         }
         for (final StackTraceElement e : trace) {
             if (isPublic(e)) {

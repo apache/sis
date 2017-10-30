@@ -122,6 +122,32 @@ public abstract class DataStore implements Resource, Localized, AutoCloseable {
     }
 
     /**
+     * Creates a new instance as a child of another data store instance.
+     * The new instance inherits the parent {@linkplain #getProvider() provider}.
+     * The parent and the child share the same listeners: adding or removing a listener to a parent
+     * adds or removes the same listeners to all children, and conversely.
+     *
+     * @param  parent     the parent data store, or {@code null} if none.
+     * @param  connector  information about the storage (URL, stream, reader instance, <i>etc</i>).
+     * @throws DataStoreException if an error occurred while creating the data store for the given storage.
+     *
+     * @since 0.8
+     */
+    protected DataStore(final DataStore parent, final StorageConnector connector) throws DataStoreException {
+        ArgumentChecks.ensureNonNull("connector", connector);
+        if (parent != null) {
+            provider  = parent.provider;
+            locale    = parent.locale;
+            listeners = parent.listeners;
+        } else {
+            provider  = null;
+            locale    = Locale.getDefault(Locale.Category.DISPLAY);
+            listeners = new WarningListeners<>(this);
+        }
+        name = connector.getStorageName();
+    }
+
+    /**
      * Returns the factory that created this {@code DataStore} instance.
      * The provider gives additional information on this {@code DataStore} such as a format description
      * and a list of parameters that can be used for opening data stores of the same class.
@@ -198,7 +224,7 @@ public abstract class DataStore implements Resource, Localized, AutoCloseable {
      * The collection of legal parameters is implementation-dependent
      * ({@linkplain org.apache.sis.parameter.DefaultParameterValue#getDescriptor() their description}
      * is given by {@link DataStoreProvider#getOpenParameters()}),
-     * but should contain at least a parameter named {@value DataStoreProvider#LOCATION}
+     * but should contain at least a parameter named {@value org.apache.sis.storage.DataStoreProvider#LOCATION}
      * with a {@link java.net.URI}, {@link java.nio.file.Path} or {@link javax.sql.DataSource} value.
      *
      * <p>In the event a data store must be closed and reopened later, those parameters can be stored in a file or

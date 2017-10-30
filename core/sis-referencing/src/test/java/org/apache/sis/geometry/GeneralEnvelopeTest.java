@@ -39,11 +39,11 @@ import static org.apache.sis.geometry.AbstractEnvelopeTest.WGS84;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Johann Sorel (Geomatys)
- * @version 0.5
+ * @version 0.8
  * @since   0.3
  * @module
  */
-@DependsOn(AbstractEnvelopeTest.class)
+@DependsOn(ArrayEnvelopeTest.class)
 public strictfp class GeneralEnvelopeTest extends TestCase {
     /**
      * Tolerance threshold for floating point comparisons.
@@ -97,7 +97,7 @@ public strictfp class GeneralEnvelopeTest extends TestCase {
             final double xLower, final double ymin, final double xUpper, final double ymax)
     {
         final double xmin, xmax;
-        if (MathFunctions.isNegative(xUpper - xLower)) { // Check for anti-meridian spanning.
+        if (MathFunctions.isNegative(xUpper - xLower)) {                // Check for anti-meridian spanning.
             xmin = -180;
             xmax = +180;
         } else {
@@ -131,25 +131,24 @@ public strictfp class GeneralEnvelopeTest extends TestCase {
     private static void assertIntersectEquals(final GeneralEnvelope e1, final GeneralEnvelope e2,
             final double xmin, final double ymin, final double xmax, final double ymax)
     {
-        final boolean isEmpty = !(((xmax - xmin) * (ymax - ymin)) != 0);        // Use ! for catching NaN.
         final Envelope2D r1 = new Envelope2D(e1);
         final Envelope2D r2 = new Envelope2D(e2);
         final Envelope2D ri = r1.createIntersection(r2);
-        assertEquals("isEmpty", isEmpty, r1.isEmpty());
+        assertFalse("isEmpty", r1.isEmpty());
         assertEnvelopeEquals(ri, xmin, ymin, xmax, ymax);
         assertEquals("Interchanged arguments.", ri, r2.createIntersection(r1));
 
         // Compares with GeneralEnvelope.
         final GeneralEnvelope ei = new GeneralEnvelope(e1);
         ei.intersect(e2);
-        assertEquals("isEmpty", isEmpty, e1.isEmpty());
+        assertFalse("isEmpty", e1.isEmpty());
         assertEnvelopeEquals(ei, xmin, ymin, xmax, ymax);
         assertTrue("Using GeneralEnvelope.", ei.equals(ri, STRICT, false));
 
         // Interchanges arguments.
         ei.setEnvelope(e2);
         ei.intersect(e1);
-        assertEquals("isEmpty", isEmpty, e1.isEmpty());
+        assertFalse("isEmpty", e1.isEmpty());
         assertEnvelopeEquals(ei, xmin, ymin, xmax, ymax);
         assertTrue("Using GeneralEnvelope.", ei.equals(ri, STRICT, false));
     }
@@ -233,7 +232,7 @@ public strictfp class GeneralEnvelopeTest extends TestCase {
         //  └──────────┘
         e1.setEnvelope(20, -20,  80, 12);
         e2.setEnvelope(40, -10, 100, 30);
-        final double ymin=-10, ymax=12; // Will not change anymore
+        final double ymin=-10, ymax=12;                         // Will not change anymore
         assertIntersectEquals(e1, e2, 40, ymin, 80, ymax);
         //  ────┐  ┌────
         //  ──┐ │  │ ┌──
@@ -272,6 +271,20 @@ public strictfp class GeneralEnvelopeTest extends TestCase {
         //  ─────┘     └─────
         e2.setRange(0, 10, 90);
         assertIntersectEquals(e1, e2, NaN, ymin, NaN, ymax);
+        //  ────────┬────────
+        //        ┌─┼────┐
+        //        └─┼────┘
+        //  ────────┴────────
+        e1.setRange(0, 0.0, -0.0);
+        e2.setRange(0, -10,   30);
+        assertIntersectEquals(e1, e2, -10, ymin, 30, ymax);
+        //  ┌───────────────┐
+        //  │               │
+        //  │               │
+        //  └───────────────┘
+        e1.setRange(0, 0.0, -0.0);
+        e2.setRange(0, 0.0, -0.0);
+        assertIntersectEquals(e1, e2, 0.0, ymin, -0.0, ymax);
 
         // Post-test verification, mostly for SubEnvelope.
         verifyInvariants(e1);
