@@ -159,7 +159,6 @@
        =========================================================== -->
   <modules>
     <module>sis-storage</module>
-    <module>sis-shapefile</module>
     <module>sis-netcdf</module>
     <module>sis-geotiff</module>
     <module>sis-xmlstore</module>
