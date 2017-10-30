@@ -152,8 +152,8 @@ public class GeoTiffStore extends DataStore {
 
     /**
      * Returns the parameters used to open this GeoTIFF data store.
-     * If non-null, the parameters are described by {@link GeoTiffStoreProvider#getOpenParameters()}
-     * and contains at least a parameter named {@value GeoTiffStoreProvider#LOCATION} with a {@link URI} value.
+     * If non-null, the parameters are described by {@link GeoTiffStoreProvider#getOpenParameters()} and contains at
+     * least a parameter named {@value org.apache.sis.storage.DataStoreProvider#LOCATION} with a {@link URI} value.
      * This method may return {@code null} if the storage input can not be described by a URI
      * (for example a GeoTIFF file reading directly from a {@link java.nio.channels.ReadableByteChannel}).
      *

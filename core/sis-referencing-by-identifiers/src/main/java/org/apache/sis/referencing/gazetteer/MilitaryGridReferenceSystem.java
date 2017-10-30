@@ -220,7 +220,7 @@ public class MilitaryGridReferenceSystem extends ReferencingByIdentifiers {
     final CommonCRS datum;
 
     /**
-     * Whether {@link Encoder} should infer the datum from the given coordinates
+     * Whether {@link MilitaryGridReferenceSystem.Encoder} should infer the datum from the given coordinates
      * instead than using {@link #datum}.
      */
     final boolean avoidDatumChange;
