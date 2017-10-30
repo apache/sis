@@ -32,7 +32,7 @@ import org.apache.sis.util.resources.ResourceInternationalString;
  * all modules in the Apache SIS project, see {@link org.apache.sis.util.resources} package.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.8
  * @module
  */
@@ -151,6 +151,11 @@ public final class Resources extends IndexedResourceBundle {
          * Feature “{1}” has not been found in the “{0}” data store.
          */
         public static final short FeatureNotFound_2 = 17;
+
+        /**
+         * Whether to assemble trajectory fragments (lines in CSV file) in a single feature instance.
+         */
+        public static final short FoliationRepresentation = 38;
 
         /**
          * The {0} data store does not accept features of type “{1}”.
