@@ -66,7 +66,7 @@ public final class AlbersEqualArea extends MapProjection {
 
     /**
      * The operation parameter descriptor for the <cite>Latitude of 2nd standard parallel</cite> parameter value.
-     * Valid values range is [-90 … 90]° and default value is the value given to the {@link #STANDARD_PARALLEL_2}
+     * Valid values range is [-90 … 90]° and default value is the value given to the {@link #STANDARD_PARALLEL_1}
      * parameter.
      */
     public static final ParameterDescriptor<Double> STANDARD_PARALLEL_2;
