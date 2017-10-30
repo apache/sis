@@ -72,9 +72,9 @@ public abstract class URIDataStore extends DataStore {
      * This convenience method is used for public {@code DataStore} implementations that can not extend
      * {@code URIDataStore} directly, because this class is internal.
      *
-     * @param provider
-     * @param location
-     * @return
+     * @param  provider  the provider of the data store for which to get open parameters.
+     * @param  location  file opened by the data store.
+     * @return parameters to be returned by {@link DataStore#getOpenParameters()}.
      *
      * @todo Verify if non-exported classes in JDK9 are hidden from Javadoc, like package-private classes.
      *       If true, we could remove this hack and extend {@code URIDataStore} even in public classes.

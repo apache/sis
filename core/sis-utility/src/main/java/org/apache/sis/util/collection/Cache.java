@@ -63,7 +63,7 @@ import org.apache.sis.internal.jdk8.Supplier;
  *     public MyObject getMyObject(final String key) throws MyCheckedException {
  *         try {
  *             return cache.getOrCreate(key, new Callable<MyObject>() {
- *                 MyObject call() throws FactoryException {
+ *                 public MyObject call() throws MyCheckedException {
  *                     return createMyObject(key);
  *                 }
  *             });
