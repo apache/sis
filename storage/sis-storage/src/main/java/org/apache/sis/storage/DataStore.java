@@ -224,7 +224,7 @@ public abstract class DataStore implements Resource, Localized, AutoCloseable {
      * The collection of legal parameters is implementation-dependent
      * ({@linkplain org.apache.sis.parameter.DefaultParameterValue#getDescriptor() their description}
      * is given by {@link DataStoreProvider#getOpenParameters()}),
-     * but should contain at least a parameter named {@value DataStoreProvider#LOCATION}
+     * but should contain at least a parameter named {@value org.apache.sis.storage.DataStoreProvider#LOCATION}
      * with a {@link java.net.URI}, {@link java.nio.file.Path} or {@link javax.sql.DataSource} value.
      *
      * <p>In the event a data store must be closed and reopened later, those parameters can be stored in a file or
