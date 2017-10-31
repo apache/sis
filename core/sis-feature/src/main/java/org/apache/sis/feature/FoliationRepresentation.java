@@ -24,7 +24,7 @@ package org.apache.sis.feature;
  * <div class="note"><b>Example:</b>
  * consider the following trajectories:
  *
- * <table>
+ * <table class="sis">
  *   <caption>Moving features example</caption>
  *   <tr><th>Identifier</th> <th>Time</th> <th>Trajectory</th>   <th>Status</th></tr>
  *   <tr><td>John Smith</td> <td>8:00</td> <td>(3 4), (3 5)</td> <td>Walking</td></tr>
