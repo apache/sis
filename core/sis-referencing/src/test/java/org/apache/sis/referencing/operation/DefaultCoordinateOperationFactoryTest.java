@@ -178,7 +178,7 @@ public final strictfp class DefaultCoordinateOperationFactoryTest extends MathTr
         assertEquals("linearAccuracy", isUsingEpsgFactory ? 2 : PositionalAccuracyConstant.UNKNOWN_ACCURACY,
                                        CRS.getLinearAccuracy(operation), STRICT);
 
-        tolerance = isUsingEpsgFactory ? Formulas.LINEAR_TOLERANCE : 100;
+        tolerance = isUsingEpsgFactory ? Formulas.LINEAR_TOLERANCE : 1000;
         transform = operation.getMathTransform();
         /*
          * Test using the location of Paris (48.856578°N, 2.351828°E) first,
@@ -236,7 +236,7 @@ public final strictfp class DefaultCoordinateOperationFactoryTest extends MathTr
         assertEquals("linearAccuracy", isUsingEpsgFactory ? 2 : PositionalAccuracyConstant.UNKNOWN_ACCURACY,
                                        CRS.getLinearAccuracy(operation), STRICT);
 
-        tolerance = isUsingEpsgFactory ? Formulas.LINEAR_TOLERANCE : 100;
+        tolerance = isUsingEpsgFactory ? Formulas.LINEAR_TOLERANCE : 1000;
         transform = operation.getMathTransform();
         isInverseTransformSupported = false;
         /*
