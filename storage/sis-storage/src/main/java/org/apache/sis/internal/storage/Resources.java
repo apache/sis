@@ -67,6 +67,11 @@ public final class Resources extends IndexedResourceBundle {
         public static final short AmbiguousName_4 = 15;
 
         /**
+         * Can not get metadata common to “{0}” files. Reason: {1}
+         */
+        public static final short CanNotGetCommonMetadata_2 = 39;
+
+        /**
          * Can not read the Coordinate Reference System (CRS) Well Known Text (WKT) in “{0}”.
          */
         public static final short CanNotReadCRS_WKT_1 = 37;
