@@ -1203,25 +1203,6 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
     }
 
     /**
-     * Creates a math transform that represent a change of coordinate system.
-     *
-     * @param  source  the source coordinate system.
-     * @param  target  the target coordinate system.
-     * @return a conversion from the given source to the given target coordinate system.
-     * @throws FactoryException if the conversion can not be created.
-     *
-     * @deprecated Replaced by {@link #createCoordinateSystemChange(CoordinateSystem, CoordinateSystem, Ellipsoid)}
-     *
-     * @since 0.7
-     */
-    @Deprecated
-    public MathTransform createCoordinateSystemChange(final CoordinateSystem source, final CoordinateSystem target)
-            throws FactoryException
-    {
-        return createCoordinateSystemChange(source, target, null);
-    }
-
-    /**
      * Creates a math transform that represent a change of coordinate system. If exactly one argument is
      * an {@linkplain org.apache.sis.referencing.cs.DefaultEllipsoidalCS ellipsoidal coordinate systems},
      * then the {@code ellipsoid} argument is mandatory. In all other cases (including the case where both

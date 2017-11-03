@@ -252,7 +252,7 @@ public class GeodeticObjectBuilder extends Builder<GeodeticObjectBuilder> {
      * @return {@code this}, for method calls chaining.
      * @throws FactoryException if the operation method for the Transverse Mercator projection can not be obtained.
      *
-     * @see CommonCRS#UTM(double, double)
+     * @see CommonCRS#universal(double, double)
      */
     public GeodeticObjectBuilder setTransverseMercator(TransverseMercator.Zoner zoner, double latitude, double longitude)
             throws FactoryException

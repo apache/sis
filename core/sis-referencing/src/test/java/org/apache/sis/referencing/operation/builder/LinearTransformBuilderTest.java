@@ -74,15 +74,12 @@ public final strictfp class LinearTransformBuilderTest extends TestCase {
      */
     @Test
     public void testMinimalist2D() throws FactoryException {
+        final Map<DirectPosition2D,DirectPosition2D> pos = new HashMap<>(8);
+        assertNull(pos.put(new DirectPosition2D(1, 1), new DirectPosition2D(3, 2)));
+        assertNull(pos.put(new DirectPosition2D(1, 2), new DirectPosition2D(3, 5)));
+        assertNull(pos.put(new DirectPosition2D(2, 2), new DirectPosition2D(5, 5)));
         final LinearTransformBuilder builder = new LinearTransformBuilder();
-        builder.setSourcePoints(
-                new DirectPosition2D(1, 1),
-                new DirectPosition2D(1, 2),
-                new DirectPosition2D(2, 2));
-        builder.setTargetPoints(
-                new DirectPosition2D(3, 2),
-                new DirectPosition2D(3, 5),
-                new DirectPosition2D(5, 5));
+        builder.setControlPoints(pos);
 
         assertArrayEquals(new double[] {3, 2}, builder.getControlPoint(new int[] {1, 1}), STRICT);
         assertArrayEquals(new double[] {3, 5}, builder.getControlPoint(new int[] {1, 2}), STRICT);
