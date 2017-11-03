@@ -267,7 +267,7 @@ public abstract class Initializer {
                 final LogRecord record = Messages.getResources(null).getLogRecord(
                         Level.CONFIG, Messages.Keys.JNDINotSpecified_1, JNDI);
                 record.setLoggerName(Loggers.SQL);
-                Logging.log(Initializer.class, "getDataSource", record);
+                Logging.log(null, null, record);                // Let Logging.log(…) infers the public caller.
             }
             /*
              * At this point we determined that there is no JNDI context or no object binded to "jdbc/SpatialMetadata".
