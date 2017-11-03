@@ -27,6 +27,7 @@ import org.apache.sis.util.Localized;
 import org.apache.sis.util.Exceptions;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
 
 
@@ -267,6 +268,7 @@ public class WarningListeners<S> implements Localized {
     /**
      * Returns {@code true} if the given stack trace element describes a method considered part of public API.
      * This method is invoked in order to infer the class and method names to declare in a {@link LogRecord}.
+     * We do not document this feature in public Javadoc because it is based on heuristic rules that may change.
      *
      * <p>The current implementation compares the class name against a hard-coded list of classes to hide.
      * This implementation may change in any future SIS version.</p>
@@ -274,11 +276,17 @@ public class WarningListeners<S> implements Localized {
      * @param  e  a stack trace element.
      * @return {@code true} if the class and method specified by the given element can be considered public API.
      */
-    private static boolean isPublic(final StackTraceElement e) {
-        final String classname  = e.getClassName();
-        return !classname.equals("org.apache.sis.util.logging.WarningListeners") &&
-               !classname.contains(".internal.") && !classname.startsWith("java") &&
-                classname.indexOf('$') < 0 && e.getMethodName().indexOf('$') < 0;
+    static boolean isPublic(final StackTraceElement e) {
+        final String classname = e.getClassName();
+        if (classname.startsWith("java") || classname.contains(".internal.") ||
+            classname.indexOf('$') >= 0 || e.getMethodName().indexOf('$') >= 0)
+        {
+            return false;
+        }
+        if (classname.startsWith(Modules.CLASSNAME_PREFIX + "util.logging.")) {
+            return classname.endsWith("Test");      // Consider JUnit tests as public.
+        }
+        return true;    // TODO: with StackWalker on JDK9, check if the class is public.
     }
 
     /**
