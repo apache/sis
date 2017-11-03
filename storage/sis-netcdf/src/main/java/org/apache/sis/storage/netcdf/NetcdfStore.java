@@ -80,21 +80,6 @@ public class NetcdfStore extends DataStore implements Aggregate {
      * This constructor invokes {@link StorageConnector#closeAllExcept(Object)}, keeping open only the
      * needed resource.
      *
-     * @param  connector information about the storage (URL, stream, {@link ucar.nc2.NetcdfFile} instance, <i>etc</i>).
-     * @throws DataStoreException if an error occurred while opening the netCDF file.
-     *
-     * @deprecated Replaced by {@link #NetcdfStore(NetcdfStoreProvider, StorageConnector)}.
-     */
-    @Deprecated
-    public NetcdfStore(final StorageConnector connector) throws DataStoreException {
-        this(null, connector);
-    }
-
-    /**
-     * Creates a new netCDF store from the given file, URL, stream or {@link ucar.nc2.NetcdfFile} object.
-     * This constructor invokes {@link StorageConnector#closeAllExcept(Object)}, keeping open only the
-     * needed resource.
-     *
      * @param  provider   the factory that created this {@code DataStore} instance, or {@code null} if unspecified.
      * @param  connector  information about the storage (URL, stream, {@link ucar.nc2.NetcdfFile} instance, <i>etc</i>).
      * @throws DataStoreException if an error occurred while opening the netCDF file.

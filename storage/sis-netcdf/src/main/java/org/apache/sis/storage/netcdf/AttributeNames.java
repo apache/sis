@@ -109,7 +109,6 @@ import org.opengis.metadata.extent.GeographicDescription;
  * {@value     #METADATA_CREATION}<br>
  * {@value     #METADATA_LINK}<br>
  * {@linkplain #TITLE "name"}<br>
- * {@value     #NAMING_AUTHORITY}<br>
  * {@value     #PROCESSING_LEVEL}<br>
  * {@value     #PRODUCT_VERSION}<br>
  * {@linkplain #PROGRAM   "program"}<br>
@@ -276,28 +275,6 @@ public class AttributeNames {
     public static final Term IDENTIFIER = new Term(ACDD.id, ACDD.naming_authority);
 
     /**
-     * The {@value} attribute name for the identifier authority (<em>Recommended</em>).
-     * The combination of the {@value} and the {@code "id"} should be a globally
-     * unique identifier for the dataset.
-     *
-     * <p><b>Path in ISO 19115:</b></p> <ul><li>{@link Metadata} /
-     * {@link Metadata#getFileIdentifier() fileIdentifier}</li>
-     * <li>{@link Metadata} /
-     * {@link Metadata#getIdentificationInfo() identificationInfo} /
-     * {@link DataIdentification#getCitation() citation} /
-     * {@link Citation#getIdentifiers() identifier} /
-     * {@link Identifier#getAuthority() authority} /
-     * {@link Citation#getTitle() title}</li></ul>
-     *
-     * @see #IDENTIFIER
-     * @see <a href="http://wiki.esipfed.org/index.php/Attribute_Convention_for_Data_Discovery#naming_authority">ESIP reference</a>
-     *
-     * @deprecated Moved to {@code IDENTIFIER.VOCABULARY}.
-     */
-    @Deprecated
-    public static final String NAMING_AUTHORITY = ACDD.naming_authority;
-
-    /**
      * The set of attribute names for a long descriptive name for the variable taken from a controlled
      * vocabulary of variable names. This is actually a {@linkplain VariableSimpleIF variable} attribute,
      * but sometime appears also in {@linkplain NetcdfFile#findGlobalAttribute(String) global attributes}.
@@ -318,25 +295,6 @@ public class AttributeNames {
     public static final Term STANDARD_NAME = new Term(CF.STANDARD_NAME, ACDD.standard_name_vocabulary);
 
     /**
-     * The {@value} attribute name for indicating which controlled list of variable names has been
-     * used in the {@code "standard_name"} attribute.
-     *
-     * <p><b>Path in ISO 19115:</b></p> <ul><li>{@link Metadata} /
-     * {@link Metadata#getIdentificationInfo() identificationInfo} /
-     * {@link DataIdentification#getDescriptiveKeywords() descriptiveKeywords} /
-     * {@link Keywords#getThesaurusName() thesaurusName} /
-     * {@link Citation#getTitle() title}</li></ul>
-     *
-     * @see #STANDARD_NAME
-     * @see #VOCABULARY
-     * @see <a href="http://wiki.esipfed.org/index.php/Attribute_Convention_for_Data_Discovery#standard_name_vocabulary">ESIP reference</a>
-     *
-     * @deprecated Moved to {@code STANDARD_NAME.VOCABULARY}.
-     */
-    @Deprecated
-    public static final String STANDARD_NAME_VOCABULARY = ACDD.standard_name_vocabulary;
-
-    /**
      * The set of attribute names for a comma separated list of key words and phrases
      * (<em>Highly Recommended</em>).
      *
@@ -354,25 +312,6 @@ public class AttributeNames {
      * @see <a href="http://wiki.esipfed.org/index.php/Attribute_Convention_for_Data_Discovery#keywords">ESIP reference</a>
      */
     public static final Term KEYWORDS = new Term(ACDD.keywords, ACDD.keywords_vocabulary);
-
-    /**
-     * The {@value} attribute name for the guideline for the words/phrases in the
-     * {@code "keyword"} attribute (<em>Recommended</em>).
-     *
-     * <p><b>Path in ISO 19115:</b></p> <ul><li>{@link Metadata} /
-     * {@link Metadata#getIdentificationInfo() identificationInfo} /
-     * {@link DataIdentification#getDescriptiveKeywords() descriptiveKeywords} /
-     * {@link Keywords#getThesaurusName() thesaurusName} /
-     * {@link Citation#getTitle() title}</li></ul>
-     *
-     * @see #KEYWORDS
-     * @see #STANDARD_NAME_VOCABULARY
-     * @see <a href="http://wiki.esipfed.org/index.php/Attribute_Convention_for_Data_Discovery#keywords_vocabulary">ESIP reference</a>
-     *
-     * @deprecated Moved to {@code KEYWORDS.VOCABULARY}.
-     */
-    @Deprecated
-    public static final String VOCABULARY = ACDD.keywords_vocabulary;
 
     /**
      * The {@value} attribute name for a high-level geographic data thematic classification.
@@ -721,16 +660,6 @@ public class AttributeNames {
         public final Role DEFAULT_ROLE;
 
         /**
-         * @deprecated replaced by the constructor with one more argument (the type).
-         */
-        @Deprecated
-        public Responsible(final String name, final String institution, final String url, final String email,
-                final String role, final Role defaultRole)
-        {
-            this(name, null, institution, url, email, role, defaultRole);
-        }
-
-        /**
          * Creates a new set of attribute names. Any argument can be {@code null} if not applicable.
          *
          * @param name         the attribute name for the responsible's name.
@@ -862,11 +791,6 @@ public class AttributeNames {
      * @since 0.8
      */
     public static final String ACKNOWLEDGEMENT = ACDD.acknowledgement;
-
-    /**
-     * @deprecated Renamed {@link #ACKNOWLEDGEMENT}.
-     */
-    public static final String ACKNOWLEDGMENT = "acknowledgment";
 
     /**
      * The {@value} attribute name for a description of the restrictions to data access
