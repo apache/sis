@@ -194,8 +194,10 @@ final class AuthorityFactories<T extends AuthorityFactory> extends LazySet<T> {
             message = e.toString();
         }
         final LogRecord record = new LogRecord(isWarning ? Level.WARNING : Level.CONFIG, message);
+        if (isWarning && !(e instanceof UnavailableFactoryException)) {
+            record.setThrown(e);
+        }
         record.setLoggerName(Loggers.CRS_FACTORY);
-        if (isWarning) record.setThrown(e);
         Logging.log(CRS.class, "getAuthorityFactory", record);
     }
 
