@@ -53,6 +53,7 @@ import org.apache.sis.util.collection.Containers;
 import org.apache.sis.util.UnsupportedImplementationException;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.parameter.Parameterized;
+import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.referencing.cs.CoordinateSystems;
 import org.apache.sis.referencing.AbstractIdentifiedObject;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
@@ -64,6 +65,7 @@ import org.apache.sis.internal.referencing.Resources;
 import org.apache.sis.internal.referencing.WKTUtilities;
 import org.apache.sis.internal.metadata.WKTKeywords;
 import org.apache.sis.internal.metadata.MetadataUtilities;
+import org.apache.sis.internal.util.Constants;
 import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
 import org.apache.sis.internal.system.Semaphores;
@@ -963,10 +965,27 @@ check:      for (int isTarget=0; ; isTarget++) {        // 0 == source check; 1 
                 parameters = null;
             }
             if (parameters != null) {
+                /*
+                 * Format the parameter values. Apache SIS uses the EPSG geodetic dataset as the main source of
+                 * parameter definitions. When a parameter is defined by both OGC and EPSG with different names,
+                 * the Formatter class is responsible for choosing an appropriate name. But when the difference
+                 * is more fundamental, we may have duplication. For example in the "Molodensky" operation, OGC
+                 * uses source and target axis lengths while EPSG uses only difference between those lengths.
+                 * In this case, OGC and EPSG parameters are defined separately and are redundant. To simplify
+                 * the CoordinateOperation WKT, we omit non-EPSG parameters when we have determined that we are
+                 * about to describe an EPSG operation. We could generalize this filtering to any authority, but
+                 * we don't because few authorities are as complete as EPSG, so other authorities are more likely
+                 * to mix EPSG or someone else components with their own. Note also that we don't apply filtering
+                 * on MathTransform WKT neither for more reliable debugging.
+                 */
+                final boolean filter = WKTUtilities.isEPSG(parameters.getDescriptor(), false) &&   // NOT method.getName()
+                        Constants.EPSG.equalsIgnoreCase(Citations.getCodeSpace(formatter.getNameAuthority()));
                 formatter.newLine();
                 formatter.indent(+1);
                 for (final GeneralParameterValue param : parameters.values()) {
-                    WKTUtilities.append(param, formatter);
+                    if (!filter || WKTUtilities.isEPSG(param.getDescriptor(), true)) {
+                        WKTUtilities.append(param, formatter);
+                    }
                 }
                 formatter.indent(-1);
             }
