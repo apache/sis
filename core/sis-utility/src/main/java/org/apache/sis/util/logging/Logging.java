@@ -241,13 +241,16 @@ public final class Logging extends Static {
      * @param  record  the record where to set the class and method names.
      * @return the record to use for logging the record.
      */
-    static Logger inferCaller(Logger logger, String classe, String method,
+    private static Logger inferCaller(Logger logger, String classe, String method,
             final StackTraceElement[] trace, final LogRecord record)
     {
         for (final StackTraceElement element : trace) {
             /*
              * Search for the first stack trace element with a classname matching the expected one.
              * We compare against the name of the class given in argument if it was non-null.
+             *
+             * Note: a previous version also compared logger name with package name.
+             * This has been removed because those names are only loosely related.
              */
             final String classname = element.getClassName();
             if (classe != null) {
