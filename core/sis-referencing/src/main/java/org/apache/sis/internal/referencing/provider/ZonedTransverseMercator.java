@@ -100,6 +100,17 @@ public final class ZonedTransverseMercator extends AbstractProvider {
     }
 
     /**
+     * Notifies {@code DefaultMathTransformFactory} that this projection requires
+     * values for the {@code "semi_major"} and {@code "semi_minor"} parameters.
+     *
+     * @return 1, meaning that the operation requires a source ellipsoid.
+     */
+    @Override
+    public final int getEllipsoidsMask() {
+        return 1;
+    }
+
+    /**
      * Creates a map projection from the specified group of parameter values.
      *
      * @param  factory     the factory to use for creating and concatenating the (de)normalization transforms.
