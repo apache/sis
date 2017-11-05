@@ -30,7 +30,7 @@
  *     └─ content
  * </pre>
  *
- * Then the command can be used as below:
+ * Then the command can be used as below on Unix systems:
  *
  * <pre>cd site
  * java -classpath ../trunk/core/sis-build-helper/target/classes org.apache.sis.internal.book.Assembler en
