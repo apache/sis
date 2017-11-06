@@ -710,8 +710,8 @@ loop:   for (int i=0; ; i++) {
             final String lineSeparator = System.lineSeparator();
             if (bodyLineSeparator.length() != lineSeparator.length() + margin + 1) {
                 final int highlight = Math.min(CONTINUATION_MARGIN, margin);
-                bodyLineSeparator = lineSeparator + levelColor+ CharSequences.spaces(highlight)
-                                                  + levelReset+ CharSequences.spaces(margin - highlight + 1);
+                bodyLineSeparator = lineSeparator + levelColor + CharSequences.spaces(highlight)
+                                                  + levelReset + CharSequences.spaces(margin - highlight + 1);
                 writer.setLineSeparator(bodyLineSeparator);
             }
             if (faint) {
