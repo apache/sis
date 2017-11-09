@@ -133,6 +133,21 @@
     </dependency>
   </dependencies>
 
+  <!-- Because the EPSG database is not free, require the user to ask it explicitely. -->
+  <profiles>
+    <profile>
+      <id>non-free</id>
+      <dependencies>
+        <dependency>
+          <groupId>org.apache.sis.non-free</groupId>
+          <artifactId>sis-embedded-data</artifactId>
+          <version>${project.version}</version>
+          <scope>runtime</scope>
+        </dependency>
+      </dependencies>
+    </profile>
+  </profiles>
+
 
   <!-- ===========================================================
            Build Configuration
