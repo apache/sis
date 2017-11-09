@@ -51,14 +51,14 @@
           </node>
         </node>
 
-        <node oor:name="getAxis" oor:op="replace">
+        <node oor:name="getScope" oor:op="replace">
           <prop oor:name="DisplayName">
-            <value xml:lang="en">CRS.AXIS</value>
-            <value xml:lang="fr">AXE.SRS</value>
+            <value xml:lang="en">CRS.USAGE</value>
+            <value xml:lang="fr">USAGE.SRS</value>
           </prop>
           <prop oor:name="Description">
-            <value xml:lang="en">Returns the axis name for the specified dimension in a Coordinate Reference System (CRS) identified by the given code.</value>
-            <value xml:lang="fr">Retourne le nom de l’axe à la dimension spécifiée dans un Système de Références Spatiales (SRS) identifié par le code donné.</value>
+            <value xml:lang="en">Returns the usage scope of an object identified by the given code. The object is usually, but not necessarily, a Coordinate Reference System (CRS).</value>
+            <value xml:lang="fr">Retourne le domaine d’utilisation d’un objet identifié par le code donné. L’objet est habituellement, mais pas obligatoirement, un Système de Références Spatiales (SRS).</value>
           </prop>
           <prop oor:name="Category">
             <value>Add-In</value>
@@ -74,14 +74,30 @@
                 <value xml:lang="fr">Le code alloué par une autorité ou le chemin vers un fichier.</value>
               </prop>
             </node>
-            <node oor:name="dimension" oor:op="replace">
+          </node>
+        </node>
+
+        <node oor:name="getScope" oor:op="replace">
+          <prop oor:name="DisplayName">
+            <value xml:lang="en">REGION.NAME</value>
+            <value xml:lang="fr">NOM.REGION</value>
+          </prop>
+          <prop oor:name="Description">
+            <value xml:lang="en">Returns the domain of validity as country or region name(s) for an object identified by the given code.</value>
+            <value xml:lang="fr">Retourne sous forme de nom(s) de pays ou de région(s) le domaine de validité d’un objet identifié par le code donné.</value>
+          </prop>
+          <prop oor:name="Category">
+            <value>Add-In</value>
+          </prop>
+          <node oor:name="Parameters">
+            <node oor:name="codeOrPath" oor:op="replace">
               <prop oor:name="DisplayName">
-                <value xml:lang="en">dimension</value>
-                <value xml:lang="fr">dimension</value>
+                <value xml:lang="en">identifier</value>
+                <value xml:lang="fr">identifiant</value>
               </prop>
               <prop oor:name="Description">
-                <value xml:lang="en">The dimension (1, 2, …) of axis to describe.</value>
-                <value xml:lang="fr">La dimension (1, 2, …) de l’axe à décrire.</value>
+                <value xml:lang="en">The code allocated by authority or the path to a file.</value>
+                <value xml:lang="fr">Le code alloué par une autorité ou le chemin vers un fichier.</value>
               </prop>
             </node>
           </node>
@@ -154,6 +170,42 @@
               <prop oor:name="Description">
                 <value xml:lang="en">Bounding box of source points to transform. This is a matrix of at least two rows containing (in any order) the minimum and maximum values of all coordinates to transform.</value>
                 <value xml:lang="fr">Boîte englobante des points sources à transformer. C’est une matrice d’au moins deux lignes contenant (dans n’importe quel ordre) les valeurs minimales et maximales des coordonnées à transformer.</value>
+              </prop>
+            </node>
+          </node>
+        </node>
+
+        <node oor:name="getAxis" oor:op="replace">
+          <prop oor:name="DisplayName">
+            <value xml:lang="en">CRS.AXIS</value>
+            <value xml:lang="fr">AXE.SRS</value>
+          </prop>
+          <prop oor:name="Description">
+            <value xml:lang="en">Returns the axis name for the specified dimension in a Coordinate Reference System (CRS) identified by the given code.</value>
+            <value xml:lang="fr">Retourne le nom de l’axe à la dimension spécifiée dans un Système de Références Spatiales (SRS) identifié par le code donné.</value>
+          </prop>
+          <prop oor:name="Category">
+            <value>Add-In</value>
+          </prop>
+          <node oor:name="Parameters">
+            <node oor:name="codeOrPath" oor:op="replace">
+              <prop oor:name="DisplayName">
+                <value xml:lang="en">identifier</value>
+                <value xml:lang="fr">identifiant</value>
+              </prop>
+              <prop oor:name="Description">
+                <value xml:lang="en">The code allocated by authority or the path to a file.</value>
+                <value xml:lang="fr">Le code alloué par une autorité ou le chemin vers un fichier.</value>
+              </prop>
+            </node>
+            <node oor:name="dimension" oor:op="replace">
+              <prop oor:name="DisplayName">
+                <value xml:lang="en">dimension</value>
+                <value xml:lang="fr">dimension</value>
+              </prop>
+              <prop oor:name="Description">
+                <value xml:lang="en">The dimension (1, 2, …) of axis to describe.</value>
+                <value xml:lang="fr">La dimension (1, 2, …) de l’axe à décrire.</value>
               </prop>
             </node>
           </node>

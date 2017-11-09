@@ -26,7 +26,7 @@ import org.junit.AfterClass;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
-import static org.junit.Assume.assumeTrue;
+import static org.junit.Assume.assumeFalse;
 
 
 /**
@@ -84,6 +84,15 @@ public final strictfp class ReferencingFunctionsTest extends TestCase {
     }
 
     /**
+     * Tests {@link ReferencingFunctions#getScope(String)}.
+     */
+    @Test
+    public void testGetScope() {
+        final String scope = instance.getScope("EPSG:4326");
+        assertTrue(scope, scope.contains("Horizontal component of 3D system"));
+    }
+
+    /**
      * Tests {@link ReferencingFunctions#getAxis(String, int)}.
      */
     @Test
@@ -96,13 +105,22 @@ public final strictfp class ReferencingFunctionsTest extends TestCase {
     }
 
     /**
+     * Tests {@link ReferencingFunctions#getDomainOfValidity(String)}.
+     */
+    @Test
+    public void testGetDomainOfValidity() {
+        final String domain = instance.getDomainOfValidity("EPSG:4326");
+        assertTrue(domain, domain.contains("World"));
+    }
+
+    /**
      * Tests {@link ReferencingFunctions#getGeographicArea(String)}.
      */
     @Test
     public void testGetGeographicArea() {
         final double[][] bbox = instance.getGeographicArea("EPSG:32620");     // UTM zone 20
-        assertEquals(2, bbox.length);
-        assumeTrue(!Double.isNaN(bbox[0][0]));    // NaN if EPSG dataset is not installed.
+        assumeFalse(bbox.length == 0);            // Empty if EPSG dataset is not installed.
+        assertEquals("bbox.length", 2, bbox.length);
         assertArrayEquals("Upper left corner",  new double[] {84, -66}, bbox[0], STRICT);
         assertArrayEquals("Lower right corner", new double[] { 0, -60}, bbox[1], STRICT);
     }
