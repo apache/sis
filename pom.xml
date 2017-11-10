@@ -38,7 +38,7 @@
        ============================================================== -->
   <groupId>org.apache.sis</groupId>
   <artifactId>parent</artifactId>
-  <version>0.8-SNAPSHOT</version>
+  <version>0.8</version>
   <packaging>pom</packaging>
 
   <name>Apache SIS</name>
@@ -67,12 +67,12 @@ Apache SIS is a free software, Java language library for developing geospatial a
        ============================================================== -->
   <scm>
     <connection>
-      scm:svn:http://svn.apache.org/repos/asf/sis/branches/0.8
+      scm:svn:http://svn.apache.org/repos/asf/sis/tags/0.8
     </connection>
     <developerConnection>
-      scm:svn:https://svn.apache.org/repos/asf/sis/branches/0.8
+      scm:svn:https://svn.apache.org/repos/asf/sis/tags/0.8
     </developerConnection>
-    <url>http://svn.apache.org/viewvc/sis/branches/0.8</url>
+    <url>http://svn.apache.org/viewvc/sis/tags/0.8</url>
   </scm>
 
   <ciManagement>
