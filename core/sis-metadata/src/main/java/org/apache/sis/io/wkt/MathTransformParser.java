@@ -57,7 +57,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  * @author  Rueben Schulz (UBC)
  * @version 0.8
  *
- * @see <a href="http://www.geoapi.org/snapshot/javadoc/org/opengis/referencing/doc-files/WKT.html">Well Know Text specification</a>
+ * @see <a href="http://www.geoapi.org/3.0/javadoc/org/opengis/referencing/doc-files/WKT.html">Well Know Text specification</a>
  *
  * @since 0.6
  * @module
