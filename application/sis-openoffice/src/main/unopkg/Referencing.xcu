@@ -77,7 +77,7 @@
           </node>
         </node>
 
-        <node oor:name="getScope" oor:op="replace">
+        <node oor:name="getDomainOfValidity" oor:op="replace">
           <prop oor:name="DisplayName">
             <value xml:lang="en">REGION.NAME</value>
             <value xml:lang="fr">NOM.REGION</value>
