@@ -28,7 +28,7 @@
   <platform   value="all"/>
 
   <publisher>
-    <name lang="en" xlink:href="http://sis.apache.org/openoffice/">Apache SIS</name>
+    <name lang="en" xlink:href="http://sis.apache.org/openoffice/index.html">Apache SIS</name>
   </publisher>
 
   <display-name>
@@ -40,14 +40,26 @@
     <default xlink:href="sis.png" />
   </icon>
 
+  <extension-description>
+    <src lang="en" xlink:href="description.txt"/>
+  </extension-description>
+
+  <registration>
+    <simple-license accept-by="admin" suppress-on-update="true" suppress-if-required="true">
+      <license-text lang="en" xlink:href="license.txt"/>
+    </simple-license>
+  </registration>
+
+  <dependencies>
+    <OpenOffice.org-minimal-version value="3.3" d:name="OpenOffice.org 3.3"/>
+  </dependencies>
+
   <release-notes>
-    <src lang="en" xlink:href="http://sis.apache.org/openoffice/"/>
+    <src lang="en" xlink:href="http://sis.apache.org/openoffice/index.html"/>
   </release-notes>
 
-<!--
   <update-information>
     <src xlink:href="http://sis.apache.org/openoffice/update.xml"/>
   </update-information>
--->
 
 </description>
