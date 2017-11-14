@@ -29,12 +29,6 @@
   <!-- Invoked after a branch has been created from the trunk. -->
   <target name="branch">
 
-    <!-- Ensure that the "sis-build-helper" plugin used by the build is the released version. -->
-    <replaceregexp file = "${user.dir}/pom.xml"
-                  match = "&lt;sis\.plugin\.version&gt;.+&lt;/sis\.plugin\.version&gt;"
-                replace = "&lt;sis.plugin.version&gt;${branch.version}-SNAPSHOT&lt;/sis.plugin.version&gt;"/>
-                <!-- The -SNAPSHOT part will be removed later, at tag creation. -->
-
     <!-- Replace the version number in Java code. -->
     <replaceregexp file = "${user.dir}/core/sis-utility/src/main/java/org/apache/sis/util/Version.java"
                   match = "MINOR_VERSION\s*\+\s*&quot;-SNAPSHOT&quot;"
@@ -69,8 +63,6 @@
       <include name="**/pom.xml"/>
       <replacefilter token="&lt;version&gt;${branch.version}-SNAPSHOT&lt;/version&gt;"
                      value="&lt;version&gt;${sis.version}&lt;/version&gt;"/>
-      <replacefilter token="&lt;sis.plugin.version&gt;${branch.version}-SNAPSHOT&lt;/sis.plugin.version&gt;"
-                     value="&lt;sis.plugin.version&gt;${sis.version}&lt;/sis.plugin.version&gt;"/>
     </replace>
   </target>
 </project>
