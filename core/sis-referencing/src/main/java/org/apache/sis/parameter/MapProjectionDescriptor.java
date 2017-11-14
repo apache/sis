@@ -48,7 +48,7 @@ import org.apache.sis.util.Workaround;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.6
  *
- * @see <a href="http://www.unidata.ucar.edu/software/netcdf-java/reference/StandardCoordinateTransforms.html">NetCDF projection parameters</a>
+ * @see <a href="http://www.unidata.ucar.edu/software/thredds/current/netcdf-java/reference/StandardCoordinateTransforms.html">NetCDF projection parameters</a>
  *
  * @since 0.6
  * @module
