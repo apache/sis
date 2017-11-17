@@ -22,8 +22,10 @@ import java.io.StringReader;
 import org.opengis.metadata.Metadata;
 import org.opengis.metadata.extent.Extent;
 import org.opengis.metadata.extent.GeographicBoundingBox;
+import org.apache.sis.feature.FoliationRepresentation;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.StorageConnector;
+import org.apache.sis.storage.DataOptionKey;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 import com.esri.core.geometry.Point2D;
@@ -47,7 +49,7 @@ import org.apache.sis.internal.jdk8.Instant;
  * Tests {@link Store}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.7
  * @module
  */
@@ -80,6 +82,15 @@ public final strictfp class StoreTest extends TestCase {
     }
 
     /**
+     * Opens a CSV store on the test data for reading the lines as-is, without assembling them in a single trajectory.
+     */
+    private static Store open() throws DataStoreException {
+        StorageConnector connector = new StorageConnector(testData());
+        connector.setOption(DataOptionKey.FOLIATION_REPRESENTATION, FoliationRepresentation.FRAGMENTED);
+        return new Store(null, connector);
+    }
+
+    /**
      * Tests {@link Store#getMetadata()}.
      *
      * @throws DataStoreException if an error occurred while parsing the data.
@@ -87,7 +98,7 @@ public final strictfp class StoreTest extends TestCase {
     @Test
     public void testGetMetadata() throws DataStoreException {
         final Metadata metadata;
-        try (Store store = new Store(null, new StorageConnector(testData()), true)) {
+        try (Store store = open()) {
             metadata = store.getMetadata();
         }
         final Extent extent = getSingleton(((AbstractIdentification) getSingleton(metadata.getIdentificationInfo())).getExtents());
@@ -106,7 +117,7 @@ public final strictfp class StoreTest extends TestCase {
      */
     @Test
     public void testStaticFeatures() throws DataStoreException {
-        try (Store store = new Store(null, new StorageConnector(testData()), true)) {
+        try (Store store = open()) {
             verifyFeatureType(store.featureType, double[].class, 1);
             assertEquals("foliation", Foliation.TIME, store.foliation);
             final Iterator<AbstractFeature> it = store.features(false).iterator();
@@ -135,7 +146,7 @@ public final strictfp class StoreTest extends TestCase {
     @Test
     public void testMovingFeatures() throws DataStoreException {
         isMovingFeature = true;
-        try (Store store = new Store(null, new StorageConnector(testData()), false)) {
+        try (Store store = new Store(null, new StorageConnector(testData()))) {
             verifyFeatureType(store.featureType, Polyline.class, Integer.MAX_VALUE);
             assertEquals("foliation", Foliation.TIME, store.foliation);
             final Iterator<AbstractFeature> it = store.features(false).iterator();

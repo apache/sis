@@ -482,28 +482,6 @@ public class IndexedResourceBundle extends ResourceBundle implements Localized {
     }
 
     /**
-     * Gets a string for the given key and appends ":" to it.
-     * A space may or may not be added before ":", depending on the locale.
-     * No space is added after the string; it is up to the caller to add such space if needed.
-     *
-     * @param  key  the key for the desired string.
-     * @return the string for the given key.
-     * @throws MissingResourceException if no object for the given key can be found.
-     *
-     * @deprecated Replaced by {@link #appendLabel(short, Appendable)}.
-     */
-    @Deprecated
-    public final String getLabel(final short key) throws MissingResourceException {
-        String label = getString(key);
-        if (Locale.FRENCH.getLanguage().equals(getLocale().getLanguage())) {
-            label += "\u00A0:";
-        } else {
-            label += ':';
-        }
-        return label;
-    }
-
-    /**
      * Gets a string for the given key from this resource bundle or one of its parents.
      *
      * @param  key  the key for the desired string.

@@ -305,7 +305,7 @@ public final class Citations extends Static {
 
     /**
      * The authority for identifiers of objects defined by the
-     * <a href="http://www.unidata.ucar.edu/software/netcdf-java">NetCDF</a> specification.
+     * <a href="http://www.unidata.ucar.edu/software/thredds/current/netcdf-java/">NetCDF</a> specification.
      * The {@linkplain IdentifierSpace#getName() name} of this identifier space is fixed to {@code "NetCDF"}.
      * This citation is used as the authority for some map projection method and parameter names
      * as used in netCDF files.

@@ -42,7 +42,7 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
 
 /**
  * Tests the {@link ValueMap} class on instances created by
- * {@link MetadataStandard#asValueMap(Object, KeyNamePolicy, ValueExistencePolicy)}.
+ * {@link MetadataStandard#asValueMap(Object, Class, KeyNamePolicy, ValueExistencePolicy)}.
  * Unless otherwise specified, all tests use the {@link MetadataStandard#ISO_19115} constant.
  *
  * @author  Martin Desruisseaux (Geomatys)

@@ -247,7 +247,7 @@ public final strictfp class MetadataStandardTest extends TestCase {
     }
 
     /**
-     * Tests the {@link MetadataStandard#asValueMap(Object, KeyNamePolicy, ValueExistencePolicy)} implementation.
+     * Tests the {@link MetadataStandard#asValueMap(Object, Class, KeyNamePolicy, ValueExistencePolicy)} implementation.
      * This test duplicates {@link ValueMapTest}, but is done here again as an integration test and because many
      * {@code MetadataStandard} methods depend on it ({@code equals}, {@code hashCode}, {@code prune}, <i>etc.</i>).
      */

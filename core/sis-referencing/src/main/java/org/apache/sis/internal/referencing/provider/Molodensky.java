@@ -19,6 +19,7 @@ package org.apache.sis.internal.referencing.provider;
 import java.util.Map;
 import java.util.Collections;
 import javax.xml.bind.annotation.XmlTransient;
+import javax.measure.Unit;
 import org.opengis.util.FactoryException;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptor;
@@ -34,9 +35,11 @@ import org.apache.sis.referencing.datum.DefaultEllipsoid;
 import org.apache.sis.referencing.operation.transform.MolodenskyTransform;
 import org.apache.sis.internal.referencing.NilReferencingObject;
 import org.apache.sis.internal.referencing.Formulas;
+import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.measure.Units;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.Debug;
 
 
@@ -226,6 +229,7 @@ public final class Molodensky extends GeocentricAffineBetweenGeographic {
         final Ellipsoid target = new Ellipsoid(name, ta, tb, -Δa, -Δf);
         source.other = target;
         target.other = source;
+        source.computeDifferences(values);
         return MolodenskyTransform.createGeodeticTransformation(factory,
                 source, sourceDimensions >= 3,
                 target, targetDimensions >= 3,
@@ -258,7 +262,7 @@ public final class Molodensky extends GeocentricAffineBetweenGeographic {
     @SuppressWarnings("serial")
     private static final class Ellipsoid extends DefaultEllipsoid {
         /** The EPSG parameter values, or NaN if unspecified. */
-        private final double Δa, Δf;
+        private double Δa, Δf;
 
         /** The ellipsoid for which Δa and Δf are valid. */
         Ellipsoid other;
@@ -268,6 +272,45 @@ public final class Molodensky extends GeocentricAffineBetweenGeographic {
             super(name, a, b, Formulas.getInverseFlattening(a, b), false, Units.METRE);
             this.Δa = Δa;
             this.Δf = Δf;
+        }
+
+        /**
+         * Computes Δa and Δf now if not already done and tries to store the result in the given parameters.
+         * The parameters are set in order to complete them when the user specified the OGC parameters (axis
+         * lengths) and not the EPSG ones (axis and flattening differences).
+         */
+        void computeDifferences(final Parameters values) {
+            if (Double.isNaN(Δa)) {
+                Δa = super.semiMajorAxisDifference(other);
+                setIfPresent(values, AXIS_LENGTH_DIFFERENCE, Δa, getAxisUnit());
+            }
+            if (Double.isNaN(Δf)) {
+                Δf = super.flatteningDifference(other);
+                setIfPresent(values, FLATTENING_DIFFERENCE, Δf, Units.UNITY);
+            }
+        }
+
+        /**
+         * Tries to set the given parameter values. This method should be invoked only when completing parameters
+         * without explicit values. This approach complete the work done in {@code DefaultMathTransformFactory},
+         * which already completed the {@code src_semi_major}, {@code src_semi_minor}, {@code tgt_semi_major} and
+         * {@code tgt_semi_minor} parameters.
+         *
+         * @param  values     the group in which to set the parameter values.
+         * @param  parameter  descriptor of the parameter to set.
+         * @param  value      the new value.
+         * @param  unit       unit of measurement for the new value.
+         */
+        private static void setIfPresent(final Parameters values, final ParameterDescriptor<Double> parameter,
+                final double value, final Unit<?> unit)
+        {
+            try {
+                values.getOrCreate(parameter).setValue(value, unit);
+            } catch (ParameterNotFoundException | InvalidParameterValueException e) {
+                // Nonn-fatal since this attempt was only for information purpose.
+                Logging.recoverableException(Logging.getLogger(Loggers.COORDINATE_OPERATION),
+                        Molodensky.class, "createMathTransform", e);
+            }
         }
 
         /** Returns Δa as specified in the parameters if possible, or compute it otherwise. */

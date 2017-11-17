@@ -133,6 +133,7 @@ public final class UnoPkg extends AbstractMojo implements FilenameFilter {
                name.endsWith(".rdb") || name.endsWith(".RDB") ||
                name.endsWith(".xml") || name.endsWith(".XML") ||
                name.endsWith(".xcu") || name.endsWith(".XCU") ||
+               name.endsWith(".txt") || name.endsWith(".TXT") ||
                name.endsWith(".png") || name.endsWith(".PNG");
     }
 
