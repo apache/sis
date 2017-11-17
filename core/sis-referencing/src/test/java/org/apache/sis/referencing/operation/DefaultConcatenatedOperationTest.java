@@ -43,7 +43,7 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
  * Tests the {@link DefaultConcatenatedOperation} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.7
+ * @version 0.8
  * @since   0.7
  * @module
  */
@@ -114,9 +114,7 @@ public final strictfp class DefaultConcatenatedOperationTest extends XMLTestCase
                 "      Axis[“Latitude (B)”, north, Unit[“degree”, 0.017453292519943295]],\n" +
                 "      Axis[“Ellipsoidal height (h)”, up, Unit[“metre”, 1]]]],\n" +
                 "  CoordinateOperationStep[“Geographic to geocentric”,\n" +
-                "    Method[“Geographic/geocentric conversions”],\n" +
-                "      Parameter[“semi_major”, 6377397.155, Unit[“metre”, 1]],\n" +
-                "      Parameter[“semi_minor”, 6356078.962818189, Unit[“metre”, 1]]],\n" +
+                "    Method[“Geographic/geocentric conversions”]],\n" +         // Omit non-EPSG parameters for EPSG method.
                 "  CoordinateOperationStep[“Tokyo to JGD2000 (GSI)”,\n" +
                 "    Method[“Geocentric translations”],\n" +
                 "      Parameter[“X-axis translation”, -146.414],\n" +

@@ -25,7 +25,6 @@ import java.sql.SQLException;
 import java.util.StringTokenizer;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
-import java.util.logging.LogRecord;
 import java.io.BufferedReader;
 import org.apache.sis.util.StringBuilders;
 import org.apache.sis.internal.metadata.sql.ScriptRunner;
@@ -280,18 +279,16 @@ final class EPSGInstaller extends ScriptRunner {
     }
 
     /**
-     * Logs a message reporting the failure to create EPSG database. This method is invoked when {@link EPSGFactory}
-     * caught an exception. This log completes rather than replaces the exception message since {@code EPSGFactory}
-     * lets the exception propagate. Another code (for example {@link org.apache.sis.referencing.CRS#forCode(String)})
-     * may catch that exception and log another record with the exception message.
+     * Creates a message reporting the failure to create EPSG database. This method is invoked when {@link EPSGFactory}
+     * caught an exception. This method completes the exception message with the file name and line number where the
+     * error occurred, if such information is available.
      */
-    final void logFailure(final Locale locale, final Exception cause) {
+    final String failure(final Locale locale, final Exception cause) {
         String message = Messages.getResources(locale).getString(Messages.Keys.CanNotCreateSchema_1, EPSG);
         String status = status(locale);
         if (status != null) {
             message = message + ' ' + status;
         }
-        message = Exceptions.formatChainedMessages(locale, message, cause);
-        InstallationScriptProvider.log(new LogRecord(Level.WARNING, message));
+        return Exceptions.formatChainedMessages(locale, message, cause);
     }
 }

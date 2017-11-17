@@ -18,10 +18,9 @@ package org.apache.sis.storage;
 
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptorGroup;
-import org.opengis.parameter.ParameterNotFoundException;
 import org.opengis.metadata.distribution.Format;
 import org.apache.sis.internal.simple.SimpleFormat;
-import org.apache.sis.internal.storage.Resources;
+import org.apache.sis.internal.storage.URIDataStore;
 import org.apache.sis.metadata.iso.citation.DefaultCitation;
 import org.apache.sis.metadata.iso.distribution.DefaultFormat;
 import org.apache.sis.measure.Range;
@@ -287,18 +286,6 @@ public abstract class DataStoreProvider {
      */
     public DataStore open(final ParameterValueGroup parameters) throws DataStoreException {
         ArgumentChecks.ensureNonNull("parameter", parameters);
-        ParameterNotFoundException cause = null;
-        Object location;
-        try {
-            location = parameters.parameter(LOCATION).getValue();
-        } catch (ParameterNotFoundException e) {
-            location = null;
-            cause = e;
-        }
-        if (location == null) {
-            throw new IllegalOpenParameterException(Resources.format(Resources.Keys.UndefinedParameter_2,
-                    getShortName(), LOCATION), cause);
-        }
-        return open(new StorageConnector(location));
+        return open(URIDataStore.Provider.connector(this, parameters));
     }
 }

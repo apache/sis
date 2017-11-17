@@ -25,6 +25,7 @@ import org.opengis.util.FactoryException;
 import org.opengis.util.NoSuchIdentifierException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.referencing.factory.FactoryDataException;
+import org.apache.sis.referencing.factory.UnavailableFactoryException;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.io.wkt.Convention;
@@ -67,9 +68,20 @@ public final strictfp class ConsistencyTest extends TestCase {
      * Codes to exclude for now.
      */
     private static final Set<String> EXCLUDES = new HashSet<>(Arrays.asList(
-        "CRS:1",            // Computer display
-        "EPSG:5819"         // EPSG topocentric example A
+        "CRS:1",            // Computer display: WKT parser alters the (i,j) axis names.
+        "EPSG:5819",        // EPSG topocentric example A: error while parsing WKT.
+        "AUTO2:42001",      // This projection requires parameters, but we provide none.
+        "AUTO2:42002",      // This projection requires parameters, but we provide none.
+        "AUTO2:42003",      // This projection requires parameters, but we provide none.
+        "AUTO2:42004",      // This projection requires parameters, but we provide none.
+        "AUTO2:42005"       // This projection requires parameters, but we provide none.
     ));
+
+    /**
+     * Width of the code columns in the warnings formatted by {@link #print(String, String, Object)}.
+     * We begin with an arbitrary width and will expand if necessary.
+     */
+    private int codeWidth = 15;
 
     /**
      * Verifies the WKT consistency of all CRS instances.
@@ -92,7 +104,7 @@ public final strictfp class ConsistencyTest extends TestCase {
                 final CoordinateReferenceSystem crs;
                 try {
                     crs = CRS.forCode(code);
-                } catch (NoSuchIdentifierException | FactoryDataException e) {
+                } catch (UnavailableFactoryException | NoSuchIdentifierException | FactoryDataException e) {
                     print(code, "WARNING", e.getLocalizedMessage());
                     continue;
                 }
@@ -118,9 +130,13 @@ public final strictfp class ConsistencyTest extends TestCase {
      * Prints the given code followed by spaces and the given {@code "ERROR"} or {@code "WARNING"} word,
      * then the given message.
      */
-    private static void print(final String code, final String word, final Object message) {
+    private void print(final String code, final String word, final Object message) {
+        final int currentWidth = code.length();
+        if (currentWidth >= codeWidth) {
+            codeWidth = currentWidth + 1;
+        }
         out.print(code);
-        out.print(CharSequences.spaces(15 - code.length()));
+        out.print(CharSequences.spaces(codeWidth - currentWidth));
         out.print(word);
         out.print(": ");
         out.println(message);
@@ -135,7 +151,7 @@ public final strictfp class ConsistencyTest extends TestCase {
      * @param  crs   the CRS to test.
      * @return the parsed CRS.
      */
-    private static CoordinateReferenceSystem parseAndFormat(final WKTFormat f,
+    private CoordinateReferenceSystem parseAndFormat(final WKTFormat f,
             final String code, final CoordinateReferenceSystem crs)
     {
         String wkt = f.format(crs);
