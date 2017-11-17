@@ -5,6 +5,7 @@ DefaultEllipsoid
 DefaultGeodeticDatum
 DefaultMetadata
 DefaultProjectedCRS
+Envelope2D
 Envelopes
 GeneralEnvelope
 GridGeometry
