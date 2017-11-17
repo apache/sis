@@ -17,10 +17,8 @@
 package org.apache.sis.openoffice;
 
 import java.util.Arrays;
-import org.apache.sis.util.collection.Cache;
-
-// Branch-dependent imports
 import java.util.Objects;
+import org.apache.sis.util.collection.Cache;
 
 
 /**

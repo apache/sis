@@ -38,7 +38,7 @@ import org.apache.sis.feature.AbstractIdentifiedType;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.8
  * @module
  */
@@ -99,6 +99,42 @@ public abstract class PropertyTypeBuilder extends TypeBuilder {
     final FeatureTypeBuilder owner() {
         ensureAlive(owner);
         return owner;
+    }
+
+    /**
+     * Sets the {@code PropertyType} name as a generic name.
+     * See {@linkplain TypeBuilder#setName(GenericName) the parent class} for more information.
+     *
+     * @return {@code this} for allowing method calls chaining.
+     */
+    @Override
+    public PropertyTypeBuilder setName(final GenericName name) {
+        super.setName(name);
+        return this;
+    }
+
+    /**
+     * Sets the {@code PropertyType} name as a simple string (local name).
+     * See {@linkplain TypeBuilder#setName(CharSequence) the parent class} for more information.
+     *
+     * @return {@code this} for allowing method calls chaining.
+     */
+    @Override
+    public PropertyTypeBuilder setName(final CharSequence localPart) {
+        super.setName(localPart);
+        return this;
+    }
+
+    /**
+     * Sets the {@code PropertyType} name as a string in the given scope.
+     * See {@linkplain TypeBuilder#setName(CharSequence...) the parent class} for more information.
+     *
+     * @return {@code this} for allowing method calls chaining.
+     */
+    @Override
+    public PropertyTypeBuilder setName(final CharSequence... components) {
+        super.setName(components);
+        return this;
     }
 
     /**
@@ -171,6 +207,42 @@ public abstract class PropertyTypeBuilder extends TypeBuilder {
             }
             clearCache();
         }
+        return this;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public PropertyTypeBuilder setDefinition(final CharSequence definition) {
+        super.setDefinition(definition);
+        return this;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public PropertyTypeBuilder setDesignation(final CharSequence designation) {
+        super.setDesignation(designation);
+        return this;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public PropertyTypeBuilder setDescription(final CharSequence description) {
+        super.setDescription(description);
+        return this;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public PropertyTypeBuilder setDeprecated(final boolean deprecated) {
+        super.setDeprecated(deprecated);
         return this;
     }
 

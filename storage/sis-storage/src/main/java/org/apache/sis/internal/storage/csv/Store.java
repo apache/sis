@@ -39,6 +39,7 @@ import org.opengis.referencing.crs.TemporalCRS;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.feature.DefaultAttributeType;
 import org.apache.sis.feature.DefaultFeatureType;
+import org.apache.sis.feature.FoliationRepresentation;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.internal.referencing.GeodeticObjectBuilder;
@@ -54,6 +55,7 @@ import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.geometry.ImmutableEnvelope;
 import org.apache.sis.metadata.iso.DefaultMetadata;
 import org.apache.sis.metadata.sql.MetadataStoreException;
+import org.apache.sis.storage.DataOptionKey;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.storage.DataStoreReferencingException;
@@ -81,7 +83,7 @@ import org.apache.sis.feature.AbstractIdentifiedType;
  * See package javadoc for more information on the syntax.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.7
  * @module
  */
@@ -224,12 +226,9 @@ final class Store extends URIDataStore implements FeatureSet {
      *
      * @param  provider   the factory that created this {@code DataStore} instance, or {@code null} if unspecified.
      * @param  connector  information about the storage (URL, stream, <i>etc</i>).
-     * @param  immediate  {@code true} for forcing the creation of a distinct {@code Feature} instance for each line.
      * @throws DataStoreException if an error occurred while opening the stream.
      */
-    public Store(final StoreProvider provider, final StorageConnector connector, final boolean immediate)
-            throws DataStoreException
-    {
+    public Store(final StoreProvider provider, final StorageConnector connector) throws DataStoreException {
         super(provider, connector);
         final Reader r = connector.getStorageAs(Reader.class);
         connector.closeAllExcept(r);
@@ -239,7 +238,7 @@ final class Store extends URIDataStore implements FeatureSet {
         }
         source     = (r instanceof BufferedReader) ? (BufferedReader) r : new LineNumberReader(r);
         geometries = Geometries.implementation(connector.getOption(OptionKey.GEOMETRY_LIBRARY));
-        dissociate = immediate;
+        dissociate = FoliationRepresentation.FRAGMENTED.equals(connector.getOption(DataOptionKey.FOLIATION_REPRESENTATION));
         GeneralEnvelope envelope    = null;
         DefaultFeatureType featureType = null;
         Foliation       foliation   = null;

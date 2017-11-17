@@ -39,6 +39,11 @@ import org.apache.sis.util.resources.Vocabulary;
 
 /**
  * Geographic coordinates represented as <cite>geohashes</cite> strings.
+ * Geohash is a simple encoding of geographic coordinates into a short string of letters and digits.
+ * Longer strings are more accurate, however the accuracy is not uniformly distributed between latitude
+ * and longitude, and removing digits decreases accuracy faster when the point is located close to the
+ * equator than close to a pole. For a system having more uniform accuracy, see the
+ * {@linkplain MilitaryGridReferenceSystem Military Grid Reference System} (MGRS).
  *
  * @author  Chris Mattmann (JPL)
  * @author  Martin Desruisseaux (Geomatys)

@@ -22,7 +22,9 @@ import javax.measure.quantity.Angle;
 import org.opengis.parameter.ParameterValue;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.GeneralParameterValue;
+import org.opengis.parameter.GeneralParameterDescriptor;
 import org.opengis.referencing.IdentifiedObject;
+import org.opengis.referencing.ReferenceIdentifier;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
@@ -46,6 +48,7 @@ import org.apache.sis.measure.Units;
 import org.apache.sis.util.Static;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.resources.Vocabulary;
+import org.apache.sis.internal.util.Constants;
 
 
 /**
@@ -243,6 +246,32 @@ public final class WKTUtilities extends Static {
             formatter.append((FormattableObject) parameter);
             formatter.newLine();
         }
+    }
+
+    /**
+     * Returns {@code true} if the given parameter is defined in the EPSG code space. We handle EPSG
+     * parameters in a special way because Apache SIS uses the EPSG geodetic dataset as the primary
+     * source of coordinate operation definitions.
+     *
+     * <p>We intentionally don't define {@code isEPSG(OperationMethod)} method because the operation
+     * method may be the inverse of an EPSG method (for example "Inverse of Mercator (variant A)")
+     * which would not be recognized. Instead, {@code isEPSG(method.getParameters())} should work.</p>
+     *
+     * @param  descriptor   the parameter or group of parameters to inspect.
+     * @param  ifUndefined  the value to return if the code space is undefined.
+     * @return whether the given parameter is an EPSG parameter.
+     */
+    public static boolean isEPSG(final GeneralParameterDescriptor descriptor, final boolean ifUndefined) {
+        if (descriptor != null) {
+            final ReferenceIdentifier id = descriptor.getName();
+            if (id != null) {
+                final String cs = id.getCodeSpace();
+                if (cs != null) {
+                    return Constants.EPSG.equalsIgnoreCase(cs);
+                }
+            }
+        }
+        return ifUndefined;
     }
 
     /**

@@ -109,7 +109,7 @@ public abstract class Vector extends AbstractList<Number> implements RandomAcces
      *
      * <div class="section">Unsigned integers</div>
      * Java has no primitive support for unsigned integers. But some file formats use unsigned integers,
-     * which can be simulated in Java by the use of bit masks or methods like {@link Integer#toUnsignedLong(int)}.
+     * which can be simulated in Java by the use of bit masks or methods like {@code Integer.toUnsignedLong(int)}.
      * This {@code Vector} class applies automatically those masks (unless otherwise noticed in method Javadoc)
      * if the {@code isUnsigned} argument is {@code true}.
      * That argument applies only to {@code byte[]}, {@code short[]}, {@code int[]} or {@code long[]} arrays

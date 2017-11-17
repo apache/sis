@@ -17,7 +17,6 @@
 package org.apache.sis.metadata.iso.distribution;
 
 import java.util.Collection;
-import java.util.Collections;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -31,7 +30,6 @@ import org.apache.sis.internal.metadata.Dependencies;
 import org.apache.sis.internal.metadata.LegacyPropertyAdapter;
 import org.apache.sis.metadata.iso.citation.DefaultCitation;
 import org.apache.sis.metadata.iso.ISOMetadata;
-import org.apache.sis.util.iso.Types;
 
 // Branch-dependent imports
 import org.apache.sis.internal.jdk8.BiConsumer;
@@ -133,27 +131,6 @@ public class DefaultFormat extends ISOMetadata implements Format {
      * Constructs an initially empty format.
      */
     public DefaultFormat() {
-    }
-
-    /**
-     * Creates a format initialized to the given name and version.
-     * The given name should be a short name or abbreviation, for example "JPEG" or "GeoTIFF".
-     *
-     * @param  name     the abbreviated name of the data transfer format, or {@code null}.
-     * @param  version  the version of the format (date, number, <i>etc.</i>), or {@code null}.
-     *
-     * @deprecated This constructor had a straightforward meaning in ISO 19115:2003, but became confusing
-     *             with the ISO 19115:2014 update because of differences in the {@code Format} model.
-     *             Consider using {@link org.apache.sis.metadata.sql.MetadataSource#lookup(Class, String)} instead.
-     */
-    @Deprecated
-    public DefaultFormat(CharSequence name, final CharSequence version) {
-        final DefaultCitation citation = new DefaultCitation();
-        if (name != null) {
-            citation.setAlternateTitles(Collections.singleton(Types.toInternationalString(name)));
-        }
-        citation.setEdition(Types.toInternationalString(version));
-        formatSpecificationCitation = citation;
     }
 
     /**

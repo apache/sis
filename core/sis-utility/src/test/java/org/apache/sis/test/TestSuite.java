@@ -28,7 +28,9 @@ import java.net.URL;
 import java.net.URISyntaxException;
 import org.apache.sis.internal.system.Shutdown;
 import org.apache.sis.internal.system.SystemListener;
+import org.apache.sis.util.logging.MonolineFormatter;
 import org.apache.sis.util.Classes;
+import org.junit.BeforeClass;
 import org.junit.AfterClass;
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
@@ -40,7 +42,7 @@ import static org.junit.Assert.*;
  * Base class of Apache SIS test suites (except the ones that extend GeoAPI suites).
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.7
+ * @version 1.0
  * @since   0.3
  * @module
  */
@@ -237,6 +239,21 @@ public abstract strictfp class TestSuite {
                 fail("Class " + testCase.getCanonicalName() + " is declared twice.");
             }
         }
+    }
+
+    /**
+     * Installs Apache SIS monoline formatter for easier identification of Apache SIS log messages among Maven outputs.
+     * We perform this installation only for {@code *TestSuite}, not for individual {@code *Test}. Consequently this is
+     * typically enabled when building a whole module with Maven but not when debugging an individual class.
+     *
+     * @since 1.0
+     */
+    @BeforeClass
+    public static void configureLogging() {
+        MonolineFormatter f = MonolineFormatter.install();
+        f.setHeader(null);
+        f.setTimeFormat(null);
+        f.setSourceFormat("class.method");
     }
 
     /**

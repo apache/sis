@@ -1,0 +1,1 @@
+Provide coordinate operation services as formulas inside the Calc spreadsheet.

@@ -113,7 +113,7 @@ public class LinearTransformBuilder extends TransformBuilder {
     private int numPoints;
 
     /**
-     * The transform created by the last call to {@link #create()}.
+     * The transform created by the last call to {@link #create(MathTransformFactory)}.
      * This is reset to {@code null} when coordinates are modified.
      */
     private transient LinearTransform transform;
@@ -376,8 +376,6 @@ search: for (int j=0; j<numPoints; j++) {
             throws MismatchedDimensionException
     {
         ArgumentChecks.ensureNonNull("sourceToTarget", sourceToTarget);
-        pendingSources = null;
-        pendingTargets = null;
         transform   = null;
         correlation = null;
         sources     = null;
@@ -516,7 +514,6 @@ search: for (int j=0; j<numPoints; j++) {
      * @since 0.8
      */
     public double[] getControlPoint(final int[] source) {
-        processPendings();
         ArgumentChecks.ensureNonNull("source", source);
         verifySourceDimension(source.length);
         if (targets == null) {
@@ -554,97 +551,6 @@ search: for (int j=0; j<numPoints; j++) {
     }
 
     /**
-     * Sets the source points, overwriting any previous setting. The number of source points will need to be the same
-     * than the number of {@linkplain #setTargetPoints target points} when the {@link #create()} method will be invoked.
-     * In current Apache SIS implementation, the source points must be one or two-dimensional.
-     *
-     * <p>If this builder has been created with the {@link #LinearTransformBuilder(int...)} constructor,
-     * then all given points must be two-dimensional and all ordinate values must be integers in the
-     * [0 … <var>width</var>-1] or [0 … <var>height</var>-1] range for the first and second dimension
-     * respectively. This constraint does not apply if this builder has been created with the
-     * {@link #LinearTransformBuilder()} constructor.</p>
-     *
-     * <p>It is caller's responsibility to ensure that no source point is duplicated.
-     * If the same source point is repeated twice, then {@code LinearTransformBuilder} behavior is undefined.</p>
-     *
-     * @param  points  the source points, assumed precise.
-     * @throws MismatchedDimensionException if at least one point does not have the expected number of dimensions.
-     *
-     * @deprecated Replaced by {@link #setControlPoints(Map)}.
-     */
-    @Deprecated
-    public void setSourcePoints(final DirectPosition... points) throws MismatchedDimensionException {
-        ArgumentChecks.ensureNonNull("points", points);
-        transform   = null;
-        correlation = null;
-        sources     = null;
-        targets     = null;
-        numPoints   = 0;
-        pendingSources = points.clone();
-    }
-
-    /**
-     * Sets the target points, overwriting any previous setting. The number of target points will need to be the same
-     * than the number of {@linkplain #setSourcePoints source points} when the {@link #create()} method will be invoked.
-     * Target points can have any number of dimensions (not necessarily 2), but all points shall have
-     * the same number of dimensions.
-     *
-     * @param  points  the target points, assumed uncertain.
-     * @throws MismatchedDimensionException if not all points have the same number of dimensions.
-     *
-     * @deprecated Replaced by {@link #setControlPoints(Map)}.
-     */
-    @Deprecated
-    public void setTargetPoints(final DirectPosition... points) throws MismatchedDimensionException {
-        ArgumentChecks.ensureNonNull("points", points);
-        transform   = null;
-        correlation = null;
-        sources     = null;
-        targets     = null;
-        numPoints   = 0;
-        pendingTargets = points.clone();
-    }
-
-    @Deprecated
-    private transient DirectPosition[] pendingSources, pendingTargets;
-
-    @Deprecated
-    private void processPendings() {
-        if (pendingSources != null || pendingTargets != null) {
-            if (pendingSources == null || pendingTargets == null) {
-                throw new IllegalStateException(Errors.format(
-                        Errors.Keys.MissingValueForProperty_1, (pendingSources == null) ? "sources" : "targets"));
-            }
-            final int length = pendingSources.length;
-            if (pendingTargets.length != length) {
-                throw new IllegalStateException(Errors.format(Errors.Keys.MismatchedArrayLengths));
-            }
-            final Map<DirectPosition,DirectPosition> sourceToTarget = new java.util.HashMap<>(length);
-            for (int i=0; i<length; i++) {
-                sourceToTarget.put(pendingSources[i], pendingTargets[i]);
-            }
-            setControlPoints(sourceToTarget);
-        }
-    }
-
-    /**
-     * Creates a linear transform approximation from the source positions to the target positions.
-     * This method assumes that source positions are precise and that all uncertainty is in the target positions.
-     *
-     * @return the fitted linear transform.
-     *
-     * @deprecated Replaced by {@link #create(MathTransformFactory)}.
-     */
-    @Deprecated
-    public LinearTransform create() {
-        try {
-            return create(null);
-        } catch (FactoryException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    /**
      * Creates a linear transform approximation from the source positions to the target positions.
      * This method assumes that source positions are precise and that all uncertainty is in the target positions.
      *
@@ -661,7 +567,6 @@ search: for (int j=0; j<numPoints; j++) {
     @SuppressWarnings("serial")
     public LinearTransform create(final MathTransformFactory factory) throws FactoryException {
         if (transform == null) {
-            processPendings();
             final double[][] sources = this.sources;                    // Protect from changes.
             final double[][] targets = this.targets;
             if (targets == null) {
@@ -734,7 +639,7 @@ search: for (int j=0; j<numPoints; j++) {
     }
 
     /**
-     * Returns the correlation coefficients of the last transform created by {@link #create()},
+     * Returns the correlation coefficients of the last transform created by {@link #create create(…)},
      * or {@code null} if none. If non-null, the array length is equals to the number of target
      * dimensions.
      *
