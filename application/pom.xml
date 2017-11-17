@@ -118,7 +118,16 @@
     <module>sis-console</module>
     <module>sis-javafx</module>
     <module>sis-webapp</module>
-<!--<module>sis-openoffice</module>     Omitted for now because of the numerous warnings emitted by Pack200. -->
   </modules>
 
+  <!-- Following module is omitted for now (unless doing a release)
+       because of the numerous warnings emitted by Pack200. -->
+  <profiles>
+    <profile>
+      <id>apache-release</id>
+      <modules>
+        <module>sis-openoffice</module>
+      </modules>
+    </profile>
+  </profiles>
 </project>
