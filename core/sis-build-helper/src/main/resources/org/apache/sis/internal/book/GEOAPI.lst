@@ -64,6 +64,7 @@ Ellipsoid
 EllipsoidalCS
 EngineeringCRS
 EngineeringDatum
+Envelope
 EnvironmentalRecord
 EvaluationMethodType
 Event
