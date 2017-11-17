@@ -157,9 +157,9 @@ abstract class CoordinateSystemTransform extends AbstractMathTransform {
     }
 
     /**
-     * Implementation of {@link DefaultMathTransformFactory#createCoordinateSystemChange(CoordinateSystem, CoordinateSystem)},
-     * defined here for reducing the {@code DefaultMathTransformFactory} weight in the common case where the conversions
-     * handled by this class are not needed.
+     * Implementation of {@link DefaultMathTransformFactory#createCoordinateSystemChange(CoordinateSystem,
+     * CoordinateSystem, Ellipsoid)}, defined here for reducing the {@code DefaultMathTransformFactory}
+     * weight in the common case where the conversions handled by this class are not needed.
      */
     static MathTransform create(final MathTransformFactory factory, final CoordinateSystem source,
             final CoordinateSystem target) throws FactoryException

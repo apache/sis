@@ -110,6 +110,7 @@ public final strictfp class WarningListenersTest extends TestCase implements War
         listeners.warning("The message", null);
         listeners.removeWarningListener(this);
         assertNotNull("Listener has not been notified.", warning);
+        assertEquals(getClass().getName(), warning.getSourceClassName());
         assertEquals("testWarning", warning.getSourceMethodName());
         assertEquals("The message", warning.getMessage());
     }

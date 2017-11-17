@@ -17,14 +17,17 @@
 package org.apache.sis.internal.storage;
 
 import java.net.URI;
+import java.nio.charset.Charset;
+import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
-import org.opengis.parameter.ParameterValueGroup;
+import org.opengis.parameter.ParameterNotFoundException;
 import org.apache.sis.parameter.ParameterBuilder;
+import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreProvider;
 import org.apache.sis.storage.DataStoreException;
-import org.apache.sis.storage.StorageConnector;
+import org.apache.sis.storage.IllegalOpenParameterException;
 import org.apache.sis.internal.storage.io.IOUtilities;
 
 
@@ -35,7 +38,7 @@ import org.apache.sis.internal.storage.io.IOUtilities;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.8
  * @module
  */
@@ -69,12 +72,12 @@ public abstract class URIDataStore extends DataStore {
 
     /**
      * Creates parameter value group for the current location, if non-null.
-     * This convenience method is used for public {@code DataStore} implementations that can not extend
-     * {@code URIDataStore} directly, because this class is internal.
+     * This convenience method is used for {@link DataStore#getOpenParameters()} implementations in public
+     * {@code DataStore} that can not extend {@code URIDataStore} directly, because this class is internal.
      *
-     * @param provider
-     * @param location
-     * @return
+     * @param  provider  the provider of the data store for which to get open parameters.
+     * @param  location  file opened by the data store.
+     * @return parameters to be returned by {@link DataStore#getOpenParameters()}.
      *
      * @todo Verify if non-exported classes in JDK9 are hidden from Javadoc, like package-private classes.
      *       If true, we could remove this hack and extend {@code URIDataStore} even in public classes.
@@ -99,11 +102,19 @@ public abstract class URIDataStore extends DataStore {
         /**
          * Description of the location parameter.
          */
-        public static final ParameterDescriptor<URI> LOCATION_PARAM = new ParameterBuilder()
-                .setDescription(Resources.formatInternational(Resources.Keys.DataStoreLocation))
-                .addName(LOCATION)
-                .setRequired(true)
-                .create(URI.class, null);
+        public static final ParameterDescriptor<URI> LOCATION_PARAM;
+
+        /**
+         * Description of the optional parameter for character encoding used by the data store.
+         * This parameter is not included in the descriptor created by {@link #build(ParameterBuilder)}
+         * default implementation. It is subclass responsibility to add it if desired.
+         */
+        public static final ParameterDescriptor<Charset> ENCODING;
+        static {
+            final ParameterBuilder builder = new ParameterBuilder();
+            ENCODING       = builder.addName("encoding").setDescription(Resources.formatInternational(Resources.Keys.DataStoreEncoding)).create(Charset.class, null);
+            LOCATION_PARAM = builder.addName( LOCATION ).setDescription(Resources.formatInternational(Resources.Keys.DataStoreLocation)).setRequired(true).create(URI.class, null);
+        }
 
         /**
          * The parameter descriptor to be returned by {@link #getOpenParameters()}.
@@ -160,6 +171,31 @@ public abstract class URIDataStore extends DataStore {
          */
         public static ParameterDescriptorGroup descriptor(final String name) {
             return new ParameterBuilder().addName(name).createGroup(LOCATION_PARAM);
+        }
+
+        /**
+         * Creates a storage connector initialized to the location declared in given parameters.
+         * This convenience method does not set any other parameters.
+         *
+         * @param  provider    the provider for which to create a storage connector (for error messages).
+         * @param  parameters  the parameters to use for creating a storage connector.
+         * @return the storage connector initialized to the location specified in the parameters.
+         * @throws IllegalOpenParameterException if no {@value #LOCATION} parameter has been found.
+         */
+        public static StorageConnector connector(final DataStoreProvider provider, final ParameterValueGroup parameters)
+                throws IllegalOpenParameterException
+        {
+            ParameterNotFoundException cause = null;
+            try {
+                final Object location = parameters.parameter(LOCATION).getValue();
+                if (location != null) {
+                    return new StorageConnector(location);
+                }
+            } catch (ParameterNotFoundException e) {
+                cause = e;
+            }
+            throw new IllegalOpenParameterException(Resources.format(Resources.Keys.UndefinedParameter_2,
+                        provider.getShortName(), LOCATION), cause);
         }
     }
 

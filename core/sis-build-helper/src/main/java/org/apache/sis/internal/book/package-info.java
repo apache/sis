@@ -21,7 +21,22 @@
  * {@code http://svn.apache.org/repos/asf/sis/site/trunk/content/book/} directory.
  *
  * <p>The main class in this package is {@link org.apache.sis.internal.book.Assembler}.
- * Other classes are helper classes that should be ignored.</p>
+ * Other classes are helper classes that should be ignored. Assuming the following directory layout:</p>
+ *
+ * <pre>&lt;current directory&gt;
+ * ├─ trunk
+ * └─ site
+ *     ├─ book
+ *     └─ content
+ * </pre>
+ *
+ * Then the command can be used as below on Unix systems:
+ *
+ * <pre>cd site
+ * java -classpath ../trunk/core/sis-build-helper/target/classes org.apache.sis.internal.book.Assembler en
+ * </pre>
+ *
+ * Replace {@code en} by {@code fr} for generating the French version.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8

@@ -27,7 +27,6 @@ import org.opengis.util.InternationalString;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
-import org.opengis.parameter.ParameterNotFoundException;
 import org.apache.sis.parameter.ParameterBuilder;
 import org.apache.sis.parameter.Parameters;
 import org.apache.sis.storage.DataStore;
@@ -35,7 +34,6 @@ import org.apache.sis.storage.DataStoreProvider;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.ProbeResult;
-import org.apache.sis.storage.IllegalOpenParameterException;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.internal.system.Modules;
@@ -84,11 +82,18 @@ public final class FolderStoreProvider extends DataStoreProvider {
         final ParameterDescriptor<Path> location;
         final ParameterBuilder builder = new ParameterBuilder();
         final InternationalString remark = Resources.formatInternational(Resources.Keys.UsedOnlyIfNotEncoded);
+        ENCODING   = annotate(builder, URIDataStore.Provider.ENCODING, remark);
         LOCALE     = builder.addName("locale"  ).setDescription(Resources.formatInternational(Resources.Keys.DataStoreLocale  )).setRemarks(remark).create(Locale.class,   null);
         TIMEZONE   = builder.addName("timezone").setDescription(Resources.formatInternational(Resources.Keys.DataStoreTimeZone)).setRemarks(remark).create(TimeZone.class, null);
-        ENCODING   = builder.addName("encoding").setDescription(Resources.formatInternational(Resources.Keys.DataStoreEncoding)).setRemarks(remark).create(Charset.class,  null);
-        location   = builder.addName( LOCATION ).setDescription(URIDataStore.Provider.LOCATION_PARAM.getDescription())          .setRequired(true) .create(Path.class,     null);
-        PARAMETERS = builder.addName( NAME     ).createGroup(location, LOCALE, TIMEZONE, ENCODING);
+        location   = new ParameterBuilder(URIDataStore.Provider.LOCATION_PARAM).create(Path.class, null);
+        PARAMETERS = builder.addName(NAME).createGroup(location, LOCALE, TIMEZONE, ENCODING);
+    }
+
+    /**
+     * Creates a parameter descriptor equals to the given one except for the remarks which are set to the given value.
+     */
+    private static <T> ParameterDescriptor<T> annotate(ParameterBuilder builder, ParameterDescriptor<T> e, InternationalString remark) {
+        return builder.addName(e.getName()).setDescription(e.getDescription()).setRemarks(remark).create(e.getValueClass(), null);
     }
 
     /**
@@ -173,22 +178,12 @@ public final class FolderStoreProvider extends DataStoreProvider {
     @Override
     public DataStore open(final ParameterValueGroup parameters) throws DataStoreException {
         ArgumentChecks.ensureNonNull("parameter", parameters);
-        ParameterNotFoundException cause = null;
-        try {
-            final Object location = parameters.parameter(LOCATION).getValue();
-            if (location != null) {
-                final Parameters pg = Parameters.castOrWrap(parameters);
-                final StorageConnector connector = new StorageConnector(location);
-                connector.setOption(OptionKey.LOCALE,   pg.getValue(LOCALE));
-                connector.setOption(OptionKey.TIMEZONE, pg.getValue(TIMEZONE));
-                connector.setOption(OptionKey.ENCODING, pg.getValue(ENCODING));
-                return open(connector);
-            }
-        } catch (ParameterNotFoundException e) {
-            cause = e;
-        }
-        throw new IllegalOpenParameterException(Resources.format(Resources.Keys.UndefinedParameter_2,
-                getShortName(), LOCATION), cause);
+        final StorageConnector connector = URIDataStore.Provider.connector(this, parameters);
+        final Parameters pg = Parameters.castOrWrap(parameters);
+        connector.setOption(OptionKey.LOCALE,   pg.getValue(LOCALE));
+        connector.setOption(OptionKey.TIMEZONE, pg.getValue(TIMEZONE));
+        connector.setOption(OptionKey.ENCODING, pg.getValue(ENCODING));
+        return open(connector);
     }
 
     /**

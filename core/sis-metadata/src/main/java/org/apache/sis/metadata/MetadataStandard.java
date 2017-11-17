@@ -841,23 +841,6 @@ public class MetadataStandard implements Serializable {
     }
 
     /**
-     * @deprecated Replaced by {@link #asValueMap(Object, Class, KeyNamePolicy, ValueExistencePolicy)}
-     * (i.e. a {@code Class} argument has been inserted after the metadata value).
-     *
-     * @param  metadata     the metadata object to view as a map.
-     * @param  keyPolicy    determines the string representation of map keys.
-     * @param  valuePolicy  whether the entries having null value or empty collection shall be included in the map.
-     * @return a map view over the metadata object.
-     * @throws ClassCastException if the metadata object does not implement a metadata interface of the expected package.
-     */
-    @Deprecated
-    public Map<String,Object> asValueMap(final Object metadata, final KeyNamePolicy keyPolicy,
-            final ValueExistencePolicy valuePolicy) throws ClassCastException
-    {
-        return asValueMap(metadata, null, keyPolicy, valuePolicy);
-    }
-
-    /**
      * Returns the specified metadata object as a tree table.
      * The tree table is backed by the metadata object using Java reflection, so changes in the
      * underlying metadata object are immediately reflected in the tree table and conversely.
@@ -936,20 +919,6 @@ public class MetadataStandard implements Serializable {
             baseType = getInterface(metadata.getClass());
         }
         return new TreeTableView(this, metadata, baseType, valuePolicy);
-    }
-
-    /**
-     * @deprecated Replaced by {@link #asTreeTable(Object, Class, ValueExistencePolicy)}
-     * (i.e. a {@code Class} argument has been inserted after the metadata value).
-     *
-     * @param  metadata     the metadata object to view as a tree table.
-     * @param  valuePolicy  whether the property having null value or empty collection shall be included in the tree.
-     * @return a tree table representation of the specified metadata.
-     * @throws ClassCastException if the metadata object does not implement a metadata interface of the expected package.
-     */
-    @Deprecated
-    public TreeTable asTreeTable(final Object metadata, final ValueExistencePolicy valuePolicy) throws ClassCastException {
-        return asTreeTable(metadata, null, valuePolicy);
     }
 
     /**
