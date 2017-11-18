@@ -391,7 +391,9 @@ public final class Assembler {
                                         tableOfChapterContent = document.createElement("ul");
                                         tableOfChapterContent.setAttribute("class", "toc");
                                         final Node nav = document.createElement("nav");
-                                        nav.appendChild(document.createTextNode(resources.getString("this-chapter")));
+                                        final Node p = document.createElement("p");
+                                        p.appendChild(document.createTextNode(resources.getString("this-chapter")));
+                                        nav.appendChild(p);
                                         nav.appendChild(tableOfChapterContent);
                                         Node insertionPoint = node.getParentNode();             // The <header> element.
                                         do insertionPoint = insertionPoint.getNextSibling();    // The first paragraph.
