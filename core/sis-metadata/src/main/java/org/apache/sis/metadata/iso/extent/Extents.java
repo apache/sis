@@ -62,11 +62,11 @@ import org.opengis.geometry.Geometry;
  * This class provides methods for:
  *
  * <ul>
- *   <li>{@link #getGeographicBoundingBox(Extent)}, {@link #getVerticalRange(Extent)}
- *       and {@link #getDate(Extent, double)}
- *       for fetching geographic or temporal components in a convenient form.</li>
- *   <li>Methods for computing {@linkplain #intersection intersection} of bounding boxes
- *       and {@linkplain #area area} estimations.</li>
+ *   <li>{@linkplain #getGeographicBoundingBox Fetching geographic},
+ *       {@linkplain #getVerticalRange vertical} or
+ *       {@linkplain #getDate temporal components} in a convenient form.</li>
+ *   <li>Computing {@linkplain #intersection intersection} of bounding boxes</li>
+ *   <li>Computing {@linkplain #area area} estimations.</li>
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
