@@ -322,7 +322,9 @@ public final class CodeColorizer {
                             nextSubstringStart = lower;
                             lower = text.indexOf(stopCondition, lower+1);
                             if (lower >= 0) {
-                                lower += stopCondition.length();
+                                if (!stopCondition.equals("\n")) {
+                                    lower += stopCondition.length();
+                                }
                                 stopCondition = null;
                             } else {
                                 lower = text.length();
