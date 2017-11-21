@@ -37,6 +37,8 @@ import org.apache.sis.internal.system.ReferenceQueueConsumer;
 
 // Branch-dependent imports
 import java.util.function.Supplier;
+import java.util.function.Function;
+import java.util.function.BiFunction;
 
 
 /**
@@ -53,34 +55,20 @@ import java.util.function.Supplier;
  *   <li>Otherwise compute the value, store the result and release the lock.</li>
  * </ol>
  *
- * The easiest way (except for exception handling) to use this class is to prepare a
- * {@link Callable} statement to be executed only if the object is not in the cache,
- * and to invoke the {@link #getOrCreate getOrCreate} method. Example:
+ * The easiest way to use this class with lambda functions is as below:
  *
  * {@preformat java
  *     private final Cache<String,MyObject> cache = new Cache<String,MyObject>();
  *
- *     public MyObject getMyObject(final String key) throws MyCheckedException {
- *         try {
- *             return cache.getOrCreate(key, new Callable<MyObject>() {
- *                 public MyObject call() throws MyCheckedException {
- *                     return createMyObject(key);
- *                 }
- *             });
- *         } catch (MyCheckedException | RuntimeException e) {
- *             throw e;
- *         } catch (Exception e) {
- *             throw new UndeclaredThrowableException(e);
- *         }
+ *     public MyObject getMyObject(String key) {
+ *         return cache.computeIfAbsent(key, (k) -> createMyObject(k));
  *     }
  * }
  *
- * An alternative is to perform explicitly all the steps enumerated above. This alternative
- * avoid the creation of a temporary {@code Callable} statement which may never be executed,
- * and avoid the exception handling due to the {@code throws Exception} clause. Note that the
- * call to {@link Handler#putAndUnlock putAndUnlock} <strong>must</strong> be in the {@code finally}
- * block of a {@code try} block beginning immediately after the call to {@link #lock lock},
- * no matter what the result of the computation is (including {@code null}).
+ * An alternative is to perform explicitly all the steps enumerated above.
+ * Note that the call to {@link Handler#putAndUnlock putAndUnlock(…)} <strong>must</strong>
+ * be in the {@code finally} block of a {@code try} block beginning immediately after the call
+ * to {@link #lock lock(…)}, no matter what the result of the computation is (including {@code null}).
  *
  * {@preformat java
  *     private final Cache<String,MyObject> cache = new Cache<String,MyObject>();
@@ -130,7 +118,8 @@ import java.util.function.Supplier;
  * <var>A</var>. If this rule is not meet, deadlock may occur randomly.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.4
+ * @author  Alexis Manin (Geomatys)
+ * @version 1.0
  *
  * @param <K>  the type of key objects.
  * @param <V>  the type of value objects.
@@ -141,8 +130,8 @@ import java.util.function.Supplier;
 public class Cache<K,V> extends AbstractMap<K,V> {
     /**
      * The map that contains the cached values. If a value is under the process of being
-     * calculated, then the value will be a temporary instance of {@link Handler}. The
-     * value may also be weak or soft {@link Reference} objects.
+     * calculated, then the value will be a temporary instance of {@link Handler}.
+     * The value may also be weak or soft {@link Reference} objects.
      */
     private final ConcurrentMap<K,Object> map;
 
@@ -255,6 +244,8 @@ public class Cache<K,V> extends AbstractMap<K,V> {
 
     /**
      * Returns {@code true} if this map contains the specified key.
+     * Values under computation in other threads are considered as existing
+     * (a call to {@link #get(Object)} will block until the computation is completed).
      *
      * @param  key  the key to check for existence.
      * @return {@code true} if the given key still exist in this cache.
@@ -270,6 +261,16 @@ public class Cache<K,V> extends AbstractMap<K,V> {
      */
     static boolean isReservedType(final Object value) {
         return (value instanceof Handler<?> || value instanceof Reference<?>);
+    }
+
+    /**
+     * Ensures that the given value is not an instance of a reserved type.
+     */
+    private static void ensureValidType(final Object value) throws IllegalArgumentException {
+        if (isReservedType(value)) {
+            throw new IllegalArgumentException(Errors.format(
+                    Errors.Keys.IllegalArgumentClass_2, "value", value.getClass()));
+        }
     }
 
     /**
@@ -291,56 +292,231 @@ public class Cache<K,V> extends AbstractMap<K,V> {
     }
 
     /**
-     * Puts the given value in cache.
+     * Notifies this {@code Cache} instance that an entry has changed. This methods adjusts
+     * cost calculation. This may cause some strong references to become weak references.
      *
-     * @param  key    the key for which to set a value.
-     * @param  value  the value to store.
-     * @return the value previously stored at the given key, or {@code null} if none.
+     * @param  key    key of the entry that changed.
+     * @param  value  the new value. May be {@code null}.
+     */
+    final void notifyChange(final K key, final V value) {
+        DelayedExecutor.schedule(new Strong(key, value));
+    }
+
+    /**
+     * Puts the given value in cache.
+     * A null {@code value} argument removes the entry.
+     *
+     * @param  key    the key to associate with a value.
+     * @param  value  the value to associate with the given key, or {@code null} for removing the mapping.
+     * @return the value previously mapped to the given key, or {@code null} if none.
      */
     @Override
     public V put(final K key, final V value) {
-        if (isReservedType(value)) {
-            throw new IllegalArgumentException(Errors.format(
-                    Errors.Keys.IllegalArgumentClass_2, "value", value.getClass()));
+        ensureValidType(value);
+        final Object previous = (value != null) ? map.put(key, value) : map.remove(key);
+        if (previous != value) {
+            notifyChange(key, value);
         }
-        final Object previous;
-        if (value != null) {
-            previous = map.put(key, value);
-            DelayedExecutor.schedule(new Strong(key, value));
-        } else {
-            previous = map.remove(key);
-        }
-        return Cache.<V>valueOf(previous);
+        return valueOf(previous);
     }
 
     /**
-     * Removes the value associated to the given key in the cache.
+     * If the given key is not mapped to a value, puts the given value in the cache.
+     * Otherwise does nothing. A null {@code value} argument is equivalent to a no-op.
+     *
+     * @param  key    the key to associate with a value.
+     * @param  value  the value to associate with the given key if no value already exists, or {@code null}.
+     * @return the existing value mapped to the given key, or {@code null} if none existed before this method call.
+     *
+     * @since 1.0
+     */
+    @Override
+    public V putIfAbsent(final K key, final V value) {
+        if (value == null) {
+            return null;
+        }
+        ensureValidType(value);
+        final Object previous = map.putIfAbsent(key, value);
+        if (previous == null) {
+            // A non-null value means that 'putIfAbsent' did nothing.
+            notifyChange(key, value);
+        }
+        return valueOf(previous);
+    }
+
+    /**
+     * If the given key is mapped to any value, replaces that value with the given new value.
+     * Otherwise does nothing. A null {@code value} argument removes the entry.
+     *
+     * @param  key    key of the value to replace.
+     * @param  value  the new value to use in replacement of the previous one, or {@code null} for removing the mapping.
+     * @return the previously mapped value, or {@code null} if no value was mapped to the given key.
+     *
+     * @since 1.0
+     */
+    @Override
+    public V replace(final K key, final V value) {
+        ensureValidType(value);
+        final Object previous = (value != null) ? map.replace(key, value) : map.remove(key);
+        if (previous != null) {
+            // A null value means that 'replace' did nothing.
+            notifyChange(key, value);
+        }
+        return valueOf(previous);
+    }
+
+    /**
+     * If the given key is mapped to the given old value, replaces that value with the given new value.
+     * Otherwise does nothing. A null {@code value} argument removes the entry if the condition matches.
+     *
+     * @param  key      key of the value to replace.
+     * @param  oldValue previous value expected to be mapped to the given key.
+     * @param  newValue the new value to put if the condition matches, or {@code null} for removing the mapping.
+     * @return {@code true} if the value has been replaced, {@code false} otherwise.
+     *
+     * @since 1.0
+     */
+    @Override
+    public boolean replace(final K key, final V oldValue, final V newValue) {
+        ensureValidType(newValue);
+        final boolean done;
+        if (oldValue != null) {
+            done = (newValue != null) ? map.replace(key, oldValue, newValue) : map.remove(key, oldValue);
+        } else {
+            done = (newValue != null) && map.putIfAbsent(key, newValue) == null;
+        }
+        if (done) {
+            notifyChange(key, newValue);
+        }
+        return done;
+    }
+
+    /**
+     * Iterates over all entries in the cache and replaces their value with the one provided by the given function.
+     * If the function throws an exception, the iteration is stopped and the exception is propagated. If any value
+     * is under computation in other threads, then the iteration will block on that entry until its computation is
+     * completed.
+     *
+     * @param  remapping  the function computing new values from the old ones.
+     *
+     * @since 1.0
+     */
+    @Override
+    public void replaceAll(final BiFunction<? super K, ? super V, ? extends V> remapping) {
+        map.replaceAll((key, oldValue) -> {
+            final V toReplace = valueOf(oldValue);
+            final V newValue = remapping.apply(key, toReplace);
+            ensureValidType(newValue);
+            if (newValue != toReplace) {
+                notifyChange(key, newValue);
+            }
+            return newValue;
+        });
+    }
+
+    /**
+     * Replaces the value mapped to the given key by a new value computed from the old value.
+     * If a value for the given key is under computation in another thread, then this method
+     * blocks until that computation is completed.
+     *
+     * @param  key        key of the value to replace.
+     * @param  remapping  the function computing new values from the old ones, or from a {@code null} value.
+     * @return the new value associated with the given key.
+     *
+     * @since 1.0
+     */
+    @Override
+    public V compute(final K key, final BiFunction<? super K, ? super V, ? extends V> remapping) {
+        return valueOf(map.compute(key, (k, oldValue) -> {
+            final V toReplace = valueOf(oldValue);
+            final V newValue = remapping.apply(k, toReplace);
+            ensureValidType(newValue);
+            if (newValue != toReplace) {
+                notifyChange(key, newValue);
+            }
+            return newValue;
+        }));
+    }
+
+    /**
+     * Maps the given value to the given key if no mapping existed before this method call,
+     * or computes a new value otherwise. If a value for the given key is under computation
+     * in another thread, then this method blocks until that computation is completed.
+     *
+     * @param  key        key of the value to replace.
+     * @param  value      the value to associate with the given key if no value already exists, or {@code null}.
+     * @param  remapping  the function computing a new value by merging the exiting value
+     *                    with the {@code value} argument given to this method.
+     * @return the new value associated with the given key.
+     *
+     * @since 1.0
+     */
+    @Override
+    public V merge(final K key, final V value, final BiFunction<? super V, ? super V, ? extends V> remapping) {
+        ensureValidType(value);
+        return valueOf(map.merge(key, value, (oldValue, givenValue) -> {
+            final V toReplace = valueOf(oldValue);
+            final V newValue = remapping.apply(toReplace, valueOf(givenValue));
+            ensureValidType(newValue);
+            if (newValue != toReplace) {
+                notifyChange(key, newValue);
+            }
+            return newValue;
+        }));
+    }
+
+    /**
+     * Removes the value mapped to the given key in the cache.
      *
      * @param  key  the key of the value to removed.
-     * @return the value that were associated to the given key, or {@code null} if none.
+     * @return the value that were mapped to the given key, or {@code null} if none.
      */
     @Override
     public V remove(final Object key) {
-        return Cache.<V>valueOf(map.remove(key));
+        return valueOf(map.remove(key));
     }
 
     /**
-     * Returns the value associated to the given key in the cache. This method is similar to
-     * {@link #peek} except that it blocks if the value is currently under computation in an
-     * other thread.
+     * Returns the value mapped to the given key in the cache. This method is similar to {@link #peek(Object)}
+     * except that it blocks if the value is currently under computation in an other thread.
      *
      * @param  key  the key of the value to get.
-     * @return the value associated to the given key, or {@code null} if none.
+     * @return the value mapped to the given key, or {@code null} if none.
+     *
+     * @see #peek(Object)
      */
     @Override
     public V get(final Object key) {
-        return Cache.<V>valueOf(map.get(key));
+        return valueOf(map.get(key));
     }
 
     /**
-     * Returns the value for the given key. If a value already exists in the cache, then it
-     * is returned immediately. Otherwise the {@code creator.call()} method is invoked and
-     * its result is saved in this cache for future reuse.
+     * Returns the value for the given key if it exists, or computes it otherwise.
+     * If a value already exists in the cache, then it is returned immediately.
+     * Otherwise the {@code creator.call()} method is invoked and its result is saved in this cache for future reuse.
+     *
+     * <div class="note"><b>Example:</b>
+     * the following example shows how this method can be used.
+     * In particular, it shows how to propagate {@code MyCheckedException}:
+     *
+     * {@preformat java
+     *     private final Cache<String,MyObject> cache = new Cache<String,MyObject>();
+     *
+     *     public MyObject getMyObject(final String key) throws MyCheckedException {
+     *         try {
+     *             return cache.getOrCreate(key, new Callable<MyObject>() {
+     *                 public MyObject call() throws MyCheckedException {
+     *                     return createMyObject(key);
+     *                 }
+     *             });
+     *         } catch (MyCheckedException | RuntimeException e) {
+     *             throw e;
+     *         } catch (Exception e) {
+     *             throw new UndeclaredThrowableException(e);
+     *         }
+     *     }
+     * }
+     * </div>
      *
      * @param  key      the key for which to get the cached or created value.
      * @param  creator  a method for creating a value, to be invoked only if no value are cached for the given key.
@@ -355,6 +531,46 @@ public class Cache<K,V> extends AbstractMap<K,V> {
                 value = handler.peek();
                 if (value == null) {
                     value = creator.call();
+                }
+            } finally {
+                handler.putAndUnlock(value);
+            }
+        }
+        return value;
+    }
+
+    /**
+     * Returns the value for the given key if it exists, or computes it otherwise.
+     * This method is similar to {@link #getOrCreate(Object, Callable)}, but without checked exceptions.
+     *
+     * <div class="note"><b>Example:</b>
+     * below is the same code than {@link #getOrCreate(Object, Callable)} example,
+     * but without the need for any checked exception handling:
+     *
+     * {@preformat java
+     *     private final Cache<String,MyObject> cache = new Cache<String,MyObject>();
+     *
+     *     public MyObject getMyObject(final String key) {
+     *         return cache.computeIfAbsent(key, (k) -> createMyObject(k));
+     *     }
+     * }
+     * </div>
+     *
+     * @param  key      the key for which to get the cached or created value.
+     * @param  creator  a method for creating a value, to be invoked only if no value are cached for the given key.
+     * @return the value already mapped to the key, or the newly computed value.
+     *
+     * @since 1.0
+     */
+    @Override
+    public V computeIfAbsent(final K key, final Function<? super K, ? extends V> creator) {
+        V value = peek(key);
+        if (value == null) {
+            final Handler<V> handler = lock(key);
+            try {
+                value = handler.peek();
+                if (value == null) {
+                    value = creator.apply(key);
                 }
             } finally {
                 handler.putAndUnlock(value);
@@ -386,7 +602,7 @@ public class Cache<K,V> extends AbstractMap<K,V> {
             final V result = ref.get();
             if (result != null && map.replace(key, ref, result)) {
                 ref.clear();                        // Prevents the reference from being enqueued.
-                DelayedExecutor.schedule(new Strong(key, result));
+                notifyChange(key, result);
             }
             return result;
         }
@@ -397,9 +613,9 @@ public class Cache<K,V> extends AbstractMap<K,V> {
 
     /**
      * Invoked from the a background thread after a {@linkplain WeakReference weak}
-     * or {@linkplain SoftReference soft} reference has been replaced by a strong one. It will
-     * looks for older strong references to replace by weak references so that the total cost
-     * stay below the cost limit.
+     * or {@linkplain SoftReference soft} reference has been replaced by a strong one.
+     * It will looks for older strong references to replace by weak references so that
+     * the total cost stay below the cost limit.
      */
     private final class Strong extends DelayedRunnable.Immediate {
         private final K key;
@@ -479,7 +695,7 @@ public class Cache<K,V> extends AbstractMap<K,V> {
                      */
                     if (map.replace(key, ref, result)) {
                         ref.clear();                        // Prevents the reference from being enqueued.
-                        DelayedExecutor.schedule(new Strong(key, result));
+                        notifyChange(key, result);
                     }
                     return new Simple<>(result);
                 }
@@ -540,9 +756,8 @@ public class Cache<K,V> extends AbstractMap<K,V> {
     }
 
     /**
-     * The handler returned by {@link Cache#lock}, to be used for unlocking and storing the
-     * result. This handler should be used as below (note the {@code try} … {@code catch}
-     * blocks, which are <strong>mandatory</strong>):
+     * The handler returned by {@link Cache#lock}, to be used for unlocking and storing the result.
+     * This handler should be used as below (the {@code try} … {@code finally} statements are important):
      *
      * {@preformat java
      *     Value V = null;
@@ -766,7 +981,7 @@ public class Cache<K,V> extends AbstractMap<K,V> {
      * than the cost limit, then oldest strong references are replaced by weak references.
      */
     final void adjustReferences(final K key, final V value) {
-        int cost = cost(value);
+        int cost = (value != null) ? cost(value) : 0;
         synchronized (costs) {                          // Should not be needed, but done as a safety.
             final Integer old = costs.put(key, cost);
             if (old != null) {
@@ -779,7 +994,7 @@ public class Cache<K,V> extends AbstractMap<K,V> {
                      * Converts the current entry from strong reference to weak/soft reference.
                      * We perform this conversion even if the entry is for the value just added
                      * to the cache, if it happen that the cost is higher than the maximal one.
-                     * That entry should not be garbage collected to early anyway because the
+                     * That entry should not be garbage collected too early anyway because the
                      * caller should still have a strong reference to the value he just created.
                      */
                     final Map.Entry<K,Integer> entry = it.next();
