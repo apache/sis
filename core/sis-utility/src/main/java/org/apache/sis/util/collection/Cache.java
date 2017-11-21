@@ -244,24 +244,116 @@ public class Cache<K,V> extends AbstractMap<K,V> implements ConcurrentMap<K,V> {
     }
 
     /**
-     * Returns {@code true} if this map contains the specified key.
-     * If the value is under computation in another thread, this method returns {@code true}
-     * without waiting for the computation result. This behavior is consistent with other
-     * {@code Map} methods in the following ways:
+     * Returns the value mapped to the given key in the cache, potentially waiting for computation to complete.
+     * This method is similar to {@link #peek(Object)} except that it blocks if the value is currently under
+     * computation in another thread.
      *
-     * <ul>
-     *   <li>{@link #get(Object)} blocks until the computation is completed.</li>
-     *   <li>{@link #put(Object, Object)} returns {@code null} for values under computation,
-     *       i.e. behaves as if keys are temporarily mapped to the {@code null} value until
-     *       the computation is completed.</li>
-     * </ul>
+     * @param  key  the key of the value to get.
+     * @return the value mapped to the given key, or {@code null} if none.
      *
-     * @param  key  the key to check for existence.
-     * @return {@code true} if the given key is mapped to an existing value or a value under computation.
+     * @see #peek(Object)
+     * @see #computeIfAbsent(Object, Function)
      */
     @Override
-    public boolean containsKey(final Object key) {
-        return map.containsKey(key);
+    public V get(final Object key) {
+        return valueOf(map.get(key));
+    }
+
+    /**
+     * Returns the value for the given key if it exists, or computes it otherwise.
+     * If a value already exists in the cache, then it is returned immediately.
+     * Otherwise the {@code creator.call()} method is invoked and its result is saved in this cache for future reuse.
+     *
+     * <div class="note"><b>Example:</b>
+     * the following example shows how this method can be used.
+     * In particular, it shows how to propagate {@code MyCheckedException}:
+     *
+     * {@preformat java
+     *     private final Cache<String,MyObject> cache = new Cache<String,MyObject>();
+     *
+     *     public MyObject getMyObject(final String key) throws MyCheckedException {
+     *         try {
+     *             return cache.getOrCreate(key, new Callable<MyObject>() {
+     *                 public MyObject call() throws MyCheckedException {
+     *                     return createMyObject(key);
+     *                 }
+     *             });
+     *         } catch (MyCheckedException | RuntimeException e) {
+     *             throw e;
+     *         } catch (Exception e) {
+     *             throw new UndeclaredThrowableException(e);
+     *         }
+     *     }
+     * }
+     * </div>
+     *
+     * This method is similar to {@link #computeIfAbsent(Object, Function)} except that it can propagate
+     * checked exceptions. If the {@code creator} function does not throw any checked exception, then
+     * invoking {@code computeIfAbsent(…)} is simpler.
+     *
+     * @param  key      the key for which to get the cached or created value.
+     * @param  creator  a method for creating a value, to be invoked only if no value are cached for the given key.
+     * @return the value for the given key, which may have been created as a result of this method call.
+     * @throws Exception if an exception occurred during the execution of {@code creator.call()}.
+     */
+    public V getOrCreate(final K key, final Callable<? extends V> creator) throws Exception {
+        V value = peek(key);
+        if (value == null) {
+            final Handler<V> handler = lock(key);
+            try {
+                value = handler.peek();
+                if (value == null) {
+                    value = creator.call();
+                }
+            } finally {
+                handler.putAndUnlock(value);
+            }
+        }
+        return value;
+    }
+
+    /**
+     * Returns the value for the given key if it exists, or computes it otherwise.
+     * If a value already exists in the cache, then it is returned immediately.
+     * Otherwise the {@code creator.apply(Object)} method is invoked and its result
+     * is saved in this cache for future reuse.
+     *
+     * <div class="note"><b>Example:</b>
+     * below is the same code than {@link #getOrCreate(Object, Callable)} example,
+     * but without the need for any checked exception handling:
+     *
+     * {@preformat java
+     *     private final Cache<String,MyObject> cache = new Cache<String,MyObject>();
+     *
+     *     public MyObject getMyObject(final String key) {
+     *         return cache.computeIfAbsent(key, (k) -> createMyObject(k));
+     *     }
+     * }
+     * </div>
+     *
+     * This method is similar to {@link #getOrCreate(Object, Callable)}, but without checked exceptions.
+     *
+     * @param  key      the key for which to get the cached or created value.
+     * @param  creator  a method for creating a value, to be invoked only if no value are cached for the given key.
+     * @return the value already mapped to the key, or the newly computed value.
+     *
+     * @since 1.0
+     */
+    @Override
+    public V computeIfAbsent(final K key, final Function<? super K, ? extends V> creator) {
+        V value = peek(key);
+        if (value == null) {
+            final Handler<V> handler = lock(key);
+            try {
+                value = handler.peek();
+                if (value == null) {
+                    value = creator.apply(key);
+                }
+            } finally {
+                handler.putAndUnlock(value);
+            }
+        }
+        return value;
     }
 
     /**
@@ -330,27 +422,6 @@ public class Cache<K,V> extends AbstractMap<K,V> implements ConcurrentMap<K,V> {
     }
 
     /**
-     * Puts the given value in cache and immediately returns the old value.
-     * A null {@code value} argument removes the entry. If a different value is under computation in another thread,
-     * then the other thread may fail with an {@link IllegalStateException} unless {@link #isKeyCollisionAllowed()}
-     * returns {@code true}. For more safety, consider using {@link #putIfAbsent putIfAbsent(…)} instead.
-     *
-     * @param  key    the key to associate with a value.
-     * @param  value  the value to associate with the given key, or {@code null} for removing the mapping.
-     * @return the value previously mapped to the given key, or {@code null} if no value existed before this
-     *         method call or if the value was under computation in another thread.
-     */
-    @Override
-    public V put(final K key, final V value) {
-        ensureValidType(value);
-        final Object previous = (value != null) ? map.put(key, value) : map.remove(key);
-        if (previous != value) {
-            notifyChange(key, value);
-        }
-        return immediateValueOf(previous);
-    }
-
-    /**
      * If no value is already mapped and no value is under computation for the given key, puts the given value
      * in the cache. Otherwise returns the current value (potentially blocking until the computation finishes).
      * A null {@code value} argument is equivalent to a no-op. Otherwise a {@code null} return value means that
@@ -374,6 +445,27 @@ public class Cache<K,V> extends AbstractMap<K,V> implements ConcurrentMap<K,V> {
             notifyChange(key, value);
         }
         return valueOf(previous);
+    }
+
+    /**
+     * Puts the given value in cache and immediately returns the old value.
+     * A null {@code value} argument removes the entry. If a different value is under computation in another thread,
+     * then the other thread may fail with an {@link IllegalStateException} unless {@link #isKeyCollisionAllowed()}
+     * returns {@code true}. For more safety, consider using {@link #putIfAbsent putIfAbsent(…)} instead.
+     *
+     * @param  key    the key to associate with a value.
+     * @param  value  the value to associate with the given key, or {@code null} for removing the mapping.
+     * @return the value previously mapped to the given key, or {@code null} if no value existed before this
+     *         method call or if the value was under computation in another thread.
+     */
+    @Override
+    public V put(final K key, final V value) {
+        ensureValidType(value);
+        final Object previous = (value != null) ? map.put(key, value) : map.remove(key);
+        if (previous != value) {
+            notifyChange(key, value);
+        }
+        return immediateValueOf(previous);
     }
 
     /**
@@ -405,9 +497,9 @@ public class Cache<K,V> extends AbstractMap<K,V> implements ConcurrentMap<K,V> {
      * Otherwise does nothing. A null {@code value} argument removes the entry if the condition matches.
      * If a value is under computation in another thread, then this method unconditionally returns {@code false}.
      *
-     * @param  key      key of the value to replace.
-     * @param  oldValue previous value expected to be mapped to the given key.
-     * @param  newValue the new value to put if the condition matches, or {@code null} for removing the mapping.
+     * @param  key       key of the value to replace.
+     * @param  oldValue  previous value expected to be mapped to the given key.
+     * @param  newValue  the new value to put if the condition matches, or {@code null} for removing the mapping.
      * @return {@code true} if the value has been replaced, {@code false} otherwise.
      *
      * @since 1.0
@@ -599,106 +691,24 @@ public class Cache<K,V> extends AbstractMap<K,V> implements ConcurrentMap<K,V> {
     }
 
     /**
-     * Returns the value mapped to the given key in the cache. This method is similar to {@link #peek(Object)}
-     * except that it blocks if the value is currently under computation in an other thread.
+     * Returns {@code true} if this map contains the specified key.
+     * If the value is under computation in another thread, this method returns {@code true}
+     * without waiting for the computation result. This behavior is consistent with other
+     * {@code Map} methods in the following ways:
      *
-     * @param  key  the key of the value to get.
-     * @return the value mapped to the given key, or {@code null} if none.
+     * <ul>
+     *   <li>{@link #get(Object)} blocks until the computation is completed.</li>
+     *   <li>{@link #put(Object, Object)} returns {@code null} for values under computation,
+     *       i.e. behaves as if keys are temporarily mapped to the {@code null} value until
+     *       the computation is completed.</li>
+     * </ul>
      *
-     * @see #peek(Object)
+     * @param  key  the key to check for existence.
+     * @return {@code true} if the given key is mapped to an existing value or a value under computation.
      */
     @Override
-    public V get(final Object key) {
-        return valueOf(map.get(key));
-    }
-
-    /**
-     * Returns the value for the given key if it exists, or computes it otherwise.
-     * If a value already exists in the cache, then it is returned immediately.
-     * Otherwise the {@code creator.call()} method is invoked and its result is saved in this cache for future reuse.
-     *
-     * <div class="note"><b>Example:</b>
-     * the following example shows how this method can be used.
-     * In particular, it shows how to propagate {@code MyCheckedException}:
-     *
-     * {@preformat java
-     *     private final Cache<String,MyObject> cache = new Cache<String,MyObject>();
-     *
-     *     public MyObject getMyObject(final String key) throws MyCheckedException {
-     *         try {
-     *             return cache.getOrCreate(key, new Callable<MyObject>() {
-     *                 public MyObject call() throws MyCheckedException {
-     *                     return createMyObject(key);
-     *                 }
-     *             });
-     *         } catch (MyCheckedException | RuntimeException e) {
-     *             throw e;
-     *         } catch (Exception e) {
-     *             throw new UndeclaredThrowableException(e);
-     *         }
-     *     }
-     * }
-     * </div>
-     *
-     * @param  key      the key for which to get the cached or created value.
-     * @param  creator  a method for creating a value, to be invoked only if no value are cached for the given key.
-     * @return the value for the given key, which may have been created as a result of this method call.
-     * @throws Exception if an exception occurred during the execution of {@code creator.call()}.
-     */
-    public V getOrCreate(final K key, final Callable<? extends V> creator) throws Exception {
-        V value = peek(key);
-        if (value == null) {
-            final Handler<V> handler = lock(key);
-            try {
-                value = handler.peek();
-                if (value == null) {
-                    value = creator.call();
-                }
-            } finally {
-                handler.putAndUnlock(value);
-            }
-        }
-        return value;
-    }
-
-    /**
-     * Returns the value for the given key if it exists, or computes it otherwise.
-     * This method is similar to {@link #getOrCreate(Object, Callable)}, but without checked exceptions.
-     *
-     * <div class="note"><b>Example:</b>
-     * below is the same code than {@link #getOrCreate(Object, Callable)} example,
-     * but without the need for any checked exception handling:
-     *
-     * {@preformat java
-     *     private final Cache<String,MyObject> cache = new Cache<String,MyObject>();
-     *
-     *     public MyObject getMyObject(final String key) {
-     *         return cache.computeIfAbsent(key, (k) -> createMyObject(k));
-     *     }
-     * }
-     * </div>
-     *
-     * @param  key      the key for which to get the cached or created value.
-     * @param  creator  a method for creating a value, to be invoked only if no value are cached for the given key.
-     * @return the value already mapped to the key, or the newly computed value.
-     *
-     * @since 1.0
-     */
-    @Override
-    public V computeIfAbsent(final K key, final Function<? super K, ? extends V> creator) {
-        V value = peek(key);
-        if (value == null) {
-            final Handler<V> handler = lock(key);
-            try {
-                value = handler.peek();
-                if (value == null) {
-                    value = creator.apply(key);
-                }
-            } finally {
-                handler.putAndUnlock(value);
-            }
-        }
-        return value;
+    public boolean containsKey(final Object key) {
+        return map.containsKey(key);
     }
 
     /**
