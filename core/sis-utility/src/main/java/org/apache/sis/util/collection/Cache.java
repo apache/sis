@@ -55,7 +55,7 @@ import java.util.function.BiFunction;
  *   <li>Otherwise compute the value, store the result and release the lock.</li>
  * </ol>
  *
- * The easiest way to use this class with lambda functions is as below:
+ * The easiest way to use this class is as below:
  *
  * {@preformat java
  *     private final Cache<String,MyObject> cache = new Cache<String,MyObject>();
@@ -65,9 +65,10 @@ import java.util.function.BiFunction;
  *     }
  * }
  *
- * An alternative is to perform explicitly all the steps enumerated above.
+ * Alternatively, one can perform explicitly all the steps enumerated above.
+ * This alternative sometime provides more flexibility, for example in exception handling.
  * Note that the call to {@link Handler#putAndUnlock putAndUnlock(…)} <strong>must</strong>
- * be in the {@code finally} block of a {@code try} block beginning immediately after the call
+ * be inside the {@code finally} block of a {@code try} block beginning immediately after the call
  * to {@link #lock lock(…)}, no matter what the result of the computation is (including {@code null}).
  *
  * {@preformat java
@@ -127,10 +128,10 @@ import java.util.function.BiFunction;
  * @since 0.3
  * @module
  */
-public class Cache<K,V> extends AbstractMap<K,V> {
+public class Cache<K,V> extends AbstractMap<K,V> implements ConcurrentMap<K,V> {
     /**
-     * The map that contains the cached values. If a value is under the process of being
-     * calculated, then the value will be a temporary instance of {@link Handler}.
+     * The map that contains the cached values. If a value is in the process of being computed,
+     * then the value will be a temporary instance of {@link Handler}.
      * The value may also be weak or soft {@link Reference} objects.
      */
     private final ConcurrentMap<K,Object> map;
@@ -213,11 +214,11 @@ public class Cache<K,V> extends AbstractMap<K,V> {
      */
     @Override
     public void clear() {
-        map.clear();
-        /*
-         * Do not update "costs" and "totalCost". Instead let adjustReferences(…)
-         * do its job, which needs to be done in a different thread.
-         */
+        synchronized (costs) {
+            map.clear();
+            costs.clear();
+            totalCost = 0;
+        }
     }
 
     /**
@@ -244,11 +245,19 @@ public class Cache<K,V> extends AbstractMap<K,V> {
 
     /**
      * Returns {@code true} if this map contains the specified key.
-     * Values under computation in other threads are considered as existing
-     * (a call to {@link #get(Object)} will block until the computation is completed).
+     * If the value is under computation in another thread, this method returns {@code true}
+     * without waiting for the computation result. This behavior is consistent with other
+     * {@code Map} methods in the following ways:
+     *
+     * <ul>
+     *   <li>{@link #get(Object)} blocks until the computation is completed.</li>
+     *   <li>{@link #put(Object, Object)} returns {@code null} for values under computation,
+     *       i.e. behaves as if keys are temporarily mapped to the {@code null} value until
+     *       the computation is completed.</li>
+     * </ul>
      *
      * @param  key  the key to check for existence.
-     * @return {@code true} if the given key still exist in this cache.
+     * @return {@code true} if the given key is mapped to an existing value or a value under computation.
      */
     @Override
     public boolean containsKey(final Object key) {
@@ -275,6 +284,8 @@ public class Cache<K,V> extends AbstractMap<K,V> {
 
     /**
      * Returns the value of the given object, unwrapping it if possible.
+     * If the value is under computation in another thread, this method
+     * will block until the computation is completed.
      */
     @SuppressWarnings("unchecked")
     private static <V> V valueOf(final Object value) {
@@ -292,6 +303,22 @@ public class Cache<K,V> extends AbstractMap<K,V> {
     }
 
     /**
+     * Returns the value of the given object if it is not under computation.
+     * This method is similar to {@link #valueOf(Object)} except that it does
+     * not block if the value is under computation.
+     */
+    @SuppressWarnings("unchecked")
+    private static <V> V immediateValueOf(final Object value) {
+        if (value instanceof Reference<?>) {
+            return ((Reference<V>) value).get();
+        }
+        if (value instanceof Handler<?>) {
+            return null;
+        }
+        return (V) value;
+    }
+
+    /**
      * Notifies this {@code Cache} instance that an entry has changed. This methods adjusts
      * cost calculation. This may cause some strong references to become weak references.
      *
@@ -303,12 +330,15 @@ public class Cache<K,V> extends AbstractMap<K,V> {
     }
 
     /**
-     * Puts the given value in cache.
-     * A null {@code value} argument removes the entry.
+     * Puts the given value in cache and immediately returns the old value.
+     * A null {@code value} argument removes the entry. If a different value is under computation in another thread,
+     * then the other thread may fail with an {@link IllegalStateException} unless {@link #isKeyCollisionAllowed()}
+     * returns {@code true}. For more safety, consider using {@link #putIfAbsent putIfAbsent(…)} instead.
      *
      * @param  key    the key to associate with a value.
      * @param  value  the value to associate with the given key, or {@code null} for removing the mapping.
-     * @return the value previously mapped to the given key, or {@code null} if none.
+     * @return the value previously mapped to the given key, or {@code null} if no value existed before this
+     *         method call or if the value was under computation in another thread.
      */
     @Override
     public V put(final K key, final V value) {
@@ -317,12 +347,14 @@ public class Cache<K,V> extends AbstractMap<K,V> {
         if (previous != value) {
             notifyChange(key, value);
         }
-        return valueOf(previous);
+        return immediateValueOf(previous);
     }
 
     /**
-     * If the given key is not mapped to a value, puts the given value in the cache.
-     * Otherwise does nothing. A null {@code value} argument is equivalent to a no-op.
+     * If no value is already mapped and no value is under computation for the given key, puts the given value
+     * in the cache. Otherwise returns the current value (potentially blocking until the computation finishes).
+     * A null {@code value} argument is equivalent to a no-op. Otherwise a {@code null} return value means that
+     * the given {@code value} has been stored in the {@code Cache}.
      *
      * @param  key    the key to associate with a value.
      * @param  value  the value to associate with the given key if no value already exists, or {@code null}.
@@ -347,10 +379,13 @@ public class Cache<K,V> extends AbstractMap<K,V> {
     /**
      * If the given key is mapped to any value, replaces that value with the given new value.
      * Otherwise does nothing. A null {@code value} argument removes the entry.
+     * If a different value is under computation in another thread, then the other thread may fail with
+     * an {@link IllegalStateException} unless {@link #isKeyCollisionAllowed()} returns {@code true}.
      *
      * @param  key    key of the value to replace.
      * @param  value  the new value to use in replacement of the previous one, or {@code null} for removing the mapping.
-     * @return the previously mapped value, or {@code null} if no value was mapped to the given key.
+     * @return the value previously mapped to the given key, or {@code null} if no value existed before this
+     *         method call or if the value was under computation in another thread.
      *
      * @since 1.0
      */
@@ -362,12 +397,13 @@ public class Cache<K,V> extends AbstractMap<K,V> {
             // A null value means that 'replace' did nothing.
             notifyChange(key, value);
         }
-        return valueOf(previous);
+        return immediateValueOf(previous);
     }
 
     /**
      * If the given key is mapped to the given old value, replaces that value with the given new value.
      * Otherwise does nothing. A null {@code value} argument removes the entry if the condition matches.
+     * If a value is under computation in another thread, then this method unconditionally returns {@code false}.
      *
      * @param  key      key of the value to replace.
      * @param  oldValue previous value expected to be mapped to the given key.
@@ -403,21 +439,16 @@ public class Cache<K,V> extends AbstractMap<K,V> {
      */
     @Override
     public void replaceAll(final BiFunction<? super K, ? super V, ? extends V> remapping) {
-        map.replaceAll((key, oldValue) -> {
-            final V toReplace = valueOf(oldValue);
-            final V newValue = remapping.apply(key, toReplace);
-            ensureValidType(newValue);
-            if (newValue != toReplace) {
-                notifyChange(key, newValue);
-            }
-            return newValue;
-        });
+        final ReplaceAdapter adapter = new ReplaceAdapter(remapping);
+        map.replaceAll(adapter);
+        Deferred.notifyChanges(this, adapter.changes);
     }
 
     /**
      * Replaces the value mapped to the given key by a new value computed from the old value.
      * If a value for the given key is under computation in another thread, then this method
-     * blocks until that computation is completed.
+     * blocks until that computation is completed. This is equivalent to the work performed
+     * by {@link #replaceAll replaceAll(…)} but on a single entry.
      *
      * @param  key        key of the value to replace.
      * @param  remapping  the function computing new values from the old ones, or from a {@code null} value.
@@ -427,15 +458,10 @@ public class Cache<K,V> extends AbstractMap<K,V> {
      */
     @Override
     public V compute(final K key, final BiFunction<? super K, ? super V, ? extends V> remapping) {
-        return valueOf(map.compute(key, (k, oldValue) -> {
-            final V toReplace = valueOf(oldValue);
-            final V newValue = remapping.apply(k, toReplace);
-            ensureValidType(newValue);
-            if (newValue != toReplace) {
-                notifyChange(key, newValue);
-            }
-            return newValue;
-        }));
+        final ReplaceAdapter adapter = new ReplaceAdapter(remapping);
+        final Object value = map.compute(key, adapter);
+        Deferred.notifyChanges(this, adapter.changes);
+        return valueOf(value);
     }
 
     /**
@@ -454,26 +480,122 @@ public class Cache<K,V> extends AbstractMap<K,V> {
     @Override
     public V merge(final K key, final V value, final BiFunction<? super V, ? super V, ? extends V> remapping) {
         ensureValidType(value);
-        return valueOf(map.merge(key, value, (oldValue, givenValue) -> {
-            final V toReplace = valueOf(oldValue);
-            final V newValue = remapping.apply(toReplace, valueOf(givenValue));
-            ensureValidType(newValue);
-            if (newValue != toReplace) {
-                notifyChange(key, newValue);
+
+        /** Similar to {@link Cache.ReplaceAdapter}, but adapted to the merge case. */
+        final class Adapter implements BiFunction<Object,Object,Object> {
+            /** Forwards {@link Cache#map} calls to the user-provided function. */
+            @Override public Object apply(final Object oldValue, final Object givenValue) {
+                final V toReplace = valueOf(oldValue);
+                final V newValue = remapping.apply(toReplace, valueOf(givenValue));
+                ensureValidType(newValue);
+                if (newValue != toReplace) {
+                    changes = new Deferred<>(key, newValue, changes);
+                }
+                return newValue;
             }
-            return newValue;
-        }));
+
+            /** The new values for which to send notifications. */
+            Deferred<K,V> changes;
+        }
+        final Adapter adapter = new Adapter();
+        final Object newValue = map.merge(key, value, adapter);
+        Deferred.notifyChanges(this, adapter.changes);
+        return valueOf(newValue);
     }
 
     /**
-     * Removes the value mapped to the given key in the cache.
+     * A callback for {@link Cache#map} which forwards the calls to the {@code remapping} function provided by user.
+     * Before to forward the calls, {@code ReplaceAdapter} verifies if the value is under computation. If yes, then
+     * this adapter block until the value is available for forwarding it to the user.
+     */
+    private final class ReplaceAdapter implements BiFunction<K,Object,Object> {
+        /** The new values for which to send notifications. */
+        private Deferred<K,V> changes;
+
+        /** The user-providing function. */
+        private final BiFunction<? super K, ? super V, ? extends V> remapping;
+
+        /** Creates a new adapter for the given user-provided function. */
+        ReplaceAdapter(final BiFunction<? super K, ? super V, ? extends V> remapping) {
+            this.remapping = remapping;
+        }
+
+        /** Forwards {@link Cache#map} calls to the user-provided function. */
+        @Override public Object apply(final K key, final Object oldValue) {
+            final V toReplace = valueOf(oldValue);
+            final V newValue = remapping.apply(key, toReplace);
+            ensureValidType(newValue);
+            if (newValue != toReplace) {
+                changes = new Deferred<>(key, newValue, changes);
+            }
+            return newValue;
+        }
+    }
+
+    /**
+     * Key-value pairs of new entries created during {@link Cache.ReplaceAdapter} execution, as a chained list.
+     * Calls to {@link Cache#notifyChange(Object, Object)} for those entries need to be deferred until operation
+     * on {@link Cache#map} completed because {@link Cache#adjustReferences(Object, Object)} needs the new values
+     * to be present in the map.
+     */
+    private static final class Deferred<K,V> {
+        private final K key;
+        private final V value;
+        private final Deferred<K,V> next;
+
+        /** Creates a new notification to be sent after the {@link Cache#map} operation completed. */
+        Deferred(final K key, final V value, final Deferred<K,V> next) {
+            this.key   = key;
+            this.value = value;
+            this.next  = next;
+        }
+
+        /** Sends all deferred notifications, starting with the given one. */
+        static <K,V> void notifyChanges(final Cache<K,V> cache, Deferred<K,V> entry) {
+            while (entry != null) {
+                cache.notifyChange(entry.key, entry.value);
+                entry = entry.next;
+            }
+        }
+    }
+
+    /**
+     * Removes the value mapped to the given key in the cache. If a value is under computation in another thread,
+     * then the other thread may fail with an {@link IllegalStateException} unless {@link #isKeyCollisionAllowed()}
+     * returns {@code true}. For more safety, consider using {@link #remove(Object, Object)} instead.
      *
      * @param  key  the key of the value to removed.
-     * @return the value that were mapped to the given key, or {@code null} if none.
+     * @return the value previously mapped to the given key, or {@code null} if no value existed before this
+     *         method call or if the value was under computation in another thread.
      */
     @Override
+    @SuppressWarnings("unchecked")
     public V remove(final Object key) {
-        return valueOf(map.remove(key));
+        final Object oldValue = map.remove(key);
+        if (oldValue != null) {
+            notifyChange((K) key, null);
+        }
+        return immediateValueOf(oldValue);
+    }
+
+    /**
+     * If the given key is mapped to the given old value, removes that value. Otherwise does nothing.
+     * If a value is under computation in another thread, then this method unconditionally returns {@code false}.
+     *
+     * @param  key      key of the value to remove.
+     * @param  oldValue previous value expected to be mapped to the given key.
+     * @return {@code true} if the value has been removed, {@code false} otherwise.
+     *
+     * @since 1.0
+     */
+    @Override
+    @SuppressWarnings("unchecked")
+    public boolean remove(final Object key, final Object oldValue) {
+        final boolean done = map.remove(key, oldValue);
+        if (done) {
+            notifyChange((K) key, null);
+        }
+        return done;
     }
 
     /**
@@ -746,7 +868,7 @@ public class Cache<K,V> extends AbstractMap<K,V> {
             return work.new Wait();
         }
         /*
-         * A calculation has already been completed. Returns a wrapper
+         * A computation has already been completed. Returns a wrapper
          * which will just return the result without any processing.
          */
         assert !isReservedType(value) : value;
@@ -808,12 +930,12 @@ public class Cache<K,V> extends AbstractMap<K,V> {
 
     /**
      * A simple handler implementation wrapping an existing value. This implementation
-     * is used when the value has been fully calculated in an other thread before this
+     * is used when the value has been fully computed in an other thread before this
      * thread could start its work.
      */
     private final class Simple<V> implements Handler<V> {
         /**
-         * The result calculated in an other thread.
+         * The result computed in an other thread.
          */
         private final V value;
 
@@ -825,7 +947,7 @@ public class Cache<K,V> extends AbstractMap<K,V> {
         }
 
         /**
-         * Returns the calculated value.
+         * Returns the computed value.
          */
         @Override
         public V peek() {
@@ -878,8 +1000,8 @@ public class Cache<K,V> extends AbstractMap<K,V> {
         }
 
         /**
-         * Waits for the completion of the value computation and returns this result. This
-         * method should be invoked only from an other thread than the one doing the calculation.
+         * Waits for the completion of the value computation and returns this result.
+         * This method should be invoked only from another thread than the one doing the computation.
          */
         @Override
         public V get() {
@@ -928,6 +1050,8 @@ public class Cache<K,V> extends AbstractMap<K,V> {
             }
             if (done) {
                 DelayedExecutor.schedule(this);
+            } else if (!isKeyCollisionAllowed()) {
+                throw new IllegalStateException(Errors.format(Errors.Keys.KeyCollision_1, key));
             }
         }
 
@@ -982,7 +1106,7 @@ public class Cache<K,V> extends AbstractMap<K,V> {
      */
     final void adjustReferences(final K key, final V value) {
         int cost = (value != null) ? cost(value) : 0;
-        synchronized (costs) {                          // Should not be needed, but done as a safety.
+        synchronized (costs) {
             final Integer old = costs.put(key, cost);
             if (old != null) {
                 cost -= old;
