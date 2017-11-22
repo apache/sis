@@ -42,9 +42,31 @@ import java.util.function.BiFunction;
 
 
 /**
- * A concurrent cache mechanism. This implementation is thread-safe and supports concurrency.
- * A cache entry can be locked when an object is in process of being created. The steps
- * are as below:
+ * A concurrent map capable to locks entries for which the value is in process of being computed.
+ * This map is intended for use as a cache, with a goal of avoiding to compute the same values twice.
+ * This implementation is thread-safe and supports concurrency.
+ * {@code Cache} is based on {@link ConcurrentHashMap} with the addition of three main capabilities:
+ *
+ * <ul>
+ *   <li>Lock an entry when its value is under computation in a thread.</li>
+ *   <li>Block other threads requesting the value of that particular entry until computation is completed.</li>
+ *   <li>Retain oldest values by soft or weak references instead of strong references.</li>
+ * </ul>
+ *
+ * The easiest way to use this class is to invoke {@link #computeIfAbsent computeIfAbsent(…)}
+ * or {@link #getOrCreate getOrCreate(…)} with lambda functions as below:
+ *
+ * {@preformat java
+ *     private final Cache<String,MyObject> cache = new Cache<String,MyObject>();
+ *
+ *     public MyObject getMyObject(String key) {
+ *         return cache.computeIfAbsent(key, (k) -> createMyObject(k));
+ *     }
+ * }
+ *
+ * Alternatively, one can handle explicitely the locks.
+ * This alternative sometime provides more flexibility, for example in exception handling.
+ * The steps are as below:
  *
  * <ol>
  *   <li>Check if the value is already available in the map.
@@ -55,18 +77,7 @@ import java.util.function.BiFunction;
  *   <li>Otherwise compute the value, store the result and release the lock.</li>
  * </ol>
  *
- * The easiest way to use this class is as below:
- *
- * {@preformat java
- *     private final Cache<String,MyObject> cache = new Cache<String,MyObject>();
- *
- *     public MyObject getMyObject(String key) {
- *         return cache.computeIfAbsent(key, (k) -> createMyObject(k));
- *     }
- * }
- *
- * Alternatively, one can perform explicitly all the steps enumerated above.
- * This alternative sometime provides more flexibility, for example in exception handling.
+ * Code example is shown below.
  * Note that the call to {@link Handler#putAndUnlock putAndUnlock(…)} <strong>must</strong>
  * be inside the {@code finally} block of a {@code try} block beginning immediately after the call
  * to {@link #lock lock(…)}, no matter what the result of the computation is (including {@code null}).
@@ -252,6 +263,7 @@ public class Cache<K,V> extends AbstractMap<K,V> implements ConcurrentMap<K,V> {
      * @return the value mapped to the given key, or {@code null} if none.
      *
      * @see #peek(Object)
+     * @see #containsKey(Object)
      * @see #computeIfAbsent(Object, Function)
      */
     @Override
@@ -295,6 +307,10 @@ public class Cache<K,V> extends AbstractMap<K,V> implements ConcurrentMap<K,V> {
      * @param  creator  a method for creating a value, to be invoked only if no value are cached for the given key.
      * @return the value for the given key, which may have been created as a result of this method call.
      * @throws Exception if an exception occurred during the execution of {@code creator.call()}.
+     *
+     * @see #get(Object)
+     * @see #peek(Object)
+     * @see #computeIfAbsent(Object, Function)
      */
     public V getOrCreate(final K key, final Callable<? extends V> creator) throws Exception {
         V value = peek(key);
@@ -338,6 +354,11 @@ public class Cache<K,V> extends AbstractMap<K,V> implements ConcurrentMap<K,V> {
      * @return the value already mapped to the key, or the newly computed value.
      *
      * @since 1.0
+     *
+     * @see #peek(Object)
+     * @see #containsKey(Object)
+     * @see #getOrCreate(Object, Callable)
+     * @see #computeIfPresent(Object, BiFunction)
      */
     @Override
     public V computeIfAbsent(final K key, final Function<? super K, ? extends V> creator) {
@@ -431,6 +452,9 @@ public class Cache<K,V> extends AbstractMap<K,V> implements ConcurrentMap<K,V> {
      * @param  value  the value to associate with the given key if no value already exists, or {@code null}.
      * @return the existing value mapped to the given key, or {@code null} if none existed before this method call.
      *
+     * @see #get(Object)
+     * @see #computeIfAbsent(Object, Function)
+     *
      * @since 1.0
      */
     @Override
@@ -457,6 +481,9 @@ public class Cache<K,V> extends AbstractMap<K,V> implements ConcurrentMap<K,V> {
      * @param  value  the value to associate with the given key, or {@code null} for removing the mapping.
      * @return the value previously mapped to the given key, or {@code null} if no value existed before this
      *         method call or if the value was under computation in another thread.
+     *
+     * @see #get(Object)
+     * @see #putIfAbsent(Object, Object)
      */
     @Override
     public V put(final K key, final V value) {
@@ -478,6 +505,8 @@ public class Cache<K,V> extends AbstractMap<K,V> implements ConcurrentMap<K,V> {
      * @param  value  the new value to use in replacement of the previous one, or {@code null} for removing the mapping.
      * @return the value previously mapped to the given key, or {@code null} if no value existed before this
      *         method call or if the value was under computation in another thread.
+     *
+     * @see #replace(Object, Object, Object)
      *
      * @since 1.0
      */
@@ -543,8 +572,34 @@ public class Cache<K,V> extends AbstractMap<K,V> implements ConcurrentMap<K,V> {
      * by {@link #replaceAll replaceAll(…)} but on a single entry.
      *
      * @param  key        key of the value to replace.
+     * @param  remapping  the function computing new values from the old ones.
+     * @return the new value associated with the given key.
+     *
+     * @see #computeIfAbsent(Object, Function)
+     *
+     * @since 1.0
+     */
+    @Override
+    public V computeIfPresent(final K key, final BiFunction<? super K, ? super V, ? extends V> remapping) {
+        final ReplaceAdapter adapter = new ReplaceAdapter(remapping);
+        final Object value = map.computeIfPresent(key, adapter);
+        Deferred.notifyChanges(this, adapter.changes);
+        return valueOf(value);
+    }
+
+    /**
+     * Replaces the value mapped to the given key by a new value computed from the old value.
+     * If there is no value for the given key, then the "old value" is taken as {@code null}.
+     * If a value for the given key is under computation in another thread, then this method
+     * blocks until that computation is completed. This method is equivalent to
+     * {@link #computeIfPresent computeIfPresent(…)} except that a new value will be computed
+     * even if no value existed for the key before this method call.
+     *
+     * @param  key        key of the value to replace.
      * @param  remapping  the function computing new values from the old ones, or from a {@code null} value.
      * @return the new value associated with the given key.
+     *
+     * @see #computeIfAbsent(Object, Function)
      *
      * @since 1.0
      */
@@ -659,6 +714,9 @@ public class Cache<K,V> extends AbstractMap<K,V> implements ConcurrentMap<K,V> {
      * @param  key  the key of the value to removed.
      * @return the value previously mapped to the given key, or {@code null} if no value existed before this
      *         method call or if the value was under computation in another thread.
+     *
+     * @see #get(Object)
+     * @see #remove(Object, Object)
      */
     @Override
     @SuppressWarnings("unchecked")
@@ -677,6 +735,8 @@ public class Cache<K,V> extends AbstractMap<K,V> implements ConcurrentMap<K,V> {
      * @param  key      key of the value to remove.
      * @param  oldValue previous value expected to be mapped to the given key.
      * @return {@code true} if the value has been removed, {@code false} otherwise.
+     *
+     * @see #get(Object)
      *
      * @since 1.0
      */
@@ -705,6 +765,9 @@ public class Cache<K,V> extends AbstractMap<K,V> implements ConcurrentMap<K,V> {
      *
      * @param  key  the key to check for existence.
      * @return {@code true} if the given key is mapped to an existing value or a value under computation.
+     *
+     * @see #get(Object)
+     * @see #peek(Object)
      */
     @Override
     public boolean containsKey(final Object key) {
@@ -718,6 +781,9 @@ public class Cache<K,V> extends AbstractMap<K,V> implements ConcurrentMap<K,V> {
      *
      * @param  key  the key for which to get the cached value.
      * @return the cached value for the given key, or {@code null} if there is none.
+     *
+     * @see #get(Object)
+     * @see #lock(Object)
      */
     public V peek(final K key) {
         final Object value = map.get(key);
