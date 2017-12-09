@@ -20,6 +20,7 @@ import java.util.Locale;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.LineNumberReader;
+import java.io.Reader;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.IOException;
@@ -160,6 +161,29 @@ public final class IOUtilities extends Static {
     }
 
     /**
+     * Returns the given path without the directories and without the extension.
+     * For example if the given path is {@code "/Users/name/Map.png"}, then this
+     * method returns {@code "Map"}.
+     *
+     * @param  path  the path from which to get the filename without extension, or {@code null}.
+     * @return the filename without extension, or {@code null} if none.
+     */
+    public static String filenameWithoutExtension(String path) {
+        if (path != null) {
+            int s = path.lastIndexOf(File.separatorChar);
+            if (s < 0 && File.separatorChar != '/') {
+                s = path.lastIndexOf('/');
+            }
+            int e = path.lastIndexOf('.');
+            if (e <= ++s) {
+                e = path.length();
+            }
+            path = path.substring(s, e);
+        }
+        return path;
+    }
+
+    /**
      * Encodes the characters that are not legal for the {@link URI#URI(String)} constructor.
      * Note that in addition to unreserved characters ("{@code _-!.~'()*}"), the reserved
      * characters ("{@code ?/[]@}") and the punctuation characters ("{@code ,;:$&+=}")
@@ -236,7 +260,7 @@ public final class IOUtilities extends Static {
             return null;
         }
         /*
-         * Convert the URL to an URI, taking in account the encoding if any.
+         * Convert the URL to a URI, taking in account the encoding if any.
          *
          * Note: URL.toURI() is implemented as new URI(URL.toString()) where toString()
          * delegates to toExternalForm(), and all those methods are final. So we really
@@ -525,6 +549,30 @@ public final class IOUtilities extends Static {
             }
         }
         return isWrite & (!isRead | truncate);
+    }
+
+    /**
+     * Reads the next character as an Unicode code point. Unless end-of-file has been reached, the returned value is
+     * between {@value java.lang.Character#MIN_CODE_POINT} and {@value java.lang.Character#MAX_CODE_POINT} inclusive.
+     *
+     * @param  in  the reader from which to read code point.
+     * @return the next code point, or -1 on end of file.
+     * @throws IOException if an error occurred while reading characters.
+     *
+     * @since 0.8
+     */
+    public static int readCodePoint(final Reader in) throws IOException {
+        int c = in.read();
+        while (c >= Character.MIN_HIGH_SURROGATE && c <= Character.MAX_HIGH_SURROGATE) {
+            final int low = in.read();
+            if (low >= Character.MIN_LOW_SURROGATE && low <= Character.MAX_LOW_SURROGATE) {
+                c = Character.toCodePoint((char) c, (char) low);
+                break;
+            } else {
+                c = low;        // Discard orphan high surrogate and take the next character.
+            }
+        }
+        return c;
     }
 
     /**

@@ -814,7 +814,7 @@ public final strictfp class CoordinateOperationFinderTest extends MathTransformT
                 "  Id[“EPSG”, “3395”]]");
 
         CoordinateReferenceSystem sourceCRS = targetCRS;
-        sourceCRS = compound("Mercator 3D", sourceCRS, CommonCRS.Vertical.ELLIPSOIDAL.crs());
+        sourceCRS = compound("Mercator 3D", sourceCRS, CommonCRS.Vertical.MEAN_SEA_LEVEL.crs());
         sourceCRS = compound("Mercator 4D", sourceCRS, CommonCRS.Temporal.MODIFIED_JULIAN.crs());
 
         final CoordinateOperation operation = finder.createOperation(sourceCRS, targetCRS);
@@ -864,7 +864,7 @@ public final strictfp class CoordinateOperationFinderTest extends MathTransformT
         assertSame      ("sourceCRS", sourceCRS, operation.getSourceCRS());
         assertSame      ("targetCRS", targetCRS, operation.getTargetCRS());
         assertInstanceOf("operation", ConcatenatedOperation.class, operation);
-        assertEquals    ("name", "CompoundCRS[“Test3D”] → CompoundCRS[“Test4D”]", operation.getName().getCode());
+        assertEquals    ("name", "CompoundCRS[“Test3D”] ⟶ CompoundCRS[“Test4D”]", operation.getName().getCode());
 
         transform = operation.getMathTransform();
         assertInstanceOf("transform", LinearTransform.class, transform);

@@ -18,6 +18,7 @@ package org.apache.sis.storage.geotiff;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import org.opengis.parameter.ParameterDescriptorGroup;
 import org.apache.sis.util.Version;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreException;
@@ -26,6 +27,7 @@ import org.apache.sis.storage.ProbeResult;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.internal.storage.Capabilities;
 import org.apache.sis.internal.storage.Capability;
+import org.apache.sis.internal.storage.URIDataStore;
 import org.apache.sis.internal.util.Constants;
 
 
@@ -58,6 +60,11 @@ public class GeoTiffStoreProvider extends DataStoreProvider {
     private static final Version VERSION = new Version("6.0");
 
     /**
+     * The parameter descriptor to be returned by {@link #getOpenParameters()}.
+     */
+    private static final ParameterDescriptorGroup OPEN_DESCRIPTOR = URIDataStore.Provider.descriptor(Constants.GEOTIFF);
+
+    /**
      * Creates a new provider.
      */
     public GeoTiffStoreProvider() {
@@ -71,6 +78,18 @@ public class GeoTiffStoreProvider extends DataStoreProvider {
     @Override
     public String getShortName() {
         return Constants.GEOTIFF;
+    }
+
+    /**
+     * Returns a description of all parameters accepted by this provider for opening a GeoTIFF file.
+     *
+     * @return description of available parameters for opening a GeoTIFF file.
+     *
+     * @since 0.8
+     */
+    @Override
+    public ParameterDescriptorGroup getOpenParameters() {
+        return OPEN_DESCRIPTOR;
     }
 
     /**

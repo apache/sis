@@ -65,7 +65,7 @@ final class AnglePattern {
     /**
      * Converts the given argument to a pattern valid for {@link AngleFormat}.
      *
-     * @param  patternOrVoid the optional pattern argument from the OpenOffice formula.
+     * @param  patternOrVoid  the optional pattern argument from the OpenOffice formula.
      * @throws IllegalArgumentException if {@code patternOrVoid} is not a string value or void.
      */
     AnglePattern(final Object patternOrVoid) throws IllegalArgumentException {
@@ -90,7 +90,7 @@ final class AnglePattern {
      * Returns the angle format to use for this pattern. The formatter is cached on the assumption
      * that the same pattern will be used for formatting more than once.
      *
-     * @param  locale the locale.
+     * @param  locale  the locale.
      * @return the angle format for this pattern and the given locale.
      */
     private AngleFormat getAngleFormat(final Locale locale) {

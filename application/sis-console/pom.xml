@@ -28,7 +28,7 @@
   <parent>
     <groupId>org.apache.sis</groupId>
     <artifactId>application</artifactId>
-    <version>0.8-jdk8-SNAPSHOT</version>
+    <version>1.0-jdk8-SNAPSHOT</version>
   </parent>
 
 
@@ -100,6 +100,29 @@ Console application.
     </plugins>
   </build>
 
+  <!-- Create the binary distribution file, including PACK200 bundle. -->
+  <profiles>
+    <profile>
+      <id>apache-release</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.sis.core</groupId>
+            <artifactId>sis-build-helper</artifactId>
+            <version>${sis.plugin.version}</version>
+            <executions>
+              <execution>
+                <goals>
+                  <goal>dist</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
+
 
   <!-- ===========================================================
            Dependencies
@@ -129,10 +152,16 @@ Console application.
       <version>${project.version}</version>
       <scope>runtime</scope>
     </dependency>
+    <dependency>
+      <groupId>org.apache.sis.storage</groupId>
+      <artifactId>sis-gdal</artifactId>
+      <version>${project.version}</version>
+      <scope>runtime</scope>
+    </dependency>
 
     <!-- Test dependencies -->
     <dependency>
-      <!-- For UCAR NetCDF -->
+      <!-- For UCAR netCDF -->
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-jdk14</artifactId>
       <scope>test</scope>

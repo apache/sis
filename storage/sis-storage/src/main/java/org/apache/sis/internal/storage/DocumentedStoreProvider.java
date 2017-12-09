@@ -16,12 +16,12 @@
  */
 package org.apache.sis.internal.storage;
 
-import java.util.logging.Logger;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
 import org.opengis.metadata.distribution.Format;
 import org.apache.sis.metadata.sql.MetadataSource;
 import org.apache.sis.metadata.sql.MetadataStoreException;
 import org.apache.sis.storage.DataStore;
-import org.apache.sis.storage.DataStoreProvider;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.logging.WarningListeners;
 import org.apache.sis.internal.system.Modules;
@@ -36,7 +36,7 @@ import org.apache.sis.internal.system.Modules;
  * @since   0.8
  * @module
  */
-public abstract class DocumentedStoreProvider extends DataStoreProvider {
+public abstract class DocumentedStoreProvider extends URIDataStore.Provider {
     /**
      * The primary key to use for searching in the {@code MD_Format} table, or {@code null} if none.
      * This primary name is also the value returned by {@link #getShortName()} default implementation.
@@ -99,13 +99,17 @@ public abstract class DocumentedStoreProvider extends DataStoreProvider {
             if (listeners != null) {
                 listeners.warning(null, e);
             } else {
-                final Logger logger = Logging.getLogger(Modules.STORAGE);
+                final Level level;
                 if (!logged) {
                     logged = true;      // Not atomic - not a big deal if we use warning level twice.
-                    Logging.unexpectedException(logger, getClass(), "getFormat", e);
+                    level = Level.WARNING;
                 } else {
-                    Logging.recoverableException(logger, getClass(), "getFormat", e);
+                    level = Level.FINE;
                 }
+                final LogRecord record = Resources.forLocale(null).getLogRecord(level,
+                        Resources.Keys.CanNotGetCommonMetadata_2, getShortName(), e.getLocalizedMessage());
+                record.setLoggerName(Modules.STORAGE);
+                Logging.log(getClass(), "getFormat", record);
             }
         }
         return super.getFormat();

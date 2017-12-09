@@ -93,7 +93,7 @@ public abstract class Geometries<G> {
         this.pointClass    = pointClass;
         this.polylineClass = polylineClass;
         this.polygonClass  = polygonClass;
-        fallback = implementation;
+        this.fallback      = implementation;
     }
 
     /**
@@ -178,7 +178,7 @@ public abstract class Geometries<G> {
     abstract GeneralEnvelope tryGetEnvelope(Object geometry);
 
     /**
-     * If the given object is one of the recognized type and its envelope is non-empty,
+     * If the given object is one of the recognized types and its envelope is non-empty,
      * returns that envelope as an Apache SIS implementation. Otherwise returns {@code null}.
      *
      * @param  geometry  the geometry from which to get the envelope, or {@code null}.
@@ -189,6 +189,35 @@ public abstract class Geometries<G> {
         for (Geometries<?> g = implementation; g != null; g = g.fallback) {
             GeneralEnvelope env = g.tryGetEnvelope(geometry);
             if (env != null) return env;
+        }
+        return null;
+    }
+
+    /**
+     * If the given geometry is the type supported by this {@code Geometries} instance,
+     * returns a short string representation the class name. Otherwise returns {@code null}.
+     */
+    abstract String tryGetLabel(Object geometry);
+
+    /**
+     * If the given object is one of the recognized types, returns a short string representation
+     * (typically the class name and the bounds). Otherwise returns {@code null}.
+     *
+     * @param  geometry  the geometry from which to get a string representation, or {@code null}.
+     * @return a short string representation of the given geometry, or {@code null} if the given
+     *         object is not a recognized geometry.
+     */
+    public static String toString(final Object geometry) {
+        for (Geometries<?> g = implementation; g != null; g = g.fallback) {
+            String s = g.tryGetLabel(geometry);
+            if (s != null) {
+                GeneralEnvelope env = g.tryGetEnvelope(geometry);
+                if (env != null) {
+                    final String bbox = env.toString();
+                    s += bbox.substring(bbox.indexOf('('));
+                }
+                return s;
+            }
         }
         return null;
     }
@@ -253,6 +282,14 @@ public abstract class Geometries<G> {
         }
         return null;
     }
+
+    /**
+     * Parses the given WKT.
+     *
+     * @param  wkt  the WKT to parse.
+     * @return the geometry object for the given WKT.
+     */
+    public abstract Object parseWKT(String wkt);
 
     /**
      * Returns an error message for an unsupported geometry object.

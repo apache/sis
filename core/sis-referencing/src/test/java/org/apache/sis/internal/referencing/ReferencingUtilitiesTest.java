@@ -21,6 +21,7 @@ import org.opengis.referencing.cs.*;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.crs.GeographicCRS;
 import org.opengis.referencing.datum.PrimeMeridian;
+import org.opengis.referencing.datum.VerticalDatum;
 import org.opengis.referencing.IdentifiedObject;
 import org.apache.sis.referencing.datum.HardCodedDatum;
 import org.apache.sis.referencing.crs.HardCodedCRS;
@@ -56,6 +57,14 @@ public final strictfp class ReferencingUtilitiesTest extends TestCase {
     }
 
     /**
+     * Tests {@link ReferencingUtilities#isEllipsoidalHeight(VerticalDatum)}.
+     */
+    @Test
+    public void testEllipsoidalHeight() {
+        assertTrue(isEllipsoidalHeight(HardCodedDatum.ELLIPSOID));
+    }
+
+    /**
      * Asserts that normalization of the given CRS produces {@link HardCodedCRS#WGS84} (ignoring metadata).
      *
      * @param  message         the message to show in case of failure.
@@ -84,7 +93,7 @@ public final strictfp class ReferencingUtilitiesTest extends TestCase {
     }
 
     /**
-     * Tests {@link ReferencingUtilities#getPropertiesForModifiedCRS(IdentifiedObject, String...)}.
+     * Tests {@link ReferencingUtilities#getPropertiesForModifiedCRS(IdentifiedObject)}.
      *
      * @since 0.7
      */
@@ -110,7 +119,7 @@ public final strictfp class ReferencingUtilitiesTest extends TestCase {
         assertEquals("cylindricalCS",    toPropertyName(CoordinateSystem.class, CylindricalCS   .class).toString());
         assertEquals("ellipsoidalCS",    toPropertyName(CoordinateSystem.class, EllipsoidalCS   .class).toString());
         assertEquals("linearCS",         toPropertyName(CoordinateSystem.class, LinearCS        .class).toString());
-//      assertEquals("parametricCS",     toPropertyName(CoordinateSystem.class, ParametricCS    .class).toString());
+        assertEquals("parametricCS",     toPropertyName(CoordinateSystem.class, ParametricCS    .class).toString());
         assertEquals("polarCS",          toPropertyName(CoordinateSystem.class, PolarCS         .class).toString());
         assertEquals("sphericalCS",      toPropertyName(CoordinateSystem.class, SphericalCS     .class).toString());
         assertEquals("timeCS",           toPropertyName(CoordinateSystem.class, TimeCS          .class).toString());

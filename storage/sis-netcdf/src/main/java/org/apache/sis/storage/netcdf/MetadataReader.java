@@ -53,13 +53,16 @@ import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.metadata.iso.DefaultMetadata;
 import org.apache.sis.metadata.iso.citation.*;
 import org.apache.sis.metadata.iso.identification.*;
+import org.apache.sis.metadata.iso.lineage.DefaultSource;
 import org.apache.sis.metadata.iso.lineage.DefaultLineage;
 import org.apache.sis.metadata.iso.quality.DefaultDataQuality;
 import org.apache.sis.internal.netcdf.Axis;
 import org.apache.sis.internal.netcdf.Decoder;
 import org.apache.sis.internal.netcdf.Variable;
 import org.apache.sis.internal.netcdf.GridGeometry;
+import org.apache.sis.internal.storage.io.IOUtilities;
 import org.apache.sis.internal.storage.MetadataBuilder;
+import org.apache.sis.internal.storage.wkt.StoreFormat;
 import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.util.resources.Errors;
@@ -68,6 +71,7 @@ import org.apache.sis.measure.Units;
 
 // The following dependency is used only for static final String constants.
 // Consequently the compiled class files should not have this dependency.
+import ucar.nc2.constants.ACDD;
 import ucar.nc2.constants.CDM;
 import ucar.nc2.constants.CF;
 
@@ -77,7 +81,7 @@ import static org.apache.sis.internal.util.CollectionsExt.first;
 
 
 /**
- * Mapping from NetCDF metadata to ISO 19115-2 metadata. The {@link String} constants declared in
+ * Mapping from netCDF metadata to ISO 19115-2 metadata. The {@link String} constants declared in
  * the {@linkplain AttributeNames parent class} are the name of attributes examined by this class.
  * The current implementation searches the attribute values in the following places, in that order:
  *
@@ -108,6 +112,12 @@ import static org.apache.sis.internal.util.CollectionsExt.first;
  */
 final class MetadataReader extends MetadataBuilder {
     /**
+     * Whether the reader should include experimental fields.
+     * They are fields for which we are unsure of the proper ISO 19115 location.
+     */
+    private static final boolean EXPERIMENTAL = true;
+
+    /**
      * Names of groups where to search for metadata, in precedence order.
      * The {@code null} value stands for global attributes.
      *
@@ -122,7 +132,7 @@ final class MetadataReader extends MetadataBuilder {
 
     /**
      * The character to use as a separator in comma-separated list. This separator is used for parsing the
-     * {@value org.apache.sis.storage.netcdf.AttributeNames#KEYWORDS} attribute value for instance.
+     * {@link AttributeNames#KEYWORDS} attribute value for instance.
      */
     private static final char SEPARATOR = ',';
 
@@ -143,7 +153,7 @@ final class MetadataReader extends MetadataBuilder {
     private static final VerticalCRS VERTICAL_CRS = null;
 
     /**
-     * The source of NetCDF attributes from which to infer ISO metadata.
+     * The source of netCDF attributes from which to infer ISO metadata.
      * This source is set at construction time.
      *
      * <p>This {@code MetadataReader} class does <strong>not</strong> close this source.
@@ -167,7 +177,7 @@ final class MetadataReader extends MetadataBuilder {
      * more than once.
      *
      * <p>The point of contact is stored in the two following places. The semantic of those two
-     * contacts is not strictly identical, but the distinction is not used in NetCDF file:</p>
+     * contacts is not strictly identical, but the distinction is not used in netCDF file:</p>
      *
      * <ul>
      *   <li>{@link DefaultMetadata#getContacts()}</li>
@@ -180,9 +190,9 @@ final class MetadataReader extends MetadataBuilder {
     private transient Responsibility pointOfContact;
 
     /**
-     * Creates a new <cite>NetCDF to ISO</cite> mapper for the given source.
+     * Creates a new <cite>netCDF to ISO</cite> mapper for the given source.
      *
-     * @param  decoder  the source of NetCDF attributes.
+     * @param  decoder  the source of netCDF attributes.
      */
     MetadataReader(final Decoder decoder) {
         this.decoder = decoder;
@@ -327,22 +337,22 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
     }
 
     /**
-     * Returns {@code true} if the given NetCDF attribute is either null or equals to the
+     * Returns {@code true} if the given netCDF attribute is either null or equals to the
      * string value of the given metadata value.
      *
      * @param metadata  The value stored in the metadata object.
-     * @param attribute The value parsed from the NetCDF file.
+     * @param attribute The value parsed from the netCDF file.
      */
     private static boolean canShare(final CharSequence metadata, final String attribute) {
         return (attribute == null) || (metadata != null && metadata.toString().equals(attribute));
     }
 
     /**
-     * Returns {@code true} if the given NetCDF attribute is either null or equals to one
+     * Returns {@code true} if the given netCDF attribute is either null or equals to one
      * of the values in the given collection.
      *
      * @param  metadata   the value stored in the metadata object.
-     * @param  attribute  the value parsed from the NetCDF file.
+     * @param  attribute  the value parsed from the netCDF file.
      */
     private static boolean canShare(final Collection<String> metadata, final String attribute) {
         return (attribute == null) || metadata.contains(attribute);
@@ -352,7 +362,7 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
      * Returns {@code true} if the given URL is null, or if the given resource contains that URL.
      *
      * @param  resource  the value stored in the metadata object.
-     * @param  url       the value parsed from the NetCDF file.
+     * @param  url       the value parsed from the netCDF file.
      */
     private static boolean canShare(final OnlineResource resource, final String url) {
         return (url == null) || (resource != null && canShare(resource.getLinkage().toString(), url));
@@ -362,10 +372,23 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
      * Returns {@code true} if the given email is null, or if the given address contains that email.
      *
      * @param  address  the value stored in the metadata object.
-     * @param  email    the value parsed from the NetCDF file.
+     * @param  email    the value parsed from the netCDF file.
      */
     private static boolean canShare(final Address address, final String email) {
         return (email == null) || (address != null && canShare(address.getElectronicMailAddresses(), email));
+    }
+
+    /**
+     * Creates a URI form the given path, or returns {@code null} if the given URL is null or can not be parsed.
+     * In the later case, a warning will be emitted.
+     */
+    private URI createURI(final String url) {
+        if (url != null) try {
+            return new URI(url);
+        } catch (URISyntaxException e) {
+            warning(e);
+        }
+        return null;
     }
 
     /**
@@ -373,20 +396,22 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
      * declares the URL as a mandatory attribute, this method will ignore all other attributes
      * if the given URL is null.
      *
-     * @param  url  the URL (mandatory - if {@code null}, no resource will be created).
+     * @param  url   the URL (mandatory - if {@code null}, no resource will be created).
      * @return the online resource, or {@code null} if the URL was null.
      */
     private OnlineResource createOnlineResource(final String url) {
-        if (url != null) try {
-            final DefaultOnlineResource resource = new DefaultOnlineResource(new URI(url));
-            resource.setProtocol("http");
-            resource.setApplicationProfile("web browser");
-            resource.setFunction(OnLineFunction.INFORMATION);
-            return resource;
-        } catch (URISyntaxException e) {
-            warning(e);
+        final URI uri = createURI(url);
+        if (uri == null) {
+            return null;
         }
-        return null;
+        final DefaultOnlineResource resource = new DefaultOnlineResource(uri);
+        final String protocol = uri.getScheme();
+        resource.setProtocol(protocol);
+        if ("http".equalsIgnoreCase(protocol) || "https".equalsIgnoreCase(protocol)) {
+            resource.setApplicationProfile("web browser");
+        }
+        resource.setFunction(OnLineFunction.INFORMATION);
+        return resource;
     }
 
     /**
@@ -422,8 +447,10 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
      * <p>Implementation note: this method tries to reuse the existing {@link #pointOfContact} instance,
      * or part of it, if it is suitable.</p>
      *
-     * @param  keys  the group of attribute names to use for fetching the values.
-     * @param  isPointOfContact {@code true} for forcing the role to {@link Role#POINT_OF_CONTACT}.
+     * @param  keys              the group of attribute names to use for fetching the values.
+     * @param  isPointOfContact  {@code true} if this responsible party is the "main" one. This will force the
+     *         role to {@link Role#POINT_OF_CONTACT} and enable the use of {@code "institution"} attribute as
+     *         a fallback if there is no value for {@link Responsible#INSTITUTION}.
      * @return the responsible party, or {@code null} if none.
      *
      * @see AttributeNames#CREATOR
@@ -431,12 +458,28 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
      * @see AttributeNames#PUBLISHER
      */
     private Responsibility createResponsibleParty(final Responsible keys, final boolean isPointOfContact) {
-        final String individualName   = stringValue(keys.NAME);
-        final String organisationName = stringValue(keys.INSTITUTION);
-        final String email            = stringValue(keys.EMAIL);
-        final String url              = stringValue(keys.URL);
+        String individualName   = stringValue(keys.NAME);
+        String organisationName = stringValue(keys.INSTITUTION);
+        final String email      = stringValue(keys.EMAIL);
+        final String url        = stringValue(keys.URL);
+        if (organisationName == null && isPointOfContact) {
+            organisationName = stringValue("institution");
+        }
         if (individualName == null && organisationName == null && email == null && url == null) {
             return null;
+        }
+        /*
+         * The "individual" name may actually be an institution name, either because a "*_type" attribute
+         * said so or because the "individual" name is the same than the institution name. In such cases,
+         * reorganize the names in order to avoid duplication.
+         */
+        if (organisationName == null) {
+            if (isOrganisation(keys)) {
+                organisationName = individualName;
+                individualName = null;
+            }
+        } else if (organisationName.equalsIgnoreCase(individualName)) {
+            individualName = null;
         }
         Role role = forCodeName(Role.class, stringValue(keys.ROLE));
         if (role == null) {
@@ -497,12 +540,22 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
                 AbstractParty party = null;
                 if (individualName   != null) party = new DefaultIndividual(individualName, null, null);
                 if (organisationName != null) party = new DefaultOrganisation(organisationName, null, (Individual) party, null);
-                if (party            == null) party = new AbstractParty(); // We don't know if this is an individual or an organisation.
+                if (party            == null) party = isOrganisation(keys) ? new DefaultOrganisation() : new DefaultIndividual();
                 if (contact          != null) party.setContactInfo(singleton(contact));
                 responsibility = new DefaultResponsibility(role, null, party);
             }
         }
         return responsibility;
+    }
+
+    /**
+     * Returns {@code true} if the responsible party described by the given keys is an organization.
+     * In case of doubt, this method returns {@code false}. This is consistent with ACDD recommendation,
+     * which set the default value to {@code "person"}.
+     */
+    private boolean isOrganisation(final Responsible keys) {
+        final String type = stringValue(keys.TYPE);
+        return "institution".equalsIgnoreCase(type) || "group".equalsIgnoreCase(type);
     }
 
     /**
@@ -526,8 +579,10 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
             }
         }
         addTitle(title);
+        addEdition(stringValue(PRODUCT_VERSION));
         addOtherCitationDetails(stringValue(REFERENCES));
         addCitationDate(decoder.dateValue(METADATA_CREATION), DateType.CREATION,    Scope.ALL);
+        addCitationDate(decoder.dateValue(METADATA_MODIFIED), DateType.REVISION,    Scope.ALL);
         addCitationDate(decoder.dateValue(DATE_CREATED),      DateType.CREATION,    Scope.RESOURCE);
         addCitationDate(decoder.dateValue(DATE_MODIFIED),     DateType.REVISION,    Scope.RESOURCE);
         addCitationDate(decoder.dateValue(DATE_ISSUED),       DateType.PUBLICATION, Scope.RESOURCE);
@@ -547,7 +602,7 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
             }
         }
         /*
-         * There is no distinction in NetCDF files between "point of contact" and "creator".
+         * There is no distinction in netCDF files between "point of contact" and "creator".
          * We take the first one as the data originator.
          */
         addCitedResponsibleParty(pointOfContact, Role.ORIGINATOR);
@@ -591,8 +646,8 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
         final Set<String> keywords = new LinkedHashSet<>();
         for (final String path : searchPath) {
             decoder.setSearchPath(path);
-            keywords.addAll(split(stringValue(KEYWORDS)));
-            standard = addIfNonNull(standard, stringValue(STANDARD_NAME));
+            keywords.addAll(split(stringValue(KEYWORDS.TEXT)));
+            standard = addIfNonNull(standard, stringValue(STANDARD_NAME.TEXT));
             project  = addIfNonNull(project,  stringValue(PROJECT));
             for (final String keyword : split(stringValue(ACCESS_CONSTRAINT))) {
                 addAccessConstraint(forCodeName(Restriction.class, keyword));
@@ -601,7 +656,7 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
             addSpatialRepresentation(forCodeName(SpatialRepresentationType.class, stringValue(DATA_TYPE)));
             if (!hasExtent) {
                 /*
-                 * Takes only ONE extent, because a NetCDF file may declare many time the same
+                 * Takes only ONE extent, because a netCDF file may declare many time the same
                  * extent with different precision. The groups are ordered in such a way that
                  * the first extent should be the most accurate one.
                  */
@@ -618,17 +673,26 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
         addCredits                (stringValue(ACKNOWLEDGEMENT));
         addCredits                (stringValue("acknowledgment"));          // Legacy spelling.
         addUseLimitation          (stringValue(LICENSE));
-        addKeywords(standard,  KeywordType.THEME,       stringValue(STANDARD_NAME_VOCABULARY));
-        addKeywords(keywords,  KeywordType.THEME,       stringValue(VOCABULARY));
+        addKeywords(standard,  KeywordType.THEME,       stringValue(STANDARD_NAME.VOCABULARY));
+        addKeywords(keywords,  KeywordType.THEME,       stringValue(KEYWORDS.VOCABULARY));
         addKeywords(project,   KeywordType.PROJECT,     null);
         addKeywords(publisher, KeywordType.DATA_CENTRE, null);
+        /*
+         * Add geospatial bounds as a geometric object. This optional operation requires
+         * an external library (ESRI or JTS) to be present on the classpath.
+         */
+        final String wkt = stringValue(GEOSPATIAL_BOUNDS);
+        if (wkt != null) {
+            addBoundingPolygon(new StoreFormat(decoder.geomlib, decoder.listeners).parseGeometry(wkt,
+                    stringValue(GEOSPATIAL_BOUNDS + "_crs"), stringValue(GEOSPATIAL_BOUNDS + "_vertical_crs")));
+        }
     }
 
     /**
      * Adds information about axes and cell geometry.
      * This is the {@code <gmd:spatialRepresentationInfo>} element in XML.
      *
-     * @param  cs  the grid geometry (related to the NetCDF coordinate system).
+     * @param  cs  the grid geometry (related to the netCDF coordinate system).
      */
     private void addSpatialRepresentationInfo(final GridGeometry cs) throws IOException, DataStoreException {
         final Axis[] axes = cs.getAxes();
@@ -636,7 +700,7 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
             final int dim = axes.length - i;
             final Axis axis = axes[--i];
             /*
-             * Axes usually have exactly one dimension. However some NetCDF axes are backed by a two-dimensional
+             * Axes usually have exactly one dimension. However some netCDF axes are backed by a two-dimensional
              * conversion grid. In such case, our Axis constructor should have ensured that the first element in
              * the 'sourceDimensions' and 'sourceSizes' arrays are for the grid dimension which is most closely
              * oriented toward the axis direction.
@@ -657,7 +721,7 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
     }
 
     /**
-     * Adds the extent declared in the given group. For more consistent results, the caller should restrict
+     * Adds the extent declared in the current group. For more consistent results, the caller should restrict
      * the {@linkplain Decoder#setSearchPath search path} to a single group before invoking this method.
      *
      * @return {@code true} if at least one numerical value has been added.
@@ -756,7 +820,34 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
     }
 
     /**
-     * Adds information about all NetCDF variables. This is the {@code <gmd:contentInfo>} element in XML.
+     * Adds information about acquisition (program, platform).
+     */
+    private void addAcquisitionInfo() {
+        final Term[] attributes = {
+            AttributeNames.PROGRAM,
+            AttributeNames.PLATFORM,
+            AttributeNames.INSTRUMENT
+        };
+        for (int i=0; i<attributes.length; i++) {
+            final Term at = attributes[i];
+            final String authority = stringValue(at.VOCABULARY);
+            for (final String keyword : split(stringValue(at.TEXT))) {
+                switch (i) {
+                    case 0: {
+                        if (EXPERIMENTAL) {
+                            addAcquisitionOperation(authority, keyword);
+                        }
+                        break;
+                    }
+                    case 1: addPlatform  (authority, keyword); break;
+                    case 2: addInstrument(authority, keyword); break;
+                }
+            }
+        }
+    }
+
+    /**
+     * Adds information about all netCDF variables. This is the {@code <gmd:contentInfo>} element in XML.
      * This method groups variables by their domains, i.e. variables having the same set of axes are grouped together.
      */
     private void addContentInfo() {
@@ -770,7 +861,7 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
         final String processingLevel = stringValue(PROCESSING_LEVEL);
         for (final List<Variable> group : contents.values()) {
             /*
-             * Instantiate a CoverageDescription for each distinct set of NetCDF dimensions
+             * Instantiate a CoverageDescription for each distinct set of netCDF dimensions
              * (e.g. longitude,latitude,time). This separation is based on the fact that a
              * coverage has only one domain for every range of values.
              */
@@ -798,7 +889,7 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
      * Adds metadata about a sample dimension (or band) from the given variable.
      * This is the {@code <gmd:dimension>} element in XML.
      *
-     * @param  variable  the NetCDF variable.
+     * @param  variable  the netCDF variable.
      */
     private void addSampleDimension(final Variable variable) {
         newSampleDimension();
@@ -811,11 +902,11 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
             setBandIdentifier(nameFactory.createMemberName(null, name,
                     nameFactory.createTypeName(null, variable.getDataTypeName())));
         }
-        Object[] v = variable.getAttributeValues(STANDARD_NAME, false);
+        Object[] v = variable.getAttributeValues(CF.STANDARD_NAME, false);
         final String id = (v.length == 1) ? trim((String) v[0]) : null;
         if (id != null && !id.equals(name)) {
-            v = variable.getAttributeValues(STANDARD_NAME_VOCABULARY, false);
-            addBandIdentifier(v.length == 1 ? (String) v[0] : null, id);
+            v = variable.getAttributeValues(ACDD.standard_name_vocabulary, false);
+            addBandName(v.length == 1 ? (String) v[0] : null, id);
         }
         final String description = trim(variable.getDescription());
         if (description != null && !description.equals(name) && !description.equals(id)) {
@@ -832,6 +923,7 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
         v = variable.getAttributeValues(CDM.SCALE_FACTOR, true); if (v.length == 1) scale  = ((Number) v[0]).doubleValue();
         v = variable.getAttributeValues(CDM.ADD_OFFSET,   true); if (v.length == 1) offset = ((Number) v[0]).doubleValue();
         setTransferFunction(scale, offset);
+        addContentType(forCodeName(CoverageContentType.class, stringValue(ACDD.coverage_content_type)));
     }
 
     /**
@@ -841,7 +933,7 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
      * <p><b>Note:</b> ISO 19115 range elements are approximatively equivalent to
      * {@code org.apache.sis.coverage.Category} in the {@code sis-coverage} module.</p>
      *
-     * @param  variable  the NetCDF variable.
+     * @param  variable  the netCDF variable.
      * @param  name      one of the elements in the {@link AttributeNames#FLAG_NAMES} attribute, or {@code null}.
      * @param  meaning   one of the elements in the {@link AttributeNames#FLAG_MEANINGS} attribute or {@code null}.
      * @param  mask      one of the elements in the {@link AttributeNames#FLAG_MASKS} attribute or {@code null}.
@@ -856,34 +948,47 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
     }
 
     /**
-     * Adds a globally unique identifier for the current NetCDF {@linkplain #decoder}.
+     * Adds a globally unique identifier for the current netCDF {@linkplain #decoder}.
      * The current implementation builds the identifier from the following attributes:
      *
      * <ul>
-     *   <li>{@value AttributeNames#NAMING_AUTHORITY} used as the {@linkplain Identifier#getAuthority() authority}.</li>
-     *   <li>{@value AttributeNames#IDENTIFIER}, or {@link ucar.nc2.NetcdfFile#getId()} if no identifier attribute was found.</li>
+     *   <li>{@code AttributeNames.IDENTIFIER.VOCABULARY} used as the {@linkplain Identifier#getAuthority() authority}.</li>
+     *   <li>{@code AttributeNames.IDENTIFIER.TEXT}, or {@link ucar.nc2.NetcdfFile#getId()} if no identifier attribute was found,
+     *       or the filename without extension if {@code getId()} returned nothing.</li>
      * </ul>
+     *
+     * This method should be invoked last, after we made our best effort to set the title.
      */
     private void addFileIdentifier() {
-        String identifier = stringValue(IDENTIFIER);
-        if (identifier == null) {
+        String identifier = stringValue(IDENTIFIER.TEXT);
+        String authority;
+        if (identifier != null) {
+            authority = stringValue(IDENTIFIER.VOCABULARY);
+        } else {
             identifier = decoder.getId();
             if (identifier == null) {
-                return;
+                identifier = IOUtilities.filenameWithoutExtension(decoder.getFilename());
+                if (identifier == null) {
+                    return;
+                }
             }
+            authority = null;
         }
-        addIdentifier(stringValue(NAMING_AUTHORITY), identifier, Scope.ALL);
+        if (authority == null) {
+            addTitleOrIdentifier(identifier, Scope.ALL);
+        } else {
+            addIdentifier(authority, identifier, Scope.ALL);
+        }
     }
 
     /**
-     * Creates an ISO {@code Metadata} object from the information found in the NetCDF file.
+     * Creates an ISO {@code Metadata} object from the information found in the netCDF file.
      *
      * @return the ISO metadata object.
      * @throws IOException if an I/O operation was necessary but failed.
      * @throws DataStoreException if a logical error occurred.
      */
     public Metadata read() throws IOException, DataStoreException {
-        addFileIdentifier();
         addResourceScope(ScopeCode.DATASET, null);
         Set<InternationalString> publisher = addCitation();
         addIdentificationInfo(publisher);
@@ -893,10 +998,11 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
                 addResourceScope(ScopeCode.SERVICE, name);
             }
         }
+        addAcquisitionInfo();
         addContentInfo();
         /*
          * Add the dimension information, if any. This metadata node
-         * is built from the NetCDF CoordinateSystem objects.
+         * is built from the netCDF CoordinateSystem objects.
          */
         for (final GridGeometry cs : decoder.getGridGeometries()) {
             if (cs.getSourceDimensions() >= Variable.MIN_DIMENSION &&
@@ -905,6 +1011,7 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
                 addSpatialRepresentationInfo(cs);
             }
         }
+        addFileIdentifier();
         /*
          * Add history in Metadata.dataQualityInfo.lineage.statement as specified by UnidataDD2MI.xsl.
          * However Metadata.resourceLineage.statement could be a more appropriate place.
@@ -913,17 +1020,26 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
         final DefaultMetadata metadata = build(false);
         for (final String path : searchPath) {
             decoder.setSearchPath(path);
-            final String history = stringValue(HISTORY);
-            if (history != null) {
+            DefaultLineage lineage = null;
+            String value = stringValue(HISTORY);
+            if (value != null) {
+                lineage = new DefaultLineage();
+                lineage.setStatement(new SimpleInternationalString(value));
+            }
+            value = stringValue(SOURCE);
+            if (value != null) {
+                if (lineage == null) lineage = new DefaultLineage();
+                addIfAbsent(lineage.getSources(), new DefaultSource(value));
+            }
+            if (lineage != null) {
                 final DefaultDataQuality quality = new DefaultDataQuality(ScopeCode.DATASET);
-                final DefaultLineage lineage = new DefaultLineage();
-                lineage.setStatement(new SimpleInternationalString(history));
                 quality.setLineage(lineage);
                 addIfAbsent(metadata.getDataQualityInfo(), quality);
             }
         }
         decoder.setSearchPath(searchPath);
         metadata.setMetadataStandards(Citations.ISO_19115);
+        addCompleteMetadata(createURI(stringValue(METADATA_LINK)));
         return metadata;
     }
 }

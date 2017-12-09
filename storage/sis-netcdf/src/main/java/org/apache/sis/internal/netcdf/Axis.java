@@ -23,9 +23,9 @@ import org.apache.sis.storage.DataStoreException;
 
 
 /**
- * Information about a coordinate system axes. In NetCDF files, all axes can be related to 1 or more dimensions
+ * Information about a coordinate system axes. In netCDF files, all axes can be related to 1 or more dimensions
  * of the grid domain. Those grid domain dimensions are specified by the {@link #sourceDimensions} array.
- * Whether the array length is 1 or 2 depends on whether the wrapped NetCDF axis is an instance of
+ * Whether the array length is 1 or 2 depends on whether the wrapped netCDF axis is an instance of
  * {@link ucar.nc2.dataset.CoordinateAxis1D} or {@link ucar.nc2.dataset.CoordinateAxis2D} respectively.
  *
  * @author  Martin Desruisseaux (Geomatys)
@@ -44,7 +44,7 @@ public final class Axis {
 
     /**
      * The indices of the grid dimension associated to this axis. The length of this array is often 1.
-     * But if more than one grid dimension is associated to this axis (i.e. if the wrapped NetCDF axis
+     * But if more than one grid dimension is associated to this axis (i.e. if the wrapped netCDF axis
      * is an instance of {@link ucar.nc2.dataset.CoordinateAxis2D}),  then the first value is the grid
      * dimension which seems most closely oriented toward this axis direction. We do that for allowing
      * {@code MetadataReader.addSpatialRepresentationInfo(…)} method to get the most appropriate value

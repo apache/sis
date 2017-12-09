@@ -35,7 +35,7 @@ import java.sql.Connection;                             // For javadoc.
 import org.apache.sis.internal.system.DataDirectory;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.internal.util.X364;
-import org.apache.sis.internal.util.Fallback;
+import org.apache.sis.internal.referencing.Fallback;
 import org.apache.sis.setup.InstallationResources;
 
 import static org.apache.sis.internal.util.Constants.EPSG;
@@ -51,7 +51,7 @@ import static org.apache.sis.internal.util.Constants.EPSG;
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.7
+ * @version 0.8
  * @since   0.7
  * @module
  */
@@ -60,7 +60,7 @@ public class ResourcesDownloader extends InstallationResources {
     /**
      * Where to download the EPSG scripts after user has approved the terms of use.
      */
-    private static final String DOWNLOAD_URL = "http://repo1.maven.org/maven2/org/apache/sis/non-free/sis-epsg/0.7/sis-epsg-0.7.jar";
+    private static final String DOWNLOAD_URL = "http://repo1.maven.org/maven2/org/apache/sis/non-free/sis-epsg/0.8/sis-epsg-0.8.jar";
 
     /**
      * Estimation of the EPSG database size after installation, in mega-bytes.
@@ -264,6 +264,26 @@ public class ResourcesDownloader extends InstallationResources {
     }
 
     /**
+     * Returns an installation resource for the given authority.
+     * If that question has not already been asked, this method asks to the user if (s)he accepts
+     * EPSG terms of use. If (s)he refuses, an {@link AccessDeniedException} will be thrown.
+     *
+     * @param  authority  one of the values returned by {@link #getAuthorities()}.
+     * @param  index      index of the resource to get, from 0 inclusive to
+     *         <code>{@linkplain #getResourceNames(String) getResourceNames}(authority).length</code> exclusive.
+     * @return the resource as an URL or any other type, at implementation choice.
+     * @throws IllegalArgumentException if the given {@code authority} argument is not one of the expected values.
+     * @throws IndexOutOfBoundsException if the given {@code resource} argument is out of bounds.
+     * @throws IOException if an error occurred while fetching the resource.
+     *
+     * @since 0.8
+     */
+    @Override
+    public Object getResource(final String authority, final int index) throws IOException {
+        return provider(authority, true).getResource(authority, index);
+    }
+
+    /**
      * Returns a reader for the installation script at the given index.
      * This method is invoked by {@link org.apache.sis.referencing.factory.sql.EPSGFactory#install(Connection)}
      * for getting the SQL scripts to execute during EPSG dataset installation.
@@ -277,6 +297,7 @@ public class ResourcesDownloader extends InstallationResources {
      * @return a reader for the installation script content.
      * @throws IllegalArgumentException if the given {@code authority} argument is not one of the expected values.
      * @throws IndexOutOfBoundsException if the given {@code resource} argument is out of bounds.
+     * @throws FileNotFoundException if the SQL script of the given name has not been found.
      * @throws IOException if an error occurred while creating the reader.
      */
     @Override

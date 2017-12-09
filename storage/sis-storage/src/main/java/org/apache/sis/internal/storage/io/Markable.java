@@ -17,7 +17,6 @@
 package org.apache.sis.internal.storage.io;
 
 import java.io.IOException;
-import java.nio.InvalidMarkException;
 
 
 /**
@@ -37,7 +36,10 @@ import java.nio.InvalidMarkException;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
- * @since   0.8
+ *
+ * @see Readable
+ *
+ * @since 0.8
  * @module
  */
 public interface Markable {
@@ -56,6 +58,8 @@ public interface Markable {
      * Calls to {@code mark()} and {@code reset()} can be nested arbitrarily.
      *
      * @throws IOException if this stream can not mark the current position.
+     *
+     * @see javax.imageio.stream.ImageInputStream#mark()
      */
     void mark() throws IOException;
 
@@ -64,8 +68,14 @@ public interface Markable {
      * An {@code IOException} may be be thrown if the previous marked position lies in the
      * discarded portion of the stream.
      *
-     * @throws InvalidMarkException if there is no mark.
+     * <p>If there is no mark, then the behavior is undefined.
+     * {@link java.io.InputStream#reset()} specifies that we shall move to the file beginning.
+     * {@link javax.imageio.stream.ImageInputStream#reset()} specifies that we shall do nothing.
+     * {@link ChannelDataInput#reset()} throws {@link java.nio.InvalidMarkException}.</p>
+     *
      * @throws IOException if a mark was defined but this stream can not move to that position.
+     *
+     * @see javax.imageio.stream.ImageInputStream#reset()
      */
     void reset() throws IOException;
 }

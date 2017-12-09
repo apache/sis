@@ -31,6 +31,7 @@ import org.apache.sis.internal.netcdf.Decoder;
 import org.apache.sis.internal.netcdf.ucar.DecoderWrapper;
 import org.apache.sis.internal.netcdf.TestCase;
 import org.apache.sis.storage.DataStoreException;
+import org.apache.sis.setup.GeometryLibrary;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestUtilities;
 import org.junit.Test;
@@ -43,7 +44,7 @@ import static org.junit.Assert.*;
  * The tests are overridden in order to add some additional assertions for attributes not parsed by
  * the GeoAPI demo code.
  *
- * <p>This tests uses the UCAR implementation for reading NetCDF attributes.
+ * <p>This tests uses the UCAR implementation for reading netCDF attributes.
  * For a test using the SIS embedded implementation, see {@link MetadataReaderTest}.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
@@ -54,7 +55,7 @@ import static org.junit.Assert.*;
 @DependsOn(MetadataReaderTest.class)
 public final strictfp class ConformanceTest extends NetcdfMetadataTest {
     /**
-     * Reads a metadata object from the given NetCDF file.
+     * Reads a metadata object from the given netCDF file.
      * This method is invoked by the tests inherited from the {@code geoapi-test} module.
      *
      * <div class="note"><b>Note:</b>
@@ -62,13 +63,13 @@ public final strictfp class ConformanceTest extends NetcdfMetadataTest {
      * {@code NetcdfFile.findAttribute(String)} method calls. However in SIS implementation, the metadata
      * object is fully created right at this method invocation time.</div>
      *
-     * @param  file the NetCDF file to wrap.
+     * @param  file  the netCDF file to wrap.
      * @return a metadata implementation created from the attributes found in the given file.
-     * @throws IOException if an error occurred while reading the given NetCDF file.
+     * @throws IOException if an error occurred while reading the given netCDF file.
      */
     @Override
     protected Metadata wrap(final NetcdfFile file) throws IOException {
-        final Decoder decoder = new DecoderWrapper(TestCase.LISTENERS, file);
+        final Decoder decoder = new DecoderWrapper(file, GeometryLibrary.JAVA2D, TestCase.LISTENERS);
         final MetadataReader ncISO = new MetadataReader(decoder);
         try {
             return ncISO.read();
@@ -139,7 +140,7 @@ public final strictfp class ConformanceTest extends NetcdfMetadataTest {
     }
 
     /**
-     * Tests a NetCDF binary file. This method inherits the tests defined in GeoAPI,
+     * Tests a netCDF binary file. This method inherits the tests defined in GeoAPI,
      * and adds some additional tests for attributes parsed by SIS but not GeoAPI.
      *
      * @throws IOException if the test file can not be read.
@@ -175,7 +176,10 @@ public final strictfp class ConformanceTest extends NetcdfMetadataTest {
     @Test
     @Override
     public void testLandsat() throws IOException {
-        addCommonProperties(expectedProperties, false);
+        final Map<String,Object> expected = expectedProperties;
+        addCommonProperties(expected, false);
+        assertNull(expected.put("identificationInfo.citation.title", "Landsat-GDAL"));
+        assertNull(expected.put("metadataIdentifier.code", "Landsat-GDAL"));
         super.testLandsat();
         assertSame("metadataScope", ScopeCode.DATASET, getSingleton(metadata.getMetadataScopes()).getResourceScope());
 
@@ -193,6 +197,8 @@ public final strictfp class ConformanceTest extends NetcdfMetadataTest {
     public void testCIP() throws IOException {
         final Map<String,Object> expected = expectedProperties;
         addCommonProperties(expected, true);
+        assertNull(expected.put("identificationInfo.citation.title", "CIP"));
+        assertNull(expected.put("metadataIdentifier.code", "CIP"));
         super.testCIP();
         assertSame("metadataScope", ScopeCode.DATASET, getSingleton(metadata.getMetadataScopes()).getResourceScope());
         /*

@@ -62,7 +62,12 @@ public final class Registration implements FilenameFilter {
     static final String LOGGER = "org.apache.sis.openoffice";
 
     /**
-     * Whether to force EPSG database startup early.
+     * Whether to force EPSG database startup early, for example in order to force database creation from SQL scripts.
+     * The SQL scripts may be used if this module depends on {@code sis-epsg} module, or if {@code SIS_DATA} directory
+     * contains a {@code "Databases/ExternalSources"} sub-directory. When such database creation is necessary, it may
+     * be less surprising for users to perform this lengthly task at add-in installation time instead than when the
+     * formulas are first used. However if the add-in depend on {@code sis-embedded-data} instead, then early startup
+     * is less useful since there is no database to create.
      */
     private static final boolean FORCE_EPSG_STARTUP = false;
 
@@ -182,8 +187,8 @@ public final class Registration implements FilenameFilter {
     /**
      * Filters a directory content in order to retain only the {@code "*.pack"} files.
      *
-     * @param directory the add-in installation directory.
-     * @param name the name of a file in the given directory.
+     * @param directory  the add-in installation directory.
+     * @param name       the name of a file in the given directory.
      */
     @Override
     public boolean accept(final File directory, final String name) {
@@ -194,7 +199,7 @@ public final class Registration implements FilenameFilter {
      * Returns a factory for creating the service.
      * This method is called by the {@code com.sun.star.comp.loader.JavaLoader}; do not rename!
      *
-     * @param   implementation the name of the implementation for which a service is desired.
+     * @param   implementation  the name of the implementation for which a service is desired.
      * @return  a factory for creating the component.
      */
     public static XSingleComponentFactory __getComponentFactory(final String implementation) {
@@ -214,7 +219,7 @@ public final class Registration implements FilenameFilter {
      * Writes the service information into the given registry key.
      * This method is called by the {@code com.sun.star.comp.loader.JavaLoader}; do not rename!
      *
-     * @param  registry the registry key.
+     * @param  registry  the registry key.
      * @return {@code true} if the operation succeeded.
      */
     public static boolean __writeRegistryServiceInfo(final XRegistryKey registry) {

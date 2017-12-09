@@ -197,7 +197,7 @@ public class PolarStereographic extends ConformalProjection {
         if (abs(φ1 + PI/2) < ANGULAR_TOLERANCE) {
             /*
              * Polar Stereographic (variant A)
-             * True scale at pole (part of Synder 21-33). From EPSG guide (April 2015) §1.3.7.2:
+             * True scale at pole (part of Snyder 21-33). From EPSG guide (April 2015) §1.3.7.2:
              *
              *    ρ = 2⋅a⋅k₀⋅t / √[(1+ℯ)^(1+ℯ) ⋅ (1–ℯ)^(1–ℯ)]
              *
@@ -212,7 +212,7 @@ public class PolarStereographic extends ConformalProjection {
         } else {
             /*
              * Polar Stereographic (variant B or C)
-             * Derived from Synder 21-32 and 21-33. From EPSG guide (April 2015) §1.3.7.2:
+             * Derived from Snyder 21-32 and 21-33. From EPSG guide (April 2015) §1.3.7.2:
              *
              *   tF = tan(π/4 + φ1/2) / {[(1 + ℯ⋅sinφ1) / (1 – ℯ⋅sinφ1)]^(ℯ/2)}
              *   mF = cosφ1 / √[1 – ℯ²⋅sin²φ1]
@@ -225,7 +225,7 @@ public class PolarStereographic extends ConformalProjection {
              *   ρ  = mF / tF
              *   k₀ = ρ⋅√[…]/2  but we do not need that value.
              *
-             * In the spherical case, should give ρ = 1 + sinφ1   (Synder 21-7 and 21-11).
+             * In the spherical case, should give ρ = 1 + sinφ1   (Snyder 21-7 and 21-11).
              */
             final double sinφ1 = sin(φ1);
             final double mF = initializer.scaleAtφ(sinφ1, cos(φ1));
@@ -378,8 +378,8 @@ public class PolarStereographic extends ConformalProjection {
             final double sinθ = sin(θ);
             final double cosθ = cos(θ);
             final double t    = tan(PI/4 + 0.5*φ);
-            final double x    = t * sinθ;               // Synder 21-5
-            final double y    = t * cosθ;               // Synder 21-6
+            final double x    = t * sinθ;               // Snyder 21-5
+            final double y    = t * cosθ;               // Snyder 21-6
             if (dstPts != null) {
                 dstPts[dstOff  ] = x;
                 dstPts[dstOff+1] = y;

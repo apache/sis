@@ -973,24 +973,6 @@ public enum CommonCRS {
      */
 
     /**
-     * Returns a Universal Transverse Mercator (UTM) projection for the zone containing the given point.
-     * There is a total of 120 UTM zones, with 60 zones in the North hemisphere and 60 zones in the South hemisphere.
-     *
-     * @param  latitude  a latitude in the desired UTM projection zone.
-     * @param  longitude a longitude in the desired UTM projection zone.
-     * @return a Universal Transverse Mercator projection for the zone containing the given point.
-     *
-     * @since 0.7
-     *
-     * @deprecated Generalized by {@link #universal(double, double)},
-     *             which can also return a UPS projection when appropriate.
-     */
-    @Deprecated
-    public ProjectedCRS UTM(final double latitude, final double longitude) {
-        return universal(Math.signum(latitude), longitude);
-    }
-
-    /**
      * Returns a Universal Transverse Mercator (UTM) or a Universal Polar Stereographic (UPS) projection
      * for the zone containing the given point.
      * There is a total of 120 UTM zones, with 60 zones in the North hemisphere and 60 zones in the South hemisphere.

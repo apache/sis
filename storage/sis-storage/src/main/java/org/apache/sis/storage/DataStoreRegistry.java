@@ -23,7 +23,7 @@ import java.util.Iterator;
 import java.util.ServiceLoader;
 import org.apache.sis.internal.storage.Resources;
 import org.apache.sis.internal.system.DefaultFactories;
-import org.apache.sis.internal.util.LazySet;
+import org.apache.sis.internal.referencing.LazySet;
 import org.apache.sis.util.ArgumentChecks;
 
 
@@ -241,7 +241,9 @@ search:         while (!deferred.isEmpty() && connector.prefetch()) {
             }
         }
         if (open && selected == null) {
-            throw new UnsupportedStorageException(null, Resources.Keys.UnknownFormatFor_1, connector.getStorageName());
+            @SuppressWarnings("null")
+            final String name = connector.getStorageName();
+            throw new UnsupportedStorageException(null, Resources.Keys.UnknownFormatFor_1, name);
         }
         return selected;
     }

@@ -28,6 +28,8 @@ import org.opengis.referencing.crs.GeocentricCRS;
 import org.opengis.referencing.crs.GeodeticCRS;
 import org.opengis.referencing.crs.GeographicCRS;
 import org.opengis.referencing.crs.VerticalCRS;
+import org.opengis.referencing.crs.CompoundCRS;
+import org.opengis.referencing.crs.SingleCRS;
 import org.opengis.referencing.datum.Datum;
 import org.opengis.referencing.datum.DatumAuthorityFactory;
 import org.opengis.referencing.datum.GeodeticDatum;
@@ -36,6 +38,7 @@ import org.opengis.referencing.datum.VerticalDatum;
 import org.opengis.util.FactoryException;
 import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.metadata.iso.extent.Extents;
+import org.apache.sis.referencing.cs.HardCodedCS;
 import org.apache.sis.referencing.crs.HardCodedCRS;
 import org.apache.sis.referencing.datum.HardCodedDatum;
 import org.apache.sis.measure.Units;
@@ -271,6 +274,89 @@ public final strictfp class MultiAuthoritiesFactoryTest extends TestCase {
             assertTrue(message, message.contains("crs"));
             assertTrue(message, message.contains("Datum"));
         }
+    }
+
+    /**
+     * Tests {@code MultiAuthoritiesFactory.createFoo(String)} from codes in the
+     * {@code "urn:ogc:def:type, type₁:authority₁:version₁:code₁, type₂:authority₂:version₂:code₂"} form.
+     *
+     * @throws FactoryException if an authority or a code is not recognized.
+     *
+     * @since 0.8
+     */
+    @Test
+    @DependsOnMethod("testCreateFromURNs")
+    public void testCreateFromCombinedURNs() throws FactoryException {
+        final Set<AuthorityFactoryMock> mock = Collections.singleton(new AuthorityFactoryMock("MOCK", "2.3"));
+        final MultiAuthoritiesFactory factory = new MultiAuthoritiesFactory(mock, mock, mock, null);
+        testCreateFromCombinedURIs(factory, "urn:ogc:def:crs, crs:MOCK::4326, crs:MOCK::5714");
+        /*
+         * Following are more unusual combinations described in OGC 07-092r1 (2007)
+         * "Definition identifier URNs in OGC namespace".
+         */
+        SingleCRS crs = factory.createGeographicCRS("urn:ogc:def:crs, datum:MOCK::6326, cs:MOCK::6424");
+        assertSame("datum", HardCodedDatum.WGS84, crs.getDatum());
+        assertSame("cs", HardCodedCS.GEODETIC_2D, crs.getCoordinateSystem());
+        /*
+         * Verify that invalid combined URIs are rejected.
+         */
+        try {
+            factory.createObject("urn:ogc:def:cs, crs:MOCK::4326, crs:MOCK::5714");
+            fail("Shall not accept to create CoordinateSystem from combined URI.");
+        } catch (FactoryException e) {
+            String message = e.getMessage();
+            assertTrue(message, message.contains("CoordinateSystem"));
+        }
+        try {
+            factory.createObject("urn:ogc:def:crs, datum:MOCK::6326, cs:MOCK::6424, cs:MOCK::6422");
+            fail("Shall not accept to create combined URI with unexpected objects.");
+        } catch (FactoryException e) {
+            assertNotNull(e.getMessage());
+        }
+    }
+
+    /**
+     * Tests {@code MultiAuthoritiesFactory.createFoo(String)} from codes in the
+     * {@code "http://www.opengis.net/def/crs-compound?1=(…)/code₁&2=(…)/code₂"} form.
+     *
+     * @throws FactoryException if an authority or a code is not recognized.
+     *
+     * @since 0.8
+     */
+    @Test
+    @DependsOnMethod("testCreateFromHTTPs")
+    public void testCreateFromCombinedHTTPs() throws FactoryException {
+        final Set<AuthorityFactoryMock> mock = Collections.singleton(new AuthorityFactoryMock("MOCK", "2.3"));
+        final MultiAuthoritiesFactory factory = new MultiAuthoritiesFactory(mock, mock, mock, null);
+        testCreateFromCombinedURIs(factory, "http://www.opengis.net/def/crs-compound?"
+                                        + "1=http://www.opengis.net/def/crs/MOCK/0/4326&"
+                                        + "2=http://www.opengis.net/def/crs/MOCK/0/5714");
+        testCreateFromCombinedURIs(factory, "http://www.opengis.net/def/crs-compound?"
+                                        + "2=http://www.opengis.net/def/crs/MOCK/0/5714&"
+                                        + "1=http://www.opengis.net/def/crs/MOCK/0/4326");
+        /*
+         * Contrarily to URN, the HTTP form shall not accept Datum + CoordinateSystem combination.
+         */
+        try {
+            factory.createObject("http://www.opengis.net/def/crs-compound?"
+                             + "1=http://www.opengis.net/def/datum/MOCK/0/6326&"
+                             + "2=http://www.opengis.net/def/cs/MOCK/0/6424");
+            fail("Shall not accept Datum + CoordinateSystem combination.");
+        } catch (FactoryException e) {
+            assertNotNull(e.getMessage());
+        }
+    }
+
+    /**
+     * Implementation of {@link #testCreateFromCombinedURNs()} and {@link #testCreateFromCombinedHTTPs()}.
+     */
+    private static void testCreateFromCombinedURIs(final MultiAuthoritiesFactory factory, final String heightOnWGS84)
+            throws FactoryException
+    {
+        CompoundCRS crs = factory.createCompoundCRS(heightOnWGS84);
+        assertArrayEquals("WGS 84 + MSL height", new SingleCRS[] {
+            HardCodedCRS.WGS84_φλ, HardCodedCRS.GRAVITY_RELATED_HEIGHT
+        }, crs.getComponents().toArray());
     }
 
     /**

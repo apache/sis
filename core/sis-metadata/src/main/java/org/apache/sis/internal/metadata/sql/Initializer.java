@@ -22,6 +22,7 @@ import java.net.URLClassLoader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.io.IOException;
 import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
@@ -41,6 +42,7 @@ import javax.naming.event.EventContext;
 import javax.naming.event.NamingEvent;
 import javax.naming.event.NamingExceptionEvent;
 import javax.naming.event.ObjectChangeListener;
+import org.apache.sis.setup.InstallationResources;
 import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.internal.system.DataDirectory;
 import org.apache.sis.internal.system.Shutdown;
@@ -58,6 +60,15 @@ import org.apache.sis.util.logging.Logging;
  *   META-INF/services/org.apache.sis.internal.metadata.sql.Initializer
  * }
  *
+ * {@code Initializer} implementations should define the following methods:
+ *
+ * <ul>
+ *   <li>{@link #createSchema(Connection)} — invoked when a new database is created.</li>
+ *   <li>{@link #dataSourceChanged()} — invoked when the data source changed.</li>
+ * </ul>
+ *
+ * All other methods are related to getting the {@code DataSource} instance, through JNDI or otherwise.
+ *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
  * @since   0.7
@@ -67,8 +78,11 @@ public abstract class Initializer {
     /**
      * Name of the database to open in the {@code $SIS_DATA/Databases} directory or the directory given by
      * the {@code derby.system.home} property.
+     *
+     * <div class="note"><b>Note:</b>
+     * this field is public for the needs of {@code non-free:sis-embedded-data} module.</div>
      */
-    private static final String DATABASE = "SpatialMetadata";
+    public static final String DATABASE = "SpatialMetadata";
 
     /**
      * The property name for the home of Derby databases.
@@ -79,6 +93,11 @@ public abstract class Initializer {
      * Name of the JNDI resource to lookup in the {@code "java:comp/env"} context.
      */
     public static final String JNDI = "jdbc/" + DATABASE;
+
+    /**
+     * A pseudo-authority name used by {@link InstallationResources} for the embedded data resources.
+     */
+    public static final String EMBEDDED = "Embedded";
 
     /**
      * The class loader for JavaDB (i.e. the Derby database distributed with the JDK), created when first needed.
@@ -100,6 +119,7 @@ public abstract class Initializer {
     /**
      * {@code true} if {@link #connected(DatabaseMetaData)} has been invoked at least once.
      * This is reset to {@code false} if the {@link #source} is changed.
+     * We use this information for logging purpose.
      */
     private static boolean connected;
 
@@ -239,47 +259,73 @@ public abstract class Initializer {
                     Listener.register((EventContext) env);
                 }
                 return source;
+                /*
+                 * No Derby shutdown hook for DataSource fetched fron JNDI.
+                 * We presume that shutdowns are handled by the container.
+                 */
             } catch (NameNotFoundException e) {
                 final LogRecord record = Messages.getResources(null).getLogRecord(
                         Level.CONFIG, Messages.Keys.JNDINotSpecified_1, JNDI);
                 record.setLoggerName(Loggers.SQL);
-                Logging.log(Initializer.class, "getDataSource", record);
+                Logging.log(null, null, record);                // Let Logging.log(…) infers the public caller.
             }
             /*
              * At this point we determined that there is no JNDI context or no object binded to "jdbc/SpatialMetadata".
              * As a fallback, try to open the Derby database located in $SIS_DATA/Databases/SpatialMetadata directory.
+             * Only if the SIS_DATA environment variable is not set, verify first if the 'sis-embedded-data' module is
+             * on the classpath. Note that if SIS_DATA is defined and valid, it has precedence.
              */
-            final boolean create;
-            final String home = AccessController.doPrivileged((PrivilegedAction<String>) () -> System.getProperty(DERBY_HOME_KEY));
-            final Path dir = DataDirectory.DATABASES.getDirectory();
-            if (dir != null) {
-                Path path = dir.resolve(DATABASE);
-                if (home != null) try {
-                    /*
-                     * If a "derby.system.home" property is set, we may be able to get a shorter path by making it
-                     * relative to Derby home. The intend is to have a nicer URL like "jdbc:derby:SpatialMetadata"
-                     * instead than "jdbc:derby:/a/long/path/to/SIS/Data/Databases/SpatialMetadata". In addition
-                     * to making loggings and EPSGDataAccess.getAuthority() output nicer, it also reduces the risk
-                     * of encoding issues if the path contains spaces or non-ASCII characters.
-                     */
-                    path = Paths.get(home).relativize(path);
-                } catch (IllegalArgumentException | SecurityException e) {
-                    // The path can not be relativized. This is okay.
-                    Logging.recoverableException(Logging.getLogger(Loggers.SQL), Initializer.class, "getDataSource", e);
+            boolean create = false;
+            final boolean isEnvClear = DataDirectory.isEnvClear();
+            if (!isEnvClear || (source = embedded()) == null) {
+                final String home = AccessController.doPrivileged((PrivilegedAction<String>) () -> System.getProperty(DERBY_HOME_KEY));
+                final Path dir = DataDirectory.DATABASES.getDirectory();
+                final String dbURL;
+                if (dir != null) {
+                    Path path = dir.resolve(DATABASE);
+                    if (home != null) try {
+                        /*
+                         * If a "derby.system.home" property is set, we may be able to get a shorter path by making it
+                         * relative to Derby home. The intend is to have a nicer URL like "jdbc:derby:SpatialMetadata"
+                         * instead than "jdbc:derby:/a/long/path/to/SIS/Data/Databases/SpatialMetadata". In addition
+                         * to making loggings and EPSGDataAccess.getAuthority() output nicer, it also reduces the risk
+                         * of encoding issues if the path contains spaces or non-ASCII characters.
+                         */
+                        path = Paths.get(home).relativize(path);
+                    } catch (IllegalArgumentException | SecurityException e) {
+                        // The path can not be relativized. This is okay.
+                        Logging.recoverableException(Logging.getLogger(Loggers.SQL), Initializer.class, "getDataSource", e);
+                    }
+                    path   = path.normalize();
+                    create = !Files.exists(path);
+                    dbURL  = path.toString().replace(path.getFileSystem().getSeparator(), "/");
+                } else if (home != null) {
+                    final Path path = Paths.get(home);
+                    create = !Files.exists(path.resolve(DATABASE)) && Files.isDirectory(path);
+                    dbURL  = DATABASE;
+                } else {
+                    create = true;
+                    dbURL  = null;
                 }
                 /*
-                 * Create the Derby data source using the context class loader if possible,
-                 * or otherwise a URL class loader to the JavaDB distributed with the JDK.
+                 * If we need to create the database, verify if an embedded database is available instead.
+                 * We perform this check only if we have not already checked for embedded database at the
+                 * beginning of this block.
                  */
-                path   = path.normalize();
-                create = !Files.exists(path);
-                source = forJavaDB(path.toString().replace(path.getFileSystem().getSeparator(), "/"));
-            } else if (home != null) {
-                final Path path = Paths.get(home);
-                create = !Files.exists(path.resolve(DATABASE)) && Files.isDirectory(path);
-                source = forJavaDB(DATABASE);
-            } else {
-                return null;
+                if (create & !isEnvClear) {
+                    source = embedded();
+                    create = (source == null);
+                }
+                if (source == null) {
+                    if (dbURL == null) {
+                        return null;
+                    }
+                    /*
+                     * Create the Derby data source using the context class loader if possible,
+                     * or otherwise a URL class loader to the JavaDB distributed with the JDK.
+                     */
+                    source = forJavaDB(dbURL);
+                }
             }
             /*
              * Register the shutdown hook before to attempt any operation on the database in order to close
@@ -318,6 +364,34 @@ public abstract class Initializer {
         return NamingManager.hasInitialContextFactoryBuilder() ||
                AccessController.doPrivileged((PrivilegedAction<Boolean>) () ->
                        System.getProperty(Context.INITIAL_CONTEXT_FACTORY) != null);
+    }
+
+    /**
+     * If the {@code non-free:sis-embedded-data} module is present on the classpath,
+     * returns the data source for embedded Derby database. Otherwise returns {@code null}.
+     *
+     * @see <a href="https://issues.apache.org/jira/browse/SIS-337">SIS-337</a>
+     *
+     * @since 0.8
+     */
+    private static DataSource embedded() {
+        for (InstallationResources res : DefaultFactories.createServiceLoader(InstallationResources.class)) {
+            if (res.getAuthorities().contains(EMBEDDED)) try {
+                final String[] names = res.getResourceNames(EMBEDDED);
+                for (int i=0; i<names.length; i++) {
+                    if (DATABASE.equals(names[i])) {
+                        final Object ds = res.getResource(EMBEDDED, i);
+                        if (ds instanceof DataSource) {
+                            return (DataSource) ds;
+                        }
+                    }
+                }
+            } catch (IOException e) {
+                Logging.unexpectedException(Logging.getLogger(Loggers.SQL), Initializer.class, "getDataSource", e);
+                // Continue - the system will fallback on the hard-coded subset of EPSG definitions.
+            }
+        }
+        return null;
     }
 
     /**
@@ -449,10 +523,13 @@ public abstract class Initializer {
     /**
      * Returns {@code true} if the given exception is the one that we expect in successful shutdown of a Derby database.
      *
+     * <div class="note"><b>Note:</b>
+     * this method is public for the needs of {@code non-free:sis-embedded-data} module.</div>
+     *
      * @param  e  the exception thrown by Derby.
      * @return {@code true} if the exception indicates a successful shutdown.
      */
-    static boolean isSuccessfulShutdown(final SQLException e) {
+    public static boolean isSuccessfulShutdown(final SQLException e) {
         final String state = e.getSQLState();
         return "08006".equals(state) ||     // Database 'SpatialMetadata' shutdown.
                "XJ004".equals(state);       // Database 'SpatialMetadata' not found (may happen if we failed to open it in the first place).

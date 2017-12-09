@@ -39,6 +39,7 @@ import org.apache.sis.util.collection.TableColumn;
 import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.internal.system.Supervisor;
 import org.apache.sis.internal.system.SupervisorMBean;
+import org.apache.sis.internal.system.DataDirectory;
 import org.apache.sis.internal.util.StandardDateFormat;
 import org.apache.sis.internal.util.X364;
 
@@ -84,6 +85,7 @@ final class AboutCommand extends CommandRunner {
      */
     @Override
     public int run() throws Exception {
+        DataDirectory.quiet();
         /*
          * Check the number of arguments, which can be 0 or 1. If present,
          * the argument is the name and port number of a remote machine.

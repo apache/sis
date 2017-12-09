@@ -202,6 +202,10 @@ public class FeatureTypeBuilder extends TypeBuilder {
 
     /**
      * Creates a new builder instance using the given feature type as a template.
+     * This constructor initializes the list of {@linkplain #properties() properties}, the
+     * {@linkplain #getSuperTypes() super types} and {@link #isAbstract() isAbstract} flag
+     * to values inferred from the given template. The properties list will contain properties
+     * declared explicitely in the given template, not including properties inherited from super types.
      *
      * @param template  an existing feature type to use as a template, or {@code null} if none.
      *
@@ -263,6 +267,7 @@ public class FeatureTypeBuilder extends TypeBuilder {
     /**
      * Sets all properties of this builder to the values of the given feature type.
      * This builder is {@linkplain #clear() cleared} before the properties of the given type are copied.
+     * The copy is performed as documented in the {@linkplain #FeatureTypeBuilder(FeatureType) constructor}.
      *
      * @param  template  an existing feature type to use as a template, or {@code null} if none.
      * @return {@code this} for allowing method calls chaining.
@@ -407,9 +412,10 @@ public class FeatureTypeBuilder extends TypeBuilder {
 
     /**
      * Sets the parent types (or super-type) from which to inherit properties.
-     * If this method is not invoked, then the default value is to have no parent.
+     * If this method is not invoked, then the default value is no parent.
      *
      * @param  parents  the parent types from which to inherit properties, or an empty array if none.
+     *                  Null elements are ignored.
      * @return {@code this} for allowing method calls chaining.
      */
     public FeatureTypeBuilder setSuperTypes(final FeatureType... parents) {
@@ -418,6 +424,11 @@ public class FeatureTypeBuilder extends TypeBuilder {
         if (!superTypes.equals(asList)) {
             superTypes.clear();
             superTypes.addAll(asList);
+            for (int i=superTypes.size(); --i >= 0;) {
+                if (superTypes.get(i) == null) {
+                    superTypes.remove(i);
+                }
+            }
             clearCache();
         }
         return this;
@@ -595,10 +606,12 @@ public class FeatureTypeBuilder extends TypeBuilder {
 
     /**
      * Returns a view of all attributes and associations added to the {@code FeatureType} to build.
+     * This list contains only properties declared explicitely to this builder;
+     * it does not include properties inherited from {@linkplain #getSuperTypes() super-types}.
      * The returned list is <cite>live</cite>: changes in this builder are reflected in that list and conversely.
      * However the returned list allows only {@linkplain List#remove(Object) remove} operations;
      * new attributes or associations can be added only by calls to one of the {@code addAttribute(…)}
-     * or {@code addAssociation(…)} methods.
+     * or {@code addAssociation(…)} methods. Removal operations never affect the super-types.
      *
      * @return a live list over the properties declared to this builder.
      *

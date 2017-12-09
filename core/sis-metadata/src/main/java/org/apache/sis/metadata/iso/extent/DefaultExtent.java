@@ -16,7 +16,10 @@
  */
 package org.apache.sis.metadata.iso.extent;
 
+import java.util.Set;
+import java.util.LinkedHashSet;
 import java.util.Collection;
+import java.util.function.BinaryOperator;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -29,9 +32,14 @@ import org.opengis.metadata.extent.GeographicBoundingBox;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.util.InternationalString;
 import org.apache.sis.util.iso.Types;
+import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.collection.Containers;
+import org.apache.sis.metadata.AbstractMetadata;
 import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.metadata.TitleProperty;
 import org.apache.sis.internal.metadata.ReferencingServices;
+import org.apache.sis.xml.NilObject;
+import org.apache.sis.xml.NilReason;
 
 
 /**
@@ -74,7 +82,7 @@ import org.apache.sis.internal.metadata.ReferencingServices;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Touraïvane (IRD)
  * @author  Cédric Briançon (Geomatys)
- * @version 0.3
+ * @version 0.8
  *
  * @see Extents#getGeographicBoundingBox(Extent)
  * @see org.apache.sis.referencing.AbstractReferenceSystem#getDomainOfValidity()
@@ -289,6 +297,85 @@ public class DefaultExtent extends ISOMetadata implements Extent {
      */
     public void addElements(final Envelope envelope) throws TransformException {
         checkWritePermission();
+        ArgumentChecks.ensureNonNull("envelope", envelope);
         ReferencingServices.getInstance().addElements(envelope, this);
+    }
+
+    /**
+     * Sets this extent to the intersection of this extent with the specified one.
+     * This method computes the intersections of all geographic, vertical and temporal elements in this extent
+     * with all geographic, vertical and temporal elements in the other extent, ignoring duplicated results.
+     *
+     * @param  other  the extent to intersect with this extent.
+     * @throws IllegalArgumentException if two elements to intersect are not compatible (e.g. mismatched
+     *         {@linkplain DefaultGeographicBoundingBox#getInclusion() bounding box inclusion status} or
+     *         mismatched {@linkplain DefaultVerticalExtent#getVerticalCRS() vertical datum}).
+     * @throws UnsupportedOperationException if a {@code TemporalFactory} is required but no implementation
+     *         has been found on the classpath.
+     *
+     * @see Extents#intersection(Extent, Extent)
+     * @see org.apache.sis.geometry.GeneralEnvelope#intersect(Envelope)
+     *
+     * @since 0.8
+     */
+    public void intersect(final Extent other) {
+        checkWritePermission();
+        ArgumentChecks.ensureNonNull("other", other);
+        final InternationalString od = other.getDescription();
+        if (od != null && !(description instanceof NilObject)) {
+            if (description == null || (od instanceof NilObject)) {
+                description = od;
+            } else if (!description.equals(od)) {
+                description = NilReason.MISSING.createNilObject(InternationalString.class);
+            }
+        }
+        geographicElements = intersect(GeographicExtent.class, geographicElements, other.getGeographicElements(), Extents::intersection);
+        verticalElements   = intersect(VerticalExtent.class,   verticalElements,   other.getVerticalElements(),   Extents::intersection);
+        temporalElements   = intersect(TemporalExtent.class,   temporalElements,   other.getTemporalElements(),   Extents::intersection);
+    }
+
+    /**
+     * Computes the intersections of all elements in the given {@code sources} collection will all elements
+     * in the given {@code targets} collection. If one of those collections is null or empty, this method
+     * returns all elements of the other collection (may be {@code targets} itself).
+     *
+     * @param  <T>        compile-time value of {@code type} argument.
+     * @param  type       the type of elements in the collections.
+     * @param  targets    the elements in this {@code DefaultExtent}. Also the collection where results will be stored.
+     * @param  sources    the elements from the other {@code Extent} to intersect with this extent.
+     * @param  intersect  the function computing intersections.
+     * @return the intersection results. May be the same instance than {@code targets} with elements replaced.
+     */
+    private <T> Collection<T> intersect(final Class<T> type, Collection<T> targets, Collection<? extends T> sources, final BinaryOperator<T> intersect) {
+        if (!Containers.isNullOrEmpty(sources)) {
+            if (!Containers.isNullOrEmpty(targets)) {
+                final Set<T> results = new LinkedHashSet<>(Containers.hashMapCapacity(targets.size()));
+                T empty = null;
+                for (final T target : targets) {
+                    for (final T source : sources) {
+                        final T e = intersect.apply(target, source);
+                        results.add(e);
+                        /*
+                         * If the two elements do not intersect, remember the value created by the intersection method
+                         * for meaning "no intersection".  We remember only the first value since we always create the
+                         * same value for meaning "no intersection".
+                         */
+                        if (empty == null && e != source && e != target && (e instanceof AbstractMetadata) && ((AbstractMetadata) e).isEmpty()) {
+                            empty = e;
+                        }
+                    }
+                }
+                /*
+                 * Remove the "no intersection" value, unless this is the only result.
+                 */
+                results.remove(null);
+                if (results.size() > 1) {
+                    results.remove(empty);
+                }
+                sources = results;
+            }
+            targets = writeCollection(sources, targets, type);
+        }
+        return targets;
     }
 }

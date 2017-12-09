@@ -31,6 +31,7 @@ import org.apache.sis.internal.storage.io.HyperRectangleReader;
 import org.apache.sis.internal.storage.io.Region;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreContentException;
+import org.apache.sis.storage.netcdf.AttributeNames;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.Numbers;
@@ -38,9 +39,9 @@ import org.apache.sis.math.Vector;
 
 
 /**
- * Description of a variable found in a NetCDF file.
+ * Description of a variable found in a netCDF file.
  * The natural ordering of {@code VariableInfo} is the order in which the variables appear in the stream of bytes
- * that make the NetCDF file. Reading variables in natural order reduces the amount of channel seek operations.
+ * that make the netCDF file. Reading variables in natural order reduces the amount of channel seek operations.
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
@@ -103,7 +104,7 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
     private final Map<String,Object> attributes;
 
     /**
-     * The NetCDF type of data, or {@code null} if unknown.
+     * The netCDF type of data, or {@code null} if unknown.
      */
     private final DataType dataType;
 
@@ -115,7 +116,7 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
 
     /**
      * {@code true} if this variable seems to be a coordinate system axis, as determined by comparing its name
-     * with the name of all dimensions in the NetCDF file. This information is computed at construction time
+     * with the name of all dimensions in the netCDF file. This information is computed at construction time
      * because requested more than once.
      *
      * @see #isCoordinateSystemAxis()
@@ -130,15 +131,24 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
     private transient Vector values;
 
     /**
+     * The {@code flag_meanings} values (used for enumeration values), or {@code null} if this variable is not
+     * an enumeration.
+     *
+     * @see #isEnumeration()
+     * @see #meaning(int)
+     */
+    private final String[] meanings;
+
+    /**
      * Creates a new variable.
      *
      * @param  input       the channel together with a buffer for reading the variable data.
      * @param  name        the variable name.
      * @param  dimensions  the dimensions of this variable.
      * @param  attributes  the attributes associates to the variable, or an empty map if none.
-     * @param  dataType    the NetCDF type of data, or {@code null} if unknown.
+     * @param  dataType    the netCDF type of data, or {@code null} if unknown.
      * @param  size        the variable size, used for verification purpose only.
-     * @param  offset      the offset where the variable data begins in the NetCDF file.
+     * @param  offset      the offset where the variable data begins in the netCDF file.
      */
     VariableInfo(final ChannelDataInput      input,
                  final String                name,
@@ -157,7 +167,7 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
         this.attributes = attributes;
         this.dataType   = dataType;
         /*
-         * The 'size' value is provided in the NetCDF files, but doesn't need to be stored since it
+         * The 'size' value is provided in the netCDF files, but doesn't need to be stored since it
          * is redundant with the dimension lengths and is not large enough for big variables anyway.
          */
         if (dataType != null && dataType.number >= Numbers.BYTE && dataType.number <= Numbers.DOUBLE) {
@@ -181,6 +191,20 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
             isCoordinateSystemAxis = dimensions[0].name.equals(value);
         } else {
             isCoordinateSystemAxis = false;
+        }
+        /*
+         * Verify if this variable is an enumeration. If yes, we remove the attributes that define the
+         * enumeration since those attributes may be verbose and "pollute" the variable definition.
+         */
+        if (!attributes.isEmpty()) {    // For avoiding UnsupportedOperationException if unmodifiable map.
+            String[] meanings = stringValues(attributes.remove(AttributeNames.FLAG_MEANINGS));
+            switch (meanings.length) {
+                case 0: meanings = null; break;
+                case 1: meanings = (String[]) CharSequences.split(meanings[0], ' '); break;
+            }
+            this.meanings = meanings;
+        } else {
+            meanings = null;
         }
     }
 
@@ -228,8 +252,15 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
     }
 
     /**
+     * Returns {@code true} if this variable is an enumeration.
+     */
+    public boolean isEnumeration() {
+        return meanings != null;
+    }
+
+    /**
      * Returns {@code true} if this variable seems to be a coordinate system axis,
-     * determined by comparing its name with the name of all dimensions in the NetCDF file.
+     * determined by comparing its name with the name of all dimensions in the netCDF file.
      */
     @Override
     public boolean isCoordinateSystemAxis() {
@@ -385,10 +416,14 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
                 throw new DataStoreContentException(unknownType());
             }
             long length = 1;
+            boolean overflow = false;
             for (final Dimension dimension : dimensions) {
                 length *= dimension.length();
+                if (length > Integer.MAX_VALUE) {
+                    overflow = true;
+                }
             }
-            if (length > Integer.MAX_VALUE) {
+            if (overflow) {
                 throw new DataStoreContentException(Errors.format(Errors.Keys.ExcessiveListSize_2, name, length));
             }
             final int dimension = dimensions.length;
@@ -453,6 +488,18 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
     }
 
     /**
+     * Returns the meaning of the given ordinal value, or {@code null} if none.
+     * Callers must have verified that {@link #isEnumeration()} returned {@code true}
+     * before to invoke this method
+     *
+     * @param  ordinal  the ordinal of the enumeration for which to get the value.
+     * @return the value associated to the given ordinal, or {@code null} if none.
+     */
+    public String meaning(final int ordinal) {
+        return (ordinal >= 0 && ordinal < meanings.length) ? meanings[ordinal] : null;
+    }
+
+    /**
      * Returns the error message for an unknown data type.
      */
     private String unknownType() {
@@ -460,8 +507,8 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
     }
 
     /**
-     * Returns -1 if this variable is located before the other variable in the streal of bytes that make
-     * the NetCDF file, or +1 if it is located after.
+     * Returns -1 if this variable is located before the other variable in the stream of bytes that make
+     * the netCDF file, or +1 if it is located after.
      */
     @Override
     public int compareTo(final VariableInfo other) {

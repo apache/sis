@@ -169,16 +169,18 @@ public final strictfp class DefaultCoordinateOperationFactoryTest extends MathTr
         assertSame      ("targetCRS", targetCRS, operation.getTargetCRS());
         assertInstanceOf("operation", ConcatenatedOperation.class, operation);
         /*
-         * The accuracy of the coordinate operation depends on whether a path as been found with the help
+         * The accuracy of the coordinate operation depends on whether a path has been found with the help
          * of the EPSG database (in which case the reported accuracy is 2 metres) or if we had to find an
-         * operation by ourselves (in which case we conservatively report an accuracy of 3000 metres, bu
-         * in practice observe an error of about 80 metres for this test).
+         * operation by ourselves (in which case we conservatively report an accuracy of 3000 metres, but
+         * in practice observe an error between 80 and 515 metres for this test depending on the operation
+         * method used). By comparison, the translation declared in EPSG database is about 370 metres in
+         * geocentric coordinates.
          */
         final boolean isUsingEpsgFactory = verifyParametersNTF(((ConcatenatedOperation) operation).getOperations(), 1);
         assertEquals("linearAccuracy", isUsingEpsgFactory ? 2 : PositionalAccuracyConstant.UNKNOWN_ACCURACY,
                                        CRS.getLinearAccuracy(operation), STRICT);
 
-        tolerance = isUsingEpsgFactory ? Formulas.LINEAR_TOLERANCE : 100;
+        tolerance = isUsingEpsgFactory ? Formulas.LINEAR_TOLERANCE : 600;
         transform = operation.getMathTransform();
         /*
          * Test using the location of Paris (48.856578°N, 2.351828°E) first,
@@ -212,10 +214,10 @@ public final strictfp class DefaultCoordinateOperationFactoryTest extends MathTr
         final CoordinateReferenceSystem sourceCRS = parse(
                 "CompoundCRS[“NTF 4D”," +
                 "  $NTF,\n" +
-                "  VerticalCRS[“Ellipsoidal height”,\n" +
-                "    VerticalDatum[“Ellipsoid”],\n" +
+                "  VerticalCRS[“Geoidal height”,\n" +
+                "    VerticalDatum[“Geoid”],\n" +
                 "    CS[vertical, 1],\n" +
-                "      Axis[“Ellipsoidal height (h)”, up],\n" +
+                "      Axis[“Geoidal height (H)”, up],\n" +
                 "      Unit[“metre”, 1]],\n" +
                 "  TimeCRS[“Modified Julian”,\n" +
                 "    TimeDatum[“Modified Julian”, TimeOrigin[1858-11-17T00:00:00.0Z]],\n" +
@@ -229,14 +231,14 @@ public final strictfp class DefaultCoordinateOperationFactoryTest extends MathTr
         assertSame      ("targetCRS", targetCRS, operation.getTargetCRS());
         assertInstanceOf("operation", ConcatenatedOperation.class, operation);
         /*
-         * The accuracy of the coordinate operation depends on whether a path as been found with the help
+         * The accuracy of the coordinate operation depends on whether a path has been found with the help
          * of the EPSG database. See testProjectionAndLongitudeRotation() for more information.
          */
         final boolean isUsingEpsgFactory = verifyParametersNTF(((ConcatenatedOperation) operation).getOperations(), 2);
         assertEquals("linearAccuracy", isUsingEpsgFactory ? 2 : PositionalAccuracyConstant.UNKNOWN_ACCURACY,
                                        CRS.getLinearAccuracy(operation), STRICT);
 
-        tolerance = isUsingEpsgFactory ? Formulas.LINEAR_TOLERANCE : 100;
+        tolerance = isUsingEpsgFactory ? Formulas.LINEAR_TOLERANCE : 600;
         transform = operation.getMathTransform();
         isInverseTransformSupported = false;
         /*

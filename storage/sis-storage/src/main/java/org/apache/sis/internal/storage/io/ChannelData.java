@@ -49,7 +49,8 @@ public abstract class ChannelData implements Markable {
     private static final int BIT_OFFSET_SIZE = 3;
 
     /**
-     * A file identifier used only for formatting error message.
+     * A short identifier (typically a filename without path) used for formatting error message.
+     * This is often the value given by {@link org.apache.sis.storage.StorageConnector#getStorageName()}.
      */
     public final String filename;
 
@@ -62,8 +63,11 @@ public abstract class ChannelData implements Markable {
      * The position of the channel when this {@code ChannelData} has been created.
      * This is almost always 0, but we allow other values in case the data to read
      * or write are part of a bigger file.
+     *
+     * <p>This value is added to the argument given to the {@link #seek(long)} method. Users can ignore
+     * this field, unless they want to invoke {@link SeekableByteChannel#position(long)} directly.</p>
      */
-    final long channelOffset;
+    public final long channelOffset;
 
     /**
      * The channel position where is located the {@link #buffer} value at index 0.
@@ -111,7 +115,7 @@ public abstract class ChannelData implements Markable {
      * Creates a new instance for the given channel and using the given buffer.
      * The channel is not stored by this class - it shall be stored by the subclass.
      *
-     * @param  filename  a file identifier used only for formatting error message.
+     * @param  filename  a short identifier (typically a filename without path) used for formatting error message.
      * @param  channel   the channel from where data are read or where to wrote.
      * @param  buffer    the buffer where to store the data.
      * @throws IOException if an error occurred while reading the channel.
@@ -272,13 +276,11 @@ public abstract class ChannelData implements Markable {
      * An {@code IOException} may be be thrown if the previous marked position lies in the
      * discarded portion of the stream.
      *
-     * <p>This method differs from the {@link javax.imageio.stream.ImageInputStream} contract in two aspects:</p>
-     * <ul>
-     *   <li>This method may, under some conditions, be able to perform its work even if the marked
-     *       position is before the flushed position.</li>
-     *   <li>If there is no mark, this method throws an {@link InvalidMarkException} rather than
-     *       doing nothing. Doing nothing is considered a too high risk of error.</li>
-     * </ul>
+     * <div class="section">Departure from Image I/O specification</div>
+     * The {@link javax.imageio.stream.ImageInputStream#reset()} contract specifies that if there is no matching mark,
+     * then this method shall do nothing. This method throws {@link InvalidMarkException} instead; silently ignoring
+     * the mismatch is considered too dangerous. However we may revisit this policy in the future if it appears to be
+     * a compatibility problem. Consequently, no code shall rely on {@code InvalidMarkException} to be thrown.
      *
      * @throws IOException if an I/O error occurs.
      */

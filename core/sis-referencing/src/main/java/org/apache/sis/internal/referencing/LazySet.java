@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.internal.util;
+package org.apache.sis.internal.referencing;
 
 import java.util.List;
 import java.util.Arrays;
@@ -23,6 +23,8 @@ import java.util.Iterator;
 import java.util.ServiceLoader;
 import java.util.NoSuchElementException;
 import org.apache.sis.internal.system.DefaultFactories;
+import org.apache.sis.internal.util.SetOfUnknownSize;
+import org.apache.sis.internal.util.UnmodifiableArrayList;
 
 
 /**
@@ -37,7 +39,7 @@ import org.apache.sis.internal.system.DefaultFactories;
  *
  * <p>Some usages for this class are to prepend some values before the elements given by the source {@code Iterable},
  * or to replace some values when they are loaded. It may also be used for creating filtered sets when used together
- * with {@link CollectionsExt#filter CollectionsExt.filter(…)}.</p>
+ * with {@link org.apache.sis.internal.util.CollectionsExt#filter CollectionsExt.filter(…)}.</p>
  *
  * <p>This class is not thread-safe. Synchronization, if desired, shall be done by the caller.</p>
  *
@@ -184,11 +186,24 @@ public class LazySet<E> extends SetOfUnknownSize<E> {
     public final int size() {
         if (canPullMore()) {
             while (sourceIterator.hasNext()) {
-                cache(sourceIterator.next());
+                cache(next(sourceIterator));
             }
             sourceIterator = null;
         }
         return numCached;
+    }
+
+    /**
+     * Returns the next element from the given iterator. Default implementation returns {@link Iterator#next()}.
+     * Subclasses may override if they need to apply additional processing. For example this method can be used
+     * for skipping data, but this approach works only if we have the guarantee that another element exists after
+     * the skipped one (because {@code LazySet} will not invoke {@link Iterator#hasNext()} again).
+     *
+     * @param  it  the iterator from which to get a next value.
+     * @return the next value (may be {@code null}).
+     */
+    protected E next(final Iterator<? extends E> it) {
+        return it.next();
     }
 
     /**
@@ -238,7 +253,7 @@ public class LazySet<E> extends SetOfUnknownSize<E> {
         assert index <= numCached : index;
         if (index >= numCached) {
             if (canPullMore()) {
-                cache(sourceIterator.next());
+                cache(next(sourceIterator));
             } else {
                 throw new NoSuchElementException();
             }
