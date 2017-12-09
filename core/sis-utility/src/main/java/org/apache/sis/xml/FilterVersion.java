@@ -17,6 +17,8 @@
 package org.apache.sis.xml;
 
 import java.util.Map;
+import java.util.HashMap;
+import org.apache.sis.util.collection.Containers;
 import org.apache.sis.internal.jaxb.LegacyNamespaces;
 
 import static java.util.Collections.singletonMap;
@@ -28,21 +30,60 @@ import static java.util.Collections.singletonMap;
  * See {@link FilteredNamespaces} for more information.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.4
+ * @author  Cullen Rombach (Image Matters)
+ * @version 1.0
  * @since   0.4
  * @module
  */
 enum FilterVersion {
     /**
+     * Metadata using the legacy ISO 19139 schema (replaced by ISO 19115-3).
+     */
+    ISO19139(new String[] {
+            Namespaces.CAT,
+            Namespaces.CIT,
+            Namespaces.LAN,
+            Namespaces.MAC,
+            Namespaces.MAS,
+            Namespaces.MCC,
+            Namespaces.MCO,
+            Namespaces.MEX,
+            Namespaces.MMI,
+            Namespaces.MPC,
+            Namespaces.MRC,
+            Namespaces.MRD,
+            Namespaces.MDQ,
+            Namespaces.MRI,
+            Namespaces.MRL,
+            Namespaces.MRS,
+            Namespaces.MSR,
+            Namespaces.MDS,
+            Namespaces.MD1,
+            Namespaces.MDA,
+            Namespaces.MDT,
+            Namespaces.MD2,
+            Namespaces.RCE,
+            Namespaces.FCC,
+            Namespaces.GMW,
+            Namespaces.DQC,
+            Namespaces.MDB,
+            Namespaces.GEX,
+        }, LegacyNamespaces.GMD,
+        new String[] {
+            Namespaces.GCX, LegacyNamespaces.GMX,
+            Namespaces.GCO, LegacyNamespaces.GCO,
+            Namespaces.SRV, LegacyNamespaces.SRV}),
+
+    /**
      * GML using the legacy {@code "http://www.opengis.net/gml"} namespace.
      */
-    GML31(Namespaces.GML, LegacyNamespaces.GML);
+    GML31(Namespaces.GML, LegacyNamespaces.GML),
 
     /**
      * Apply all known namespace replacements. This can be used only at unmarshalling time,
      * for replacing all namespaces by the namespaces declared in Apache SIS JAXB annotations.
      */
-    static FilterVersion ALL = GML31;
+    ALL(ISO19139, GML31);
 
     /**
      * The URI replacements to apply when going from the "real" data producer (JAXB marshaller)
@@ -63,9 +104,46 @@ enum FilterVersion {
 
     /**
      * Creates a new enum for replacing only one namespace.
+     *
+     * @param  impl  the namespace used in JAXB annotations (should be latest schema).
+     * @param  view  the namespace used in the XML file to (un)marshall (older schema).
      */
     private FilterVersion(final String impl, final String view) {
         this.toView = singletonMap(impl, view);
         this.toImpl = singletonMap(view, impl);
+    }
+
+    /**
+     * Creates a new enum for replacing many namespaces by a single one.
+     * This constructor is used when the legacy schema (the "view") was one large monolithic schema,
+     * and the new schema (the "impl") has been separated in many smaller modules.
+     *
+     * @param  impl        the namespaces used in JAXB annotations (should be latest schema).
+     * @param  view        the single namespace used in the XML file to (un)marshall (older schema).
+     * @param  additional  additional (<var>impl</var>, <var>view</var>) mapping for a few namespaces
+     *                     having different {@code view} values.
+     */
+    private FilterVersion(final String[] impl, final String view, final String[] additional) {
+        toView = new HashMap<>(Containers.hashMapCapacity(impl.length));
+        toImpl = new HashMap<>();
+        for (final String e : impl) {
+            toImpl.put(e, view);
+        }
+        for (int i=0; i<additional.length;) {
+            final String p = additional[i++];
+            final String v = additional[i++];
+            toView.put(p, v);
+            toImpl.put(v, p);
+        }
+    }
+
+    /**
+     * Creates the {@link #ALL} enumeration.
+     */
+    private FilterVersion(final FilterVersion first, final FilterVersion more) {
+        toView = new HashMap<>(first.toView);
+        toImpl = new HashMap<>(first.toImpl);
+        toView.putAll(more.toView);
+        toImpl.putAll(more.toImpl);
     }
 }

@@ -118,6 +118,7 @@ public final class Namespaces extends Static {
      *   <caption>Change log</caption>
      *   <tr><th>SIS version</th> <th>URL</th></tr>
      *   <tr><td>0.3 to 0.8</td>  <td>http://www.isotc211.org/2005/gco</td></tr>
+     *   <tr><td>Since 1.0</td>   <td>http://standards.iso.org/iso/19115/-3/gco/1.0</td></tr>
      * </table>
      *
      * @category ISO
@@ -154,6 +155,7 @@ public final class Namespaces extends Static {
      *   <caption>Change log</caption>
      *   <tr><th>SIS version</th> <th>URL</th></tr>
      *   <tr><td>0.3 to 0.8</td>  <td>http://www.isotc211.org/2005/gfc</td></tr>
+     *   <tr><td>Since 1.0</td>   <td>http://standards.iso.org/iso/19110/gfc/1.1</td></tr>
      * </table>
      *
      * @category ISO
@@ -350,6 +352,7 @@ public final class Namespaces extends Static {
      *   <caption>Change log</caption>
      *   <tr><th>SIS version</th> <th>URL</th></tr>
      *   <tr><td>0.3 to 0.8</td>  <td>http://www.isotc211.org/2005/srv</td></tr>
+     *   <tr><td>Since 1.0</td>   <td>http://standards.iso.org/iso/19115/-3/srv/2.0</td></tr>
      * </table>
      *
      * @category ISO
@@ -475,8 +478,11 @@ public final class Namespaces extends Static {
      * The usual prefix for this namespace is {@code "gts"}.
      *
      * @category ISO
+     *
+     * @deprecated as of ISO 19115-3, splitted in many different namespaces.
      */
-    public static final String GTS = "http://www.isotc211.org/2005/gts";
+    @Deprecated
+    public static final String GTS = LegacyNamespaces.GTS;
 
     /**
      * The <code>{@value}</code> URL.
@@ -488,6 +494,7 @@ public final class Namespaces extends Static {
      *   <caption>Change log</caption>
      *   <tr><th>SIS version</th> <th>URL</th></tr>
      *   <tr><td>0.3</td>         <td>http://www.opengis.net/gml</td></tr>
+     *   <tr><td>Since 0.4</td>   <td>http://www.opengis.net/gml/3.2</td></tr>
      * </table>
      *
      * @category OGC
