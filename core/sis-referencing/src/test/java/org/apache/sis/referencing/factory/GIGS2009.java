@@ -52,7 +52,7 @@ public final strictfp class GIGS2009 extends org.opengis.test.referencing.gigs.G
      * Creates a new test using the default authority factory.
      */
     public GIGS2009() {
-        super(GIGS2001.factory);
+        super(TestFactorySource.factory);
     }
 
     /**
@@ -62,16 +62,16 @@ public final strictfp class GIGS2009 extends org.opengis.test.referencing.gigs.G
      */
     @BeforeClass
     public static void createFactory() throws FactoryException {
-        GIGS2001.createFactory();
+        TestFactorySource.createFactory();
     }
 
     /**
-     * Force releases of JDBC connections after the tests in this class.
+     * Forces release of JDBC connections after the tests in this class.
      *
      * @throws FactoryException if an error occurred while closing the connections.
      */
     @AfterClass
     public static void close() throws FactoryException {
-        GIGS2001.close();
+        TestFactorySource.close();
     }
 }

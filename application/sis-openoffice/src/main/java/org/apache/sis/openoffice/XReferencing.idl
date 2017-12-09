@@ -44,12 +44,16 @@ module org {
             [in] string codeOrPath
           );
 
-          /// Returns the axis name for the specified dimension in an identified object.
-          string getAxis(
+          /// Returns the scope of an identified object.
+          string getScope(
             /// The authority code (e.g. "EPSG:4326").
-            [in] string codeOrPath,
-            /// The dimension (1, 2, ...).
-            [in] long dimension
+            [in] string codeOrPath
+          );
+
+          /// Returns the domain of validity as country or region names for an identified object.
+          string getDomainOfValidity(
+            /// The authority code (e.g. "EPSG:4326").
+            [in] string codeOrPath
           );
 
           /// Returns the domain of validity as a geographic bounding box for an identified object.
@@ -67,6 +71,14 @@ module org {
             /// An optional bounding box of source coordinates to transform.
             [in] any areaOfInterest
           ) raises (com::sun::star::lang::IllegalArgumentException);
+
+          /// Returns the axis name for the specified dimension in an identified object.
+          string getAxis(
+            /// The authority code (e.g. "EPSG:4326").
+            [in] string codeOrPath,
+            /// The dimension (1, 2, ...).
+            [in] long dimension
+          );
 
           /// Transforms a list of coordinates from source CRS to target CRS.
           sequence< sequence< double > > transformPoints(

@@ -26,6 +26,7 @@ import java.nio.IntBuffer;
 import java.nio.LongBuffer;
 import java.nio.FloatBuffer;
 import java.nio.DoubleBuffer;
+import java.nio.charset.Charset;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.SeekableByteChannel;
 import org.apache.sis.internal.storage.Resources;
@@ -76,7 +77,7 @@ public class ChannelDataInput extends ChannelData {
      * If the buffer already contains some data, then the {@code filled} argument shall be {@code true}.
      * Otherwise (e.g. if it is a newly created buffer), then {@code filled} shall be {@code false}.
      *
-     * @param  filename  a file identifier used only for formatting error message.
+     * @param  filename  a short identifier (typically a filename without path) used for formatting error message.
      * @param  channel   the channel from where data are read.
      * @param  buffer    the buffer where to copy the data.
      * @param  filled    {@code true} if the buffer already contains data, or {@code false} if it needs
@@ -822,7 +823,7 @@ public class ChannelDataInput extends ChannelData {
      * @return the string decoded from the {@code length} next bytes.
      * @throws IOException if an error occurred while reading the bytes, or if the given encoding is invalid.
      */
-    public final String readString(final int length, final String encoding) throws IOException {
+    public final String readString(final int length, final Charset encoding) throws IOException {
         if (buffer.hasArray() && length <= buffer.capacity()) {
             ensureBufferContains(length);
             final int position = buffer.position(); // Must be after 'ensureBufferContains(int)'.
@@ -841,7 +842,7 @@ public class ChannelDataInput extends ChannelData {
      */
     @Override
     public final void seek(final long position) throws IOException {
-        long p = position - bufferOffset;
+        long p = Math.subtractExact(position, bufferOffset);
         if (p >= 0 && p <= buffer.limit()) {
             /*
              * Requested position is inside the current limits of the buffer.
@@ -854,7 +855,7 @@ public class ChannelDataInput extends ChannelData {
              * that StorageConnector.rewind() needs the buffer content to be
              * valid as a result of this seek, so we reload it immediately.
              */
-            ((SeekableByteChannel) channel).position(channelOffset + position);
+            ((SeekableByteChannel) channel).position(Math.addExact(channelOffset, position));
             bufferOffset = position;
             buffer.clear().limit(0);
         } else if (p >= 0) {

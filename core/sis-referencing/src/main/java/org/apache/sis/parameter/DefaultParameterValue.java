@@ -473,7 +473,7 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
      * {@link URI}, {@link URL}, {@link Path}, {@link File}.
      *
      * @return the reference to a file containing parameter values.
-     * @throws InvalidParameterTypeException if the value is not a reference to a file or an URI.
+     * @throws InvalidParameterTypeException if the value is not a reference to a file or a URI.
      * @throws IllegalStateException if the value is not defined and there is no default value.
      *
      * @see #getValue()

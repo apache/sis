@@ -32,7 +32,7 @@ import org.apache.sis.util.resources.ResourceInternationalString;
  * all modules in the Apache SIS project, see {@link org.apache.sis.util.resources} package.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.8
  * @module
  */
@@ -65,6 +65,21 @@ public final class Resources extends IndexedResourceBundle {
          * of “{0}” data.
          */
         public static final short AmbiguousName_4 = 15;
+
+        /**
+         * Can not get metadata common to “{0}” files. Reason: {1}
+         */
+        public static final short CanNotGetCommonMetadata_2 = 39;
+
+        /**
+         * Can not read the Coordinate Reference System (CRS) Well Known Text (WKT) in “{0}”.
+         */
+        public static final short CanNotReadCRS_WKT_1 = 37;
+
+        /**
+         * Can not read “{0}” directory.
+         */
+        public static final short CanNotReadDirectory_1 = 34;
 
         /**
          * Can not read “{1}” as a file in the {0} format.
@@ -102,6 +117,31 @@ public final class Resources extends IndexedResourceBundle {
         public static final short ConcurrentWrite_1 = 20;
 
         /**
+         * Character encoding used by the data store.
+         */
+        public static final short DataStoreEncoding = 29;
+
+        /**
+         * Formating conventions of dates and numbers.
+         */
+        public static final short DataStoreLocale = 30;
+
+        /**
+         * Data store location as a file or URL.
+         */
+        public static final short DataStoreLocation = 31;
+
+        /**
+         * Timezone of dates in the data store.
+         */
+        public static final short DataStoreTimeZone = 32;
+
+        /**
+         * Content of “{0}” directory.
+         */
+        public static final short DirectoryContent_1 = 35;
+
+        /**
          * Character string in the “{0}” file is too long. The string has {2} characters while the
          * limit is {1}.
          */
@@ -116,6 +156,11 @@ public final class Resources extends IndexedResourceBundle {
          * Feature “{1}” has not been found in the “{0}” data store.
          */
         public static final short FeatureNotFound_2 = 17;
+
+        /**
+         * Whether to assemble trajectory fragments (lines in CSV file) in a single feature instance.
+         */
+        public static final short FoliationRepresentation = 38;
 
         /**
          * The {0} data store does not accept features of type “{1}”.
@@ -164,9 +209,29 @@ public final class Resources extends IndexedResourceBundle {
         public static final short ShallBeDeclaredBefore_2 = 22;
 
         /**
+         * The “{0}” directory is used more than once because of symbolic links.
+         */
+        public static final short SharedDirectory_1 = 36;
+
+        /**
+         * Write operations are not supported.
+         */
+        public static final short StoreIsReadOnly = 28;
+
+        /**
          * Can not move backward in the “{0}” stream.
          */
         public static final short StreamIsForwardOnly_1 = 13;
+
+        /**
+         * Stream “{0}” is not readable.
+         */
+        public static final short StreamIsNotReadable_1 = 25;
+
+        /**
+         * Stream “{0}” is not writable.
+         */
+        public static final short StreamIsNotWritable_1 = 26;
 
         /**
          * The “{0}” data store can be read only once.
@@ -179,9 +244,19 @@ public final class Resources extends IndexedResourceBundle {
         public static final short StreamIsWriteOnce_1 = 21;
 
         /**
+         * Can not open {0} data store without “{1}” parameter.
+         */
+        public static final short UndefinedParameter_2 = 27;
+
+        /**
          * Format of “{0}” is not recognized.
          */
         public static final short UnknownFormatFor_1 = 14;
+
+        /**
+         * Used only if this information is not encoded with the data.
+         */
+        public static final short UsedOnlyIfNotEncoded = 33;
     }
 
     /**

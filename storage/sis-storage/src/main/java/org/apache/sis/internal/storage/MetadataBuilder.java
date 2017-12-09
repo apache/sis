@@ -24,16 +24,19 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.net.URI;
 import java.nio.charset.Charset;
 import javax.measure.Unit;
 import org.opengis.util.MemberName;
 import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
+import org.opengis.geometry.Geometry;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Role;
 import org.opengis.metadata.citation.DateType;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.citation.CitationDate;
+import org.opengis.metadata.citation.OnLineFunction;
 import org.opengis.metadata.spatial.GCP;
 import org.opengis.metadata.spatial.Dimension;
 import org.opengis.metadata.spatial.DimensionNameType;
@@ -42,6 +45,7 @@ import org.opengis.metadata.spatial.PixelOrientation;
 import org.opengis.metadata.spatial.GeolocationInformation;
 import org.opengis.metadata.spatial.SpatialRepresentationType;
 import org.opengis.metadata.constraint.Restriction;
+import org.opengis.metadata.content.CoverageContentType;
 import org.opengis.metadata.content.TransferFunctionType;
 import org.opengis.metadata.maintenance.ScopeCode;
 import org.opengis.metadata.acquisition.Context;
@@ -62,6 +66,7 @@ import org.apache.sis.metadata.iso.DefaultMetadataScope;
 import org.apache.sis.metadata.iso.extent.DefaultExtent;
 import org.apache.sis.metadata.iso.extent.DefaultVerticalExtent;
 import org.apache.sis.metadata.iso.extent.DefaultTemporalExtent;
+import org.apache.sis.metadata.iso.extent.DefaultBoundingPolygon;
 import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
 import org.apache.sis.metadata.iso.extent.DefaultGeographicDescription;
 import org.apache.sis.metadata.iso.spatial.DefaultGridSpatialRepresentation;
@@ -83,6 +88,7 @@ import org.apache.sis.metadata.iso.citation.DefaultCitationDate;
 import org.apache.sis.metadata.iso.citation.DefaultResponsibility;
 import org.apache.sis.metadata.iso.citation.DefaultIndividual;
 import org.apache.sis.metadata.iso.citation.DefaultOrganisation;
+import org.apache.sis.metadata.iso.citation.DefaultOnlineResource;
 import org.apache.sis.metadata.iso.constraint.DefaultLegalConstraints;
 import org.apache.sis.metadata.iso.identification.DefaultKeywords;
 import org.apache.sis.metadata.iso.identification.DefaultResolution;
@@ -875,6 +881,7 @@ public class MetadataBuilder {
      * @param  scope      whether the date applies to data, to metadata or to both.
      *
      * @see #addTitle(CharSequence)
+     * @see #addTitleOrIdentifier(String, Scope)
      */
     public final void addIdentifier(final CharSequence authority, String code, final Scope scope) {
         ArgumentChecks.ensureNonNull("scope", scope);
@@ -1072,7 +1079,7 @@ public class MetadataBuilder {
      * Storage location is:
      *
      * <ul>
-     *   <li>{@code metadata/identificationInfo/citation/title} if available</li>
+     *   <li>{@code metadata/identificationInfo/citation/title} if not yet used</li>
      *   <li>{@code metadata/identificationInfo/citation/alternateTitle} otherwise</li>
      * </ul>
      *
@@ -1094,12 +1101,56 @@ public class MetadataBuilder {
     }
 
     /**
-     * Adds a brief narrative summary of the resource(s).
-     * If a summary already existed, the new one will be appended after a new line.
+     * Adds the given code as a title if the current citation has no title, or as an identifier otherwise.
+     * This method is invoked when adding an identifier to a metadata that may have no title. Because the
+     * title is mandatory, adding only an identifier would make an invalid metadata.
+     *
+     * @param  code   the identifier code, or {@code null} for no-operation.
+     * @param  scope  whether the date applies to data, to metadata or to both.
+     *
+     * @see #addTitle(CharSequence)
+     * @see #addIdentifier(CharSequence, String, Scope)
+     */
+    public final void addTitleOrIdentifier(final String code, Scope scope) {
+        ArgumentChecks.ensureNonNull("scope", scope);
+        if (scope != Scope.METADATA) {
+            if (citation == null || citation.getTitle() == null) {
+                addTitle(code);
+                if (scope == Scope.RESOURCE) {
+                    return;
+                }
+                scope = Scope.METADATA;
+            }
+        }
+        addIdentifier(null, code, scope);
+    }
+
+    /**
+     * Adds a version of the resource.
+     * If a version already exists, the new one will be appended after a new line.
      * Storage location is:
      *
      * <ul>
-     *   <li>{@code metadata/identificationInfo/abstract}
+     *   <li>{@code metadata/identificationInfo/citation/edition}</li>
+     * </ul>
+     *
+     * @param version  the version of resource(s), or {@code null} for no-operation.
+     */
+    public final void addEdition(final CharSequence version) {
+        final InternationalString i18n = trim(version);
+        if (i18n != null) {
+            final DefaultCitation citation = citation();
+            citation.setEdition(append(citation.getEdition(), i18n));
+        }
+    }
+
+    /**
+     * Adds a brief narrative summary of the resource(s).
+     * If a summary already exists, the new one will be appended after a new line.
+     * Storage location is:
+     *
+     * <ul>
+     *   <li>{@code metadata/identificationInfo/abstract}</li>
      * </ul>
      *
      * @param description  the summary of resource(s), or {@code null} for no-operation.
@@ -1117,7 +1168,7 @@ public class MetadataBuilder {
 
     /**
      * Adds a summary of the intentions with which the resource(s) was developed.
-     * If a purpose already existed, the new one will be appended after a new line.
+     * If a purpose already exists, the new one will be appended after a new line.
      * Storage location is:
      *
      * <ul>
@@ -1155,7 +1206,7 @@ public class MetadataBuilder {
 
     /**
      * Adds any other descriptive information about the resource.
-     * If information already existed, the new one will be appended after a new line.
+     * If information already exists, the new one will be appended after a new line.
      * Storage location is:
      *
      * <ul>
@@ -1612,6 +1663,22 @@ parse:      for (int i = 0; i < length;) {
     }
 
     /**
+     * Adds the given geometry as a bounding polygon.
+     * Storage locations is:
+     *
+     * <ul>
+     *   <li>{@code metadata/identificationInfo/extent/geographicElement/polygon}</li>
+     * </ul>
+     *
+     * @param  bounds  the bounding polygon, or {@code null} if none.
+     */
+    public final void addBoundingPolygon(final Geometry bounds) {
+        if (bounds != null) {
+            addIfNotPresent(extent().getGeographicElements(), new DefaultBoundingPolygon(bounds));
+        }
+    }
+
+    /**
      * Adds a geographic extent described by an identifier. The given identifier is stored as-is as
      * the natural language description, and possibly in a modified form as the geographic identifier.
      * See {@link DefaultGeographicDescription#DefaultGeographicDescription(CharSequence)} for details.
@@ -2000,6 +2067,22 @@ parse:      for (int i = 0; i < length;) {
     }
 
     /**
+     * Adds type of information represented in the cell.
+     * Storage location is:
+     *
+     * <ul>
+     *   <li>{@code metadata/contentInfo/attributeGroup/contentType}</li>
+     * </ul>
+     *
+     * @param  type  type of information represented in the cell, or {@code null} for no-operation.
+     */
+    public final void addContentType(final CoverageContentType type) {
+        if (type != null) {
+            attributeGroup().getContentTypes().add(type);
+        }
+    }
+
+    /**
      * Sets the name or number that uniquely identifies instances of bands of wavelengths on which a sensor operates.
      * If a coverage contains more than one band, additional bands can be created by calling
      * {@link #newSampleDimension()} before to call this method.
@@ -2059,7 +2142,7 @@ parse:      for (int i = 0; i < length;) {
      * @param  authority  identifies which controlled list of name is used, or {@code null} if none.
      * @param  name       the band name, or {@code null} for no-operation.
      */
-    public final void addBandIdentifier(final CharSequence authority, String name) {
+    public final void addBandName(final CharSequence authority, String name) {
         if (name != null && !(name = name.trim()).isEmpty()) {
             addIfNotPresent(sampleDimension().getNames(), sharedIdentifier(authority, name));
         }
@@ -2372,6 +2455,26 @@ parse:      for (int i = 0; i < length;) {
     }
 
     /**
+     * Adds the identifier of the operation used to acquire the dataset.
+     * Examples: "GHRSST", "NOAA CDR", "NASA EOS", "JPSS", "GOES-R".
+     * Storage location is:
+     *
+     * <ul>
+     *   <li>{@code metadata/acquisitionInformation/operation/identifier}</li>
+     * </ul>
+     *
+     * @param  program     identification of the mission, or {@code null} if none.
+     * @param  identifier  unique identification of the operation, or {@code null} for no-operation.
+     */
+    public final void addAcquisitionOperation(final CharSequence program, String identifier) {
+        if (identifier != null && !(identifier = identifier.trim()).isEmpty()) {
+            final DefaultOperation r = new DefaultOperation();
+            r.setIdentifier(sharedIdentifier(program, identifier));
+            addIfNotPresent(acquisition().getOperations(), r);
+        }
+    }
+
+    /**
      * Adds the identifier of the requirement to be satisfied by data acquisition.
      * Storage location is:
      *
@@ -2497,6 +2600,25 @@ parse:      for (int i = 0; i < length;) {
         if (i18n != null) {
             final DefaultFormat format = format();
             format.setFileDecompressionTechnique(append(format.getFileDecompressionTechnique(), i18n));
+        }
+    }
+
+    /**
+     * Adds a URL to a more complete description of the metadata.
+     *
+     * <ul>
+     *   <li>{@code metadata/metadataLinkage/linkage}
+     *     with {@code function} set to {@link OnLineFunction#COMPLETE_METADATA}</li>
+     * </ul>
+     *
+     * @param  link
+     */
+    public final void addCompleteMetadata(final URI link) {
+        if (link != null) {
+            final DefaultOnlineResource ln = new DefaultOnlineResource(link);
+            ln.setFunction(OnLineFunction.COMPLETE_METADATA);
+            ln.setProtocol(link.getScheme());
+            addIfNotPresent(metadata().getMetadataLinkages(), ln);
         }
     }
 

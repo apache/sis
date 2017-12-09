@@ -226,7 +226,8 @@ public abstract class GeocentricAffine extends GeodeticOperation {
 
     /**
      * Returns the parameters for creating a datum shift operation.
-     * The operation method will be one of the {@code GeocentricAffine} subclasses.
+     * The operation method will be one of the {@code GeocentricAffine} subclasses,
+     * unless the specified {@code method} argument is {@link DatumShiftMethod#NONE}.
      * If no single operation method can be used, then this method returns {@code null}.
      *
      * <p>This method does <strong>not</strong> change the coordinate system type.
@@ -235,19 +236,18 @@ public abstract class GeocentricAffine extends GeodeticOperation {
      * will cause this method to return {@code null}. In such case, it is caller's responsibility to apply
      * the datum shift itself in Cartesian geocentric coordinates.</p>
      *
-     * @param sourceCS       the source coordinate system. Only the type and number of dimensions is checked.
-     * @param targetCS       the target coordinate system. Only the type and number of dimensions is checked.
-     * @param datumShift     the datum shift as a matrix.
-     * @param useMolodensky  {@code true} for allowing the use of Molodensky approximation, or {@code false}
-     *                       for using the transformation in geocentric space (which should be more accurate).
+     * @param  sourceCS    the source coordinate system. Only the type and number of dimensions is checked.
+     * @param  targetCS    the target coordinate system. Only the type and number of dimensions is checked.
+     * @param  datumShift  the datum shift as a matrix, or {@code null} if there is no datum shift information.
+     * @param  method      the preferred datum shift method. Note that {@code createParameters(…)} may overwrite.
      * @return the parameter values, or {@code null} if no single operation method can be found.
      */
     public static ParameterValueGroup createParameters(final CoordinateSystem sourceCS,
-            final CoordinateSystem targetCS, final Matrix datumShift, boolean useMolodensky)
+            final CoordinateSystem targetCS, final Matrix datumShift, DatumShiftMethod method)
     {
         final boolean isEllipsoidal = (sourceCS instanceof EllipsoidalCS);
-        if (!(isEllipsoidal ? targetCS instanceof EllipsoidalCS
-                            : targetCS instanceof CartesianCS && sourceCS instanceof CartesianCS))
+        if (!(isEllipsoidal ? (targetCS instanceof EllipsoidalCS)
+                            : (targetCS instanceof CartesianCS && sourceCS instanceof CartesianCS)))
         {
             return null;        // Coordinate systems are not two EllipsoidalCS or two CartesianCS.
         }
@@ -256,43 +256,93 @@ public abstract class GeocentricAffine extends GeodeticOperation {
         if (dimension != targetCS.getDimension()) {
             dimension  = 4;     // Any value greater than 3 means "mismatched dimensions" for this method.
         }
+        if (method == DatumShiftMethod.NONE) {
+            if (dimension <= 3) {
+                return Affine.identity(dimension);
+            } else if (isEllipsoidal) {
+                final ParameterDescriptorGroup descriptor;
+                switch (sourceCS.getDimension()) {
+                    case 2: descriptor = Geographic2Dto3D.PARAMETERS; break;
+                    case 3: descriptor = Geographic3Dto2D.PARAMETERS; break;
+                    default: return null;
+                }
+                return descriptor.createValue();
+            } else {
+                return null;
+            }
+        }
         /*
          * Try to convert the matrix into (tX, tY, tZ, rX, rY, rZ, dS) parameters.
-         * The matrix may not be convertible, in which case we will let the callers
+         * The matrix may not be convertible, in which case we will let the caller
          * uses the matrix directly in Cartesian geocentric coordinates.
          */
         final BursaWolfParameters parameters = new BursaWolfParameters(null, null);
-        try {
+        if (datumShift != null) try {
             parameters.setPositionVectorTransformation(datumShift, BURSAWOLF_TOLERANCE);
         } catch (IllegalArgumentException e) {
             log(Loggers.COORDINATE_OPERATION, "createParameters", e);
             return null;
+        } else {
+            /*
+             * If there is no datum shift parameters (not to be confused with identity), then those parameters
+             * are assumed unknown. Using the most accurate methods would give a false impression of accuracy,
+             * so we use the fastest method instead. Since all parameter values are zero, Apache SIS should use
+             * the AbridgedMolodenskyTransform2D optimization.
+             */
+            method = DatumShiftMethod.ABRIDGED_MOLODENSKY;
         }
         final boolean isTranslation = parameters.isTranslation();
         final ParameterDescriptorGroup descriptor;
         /*
-         * Following "if" blocks are ordered from more accurate to less accurate datum shift method
-         * supported by GeocentricAffine subclasses.
+         * Following "if" blocks are ordered from most accurate to less accurate datum shift method
+         * supported by GeocentricAffine subclasses (except NONE which has already been handled).
+         * Special cases:
+         *
+         *   - If the datum shift is applied between geocentric CRS, then the Molodensky approximations do not apply
+         *     as they are designed for transformations between geographic CRS only. User preference is then ignored.
+         *
+         *   - Molodensky methods are approximations for datum shifts having only translation terms in their Bursa-Wolf
+         *     parameters. If there is also a scale or rotation terms, then we can not use Molodensky methods. The user
+         *     preference is then ignored.
          */
         if (!isEllipsoidal) {
-            useMolodensky = false;
+            method = DatumShiftMethod.GEOCENTRIC_DOMAIN;
             descriptor = isTranslation ? GeocentricTranslation.PARAMETERS
                                        : PositionVector7Param .PARAMETERS;
-        } else {
-            if (!isTranslation) {
-                useMolodensky = false;
-                descriptor = (dimension >= 3) ? PositionVector7Param3D.PARAMETERS
-                                              : PositionVector7Param2D.PARAMETERS;
-            } else if (!useMolodensky) {
+        } else if (!isTranslation) {
+            method = DatumShiftMethod.GEOCENTRIC_DOMAIN;
+            descriptor = (dimension >= 3) ? PositionVector7Param3D.PARAMETERS
+                                          : PositionVector7Param2D.PARAMETERS;
+        } else switch (method) {
+            case GEOCENTRIC_DOMAIN: {
                 descriptor = (dimension >= 3) ? GeocentricTranslation3D.PARAMETERS
                                               : GeocentricTranslation2D.PARAMETERS;
-            } else {
-                descriptor = Molodensky.PARAMETERS;
+                break;
             }
+            case MOLODENSKY: {
+                descriptor = Molodensky.PARAMETERS;
+                break;
+            }
+            case ABRIDGED_MOLODENSKY: {
+                descriptor = AbridgedMolodensky.PARAMETERS;
+                break;
+            }
+            default: throw new AssertionError(method);
         }
+        /*
+         * Following lines will set all Bursa-Wolf parameter values (scale, translation
+         * and rotation terms). In the particular case of Molodensky method, we have an
+         * additional parameter for the number of source and target dimensions (2 or 3).
+         */
         final Parameters values = createParameters(descriptor, parameters, isTranslation);
-        if (useMolodensky && dimension <= 3) {
-            values.getOrCreate(Molodensky.DIMENSION).setValue(dimension);
+        switch (method) {
+            case MOLODENSKY:
+            case ABRIDGED_MOLODENSKY: {
+                if (dimension <= 3) {
+                    values.getOrCreate(Molodensky.DIMENSION).setValue(dimension);
+                }
+                break;
+            }
         }
         return values;
     }

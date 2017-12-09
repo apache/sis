@@ -53,7 +53,7 @@ import org.opengis.util.FactoryException;
 import org.opengis.util.NoSuchIdentifierException;
 
 import org.apache.sis.io.wkt.Parser;
-import org.apache.sis.internal.util.LazySet;
+import org.apache.sis.internal.referencing.LazySet;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.internal.referencing.Formulas;
 import org.apache.sis.internal.metadata.ReferencingServices;
@@ -128,7 +128,7 @@ import org.apache.sis.util.resources.Errors;
  * </ul>
  *
  * <p>The main purpose of those dynamic parameters is to support some less commonly used conventions
- * without duplicating the most commonly used conventions. The alternative ways are used in NetCDF
+ * without duplicating the most commonly used conventions. The alternative ways are used in netCDF
  * files for example, which often use spherical models instead than ellipsoidal ones.</p>
  *
  *
@@ -1200,25 +1200,6 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
         final Context context = ReferencingUtilities.createTransformContext(baseCRS, null, null);
         context.setTarget(derivedCS);
         return createParameterizedTransform(parameters, context);
-    }
-
-    /**
-     * Creates a math transform that represent a change of coordinate system.
-     *
-     * @param  source  the source coordinate system.
-     * @param  target  the target coordinate system.
-     * @return a conversion from the given source to the given target coordinate system.
-     * @throws FactoryException if the conversion can not be created.
-     *
-     * @deprecated Replaced by {@link #createCoordinateSystemChange(CoordinateSystem, CoordinateSystem, Ellipsoid)}
-     *
-     * @since 0.7
-     */
-    @Deprecated
-    public MathTransform createCoordinateSystemChange(final CoordinateSystem source, final CoordinateSystem target)
-            throws FactoryException
-    {
-        return createCoordinateSystemChange(source, target, null);
     }
 
     /**

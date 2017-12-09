@@ -30,6 +30,7 @@ import com.sun.star.lib.uno.helper.WeakBase;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.Exceptions;
 import org.apache.sis.util.logging.Logging;
+import org.apache.sis.util.resources.Vocabulary;
 
 
 /**
@@ -148,10 +149,9 @@ public abstract class CalcAddins extends WeakBase implements XServiceName, XServ
      * The string to returns when a formula does not have any value to return.
      *
      * @return the string with a message for missing values.
-     * @todo localize.
      */
-    static String noResultString() {
-        return "(none)";
+    final String noResultString() {
+        return Vocabulary.getResources(getJavaLocale()).getString(Vocabulary.Keys.Unknown);
     }
 
     /**

@@ -164,7 +164,7 @@ final class MapProjectionParameters extends DefaultParameterValueGroup {
 
         /**
          * All names known to Apache SIS for the Earth radius parameter.
-         * This is used in some NetCDF files instead of {@code SEMI_MAJOR} and {@code SEMI_MINOR}.
+         * This is used in some netCDF files instead of {@code SEMI_MAJOR} and {@code SEMI_MINOR}.
          * This is not a standard parameter.
          */
         static final ParameterDescriptor<Double> DESCRIPTOR = new DefaultParameterDescriptor<>(
@@ -249,7 +249,7 @@ final class MapProjectionParameters extends DefaultParameterValueGroup {
 
         /**
          * All names known to Apache SIS for the inverse flattening parameter.
-         * This is used in some NetCDF files instead of {@code SEMI_MINOR}.
+         * This is used in some netCDF files instead of {@code SEMI_MINOR}.
          * This is not a standard parameter.
          */
         static final ParameterDescriptor<Double> DESCRIPTOR = new DefaultParameterDescriptor<>(
@@ -433,7 +433,7 @@ final class MapProjectionParameters extends DefaultParameterValueGroup {
 
         /**
          * All names known to Apache SIS for the standard parallels parameter, as an array of 1 or 2 elements.
-         * This is used in some NetCDF files instead of {@value Constants#STANDARD_PARALLEL_1} and
+         * This is used in some netCDF files instead of {@value Constants#STANDARD_PARALLEL_1} and
          * {@value Constants#STANDARD_PARALLEL_2}. This is not a standard parameter.
          */
         static final ParameterDescriptor<double[]> DESCRIPTOR = new DefaultParameterDescriptor<>(

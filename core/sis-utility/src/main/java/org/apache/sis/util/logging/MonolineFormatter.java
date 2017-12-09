@@ -109,7 +109,7 @@ import static org.apache.sis.internal.util.StandardDateFormat.UTC;
  * from multiple threads.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.7
+ * @version 1.0
  *
  * @see SimpleFormatter
  * @see Handler#setFormatter(Formatter)
@@ -164,6 +164,11 @@ public class MonolineFormatter extends Formatter {
     private static final boolean SHOW_LEVEL = true;
 
     /**
+     * Number of spaces to colorize at the beginning of lines that are continuation of a single log record.
+     */
+    private static final int CONTINUATION_MARGIN = 4;
+
+    /**
      * Minimal number of stack trace elements to print before and after the "interesting" elements.
      * The "interesting" elements are the first stack trace elements, and the element which point
      * to the method that produced the log record.
@@ -171,6 +176,11 @@ public class MonolineFormatter extends Formatter {
      * @see #printAbridged(Throwable, Appendable, String, String, String)
      */
     private static final int CONTEXT_STACK_TRACE_ELEMENTS = 2;
+
+    /**
+     * Maximal amount of causes to print in stack traces. This is an arbitrary limit.
+     */
+    private static final int MAX_CAUSES = 10;
 
     /**
      * The string to write on the left side of the first line of every log records.
@@ -330,7 +340,7 @@ public class MonolineFormatter extends Formatter {
 
     /**
      * Returns the length of the widest level name, taking in account only the standard levels
-     * equals or greater then the given threshold.
+     * equals or greater than the given threshold.
      */
     static int levelWidth(final Level threshold) {
         int levelWidth = 0;
@@ -624,11 +634,18 @@ loop:   for (int i=0; ; i++) {
      */
     @Override
     public String format(final LogRecord record) {
+        boolean faint = false;                      // Whether to use faint text for level < INFO.
+        String emphaseStart = "";                   // ANSI escape sequence for bold text if we use it.
+        String emphaseEnd   = "";                   // ANSI escape sequence for stopping bold text if we use it.
         final Level level = record.getLevel();
         final StringBuffer buffer = this.buffer;
         synchronized (buffer) {
-            final boolean colors  = (this.colors != null);
-            final boolean emphase = !faintSupported || (level.intValue() >= LEVEL_THRESHOLD.intValue());
+            final boolean colors = (this.colors != null);
+            if (colors && level.intValue() >= LEVEL_THRESHOLD.intValue()) {
+                emphaseStart = X364.BOLD.sequence();
+                emphaseEnd   = X364.NORMAL.sequence();
+                faint        = faintSupported;
+            }
             buffer.setLength(header.length());
             /*
              * Appends the time (e.g. "00:00:12.365"). The time pattern can be set either
@@ -651,10 +668,10 @@ loop:   for (int i=0; ; i++) {
                     levelColor = colorAt(level);
                     levelReset = X364.BACKGROUND_DEFAULT.sequence();
                 }
-                final int offset = buffer.append(levelColor).length();
-                buffer.append(level.getLocalizedName())
-                      .append(CharSequences.spaces(levelWidth - (buffer.length() - offset)));
-                margin += buffer.length() - offset;
+                final int offset = buffer.append(levelColor).append(emphaseStart).length();
+                final int length = buffer.append(level.getLocalizedName()).length() - offset;
+                buffer.append(emphaseEnd).append(CharSequences.spaces(levelWidth - length));
+                margin += buffer.length() - emphaseEnd.length() - offset;
                 buffer.append(levelReset).append(' ');
             }
             /*
@@ -683,14 +700,7 @@ loop:   for (int i=0; ; i++) {
                 if (sourceFormat == METHOD) {
                     source = source + '.' + record.getSourceMethodName();
                 }
-                if (colors && emphase) {
-                    buffer.append(X364.BOLD.sequence());
-                }
-                buffer.append('[').append(source).append(']');
-                if (colors && emphase) {
-                    buffer.append(X364.NORMAL.sequence());
-                }
-                buffer.append(' ');
+                buffer.append(emphaseStart).append('[').append(source).append(']').append(emphaseEnd).append(' ');
             }
             /*
              * Now prepare the LineAppender for the message. We set a line separator prefixed by some
@@ -699,10 +709,12 @@ loop:   for (int i=0; ; i++) {
             String bodyLineSeparator = writer.getLineSeparator();
             final String lineSeparator = System.lineSeparator();
             if (bodyLineSeparator.length() != lineSeparator.length() + margin + 1) {
-                bodyLineSeparator = lineSeparator + levelColor + CharSequences.spaces(margin) + levelReset + ' ';
+                final int highlight = Math.min(CONTINUATION_MARGIN, margin);
+                bodyLineSeparator = lineSeparator + levelColor + CharSequences.spaces(highlight)
+                                                  + levelReset + CharSequences.spaces(margin - highlight + 1);
                 writer.setLineSeparator(bodyLineSeparator);
             }
-            if (colors && !emphase) {
+            if (faint) {
                 buffer.append(X364.FAINT.sequence());
             }
             final Throwable exception = record.getThrown();
@@ -736,7 +748,7 @@ loop:   for (int i=0; ; i++) {
                 throw new AssertionError(e);
             }
             buffer.setLength(CharSequences.skipTrailingWhitespaces(buffer, 0, buffer.length()));
-            if (colors && !emphase) {
+            if (faint) {
                 buffer.append(X364.NORMAL.sequence());
             }
             buffer.append(lineSeparator);
@@ -812,8 +824,7 @@ loop:   for (int i=0; ; i++) {
             final String loggerName, final String sourceClassName, final String sourceMethodName) throws IOException
     {
         StackTraceElement previous = null;
-        // Arbitrary limit of 10 causes to format.
-        for (int numCauses=0; numCauses<10; numCauses++) {
+        for (int numCauses=0; numCauses<MAX_CAUSES; numCauses++) {
             final StackTraceElement[] trace = exception.getStackTrace();
             /*
              * Find the index of the stack trace element where the log has been produced.

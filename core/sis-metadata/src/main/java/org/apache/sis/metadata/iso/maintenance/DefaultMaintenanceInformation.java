@@ -238,7 +238,7 @@ public class DefaultMaintenanceInformation extends ISOMetadata implements Mainte
     @Dependencies("getMaintenanceDates")
     public Date getDateOfNextUpdate() {
         final Collection<CitationDate> dates = getMaintenanceDates();
-        if (dates != null) { // May be null on XML marshalling.
+        if (dates != null) {                                                    // May be null on XML marshalling.
             for (final CitationDate date : dates) {
                 if (DateType.NEXT_UPDATE.equals(date.getDateType())) {
                     return date.getDate();

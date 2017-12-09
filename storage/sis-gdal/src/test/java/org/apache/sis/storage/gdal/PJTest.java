@@ -23,7 +23,7 @@ import org.apache.sis.test.TestCase;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import static org.junit.Assume.*;
+import static org.junit.Assume.assumeTrue;
 import static org.apache.sis.test.Assert.*;
 
 
@@ -60,7 +60,7 @@ public final strictfp class PJTest extends TestCase {
      * Ensures that the given object is the WGS84 definition.
      */
     private static void assertIsWGS84(final PJ pj) {
-        assertEquals("+proj=latlong +datum=WGS84 +ellps=WGS84 +towgs84=0,0,0", pj.getCode().trim());
+        assertEquals("+proj=latlong +datum=WGS84 +ellps=WGS84 +towgs84=0,0,0", pj.getCode());
         assertEquals("Proj4",            pj.getCodeSpace());
         assertSame  (Citations.PROJ4,    pj.getAuthority());
         assertTrue  (Character.isDigit(  pj.getVersion().codePointAt(0)));

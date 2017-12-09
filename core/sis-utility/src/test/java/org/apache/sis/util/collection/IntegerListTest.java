@@ -21,7 +21,9 @@ import java.util.ArrayList;
 import java.util.Set;
 import java.util.HashSet;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.Random;
+import java.util.ConcurrentModificationException;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.TestUtilities;
 import org.junit.Test;
@@ -29,66 +31,105 @@ import org.junit.Test;
 import static java.lang.StrictMath.*;
 import static org.apache.sis.test.Assert.*;
 
+// Branch-dependent imports
+import java.util.function.IntConsumer;
+import java.util.PrimitiveIterator;
+import java.util.stream.IntStream;
+
 
 /**
  * Tests {@link IntegerList} implementations.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.7
+ * @author  Alexis Manin (Geomatys)
+ * @version 0.8
  * @since   0.7
  * @module
  */
 public final strictfp class IntegerListTest extends TestCase {
     /**
-     * The list of integers.
+     * The list of integers being tested.
      */
     private IntegerList list;
 
     /**
      * Writes values and read them again for making sure they are the expected ones.
+     * This method tests also split iterators.
      *
      * @param maximalValue  the maximal value allowed.
      */
     private void testReadWrite(final int maximalValue) {
         final Random random = TestUtilities.createRandomNumberGenerator();
-        final int length = 400;
-        // Use half the lenght as initial capacity in order to test dynamic resizing.
+        final int length = 350 + random.nextInt(101);
+        /*
+         * Use half the lenght as initial capacity in order to test dynamic resizing.
+         * Dynamic resizing should happen in one of the call to list.add(value) after
+         * about 200 values.
+         */
         list = new IntegerList(length / 2, maximalValue);
-        assertTrue(list.maximalValue() >= maximalValue);
+        assertTrue("maximalValue()", list.maximalValue() >= maximalValue);
         final List<Integer> copy = new ArrayList<>(length);
         for (int i=0; i<length; i++) {
-            assertEquals(i, list.size());
+            assertEquals("size()", i, list.size());
             final Integer value = nextInt(random, maximalValue);
-            assertTrue(copy.add(value));
-            assertTrue(list.add(value));
+            assertTrue("add(Integer)", copy.add(value));
+            assertTrue("add(Integer)", list.add(value));
         }
-        assertEquals(copy, list);
-        assertEquals(copy.hashCode(), list.hashCode());
+        assertEquals("Comparison with reference implementation", copy, list);
+        assertEquals("hashCode()", copy.hashCode(), list.hashCode());
         /*
-         * Overwrite 1/10 of the values.
+         * Overwrite about 1/10 of the values in both the tested IntegerList and the
+         * reference ArrayList. Then compare the IntegerList against the reference.
          */
-        for (int i=0; i<length; i+=10) {
+        for (int i=0; i<length; i += 8 + random.nextInt(5)) {
             final Integer value = nextInt(random, maximalValue);
             final Integer old = copy.set(i, value);
-            assertNotNull(old);
-            assertEquals(old, list.set(i, value));
+            assertNotNull("set(Integer)", old);
+            assertEquals ("set(Integer)", old, list.set(i, value));
         }
         for (int i=0; i<length; i++) {
-            assertEquals(String.valueOf(i), copy.get(i), list.get(i));
+            if (!copy.get(i).equals(list.get(i))) {
+                fail("Mismatched value at index " + i);
+            }
         }
-        assertEquals(copy, list);
-        assertEquals(copy.hashCode(), list.hashCode());
-        assertNotSame(list, assertSerializedEquals(list));
+        assertEquals("Comparison with reference implementation", copy, list);
+        assertEquals("hashCode()", copy.hashCode(), list.hashCode());
         /*
-         * Tests cloning and removal of values.
+         * Test the stream, using the ArrayList as a reference implementation. This will indirectly
+         * use the PrimitiveSpliterator.forEachRemaining(Consumer<? super Integer>) method. A more
+         * specific test using forEachRemaining(IntConsumer) is done by the testInts() method.
          */
-        final List<Integer> clone = list.clone();
-        assertEquals(copy, clone);
-        assertEquals(copy.remove(100), clone.remove(100));
-        assertEquals(copy, clone);
+        assertSequentialStreamEquals(copy.iterator(), list.stream());
+        /*
+         * Tests cloning and removal of values in a range of indices. The IntegerList.removeRange(…)
+         * method is invoked indirectly by subList(…).clear(). Again, we use ArrayList as a reference.
+         */
+        final IntegerList clone = list.clone();
+        assertEquals("clone()", copy, clone);
+        assertEquals("remove(int)", copy.remove(100), clone.remove(100));
+        assertEquals("remove(int)", copy, clone);
         copy .subList(128, 256).clear();
         clone.subList(128, 256).clear();
-        assertEquals(copy, clone);
+        assertEquals("After removeRange(…)", copy, clone);
+        /*
+         * Tests iterator on primitive integers, with random removal of some elements during traversal.
+         */
+        final PrimitiveIterator.OfInt it = clone.iterator();
+        final Iterator<Integer> itRef = copy.iterator();
+        while (itRef.hasNext()) {
+            assertTrue("hasNext()", it.hasNext());
+            assertEquals(itRef.next().intValue(), it.nextInt());
+            if (random.nextInt(10) == 0) {
+                itRef.remove();
+                it.remove();
+            }
+        }
+        assertFalse("hasNext()", it.hasNext());
+        assertEquals("After remove()", copy, clone);
+        /*
+         * Verify that serialization and deserialization gives a new list with identical content.
+         */
+        assertNotSame("Serialization", list, assertSerializedEquals(list));
     }
 
     /**
@@ -107,15 +148,14 @@ public final strictfp class IntegerListTest extends TestCase {
      * already filled with random values prior this method call.
      */
     private void testFill(final int value) {
-        assertEquals(400, list.size());
         final Set<Integer> set = new HashSet<>();
         list.fill(value);
         set.addAll(list);
-        assertEquals(Collections.singleton(value), set);
+        assertEquals("fill(value)", Collections.singleton(value), set);
         list.fill(0);
         set.clear();
         set.addAll(list);
-        assertEquals(Collections.singleton(0), set);
+        assertEquals("fill(0)", Collections.singleton(0), set);
     }
 
     /**
@@ -160,14 +200,13 @@ public final strictfp class IntegerListTest extends TestCase {
     @Test
     public void test100() {
         testReadWrite(100);
-        assertEquals(400, list.size());
         final int old100 = list.getInt(100);
         list.resize(101);
-        assertEquals(old100, list.getInt(100));
+        assertEquals("getInt(last)", old100, list.getInt(100));
         list.resize(200);
-        assertEquals(200, list.size());
-        assertEquals(old100, list.getInt(100));
-        assertEquals(0, list.getInt(101));
+        assertEquals("size()",              200, list.size());
+        assertEquals("getInt(existing)", old100, list.getInt(100));
+        assertEquals("getInt(new)",           0, list.getInt(101));
         for (int i=101; i<200; i++) {
             assertEquals(0, list.getInt(i));
         }
@@ -191,5 +230,69 @@ public final strictfp class IntegerListTest extends TestCase {
     public void testMax() {
         testReadWrite(Integer.MAX_VALUE);
         testFill(17);
+    }
+
+    /**
+     * Tests that primitive stream traversal is coherent with its list value.
+     * This method tests sequential stream only.
+     */
+    @Test
+    public void testStream() {
+        list = createRandomlyFilled(42, 404);
+        list.stream(false).forEach(new IntConsumer() {
+            private int index = 0;
+
+            @Override
+            public void accept(int value) {
+                assertEquals("Spliterator value differs from its original list", list.getInt(index++), value);
+            }
+        });
+    }
+
+    /**
+     * Tests that primitive stream traversal with parallelization.
+     */
+    @Test
+    public void testIntsParallel() {
+        list = createRandomlyFilled(80, 321);
+        assertParallelStreamEquals(list.iterator(), list.stream().parallel());
+    }
+
+    /**
+     * Ensures our stream is a fail-fast operator, i.e: it fails when the list has
+     * been modified before the end of its iteration.
+     */
+    @Test
+    public void testErrorOnCoModification() {
+        list = createRandomlyFilled(4, 10);
+        final PrimitiveIterator.OfInt values = list.stream(false).iterator();
+
+        // Start iteration normally.
+        assertEquals(list.getInt(0), values.nextInt());
+        assertEquals(list.getInt(1), values.nextInt());
+
+        // Now, if we alter the list and then try to use previously created stream, we should get an error.
+        list.add(0);
+        try {
+            values.next();
+            fail("Concurrent modification has not been detected.");
+        } catch (ConcurrentModificationException expected) {
+            // Expected behavior
+        }
+    }
+
+    /**
+     * Creates a new list whose capacity and value magnitude are defined as input.
+     * The list is filled by a random integer generator before return.
+     *
+     * @param  size      number of elements to insert in the list.
+     * @param  maxValue  maximum value to use for value insertion.
+     * @return a fresh and filled list.
+     */
+    private static IntegerList createRandomlyFilled(final int size, final int maxValue) {
+        final Random random = TestUtilities.createRandomNumberGenerator();
+        return IntStream.generate(() -> random.nextInt(maxValue))
+                .limit(size)
+                .collect(() -> new IntegerList(size, maxValue), IntegerList::addInt, null);
     }
 }

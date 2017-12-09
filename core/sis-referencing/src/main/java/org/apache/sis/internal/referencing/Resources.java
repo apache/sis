@@ -68,6 +68,11 @@ public final class Resources extends IndexedResourceBundle {
         public static final short AmbiguousEllipsoid_1 = 1;
 
         /**
+         * Can not create objects of type ‘{0}’ from combined URI.
+         */
+        public static final short CanNotCombineUriAsType_1 = 79;
+
+        /**
          * Can not compute the coordinate operation derivative.
          */
         public static final short CanNotComputeDerivative = 2;
@@ -78,7 +83,7 @@ public final class Resources extends IndexedResourceBundle {
         public static final short CanNotConcatenateTransforms_2 = 3;
 
         /**
-         * Can not create an object of group “{1}” as an instance of class ‘{0}’.
+         * Can not create an object of type “{1}” as an instance of class ‘{0}’.
          */
         public static final short CanNotCreateObjectAsInstanceOf_2 = 4;
 
@@ -96,6 +101,11 @@ public final class Resources extends IndexedResourceBundle {
          * Can not map an axis from the specified coordinate system to the “{0}” direction.
          */
         public static final short CanNotMapAxisToDirection_1 = 6;
+
+        /**
+         * Can not parse component {1} in the combined {0,choice,0#URN|1#URL}.
+         */
+        public static final short CanNotParseCombinedReference_2 = 78;
 
         /**
          * Target dimension {0} depends on excluded source dimensions.
@@ -147,6 +157,18 @@ public final class Resources extends IndexedResourceBundle {
          * Name or alias for parameter “{0}” at index {1} conflict with name “{2}” at index {3}.
          */
         public static final short DuplicatedParameterName_4 = 16;
+
+        /**
+         * Compound coordinate reference systems can not contain two {0,choice,1#horizontal|2#vertical}
+         * components.
+         */
+        public static final short DuplicatedSpatialComponents_1 = 76;
+
+        /**
+         * Compound coordinate reference systems should not contain ellipsoidal height. Use a
+         * three-dimensional {0,choice,0#geographic|1#projected} system instead.
+         */
+        public static final short EllipsoidalHeightNotAllowed_1 = 77;
 
         /**
          * There is no factory for version {1} of “{0}” authority. Fallback on default version for
@@ -413,6 +435,11 @@ public final class Resources extends IndexedResourceBundle {
          * Matrix is singular.
          */
         public static final short SingularMatrix = 63;
+
+        /**
+         * Combined URI contains unexpected components.
+         */
+        public static final short UnexpectedComponentInURI = 80;
 
         /**
          * Unexpected dimension for a coordinate system of type ‘{0}’.

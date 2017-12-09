@@ -28,7 +28,7 @@
   <parent>
     <groupId>org.apache.sis</groupId>
     <artifactId>storage</artifactId>
-    <version>0.8-jdk8-SNAPSHOT</version>
+    <version>1.0-jdk8-SNAPSHOT</version>
   </parent>
 
 
@@ -38,11 +38,11 @@
   <groupId>org.apache.sis.storage</groupId>
   <artifactId>sis-netcdf</artifactId>
   <packaging>bundle</packaging>
-  <name>Apache SIS NetCDF storage</name>
+  <name>Apache SIS netCDF storage</name>
   <description>
   <!-- Left alignment because this description will be copied in META-INF/MANIFEST.MF
        The leading space after the first line is necessary for proper formatting. -->
-Bridge between NetCDF Climate and Forecast (CF) convention and ISO 19115 metadata.
+Bridge between netCDF Climate and Forecast (CF) convention and ISO 19115 metadata.
   </description>
 
 
@@ -153,12 +153,12 @@ Bridge between NetCDF Climate and Forecast (CF) convention and ISO 19115 metadat
     </dependency>
   </dependencies>
 
-  <!--  UCAR repository from which to download the NetCDF library. -->
+  <!--  UCAR repository from which to download the netCDF library. -->
   <repositories>
     <repository>
       <id>UCAR</id>
       <name>UCAR repository</name>
-      <url>https://artifacts.unidata.ucar.edu/content/repositories/unidata-releases</url>
+      <url>https://artifacts.unidata.ucar.edu/repository/unidata-releases</url>
       <snapshots>
         <enabled>false</enabled>
       </snapshots>

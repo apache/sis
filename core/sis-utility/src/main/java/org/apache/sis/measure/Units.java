@@ -27,18 +27,14 @@ import org.opengis.geometry.DirectPosition;         // For javadoc
 import org.opengis.referencing.cs.AxisDirection;    // For javadoc
 
 import org.apache.sis.util.Static;
-import org.apache.sis.util.Workaround;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.internal.util.Constants;
 
-import static java.lang.Math.PI;
-import static java.lang.Math.abs;
 import static org.apache.sis.measure.UnitRegistry.SI;
 import static org.apache.sis.measure.UnitRegistry.ACCEPTED;
 import static org.apache.sis.measure.UnitRegistry.IMPERIAL;
 import static org.apache.sis.measure.UnitRegistry.OTHER;
 import static org.apache.sis.measure.UnitRegistry.PREFIXABLE;
-import static org.apache.sis.measure.SexagesimalConverter.EPS;
 
 
 /**
@@ -371,7 +367,7 @@ public final class Units extends Static {
      * <table class="compact" summary="Related units" style="margin-left:30px; line-height:1.25">
      *   <tr><td>SI angle units:</td>   <td style="word-spacing:1em">{@link #MICRORADIAN}, <u><b>{@code RADIAN}</b></u>.</td></tr>
      *   <tr><td>In other systems:</td> <td style="word-spacing:1em">{@link #DEGREE}, {@link #ARC_MINUTE}, {@link #ARC_SECOND}, {@link #GRAD}.</td></tr>
-     *   <tr><td>Derived units:</td>    <td style="word-spacing:1em">{@link #STERADIAN}.</td></tr>
+     *   <tr><td>Derived units:</td>    <td style="word-spacing:1em">{@link #STERADIAN}, {@link #RADIANS_PER_SECOND}.</td></tr>
      * </table></div>
      *
      * @since 0.8
@@ -541,7 +537,7 @@ public final class Units extends Static {
      * <div class="note"><p class="simpleTagLabel" style="margin-bottom:0">Related units:</p>
      * <table class="compact" summary="Related units" style="margin-left:30px; line-height:1.25">
      *   <tr><td>SI time units:</td>    <td style="word-spacing:1em">{@link #MILLISECOND}, <b>{@link #SECOND}</b>.</td></tr>
-     *   <tr><td>In other systems:</td> <td style="word-spacing:1em">{@link #MINUTE}, {@link #HOUR}, {@link #DAY}, <u>{@link WEEK}</u>, {@link #TROPICAL_YEAR}.</td></tr>
+     *   <tr><td>In other systems:</td> <td style="word-spacing:1em">{@link #MINUTE}, {@link #HOUR}, {@link #DAY}, <u>{@link #WEEK}</u>, {@link #TROPICAL_YEAR}.</td></tr>
      *   <tr><td>Derived units:</td>    <td style="word-spacing:1em">{@link #KILOMETRES_PER_HOUR}, {@link #HERTZ}.</td></tr>
      * </table></div>
      *
@@ -580,6 +576,19 @@ public final class Units extends Static {
      * @since 0.8
      */
     public static final Unit<Frequency> HERTZ;
+
+    /**
+     * The unit for angular velocity (rad/s).
+     * The identifier is EPSG:1035.
+     *
+     * <div class="note"><p class="simpleTagLabel" style="margin-bottom:0">Related units:</p>
+     * <table class="compact" summary="Related units" style="margin-left:30px; line-height:1.25">
+     *   <tr><td>Components:</td> <td style="word-spacing:0.5em">{@link #RADIAN} ∕ {@link #SECOND}</td></tr>
+     * </table></div>
+     *
+     * @since 0.8
+     */
+    public static final Unit<AngularVelocity> RADIANS_PER_SECOND;
 
     /**
      * The SI derived unit for speed (m/s).
@@ -1020,10 +1029,9 @@ public final class Units extends Static {
      * Salinity measured using PSS-78. While this is a dimensionless measurement, the {@code "psu"} symbol
      * is sometime added to PSS-78 measurement. However this is officially discouraged.
      *
-     * <p>If we make this field public in a future SIS version, we should consider introducing a
-     * {@code Salinity} quantity type.</p>
+     * @since 0.8
      */
-    static final Unit<Dimensionless> PSU;
+    public static final Unit<Salinity> PSU;
 
     /**
      * Sigma-level, used in oceanography. This is a way to measure a depth as a fraction of the sea floor depth.
@@ -1069,6 +1077,7 @@ public final class Units extends Static {
         final UnitDimension temperature   = new UnitDimension('Θ');
         final UnitDimension amount        = new UnitDimension('N');
         final UnitDimension luminous      = new UnitDimension('J');
+        final UnitDimension frequency     = time.pow(-1);
         final UnitDimension area          = length.pow(2);
         final UnitDimension speed         = length.divide(time);
         final UnitDimension force         = mass.multiply(speed).divide(time);
@@ -1143,11 +1152,19 @@ public final class Units extends Static {
         WEEK           = add(s, LinearConverter.scale( 7*24*60*60,      1), "wk",  OTHER,    (short) 0);
         TROPICAL_YEAR  = add(s, LinearConverter.scale(31556925445.0, 1000), "a",   OTHER,    (short) 1029);
         /*
-         * All Unit<Speed>.
+         * All Unit<Speed>, Unit<AngularVelocity> and Unit<ScaleRateOfChange>.
+         * The 'unityPerSecond' unit is not added to the registry because it is specific to the EPSG database,
+         * has no clear symbol and is easy to confuse with Hertz. We create that unit only for allowing us to
+         * create the "ppm/a" units.
          */
+        final SystemUnit<ScaleRateOfChange> unityPerSecond;
+        unityPerSecond = new SystemUnit<>(ScaleRateOfChange.class, frequency, null, OTHER, (short) 1036, null);
+        unityPerSecond.related(1);
         mps.related(1);
         METRES_PER_SECOND   = mps;
-        KILOMETRES_PER_HOUR = add(mps, LinearConverter.scale(10, 36), "km∕h", ACCEPTED, (short) 0);
+        KILOMETRES_PER_HOUR = add(mps, LinearConverter.scale(10, 36),     "km∕h",  ACCEPTED, (short) 0);
+        RADIANS_PER_SECOND  = add(AngularVelocity.class, null, frequency, "rad∕s", SI,       (short) 1035);
+        add(unityPerSecond, LinearConverter.scale(1, 31556925445E6),      "ppm∕a", OTHER,    (short) 1030);
         /*
          * All Unit<Pressure>.
          */
@@ -1177,8 +1194,9 @@ public final class Units extends Static {
         GRAM         = add(kg, milli, "g", (byte) (ACCEPTED | PREFIXABLE), (short) 0);
         /*
          * Force, energy, electricity, magnetism and other units.
+         * Frequency must be defined after angular velocities.
          */
-        HERTZ      = add(Frequency.class,           Scalar.Frequency::new, time.pow(-1),                 "Hz",  (byte) (SI | PREFIXABLE), (short) 0);
+        HERTZ      = add(Frequency.class,           Scalar.Frequency::new, frequency,                    "Hz",  (byte) (SI | PREFIXABLE), (short) 0);
         NEWTON     = add(Force.class,               Scalar.Force::new,     force,                        "N",   (byte) (SI | PREFIXABLE), (short) 0);
         JOULE      = add(Energy.class,              Scalar.Energy::new,    energy,                       "J",   (byte) (SI | PREFIXABLE), (short) 0);
         WATT       = add(Power.class,               Scalar.Power::new,     power,                        "W",   (byte) (SI | PREFIXABLE), (short) 0);
@@ -1201,7 +1219,7 @@ public final class Units extends Static {
          */
         PERCENT = add(one, centi,                                                    "%",     OTHER, (short) 0);
         PPM     = add(one, micro,                                                    "ppm",   OTHER, (short) 9202);
-        PSU     = add(Dimensionless.class, Scalar.Dimensionless::new, dimensionless, "psu",   OTHER, (short) 0);
+        PSU     = add(Salinity.class,      null,                      dimensionless, "psu",   OTHER, (short) 0);
         SIGMA   = add(Dimensionless.class, Scalar.Dimensionless::new, dimensionless, "sigma", OTHER, (short) 0);
         PIXEL   = add(Dimensionless.class, Scalar.Dimensionless::new, dimensionless, "px",    OTHER, (short) 0);
         UNITY   = UnitRegistry.init(one);  // Must be last in order to take precedence over all other units associated to UnitDimension.NONE.
@@ -1452,51 +1470,6 @@ public final class Units extends Static {
     }
 
     /**
-     * Multiplies the given unit by the given factor. For example multiplying {@link #METRE}
-     * by 1000 gives {@link #KILOMETRE}. Invoking this method is equivalent to invoking
-     * {@link Unit#multiply(double)} except for the following:
-     *
-     * <ul>
-     *   <li>A small tolerance factor is applied for a few factors commonly used in GIS.
-     *       For example {@code multiply(RADIANS, 0.0174532925199...)} will return {@link #DEGREE}
-     *       even if the given numerical value is slightly different than {@linkplain Math#PI π}/180.
-     *       The tolerance factor and the set of units handled especially may change in future SIS versions.</li>
-     *   <li>This method tries to returns unique instances for some common units.</li>
-     * </ul>
-     *
-     * @param  <Q>     the quantity measured by the unit.
-     * @param  unit    the unit to multiply.
-     * @param  factor  the multiplication factor.
-     * @return the unit multiplied by the given factor.
-     *
-     * @deprecated Replaced by Apache SIS implementation of {@link Unit#multiply(double)}.
-     */
-    @Deprecated
-    @Workaround(library="JSR-275", version="0.9.3")
-    @SuppressWarnings("unchecked")
-    public static <Q extends Quantity<Q>> Unit<Q> multiply(Unit<Q> unit, final double factor) {
-        if (RADIAN.equals(unit)) {
-            if (abs(factor - (PI / 180)) <= (EPS * PI/180)) {
-                return (Unit<Q>) DEGREE;
-            }
-            if (abs(factor - (PI / 200)) <= (EPS * PI/200)) {
-                return (Unit<Q>) GRAD;
-            }
-        } else if (METRE.equals(unit)) {
-            if (abs(factor - 0.3048) <= (EPS * 0.3048)) {
-                return (Unit<Q>) FOOT;
-            }
-            if (abs(factor - (1200.0/3937)) <= (EPS * (1200.0/3937))) {
-                return (Unit<Q>) US_SURVEY_FOOT;
-            }
-        }
-        if (abs(factor - 1) > EPS) {
-            unit = unit.multiply(factor);
-        }
-        return unit;
-    }
-
-    /**
      * Returns the factor by which to multiply the standard unit in order to get the given unit.
      * The "standard" unit is usually the SI unit on which the given unit is based, as given by
      * {@link Unit#getSystemUnit()}.
@@ -1597,12 +1570,12 @@ public final class Units extends Static {
      * is parsed as an integer and forwarded to the {@link #valueOfEPSG(int)} method.
      *
      * <div class="section">NetCDF unit symbols</div>
-     * The attributes in NetCDF files often merge the axis direction with the angular unit,
+     * The attributes in netCDF files often merge the axis direction with the angular unit,
      * as in {@code "degrees_east"} or {@code "degrees_north"}. This {@code valueOf} method
      * ignores those suffixes and unconditionally returns {@link #DEGREE} for all axis directions.
      * In particular, the units for {@code "degrees_west"} and {@code "degrees_east"}
      * do <strong>not</strong> have opposite sign.
-     * It is caller responsibility to handle the direction of axes associated to NetCDF units.
+     * It is caller responsibility to handle the direction of axes associated to netCDF units.
      *
      * @param  uom  the symbol to parse, or {@code null}.
      * @return the parsed symbol, or {@code null} if {@code uom} was null.

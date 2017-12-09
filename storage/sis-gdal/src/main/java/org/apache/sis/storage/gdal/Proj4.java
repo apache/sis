@@ -166,22 +166,13 @@ public final class Proj4 extends Static {
          * Append the map projection parameters. Those parameters may include axis lengths (a and b),
          * but not necessarily. If axis lengths are specified, then we will ignore the Ellipsoid instance
          * associated to the CRS.
-         *
-         * The "+over" option is for disabling the default wrapping of output longitudes in the -180 to 180 range.
-         * We do that for having the same behavior between Proj.4 and Apache SIS. No wrapping reduce discontinuity
-         * problems with geometries that cross the anti-meridian.
-         *
-         * The "+no_defs" option is for ensuring that no defaults are read from "/usr/share/proj/proj_def.dat" file.
-         * That file contains default values for various map projections, for example "+lat_1=29.5" and "+lat_2=45.5"
-         * for the "aea" projection. Those defaults are assuming that users want Conterminous U.S. map.
-         * This may cause surprising behavior for users outside USA.
          */
         final StringBuilder definition = new StringBuilder(100);
         definition.append(Proj4Factory.PROJ_PARAM).append(method);
         boolean hasSemiMajor = false;
         boolean hasSemiMinor = false;
         if (parameters != null) {
-            definition.append(" +over +no_defs");                                       // See above comment
+            definition.append(Proj4Factory.STANDARD_OPTIONS);
             for (final GeneralParameterValue parameter : parameters.values()) {
                 if (parameter instanceof ParameterValue<?>) {
                     final ParameterValue<?> pv = (ParameterValue<?>) parameter;
@@ -197,9 +188,9 @@ public final class Proj4 extends Static {
                         }
                     }
                     final String pn = name(parameter.getDescriptor());
-                    hasSemiMajor |= pn.equals("+a");
-                    hasSemiMinor |= pn.equals("+b");
-                    definition.append(' ').append(pn).append('=').append(value);
+                    hasSemiMajor |= pn.equals("a");
+                    hasSemiMinor |= pn.equals("b");
+                    definition.append(" +").append(pn).append('=').append(value);
                 }
             }
         }
@@ -308,7 +299,7 @@ public final class Proj4 extends Static {
      * Creates a new CRS from the given {@literal Proj.4} definition string.
      * Some examples of definition strings are:
      * <ul>
-     *   <li>{@code "+init=epsg:3395"} (see warning below)</li>
+     *   <li>{@code "+init=epsg:3395 +over"} (see warning below)</li>
      *   <li>{@code "+proj=latlong +datum=WGS84 +ellps=WGS84 +towgs84=0,0,0"}</li>
      *   <li>{@code "+proj=merc +lon_0=0 +k=1 +x_0=0 +y_0=0 +datum=WGS84 +units=m +ellps=WGS84 +towgs84=0,0,0"}</li>
      * </ul>

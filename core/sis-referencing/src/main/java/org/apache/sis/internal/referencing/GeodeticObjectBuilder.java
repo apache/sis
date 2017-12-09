@@ -40,10 +40,10 @@ import org.opengis.referencing.datum.TemporalDatum;
 import org.opengis.referencing.operation.CoordinateOperationFactory;
 import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.referencing.operation.Conversion;
-import org.apache.sis.internal.metadata.ReferencingServices;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.internal.system.DefaultFactories;
+import org.apache.sis.internal.metadata.EllipsoidalHeightCombiner;
 import org.apache.sis.internal.referencing.provider.TransverseMercator;
 import org.apache.sis.internal.referencing.provider.PolarStereographicA;
 import org.apache.sis.measure.Latitude;
@@ -252,7 +252,7 @@ public class GeodeticObjectBuilder extends Builder<GeodeticObjectBuilder> {
      * @return {@code this}, for method calls chaining.
      * @throws FactoryException if the operation method for the Transverse Mercator projection can not be obtained.
      *
-     * @see CommonCRS#UTM(double, double)
+     * @see CommonCRS#universal(double, double)
      */
     public GeodeticObjectBuilder setTransverseMercator(TransverseMercator.Zoner zoner, double latitude, double longitude)
             throws FactoryException
@@ -424,7 +424,13 @@ public class GeodeticObjectBuilder extends Builder<GeodeticObjectBuilder> {
      * @throws FactoryException if the object creation failed.
      */
     public CoordinateReferenceSystem createCompoundCRS(final CoordinateReferenceSystem... components) throws FactoryException {
-        return ReferencingServices.getInstance().createCompoundCRS(getCRSFactory(), getCSFactory(), properties, components);
+        return new EllipsoidalHeightCombiner() {
+            @Override public void initialize(final int factoryTypes) {
+                if ((factoryTypes & CRS)       != 0) crsFactory = getCRSFactory();
+                if ((factoryTypes & CS)        != 0)  csFactory = getCSFactory();
+                if ((factoryTypes & OPERATION) != 0)  opFactory = getCoordinateOperationFactory();
+            }
+        }.createCompoundCRS(properties, components);
     }
 
     /**

@@ -32,7 +32,7 @@ import org.opengis.referencing.operation.TransformException;
  *   <li>If the expected mathematical value is infinite (for example the Mercator projection at ±90° of latitude),
  *       then the map projection should return a {@link Double#POSITIVE_INFINITY} or {@link Double#NEGATIVE_INFINITY},
  *       depending on the sign of the correct mathematical answer.</li>
- *   <li>If no real number is expected to exist for the input coordinate (for example the root of a negative value),
+ *   <li>If no real number is expected to exist for the input coordinate (for example at a latitude greater than 90°),
  *       then the map projection should return {@link Double#NaN}.</li>
  *   <li>If a real number is expected to exist but the map projection fails to compute it (for example because an
  *       iterative algorithm does not converge), then the projection should throw {@code ProjectionException}.</li>

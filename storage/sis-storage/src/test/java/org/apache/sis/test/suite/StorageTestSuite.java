@@ -37,6 +37,7 @@ import org.junit.BeforeClass;
     org.apache.sis.internal.storage.io.ChannelImageInputStreamTest.class,
     org.apache.sis.internal.storage.io.ChannelImageOutputStreamTest.class,
     org.apache.sis.internal.storage.io.HyperRectangleReaderTest.class,
+    org.apache.sis.internal.storage.io.RewindableLineReaderTest.class,
     org.apache.sis.internal.storage.MetadataBuilderTest.class,
     org.apache.sis.storage.FeatureNamingTest.class,
     org.apache.sis.storage.ProbeResultTest.class,
@@ -48,6 +49,7 @@ import org.junit.BeforeClass;
     org.apache.sis.internal.storage.wkt.StoreTest.class,
     org.apache.sis.internal.storage.csv.StoreProviderTest.class,
     org.apache.sis.internal.storage.csv.StoreTest.class,
+    org.apache.sis.internal.storage.folder.StoreTest.class,
     org.apache.sis.storage.DataStoresTest.class
 })
 public final strictfp class StorageTestSuite extends TestSuite {

@@ -31,6 +31,7 @@ import org.apache.maven.artifact.Artifact;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
+import org.apache.maven.plugins.annotations.ResolutionScope;
 
 import static java.util.jar.Pack200.Packer;
 
@@ -43,7 +44,7 @@ import static java.util.jar.Pack200.Packer;
  * @since   0.8
  * @module
  */
-@Mojo(name = "unopkg", defaultPhase = LifecyclePhase.PACKAGE)
+@Mojo(name = "unopkg", defaultPhase = LifecyclePhase.PACKAGE, requiresDependencyResolution = ResolutionScope.COMPILE_PLUS_RUNTIME)
 public final class UnoPkg extends AbstractMojo implements FilenameFilter {
     /**
      * The subdirectory (relative to {@link #baseDirectory}) where the UNO files are expected.
@@ -62,7 +63,7 @@ public final class UnoPkg extends AbstractMojo implements FilenameFilter {
 
     /**
      * Base directory of the module to compile.
-     * The UNO files are expect in the {@code "src/main/unopkg"} subdirectory.
+     * The UNO files are expected in the {@code "src/main/unopkg"} subdirectory.
      * The plugin will look for the {@code META-INF/manifest.xml} and {@code *.rdb} files in that directory.
      */
     @Parameter(property="basedir", required=true, readonly=true)
@@ -132,6 +133,7 @@ public final class UnoPkg extends AbstractMojo implements FilenameFilter {
                name.endsWith(".rdb") || name.endsWith(".RDB") ||
                name.endsWith(".xml") || name.endsWith(".XML") ||
                name.endsWith(".xcu") || name.endsWith(".XCU") ||
+               name.endsWith(".txt") || name.endsWith(".TXT") ||
                name.endsWith(".png") || name.endsWith(".PNG");
     }
 
@@ -184,6 +186,8 @@ public final class UnoPkg extends AbstractMojo implements FilenameFilter {
             }
             /*
              * Copies the dependencies, optionally in a single PACK200 entry.
+             * We discard most debug information because stack traces are not
+             * easy to get from an application running in OpenOffice anyway.
              */
             Pack200.Packer packer = null;
             if (Boolean.parseBoolean(pack200)) {
@@ -199,11 +203,10 @@ public final class UnoPkg extends AbstractMojo implements FilenameFilter {
                 p.put(Packer.DEFLATE_HINT,      Packer.TRUE);       // transmitting a single request to use "compress" mode.
                 p.put(Packer.UNKNOWN_ATTRIBUTE, Packer.ERROR);      // throw an error if an attribute is unrecognized.
             }
-            for (final Artifact artifact : project.getDependencyArtifacts()) {
+            for (final Artifact artifact : project.getArtifacts()) {
                 final String scope = artifact.getScope();
-                if (scope != null &&  // Maven 2.0.6 bug?
-                   (scope.equalsIgnoreCase(Artifact.SCOPE_COMPILE) ||
-                    scope.equalsIgnoreCase(Artifact.SCOPE_RUNTIME)))
+                if (Artifact.SCOPE_COMPILE.equalsIgnoreCase(scope) ||
+                    Artifact.SCOPE_RUNTIME.equalsIgnoreCase(scope))
                 {
                     final File file = artifact.getFile();
                     String name = file.getName();
@@ -211,7 +214,7 @@ public final class UnoPkg extends AbstractMojo implements FilenameFilter {
                         name = prefix + name;
                     }
                     if (packer != null && name.endsWith(".jar")) {
-                        name = name.substring(0, name.length()-3) + "pack";
+                        name = name.substring(0, name.length() - 3) + "pack";
                         try (JarFile jar = new FilteredJarFile(file)) {
                             out.putNextEntry(new ZipEntry(name));
                             packer.pack(jar, out);

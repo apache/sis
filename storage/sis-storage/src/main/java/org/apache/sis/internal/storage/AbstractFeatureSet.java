@@ -28,17 +28,14 @@ import org.apache.sis.util.logging.WarningListeners;
  * @version 0.8
  * @since   0.8
  * @module
- *
- * @todo this class may be removed if we refactor {@link FeatureSet} as an abstract class.
  */
 public abstract class AbstractFeatureSet extends AbstractResource implements FeatureSet {
     /**
      * Creates a new resource.
      *
-     * @param store      the data store which contains this resource.
      * @param listeners  the set of registered warning listeners for the data store.
      */
-    protected AbstractFeatureSet(final DataStore store, final WarningListeners<DataStore> listeners) {
-        super(store, listeners);
+    protected AbstractFeatureSet(final WarningListeners<DataStore> listeners) {
+        super(listeners);
     }
 }

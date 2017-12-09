@@ -20,11 +20,22 @@ import java.io.InputStream;
 import java.io.IOException;
 import javax.imageio.stream.ImageInputStream;
 
+// Branch-dependent imports
+import java.io.UncheckedIOException;
+
 
 /**
  * Wraps an {@link ImageInputStream} as a standard {@link InputStream}.
  *
- * @author  Martin Desruisseaux (IRD)
+ * <div class="section">Thread-safety</div>
+ * This class is thread-safe only if the underlying {@link ImageInputStream} is itself thread-safe.
+ * For performance reasons, this class does not synchronize the frequently invoked {@code read(…)}
+ * methods since they do nothing else than delegating to {@code ImageInputStream}. This means that
+ * if the wrapped input is {@link ChannelImageInputStream}, then this class is <strong>not</strong>
+ * thread-safe. This is not necessarily a contradiction with Java API since input streams define no
+ * explicit synchronization lock (contrarily to {@link java.io.Reader}.
+ *
+ * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 0.8
  *
  * @see OutputStreamAdapter
@@ -41,13 +52,34 @@ public final class InputStreamAdapter extends InputStream implements Markable {
     public final ImageInputStream input;
 
     /**
+     * Position of the last mark created by {@link #mark(int)}, or the file beginning if there is no mark.
+     */
+    private long markPosition;
+
+    /**
+     * Count of marks created by {@link #mark()}, not counting the mark created by {@link #mark(int)}.
+     * We have to keep this count ourselves because {@link ImageInputStream#reset()} does nothing if
+     * there is no mark, and provides no API for letting us know if {@code reset()} worked.
+     */
+    private int nestedMarks;
+
+    /**
+     * Temporarily set to {@code true} if a call to {@link #close()} should not be propagated to the {@link #input}.
+     *
+     * @see RewindableLineReader#rewind()
+     */
+    boolean keepOpen;
+
+    /**
      * Constructs a new input stream.
      *
-     * @param input  the stream to wrap.
+     * @param  input  the stream to wrap.
+     * @throws IOException  if an error occurred while creating the adapter.
      */
-    public InputStreamAdapter(final ImageInputStream input) {
+    public InputStreamAdapter(final ImageInputStream input) throws IOException {
         assert !(input instanceof InputStream);
         this.input = input;
+        markPosition = input.getStreamPosition();
     }
 
     /**
@@ -105,31 +137,60 @@ public final class InputStreamAdapter extends InputStream implements Markable {
     }
 
     /**
-     * Marks the current position in this input stream.
+     * Discards all previous marks and marks the current position in this input stream.
+     * This method is part of {@link InputStream} API, where only one mark can be set and multiple
+     * calls to {@code reset()} move to the same position until {@code mark(int)} is invoked again.
      *
      * @param  readlimit  ignored.
+     * @throws UncheckedIOException if the mark can not be set.
      */
     @Override
-    public void mark(final int readlimit) {
-        input.mark();
+    public synchronized void mark(final int readlimit) {
+        try {
+            markPosition = input.getStreamPosition();
+            input.flushBefore(markPosition);
+            nestedMarks = 0;
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);      // InputStream.mark() does not allow us to throw IOException.
+        }
     }
 
     /**
      * Marks the current position in this input stream.
+     * This method is part of {@link Markable} API, where marks can be nested.
+     * It is okay to invoke this method after {@link #mark(int)} (but not before).
      */
     @Override
-    public void mark() {
+    public synchronized void mark() {
         input.mark();
+        nestedMarks++;
     }
 
     /**
      * Repositions this stream to the position at the time the {@code mark} method was last called.
+     * This method has to comply with both {@link InputStream#reset()} and {@link Markable#reset()}
+     * contracts. It does that by choosing the first option in following list:
+     *
+     * <ul>
+     *   <li>If there is nested {@link #mark()} calls, then this {@code reset()} method sets the stream
+     *       position to the most recent unmatched call to {@code mark()}.</li>
+     *   <li>Otherwise if the {@link #mark(int)} method has been invoked, then this method sets the stream
+     *       position to the mark created by the most recent call to {@code mark(int)}. The {@code reset()}
+     *       method can be invoked many time; it will always set the position to the same mark
+     *       (this behavior is required by {@link InputStream} contract).</li>
+     *   <li>Otherwise this method sets the stream position to the position it had when this
+     *       {@code InputStreamAdapter} has been created.</li>
+     * </ul>
      *
      * @throws IOException if an I/O error occurs.
      */
     @Override
-    public void reset() throws IOException {
-        input.reset();
+    public synchronized void reset() throws IOException {
+        if (--nestedMarks >= 0) {
+            input.reset();
+        } else {
+            input.seek(markPosition);
+        }
     }
 
     /**
@@ -149,7 +210,7 @@ public final class InputStreamAdapter extends InputStream implements Markable {
      * @throws IOException if an I/O error occurs.
      */
     @Override
-    public void close() throws IOException {
-        input.close();
+    public synchronized void close() throws IOException {
+        if (!keepOpen) input.close();
     }
 }

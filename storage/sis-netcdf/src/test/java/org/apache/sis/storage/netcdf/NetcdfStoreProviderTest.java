@@ -48,7 +48,7 @@ import static org.opengis.test.Assert.*;
 public final strictfp class NetcdfStoreProviderTest extends IOTestCase {
     /**
      * Tests {@link NetcdfStoreProvider#probeContent(StorageConnector)} for an input stream which shall
-     * be recognized as a classic NetCDF file.
+     * be recognized as a classic netCDF file.
      *
      * @throws DataStoreException if a logical error occurred.
      */
@@ -66,7 +66,7 @@ public final strictfp class NetcdfStoreProviderTest extends IOTestCase {
     /**
      * Tests {@link NetcdfStoreProvider#probeContent(StorageConnector)} for a UCAR {@link NetcdfFile} object.
      *
-     * @throws IOException if an error occurred while opening the NetCDF file.
+     * @throws IOException if an error occurred while opening the netCDF file.
      * @throws DataStoreException if a logical error occurred.
      */
     @Test
@@ -83,9 +83,9 @@ public final strictfp class NetcdfStoreProviderTest extends IOTestCase {
 
     /**
      * Tests {@link NetcdfStoreProvider#decoder(WarningListeners, StorageConnector)} for an input stream which
-     * shall be recognized as a classic NetCDF file. The provider shall instantiate a {@link ChannelDecoder}.
+     * shall be recognized as a classic netCDF file. The provider shall instantiate a {@link ChannelDecoder}.
      *
-     * @throws IOException if an error occurred while opening the NetCDF file.
+     * @throws IOException if an error occurred while opening the netCDF file.
      * @throws DataStoreException if a logical error occurred.
      */
     @Test
@@ -100,7 +100,7 @@ public final strictfp class NetcdfStoreProviderTest extends IOTestCase {
      * Tests {@link NetcdfStoreProvider#decoder(WarningListeners, StorageConnector)} for a UCAR
      * {@link NetcdfFile} object. The provider shall instantiate a {@link DecoderWrapper}.
      *
-     * @throws IOException if an error occurred while opening the NetCDF file.
+     * @throws IOException if an error occurred while opening the netCDF file.
      * @throws DataStoreException if a logical error occurred.
      */
     @Test

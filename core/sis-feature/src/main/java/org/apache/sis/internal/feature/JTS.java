@@ -21,6 +21,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.InvocationTargetException;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.math.Vector;
+import org.apache.sis.util.Classes;
 
 
 /**
@@ -59,6 +60,14 @@ final class JTS extends Geometries<Object> {
         getMinY = envt.getMethod("getMinY", (Class[]) null);
         getMaxX = envt.getMethod("getMaxX", (Class[]) null);
         getMaxY = envt.getMethod("getMaxY", (Class[]) null);
+    }
+
+    /**
+     * If the given object is a JTS geometry, returns a short string representation the class name.
+     */
+    @Override
+    final String tryGetLabel(Object geometry) {
+        return (rootClass.isInstance(geometry)) ? Classes.getShortClassName(geometry) : null;
     }
 
     /**
@@ -136,5 +145,13 @@ final class JTS extends Geometries<Object> {
     @Override
     final Object tryMergePolylines(final Object first, final Iterator<?> polylines) {
         throw unsupported(2);   // TODO - see class javadoc
+    }
+
+    /**
+     * Parses the given WKT.
+     */
+    @Override
+    public Object parseWKT(final String wkt) {
+        throw unsupported(2);
     }
 }

@@ -31,6 +31,7 @@ import org.junit.BeforeClass;
  */
 @Suite.SuiteClasses({
     org.apache.sis.internal.metadata.AxisDirectionsTest.class,
+    org.apache.sis.internal.referencing.LazySetTest.class,
     org.apache.sis.internal.referencing.FormulasTest.class,
     org.apache.sis.internal.referencing.j2d.ShapeUtilitiesTest.class,
     org.apache.sis.internal.referencing.PositionalAccuracyConstantTest.class,
@@ -124,6 +125,7 @@ import org.junit.BeforeClass;
     org.apache.sis.referencing.operation.transform.ContextualParametersTest.class,
     org.apache.sis.referencing.operation.transform.EllipsoidToCentricTransformTest.class,
     org.apache.sis.referencing.operation.transform.MolodenskyTransformTest.class,
+    org.apache.sis.referencing.operation.transform.AbridgedMolodenskyTransformTest.class,
     org.apache.sis.referencing.operation.transform.SphericalToCartesianTest.class,
     org.apache.sis.referencing.operation.transform.CartesianToSphericalTest.class,
     org.apache.sis.referencing.operation.transform.PolarToCartesianTest.class,
@@ -220,6 +222,7 @@ import org.junit.BeforeClass;
     org.apache.sis.referencing.cs.CodesTest.class,
     org.apache.sis.referencing.CRSTest.class,
     org.apache.sis.internal.referencing.DefinitionVerifierTest.class,
+    org.apache.sis.internal.referencing.CoordinateOperationsTest.class,
 
     // Coordinate operation finders are last, since they need everything else.
     org.apache.sis.referencing.operation.CoordinateOperationRegistryTest.class,
@@ -228,12 +231,13 @@ import org.junit.BeforeClass;
     org.apache.sis.referencing.operation.builder.LinearTransformBuilderTest.class,
     org.apache.sis.referencing.operation.builder.LocalizationGridBuilderTest.class,
 
-    // Geometry
+    // Geometry and miscellaneous
     org.apache.sis.geometry.AbstractDirectPositionTest.class,
     org.apache.sis.geometry.GeneralDirectPositionTest.class,
     org.apache.sis.geometry.DirectPosition1DTest.class,
     org.apache.sis.geometry.DirectPosition2DTest.class,
     org.apache.sis.geometry.AbstractEnvelopeTest.class,
+    org.apache.sis.geometry.ArrayEnvelopeTest.class,
     org.apache.sis.geometry.GeneralEnvelopeTest.class,
     org.apache.sis.geometry.SubEnvelopeTest.class,
     org.apache.sis.geometry.ImmutableEnvelopeTest.class,
@@ -242,10 +246,12 @@ import org.junit.BeforeClass;
     org.apache.sis.geometry.Shapes2DTest.class,                 // Simpler than EnvelopesTest.
     org.apache.sis.geometry.EnvelopesTest.class,
     org.apache.sis.internal.referencing.ServicesForMetadataTest.class,
+    org.apache.sis.internal.metadata.EllipsoidalHeightCombinerTest.class,
     org.apache.sis.geometry.CoordinateFormatTest.class,
 
     org.apache.sis.distance.LatLonPointRadiusTest.class,        // Pending refactoring in a geometry package.
 
+    org.apache.sis.test.integration.CoordinateReferenceSystemTest.class,
     org.apache.sis.test.integration.CoordinateOperationTest.class,
     org.apache.sis.test.integration.DatumShiftTest.class,
     org.apache.sis.test.integration.MetadataTest.class,

@@ -1200,7 +1200,7 @@ searchWordBreak:    while (true) {
      *
      *   <li>Next replace all occurrence of {@code '_'} by spaces in order to take in account
      *     an other common naming convention, which uses {@code '_'} as a word separator. This
-     *     convention is used by NetCDF attributes like {@code "project_name"}.</li>
+     *     convention is used by netCDF attributes like {@code "project_name"}.</li>
      *
      *   <li>Finally ensure that the first character is upper-case.</li>
      * </ol>

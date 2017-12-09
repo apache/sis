@@ -16,17 +16,19 @@
  */
 package org.apache.sis.internal.storage;
 
+import java.util.Locale;
 import org.opengis.geometry.Envelope;
 import org.opengis.metadata.Metadata;
 import org.opengis.metadata.extent.Extent;
-import org.opengis.metadata.extent.GeographicExtent;
 import org.opengis.metadata.extent.GeographicBoundingBox;
+import org.opengis.metadata.extent.GeographicExtent;
 import org.opengis.metadata.identification.Identification;
+import org.apache.sis.geometry.GeneralEnvelope;
+import org.apache.sis.util.Localized;
+import org.apache.sis.util.logging.WarningListeners;
 import org.apache.sis.storage.Resource;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreException;
-import org.apache.sis.geometry.GeneralEnvelope;
-import org.apache.sis.util.logging.WarningListeners;
 
 
 /**
@@ -36,32 +38,43 @@ import org.apache.sis.util.logging.WarningListeners;
  * @version 0.8
  * @since   0.8
  * @module
- *
- * @todo this class may be removed if we refactor {@link Resource} as an abstract class.
  */
-public abstract class AbstractResource implements Resource {
-    /**
-     * The data store which contains this resource.
-     */
-    protected final DataStore store;
-
+public abstract class AbstractResource implements Resource, Localized {
     /**
      * The set of registered warning listeners for the data store.
-     *
-     * @todo Remove this field if we move {@code AbstractResource} to the {@code org.apache.sis.storage} package,
-     *       since we would be able to access {@code DataStore.listeners} directly.
      */
-    private final WarningListeners<DataStore> listeners;
+    protected final WarningListeners<DataStore> listeners;
 
     /**
      * Creates a new resource.
      *
-     * @param store      the data store which contains this resource.
      * @param listeners  the set of registered warning listeners for the data store.
      */
-    protected AbstractResource(final DataStore store, final WarningListeners<DataStore> listeners) {
-        this.store     = store;
+    protected AbstractResource(final WarningListeners<DataStore> listeners) {
         this.listeners = listeners;
+    }
+
+    /**
+     * Returns the locale for error messages or warnings.
+     * Returns {@code null} if no locale is explicitly defined.
+     *
+     * @return the locale, or {@code null} if not explicitly defined.
+     */
+    @Override
+    public final Locale getLocale() {
+        return (listeners != null) ? listeners.getLocale() : null;
+    }
+
+    /**
+     * Returns the display name of the data store, or {@code null} if none.
+     * This is a convenience method for formatting error messages in subclasses.
+     *
+     * @return the data store display name, or {@code null}.
+     *
+     * @see DataStore#getDisplayName()
+     */
+    protected final String getStoreName() {
+        return (listeners != null) ? listeners.getSource().getDisplayName() : null;
     }
 
     /**
@@ -70,12 +83,21 @@ public abstract class AbstractResource implements Resource {
      * assuming the {@linkplain org.apache.sis.referencing.CommonCRS#defaultGeographic() default geographic CRS}
      * (usually WGS 84).
      *
-     * @return the spatio-temporal resource extent.
+     * @return the spatio-temporal resource extent, or {@code null} if none.
      * @throws DataStoreException if an error occurred while reading or computing the envelope.
      */
-    @Override
     public Envelope getEnvelope() throws DataStoreException {
-        final Metadata metadata = getMetadata();
+        return envelope(getMetadata());
+    }
+
+    /**
+     * Implementation of {@link #getEnvelope()}, provided as a separated method for
+     * {@link org.apache.sis.storage.DataSet} implementations that do not extend {@code AbstractResource}.
+     *
+     * @param  metadata  the metadata from which to compute the envelope, or {@code null}.
+     * @return the spatio-temporal resource extent, or {@code null} if none.
+     */
+    public static Envelope envelope(final Metadata metadata) {
         GeneralEnvelope bounds = null;
         if (metadata != null) {
             for (final Identification identification : metadata.getIdentificationInfo()) {
@@ -98,14 +120,5 @@ public abstract class AbstractResource implements Resource {
             }
         }
         return bounds;
-    }
-
-    /**
-     * The set of registered warning listeners for the data store.
-     *
-     * @return the registered warning listeners for the data store.
-     */
-    protected final WarningListeners<DataStore> listeners() {
-        return listeners;
     }
 }

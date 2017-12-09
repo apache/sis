@@ -28,7 +28,7 @@
   <parent>
     <groupId>org.apache.sis</groupId>
     <artifactId>application</artifactId>
-    <version>0.8-jdk8-SNAPSHOT</version>
+    <version>1.0-jdk8-SNAPSHOT</version>
   </parent>
 
 
@@ -132,6 +132,21 @@
       <scope>provided</scope>
     </dependency>
   </dependencies>
+
+  <!-- Because the EPSG database is not free, require the user to ask it explicitely. -->
+  <profiles>
+    <profile>
+      <id>non-free</id>
+      <dependencies>
+        <dependency>
+          <groupId>org.apache.sis.non-free</groupId>
+          <artifactId>sis-embedded-data</artifactId>
+          <version>${sis.non-free.version}</version>
+          <scope>runtime</scope>
+        </dependency>
+      </dependencies>
+    </profile>
+  </profiles>
 
 
   <!-- ===========================================================

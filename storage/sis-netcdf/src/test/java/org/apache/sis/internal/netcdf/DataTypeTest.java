@@ -32,7 +32,7 @@ import static org.junit.Assert.*;
  */
 public final strictfp class DataTypeTest extends TestCase {
     /**
-     * Verifies the relationship between the enumeration ordinal value and the NetCDF numerical code.
+     * Verifies the relationship between the enumeration ordinal value and the netCDF numerical code.
      */
     @Test
     public void testOrdinalValues() {

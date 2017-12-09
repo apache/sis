@@ -16,29 +16,24 @@
  */
 package org.apache.sis.internal.referencing;
 
-import java.util.Map;
-import java.util.Collections;
+import java.util.Date;
 import org.opengis.geometry.Envelope;
 import org.opengis.metadata.extent.GeographicBoundingBox;
 import org.opengis.metadata.extent.VerticalExtent;
-import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.opengis.referencing.crs.GeographicCRS;
-import org.opengis.referencing.crs.SingleCRS;
 import org.opengis.referencing.operation.TransformException;
-import org.opengis.util.FactoryException;
-import org.apache.sis.internal.metadata.ReferencingServices;
 import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
 import org.apache.sis.metadata.iso.extent.DefaultVerticalExtent;
+import org.apache.sis.metadata.iso.extent.DefaultTemporalExtent;
 import org.apache.sis.metadata.iso.extent.DefaultSpatialTemporalExtent;
 import org.apache.sis.geometry.GeneralEnvelope;
-import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.referencing.crs.HardCodedCRS;
-import org.apache.sis.referencing.factory.GeodeticObjectFactory;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
+import org.apache.sis.test.TestUtilities;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import static org.apache.sis.test.Assert.*;
@@ -54,10 +49,19 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
  * @module
  */
 @DependsOn({
-    org.apache.sis.referencing.CRSTest.class,
     org.apache.sis.referencing.CommonCRSTest.class
 })
 public final strictfp class ServicesForMetadataTest extends TestCase {
+    /**
+     * Tests {@link org.apache.sis.metadata.iso.extent.Extents#centroid(GeographicBoundingBox)}.
+     *
+     * @since 0.8
+     */
+    @Test
+    public void testGeographicBoundingBoxCentroid() {
+        org.apache.sis.metadata.iso.extent.ExtentsTest.testCentroid();
+    }
+
     /**
      * Creates a test envelope with the given CRS and initialized with
      * [-10 … 70]° of longitude, [-20 … 30]° of latitude, [-40 … 60] metres of elevation
@@ -96,7 +100,6 @@ public final strictfp class ServicesForMetadataTest extends TestCase {
         assertEquals( 70, extent.getMaximumValue(), STRICT);
         assertEqualsIgnoreMetadata(expectedCRS.crs(), extent.getVerticalCRS());
     }
-
 
     /**
      * Tests (indirectly) {@link ServicesForMetadata#setBounds(Envelope, DefaultGeographicBoundingBox)}
@@ -165,62 +168,40 @@ public final strictfp class ServicesForMetadataTest extends TestCase {
     }
 
     /**
-     * Tests {@link ServicesForMetadata#createCompoundCRS ReferencingUtilities.createCompoundCRS(…)}.
+     * Tests {@link DefaultVerticalExtent#intersect(VerticalExtent)}.
      *
-     * @throws FactoryException if a CRS can not be created.
-     *
-     * @see <a href="https://issues.apache.org/jira/browse/SIS-303">SIS-303</a>
-     *
-     * @since 0.7
-     */
-    @Test
-    public void testCreateCompoundCRS() throws FactoryException {
-        final ReferencingServices services = ServicesForMetadata.getInstance();
-        final GeodeticObjectFactory factory = new GeodeticObjectFactory();
-        final Map<String,String> properties = Collections.singletonMap(CoordinateReferenceSystem.NAME_KEY, "WGS 84 (4D)");
-        /*
-         * createCompoundCRS(…) should not combine GeographicCRS with non-ellipsoidal height.
-         */
-        CoordinateReferenceSystem compound = services.createCompoundCRS(factory, factory, properties,
-                HardCodedCRS.WGS84, HardCodedCRS.GRAVITY_RELATED_HEIGHT, HardCodedCRS.TIME);
-        assertArrayEqualsIgnoreMetadata(new SingleCRS[] {HardCodedCRS.WGS84, HardCodedCRS.GRAVITY_RELATED_HEIGHT, HardCodedCRS.TIME},
-                CRS.getSingleComponents(compound).toArray());
-        /*
-         * createCompoundCRS(…) should combine GeographicCRS with ellipsoidal height.
-         */
-        compound = services.createCompoundCRS(factory, factory, properties,
-                HardCodedCRS.WGS84, HardCodedCRS.ELLIPSOIDAL_HEIGHT);
-        assertArrayEqualsIgnoreMetadata(new SingleCRS[] {HardCodedCRS.WGS84_3D},
-                CRS.getSingleComponents(compound).toArray());
-        /*
-         * createCompoundCRS(…) should combine GeographicCRS with ellipsoidal height and keep time.
-         */
-        compound = services.createCompoundCRS(factory, factory, properties,
-                HardCodedCRS.WGS84, HardCodedCRS.ELLIPSOIDAL_HEIGHT, HardCodedCRS.TIME);
-        assertArrayEqualsIgnoreMetadata(new SingleCRS[] {HardCodedCRS.WGS84_3D, HardCodedCRS.TIME},
-                CRS.getSingleComponents(compound).toArray());
-        /*
-         * Non-standard feature: accept (VerticalCRS + GeodeticCRS) order.
-         * The test below use the reverse order for all axes compared to the previous test.
-         */
-        compound = services.createCompoundCRS(factory, factory, properties,
-                HardCodedCRS.TIME, HardCodedCRS.ELLIPSOIDAL_HEIGHT, HardCodedCRS.WGS84_φλ);
-        final Object[] components = CRS.getSingleComponents(compound).toArray();
-        assertEquals(2, components.length);
-        assertEqualsIgnoreMetadata(HardCodedCRS.TIME, components[0]);
-        assertInstanceOf("Shall be a three-dimensional geographic CRS.", GeographicCRS.class, components[1]);
-        assertAxisDirectionsEqual("Shall be a three-dimensional geographic CRS.",
-                ((CoordinateReferenceSystem) components[1]).getCoordinateSystem(),
-                AxisDirection.UP, AxisDirection.NORTH, AxisDirection.EAST);
-    }
-
-    /**
-     * Tests {@link org.apache.sis.metadata.iso.extent.Extents#centroid(GeographicBoundingBox)}.
+     * @throws TransformException if the transformation failed.
      *
      * @since 0.8
      */
     @Test
-    public void testGeographicBoundingBoxCentroid() {
-        org.apache.sis.metadata.iso.extent.ExtentsTest.testCentroid();
+    public void testVerticalIntersection() throws TransformException {
+        final DefaultVerticalExtent e1 = new DefaultVerticalExtent(1000, 2000, HardCodedCRS.ELLIPSOIDAL_HEIGHT_cm);
+        final DefaultVerticalExtent e2 = new DefaultVerticalExtent(15,   25,   HardCodedCRS.ELLIPSOIDAL_HEIGHT);
+        e1.intersect(e2);
+        assertEquals(new DefaultVerticalExtent(1500, 2000, HardCodedCRS.ELLIPSOIDAL_HEIGHT_cm), e1);
+    }
+
+    /**
+     * Tests {@link DefaultTemporalExtent#intersect(TemporalExtent)}.
+     *
+     * @throws TransformException if the transformation failed.
+     *
+     * @since 0.8
+     */
+    @Test
+    @Ignore("This operation requires the sis-temporal module.")
+    public void testTemporalIntersection() throws TransformException {
+        final DefaultTemporalExtent e1 = new DefaultTemporalExtent();
+        final DefaultTemporalExtent e2 = new DefaultTemporalExtent();
+        final Date t1 = TestUtilities.date("2016-12-05 19:45:20");
+        final Date t2 = TestUtilities.date("2017-02-18 02:12:50");
+        final Date t3 = TestUtilities.date("2017-11-30 23:50:00");
+        final Date t4 = TestUtilities.date("2018-05-20 12:30:45");
+        e1.setBounds(t1, t3);
+        e2.setBounds(t2, t4);
+        e1.intersect(e2);
+        assertEquals("startTime", t2, e1.getStartTime());
+        assertEquals("endTime",   t3, e1.getEndTime());
     }
 }

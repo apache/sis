@@ -20,15 +20,17 @@ import java.io.Reader;
 import java.io.BufferedReader;
 import java.io.LineNumberReader;
 import java.io.IOException;
+import java.net.URI;
 import org.opengis.metadata.Metadata;
 import org.opengis.util.FactoryException;
+import org.opengis.parameter.ParameterValueGroup;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreReferencingException;
 import org.apache.sis.storage.UnsupportedStorageException;
 import org.apache.sis.storage.StorageConnector;
+import org.apache.sis.internal.storage.URIDataStore;
 import org.apache.sis.setup.OptionKey;
-import org.apache.sis.storage.Resource;
 import org.apache.sis.util.Debug;
 
 
@@ -72,6 +74,11 @@ public class LandsatStore extends DataStore {
     private Reader source;
 
     /**
+     * The {@link LandsatStoreProvider#LOCATION} parameter value, or {@code null} if none.
+     */
+    private final URI location;
+
+    /**
      * The object returned by {@link #getMetadata()}, created when first needed and cached.
      */
     private Metadata metadata;
@@ -87,10 +94,11 @@ public class LandsatStore extends DataStore {
      */
     public LandsatStore(final LandsatStoreProvider provider, final StorageConnector connector) throws DataStoreException {
         super(provider, connector);
+        location = connector.getStorageAs(URI.class);
         source = connector.getStorageAs(Reader.class);
         connector.closeAllExcept(source);
         if (source == null) {
-            throw new UnsupportedStorageException(super.getLocale(), "Landsat",
+            throw new UnsupportedStorageException(super.getLocale(), LandsatStoreProvider.NAME,
                     connector.getStorage(), connector.getOption(OptionKey.OPEN_OPTIONS));
         }
     }
@@ -121,15 +129,19 @@ public class LandsatStore extends DataStore {
     }
 
     /**
-     * Current implementation does not provide any resource yet.
-     * Future versions may return an aggregate of all raster data in the GeoTIFF files associated with this metadata.
+     * Returns the parameters used to open this Landsat data store.
+     * If non-null, the parameters are described by {@link LandsatStoreProvider#getOpenParameters()} and contains at
+     * least a parameter named {@value org.apache.sis.storage.DataStoreProvider#LOCATION} with a {@link URI} value.
+     * This method may return {@code null} if the storage input can not be described by a URI
+     * (for example a Landsat file reading directly from a {@link java.nio.channels.ReadableByteChannel}).
      *
-     * @return the starting point of all resources in this data store.
-     * @throws DataStoreException if an error occurred while reading the data.
+     * @return parameters used for opening this data store, or {@code null} if not available.
+     *
+     * @since 0.8
      */
     @Override
-    public Resource getRootResource() throws DataStoreException {
-        return null;
+    public ParameterValueGroup getOpenParameters() {
+        return URIDataStore.parameters(provider, location);
     }
 
     /**

@@ -23,8 +23,6 @@ import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
 import org.apache.sis.internal.simple.SimpleCitation;
 import org.apache.sis.internal.simple.SimpleIdentifier;
-import org.apache.sis.xml.IdentifierSpace;
-import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
@@ -113,41 +111,5 @@ public final strictfp class CitationsTest extends TestCase {
         citation = citation("Web Map Server", identifier("OGC", "06-042"), identifier("ISO", "19128"));
         assertEquals("OGC:06-042", Citations.getIdentifier(citation, false));
         assertEquals("ISO_19128",  Citations.getIdentifier(citation, true));
-    }
-
-    /**
-     * Tests {@link Citations#getCodeSpace(Citation)} with some ignorable characters.
-     * Ignorable character used in this test are:
-     *
-     * <ul>
-     *   <li>200B: zero width space</li>
-     *   <li>2060: word joiner</li>
-     * </ul>
-     */
-    @Test
-    @DependsOnMethod("testGetIdentifier")
-    public void testGetCodeSpace() {
-        final SimpleCitation citation = new SimpleCitation(" Valid\u2060Id\u200Bentifier ");
-        assertEquals("ValidIdentifier", Citations.getCodeSpace(citation));
-
-        assertNull("Shall not be taken as a valid identifier.",
-                Citations.getCodeSpace(new SimpleCitation("Proj.4")));
-        assertEquals("Shall fallback on the the identifier space name.",
-                "TheProj4Space", Citations.getCodeSpace(new Proj4()));
-    }
-
-    /**
-     * A citation which is also an {@link IdentifierSpace}, for {@link #testGetCodeSpace()} purpose.
-     */
-     @SuppressWarnings("serial")
-     private static final class Proj4 extends SimpleCitation implements IdentifierSpace<Integer> {
-        Proj4() {
-            super("Proj.4");
-        }
-
-        @Override
-        public String getName() {
-            return "TheProj4Space";         // Intentionally a very different name than "Proj4".
-        }
     }
 }

@@ -35,6 +35,11 @@ import org.apache.sis.internal.storage.Capability;
 @Capabilities(Capability.READ)
 public final class StoreProvider extends AbstractProvider {
     /**
+     * The format name.
+     */
+    static final String NAME = "XML";
+
+    /**
      * Creates a new provider.
      */
     public StoreProvider() {
@@ -52,7 +57,7 @@ public final class StoreProvider extends AbstractProvider {
      */
     @Override
     public String getShortName() {
-        return "XML";
+        return NAME;
     }
 
     /**

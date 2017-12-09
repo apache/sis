@@ -31,36 +31,43 @@ import java.net.URI;
 import java.nio.charset.Charset;
 import javax.measure.Unit;
 import javax.measure.quantity.Time;
-import org.opengis.metadata.Metadata;
 import org.opengis.util.FactoryException;
+import org.opengis.geometry.Envelope;
+import org.opengis.metadata.Metadata;
 import org.opengis.metadata.maintenance.ScopeCode;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.crs.TemporalCRS;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.feature.DefaultAttributeType;
 import org.apache.sis.feature.DefaultFeatureType;
+import org.apache.sis.feature.FoliationRepresentation;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.internal.referencing.GeodeticObjectBuilder;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
 import org.apache.sis.internal.storage.MetadataBuilder;
 import org.apache.sis.internal.storage.io.IOUtilities;
+import org.apache.sis.internal.storage.io.RewindableLineReader;
 import org.apache.sis.internal.feature.Geometries;
 import org.apache.sis.internal.feature.MovingFeature;
 import org.apache.sis.internal.storage.Resources;
+import org.apache.sis.internal.storage.URIDataStore;
 import org.apache.sis.geometry.GeneralEnvelope;
+import org.apache.sis.geometry.ImmutableEnvelope;
 import org.apache.sis.metadata.iso.DefaultMetadata;
 import org.apache.sis.metadata.sql.MetadataStoreException;
-import org.apache.sis.storage.Resource;
-import org.apache.sis.storage.DataStore;
+import org.apache.sis.storage.DataOptionKey;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.storage.DataStoreReferencingException;
+import org.apache.sis.storage.UnsupportedStorageException;
 import org.apache.sis.storage.StorageConnector;
+import org.apache.sis.storage.FeatureSet;
 import org.apache.sis.setup.OptionKey;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.io.InvalidSeekException;
 import org.apache.sis.measure.Units;
 
 // Branch-dependent imports
@@ -79,11 +86,11 @@ import org.opengis.feature.AttributeType;
  * See package javadoc for more information on the syntax.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.7
  * @module
  */
-public final class Store extends DataStore {
+final class Store extends URIDataStore implements FeatureSet {
     /**
      * The character at the beginning of lines to ignore in the header.
      * Note that this is not part of OGC Moving Feature Specification.
@@ -153,8 +160,9 @@ public final class Store extends DataStore {
      * and a temporal component if the CSV file contains a start time and end time.
      *
      * @see #parseEnvelope(List)
+     * @see #getEnvelope()
      */
-    private final GeneralEnvelope envelope;
+    private final ImmutableEnvelope envelope;
 
     /**
      * Description of the columns found in the CSV file.
@@ -221,27 +229,25 @@ public final class Store extends DataStore {
      *
      * @param  provider   the factory that created this {@code DataStore} instance, or {@code null} if unspecified.
      * @param  connector  information about the storage (URL, stream, <i>etc</i>).
-     * @param  immediate  {@code true} for forcing the creation of a distinct {@code Feature} instance for each line.
      * @throws DataStoreException if an error occurred while opening the stream.
      */
-    public Store(final StoreProvider provider, final StorageConnector connector, final boolean immediate)
-            throws DataStoreException
-    {
+    public Store(final StoreProvider provider, final StorageConnector connector) throws DataStoreException {
         super(provider, connector);
         final Reader r = connector.getStorageAs(Reader.class);
         connector.closeAllExcept(r);
         if (r == null) {
-            throw new DataStoreException(Errors.format(Errors.Keys.CanNotOpen_1, super.getDisplayName()));
+            throw new UnsupportedStorageException(super.getLocale(), StoreProvider.NAME,
+                    connector.getStorage(), connector.getOption(OptionKey.OPEN_OPTIONS));
         }
-        source = (r instanceof BufferedReader) ? (BufferedReader) r : new LineNumberReader(r);
+        source     = (r instanceof BufferedReader) ? (BufferedReader) r : new LineNumberReader(r);
         geometries = Geometries.implementation(connector.getOption(OptionKey.GEOMETRY_LIBRARY));
-        dissociate = immediate;
+        dissociate = FoliationRepresentation.FRAGMENTED.equals(connector.getOption(DataOptionKey.FOLIATION_REPRESENTATION));
         GeneralEnvelope envelope    = null;
         FeatureType     featureType = null;
         Foliation       foliation   = null;
         try {
             final List<String> elements = new ArrayList<>();
-            source.mark(1024);
+            source.mark(RewindableLineReader.BUFFER_SIZE);
             String line;
             while ((line = source.readLine()) != null) {
                 line = line.trim();
@@ -287,9 +293,9 @@ public final class Store extends DataStore {
                     }
                 }
                 elements.clear();
-                source.mark(1024);
+                source.mark(RewindableLineReader.BUFFER_SIZE);
             }
-            source.reset();
+            source.reset();                 // Restore position to the first line after the header.
         } catch (IOException e) {
             throw new DataStoreException(getLocale(), StoreProvider.NAME, super.getDisplayName(), source).initCause(e);
         } catch (FactoryException e) {
@@ -298,10 +304,37 @@ public final class Store extends DataStore {
             throw new DataStoreContentException(getLocale(), StoreProvider.NAME, super.getDisplayName(), source).initCause(e);
         }
         this.encoding    = connector.getOption(OptionKey.ENCODING);
-        this.envelope    = envelope;
+        this.envelope    = new ImmutableEnvelope(envelope);
         this.featureType = featureType;
         this.foliation   = foliation;
         this.dissociate |= (timeEncoding == null);
+    }
+
+    /**
+     * Moves the reader position to beginning of file, if possible. We try to use the mark defined by the constructor,
+     * which is set after the last header line. If the mark is no longer valid, then we have to create a new line reader.
+     * In this later case, we have to skip the header lines (i.e. we reproduce the constructor loop, but without parsing
+     * metadata).
+     */
+    private void rewind() throws IOException {
+        final BufferedReader reader = source;
+        if (!(reader instanceof RewindableLineReader)) {
+            throw new InvalidSeekException(Resources.forLocale(getLocale())
+                    .getString(Resources.Keys.StreamIsForwardOnly_1, getDisplayName()));
+        }
+        source = ((RewindableLineReader) reader).rewind();
+        if (source != reader) {
+            String line;
+            while ((line = source.readLine()) != null) {
+                line = line.trim();
+                if (!line.isEmpty()) {
+                    final char c = line.charAt(0);
+                    if (c != COMMENT && c != METADATA) break;
+                }
+                source.mark(RewindableLineReader.BUFFER_SIZE);
+            }
+            source.reset();         // Restore position to the first line after the header.
+        }
     }
 
     /**
@@ -613,19 +646,36 @@ public final class Store extends DataStore {
                 listeners.warning(null, e);
             }
             builder.addFeatureType(featureType, null);
+            addTitleOrIdentifier(builder);
             metadata = builder.build(true);
         }
         return metadata;
     }
 
     /**
-     * Returns the {@code FeatureSet} from which all features in this data store can be accessed.
-     *
-     * @return the starting point of all features in this data store.
+     * Returns the spatio-temporal extent of CSV data in coordinate reference system of the CSV file.
      */
     @Override
-    public Resource getRootResource() {
-        return new FeatureAccess(this, listeners);
+    public Envelope getEnvelope() throws DataStoreException {
+        return envelope;
+    }
+
+    /**
+     * Returns the type of features in the CSV file. The feature type name will be the value
+     * specified at the following path (only one such value exists for a CSV data store):
+     *
+     * <blockquote>
+     * {@link #getMetadata()} /
+     * {@link org.apache.sis.metadata.iso.DefaultMetadata#getContentInfo() contentInfo} /
+     * {@link org.apache.sis.metadata.iso.content.DefaultFeatureCatalogueDescription#getFeatureTypeInfo() featureTypes} /
+     * {@link org.apache.sis.metadata.iso.content.DefaultFeatureTypeInfo#getFeatureTypeName() featureTypeName}
+     * </blockquote>
+     *
+     * @return type of features in the CSV file.
+     */
+    @Override
+    public FeatureType getType() {
+        return featureType;
     }
 
     /**
@@ -635,10 +685,11 @@ public final class Store extends DataStore {
      * @return a stream over all features in the CSV file.
      * @throws DataStoreException if an error occurred while creating the feature stream.
      *
-     * @todo Needs to reset the position when doing another pass on the features.
+     * @todo Need to reset the position when doing another pass on the features. See {@link #rewind()}.
      * @todo If sequential order, publish Feature as soon as identifier changed.
      */
-    final synchronized Stream<Feature> features(final boolean parallel) throws DataStoreException {
+    @Override
+    public final synchronized Stream<Feature> features(final boolean parallel) throws DataStoreException {
         /*
          * If the user asks for one feature instance per line, then we can return a FeatureIter instance directly.
          * Since each feature is fully constructed from a single line and each line are read atomically, we can

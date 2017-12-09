@@ -276,7 +276,7 @@ public final strictfp class UnitsTest extends TestCase {
 
     /**
      * Tests {@link Units#valueOf(String)} with more advanced units.
-     * Those units are found in NetCDF files among others.
+     * Those units are found in netCDF files among others.
      */
     @Test
     public void testAdvancedValueOf() {

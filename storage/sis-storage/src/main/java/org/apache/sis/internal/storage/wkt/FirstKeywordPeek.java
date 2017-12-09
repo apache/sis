@@ -19,6 +19,7 @@ package org.apache.sis.internal.storage.wkt;
 import java.io.Reader;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import org.apache.sis.internal.storage.io.IOUtilities;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.ProbeResult;
@@ -41,6 +42,7 @@ public abstract class FirstKeywordPeek {
 
     /**
      * The read-ahead limit when reading a text from a {@link Reader}.
+     * Should be no more than {@code StorageConnector.DEFAULT_BUFFER_SIZE / 2}.
      */
     static final int READ_AHEAD_LIMIT = 2048;
 
@@ -78,7 +80,7 @@ public abstract class FirstKeywordPeek {
             return -1;
         }
         int c;
-        while ((c = reader.read()) >= 0) {
+        while ((c = IOUtilities.readCodePoint(reader)) >= 0) {
             if (!Character.isWhitespace(c)) break;
         }
         return c;
@@ -94,7 +96,7 @@ public abstract class FirstKeywordPeek {
                 if (!buffer.hasRemaining()) break;
                 c = (char) buffer.get();
             } else {
-                c = reader.read();
+                c = IOUtilities.readCodePoint(reader);
                 if (c < 0) break;
             }
         } while (!Characters.isLineOrParagraphSeparator(c));
@@ -159,7 +161,7 @@ public abstract class FirstKeywordPeek {
                         }
                         keyword[pos++] = (char) c;
                     }
-                    c = (buffer == null) ? reader.read() : buffer.hasRemaining() ? (char) buffer.get() : -1;
+                    c = (buffer == null) ? IOUtilities.readCodePoint(reader) : buffer.hasRemaining() ? (char) buffer.get() : -1;
                 } while ((s = isKeywordChar(c)) >= ACCEPT);
                 /*
                  * At this point we finished to read and store the keyword.
@@ -187,7 +189,7 @@ public abstract class FirstKeywordPeek {
     }
 
     /**
-     * Returns {@code true} if the given first non-white character after the keywordis one of the expected characters.
+     * Returns {@code true} if the given first non-white character after the keyword is one of the expected characters.
      *
      * @param  c  the first non-white character after the keyword, or -1 if we reached the end of stream.
      * @return {@code true} if the given character is one of the expected post-keyword characters.

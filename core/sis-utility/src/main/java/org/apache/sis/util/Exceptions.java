@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.Locale;
 import java.sql.SQLException;
+import java.nio.file.DirectoryIteratorException;
 import java.lang.reflect.InvocationTargetException;
 import org.opengis.util.InternationalString;
 import org.apache.sis.util.resources.Vocabulary;
@@ -211,6 +212,7 @@ public final class Exceptions extends Static {
      *   <li>It is an instance of {@link InvocationTargetException} (could be wrapping anything).</li>
      *   <li>It is an instance of {@link BackingStoreException} (typically wrapping a checked exception).</li>
      *   <li>It is an instance of {@link UncheckedIOException} (wrapping a {@link java.io.IOException}).</li>
+     *   <li>It is an instance of {@link DirectoryIteratorException} (wrapping a {@link java.io.IOException}).</li>
      *   <li>It is a parent type of the cause. For example some JDBC drivers wrap {@link SQLException}
      *       in other {@code SQLException} without additional information.</li>
      * </ul>
@@ -227,7 +229,8 @@ public final class Exceptions extends Static {
         if (exception != null) {
             while (exception instanceof InvocationTargetException ||
                    exception instanceof BackingStoreException ||
-                   exception instanceof UncheckedIOException)
+                   exception instanceof UncheckedIOException ||
+                   exception instanceof DirectoryIteratorException)
             {
                 final Throwable cause = exception.getCause();
                 if (!(cause instanceof Exception)) break;

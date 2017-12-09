@@ -46,15 +46,20 @@ public interface XReferencing extends XInterface {
     String getName(String codeOrPath);
 
     /**
-     * Returns the axis name and units for the specified dimension in a coordinate reference system or coordinate system.
-     * This method returns a short axis name as used in Well Known Text (WKT) format, for example <cite>"Latitude"</cite>
-     * instead of <cite>"Geodetic latitude"</cite>.
+     * Returns the scope of an identified object.
      *
      * @param  codeOrPath  the code allocated by an authority, or the path to a file.
-     * @param  dimension   the dimension (1, 2, …).
-     * @return the name of the requested axis.
+     * @return the object scope.
      */
-    String getAxis(String codeOrPath, int dimension);
+    String getScope(String codeOrPath);
+
+    /**
+     * Returns the domain of validity as country or region names for an identified object.
+     *
+     * @param  codeOrPath  the code allocated by an authority, or the path to a file.
+     * @return the domain of validity.
+     */
+    String getDomainOfValidity(String codeOrPath);
 
     /**
      * Returns the domain of validity as a geographic bounding box for an identified object.
@@ -78,6 +83,17 @@ public interface XReferencing extends XInterface {
      * @throws IllegalArgumentException if {@code points} is not a {@code double[][]} value or void.
      */
     double getAccuracy(String sourceCRS, String targetCRS, Object areaOfInterest) throws IllegalArgumentException;
+
+    /**
+     * Returns the axis name and units for the specified dimension in a coordinate reference system or coordinate system.
+     * This method returns a short axis name as used in Well Known Text (WKT) format, for example <cite>"Latitude"</cite>
+     * instead of <cite>"Geodetic latitude"</cite>.
+     *
+     * @param  codeOrPath  the code allocated by an authority, or the path to a file.
+     * @param  dimension   the dimension (1, 2, …).
+     * @return the name of the requested axis.
+     */
+    String getAxis(String codeOrPath, int dimension);
 
     /**
      * Transforms coordinates from the specified source CRS to the specified target CRS.

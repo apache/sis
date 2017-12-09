@@ -17,9 +17,12 @@
 package org.apache.sis.referencing.operation;
 
 import java.util.Map;
+import java.util.Set;
 import java.util.Objects;
 import java.util.Collection;
 import java.util.Collections;
+import java.io.IOException;
+import java.io.ObjectInputStream;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlSeeAlso;
@@ -50,16 +53,19 @@ import org.apache.sis.util.collection.Containers;
 import org.apache.sis.util.UnsupportedImplementationException;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.parameter.Parameterized;
+import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.referencing.cs.CoordinateSystems;
 import org.apache.sis.referencing.AbstractIdentifiedObject;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.referencing.operation.transform.PassThroughTransform;
 import org.apache.sis.internal.referencing.PositionalAccuracyConstant;
+import org.apache.sis.internal.referencing.CoordinateOperations;
 import org.apache.sis.internal.referencing.ReferencingUtilities;
 import org.apache.sis.internal.referencing.Resources;
 import org.apache.sis.internal.referencing.WKTUtilities;
 import org.apache.sis.internal.metadata.WKTKeywords;
 import org.apache.sis.internal.metadata.MetadataUtilities;
+import org.apache.sis.internal.util.Constants;
 import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
 import org.apache.sis.internal.system.Semaphores;
@@ -96,7 +102,7 @@ import static org.apache.sis.util.Utilities.deepEquals;
  * synchronization.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 0.7
+ * @version 0.8
  * @since   0.6
  * @module
  */
@@ -205,6 +211,16 @@ public class AbstractCoordinateOperation extends AbstractIdentifiedObject implem
      * at XML unmarshalling time by {@link AbstractSingleOperation#afterUnmarshal(Unmarshaller, Object)}.</p>
      */
     MathTransform transform;
+
+    /**
+     * Indices of target dimensions where "wrap around" may happen as a result of this coordinate operation.
+     * This is usually the longitude axis when the source CRS uses the [-180 … +180]° range and the target
+     * CRS uses the [0 … 360]° range, or the converse. If there is no change, then this is an empty set.
+     *
+     * @see #getWrapAroundChanges()
+     * @see #computeTransientFields()
+     */
+    private transient Set<Integer> wrapAroundChanges;
 
     /**
      * Creates a new coordinate operation initialized from the given properties.
@@ -369,6 +385,30 @@ check:      for (int isTarget=0; ; isTarget++) {        // 0 == source check; 1 
                 }
             }
         }
+        computeTransientFields();
+    }
+
+    /**
+     * Computes the {@link #wrapAroundChanges} field after we verified that the coordinate operation is valid.
+     */
+    final void computeTransientFields() {
+        if (sourceCRS != null && targetCRS != null) {
+            wrapAroundChanges = CoordinateOperations.wrapAroundChanges(sourceCRS, targetCRS.getCoordinateSystem());
+        } else {
+            wrapAroundChanges = Collections.emptySet();
+        }
+    }
+
+    /**
+     * Computes transient fields after deserialization.
+     *
+     * @param  in  the input stream from which to deserialize a coordinate operation.
+     * @throws IOException if an I/O error occurred while reading or if the stream contains invalid data.
+     * @throws ClassNotFoundException if the class serialized on the stream is not on the classpath.
+     */
+    private void readObject(final ObjectInputStream in) throws IOException, ClassNotFoundException {
+        in.defaultReadObject();
+        computeTransientFields();
     }
 
     /**
@@ -392,6 +432,11 @@ check:      for (int isTarget=0; ; isTarget++) {        // 0 == source check; 1 
         domainOfValidity            = operation.getDomainOfValidity();
         scope                       = operation.getScope();
         transform                   = operation.getMathTransform();
+        if (operation instanceof AbstractCoordinateOperation) {
+            wrapAroundChanges = ((AbstractCoordinateOperation) operation).wrapAroundChanges;
+        } else {
+            computeTransientFields();
+        }
     }
 
     /**
@@ -727,6 +772,40 @@ check:      for (int isTarget=0; ; isTarget++) {        // 0 == source check; 1 
     }
 
     /**
+     * Returns the indices of target dimensions where "wrap around" may happen as a result of this coordinate operation.
+     * If such change exists, then this is usually the longitude axis when the source CRS uses the [-180 … +180]° range
+     * and the target CRS uses the [0 … 360]° range, or the converse. If there is no change, then this is an empty set.
+     *
+     * <div class="note"><b>Inverse relationship:</b>
+     * sometime the target dimensions returned by this method can be mapped directly to wraparound axes in source CRS,
+     * but this is not always the case. For example consider the following operation chain:
+     *
+     * <center>source projected CRS ⟶ base CRS ⟶ target geographic CRS</center>
+     *
+     * In this example, a wraparound axis in the target CRS (the longitude) can be mapped to a wraparound axis in
+     * the {@linkplain org.apache.sis.referencing.crs.DefaultProjectedCRS#getBaseCRS() base CRS}. But there is no
+     * corresponding wraparound axis in the source CRS because the <em>easting</em> axis in projected CRS does not
+     * have a wraparound range meaning. We could argue that
+     * {@linkplain org.apache.sis.referencing.cs.DefaultCoordinateSystemAxis#getDirection() axis directions} match,
+     * but such matching is not guaranteed to exist since {@code ProjectedCRS} is a special case of
+     * {@code GeneralDerivedCRS} and derived CRS can have rotations.</div>
+     *
+     * <p>The default implementation infers this set by inspecting the source and target coordinate system axes.
+     * It returns the indices of all target axes having {@link org.opengis.referencing.cs.RangeMeaning#WRAPAROUND}
+     * and for which the following condition holds: a colinear source axis exists with compatible unit of measurement,
+     * and the range (taking unit conversions in account) or range meaning of those source and target axes are not
+     * the same.</p>
+     *
+     * @return indices of target dimensions where "wrap around" may happen as a result of this coordinate operation.
+     *
+     * @since 0.8
+     */
+    @SuppressWarnings("ReturnOfCollectionOrArrayField")
+    public Set<Integer> getWrapAroundChanges() {
+        return wrapAroundChanges;
+    }
+
+    /**
      * Compares this coordinate operation with the specified object for equality. If the {@code mode} argument
      * is {@link ComparisonMode#STRICT} or {@link ComparisonMode#BY_CONTRACT BY_CONTRACT}, then all available
      * properties are compared including the {@linkplain #getDomainOfValidity() domain of validity} and the
@@ -886,10 +965,27 @@ check:      for (int isTarget=0; ; isTarget++) {        // 0 == source check; 1 
                 parameters = null;
             }
             if (parameters != null) {
+                /*
+                 * Format the parameter values. Apache SIS uses the EPSG geodetic dataset as the main source of
+                 * parameter definitions. When a parameter is defined by both OGC and EPSG with different names,
+                 * the Formatter class is responsible for choosing an appropriate name. But when the difference
+                 * is more fundamental, we may have duplication. For example in the "Molodensky" operation, OGC
+                 * uses source and target axis lengths while EPSG uses only difference between those lengths.
+                 * In this case, OGC and EPSG parameters are defined separately and are redundant. To simplify
+                 * the CoordinateOperation WKT, we omit non-EPSG parameters when we have determined that we are
+                 * about to describe an EPSG operation. We could generalize this filtering to any authority, but
+                 * we don't because few authorities are as complete as EPSG, so other authorities are more likely
+                 * to mix EPSG or someone else components with their own. Note also that we don't apply filtering
+                 * on MathTransform WKT neither for more reliable debugging.
+                 */
+                final boolean filter = WKTUtilities.isEPSG(parameters.getDescriptor(), false) &&   // NOT method.getName()
+                        Constants.EPSG.equalsIgnoreCase(Citations.getCodeSpace(formatter.getNameAuthority()));
                 formatter.newLine();
                 formatter.indent(+1);
                 for (final GeneralParameterValue param : parameters.values()) {
-                    WKTUtilities.append(param, formatter);
+                    if (!filter || WKTUtilities.isEPSG(param.getDescriptor(), true)) {
+                        WKTUtilities.append(param, formatter);
+                    }
                 }
                 formatter.indent(-1);
             }
@@ -974,7 +1070,7 @@ check:      for (int isTarget=0; ; isTarget++) {        // 0 == source check; 1 
     private void setSource(final CoordinateReferenceSystem crs) {
         if (sourceCRS == null) {
             sourceCRS = crs;
-        } else {
+        } else if (!sourceCRS.equals(crs)) {                    // Could be defined by ConcatenatedOperation.
             MetadataUtilities.propertyAlreadySet(AbstractCoordinateOperation.class, "setSource", "sourceCRS");
         }
     }
@@ -993,7 +1089,7 @@ check:      for (int isTarget=0; ; isTarget++) {        // 0 == source check; 1 
     private void setTarget(final CoordinateReferenceSystem crs) {
         if (targetCRS == null) {
             targetCRS = crs;
-        } else {
+        } else if (!targetCRS.equals(crs)) {                    // Could be defined by ConcatenatedOperation.
             MetadataUtilities.propertyAlreadySet(AbstractCoordinateOperation.class, "setTarget", "targetCRS");
         }
     }
@@ -1056,5 +1152,12 @@ check:      for (int isTarget=0; ; isTarget++) {        // 0 == source check; 1 
         } else {
             MetadataUtilities.propertyAlreadySet(AbstractCoordinateOperation.class, "setScope", "scope");
         }
+    }
+
+    /**
+     * Invoked by JAXB after unmarshalling.
+     */
+    void afterUnmarshal(Unmarshaller unmarshaller, Object parent) {
+        computeTransientFields();
     }
 }

@@ -145,7 +145,7 @@ public final class NilReason implements Serializable {
 
     /**
      * Either the XML value as a {@code String} (including the explanation if the prefix
-     * is "{@code other}", or an {@link URI}.
+     * is "{@code other}", or a {@link URI}.
      */
     private final Object reason;
 
@@ -253,7 +253,7 @@ public final class NilReason implements Serializable {
                 }
                 String result = buffer.toString();
                 if (result.equals(reason)) {
-                    result = reason; // Use the existing instance.
+                    result = reason;                            // Use the existing instance.
                 }
                 return POOL.unique(new NilReason(result));
             }
@@ -422,7 +422,7 @@ public final class NilReason implements Serializable {
                 PrimitiveTypeProperties.associate(object, this);
             }
             if (nilObjects.put(type, object) != null) {
-                throw new AssertionError(type); // Should never happen.
+                throw new AssertionError(type);                                 // Should never happen.
             }
         }
         return type.cast(object);

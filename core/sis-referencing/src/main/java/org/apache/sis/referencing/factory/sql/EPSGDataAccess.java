@@ -151,8 +151,8 @@ import org.apache.sis.internal.util.StandardDateFormat;
  *
  * <div class="section">SQL dialects</div>
  * Because the primary distribution format for the EPSG dataset is MS-Access, this class uses SQL statements formatted
- * for the MS-Access dialect. For usage with other database softwares like PostgreSQL or Derby, a {@link SQLTranslator}
- * instance is provided to the constructor.
+ * for the MS-Access dialect. For usage with other database software products like PostgreSQL or Derby,
+ * a {@link SQLTranslator} instance is provided to the constructor.
  *
  * @author  Yann Cézard (IRD)
  * @author  Martin Desruisseaux (IRD, Geomatys)

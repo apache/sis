@@ -182,6 +182,17 @@ public final class CodeColorizer {
                 }
                 break;
             }
+            default: {
+                int upper = word.length();
+                while (upper > 0) {
+                    final int c = word.codePointBefore(upper);
+                    if (Character.isUnicodeIdentifierPart(c)) {
+                        word = word.substring(0, upper);
+                        break;
+                    }
+                    upper -= Character.charCount(c);
+                }
+            }
         }
         /*
          * Check if the keyword is a known one. The 'identifierOrigins' map contains only simple name
@@ -322,7 +333,9 @@ public final class CodeColorizer {
                             nextSubstringStart = lower;
                             lower = text.indexOf(stopCondition, lower+1);
                             if (lower >= 0) {
-                                lower += stopCondition.length();
+                                if (!stopCondition.equals("\n")) {
+                                    lower += stopCondition.length();
+                                }
                                 stopCondition = null;
                             } else {
                                 lower = text.length();
