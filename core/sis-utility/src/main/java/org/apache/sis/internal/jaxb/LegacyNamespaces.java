@@ -22,7 +22,8 @@ import org.apache.sis.util.Version;
 /**
  * Legacy XML namespaces, and {@link Version} constants for identifying when those namespaces were used.
  *
- * @author  Guilhem Legal (Geomatys)
+ * @author  Guilhem Legal  (Geomatys)
+ * @author  Cullen Rombach (Image Matters)
  * @version 1.0
  *
  * @see org.apache.sis.xml.Namespaces
@@ -31,6 +32,12 @@ import org.apache.sis.util.Version;
  * @module
  */
 public final class LegacyNamespaces {
+    /**
+     * @deprecated to be replaced by {@code VERSION_1_0}, which is the version declared in XML schemas.
+     */
+    @Deprecated
+    public static final Version ISO_19115_3 = new Version("2014");
+
     /**
      * Miscellaneous version constants.
      */
@@ -89,6 +96,12 @@ public final class LegacyNamespaces {
      * Replaced by {@link org.apache.sis.xml.Namespaces#GFC}.
      */
     public static final String GFC = "http://www.isotc211.org/2005/gfc";
+
+    /**
+     * The <code>{@value}</code> URL, used in ISO 19139.
+     * The usual prefix for this namespace is {@code "gts"}.
+     */
+    public static final String GTS = "http://www.isotc211.org/2005/gts";
 
     /**
      * A non-public (un)marshaller property for controlling usage of {@code org.apache.sis.xml.FilteredNamespaces}.

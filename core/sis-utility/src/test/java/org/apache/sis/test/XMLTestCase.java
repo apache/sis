@@ -143,7 +143,7 @@ public abstract strictfp class XMLTestCase extends TestCase {
      */
     protected final void createContext(final boolean marshal, final Locale locale, final String timezone) {
         context = new Context(marshal ? Context.MARSHALLING : 0, locale,
-                (timezone != null) ? TimeZone.getTimeZone(timezone) : null, null, null, null, null, null);
+                (timezone != null) ? TimeZone.getTimeZone(timezone) : null, null, null, null, null, null, null);
     }
 
     /**

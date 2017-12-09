@@ -50,7 +50,8 @@ import org.apache.sis.xml.ReferenceResolver;
  * if no (un)marshalling is in progress.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.7
+ * @author  Cullen Rombach (Image Matters)
+ * @version 1.0
  * @since   0.3
  * @module
  */
@@ -135,6 +136,12 @@ public final class Context extends MarshalContext {
     private final Version versionGML;
 
     /**
+     * The metadata version to be marshalled or unmarshalled, or {@code null} if unspecified.
+     * If null, than the latest version is assumed.
+     */
+    private final Version versionMetadata;
+
+    /**
      * The reference resolver currently in use, or {@code null} for {@link ReferenceResolver#DEFAULT}.
      */
     private final ReferenceResolver resolver;
@@ -203,15 +210,20 @@ public final class Context extends MarshalContext {
      * @param  timezone         the timezone, or {@code null} if unspecified.
      * @param  schemas          the schemas root URL, or {@code null} if none.
      * @param  versionGML       the GML version, or {@code null}.
+     * @param  versionMetadata  the metadata version, or {@code null}.
      * @param  resolver         the resolver in use.
      * @param  converter        the converter in use.
      * @param  warningListener  the object to inform about warnings.
      */
     @SuppressWarnings("ThisEscapedInObjectConstruction")
     public Context(final int                bitMasks,
-                   final Locale             locale,   final TimeZone       timezone,
-                   final Map<String,String> schemas,  final Version        versionGML,
-                   final ReferenceResolver  resolver, final ValueConverter converter,
+                   final Locale             locale,
+                   final TimeZone           timezone,
+                   final Map<String,String> schemas,
+                   final Version            versionGML,
+                   final Version            versionMetadata,
+                   final ReferenceResolver  resolver,
+                   final ValueConverter     converter,
                    final WarningListener<?> warningListener)
     {
         this.bitMasks          = bitMasks;
@@ -219,6 +231,7 @@ public final class Context extends MarshalContext {
         this.timezone          = timezone;
         this.schemas           = schemas;               // No clone, because this class is internal.
         this.versionGML        = versionGML;
+        this.versionMetadata   = versionMetadata;
         this.resolver          = resolver;
         this.converter         = converter;
         this.warningListener   = warningListener;
@@ -347,7 +360,7 @@ public final class Context extends MarshalContext {
 
     /**
      * Returns {@code true} if the GML version is equals or newer than the specified version.
-     * If no GML version were specified, then this method returns {@code true}, i.e. newest
+     * If no GML version was specified, then this method returns {@code true}, i.e. newest
      * version is assumed.
      *
      * <div class="note"><b>API note:</b>
@@ -364,6 +377,30 @@ public final class Context extends MarshalContext {
             final Version versionGML = context.versionGML;
             if (versionGML != null) {
                 return versionGML.compareTo(version) >= 0;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Returns {@code true} if the metadata version is equals or newer than the specified version.
+     * If no metadata version was specified, then this method returns {@code true}, i.e. newest
+     * version is assumed.
+     *
+     * <div class="note"><b>API note:</b>
+     * This method is static for the convenience of performing the check for null context.</div>
+     *
+     * @param  context  the current context, or {@code null} if none.
+     * @param  version  the version to compare to.
+     * @return {@code true} if the metadata version is equals or newer than the specified version.
+     *
+     * @see #getVersion(String)
+     */
+    public static boolean isMetadataVersion(final Context context, final Version version) {
+        if (context != null) {
+            final Version versionMetadata = context.versionMetadata;
+            if (versionMetadata != null) {
+                return versionMetadata.compareTo(version) >= 0;
             }
         }
         return true;
