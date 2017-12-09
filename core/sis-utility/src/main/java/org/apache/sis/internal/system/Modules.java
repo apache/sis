@@ -87,14 +87,14 @@ public final class Modules {
      *
      * @see org.apache.sis.util.Version
      */
-    public static final int MAJOR_VERSION = 0;
+    public static final int MAJOR_VERSION = 1;
 
     /**
      * The minor version number of all Apache SIS modules.
      *
      * @see org.apache.sis.util.Version
      */
-    public static final int MINOR_VERSION = 8;
+    public static final int MINOR_VERSION = 0;
 
     /**
      * The prefix of all classnames in Apache SIS, including a trailing dot.
