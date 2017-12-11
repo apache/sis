@@ -16,6 +16,8 @@
  */
 package org.apache.sis.xml;
 
+import java.util.Set;
+import java.util.HashSet;
 import javax.xml.stream.XMLStreamWriter;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.namespace.NamespaceContext;
@@ -30,7 +32,8 @@ import org.apache.sis.internal.util.StreamWriterDelegate;
  * See {@link FilteredNamespaces} for more information.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @author  Cullen Rombach (Image Matters)
+ * @version 1.0
  * @since   0.4
  * @module
  */
@@ -41,19 +44,24 @@ final class FilteredStreamWriter extends StreamWriterDelegate {
     private final FilterVersion version;
 
     /**
+     * Keep track of namespace URIs that have already been declared so they don't get duplicated.
+     */
+    private final Set<String> writtenNamespaceURIs;
+
+    /**
      * Creates a new filter for the given version of the standards.
      */
     FilteredStreamWriter(final XMLStreamWriter out, final FilterVersion version) {
         super(out);
         this.version = version;
+        writtenNamespaceURIs = new HashSet<>();
     }
 
     /**
      * Returns the URI to write in the XML document.
      */
     private String toView(final String uri) {
-        final String replacement = version.toView.get(uri);
-        return (replacement != null) ? replacement : uri;
+        return version.toView.getOrDefault(uri, uri);
     }
 
     /** Replaces the given URI if needed, then forwards the call. */
@@ -67,7 +75,8 @@ final class FilteredStreamWriter extends StreamWriterDelegate {
     public void writeStartElement(final String prefix, final String localName, final String namespaceURI)
             throws XMLStreamException
     {
-        out.writeStartElement(prefix, localName, toView(namespaceURI));
+        final String view = toView(namespaceURI);
+        out.writeStartElement(Namespaces.getPreferredPrefix(view, prefix), localName, view);
     }
 
     /** Replaces the given URI if needed, then forwards the call. */
@@ -81,7 +90,8 @@ final class FilteredStreamWriter extends StreamWriterDelegate {
     public void writeEmptyElement(final String prefix, final String localName, final String namespaceURI)
             throws XMLStreamException
     {
-        out.writeEmptyElement(prefix, localName, toView(namespaceURI));
+        final String view = toView(namespaceURI);
+        out.writeEmptyElement(Namespaces.getPreferredPrefix(view, prefix), localName, view);
     }
 
     /** Replaces the given URI if needed, then forwards the call. */
@@ -89,7 +99,8 @@ final class FilteredStreamWriter extends StreamWriterDelegate {
     public void writeAttribute(final String prefix, final String namespaceURI, final String localName,
             final String value) throws XMLStreamException
     {
-        out.writeAttribute(prefix, toView(namespaceURI), localName, value);
+        final String view = toView(namespaceURI);
+        out.writeAttribute(Namespaces.getPreferredPrefix(view, prefix), view, localName, value);
     }
 
     /** Replaces the given URI if needed, then forwards the call. */
@@ -100,10 +111,17 @@ final class FilteredStreamWriter extends StreamWriterDelegate {
         out.writeAttribute(toView(namespaceURI), localName, value);
     }
 
-    /** Replaces the given URI if needed, then forwards the call. */
+    /**
+     * Replaces the given URI if needed, then forwards the call.
+     * This method does nothing if the view of given URI has already be written.
+     * This filtering is applied because different URIs may be replaced by the same view.
+     */
     @Override
     public void writeNamespace(final String prefix, final String namespaceURI) throws XMLStreamException {
-        out.writeNamespace(prefix, toView(namespaceURI));
+        final String view = toView(namespaceURI);
+        if (writtenNamespaceURIs.add(view)) {
+            out.writeNamespace(Namespaces.getPreferredPrefix(view, prefix), view);
+        }
     }
 
     /** Replaces the given URI if needed, then forwards the call. */

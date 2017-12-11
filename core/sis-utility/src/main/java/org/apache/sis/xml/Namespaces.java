@@ -583,7 +583,7 @@ public final class Namespaces extends Static {
      * Returns the preferred prefix for the given namespace URI.
      *
      * @param  namespace     the namespace URI for which the prefix needs to be found. Can not be {@code null}.
-     * @param  defaultValue  the default prefix to returned if the given {@code namespace} is not recognized,
+     * @param  defaultValue  the default prefix to return if the given {@code namespace} is not recognized,
      *                       or {@code null}.
      * @return the prefix inferred from the namespace URI, or {@code null} if the given namespace is unrecognized
      *         and the {@code defaultValue} is null.
