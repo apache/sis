@@ -31,13 +31,14 @@ import javax.xml.stream.util.StreamReaderDelegate;
  * See {@link FilteredNamespaces} for more information.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.4
+ * @author  Cullen Rombach (Image Matters)
+ * @version 1.0
  * @since   0.4
  * @module
  */
-final class FilteredStreamReader extends StreamReaderDelegate {
+class FilteredStreamReader extends StreamReaderDelegate {
     /**
-     * The other version to unmarshall from.
+     * The other version to unmarshal from.
      */
     private final FilterVersion version;
 
@@ -53,25 +54,26 @@ final class FilteredStreamReader extends StreamReaderDelegate {
      * Converts a JAXB URI to the URI seen by the consumer of this wrapper.
      */
     private String toView(final String uri) {
-        final String replacement = version.toView.get(uri);
-        return (replacement != null) ? replacement : uri;
+        return version.toView.getOrDefault(uri, uri);
     }
 
     /**
      * Converts a URI read from the XML document to the URI to give to JAXB.
      */
-    private String toImpl(final String uri) {
-        final String replacement = version.toImpl.get(uri);
-        return (replacement != null) ? replacement : uri;
+    final String toImpl(final String uri) {
+        return version.toImpl.getOrDefault(uri, uri);
     }
 
     /**
      * Converts a name read from the XML document to the name to give to JAXB.
+     * The default implementation assumes a simple bijective mapping between the namespace URIs.
+     * The {@link FilteredStreamResolver} subclass implements a more complex mapping where the
+     * namespace depends on the element (class or attribute) name.
      */
-    private QName toImpl(QName name) {
+    QName toImpl(QName name) {
         final String namespaceURI = name.getNamespaceURI();
         final String replacement = toImpl(namespaceURI);
-        if (replacement != namespaceURI) { // Really identity check.
+        if (replacement != namespaceURI) {                          // Identity checks are okay here.
             name = new QName(namespaceURI, name.getLocalPart(), name.getPrefix());
         }
         return name;
@@ -83,7 +85,7 @@ final class FilteredStreamReader extends StreamReaderDelegate {
         super.require(type, toView(namespaceURI), localName);
     }
 
-    /** Returns the context of the underlying reader wrapped in a filter that convert the namespaces on the fly. */
+    /** Returns the context of the underlying reader wrapped in a filter that converts the namespaces on the fly. */
     @Override
     public NamespaceContext getNamespaceContext() {
         return new FilteredNamespaces(super.getNamespaceContext(), version, true);
@@ -107,7 +109,12 @@ final class FilteredStreamReader extends StreamReaderDelegate {
         return toImpl(super.getNamespaceURI());
     }
 
-    /** Forwards the call, then replaces the returned URI if needed. */
+    /**
+     * Forwards the call, then replaces the returned URI if needed.
+     *
+     * <b>Note:</b> the index passed to this method is the index of a namespace declaration on the root element.
+     * This should not matter as long as each <em>element</em> has the proper namespace URI.
+     */
     @Override
     public String getNamespaceURI(int index) {
         return toImpl(super.getNamespaceURI(index));

@@ -24,6 +24,8 @@ import javax.xml.namespace.NamespaceContext;
 /**
  * Substitutes at (un)marshalling time the XML namespaces used by SIS by the namespaces used in the XML document.
  * This class is used internally by {@link FilteredStreamReader} and {@link FilteredStreamWriter} only.
+ * Current {@code FilteredNamespaces} implementation takes care of XML prefixes only;
+ * the stream reader and writer do the rest of the work.
  *
  * <div class="section">The problem</div>
  * When the XML schemas of an international standard is updated, the URL of the namespace is often modified.
@@ -109,27 +111,12 @@ final class FilteredNamespaces implements NamespaceContext {
     }
 
     /**
-     * Returns the URI to make visible to the user of this filter.
-     */
-    private String toView(final String uri) {
-        final String replacement = toView.get(uri);
-        return (replacement != null) ? replacement : uri;
-    }
-
-    /**
-     * Returns the URI used by the {@linkplain #context}.
-     */
-    private String toImpl(final String uri) {
-        final String replacement = toImpl.get(uri);
-        return (replacement != null) ? replacement : uri;
-    }
-
-    /**
      * Returns the namespace for the given prefix.
      */
     @Override
     public String getNamespaceURI(final String prefix) {
-        return toView(context.getNamespaceURI(prefix));
+        final String uri = context.getNamespaceURI(prefix);
+        return toView.getOrDefault(uri, uri);
     }
 
     /**
@@ -137,7 +124,7 @@ final class FilteredNamespaces implements NamespaceContext {
      */
     @Override
     public String getPrefix(final String namespaceURI) {
-        return context.getPrefix(toImpl(namespaceURI));
+        return context.getPrefix(toImpl.getOrDefault(namespaceURI, namespaceURI));
     }
 
     /**
@@ -146,6 +133,6 @@ final class FilteredNamespaces implements NamespaceContext {
     @Override
     @SuppressWarnings("unchecked")
     public Iterator<String> getPrefixes(final String namespaceURI) {
-        return context.getPrefixes(toImpl(namespaceURI));
+        return context.getPrefixes(toImpl.getOrDefault(namespaceURI, namespaceURI));
     }
 }

@@ -103,6 +103,13 @@ enum FilterVersion {
     final Map<String,String> toImpl;
 
     /**
+     * {@code true} if application of {@link #toView} result in many namespaces collapsed into
+     * a single namespace. In those case, {@link #toImpl} is not sufficient for performing the
+     * reverse operation; we need {@link FilteredStreamResolver}.
+     */
+    final boolean manyToOne;
+
+    /**
      * Creates a new enum for replacing only one namespace.
      *
      * @param  impl  the namespace used in JAXB annotations (should be latest schema).
@@ -111,6 +118,7 @@ enum FilterVersion {
     private FilterVersion(final String impl, final String view) {
         this.toView = singletonMap(impl, view);
         this.toImpl = singletonMap(view, impl);
+        manyToOne = false;
     }
 
     /**
@@ -135,6 +143,7 @@ enum FilterVersion {
             toView.put(p, v);
             toImpl.put(v, p);
         }
+        manyToOne = true;
     }
 
     /**
@@ -145,5 +154,6 @@ enum FilterVersion {
         toImpl = new HashMap<>(first.toImpl);
         toView.putAll(more.toView);
         toImpl.putAll(more.toImpl);
+        manyToOne = true;
     }
 }
