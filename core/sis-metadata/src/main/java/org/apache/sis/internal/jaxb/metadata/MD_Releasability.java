@@ -17,28 +17,25 @@
 package org.apache.sis.internal.jaxb.metadata;
 
 import javax.xml.bind.annotation.XmlElementRef;
-import org.opengis.metadata.citation.Responsibility;
-import org.apache.sis.metadata.iso.citation.DefaultResponsibility;
-import org.apache.sis.metadata.iso.citation.DefaultResponsibleParty;
 import org.apache.sis.internal.jaxb.gco.PropertyType;
-import org.apache.sis.internal.jaxb.Context;
+import org.apache.sis.metadata.iso.constraint.DefaultReleasability;
+import org.opengis.metadata.constraint.Releasability;
 
 
 /**
- * JAXB adapter mapping implementing class to the GeoAPI interface. See
- * package documentation for more information about JAXB and interface.
+ * JAXB adapter mapping implementing class to the GeoAPI interface.
+ * See package documentation for more information about JAXB and interface.
  *
- * @author  Martin Desruisseaux (Geomatys)
  * @author  Cullen Rombach (Image Matters)
  * @since   1.0
- * @since   0.5
+ * @version 1.0
  * @module
  */
-public final class CI_Responsibility extends PropertyType<CI_Responsibility, Responsibility> {
+public final class MD_Releasability extends PropertyType<MD_Releasability, Releasability> {
     /**
      * Empty constructor for JAXB only.
      */
-    public CI_Responsibility() {
+    public MD_Releasability() {
     }
 
     /**
@@ -46,47 +43,42 @@ public final class CI_Responsibility extends PropertyType<CI_Responsibility, Res
      * This method is indirectly invoked by the private constructor
      * below, so it shall not depend on the state of this object.
      *
-     * @return {@code Responsibility.class}
+     * @return {@code Releasability.class}
      */
     @Override
-    protected Class<Responsibility> getBoundType() {
-        return Responsibility.class;
+    protected Class<Releasability> getBoundType() {
+        return Releasability.class;
     }
 
     /**
      * Constructor for the {@link #wrap} method only.
      */
-    private CI_Responsibility(final Responsibility metadata) {
+    private MD_Releasability(final Releasability metadata) {
         super(metadata);
     }
 
     /**
      * Invoked by {@link PropertyType} at marshalling time for wrapping the given metadata value
-     * in a {@code <gmd:CI_Responsibility>} XML element.
+     * in a {@code <gmd:MD_Releasability>} XML element.
      *
      * @param  metadata  the metadata element to marshall.
      * @return a {@code PropertyType} wrapping the given the metadata element.
      */
     @Override
-    protected CI_Responsibility wrap(final Responsibility metadata) {
-        return new CI_Responsibility(metadata);
+    protected MD_Releasability wrap(final Releasability metadata) {
+        return new MD_Releasability(metadata);
     }
 
     /**
      * Invoked by JAXB at marshalling time for getting the actual metadata to write
-     * inside the {@code <gmd:CI_Responsibility>} XML element.
+     * inside the {@code <gmd:MD_Releasability>} XML element.
      * This is the value or a copy of the value given in argument to the {@code wrap} method.
      *
      * @return the metadata to be marshalled.
      */
     @XmlElementRef
-    @SuppressWarnings("deprecation")
-    public DefaultResponsibility getElement() {
-        if (Context.isLatestMetadata()) {
-            return DefaultResponsibility.castOrCopy(metadata);
-        } else {
-            return DefaultResponsibleParty.castOrCopy(metadata);
-        }
+    public DefaultReleasability getElement() {
+        return DefaultReleasability.castOrCopy(metadata);
     }
 
     /**
@@ -94,7 +86,7 @@ public final class CI_Responsibility extends PropertyType<CI_Responsibility, Res
      *
      * @param  metadata  the unmarshalled metadata.
      */
-    public void setElement(final DefaultResponsibility metadata) {
+    public void setElement(final DefaultReleasability metadata) {
         this.metadata = metadata;
     }
 }

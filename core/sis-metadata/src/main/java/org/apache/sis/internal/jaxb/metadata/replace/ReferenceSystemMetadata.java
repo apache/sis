@@ -19,9 +19,13 @@ package org.apache.sis.internal.jaxb.metadata.replace;
 import java.util.Objects;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import org.opengis.metadata.Identifier;
 import org.opengis.referencing.ReferenceSystem;
+import org.apache.sis.internal.jaxb.metadata.MD_Identifier;
+import org.apache.sis.internal.jaxb.metadata.RS_Identifier;
 import org.apache.sis.internal.simple.SimpleIdentifiedObject;
+import org.apache.sis.internal.jaxb.Context;
 import org.apache.sis.util.ComparisonMode;
 
 
@@ -37,7 +41,8 @@ import org.apache.sis.util.ComparisonMode;
  *
  * @author  Guilhem Legal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.5
+ * @author  Cullen Rombach (Image Matters)
+ * @version 1.0
  *
  * @see org.apache.sis.referencing.AbstractReferenceSystem
  *
@@ -78,13 +83,15 @@ public class ReferenceSystemMetadata extends SimpleIdentifiedObject implements R
 
     /**
      * Returns the primary name by which this object is identified.
+     * This method can be invoked during ISO 19115-3 marshalling.
      *
      * @return the identifier given at construction time.
      */
     @Override
     @XmlElement(name = "referenceSystemIdentifier")
+    @XmlJavaTypeAdapter(MD_Identifier.class)
     public final Identifier getName() {
-        return super.getName();
+        return Context.isLatestMetadata() ? super.getName() : null;
     }
 
     /**
@@ -93,6 +100,24 @@ public class ReferenceSystemMetadata extends SimpleIdentifiedObject implements R
      * @param  name  the new primary name.
      */
     public final void setName(final Identifier name) {
+        this.name = name;
+    }
+
+    /**
+     * Gets the name for this reference system metadata (used in ISO 19139 format).
+     * This method can be invoked during ISO 19139 marshalling.
+     */
+    @XmlElement(name = "referenceSystemIdentifier")
+    @XmlJavaTypeAdapter(RS_Identifier.class)
+    private Identifier getLegacyName() {
+        return Context.isLatestMetadata() ? null : getName();
+    }
+
+    /**
+     * Sets the name for this reference system metadata (used in ISO 19139 format).
+     */
+    @SuppressWarnings("unused")
+    private void setLegacyName(final Identifier name) {
         this.name = name;
     }
 

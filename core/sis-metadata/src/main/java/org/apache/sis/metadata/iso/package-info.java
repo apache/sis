@@ -81,13 +81,16 @@
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Touraïvane (IRD)
  * @author  Cédric Briançon (Geomatys)
- * @version 0.5
+ * @author  Cullen Rombach (Image Matters)
+ * @version 1.0
  * @since   0.3
  * @module
  */
-@XmlSchema(location=Schemas.METADATA_XSD, elementFormDefault=XmlNsForm.QUALIFIED, namespace=Namespaces.GMD, xmlns = {
-    @XmlNs(prefix = "gmi", namespaceURI = Namespaces.GMI),
-    @XmlNs(prefix = "gmd", namespaceURI = Namespaces.GMD),
+@XmlSchema(location = Schemas.METADATA_XSD_BASE, elementFormDefault = XmlNsForm.QUALIFIED, namespace = Namespaces.MDB, xmlns = {
+    @XmlNs(prefix = "mdb", namespaceURI = Namespaces.MDB),
+    @XmlNs(prefix = "cit", namespaceURI = Namespaces.CIT),
+    @XmlNs(prefix = "lan", namespaceURI = Namespaces.LAN),
+    @XmlNs(prefix = "mcc", namespaceURI = Namespaces.MCC),
     @XmlNs(prefix = "gco", namespaceURI = Namespaces.GCO),
     @XmlNs(prefix = "xsi", namespaceURI = Namespaces.XSI)
 })

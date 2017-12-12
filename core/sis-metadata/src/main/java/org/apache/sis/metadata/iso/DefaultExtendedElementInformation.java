@@ -30,6 +30,8 @@ import org.opengis.util.InternationalString;
 import org.apache.sis.metadata.TitleProperty;
 import org.apache.sis.measure.ValueRange;
 import org.apache.sis.util.iso.Types;
+import org.apache.sis.xml.Namespaces;
+import org.apache.sis.internal.jaxb.Context;
 import org.apache.sis.internal.metadata.Dependencies;
 import org.apache.sis.internal.metadata.LegacyPropertyAdapter;
 
@@ -69,13 +71,14 @@ import static org.apache.sis.internal.metadata.MetadataUtilities.ensurePositive;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Touraïvane (IRD)
  * @author  Cédric Briançon (Geomatys)
- * @version 0.5
+ * @author  Cullen Rombach (Image Matters)
+ * @version 1.0
  * @since   0.3
  * @module
  */
 @SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @TitleProperty(name = "name")
-@XmlType(name = "MD_ExtendedElementInformation_Type", propOrder = {
+@XmlType(name = "MD_ExtendedElementInformation_Type", namespace = Namespaces.MEX, propOrder = {
     "name",
     "shortName",
     "domainCode",
@@ -90,7 +93,7 @@ import static org.apache.sis.internal.metadata.MetadataUtilities.ensurePositive;
     "rationales",
     "sources"
 })
-@XmlRootElement(name = "MD_ExtendedElementInformation")
+@XmlRootElement(name = "MD_ExtendedElementInformation", namespace = Namespaces.MEX)
 public class DefaultExtendedElementInformation extends ISOMetadata implements ExtendedElementInformation {
     /**
      * Serial number for inter-operability with different versions.
@@ -304,7 +307,7 @@ public class DefaultExtendedElementInformation extends ISOMetadata implements Ex
     @Deprecated
     @XmlElement(name = "shortName")
     public String getShortName()  {
-        return shortName;
+    	return Context.isLatestMetadata() ? null : shortName;
     }
 
     /**
@@ -333,7 +336,7 @@ public class DefaultExtendedElementInformation extends ISOMetadata implements Ex
     @Deprecated
     @XmlElement(name = "domainCode")
     public Integer getDomainCode() {
-        return domainCode;
+        return Context.isLatestMetadata() ? null : domainCode;
     }
 
     /**
