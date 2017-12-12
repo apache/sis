@@ -20,6 +20,7 @@ import javax.xml.bind.annotation.XmlElement;
 import org.opengis.metadata.maintenance.ScopeCode;
 import org.apache.sis.internal.jaxb.gmd.CodeListAdapter;
 import org.apache.sis.internal.jaxb.gmd.CodeListUID;
+import org.apache.sis.xml.Namespaces;
 
 
 /**
@@ -28,7 +29,8 @@ import org.apache.sis.internal.jaxb.gmd.CodeListUID;
  * of {@code CodeList} in ISO-19139.
  *
  * @author  Cédric Briançon (Geomatys)
- * @version 0.3
+ * @author  Cullen Rombach (Image Matters)
+ * @version 1.0
  * @since   0.3
  * @module
  */
@@ -72,7 +74,7 @@ public final class MD_ScopeCode extends CodeListAdapter<MD_ScopeCode, ScopeCode>
      * @return the value to be marshalled.
      */
     @Override
-    @XmlElement(name = "MD_ScopeCode")
+    @XmlElement(name = "MD_ScopeCode", namespace = Namespaces.MCC)
     public CodeListUID getElement() {
         return identifier;
     }

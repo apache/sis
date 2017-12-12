@@ -30,7 +30,9 @@
  * </ul>
  *
  * @author  Cédric Briançon (Geomatys)
- * @version 0.3
+ * @author  Martin Desruisseaux (Geomatys)
+ * @author  Cullen Rombach (Image Matters)
+ * @version 1.0
  *
  * @see javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter
  * @see org.opengis.util.CodeList
@@ -38,9 +40,19 @@
  * @since 0.3
  * @module
  */
-@XmlSchema(elementFormDefault = XmlNsForm.QUALIFIED, namespace = Namespaces.GMD, xmlns = {
+@XmlSchema(elementFormDefault = XmlNsForm.QUALIFIED, namespace = Namespaces.MDB, xmlns = {
+    @XmlNs(prefix = "cit", namespaceURI = Namespaces.CIT),
     @XmlNs(prefix = "gmd", namespaceURI = Namespaces.GMD),
     @XmlNs(prefix = "gmi", namespaceURI = Namespaces.GMI),
+    @XmlNs(prefix = "lan", namespaceURI = Namespaces.LAN),
+    @XmlNs(prefix = "mcc", namespaceURI = Namespaces.MCC),
+    @XmlNs(prefix = "mdb", namespaceURI = Namespaces.MDB),
+    @XmlNs(prefix = "mex", namespaceURI = Namespaces.MEX),
+    @XmlNs(prefix = "mmi", namespaceURI = Namespaces.MMI),
+    @XmlNs(prefix = "mrc", namespaceURI = Namespaces.MRC),
+    @XmlNs(prefix = "mri", namespaceURI = Namespaces.MRI),
+    @XmlNs(prefix = "msr", namespaceURI = Namespaces.MSR),
+    @XmlNs(prefix = "srv", namespaceURI = Namespaces.SRV),
     @XmlNs(prefix = "gco", namespaceURI = Namespaces.GCO)
 })
 package org.apache.sis.internal.jaxb.code;

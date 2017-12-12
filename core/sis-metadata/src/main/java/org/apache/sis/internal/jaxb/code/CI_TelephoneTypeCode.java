@@ -16,34 +16,36 @@
  */
 package org.apache.sis.internal.jaxb.code;
 
+import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
-import org.opengis.metadata.constraint.Classification;
+import org.opengis.metadata.citation.TelephoneType;
 import org.apache.sis.internal.jaxb.gmd.CodeListAdapter;
 import org.apache.sis.internal.jaxb.gmd.CodeListUID;
+import org.apache.sis.xml.Namespaces;
 
 
 /**
- * JAXB adapter for {@link Classification}, in order to integrate the value in an element
- * complying with ISO-19139 standard. See package documentation for more information about
- * the handling of {@code CodeList} in ISO-19139.
+ * JAXB adapter for {@link TelephoneType}, in order to integrate the value in an element respecting
+ * the ISO-19139 standard. See package documentation for more information about the handling
+ * of {@code CodeList} in ISO-19139.
  *
- * @author  Cédric Briançon (Geomatys)
  * @author  Cullen Rombach (Image Matters)
  * @version 1.0
- * @since   0.3
+ * @since   1.0
  * @module
  */
-public final class MD_ClassificationCode extends CodeListAdapter<MD_ClassificationCode, Classification> {
+@XmlType(namespace = Namespaces.CIT)
+public final class CI_TelephoneTypeCode extends CodeListAdapter<CI_TelephoneTypeCode, TelephoneType> {
     /**
      * Empty constructor for JAXB only.
      */
-    public MD_ClassificationCode() {
+    public CI_TelephoneTypeCode() {
     }
 
     /**
      * Creates a new adapter for the given value.
      */
-    private MD_ClassificationCode(final CodeListUID value) {
+    private CI_TelephoneTypeCode(final CodeListUID value) {
         super(value);
     }
 
@@ -53,8 +55,8 @@ public final class MD_ClassificationCode extends CodeListAdapter<MD_Classificati
      * @return the wrapper for the code list value.
      */
     @Override
-    protected MD_ClassificationCode wrap(final CodeListUID value) {
-        return new MD_ClassificationCode(value);
+    protected CI_TelephoneTypeCode wrap(final CodeListUID value) {
+        return new CI_TelephoneTypeCode(value);
     }
 
     /**
@@ -63,8 +65,8 @@ public final class MD_ClassificationCode extends CodeListAdapter<MD_Classificati
      * @return the code list class.
      */
     @Override
-    protected Class<Classification> getCodeListClass() {
-        return Classification.class;
+    protected Class<TelephoneType> getCodeListClass() {
+        return TelephoneType.class;
     }
 
     /**
@@ -73,7 +75,7 @@ public final class MD_ClassificationCode extends CodeListAdapter<MD_Classificati
      * @return the value to be marshalled.
      */
     @Override
-    @XmlElement(name = "MD_ClassificationCode")
+    @XmlElement(name = "CI_TelephoneTypeCode")
     public CodeListUID getElement() {
         return identifier;
     }

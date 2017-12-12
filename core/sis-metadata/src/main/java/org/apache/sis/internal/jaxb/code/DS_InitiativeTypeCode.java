@@ -20,6 +20,7 @@ import javax.xml.bind.annotation.XmlElement;
 import org.opengis.metadata.identification.InitiativeType;
 import org.apache.sis.internal.jaxb.gmd.CodeListAdapter;
 import org.apache.sis.internal.jaxb.gmd.CodeListUID;
+import org.apache.sis.xml.Namespaces;
 
 
 /**
@@ -28,7 +29,8 @@ import org.apache.sis.internal.jaxb.gmd.CodeListUID;
  * about the handling of CodeList in ISO-19139.
  *
  * @author  Guilhem Legal (Geomatys)
- * @version 0.3
+ * @author  Cullen Rombach (Image Matters)
+ * @version 1.0
  * @since   0.3
  * @module
  */
@@ -72,7 +74,7 @@ public final class DS_InitiativeTypeCode extends CodeListAdapter<DS_InitiativeTy
      * @return the value to be marshalled.
      */
     @Override
-    @XmlElement(name = "DS_InitiativeTypeCode")
+    @XmlElement(name = "DS_InitiativeTypeCode", namespace = Namespaces.MRI)
     public CodeListUID getElement() {
         return identifier;
     }

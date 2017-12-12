@@ -28,6 +28,7 @@ import org.apache.sis.internal.jaxb.Context;
 import org.apache.sis.internal.jaxb.gmd.Country;
 import org.apache.sis.internal.jaxb.gmd.LanguageCode;
 import org.apache.sis.internal.jaxb.gmd.PT_FreeText;
+import org.apache.sis.xml.Namespaces;
 
 
 /**
@@ -57,7 +58,8 @@ import org.apache.sis.internal.jaxb.gmd.PT_FreeText;
  * For an alternative (simpler) format, see {@link org.apache.sis.internal.jaxb.gmd.LocaleAdapter}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.4
+ * @author  Cullen Rombach (Image Matters)
+ * @version 1.0
  *
  * @see LanguageCode
  * @see Country
@@ -66,6 +68,7 @@ import org.apache.sis.internal.jaxb.gmd.PT_FreeText;
  * @since 0.3
  * @module
  */
+@XmlType(namespace = Namespaces.LAN)
 public final class PT_Locale extends XmlAdapter<PT_Locale, Locale> {
     /**
      * The attributes wrapped in a {@code "PT_Locale"} element.
@@ -76,12 +79,11 @@ public final class PT_Locale extends XmlAdapter<PT_Locale, Locale> {
     /**
      * Wraps the {@code "locale"} attributes in a {@code "PT_Locale"} element.
      */
-    @XmlType(name = "PT_Locale", propOrder = { "languageCode", "country", "characterEncoding" })
+    @XmlType(name = "PT_Locale", namespace = Namespaces.LAN, propOrder = {"languageCode", "language", "country", "characterEncoding"})
     private static final class Wrapper {
         /**
          * The language code, or {@code null} if none.
          */
-        @XmlElement(required = true)
         LanguageCode languageCode;
 
         /**
@@ -122,6 +124,38 @@ public final class PT_Locale extends XmlAdapter<PT_Locale, Locale> {
             languageCode = LanguageCode.create(context, locale);
             country      = Country     .create(context, locale);
             // The characterEncoding field will be initialized at marshalling time (see method below).
+        }
+
+        /**
+         * Gets the language code for this PT_Locale. Used in ISO 19139.
+         */
+        @XmlElement(name = "languageCode")
+        private LanguageCode getLanguageCode() {
+            return Context.isLatestMetadata() ? null : languageCode;
+        }
+
+        /**
+         * Sets the language code for this PT_Locale. Used in ISO 19139.
+         */
+        @SuppressWarnings("unused")
+        private void setLanguageCode(LanguageCode newValue) {
+            languageCode = newValue;
+        }
+
+        /**
+         * Gets the language code for this PT_Locale. Used in ISO 19115-3.
+         */
+        @XmlElement(name = "language")
+        private LanguageCode getLanguage() {
+            return Context.isLatestMetadata() ? languageCode : null;
+        }
+
+        /**
+         * Sets the language code for this PT_Locale. Used in ISO 19139.
+         */
+        @SuppressWarnings("unused")
+        private void setLanguage(LanguageCode newValue) {
+            languageCode = newValue;
         }
 
         /**
