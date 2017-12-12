@@ -44,10 +44,22 @@ class FilteredStreamReader extends StreamReaderDelegate {
 
     /**
      * Creates a new filter for the given version of the standards.
+     * Use {@link #create(XMLStreamReader, FilterVersion)} instead.
      */
     FilteredStreamReader(final XMLStreamReader in, final FilterVersion version) {
         super(in);
         this.version = version;
+    }
+
+    /**
+     * Creates a new filter for the given version of the standards.
+     */
+    static FilteredStreamReader create(final XMLStreamReader in, final FilterVersion version) {
+        if (version.manyToOne) {
+            return new FilteredStreamResolver(in, version);
+        } else {
+            return new FilteredStreamReader(in, version);
+        }
     }
 
     /**

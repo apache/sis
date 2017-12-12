@@ -27,6 +27,7 @@ import org.apache.sis.internal.jaxb.Context;
 import org.apache.sis.internal.jaxb.gco.GO_CharacterString;
 import org.apache.sis.util.iso.DefaultInternationalString;
 import org.apache.sis.util.iso.SimpleInternationalString;
+import org.apache.sis.xml.Namespaces;
 import org.apache.sis.util.ArraysExt;
 
 
@@ -56,14 +57,15 @@ import org.apache.sis.util.ArraysExt;
  *
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.6
+ * @author  Cullen Rombach (Image Matters)
+ * @version 1.0
  *
  * @see <a href="http://jira.geotoolkit.org/browse/GEOTK-152">GEOTK-152</a>
  *
  * @since 0.3
  * @module
  */
-@XmlType(name = "PT_FreeText_PropertyType")
+@XmlType(name = "PT_FreeText_PropertyType", namespace = Namespaces.LAN)
 public final class PT_FreeText extends GO_CharacterString {
     /**
      * A set of {@link LocalisedCharacterString}, representing the {@code <gmd:textGroup>} element.

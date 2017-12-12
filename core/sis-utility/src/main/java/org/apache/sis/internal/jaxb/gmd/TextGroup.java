@@ -19,6 +19,7 @@ package org.apache.sis.internal.jaxb.gmd;
 import java.util.Locale;
 import javax.xml.bind.annotation.XmlElement;
 import org.apache.sis.util.Debug;
+import org.apache.sis.xml.Namespaces;
 
 
 /**
@@ -68,7 +69,8 @@ import org.apache.sis.util.Debug;
  *
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.3
+ * @author  Cullen Rombach (Image Matters)
+ * @version 1.0
  *
  * @see LocalisedCharacterString
  * @see <a href="http://jira.geotoolkit.org/browse/GEOTK-152">GEOTK-152</a>
@@ -86,7 +88,7 @@ final class TextGroup {
      * as in the second example of class javadoc. However SIS allows arbitrary length
      * (as in the first example of class javadoc) for compatibility and convenience reasons.</p>
      */
-    @XmlElement(name = "LocalisedCharacterString")
+    @XmlElement(name = "LocalisedCharacterString", namespace = Namespaces.LAN)
     protected LocalisedCharacterString[] localized;
 
     /**

@@ -23,6 +23,7 @@ import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlElements;
 import javax.xml.bind.annotation.XmlAnyElement;
+import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlSeeAlso;
 import org.w3c.dom.Element;
 import org.opengis.util.CodeList;
@@ -55,7 +56,8 @@ import org.apache.sis.util.resources.Messages;
  *
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.7
+ * @author  Cullen Rombach (Image Matters)
+ * @version 1.0
  *
  * @see org.apache.sis.internal.jaxb.gmd.PT_FreeText
  *
@@ -68,6 +70,7 @@ import org.apache.sis.util.resources.Messages;
     org.apache.sis.internal.jaxb.gmd.LanguageCode.class,
     org.apache.sis.internal.jaxb.gmd.Country.class
 })
+@XmlRootElement(name = "CharacterString")
 public class GO_CharacterString {
     /*
      * Numerical values below are ordered: if two or more values are defined (thoerically not legal,
@@ -194,9 +197,9 @@ public class GO_CharacterString {
      */
     @XmlElements({
         @XmlElement(type = String.class,       name = "CharacterString"),
-        @XmlElement(type = Anchor.class,       name = "Anchor",       namespace = Namespaces.GMX),
-        @XmlElement(type = FileName.class,     name = "FileName",     namespace = Namespaces.GMX),
-        @XmlElement(type = MimeFileType.class, name = "MimeFileType", namespace = Namespaces.GMX)
+        @XmlElement(type = Anchor.class,       name = "Anchor",       namespace = Namespaces.GCX),
+        @XmlElement(type = FileName.class,     name = "FileName",     namespace = Namespaces.GCX),
+        @XmlElement(type = MimeFileType.class, name = "MimeFileType", namespace = Namespaces.GCX)
     })
     private Object getValue() {
         switch (type) {
@@ -272,7 +275,7 @@ public class GO_CharacterString {
      * or {@code <gmx:MimeFileType>}. This method presumes that the element name is the CodeList standard name.
      * If not, the element will be ignored.
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({ "unchecked", "unused" })
     private void setCodeList(final Object value) {
         final Element e = (Element) value;
         if (e.getNodeType() == Element.ELEMENT_NODE) {

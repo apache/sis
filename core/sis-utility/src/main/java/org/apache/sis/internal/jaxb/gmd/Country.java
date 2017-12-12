@@ -24,6 +24,7 @@ import org.apache.sis.internal.jaxb.Context;
 import org.apache.sis.internal.jaxb.gco.GO_CharacterString;
 import org.apache.sis.internal.jaxb.gco.CharSequenceAdapter;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.xml.Namespaces;
 
 
 /**
@@ -43,16 +44,17 @@ import org.apache.sis.util.resources.Errors;
  *
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.4
+ * @author  Cullen Rombach (Image Matters)
+ * @version 1.0
  * @since   0.3
  * @module
  */
-@XmlType(name = "Country_PropertyType")
+@XmlType(name = "Country_PropertyType", namespace = Namespaces.LAN)
 public final class Country extends GO_CharacterString {
     /**
      * The country using a {@link org.opengis.util.CodeList}-like format.
+     * This was called "Country" in ISO 19139 and has been renamed "CountryCode" in ISO 19115-3
      */
-    @XmlElement(name = "Country")
     private CodeListUID identifier;
 
     /**
@@ -80,6 +82,38 @@ public final class Country extends GO_CharacterString {
      */
     private Country(final Context context, final String codeListValue, final String codeSpace, final String value) {
         identifier = new CodeListUID(context, "Country", codeListValue, codeSpace, value);
+    }
+
+    /**
+     * Gets the value of the Country code using ISO 19139 element name.
+     */
+    @XmlElement(name = "Country")
+    private CodeListUID getCountry() {
+        return Context.isLatestMetadata() ? null : identifier;
+    }
+
+    /**
+     * Sets the value of the Country code in ISO 19139 element name.
+     */
+    @SuppressWarnings("unused")
+    private void setCountry(CodeListUID newValue) {
+        identifier = newValue;
+    }
+
+    /**
+     * Gets the value of the Country code using ISO 19115-3 element name.
+     */
+    @XmlElement(name = "CountryCode")
+    private CodeListUID getCountryCode() {
+        return Context.isLatestMetadata() ? identifier : null;
+    }
+
+    /**
+     * Sets the value of the Country code in ISO 19115-3 element name.
+     */
+    @SuppressWarnings("unused")
+    private void setCountryCode(CodeListUID newValue) {
+        identifier = newValue;
     }
 
     /**

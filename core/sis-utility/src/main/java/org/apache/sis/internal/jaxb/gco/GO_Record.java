@@ -17,74 +17,74 @@
 package org.apache.sis.internal.jaxb.gco;
 
 import javax.xml.bind.annotation.XmlElement;
-import org.opengis.util.RecordType;
-import org.apache.sis.util.iso.DefaultRecordType;
+import org.opengis.util.Record;
+import org.apache.sis.util.iso.DefaultRecord;
 
 
 /**
  * JAXB wrapper in order to map implementing class with the GeoAPI interface.
  * See package documentation for more information about JAXB and interface.
  *
- * @author  Cédric Briançon (Geomatys)
- * @version 0.3
- * @since   0.3
+ * @author  Cullen Rombach (Image Matters)
+ * @since   1.0
+ * @version 1.0
  * @module
  */
-public final class GO_RecordType extends PropertyType<GO_RecordType, RecordType> {
+public final class GO_Record extends PropertyType<GO_Record, Record> {
     /**
      * Empty constructor for JAXB only.
      */
-    public GO_RecordType() {
+    public GO_Record() {
     }
 
     /**
-     * Wraps a {@code RecordType} value with a {@code gco:RecordType} element at marshalling-time.
+     * Wraps a {@code Record} value with a {@code gco:Record} element at marshalling-time.
      *
      * @param  metadata  the metadata value to marshal.
      */
-    private GO_RecordType(final RecordType metadata) {
+    private GO_Record(final Record metadata) {
         super(metadata);
     }
 
     /**
-     * Returns a wrapper for the given {@code RecordType} element.
+     * Returns a wrapper for the given {@code Record} element.
      *
      * @param  value  the value to marshal.
      * @return the wrapper around the given metadata value.
      */
     @Override
-    protected GO_RecordType wrap(final RecordType value) {
-        return new GO_RecordType(value);
+    protected GO_Record wrap(final Record value) {
+        return new GO_Record(value);
     }
 
     /**
      * Returns the GeoAPI interface which is bound by this adapter.
      *
-     * @return {@code RecordType.class}
+     * @return {@code Record.class}
      */
     @Override
-    protected Class<RecordType> getBoundType() {
-        return RecordType.class;
+    protected Class<Record> getBoundType() {
+        return Record.class;
     }
 
     /**
-     * Returns the {@link DefaultRecordType} generated from the metadata value.
+     * Returns the {@link DefaultRecord} generated from the metadata value.
      * This method is systematically called at marshalling-time by JAXB.
      *
      * @return the metadata to be marshalled.
      */
-    @XmlElement(name = "RecordType")
-    public DefaultRecordType getElement() {
-        return DefaultRecordType.castOrCopy(metadata);
+    @XmlElement(name = "Record")
+    public DefaultRecord getElement() {
+        return DefaultRecord.castOrCopy(metadata);
     }
 
     /**
-     * Sets the value for the {@link DefaultRecordType}.
+     * Sets the value for the {@link DefaultRecord}.
      * This method is systematically called at unmarshalling-time by JAXB.
      *
      * @param  metadata  the unmarshalled metadata.
      */
-    public void setElement(final DefaultRecordType metadata) {
+    public void setElement(final DefaultRecord metadata) {
         this.metadata = metadata;
     }
 }

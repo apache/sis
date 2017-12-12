@@ -407,6 +407,17 @@ public final class Context extends MarshalContext {
     }
 
     /**
+     * Returns {@code true} if we are (un)marshalling ISO 19115-3 metadata,
+     * or {@code false} if (un)marshalling ISO 19139 metadata.
+     * This is a convenience method for {@link #isMetadataVersion(Context, Version)}.
+     *
+     * @return whether the (un)marshalling process is for ISO 19115-3.
+     */
+    public static boolean isLatestMetadata() {
+        return isMetadataVersion(current(), LegacyNamespaces.ISO_19115_3);
+    }
+
+    /**
      * Returns the base URL of ISO 19139 (or other standards) schemas.
      * The valid values are documented in the {@link org.apache.sis.xml.XML#SCHEMAS} property.
      * If the returned value is not empty, then this method guarantees it ends with {@code '/'}.
