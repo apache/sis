@@ -120,7 +120,7 @@ final class PooledUnmarshaller extends Pooled implements Unmarshaller {
     private Object unmarshal(XMLStreamReader input, final FilterVersion version)
             throws XMLStreamException, JAXBException
     {
-        input = new FilteredStreamReader(input, version);
+        input = FilteredStreamReader.create(input, version);
         final Context context = begin();
         final Object object;
         try {
@@ -139,7 +139,7 @@ final class PooledUnmarshaller extends Pooled implements Unmarshaller {
     private <T> JAXBElement<T> unmarshal(XMLStreamReader input, final FilterVersion version, final Class<T> declaredType)
             throws XMLStreamException, JAXBException
     {
-        input = new FilteredStreamReader(input, version);
+        input = FilteredStreamReader.create(input, version);
         final Context context = begin();
         final JAXBElement<T> object;
         try {
@@ -342,7 +342,7 @@ final class PooledUnmarshaller extends Pooled implements Unmarshaller {
     public Object unmarshal(XMLStreamReader input) throws JAXBException {
         final FilterVersion version = getFilterVersion();
         if (version != null) {
-            input = new FilteredStreamReader(input, version);
+            input = FilteredStreamReader.create(input, version);
         }
         final Context context = begin();
         try {
@@ -359,7 +359,7 @@ final class PooledUnmarshaller extends Pooled implements Unmarshaller {
     public <T> JAXBElement<T> unmarshal(XMLStreamReader input, final Class<T> declaredType) throws JAXBException {
         final FilterVersion version = getFilterVersion();
         if (version != null) {
-            input = new FilteredStreamReader(input, version);
+            input = FilteredStreamReader.create(input, version);
         }
         final Context context = begin();
         try {

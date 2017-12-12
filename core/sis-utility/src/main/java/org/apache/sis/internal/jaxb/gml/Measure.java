@@ -39,7 +39,7 @@ import org.apache.sis.measure.Units;
  *
  * <p>This class duplicates {@code org.apache.sis.measure.Measure}, but we have to do that way
  * because that {@code Measure} extends {@link Number} and we are not allowed to use the
- * {@code @XmlValue} annotation on a class that extends an other class.</p>
+ * {@code @XmlValue} annotation on a class that extends another class.</p>
  *
  * <div class="section">XML marshalling</div>
  * Measures are used in different ways by the ISO 19115 (Metadata) and GML standards.
@@ -165,7 +165,8 @@ public final class Measure {
         if (unit == null || unit.equals(Units.UNITY)) {
             return "";
         }
-        final StringBuilder buffer = Context.schema(Context.current(), "gmd", Schemas.METADATA_ROOT)
+        // Changed to METADATA_ROOT_OLD while updating to ISO 19115-3
+        final StringBuilder buffer = Context.schema(Context.current(), "gmd", Schemas.METADATA_ROOT_OLD)
                                             .append(Schemas.UOM_PATH).append("#xpointer(//*[@gml:id='");
         try {
             UCUM.format(unit, buffer);
