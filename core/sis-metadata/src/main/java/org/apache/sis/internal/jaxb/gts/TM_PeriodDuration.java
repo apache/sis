@@ -40,7 +40,8 @@ import org.apache.sis.util.iso.SimpleInternationalString;
  *       API in geoapi-pending, which is not very clear... We prefer to hide this for now.
  *
  * @author  Guilhem Legal (Geomatys)
- * @version 0.3
+ * @author  Martin Desruisseaux (Geomatys)
+ * @version 1.0
  * @since   0.3
  * @module
  */
@@ -89,7 +90,13 @@ public final class TM_PeriodDuration extends PropertyType<TM_PeriodDuration, Per
      */
     @XmlElement(name = "TM_PeriodDuration")
     public Duration getElement() {
-        final PeriodDuration metadata = this.metadata;
+        return toXML(metadata);
+    }
+
+    /**
+     * Converts the given ISO 19108 duration into a Java XML duration.
+     */
+    static Duration toXML(final PeriodDuration metadata) {
         if (metadata != null) try {
             /*
              * Get the DatatypeFactory first because if not available, then we don't need to parse
@@ -124,7 +131,7 @@ public final class TM_PeriodDuration extends PropertyType<TM_PeriodDuration, Per
             }
             return factory.newDuration(true, years, months, days, hours, minutes, seconds);
         } catch (DatatypeConfigurationException e) {
-            warningOccured("getElement", e);
+            warningOccured("toXML", e);
         }
         return null;
     }
@@ -136,7 +143,13 @@ public final class TM_PeriodDuration extends PropertyType<TM_PeriodDuration, Per
      * @param  duration  the adapter to set.
      */
     public void setElement(final Duration duration) {
-        metadata = null;                                        // Cleaned first in case of failure.
+        metadata = toISO(duration);
+    }
+
+    /**
+     * Converts the given Java XML duration into an ISO 19108 duration.
+     */
+    static PeriodDuration toISO(final Duration duration) {
         if (duration != null) try {
             final TemporalFactory factory = TemporalUtilities.getTemporalFactory();
             InternationalString years = null;
@@ -165,10 +178,11 @@ public final class TM_PeriodDuration extends PropertyType<TM_PeriodDuration, Per
             if ((value = duration.getSeconds()) != 0) {
                 seconds = new SimpleInternationalString(Integer.toString(value));
             }
-            metadata = factory.createPeriodDuration(years, months, weeks, days, hours, minutes, seconds);
+            return factory.createPeriodDuration(years, months, weeks, days, hours, minutes, seconds);
         } catch (UnsupportedOperationException e) {
-            warningOccured("setElement", e);
+            warningOccured("toISO", e);
         }
+        return null;
     }
 
     /**

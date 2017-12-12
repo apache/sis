@@ -23,6 +23,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 import org.opengis.metadata.citation.OnlineResource;
 import org.opengis.metadata.ExtendedElementInformation;
 import org.opengis.metadata.MetadataExtensionInformation;
+import org.apache.sis.xml.Namespaces;
 
 
 /**
@@ -40,16 +41,17 @@ import org.opengis.metadata.MetadataExtensionInformation;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Touraïvane (IRD)
  * @author  Cédric Briançon (Geomatys)
- * @version 0.3
+ * @author  Cullen Rombach (Image Matters)
+ * @version 1.0
  * @since   0.3
  * @module
  */
 @SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
-@XmlType(name = "MD_MetadataExtensionInformation_Type", propOrder = {
+@XmlType(name = "MD_MetadataExtensionInformation_Type", namespace = Namespaces.MEX, propOrder = {
     "extensionOnLineResource",
     "extendedElementInformation"
 })
-@XmlRootElement(name = "MD_MetadataExtensionInformation")
+@XmlRootElement(name = "MD_MetadataExtensionInformation", namespace = Namespaces.MEX)
 public class DefaultMetadataExtensionInformation extends ISOMetadata implements MetadataExtensionInformation {
     /**
      * Serial number for compatibility with different versions.

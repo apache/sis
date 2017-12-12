@@ -82,6 +82,13 @@ Implementations of metadata derived from ISO 19115. This module provides both an
       </roles>
     </contributor>
     <contributor>
+      <name>Cullen Rombach</name>
+      <organization>Image Matters</organization>
+      <roles>
+        <role>developer</role>
+      </roles>
+    </contributor>
+    <contributor>
       <name>Guilhem Legal</name>
       <email>guilhem.legal@geomatys.com</email>
       <organization>Geomatys</organization>

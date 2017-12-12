@@ -29,12 +29,14 @@
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Rémi Maréchal (Geomatys)
- * @version 0.5
+ * @author  Cullen Rombach (Image Matters)
+ * @since   1.0
  * @since   0.5
  * @module
  */
-@XmlSchema(elementFormDefault = XmlNsForm.QUALIFIED, namespace = Namespaces.GMD, xmlns = {
-    @XmlNs(prefix = "gmd", namespaceURI = Namespaces.GMD),
+@XmlSchema(elementFormDefault = XmlNsForm.QUALIFIED, namespace = Namespaces.MRS, xmlns = {
+    @XmlNs(prefix = "mrs", namespaceURI = Namespaces.MRS),
+    @XmlNs(prefix = "mdb", namespaceURI = Namespaces.MDB),
     @XmlNs(prefix = "srv", namespaceURI = Namespaces.SRV),
     @XmlNs(prefix = "gco", namespaceURI = Namespaces.GCO),
     @XmlNs(prefix = "xsi", namespaceURI = Namespaces.XSI)

@@ -91,7 +91,7 @@ public final class OtherLocales extends AbstractCollection<Locale> {
     @Override
     public Iterator<Locale> iterator() {
         final Iterator<Locale> it = languages.iterator();
-        if (it.hasNext()) it.next(); // Skip the first element.
+        if (it.hasNext()) it.next();                            // Skip the first element.
         return it;
     }
 
@@ -114,7 +114,7 @@ public final class OtherLocales extends AbstractCollection<Locale> {
         if (languages.isEmpty()) {
             Locale defaultLocale = Locale.getDefault();
             if (defaultLocale.equals(locale)) {
-                defaultLocale = Locale.ROOT;  // Same default than merge(Locale, Collection).
+                defaultLocale = Locale.ROOT;                    // Same default than merge(Locale, Collection).
             }
             languages.add(defaultLocale);
         }

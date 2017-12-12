@@ -17,28 +17,26 @@
 package org.apache.sis.internal.jaxb.metadata;
 
 import javax.xml.bind.annotation.XmlElementRef;
-import org.opengis.metadata.citation.Responsibility;
-import org.apache.sis.metadata.iso.citation.DefaultResponsibility;
-import org.apache.sis.metadata.iso.citation.DefaultResponsibleParty;
+import org.opengis.metadata.quality.Scope;
+import org.apache.sis.metadata.iso.quality.DefaultScope;
 import org.apache.sis.internal.jaxb.gco.PropertyType;
-import org.apache.sis.internal.jaxb.Context;
 
 
 /**
- * JAXB adapter mapping implementing class to the GeoAPI interface. See
- * package documentation for more information about JAXB and interface.
+ * JAXB adapter in order to map implementing class with the GeoAPI interface.
+ * See package documentation for more information about JAXB and interface.
  *
- * @author  Martin Desruisseaux (Geomatys)
  * @author  Cullen Rombach (Image Matters)
  * @since   1.0
- * @since   0.5
+ * @version 0.8
  * @module
  */
-public final class CI_Responsibility extends PropertyType<CI_Responsibility, Responsibility> {
+@SuppressWarnings("deprecation")
+public final class DQ_Scope extends PropertyType<DQ_Scope, Scope> {
     /**
      * Empty constructor for JAXB only.
      */
-    public CI_Responsibility() {
+    public DQ_Scope() {
     }
 
     /**
@@ -46,47 +44,42 @@ public final class CI_Responsibility extends PropertyType<CI_Responsibility, Res
      * This method is indirectly invoked by the private constructor
      * below, so it shall not depend on the state of this object.
      *
-     * @return {@code Responsibility.class}
+     * @return {@code Scope.class}
      */
     @Override
-    protected Class<Responsibility> getBoundType() {
-        return Responsibility.class;
+    protected Class<Scope> getBoundType() {
+        return Scope.class;
     }
 
     /**
      * Constructor for the {@link #wrap} method only.
      */
-    private CI_Responsibility(final Responsibility metadata) {
+    private DQ_Scope(final Scope metadata) {
         super(metadata);
     }
 
     /**
      * Invoked by {@link PropertyType} at marshalling time for wrapping the given metadata value
-     * in a {@code <gmd:CI_Responsibility>} XML element.
+     * in a {@code <gmd:DQ_Scope>} XML element.
      *
      * @param  metadata  the metadata element to marshall.
      * @return a {@code PropertyType} wrapping the given the metadata element.
      */
     @Override
-    protected CI_Responsibility wrap(final Responsibility metadata) {
-        return new CI_Responsibility(metadata);
+    protected DQ_Scope wrap(final Scope metadata) {
+        return new DQ_Scope(metadata);
     }
 
     /**
      * Invoked by JAXB at marshalling time for getting the actual metadata to write
-     * inside the {@code <gmd:CI_Responsibility>} XML element.
+     * inside the {@code <gmd:DQ_Scope>} XML element.
      * This is the value or a copy of the value given in argument to the {@code wrap} method.
      *
      * @return the metadata to be marshalled.
      */
     @XmlElementRef
-    @SuppressWarnings("deprecation")
-    public DefaultResponsibility getElement() {
-        if (Context.isLatestMetadata()) {
-            return DefaultResponsibility.castOrCopy(metadata);
-        } else {
-            return DefaultResponsibleParty.castOrCopy(metadata);
-        }
+    public DefaultScope getElement() {
+        return DefaultScope.castOrCopy(metadata);
     }
 
     /**
@@ -94,7 +87,7 @@ public final class CI_Responsibility extends PropertyType<CI_Responsibility, Res
      *
      * @param  metadata  the unmarshalled metadata.
      */
-    public void setElement(final DefaultResponsibility metadata) {
+    public void setElement(final DefaultScope metadata) {
         this.metadata = metadata;
     }
 }
