@@ -16,10 +16,12 @@
  */
 package org.apache.sis.internal.jaxb.code;
 
+import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import org.opengis.metadata.citation.DateType;
 import org.apache.sis.internal.jaxb.gmd.CodeListAdapter;
 import org.apache.sis.internal.jaxb.gmd.CodeListUID;
+import org.apache.sis.xml.Namespaces;
 
 
 /**
@@ -28,10 +30,12 @@ import org.apache.sis.internal.jaxb.gmd.CodeListUID;
  * about the handling of {@code CodeList} in ISO-19139.
  *
  * @author  Cédric Briançon (Geomatys)
- * @version 0.3
+ * @author  Cullen Rombach (Image Matters)
+ * @version 1.0
  * @since   0.3
  * @module
  */
+@XmlType(namespace = Namespaces.CIT)
 public final class CI_DateTypeCode extends CodeListAdapter<CI_DateTypeCode, DateType> {
     /**
      * Empty constructor for JAXB only.
