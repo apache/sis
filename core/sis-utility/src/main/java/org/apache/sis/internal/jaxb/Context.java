@@ -60,40 +60,46 @@ public final class Context extends MarshalContext {
      * The bit flag telling if a marshalling process is under progress.
      * This flag is unset for unmarshalling processes.
      */
-    public static final int MARSHALLING = 1;
+    public static final int MARSHALLING = 0x1;
 
     /**
      * The bit flag for enabling substitution of language codes by character strings.
      *
      * @see org.apache.sis.xml.XML#STRING_SUBSTITUTES
      */
-    public static final int SUBSTITUTE_LANGUAGE = 2;
+    public static final int SUBSTITUTE_LANGUAGE = 0x2;
 
     /**
      * The bit flag for enabling substitution of country codes by character strings.
      *
      * @see org.apache.sis.xml.XML#STRING_SUBSTITUTES
      */
-    public static final int SUBSTITUTE_COUNTRY = 4;
+    public static final int SUBSTITUTE_COUNTRY = 0x4;
 
     /**
      * The bit flag for enabling substitution of filenames by character strings.
      *
      * @see org.apache.sis.xml.XML#STRING_SUBSTITUTES
      */
-    public static final int SUBSTITUTE_FILENAME = 8;
+    public static final int SUBSTITUTE_FILENAME = 0x8;
 
     /**
      * The bit flag for enabling substitution of mime types by character strings.
      *
      * @see org.apache.sis.xml.XML#STRING_SUBSTITUTES
      */
-    public static final int SUBSTITUTE_MIMETYPE = 16;
+    public static final int SUBSTITUTE_MIMETYPE = 0x10;
 
     /**
      * Bit where to store whether {@link #finish()} shall invoke {@code Semaphores.clear(Semaphores.NULL_COLLECTION)}.
      */
-    private static final int CLEAR_SEMAPHORE = 32;
+    private static final int CLEAR_SEMAPHORE = 0x20;
+
+    /**
+     * Whether we are (un)marshalling legacy metadata as defined in 2003 (ISO 19139).
+     * If this flag is not set, then we assume latest metadata as defined in 2014 (ISO 19115:2014).
+     */
+    private static final int LEGACY_METADATA = 0x40;
 
     /**
      * The thread-local context. Elements are created in the constructor, and removed in a
@@ -134,12 +140,6 @@ public final class Context extends MarshalContext {
      * If null, than the latest version is assumed.
      */
     private final Version versionGML;
-
-    /**
-     * The metadata version to be marshalled or unmarshalled, or {@code null} if unspecified.
-     * If null, than the latest version is assumed.
-     */
-    private final Version versionMetadata;
 
     /**
      * The reference resolver currently in use, or {@code null} for {@link ReferenceResolver#DEFAULT}.
@@ -216,7 +216,7 @@ public final class Context extends MarshalContext {
      * @param  warningListener  the object to inform about warnings.
      */
     @SuppressWarnings("ThisEscapedInObjectConstruction")
-    public Context(final int                bitMasks,
+    public Context(int                      bitMasks,
                    final Locale             locale,
                    final TimeZone           timezone,
                    final Map<String,String> schemas,
@@ -226,27 +226,34 @@ public final class Context extends MarshalContext {
                    final ValueConverter     converter,
                    final WarningListener<?> warningListener)
     {
+        if (versionMetadata != null && versionMetadata.compareTo(LegacyNamespaces.ISO_19115_3) < 0) {
+            bitMasks |= LEGACY_METADATA;
+        }
         this.bitMasks          = bitMasks;
         this.locales           = new LinkedList<>();
         this.timezone          = timezone;
         this.schemas           = schemas;               // No clone, because this class is internal.
         this.versionGML        = versionGML;
-        this.versionMetadata   = versionMetadata;
         this.resolver          = resolver;
         this.converter         = converter;
         this.warningListener   = warningListener;
         this.identifiers       = new HashMap<>();
         this.identifiedObjects = new IdentityHashMap<>();
-        if ((bitMasks & MARSHALLING) != 0) {
-            if (!Semaphores.queryAndSet(Semaphores.NULL_COLLECTION)) {
-                this.bitMasks |= CLEAR_SEMAPHORE;
-            }
-        }
         if (locale != null) {
             locales.add(locale);
         }
         previous = CURRENT.get();
         CURRENT.set(this);
+        if ((bitMasks & MARSHALLING) != 0) {
+            /*
+             * Set global semaphore last after we are sure that construction will not fail
+             * (e.g. with an OutOfMemoryError). This is necessary for allowing the caller
+             * to invoke finish() in a finally block.
+             */
+            if (!Semaphores.queryAndSet(Semaphores.NULL_COLLECTION)) {
+                this.bitMasks |= CLEAR_SEMAPHORE;
+            }
+        }
     }
 
     /**
@@ -383,38 +390,14 @@ public final class Context extends MarshalContext {
     }
 
     /**
-     * Returns {@code true} if the metadata version is equals or newer than the specified version.
-     * If no metadata version was specified, then this method returns {@code true}, i.e. newest
-     * version is assumed.
+     * Returns {@code true} if we are (un)marshalling the legacy ISO 19139:2007 metadata format.
+     * A value of {@code false} means that we are (un)marshalling the more recent ISO 19115-3 format,
+     * or that no (un)marshalling process is under way.
      *
-     * <div class="note"><b>API note:</b>
-     * This method is static for the convenience of performing the check for null context.</div>
-     *
-     * @param  context  the current context, or {@code null} if none.
-     * @param  version  the version to compare to.
-     * @return {@code true} if the metadata version is equals or newer than the specified version.
-     *
-     * @see #getVersion(String)
+     * @return whether the (un)marshalling process is for legacy ISO 19139 metadata format.
      */
-    public static boolean isMetadataVersion(final Context context, final Version version) {
-        if (context != null) {
-            final Version versionMetadata = context.versionMetadata;
-            if (versionMetadata != null) {
-                return versionMetadata.compareTo(version) >= 0;
-            }
-        }
-        return true;
-    }
-
-    /**
-     * Returns {@code true} if we are (un)marshalling ISO 19115-3 metadata,
-     * or {@code false} if (un)marshalling ISO 19139 metadata.
-     * This is a convenience method for {@link #isMetadataVersion(Context, Version)}.
-     *
-     * @return whether the (un)marshalling process is for ISO 19115-3.
-     */
-    public static boolean isLatestMetadata() {
-        return isMetadataVersion(current(), LegacyNamespaces.ISO_19115_3);
+    public static boolean isLegacyMetadata() {
+        return isFlagSet(current(), LEGACY_METADATA);
     }
 
     /**

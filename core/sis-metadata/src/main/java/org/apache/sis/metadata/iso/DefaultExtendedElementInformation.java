@@ -31,7 +31,7 @@ import org.apache.sis.metadata.TitleProperty;
 import org.apache.sis.measure.ValueRange;
 import org.apache.sis.util.iso.Types;
 import org.apache.sis.xml.Namespaces;
-import org.apache.sis.internal.jaxb.Context;
+import org.apache.sis.internal.jaxb.LegacyNamespaces;
 import org.apache.sis.internal.metadata.Dependencies;
 import org.apache.sis.internal.metadata.LegacyPropertyAdapter;
 
@@ -305,9 +305,9 @@ public class DefaultExtendedElementInformation extends ISOMetadata implements Ex
      */
     @Override
     @Deprecated
-    @XmlElement(name = "shortName")
+    @XmlElement(name = "shortName", namespace = LegacyNamespaces.GMD)
     public String getShortName()  {
-    	return Context.isLatestMetadata() ? null : shortName;
+        return shortName;
     }
 
     /**
@@ -334,9 +334,9 @@ public class DefaultExtendedElementInformation extends ISOMetadata implements Ex
      */
     @Override
     @Deprecated
-    @XmlElement(name = "domainCode")
+    @XmlElement(name = "domainCode", namespace = LegacyNamespaces.GMD)
     public Integer getDomainCode() {
-        return Context.isLatestMetadata() ? null : domainCode;
+        return domainCode;
     }
 
     /**
