@@ -32,7 +32,7 @@ import org.apache.sis.util.ComparisonMode;
 /**
  * An implementation of {@link ReferenceSystem} marshalled as specified in ISO 19115.
  * This is different than the {@code ReferenceSystem} implementation provided in the
- * referencing module, since the later marshall the CRS as specified in GML (close
+ * referencing module, since the later marshals the CRS as specified in GML (close
  * to ISO 19111 model).
  *
  * <p>Note that this implementation is very simple and serves no other purpose than being
@@ -91,7 +91,7 @@ public class ReferenceSystemMetadata extends SimpleIdentifiedObject implements R
     @XmlElement(name = "referenceSystemIdentifier")
     @XmlJavaTypeAdapter(MD_Identifier.class)
     public final Identifier getName() {
-        return Context.isLatestMetadata() ? super.getName() : null;
+        return Context.isLegacyMetadata() ? null : super.getName();
     }
 
     /**
@@ -110,7 +110,7 @@ public class ReferenceSystemMetadata extends SimpleIdentifiedObject implements R
     @XmlElement(name = "referenceSystemIdentifier")
     @XmlJavaTypeAdapter(RS_Identifier.class)
     private Identifier getLegacyName() {
-        return Context.isLatestMetadata() ? null : getName();
+        return Context.isLegacyMetadata() ? super.getName() : null;
     }
 
     /**

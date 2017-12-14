@@ -131,7 +131,7 @@ public final class PT_Locale extends XmlAdapter<PT_Locale, Locale> {
          */
         @XmlElement(name = "languageCode")
         private LanguageCode getLanguageCode() {
-            return Context.isLatestMetadata() ? null : languageCode;
+            return Context.isLegacyMetadata() ? languageCode : null;
         }
 
         /**
@@ -147,7 +147,7 @@ public final class PT_Locale extends XmlAdapter<PT_Locale, Locale> {
          */
         @XmlElement(name = "language")
         private LanguageCode getLanguage() {
-            return Context.isLatestMetadata() ? languageCode : null;
+            return Context.isLegacyMetadata() ? null : languageCode;
         }
 
         /**

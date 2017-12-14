@@ -37,6 +37,7 @@ import org.apache.sis.io.wkt.FormattableObject;
 import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.io.wkt.ElementKind;
+import org.apache.sis.xml.Namespaces;
 
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 import static org.apache.sis.util.CharSequences.trimWhitespaces;
@@ -129,13 +130,13 @@ import static org.apache.sis.util.collection.Containers.property;
  * @module
  */
 @TitleProperty(name = "code")
-@XmlType(name = "RS_Identifier_Type", propOrder = {
+@XmlType(name = "RS_Identifier_Type", namespace = Namespaces.GMD, propOrder = {
     "authority",
     "code",
     "codeSpace",
     "version"
 })
-@XmlRootElement(name = "RS_Identifier")
+@XmlRootElement(name = "RS_Identifier", namespace = Namespaces.GMD)
 public class ImmutableIdentifier extends FormattableObject implements Identifier, Serializable {
     /**
      * For cross-version compatibility.

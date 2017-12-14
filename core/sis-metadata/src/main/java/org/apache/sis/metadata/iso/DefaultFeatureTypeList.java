@@ -19,6 +19,7 @@ package org.apache.sis.metadata.iso;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+import org.apache.sis.internal.jaxb.LegacyNamespaces;
 import org.opengis.metadata.FeatureTypeList;
 
 
@@ -42,7 +43,7 @@ import org.opengis.metadata.FeatureTypeList;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Touraïvane (IRD)
  * @author  Cédric Briançon (Geomatys)
- * @version 0.3
+ * @version 1.0
  * @since   0.3
  * @module
  *
@@ -50,11 +51,11 @@ import org.opengis.metadata.FeatureTypeList;
  */
 @Deprecated                                     // TODO: after deletion, search "FeatureTypeList" on the whole code base.
 @SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
-@XmlType(propOrder = {
+@XmlType(namespace = LegacyNamespaces.GMD, propOrder = {
     "spatialObject",
     "spatialSchemaName"
 })
-@XmlRootElement(name = "MD_FeatureTypeList")
+@XmlRootElement(name = "MD_FeatureTypeList", namespace = LegacyNamespaces.GMD)
 public class DefaultFeatureTypeList extends ISOMetadata implements FeatureTypeList {
     /**
      * Serial number for inter-operability with different versions.

@@ -89,7 +89,7 @@ public final class Country extends GO_CharacterString {
      */
     @XmlElement(name = "Country")
     private CodeListUID getCountry() {
-        return Context.isLatestMetadata() ? null : identifier;
+        return Context.isLegacyMetadata() ? identifier : null;
     }
 
     /**
@@ -105,7 +105,7 @@ public final class Country extends GO_CharacterString {
      */
     @XmlElement(name = "CountryCode")
     private CodeListUID getCountryCode() {
-        return Context.isLatestMetadata() ? identifier : null;
+        return Context.isLegacyMetadata() ? null : identifier;
     }
 
     /**
