@@ -92,11 +92,13 @@
     @XmlNs(prefix = "lan", namespaceURI = Namespaces.LAN),
     @XmlNs(prefix = "mcc", namespaceURI = Namespaces.MCC),
     @XmlNs(prefix = "gco", namespaceURI = Namespaces.GCO),
-    @XmlNs(prefix = "xsi", namespaceURI = Namespaces.XSI)
+    @XmlNs(prefix = "xsi", namespaceURI = Namespaces.XSI),
+    @XmlNs(prefix = "gmd", namespaceURI = LegacyNamespaces.GMD)
 })
 @XmlAccessorType(XmlAccessType.NONE)
 @XmlJavaTypeAdapters({
     @XmlJavaTypeAdapter(CI_Citation.class),
+    @XmlJavaTypeAdapter(CI_Date.class),
     @XmlJavaTypeAdapter(CI_OnlineResource.class),
     @XmlJavaTypeAdapter(CI_Responsibility.class),
     @XmlJavaTypeAdapter(DQ_DataQuality.class),
@@ -110,8 +112,10 @@
     @XmlJavaTypeAdapter(MD_ExtendedElementInformation.class),
     @XmlJavaTypeAdapter(MD_FeatureTypeList.class),
     @XmlJavaTypeAdapter(MD_Identification.class),
+    @XmlJavaTypeAdapter(MD_Identifier.class),
     @XmlJavaTypeAdapter(MD_MaintenanceInformation.class),
     @XmlJavaTypeAdapter(MD_MetadataExtensionInformation.class),
+    @XmlJavaTypeAdapter(MD_MetadataScope.class),
     @XmlJavaTypeAdapter(MD_ObligationCode.class),
     @XmlJavaTypeAdapter(MD_PortrayalCatalogueReference.class),
     @XmlJavaTypeAdapter(MD_ScopeCode.class),
@@ -120,7 +124,7 @@
     @XmlJavaTypeAdapter(RS_ReferenceSystem.class),
 
     // Java types, primitive types and basic OGC types handling
-    @XmlJavaTypeAdapter(LocaleAdapter.class),
+    @XmlJavaTypeAdapter(PT_Locale.class),
     @XmlJavaTypeAdapter(StringAdapter.class),
     @XmlJavaTypeAdapter(InternationalStringAdapter.class),
     @XmlJavaTypeAdapter(GO_DateTime.class),
@@ -137,8 +141,8 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapters;
 import org.apache.sis.xml.Namespaces;
+import org.apache.sis.internal.jaxb.LegacyNamespaces;
 import org.apache.sis.internal.jaxb.Schemas;
 import org.apache.sis.internal.jaxb.gco.*;
-import org.apache.sis.internal.jaxb.gmd.*;
 import org.apache.sis.internal.jaxb.code.*;
 import org.apache.sis.internal.jaxb.metadata.*;
