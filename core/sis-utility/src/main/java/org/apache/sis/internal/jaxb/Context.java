@@ -99,7 +99,7 @@ public final class Context extends MarshalContext {
      * Whether we are (un)marshalling legacy metadata as defined in 2003 (ISO 19139).
      * If this flag is not set, then we assume latest metadata as defined in 2014 (ISO 19115:2014).
      */
-    private static final int LEGACY_METADATA = 0x40;
+    public static final int LEGACY_METADATA = 0x40;
 
     /**
      * The thread-local context. Elements are created in the constructor, and removed in a
@@ -114,9 +114,17 @@ public final class Context extends MarshalContext {
     public static final Logger LOGGER = Logging.getLogger(Loggers.XML);
 
     /**
+     * Notifies {@code FilterByVersion} that (un)marshalling process may happen.
+     * This is used for avoiding classes loading before this possibility exists.
+     */
+    static {
+        FilterByVersion.enable();
+    }
+
+    /**
      * Various boolean attributes determines by the above static constants.
      */
-    private int bitMasks;
+    final int bitMasks;
 
     /**
      * The locale to use for marshalling, or an empty queue if no locale were explicitly specified.
@@ -229,7 +237,6 @@ public final class Context extends MarshalContext {
         if (versionMetadata != null && versionMetadata.compareTo(LegacyNamespaces.ISO_19115_3) < 0) {
             bitMasks |= LEGACY_METADATA;
         }
-        this.bitMasks          = bitMasks;
         this.locales           = new LinkedList<>();
         this.timezone          = timezone;
         this.schemas           = schemas;               // No clone, because this class is internal.
@@ -243,17 +250,18 @@ public final class Context extends MarshalContext {
             locales.add(locale);
         }
         previous = CURRENT.get();
-        CURRENT.set(this);
         if ((bitMasks & MARSHALLING) != 0) {
             /*
-             * Set global semaphore last after we are sure that construction will not fail
-             * (e.g. with an OutOfMemoryError). This is necessary for allowing the caller
-             * to invoke finish() in a finally block.
+             * Set global semaphore last after our best effort to ensure that construction
+             * will not fail with an OutOfMemoryError. This is preferable for allowing the
+             * caller to invoke finish() in a finally block.
              */
             if (!Semaphores.queryAndSet(Semaphores.NULL_COLLECTION)) {
-                this.bitMasks |= CLEAR_SEMAPHORE;
+                bitMasks |= CLEAR_SEMAPHORE;
             }
         }
+        this.bitMasks = bitMasks;
+        CURRENT.set(this);
     }
 
     /**
@@ -387,17 +395,6 @@ public final class Context extends MarshalContext {
             }
         }
         return true;
-    }
-
-    /**
-     * Returns {@code true} if we are (un)marshalling the legacy ISO 19139:2007 metadata format.
-     * A value of {@code false} means that we are (un)marshalling the more recent ISO 19115-3 format,
-     * or that no (un)marshalling process is under way.
-     *
-     * @return whether the (un)marshalling process is for legacy ISO 19139 metadata format.
-     */
-    public static boolean isLegacyMetadata() {
-        return isFlagSet(current(), LEGACY_METADATA);
     }
 
     /**

@@ -21,6 +21,8 @@ import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.internal.jaxb.Context;
+import org.apache.sis.internal.jaxb.FilterByVersion;
+import org.apache.sis.internal.jaxb.LegacyNamespaces;
 import org.apache.sis.internal.jaxb.gco.GO_CharacterString;
 import org.apache.sis.internal.jaxb.gco.CharSequenceAdapter;
 import org.apache.sis.util.resources.Errors;
@@ -58,6 +60,11 @@ public final class Country extends GO_CharacterString {
     private CodeListUID identifier;
 
     /**
+     * {@code true} if marshalling ISO 19139:2007, or {@code false} if marshalling ISO 19115-3.
+     */
+    private boolean isLegacyMetadata;
+
+    /**
      * Empty constructor for JAXB only.
      */
     private Country() {
@@ -69,6 +76,7 @@ public final class Country extends GO_CharacterString {
      */
     private Country(final CharSequence code) {
         super(code);
+        detectVersion();
     }
 
     /**
@@ -82,14 +90,22 @@ public final class Country extends GO_CharacterString {
      */
     private Country(final Context context, final String codeListValue, final String codeSpace, final String value) {
         identifier = new CodeListUID(context, "Country", codeListValue, codeSpace, value);
+        detectVersion();
+    }
+
+    /**
+     * Determines if we are marshalling ISO 19139:2007 or ISO 19115-3 documents.
+     */
+    private void detectVersion() {
+        isLegacyMetadata = !FilterByVersion.CURRENT_METADATA.accept();
     }
 
     /**
      * Gets the value of the Country code using ISO 19139 element name.
      */
-    @XmlElement(name = "Country")
+    @XmlElement(name = "Country", namespace = LegacyNamespaces.GMD)
     private CodeListUID getCountry() {
-        return Context.isLegacyMetadata() ? identifier : null;
+        return isLegacyMetadata ? identifier : null;
     }
 
     /**
@@ -105,7 +121,7 @@ public final class Country extends GO_CharacterString {
      */
     @XmlElement(name = "CountryCode")
     private CodeListUID getCountryCode() {
-        return Context.isLegacyMetadata() ? null : identifier;
+        return isLegacyMetadata ? null : identifier;
     }
 
     /**
