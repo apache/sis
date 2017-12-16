@@ -17,6 +17,7 @@
 package org.apache.sis.internal.jaxb.metadata.replace;
 
 import java.util.Objects;
+import javax.xml.bind.Marshaller;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
@@ -25,7 +26,8 @@ import org.opengis.referencing.ReferenceSystem;
 import org.apache.sis.internal.jaxb.metadata.MD_Identifier;
 import org.apache.sis.internal.jaxb.metadata.RS_Identifier;
 import org.apache.sis.internal.simple.SimpleIdentifiedObject;
-import org.apache.sis.internal.jaxb.Context;
+import org.apache.sis.internal.jaxb.FilterByVersion;
+import org.apache.sis.internal.jaxb.LegacyNamespaces;
 import org.apache.sis.util.ComparisonMode;
 
 
@@ -57,6 +59,11 @@ public class ReferenceSystemMetadata extends SimpleIdentifiedObject implements R
     private static final long serialVersionUID = 2810145397032096087L;
 
     /**
+     * {@code true} if marshalling ISO 19139:2007, or {@code false} if marshalling ISO 19115-3.
+     */
+    private boolean isLegacyMetadata;
+
+    /**
      * Creates a reference system without identifier.
      * This constructor is mainly for JAXB.
      */
@@ -82,6 +89,13 @@ public class ReferenceSystemMetadata extends SimpleIdentifiedObject implements R
     }
 
     /**
+     * Invoked by JAXB {@link javax.xml.bind.Marshaller} before this object is marshalled to XML.
+     */
+    private void beforeMarshal(final Marshaller marshaller) {
+        isLegacyMetadata = !FilterByVersion.CURRENT_METADATA.accept();
+    }
+
+    /**
      * Returns the primary name by which this object is identified.
      * This method can be invoked during ISO 19115-3 marshalling.
      *
@@ -91,7 +105,7 @@ public class ReferenceSystemMetadata extends SimpleIdentifiedObject implements R
     @XmlElement(name = "referenceSystemIdentifier")
     @XmlJavaTypeAdapter(MD_Identifier.class)
     public final Identifier getName() {
-        return Context.isLegacyMetadata() ? null : super.getName();
+        return isLegacyMetadata ? null : super.getName();
     }
 
     /**
@@ -107,10 +121,10 @@ public class ReferenceSystemMetadata extends SimpleIdentifiedObject implements R
      * Gets the name for this reference system metadata (used in ISO 19139 format).
      * This method can be invoked during ISO 19139 marshalling.
      */
-    @XmlElement(name = "referenceSystemIdentifier")
+    @XmlElement(name = "referenceSystemIdentifier", namespace = LegacyNamespaces.GMD)
     @XmlJavaTypeAdapter(RS_Identifier.class)
     private Identifier getLegacyName() {
-        return Context.isLegacyMetadata() ? super.getName() : null;
+        return isLegacyMetadata ? super.getName() : null;
     }
 
     /**

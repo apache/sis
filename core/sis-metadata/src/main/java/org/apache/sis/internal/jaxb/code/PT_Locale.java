@@ -24,6 +24,7 @@ import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.adapters.XmlAdapter;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
+import org.apache.sis.internal.jaxb.LegacyNamespaces;
 import org.apache.sis.internal.jaxb.Context;
 import org.apache.sis.internal.jaxb.gmd.Country;
 import org.apache.sis.internal.jaxb.gmd.LanguageCode;
@@ -111,6 +112,11 @@ public final class PT_Locale extends XmlAdapter<PT_Locale, Locale> {
         Charset characterEncoding;
 
         /**
+         * {@code true} if marshalling ISO 19139:2007, or {@code false} if marshalling ISO 19115-3.
+         */
+        private boolean isLegacyMetadata;
+
+        /**
          * Empty constructor for JAXB only.
          */
         public Wrapper() {
@@ -121,17 +127,18 @@ public final class PT_Locale extends XmlAdapter<PT_Locale, Locale> {
          */
         Wrapper(final Locale locale) {
             final Context context = Context.current();
-            languageCode = LanguageCode.create(context, locale);
-            country      = Country     .create(context, locale);
+            isLegacyMetadata = Context.isFlagSet(context, Context.LEGACY_METADATA);
+            languageCode     = LanguageCode.create(context, locale);
+            country          = Country     .create(context, locale);
             // The characterEncoding field will be initialized at marshalling time (see method below).
         }
 
         /**
          * Gets the language code for this PT_Locale. Used in ISO 19139.
          */
-        @XmlElement(name = "languageCode")
+        @XmlElement(name = "languageCode", namespace = LegacyNamespaces.GMD)
         private LanguageCode getLanguageCode() {
-            return Context.isLegacyMetadata() ? languageCode : null;
+            return isLegacyMetadata ? languageCode : null;
         }
 
         /**
@@ -147,7 +154,7 @@ public final class PT_Locale extends XmlAdapter<PT_Locale, Locale> {
          */
         @XmlElement(name = "language")
         private LanguageCode getLanguage() {
-            return Context.isLegacyMetadata() ? null : languageCode;
+            return isLegacyMetadata ? null : languageCode;
         }
 
         /**

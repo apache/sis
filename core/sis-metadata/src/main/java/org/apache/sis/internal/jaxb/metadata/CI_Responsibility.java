@@ -21,7 +21,7 @@ import org.opengis.metadata.citation.Responsibility;
 import org.apache.sis.metadata.iso.citation.DefaultResponsibility;
 import org.apache.sis.metadata.iso.citation.DefaultResponsibleParty;
 import org.apache.sis.internal.jaxb.gco.PropertyType;
-import org.apache.sis.internal.jaxb.Context;
+import org.apache.sis.internal.jaxb.FilterByVersion;
 
 
 /**
@@ -82,10 +82,10 @@ public final class CI_Responsibility extends PropertyType<CI_Responsibility, Res
     @XmlElementRef
     @SuppressWarnings("deprecation")
     public DefaultResponsibility getElement() {
-        if (Context.isLegacyMetadata()) {
-            return DefaultResponsibleParty.castOrCopy(metadata);
-        } else {
+        if (FilterByVersion.CURRENT_METADATA.accept()) {
             return DefaultResponsibility.castOrCopy(metadata);
+        } else {
+            return DefaultResponsibleParty.castOrCopy(metadata);
         }
     }
 
