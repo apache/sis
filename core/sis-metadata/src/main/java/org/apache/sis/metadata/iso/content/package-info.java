@@ -80,19 +80,25 @@
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Touraïvane (IRD)
  * @author  Cédric Briançon (Geomatys)
- * @version 0.5
+ * @author  Cullen Rombach (Image Matters)
+ * @version 1.0
  * @since   0.3
  * @module
  */
-@XmlSchema(location=Schemas.METADATA_XSD, elementFormDefault=XmlNsForm.QUALIFIED, namespace=Namespaces.GMD, xmlns = {
-    @XmlNs(prefix = "gmi", namespaceURI = Namespaces.GMI),
-    @XmlNs(prefix = "gmd", namespaceURI = Namespaces.GMD),
+@XmlSchema(location=Schemas.METADATA_XSD_CONTENT, elementFormDefault=XmlNsForm.QUALIFIED, namespace=Namespaces.MRC, xmlns = {
+    @XmlNs(prefix = "mrc", namespaceURI = Namespaces.MRC),
+    @XmlNs(prefix = "mcc", namespaceURI = Namespaces.MCC),
+    @XmlNs(prefix = "fcc", namespaceURI = Namespaces.FCC),
+    @XmlNs(prefix = "lan", namespaceURI = Namespaces.LAN),
     @XmlNs(prefix = "gco", namespaceURI = Namespaces.GCO),
-    @XmlNs(prefix = "xsi", namespaceURI = Namespaces.XSI)
+    @XmlNs(prefix = "xsi", namespaceURI = Namespaces.XSI),
+    @XmlNs(prefix = "gmd", namespaceURI = LegacyNamespaces.GMD),
+    @XmlNs(prefix = "gmi", namespaceURI = LegacyNamespaces.GMI)
 })
 @XmlAccessorType(XmlAccessType.NONE)
 @XmlJavaTypeAdapters({
     @XmlJavaTypeAdapter(CI_Citation.class),
+    @XmlJavaTypeAdapter(MD_AttributeGroup.class),
     @XmlJavaTypeAdapter(MD_CoverageContentTypeCode.class),
     @XmlJavaTypeAdapter(MD_Identifier.class),
     @XmlJavaTypeAdapter(MD_ImagingConditionCode.class),
@@ -122,6 +128,7 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapters;
 import org.apache.sis.xml.Namespaces;
+import org.apache.sis.internal.jaxb.LegacyNamespaces;
 import org.apache.sis.internal.jaxb.Schemas;
 import org.apache.sis.internal.jaxb.gco.*;
 import org.apache.sis.internal.jaxb.gmd.*;

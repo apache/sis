@@ -28,15 +28,15 @@ import org.apache.sis.internal.jaxb.gco.PropertyType;
  *
  * @author  Guilhem Legal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.3
+ * @version 1.0
  * @since   0.3
  * @module
  */
-public final class MD_Scope extends PropertyType<MD_Scope, Scope> {
+public class MD_Scope extends PropertyType<MD_Scope, Scope> {
     /**
      * Empty constructor for JAXB only.
      */
-    public MD_Scope() {
+    MD_Scope() {
     }
 
     /**
@@ -47,7 +47,7 @@ public final class MD_Scope extends PropertyType<MD_Scope, Scope> {
      * @return {@code Scope.class}
      */
     @Override
-    protected Class<Scope> getBoundType() {
+    protected final Class<Scope> getBoundType() {
         return Scope.class;
     }
 
@@ -78,7 +78,7 @@ public final class MD_Scope extends PropertyType<MD_Scope, Scope> {
      * @return the metadata to be marshalled.
      */
     @XmlElementRef
-    public DefaultScope getElement() {
+    public final DefaultScope getElement() {
         return DefaultScope.castOrCopy(metadata);
     }
 
@@ -87,7 +87,26 @@ public final class MD_Scope extends PropertyType<MD_Scope, Scope> {
      *
      * @param  metadata  the unmarshalled metadata.
      */
-    public void setElement(final DefaultScope metadata) {
+    public final void setElement(final DefaultScope metadata) {
         this.metadata = metadata;
+    }
+
+    /**
+     * Wraps the value only if marshalling ISO 19115-3 element.
+     * Otherwise (i.e. if marshalling a legacy ISO 19139:2007 document), omit the element.
+     */
+    public static final class Since2014 extends MD_Scope {
+        /** Empty constructor used only by JAXB. */
+        private Since2014() {
+        }
+
+        /**
+         * Wraps the given value in an ISO 19115-3 element, unless we are marshalling an older document.
+         *
+         * @return a non-null value only if marshalling ISO 19115-3 or newer.
+         */
+        @Override public MD_Scope wrap(final Scope value) {
+            return accept2014() ? super.wrap(value) : null;
+        }
     }
 }

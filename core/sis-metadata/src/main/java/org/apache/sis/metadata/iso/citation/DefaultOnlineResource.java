@@ -17,12 +17,18 @@
 package org.apache.sis.metadata.iso.citation;
 
 import java.net.URI;
+import java.net.URISyntaxException;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
+import org.apache.sis.internal.jaxb.Context;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.citation.OnLineFunction;
 import org.opengis.metadata.citation.OnlineResource;
+import org.apache.sis.internal.jaxb.FilterByVersion;
+import org.apache.sis.internal.jaxb.LegacyNamespaces;
+import org.apache.sis.internal.jaxb.gco.StringAdapter;
 import org.apache.sis.metadata.iso.ISOMetadata;
 
 
@@ -46,18 +52,21 @@ import org.apache.sis.metadata.iso.ISOMetadata;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Touraïvane (IRD)
  * @author  Cédric Briançon (Geomatys)
- * @version 0.5
+ * @author  Cullen Rombach (Image Matters)
+ * @version 1.0
  * @since   0.3
  * @module
  */
 @SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "CI_OnlineResource_Type", propOrder = {
-    "linkage",
+    "linkageURL",
+    "linkageString",
     "protocol",
     "applicationProfile",
     "name",
     "description",
-    "function"
+    "function",
+    "protocolRequest"
 })
 @XmlRootElement(name = "CI_OnlineResource")
 public class DefaultOnlineResource extends ISOMetadata implements OnlineResource {
@@ -258,7 +267,7 @@ public class DefaultOnlineResource extends ISOMetadata implements OnlineResource
      * @return location for on-line access using a Uniform Resource Locator address or similar scheme, or {@code null}.
      */
     @Override
-    @XmlElement(name = "linkage", required = true)
+    // @XmlElement at the end of this class.
     public URI getLinkage() {
         return linkage;
     }
@@ -318,6 +327,8 @@ public class DefaultOnlineResource extends ISOMetadata implements OnlineResource
      * @since 0.5
      */
     @Override
+    @XmlElement(name = "protocolRequest")
+    @XmlJavaTypeAdapter(StringAdapter.Since2014.class)
     public String getProtocolRequest() {
         return protocolRequest;
     }
@@ -332,5 +343,60 @@ public class DefaultOnlineResource extends ISOMetadata implements OnlineResource
     public void setProtocolRequest(final String newValue) {
         checkWritePermission();
         protocolRequest = newValue;
+    }
+
+
+
+
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+    ////////                                                                                  ////////
+    ////////                               XML support with JAXB                              ////////
+    ////////                                                                                  ////////
+    ////////        The following methods are invoked by JAXB using reflection (even if       ////////
+    ////////        they are private) or are helpers for other methods invoked by JAXB.       ////////
+    ////////        Those methods can be safely removed if Geographic Markup Language         ////////
+    ////////        (GML) support is not needed.                                              ////////
+    ////////                                                                                  ////////
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Invoked at marshalling time for writing URL as defined by ISO 19139:2007.
+     * That legacy standard wraps the URL in a {@code <gmd:URL>} element.
+     */
+    @XmlElement(name = "linkage", namespace = LegacyNamespaces.GMD)
+    private URI getLinkageURL() {
+        return FilterByVersion.LEGACY_METADATA.accept() ? getLinkage() : null;
+    }
+
+    /**
+     * Invoked at ISO 19139:2007 unmarshalling time for storing the value of {@code <gmd:URL>} element.
+     */
+    @SuppressWarnings("unused")
+    private void setLinkageURL(final URI newValue) {
+        setLinkage(newValue);
+    }
+
+    /**
+     * Invoked at marshalling time for writing URL as defined by ISO 19115-3.
+     * That newer standard write the URL directly, without wrapping in {@code <gmd:URL>} element.
+     */
+    @XmlElement(name = "linkage", required = true)
+    private String getLinkageString() {
+        if (FilterByVersion.CURRENT_METADATA.accept()) {
+            final URI linkage = getLinkage();
+            if (linkage != null) {
+                return linkage.toString();
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Invoked at ISO 19115-3 unmarshalling time for parsing the URL.
+     */
+    @SuppressWarnings("unused")
+    private void setLinkageString(final String newValue) throws URISyntaxException {
+        final Context context = Context.current();
+        setLinkage(Context.converter(context).toURI(context, newValue));
     }
 }

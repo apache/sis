@@ -22,14 +22,14 @@ import javax.xml.bind.annotation.XmlType;
 
 
 /**
- * Surrounds integer values by {@code <gco:Integer>}.
- * The ISO-19139 standard requires most types to be surrounded by an element representing the value type.
+ * Wraps integer values in {@code <gco:Integer>} element.
+ * The ISO-19139 standard requires most types to be wrapped by an element representing the value type.
  * The JAXB default behavior is to marshal primitive Java types directly, without such wrapper element.
  * The role of this class is to add the {@code <gco:…>} wrapper element required by ISO 19139.
  *
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.4
+ * @version 1.0
  *
  * @see GO_Integer64
  *
@@ -37,11 +37,11 @@ import javax.xml.bind.annotation.XmlType;
  * @module
  */
 @XmlType(name = "Integer_PropertyType")
-public final class GO_Integer extends PropertyType<GO_Integer, Integer> {
+public class GO_Integer extends PropertyType<GO_Integer, Integer> {
     /**
      * Empty constructor used only by JAXB.
      */
-    public GO_Integer() {
+    GO_Integer() {
     }
 
     /**
@@ -59,7 +59,7 @@ public final class GO_Integer extends PropertyType<GO_Integer, Integer> {
      * @return {@code Integer.class}
      */
     @Override
-    protected Class<Integer> getBoundType() {
+    protected final Class<Integer> getBoundType() {
         return Integer.class;
     }
 
@@ -67,8 +67,8 @@ public final class GO_Integer extends PropertyType<GO_Integer, Integer> {
      * Allows JAXB to change the result of the marshalling process, according to the
      * ISO-19139 standard and its requirements about primitive types.
      *
-     * @param  value  the integer value we want to surround by an element representing its type.
-     * @return an adaptation of the integer value, that is to say an integer value surrounded
+     * @param  value  the integer value we want to wrap in an element representing its type.
+     * @return a wrapper for the integer value, that is to say an integer value wrapped
      *         by {@code <gco:Integer>} element.
      */
     @Override
@@ -83,7 +83,7 @@ public final class GO_Integer extends PropertyType<GO_Integer, Integer> {
      */
     @XmlElement(name = "Integer")
     @XmlSchemaType(name = "integer")
-    public Integer getElement() {
+    public final Integer getElement() {
         return metadata;
     }
 
@@ -92,7 +92,26 @@ public final class GO_Integer extends PropertyType<GO_Integer, Integer> {
      *
      * @param  metadata  the unmarshalled value.
      */
-    public void setElement(final Integer metadata) {
+    public final void setElement(final Integer metadata) {
         this.metadata = metadata;
+    }
+
+    /**
+     * Wraps the value only if marshalling ISO 19115-3 element.
+     * Otherwise (i.e. if marshalling a legacy ISO 19139:2007 document), omit the element.
+     */
+    public static final class Since2014 extends GO_Integer {
+        /** Empty constructor used only by JAXB. */
+        private Since2014() {
+        }
+
+        /**
+         * Wraps the given value in an ISO 19115-3 element, unless we are marshalling an older document.
+         *
+         * @return a non-null value only if marshalling ISO 19115-3 or newer.
+         */
+        @Override public GO_Integer wrap(final Integer value) {
+            return accept2014() ? super.wrap(value) : null;
+        }
     }
 }

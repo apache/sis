@@ -31,6 +31,7 @@ import org.apache.sis.xml.IdentifierSpace;
 import org.apache.sis.xml.IdentifiedObject;
 import org.apache.sis.xml.ReferenceResolver;
 import org.apache.sis.internal.jaxb.Context;
+import org.apache.sis.internal.jaxb.FilterByVersion;
 import org.apache.sis.internal.jaxb.PrimitiveTypeProperties;
 import org.apache.sis.util.iso.SimpleInternationalString;
 import org.apache.sis.util.resources.Errors;
@@ -542,6 +543,16 @@ public abstract class PropertyType<ValueType extends PropertyType<ValueType,Boun
      * @return the bound type, which is typically the GeoAPI interface.
      */
     protected abstract Class<BoundType> getBoundType();
+
+    /**
+     * Returns {@code true} if a {@code Since2014} subclasses should return a non-null value.
+     * This is a convenience method for {@code FilterByVersion.CURRENT_METADATA.accept()}.
+     *
+     * @return whether {@code Since2014} subclasses should return a non-null value.
+     */
+    protected final boolean accept2014() {
+        return FilterByVersion.CURRENT_METADATA.accept();
+    }
 
     /**
      * Creates a new instance of this class wrapping the given metadata.

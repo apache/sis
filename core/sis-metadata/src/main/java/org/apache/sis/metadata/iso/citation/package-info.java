@@ -86,14 +86,18 @@
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Touraïvane (IRD)
  * @author  Cédric Briançon (Geomatys)
- * @version 0.7
+ * @author  Cullen Rombach (Image Matters)
+ * @version 1.0
  * @since   0.3
  * @module
  */
-@XmlSchema(location=Schemas.METADATA_XSD, elementFormDefault=XmlNsForm.QUALIFIED, namespace=Namespaces.GMD, xmlns = {
-    @XmlNs(prefix = "gmd", namespaceURI = Namespaces.GMD),
+@XmlSchema(location=Schemas.METADATA_XSD_CITATION, elementFormDefault=XmlNsForm.QUALIFIED, namespace=Namespaces.CIT, xmlns = {
+    @XmlNs(prefix = "cit", namespaceURI = Namespaces.CIT),
+    @XmlNs(prefix = "mcc", namespaceURI = Namespaces.MCC),
+    @XmlNs(prefix = "mrd", namespaceURI = Namespaces.MRD),
     @XmlNs(prefix = "gco", namespaceURI = Namespaces.GCO),
-    @XmlNs(prefix = "xsi", namespaceURI = Namespaces.XSI)
+    @XmlNs(prefix = "xsi", namespaceURI = Namespaces.XSI),
+    @XmlNs(prefix = "gmd", namespaceURI = LegacyNamespaces.GMD)
 })
 @XmlAccessorType(XmlAccessType.NONE)
 @XmlJavaTypeAdapters({
@@ -110,6 +114,7 @@
     @XmlJavaTypeAdapter(CI_Series.class),
     @XmlJavaTypeAdapter(CI_Telephone.class),
     @XmlJavaTypeAdapter(EX_Extent.class),
+    @XmlJavaTypeAdapter(MD_BrowseGraphic.class),
     @XmlJavaTypeAdapter(MD_Identifier.class),
 
     // Java types, primitive types and basic OGC types handling
@@ -128,6 +133,7 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapters;
 import org.apache.sis.xml.Namespaces;
+import org.apache.sis.internal.jaxb.LegacyNamespaces;
 import org.apache.sis.internal.jaxb.Schemas;
 import org.apache.sis.internal.jaxb.gco.*;
 import org.apache.sis.internal.jaxb.gmd.*;

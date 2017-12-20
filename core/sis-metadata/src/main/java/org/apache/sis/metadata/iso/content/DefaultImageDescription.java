@@ -23,6 +23,8 @@ import javax.xml.bind.annotation.XmlRootElement;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.content.ImageDescription;
 import org.opengis.metadata.content.ImagingCondition;
+import org.apache.sis.internal.jaxb.LegacyNamespaces;
+import org.apache.sis.internal.jaxb.FilterByVersion;
 import org.apache.sis.measure.ValueRange;
 
 import static org.apache.sis.internal.metadata.MetadataUtilities.ensureInRange;
@@ -59,7 +61,7 @@ import static org.apache.sis.internal.metadata.MetadataUtilities.ensurePositive;
     "imagingCondition",
     "imageQualityCode",
     "cloudCoverPercentage",
-    "processingLevelCode",
+    "processingLevel",
     "compressionGenerationQuantity",
     "triangulationIndicator",
     "radiometricCalibrationDataAvailable",
@@ -328,29 +330,6 @@ public class DefaultImageDescription extends DefaultCoverageDescription implemen
     }
 
     /**
-     * Returns the image distributor's code that identifies the level of radiometric and geometric
-     * processing that has been applied.
-     *
-     * @return the level of radiometric and geometric processing that has been applied, or {@code null} if unspecified.
-     */
-    @Override
-    @XmlElement(name = "processingLevelCode")
-    public Identifier getProcessingLevelCode() {
-        return super.getProcessingLevelCode();
-    }
-
-    /**
-     * Sets the image distributor's code that identifies the level of radiometric and geometric
-     * processing that has been applied.
-     *
-     * @param  newValue  the new processing level code.
-     */
-    @Override
-    public void setProcessingLevelCode(final Identifier newValue) {
-        super.setProcessingLevelCode(newValue);
-    }
-
-    /**
      * Returns the count of the number of lossy compression cycles performed on the image.
      *
      * @return the number of lossy compression cycles performed on the image, or {@code null} if unspecified.
@@ -480,5 +459,38 @@ public class DefaultImageDescription extends DefaultCoverageDescription implemen
     public void setLensDistortionInformationAvailable(final Boolean newValue) {
         checkWritePermission();
         lensDistortionInformationAvailable = newValue;
+    }
+
+
+
+
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+    ////////                                                                                  ////////
+    ////////                               XML support with JAXB                              ////////
+    ////////                                                                                  ////////
+    ////////        The following methods are invoked by JAXB using reflection (even if       ////////
+    ////////        they are private) or are helpers for other methods invoked by JAXB.       ////////
+    ////////        Those methods can be safely removed if Geographic Markup Language         ////////
+    ////////        (GML) support is not needed.                                              ////////
+    ////////                                                                                  ////////
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * An attribute which was defined in {@code ImageDescription} by ISO 19115:2003,
+     * and which moved to the parent class in ISO 19115:2014 revision. We handle the
+     * two versions separately for proper attribute ordering, and for avoiding this
+     * attribute to be written for subtypes other than {@code ImageDescription}.
+     */
+    @XmlElement(name = "processingLevelCode", namespace = LegacyNamespaces.GMD)
+    private Identifier getProcessingLevel() {
+        return FilterByVersion.LEGACY_METADATA.accept() ? getProcessingLevelCode() : null;
+    }
+
+    /**
+     * Invoked by JAXB at unmarshalling time.
+     */
+    @SuppressWarnings("unused")
+    private void setProcessingLevel(final Identifier newValue) {
+        setProcessingLevelCode(newValue);
     }
 }

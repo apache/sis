@@ -26,15 +26,16 @@ import org.apache.sis.util.iso.DefaultRecord;
  * See package documentation for more information about JAXB and interface.
  *
  * @author  Cullen Rombach (Image Matters)
- * @since   1.0
+ * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
+ * @since   1.0
  * @module
  */
-public final class GO_Record extends PropertyType<GO_Record, Record> {
+public class GO_Record extends PropertyType<GO_Record, Record> {
     /**
      * Empty constructor for JAXB only.
      */
-    public GO_Record() {
+    GO_Record() {
     }
 
     /**
@@ -44,6 +45,16 @@ public final class GO_Record extends PropertyType<GO_Record, Record> {
      */
     private GO_Record(final Record metadata) {
         super(metadata);
+    }
+
+    /**
+     * Returns the GeoAPI interface which is bound by this adapter.
+     *
+     * @return {@code Record.class}
+     */
+    @Override
+    protected final Class<Record> getBoundType() {
+        return Record.class;
     }
 
     /**
@@ -58,23 +69,13 @@ public final class GO_Record extends PropertyType<GO_Record, Record> {
     }
 
     /**
-     * Returns the GeoAPI interface which is bound by this adapter.
-     *
-     * @return {@code Record.class}
-     */
-    @Override
-    protected Class<Record> getBoundType() {
-        return Record.class;
-    }
-
-    /**
      * Returns the {@link DefaultRecord} generated from the metadata value.
      * This method is systematically called at marshalling-time by JAXB.
      *
      * @return the metadata to be marshalled.
      */
     @XmlElement(name = "Record")
-    public DefaultRecord getElement() {
+    public final DefaultRecord getElement() {
         return DefaultRecord.castOrCopy(metadata);
     }
 
@@ -84,7 +85,26 @@ public final class GO_Record extends PropertyType<GO_Record, Record> {
      *
      * @param  metadata  the unmarshalled metadata.
      */
-    public void setElement(final DefaultRecord metadata) {
+    public final void setElement(final DefaultRecord metadata) {
         this.metadata = metadata;
+    }
+
+    /**
+     * Wraps the value only if marshalling ISO 19115-3 element.
+     * Otherwise (i.e. if marshalling a legacy ISO 19139:2007 document), omit the element.
+     */
+    public static final class Since2014 extends GO_Record {
+        /** Empty constructor used only by JAXB. */
+        private Since2014() {
+        }
+
+        /**
+         * Wraps the given value in an ISO 19115-3 element, unless we are marshalling an older document.
+         *
+         * @return a non-null value only if marshalling ISO 19115-3 or newer.
+         */
+        @Override public GO_Record wrap(final Record value) {
+            return accept2014() ? super.wrap(value) : null;
+        }
     }
 }

@@ -28,15 +28,15 @@ import org.apache.sis.internal.jaxb.gco.PropertyType;
  *
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.3
+ * @version 1.0
  * @since   0.3
  * @module
  */
-public final class CI_Citation extends PropertyType<CI_Citation, Citation> {
+public class CI_Citation extends PropertyType<CI_Citation, Citation> {
     /**
      * Empty constructor for JAXB only.
      */
-    public CI_Citation() {
+    CI_Citation() {
     }
 
     /**
@@ -47,7 +47,7 @@ public final class CI_Citation extends PropertyType<CI_Citation, Citation> {
      * @return {@code Citation.class}
      */
     @Override
-    protected Class<Citation> getBoundType() {
+    protected final Class<Citation> getBoundType() {
         return Citation.class;
     }
 
@@ -78,7 +78,7 @@ public final class CI_Citation extends PropertyType<CI_Citation, Citation> {
      * @return the metadata to be marshalled.
      */
     @XmlElementRef
-    public DefaultCitation getElement() {
+    public final DefaultCitation getElement() {
         return DefaultCitation.castOrCopy(metadata);
     }
 
@@ -87,7 +87,26 @@ public final class CI_Citation extends PropertyType<CI_Citation, Citation> {
      *
      * @param  metadata  the unmarshalled metadata.
      */
-    public void setElement(final DefaultCitation metadata) {
+    public final void setElement(final DefaultCitation metadata) {
         this.metadata = metadata;
+    }
+
+    /**
+     * Wraps the value only if marshalling ISO 19115-3 element.
+     * Otherwise (i.e. if marshalling a legacy ISO 19139:2007 document), omit the element.
+     */
+    public static final class Since2014 extends CI_Citation {
+        /** Empty constructor used only by JAXB. */
+        private Since2014() {
+        }
+
+        /**
+         * Wraps the given value in an ISO 19115-3 element, unless we are marshalling an older document.
+         *
+         * @return a non-null value only if marshalling ISO 19115-3 or newer.
+         */
+        @Override public CI_Citation wrap(final Citation value) {
+            return accept2014() ? super.wrap(value) : null;
+        }
     }
 }

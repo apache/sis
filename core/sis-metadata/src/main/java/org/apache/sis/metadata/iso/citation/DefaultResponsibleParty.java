@@ -31,6 +31,7 @@ import org.opengis.metadata.citation.ResponsibleParty;
 import org.opengis.metadata.citation.Role;
 import org.opengis.util.InternationalString;
 import org.apache.sis.util.iso.Types;
+import org.apache.sis.internal.jaxb.LegacyNamespaces;
 import org.apache.sis.internal.metadata.Dependencies;
 import org.apache.sis.internal.metadata.LegacyPropertyAdapter;
 
@@ -58,14 +59,14 @@ import org.apache.sis.internal.metadata.LegacyPropertyAdapter;
  */
 @Deprecated
 @SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
-@XmlType(name = "CI_ResponsibleParty_Type", propOrder = {
+@XmlType(name = "CI_ResponsibleParty_Type", namespace = LegacyNamespaces.GMD, propOrder = {
     "individualName",
     "organisationName",
     "positionName",
     "contactInfo",
     "role"
 })
-@XmlRootElement(name = "CI_ResponsibleParty")
+@XmlRootElement(name = "CI_ResponsibleParty", namespace = LegacyNamespaces.GMD)
 public class DefaultResponsibleParty extends DefaultResponsibility implements ResponsibleParty {
     /**
      * Serial number for inter-operability with different versions.

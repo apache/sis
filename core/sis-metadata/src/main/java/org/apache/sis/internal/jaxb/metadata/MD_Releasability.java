@@ -27,15 +27,16 @@ import org.opengis.metadata.constraint.Releasability;
  * See package documentation for more information about JAXB and interface.
  *
  * @author  Cullen Rombach (Image Matters)
+ * @author  Martin Desruisseaux (Geomatys)
  * @since   1.0
  * @version 1.0
  * @module
  */
-public final class MD_Releasability extends PropertyType<MD_Releasability, Releasability> {
+public class MD_Releasability extends PropertyType<MD_Releasability, Releasability> {
     /**
      * Empty constructor for JAXB only.
      */
-    public MD_Releasability() {
+    MD_Releasability() {
     }
 
     /**
@@ -46,7 +47,7 @@ public final class MD_Releasability extends PropertyType<MD_Releasability, Relea
      * @return {@code Releasability.class}
      */
     @Override
-    protected Class<Releasability> getBoundType() {
+    protected final Class<Releasability> getBoundType() {
         return Releasability.class;
     }
 
@@ -77,7 +78,7 @@ public final class MD_Releasability extends PropertyType<MD_Releasability, Relea
      * @return the metadata to be marshalled.
      */
     @XmlElementRef
-    public DefaultReleasability getElement() {
+    public final DefaultReleasability getElement() {
         return DefaultReleasability.castOrCopy(metadata);
     }
 
@@ -86,7 +87,26 @@ public final class MD_Releasability extends PropertyType<MD_Releasability, Relea
      *
      * @param  metadata  the unmarshalled metadata.
      */
-    public void setElement(final DefaultReleasability metadata) {
+    public final void setElement(final DefaultReleasability metadata) {
         this.metadata = metadata;
+    }
+
+    /**
+     * Wraps the value only if marshalling ISO 19115-3 element.
+     * Otherwise (i.e. if marshalling a legacy ISO 19139:2007 document), omit the element.
+     */
+    public static final class Since2014 extends MD_Releasability {
+        /** Empty constructor used only by JAXB. */
+        private Since2014() {
+        }
+
+        /**
+         * Wraps the given value in an ISO 19115-3 element, unless we are marshalling an older document.
+         *
+         * @return a non-null value only if marshalling ISO 19115-3 or newer.
+         */
+        @Override public MD_Releasability wrap(final Releasability value) {
+            return accept2014() ? super.wrap(value) : null;
+        }
     }
 }
