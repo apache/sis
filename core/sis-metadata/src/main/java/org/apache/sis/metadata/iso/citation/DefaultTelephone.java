@@ -22,10 +22,15 @@ import java.util.Collections;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import org.opengis.metadata.citation.Telephone;
 import org.opengis.metadata.citation.TelephoneType;
-import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.metadata.iso.ISOMetadata;
+import org.apache.sis.internal.util.CollectionsExt;
+import org.apache.sis.internal.jaxb.FilterByVersion;
+import org.apache.sis.internal.jaxb.LegacyNamespaces;
+import org.apache.sis.internal.jaxb.gco.StringAdapter;
+import org.apache.sis.internal.jaxb.code.CI_TelephoneTypeCode;
 import org.apache.sis.internal.metadata.Dependencies;
 
 
@@ -61,7 +66,8 @@ import org.apache.sis.internal.metadata.Dependencies;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Cédric Briançon (Geomatys)
  * @author  Rémi Maréchal (Geomatys)
- * @version 0.5
+ * @author  Cullen Rombach (Image Matters)
+ * @version 1.0
  *
  * @see DefaultContact#getPhones()
  *
@@ -70,6 +76,9 @@ import org.apache.sis.internal.metadata.Dependencies;
  */
 @SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "CI_Telephone_Type", propOrder = {
+    "number",
+    "numberType",
+    // Legacy ISO 19139:2007 attributes.
     "voices",
     "facsimiles"
 })
@@ -159,7 +168,8 @@ public class DefaultTelephone extends ISOMetadata implements Telephone {
      * @since 0.5
      */
     @Override
-/// @XmlElement(name = "number", required = true)
+    @XmlElement(name = "number", required = true)
+    @XmlJavaTypeAdapter(StringAdapter.Since2014.class)
     public String getNumber() {
         return number;
     }
@@ -184,7 +194,8 @@ public class DefaultTelephone extends ISOMetadata implements Telephone {
      * @since 0.5
      */
     @Override
-/// @XmlElement(name = "numberType")
+    @XmlElement(name = "numberType")
+    @XmlJavaTypeAdapter(CI_TelephoneTypeCode.Since2014.class)
     public TelephoneType getNumberType() {
         return numberType;
     }
@@ -268,10 +279,13 @@ public class DefaultTelephone extends ISOMetadata implements Telephone {
      */
     @Override
     @Deprecated
-    @XmlElement(name = "voice")
     @Dependencies({"getNumber", "getNumberType"})
+    @XmlElement(name = "voice", namespace = LegacyNamespaces.GMD)
     public final Collection<String> getVoices() {
-        return new LegacyTelephones(getOwner(), TelephoneType.VOICE);
+        if (FilterByVersion.LEGACY_METADATA.accept()) {
+            return new LegacyTelephones(getOwner(), TelephoneType.VOICE);
+        }
+        return null;                    // Marshalling newer ISO 19115-3 document.
     }
 
     /**
@@ -301,10 +315,13 @@ public class DefaultTelephone extends ISOMetadata implements Telephone {
      */
     @Override
     @Deprecated
-    @XmlElement(name = "facsimile")
     @Dependencies({"getNumber", "getNumberType"})
+    @XmlElement(name = "facsimile", namespace = LegacyNamespaces.GMD)
     public final Collection<String> getFacsimiles() {
-        return new LegacyTelephones(getOwner(), TelephoneType.FACSIMILE);
+        if (FilterByVersion.LEGACY_METADATA.accept()) {
+            return new LegacyTelephones(getOwner(), TelephoneType.FACSIMILE);
+        }
+        return null;                    // Marshalling newer ISO 19115-3 document.
     }
 
     /**

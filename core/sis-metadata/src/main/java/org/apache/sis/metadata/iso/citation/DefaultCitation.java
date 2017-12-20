@@ -31,6 +31,8 @@ import org.opengis.metadata.citation.Series;
 import org.opengis.metadata.identification.BrowseGraphic;
 import org.opengis.util.InternationalString;
 import org.apache.sis.util.iso.Types;
+import org.apache.sis.internal.jaxb.FilterByVersion;
+import org.apache.sis.internal.jaxb.LegacyNamespaces;
 import org.apache.sis.internal.jaxb.NonMarshalledAuthority;
 import org.apache.sis.metadata.TitleProperty;
 import org.apache.sis.metadata.iso.ISOMetadata;
@@ -68,7 +70,8 @@ import static org.apache.sis.internal.metadata.MetadataUtilities.toMilliseconds;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Cédric Briançon (Geomatys)
  * @author  Rémi Maréchal (Geomatys)
- * @version 0.7
+ * @author  Cullen Rombach (Image Matters)
+ * @version 1.0
  * @since   0.3
  * @module
  */
@@ -87,7 +90,9 @@ import static org.apache.sis.internal.metadata.MetadataUtilities.toMilliseconds;
     "otherCitationDetails",
     "collectiveTitle",
     "ISBN",
-    "ISSN"
+    "ISSN",
+    "onlineResource",
+    "graphic"
 })
 @XmlRootElement(name = "CI_Citation")
 public class DefaultCitation extends ISOMetadata implements Citation {
@@ -485,9 +490,9 @@ public class DefaultCitation extends ISOMetadata implements Citation {
      */
     @Override
     @Deprecated
-    @XmlElement(name = "collectiveTitle")
+    @XmlElement(name = "collectiveTitle", namespace = LegacyNamespaces.GMD)
     public InternationalString getCollectiveTitle() {
-        return collectiveTitle;
+        return FilterByVersion.LEGACY_METADATA.accept() ? collectiveTitle : null;
     }
 
     /**
@@ -590,7 +595,7 @@ public class DefaultCitation extends ISOMetadata implements Citation {
      * @since 0.5
      */
     @Override
-/// @XmlElement(name = "onlineResource")
+    // @XmlElement at the end of this class.
     public Collection<OnlineResource> getOnlineResources() {
         return onlineResources = nonNullCollection(onlineResources, OnlineResource.class);
     }
@@ -614,7 +619,7 @@ public class DefaultCitation extends ISOMetadata implements Citation {
      * @since 0.5
      */
     @Override
-/// @XmlElement(name = "graphic")
+    // @XmlElement at the end of this class.
     public Collection<BrowseGraphic> getGraphics() {
         return graphics = nonNullCollection(graphics, BrowseGraphic.class);
     }
@@ -628,5 +633,34 @@ public class DefaultCitation extends ISOMetadata implements Citation {
      */
     public void setGraphics(final Collection<? extends BrowseGraphic> newValues) {
         graphics = writeCollection(newValues, graphics, BrowseGraphic.class);
+    }
+
+
+
+
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+    ////////                                                                                  ////////
+    ////////                               XML support with JAXB                              ////////
+    ////////                                                                                  ////////
+    ////////        The following methods are invoked by JAXB using reflection (even if       ////////
+    ////////        they are private) or are helpers for other methods invoked by JAXB.       ////////
+    ////////        Those methods can be safely removed if Geographic Markup Language         ////////
+    ////////        (GML) support is not needed.                                              ////////
+    ////////                                                                                  ////////
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Invoked by JAXB at both marshalling and unmarshalling time.
+     * This attribute has been added by ISO 19115:2014 standard.
+     * If (and only if) marshalling an older standard version, we omit this attribute.
+     */
+    @XmlElement(name = "onlineResource")
+    private Collection<OnlineResource> getOnlineResource() {
+        return FilterByVersion.CURRENT_METADATA.accept() ? getOnlineResources() : null;
+    }
+
+    @XmlElement(name = "graphic")
+    private Collection<BrowseGraphic> getGraphic() {
+        return FilterByVersion.CURRENT_METADATA.accept() ? getGraphics() : null;
     }
 }

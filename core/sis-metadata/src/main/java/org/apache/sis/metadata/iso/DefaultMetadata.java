@@ -70,6 +70,8 @@ import org.apache.sis.internal.jaxb.gmd.LocaleAdapter;
 import org.apache.sis.internal.jaxb.LegacyNamespaces;
 import org.apache.sis.internal.jaxb.FilterByVersion;
 import org.apache.sis.internal.jaxb.Context;
+import org.apache.sis.internal.jaxb.metadata.CI_Citation;
+import org.apache.sis.internal.jaxb.metadata.MD_Identifier;
 import org.apache.sis.xml.Namespaces;
 
 
@@ -134,7 +136,7 @@ import org.apache.sis.xml.Namespaces;
     "metadataIdentifier",
     "defaultLocale",
     "parentMetadata",
-    "metadataScopes",
+    "metadataScope",
 
     // Legacy ISO 19139:2007 attributes
     "fileIdentifier",
@@ -148,8 +150,8 @@ import org.apache.sis.xml.Namespaces;
     "contacts",
 
     // Attributes new in ISO 19115-3
-    "dateInfo",
-    "metadataStandards",
+    "dates",
+    "metadataStandard",
     "otherLocales",
 
     // Legacy ISO 19139:2007 attributes
@@ -412,8 +414,9 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      */
     @Override
     @XmlElement(name = "metadataIdentifier")
+    @XmlJavaTypeAdapter(MD_Identifier.Since2014.class)
     public Identifier getMetadataIdentifier() {
-        return FilterByVersion.CURRENT_METADATA.accept() ? metadataIdentifier : null;
+        return metadataIdentifier;
     }
 
     /**
@@ -484,6 +487,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      * @since 0.5
      */
     @Override
+    // @XmlElement at the end of this class.
     public Collection<Locale> getLanguages() {
         return languages = nonNullCollection(languages, Locale.class);
     }
@@ -526,15 +530,6 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
     }
 
     /**
-     * Gets the default locale for this record (used in ISO 19115-3 format).
-     */
-    @Dependencies("getLanguages")
-    @XmlElement(name = "defaultLocale")
-    private Locale getDefaultLocale() {
-        return FilterByVersion.CURRENT_METADATA.accept() ? CollectionsExt.first(getLanguages()) : null;
-    }
-
-    /**
      * Sets the language used for documenting metadata.
      * This method modifies the collection returned by {@link #getLanguages()} as below:
      *
@@ -551,23 +546,6 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
     public void setLanguage(final Locale newValue) {
         checkWritePermission();
         setDefaultLocale(newValue);
-    }
-
-    /**
-     * Sets the default locale for this record (used in ISO 19115-3 format).
-     */
-    @SuppressWarnings("unused")
-    private void setDefaultLocale(final Locale newValue) {
-        setLanguages(OtherLocales.setFirst(languages, newValue)); // See "Note about deprecated methods implementation"
-    }
-
-    /**
-     * Gets the other locales for this record (used in ISO 19115-3 format).
-     */
-    @Dependencies("getLanguages")
-    @XmlElement(name = "otherLocale")
-    private Collection<Locale> getOtherLocales() {
-        return FilterByVersion.CURRENT_METADATA.accept() ? OtherLocales.filter(getLanguages()) : null;
     }
 
     /**
@@ -596,14 +574,6 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
     public void setLocales(final Collection<? extends Locale> newValues) {
         checkWritePermission();
         setOtherLocales(newValues);
-    }
-
-    /**
-     * Sets the other locales for this record (used in ISO 19115-3 format).
-     */
-    @SuppressWarnings("unused")
-    private void setOtherLocales(final Collection<? extends Locale> newValues) {
-        setLanguages(OtherLocales.merge(CollectionsExt.first(languages), newValues)); // See "Note about deprecated methods implementation"
     }
 
     /**
@@ -699,8 +669,9 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      */
     @Override
     @XmlElement(name = "parentMetadata")
+    @XmlJavaTypeAdapter(CI_Citation.Since2014.class)
     public Citation getParentMetadata() {
-        return FilterByVersion.CURRENT_METADATA.accept() ? parentMetadata : null;
+        return parentMetadata;
     }
 
     /**
@@ -766,9 +737,8 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      * @since 0.5
      */
     @Override
-    @XmlElement(name = "metadataScope")
+    // @XmlElement at the end of this class.
     public Collection<MetadataScope> getMetadataScopes() {
-        if (!FilterByVersion.CURRENT_METADATA.accept()) return null;
         return metadataScopes = nonNullCollection(metadataScopes, MetadataScope.class);
     }
 
@@ -915,9 +885,8 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      * @since 0.5
      */
     @Override
-    @XmlElement(name = "dateInfo", required = true)
+    // @XmlElement at the end of this class.
     public Collection<CitationDate> getDateInfo() {
-        if (!FilterByVersion.CURRENT_METADATA.accept()) return null;
         return dateInfo = nonNullCollection(dateInfo, CitationDate.class);
     }
 
@@ -943,7 +912,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
     @Override
     @Deprecated
     @Dependencies("getDateInfo")
-    @XmlElement(name = "dateStamp", namespace = LegacyNamespaces.GMD, required = true)
+    @XmlElement(name = "dateStamp", namespace = LegacyNamespaces.GMD)
     public Date getDateStamp() {
         if (FilterByVersion.LEGACY_METADATA.accept()) {
             final Collection<CitationDate> dates = getDateInfo();
@@ -1008,9 +977,8 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      * @since 0.5
      */
     @Override
-    @XmlElement(name = "metadataStandard")
+    // @XmlElement at the end of this class.
     public Collection<Citation> getMetadataStandards() {
-        if (!FilterByVersion.CURRENT_METADATA.accept()) return null;
         return metadataStandards = nonNullCollection(metadataStandards, Citation.class);
     }
 
@@ -1583,5 +1551,59 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
     @SuppressWarnings("unused")
     private void afterMarshal(final Marshaller marshaller) {
         Context.pull();
+    }
+
+    /**
+     * Gets the default locale for this record (used in ISO 19115-3 format).
+     */
+    @Dependencies("getLanguages")
+    @XmlElement(name = "defaultLocale")
+    private Locale getDefaultLocale() {
+        return FilterByVersion.CURRENT_METADATA.accept() ? CollectionsExt.first(getLanguages()) : null;
+    }
+
+    /**
+     * Sets the default locale for this record (used in ISO 19115-3 format).
+     */
+    @SuppressWarnings("unused")
+    private void setDefaultLocale(final Locale newValue) {
+        setLanguages(OtherLocales.setFirst(languages, newValue)); // See "Note about deprecated methods implementation"
+    }
+
+    /**
+     * Gets the other locales for this record (used in ISO 19115-3 format).
+     */
+    @Dependencies("getLanguages")
+    @XmlElement(name = "otherLocale")
+    private Collection<Locale> getOtherLocales() {
+        return FilterByVersion.CURRENT_METADATA.accept() ? OtherLocales.filter(getLanguages()) : null;
+    }
+
+    /**
+     * Sets the other locales for this record (used in ISO 19115-3 format).
+     */
+    @SuppressWarnings("unused")
+    private void setOtherLocales(final Collection<? extends Locale> newValues) {
+        setLanguages(OtherLocales.merge(CollectionsExt.first(languages), newValues));
+    }
+
+    /**
+     * Invoked by JAXB at both marshalling and unmarshalling time.
+     * This attribute has been added by ISO 19115:2014 standard.
+     * If (and only if) marshalling an older standard version, we omit this attribute.
+     */
+    @XmlElement(name = "metadataScope")
+    private Collection<MetadataScope> getMetadataScope() {
+        return FilterByVersion.CURRENT_METADATA.accept() ? getMetadataScopes() : null;
+    }
+
+    @XmlElement(name = "dateInfo", required = true)
+    private Collection<CitationDate> getDates() {
+        return FilterByVersion.CURRENT_METADATA.accept() ? getDateInfo() : null;
+    }
+
+    @XmlElement(name = "metadataStandard")
+    private Collection<Citation> getMetadataStandard() {
+        return FilterByVersion.CURRENT_METADATA.accept() ? getMetadataStandards() : null;
     }
 }

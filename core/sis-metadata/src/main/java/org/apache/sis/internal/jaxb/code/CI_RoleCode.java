@@ -31,16 +31,17 @@ import org.apache.sis.xml.Namespaces;
  *
  * @author  Cédric Briançon (Geomatys)
  * @author  Cullen Rombach (Image Matters)
+ * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
  * @since   0.3
  * @module
  */
 @XmlType(namespace = Namespaces.CIT)
-public final class CI_RoleCode extends CodeListAdapter<CI_RoleCode, Role> {
+public class CI_RoleCode extends CodeListAdapter<CI_RoleCode, Role> {
     /**
      * Empty constructor for JAXB only.
      */
-    public CI_RoleCode() {
+    CI_RoleCode() {
     }
 
     /**
@@ -66,7 +67,7 @@ public final class CI_RoleCode extends CodeListAdapter<CI_RoleCode, Role> {
      * @return the code list class.
      */
     @Override
-    protected Class<Role> getCodeListClass() {
+    protected final Class<Role> getCodeListClass() {
         return Role.class;
     }
 
@@ -77,7 +78,7 @@ public final class CI_RoleCode extends CodeListAdapter<CI_RoleCode, Role> {
      */
     @Override
     @XmlElement(name = "CI_RoleCode")
-    public CodeListUID getElement() {
+    public final CodeListUID getElement() {
         return identifier;
     }
 
@@ -86,7 +87,26 @@ public final class CI_RoleCode extends CodeListAdapter<CI_RoleCode, Role> {
      *
      * @param  value  the unmarshalled value.
      */
-    public void setElement(final CodeListUID value) {
+    public final void setElement(final CodeListUID value) {
         identifier = value;
+    }
+
+    /**
+     * Wraps the value only if marshalling ISO 19115-3 element.
+     * Otherwise (i.e. if marshalling a legacy ISO 19139:2007 document), omit the element.
+     */
+    public static final class Since2014 extends CI_RoleCode {
+        /** Empty constructor used only by JAXB. */
+        private Since2014() {
+        }
+
+        /**
+         * Wraps the given value in an ISO 19115-3 element, unless we are marshalling an older document.
+         *
+         * @return a non-null value only if marshalling ISO 19115-3 or newer.
+         */
+        @Override public CI_RoleCode wrap(final CodeListUID value) {
+            return accept2014() ? super.wrap(value) : null;
+        }
     }
 }

@@ -21,6 +21,7 @@ import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlSeeAlso;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.citation.Responsibility;
@@ -30,6 +31,9 @@ import org.opengis.metadata.constraint.Constraints;
 import org.opengis.metadata.constraint.LegalConstraints;
 import org.opengis.metadata.constraint.SecurityConstraints;
 import org.opengis.metadata.maintenance.Scope;
+import org.apache.sis.internal.jaxb.FilterByVersion;
+import org.apache.sis.internal.jaxb.metadata.MD_Releasability;
+import org.apache.sis.internal.jaxb.metadata.MD_Scope;
 import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.util.iso.Types;
 
@@ -50,19 +54,20 @@ import org.apache.sis.util.iso.Types;
  * @author  Touraïvane (IRD)
  * @author  Cédric Briançon (Geomatys)
  * @author  Rémi Maréchal (Geomatys)
- * @version 0.5
+ * @author  Cullen Rombach (Image Matters)
+ * @version 1.0
  * @since   0.3
  * @module
  */
 @SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
-@XmlType(name = "MD_Constraints_Type" /*, propOrder = {
+@XmlType(name = "MD_Constraints_Type", propOrder = {
     "useLimitation",
     "constraintApplicationScope",
     "graphic",
     "reference",
     "releasability",
     "responsibleParty"
-} */)
+})
 @XmlRootElement(name = "MD_Constraints")
 @XmlSeeAlso({
     DefaultLegalConstraints.class,
@@ -209,7 +214,8 @@ public class DefaultConstraints extends ISOMetadata implements Constraints {
      * @since 0.5
      */
     @Override
-/// @XmlElement(name = "constraintApplicationScope")
+    @XmlElement(name = "constraintApplicationScope")
+    @XmlJavaTypeAdapter(MD_Scope.Since2014.class)
     public Scope getConstraintApplicationScope() {
         return constraintApplicationScope;
     }
@@ -234,7 +240,7 @@ public class DefaultConstraints extends ISOMetadata implements Constraints {
      * @since 0.5
      */
     @Override
-/// @XmlElement(name = "graphic")
+    // @XmlElement at the end of this class.
     public Collection<BrowseGraphic> getGraphics() {
         return graphics = nonNullCollection(graphics, BrowseGraphic.class);
     }
@@ -259,7 +265,7 @@ public class DefaultConstraints extends ISOMetadata implements Constraints {
      * @since 0.5
      */
     @Override
-/// @XmlElement(name = "reference")
+    // @XmlElement at the end of this class.
     public Collection<Citation> getReferences() {
         return references = nonNullCollection(references, Citation.class);
     }
@@ -283,7 +289,8 @@ public class DefaultConstraints extends ISOMetadata implements Constraints {
      * @since 0.5
      */
     @Override
-/// @XmlElement(name = "releasability")
+    @XmlElement(name = "releasability")
+    @XmlJavaTypeAdapter(MD_Releasability.Since2014.class)
     public Releasability getReleasability() {
         return releasability;
     }
@@ -308,7 +315,7 @@ public class DefaultConstraints extends ISOMetadata implements Constraints {
      * @since 0.5
      */
     @Override
-/// @XmlElement(name = "responsibleParty")
+    // @XmlElement at the end of this class.
     public Collection<Responsibility> getResponsibleParties() {
         return responsibleParties = nonNullCollection(responsibleParties, Responsibility.class);
     }
@@ -322,5 +329,39 @@ public class DefaultConstraints extends ISOMetadata implements Constraints {
      */
     public void setResponsibleParties(final Collection<? extends Responsibility> newValues) {
         responsibleParties = writeCollection(newValues, responsibleParties, Responsibility.class);
+    }
+
+
+
+
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+    ////////                                                                                  ////////
+    ////////                               XML support with JAXB                              ////////
+    ////////                                                                                  ////////
+    ////////        The following methods are invoked by JAXB using reflection (even if       ////////
+    ////////        they are private) or are helpers for other methods invoked by JAXB.       ////////
+    ////////        Those methods can be safely removed if Geographic Markup Language         ////////
+    ////////        (GML) support is not needed.                                              ////////
+    ////////                                                                                  ////////
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Invoked by JAXB at both marshalling and unmarshalling time.
+     * This attribute has been added by ISO 19115:2014 standard.
+     * If (and only if) marshalling an older standard version, we omit this attribute.
+     */
+    @XmlElement(name = "graphic")
+    private Collection<BrowseGraphic> getGraphic() {
+        return FilterByVersion.CURRENT_METADATA.accept() ? getGraphics() : null;
+    }
+
+    @XmlElement(name = "reference")
+    private Collection<Citation> getReference() {
+        return FilterByVersion.CURRENT_METADATA.accept() ? getReferences() : null;
+    }
+
+    @XmlElement(name = "responsibleParty")
+    private Collection<Responsibility> getResponsibleParty() {
+        return FilterByVersion.CURRENT_METADATA.accept() ? getResponsibleParties() : null;
     }
 }
