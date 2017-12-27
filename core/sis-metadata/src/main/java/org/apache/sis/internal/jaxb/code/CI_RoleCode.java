@@ -105,7 +105,7 @@ public class CI_RoleCode extends CodeListAdapter<CI_RoleCode, Role> {
          *
          * @return a non-null value only if marshalling ISO 19115-3 or newer.
          */
-        @Override public CI_RoleCode wrap(final CodeListUID value) {
+        @Override protected CI_RoleCode wrap(final CodeListUID value) {
             return accept2014() ? super.wrap(value) : null;
         }
     }

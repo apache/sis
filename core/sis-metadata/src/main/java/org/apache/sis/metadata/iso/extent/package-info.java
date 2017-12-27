@@ -135,13 +135,17 @@
  * @author  Touraïvane (IRD)
  * @author  Cédric Briançon (Geomatys)
  * @author  Guilhem Legal (Geomatys)
- * @version 0.5
+ * @author  Cullen Rombach (Image Matters)
+ * @version 1.0
  * @since   0.3
  * @module
  */
-@XmlSchema(location=Schemas.METADATA_XSD, elementFormDefault=XmlNsForm.QUALIFIED, namespace=Namespaces.GMD, xmlns = {
-    @XmlNs(prefix = "gmd", namespaceURI = Namespaces.GMD),
+@XmlSchema(location=Schemas.METADATA_XSD_EXTENT, elementFormDefault=XmlNsForm.QUALIFIED, namespace=Namespaces.GEX, xmlns = {
+    @XmlNs(prefix = "gex", namespaceURI = Namespaces.GEX),
+    @XmlNs(prefix = "mcc", namespaceURI = Namespaces.MCC),
+    @XmlNs(prefix = "rce", namespaceURI = Namespaces.RCE),
     @XmlNs(prefix = "gco", namespaceURI = Namespaces.GCO),
+    @XmlNs(prefix = "gmw", namespaceURI = Namespaces.GMW),
     @XmlNs(prefix = "xsi", namespaceURI = Namespaces.XSI)
 })
 @XmlAccessorType(XmlAccessType.NONE)

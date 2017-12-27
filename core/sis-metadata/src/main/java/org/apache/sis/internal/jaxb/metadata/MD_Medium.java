@@ -28,15 +28,15 @@ import org.apache.sis.internal.jaxb.gco.PropertyType;
  *
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.3
+ * @version 1.0
  * @since   0.3
  * @module
  */
-public final class MD_Medium extends PropertyType<MD_Medium, Medium> {
+public class MD_Medium extends PropertyType<MD_Medium, Medium> {
     /**
      * Empty constructor for JAXB only.
      */
-    public MD_Medium() {
+    MD_Medium() {
     }
 
     /**
@@ -47,7 +47,7 @@ public final class MD_Medium extends PropertyType<MD_Medium, Medium> {
      * @return {@code Medium.class}
      */
     @Override
-    protected Class<Medium> getBoundType() {
+    protected final Class<Medium> getBoundType() {
         return Medium.class;
     }
 
@@ -78,7 +78,7 @@ public final class MD_Medium extends PropertyType<MD_Medium, Medium> {
      * @return the metadata to be marshalled.
      */
     @XmlElementRef
-    public DefaultMedium getElement() {
+    public final DefaultMedium getElement() {
         return DefaultMedium.castOrCopy(metadata);
     }
 
@@ -87,7 +87,26 @@ public final class MD_Medium extends PropertyType<MD_Medium, Medium> {
      *
      * @param  metadata  the unmarshalled metadata.
      */
-    public void setElement(final DefaultMedium metadata) {
+    public final void setElement(final DefaultMedium metadata) {
         this.metadata = metadata;
+    }
+
+    /**
+     * Wraps the value only if marshalling ISO 19115-3 element.
+     * Otherwise (i.e. if marshalling a legacy ISO 19139:2007 document), omit the element.
+     */
+    public static final class Since2014 extends MD_Medium {
+        /** Empty constructor used only by JAXB. */
+        private Since2014() {
+        }
+
+        /**
+         * Wraps the given value in an ISO 19115-3 element, unless we are marshalling an older document.
+         *
+         * @return a non-null value only if marshalling ISO 19115-3 or newer.
+         */
+        @Override protected MD_Medium wrap(final Medium value) {
+            return accept2014() ? super.wrap(value) : null;
+        }
     }
 }

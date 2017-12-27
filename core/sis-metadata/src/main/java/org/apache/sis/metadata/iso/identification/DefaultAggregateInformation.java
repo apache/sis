@@ -26,8 +26,6 @@ import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.identification.AggregateInformation;
 import org.opengis.metadata.identification.AssociatedResource;
-import org.opengis.metadata.identification.AssociationType;
-import org.opengis.metadata.identification.InitiativeType;
 import org.apache.sis.metadata.iso.citation.DefaultCitation;
 import org.apache.sis.internal.metadata.Dependencies;
 
@@ -58,7 +56,8 @@ import org.apache.sis.internal.metadata.Dependencies;
  *
  * @author  Guilhem Legal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.5
+ * @author  Cullen Rombach (Image Matters)
+ * @version 1.0
  * @since   0.3
  * @module
  *
@@ -69,8 +68,7 @@ import org.apache.sis.internal.metadata.Dependencies;
 @XmlType(name = "MD_AggregateInformation_Type", propOrder = {
     "aggregateDataSetName",
     "aggregateDataSetIdentifier",
-    "associationType",
-    "initiativeType"
+    // "associationType" and "initiativeType" will be written by parent class.
 })
 @XmlRootElement(name = "MD_AggregateInformation")
 public class DefaultAggregateInformation extends DefaultAssociatedResource implements AggregateInformation {
@@ -168,7 +166,7 @@ public class DefaultAggregateInformation extends DefaultAssociatedResource imple
     /**
      * Returns the first identifier of the given citation.
      */
-    static Identifier getAggregateDataSetIdentifier(final Citation name) {
+    private static Identifier getAggregateDataSetIdentifier(final Citation name) {
         if (name != null) {
             final Collection<? extends Identifier> names = name.getIdentifiers();
             if (names != null) { // May be null on XML marshalling.
@@ -215,47 +213,5 @@ public class DefaultAggregateInformation extends DefaultAssociatedResource imple
                 it.remove();
             }
         }
-    }
-
-    /**
-     * Association type of the aggregate dataset.
-     *
-     * @return association type of the aggregate dataset.
-     */
-    @Override
-    @XmlElement(name = "associationType", required = true)
-    public AssociationType getAssociationType() {
-        return super.getAssociationType();
-    }
-
-    /**
-     * Sets the association type of the aggregate dataset.
-     *
-     * @param  newValue  the new association type.
-     */
-    @Override
-    public void setAssociationType(final AssociationType newValue) {
-        super.setAssociationType(newValue);
-    }
-
-    /**
-     * Type of initiative under which the aggregate dataset was produced.
-     *
-     * @return type of initiative under which the aggregate dataset was produced, or {@code null}.
-     */
-    @Override
-    @XmlElement(name = "initiativeType")
-    public InitiativeType getInitiativeType() {
-        return super.getInitiativeType();
-    }
-
-    /**
-     * Sets the type of initiative under which the aggregate dataset was produced.
-     *
-     * @param  newValue  the new initiative.
-     */
-    @Override
-    public void setInitiativeType(final InitiativeType newValue) {
-        super.setInitiativeType(newValue);
     }
 }

@@ -105,7 +105,7 @@ public class CI_Citation extends PropertyType<CI_Citation, Citation> {
          *
          * @return a non-null value only if marshalling ISO 19115-3 or newer.
          */
-        @Override public CI_Citation wrap(final Citation value) {
+        @Override protected CI_Citation wrap(final Citation value) {
             return accept2014() ? super.wrap(value) : null;
         }
     }

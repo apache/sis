@@ -41,13 +41,13 @@ public final class TM_Duration extends PropertyType<TM_Duration, Duration> {
     /**
      * Empty constructor for JAXB.
      */
-    public TM_Duration() {
+    TM_Duration() {
     }
 
     /**
      * Wraps a Temporal Duration value at marshalling-time.
      *
-     * @param metadata The metadata value to marshal.
+     * @param  metadata  the metadata value to marshal.
      */
     private TM_Duration(final Duration metadata) {
         super(metadata);
@@ -56,8 +56,8 @@ public final class TM_Duration extends PropertyType<TM_Duration, Duration> {
     /**
      * Returns the Duration value wrapped by a {@code gts:TM_Duration} element.
      *
-     * @param value The value to marshal.
-     * @return The adapter which wraps the metadata value.
+     * @param  value  the value to marshal.
+     * @return the adapter which wraps the metadata value.
      */
     @Override
     protected TM_Duration wrap(final Duration value) {

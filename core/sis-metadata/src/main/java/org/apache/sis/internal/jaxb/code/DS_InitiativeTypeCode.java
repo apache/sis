@@ -34,11 +34,11 @@ import org.apache.sis.xml.Namespaces;
  * @since   0.3
  * @module
  */
-public final class DS_InitiativeTypeCode extends CodeListAdapter<DS_InitiativeTypeCode, InitiativeType> {
+public class DS_InitiativeTypeCode extends CodeListAdapter<DS_InitiativeTypeCode, InitiativeType> {
     /**
      * Empty constructor for JAXB only.
      */
-    public DS_InitiativeTypeCode() {
+    DS_InitiativeTypeCode() {
     }
 
     /**
@@ -64,7 +64,7 @@ public final class DS_InitiativeTypeCode extends CodeListAdapter<DS_InitiativeTy
      * @return the code list class.
      */
     @Override
-    protected Class<InitiativeType> getCodeListClass() {
+    protected final Class<InitiativeType> getCodeListClass() {
         return InitiativeType.class;
     }
 
@@ -75,7 +75,7 @@ public final class DS_InitiativeTypeCode extends CodeListAdapter<DS_InitiativeTy
      */
     @Override
     @XmlElement(name = "DS_InitiativeTypeCode", namespace = Namespaces.MRI)
-    public CodeListUID getElement() {
+    public final CodeListUID getElement() {
         return identifier;
     }
 
@@ -84,7 +84,26 @@ public final class DS_InitiativeTypeCode extends CodeListAdapter<DS_InitiativeTy
      *
      * @param  value  the unmarshalled value.
      */
-    public void setElement(final CodeListUID value) {
+    public final void setElement(final CodeListUID value) {
         identifier = value;
+    }
+
+    /**
+     * Wraps the value only if marshalling ISO 19115-3 element.
+     * Otherwise (i.e. if marshalling a legacy ISO 19139:2007 document), omit the element.
+     */
+    public static final class Since2014 extends DS_InitiativeTypeCode {
+        /** Empty constructor used only by JAXB. */
+        private Since2014() {
+        }
+
+        /**
+         * Wraps the given value in an ISO 19115-3 element, unless we are marshalling an older document.
+         *
+         * @return a non-null value only if marshalling ISO 19115-3 or newer.
+         */
+        @Override protected DS_InitiativeTypeCode wrap(final CodeListUID value) {
+            return accept2014() ? super.wrap(value) : null;
+        }
     }
 }
