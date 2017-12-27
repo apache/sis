@@ -22,13 +22,17 @@ import java.nio.charset.Charset;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
+import org.opengis.util.InternationalString;
 import org.opengis.metadata.extent.Extent;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.identification.TopicCategory;
 import org.opengis.metadata.identification.DataIdentification;
-import org.opengis.util.InternationalString;
-
-import static org.apache.sis.internal.jaxb.gco.PropertyType.LEGACY_XML;
+import org.apache.sis.internal.metadata.OtherLocales;
+import org.apache.sis.internal.jaxb.gmd.LocaleAdapter;
+import org.apache.sis.internal.jaxb.LegacyNamespaces;
+import org.apache.sis.internal.jaxb.FilterByVersion;
+import org.apache.sis.internal.util.CollectionsExt;
 
 
 /**
@@ -62,14 +66,20 @@ import static org.apache.sis.internal.jaxb.gco.PropertyType.LEGACY_XML;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Touraïvane (IRD)
  * @author  Cédric Briançon (Geomatys)
- * @version 0.5
+ * @author  Cullen Rombach (Image Matters)
+ * @version 1.0
  * @since   0.3
  * @module
  */
 @SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "MD_DataIdentification_Type", propOrder = {
-    "languages",
+    // ISO 19115:2003 legacy
+    "language",
     "characterSets",
+
+    // ISO 19115:2014
+    "defaultLocale",
+    "otherLocale",
     "topicCategory",
     "environmentDescription",
     "extent",
@@ -184,7 +194,7 @@ public class DefaultDataIdentification extends AbstractIdentification implements
      * @see Locale#getISO3Language()
      */
     @Override
-    @XmlElement(name = "language", required = true)
+    // @XmlElement at the end of this class.
     public Collection<Locale> getLanguages() {
         return languages = nonNullCollection(languages, Locale.class);
     }
@@ -276,11 +286,53 @@ public class DefaultDataIdentification extends AbstractIdentification implements
     //////////////////////////////////////////////////////////////////////////////////////////////////
 
     /**
+     * Gets the default locale for this record (used in ISO 19115-3 format).
+     */
+    @XmlElement(name = "defaultLocale")
+    private Locale getDefaultLocale() {
+        return FilterByVersion.CURRENT_METADATA.accept() ? CollectionsExt.first(getLanguages()) : null;
+    }
+
+    /**
+     * Sets the default locale for this record (used in ISO 19115-3 format).
+     */
+    @SuppressWarnings("unused")
+    private void setDefaultLocale(final Locale newValue) {
+        setLanguages(OtherLocales.setFirst(languages, newValue));
+    }
+
+    /**
+     * Gets the other locales for this record (used in ISO 19115-3 format).
+     */
+    @XmlElement(name = "otherLocale")
+    private Collection<Locale> getOtherLocales() {
+        return FilterByVersion.CURRENT_METADATA.accept() ? OtherLocales.filter(getLanguages()) : null;
+    }
+
+    /**
+     * Sets the other locales for this record (used in ISO 19115-3 format).
+     * Defined as a matter of principle, but not invoked by JAXB implementation.
+     */
+    @SuppressWarnings("unused")
+    private void setOtherLocales(final Collection<? extends Locale> newValues) {
+        setLanguages(OtherLocales.merge(CollectionsExt.first(languages), newValues));
+    }
+
+    /**
+     * Returns the locale to marshal if the XML document is to be written in ISO 19139:2007 format.
+     */
+    @XmlElement(name = "language", namespace = LegacyNamespaces.GMD, required = true)
+    @XmlJavaTypeAdapter(LocaleAdapter.class)
+    private Collection<Locale> getLanguage() {
+        return FilterByVersion.LEGACY_METADATA.accept() ? getLanguages() : null;
+    }
+
+    /**
      * For JAXB marhalling of ISO 19115:2003 document only.
      */
-    @XmlElement(name = "topicCategory")
+    @XmlElement(name = "topicCategory", namespace = LegacyNamespaces.GMD)
     private Collection<TopicCategory> getTopicCategory()  {
-        return LEGACY_XML ? getTopicCategories() : null;
+        return FilterByVersion.LEGACY_METADATA.accept() ? getTopicCategories() : null;
     }
 
     /**
@@ -293,9 +345,9 @@ public class DefaultDataIdentification extends AbstractIdentification implements
     /**
      * For JAXB marhalling of ISO 19115:2003 document only.
      */
-    @XmlElement(name = "extent")
+    @XmlElement(name = "extent", namespace = LegacyNamespaces.GMD)
     private Collection<Extent> getExtent() {
-        return LEGACY_XML ? getExtents() : null;
+        return FilterByVersion.LEGACY_METADATA.accept() ? getExtents() : null;
     }
 
     /**

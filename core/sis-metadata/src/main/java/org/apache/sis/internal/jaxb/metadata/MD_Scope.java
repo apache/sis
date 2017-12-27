@@ -23,8 +23,8 @@ import org.apache.sis.internal.jaxb.gco.PropertyType;
 
 
 /**
- * JAXB adapter in order to map implementing class with the GeoAPI interface. See
- * package documentation for more information about JAXB and interface.
+ * JAXB adapter in order to map implementing class with the GeoAPI interface.
+ * See package documentation for more information about JAXB and interface.
  *
  * @author  Guilhem Legal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
@@ -105,7 +105,7 @@ public class MD_Scope extends PropertyType<MD_Scope, Scope> {
          *
          * @return a non-null value only if marshalling ISO 19115-3 or newer.
          */
-        @Override public MD_Scope wrap(final Scope value) {
+        @Override protected MD_Scope wrap(final Scope value) {
             return accept2014() ? super.wrap(value) : null;
         }
     }

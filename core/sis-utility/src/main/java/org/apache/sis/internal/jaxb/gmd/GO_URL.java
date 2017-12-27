@@ -30,7 +30,10 @@ import org.apache.sis.internal.jaxb.Context;
  *
  * @author  Cédric Briançon (Geomatys)
  * @version 0.3
- * @since   0.3
+ *
+ * @see org.apache.sis.internal.jaxb.gco.URIAdapter
+ *
+ * @since 0.3
  * @module
  */
 public final class GO_URL extends XmlAdapter<GO_URL, URI> {

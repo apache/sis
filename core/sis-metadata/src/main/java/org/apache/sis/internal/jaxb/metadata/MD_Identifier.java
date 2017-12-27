@@ -118,7 +118,7 @@ public class MD_Identifier extends PropertyType<MD_Identifier, Identifier> {
          *
          * @return a non-null value only if marshalling ISO 19115-3 or newer.
          */
-        @Override public MD_Identifier wrap(final Identifier value) {
+        @Override protected MD_Identifier wrap(final Identifier value) {
             return accept2014() ? super.wrap(value) : null;
         }
     }

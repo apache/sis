@@ -27,15 +27,15 @@ import org.apache.sis.internal.jaxb.gco.PropertyType;
  * package documentation for more information about JAXB and interface.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.5
+ * @version 1.0
  * @since   0.5
  * @module
  */
-public final class SV_OperationMetadata extends PropertyType<SV_OperationMetadata, OperationMetadata> {
+public class SV_OperationMetadata extends PropertyType<SV_OperationMetadata, OperationMetadata> {
     /**
      * Empty constructor for JAXB only.
      */
-    public SV_OperationMetadata() {
+    SV_OperationMetadata() {
     }
 
     /**
@@ -46,7 +46,7 @@ public final class SV_OperationMetadata extends PropertyType<SV_OperationMetadat
      * @return {@code OperationMetadata.class}
      */
     @Override
-    protected Class<OperationMetadata> getBoundType() {
+    protected final Class<OperationMetadata> getBoundType() {
         return OperationMetadata.class;
     }
 
@@ -77,7 +77,7 @@ public final class SV_OperationMetadata extends PropertyType<SV_OperationMetadat
      * @return the metadata to be marshalled.
      */
     @XmlElementRef
-    public DefaultOperationMetadata getElement() {
+    public final DefaultOperationMetadata getElement() {
         return DefaultOperationMetadata.castOrCopy(metadata);
     }
 
@@ -86,7 +86,26 @@ public final class SV_OperationMetadata extends PropertyType<SV_OperationMetadat
      *
      * @param  metadata  the unmarshalled metadata.
      */
-    public void setElement(final DefaultOperationMetadata metadata) {
+    public final void setElement(final DefaultOperationMetadata metadata) {
         this.metadata = metadata;
+    }
+
+    /**
+     * Wraps the value only if marshalling ISO 19115-3 element.
+     * Otherwise (i.e. if marshalling a legacy ISO 19139:2007 document), omit the element.
+     */
+    public static final class Since2014 extends SV_OperationMetadata {
+        /** Empty constructor used only by JAXB. */
+        private Since2014() {
+        }
+
+        /**
+         * Wraps the given value in an ISO 19115-3 element, unless we are marshalling an older document.
+         *
+         * @return a non-null value only if marshalling ISO 19115-3 or newer.
+         */
+        @Override protected SV_OperationMetadata wrap(final OperationMetadata value) {
+            return accept2014() ? super.wrap(value) : null;
+        }
     }
 }

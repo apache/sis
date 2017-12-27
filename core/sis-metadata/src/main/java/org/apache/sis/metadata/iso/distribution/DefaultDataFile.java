@@ -48,16 +48,17 @@ import org.apache.sis.metadata.iso.ISOMetadata;
  *
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.3
+ * @author  Cullen Rombach (Image Matters)
+ * @version 1.0
  * @since   0.3
  * @module
  */
 @SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
-@XmlType(name = "MX_DataFile_Type", propOrder = {
+@XmlType(name = "MX_DataFile_Type", namespace = Namespaces.GCX, propOrder = {
     "featureTypes",
     "fileFormat"
 })
-@XmlRootElement(name = "MX_DataFile", namespace = Namespaces.GMX)
+@XmlRootElement(name = "MX_DataFile", namespace = Namespaces.GCX)
 public class DefaultDataFile extends ISOMetadata implements DataFile {
     /**
      * Serial number for inter-operability with different versions.
@@ -134,7 +135,7 @@ public class DefaultDataFile extends ISOMetadata implements DataFile {
      * @return list of features types concerned by the transfer data file.
      */
     @Override
-    @XmlElement(name = "featureType", namespace = Namespaces.GMX)
+    @XmlElement(name = "featureType")
     public Collection<LocalName> getFeatureTypes() {
         return featureTypes = nonNullCollection(featureTypes, LocalName.class);
     }
@@ -154,7 +155,7 @@ public class DefaultDataFile extends ISOMetadata implements DataFile {
      * @return format of the transfer data file, or {@code null}.
      */
     @Override
-    @XmlElement(name = "fileFormat", namespace = Namespaces.GMX, required = true)
+    @XmlElement(name = "fileFormat", required = true)
     public Format getFileFormat() {
         return fileFormat;
     }

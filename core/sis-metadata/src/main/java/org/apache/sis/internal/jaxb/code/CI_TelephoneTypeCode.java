@@ -104,7 +104,7 @@ public class CI_TelephoneTypeCode extends CodeListAdapter<CI_TelephoneTypeCode, 
          *
          * @return a non-null value only if marshalling ISO 19115-3 or newer.
          */
-        @Override public CI_TelephoneTypeCode wrap(final CodeListUID value) {
+        @Override protected CI_TelephoneTypeCode wrap(final CodeListUID value) {
             return accept2014() ? super.wrap(value) : null;
         }
     }

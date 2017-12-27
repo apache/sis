@@ -21,6 +21,7 @@ import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlSeeAlso;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.citation.Responsibility;
@@ -44,6 +45,8 @@ import org.opengis.temporal.Duration;
 import org.opengis.util.InternationalString;
 import org.apache.sis.internal.metadata.Dependencies;
 import org.apache.sis.internal.metadata.LegacyPropertyAdapter;
+import org.apache.sis.internal.jaxb.metadata.MD_Identifier;
+import org.apache.sis.internal.jaxb.FilterByVersion;
 import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.util.iso.Types;
 
@@ -77,7 +80,8 @@ import org.apache.sis.util.iso.Types;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Touraïvane (IRD)
  * @author  Cédric Briançon (Geomatys)
- * @version 0.5
+ * @author  Cullen Rombach (Image Matters)
+ * @version 1.0
  * @since   0.3
  * @module
  */
@@ -89,15 +93,27 @@ import org.apache.sis.util.iso.Types;
     "credits",
     "status",
     "pointOfContacts",
+    "spatialRepresentationTypes",       // Here in ISO 19115:2014 (was after 'aggregationInfo' in ISO 19115:2003)
+    "spatialResolutions",               // Shall be kept next to 'spatialRepresentationTypes'
+    "temporalResolution",               // ISO 19115-3 only
+    "topicCategory",                    // Here in ISO 19115:2014 (was in subclasses in ISO 19115:2003)
+    "extent",                           // Here in ISO 19115:2014 (was in subclasses in ISO 19115:2003)
+    "additionalDocumentation",          // ISO 19115:2014 only
+    "processingLevel",                  // ISO 19115:2014 only
     "resourceMaintenances",
     "graphicOverviews",
     "resourceFormats",
     "descriptiveKeywords",
     "resourceSpecificUsages",
     "resourceConstraints",
-    "aggregationInfo",
-    "spatialRepresentationTypes", // After 'pointOfContact' according ISO 19115:2014, but here for ISO 19115:2003 compatibility.
-    "spatialResolutions"          // Shall be kept next to 'spatialRepresentationTypes'
+    "associatedResource",
+    "aggregationInfo",                  // Legacy ISO 19115:2003 (replaced by 'associatedResources')
+    /*
+     * NOTE: legacy ISO 19115:2003 specification had 'spatialRepresentationTypes' and 'spatialResolutions'
+     *       elements last. If we wanted to produce strictly compliant legacy XML documents, we would have
+     *       to duplicate those attributes. We avoid this complexity on the assumption that readers are
+     *       tolerant to different order (this relaxation is needed only for legacy XML).
+     */
 })
 @XmlRootElement(name = "MD_Identification")
 @XmlSeeAlso({
@@ -484,7 +500,7 @@ public class AbstractIdentification extends ISOMetadata implements Identificatio
      * @since 0.5
      */
     @Override
-/// @XmlElement(name = "temporalResolution")
+    // @XmlElement at the end of this class.
     public Collection<Duration> getTemporalResolutions() {
         return temporalResolutions = nonNullCollection(temporalResolutions, Duration.class);
     }
@@ -508,7 +524,7 @@ public class AbstractIdentification extends ISOMetadata implements Identificatio
      * @since 0.5
      */
     @Override
-/// @XmlElement(name = "topicCategory")
+    // @XmlElement at the end of this class.
     public Collection<TopicCategory> getTopicCategories()  {
         return topicCategories = nonNullCollection(topicCategories, TopicCategory.class);
     }
@@ -532,7 +548,7 @@ public class AbstractIdentification extends ISOMetadata implements Identificatio
      * @since 0.5
      */
     @Override
-/// @XmlElement(name = "extent")
+    // @XmlElement at the end of this class.
     public Collection<Extent> getExtents() {
         return extents = nonNullCollection(extents, Extent.class);
     }
@@ -556,7 +572,7 @@ public class AbstractIdentification extends ISOMetadata implements Identificatio
      * @since 0.5
      */
     @Override
-/// @XmlElement(name = "additionalDocumentation")
+    // @XmlElement at the end of this class.
     public Collection<Citation> getAdditionalDocumentations() {
         return additionalDocumentations = nonNullCollection(additionalDocumentations, Citation.class);
     }
@@ -580,7 +596,8 @@ public class AbstractIdentification extends ISOMetadata implements Identificatio
      * @since 0.5
      */
     @Override
-/// @XmlElement(name = "processingLevel")
+    @XmlElement(name = "processingLevel")
+    @XmlJavaTypeAdapter(MD_Identifier.Since2014.class)
     public Identifier getProcessingLevel() {
         return processingLevel;
     }
@@ -731,7 +748,7 @@ public class AbstractIdentification extends ISOMetadata implements Identificatio
      * @since 0.5
      */
     @Override
-/// @XmlElement(name = "associatedResource")
+    // @XmlElement at the end of this class.
     public Collection<AssociatedResource> getAssociatedResources() {
         return associatedResources = nonNullCollection(associatedResources, AssociatedResource.class);
     }
@@ -759,6 +776,7 @@ public class AbstractIdentification extends ISOMetadata implements Identificatio
     @XmlElement(name = "aggregationInfo")
     @Dependencies("getAssociatedResources")
     public Collection<AggregateInformation> getAggregationInfo() {
+        if (!FilterByVersion.LEGACY_METADATA.accept()) return null;
         return new LegacyPropertyAdapter<AggregateInformation,AssociatedResource>(getAssociatedResources()) {
             @Override protected AssociatedResource wrap(final AggregateInformation value) {
                 return value;
@@ -784,5 +802,52 @@ public class AbstractIdentification extends ISOMetadata implements Identificatio
     @Deprecated
     public void setAggregationInfo(final Collection<? extends AggregateInformation> newValues) {
         setAssociatedResources(newValues);
+    }
+
+
+
+
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+    ////////                                                                                  ////////
+    ////////                               XML support with JAXB                              ////////
+    ////////                                                                                  ////////
+    ////////        The following methods are invoked by JAXB using reflection (even if       ////////
+    ////////        they are private) or are helpers for other methods invoked by JAXB.       ////////
+    ////////        Those methods can be safely removed if Geographic Markup Language         ////////
+    ////////        (GML) support is not needed.                                              ////////
+    ////////                                                                                  ////////
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Invoked by JAXB at both marshalling and unmarshalling time.
+     * This attribute has been added by ISO 19115:2014 standard.
+     * If (and only if) marshalling an older standard version, we omit this attribute.
+     *
+     * @todo Currently, the {@code XmlJavaTypeAdapter} used here just internally converts {@code Duration} objects
+     *       into {@code PeriodDuration} objects. Need to add support for {@code IntervalLength} in the future.
+     */
+    @XmlElement(name = "temporalResolution")
+    private Collection<Duration> getTemporalResolution() {
+        return FilterByVersion.CURRENT_METADATA.accept() ? getTemporalResolutions() : null;
+    }
+
+    @XmlElement(name = "topicCategory")
+    private Collection<TopicCategory> getTopicCategory()  {
+        return FilterByVersion.CURRENT_METADATA.accept() ? getTopicCategories() : null;
+    }
+
+    @XmlElement(name = "extent")
+    private Collection<Extent> getExtent() {
+        return FilterByVersion.CURRENT_METADATA.accept() ? getExtents() : null;
+    }
+
+    @XmlElement(name = "additionalDocumentation")
+    private Collection<Citation> getAdditionalDocumentation() {
+        return FilterByVersion.CURRENT_METADATA.accept() ? getAdditionalDocumentations() : null;
+    }
+
+    @XmlElement(name = "associatedResource")
+    private Collection<AssociatedResource> getAssociatedResource() {
+        return FilterByVersion.CURRENT_METADATA.accept() ? getAssociatedResources() : null;
     }
 }

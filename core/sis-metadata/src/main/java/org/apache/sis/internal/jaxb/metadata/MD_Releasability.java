@@ -105,7 +105,7 @@ public class MD_Releasability extends PropertyType<MD_Releasability, Releasabili
          *
          * @return a non-null value only if marshalling ISO 19115-3 or newer.
          */
-        @Override public MD_Releasability wrap(final Releasability value) {
+        @Override protected MD_Releasability wrap(final Releasability value) {
             return accept2014() ? super.wrap(value) : null;
         }
     }

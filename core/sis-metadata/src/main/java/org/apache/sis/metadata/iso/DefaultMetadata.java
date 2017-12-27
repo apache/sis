@@ -1556,7 +1556,6 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
     /**
      * Gets the default locale for this record (used in ISO 19115-3 format).
      */
-    @Dependencies("getLanguages")
     @XmlElement(name = "defaultLocale")
     private Locale getDefaultLocale() {
         return FilterByVersion.CURRENT_METADATA.accept() ? CollectionsExt.first(getLanguages()) : null;
@@ -1573,7 +1572,6 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
     /**
      * Gets the other locales for this record (used in ISO 19115-3 format).
      */
-    @Dependencies("getLanguages")
     @XmlElement(name = "otherLocale")
     private Collection<Locale> getOtherLocales() {
         return FilterByVersion.CURRENT_METADATA.accept() ? OtherLocales.filter(getLanguages()) : null;
