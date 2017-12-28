@@ -73,13 +73,10 @@ import org.apache.sis.internal.util.CollectionsExt;
  */
 @SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "MD_DataIdentification_Type", propOrder = {
-    // ISO 19115:2003 legacy
-    "language",
-    "characterSets",
-
-    // ISO 19115:2014
-    "defaultLocale",
-    "otherLocale",
+    "language",                 // Legacy ISO 19115:2003
+    "characterSets",            // Legacy ISO 19115:2003
+    "defaultLocale",            // New in ISO 19115:2014
+    "otherLocale",              // New in ISO 19115:2014
     "topicCategory",
     "environmentDescription",
     "extent",
@@ -344,6 +341,7 @@ public class DefaultDataIdentification extends AbstractIdentification implements
 
     /**
      * For JAXB marhalling of ISO 19115:2003 document only.
+     * For the more recent ISO 19115:2014, we inherit {@link #getExtents()} from the parent class instead.
      */
     @XmlElement(name = "extent", namespace = LegacyNamespaces.GMD)
     private Collection<Extent> getExtent() {
