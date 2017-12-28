@@ -20,11 +20,13 @@ import java.util.Collection;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.identification.Keywords;
 import org.opengis.metadata.identification.KeywordType;
 import org.opengis.metadata.identification.KeywordClass;
+import org.apache.sis.internal.jaxb.metadata.MD_KeywordClass;
 import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.util.iso.Types;
 
@@ -48,7 +50,8 @@ import org.apache.sis.util.iso.Types;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Touraïvane (IRD)
  * @author  Cédric Briançon (Geomatys)
- * @version 0.5
+ * @author  Cullen Rombach (Image Matters)
+ * @version 1.0
  * @since   0.3
  * @module
  */
@@ -56,7 +59,8 @@ import org.apache.sis.util.iso.Types;
 @XmlType(name = "MD_Keywords_Type", propOrder = {
     "keywords",
     "type",
-    "thesaurusName"
+    "thesaurusName",
+    "keywordClass"
 })
 @XmlRootElement(name = "MD_Keywords")
 public class DefaultKeywords extends ISOMetadata implements Keywords {
@@ -226,6 +230,8 @@ public class DefaultKeywords extends ISOMetadata implements Keywords {
      * @since 0.5
      */
     @Override
+    @XmlElement(name = "keywordClass")
+    @XmlJavaTypeAdapter(MD_KeywordClass.Since2014.class)
     public KeywordClass getKeywordClass() {
         return keywordClass;
     }

@@ -62,21 +62,26 @@
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Touraïvane (IRD)
  * @author  Cédric Briançon (Geomatys)
- * @version 0.5
+ * @author  Cullen Rombach (Image Matters)
+ * @version 1.0
  * @since   0.3
  * @module
  */
-@XmlSchema(location=Schemas.METADATA_XSD, elementFormDefault=XmlNsForm.QUALIFIED, namespace=Namespaces.GMD, xmlns = {
-    @XmlNs(prefix = "gmd", namespaceURI = Namespaces.GMD),
+@XmlSchema(location=Schemas.METADATA_XSD_MAINTENANCE, elementFormDefault=XmlNsForm.QUALIFIED, namespace=Namespaces.MMI, xmlns = {
+    @XmlNs(prefix = "mmi", namespaceURI = Namespaces.MMI),
+    @XmlNs(prefix = "mcc", namespaceURI = Namespaces.MCC),
+    @XmlNs(prefix = "gmw", namespaceURI = Namespaces.GMW),
     @XmlNs(prefix = "gco", namespaceURI = Namespaces.GCO),
     @XmlNs(prefix = "xsi", namespaceURI = Namespaces.XSI)
 })
 @XmlAccessorType(XmlAccessType.NONE)
 @XmlJavaTypeAdapters({
     @XmlJavaTypeAdapter(EX_Extent.class),
+    @XmlJavaTypeAdapter(CI_Date.class),
     @XmlJavaTypeAdapter(CI_Responsibility.class),
     @XmlJavaTypeAdapter(MD_MaintenanceFrequencyCode.class),
     @XmlJavaTypeAdapter(MD_MaintenanceInformation.class),
+    @XmlJavaTypeAdapter(MD_Scope.class),
     @XmlJavaTypeAdapter(MD_ScopeCode.class),
     @XmlJavaTypeAdapter(MD_ScopeDescription.class),
     @XmlJavaTypeAdapter(TM_PeriodDuration.class),

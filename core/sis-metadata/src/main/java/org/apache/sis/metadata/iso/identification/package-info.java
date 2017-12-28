@@ -95,13 +95,18 @@
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Touraïvane (IRD)
  * @author  Cédric Briançon (Geomatys)
- * @version 0.5
+ * @author  Cullen Rombach (Image Matters)
+ * @version 1.0
  * @since   0.3
  * @module
  */
-@XmlSchema(location=Schemas.METADATA_XSD, elementFormDefault=XmlNsForm.QUALIFIED, namespace=Namespaces.GMD, xmlns = {
-    @XmlNs(prefix = "gmd", namespaceURI = Namespaces.GMD),
+@XmlSchema(location=Schemas.METADATA_XSD_IDENTIFICATION, elementFormDefault=XmlNsForm.QUALIFIED, namespace=Namespaces.MRI, xmlns = {
+    @XmlNs(prefix = "mri", namespaceURI = Namespaces.MRI),
+    @XmlNs(prefix = "lan", namespaceURI = Namespaces.LAN),
+    @XmlNs(prefix = "mcc", namespaceURI = Namespaces.MCC),
+    @XmlNs(prefix = "cit", namespaceURI = Namespaces.CIT),
     @XmlNs(prefix = "gco", namespaceURI = Namespaces.GCO),
+    @XmlNs(prefix = "gmw", namespaceURI = Namespaces.GMW),
     @XmlNs(prefix = "srv", namespaceURI = Namespaces.SRV),
     @XmlNs(prefix = "xsi", namespaceURI = Namespaces.XSI)
 })
@@ -131,16 +136,17 @@
     @XmlJavaTypeAdapter(MD_StandardOrderProcess.class),
     @XmlJavaTypeAdapter(MD_TopicCategoryCode.class),
     @XmlJavaTypeAdapter(MD_Usage.class),
+    @XmlJavaTypeAdapter(PT_Locale.class),
     @XmlJavaTypeAdapter(SV_CoupledResource.class),
     @XmlJavaTypeAdapter(SV_CouplingType.class),
     @XmlJavaTypeAdapter(SV_OperationMetadata.class),
     @XmlJavaTypeAdapter(SV_OperationChainMetadata.class),
     @XmlJavaTypeAdapter(SV_Parameter.class),
     @XmlJavaTypeAdapter(SV_ParameterDirection.class),
+    @XmlJavaTypeAdapter(TM_Duration.class),
 
     // Java types, primitive types and basic OGC types handling
     @XmlJavaTypeAdapter(URIAdapter.class),
-    @XmlJavaTypeAdapter(LocaleAdapter.class),
     @XmlJavaTypeAdapter(StringAdapter.class),
     @XmlJavaTypeAdapter(InternationalStringAdapter.class),
     @XmlJavaTypeAdapter(GO_DateTime.class),
@@ -159,6 +165,6 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapters;
 import org.apache.sis.xml.Namespaces;
 import org.apache.sis.internal.jaxb.Schemas;
 import org.apache.sis.internal.jaxb.gco.*;
-import org.apache.sis.internal.jaxb.gmd.*;
+import org.apache.sis.internal.jaxb.gts.*;
 import org.apache.sis.internal.jaxb.code.*;
 import org.apache.sis.internal.jaxb.metadata.*;

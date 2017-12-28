@@ -149,7 +149,6 @@ public class DefaultScopeDescription extends ISOMetadata implements ScopeDescrip
      *
      * @see #castOrCopy(ScopeDescription)
      */
-    @SuppressWarnings("unchecked")
     public DefaultScopeDescription(final ScopeDescription object) {
         super(object);
         if (object != null) {

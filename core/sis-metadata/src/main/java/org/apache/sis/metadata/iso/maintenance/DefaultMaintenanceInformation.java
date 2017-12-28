@@ -37,6 +37,7 @@ import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.metadata.iso.citation.DefaultCitationDate;
 import org.apache.sis.internal.metadata.LegacyPropertyAdapter;
 import org.apache.sis.internal.metadata.Dependencies;
+import org.apache.sis.internal.jaxb.FilterByVersion;
 
 
 /**
@@ -60,17 +61,20 @@ import org.apache.sis.internal.metadata.Dependencies;
  * @author  Cédric Briançon (Geomatys)
  * @author  Guilhem Legal (Geomatys)
  * @author  Rémi Maréchal (Geomatys)
- * @version 0.5
+ * @author  Cullen Rombach (Image Matters)
+ * @version 1.0
  * @since   0.3
  * @module
  */
 @SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "MD_MaintenanceInformation_Type", propOrder = {
     "maintenanceAndUpdateFrequency",
-    "dateOfNextUpdate",
+    "maintenanceDate",                          // New in ISO 19115:2014
+    "dateOfNextUpdate",                         // Legacy ISO 19115:2003
     "userDefinedMaintenanceFrequency",
-    "updateScopes",
-    "updateScopeDescriptions",
+    "maintenanceScope",                         // New in ISO 19115:2014 - contains information from the two below
+    "updateScopes",                             // Legacy ISO 19115:2003
+    "updateScopeDescriptions",                  // Legacy ISO 19115:2003
     "maintenanceNotes",
     "contacts"
 })
@@ -206,7 +210,7 @@ public class DefaultMaintenanceInformation extends ISOMetadata implements Mainte
      * @since 0.5
      */
     @Override
-/// @XmlElement(name = "maintenanceDate", required = true)
+    // @XmlElement at the end of this class.
     public Collection<CitationDate> getMaintenanceDates() {
         return maintenanceDates = nonNullCollection(maintenanceDates, CitationDate.class);
     }
@@ -237,11 +241,13 @@ public class DefaultMaintenanceInformation extends ISOMetadata implements Mainte
     @XmlElement(name = "dateOfNextUpdate")
     @Dependencies("getMaintenanceDates")
     public Date getDateOfNextUpdate() {
-        final Collection<CitationDate> dates = getMaintenanceDates();
-        if (dates != null) {                                                    // May be null on XML marshalling.
-            for (final CitationDate date : dates) {
-                if (DateType.NEXT_UPDATE.equals(date.getDateType())) {
-                    return date.getDate();
+        if (FilterByVersion.LEGACY_METADATA.accept()) {
+            final Collection<CitationDate> dates = getMaintenanceDates();
+            if (dates != null) {                                                    // May be null on XML marshalling.
+                for (final CitationDate date : dates) {
+                    if (DateType.NEXT_UPDATE.equals(date.getDateType())) {
+                        return date.getDate();
+                    }
                 }
             }
         }
@@ -313,7 +319,7 @@ public class DefaultMaintenanceInformation extends ISOMetadata implements Mainte
      * @since 0.5
      */
     @Override
-/// @XmlElement(name = "maintenanceScope")
+    // @XmlElement at the end of this class.
     public Collection<Scope> getMaintenanceScopes() {
         return maintenanceScopes = nonNullCollection(maintenanceScopes, Scope.class);
     }
@@ -344,6 +350,7 @@ public class DefaultMaintenanceInformation extends ISOMetadata implements Mainte
     @XmlElement(name = "updateScope")
     @Dependencies("getMaintenanceScopes")
     public final Collection<ScopeCode> getUpdateScopes() {
+        if (!FilterByVersion.LEGACY_METADATA.accept()) return null;
         return new LegacyPropertyAdapter<ScopeCode,Scope>(getMaintenanceScopes()) {
             /** Stores a legacy value into the new kind of value. */
             @Override protected Scope wrap(final ScopeCode value) {
@@ -395,6 +402,7 @@ public class DefaultMaintenanceInformation extends ISOMetadata implements Mainte
     @XmlElement(name = "updateScopeDescription")
     @Dependencies("getMaintenanceScopes")
     public final Collection<ScopeDescription> getUpdateScopeDescriptions() {
+        if (!FilterByVersion.LEGACY_METADATA.accept()) return null;
         return new LegacyPropertyAdapter<ScopeDescription,Scope>(getMaintenanceScopes()) {
             /** Stores a legacy value into the new kind of value. */
             @Override protected Scope wrap(final ScopeDescription value) {
@@ -476,5 +484,34 @@ public class DefaultMaintenanceInformation extends ISOMetadata implements Mainte
      */
     public void setContacts(final Collection<? extends Responsibility> newValues) {
         contacts = writeCollection(newValues, contacts, Responsibility.class);
+    }
+
+
+
+
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+    ////////                                                                                  ////////
+    ////////                               XML support with JAXB                              ////////
+    ////////                                                                                  ////////
+    ////////        The following methods are invoked by JAXB using reflection (even if       ////////
+    ////////        they are private) or are helpers for other methods invoked by JAXB.       ////////
+    ////////        Those methods can be safely removed if Geographic Markup Language         ////////
+    ////////        (GML) support is not needed.                                              ////////
+    ////////                                                                                  ////////
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Invoked by JAXB at both marshalling and unmarshalling time.
+     * This attribute has been added by ISO 19115:2014 standard.
+     * If (and only if) marshalling an older standard version, we omit this attribute.
+     */
+    @XmlElement(name = "maintenanceDate", required = true)
+    private Collection<CitationDate> getMaintenanceDate() {
+        return FilterByVersion.CURRENT_METADATA.accept() ? getMaintenanceDates() : null;
+    }
+
+    @XmlElement(name = "maintenanceScope")
+    private Collection<Scope> getMaintenanceScope() {
+        return FilterByVersion.CURRENT_METADATA.accept() ? getMaintenanceScopes() : null;
     }
 }
