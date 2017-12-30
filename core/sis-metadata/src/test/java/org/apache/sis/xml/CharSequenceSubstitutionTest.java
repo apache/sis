@@ -35,7 +35,8 @@ import static org.apache.sis.test.Assert.*;
  * Tests the XML marshalling of {@code Anchor} and {@code CodeList} as substitution of {@code <gco:CharacterSequence>}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.7
+ * @author  Cullen Rombach (Image Matters)
+ * @version 1.0
  * @since   0.3
  * @module
  */
@@ -50,12 +51,12 @@ public final strictfp class CharSequenceSubstitutionTest extends XMLTestCase {
     @DependsOnMethod("testAnchor")
     public void testAnchorForString() throws JAXBException {
         final String expected =
-                "<gmd:RS_Identifier xmlns:gmx=\""   + Namespaces.GMX   + '"' +
+                "<gmd:RS_Identifier xmlns:gcx=\""   + Namespaces.GCX   + '"' +
                                   " xmlns:gmd=\""   + Namespaces.GMD   + '"' +
                                   " xmlns:gco=\""   + Namespaces.GCO   + '"' +
                                   " xmlns:xlink=\"" + Namespaces.XLINK + "\">\n" +
                 "  <gmd:code>\n" +
-                "    <gmx:Anchor xlink:href=\"SDN:L101:2:4326\">EPSG:4326</gmx:Anchor>\n" +
+                "    <gcx:Anchor xlink:href=\"SDN:L101:2:4326\">EPSG:4326</gcx:Anchor>\n" +
                 "  </gmd:code>\n" +
                 "  <gmd:codeSpace>\n" +
                 "    <gco:CharacterString>L101</gco:CharacterString>\n" +
@@ -76,7 +77,7 @@ public final strictfp class CharSequenceSubstitutionTest extends XMLTestCase {
     @Test
     public void testAnchor() throws JAXBException {
         final String expected =
-                "<gmd:CI_Address xmlns:gmx=\""   + Namespaces.GMX   + '"' +
+                "<gmd:CI_Address xmlns:gcx=\""   + Namespaces.GCX   + '"' +
                                " xmlns:gmd=\""   + Namespaces.GMD   + '"' +
                                " xmlns:gco=\""   + Namespaces.GCO   + '"' +
                                " xmlns:xlink=\"" + Namespaces.XLINK + "\">\n" +
@@ -90,7 +91,7 @@ public final strictfp class CharSequenceSubstitutionTest extends XMLTestCase {
                 "    <gco:CharacterString>29280</gco:CharacterString>\n" +
                 "  </gmd:postalCode>\n" +
                 "  <gmd:country>\n" +
-                "    <gmx:Anchor xlink:href=\"SDN:C320:2:FR\">France</gmx:Anchor>\n" +
+                "    <gcx:Anchor xlink:href=\"SDN:C320:2:FR\">France</gcx:Anchor>\n" +
                 "  </gmd:country>\n" +
                 "  <gmd:electronicMailAddress>\n" +
                 "    <gco:CharacterString>(hiden)@ifremer.fr</gco:CharacterString>\n" +

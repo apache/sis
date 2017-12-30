@@ -36,7 +36,8 @@ public final class LegacyNamespaces {
      * @deprecated to be replaced by {@code VERSION_1_0}, which is the version declared in XML schemas.
      */
     @Deprecated
-    public static final Version ISO_19115_3 = new Version("2014");
+    public static final Version ISO_19115_3 = new Version("2014"),
+                                ISO_19139   = new Version("2003");
 
     /**
      * Miscellaneous version constants.

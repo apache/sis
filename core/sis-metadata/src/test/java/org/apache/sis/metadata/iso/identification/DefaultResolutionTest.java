@@ -132,7 +132,7 @@ public final strictfp class DefaultResolutionTest extends TestCase {
                 "<gmd:MD_Resolution xmlns:gmd=\"" + Namespaces.GMD + '"' +
                                   " xmlns:gco=\"" + Namespaces.GCO + "\">\n" +
                 "  <gmd:distance>\n" +
-                "    <gco:Distance uom=\"" + Schemas.METADATA_ROOT + Schemas.UOM_PATH + "#xpointer(//*[@gml:id='m'])\">1000.0</gco:Distance>\n" +
+                "    <gco:Distance uom=\"" + Schemas.METADATA_ROOT_OLD + Schemas.UOM_PATH + "#xpointer(//*[@gml:id='m'])\">1000.0</gco:Distance>\n" +
                 "  </gmd:distance>\n" +
                 "</gmd:MD_Resolution>", xml, "xmlns:*");
         /*
