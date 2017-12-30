@@ -39,13 +39,14 @@ import static java.util.Collections.singletonMap;
  * Tests {@link DefaultBrowseGraphic}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.4
+ * @author  Cullen Rombach (Image Matters)
+ * @version 1.0
  * @since   0.4
  * @module
  */
 public final strictfp class DefaultBrowseGraphicTest extends TestCase {
     /**
-     * Tests XML marshalling of {@code <gmx:MimeFileType>} inside {@code <gmd:MD_BrowseGraphic>}.
+     * Tests XML marshalling of {@code <gcx:MimeFileType>} inside {@code <gmd:MD_BrowseGraphic>}.
      *
      * @throws JAXBException if an error occurred while (un)marshalling the {@code BrowseGraphic}.
      */
@@ -56,9 +57,9 @@ public final strictfp class DefaultBrowseGraphicTest extends TestCase {
         final String xml = XML.marshal(browse);
         assertXmlEquals(
                 "<gmd:MD_BrowseGraphic xmlns:gmd=\"" + Namespaces.GMD + '"' +
-                                     " xmlns:gmx=\"" + Namespaces.GMX + "\">\n" +
+                                     " xmlns:gcx=\"" + Namespaces.GCX + "\">\n" +
                 "  <gmd:fileType>\n" +
-                "    <gmx:MimeFileType type=\"image/tiff\">image/tiff</gmx:MimeFileType>\n" +
+                "    <gcx:MimeFileType type=\"image/tiff\">image/tiff</gcx:MimeFileType>\n" +
                 "  </gmd:fileType>\n" +
                 "</gmd:MD_BrowseGraphic>", xml, "xmlns:*");
         /*
@@ -68,7 +69,7 @@ public final strictfp class DefaultBrowseGraphicTest extends TestCase {
     }
 
     /**
-     * Tests XML marshalling of {@code <gmx:FileName>} inside {@code <gmd:MD_BrowseGraphic>}.
+     * Tests XML marshalling of {@code <gcx:FileName>} inside {@code <gmd:MD_BrowseGraphic>}.
      *
      * @throws JAXBException if an error occurred while (un)marshalling the {@code BrowseGraphic}.
      */
@@ -79,9 +80,9 @@ public final strictfp class DefaultBrowseGraphicTest extends TestCase {
         final String xml = XML.marshal(browse);
         assertXmlEquals(
                 "<gmd:MD_BrowseGraphic xmlns:gmd=\"" + Namespaces.GMD + '"' +
-                                     " xmlns:gmx=\"" + Namespaces.GMX + "\">\n" +
+                                     " xmlns:gcx=\"" + Namespaces.GCX + "\">\n" +
                 "  <gmd:fileName>\n" +
-                "    <gmx:FileName src=\"file:/catalog/image.png\">image.png</gmx:FileName>\n" +
+                "    <gcx:FileName src=\"file:/catalog/image.png\">image.png</gcx:FileName>\n" +
                 "  </gmd:fileName>\n" +
                 "</gmd:MD_BrowseGraphic>", xml, "xmlns:*");
         /*
@@ -91,7 +92,7 @@ public final strictfp class DefaultBrowseGraphicTest extends TestCase {
     }
 
     /**
-     * Tests unmarshalling of {@code <gmx:FileName>} without {@code src} attribute.
+     * Tests unmarshalling of {@code <gcx:FileName>} without {@code src} attribute.
      *
      * @throws JAXBException if an error occurred while (un)marshalling the {@code BrowseGraphic}.
      */
@@ -100,9 +101,9 @@ public final strictfp class DefaultBrowseGraphicTest extends TestCase {
     public void testFileNameWithoutSrc() throws JAXBException {
         final DefaultBrowseGraphic browse = (DefaultBrowseGraphic) XML.unmarshal(
                 "<gmd:MD_BrowseGraphic xmlns:gmd=\"" + Namespaces.GMD + '"' +
-                                     " xmlns:gmx=\"" + Namespaces.GMX + "\">\n" +
+                                     " xmlns:gcx=\"" + Namespaces.GCX + "\">\n" +
                 "  <gmd:fileName>\n" +
-                "    <gmx:FileName>file:/catalog/image.png</gmx:FileName>\n" +
+                "    <gcx:FileName>file:/catalog/image.png</gcx:FileName>\n" +
                 "  </gmd:fileName>\n" +
                 "</gmd:MD_BrowseGraphic>");
 
@@ -110,7 +111,7 @@ public final strictfp class DefaultBrowseGraphicTest extends TestCase {
     }
 
     /**
-     * Tests XML marshalling of {@code <gmx:FileName>} and {@code <gmx:MimeFileType>} together.
+     * Tests XML marshalling of {@code <gcx:FileName>} and {@code <gcx:MimeFileType>} together.
      *
      * @throws JAXBException if an error occurred while (un)marshalling the {@code BrowseGraphic}.
      */
@@ -123,12 +124,12 @@ public final strictfp class DefaultBrowseGraphicTest extends TestCase {
         final String xml = XML.marshal(browse);
         assertXmlEquals(
                 "<gmd:MD_BrowseGraphic xmlns:gmd=\"" + Namespaces.GMD + '"' +
-                                     " xmlns:gmx=\"" + Namespaces.GMX + "\">\n" +
+                                     " xmlns:gcx=\"" + Namespaces.GCX + "\">\n" +
                 "  <gmd:fileName>\n" +
-                "    <gmx:FileName src=\"file:/catalog/image.png\">image.png</gmx:FileName>\n" +
+                "    <gcx:FileName src=\"file:/catalog/image.png\">image.png</gcx:FileName>\n" +
                 "  </gmd:fileName>\n" +
                 "  <gmd:fileType>\n" +
-                "    <gmx:MimeFileType type=\"image/tiff\">image/tiff</gmx:MimeFileType>\n" +
+                "    <gcx:MimeFileType type=\"image/tiff\">image/tiff</gcx:MimeFileType>\n" +
                 "  </gmd:fileType>\n" +
                 "</gmd:MD_BrowseGraphic>", xml, "xmlns:*");
         /*
@@ -170,7 +171,7 @@ public final strictfp class DefaultBrowseGraphicTest extends TestCase {
     }
 
     /**
-     * Tests the unmarshaller with the same URI in both {@code <gco:CharacterString>} and {@code <gmx:FileName>}.
+     * Tests the unmarshaller with the same URI in both {@code <gco:CharacterString>} and {@code <gcx:FileName>}.
      * Since the URI is the same, the unmarshaller should not produce any warning since there is no ambiguity.
      *
      * @throws JAXBException if an error occurred while (un)marshalling the {@code BrowseGraphic}.
@@ -181,10 +182,10 @@ public final strictfp class DefaultBrowseGraphicTest extends TestCase {
         final Warning listener = new Warning();
         final DefaultBrowseGraphic browse = listener.unmarshal(
                 "<gmd:MD_BrowseGraphic xmlns:gmd=\"" + Namespaces.GMD + '"' +
-                                     " xmlns:gmx=\"" + Namespaces.GMX + '"' +
+                                     " xmlns:gcx=\"" + Namespaces.GCX + '"' +
                                      " xmlns:gco=\"" + Namespaces.GCO + "\">\n" +
                 "  <gmd:fileName>\n" +
-                "    <gmx:FileName src=\"file:/catalog/image.png\">image.png</gmx:FileName>\n" +
+                "    <gcx:FileName src=\"file:/catalog/image.png\">image.png</gcx:FileName>\n" +
                 "    <gco:CharacterString>file:/catalog/image.png</gco:CharacterString>\n" +
                 "  </gmd:fileName>\n" +
                 "</gmd:MD_BrowseGraphic>");
@@ -195,21 +196,21 @@ public final strictfp class DefaultBrowseGraphicTest extends TestCase {
 
     /**
      * Ensures that the unmarshaller produces a warning when {@code <gco:CharacterString>} and
-     * {@code <gmx:FileName>} both exist inside the same {@code <gmd:MD_BrowseGraphic>}.
+     * {@code <gcx:FileName>} both exist inside the same {@code <gmd:MD_BrowseGraphic>}.
      *
      * @throws JAXBException if an error occurred while (un)marshalling the {@code BrowseGraphic}.
      */
     @Test
     @DependsOnMethod("testStringSubstitution")
     public void testWarnings() throws JAXBException {
-        testWarnings("<gmx:FileName src=\"file:/catalog/image.png\">image.png</gmx:FileName>",
+        testWarnings("<gcx:FileName src=\"file:/catalog/image.png\">image.png</gcx:FileName>",
                      "<gco:CharacterString>file:/catalog/image2.png</gco:CharacterString>");
         /*
          * Test again with the same element value, but in reverse order.
          * We do that for ensuring that FileName still has precedence.
          */
         testWarnings("<gco:CharacterString>file:/catalog/image2.png</gco:CharacterString>",
-                     "<gmx:FileName src=\"file:/catalog/image.png\">image.png</gmx:FileName>");
+                     "<gcx:FileName src=\"file:/catalog/image.png\">image.png</gcx:FileName>");
     }
 
     /**
@@ -219,7 +220,7 @@ public final strictfp class DefaultBrowseGraphicTest extends TestCase {
         final Warning listener = new Warning();
         final DefaultBrowseGraphic browse = listener.unmarshal(
                 "<gmd:MD_BrowseGraphic xmlns:gmd=\"" + Namespaces.GMD + '"' +
-                                     " xmlns:gmx=\"" + Namespaces.GMX + '"' +
+                                     " xmlns:gcx=\"" + Namespaces.GCX + '"' +
                                      " xmlns:gco=\"" + Namespaces.GCO + "\">\n" +
                 "  <gmd:fileName>\n" +
                 "    " + first + "\n" +

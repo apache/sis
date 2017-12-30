@@ -119,9 +119,9 @@ public final strictfp class DefaultMetadataTest extends XMLTestCase implements W
     @Test
     public void testEmptyCollection() throws JAXBException {
         final DefaultMetadata metadata = unmarshal(
-                "<gmd:MD_Metadata xmlns:gmd=\"" + Namespaces.GMD + "\">\n" +
-                "  <gmd:contact/>\n" +
-                "</gmd:MD_Metadata>");
+                "<mdb:MD_Metadata xmlns:mdb=\"" + Namespaces.MDB + "\">\n" +
+                "  <mdb:contact/>\n" +
+                "</mdb:MD_Metadata>");
         /*
          * Verify metadata property.
          */

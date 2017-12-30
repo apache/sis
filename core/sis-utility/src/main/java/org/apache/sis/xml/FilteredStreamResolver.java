@@ -135,8 +135,6 @@ final class FilteredStreamResolver extends FilteredStreamReader {
     /**
      * The mapping from attribute names to types where such attribute is declared.
      * An attribute of the same name may be declared in many types.
-     *
-     * @see #declaringTypes(String)
      */
     private static final Map<String, Set<String>> DECLARING_TYPES;
     static {
@@ -169,8 +167,6 @@ final class FilteredStreamResolver extends FilteredStreamReader {
      *   <li>key:   old element name</li>
      *   <li>value: new element name</li>
      * </ul>
-     *
-     * @see #newName(String)
      */
     private static final Map<String,String> NAME_CHANGES = Collections.singletonMap("URL", "CharacterString");
 
