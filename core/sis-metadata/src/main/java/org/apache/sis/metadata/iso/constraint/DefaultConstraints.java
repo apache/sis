@@ -61,7 +61,7 @@ import org.apache.sis.util.iso.Types;
  */
 @SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "MD_Constraints_Type", propOrder = {
-    "useLimitation",
+    "useLimitations",
     "constraintApplicationScope",
     "graphic",
     "reference",
