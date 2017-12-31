@@ -100,6 +100,7 @@
     @XmlJavaTypeAdapter(CI_Citation.class),
     @XmlJavaTypeAdapter(MD_AttributeGroup.class),
     @XmlJavaTypeAdapter(MD_CoverageContentTypeCode.class),
+    @XmlJavaTypeAdapter(MD_FeatureTypeInfo.class),
     @XmlJavaTypeAdapter(MD_Identifier.class),
     @XmlJavaTypeAdapter(MD_ImagingConditionCode.class),
     @XmlJavaTypeAdapter(MD_RangeDimension.class),

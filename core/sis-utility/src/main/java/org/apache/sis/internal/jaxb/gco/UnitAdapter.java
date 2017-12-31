@@ -19,6 +19,7 @@ package org.apache.sis.internal.jaxb.gco;
 import javax.measure.Unit;
 import javax.xml.bind.annotation.adapters.XmlAdapter;
 import org.apache.sis.internal.jaxb.Context;
+import org.apache.sis.internal.jaxb.FilterByVersion;
 import org.apache.sis.internal.jaxb.gml.Measure;
 
 
@@ -27,7 +28,7 @@ import org.apache.sis.internal.jaxb.gml.Measure;
  *
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  *
  * @see Measure
  *
@@ -76,6 +77,25 @@ public class UnitAdapter extends XmlAdapter<String, Unit<?>> {
         @Override
         public String marshal(final Unit<?> value) {
             return Measure.getUOM(value, false, true);
+        }
+    }
+
+    /**
+     * Wraps the value only if marshalling ISO 19115-3 element.
+     * Otherwise (i.e. if marshalling a legacy ISO 19139:2007 document), omit the element.
+     */
+    public static final class Since2014 extends UnitAdapter {
+        /** Empty constructor used only by JAXB. */
+        private Since2014() {
+        }
+
+        /**
+         * Wraps the given value in an ISO 19115-3 element, unless we are marshalling an older document.
+         *
+         * @return a non-null value only if marshalling ISO 19115-3 or newer.
+         */
+        @Override public String marshal(final Unit<?> value) {
+            return FilterByVersion.CURRENT_METADATA.accept() ? super.marshal(value) : null;
         }
     }
 }

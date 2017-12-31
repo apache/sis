@@ -45,11 +45,11 @@ import org.apache.sis.util.iso.SimpleInternationalString;
  * @since   0.3
  * @module
  */
-public final class TM_PeriodDuration extends PropertyType<TM_PeriodDuration, PeriodDuration> {
+public class TM_PeriodDuration extends PropertyType<TM_PeriodDuration, PeriodDuration> {
     /**
      * Empty constructor for JAXB.
      */
-    public TM_PeriodDuration() {
+    TM_PeriodDuration() {
     }
 
     /**
@@ -78,7 +78,7 @@ public final class TM_PeriodDuration extends PropertyType<TM_PeriodDuration, Per
      * @return {@code PeriodDuration.class}
      */
     @Override
-    protected Class<PeriodDuration> getBoundType() {
+    protected final Class<PeriodDuration> getBoundType() {
         return PeriodDuration.class;
     }
 
@@ -89,7 +89,7 @@ public final class TM_PeriodDuration extends PropertyType<TM_PeriodDuration, Per
      * @return the time period, or {@code null}.
      */
     @XmlElement(name = "TM_PeriodDuration")
-    public Duration getElement() {
+    public final Duration getElement() {
         return toXML(metadata);
     }
 
@@ -142,7 +142,7 @@ public final class TM_PeriodDuration extends PropertyType<TM_PeriodDuration, Per
      *
      * @param  duration  the adapter to set.
      */
-    public void setElement(final Duration duration) {
+    public final void setElement(final Duration duration) {
         metadata = toISO(duration);
     }
 
@@ -194,6 +194,25 @@ public final class TM_PeriodDuration extends PropertyType<TM_PeriodDuration, Per
     private static void warningOccured(final String methodName, final Exception e) {
         if (TemporalUtilities.REPORT_MISSING_MODULE || !e.getMessage().contains("sis-temporal")) {
             Context.warningOccured(Context.current(), TM_PeriodDuration.class, methodName, e, true);
+        }
+    }
+
+    /**
+     * Wraps the value only if marshalling ISO 19115-3 element.
+     * Otherwise (i.e. if marshalling a legacy ISO 19139:2007 document), omit the element.
+     */
+    public static final class Since2014 extends TM_PeriodDuration {
+        /** Empty constructor used only by JAXB. */
+        private Since2014() {
+        }
+
+        /**
+         * Wraps the given value in an ISO 19115-3 element, unless we are marshalling an older document.
+         *
+         * @return a non-null value only if marshalling ISO 19115-3 or newer.
+         */
+        @Override protected TM_PeriodDuration wrap(final PeriodDuration value) {
+            return accept2014() ? super.wrap(value) : null;
         }
     }
 }

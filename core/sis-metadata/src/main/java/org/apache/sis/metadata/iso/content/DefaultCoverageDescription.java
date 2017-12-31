@@ -31,7 +31,6 @@ import org.opengis.metadata.content.ImageDescription;
 import org.opengis.metadata.content.RangeDimension;
 import org.opengis.metadata.content.RangeElementDescription;
 import org.opengis.util.RecordType;
-import org.apache.sis.xml.Namespaces;
 import org.apache.sis.internal.metadata.Dependencies;
 import org.apache.sis.internal.metadata.LegacyPropertyAdapter;
 import org.apache.sis.internal.jaxb.FilterByVersion;
@@ -358,7 +357,7 @@ public class DefaultCoverageDescription extends AbstractContentInformation imple
      * @return description of the specific range elements of a coverage.
      */
     @Override
-    @XmlElement(name = "rangeElementDescription", namespace = Namespaces.GMI)
+    @XmlElement(name = "rangeElementDescription")
     public Collection<RangeElementDescription> getRangeElementDescriptions() {
         return rangeElementDescriptions = nonNullCollection(rangeElementDescriptions, RangeElementDescription.class);
     }

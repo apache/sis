@@ -22,12 +22,14 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlSeeAlso;
 import javax.xml.bind.annotation.XmlType;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import org.opengis.metadata.content.Band;
 import org.opengis.metadata.content.BandDefinition;
 import org.opengis.metadata.content.PolarizationOrientation;
 import org.opengis.metadata.content.TransferFunctionType;
-import org.apache.sis.xml.Namespaces;
 import org.apache.sis.measure.ValueRange;
+import org.apache.sis.internal.jaxb.gco.GO_Real;
+import org.apache.sis.internal.jaxb.gco.UnitAdapter;
 
 import static org.apache.sis.internal.metadata.MetadataUtilities.ensurePositive;
 
@@ -53,12 +55,16 @@ import static org.apache.sis.internal.metadata.MetadataUtilities.ensurePositive;
  * @author  Touraïvane (IRD)
  * @author  Cédric Briançon (Geomatys)
  * @author  Rémi Maréchal (Geomatys)
- * @version 0.5
+ * @author  Cullen Rombach (Image Matters)
+ * @version 1.0
  * @since   0.3
  * @module
  */
 @SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "MD_Band_Type", propOrder = {
+    "boundMax",
+    "boundMin",
+    "boundUnits",
     "peakResponse",
     "bitsPerValue",
     "toneGradation",
@@ -190,7 +196,8 @@ public class DefaultBand extends DefaultSampleDimension implements Band {
      */
     @Override
     @ValueRange(minimum = 0)
-/// @XmlElement(name = "boundMin")
+    @XmlElement(name = "boundMin")
+    @XmlJavaTypeAdapter(GO_Real.Since2014.class)
     public Double getBoundMin() {
         return boundMin;
     }
@@ -221,7 +228,8 @@ public class DefaultBand extends DefaultSampleDimension implements Band {
      */
     @Override
     @ValueRange(minimum = 0)
-/// @XmlElement(name = "boundMax")
+    @XmlElement(name = "boundMax")
+    @XmlJavaTypeAdapter(GO_Real.Since2014.class)
     public Double getBoundMax() {
         return boundMax;
     }
@@ -251,7 +259,8 @@ public class DefaultBand extends DefaultSampleDimension implements Band {
      * @see org.apache.sis.measure.Units#NANOMETRE
      */
     @Override
-/// @XmlElement(name = "boundUnits")
+    @XmlElement(name = "boundUnits")
+    @XmlJavaTypeAdapter(UnitAdapter.Since2014.class)
     public Unit<Length> getBoundUnits() {
         return boundUnits;
     }
@@ -274,7 +283,7 @@ public class DefaultBand extends DefaultSampleDimension implements Band {
      * @return criterion for defining maximum and minimum wavelengths, or {@code null}.
      */
     @Override
-    @XmlElement(name = "bandBoundaryDefinition", namespace = Namespaces.GMI)
+    @XmlElement(name = "bandBoundaryDefinition")
     public BandDefinition getBandBoundaryDefinition() {
         return bandBoundaryDefinition;
     }
@@ -396,7 +405,7 @@ public class DefaultBand extends DefaultSampleDimension implements Band {
      */
     @Override
     @ValueRange(minimum = 0, isMinIncluded = false)
-    @XmlElement(name = "nominalSpatialResolution", namespace = Namespaces.GMI)
+    @XmlElement(name = "nominalSpatialResolution")
     public Double getNominalSpatialResolution() {
         return super.getNominalSpatialResolution();
     }
@@ -413,7 +422,7 @@ public class DefaultBand extends DefaultSampleDimension implements Band {
      * {@inheritDoc}
      */
     @Override
-    @XmlElement(name = "transferFunctionType", namespace = Namespaces.GMI)
+    @XmlElement(name = "transferFunctionType")
     public TransferFunctionType getTransferFunctionType() {
         return super.getTransferFunctionType();
     }
@@ -432,7 +441,7 @@ public class DefaultBand extends DefaultSampleDimension implements Band {
      * @return polarization of the radiation transmitted, or {@code null}.
      */
     @Override
-    @XmlElement(name = "transmittedPolarization", namespace = Namespaces.GMI)
+    @XmlElement(name = "transmittedPolarization")
     public PolarizationOrientation getTransmittedPolarization() {
         return transmittedPolarization;
     }
@@ -453,7 +462,7 @@ public class DefaultBand extends DefaultSampleDimension implements Band {
      * @return polarization of the radiation detected, or {@code null}.
      */
     @Override
-    @XmlElement(name = "detectedPolarization", namespace = Namespaces.GMI)
+    @XmlElement(name = "detectedPolarization")
     public PolarizationOrientation getDetectedPolarization() {
         return detectedPolarization;
     }

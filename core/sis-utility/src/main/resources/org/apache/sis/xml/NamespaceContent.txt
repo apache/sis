@@ -514,6 +514,7 @@ http://standards.iso.org/iso/19115/-3/mrc/1.0
     contentType
   MD_Band
     <type>
+    bandBoundaryDefinition
     bitsPerValue
     description
     descriptor
@@ -547,6 +548,7 @@ http://standards.iso.org/iso/19115/-3/mrc/1.0
     <type>
     complianceCode
     featureCatalogueCitation
+    featureTypeInfo
     featureTypes
     includedWithDataset
     language
@@ -582,12 +584,17 @@ http://standards.iso.org/iso/19115/-3/mrc/1.0
   MD_SampleDimension
     <type>
     bitsPerValue
+    boundMax
+    boundMin
+    boundUnits
     description
     descriptor
+    detectedPolarization
     maxValue
     meanValue
     minValue
     name
+    nominalSpatialResolution
     numberOfValues
     offset
     otherProperty
@@ -595,10 +602,15 @@ http://standards.iso.org/iso/19115/-3/mrc/1.0
     scaleFactor
     sequenceIdentifier
     standardDeviation
+    transferFunctionType
+    transmittedPolarization
     units
   MI_Band
     bandBoundaryDefinition
     bitsPerValue
+    boundMax
+    boundMin
+    boundUnits
     description
     descriptor
     detectedPolarization
@@ -647,8 +659,10 @@ http://standards.iso.org/iso/19115/-3/mrc/1.0
 http://standards.iso.org/iso/19115/-3/mrd/1.0
   MD_DigitalTransferOptions
     <type>
+    distributionFormat
     offLine
     onLine
+    transferFrequency
     transferSize
     unitsOfDistribution
   MD_Distribution
@@ -773,8 +787,11 @@ http://standards.iso.org/iso/19115/-3/mri/1.0
     denominator
   MD_Resolution
     <type>
+    angularDistance
     distance
     equivalentScale
+    levelOfDetail
+    vertical
   MD_Usage
     <type>
     additionalDocumentation
@@ -1242,12 +1259,6 @@ http://www.isotc211.org/2005/gmi
   LI_Source
     processedLevel
     resolution
-  MD_Band
-    bandBoundaryDefinition
-    detectedPolarization
-    nominalSpatialResolution
-    transferFunctionType
-    transmittedPolarization
   MD_Georectified
     checkPoint
   MD_Georeferenceable
