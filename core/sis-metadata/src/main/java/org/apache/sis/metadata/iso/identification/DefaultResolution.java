@@ -25,6 +25,8 @@ import org.opengis.metadata.identification.RepresentativeFraction;
 import org.opengis.metadata.identification.Resolution;
 import org.apache.sis.internal.jaxb.Context;
 import org.apache.sis.internal.jaxb.gco.GO_Distance;
+import org.apache.sis.internal.jaxb.gco.GO_Real;
+import org.apache.sis.internal.jaxb.gco.InternationalStringAdapter;
 import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.measure.ValueRange;
 import org.apache.sis.util.resources.Messages;
@@ -63,7 +65,8 @@ import static org.apache.sis.internal.metadata.MetadataUtilities.ensurePositive;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Touraïvane (IRD)
  * @author  Cédric Briançon (Geomatys)
- * @version 0.6
+ * @author  Cullen Rombach (Image Matters)
+ * @version 1.0
  *
  * @see AbstractIdentification#getSpatialResolutions()
  *
@@ -291,6 +294,8 @@ public class DefaultResolution extends ISOMetadata implements Resolution {
      */
     @Override
     @ValueRange(minimum=0, isMinIncluded=false)
+    @XmlElement(name = "vertical")
+    @XmlJavaTypeAdapter(GO_Real.Since2014.class)
     public Double getVertical() {
         return (property == VERTICAL) ? (Double) value : null;
     }
@@ -322,6 +327,7 @@ public class DefaultResolution extends ISOMetadata implements Resolution {
      */
     @Override
     @ValueRange(minimum=0, isMinIncluded=false)
+    @XmlJavaTypeAdapter(GO_Real.Since2014.class)
     public Double getAngularDistance() {
         return (property == ANGULAR) ? (Double) value : null;
     }
@@ -352,6 +358,8 @@ public class DefaultResolution extends ISOMetadata implements Resolution {
      * @since 0.5
      */
     @Override
+    @XmlElement(name = "levelOfDetail")
+    @XmlJavaTypeAdapter(InternationalStringAdapter.Since2014.class)
     public InternationalString getLevelOfDetail() {
         return (property == TEXT) ? (InternationalString) value : null;
     }

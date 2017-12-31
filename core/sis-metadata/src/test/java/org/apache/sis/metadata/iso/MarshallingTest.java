@@ -412,9 +412,9 @@ public final class MarshallingTest extends XMLTestCase implements WarningListene
                 // Attribute description TODO: this doesn't work properly.
                 final DefaultRecordSchema schema = new DefaultRecordSchema(null, null, "MySchema");
                 final Map<CharSequence,Class<?>> members = new LinkedHashMap<>();
-                members.put("city",        String.class);
-                members.put("latitude",    Double.class);
-                members.put("longitude",   Double.class);
+                members.put("city",      String.class);
+                members.put("latitude",  Double.class);
+                members.put("longitude", Double.class);
                 final RecordType recordType = schema.createRecordType("MyRecordType", members);
                 coverageDescription.setAttributeDescription(recordType);
                 {
@@ -443,6 +443,8 @@ public final class MarshallingTest extends XMLTestCase implements WarningListene
             }
             // Feature Catalogue Description
             final DefaultFeatureCatalogueDescription featureCatalogueDescription = new DefaultFeatureCatalogueDescription();
+            featureCatalogueDescription.setIncludedWithDataset(true);
+            featureCatalogueDescription.setCompliant(true);
             md.setContentInfo(Arrays.asList(coverageDescription, featureCatalogueDescription));
         }
         return md;

@@ -25,6 +25,7 @@ import org.opengis.util.GenericName;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.content.FeatureCatalogueDescription;
 import org.opengis.metadata.content.FeatureTypeInfo;
+import org.apache.sis.internal.jaxb.FilterByVersion;
 import org.apache.sis.internal.metadata.Dependencies;
 import org.apache.sis.internal.metadata.LegacyPropertyAdapter;
 
@@ -51,7 +52,8 @@ import org.apache.sis.internal.metadata.LegacyPropertyAdapter;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Touraïvane (IRD)
  * @author  Cédric Briançon (Geomatys)
- * @version 0.5
+ * @author  Cullen Rombach (Image Matters)
+ * @version 1.0
  * @since   0.3
  * @module
  */
@@ -60,7 +62,8 @@ import org.apache.sis.internal.metadata.LegacyPropertyAdapter;
     "compliant",
     "languages",
     "includedWithDataset",
-    "featureTypes",
+    "featureTypesInfo",             // New in ISO 19115:2014. Actual name is "featureTypeInfo"
+    "featureTypes",                 // Legacy ISO 19115:2003
     "featureCatalogueCitations"
 })
 @XmlRootElement(name = "MD_FeatureCatalogueDescription")
@@ -222,6 +225,7 @@ public class DefaultFeatureCatalogueDescription extends AbstractContentInformati
      * @since 0.5
      */
     @Override
+    // @XmlElement at the end of this class.
     public Collection<FeatureTypeInfo> getFeatureTypeInfo() {
         return featureTypes = nonNullCollection(featureTypes, FeatureTypeInfo.class);
     }
@@ -249,6 +253,7 @@ public class DefaultFeatureCatalogueDescription extends AbstractContentInformati
     @XmlElement(name = "featureTypes")
     @Dependencies("getFeatureTypeInfo")
     public final Collection<GenericName> getFeatureTypes() {
+        if (!FilterByVersion.LEGACY_METADATA.accept()) return null;
         return new LegacyPropertyAdapter<GenericName,FeatureTypeInfo>(getFeatureTypeInfo()) {
             /** Stores a legacy value into the new kind of value. */
             @Override protected FeatureTypeInfo wrap(final GenericName value) {
@@ -302,5 +307,29 @@ public class DefaultFeatureCatalogueDescription extends AbstractContentInformati
      */
     public void setFeatureCatalogueCitations(final Collection<? extends Citation> newValues) {
         featureCatalogueCitations = writeCollection(newValues, featureCatalogueCitations, Citation.class);
+    }
+
+
+
+
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+    ////////                                                                                  ////////
+    ////////                               XML support with JAXB                              ////////
+    ////////                                                                                  ////////
+    ////////        The following methods are invoked by JAXB using reflection (even if       ////////
+    ////////        they are private) or are helpers for other methods invoked by JAXB.       ////////
+    ////////        Those methods can be safely removed if Geographic Markup Language         ////////
+    ////////        (GML) support is not needed.                                              ////////
+    ////////                                                                                  ////////
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Invoked by JAXB at both marshalling and unmarshalling time.
+     * This attribute has been added by ISO 19115:2014 standard.
+     * If (and only if) marshalling an older standard version, we omit this attribute.
+     */
+    @XmlElement(name = "featureTypeInfo")
+    private Collection<FeatureTypeInfo> getFeatureTypesInfo() {
+        return FilterByVersion.CURRENT_METADATA.accept() ? getFeatureTypeInfo() : null;
     }
 }

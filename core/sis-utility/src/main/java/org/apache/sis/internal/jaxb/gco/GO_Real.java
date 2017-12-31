@@ -74,7 +74,7 @@ public class GO_Real extends PropertyType<GO_Real, Double> {
      *         by {@code <gco:Real>} element.
      */
     @Override
-    public GO_Real wrap(final Double value) {
+    protected GO_Real wrap(final Double value) {
         return new GO_Real(value);
     }
 
@@ -112,7 +112,7 @@ public class GO_Real extends PropertyType<GO_Real, Double> {
          *
          * @return a non-null value only if marshalling ISO 19115-3 or newer.
          */
-        @Override public GO_Real wrap(final Double value) {
+        @Override protected GO_Real wrap(final Double value) {
             return accept2014() ? super.wrap(value) : null;
         }
     }
