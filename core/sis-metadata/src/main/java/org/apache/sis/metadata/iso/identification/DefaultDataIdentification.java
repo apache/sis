@@ -76,7 +76,7 @@ import org.apache.sis.internal.util.CollectionsExt;
     "language",                 // Legacy ISO 19115:2003
     "characterSets",            // Legacy ISO 19115:2003
     "defaultLocale",            // New in ISO 19115:2014
-    "otherLocale",              // New in ISO 19115:2014
+    "otherLocales",             // New in ISO 19115:2014
     "topicCategory",
     "environmentDescription",
     "extent",

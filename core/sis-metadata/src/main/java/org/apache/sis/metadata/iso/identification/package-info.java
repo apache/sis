@@ -120,6 +120,7 @@
     @XmlJavaTypeAdapter(DS_InitiativeTypeCode.class),
     @XmlJavaTypeAdapter(EX_Extent.class),
     @XmlJavaTypeAdapter(MD_AggregateInformation.class),
+    @XmlJavaTypeAdapter(MD_AssociatedResource.class),
     @XmlJavaTypeAdapter(MD_BrowseGraphic.class),
     @XmlJavaTypeAdapter(MD_CharacterSetCode.class),
     @XmlJavaTypeAdapter(MD_Constraints.class),
