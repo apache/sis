@@ -31,6 +31,7 @@ import org.opengis.metadata.citation.Role;
 import org.opengis.metadata.citation.Responsibility;
 import org.opengis.metadata.citation.PresentationForm;
 import org.apache.sis.internal.util.CollectionsExt;
+import org.apache.sis.internal.jaxb.LegacyNamespaces;
 import org.apache.sis.xml.IdentifierMap;
 import org.apache.sis.xml.IdentifierSpace;
 import org.apache.sis.metadata.iso.extent.Extents;
@@ -192,7 +193,7 @@ public final strictfp class DefaultCitationTest extends XMLTestCase {
                 new DefaultResponsibility(Role.FUNDER,     null, new DefaultIndividual("Robin Hood",  null, contact))
         ));
         c.getDates().add(new DefaultCitationDate(TestUtilities.date("2015-10-17 00:00:00"), DateType.ADOPTED));
-        assertMarshalEqualsFile(XML_FILE, c, "xlmns:*", "xsi:schemaLocation");
+        assertMarshalEqualsFile(XML_FILE, c, LegacyNamespaces.ISO_19139, "xlmns:*", "xsi:schemaLocation");
     }
 
     /**
