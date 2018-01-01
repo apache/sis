@@ -39,7 +39,7 @@ public class MD_Identifier extends PropertyType<MD_Identifier, Identifier> {
     /**
      * Empty constructor for JAXB only.
      */
-    MD_Identifier() {
+    public MD_Identifier() {
     }
 
     /**
@@ -110,7 +110,7 @@ public class MD_Identifier extends PropertyType<MD_Identifier, Identifier> {
      */
     public static final class Since2014 extends MD_Identifier {
         /** Empty constructor used only by JAXB. */
-        private Since2014() {
+        public Since2014() {
         }
 
         /**

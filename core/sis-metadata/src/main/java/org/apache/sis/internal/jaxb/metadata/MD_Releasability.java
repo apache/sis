@@ -36,7 +36,7 @@ public class MD_Releasability extends PropertyType<MD_Releasability, Releasabili
     /**
      * Empty constructor for JAXB only.
      */
-    MD_Releasability() {
+    public MD_Releasability() {
     }
 
     /**
@@ -97,7 +97,7 @@ public class MD_Releasability extends PropertyType<MD_Releasability, Releasabili
      */
     public static final class Since2014 extends MD_Releasability {
         /** Empty constructor used only by JAXB. */
-        private Since2014() {
+        public Since2014() {
         }
 
         /**

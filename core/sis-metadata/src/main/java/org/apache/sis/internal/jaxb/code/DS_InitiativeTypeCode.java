@@ -16,6 +16,7 @@
  */
 package org.apache.sis.internal.jaxb.code;
 
+import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import org.opengis.metadata.identification.InitiativeType;
 import org.apache.sis.internal.jaxb.gmd.CodeListAdapter;
@@ -34,11 +35,12 @@ import org.apache.sis.xml.Namespaces;
  * @since   0.3
  * @module
  */
+@XmlType(namespace = Namespaces.MRI)
 public class DS_InitiativeTypeCode extends CodeListAdapter<DS_InitiativeTypeCode, InitiativeType> {
     /**
      * Empty constructor for JAXB only.
      */
-    DS_InitiativeTypeCode() {
+    public DS_InitiativeTypeCode() {
     }
 
     /**
@@ -74,7 +76,7 @@ public class DS_InitiativeTypeCode extends CodeListAdapter<DS_InitiativeTypeCode
      * @return the value to be marshalled.
      */
     @Override
-    @XmlElement(name = "DS_InitiativeTypeCode", namespace = Namespaces.MRI)
+    @XmlElement(name = "DS_InitiativeTypeCode")
     public final CodeListUID getElement() {
         return identifier;
     }
@@ -94,7 +96,7 @@ public class DS_InitiativeTypeCode extends CodeListAdapter<DS_InitiativeTypeCode
      */
     public static final class Since2014 extends DS_InitiativeTypeCode {
         /** Empty constructor used only by JAXB. */
-        private Since2014() {
+        public Since2014() {
         }
 
         /**

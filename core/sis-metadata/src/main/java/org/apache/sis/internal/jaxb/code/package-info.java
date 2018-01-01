@@ -41,19 +41,18 @@
  * @module
  */
 @XmlSchema(elementFormDefault = XmlNsForm.QUALIFIED, namespace = Namespaces.MDB, xmlns = {
+    @XmlNs(prefix = "mdb", namespaceURI = Namespaces.MDB),
     @XmlNs(prefix = "cit", namespaceURI = Namespaces.CIT),
-    @XmlNs(prefix = "gmd", namespaceURI = Namespaces.GMD),
-    @XmlNs(prefix = "gmi", namespaceURI = Namespaces.GMI),
     @XmlNs(prefix = "lan", namespaceURI = Namespaces.LAN),
     @XmlNs(prefix = "mcc", namespaceURI = Namespaces.MCC),
-    @XmlNs(prefix = "mdb", namespaceURI = Namespaces.MDB),
     @XmlNs(prefix = "mex", namespaceURI = Namespaces.MEX),
     @XmlNs(prefix = "mmi", namespaceURI = Namespaces.MMI),
     @XmlNs(prefix = "mrc", namespaceURI = Namespaces.MRC),
     @XmlNs(prefix = "mri", namespaceURI = Namespaces.MRI),
     @XmlNs(prefix = "msr", namespaceURI = Namespaces.MSR),
     @XmlNs(prefix = "srv", namespaceURI = Namespaces.SRV),
-    @XmlNs(prefix = "gco", namespaceURI = Namespaces.GCO)
+    @XmlNs(prefix = "gmd", namespaceURI = Namespaces.GMD),
+    @XmlNs(prefix = "gmi", namespaceURI = Namespaces.GMI)
 })
 package org.apache.sis.internal.jaxb.code;
 

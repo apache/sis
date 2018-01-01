@@ -41,7 +41,7 @@ public class CI_RoleCode extends CodeListAdapter<CI_RoleCode, Role> {
     /**
      * Empty constructor for JAXB only.
      */
-    CI_RoleCode() {
+    public CI_RoleCode() {
     }
 
     /**
@@ -97,7 +97,7 @@ public class CI_RoleCode extends CodeListAdapter<CI_RoleCode, Role> {
      */
     public static final class Since2014 extends CI_RoleCode {
         /** Empty constructor used only by JAXB. */
-        private Since2014() {
+        public Since2014() {
         }
 
         /**

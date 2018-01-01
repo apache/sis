@@ -36,7 +36,7 @@ public class CI_Citation extends PropertyType<CI_Citation, Citation> {
     /**
      * Empty constructor for JAXB only.
      */
-    CI_Citation() {
+    public CI_Citation() {
     }
 
     /**
@@ -97,7 +97,7 @@ public class CI_Citation extends PropertyType<CI_Citation, Citation> {
      */
     public static final class Since2014 extends CI_Citation {
         /** Empty constructor used only by JAXB. */
-        private Since2014() {
+        public Since2014() {
         }
 
         /**
