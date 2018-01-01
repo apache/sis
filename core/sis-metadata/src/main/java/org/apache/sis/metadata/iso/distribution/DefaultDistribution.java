@@ -20,6 +20,7 @@ import java.util.Collection;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.distribution.DigitalTransferOptions;
 import org.opengis.metadata.distribution.Distribution;
@@ -27,6 +28,7 @@ import org.opengis.metadata.distribution.Distributor;
 import org.opengis.metadata.distribution.Format;
 import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.metadata.TitleProperty;
+import org.apache.sis.internal.jaxb.gco.InternationalStringAdapter;
 
 
 /**
@@ -52,13 +54,15 @@ import org.apache.sis.metadata.TitleProperty;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Touraïvane (IRD)
  * @author  Cédric Briançon (Geomatys)
- * @version 0.5
+ * @author  Cullen Rombach (Image Matters)
+ * @version 1.0
  * @since   0.3
  * @module
  */
 @SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @TitleProperty(name = "description")
 @XmlType(name = "MD_Distribution_Type", propOrder = {
+    "description",              // New in ISO 19115-3
     "distributionFormats",
     "distributors",
     "transferOptions"
@@ -149,6 +153,8 @@ public class DefaultDistribution extends ISOMetadata implements Distribution {
      * @since 0.5
      */
     @Override
+    @XmlElement(name = "description")
+    @XmlJavaTypeAdapter(InternationalStringAdapter.Since2014.class)
     public InternationalString getDescription() {
         return description;
     }

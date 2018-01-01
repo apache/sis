@@ -667,6 +667,7 @@ http://standards.iso.org/iso/19115/-3/mrd/1.0
     unitsOfDistribution
   MD_Distribution
     <type>
+    description
     distributionFormat
     distributor
     transferOptions
@@ -690,6 +691,7 @@ http://standards.iso.org/iso/19115/-3/mrd/1.0
     <type>
     density
     densityUnits
+    identifier
     mediumFormat
     mediumNote
     name
@@ -698,6 +700,8 @@ http://standards.iso.org/iso/19115/-3/mrd/1.0
     <type>
     fees
     orderingInstructions
+    orderOptions
+    orderOptionType
     plannedAvailableDateTime
     turnaround
 http://standards.iso.org/iso/19115/-3/mri/1.0
