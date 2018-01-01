@@ -36,7 +36,7 @@ public class MD_Scope extends PropertyType<MD_Scope, Scope> {
     /**
      * Empty constructor for JAXB only.
      */
-    MD_Scope() {
+    public MD_Scope() {
     }
 
     /**
@@ -97,7 +97,7 @@ public class MD_Scope extends PropertyType<MD_Scope, Scope> {
      */
     public static final class Since2014 extends MD_Scope {
         /** Empty constructor used only by JAXB. */
-        private Since2014() {
+        public Since2014() {
         }
 
         /**

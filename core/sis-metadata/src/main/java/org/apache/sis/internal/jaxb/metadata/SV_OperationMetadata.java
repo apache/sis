@@ -35,7 +35,7 @@ public class SV_OperationMetadata extends PropertyType<SV_OperationMetadata, Ope
     /**
      * Empty constructor for JAXB only.
      */
-    SV_OperationMetadata() {
+    public SV_OperationMetadata() {
     }
 
     /**
@@ -96,7 +96,7 @@ public class SV_OperationMetadata extends PropertyType<SV_OperationMetadata, Ope
      */
     public static final class Since2014 extends SV_OperationMetadata {
         /** Empty constructor used only by JAXB. */
-        private Since2014() {
+        public Since2014() {
         }
 
         /**

@@ -16,6 +16,7 @@
  */
 package org.apache.sis.internal.jaxb.code;
 
+import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import org.opengis.metadata.content.TransferFunctionType;
 import org.apache.sis.internal.jaxb.gmd.CodeListAdapter;
@@ -29,10 +30,11 @@ import org.apache.sis.xml.Namespaces;
  * of {@code CodeList} in ISO-19139.
  *
  * @author  Cédric Briançon (Geomatys)
- * @version 0.3
+ * @version 1.0
  * @since   0.3
  * @module
  */
+@XmlType(namespace = Namespaces.GMI)
 public final class MI_TransferFunctionTypeCode
         extends CodeListAdapter<MI_TransferFunctionTypeCode, TransferFunctionType>
 {
@@ -75,7 +77,7 @@ public final class MI_TransferFunctionTypeCode
      * @return the value to be marshalled.
      */
     @Override
-    @XmlElement(name = "MI_TransferFunctionTypeCode", namespace = Namespaces.GMI)
+    @XmlElement(name = "MI_TransferFunctionTypeCode")
     public CodeListUID getElement() {
         return identifier;
     }

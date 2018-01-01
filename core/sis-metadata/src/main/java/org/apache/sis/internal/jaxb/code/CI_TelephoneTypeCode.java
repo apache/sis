@@ -40,7 +40,7 @@ public class CI_TelephoneTypeCode extends CodeListAdapter<CI_TelephoneTypeCode, 
     /**
      * Empty constructor for JAXB only.
      */
-    CI_TelephoneTypeCode() {
+    public CI_TelephoneTypeCode() {
     }
 
     /**
@@ -96,7 +96,7 @@ public class CI_TelephoneTypeCode extends CodeListAdapter<CI_TelephoneTypeCode, 
      */
     public static final class Since2014 extends CI_TelephoneTypeCode {
         /** Empty constructor used only by JAXB. */
-        private Since2014() {
+        public Since2014() {
         }
 
         /**

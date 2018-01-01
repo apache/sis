@@ -16,6 +16,7 @@
  */
 package org.apache.sis.internal.jaxb.code;
 
+import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import org.opengis.metadata.maintenance.MaintenanceFrequency;
 import org.apache.sis.internal.jaxb.gmd.CodeListAdapter;
@@ -34,6 +35,7 @@ import org.apache.sis.xml.Namespaces;
  * @since   0.3
  * @module
  */
+@XmlType(namespace = Namespaces.MMI)
 public final class MD_MaintenanceFrequencyCode
         extends CodeListAdapter<MD_MaintenanceFrequencyCode, MaintenanceFrequency>
 {
@@ -76,7 +78,7 @@ public final class MD_MaintenanceFrequencyCode
      * @return the value to be marshalled.
      */
     @Override
-    @XmlElement(name = "MD_MaintenanceFrequencyCode", namespace = Namespaces.MMI)
+    @XmlElement(name = "MD_MaintenanceFrequencyCode")
     public CodeListUID getElement() {
         return identifier;
     }

@@ -35,7 +35,7 @@ public class MD_KeywordClass extends PropertyType<MD_KeywordClass, KeywordClass>
     /**
      * Empty constructor for JAXB only.
      */
-    MD_KeywordClass() {
+    public MD_KeywordClass() {
     }
 
     /**
@@ -96,7 +96,7 @@ public class MD_KeywordClass extends PropertyType<MD_KeywordClass, KeywordClass>
      */
     public static final class Since2014 extends MD_KeywordClass {
         /** Empty constructor used only by JAXB. */
-        private Since2014() {
+        public Since2014() {
         }
 
         /**

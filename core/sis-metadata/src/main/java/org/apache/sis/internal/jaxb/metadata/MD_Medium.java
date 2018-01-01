@@ -36,7 +36,7 @@ public class MD_Medium extends PropertyType<MD_Medium, Medium> {
     /**
      * Empty constructor for JAXB only.
      */
-    MD_Medium() {
+    public MD_Medium() {
     }
 
     /**
@@ -97,7 +97,7 @@ public class MD_Medium extends PropertyType<MD_Medium, Medium> {
      */
     public static final class Since2014 extends MD_Medium {
         /** Empty constructor used only by JAXB. */
-        private Since2014() {
+        public Since2014() {
         }
 
         /**

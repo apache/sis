@@ -16,6 +16,7 @@
  */
 package org.apache.sis.internal.jaxb.code;
 
+import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import org.opengis.metadata.identification.DistributedComputingPlatform;
 import org.apache.sis.internal.jaxb.gmd.CodeListAdapter;
@@ -29,10 +30,11 @@ import org.apache.sis.xml.Namespaces;
  * of {@code CodeList} in ISO-19139.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.5
+ * @version 1.0
  * @since   0.5
  * @module
  */
+@XmlType(namespace = Namespaces.SRV)
 public final class DCPList extends CodeListAdapter<DCPList, DistributedComputingPlatform> {
     /**
      * Empty constructor for JAXB only.
@@ -73,7 +75,7 @@ public final class DCPList extends CodeListAdapter<DCPList, DistributedComputing
      * @return the value to be marshalled.
      */
     @Override
-    @XmlElement(name = "DCPList", namespace = Namespaces.SRV)
+    @XmlElement(name = "DCPList")
     public CodeListUID getElement() {
         return identifier;
     }
