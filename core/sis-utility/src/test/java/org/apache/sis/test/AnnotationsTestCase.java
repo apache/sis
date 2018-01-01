@@ -115,7 +115,7 @@ public abstract strictfp class AnnotationsTestCase extends TestCase {
     /**
      * If the given GeoAPI type, when marshalled to XML, is wrapped into an other XML element,
      * returns the class of the wrapper for that XML element. Otherwise returns {@code null}.
-     * Such wrappers are unusual in XML (except for lists), but the ISO 19139 standard do that
+     * Such wrappers are unusual in XML (except for lists), but the ISO 19115-3 standard do that
      * systematically for every elements.
      *
      * <p><b>Example:</b> when a {@link org.apache.sis.metadata.iso.citation.DefaultContact}
@@ -194,7 +194,7 @@ public abstract strictfp class AnnotationsTestCase extends TestCase {
     }
 
     /**
-     * Returns the XML type for an element of the given type. For example in ISO 19139,
+     * Returns the XML type for an element of the given type. For example in ISO 19115-3,
      * the XML type of {@code CI_Citation} is {@code CI_Citation_Type}.
      *
      * @param  type  the GeoAPI interface.

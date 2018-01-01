@@ -32,9 +32,9 @@ import org.apache.sis.util.ArraysExt;
 
 
 /**
- * JAXB wrapper for ISO-19139 {@code <PT_FreeText>} element mapped to {@link InternationalString}.
- * It will be used in order to marshal and unmarshal international strings localized in several
- * language, using the {@link DefaultInternationalString} implementation class. Example:
+ * JAXB wrapper for ISO 19115-3 {@code <PT_FreeText>} element mapped to {@link InternationalString}.
+ * It will be used in order to marshal and unmarshal international strings localized in several language,
+ * using the {@link DefaultInternationalString} implementation class. Example:
  *
  * {@preformat xml
  *   <gmd:title xsi:type="gmd:PT_FreeText_PropertyType">

@@ -24,9 +24,9 @@ import org.apache.sis.internal.jaxb.FilterByVersion;
 
 
 /**
- * An adapter for {@link CodeList}, in order to implement the ISO-19139 standard. This object
- * wraps a {@link CodeListUID}, which contain {@link CodeListUID#codeList codeList} and
- * {@link CodeListUID#codeListValue codeListValue} attributes. The result looks like below:
+ * An adapter for {@link CodeList}, in order to implement the ISO 19115-3 standard.
+ * This object wraps a {@link CodeListUID}, which contain {@link CodeListUID#codeList codeList}
+ * and {@link CodeListUID#codeListValue codeListValue} attributes. The result looks like below:
  *
  * {@preformat xml
  *   <dateType>
@@ -64,7 +64,7 @@ public abstract class CodeListAdapter<ValueType extends CodeListAdapter<ValueTyp
     }
 
     /**
-     * Creates a wrapper for a {@link CodeList}, in order to handle the format specified in ISO-19139.
+     * Creates a wrapper for a {@link CodeList}, in order to handle the format specified in ISO 19115-3.
      *
      * @param  value  the value of {@link CodeList} to be marshalled.
      */

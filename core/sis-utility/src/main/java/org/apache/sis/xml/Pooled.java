@@ -106,7 +106,7 @@ abstract class Pooled {
     private TimeZone timezone;
 
     /**
-     * The base URL of ISO 19139 (or other standards) schemas. It shall be an unmodifiable
+     * The base URL of ISO 19115-3 (or other standards) schemas. It shall be an unmodifiable
      * instance because {@link #getProperty(String)} returns a direct reference to the user.
      * The valid values are documented in the {@link XML#SCHEMAS} property.
      */

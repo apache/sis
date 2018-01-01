@@ -23,9 +23,9 @@ import javax.xml.bind.annotation.XmlType;
 
 /**
  * Wraps integer values in {@code <gco:Integer>} element.
- * The ISO-19139 standard requires most types to be wrapped by an element representing the value type.
+ * The ISO 19115-3 standard requires most types to be wrapped by an element representing the value type.
  * The JAXB default behavior is to marshal primitive Java types directly, without such wrapper element.
- * The role of this class is to add the {@code <gco:…>} wrapper element required by ISO 19139.
+ * The role of this class is to add the {@code <gco:…>} wrapper element required by ISO 19115-3.
  *
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
@@ -65,7 +65,7 @@ public class GO_Integer extends PropertyType<GO_Integer, Integer> {
 
     /**
      * Allows JAXB to change the result of the marshalling process, according to the
-     * ISO-19139 standard and its requirements about primitive types.
+     * ISO 19115-3 standard and its requirements about primitive types.
      *
      * @param  value  the integer value we want to wrap in an element representing its type.
      * @return a wrapper for the integer value, that is to say an integer value wrapped

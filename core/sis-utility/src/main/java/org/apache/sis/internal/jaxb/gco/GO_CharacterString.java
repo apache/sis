@@ -43,7 +43,7 @@ import org.apache.sis.util.resources.Messages;
 
 /**
  * JAXB wrapper for string value in a {@code <gco:CharacterString>}, {@code <gmx:Anchor>},
- * {@code <gmx:FileName>} or {@code <gmx:MimeFileType>} element, for ISO-19139 compliance.
+ * {@code <gmx:FileName>} or {@code <gmx:MimeFileType>} element, for ISO 19139:2007 compliance.
  *
  * <p>{@code FileName} and {@code MimeFileType} are possible substitutions for {@code CharacterString}.
  * They make sense only in {@link org.apache.sis.metadata.iso.identification.DefaultBrowseGraphic} or

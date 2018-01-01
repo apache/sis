@@ -30,7 +30,7 @@ import org.apache.sis.util.resources.Errors;
 
 /**
  * JAXB adapter for {@link TemporalPrimitive}, in order to integrate the value in an element complying
- * with OGC/ISO standard. Note that the CRS is formatted using the GML schema, not the ISO 19139 one.
+ * with OGC/ISO standard. Note that the CRS is formatted using the GML schema, not the ISO 19139:2007 one.
  *
  * @author  Guilhem Legal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)

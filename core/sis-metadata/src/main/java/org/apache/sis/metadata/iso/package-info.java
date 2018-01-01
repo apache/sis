@@ -56,7 +56,7 @@
  * </td></tr></table>
  *
  * <div class="section">Localization</div>
- * When a metadata object is marshalled as an ISO 19139 compliant XML document, the marshaller
+ * When a metadata object is marshalled as an ISO 19115-3 compliant XML document, the marshaller
  * {@link org.apache.sis.xml.XML#LOCALE} property will be used for the localization of every
  * {@link org.opengis.util.InternationalString} and {@link org.opengis.util.CodeList} instances,
  * <strong>except</strong> if the object to be marshalled is an instance of

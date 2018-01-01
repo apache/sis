@@ -22,9 +22,9 @@ import org.apache.sis.internal.jaxb.gmd.EnumAdapter;
 
 
 /**
- * JAXB adapter for {@link TopicCategory}, in order to integrate the value in an element
- * complying with ISO-19139 standard. See package documentation for more information
- * about the handling of {@code CodeList} in ISO-19139.
+ * JAXB adapter for {@link TopicCategory}
+ * in order to wrap the value in an XML element as specified by ISO 19115-3 standard.
+ * See package documentation for more information about the handling of {@code CodeList} in ISO 19115-3.
  *
  * @author  Cédric Briançon (Geomatys)
  * @author  Guihem Legal (Geomatys)

@@ -37,7 +37,7 @@ import static java.util.Collections.singletonMap;
  */
 enum FilterVersion {
     /**
-     * Metadata using the legacy ISO 19139 schema (replaced by ISO 19115-3).
+     * Metadata using the legacy ISO 19139:2007 schema (replaced by ISO 19115-3).
      */
     ISO19139(new String[] {
             Namespaces.CAT,

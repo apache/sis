@@ -26,9 +26,9 @@ import org.apache.sis.xml.Namespaces;
 
 
 /**
- * JAXB wrapper for {@link Locale}, in order to integrate the value in an element respecting
- * the ISO-19139 standard. See package documentation for more information about the handling
- * of {@code CodeList} in ISO-19139.
+ * JAXB wrapper for {@link Locale}
+ * in order to wrap the value in an XML element as specified by ISO 19115-3 standard.
+ * See package documentation for more information about the handling of {@code CodeList} in ISO 19115-3.
  *
  * <p>This adapter formats the locale like below:</p>
  *

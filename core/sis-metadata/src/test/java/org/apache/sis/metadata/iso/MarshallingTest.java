@@ -132,7 +132,7 @@ public final class MarshallingTest extends XMLTestCase implements WarningListene
             parent.getIdentifiers().add(parentId);
             md.setParentMetadata(parent);
         }
-        // mdb:metadataScope (hierarchyLevel and hierarchyLevelName in ISO 19139)
+        // mdb:metadataScope (hierarchyLevel and hierarchyLevelName in legacy ISO 19115:2003 model)
         md.getMetadataScopes().add(new DefaultMetadataScope(ScopeCode.DATASET, "hierarchyLevelName"));
         final DefaultOnlineResource onlineResource;
         {
@@ -172,7 +172,7 @@ public final class MarshallingTest extends XMLTestCase implements WarningListene
             md.setContacts(Arrays.asList(new DefaultResponsibility(Role.POINT_OF_CONTACT, null, org),
                                          new DefaultResponsibility(Role.POINT_OF_CONTACT, null, individual2)));
         }
-        // Date info (date stamp in ISO 19139)
+        // Date info (date stamp in legacy ISO 19115:2003 model)
         final Collection<CitationDate> dateInfo = Collections.singleton(new DefaultCitationDate(new Date(), DateType.CREATION));
         md.setDateInfo(dateInfo);
         {
@@ -371,7 +371,7 @@ public final class MarshallingTest extends XMLTestCase implements WarningListene
             associatedResources = Collections.singleton(associatedResource);
             dataId.setAssociatedResources(associatedResources);
         }
-        dataId.setLanguages(languages);     // Locales (ISO 19115-3) a.k.a Languages and CharacterSets (ISO 19139)
+        dataId.setLanguages(languages);     // Locales (ISO 19115:2014) a.k.a Languages and CharacterSets (ISO 19115:2003)
         dataId.setCharacterSets(charSets);
         dataId.setEnvironmentDescription (new SimpleInternationalString("environmentDescription"));
         dataId.setSupplementalInformation(new SimpleInternationalString("supplementalInformation"));
@@ -465,7 +465,7 @@ public final class MarshallingTest extends XMLTestCase implements WarningListene
     }
 
     /**
-     * Tests marshalling of a document based on ISO 19115:2014 model.
+     * Tests marshalling of an ISO 19115-3 document (based on ISO 19115:2014 model).
      *
      * @throws URISyntaxException if an error occurred while creating the metadata object.
      * @throws JAXBException if an error occurred while marshalling the document.

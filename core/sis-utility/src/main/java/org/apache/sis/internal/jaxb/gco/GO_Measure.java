@@ -83,7 +83,7 @@ public final class GO_Measure extends XmlAdapter<GO_Measure, Double> {
 
     /**
      * Allows JAXB to change the result of the marshalling process, according to the
-     * ISO-19139 standard and its requirements about {@code measures}.
+     * ISO 19115-3 standard and its requirements about {@code measures}.
      *
      * @param  value  the double value we want to wrap into a {@code <gco:Measure>} element.
      * @return a double value wrapped by {@code <gco:Measure>} element with an {@code uom} attribute.

@@ -257,7 +257,7 @@ public class DefaultCoupledResource extends ISOMetadata implements CoupledResour
     //////////////////////////////////////////////////////////////////////////////////////////////////
 
     /**
-     * For JAXB marshalling of ISO 19139:2007 document only.
+     * For JAXB marshalling of ISO 19139:2007 document only (XML based on legacy ISO 19115:2003 model).
      */
     @XmlElement(name = "operationName", namespace = Namespaces.SRV)
     private String getOperationName() {
@@ -271,9 +271,9 @@ public class DefaultCoupledResource extends ISOMetadata implements CoupledResour
     }
 
     /**
-     * For JAXB unmarhalling of ISO 19119 document only. Sets {@link #operation} to a temporary
-     * {@link OperationName} placeholder. That temporary instance will be replaced by the real
-     * one when the enclosing {@link DefaultServiceIdentification} is unmarshalled.
+     * For JAXB unmarhalling of ISO 19139:2007 document only. Sets {@link #operation} to a temporary
+     * {@link OperationName} placeholder. That temporary instance will be replaced by the real one
+     * when the enclosing {@link DefaultServiceIdentification} is unmarshalled.
      */
     @SuppressWarnings("unused")
     private void setOperationName(final String name) {

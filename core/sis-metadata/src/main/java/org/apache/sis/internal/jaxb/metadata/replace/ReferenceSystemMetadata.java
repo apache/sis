@@ -59,7 +59,7 @@ public class ReferenceSystemMetadata extends SimpleIdentifiedObject implements R
     private static final long serialVersionUID = 2810145397032096087L;
 
     /**
-     * {@code true} if marshalling ISO 19139:2007, or {@code false} if marshalling ISO 19115-3.
+     * {@code true} if marshalling ISO 19115:2003 model, or {@code false} if marshalling ISO 19115:2014 model.
      */
     private boolean isLegacyMetadata;
 
@@ -118,8 +118,8 @@ public class ReferenceSystemMetadata extends SimpleIdentifiedObject implements R
     }
 
     /**
-     * Gets the name for this reference system metadata (used in ISO 19139 format).
-     * This method can be invoked during ISO 19139 marshalling.
+     * Gets the name for this reference system metadata (used in ISO 19115:2003 model).
+     * This method can be invoked during marshalling of legacy XML documents.
      */
     @XmlElement(name = "referenceSystemIdentifier", namespace = LegacyNamespaces.GMD)
     @XmlJavaTypeAdapter(RS_Identifier.class)
@@ -128,7 +128,7 @@ public class ReferenceSystemMetadata extends SimpleIdentifiedObject implements R
     }
 
     /**
-     * Sets the name for this reference system metadata (used in ISO 19139 format).
+     * Sets the name for this reference system metadata (used in ISO 19115:2003 model).
      */
     @SuppressWarnings("unused")
     private void setLegacyName(final Identifier name) {

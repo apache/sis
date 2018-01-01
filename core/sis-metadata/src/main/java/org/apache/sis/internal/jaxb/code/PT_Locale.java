@@ -33,9 +33,9 @@ import org.apache.sis.xml.Namespaces;
 
 
 /**
- * JAXB adapter for {@link Locale}, in order to integrate the value in an element respecting
- * the ISO-19139 standard. See package documentation for more information about the handling
- * of {@code CodeList} in ISO-19139.
+ * JAXB adapter for {@link Locale}
+ * in order to wrap the value in an XML element as specified by ISO 19115-3 standard.
+ * See package documentation for more information about the handling of {@code CodeList} in ISO 19115-3.
  *
  * <p>This adapter formats the locale like below:</p>
  *
@@ -112,7 +112,8 @@ public final class PT_Locale extends XmlAdapter<PT_Locale, Locale> {
         Charset characterEncoding;
 
         /**
-         * {@code true} if marshalling ISO 19139:2007, or {@code false} if marshalling ISO 19115-3.
+         * {@code true} if marshalling an element from the ISO 19115:2003 model,
+         * or {@code false} if marshalling an element from the ISO 19115:2014 model.
          */
         private boolean isLegacyMetadata;
 
@@ -134,7 +135,7 @@ public final class PT_Locale extends XmlAdapter<PT_Locale, Locale> {
         }
 
         /**
-         * Gets the language code for this PT_Locale. Used in ISO 19139.
+         * Gets the language code for this PT_Locale. Used in ISO 19115:2003 model.
          */
         @XmlElement(name = "languageCode", namespace = LegacyNamespaces.GMD)
         private LanguageCode getLanguageCode() {
@@ -142,7 +143,7 @@ public final class PT_Locale extends XmlAdapter<PT_Locale, Locale> {
         }
 
         /**
-         * Sets the language code for this PT_Locale. Used in ISO 19139.
+         * Sets the language code for this PT_Locale. Used in ISO 19115:2003 model.
          */
         @SuppressWarnings("unused")
         private void setLanguageCode(LanguageCode newValue) {
@@ -158,7 +159,7 @@ public final class PT_Locale extends XmlAdapter<PT_Locale, Locale> {
         }
 
         /**
-         * Sets the language code for this PT_Locale. Used in ISO 19139.
+         * Sets the language code for this PT_Locale. Used in ISO 19115:2003 model.
          */
         @SuppressWarnings("unused")
         private void setLanguage(LanguageCode newValue) {

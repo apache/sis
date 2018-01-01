@@ -38,7 +38,7 @@ import org.apache.sis.internal.util.CollectionsExt;
 /**
  * A {@code StreamReader} which uses a more complex algorithm backed by a dictionary for identifying the XML namespaces
  * expected by JAXB implementation. This is used when a single namespace in a legacy schema has been splitted into many
- * namespaces in a newer schema. This happen for example in the upgrade from ISO 19139 to ISO 19115-3. In such cases,
+ * namespaces in a newer schema. This happen for example in the upgrade from ISO 19139:2007 to ISO 19115-3. In such cases,
  * we need to check which attribute is being mapped in order to determine the new namespace.
  *
  * @author  Cullen Rombach (Image Matters)
@@ -161,7 +161,7 @@ final class FilteredStreamResolver extends FilteredStreamReader {
 
     /**
      * Elements that need to have their name changed.
-     * For example {@code gmd:URL} needs to be changed to {@code gco:CharacterString} for reading ISO 19139.
+     * For example {@code gmd:URL} needs to be changed to {@code gco:CharacterString} for reading ISO 19139:2007.
      *
      * <ul>
      *   <li>key:   old element name</li>
@@ -236,7 +236,7 @@ final class FilteredStreamResolver extends FilteredStreamReader {
      * in the context of the current part of the XML document being read.
      *
      * @param   name       the element or attribute name currently being read.
-     * @param   namespace  the namespace declared in the document being read (e.g. an ISO 19139 namespace).
+     * @param   namespace  the namespace declared in the document being read (e.g. an ISO 19139:2007 namespace).
      * @return  the namespace URI for the element or attribute in the current context (e.g. an ISO 19115-3 namespace).
      */
     private String toImplNamespace(final String name, final String namespace) {

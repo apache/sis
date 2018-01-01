@@ -25,9 +25,9 @@ import org.apache.sis.xml.Namespaces;
 
 
 /**
- * JAXB adapter for {@link InitiativeType}, in order to integrate the value in a element
- * complying with ISO-19139 standard. See package documentation to have more information
- * about the handling of CodeList in ISO-19139.
+ * JAXB adapter for {@link InitiativeType}
+ * in order to wrap the value in an XML element as specified by ISO 19115-3 standard.
+ * See package documentation for more information about the handling of {@code CodeList} in ISO 19115-3.
  *
  * @author  Guilhem Legal (Geomatys)
  * @author  Cullen Rombach (Image Matters)
@@ -91,8 +91,8 @@ public class DS_InitiativeTypeCode extends CodeListAdapter<DS_InitiativeTypeCode
     }
 
     /**
-     * Wraps the value only if marshalling ISO 19115-3 element.
-     * Otherwise (i.e. if marshalling a legacy ISO 19139:2007 document), omit the element.
+     * Wraps the value only if marshalling an element from the ISO 19115:2003 metadata model.
+     * Otherwise (i.e. if marshalling according legacy ISO 19115:2014 model), omits the element.
      */
     public static final class Since2014 extends DS_InitiativeTypeCode {
         /** Empty constructor used only by JAXB. */

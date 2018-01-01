@@ -23,7 +23,7 @@ import org.apache.sis.internal.jaxb.Context;
 
 
 /**
- * JAXB adapter wrapping a URI value with a {@code <gmx:FileName>} element, for ISO-19139 compliance.
+ * JAXB adapter wrapping a URI value with a {@code <gmx:FileName>} element, for ISO 19139:2007 compliance.
  *
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)

@@ -115,7 +115,7 @@ public class ValueConverter {
     }
 
     /**
-     * Converts the given locale to a language code. For better ISO 19139 compliance, the language code
+     * Converts the given locale to a language code. For better compliance with ISO standards, the language code
      * should be a 3-letters ISO 639-2 code (e.g. {@code "jpn"} for {@linkplain Locale#JAPANESE Japanese}).
      * However those codes may not be available for every locales.
      *
@@ -159,7 +159,7 @@ public class ValueConverter {
     }
 
     /**
-     * Converts the given locale to a country code. For better ISO 19139 compliance, the country code
+     * Converts the given locale to a country code. For better compliance with ISO standards, the country code
      * should be a 2-letters ISO 3166 code (e.g. {@code "JP"} for {@linkplain Locale#JAPAN Japan}).
      *
      * <p>The default implementation returns {@link Locale#getCountry()} if non-empty, or {@code null} otherwise.</p>
@@ -185,7 +185,7 @@ public class ValueConverter {
     /**
      * Converts the given character set to a code.
      *
-     * <p>The default implementation first invokes {@link Charset#name()}. Then if marshalling to ISO 19139:2007,
+     * <p>The default implementation first invokes {@link Charset#name()}. Then if marshalling to legacy ISO 19139:2007,
      * this method converts the <a href="http://www.iana.org/assignments/character-sets">IANA</a> name to a
      * ISO 19115:2003 {@code MD_CharacterSetCode} using the following equivalence table:</p>
      *
