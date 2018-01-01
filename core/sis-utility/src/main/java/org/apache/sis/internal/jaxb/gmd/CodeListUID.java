@@ -41,7 +41,8 @@ import org.apache.sis.internal.jaxb.Schemas;
  *
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.7
+ * @author  Cullen Rombach (Image Matters)
+ * @version 1.0
  *
  * @see CodeListAdapter
  *
@@ -66,9 +67,16 @@ public final class CodeListUID {
      * @return the URL to the given code list in the given schema.
      */
     private static String schema(final Context context, final String identifier) {
-        return Context.schema(context, "gmd", Schemas.METADATA_ROOT)
-                .append(Schemas.CODELISTS_PATH)     // Future SIS version may switch between localized/unlocalized file.
-                .append('#').append(identifier).toString();
+        final String prefix, path;
+        if (Context.isFlagSet(context, Context.LEGACY_METADATA)) {
+            prefix = "gmd";
+            path = Schemas.CODELISTS_PATH_LEGACY;   // Future SIS version may switch between localized/unlocalized file.
+        } else {
+            prefix = "mdb";
+            path = Schemas.CODELISTS_PATH;
+        }
+        return Context.schema(context, prefix, Schemas.METADATA_ROOT)
+                .append(path).append('#').append(identifier).toString();
     }
 
     /**

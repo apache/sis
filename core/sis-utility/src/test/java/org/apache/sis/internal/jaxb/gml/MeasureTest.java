@@ -61,7 +61,7 @@ public final strictfp class MeasureTest extends TestCase {
         assertEquals(Units.METRE, measure.unit);
         assertEquals("urn:ogc:def:uom:EPSG::9001", measure.getUOM());
         measure.asXPointer = true;
-        assertEquals(Schemas.METADATA_ROOT_OLD + Schemas.UOM_PATH + "#xpointer(//*[@gml:id='m'])", measure.getUOM());
+        assertEquals(Schemas.METADATA_ROOT_LEGACY + Schemas.UOM_PATH + "#xpointer(//*[@gml:id='m'])", measure.getUOM());
 
         measure.unit = null;
         measure.asXPointer = false;
@@ -69,12 +69,12 @@ public final strictfp class MeasureTest extends TestCase {
         assertEquals(Units.DEGREE, measure.unit);
         assertEquals("urn:ogc:def:uom:EPSG::9102", measure.getUOM());
         measure.asXPointer = true;
-        assertEquals(Schemas.METADATA_ROOT_OLD + Schemas.UOM_PATH + "#xpointer(//*[@gml:id='deg'])", measure.getUOM());
+        assertEquals(Schemas.METADATA_ROOT_LEGACY + Schemas.UOM_PATH + "#xpointer(//*[@gml:id='deg'])", measure.getUOM());
 
         measure.unit = null;
         measure.asXPointer = true;
         measure.setUOM("gmxUom.xml#kg");                        // Not really an existing unit in 'gmxUom'.
         assertEquals(Units.KILOGRAM, measure.unit);
-        assertEquals(Schemas.METADATA_ROOT_OLD + Schemas.UOM_PATH + "#xpointer(//*[@gml:id='kg'])", measure.getUOM());
+        assertEquals(Schemas.METADATA_ROOT_LEGACY + Schemas.UOM_PATH + "#xpointer(//*[@gml:id='kg'])", measure.getUOM());
     }
 }
