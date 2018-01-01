@@ -68,8 +68,8 @@ import static org.apache.sis.util.collection.Containers.hashMapCapacity;
  *       except {@link #equals(Object, Object, ComparisonMode)} and {@link #freeze(Object)}.</li>
  *
  *   <li>Extra properties defined by the {@link IdentifiedObject} interface. Those properties
- *       invisible in the ISO 19115 model, but appears in ISO 19139 XML marshalling. So we do
- *       the same in the SIS implementation: invisible in map and tree view, but visible in
+ *       invisible in the ISO 19115-1 model, but appears in ISO 19115-3 XML marshalling. So we
+ *       do the same in the SIS implementation: invisible in map and tree view, but visible in
  *       XML marshalling.</li>
  * </ul>
  *
@@ -100,8 +100,8 @@ class PropertyAccessor {
     /**
      * Additional getter to declare in every list of getter methods that do not already provide
      * their own {@code getIdentifiers()} method. We handle this method specially because it is
-     * needed for XML marshalling in ISO 19139 compliant document, while not part of abstract
-     * ISO 19115 specification.
+     * needed for XML marshalling in ISO 19115-3 compliant document, while not part of abstract
+     * ISO 19115-1 specification.
      *
      * @see IdentifiedObject#getIdentifiers()
      */

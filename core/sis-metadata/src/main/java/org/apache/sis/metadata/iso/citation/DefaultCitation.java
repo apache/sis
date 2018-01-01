@@ -56,7 +56,7 @@ import static org.apache.sis.internal.metadata.MetadataUtilities.toMilliseconds;
  * The ISO 19115 model provides specific attributes for the {@linkplain #getISBN() ISBN} and
  * {@linkplain #getISSN() ISSN} codes. However the SIS library handles those codes like any
  * other identifiers. Consequently the ISBN and ISSN codes are included in the collection
- * returned by {@link #getIdentifiers()}, except at XML marshalling time (for ISO 19139 compliance).
+ * returned by {@link #getIdentifiers()}, except at XML marshalling time (for ISO 19115-3 compliance).
  *
  * <div class="section">Limitations</div>
  * <ul>
@@ -366,7 +366,7 @@ public class DefaultCitation extends ISOMetadata implements Citation {
      *
      * <div class="note"><b>XML note:</b>
      * The {@code <gmd:identifier>} element marshalled to XML will exclude all the above cited identifiers,
-     * for ISO 19139 compliance. Those identifiers will appear in other XML elements or attributes.</div>
+     * for ISO 19115-3 compliance. Those identifiers will appear in other XML elements or attributes.</div>
      *
      * @return the identifiers, or an empty collection if none.
      *

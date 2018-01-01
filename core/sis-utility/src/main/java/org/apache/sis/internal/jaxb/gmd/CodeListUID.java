@@ -30,7 +30,7 @@ import org.apache.sis.internal.jaxb.Schemas;
 
 
 /**
- * Stores information about {@link CodeList} in order to marshal in the way defined by ISO-19139.
+ * Stores information about {@link CodeList} in order to marshal in the way defined by ISO 19115-3.
  * This class provides the {@link #codeList} and {@link #codeListValue} attributes to be marshalled.
  * Those attributes should be unique for each code.
  *

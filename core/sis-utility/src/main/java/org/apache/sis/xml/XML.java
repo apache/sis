@@ -132,14 +132,14 @@ public final class XML extends Static {
      *
      * <ul>
      *   <li>The value of the {@code codeList} attribute when marshalling subclasses of
-     *       {@link org.opengis.util.CodeList} in ISO 19139 compliant XML document.</li>
+     *       {@link org.opengis.util.CodeList} in ISO 19115-3 compliant XML document.</li>
      *   <li>The value of the {@code uom} attribute when marshalling measures (for example
-     *       {@code <gco:Distance>}) in ISO 19139 compliant XML document.</li>
+     *       {@code <gco:Distance>}) in ISO 19115-3 compliant XML document.</li>
      * </ul>
      *
      * As of SIS 0.3, only one {@code Map} key is recognized: {@code "gmd"}, which stands
-     * for the ISO 19139 schemas. Additional keys, if any, are ignored. Future SIS versions
-     * may recognize more keys.
+     * for the legacy ISO 19139:2007 schemas. Additional keys, if any, are ignored.
+     * Future SIS versions may recognize more keys.
      *
      * <div class="section">Valid values</div>
      * <table class="sis">
@@ -193,7 +193,8 @@ public final class XML extends Static {
      *
      * <div class="section">Supported metadata versions</div>
      * Apache SIS currently supports ISO 19115-3 by default (with the value "2014").
-     * SIS can read and write ISO 19139 if this property is set to "2003".
+     * SIS can write legacy ISO 19139:2007 documents if this property is set to "2003".
+     * Both versions can be read without the need to specify this property.
      *
      * @since 1.0
      */

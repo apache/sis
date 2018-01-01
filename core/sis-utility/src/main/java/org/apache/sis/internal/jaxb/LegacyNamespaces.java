@@ -60,7 +60,7 @@ public final class LegacyNamespaces {
     public static final String GML = "http://www.opengis.net/gml";
 
     /**
-     * The <code>{@value}</code> URL, used in ISO 19139.
+     * The <code>{@value}</code> URL, used in ISO 19139:2007.
      * The usual prefix for this namespace is {@code "gmd"}.
      */
     public static final String GMD = "http://www.isotc211.org/2005/gmd";
@@ -72,20 +72,20 @@ public final class LegacyNamespaces {
     public static final String GMI = "http://www.isotc211.org/2005/gmi";
 
     /**
-     * The <code>{@value}</code> URL, used in ISO 19139.
+     * The <code>{@value}</code> URL, used in ISO 19139:2007.
      * The usual prefix for this namespace is {@code "gmx"}.
      */
     public static final String GMX = "http://www.isotc211.org/2005/gmx";
 
     /**
-     * The <code>{@value}</code> URL, used in ISO 19139.
+     * The <code>{@value}</code> URL, used in ISO 19139:2007.
      * The usual prefix for this namespace is {@code "gco"}.
      * Replaced by {@link org.apache.sis.xml.Namespaces#GCO}.
      */
     public static final String GCO = "http://www.isotc211.org/2005/gco";
 
     /**
-     * The <code>{@value}</code> URL, used in ISO 19139.
+     * The <code>{@value}</code> URL, used in ISO 19139:2007.
      * The usual prefix for this namespace is {@code "srv"}.
      * Replaced by {@link org.apache.sis.xml.Namespaces#SRV}.
      */
@@ -99,7 +99,7 @@ public final class LegacyNamespaces {
     public static final String GFC = "http://www.isotc211.org/2005/gfc";
 
     /**
-     * The <code>{@value}</code> URL, used in ISO 19139.
+     * The <code>{@value}</code> URL, used in ISO 19139:2007.
      * The usual prefix for this namespace is {@code "gts"}.
      */
     public static final String GTS = "http://www.isotc211.org/2005/gts";

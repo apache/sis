@@ -92,8 +92,8 @@ public class MD_Releasability extends PropertyType<MD_Releasability, Releasabili
     }
 
     /**
-     * Wraps the value only if marshalling ISO 19115-3 element.
-     * Otherwise (i.e. if marshalling a legacy ISO 19139:2007 document), omit the element.
+     * Wraps the value only if marshalling an element from the ISO 19115:2003 metadata model.
+     * Otherwise (i.e. if marshalling according legacy ISO 19115:2014 model), omits the element.
      */
     public static final class Since2014 extends MD_Releasability {
         /** Empty constructor used only by JAXB. */

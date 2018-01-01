@@ -23,9 +23,9 @@ import javax.xml.bind.annotation.XmlType;
 
 /**
  * Surrounds double values by {@code <gco:Decimal>}.
- * The ISO-19139 standard requires most types to be surrounded by an element representing the value type.
+ * The ISO 19115-3 standard requires most types to be wrapped by an element representing the value type.
  * The JAXB default behavior is to marshal primitive Java types directly, without such wrapper element.
- * The role of this class is to add the {@code <gco:…>} wrapper element required by ISO 19139.
+ * The role of this class is to add the {@code <gco:…>} wrapper element required by ISO 19115-3.
  *
  * <div class="section">Relationship with {@code GO_Real}</div>
  * This adapter is identical to {@link GO_Real} except for the element name, which is {@code "Decimal"} instead
@@ -72,7 +72,7 @@ public final class GO_Decimal extends PropertyType<GO_Decimal, Double> {
 
     /**
      * Allows JAXB to change the result of the marshalling process, according to the
-     * ISO-19139 standard and its requirements about primitive types.
+     * ISO 19115-3 standard and its requirements about primitive types.
      *
      * @param  value  the double value we want to surround by an element representing its type.
      * @return an adaptation of the double value, that is to say a double value surrounded

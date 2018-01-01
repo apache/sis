@@ -33,14 +33,14 @@ package org.apache.sis.internal.jaxb;
 public enum FilterByVersion {
     /**
      * {@code accept() == true} if marshalling of an ISO 19139:2007 document in in progress,
-     * or if no marshalling in underway.
+     * or if no marshalling in underway. Those documents are based on ISO 19115:2003 model.
      */
     LEGACY_METADATA(Context.MARSHALLING | Context.LEGACY_METADATA,
                     Context.MARSHALLING),
 
     /**
-     * {@code accept() == true} if marshalling of an ISO 19139:2014 document in in progress,
-     * or if no marshalling in underway.
+     * {@code accept() == true} if marshalling of an ISO 19115-3 document in in progress,
+     * or if no marshalling in underway. Those documents are based on ISO 19115:2014 model.
      */
     CURRENT_METADATA(Context.MARSHALLING | Context.LEGACY_METADATA,
                      Context.MARSHALLING | Context.LEGACY_METADATA);

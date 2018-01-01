@@ -26,7 +26,7 @@ import org.apache.sis.internal.jaxb.gco.PropertyType;
  * JAXB adapter mapping the GeoAPI {@link Identifier} to an implementation class that can
  * be marshalled. See the package documentation for more information about JAXB and interfaces.
  *
- * <p>The XML produced by this adapter shall be compliant to the ISO 19139 syntax.</p>
+ * <p>The XML produced by this adapter shall be compliant to the ISO 19115-3 syntax.</p>
  *
  * Note that a class of the same name is defined in the {@link org.apache.sis.internal.jaxb.referencing}
  * package, which serves the same purpose (wrapping exactly the same interface) but using the GML syntax

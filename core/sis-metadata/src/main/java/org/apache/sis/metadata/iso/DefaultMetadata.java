@@ -132,13 +132,13 @@ import org.apache.sis.xml.Namespaces;
  */
 @SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "MD_Metadata_Type", propOrder = {
-    // Attributes new in ISO 19115-3
+    // Attributes new in ISO 19115:2014
     "metadataIdentifier",
     "defaultLocale",
     "parentMetadata",
     "metadataScope",
 
-    // Legacy ISO 19139:2007 attributes
+    // Legacy ISO 19115:2003 attributes
     "fileIdentifier",
     "language",
     "characterSet",
@@ -149,19 +149,19 @@ import org.apache.sis.xml.Namespaces;
     // Common to both formats
     "contacts",
 
-    // Attributes new in ISO 19115-3
+    // Attributes new in ISO 19115:2014
     "dates",
     "metadataStandard",
     "otherLocales",
 
-    // Legacy ISO 19139:2007 attributes
+    // Legacy ISO 19115:2003 attributes
     "dateStamp",
     "metadataStandardName",
     "metadataStandardVersion",
     "dataSetUri",
     "locales",
 
-    // Common to both formats
+    // Common to both metadata models
     "spatialRepresentationInfo",
     "referenceSystemInfo",
     "metadataExtensionInfo",

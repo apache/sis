@@ -30,9 +30,9 @@ import org.apache.sis.xml.Namespaces;
 
 
 /**
- * JAXB wrapper for {@link Locale}, in order to integrate the value in an element respecting
- * the ISO-19139 standard. See package documentation for more information about the handling
- * of {@code CodeList} in ISO-19139.
+ * JAXB wrapper for {@link Locale}
+ * in order to wrap the value in an XML element as specified by ISO 19115-3 standard.
+ * See package documentation for more information about the handling of {@code CodeList} in ISO 19115-3.
  *
  * <p>This adapter formats the locale like below:</p>
  *
@@ -55,7 +55,7 @@ import org.apache.sis.xml.Namespaces;
 public final class Country extends GO_CharacterString {
     /**
      * The country using a {@link org.opengis.util.CodeList}-like format.
-     * This was called "Country" in ISO 19139 and has been renamed "CountryCode" in ISO 19115-3
+     * This was called "Country" in ISO 19139:2007 and has been renamed "CountryCode" in ISO 19115-3
      */
     private CodeListUID identifier;
 
@@ -101,7 +101,7 @@ public final class Country extends GO_CharacterString {
     }
 
     /**
-     * Gets the value of the Country code using ISO 19139 element name.
+     * Gets the value of the Country code using ISO 19139:2007 element name.
      */
     @XmlElement(name = "Country", namespace = LegacyNamespaces.GMD)
     private CodeListUID getCountry() {
@@ -109,7 +109,7 @@ public final class Country extends GO_CharacterString {
     }
 
     /**
-     * Sets the value of the Country code in ISO 19139 element name.
+     * Sets the value of the Country code in ISO 19139:2007 element name.
      */
     @SuppressWarnings("unused")
     private void setCountry(CodeListUID newValue) {

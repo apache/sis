@@ -24,9 +24,8 @@ import org.apache.sis.internal.jaxb.Context;
 
 
 /**
- * JAXB adapter wrapping a URI in a {@code <gmd:URL>} element, for ISO-19139 compliance.
- * Note that while this object is called {@code "URL"}, we actually use the {@link URI}
- * Java object.
+ * JAXB adapter wrapping a URI in a {@code <gmd:URL>} element, for ISO 19139:2007 compliance.
+ * Note that while this object is called {@code "URL"}, we actually use the {@link URI} Java object.
  *
  * @author  Cédric Briançon (Geomatys)
  * @version 0.3

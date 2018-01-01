@@ -66,7 +66,7 @@
  * Apache SIS provides a unified view of all metadata identifiers. This view includes the citation
  * {@linkplain org.apache.sis.metadata.iso.citation.DefaultCitation#getISBN() ISBN} and
  * {@linkplain org.apache.sis.metadata.iso.citation.DefaultCitation#getISSN() ISSN} codes,
- * except at XML marshalling time (for ISO 19139 compliance).
+ * except at XML marshalling time (for ISO 19115-3 compliance).
  * See {@link org.apache.sis.xml.IdentifierMap} for more information.
  *
  * <div class="section">Null values, nil objects and collections</div>

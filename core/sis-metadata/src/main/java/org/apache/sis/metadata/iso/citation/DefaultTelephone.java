@@ -76,11 +76,10 @@ import org.apache.sis.internal.metadata.Dependencies;
  */
 @SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "CI_Telephone_Type", propOrder = {
-    "number",
-    "numberType",
-    // Legacy ISO 19139:2007 attributes.
-    "voices",
-    "facsimiles"
+    "number",           // New in ISO 19115:2014
+    "numberType",       // Ibid.
+    "voices",           // Legacy ISO 19115:2003
+    "facsimiles"        // Ibid.
 })
 @XmlRootElement(name = "CI_Telephone")
 public class DefaultTelephone extends ISOMetadata implements Telephone {

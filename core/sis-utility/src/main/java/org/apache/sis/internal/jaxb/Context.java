@@ -96,8 +96,8 @@ public final class Context extends MarshalContext {
     private static final int CLEAR_SEMAPHORE = 0x20;
 
     /**
-     * Whether we are (un)marshalling legacy metadata as defined in 2003 (ISO 19139).
-     * If this flag is not set, then we assume latest metadata as defined in 2014 (ISO 19115:2014).
+     * Whether we are (un)marshalling legacy metadata as defined in 2003 model (ISO 19139:2007).
+     * If this flag is not set, then we assume latest metadata as defined in 2014 model (ISO 19115-3).
      */
     public static final int LEGACY_METADATA = 0x40;
 
@@ -138,7 +138,7 @@ public final class Context extends MarshalContext {
     private final TimeZone timezone;
 
     /**
-     * The base URL of ISO 19139 (or other standards) schemas. The valid values
+     * The base URL of ISO 19115-3 (or other standards) schemas. The valid values
      * are documented in the {@link org.apache.sis.xml.XML#SCHEMAS} property.
      */
     private final Map<String,String> schemas;
@@ -398,7 +398,7 @@ public final class Context extends MarshalContext {
     }
 
     /**
-     * Returns the base URL of ISO 19139 (or other standards) schemas.
+     * Returns the base URL of ISO 19115-3 (or other standards) schemas.
      * The valid values are documented in the {@link org.apache.sis.xml.XML#SCHEMAS} property.
      * If the returned value is not empty, then this method guarantees it ends with {@code '/'}.
      *

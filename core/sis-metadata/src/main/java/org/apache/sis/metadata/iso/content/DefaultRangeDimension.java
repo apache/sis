@@ -60,8 +60,8 @@ import org.apache.sis.internal.jaxb.gco.InternationalStringAdapter;
 @TitleProperty(name = "sequenceIdentifier")
 @XmlType(name = "MD_RangeDimension_Type", propOrder = {
     "sequenceIdentifier",
-    "description",          // ISO 19115-3
-    "descriptor",           // ISO 19139:2007 (legacy)
+    "description",          // New in ISO 19115:2014
+    "descriptor",           // Legacy ISO 19115:2003
     "name"
 })
 @XmlRootElement(name = "MD_RangeDimension")

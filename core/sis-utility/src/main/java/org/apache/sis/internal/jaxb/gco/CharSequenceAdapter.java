@@ -27,8 +27,8 @@ import org.apache.sis.internal.jaxb.gmd.PT_FreeText;
 
 
 /**
- * JAXB adapter in order to wrap the string value with a {@code <gco:CharacterString>} element,
- * for ISO-19139 compliance. A {@link CharSequenceAdapter} can handle the following types:
+ * JAXB adapter wrapping the string value in a {@code <gco:CharacterString>} element, for ISO 19115-3 compliance.
+ * A {@link CharSequenceAdapter} can handle the following types:
  *
  * <ul>
  *   <li>{@link InternationalString}, which may be mapped to {@link PT_FreeText} elements.</li>

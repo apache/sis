@@ -24,8 +24,8 @@ import org.apache.sis.xml.Namespaces;
 
 /**
  * A set of strings localized in different languages. This adapter represents the
- * {@code <gmd:textGroup>} element defined for embedded translations in ISO-19139
- * standard. See {@link PT_FreeText} class javadoc for an example.
+ * {@code <gmd:textGroup>} element defined in ISO 19139:2007.
+ * See {@link PT_FreeText} class javadoc for an example.
  *
  * <p>If a localized string has a {@code null} locale, then this string will not be
  * included in this text group because that string should be already included in
@@ -36,8 +36,8 @@ import org.apache.sis.xml.Namespaces;
  * <p>The {@code TextGroup} name suggests that this object can contain many localized strings.
  * However it appears that despite its name, {@code TextGroup} shall always contains exactly 1
  * localized strings and the whole {@code TextGroup} element shall be repeated for each additional
- * languages. SIS uses the ISO 19139 compliant form for marshalling, but accepts both forms during
- * unmarshalling. More specifically, the name suggests that the format should be:</p>
+ * languages. SIS uses the ISO 19139:2007 compliant form for marshalling, but accepts both forms
+ * during unmarshalling. More specifically, the name suggests that the format should be:</p>
  *
  * {@preformat xml
  *   <gco:CharacterString>Apache SIS, projet OpenSource</gco:CharacterString>
@@ -84,7 +84,7 @@ final class TextGroup {
      * JAXB uses this field at marshalling-time in order to wrap {@code N}
      * {@code <LocalisedCharacterString>} elements inside a single {@code <textGroup>} element.
      *
-     * <p>In ISO 19139 compliant documents, the length of this array shall be exactly 1,
+     * <p>In ISO 19139:2007 compliant documents, the length of this array shall be exactly 1,
      * as in the second example of class javadoc. However SIS allows arbitrary length
      * (as in the first example of class javadoc) for compatibility and convenience reasons.</p>
      */
@@ -99,9 +99,9 @@ final class TextGroup {
 
     /**
      * Constructs a {@linkplain TextGroup text group} for a single locale. This constructor
-     * puts exactly one string in the {@code TextGroup}, as required by ISO 19139. However
-     * it would be possible to declare an other constructor allowing the more compact form
-     * (the smaller ) if there is a need for that in the future.
+     * puts exactly one string in the {@code TextGroup}, as required by ISO 19139:2007.
+     * However it would be possible to declare an other constructor allowing the more compact form
+     * (the smaller) if there is a need for that in the future.
      *
      * @param  locale  the string language.
      * @param  text    the string.

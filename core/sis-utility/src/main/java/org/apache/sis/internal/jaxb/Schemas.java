@@ -88,7 +88,7 @@ public final class Schemas {
     public static final String METADATA_ROOT = "http://standards.iso.org/iso/19115/";
 
     /**
-     * The root directory of ISO 19139 metadata schemas.
+     * The root directory of ISO 19115-3 metadata schemas.
      * This is sometime used as an alternative to {@link #METADATA_ROOT_OLD}.
      */
     @Deprecated

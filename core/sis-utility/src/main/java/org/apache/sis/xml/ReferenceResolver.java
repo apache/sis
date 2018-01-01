@@ -243,8 +243,8 @@ public class ReferenceResolver {
 
     /**
      * Returns the {@code <gmx:Anchor>} to use for the given text, or {@code null} if none.
-     * Anchors can appear in ISO 19139 documents where we would normally expect a character
-     * sequence. For example:
+     * Anchors can appear in ISO 19115-3 documents where we would normally expect a character sequence.
+     * For example:
      *
      * <table class="sis">
      * <caption>XML representations of string</caption>

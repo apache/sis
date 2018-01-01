@@ -288,12 +288,12 @@ public final strictfp class AllMetadataTest extends MetadataTestCase {
         final String rootName = type.getAnnotation(UML.class).identifier();
         switch (rootName) {
             // Following prefix was changed in ISO 19115 corrigendum,
-            // but ISO 19139 still use the old prefix.
+            // but ISO 19139:2007 still use the old prefix.
             case "SV_ServiceIdentification": {
                 return "MD_ServiceIdentification_Type";
             }
             // Following prefix was changed in ISO 19115:2014,
-            // but ISO 19139 still use the old prefix.
+            // but ISO 19139:2007 still use the old prefix.
             case "MD_Scope": {
                 return "DQ_Scope_Type";
             }

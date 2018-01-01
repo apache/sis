@@ -22,7 +22,7 @@ import org.apache.sis.util.iso.Types;
 
 
 /**
- * An adapter for {@link Enum}, in order to implement the ISO-19139 standard.
+ * An adapter for {@link Enum}, in order to implement the ISO 19115-3 standard.
  * Example:
  *
  * {@preformat xml

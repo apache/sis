@@ -29,7 +29,7 @@ import org.apache.sis.internal.jaxb.XmlUtilities;
 
 /**
  * JAXB adapter wrapping the date value in a {@code <gco:Date>} or {@code <gco:DateTime>} element,
- * for ISO-19139 compliance. Only one of {@code Date} or {@code DateTime} field shall be non-null.
+ * for ISO 19115-3 compliance. Only one of {@code Date} or {@code DateTime} field shall be non-null.
  * At marshalling time, the choice is performed depending on whatever the given date contains
  * hour, minute or seconds information different than zero.
  *
