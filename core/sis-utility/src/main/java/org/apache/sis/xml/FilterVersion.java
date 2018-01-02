@@ -126,7 +126,7 @@ enum FilterVersion {
      * This constructor is used when the legacy schema (the "view") was one large monolithic schema,
      * and the new schema (the "impl") has been separated in many smaller modules.
      *
-     * @param  impl        the namespaces used in JAXB annotations (should be latest schema).
+     * @param  impl        the namespaces used in JAXB annotations (should be most recent schema).
      * @param  view        the single namespace used in the XML file to (un)marshall (older schema).
      * @param  additional  additional (<var>impl</var>, <var>view</var>) mapping for a few namespaces
      *                     having different {@code view} values.
@@ -135,7 +135,7 @@ enum FilterVersion {
         toView = new HashMap<>(Containers.hashMapCapacity(impl.length));
         toImpl = new HashMap<>();
         for (final String e : impl) {
-            toImpl.put(e, view);
+            toView.put(e, view);
         }
         for (int i=0; i<additional.length;) {
             final String p = additional[i++];

@@ -57,6 +57,7 @@ public final class CodeListUID {
      * Some examples of strings returned by this method are:
      *
      * <ul>
+     *   <li>{@code "http://standards.iso.org/iso/19115/resources/Codelist/cat/codelists.xml#LanguageCode"}</li>
      *   <li>{@code "http://schemas.opengis.net/iso/19139/20070417/resources/Codelist/gmxCodelists.xml#LanguageCode"}</li>
      *   <li>{@code "http://schemas.opengis.net/iso/19139/20070417/resources/Codelist/gmxCodelists.xml#MD_CharacterSetCode"}</li>
      *   <li>{@code "http://schemas.opengis.net/iso/19139/20070417/resources/Codelist/gmxCodelists.xml#CI_OnLineFunctionCode"}</li>
@@ -67,16 +68,17 @@ public final class CodeListUID {
      * @return the URL to the given code list in the given schema.
      */
     private static String schema(final Context context, final String identifier) {
-        final String prefix, path;
+        final String prefix, root, path;
         if (Context.isFlagSet(context, Context.LEGACY_METADATA)) {
             prefix = "gmd";
+            root = Schemas.METADATA_ROOT_LEGACY;
             path = Schemas.CODELISTS_PATH_LEGACY;   // Future SIS version may switch between localized/unlocalized file.
         } else {
             prefix = "mdb";
+            root = Schemas.METADATA_ROOT;
             path = Schemas.CODELISTS_PATH;
         }
-        return Context.schema(context, prefix, Schemas.METADATA_ROOT)
-                .append(path).append('#').append(identifier).toString();
+        return Context.schema(context, prefix, root).append(path).append('#').append(identifier).toString();
     }
 
     /**
