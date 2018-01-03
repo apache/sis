@@ -27,6 +27,7 @@ import org.opengis.metadata.citation.CitationDate;
 import org.opengis.metadata.citation.Responsibility;
 import org.opengis.metadata.citation.PresentationForm;
 import org.apache.sis.metadata.iso.citation.DefaultCitation;
+import org.apache.sis.internal.jaxb.LegacyNamespaces;
 import org.apache.sis.internal.jaxb.Schemas;
 import org.apache.sis.xml.XML;
 import org.apache.sis.xml.Namespaces;
@@ -42,7 +43,7 @@ import static org.apache.sis.test.Assert.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Guilhem Legal (Geomatys)
- * @version 0.5
+ * @version 1.0
  *
  * @see <a href="http://jira.geotoolkit.org/browse/GEOTK-121">GEOTK-121</a>
  *
@@ -58,7 +59,7 @@ public final strictfp class CodeListMarshallingTest extends XMLTestCase {
     private static String getResponsiblePartyXML(final String baseURL) {
         return "<gmd:CI_ResponsibleParty xmlns:gmd=\"" + Namespaces.GMD + "\">\n" +
                "  <gmd:role>\n" +
-               "    <gmd:CI_RoleCode codeList=\"" + baseURL + Schemas.CODELISTS_PATH + "#CI_RoleCode\"" +
+               "    <gmd:CI_RoleCode codeList=\"" + baseURL + Schemas.CODELISTS_PATH_LEGACY + "#CI_RoleCode\"" +
                     " codeListValue=\"principalInvestigator\">" + "Principal investigator</gmd:CI_RoleCode>\n" +
                "  </gmd:role>\n" +
                "</gmd:CI_ResponsibleParty>";
@@ -72,7 +73,7 @@ public final strictfp class CodeListMarshallingTest extends XMLTestCase {
     private static String getCitationXML(final String baseURL, final String language, final String value) {
         return "<gmd:CI_Date xmlns:gmd=\"" + Namespaces.GMD + "\">\n" +
                "  <gmd:dateType>\n" +
-               "    <gmd:CI_DateTypeCode codeList=\"" + baseURL + Schemas.CODELISTS_PATH + "#CI_DateTypeCode\"" +
+               "    <gmd:CI_DateTypeCode codeList=\"" + baseURL + Schemas.CODELISTS_PATH_LEGACY + "#CI_DateTypeCode\"" +
                     " codeListValue=\"creation\" codeSpace=\"" + language + "\">" + value + "</gmd:CI_DateTypeCode>\n" +
                "  </gmd:dateType>\n" +
                "</gmd:CI_Date>";
@@ -85,14 +86,14 @@ public final strictfp class CodeListMarshallingTest extends XMLTestCase {
      */
     @Test
     public void testDefaultURL() throws JAXBException {
-        final String expected = getResponsiblePartyXML(Schemas.METADATA_ROOT);
+        final String expected = getResponsiblePartyXML(Schemas.METADATA_ROOT_LEGACY);
         final Responsibility rp = (Responsibility) XML.unmarshal(expected);
         assertEquals(Role.PRINCIPAL_INVESTIGATOR, rp.getRole());
         /*
          * Use the convenience method in order to avoid the effort of creating
          * our own MarshallerPool.
          */
-        final String actual = XML.marshal(rp);
+        final String actual = marshal(rp, LegacyNamespaces.ISO_19139);
         assertXmlEquals(expected, actual, "xmlns:*");
     }
 
@@ -109,6 +110,7 @@ public final strictfp class CodeListMarshallingTest extends XMLTestCase {
 
         final MarshallerPool pool = getMarshallerPool();
         final Marshaller marshaller = pool.acquireMarshaller();
+        marshaller.setProperty(XML.METADATA_VERSION, LegacyNamespaces.ISO_19139);
         marshaller.setProperty(XML.SCHEMAS, Collections.singletonMap("gmd",
                 "http://standards.iso.org/ittf/PubliclyAvailableStandards/ISO_19139_Schemas")); // Intentionally omit trailing '/'.
         final String actual = marshal(marshaller, rp);
@@ -125,11 +127,12 @@ public final strictfp class CodeListMarshallingTest extends XMLTestCase {
     public void testLocalization() throws JAXBException {
         final MarshallerPool pool = getMarshallerPool();
         final Marshaller marshaller = pool.acquireMarshaller();
+        marshaller.setProperty(XML.METADATA_VERSION, LegacyNamespaces.ISO_19139);
         /*
          * First, test using the French locale.
          */
         marshaller.setProperty(XML.LOCALE, Locale.FRENCH);
-        String expected = getCitationXML(Schemas.METADATA_ROOT, "fra", "Création");
+        String expected = getCitationXML(Schemas.METADATA_ROOT_LEGACY, "fra", "Création");
         CitationDate ci = (CitationDate) XML.unmarshal(expected);
         assertEquals(DateType.CREATION, ci.getDateType());
         String actual = marshal(marshaller, ci);
@@ -138,7 +141,7 @@ public final strictfp class CodeListMarshallingTest extends XMLTestCase {
          * Tests again using the English locale.
          */
         marshaller.setProperty(XML.LOCALE, Locale.ENGLISH);
-        expected = getCitationXML(Schemas.METADATA_ROOT, "eng", "Creation");
+        expected = getCitationXML(Schemas.METADATA_ROOT_LEGACY, "eng", "Creation");
         ci = (CitationDate) XML.unmarshal(expected);
         assertEquals(DateType.CREATION, ci.getDateType());
         actual = marshal(marshaller, ci);
@@ -159,7 +162,7 @@ public final strictfp class CodeListMarshallingTest extends XMLTestCase {
                 PresentationForm.valueOf("IMAGE_DIGITAL"), // Existing code with UML id="imageDigital"
                 PresentationForm.valueOf("test")));        // New code
 
-        final String xml = marshal(id);
+        final String xml = marshal(id, LegacyNamespaces.ISO_19139);
 
         // "IMAGE_DIGITAL" is marshalled as "imageDigital" because is contains a UML id, which is lower-case.
         assertXmlEquals(

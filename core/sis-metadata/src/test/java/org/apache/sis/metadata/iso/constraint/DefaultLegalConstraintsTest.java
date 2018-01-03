@@ -24,6 +24,7 @@ import org.apache.sis.xml.XML;
 import org.apache.sis.xml.Namespaces;
 import org.apache.sis.xml.MarshallerPool;
 import org.apache.sis.util.logging.WarningListener;
+import org.apache.sis.internal.jaxb.LegacyNamespaces;
 import org.apache.sis.test.XMLTestCase;
 import org.junit.Test;
 
@@ -79,7 +80,7 @@ public final strictfp class DefaultLegalConstraintsTest extends XMLTestCase impl
     }
 
     /**
-     * Unmarshalls the given XML fragment.
+     * Unmarshals the given XML fragment.
      */
     private DefaultLegalConstraints unmarshal(final String xml) throws JAXBException {
         final MarshallerPool pool = getMarshallerPool();
@@ -142,7 +143,7 @@ public final strictfp class DefaultLegalConstraintsTest extends XMLTestCase impl
 
         final DefaultLegalConstraints c = new DefaultLegalConstraints();
         c.setUseConstraints(singleton(Restriction.LICENCE));
-        assertXmlEquals(xml, marshal(c), "xmlns:*");
+        assertXmlEquals(xml, marshal(c, LegacyNamespaces.ISO_19139), "xmlns:*");
         /*
          * Unmarshall and ensure that we got back the original LICENCE code, not a new "LICENSE" code.
          */
