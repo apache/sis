@@ -38,6 +38,8 @@ import org.apache.sis.metadata.iso.extent.Extents;
 import org.apache.sis.metadata.iso.DefaultIdentifier;
 import org.apache.sis.util.iso.SimpleInternationalString;
 import org.apache.sis.util.iso.DefaultInternationalString;
+import org.apache.sis.util.Version;
+import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestUtilities;
 import org.apache.sis.test.XMLTestCase;
 import org.junit.Test;
@@ -50,7 +52,8 @@ import static org.apache.sis.test.MetadataAssert.*;
  * Tests {@link DefaultCitation}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.7
+ * @author  Cullen Rombach (Image Matters)
+ * @version 1.0
  * @since   0.3
  * @module
  */
@@ -59,6 +62,11 @@ public final strictfp class DefaultCitationTest extends XMLTestCase {
      * An XML file in this package containing a citation.
      */
     private static final String XML_FILE = "Citation.xml";
+
+    /**
+     * An XML file in this package containing a citation in the format of legacy ISO 19139:2007 specification.
+     */
+    private static final String XML_FILE_LEGACY = "Citation (legacy).xml";
 
     /**
      * Creates a citation with an arbitrary title, presentation form and other properties.
@@ -175,6 +183,19 @@ public final strictfp class DefaultCitationTest extends XMLTestCase {
     }
 
     /**
+     * Tests XML marshalling using the format derived form ISO 19115:2014 model.
+     * This method also tests usage of {@code gml:id} and {@code xlink:href}.
+     *
+     * @throws JAXBException if an error occurred during marshalling.
+     *
+     * @since 1.0
+     */
+    @Test
+    public void testMarshalling() throws JAXBException {
+        testMarshalling(XML_FILE, LegacyNamespaces.ISO_19115_3);
+    }
+
+    /**
      * Tests XML marshalling using the format derived form ISO 19115:2003 model.
      * This method also tests usage of {@code gml:id} and {@code xlink:href}.
      *
@@ -183,7 +204,18 @@ public final strictfp class DefaultCitationTest extends XMLTestCase {
      * @since 0.7
      */
     @Test
-    public void testMarshalling() throws JAXBException {
+    @DependsOnMethod("testMarshalling")
+    public void testMarshallingLegacy() throws JAXBException {
+        testMarshalling(XML_FILE_LEGACY, LegacyNamespaces.ISO_19139);
+    }
+
+    /**
+     * Tests XML marshalling for the given metadata version.
+     *
+     * @param  file     file containing the expected metadata.
+     * @param  version  the metadata version to marshal.
+     */
+    private void testMarshalling(final String file, final Version version) throws JAXBException {
         final DefaultContact contact = new DefaultContact();
         contact.setContactInstructions(new SimpleInternationalString("Send carrier pigeon."));
         contact.getIdentifierMap().putSpecialized(IdentifierSpace.ID, "ip-protocol");
@@ -193,7 +225,20 @@ public final strictfp class DefaultCitationTest extends XMLTestCase {
                 new DefaultResponsibility(Role.FUNDER,     null, new DefaultIndividual("Robin Hood",  null, contact))
         ));
         c.getDates().add(new DefaultCitationDate(TestUtilities.date("2015-10-17 00:00:00"), DateType.ADOPTED));
-        assertMarshalEqualsFile(XML_FILE, c, LegacyNamespaces.ISO_19139, "xlmns:*", "xsi:schemaLocation");
+        assertMarshalEqualsFile(file, c, version, "xlmns:*", "xsi:schemaLocation");
+    }
+
+    /**
+     * Tests XML unmarshalling using the format derived form ISO 19115:2014 model.
+     * This method also tests usage of {@code gml:id} and {@code xlink:href}.
+     *
+     * @throws JAXBException if an error occurred during unmarshalling.
+     *
+     * @since 1.0
+     */
+    @Test
+    public void testUnmarshalling() throws JAXBException {
+        testUnmarshalling(XML_FILE);
     }
 
     /**
@@ -205,8 +250,19 @@ public final strictfp class DefaultCitationTest extends XMLTestCase {
      * @since 0.7
      */
     @Test
-    public void testUnmarshalling() throws JAXBException {
-        final DefaultCitation c = unmarshalFile(DefaultCitation.class, XML_FILE);
+    @DependsOnMethod("testUnmarshalling")
+    public void testUnmarshallingLegacy() throws JAXBException {
+        testUnmarshalling(XML_FILE_LEGACY);
+    }
+
+    /**
+     * Tests XML unmarshalling for a metadata version.
+     * The version is not specified since it should be detected automatically.
+     *
+     * @param  file  file containing the metadata to unmarshal.
+     */
+    private void testUnmarshalling(final String file) throws JAXBException {
+        final DefaultCitation c = unmarshalFile(DefaultCitation.class, file);
         assertTitleEquals("title", "Fight against poverty", c);
 
         final CitationDate date = getSingleton(c.getDates());
