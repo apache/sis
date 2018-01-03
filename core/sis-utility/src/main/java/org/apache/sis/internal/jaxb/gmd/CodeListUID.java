@@ -115,7 +115,7 @@ public final class CodeListUID {
     /**
      * Default empty constructor for JAXB.
      */
-    private CodeListUID() {
+    public CodeListUID() {
     }
 
     /**
