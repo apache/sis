@@ -225,6 +225,7 @@ public final strictfp class DefaultCitationTest extends XMLTestCase {
                 new DefaultResponsibility(Role.FUNDER,     null, new DefaultIndividual("Robin Hood",  null, contact))
         ));
         c.getDates().add(new DefaultCitationDate(TestUtilities.date("2015-10-17 00:00:00"), DateType.ADOPTED));
+        // Check that XML file built by the marshaller is the same as the example file.
         assertMarshalEqualsFile(file, c, version, "xlmns:*", "xsi:schemaLocation");
     }
 
@@ -273,7 +274,7 @@ public final strictfp class DefaultCitationTest extends XMLTestCase {
         final Contact contact = assertResponsibilityEquals(Role.ORIGINATOR, "Maid Marian", it.next());
         assertEquals("Contact instruction", "Send carrier pigeon.", contact.getContactInstructions().toString());
 
-        // Thanks to xlink:href, the Contact shall be the same instance than above.
+        // Thanks to xlink:href, the Contact shall be the same instance as above.
         assertSame("contact", contact, assertResponsibilityEquals(Role.FUNDER, "Robin Hood", it.next()));
         assertFalse(it.hasNext());
     }
