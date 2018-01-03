@@ -84,6 +84,8 @@ Implementations of metadata derived from ISO 19115. This module provides both an
     <contributor>
       <name>Cullen Rombach</name>
       <organization>Image Matters</organization>
+      <organizationUrl>http://www.imagemattersllc.com</organizationUrl>
+      <timezone>-5</timezone>
       <roles>
         <role>developer</role>
       </roles>

@@ -22,6 +22,7 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlSeeAlso;
 import javax.xml.bind.annotation.XmlType;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
@@ -37,6 +38,8 @@ import org.apache.sis.metadata.TitleProperty;
 import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.metadata.iso.maintenance.DefaultScope;
 import org.apache.sis.metadata.iso.identification.DefaultResolution;
+import org.apache.sis.internal.jaxb.metadata.MD_Resolution;
+import org.apache.sis.internal.jaxb.FilterByVersion;
 import org.apache.sis.internal.metadata.Dependencies;
 import org.apache.sis.util.iso.Types;
 import org.apache.sis.xml.Namespaces;
@@ -75,7 +78,8 @@ import org.apache.sis.xml.Namespaces;
  * @author  Touraïvane (IRD)
  * @author  Cédric Briançon (Geomatys)
  * @author  Rémi Maréchal (Geomatys)
- * @version 0.5
+ * @author  Cullen Rombach (Image Matters)
+ * @version 1.0
  * @since   0.3
  * @module
  */
@@ -83,10 +87,11 @@ import org.apache.sis.xml.Namespaces;
 @TitleProperty(name = "description")
 @XmlType(name = "LI_Source_Type", propOrder = {
     "description",
-    "scaleDenominator",
+    "scaleDenominator",             // Legacy ISO 19115:2003
     "sourceCitation",
     "sourceExtents",
     "sourceSteps",
+    "sourceSpatialResolution",      // New in ISO 19115:2014
     "processedLevel",
     "resolution"
 })
@@ -236,7 +241,8 @@ public class DefaultSource extends ISOMetadata implements Source {
      * @since 0.5
      */
     @Override
-/// @XmlElement(name = "sourceSpatialResolution")
+    @XmlElement(name = "sourceSpatialResolution")
+    @XmlJavaTypeAdapter(MD_Resolution.Since2014.class)
     public Resolution getSourceSpatialResolution() {
         return sourceSpatialResolution;
     }
@@ -267,8 +273,13 @@ public class DefaultSource extends ISOMetadata implements Source {
     @XmlElement(name = "scaleDenominator")
     @Dependencies("getSourceSpatialResolution")
     public RepresentativeFraction getScaleDenominator() {
-        final Resolution resolution = getSourceSpatialResolution();
-        return (resolution != null) ? resolution.getEquivalentScale() : null;
+        if (FilterByVersion.LEGACY_METADATA.accept()) {
+            final Resolution resolution = getSourceSpatialResolution();
+            if (resolution != null) {
+                return resolution.getEquivalentScale();
+            }
+        }
+        return null;
     }
 
     /**

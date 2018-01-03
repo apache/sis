@@ -326,6 +326,15 @@ Apache SIS is a free software, Java language library for developing geospatial a
       </roles>
     </contributor>
     <contributor>
+      <name>Cullen Rombach</name>
+      <organization>Image Matters</organization>
+      <organizationUrl>http://www.imagemattersllc.com</organizationUrl>
+      <timezone>-5</timezone>
+      <roles>
+        <role>developer</role>
+      </roles>
+    </contributor>
+    <contributor>
       <name>Guilhem Legal</name>
       <email>guilhem.legal@geomatys.com</email>
       <organization>Geomatys</organization>
