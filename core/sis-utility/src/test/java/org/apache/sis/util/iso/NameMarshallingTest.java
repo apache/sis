@@ -25,9 +25,11 @@ import org.opengis.util.LocalName;
 import org.opengis.util.GenericName;
 import org.opengis.util.NameFactory;
 import org.opengis.util.NameSpace;
-import org.apache.sis.internal.system.DefaultFactories;
+import org.apache.sis.xml.XML;
 import org.apache.sis.xml.Namespaces;
 import org.apache.sis.xml.MarshallerPool;
+import org.apache.sis.internal.jaxb.LegacyNamespaces;
+import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.test.mock.IdentifiedObjectMock;
 import org.apache.sis.test.XMLTestCase;
 import org.apache.sis.test.DependsOn;
@@ -42,7 +44,8 @@ import static org.apache.sis.test.Assert.*;
  * Tests the XML marshalling of generic names.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.5
+ * @author  Cullen Rombach (Image Matters)
+ * @version 1.0
  * @since   0.3
  * @module
  */
@@ -64,6 +67,7 @@ public final strictfp class NameMarshallingTest extends XMLTestCase {
             pool = new MarshallerPool(JAXBContext.newInstance(IdentifiedObjectMock.class), null);
         }
         final Marshaller marshaller = pool.acquireMarshaller();
+        marshaller.setProperty(XML.METADATA_VERSION, LegacyNamespaces.ISO_19139);
         final String xml = marshal(marshaller, new IdentifiedObjectMock(null, name));
         pool.recycle(marshaller);
         return xml;
@@ -72,7 +76,7 @@ public final strictfp class NameMarshallingTest extends XMLTestCase {
     /**
      * Converse of {@link #marshal(GenericName)}.
      */
-    private GenericName unmarshall(final String xml) throws JAXBException {
+    private GenericName unmarshal(final String xml) throws JAXBException {
         final Unmarshaller unmarshaller = pool.acquireUnmarshaller();
         final Object value = unmarshal(unmarshaller, xml);
         pool.recycle(unmarshaller);
@@ -91,14 +95,14 @@ public final strictfp class NameMarshallingTest extends XMLTestCase {
         assertEquals("An ordinary local name", name.toString());
         final String expected =
                 "<gml:IO_IdentifiedObject xmlns:gml=\"" + Namespaces.GML + '"' +
-                                        " xmlns:gco=\"" + Namespaces.GCO + "\">\n" +
+                                        " xmlns:gco=\"" + LegacyNamespaces.GCO + "\">\n" +
                 "  <gml:alias>\n" +
                 "    <gco:LocalName>An ordinary local name</gco:LocalName>\n" +
                 "  </gml:alias>\n" +
                 "</gml:IO_IdentifiedObject>\n";
         final String actual = marshal(name);
         assertXmlEquals(expected, actual, "xmlns:*");
-        assertEquals(name, unmarshall(expected));
+        assertEquals(name, unmarshal(expected));
     }
 
     /**
@@ -114,14 +118,14 @@ public final strictfp class NameMarshallingTest extends XMLTestCase {
         assertEquals("A name with & and > and <.", name.toString());
         final String expected =
                 "<gml:IO_IdentifiedObject xmlns:gml=\"" + Namespaces.GML + '"' +
-                                        " xmlns:gco=\"" + Namespaces.GCO + "\">\n" +
+                                        " xmlns:gco=\"" + LegacyNamespaces.GCO + "\">\n" +
                 "  <gml:alias>\n" +
                 "    <gco:LocalName>A name with &amp; and &gt; and &lt;.</gco:LocalName>\n" +
                 "  </gml:alias>\n" +
                 "</gml:IO_IdentifiedObject>\n";
         final String actual = marshal(name);
         assertXmlEquals(expected, actual, "xmlns:*");
-        assertEquals(name, unmarshall(expected));
+        assertEquals(name, unmarshal(expected));
     }
 
     /**
@@ -138,14 +142,14 @@ public final strictfp class NameMarshallingTest extends XMLTestCase {
         assertEquals("A name in a scope", name.toString());
         final String expected =
                 "<gml:IO_IdentifiedObject xmlns:gml=\"" + Namespaces.GML + '"' +
-                                        " xmlns:gco=\"" + Namespaces.GCO + "\">\n" +
+                                        " xmlns:gco=\"" + LegacyNamespaces.GCO + "\">\n" +
                 "  <gml:alias>\n" +
                 "    <gco:LocalName codeSpace=\"A code space\">A name in a scope</gco:LocalName>\n" +
                 "  </gml:alias>\n" +
                 "</gml:IO_IdentifiedObject>\n";
         final String actual = marshal(name);
         assertXmlEquals(expected, actual, "xmlns:*");
-        assertEquals(name, unmarshall(expected));
+        assertEquals(name, unmarshal(expected));
     }
 
     /**
@@ -160,7 +164,7 @@ public final strictfp class NameMarshallingTest extends XMLTestCase {
         assertEquals("An other local name", name.toString());
         final String expected =
                 "<gml:IO_IdentifiedObject xmlns:gml=\"" + Namespaces.GML + '"' +
-                                        " xmlns:gco=\"" + Namespaces.GCO + "\">\n" +
+                                        " xmlns:gco=\"" + LegacyNamespaces.GCO + "\">\n" +
                 "  <gml:alias>\n" +
                 "    <gco:TypeName>\n" +
                 "      <gco:aName>\n" +
@@ -171,7 +175,7 @@ public final strictfp class NameMarshallingTest extends XMLTestCase {
                 "</gml:IO_IdentifiedObject>\n";
         final String actual = marshal(name);
         assertXmlEquals(expected, actual, "xmlns:*");
-        assertEquals(name, unmarshall(expected));
+        assertEquals(name, unmarshal(expected));
     }
 
     /**
@@ -186,14 +190,14 @@ public final strictfp class NameMarshallingTest extends XMLTestCase {
         assertEquals("myScope:myName", name.toString());
         final String expected =
                 "<gml:IO_IdentifiedObject xmlns:gml=\"" + Namespaces.GML + '"' +
-                                        " xmlns:gco=\"" + Namespaces.GCO + "\">\n" +
+                                        " xmlns:gco=\"" + LegacyNamespaces.GCO + "\">\n" +
                 "  <gml:alias>\n" +
                 "    <gco:ScopedName>myScope:myName</gco:ScopedName>\n" +
                 "  </gml:alias>\n" +
                 "</gml:IO_IdentifiedObject>\n";
         final String actual = marshal(name);
         assertXmlEquals(expected, actual, "xmlns:*");
-        assertEquals(name, unmarshall(expected));
+        assertEquals(name, unmarshal(expected));
     }
 
     /**
