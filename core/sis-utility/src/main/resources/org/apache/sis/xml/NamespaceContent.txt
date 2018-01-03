@@ -76,14 +76,8 @@ http://standards.iso.org/iso/19115/-3/cit/1.0
     party
     role
   CI_ResponsibleParty
-    <type>
-    contactInfo
     extent
-    individualName
-    organisationName
     party
-    positionName
-    role
   CI_RoleCode
     <type>
   CI_Series

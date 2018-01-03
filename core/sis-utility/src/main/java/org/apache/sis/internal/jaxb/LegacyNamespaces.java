@@ -105,26 +105,6 @@ public final class LegacyNamespaces {
     public static final String GTS = "http://www.isotc211.org/2005/gts";
 
     /**
-     * A non-public (un)marshaller property for controlling usage of {@code org.apache.sis.xml.FilteredNamespaces}.
-     * Values can be:
-     *
-     * <ul>
-     *   <li>{@link Boolean#FALSE} for disabling namespace replacements. XML (un)marshalling will use the namespaces URI
-     *       supported natively by SIS as declared in JAXB annotations. This is sometime useful for debugging purpose.</li>
-     *   <li>{@link Boolean#TRUE} for forcing namespace replacements at unmarshalling time. This is useful for reading a
-     *       XML document of unknown GML version.</li>
-     *   <li>{@code null} or missing for the default behavior, which is apply namespace replacements only if the
-     *       {@link org.apache.sis.xml.XML#GML_VERSION} property is set to an older value than the one supported
-     *       natively by SIS.</li>
-     * </ul>
-     *
-     * This property can be given to {@link org.apache.sis.xml.MarshallerPool} constructor, or set directly on
-     * a {@code Marshaller} or {@code Unmarshaller} instance created by {@code MarshallerPool} by invoking its
-     * {@code setProperty(String, Object)} method.
-     */
-    public static final String APPLY_NAMESPACE_REPLACEMENTS = "org.apache.sis.xml.applyNamespaceReplacements";
-
-    /**
      * Do not allow instantiation of this class.
      */
     private LegacyNamespaces() {

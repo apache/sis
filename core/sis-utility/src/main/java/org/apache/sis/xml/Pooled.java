@@ -113,29 +113,6 @@ abstract class Pooled {
     private Map<String,String> schemas;
 
     /**
-     * Whether {@link FilteredNamespaces} shall be used of not. Values can be:
-     *
-     * <ul>
-     *   <li>{@value #DEFAULT_REPLACEMENT} for the default behavior, which applies namespace replacements
-     *       only if the {@link XML#GML_VERSION} property is set to an older value than the one supported
-     *       natively by SIS.</li>
-     *   <li>{@value #FORCE_REPLACEMENT} for forcing namespace replacements at unmarshalling time.
-     *       This is useful for reading a XML document of unknown GML version.</li>
-     *   <li>{@value #DISABLE_REPLACEMENT} for disabling namespace replacements. XML (un)marshalling
-     *       will use the namespaces URI supported natively by SIS as declared in JAXB annotations.
-     *       This is sometime useful for debugging purpose.</li>
-     * </ul>
-     *
-     * @see LegacyNamespaces#APPLY_NAMESPACE_REPLACEMENTS
-     */
-    private byte xmlnsReplaceCode;
-
-    /**
-     * Enumeration values for {@link #xmlnsReplaceCode}.
-     */
-    private static final byte DEFAULT_REPLACEMENT = 0, FORCE_REPLACEMENT = 1, DISABLE_REPLACEMENT = 2;
-
-    /**
      * The GML version to be marshalled or unmarshalled, or {@code null} if unspecified.
      * If null, then the latest version is assumed.
      *
@@ -238,7 +215,6 @@ abstract class Pooled {
         locale           = template.locale;
         timezone         = template.timezone;
         schemas          = template.schemas;
-        xmlnsReplaceCode = template.xmlnsReplaceCode;
         versionGML       = template.versionGML;
         versionMetadata  = template.versionMetadata;
         resolver         = template.resolver;
@@ -274,29 +250,19 @@ abstract class Pooled {
      * @see FilteredNamespaces
      */
     final FilterVersion getFilterVersion() {
-        switch (xmlnsReplaceCode) {
-            case DEFAULT_REPLACEMENT: {
-                // Apply namespace replacements only for older versions than the one supported natively by SIS.
-                if (versionGML != null) {
-                    if (versionGML.compareTo(LegacyNamespaces.VERSION_3_2_1) < 0) {
-                        return FilterVersion.GML31;
-                    }
-                }
-                if (versionMetadata != null) {
-                    if (versionMetadata.compareTo(LegacyNamespaces.ISO_19115_3) < 0) {
-                        return FilterVersion.ISO19139;
-                    }
-                }
-                break;
+        if (versionGML != null) {
+            // Apply namespace replacements only for older versions than the one supported natively by SIS.
+            if (versionGML.compareTo(LegacyNamespaces.VERSION_3_2_1) < 0) {
+                return FilterVersion.GML31;
             }
-            case FORCE_REPLACEMENT: {
-                // Force namespace replacements at unmarshalling time (illegal for marshalling).
-                if ((bitMasks & Context.MARSHALLING) == 0) {
-                    return FilterVersion.ALL;
-                }
-                break;
+        } else if (versionMetadata != null) {
+            // Only if GML version is unspecified, because GML version implies metadata version.
+            if (versionMetadata.compareTo(LegacyNamespaces.ISO_19115_3) < 0) {
+                return FilterVersion.ISO19139;
             }
-            // case DISABLE_REPLACEMENT: disable namespace replacements.
+        } else if ((bitMasks & Context.MARSHALLING) == 0) {
+            // Force namespace replacements at unmarshalling time (illegal for marshalling).
+            return FilterVersion.ALL;
         }
         return null;
     }
@@ -401,13 +367,6 @@ abstract class Pooled {
                     warningListener = (WarningListener<?>) value;
                     return;
                 }
-                case LegacyNamespaces.APPLY_NAMESPACE_REPLACEMENTS: {
-                    xmlnsReplaceCode = DEFAULT_REPLACEMENT;
-                    if (value != null) {
-                        xmlnsReplaceCode = ((Boolean) value) ? FORCE_REPLACEMENT : DISABLE_REPLACEMENT;
-                    }
-                    return;
-                }
                 case TypeRegistration.ROOT_ADAPTERS: {
                     rootAdapters = (TypeRegistration[]) value;
                     // No clone for now because ROOT_ADAPTERS is not yet a public API.
@@ -454,13 +413,6 @@ abstract class Pooled {
                 if ((bitMasks & Context.SUBSTITUTE_FILENAME) != 0) substitutes[n++] = "filename";
                 if ((bitMasks & Context.SUBSTITUTE_MIMETYPE) != 0) substitutes[n++] = "mimetype";
                 return (n != 0) ? ArraysExt.resize(substitutes, n) : null;
-            }
-            case LegacyNamespaces.APPLY_NAMESPACE_REPLACEMENTS: {
-                switch (xmlnsReplaceCode) {
-                    case FORCE_REPLACEMENT:   return Boolean.TRUE;
-                    case DISABLE_REPLACEMENT: return Boolean.FALSE;
-                    default:                  return null;
-                }
             }
             case TypeRegistration.ROOT_ADAPTERS: return (rootAdapters != null) ? rootAdapters.clone() : null;
             default: {
