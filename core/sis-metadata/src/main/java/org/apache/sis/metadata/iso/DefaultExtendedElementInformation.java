@@ -32,6 +32,7 @@ import org.apache.sis.measure.ValueRange;
 import org.apache.sis.util.iso.Types;
 import org.apache.sis.xml.Namespaces;
 import org.apache.sis.internal.jaxb.LegacyNamespaces;
+import org.apache.sis.internal.jaxb.FilterByVersion;
 import org.apache.sis.internal.metadata.Dependencies;
 import org.apache.sis.internal.metadata.LegacyPropertyAdapter;
 
@@ -90,7 +91,7 @@ import static org.apache.sis.internal.metadata.MetadataUtilities.ensurePositive;
     "domainValue",
     "parentEntity",
     "rule",
-    "rationales",
+    "rationale",
     "sources"
 })
 @XmlRootElement(name = "MD_ExtendedElementInformation", namespace = Namespaces.MEX)
@@ -307,7 +308,7 @@ public class DefaultExtendedElementInformation extends ISOMetadata implements Ex
     @Deprecated
     @XmlElement(name = "shortName", namespace = LegacyNamespaces.GMD)
     public String getShortName()  {
-        return shortName;
+        return FilterByVersion.LEGACY_METADATA.accept() ? shortName : null;
     }
 
     /**
@@ -336,7 +337,7 @@ public class DefaultExtendedElementInformation extends ISOMetadata implements Ex
     @Deprecated
     @XmlElement(name = "domainCode", namespace = LegacyNamespaces.GMD)
     public Integer getDomainCode() {
-        return domainCode;
+        return FilterByVersion.LEGACY_METADATA.accept() ? domainCode : null;
     }
 
     /**
@@ -542,6 +543,7 @@ public class DefaultExtendedElementInformation extends ISOMetadata implements Ex
      * @since 0.5
      */
     @Override
+    @XmlElement(name = "rationale")
     public InternationalString getRationale() {
         return rationale;
     }
@@ -565,7 +567,6 @@ public class DefaultExtendedElementInformation extends ISOMetadata implements Ex
      */
     @Override
     @Deprecated
-    @XmlElement(name = "rationale")
     @Dependencies("getRationale")
     public Collection<InternationalString> getRationales() {
         return new AbstractSet<InternationalString>() {

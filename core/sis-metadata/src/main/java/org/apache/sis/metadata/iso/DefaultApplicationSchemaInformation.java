@@ -19,9 +19,12 @@ package org.apache.sis.metadata.iso;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import org.opengis.metadata.ApplicationSchemaInformation;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.citation.OnlineResource;
+import org.apache.sis.internal.jaxb.gco.CharSequenceAdapter;
+import org.apache.sis.internal.jaxb.metadata.CI_OnlineResource;
 
 
 /**
@@ -47,7 +50,8 @@ import org.opengis.metadata.citation.OnlineResource;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Touraïvane (IRD)
  * @author  Cédric Briançon (Geomatys)
- * @version 0.5
+ * @author  Cullen Rombach (Image Matters)
+ * @version 1.0
  * @since   0.3
  * @module
  */
@@ -56,9 +60,9 @@ import org.opengis.metadata.citation.OnlineResource;
     "name",
     "schemaLanguage",
     "constraintLanguage",
-/// "schemaAscii",
-/// "graphicsFile",
-/// "softwareDevelopmentFile",
+    "schemaAscii",
+    "graphicsFile",
+    "softwareDevelopmentFile",
     "softwareDevelopmentFileFormat"
 })
 @XmlRootElement(name = "MD_ApplicationSchemaInformation")
@@ -241,7 +245,8 @@ public class DefaultApplicationSchemaInformation extends ISOMetadata implements 
      * @return application schema as an ASCII file, or {@code null}.
      */
     @Override
-/// @XmlElement(name = "schemaAscii")
+    @XmlElement(name = "schemaAscii")
+    @XmlJavaTypeAdapter(CharSequenceAdapter.Since2014.class)
     public CharSequence getSchemaAscii()  {
         return schemaAscii;
     }
@@ -262,7 +267,8 @@ public class DefaultApplicationSchemaInformation extends ISOMetadata implements 
      * @return application schema as a graphics file, or {@code null}.
      */
     @Override
-/// @XmlElement(name = "graphicsFile")
+    @XmlElement(name = "graphicsFile")
+    @XmlJavaTypeAdapter(CI_OnlineResource.Since2014.class)
     public OnlineResource getGraphicsFile()  {
         return graphicsFile;
     }
@@ -283,7 +289,8 @@ public class DefaultApplicationSchemaInformation extends ISOMetadata implements 
      * @return application schema as a software development file, or {@code null}.
      */
     @Override
-/// @XmlElement(name = "softwareDevelopmentFile")
+    @XmlElement(name = "softwareDevelopmentFile")
+    @XmlJavaTypeAdapter(CI_OnlineResource.Since2014.class)
     public OnlineResource getSoftwareDevelopmentFile()  {
         return softwareDevelopmentFile;
     }

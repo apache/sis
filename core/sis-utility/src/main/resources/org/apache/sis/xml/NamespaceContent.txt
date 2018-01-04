@@ -341,8 +341,11 @@ http://standards.iso.org/iso/19115/-3/mdb/1.0
   MD_ApplicationSchemaInformation
     <type>
     constraintLanguage
+    graphicsFile
     name
+    schemaAscii
     schemaLanguage
+    softwareDevelopmentFile
     softwareDevelopmentFileFormat
   MD_CellGeometryCode
     <type>
