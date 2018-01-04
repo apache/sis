@@ -51,7 +51,7 @@ import org.apache.sis.xml.Namespaces;
  */
 @SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @TitleProperty(name = "name")
-@XmlType(name = "LE_ProcessStepReport_Type", propOrder = {
+@XmlType(name = "LE_ProcessStepReport_Type", namespace = Namespaces.GMI, propOrder = {
     "name",
     "description",
     "fileType"
@@ -133,7 +133,7 @@ public class DefaultProcessStepReport extends ISOMetadata implements ProcessStep
      * @return name of the processing report, or {@code null}.
      */
     @Override
-    @XmlElement(name = "name", namespace = Namespaces.GMI, required = true)
+    @XmlElement(name = "name", required = true)
     public InternationalString getName() {
         return name;
     }
@@ -154,7 +154,7 @@ public class DefaultProcessStepReport extends ISOMetadata implements ProcessStep
      * @return what occurred during the process step, or {@code null}.
      */
     @Override
-    @XmlElement(name = "description", namespace = Namespaces.GMI)
+    @XmlElement(name = "description")
     public InternationalString getDescription() {
         return description;
     }
@@ -175,7 +175,7 @@ public class DefaultProcessStepReport extends ISOMetadata implements ProcessStep
      * @return type of file that contains the processing report, or {@code null}.
      */
     @Override
-    @XmlElement(name = "fileType", namespace = Namespaces.GMI)
+    @XmlElement(name = "fileType")
     public InternationalString getFileType() {
         return fileType;
     }

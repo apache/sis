@@ -97,8 +97,8 @@ import org.apache.sis.xml.Namespaces;
     "sourceExtents",                // Legacy ISO 19115:2003
     "scope",                        // New in ISO 19115:2014
     "sourceSteps",
-    "processedLevel",
-    "resolution"
+    "processedLevel",               // ISO 19115-2 extension
+    "resolution"                    // ISO 19115-2 extension
 })
 @XmlRootElement(name = "LI_Source")
 @XmlSeeAlso(org.apache.sis.internal.jaxb.gmi.LE_Source.class)

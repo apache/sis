@@ -364,6 +364,7 @@ http://standards.iso.org/iso/19115/-3/mdb/1.0
     <type>
   MD_Metadata
     <type>
+    alternativeMetadataReference
     applicationSchemaInfo
     characterSet
     contact
@@ -383,7 +384,9 @@ http://standards.iso.org/iso/19115/-3/mdb/1.0
     metadataConstraints
     metadataExtensionInfo
     metadataIdentifier
+    metadataLinkage
     metadataMaintenance
+    metadataProfile
     metadataScope
     metadataStandard
     metadataStandardName
@@ -393,6 +396,7 @@ http://standards.iso.org/iso/19115/-3/mdb/1.0
     parentMetadata
     portrayalCatalogueInfo
     referenceSystemInfo
+    resourceLineage
     spatialRepresentationInfo
   MD_MetadataScope
     <type>
@@ -414,6 +418,7 @@ http://standards.iso.org/iso/19115/-3/mdb/1.0
   MD_TopologyLevelCode
     <type>
   MI_Metadata
+    alternativeMetadataReference
     acquisitionInformation
     applicationSchemaInfo
     characterSet
@@ -434,7 +439,9 @@ http://standards.iso.org/iso/19115/-3/mdb/1.0
     metadataConstraints
     metadataExtensionInfo
     metadataIdentifier
+    metadataLinkage
     metadataMaintenance
+    metadataProfile
     metadataScope
     metadataStandard
     metadataStandardName
@@ -444,6 +451,7 @@ http://standards.iso.org/iso/19115/-3/mdb/1.0
     parentMetadata
     portrayalCatalogueInfo
     referenceSystemInfo
+    resourceLineage
     spatialRepresentationInfo
   RS_Identifier
     <type>
