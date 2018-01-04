@@ -28,11 +28,11 @@ import org.apache.sis.internal.jaxb.gco.PropertyType;
  *
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.3
+ * @version 1.0
  * @since   0.3
  * @module
  */
-public final class CI_OnlineResource extends PropertyType<CI_OnlineResource, OnlineResource> {
+public class CI_OnlineResource extends PropertyType<CI_OnlineResource, OnlineResource> {
     /**
      * Empty constructor for JAXB only.
      */
@@ -47,7 +47,7 @@ public final class CI_OnlineResource extends PropertyType<CI_OnlineResource, Onl
      * @return {@code OnlineResource.class}
      */
     @Override
-    protected Class<OnlineResource> getBoundType() {
+    protected final Class<OnlineResource> getBoundType() {
         return OnlineResource.class;
     }
 
@@ -78,7 +78,7 @@ public final class CI_OnlineResource extends PropertyType<CI_OnlineResource, Onl
      * @return the metadata to be marshalled.
      */
     @XmlElementRef
-    public DefaultOnlineResource getElement() {
+    public final DefaultOnlineResource getElement() {
         return DefaultOnlineResource.castOrCopy(metadata);
     }
 
@@ -87,7 +87,26 @@ public final class CI_OnlineResource extends PropertyType<CI_OnlineResource, Onl
      *
      * @param  metadata  the unmarshalled metadata.
      */
-    public void setElement(final DefaultOnlineResource metadata) {
+    public final void setElement(final DefaultOnlineResource metadata) {
         this.metadata = metadata;
+    }
+
+    /**
+     * Wraps the value only if marshalling an element from the ISO 19115:2003 metadata model.
+     * Otherwise (i.e. if marshalling according legacy ISO 19115:2014 model), omits the element.
+     */
+    public static final class Since2014 extends CI_OnlineResource {
+        /** Empty constructor used only by JAXB. */
+        public Since2014() {
+        }
+
+        /**
+         * Wraps the given value in an ISO 19115-3 element, unless we are marshalling an older document.
+         *
+         * @return a non-null value only if marshalling ISO 19115-3 or newer.
+         */
+        @Override protected CI_OnlineResource wrap(final OnlineResource value) {
+            return accept2014() ? super.wrap(value) : null;
+        }
     }
 }
