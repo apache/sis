@@ -60,7 +60,8 @@ import org.apache.sis.xml.Namespaces;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Touraïvane (IRD)
  * @author  Cédric Briançon (Geomatys)
- * @version 0.3
+ * @author  Cullen Rombach (Image Matters)
+ * @version 1.0
  * @since   0.3
  * @module
  */
@@ -69,6 +70,7 @@ import org.apache.sis.xml.Namespaces;
     "controlPointAvailable",
     "orientationParameterAvailable",
     "orientationParameterDescription",
+    "georeferencedParameters",
     "parameterCitations",
     "geolocationInformation"
 })
@@ -247,7 +249,7 @@ public class DefaultGeoreferenceable extends DefaultGridSpatialRepresentation im
      * @return terms which support grid data georeferencing, or {@code null}.
      */
     @Override
-/// @XmlElement(name = "georeferencedParameters", required = true)
+    @XmlElement(name = "georeferencedParameters", required = true)
     public Record getGeoreferencedParameters() {
         return georeferencedParameters;
     }

@@ -47,7 +47,7 @@ import org.apache.sis.xml.Namespaces;
  *
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.3
+ * @version 1.0
  *
  * @see DefaultGCPCollection
  *
@@ -55,7 +55,7 @@ import org.apache.sis.xml.Namespaces;
  * @module
  */
 @SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
-@XmlType(name = "MI_GCP_Type", propOrder = {
+@XmlType(name = "MI_GCP_Type", namespace = Namespaces.GMI, propOrder = {
     //"geographicCoordinates",
     "accuracyReports"
 })
@@ -153,7 +153,7 @@ public class DefaultGCP extends ISOMetadata implements GCP {
      * @return accuracy of a ground control point.
      */
     @Override
-    @XmlElement(name = "accuracyReport", namespace = Namespaces.GMI)
+    @XmlElement(name = "accuracyReport")
     public Collection<Element> getAccuracyReports() {
         return accuracyReports = nonNullCollection(accuracyReports, Element.class);
     }

@@ -50,7 +50,7 @@ import org.apache.sis.xml.Namespaces;
  *
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.3
+ * @version 1.0
  *
  * @see DefaultGCP
  *
@@ -59,7 +59,7 @@ import org.apache.sis.xml.Namespaces;
  */
 @SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @TitleProperty(name = "collectionName")
-@XmlType(name = "MI_GCPCollection_Type", propOrder = {
+@XmlType(name = "MI_GCPCollection_Type", namespace = Namespaces.GMI, propOrder = {
     "collectionIdentification",
     "collectionName",
     "coordinateReferenceSystem",
@@ -148,7 +148,7 @@ public class DefaultGCPCollection extends AbstractGeolocationInformation impleme
      * @return the identifier, or {@code null}.
      */
     @Override
-    @XmlElement(name = "collectionIdentification", namespace = Namespaces.GMI, required = true)
+    @XmlElement(name = "collectionIdentification", required = true)
     public Integer getCollectionIdentification() {
         return collectionIdentification;
     }
@@ -169,7 +169,7 @@ public class DefaultGCPCollection extends AbstractGeolocationInformation impleme
      * @return name of the GCP collection, or {@code null}.
      */
     @Override
-    @XmlElement(name = "collectionName", namespace = Namespaces.GMI, required = true)
+    @XmlElement(name = "collectionName", required = true)
     public InternationalString getCollectionName() {
         return collectionName;
     }
@@ -190,7 +190,7 @@ public class DefaultGCPCollection extends AbstractGeolocationInformation impleme
      * @return coordinate reference system in which the ground control points are defined, or {@code null}.
      */
     @Override
-    @XmlElement(name = "coordinateReferenceSystem", namespace = Namespaces.GMI, required = true)
+    @XmlElement(name = "coordinateReferenceSystem", required = true)
     public ReferenceSystem getCoordinateReferenceSystem() {
         return coordinateReferenceSystem;
     }
@@ -211,7 +211,7 @@ public class DefaultGCPCollection extends AbstractGeolocationInformation impleme
      * @return ground control point(s).
      */
     @Override
-    @XmlElement(name = "gcp", namespace = Namespaces.GMI, required = true)
+    @XmlElement(name = "gcp", required = true)
     public Collection<GCP> getGCPs() {
         return GCPs = nonNullCollection(GCPs, GCP.class);
     }
