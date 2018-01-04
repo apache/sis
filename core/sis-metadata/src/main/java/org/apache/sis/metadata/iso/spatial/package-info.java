@@ -115,6 +115,7 @@
 
     // Java types, primitive types and basic OGC types handling
     @XmlJavaTypeAdapter(InternationalStringAdapter.class),
+    @XmlJavaTypeAdapter(GO_Record.class),
     @XmlJavaTypeAdapter(GO_Integer.class), @XmlJavaTypeAdapter(type=int.class,     value=GO_Integer.class),
     @XmlJavaTypeAdapter(GO_Boolean.class), @XmlJavaTypeAdapter(type=boolean.class, value=GO_Boolean.class)
 })

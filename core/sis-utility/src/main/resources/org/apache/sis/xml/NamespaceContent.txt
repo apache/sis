@@ -507,7 +507,11 @@ http://standards.iso.org/iso/19115/-3/mmi/1.0
     levelDescription
   MD_ScopeDescription
     <type>
+    attributeInstances
+    attributes
     dataset
+    featureInstances
+    features
     other
 http://standards.iso.org/iso/19115/-3/mrc/1.0
   MD_AttributeGroup
@@ -887,8 +891,10 @@ http://standards.iso.org/iso/19115/-3/mrs/1.0
 http://standards.iso.org/iso/19115/-3/msr/1.0
   MD_Dimension
     <type>
+    dimensionDescription
     dimensionName
     dimensionSize
+    dimensionTitle
     resolution
   MD_DimensionNameTypeCode
     <type>
@@ -914,6 +920,7 @@ http://standards.iso.org/iso/19115/-3/msr/1.0
     axisDimensionProperties
     cellGeometry
     controlPointAvailability
+    georeferencedParameters
     numberOfDimensions
     orientationParameterAvailability
     orientationParameterDescription
@@ -951,6 +958,7 @@ http://standards.iso.org/iso/19115/-3/msr/1.0
     cellGeometry
     controlPointAvailability
     geolocationInformation
+    georeferencedParameters
     numberOfDimensions
     orientationParameterAvailability
     orientationParameterDescription
@@ -1160,6 +1168,7 @@ http://standards.iso.org/iso/19157/-2/dqc/1.0
   DQ_QuantitativeResult
     <type>
     errorStatistic
+    value
     valueType
     valueUnit
   DQ_RelativeInternalPositionalAccuracy

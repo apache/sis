@@ -42,12 +42,13 @@ import org.apache.sis.xml.Namespaces;
  *
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.3
+ * @author  Cullen Rombach (Image Matters)
+ * @version 1.0
  * @since   0.3
  * @module
  */
 @SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
-@XmlType(name = "AbstractMI_GeolocationInformation_Type")
+@XmlType(name = "AbstractMI_GeolocationInformation_Type", namespace = Namespaces.GMI)
 @XmlRootElement(name = "MI_GeolocationInformation", namespace = Namespaces.GMI)
 @XmlSeeAlso(DefaultGCPCollection.class)
 public class AbstractGeolocationInformation extends ISOMetadata implements GeolocationInformation {
@@ -120,7 +121,7 @@ public class AbstractGeolocationInformation extends ISOMetadata implements Geolo
      * @return an overall assessment of quality of geolocation information.
      */
     @Override
-    @XmlElement(name = "qualityInfo", namespace = Namespaces.GMI)
+    @XmlElement(name = "qualityInfo")
     public Collection<DataQuality> getQualityInfo() {
         return qualityInfo = nonNullCollection(qualityInfo, DataQuality.class);
     }
