@@ -38,7 +38,9 @@ import org.apache.sis.metadata.TitleProperty;
 import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.metadata.iso.maintenance.DefaultScope;
 import org.apache.sis.metadata.iso.identification.DefaultResolution;
+import org.apache.sis.internal.jaxb.metadata.RS_ReferenceSystem;
 import org.apache.sis.internal.jaxb.metadata.MD_Resolution;
+import org.apache.sis.internal.jaxb.metadata.MD_Scope;
 import org.apache.sis.internal.jaxb.FilterByVersion;
 import org.apache.sis.internal.metadata.Dependencies;
 import org.apache.sis.util.iso.Types;
@@ -88,10 +90,13 @@ import org.apache.sis.xml.Namespaces;
 @XmlType(name = "LI_Source_Type", propOrder = {
     "description",
     "scaleDenominator",             // Legacy ISO 19115:2003
-    "sourceCitation",
-    "sourceExtents",
-    "sourceSteps",
     "sourceSpatialResolution",      // New in ISO 19115:2014
+    "sourceReferenceSystem",        // New in ISO 19115:2014
+    "sourceCitation",
+    "sources",                      // New in ISO 19115:2014 (actually "sourceMetadata")
+    "sourceExtents",                // Legacy ISO 19115:2003
+    "scope",                        // New in ISO 19115:2014
+    "sourceSteps",
     "processedLevel",
     "resolution"
 })
@@ -316,11 +321,10 @@ public class DefaultSource extends ISOMetadata implements Source {
      * Returns the spatial reference system used by the source data.
      *
      * @return spatial reference system used by the source data, or {@code null}.
-     *
-     * @todo We need to annotate the referencing module before we can annotate this method.
      */
     @Override
-/// @XmlElement(name = "sourceReferenceSystem")
+    @XmlElement(name = "sourceReferenceSystem")
+    @XmlJavaTypeAdapter(RS_ReferenceSystem.Since2014.class)
     public ReferenceSystem getSourceReferenceSystem()  {
         return sourceReferenceSystem;
     }
@@ -364,7 +368,7 @@ public class DefaultSource extends ISOMetadata implements Source {
      * @since 0.5
      */
     @Override
-/// @XmlElement(name = "sourceMetadata")
+    // @XmlElement at the end of this class.
     public Collection<Citation> getSourceMetadata() {
         return sourceMetadata = nonNullCollection(sourceMetadata, Citation.class);
     }
@@ -389,7 +393,8 @@ public class DefaultSource extends ISOMetadata implements Source {
      * @since 0.5
      */
     @Override
-/// @XmlElement(name = "scope")
+    @XmlElement(name = "scope")
+    @XmlJavaTypeAdapter(MD_Scope.Since2014.class)
     public Scope getScope() {
         return scope;
     }
@@ -419,16 +424,21 @@ public class DefaultSource extends ISOMetadata implements Source {
     @XmlElement(name = "sourceExtent")
     @Dependencies("getScope")
     public Collection<Extent> getSourceExtents() {
-        Scope scope = getScope();
-        if (!(scope instanceof DefaultScope)) {
-            if (isModifiable()) {
-                scope = new DefaultScope(scope);
-                this.scope = scope;
-            } else {
-                return Collections.unmodifiableCollection(scope.getExtents());
+        if (FilterByVersion.LEGACY_METADATA.accept()) {
+            Scope scope = getScope();
+            if (scope != null) {
+                if (!(scope instanceof DefaultScope)) {
+                    if (isModifiable()) {
+                        scope = new DefaultScope(scope);
+                        this.scope = scope;
+                    } else {
+                        return Collections.unmodifiableCollection(scope.getExtents());
+                    }
+                }
+                return ((DefaultScope) scope).getExtents();
             }
         }
-        return ((DefaultScope) scope).getExtents();
+        return null;
     }
 
     /**
@@ -510,5 +520,29 @@ public class DefaultSource extends ISOMetadata implements Source {
     public void setResolution(final NominalResolution newValue) {
         checkWritePermission();
         resolution = newValue;
+    }
+
+
+
+
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+    ////////                                                                                  ////////
+    ////////                               XML support with JAXB                              ////////
+    ////////                                                                                  ////////
+    ////////        The following methods are invoked by JAXB using reflection (even if       ////////
+    ////////        they are private) or are helpers for other methods invoked by JAXB.       ////////
+    ////////        Those methods can be safely removed if Geographic Markup Language         ////////
+    ////////        (GML) support is not needed.                                              ////////
+    ////////                                                                                  ////////
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Invoked by JAXB at both marshalling and unmarshalling time.
+     * This attribute has been added by ISO 19115:2014 standard.
+     * If (and only if) marshalling an older standard version, we omit this attribute.
+     */
+    @XmlElement(name = "sourceMetadata")
+    private Collection<Citation> getSources() {
+        return FilterByVersion.CURRENT_METADATA.accept() ? getSourceMetadata() : null;
     }
 }
