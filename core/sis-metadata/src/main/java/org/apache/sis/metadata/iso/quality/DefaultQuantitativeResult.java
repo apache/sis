@@ -46,12 +46,14 @@ import org.opengis.util.RecordType;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Touraïvane (IRD)
- * @version 0.3
+ * @author  Cullen Rombach (Image Matters)
+ * @version 1.0
  * @since   0.3
  * @module
  */
 @SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "DQ_QuantitativeResult_Type", propOrder = {
+    "values",
     "valueType",
     "valueUnit",
     "errorStatistic"
@@ -139,7 +141,7 @@ public class DefaultQuantitativeResult extends AbstractResult implements Quantit
      * @return Quantitative value or values.
      */
     @Override
-//  @XmlElement(name = "value", required = true) // TODO
+    @XmlElement(name = "value", required = true)
     public List<Record> getValues() {
         return values = nonNullList(values, Record.class);
     }
