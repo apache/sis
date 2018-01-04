@@ -63,7 +63,8 @@ import static org.apache.sis.util.collection.Containers.isNullOrEmpty;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Touraïvane (IRD)
  * @author  Cédric Briançon (Geomatys)
- * @version 0.5
+ * @author  Cullen Rombach (Image Matters)
+ * @version 1.0
  * @since   0.3
  * @module
  */
@@ -318,6 +319,7 @@ public class DefaultScopeDescription extends ISOMetadata implements ScopeDescrip
      * @return feature types to which the information applies.
      */
     @Override
+    @XmlElement(name = "features")
     public Set<CharSequence> getFeatures() {
         return getProperty(FEATURES);
     }
@@ -351,6 +353,7 @@ public class DefaultScopeDescription extends ISOMetadata implements ScopeDescrip
      * @return attribute types to which the information applies.
      */
     @Override
+    @XmlElement(name = "attributes")
     public Set<CharSequence> getAttributes() {
         return getProperty(ATTRIBUTES);
     }
@@ -384,6 +387,7 @@ public class DefaultScopeDescription extends ISOMetadata implements ScopeDescrip
      * @return feature instances to which the information applies.
      */
     @Override
+    @XmlElement(name = "featureInstances")
     public Set<CharSequence> getFeatureInstances() {
         return getProperty(FEATURE_INSTANCES);
     }
@@ -417,6 +421,7 @@ public class DefaultScopeDescription extends ISOMetadata implements ScopeDescrip
      * @return attribute instances to which the information applies.
      */
     @Override
+    @XmlElement(name = "attributeInstances")
     public Set<CharSequence> getAttributeInstances() {
         return getProperty(ATTRIBUTE_INSTANCES);
     }

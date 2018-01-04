@@ -89,6 +89,7 @@
     // Java types, primitive types and basic OGC types handling
     @XmlJavaTypeAdapter(GO_DateTime.class),
     @XmlJavaTypeAdapter(StringAdapter.class),
+    @XmlJavaTypeAdapter(CharSequenceAdapter.class),
     @XmlJavaTypeAdapter(InternationalStringAdapter.class)
 })
 package org.apache.sis.metadata.iso.maintenance;

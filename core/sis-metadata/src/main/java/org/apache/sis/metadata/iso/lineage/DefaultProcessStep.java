@@ -78,9 +78,9 @@ import static org.apache.sis.internal.metadata.MetadataUtilities.toMilliseconds;
     "reference",                // New in ISO 19115:2014
     "scope",                    // New in ISO 19115:2014
     "sources",
-    "outputs",
-    "processingInformation",
-    "reports"
+    "outputs",                  // ISO 19115-2 extension
+    "processingInformation",    // Ibid.
+    "reports"                   // Ibid.
 })
 @XmlRootElement(name = "LI_ProcessStep")
 @XmlSeeAlso(org.apache.sis.internal.jaxb.gmi.LE_ProcessStep.class)
