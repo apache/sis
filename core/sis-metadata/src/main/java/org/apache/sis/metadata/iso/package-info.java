@@ -102,6 +102,7 @@
     @XmlJavaTypeAdapter(CI_OnlineResource.class),
     @XmlJavaTypeAdapter(CI_Responsibility.class),
     @XmlJavaTypeAdapter(DQ_DataQuality.class),
+    @XmlJavaTypeAdapter(LI_Lineage.class),
     @XmlJavaTypeAdapter(MD_ApplicationSchemaInformation.class),
     @XmlJavaTypeAdapter(MD_CharacterSetCode.class),
     @XmlJavaTypeAdapter(LegacyCharacterSet.class),

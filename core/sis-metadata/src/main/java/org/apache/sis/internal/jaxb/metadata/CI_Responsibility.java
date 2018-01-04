@@ -18,6 +18,7 @@ package org.apache.sis.internal.jaxb.metadata;
 
 import javax.xml.bind.annotation.XmlElementRef;
 import org.opengis.metadata.citation.Responsibility;
+import org.opengis.metadata.citation.ResponsibleParty;
 import org.apache.sis.metadata.iso.citation.DefaultResponsibility;
 import org.apache.sis.metadata.iso.citation.DefaultResponsibleParty;
 import org.apache.sis.internal.jaxb.gco.PropertyType;
@@ -83,6 +84,10 @@ public final class CI_Responsibility extends PropertyType<CI_Responsibility, Res
     @SuppressWarnings("deprecation")
     public DefaultResponsibility getElement() {
         if (FilterByVersion.CURRENT_METADATA.accept()) {
+            if (metadata instanceof ResponsibleParty) {
+                // Need to build new DefaultResponsibility object here — simply casting doesn't work.
+                return new DefaultResponsibility(metadata);
+            }
             return DefaultResponsibility.castOrCopy(metadata);
         } else {
             return DefaultResponsibleParty.castOrCopy(metadata);
