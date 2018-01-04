@@ -829,19 +829,27 @@ http://standards.iso.org/iso/19115/-3/mrl/1.0
     processingInformation
     processor
     rationale
+    reference
     report
+    scope
     source
   LE_Source
     description
     processedLevel
     resolution
     scaleDenominator
+    scope
     sourceCitation
     sourceExtent
+    sourceMetadata
+    sourceReferenceSystem
+    sourceSpatialResolution
     sourceStep
   LI_Lineage
     <type>
+    additionalDocumentation
     processStep
+    scope
     source
     statement
   LI_ProcessStep
@@ -850,13 +858,19 @@ http://standards.iso.org/iso/19115/-3/mrl/1.0
     description
     processor
     rationale
+    reference
+    scope
     source
   LI_Source
     <type>
     description
     scaleDenominator
+    scope
     sourceCitation
     sourceExtent
+    sourceMetadata
+    sourceReferenceSystem
+    sourceSpatialResolution
     sourceStep
 http://standards.iso.org/iso/19115/-3/mrs/1.0
   MD_ReferenceSystem
