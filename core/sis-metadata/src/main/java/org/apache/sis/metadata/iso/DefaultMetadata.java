@@ -136,7 +136,6 @@ import org.apache.sis.xml.Namespaces;
     "metadataIdentifier",
     "defaultLocale",
     "parentMetadata",
-    "metadataScope",
 
     // Legacy ISO 19115:2003 attributes
     "fileIdentifier",
@@ -146,13 +145,16 @@ import org.apache.sis.xml.Namespaces;
     "hierarchyLevels",
     "hierarchyLevelNames",
 
-    // Common to both formats
+    // Common to both versions
     "contacts",
 
     // Attributes new in ISO 19115:2014
-    "dates",
+    "dates",                            // actually "dateInfo"
     "metadataStandard",
+    "metadataProfile",
+    "alternativeMetadataReference",
     "otherLocales",
+    "metadataLinkage",
 
     // Legacy ISO 19115:2003 attributes
     "dateStamp",
@@ -173,6 +175,12 @@ import org.apache.sis.xml.Namespaces;
     "metadataConstraints",
     "applicationSchemaInfo",
     "metadataMaintenance",
+    "resourceLineage",
+
+    // Attributes new in ISO 19115:2014
+    "metadataScope",
+
+    // GMI extension
     "acquisitionInformation"
 })
 @XmlRootElement(name = "MD_Metadata")
@@ -1005,6 +1013,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      * @since 0.5
      */
     @Override
+    // @XmlElement at the end of this class.
     public Collection<Citation> getMetadataProfiles() {
         return metadataProfiles = nonNullCollection(metadataProfiles, Citation.class);
     }
@@ -1029,6 +1038,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      * @since 0.5
      */
     @Override
+    // @XmlElement at the end of this class.
     public Collection<Citation> getAlternativeMetadataReferences() {
         return alternativeMetadataReferences = nonNullCollection(alternativeMetadataReferences, Citation.class);
     }
@@ -1155,6 +1165,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      * @since 0.5
      */
     @Override
+    // @XmlElement at the end of this class.
     public Collection<OnlineResource> getMetadataLinkages() {
         return metadataLinkages = nonNullCollection(metadataLinkages, OnlineResource.class);
     }
@@ -1506,6 +1517,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      * @since 0.5
      */
     @Override
+    // @XmlElement at the end of this class.
     public Collection<Lineage> getResourceLineages() {
         return resourceLineages = nonNullCollection(resourceLineages, Lineage.class);
     }
@@ -1590,11 +1602,6 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      * This attribute has been added by ISO 19115:2014 standard.
      * If (and only if) marshalling an older standard version, we omit this attribute.
      */
-    @XmlElement(name = "metadataScope")
-    private Collection<MetadataScope> getMetadataScope() {
-        return FilterByVersion.CURRENT_METADATA.accept() ? getMetadataScopes() : null;
-    }
-
     @XmlElement(name = "dateInfo", required = true)
     private Collection<CitationDate> getDates() {
         return FilterByVersion.CURRENT_METADATA.accept() ? getDateInfo() : null;
@@ -1603,5 +1610,30 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
     @XmlElement(name = "metadataStandard")
     private Collection<Citation> getMetadataStandard() {
         return FilterByVersion.CURRENT_METADATA.accept() ? getMetadataStandards() : null;
+    }
+
+    @XmlElement(name = "metadataProfile")
+    private Collection<Citation> getMetadataProfile() {
+        return FilterByVersion.CURRENT_METADATA.accept() ? getMetadataProfiles() : null;
+    }
+
+    @XmlElement(name = "alternativeMetadataReference")
+    private Collection<Citation> getAlternativeMetadataReference() {
+        return FilterByVersion.CURRENT_METADATA.accept() ? getAlternativeMetadataReferences() : null;
+    }
+
+    @XmlElement(name = "metadataLinkage")
+    private Collection<OnlineResource> getMetadataLinkage() {
+        return FilterByVersion.CURRENT_METADATA.accept() ? getMetadataLinkages() : null;
+    }
+
+    @XmlElement(name = "resourceLineage")
+    private Collection<Lineage> getResourceLineage() {
+        return FilterByVersion.CURRENT_METADATA.accept() ? getResourceLineages() : null;
+    }
+
+    @XmlElement(name = "metadataScope")
+    private Collection<MetadataScope> getMetadataScope() {
+        return FilterByVersion.CURRENT_METADATA.accept() ? getMetadataScopes() : null;
     }
 }
