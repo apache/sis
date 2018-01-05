@@ -45,7 +45,7 @@ import org.apache.sis.xml.Namespaces;
  * @module
  */
 @SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
-@XmlType(name = "QE_Usability_Type")
+@XmlType(name = "QE_Usability_Type", namespace = Namespaces.GMI)
 @XmlRootElement(name = "QE_Usability", namespace = Namespaces.GMI)
 public class DefaultUsability extends AbstractElement implements Usability {
     /**

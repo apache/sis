@@ -50,12 +50,12 @@ import org.apache.sis.internal.jaxb.NonMarshalledAuthority;
  * @author  Cédric Briançon (Geomatys)
  * @author  Guilhem Legal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.3
+ * @version 1.0
  * @since   0.3
  * @module
  */
 @SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
-@XmlType(name = "LE_Processing_Type", propOrder = {
+@XmlType(name = "LE_Processing_Type", namespace = Namespaces.GMI, propOrder = {
     "identifier",
     "softwareReferences",
     "procedureDescription",
@@ -154,7 +154,7 @@ public class DefaultProcessing extends ISOMetadata implements Processing {
      * @return identifier of the processing package that produced the data, or {@code null}.
      */
     @Override
-    @XmlElement(name = "identifier", namespace = Namespaces.GMI, required = true)
+    @XmlElement(name = "identifier", required = true)
     public Identifier getIdentifier() {
         return NonMarshalledAuthority.getMarshallable(identifiers);
     }
@@ -176,7 +176,7 @@ public class DefaultProcessing extends ISOMetadata implements Processing {
      * @return document describing processing software.
      */
     @Override
-    @XmlElement(name = "softwareReference", namespace = Namespaces.GMI)
+    @XmlElement(name = "softwareReference")
     public Collection<Citation> getSoftwareReferences() {
         return softwareReferences = nonNullCollection(softwareReferences, Citation.class);
     }
@@ -196,7 +196,7 @@ public class DefaultProcessing extends ISOMetadata implements Processing {
      * @return processing procedures, or {@code null}.
      */
     @Override
-    @XmlElement(name = "procedureDescription", namespace = Namespaces.GMI)
+    @XmlElement(name = "procedureDescription")
     public InternationalString getProcedureDescription() {
         return procedureDescription;
     }
@@ -217,7 +217,7 @@ public class DefaultProcessing extends ISOMetadata implements Processing {
      * @return documentation describing the processing.
      */
     @Override
-    @XmlElement(name = "documentation", namespace = Namespaces.GMI)
+    @XmlElement(name = "documentation")
     public Collection<Citation> getDocumentations() {
         return documentations = nonNullCollection(documentations, Citation.class);
     }
@@ -237,7 +237,7 @@ public class DefaultProcessing extends ISOMetadata implements Processing {
      * @return parameters to control the processing operations, or {@code null}.
      */
     @Override
-    @XmlElement(name = "runTimeParameters", namespace = Namespaces.GMI)
+    @XmlElement(name = "runTimeParameters")
     public InternationalString getRunTimeParameters() {
         return runTimeParameters;
     }
@@ -259,7 +259,7 @@ public class DefaultProcessing extends ISOMetadata implements Processing {
      * @return methodology by which geographic information was derived from the instrument readings.
      */
     @Override
-    @XmlElement(name = "algorithm", namespace = Namespaces.GMI)
+    @XmlElement(name = "algorithm")
     public Collection<Algorithm> getAlgorithms() {
         return algorithms = nonNullCollection(algorithms, Algorithm.class);
     }

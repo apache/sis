@@ -48,16 +48,16 @@ import org.apache.sis.xml.Namespaces;
  *
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.3
+ * @version 1.0
  * @since   0.3
  * @module
  */
 @SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @TitleProperty(name = "name")
-@XmlType(name = "MI_RangeElementDescription_Type", propOrder = {
+@XmlType(name = "MI_RangeElementDescription_Type", namespace = Namespaces.GMI, propOrder = {
     "name",
-    "definition"/*,
-    "rangeElements"*/ // TODO: not yet supported.
+    "definition",
+    "rangeElements"
 })
 @XmlRootElement(name = "MI_RangeElementDescription", namespace = Namespaces.GMI)
 public class DefaultRangeElementDescription extends ISOMetadata implements RangeElementDescription {
@@ -136,7 +136,7 @@ public class DefaultRangeElementDescription extends ISOMetadata implements Range
      * @return designation associated with a set of range elements, or {@code null}.
      */
     @Override
-    @XmlElement(name = "name", namespace = Namespaces.GMI, required = true)
+    @XmlElement(name = "name", required = true)
     public InternationalString getName() {
         return name;
     }
@@ -157,7 +157,7 @@ public class DefaultRangeElementDescription extends ISOMetadata implements Range
      * @return description of a set of specific range elements, or {@code null}.
      */
     @Override
-    @XmlElement(name = "definition", namespace = Namespaces.GMI, required = true)
+    @XmlElement(name = "definition", required = true)
     public InternationalString getDefinition() {
         return definition;
     }
@@ -181,7 +181,7 @@ public class DefaultRangeElementDescription extends ISOMetadata implements Range
      * @todo implements {@link Record} in order to use the annotation.
      */
     @Override
-    //@XmlElement(name = "rangeElement", namespace = Namespaces.GMI, required = true)
+    @XmlElement(name = "rangeElement", required = true)
     public Collection<Record> getRangeElements() {
         return rangeElements = nonNullCollection(rangeElements, Record.class);
     }
