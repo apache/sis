@@ -48,12 +48,12 @@ import org.apache.sis.xml.Namespaces;
  * @author  Cédric Briançon (Geomatys)
  * @author  Guilhem Legal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.3
+ * @version 1.0
  * @since   0.3
  * @module
  */
 @SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
-@XmlType(name = "LE_Algorithm_Type", propOrder = {
+@XmlType(name = "LE_Algorithm_Type", namespace = Namespaces.GMI, propOrder = {
     "citation",
     "description"
 })
@@ -128,7 +128,7 @@ public class DefaultAlgorithm extends ISOMetadata implements Algorithm {
      * @return algorithm and version or date, or {@code null}.
      */
     @Override
-    @XmlElement(name = "citation", namespace = Namespaces.GMI, required = true)
+    @XmlElement(name = "citation", required = true)
     public Citation getCitation() {
         return citation;
     }
@@ -149,7 +149,7 @@ public class DefaultAlgorithm extends ISOMetadata implements Algorithm {
      * @return algorithm used to generate the data, or {@code null}.
      */
     @Override
-    @XmlElement(name = "description", namespace = Namespaces.GMI, required = true)
+    @XmlElement(name = "description", required = true)
     public InternationalString getDescription() {
         return description;
     }

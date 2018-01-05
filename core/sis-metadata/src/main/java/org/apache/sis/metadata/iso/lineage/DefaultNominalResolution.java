@@ -51,7 +51,7 @@ import static org.apache.sis.internal.metadata.MetadataUtilities.ensurePositive;
  * @module
  */
 @SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
-@XmlType(name = "LE_NominalResolution_Type", propOrder = {
+@XmlType(name = "LE_NominalResolution_Type", namespace = Namespaces.GMI, propOrder = {
     "scanningResolution",
     "groundResolution"
 })
@@ -137,7 +137,7 @@ public class DefaultNominalResolution extends ISOMetadata implements NominalReso
      */
     @Override
     @ValueRange(minimum=0, isMinIncluded=false)
-    @XmlElement(name = "scanningResolution", namespace = Namespaces.GMI, required = true)
+    @XmlElement(name = "scanningResolution", required = true)
     public Double getScanningResolution() {
         return scanningResolution;
     }
@@ -164,7 +164,7 @@ public class DefaultNominalResolution extends ISOMetadata implements NominalReso
      */
     @Override
     @ValueRange(minimum=0, isMinIncluded=false)
-    @XmlElement(name = "groundResolution", namespace = Namespaces.GMI, required = true)
+    @XmlElement(name = "groundResolution", required = true)
     public Double getGroundResolution() {
         return groundResolution;
     }

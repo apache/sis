@@ -60,7 +60,7 @@ import org.apache.sis.xml.Namespaces;
  * @module
  */
 @SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
-@XmlType(name = "QE_CoverageResult_Type", propOrder = {
+@XmlType(name = "QE_CoverageResult_Type", namespace = Namespaces.GMI, propOrder = {
     "spatialRepresentationType",
     "resultSpatialRepresentation",
     "resultContentDescription",
@@ -157,7 +157,7 @@ public class DefaultCoverageResult extends AbstractResult implements CoverageRes
      * @return spatial representation of the coverage result, or {@code null}.
      */
     @Override
-    @XmlElement(name = "spatialRepresentationType", namespace = Namespaces.GMI, required = true)
+    @XmlElement(name = "spatialRepresentationType", required = true)
     public SpatialRepresentationType getSpatialRepresentationType() {
         return spatialRepresentationType;
     }
@@ -178,7 +178,7 @@ public class DefaultCoverageResult extends AbstractResult implements CoverageRes
      * @return digital representation of data quality measures composing the coverage result, or {@code null}.
      */
     @Override
-    @XmlElement(name = "resultSpatialRepresentation", namespace = Namespaces.GMI, required = true)
+    @XmlElement(name = "resultSpatialRepresentation", required = true)
     public SpatialRepresentation getResultSpatialRepresentation() {
         return resultSpatialRepresentation;
     }
@@ -200,7 +200,7 @@ public class DefaultCoverageResult extends AbstractResult implements CoverageRes
      * @return description of the content of the result coverage, or {@code null}.
      */
     @Override
-    @XmlElement(name = "resultContentDescription", namespace = Namespaces.GMI, required = true)
+    @XmlElement(name = "resultContentDescription", required = true)
     public CoverageDescription getResultContentDescription() {
         return resultContentDescription;
     }
@@ -222,7 +222,7 @@ public class DefaultCoverageResult extends AbstractResult implements CoverageRes
      * @return format of the result coverage data, or {@code null}.
      */
     @Override
-    @XmlElement(name = "resultFormat", namespace = Namespaces.GMI, required = true)
+    @XmlElement(name = "resultFormat", required = true)
     public Format getResultFormat() {
         return resultFormat;
     }

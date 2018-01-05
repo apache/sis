@@ -616,6 +616,7 @@ public class ImmutableIdentifier extends FormattableObject implements Identifier
     /**
      * Empty constructor for JAXB.
      */
+    @SuppressWarnings("unused")
     private ImmutableIdentifier() {
         code        = null;
         codeSpace   = null;
