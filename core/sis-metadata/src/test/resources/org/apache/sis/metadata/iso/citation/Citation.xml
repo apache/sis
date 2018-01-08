@@ -79,4 +79,8 @@
       </cit:party>
     </cit:CI_Responsibility>
   </cit:citedResponsibleParty>
+  <cit:presentationForm>
+    <cit:CI_PresentationFormCode codeList="http://standards.iso.org/iso/19115/resources/Codelist/cat/codelists.xml#CI_PresentationFormCode"
+                                 codeListValue="physicalObject">Physical Object</cit:CI_PresentationFormCode>
+  </cit:presentationForm>
 </cit:CI_Citation>

@@ -55,7 +55,6 @@ public final class Schemas {
     /**
      * The XSD definition for 193139 metadata objects.
      */
-    @Deprecated
     public static final String METADATA_XSD_LEGACY = "http://schemas.opengis.net/iso/19139/20070417/gmd/gmd.xsd";
 
     /**
@@ -78,7 +77,6 @@ public final class Schemas {
      * The root directory of OGC metadata schemas.
      * This is the schema used by default in Apache SIS.
      */
-    @Deprecated
     public static final String METADATA_ROOT_LEGACY = "http://schemas.opengis.net/iso/19139/20070417/";
 
     /**
@@ -91,7 +89,6 @@ public final class Schemas {
      * The root directory of ISO 19115-3 metadata schemas.
      * This is sometime used as an alternative to {@link #METADATA_ROOT_LEGACY}.
      */
-    @Deprecated
     public static final String ISO_19139_ROOT = "http://standards.iso.org/ittf/PubliclyAvailableStandards/ISO_19139_Schemas/";
 
     /**
@@ -103,7 +100,6 @@ public final class Schemas {
      *
      * @see <a href="https://issues.apache.org/jira/browse/SIS-154">SIS-154</a>
      */
-    @Deprecated
     public static final String CODELISTS_PATH_LEGACY = "resources/Codelist/gmxCodelists.xml";
 
     /**
