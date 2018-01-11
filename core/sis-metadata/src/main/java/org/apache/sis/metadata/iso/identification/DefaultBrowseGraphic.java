@@ -17,7 +17,6 @@
 package org.apache.sis.metadata.iso.identification;
 
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.Collection;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
@@ -29,9 +28,7 @@ import org.opengis.metadata.constraint.Constraints;
 import org.opengis.metadata.identification.BrowseGraphic;
 import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.internal.jaxb.gmx.MimeFileTypeAdapter;
-import org.apache.sis.internal.jaxb.LegacyNamespaces;
 import org.apache.sis.internal.jaxb.FilterByVersion;
-import org.apache.sis.internal.jaxb.Context;
 import org.apache.sis.xml.Namespaces;
 
 
@@ -62,8 +59,7 @@ import org.apache.sis.xml.Namespaces;
  */
 @SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "MD_BrowseGraphic_Type", namespace = Namespaces.MCC, propOrder = {
-    "fileNameURL",              // "fileName" attribute marshalled in ISO 19139:2007 way.
-    "fileNameString",           // "fileName" attribute marshalled in ISO 19115-3 way.
+    "fileName",
     "fileDescription",
     "fileType",
     "linkage",
@@ -168,6 +164,7 @@ public class DefaultBrowseGraphic extends ISOMetadata implements BrowseGraphic {
      * @return file that contains a graphic that provides an illustration of the dataset, or {@code null}.
      */
     @Override
+    @XmlElement(name = "fileName", required = true)
     public URI getFileName() {
         return fileName;
     }
@@ -292,47 +289,6 @@ public class DefaultBrowseGraphic extends ISOMetadata implements BrowseGraphic {
     ////////        (GML) support is not needed.                                              ////////
     ////////                                                                                  ////////
     //////////////////////////////////////////////////////////////////////////////////////////////////
-
-    /**
-     * Invoked at marshalling time for writing URL as defined by ISO 19139:2007.
-     * That legacy standard wraps the URL in a {@code <gmx:FileName>} element.
-     */
-    @XmlElement(name = "fileName", namespace = LegacyNamespaces.GMD, required = true)
-    private URI getFileNameURL() {
-        return FilterByVersion.LEGACY_METADATA.accept() ? getFileName() : null;
-    }
-
-    /**
-     * Invoked at ISO 19139:2007 unmarshalling time for storing the value of {@code <gmd:URL>} element.
-     */
-    @SuppressWarnings("unused")
-    private void setFileNameURL(final URI newValue) {
-        setFileName(newValue);
-    }
-
-    /**
-     * Invoked at marshalling time for writing URL as defined by ISO 19115-3.
-     * That newer standard write the URL directly, without wrapping in {@code <gmd:URL>} element.
-     */
-    @XmlElement(name = "fileName", required = true)
-    private String getFileNameString() {
-        if (FilterByVersion.CURRENT_METADATA.accept()) {
-            final URI linkage = getFileName();
-            if (linkage != null) {
-                return linkage.toString();
-            }
-        }
-        return null;
-    }
-
-    /**
-     * Invoked at ISO 19115-3 unmarshalling time for parsing the URL.
-     */
-    @SuppressWarnings("unused")
-    private void setFileNameString(final String newValue) throws URISyntaxException {
-        final Context context = Context.current();
-        setFileName(Context.converter(context).toURI(context, newValue));
-    }
 
     /**
      * Invoked by JAXB at both marshalling and unmarshalling time.
