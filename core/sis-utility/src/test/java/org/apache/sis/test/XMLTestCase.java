@@ -31,8 +31,11 @@ import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.JAXBException;
 import org.apache.sis.internal.jaxb.Context;
+import org.apache.sis.internal.jaxb.LegacyNamespaces;
+import org.apache.sis.internal.jaxb.Schemas;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Version;
+import org.apache.sis.xml.Namespaces;
 import org.apache.sis.xml.MarshallerPool;
 import org.apache.sis.xml.XML;
 import org.junit.After;
@@ -372,5 +375,55 @@ public abstract strictfp class XMLTestCase extends TestCase {
         } catch (ParseException e) {
             throw new AssertionError(e);
         }
+    }
+
+    /**
+     * The string substitutions to perform for downgrading an ISO 19115-3 document to ISO 19139:2007.
+     * Values at even indices are strings to search, and values at odd indices are replacements.
+     */
+    private static final String[] TO_LEGACY_XML = {
+        Namespaces.CIT, LegacyNamespaces.GMD, "cit",  "gmd",
+        Namespaces.MCC, LegacyNamespaces.GMD, "mcc",  "gmd",
+        Namespaces.GCX, LegacyNamespaces.GMX, "gcx",  "gmx",
+        Schemas.METADATA_ROOT,  Schemas.METADATA_ROOT_LEGACY,           // For code lists
+        Schemas.CODELISTS_PATH, Schemas.CODELISTS_PATH_LEGACY
+    };
+
+    /**
+     * Performs a simple ISO 19115-3 to ISO 19139:2007 translations using only search-and-replaces.
+     * For example this method replaces {@code "cit"} prefix by {@code "gmd"} and the corresponding
+     * {@value Namespaces#CIT} namespace by {@value LegacyNamespaces#GMD}. However this method does
+     * not perform any more complex translations like attributes refactored in other classes.  If a
+     * more complex translation is required, the test case should provide the legacy XML verbatim
+     * in a separated string.
+     *
+     * @param  xml  an XML compliant with ISO 19115-3.
+     * @return an XML compliant with ISO 19139:2007.
+     *
+     * @since 1.0
+     */
+    protected static String toLegacyXML(final String xml) {
+        final StringBuilder buffer = new StringBuilder(xml);
+        for (int c=0; c < TO_LEGACY_XML.length;) {
+            final String toSearch  = TO_LEGACY_XML[c++];
+            final String replaceBy = TO_LEGACY_XML[c++];
+            final int length = toSearch.length();
+            int i = buffer.length();
+            while ((i = buffer.lastIndexOf(toSearch, i)) >= 0) {
+                /*
+                 * Following may throw a StringIndexOutOfBoundsException if 'toSearch' is located at the
+                 * beginning (i == 0) or end (end == buffer.length()) of the buffer. However those cases
+                 * should never happen in Apache SIS test cases since it would be invalid XML.
+                 */
+                if (!Character.isUnicodeIdentifierPart(buffer.codePointBefore(i))) {
+                    final int end = i + length;
+                    if (!Character.isUnicodeIdentifierPart(buffer.codePointAt(end))) {
+                        buffer.replace(i, end, replaceBy);
+                    }
+                }
+                i -= length;
+            }
+        }
+        return buffer.toString();
     }
 }
