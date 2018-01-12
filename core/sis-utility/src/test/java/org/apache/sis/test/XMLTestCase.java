@@ -384,6 +384,8 @@ public abstract strictfp class XMLTestCase extends TestCase {
     private static final String[] TO_LEGACY_XML = {
         Namespaces.CIT, LegacyNamespaces.GMD, "cit",  "gmd",
         Namespaces.MCC, LegacyNamespaces.GMD, "mcc",  "gmd",
+        Namespaces.MRI, LegacyNamespaces.GMD, "mri",  "gmd",
+        Namespaces.GCO, LegacyNamespaces.GCO,      // "gco"
         Namespaces.GCX, LegacyNamespaces.GMX, "gcx",  "gmx",
         Schemas.METADATA_ROOT,  Schemas.METADATA_ROOT_LEGACY,           // For code lists
         Schemas.CODELISTS_PATH, Schemas.CODELISTS_PATH_LEGACY

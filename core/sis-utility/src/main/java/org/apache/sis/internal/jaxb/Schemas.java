@@ -53,12 +53,8 @@ public final class Schemas {
     public static final String GML_XSD = "http://schemas.opengis.net/gml/3.2.1/gml.xsd";
 
     /**
-     * The XSD definition for 193139 metadata objects.
-     */
-    public static final String METADATA_XSD_LEGACY = "http://schemas.opengis.net/iso/19139/20070417/gmd/gmd.xsd";
-
-    /**
      * The XSD definition for the root of ISO 19115-3 metadata objects.
+     * Most metadata XSD paths start with {@value #METADATA_ROOT}, but not all.
      */
     public static final String METADATA_XSD_BASE           = "http://standards.iso.org/iso/19115/-3/mdb/1.0/mdb.xsd",
                                METADATA_XSD_SPATIAL        = "http://standards.iso.org/iso/19115/-3/msr/1.0/msr.xsd",
@@ -74,25 +70,30 @@ public final class Schemas {
                                METADATA_XSD_ACQUISITION    = "http://standards.iso.org/iso/19115/-3/mac/1.0/mac.xsd";
 
     /**
-     * The root directory of OGC metadata schemas.
-     * This is the schema used by default in Apache SIS.
-     */
-    public static final String METADATA_ROOT_LEGACY = "http://schemas.opengis.net/iso/19139/20070417/";
-
-    /**
-     * The root directory of OGC metadata schemas.
+     * The root directory of ISO 19115 metadata schemas.
      * This is the schema used by default in Apache SIS.
      */
     public static final String METADATA_ROOT = "http://standards.iso.org/iso/19115/";
 
     /**
-     * The root directory of ISO 19115-3 metadata schemas.
-     * This is sometime used as an alternative to {@link #METADATA_ROOT_LEGACY}.
+     * The root directory of OGC metadata schemas.
+     * This is the schema used by default in Apache SIS.
+     * Some alternatives to this URL are:
+     *
+     * <ul>
+     *   <li>http://standards.iso.org/ittf/PubliclyAvailableStandards/ISO_19139_Schemas/</li>
+     *   <li>http://www.isotc211.org/2005/</li>
+     * </ul>
      */
-    public static final String ISO_19139_ROOT = "http://standards.iso.org/ittf/PubliclyAvailableStandards/ISO_19139_Schemas/";
+    public static final String METADATA_ROOT_LEGACY = "http://schemas.opengis.net/iso/19139/20070417/";
 
     /**
-     * The string to append to {@link #METADATA_ROOT_LEGACY} or {@link #ISO_19139_ROOT} for obtaining the path
+     * The string to append to {@link #METADATA_ROOT} for obtaining the path to the definitions of code lists.
+     */
+    public static final String CODELISTS_PATH = "resources/Codelist/cat/codelists.xml";
+
+    /**
+     * The string to append to {@link #METADATA_ROOT_LEGACY} or one of its alternative for obtaining the path
      * to the definitions of code lists.
      *
      * <p>A localized version of this file exists also with the {@code "ML_gmxCodelists.xml"} filename
@@ -103,14 +104,7 @@ public final class Schemas {
     public static final String CODELISTS_PATH_LEGACY = "resources/Codelist/gmxCodelists.xml";
 
     /**
-     * The string to append to {@link #METADATA_ROOT} for obtaining the path to the definitions of code lists.
-     *
-     * @see <a href="https://issues.apache.org/jira/browse/SIS-154">SIS-154</a>
-     */
-    public static final String CODELISTS_PATH = "resources/Codelist/cat/codelists.xml";
-
-    /**
-     * The string to append to {@link #METADATA_ROOT} or {@link #ISO_19139_ROOT} for obtaining the path
+     * The string to append to {@link #METADATA_ROOT} or one of its alternative for obtaining the path
      * to the definitions of units of measurement.
      *
      * <p>A localized version of this file exists also with the {@code "ML_gmxUom.xml"} filename
