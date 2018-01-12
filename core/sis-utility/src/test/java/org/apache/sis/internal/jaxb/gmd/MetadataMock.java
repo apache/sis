@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.test.mock;
+package org.apache.sis.internal.jaxb.gmd;
 
 import java.util.Locale;
 import java.util.Collection;
@@ -22,14 +22,13 @@ import java.util.Collections;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
-import org.opengis.metadata.Metadata;
-import org.apache.sis.internal.jaxb.gmd.LocaleAdapter;
 import org.apache.sis.internal.simple.SimpleMetadata;
 import org.apache.sis.xml.Namespaces;
 
 
 /**
- * A dummy implementation of {@link Metadata} with minimal XML (un)marshalling capability.
+ * A dummy implementation of {@link org.opengis.metadata.Metadata} with minimal XML (un)marshalling capability.
+ * Used for testing marshalling of legacy ISO 19139:2007 attributes.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
@@ -37,13 +36,14 @@ import org.apache.sis.xml.Namespaces;
  * @module
  */
 @XmlRootElement(name = "MD_Metadata", namespace = Namespaces.MDB)
-public final strictfp class MetadataMock extends SimpleMetadata {
+final strictfp class MetadataMock extends SimpleMetadata {
     /**
-     * The language used for documenting metadata.
+     * The language used for documenting metadata. The namespace should be {@code "gmd"},
+     * but we use the newer namespace because of the way {@code FilteredStreamResolver} work.
      */
     @XmlElement(namespace = Namespaces.MDB)
     @XmlJavaTypeAdapter(LocaleAdapter.class)
-    public Locale language;
+    private Locale language;
 
     /**
      * Creates an initially empty metadata.

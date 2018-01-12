@@ -122,7 +122,7 @@ public final strictfp class CodeListMarshallingTest extends XMLTestCase {
      */
     @Test
     public void testISO_URL() throws JAXBException {
-        final String expected = getResponsiblePartyXML(Schemas.ISO_19139_ROOT);
+        final String expected = getResponsiblePartyXML("http://standards.iso.org/ittf/PubliclyAvailableStandards/ISO_19139_Schemas/");
         final Responsibility rp = (Responsibility) XML.unmarshal(expected);
         assertEquals(Role.PRINCIPAL_INVESTIGATOR, rp.getRole());
 
@@ -130,7 +130,7 @@ public final strictfp class CodeListMarshallingTest extends XMLTestCase {
         final Marshaller marshaller = pool.acquireMarshaller();
         marshaller.setProperty(XML.METADATA_VERSION, LegacyNamespaces.ISO_19139);
         marshaller.setProperty(XML.SCHEMAS, Collections.singletonMap("gmd",
-                "http://standards.iso.org/ittf/PubliclyAvailableStandards/ISO_19139_Schemas")); // Intentionally omit trailing '/'.
+                "http://standards.iso.org/ittf/PubliclyAvailableStandards/ISO_19139_Schemas"));     // Intentionally omit trailing '/'.
         final String actual = marshal(marshaller, rp);
         pool.recycle(marshaller);
         assertXmlEquals(expected, actual, "xmlns:*");

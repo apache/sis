@@ -143,12 +143,12 @@ public final class XML extends Static {
      *
      * <ul>
      *   <li>The value of the {@code codeList} attribute when marshalling subclasses of
-     *       {@link org.opengis.util.CodeList} in ISO 19115-3 compliant XML document.</li>
-     *   <li>The value of the {@code uom} attribute when marshalling measures (for example
-     *       {@code <gco:Distance>}) in ISO 19115-3 compliant XML document.</li>
+     *       {@link org.opengis.util.CodeList}.</li>
+     *   <li>The value of the {@code uom} attribute when marshalling measures
+     *       (for example {@code <gco:Distance>}).</li>
      * </ul>
      *
-     * As of SIS 0.3, only one {@code Map} key is recognized: {@code "gmd"}, which stands
+     * Only one {@code Map} key is currently recognized: {@code "gmd"}, which stands
      * for the legacy ISO 19139:2007 schemas. Additional keys, if any, are ignored.
      * Future SIS versions may recognize more keys.
      *
@@ -157,6 +157,7 @@ public final class XML extends Static {
      *   <caption>Supported schemas</caption>
      *   <tr><th>Map key</th> <th>Typical values (choose only one)</th></tr>
      *   <tr><td><b>gmd</b></td><td>
+     *     http://www.isotc211.org/2005/<br>
      *     http://schemas.opengis.net/iso/19139/20070417/<br>
      *     http://standards.iso.org/ittf/PubliclyAvailableStandards/ISO_19139_Schemas/<br>
      *     http://eden.ign.fr/xsd/fra/20060922/
