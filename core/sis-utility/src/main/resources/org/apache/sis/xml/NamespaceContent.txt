@@ -70,6 +70,8 @@ http://standards.iso.org/iso/19115/-3/cit/1.0
     <type>
     contactInfo
     name
+  CI_PresentationFormCode
+    <type>
   CI_Responsibility
     <type>
     extent
@@ -334,8 +336,6 @@ http://standards.iso.org/iso/19115/-3/mco/1.0
     useLimitation
     userNote
 http://standards.iso.org/iso/19115/-3/mdb/1.0
-  CI_PresentationFormCode
-    <type>
   DQ_EvaluationMethodTypeCode
     <type>
   MD_ApplicationSchemaInformation
@@ -415,8 +415,6 @@ http://standards.iso.org/iso/19115/-3/mdb/1.0
   MD_RestrictionCode
     <type>
   MD_SpatialRepresentationTypeCode
-    <type>
-  MD_TopicCategoryCode
     <type>
   MD_TopologyLevelCode
     <type>
@@ -805,6 +803,8 @@ http://standards.iso.org/iso/19115/-3/mri/1.0
     equivalentScale
     levelOfDetail
     vertical
+  MD_TopicCategoryCode
+    <type>
   MD_Usage
     <type>
     additionalDocumentation
