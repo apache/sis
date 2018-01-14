@@ -174,8 +174,6 @@ http://standards.iso.org/iso/19115/-3/gex/1.0
     minimumValue
     verticalCRS
 http://standards.iso.org/iso/19115/-3/lan/1.0
-  Country
-    <type>
   CountryCode
     <type>
   LanguageCode
@@ -189,7 +187,6 @@ http://standards.iso.org/iso/19115/-3/lan/1.0
     characterEncoding
     country
     language
-    languageCode
   textGroup
     <type>
 http://standards.iso.org/iso/19115/-3/mac/1.0
@@ -369,21 +366,13 @@ http://standards.iso.org/iso/19115/-3/mdb/1.0
     <type>
     alternativeMetadataReference
     applicationSchemaInfo
-    characterSet
     contact
     contentInfo
     dataQualityInfo
-    dataSetURI
     dateInfo
-    dateStamp
     defaultLocale
     distributionInfo
-    fileIdentifier
-    hierarchyLevel
-    hierarchyLevelName
     identificationInfo
-    language
-    locale
     metadataConstraints
     metadataExtensionInfo
     metadataIdentifier
@@ -392,10 +381,7 @@ http://standards.iso.org/iso/19115/-3/mdb/1.0
     metadataProfile
     metadataScope
     metadataStandard
-    metadataStandardName
-    metadataStandardVersion
     otherLocale
-    parentIdentifier
     parentMetadata
     portrayalCatalogueInfo
     referenceSystemInfo
