@@ -16,9 +16,11 @@
  */
 package org.apache.sis.internal.jaxb.code;
 
+import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import org.opengis.metadata.identification.TopicCategory;
 import org.apache.sis.internal.jaxb.gmd.EnumAdapter;
+import org.apache.sis.xml.Namespaces;
 
 
 /**
@@ -29,10 +31,11 @@ import org.apache.sis.internal.jaxb.gmd.EnumAdapter;
  * @author  Cédric Briançon (Geomatys)
  * @author  Guihem Legal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.5
+ * @version 1.0
  * @since   0.3
  * @module
  */
+@XmlType(namespace = Namespaces.MRI)
 public final class MD_TopicCategoryCode extends EnumAdapter<MD_TopicCategoryCode, TopicCategory> {
     /**
      * The enumeration value.

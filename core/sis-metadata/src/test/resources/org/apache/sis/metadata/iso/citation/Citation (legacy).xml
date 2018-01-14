@@ -72,6 +72,6 @@
   </gmd:citedResponsibleParty>
   <gmd:presentationForm>
     <gmd:CI_PresentationFormCode codeList="http://schemas.opengis.net/iso/19139/20070417/resources/Codelist/gmxCodelists.xml#CI_PresentationFormCode"
-                                 codeListValue="physicalObject">Physical Object</gmd:CI_PresentationFormCode>
+                                 codeListValue="physicalObject">Physical object</gmd:CI_PresentationFormCode>
   </gmd:presentationForm>
 </gmd:CI_Citation>
