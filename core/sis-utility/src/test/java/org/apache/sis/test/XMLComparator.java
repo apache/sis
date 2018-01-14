@@ -43,6 +43,7 @@ import org.w3c.dom.Text;
 import org.xml.sax.SAXException;
 import org.apache.sis.xml.Namespaces;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.internal.jaxb.LegacyNamespaces;
 
 import static java.lang.StrictMath.*;
 import static org.opengis.test.Assert.*;
@@ -70,7 +71,7 @@ import static org.apache.sis.util.CharSequences.trimWhitespaces;
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Guilhem Legal (Geomatys)
- * @version 0.4
+ * @version 1.0
  *
  * @see XMLTestCase
  * @see Assert#assertXmlEquals(Object, Object, String[])
@@ -91,11 +92,12 @@ public strictfp class XMLComparator {
         map.put("xmlns", "http://www.w3.org/2000/xmlns");           // No trailing slash.
         map.put("xlink", Namespaces.XLINK);
         map.put("xsi",   Namespaces.XSI);
-        map.put("gml",   Namespaces.GML);
-        map.put("gmd",   Namespaces.GMD);
-        map.put("gmx",   Namespaces.GMX);
-        map.put("gmi",   Namespaces.GMI);
         map.put("gco",   Namespaces.GCO);
+        map.put("mdb",   Namespaces.MDB);
+        map.put("gml",   Namespaces.GML);
+        map.put("gmd",   LegacyNamespaces.GMD);
+        map.put("gmx",   LegacyNamespaces.GMX);
+        map.put("gmi",   LegacyNamespaces.GMI);
     }
 
     /**

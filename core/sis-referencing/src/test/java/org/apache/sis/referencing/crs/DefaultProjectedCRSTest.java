@@ -486,7 +486,7 @@ public final strictfp class DefaultProjectedCRSTest extends XMLTestCase {
          * Test marshalling and compare with the original file. The comparison ignores the <gml:name> nodes because the
          * marshalled CRS contains many operation method and parameter aliases which were not in the original XML file.
          */
-        assertMarshalEqualsFile(XML_FILE, crs, STRICT, new String[] {"gml:name"},
+        assertMarshalEqualsFile(XML_FILE, crs, null, STRICT, new String[] {"gml:name"},
                 new String[] {"xmlns:*", "xsi:schemaLocation", "gml:id"});
     }
 

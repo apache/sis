@@ -207,7 +207,7 @@ public abstract strictfp class XMLTestCase extends TestCase {
      *
      * @param  filename           the name of the XML file in the package of the final subclass of {@code this}.
      * @param  object             the object to marshal.
-     * @param  metadataVersion    whether to marshall legacy 19139:2007 or newer ISO 19115-3 document.
+     * @param  metadataVersion    whether to marshal legacy 19139:2007 or newer ISO 19115-3 document. Can be {@code null}.
      * @param  ignoredAttributes  the fully-qualified names of attributes to ignore
      *                            (typically {@code "xmlns:*"} and {@code "xsi:schemaLocation"}).
      * @throws JAXBException if an error occurred during marshalling.
@@ -226,6 +226,7 @@ public abstract strictfp class XMLTestCase extends TestCase {
      *
      * @param  filename           the name of the XML file in the package of the final subclass of {@code this}.
      * @param  object             the object to marshal.
+     * @param  metadataVersion    whether to marshal legacy 19139:2007 or newer ISO 19115-3 document. Can be {@code null}.
      * @param  tolerance          the tolerance threshold for comparison of numerical values.
      * @param  ignoredNodes       the fully-qualified names of the nodes to ignore, or {@code null} if none.
      * @param  ignoredAttributes  the fully-qualified names of attributes to ignore
@@ -234,12 +235,12 @@ public abstract strictfp class XMLTestCase extends TestCase {
      *
      * @see #unmarshalFile(Class, String)
      *
-     * @since 0.7
+     * @since 1.0
      */
-    protected final void assertMarshalEqualsFile(final String filename, final Object object,
+    protected final void assertMarshalEqualsFile(final String filename, final Object object, final Version metadataVersion,
             final double tolerance, final String[] ignoredNodes, final String[] ignoredAttributes) throws JAXBException
     {
-        assertXmlEquals(getResource(filename), marshal(object), tolerance, ignoredNodes, ignoredAttributes);
+        assertXmlEquals(getResource(filename), marshal(object, metadataVersion), tolerance, ignoredNodes, ignoredAttributes);
     }
 
     /**
@@ -265,7 +266,7 @@ public abstract strictfp class XMLTestCase extends TestCase {
      * The XML schema identified by the given version is used.
      *
      * @param  object           the object to marshal.
-     * @param  metadataVersion  whether to marshall legacy 19139:2007 or newer ISO 19115-3 document.
+     * @param  metadataVersion  whether to marshal legacy 19139:2007 or newer ISO 19115-3 document. Can be {@code null}.
      * @return the marshalled object.
      * @throws JAXBException if an error occurred while marshalling the object.
      *
