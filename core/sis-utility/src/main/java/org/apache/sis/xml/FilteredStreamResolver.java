@@ -22,7 +22,6 @@ import java.util.List;
 import java.util.HashSet;
 import java.util.HashMap;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.io.IOException;
 import java.io.LineNumberReader;
 import java.io.InputStreamReader;
@@ -160,17 +159,6 @@ final class FilteredStreamResolver extends FilteredStreamReader {
     }
 
     /**
-     * Elements that need to have their name changed.
-     * For example {@code gmd:URL} needs to be changed to {@code gco:CharacterString} for reading ISO 19139:2007.
-     *
-     * <ul>
-     *   <li>key:   old element name</li>
-     *   <li>value: new element name</li>
-     * </ul>
-     */
-    private static final Map<String,String> NAME_CHANGES = Collections.singletonMap("URL", "CharacterString");
-
-    /**
      * List of encountered XML tags, in order. Used for backtracking.
      * Elements are removed from this list when they are closed.
      */
@@ -235,11 +223,11 @@ final class FilteredStreamResolver extends FilteredStreamReader {
      * Return the namespace used by implementation (the SIS classes with JAXB annotations)
      * in the context of the current part of the XML document being read.
      *
-     * @param   name       the element or attribute name currently being read.
-     * @param   namespace  the namespace declared in the document being read (e.g. an ISO 19139:2007 namespace).
-     * @return  the namespace URI for the element or attribute in the current context (e.g. an ISO 19115-3 namespace).
+     * @param   name   the local name of the element or attribute currently being read.
+     * @return  the namespace URI for the element or attribute in the current context (e.g. an ISO 19115-3 namespace),
+     *          or {@code null} if the given name is unknown.
      */
-    private String toImplNamespace(final String name, final String namespace) {
+    private String toImplNamespace(final String name) {
         final Set<String> declaringTypes = DECLARING_TYPES.get(name);
         if (declaringTypes == null) {
             /*
@@ -247,7 +235,7 @@ final class FilteredStreamResolver extends FilteredStreamReader {
              */
             final Map<String,String> attributes = NAMESPACES.get(name);
             if (attributes != null) {
-                return attributes.getOrDefault(TYPE_KEY, namespace);
+                return attributes.get(TYPE_KEY);
             }
         } else {
             /*
@@ -261,37 +249,11 @@ final class FilteredStreamResolver extends FilteredStreamReader {
                      * A NullPointerException below would be a bug in our algorithm because
                      * we constructed DECLARING_TYPES from NAMESPACES keys only.
                      */
-                    return NAMESPACES.get(parent).getOrDefault(name, namespace);
+                    return NAMESPACES.get(parent).get(name);
                 }
             }
         }
-        return toImpl(namespace);
-    }
-
-    /**
-     * If the given text seems to be a qualified name and its prefix is recognized, replaces its namespace URI.
-     * Otherwise returns the text unchanged. This method is invoked for transforming attribute values.
-     */
-    private String toImplName(String text) {
-        int length = CharSequences.skipTrailingWhitespaces(text, 0, text.length());
-        int start  = CharSequences.skipLeadingWhitespaces (text, 0, length);
-        for (int sep=start; sep < length; sep++) {
-            if (text.charAt(sep) == ':') {
-                if (sep != start) {
-                    // Prefix exists, check everything
-                    String prefix = text.substring(start, sep);
-                    String uri = getParent().getNamespaceContext().getNamespaceURI(prefix);
-                    if (uri != null && !uri.isEmpty()) {
-                        String name = text.substring(sep+1, length);
-                        uri = toImplNamespace(name, uri);
-                        prefix = Namespaces.getPreferredPrefix(uri, prefix);
-                        text = prefix + ':' + name;
-                    }
-                }
-                break;
-            }
-        }
-        return text;
+        return null;
     }
 
     /**
@@ -301,22 +263,15 @@ final class FilteredStreamResolver extends FilteredStreamReader {
     @Override
     final QName toImpl(QName name) {
         final String namespaceURI = name.getNamespaceURI();
-        final String oldLocal = name.getLocalPart();
-        final String newLocal = NAME_CHANGES.getOrDefault(oldLocal, oldLocal);
-        final String replacement = toImplNamespace(newLocal, namespaceURI);
-        if (replacement != namespaceURI || newLocal != oldLocal) {               // Identity checks are okay here.
-            name = new QName(replacement, oldLocal, name.getPrefix());
+        final String localPart = name.getLocalPart();
+        String replacement = toImplNamespace(localPart);
+        if (replacement == null) {
+            replacement = toImpl(namespaceURI);
+        }
+        if (!replacement.equals(namespaceURI)) {
+            name = new QName(replacement, localPart, name.getPrefix());
         }
         return name;
-    }
-
-    /**
-     * Forwards the call, then replaces the local name if needed.
-     */
-    @Override
-    public String getLocalName() {
-        final String name = super.getLocalName();
-        return NAME_CHANGES.getOrDefault(name, name);
     }
 
     /**
@@ -325,24 +280,10 @@ final class FilteredStreamResolver extends FilteredStreamReader {
      */
     @Override
     public String getNamespaceURI() {
-        return toImplNamespace(getLocalName(), getParent().getNamespaceURI());
-    }
-
-    /**
-     * Replaces the given URI if needed, then forwards the call.
-     * If the attribute value seems to be a qualified name, replaces the namespace URI there too.
-     */
-    @Override
-    public String getAttributeValue(final String namespaceUri, final String localName) {
-        return toImplName(super.getAttributeValue(namespaceUri, localName));
-    }
-
-    /**
-     * Forwards the call.
-     * If the attribute value seems to be a qualified name, replaces the namespace URI there too.
-     */
-    @Override
-    public String getAttributeValue(int index) {
-        return toImplName(super.getAttributeValue(index));
+        String namespace = toImplNamespace(getLocalName());
+        if (namespace == null) {
+            namespace = super.getNamespaceURI();
+        }
+        return namespace;
     }
 }
