@@ -53,7 +53,8 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
  *
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.5
+ * @author  Cullen Rombach (Image Matters)
+ * @version 1.0
  * @since   0.3
  * @module
  */

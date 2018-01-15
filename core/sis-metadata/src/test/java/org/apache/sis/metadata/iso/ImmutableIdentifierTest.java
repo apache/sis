@@ -24,10 +24,11 @@ import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.metadata.iso.citation.DefaultCitation;
 import org.apache.sis.util.iso.SimpleInternationalString;
 import org.apache.sis.internal.simple.SimpleCitation;
+import org.apache.sis.internal.jaxb.LegacyNamespaces;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.test.DependsOnMethod;
-import org.apache.sis.test.TestCase;
+import org.apache.sis.test.XMLTestCase;
 import org.opengis.test.Validators;
 import org.apache.sis.test.DependsOn;
 import org.junit.Test;
@@ -40,7 +41,7 @@ import static org.opengis.metadata.Identifier.*;
  * Tests {@link ImmutableIdentifier}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.6
+ * @version 1.0
  * @since   0.3
  * @module
  */
@@ -48,7 +49,7 @@ import static org.opengis.metadata.Identifier.*;
     DefaultIdentifierTest.class,
     org.apache.sis.metadata.iso.citation.CitationsTest.class
 })
-public final strictfp class ImmutableIdentifierTest extends TestCase {
+public final strictfp class ImmutableIdentifierTest extends XMLTestCase {
     /**
      * Returns the properties map to be used in argument to test methods.
      */
@@ -171,7 +172,21 @@ public final strictfp class ImmutableIdentifierTest extends TestCase {
     @Test
     public void testMarshal() throws JAXBException {
         final ImmutableIdentifier identifier = new ImmutableIdentifier(new DefaultCitation("EPSG"), null, "4326");
-        new DefaultIdentifierTest().testMarshal("RS_Identifier", identifier);
+        assertXmlEquals(
+                "<gmd:RS_Identifier xmlns:gmd=\"" + LegacyNamespaces.GMD + "\" " +
+                               "xmlns:gco=\"" + LegacyNamespaces.GCO + "\">\n" +
+                "  <gmd:authority>\n" +
+                "    <gmd:CI_Citation>\n" +
+                "      <gmd:title>\n" +
+                "        <gco:CharacterString>EPSG</gco:CharacterString>\n" +
+                "      </gmd:title>\n" +
+                "    </gmd:CI_Citation>\n" +
+                "  </gmd:authority>\n" +
+                "  <gmd:code>\n" +
+                "    <gco:CharacterString>4326</gco:CharacterString>\n" +
+                "  </gmd:code>\n" +
+                "</gmd:RS_Identifier>",
+                marshal(identifier, LegacyNamespaces.ISO_19139), "xmlns:*");
     }
 
     /**

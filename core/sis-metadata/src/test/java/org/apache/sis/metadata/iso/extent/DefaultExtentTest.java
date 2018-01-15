@@ -18,10 +18,11 @@ package org.apache.sis.metadata.iso.extent;
 
 import java.net.URL;
 import java.util.Arrays;
-import java.io.IOException;
 import javax.xml.bind.JAXBException;
 import org.opengis.metadata.extent.Extent;
+import org.apache.sis.util.Version;
 import org.apache.sis.util.iso.SimpleInternationalString;
+import org.apache.sis.internal.jaxb.LegacyNamespaces;
 import org.apache.sis.xml.IdentifierSpace;
 import org.apache.sis.xml.Namespaces;
 import org.apache.sis.xml.NilObject;
@@ -38,24 +39,22 @@ import static org.apache.sis.test.TestUtilities.date;
  *
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @author  Cullen Rombach (Image Matters)
+ * @version 1.0
  * @since   0.3
  * @module
  */
 @DependsOn(DefaultGeographicBoundingBoxTest.class)
 public final strictfp class DefaultExtentTest extends XMLTestCase {
     /**
-     * Returns the URL to the XML file of the given name.
-     * The argument shall be one of the files listed in the following directory:
+     * Returns the URL to a test file in XML.
+     * This is used for test methods outside this {@code DefaultExtentTest} file.
      *
-     * <ul>
-     *   <li>{@code "core/sis-metadata/src/test/resources/org/apache/sis/metadata/iso/extent"}</li>
-     * </ul>
-     *
-     * @param  filename  the name of the XML file.
-     * @return the URL to the given XML file.
+     * @param  legacy  {@code true} for legacy ISO 19139:2007 format, or {@code false} for ISO 19115-3 format.
+     * @return URL to a test file in XML.
      */
-    public static URL getResource(final String filename) {
+    public static URL getTestFile(final boolean legacy) {
+        final String filename = legacy ? "Extent (legacy).xml" : "Extent.xml";
         final URL resource = DefaultExtentTest.class.getResource(filename);
         assertNotNull(filename, resource);
         return resource;
@@ -102,11 +101,27 @@ public final strictfp class DefaultExtentTest extends XMLTestCase {
      * <p><b>XML test file:</b>
      * {@code "core/sis-metadata/src/test/resources/org/apache/sis/metadata/iso/extent/Extent.xml"}</p>
      *
-     * @throws IOException   if an error occurred while reading the XML file.
      * @throws JAXBException if an error occurred during the during marshalling / unmarshalling processes.
      */
     @Test
-    public void testXML() throws IOException, JAXBException {
+    public void testXML() throws JAXBException {
+        roundtrip("Extent.xml", LegacyNamespaces.ISO_19115_3);
+    }
+
+    /**
+     * Tests the (un)marshalling of a {@code <gmd:EX_Extent>} object using the legacy ISO 19139:2007 schema.
+     *
+     * @throws JAXBException if an error occurred during the during marshalling / unmarshalling processes.
+     */
+    @Test
+    public void testLegacyXML() throws JAXBException {
+        roundtrip("Extent (legacy).xml", LegacyNamespaces.ISO_19139);
+    }
+
+    /**
+     * Compares the marshalling and unmarshalling of a {@link DefaultExtent} with XML in the given file.
+     */
+    private void roundtrip(final String filename, final Version version) throws JAXBException {
         final DefaultGeographicBoundingBox bbox = new DefaultGeographicBoundingBox(-99, -79, 14.9844, 31);
         bbox.getIdentifierMap().put(IdentifierSpace.ID, "bbox");
         final DefaultTemporalExtent temporal = new DefaultTemporalExtent();
@@ -115,44 +130,34 @@ public final strictfp class DefaultExtentTest extends XMLTestCase {
             temporal.setBounds(date("2010-01-27 13:26:10"), date("2010-08-27 13:26:10"));
         }
         final DefaultExtent extent = new DefaultExtent(null, bbox, null, temporal);
-        /*
-         * XML marshalling, and compare with the content of "ProcessStep.xml" file.
-         */
-        final String xml = marshal(extent);
-        assertTrue(xml.startsWith("<?xml"));
-        assertXmlEquals(getResource("Extent.xml"), xml, "xmlns:*", "xsi:schemaLocation");
-        /*
-         * Final comparison: ensure that we didn't lost any information.
-         */
-        assertEquals(extent, unmarshal(DefaultExtent.class, xml));
+        assertMarshalEqualsFile(filename, extent, version, "xmlns:*", "xsi:schemaLocation");
+        assertEquals(extent, unmarshalFile(DefaultExtent.class, filename));
     }
 
     /**
      * Tests XML marshalling of the {@link Extents#WORLD} constant, which is a {@code DefaultExtent} instance.
      *
      * @throws JAXBException if an error occurred during the during marshalling / unmarshalling processes.
-     *
-     * @since 0.6
      */
     @Test
     public void testWorldConstant() throws JAXBException {
         final String xml = marshal(Extents.WORLD);
-        assertXmlEquals("<gmd:EX_Extent" +
-                " xmlns:gco=\"" + Namespaces.GCO + '"' +
-                " xmlns:gmd=\"" + Namespaces.GMD + "\">\n" +
-                "  <gmd:description>\n" +
+        assertXmlEquals("<gex:EX_Extent" +
+                " xmlns:gex=\"" + Namespaces.GEX + '"' +
+                " xmlns:gco=\"" + Namespaces.GCO + "\">\n" +
+                "  <gex:description>\n" +
                 "    <gco:CharacterString>World</gco:CharacterString>\n" +
-                "  </gmd:description>\n" +
-                "  <gmd:geographicElement>\n" +
-                "    <gmd:EX_GeographicBoundingBox>\n" +
-                "      <gmd:extentTypeCode>    <gco:Boolean> true </gco:Boolean></gmd:extentTypeCode>\n" +
-                "      <gmd:westBoundLongitude><gco:Decimal> -180 </gco:Decimal></gmd:westBoundLongitude>\n" +
-                "      <gmd:eastBoundLongitude><gco:Decimal>  180 </gco:Decimal></gmd:eastBoundLongitude>\n" +
-                "      <gmd:southBoundLatitude><gco:Decimal>  -90 </gco:Decimal></gmd:southBoundLatitude>\n" +
-                "      <gmd:northBoundLatitude><gco:Decimal>   90 </gco:Decimal></gmd:northBoundLatitude>\n" +
-                "    </gmd:EX_GeographicBoundingBox>\n" +
-                "  </gmd:geographicElement>\n" +
-                "</gmd:EX_Extent>",
+                "  </gex:description>\n" +
+                "  <gex:geographicElement>\n" +
+                "    <gex:EX_GeographicBoundingBox>\n" +
+                "      <gex:extentTypeCode>    <gco:Boolean> true </gco:Boolean></gex:extentTypeCode>\n" +
+                "      <gex:westBoundLongitude><gco:Decimal> -180 </gco:Decimal></gex:westBoundLongitude>\n" +
+                "      <gex:eastBoundLongitude><gco:Decimal>  180 </gco:Decimal></gex:eastBoundLongitude>\n" +
+                "      <gex:southBoundLatitude><gco:Decimal>  -90 </gco:Decimal></gex:southBoundLatitude>\n" +
+                "      <gex:northBoundLatitude><gco:Decimal>   90 </gco:Decimal></gex:northBoundLatitude>\n" +
+                "    </gex:EX_GeographicBoundingBox>\n" +
+                "  </gex:geographicElement>\n" +
+                "</gex:EX_Extent>",
                 xml, "xmlns:*", "xsi:schemaLocation");
     }
 }

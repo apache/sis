@@ -87,7 +87,7 @@ public final strictfp class MimeTypeDetectorTest extends TestCase {
     @DependsOnMethod("testGMDFromString")
     public void testGMDFromInputStream() throws IOException {
         final String type;
-        try (InputStream in = DefaultExtentTest.getResource("Extent.xml").openStream()) {
+        try (InputStream in = DefaultExtentTest.getTestFile(true).openStream()) {
             assertEquals('<', in.read());
             assertEquals('?', in.read());
             final MimeTypeDetector detector = new MimeTypeDetector(singletonMap(Namespaces.GMD, "application/vnd.iso.19139+xml")) {

@@ -22,6 +22,7 @@ import java.util.Collection;
 import javax.xml.bind.JAXBException;
 import org.opengis.metadata.identification.TopicCategory;
 import org.apache.sis.metadata.iso.identification.DefaultDataIdentification;
+import org.apache.sis.internal.jaxb.LegacyNamespaces;
 import org.apache.sis.xml.Namespaces;
 import org.apache.sis.test.XMLTestCase;
 import org.junit.Test;
@@ -33,7 +34,8 @@ import static org.apache.sis.test.Assert.*;
  * Tests the XML marshaling of {@code Enum}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.6
+ * @author  Cullen Rombach (Image Matters)
+ * @version 1.0
  * @since   0.5
  * @module
  */
@@ -45,33 +47,33 @@ public final strictfp class EnumMarshallingTest extends XMLTestCase {
      */
     @Test
     public void testTopicCategories() throws JAXBException {
-        final Collection<TopicCategory> expected = Arrays.asList(
+        final Collection<TopicCategory> topics = Arrays.asList(
                 TopicCategory.OCEANS,
                 TopicCategory.ENVIRONMENT,
                 TopicCategory.IMAGERY_BASE_MAPS_EARTH_COVER);   // We need to test at least one enum with many words.
 
         final DefaultDataIdentification id = new DefaultDataIdentification();
-        id.setTopicCategories(expected);
+        id.setTopicCategories(topics);
+        String expected =
+                "<mri:MD_DataIdentification xmlns:mri=\"" + Namespaces.MRI + "\">\n" +
+                "  <mri:topicCategory>\n" +
+                "    <mri:MD_TopicCategoryCode>environment</mri:MD_TopicCategoryCode>\n" +
+                "  </mri:topicCategory>\n" +
+                "  <mri:topicCategory>\n" +
+                "    <mri:MD_TopicCategoryCode>imageryBaseMapsEarthCover</mri:MD_TopicCategoryCode>\n" +
+                "  </mri:topicCategory>\n" +
+                "  <mri:topicCategory>\n" +
+                "    <mri:MD_TopicCategoryCode>oceans</mri:MD_TopicCategoryCode>\n" +
+                "  </mri:topicCategory>\n" +
+                "</mri:MD_DataIdentification>";
 
-        final String xml = marshal(id);
-        assertXmlEquals(
-                "<gmd:MD_DataIdentification xmlns:gmd=\"" + Namespaces.GMD + "\">\n" +
-                "  <gmd:topicCategory>\n" +
-                "    <gmd:MD_TopicCategoryCode>environment</gmd:MD_TopicCategoryCode>\n" +
-                "  </gmd:topicCategory>\n" +
-                "  <gmd:topicCategory>\n" +
-                "    <gmd:MD_TopicCategoryCode>imageryBaseMapsEarthCover</gmd:MD_TopicCategoryCode>\n" +
-                "  </gmd:topicCategory>\n" +
-                "  <gmd:topicCategory>\n" +
-                "    <gmd:MD_TopicCategoryCode>oceans</gmd:MD_TopicCategoryCode>\n" +
-                "  </gmd:topicCategory>\n" +
-                "</gmd:MD_DataIdentification>",
-                xml, "xmlns:*");
+        final String xml = marshal(id, LegacyNamespaces.ISO_19115_3);
+        assertXmlEquals(expected, xml, "xmlns:*");
         /*
          * Unmarshall the above XML and verify that we find all the topic categories.
          */
-        final Collection<TopicCategory> unmarshalled = unmarshal(DefaultDataIdentification.class, xml).getTopicCategories();
+        final Collection<TopicCategory> unmarshalled = unmarshal(DefaultDataIdentification.class, expected).getTopicCategories();
         assertInstanceOf("topicCategory", EnumSet.class, unmarshalled);
-        assertSetEquals(expected, unmarshalled);
+        assertSetEquals(topics, unmarshalled);
     }
 }

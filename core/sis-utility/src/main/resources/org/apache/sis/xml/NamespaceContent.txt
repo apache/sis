@@ -320,6 +320,8 @@ http://standards.iso.org/iso/19115/-3/mco/1.0
     addressee
     disseminationConstraints
     statement
+  MD_RestrictionCode
+    <type>
   MD_SecurityConstraints
     <type>
     classification
@@ -397,8 +399,6 @@ http://standards.iso.org/iso/19115/-3/mdb/1.0
     <type>
     portrayalCatalogueCitation
   MD_ProgressCode
-    <type>
-  MD_RestrictionCode
     <type>
   MD_SpatialRepresentationTypeCode
     <type>

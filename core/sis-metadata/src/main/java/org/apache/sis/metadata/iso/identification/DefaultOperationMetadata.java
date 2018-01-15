@@ -293,7 +293,7 @@ public class DefaultOperationMetadata extends ISOMetadata implements OperationMe
      */
     @Override
     @SuppressWarnings({"unchecked", "rawtypes"})
-    @XmlElement(name = "parameters")
+    @XmlElement(name = "parameter")
     public Collection<ParameterDescriptor<?>> getParameters() {
         return parameters = nonNullCollection(parameters, (Class) ParameterDescriptor.class);
     }
