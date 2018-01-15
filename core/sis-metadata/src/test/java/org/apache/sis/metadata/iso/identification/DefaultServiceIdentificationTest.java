@@ -21,6 +21,7 @@ import org.opengis.util.NameFactory;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.identification.CouplingType;
 import org.apache.sis.internal.system.DefaultFactories;
+import org.apache.sis.internal.jaxb.LegacyNamespaces;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.xml.NilReason;
 import org.apache.sis.test.DependsOn;
@@ -35,7 +36,8 @@ import static java.util.Collections.singleton;
  * Tests {@link DefaultServiceIdentification}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.5
+ * @author  Cullen Rombach (Image Matters)
+ * @version 1.0
  * @since   0.5
  * @module
  */
@@ -48,6 +50,11 @@ public final strictfp class DefaultServiceIdentificationTest extends XMLTestCase
      * An XML file in this package containing a service identification.
      */
     private static final String XML_FILE = "ServiceIdentification.xml";
+
+    /**
+     * Same as {@link #XML_FILE} but using legacy ISO 19139:2007 schema.
+     */
+    private static final String XML_FILE_LEGACY = "ServiceIdentification (legacy).xml";
 
     /**
      * Creates the service identification to use for testing purpose.
@@ -77,6 +84,16 @@ public final strictfp class DefaultServiceIdentificationTest extends XMLTestCase
     }
 
     /**
+     * Tests the marshalling of a service metadata to legacy ISO 19139:2007 schema.
+     *
+     * @throws JAXBException if an error occurred during the during marshalling process.
+     */
+    @Test
+    public void testMarshalLegacy() throws JAXBException {
+        assertMarshalEqualsFile(XML_FILE_LEGACY, create(), LegacyNamespaces.ISO_19139, "xlmns:*", "xsi:schemaLocation");
+    }
+
+    /**
      * Tests the unmarshalling of a service metadata.
      *
      * <p><b>XML test file:</b>
@@ -87,5 +104,15 @@ public final strictfp class DefaultServiceIdentificationTest extends XMLTestCase
     @Test
     public void testUnmarshal() throws JAXBException {
         assertTrue(create().equals(unmarshalFile(DefaultServiceIdentification.class, XML_FILE), ComparisonMode.DEBUG));
+    }
+
+    /**
+     * Tests the unmarshalling of a service metadata from legacy ISO 19139:2007 schema.
+     *
+     * @throws JAXBException if an error occurred during the during unmarshalling process.
+     */
+    @Test
+    public void testUnmarshalLegacy() throws JAXBException {
+        assertTrue(create().equals(unmarshalFile(DefaultServiceIdentification.class, XML_FILE_LEGACY), ComparisonMode.DEBUG));
     }
 }

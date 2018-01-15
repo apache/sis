@@ -18,13 +18,13 @@ package org.apache.sis.metadata.iso.identification;
 
 import javax.xml.bind.JAXBException;
 import org.opengis.metadata.identification.RepresentativeFraction;
-import org.apache.sis.xml.XML;
+import org.apache.sis.xml.Namespaces;
 import org.apache.sis.internal.jaxb.LegacyNamespaces;
 import org.apache.sis.internal.jaxb.Context;
 import org.apache.sis.internal.jaxb.Schemas;
 import org.apache.sis.test.LoggingWatcher;
+import org.apache.sis.test.XMLTestCase;
 import org.apache.sis.test.DependsOn;
-import org.apache.sis.test.TestCase;
 import org.junit.After;
 import org.junit.Rule;
 import org.junit.Test;
@@ -36,12 +36,13 @@ import static org.apache.sis.test.Assert.*;
  * Tests {@link DefaultResolution}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.7
+ * @author  Cullen Rombach (Image Matters)
+ * @version 1.0
  * @since   0.3
  * @module
  */
 @DependsOn(DefaultRepresentativeFractionTest.class)
-public final strictfp class DefaultResolutionTest extends TestCase {
+public final strictfp class DefaultResolutionTest extends XMLTestCase {
     /**
      * A JUnit {@link Rule} for listening to log events. This field is public because JUnit requires us to
      * do so, but should be considered as an implementation details (it should have been a private field).
@@ -107,11 +108,11 @@ public final strictfp class DefaultResolutionTest extends TestCase {
      * instance which is expected to be marshalled as below (ignoring namespace declarations):
      *
      * {@preformat xml
-     *   <gmd:MD_Resolution>
-     *     <gmd:distance>
-     *       <gco:Distance uom=\"http://schemas.opengis.net/iso/19139/20070417/resources/uom/gmxUom.xml#xpointer(//*[@gml:id='m'])\">1000.0</gco:Distance>
-     *     </gmd:distance>
-     *   </gmd:MD_Resolution>
+     *   <mri:MD_Resolution>
+     *     <mri:distance>
+     *       <gco:Distance uom="http://schemas.opengis.net/iso/19139/20070417/resources/uom/gmxUom.xml#xpointer(//*[@gml:id='m'])">1000.0</gco:Distance>
+     *     </mri:distance>
+     *   </mri:MD_Resolution>
      * }
      *
      * @throws JAXBException if an error occurred while marshalling the element.
@@ -120,14 +121,38 @@ public final strictfp class DefaultResolutionTest extends TestCase {
     public void testXML() throws JAXBException {
         final DefaultResolution resolution = new DefaultResolution();
         resolution.setDistance(1000.0);
-        final String xml = XML.marshal(resolution);
-        assertTrue("<gmd:distance> element is missing. If this test fails randomly, "
-                + "see DefaultResolutionTest.testXML() javadoc for more information", xml.contains("distance"));
-        /*
-         * Following test is done as a matter of principle, but should not be a problem.
-         * The real issue is the <gmd:distance> which happen to be randomly missing for
-         * an unknown reason.
-         */
+        final String xml = marshal(resolution);
+        assertXmlEquals(
+                "<mri:MD_Resolution xmlns:mri=\"" + Namespaces.MRI + '"' +
+                                  " xmlns:gco=\"" + Namespaces.GCO + "\">\n" +
+                "  <mri:distance>\n" +
+                "    <gco:Distance uom=\"" + Schemas.METADATA_ROOT_LEGACY + Schemas.UOM_PATH + "#xpointer(//*[@gml:id='m'])\">1000.0</gco:Distance>\n" +
+                "  </mri:distance>\n" +
+                "</mri:MD_Resolution>", xml, "xmlns:*");
+
+        assertEquals(resolution, unmarshal(DefaultResolution.class, xml));
+    }
+
+    /**
+     * Tests XML (un)marshalling of a resolution element using legacy XML schema.
+     * This test creates a {@link DefaultResolution} instance which is expected to be marshalled as below
+     * (ignoring namespace declarations):
+     *
+     * {@preformat xml
+     *   <gmd:MD_Resolution>
+     *     <gmd:distance>
+     *       <gco:Distance uom="http://schemas.opengis.net/iso/19139/20070417/resources/uom/gmxUom.xml#xpointer(//*[@gml:id='m'])">1000.0</gco:Distance>
+     *     </gmd:distance>
+     *   </gmd:MD_Resolution>
+     * }
+     *
+     * @throws JAXBException if an error occurred while marshalling the element.
+     */
+    @Test
+    public void testLegacyXML() throws JAXBException {
+        final DefaultResolution resolution = new DefaultResolution();
+        resolution.setDistance(1000.0);
+        final String xml = marshal(resolution, LegacyNamespaces.ISO_19139);
         assertXmlEquals(
                 "<gmd:MD_Resolution xmlns:gmd=\"" + LegacyNamespaces.GMD + '"' +
                                   " xmlns:gco=\"" + LegacyNamespaces.GCO + "\">\n" +
@@ -135,10 +160,7 @@ public final strictfp class DefaultResolutionTest extends TestCase {
                 "    <gco:Distance uom=\"" + Schemas.METADATA_ROOT_LEGACY + Schemas.UOM_PATH + "#xpointer(//*[@gml:id='m'])\">1000.0</gco:Distance>\n" +
                 "  </gmd:distance>\n" +
                 "</gmd:MD_Resolution>", xml, "xmlns:*");
-        /*
-         * Unmarshal the element back to a Java object, as a safety.
-         * Should not be a problem neither.
-         */
-        assertEquals(resolution, XML.unmarshal(xml));
+
+        assertEquals(resolution, unmarshal(DefaultResolution.class, xml));
     }
 }

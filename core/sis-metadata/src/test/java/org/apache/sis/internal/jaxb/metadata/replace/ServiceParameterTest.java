@@ -19,8 +19,8 @@ package org.apache.sis.internal.jaxb.metadata.replace;
 import javax.xml.bind.JAXBException;
 import org.opengis.util.MemberName;
 import org.opengis.parameter.ParameterDirection;
-import org.apache.sis.util.iso.Names;
 import org.apache.sis.xml.Namespaces;
+import org.apache.sis.util.iso.Names;
 import org.apache.sis.test.XMLTestCase;
 import org.junit.Test;
 
@@ -31,7 +31,8 @@ import static org.apache.sis.test.Assert.*;
  * Tests {@link ServiceParameter}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.5
+ * @author  Cullen Rombach (Image Matters)
+ * @version 1.0
  * @since   0.5
  * @module
  */
