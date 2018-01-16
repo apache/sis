@@ -19,6 +19,7 @@ package org.apache.sis.metadata.iso.lineage;
 import javax.xml.bind.JAXBException;
 import org.apache.sis.util.iso.SimpleInternationalString;
 import org.apache.sis.internal.jaxb.gmi.LE_ProcessStep;
+import org.apache.sis.internal.jaxb.LegacyNamespaces;
 import org.apache.sis.test.XMLTestCase;
 import org.junit.Test;
 
@@ -30,7 +31,7 @@ import static org.opengis.test.Assert.*;
  *
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.3
  * @module
  */
@@ -57,7 +58,7 @@ public final strictfp class DefaultProcessStepTest extends XMLTestCase {
         /*
          * XML marshalling, and compare with the content of "ProcessStep.xml" file.
          */
-        assertMarshalEqualsFile(XML_FILE, processStep, "xlmns:*", "xsi:schemaLocation");
+        assertMarshalEqualsFile(XML_FILE, processStep, LegacyNamespaces.ISO_19139, "xlmns:*", "xsi:schemaLocation");
         /*
          * XML unmarshalling: ensure that we didn't lost any information.
          * Note that since the XML uses the <gmi:…> namespace, we got an instance of LE_ProcessStep, which

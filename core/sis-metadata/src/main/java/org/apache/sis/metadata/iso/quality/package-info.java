@@ -114,8 +114,8 @@
  * @since   0.3
  * @module
  */
-@XmlSchema(location=Schemas.METADATA_XSD_QUALITY, elementFormDefault=XmlNsForm.QUALIFIED, namespace=Namespaces.DQC, xmlns = {
-    @XmlNs(prefix = "dqc", namespaceURI = Namespaces.DQC),
+@XmlSchema(location=Schemas.METADATA_XSD_QUALITY, elementFormDefault=XmlNsForm.QUALIFIED, namespace=Namespaces.MDQ, xmlns = {
+    @XmlNs(prefix = "mdq", namespaceURI = Namespaces.MDQ),
     @XmlNs(prefix = "cit", namespaceURI = Namespaces.CIT),
     @XmlNs(prefix = "mrc", namespaceURI = Namespaces.MRC),
     @XmlNs(prefix = "mrd", namespaceURI = Namespaces.MRD),

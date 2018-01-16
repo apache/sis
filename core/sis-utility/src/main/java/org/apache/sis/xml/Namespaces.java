@@ -609,4 +609,54 @@ public final class Namespaces extends Static {
         }
         return defaultValue;
     }
+
+    /**
+     * Guesses the namespace for a type of the given ISO name. The argument given to this method
+     * must be a class name defined by ISO 19115 or other standards to be added in the future.
+     * Those ISO class names usually start with a two letter prefix, e.g. {@code "CI"}
+     * in {@link org.apache.sis.metadata.iso.citation.DefaultCitation CI_Citation}.
+     *
+     * <p>This method uses heuristic rules, first looking at the prefix, then the rest of the name in case of ambiguity.
+     * A namespace is returned on a <em>best effort</em> basis only; this method may or may not check the full name, and
+     * values returned by this method may change in future SIS versions (e.g. when new standards become supported by SIS
+     * or when existing standards are upgraded). This method should be used in last resort only, when this information
+     * can not be obtained easily in a more reliable way.</p>
+     *
+     * @param  type  a class name defined by ISO 19115 or related standards (e.g. {@code "CI_Citation"}.
+     * @return a <em>possible</em> namespace for the given type, or {@code null} if unknown.
+     *
+     * @since 1.0
+     */
+    public static String guessForType(final String type) {
+        /*
+         * Implementation note: we could invoke FilteredStreamResolver.namespace(type) unconditionally,
+         * but that method may be removed in a future SIS version if we replace FilteredStreamResolver
+         * by XSD (https://issues.apache.org/jira/projects/SIS/issues/SIS-381). By using a switch now,
+         * we reduce the behavioral change is SIS-381 is applied. It can also reduce classes loading.
+         */
+        if (type != null && type.length() >= 3) {
+            if (type.charAt(2) == '_') {
+                switch ((type.charAt(0) << Character.SIZE) | type.charAt(1)) {
+                    case ('C' << Character.SIZE) | 'I': return CIT;
+                    case ('E' << Character.SIZE) | 'X': return GEX;
+                    case ('F' << Character.SIZE) | 'C': return GFC;
+                    case ('L' << Character.SIZE) | 'E':
+                    case ('L' << Character.SIZE) | 'I': return MRL;
+                    case ('D' << Character.SIZE) | 'S': // Usually MDA except for DS_InitiativeTypeCode
+                    case ('M' << Character.SIZE) | 'D':
+                    case ('M' << Character.SIZE) | 'I': return FilteredStreamResolver.namespace(type);
+                    case ('M' << Character.SIZE) | 'X': return MDT;
+                    case ('P' << Character.SIZE) | 'T': return LAN;
+                    case ('S' << Character.SIZE) | 'V': return SRV;
+                    case ('C' << Character.SIZE) | 'S':
+                    case ('C' << Character.SIZE) | 'D':
+                    case ('S' << Character.SIZE) | 'C': return GML;
+                }
+            } else {
+                // Needs to handle at least DCPList
+                return FilteredStreamResolver.namespace(type);
+            }
+        }
+        return null;
+    }
 }

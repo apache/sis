@@ -26,7 +26,7 @@ import static org.junit.Assert.*;
  * Tests the {@link Namespaces} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.8
  * @module
  */
@@ -37,5 +37,19 @@ public final strictfp class NamespacesTest extends TestCase {
     @Test
     public void testGetPreferredPrefix() {
         assertEquals("gml", Namespaces.getPreferredPrefix("http://www.opengis.net/gml/3.2", null));
+    }
+
+    /**
+     * Tests {@link Namespaces#guessForType(String)}. This method uses {@code assertSame(…)} instead than
+     * {@code assertEquals(…)} for verifying that {@link FilteredStreamResolver} invoked {@link String#intern()}.
+     */
+    @Test
+    public void testGuessForType() {
+        assertSame("CI_Citation",           Namespaces.CIT, Namespaces.guessForType("CI_Citation"));
+        assertSame("EX_Extent",             Namespaces.GEX, Namespaces.guessForType("EX_Extent"));
+        assertSame("MD_Metadata",           Namespaces.MDB, Namespaces.guessForType("MD_Metadata"));
+        assertSame("MD_DataIdentification", Namespaces.MRI, Namespaces.guessForType("MD_DataIdentification"));
+        assertSame("DS_InitiativeTypeCode", Namespaces.MRI, Namespaces.guessForType("DS_InitiativeTypeCode"));
+        assertSame("DCPList",               Namespaces.SRV, Namespaces.guessForType("DCPList"));
     }
 }

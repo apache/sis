@@ -33,7 +33,7 @@ import static org.apache.sis.test.MetadataAssert.*;
  * Tests the XML marshalling of object having {@code nilReason} attribute.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.4
+ * @version 1.0
  *
  * @see <a href="http://jira.geotoolkit.org/browse/GEOTK-149">GEOTK-149</a>
  *
@@ -49,15 +49,15 @@ public final strictfp class NilReasonMarshallingTest extends XMLTestCase {
     @Test
     public void testMissing() throws JAXBException {
         final String expected =
-                "<gmd:CI_Citation xmlns:gmd=\"" + Namespaces.GMD + '"' +
+                "<cit:CI_Citation xmlns:cit=\"" + Namespaces.CIT + '"' +
                                 " xmlns:gco=\"" + Namespaces.GCO + "\">\n" +
-                "  <gmd:title>\n" +
+                "  <cit:title>\n" +
                 "    <gco:CharacterString>A title</gco:CharacterString>\n" +
-                "  </gmd:title>\n" +
-                "  <gmd:series gco:nilReason=\"missing\"/>\n" +
-                "</gmd:CI_Citation>";
+                "  </cit:title>\n" +
+                "  <cit:series gco:nilReason=\"missing\"/>\n" +
+                "</cit:CI_Citation>";
 
-        final Citation citation = (Citation) XML.unmarshal(expected);
+        final Citation citation = unmarshal(Citation.class, expected);
         assertTitleEquals("citation", "A title", citation);
 
         final Series series = citation.getSeries();
@@ -71,9 +71,9 @@ public final strictfp class NilReasonMarshallingTest extends XMLTestCase {
         assertEquals("Series[missing]", series.toString());
         assertNull("All attributes are expected to be null.", series.getName());
 
-        final String actual = XML.marshal(citation);
+        final String actual = marshal(citation);
         assertXmlEquals(expected, actual, "xmlns:*");
-        assertEquals(citation, XML.unmarshal(actual));
+        assertEquals(citation, unmarshal(Citation.class, actual));
     }
 
     /**
@@ -87,15 +87,15 @@ public final strictfp class NilReasonMarshallingTest extends XMLTestCase {
     @DependsOnMethod("testMissing")
     public void testMissingBoolean() throws JAXBException {
         final String expected =
-                "<gmd:DQ_ConformanceResult xmlns:gmd=\"" + Namespaces.GMD + '"' +
+                "<mdq:DQ_ConformanceResult xmlns:mdq=\"" + Namespaces.MDQ + '"' +
                                          " xmlns:gco=\"" + Namespaces.GCO + "\">\n" +
-                "  <gmd:explanation>\n" +
+                "  <mdq:explanation>\n" +
                 "    <gco:CharacterString>An explanation</gco:CharacterString>\n" +
-                "  </gmd:explanation>\n" +
-                "  <gmd:pass gco:nilReason=\"missing\"/>\n" +
-                "</gmd:DQ_ConformanceResult>";
+                "  </mdq:explanation>\n" +
+                "  <mdq:pass gco:nilReason=\"missing\"/>\n" +
+                "</mdq:DQ_ConformanceResult>";
 
-        final ConformanceResult result = (ConformanceResult) XML.unmarshal(expected);
+        final ConformanceResult result = unmarshal(ConformanceResult.class, expected);
         assertEquals("explanation", "An explanation", result.getExplanation().toString());
 
         final Boolean pass = result.pass();
@@ -104,9 +104,9 @@ public final strictfp class NilReasonMarshallingTest extends XMLTestCase {
         assertNotSame("Expected a sentinel value.", Boolean.FALSE, pass);
         assertSame("nilReason", NilReason.MISSING, NilReason.forObject(pass));
 
-        final String actual = XML.marshal(result);
+        final String actual = marshal(result);
         assertXmlEquals(expected, actual, "xmlns:*");
-        assertEquals(result, XML.unmarshal(actual));
+        assertEquals(result, unmarshal(ConformanceResult.class, actual));
     }
 
     /**
@@ -121,12 +121,12 @@ public final strictfp class NilReasonMarshallingTest extends XMLTestCase {
     @SuppressWarnings("UnnecessaryBoxing")
     public void testMissingInteger() throws JAXBException {
         final String expected =
-                "<gmd:MD_Dimension xmlns:gmd=\"" + Namespaces.GMD + '"' +
+                "<msr:MD_Dimension xmlns:msr=\"" + Namespaces.MSR + '"' +
                                  " xmlns:gco=\"" + Namespaces.GCO + "\">\n" +
-                "  <gmd:dimensionSize gco:nilReason=\"unknown\"/>\n" +
-                "</gmd:MD_Dimension>";
+                "  <msr:dimensionSize gco:nilReason=\"unknown\"/>\n" +
+                "</msr:MD_Dimension>";
 
-        final Dimension result = (Dimension) XML.unmarshal(expected);
+        final Dimension result = unmarshal(Dimension.class, expected);
 
         final Integer size = result.getDimensionSize();
         assertNotNull("Expected a sentinel value.", size);
@@ -134,9 +134,9 @@ public final strictfp class NilReasonMarshallingTest extends XMLTestCase {
         assertNotSame("Expected a sentinel value.", Integer.valueOf(0), size);
         assertSame("nilReason", NilReason.UNKNOWN, NilReason.forObject(size));
 
-        final String actual = XML.marshal(result);
+        final String actual = marshal(result);
         assertXmlEquals(expected, actual, "xmlns:*");
-        assertEquals(result, XML.unmarshal(actual));
+        assertEquals(result, unmarshal(Dimension.class, actual));
     }
 
     /**
@@ -148,13 +148,13 @@ public final strictfp class NilReasonMarshallingTest extends XMLTestCase {
     @DependsOnMethod("testMissing")
     public void testMissingDouble() throws JAXBException {
         final String expected =
-                "<gmd:MD_Band xmlns:gmd=\"" + Namespaces.GMD + '"' +
+                "<mrc:MD_Band xmlns:mrc=\"" + Namespaces.MRC + '"' +
                             " xmlns:gco=\"" + Namespaces.GCO + "\">\n" +
-                "  <gmd:minValue gco:nilReason=\"unknown\"/>\n" +
-                "  <gmd:peakResponse gco:nilReason=\"missing\"/>\n" +
-                "</gmd:MD_Band>";
+                "  <mrc:minValue gco:nilReason=\"unknown\"/>\n" +
+                "  <mrc:peakResponse gco:nilReason=\"missing\"/>\n" +
+                "</mrc:MD_Band>";
 
-        final Band result = (Band) XML.unmarshal(expected);
+        final Band result = unmarshal(Band.class, expected);
 
         final Double minValue = result.getMinValue();
         assertNotNull("Expected a sentinel value.", minValue);
@@ -166,9 +166,9 @@ public final strictfp class NilReasonMarshallingTest extends XMLTestCase {
         assertTrue("Nil value shall be NaN.", peakResponse.isNaN());
         assertSame("nilReason", NilReason.UNKNOWN, NilReason.forObject(peakResponse));
 
-        final String actual = XML.marshal(result);
+        final String actual = marshal(result);
         assertXmlEquals(expected, actual, "xmlns:*");
-        assertEquals(result, XML.unmarshal(actual));
+        assertEquals(result, unmarshal(Band.class, actual));
     }
 
     /**
@@ -180,15 +180,15 @@ public final strictfp class NilReasonMarshallingTest extends XMLTestCase {
     @DependsOnMethod("testMissing")
     public void testOther() throws JAXBException {
         final String expected =
-                "<gmd:CI_Citation xmlns:gmd=\"" + Namespaces.GMD + '"' +
+                "<cit:CI_Citation xmlns:cit=\"" + Namespaces.CIT + '"' +
                                 " xmlns:gco=\"" + Namespaces.GCO + "\">\n" +
-                "  <gmd:title>\n" +
+                "  <cit:title>\n" +
                 "    <gco:CharacterString>A title</gco:CharacterString>\n" +
-                "  </gmd:title>\n" +
-                "  <gmd:series gco:nilReason=\"other:myReason\"/>\n" +
-                "</gmd:CI_Citation>";
+                "  </cit:title>\n" +
+                "  <cit:series gco:nilReason=\"other:myReason\"/>\n" +
+                "</cit:CI_Citation>";
 
-        final Citation citation = (Citation) XML.unmarshal(expected);
+        final Citation citation = unmarshal(Citation.class, expected);
         assertTitleEquals("citation", "A title", citation);
 
         final Series series = citation.getSeries();
@@ -201,9 +201,9 @@ public final strictfp class NilReasonMarshallingTest extends XMLTestCase {
         assertEquals("Series[other:myReason]", series.toString());
         assertNull("All attributes are expected to be null.", series.getName());
 
-        final String actual = XML.marshal(citation);
+        final String actual = marshal(citation);
         assertXmlEquals(expected, actual, "xmlns:*");
-        assertEquals(citation, XML.unmarshal(actual));
+        assertEquals(citation, unmarshal(Citation.class, actual));
     }
 
     /**
@@ -215,15 +215,15 @@ public final strictfp class NilReasonMarshallingTest extends XMLTestCase {
     @DependsOnMethod("testMissing")
     public void testURI() throws JAXBException {
         final String expected =
-                "<gmd:CI_Citation xmlns:gmd=\"" + Namespaces.GMD + '"' +
+                "<cit:CI_Citation xmlns:cit=\"" + Namespaces.CIT + '"' +
                                 " xmlns:gco=\"" + Namespaces.GCO + "\">\n" +
-                "  <gmd:title>\n" +
+                "  <cit:title>\n" +
                 "    <gco:CharacterString>A title</gco:CharacterString>\n" +
-                "  </gmd:title>\n" +
-                "  <gmd:series gco:nilReason=\"http://www.myreason.org\"/>\n" +
-                "</gmd:CI_Citation>";
+                "  </cit:title>\n" +
+                "  <cit:series gco:nilReason=\"http://www.myreason.org\"/>\n" +
+                "</cit:CI_Citation>";
 
-        final Citation citation = (Citation) XML.unmarshal(expected);
+        final Citation citation = unmarshal(Citation.class, expected);
         assertTitleEquals("citation", "A title", citation);
 
         final Series series = citation.getSeries();
@@ -236,8 +236,8 @@ public final strictfp class NilReasonMarshallingTest extends XMLTestCase {
         assertEquals("Series[http://www.myreason.org]", series.toString());
         assertNull("All attributes are expected to be null.", series.getName());
 
-        final String actual = XML.marshal(citation);
+        final String actual = marshal(citation);
         assertXmlEquals(expected, actual, "xmlns:*");
-        assertEquals(citation, XML.unmarshal(actual));
+        assertEquals(citation, unmarshal(Citation.class, actual));
     }
 }
