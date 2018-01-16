@@ -20,6 +20,8 @@ import java.util.Locale;
 import javax.xml.bind.JAXBException;
 import org.opengis.util.InternationalString;
 import org.apache.sis.xml.FreeTextMarshallingTest;
+import org.apache.sis.internal.jaxb.LegacyNamespaces;
+import org.apache.sis.util.Version;
 import org.apache.sis.test.XMLTestCase;
 import org.apache.sis.test.DependsOn;
 import org.junit.Test;
@@ -33,17 +35,13 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
  *
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.4
+ * @author  Cullen Rombach (Image Matters)
+ * @version 1.0
  * @since   0.3
  * @module
  */
 @DependsOn(FreeTextMarshallingTest.class)
 public final strictfp class AbstractPositionalAccuracyTest extends XMLTestCase {
-    /**
-     * An XML file in this package containing a positional accuracy definition.
-     */
-    private static final String XML_FILE = "PositionalAccuracy.xml";
-
     /**
      * Tests the (un)marshalling of a text group with a default {@code <gco:CharacterString>} element.
      * This test is somewhat a duplicate of {@link FreeTextMarshallingTest}, but the context is more
@@ -59,7 +57,25 @@ public final strictfp class AbstractPositionalAccuracyTest extends XMLTestCase {
      */
     @Test
     public void testXML() throws JAXBException {
-        final AbstractElement metadata = unmarshalFile(AbstractElement.class, XML_FILE);
+        roundtrip("PositionalAccuracy.xml", LegacyNamespaces.ISO_19115_3);
+    }
+
+    /**
+     * Tests the (un)marshalling of a text group from/to legacy ISO 19139:2007 schema.
+     *
+     * @throws JAXBException if an error occurred during the during marshalling / unmarshalling processes.
+     */
+    @Test
+    public void testLegacyXML() throws JAXBException {
+        roundtrip("PositionalAccuracy (legacy).xml", LegacyNamespaces.ISO_19139);
+    }
+
+    /**
+     * Unmarshals the given file and verify the content.
+     * Then marshals the object and verify that we get equivalent XML.
+     */
+    private void roundtrip(final String filename, final Version version) throws JAXBException {
+        final AbstractElement metadata = unmarshalFile(AbstractElement.class, filename);
         final InternationalString nameOfMeasure = getSingleton(metadata.getNamesOfMeasure());
         /*
          * Programmatic verification of the text group.
@@ -77,6 +93,6 @@ public final strictfp class AbstractPositionalAccuracyTest extends XMLTestCase {
         /*
          * Marshalling: ensure that we didn't lost any information.
          */
-        assertMarshalEqualsFile(XML_FILE, metadata, "xmlns:*", "xsi:schemaLocation", "xsi:type");
+        assertMarshalEqualsFile(filename, metadata, version, "xmlns:*", "xsi:schemaLocation", "xsi:type");
     }
 }

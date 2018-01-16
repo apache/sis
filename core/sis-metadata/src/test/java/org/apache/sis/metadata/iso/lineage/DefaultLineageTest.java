@@ -18,11 +18,10 @@ package org.apache.sis.metadata.iso.lineage;
 
 import java.util.Arrays;
 import javax.xml.bind.JAXBException;
+import org.apache.sis.internal.jaxb.LegacyNamespaces;
 import org.apache.sis.util.iso.SimpleInternationalString;
 import org.apache.sis.metadata.iso.DefaultIdentifier;
 import org.apache.sis.test.XMLTestCase;
-import org.apache.sis.xml.Namespaces;
-import org.apache.sis.xml.XML;
 import org.junit.Test;
 
 import static org.apache.sis.test.Assert.*;
@@ -33,7 +32,7 @@ import static org.apache.sis.test.Assert.*;
  * {@code "gmi"} namespace that GeoAPI merged with the object of same name in the {@code "gmd"} namespace.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.4
+ * @version 1.0
  * @since   0.3
  * @module
  */
@@ -54,10 +53,10 @@ public final strictfp class DefaultLineageTest extends XMLTestCase {
          * If this simpler case, only ISO 19115 elements are defined (no ISO 19115-2).
          * Consequently the XML name shall be "gmd:LI_Source".
          */
-        String actual = XML.marshal(lineage);
+        String actual = marshal(lineage, LegacyNamespaces.ISO_19139);
         assertXmlEquals(
-            "<gmd:LI_Lineage xmlns:gmd=\"" + Namespaces.GMD + '"' +
-                           " xmlns:gco=\"" + Namespaces.GCO + "\">\n" +
+            "<gmd:LI_Lineage xmlns:gmd=\"" + LegacyNamespaces.GMD + '"' +
+                           " xmlns:gco=\"" + LegacyNamespaces.GCO + "\">\n" +
             "  <gmd:source>\n" +
             "    <gmd:LI_Source>\n" +
             "      <gmd:description>\n" +
@@ -70,11 +69,11 @@ public final strictfp class DefaultLineageTest extends XMLTestCase {
          * Now add a ISO 19115-2 specific property. The XML name shall become "gmi:LE_Source".
          */
         source.setProcessedLevel(new DefaultIdentifier("DummyLevel"));
-        actual = XML.marshal(lineage);
+        actual = marshal(lineage, LegacyNamespaces.ISO_19139);
         assertXmlEquals(
-            "<gmd:LI_Lineage xmlns:gmd=\"" + Namespaces.GMD + '"' +
-                           " xmlns:gmi=\"" + Namespaces.GMI + '"' +
-                           " xmlns:gco=\"" + Namespaces.GCO + "\">\n" +
+            "<gmd:LI_Lineage xmlns:gmd=\"" + LegacyNamespaces.GMD + '"' +
+                           " xmlns:gmi=\"" + LegacyNamespaces.GMI + '"' +
+                           " xmlns:gco=\"" + LegacyNamespaces.GCO + "\">\n" +
             "  <gmd:source>\n" +
             "    <gmi:LE_Source>\n" +
             "      <gmd:description>\n" +

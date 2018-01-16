@@ -234,7 +234,7 @@ public class GO_CharacterString {
      *
      * <div class="note"><b>Note:</b>
      * we have to rely on a somewhat complicated mechanism because the code lists implementations in GeoAPI
-     * do not hae JAXB annotations. If those annotations are added in a future GeoAPI implementation, then
+     * do not have JAXB annotations. If those annotations are added in a future GeoAPI implementation, then
      * we could replace this mechanism by a simple property annotated with {@code XmlElementRef}.</div>
      *
      * @since 0.7
@@ -247,23 +247,15 @@ public class GO_CharacterString {
         }
         final ControlledVocabulary code = Types.forCodeTitle(text);
         final String name = Types.getListName(code);
-        final String namespace;
         /*
-         * The namespace is usually GMD, but we also have some other namespaces link GMI.
+         * The namespace is often MDB, but we also have some other namespaces link CIT.
          * The real namespace is declared in the @XmlElement annotation of the getElement
          * method in the JAXB adapter. We could use reflection, but we do not in order to
          * avoid potential class loading issue and also because not all CodeList are in the
          * same package.
          */
-        if (name.startsWith("MD_") || name.startsWith("CI_") || name.startsWith("DS_")) {
-            namespace = Namespaces.GMD;
-        } else if (name.startsWith("MI_")) {
-            namespace = Namespaces.GMI;
-        } else if (name.startsWith("SV_") || name.equals("DCPList")) {
-            namespace = Namespaces.SRV;
-        } else if (name.startsWith("CS_") || name.startsWith("CD_") || name.startsWith("SC_")) {
-            namespace = Namespaces.GML;
-        } else {
+        String namespace = Namespaces.guessForType(name);
+        if (namespace == null) {
             namespace = XMLConstants.NULL_NS_URI;
         }
         return new JAXBElement<>(new QName(namespace, name), CodeListUID.class,

@@ -220,6 +220,17 @@ final class FilteredStreamResolver extends FilteredStreamReader {
     }
 
     /**
+     * Returns the namespace of the given ISO type, or {@code null} if unknown.
+     *
+     * @param  type  a class name defined by ISO 19115 or related standards (e.g. {@code "CI_Citation"}.
+     * @return a namespace for the given type, or {@code null} if unknown.
+     */
+    static String namespace(final String type) {
+        final Map<String,String> attributes = NAMESPACES.get(type);
+        return (attributes != null) ? attributes.get(TYPE_KEY) : null;
+    }
+
+    /**
      * Return the namespace used by implementation (the SIS classes with JAXB annotations)
      * in the context of the current part of the XML document being read.
      *
