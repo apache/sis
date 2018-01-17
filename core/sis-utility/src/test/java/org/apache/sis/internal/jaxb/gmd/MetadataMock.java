@@ -22,6 +22,7 @@ import java.util.Collections;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
+import org.apache.sis.internal.jaxb.LegacyNamespaces;
 import org.apache.sis.internal.simple.SimpleMetadata;
 import org.apache.sis.xml.Namespaces;
 
@@ -41,7 +42,7 @@ final strictfp class MetadataMock extends SimpleMetadata {
      * The language used for documenting metadata. The namespace should be {@code "gmd"},
      * but we use the newer namespace because of the way {@code FilteredStreamResolver} work.
      */
-    @XmlElement(namespace = Namespaces.MDB)
+    @XmlElement(namespace = LegacyNamespaces.GMD)
     @XmlJavaTypeAdapter(LocaleAdapter.class)
     private Locale language;
 
