@@ -428,8 +428,6 @@ http://standards.iso.org/iso/19115/-3/mdb/1.0
     hierarchyLevel
     hierarchyLevelName
     identificationInfo
-    language
-    locale
     metadataConstraints
     metadataExtensionInfo
     metadataIdentifier
