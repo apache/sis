@@ -22,7 +22,6 @@ import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import org.opengis.util.GenericName;
-import org.opengis.metadata.extent.Extent;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.identification.DataIdentification;
 import org.opengis.metadata.distribution.StandardOrderProcess;
@@ -79,7 +78,6 @@ import org.apache.sis.xml.Namespaces;
     "serviceType",
     "serviceTypeVersions",
     "accessProperties",
-    "extent",                   // Legacy ISO 19115:2003
     "coupledResources",
     "couplingType",
     "operatedDataset",
@@ -504,15 +502,6 @@ public class DefaultServiceIdentification extends AbstractIdentification impleme
     @XmlElement(name = "containsChain")
     private Collection<OperationChainMetadata> getOperationChain() {
         return FilterByVersion.CURRENT_METADATA.accept() ? getContainsChain() : null;
-    }
-
-    /**
-     * For JAXB marhalling of ISO 19115:2003 document only.
-     * For the more recent ISO 19115:2014, we inherit {@link #getExtents()} from the parent class instead.
-     */
-    @XmlElement(name = "extent")
-    private Collection<Extent> getExtent() {
-        return FilterByVersion.LEGACY_METADATA.accept() ? getExtents() : null;
     }
 
     /**

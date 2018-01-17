@@ -96,8 +96,8 @@ import org.apache.sis.util.iso.Types;
     "spatialRepresentationTypes",       // Here in ISO 19115:2014 (was after 'aggregationInfo' in ISO 19115:2003)
     "spatialResolutions",               // Shall be kept next to 'spatialRepresentationTypes'
     "temporalResolution",               // ISO 19115-3 only
-    "topicCategory",                    // Here in ISO 19115:2014 (was in subclasses in ISO 19115:2003)
-    "extent",                           // Here in ISO 19115:2014 (was in subclasses in ISO 19115:2003)
+    "topicCategories",                  // Here in ISO 19115:2014 (was in subclasses in ISO 19115:2003)
+    "extents",                          // Here in ISO 19115:2014 (was in subclasses in ISO 19115:2003)
     "additionalDocumentation",          // ISO 19115:2014 only
     "processingLevel",                  // ISO 19115:2014 only
     "resourceMaintenances",
@@ -524,7 +524,7 @@ public class AbstractIdentification extends ISOMetadata implements Identificatio
      * @since 0.5
      */
     @Override
-    // @XmlElement at the end of this class.
+    @XmlElement(name = "topicCategory")
     public Collection<TopicCategory> getTopicCategories()  {
         return topicCategories = nonNullCollection(topicCategories, TopicCategory.class);
     }
@@ -548,7 +548,7 @@ public class AbstractIdentification extends ISOMetadata implements Identificatio
      * @since 0.5
      */
     @Override
-    // @XmlElement at the end of this class.
+    @XmlElement(name = "extent")
     public Collection<Extent> getExtents() {
         return extents = nonNullCollection(extents, Extent.class);
     }
@@ -829,16 +829,6 @@ public class AbstractIdentification extends ISOMetadata implements Identificatio
     @XmlElement(name = "temporalResolution")
     private Collection<Duration> getTemporalResolution() {
         return FilterByVersion.CURRENT_METADATA.accept() ? getTemporalResolutions() : null;
-    }
-
-    @XmlElement(name = "topicCategory")
-    private Collection<TopicCategory> getTopicCategory()  {
-        return FilterByVersion.CURRENT_METADATA.accept() ? getTopicCategories() : null;
-    }
-
-    @XmlElement(name = "extent")
-    private Collection<Extent> getExtent() {
-        return FilterByVersion.CURRENT_METADATA.accept() ? getExtents() : null;
     }
 
     @XmlElement(name = "additionalDocumentation")

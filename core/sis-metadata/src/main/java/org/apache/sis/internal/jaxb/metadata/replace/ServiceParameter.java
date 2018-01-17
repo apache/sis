@@ -33,6 +33,7 @@ import org.opengis.parameter.ParameterDirection;
 import org.opengis.parameter.ParameterDescriptor;
 import org.apache.sis.internal.simple.SimpleIdentifiedObject;
 import org.apache.sis.internal.jaxb.metadata.direct.GO_MemberName;
+import org.apache.sis.internal.jaxb.FilterByVersion;
 import org.apache.sis.internal.metadata.ReferencingServices;
 import org.apache.sis.internal.metadata.NameToIdentifier;
 import org.apache.sis.util.ComparisonMode;
@@ -41,7 +42,6 @@ import org.apache.sis.xml.Namespaces;
 
 import static org.apache.sis.util.Utilities.deepEquals;
 import static org.apache.sis.internal.util.CollectionsExt.nonNull;
-import static org.apache.sis.internal.jaxb.gco.PropertyType.LEGACY_XML;
 
 
 /**
@@ -230,13 +230,16 @@ public final class ServiceParameter extends SimpleIdentifiedObject implements Pa
     }
 
     /**
-     * For JAXB marhalling of ISO 19119 document only.
+     * For JAXB marshalling of ISO 19139 document only.
      * Note that there is not setter method, since we expect the same information
      * to be provided in the {@link #name} attribute type.
      */
     @XmlElement(name = "valueType")
     final TypeName getValueType() {
-        return (LEGACY_XML && memberName != null) ? memberName.getAttributeType() : null;
+        if (memberName != null && FilterByVersion.LEGACY_METADATA.accept()) {
+            return memberName.getAttributeType();
+        }
+        return null;
     }
 
     /**
@@ -265,7 +268,11 @@ public final class ServiceParameter extends SimpleIdentifiedObject implements Pa
      */
     @XmlElement(name = "optionality", required = true)
     final String getOptionality() {
-        return LEGACY_XML ? (optionality ? "Optional" : "Mandatory") : Boolean.toString(optionality);
+        if (FilterByVersion.CURRENT_METADATA.accept()) {
+            return Boolean.toString(optionality);
+        } else {
+            return optionality ? "Optional" : "Mandatory";
+        }
     }
 
     /**
