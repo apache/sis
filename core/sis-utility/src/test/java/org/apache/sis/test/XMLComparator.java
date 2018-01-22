@@ -94,6 +94,7 @@ public strictfp class XMLComparator {
         map.put("xsi",   Namespaces.XSI);
         map.put("gco",   Namespaces.GCO);
         map.put("mdb",   Namespaces.MDB);
+        map.put("srv",   Namespaces.SRV);
         map.put("gml",   Namespaces.GML);
         map.put("gmd",   LegacyNamespaces.GMD);
         map.put("gmx",   LegacyNamespaces.GMX);

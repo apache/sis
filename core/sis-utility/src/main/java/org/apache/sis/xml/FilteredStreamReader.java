@@ -26,7 +26,7 @@ import javax.xml.stream.util.StreamReaderDelegate;
 /**
  * A filter replacing the namespaces found in a XML document by the namespaces expected by SIS at unmarshalling time.
  * This class forwards every method calls to the wrapped {@link XMLStreamReader}, with all {@code namespaceURI}
- * arguments filtered before to be delegated.
+ * arguments filtered before being delegated.
  *
  * See {@link FilteredNamespaces} for more information.
  *

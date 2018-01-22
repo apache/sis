@@ -27,6 +27,7 @@ import org.opengis.metadata.citation.OnlineResource;
 import org.opengis.metadata.identification.DistributedComputingPlatform;
 import org.opengis.metadata.identification.OperationMetadata;
 import org.apache.sis.internal.jaxb.FilterByVersion;
+import org.apache.sis.internal.jaxb.LegacyNamespaces;
 import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.metadata.TitleProperty;
 import org.apache.sis.xml.Namespaces;
@@ -66,8 +67,9 @@ import org.apache.sis.xml.Namespaces;
     "DCP",                              // Former name of "distributedComputingPlatform" used in ISO 19115:2003.
     "operationDescription",
     "invocationName",
-    "parameters",
-    "connectPoints",
+    "parameterList",                    // Actually "parameters" — was the spelling in ISO 19115:2003.
+    "connectPoints",                    // Was after "parameters" in ISO 19115:2003.
+    "parameter",                        // New spelling in ISO 19115-3:2016.
     "dependsOn"
 })
 @XmlRootElement(name = "SV_OperationMetadata", namespace = Namespaces.SRV)
@@ -293,7 +295,7 @@ public class DefaultOperationMetadata extends ISOMetadata implements OperationMe
      */
     @Override
     @SuppressWarnings({"unchecked", "rawtypes"})
-    @XmlElement(name = "parameter")
+    // @XmlElement at the end of this class.
     public Collection<ParameterDescriptor<?>> getParameters() {
         return parameters = nonNullCollection(parameters, (Class) ParameterDescriptor.class);
     }
@@ -357,8 +359,26 @@ public class DefaultOperationMetadata extends ISOMetadata implements OperationMe
      * This attribute was defined by ISO 19115:2003 standard.
      * If (and only if) marshalling a more recent standard version, we omit this attribute.
      */
-    @XmlElement(name = "DCP")
+    @XmlElement(name = "DCP", namespace = LegacyNamespaces.SRV)
     private Collection<DistributedComputingPlatform> getDCP() {
         return FilterByVersion.LEGACY_METADATA.accept() ? getDistributedComputingPlatforms() : null;
+    }
+
+    /**
+     * Invoked by JAXB for (un)marshalling using ISO 19115-3:2016 spelling.
+     * Note that 19115-1:2014 still use the "parameters" spelling
+     * (we seem to have an 19115-1 / ISO 19115-3 discrepancy here).
+     */
+    @XmlElement(name = "parameter")
+    private Collection<ParameterDescriptor<?>> getParameter() {
+        return FilterByVersion.CURRENT_METADATA.accept() ? getParameters() : null;
+    }
+
+    /**
+     * Invoked by JAXB for (un)marshalling using legacy ISO 19115:2003 spelling.
+     */
+    @XmlElement(name = "parameters", namespace = LegacyNamespaces.SRV)
+    private Collection<ParameterDescriptor<?>> getParameterList() {
+        return FilterByVersion.LEGACY_METADATA.accept() ? getParameters() : null;
     }
 }

@@ -18,18 +18,25 @@ package org.apache.sis.metadata.iso.identification;
 
 import javax.xml.bind.JAXBException;
 import org.opengis.util.NameFactory;
+import org.opengis.parameter.ParameterDirection;
+import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.identification.CouplingType;
+import org.opengis.metadata.identification.CoupledResource;
+import org.opengis.metadata.identification.OperationMetadata;
+import org.opengis.metadata.identification.ServiceIdentification;
+import org.opengis.metadata.identification.DistributedComputingPlatform;
+import org.apache.sis.metadata.iso.citation.DefaultCitation;
 import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.internal.jaxb.LegacyNamespaces;
-import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.xml.NilReason;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.XMLTestCase;
 import org.junit.Test;
 
-import static org.apache.sis.test.Assert.*;
 import static java.util.Collections.singleton;
+import static org.apache.sis.test.MetadataAssert.*;
+import static org.apache.sis.test.TestUtilities.getSingleton;
 
 
 /**
@@ -61,7 +68,8 @@ public final strictfp class DefaultServiceIdentificationTest extends XMLTestCase
      */
     private static DefaultServiceIdentification create() {
         final NameFactory factory = DefaultFactories.forBuildin(NameFactory.class);
-        final DefaultCoupledResource resource = DefaultCoupledResourceTest.create();
+        final DefaultCoupledResource resource = DefaultCoupledResourceTest.create(factory);
+        resource.setResourceReferences(singleton(new DefaultCitation("WMS specification")));
         final DefaultServiceIdentification id = new DefaultServiceIdentification(
                 factory.createGenericName(null, "Web Map Server"),      // serviceType
                 NilReason.MISSING.createNilObject(Citation.class),      // citation
@@ -71,6 +79,34 @@ public final strictfp class DefaultServiceIdentificationTest extends XMLTestCase
         id.setCouplingType(CouplingType.LOOSE);
         id.setContainsOperations(singleton(resource.getOperation()));
         return id;
+    }
+
+    /**
+     * Compare values of the given service identifications against the value expected for the
+     * instance created by {@link #create()} method.
+     */
+    private static void verify(final ServiceIdentification id) {
+        assertEquals("serviceTypeVersion", "1.0",                                  getSingleton(id.getServiceTypeVersions()));
+        assertEquals("serviceType",        "Web Map Server",                       String.valueOf(id.getServiceType()));
+        assertEquals("abstract",           "A dummy service for testing purpose.", String.valueOf(id.getAbstract()));
+        assertEquals("citation",           NilReason.MISSING,                      NilReason.forObject(id.getCitation()));
+        assertEquals("couplingType",       CouplingType.LOOSE,                     id.getCouplingType());
+
+        final CoupledResource resource = getSingleton(id.getCoupledResources());
+//      assertEquals("scopedName",        "mySpace:ABC-123",   …)  skipped because not present in new ISO 19115-3:2016.
+//      assertEquals("resourceReference", "WMS specification", …)  skipped because not present in legacy ISO 19139:2007.
+
+        final OperationMetadata op = resource.getOperation();
+        assertNotNull("operation", op);
+        assertEquals("operationName", "Get Map", op.getOperationName());
+        assertEquals("distributedComputingPlatform", DistributedComputingPlatform.WEB_SERVICES, getSingleton(op.getDistributedComputingPlatforms()));
+        assertEquals("connectPoints", NilReason.MISSING, NilReason.forObject(getSingleton(op.getConnectPoints())));
+
+        final ParameterDescriptor<?> param = getSingleton(op.getParameters());
+        assertEquals("name",          "Version",             String.valueOf(param.getName()));
+        assertEquals("minimumOccurs", 0,                     param.getMinimumOccurs());
+        assertEquals("maximumOccurs", 1,                     param.getMaximumOccurs());
+        assertEquals("direction",     ParameterDirection.IN, param.getDirection());
     }
 
     /**
@@ -103,7 +139,10 @@ public final strictfp class DefaultServiceIdentificationTest extends XMLTestCase
      */
     @Test
     public void testUnmarshal() throws JAXBException {
-        assertTrue(create().equals(unmarshalFile(DefaultServiceIdentification.class, XML_FILE), ComparisonMode.DEBUG));
+        final ServiceIdentification id = unmarshalFile(ServiceIdentification.class, XML_FILE);
+        verify(id);
+        final CoupledResource resource = getSingleton(id.getCoupledResources());
+        assertTitleEquals("resourceReference", "WMS specification", getSingleton(resource.getResourceReferences()));
     }
 
     /**
@@ -113,6 +152,9 @@ public final strictfp class DefaultServiceIdentificationTest extends XMLTestCase
      */
     @Test
     public void testUnmarshalLegacy() throws JAXBException {
-        assertTrue(create().equals(unmarshalFile(DefaultServiceIdentification.class, XML_FILE_LEGACY), ComparisonMode.DEBUG));
+        final ServiceIdentification id = unmarshalFile(ServiceIdentification.class, XML_FILE_LEGACY);
+        verify(id);
+        final CoupledResource resource = getSingleton(id.getCoupledResources());
+        assertEquals("scopedName", "mySpace:ABC-123", String.valueOf(resource.getScopedName()));
     }
 }

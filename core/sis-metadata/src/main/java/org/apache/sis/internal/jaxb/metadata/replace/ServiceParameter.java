@@ -21,7 +21,6 @@ import java.util.Objects;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import javax.measure.Unit;
 import org.opengis.util.TypeName;
 import org.opengis.util.MemberName;
@@ -32,8 +31,8 @@ import org.opengis.parameter.ParameterValue;
 import org.opengis.parameter.ParameterDirection;
 import org.opengis.parameter.ParameterDescriptor;
 import org.apache.sis.internal.simple.SimpleIdentifiedObject;
-import org.apache.sis.internal.jaxb.metadata.direct.GO_MemberName;
 import org.apache.sis.internal.jaxb.FilterByVersion;
+import org.apache.sis.internal.jaxb.LegacyNamespaces;
 import org.apache.sis.internal.metadata.ReferencingServices;
 import org.apache.sis.internal.metadata.NameToIdentifier;
 import org.apache.sis.util.ComparisonMode;
@@ -63,7 +62,7 @@ import static org.apache.sis.internal.util.CollectionsExt.nonNull;
  *
  * @author  Rémi Maréchal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.5
+ * @version 1.0
  * @since   0.5
  * @module
  */
@@ -73,6 +72,7 @@ import static org.apache.sis.internal.util.CollectionsExt.nonNull;
     "direction",
     "description",
     "optionality",
+    "optionalityLabel",     // Legacy ISO 19139:2007 way to marshal optionality.
     "repeatability",
     "valueType"
 })
@@ -84,12 +84,14 @@ public final class ServiceParameter extends SimpleIdentifiedObject implements Pa
     private static final long serialVersionUID = -5335736212313243889L;
 
     /**
-     * The name, as used by the service for this parameter.
+     * The name, as used by the service for this parameter. Note that in ISO 19115-3:2016, this element is
+     * inside a {@code <gco:MemberName>} element  (i.e. ISO inserts the same kind of {@code Property_Type}
+     * element as it does for all other attributes) while in ISO 19139:2007 it was not (i.e. name attributes
+     * like {@code <gco:aName>} were marshalled directly, without wrapper).
      *
      * @see #getValueType()
      */
     @XmlElement(required=true, name="name")
-    @XmlJavaTypeAdapter(GO_MemberName.class)
     MemberName memberName;
 
     /**
@@ -108,12 +110,12 @@ public final class ServiceParameter extends SimpleIdentifiedObject implements Pa
      * Indication if the parameter is required.
      *
      * <ul>
-     *   <li>In ISO 19115, this is represented by "{@code true}" or "{@code false}".</li>
-     *   <li>In ISO 19119, this is marshalled as "{@code Optional}" or "{@code Mandatory}".</li>
+     *   <li>In ISO 19115-3:2016, this is represented by "{@code true}" or "{@code false}".</li>
+     *   <li>In ISO 19139:2007, this was marshalled as "{@code Optional}" or "{@code Mandatory}".</li>
      * </ul>
      *
      * @see #getOptionality()
-     * @see #setOptionality(String)
+     * @see #setOptionality(Boolean)
      */
     public boolean optionality;
 
@@ -263,22 +265,33 @@ public final class ServiceParameter extends SimpleIdentifiedObject implements Pa
     }
 
     /**
-     * Returns {@code true} if {@link #optionality} is "{@code true}" or "{@code Optional}",
-     * or {@code false} otherwise.
+     * Returns the optionality as a boolean (ISO 19115-3:2016 way).
      */
     @XmlElement(name = "optionality", required = true)
-    final String getOptionality() {
-        if (FilterByVersion.CURRENT_METADATA.accept()) {
-            return Boolean.toString(optionality);
-        } else {
-            return optionality ? "Optional" : "Mandatory";
-        }
+    final Boolean getOptionality() {
+        return FilterByVersion.CURRENT_METADATA.accept() ? optionality : null;
     }
 
     /**
      * Sets whether this parameter is optional.
      */
-    final void setOptionality(final String optional) {
+    final void setOptionality(final Boolean optional) {
+        if (optional != null) optionality = optional;
+    }
+
+    /**
+     * Returns {@code "Optional"} if {@link #optionality} is {@code true} or {@code "Mandatory"} otherwise.
+     * This is the legacy ISO 19139:2007 way to marshal optionality.
+     */
+    @XmlElement(name = "optionality", namespace = LegacyNamespaces.SRV)
+    final String getOptionalityLabel() {
+        return FilterByVersion.LEGACY_METADATA.accept() ? (optionality ? "Optional" : "Mandatory") : null;
+    }
+
+    /**
+     * Sets whether this parameter is optional.
+     */
+    final void setOptionalityLabel(final String optional) {
         if (optional != null) {
             optionality = Boolean.parseBoolean(optional) || optional.equalsIgnoreCase("Optional");
         }

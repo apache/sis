@@ -16,41 +16,32 @@
  */
 package org.apache.sis.internal.jaxb.gco;
 
-import org.opengis.util.LocalName;
+import org.opengis.util.MemberName;
 
 
 /**
- * Same as {@link GO_GenericName}, but for cases where the element type is declared as {@code LocalName}
- * instead than {@code GenericName}. This adapter does not provide any new functionality;
- * its sole purpose is to declare types matching JAXB expectation.
- *
- * This adapter is used for all the following mutually exclusive properties
- * (only one can be defined at time):
- *
- * <ul>
- *   <li>{@code LocalName}</li>
- *   <li>{@code TypeName}</li>
- *   <li>{@code MemberName}</li>
- * </ul>
+ * Same as {@link GO_GenericName}, but for cases where the element type is declared as {@code MemberName}
+ * instead than {@code GenericName}. This adapter does not provide any new functionality; its sole purpose
+ * is to declare types matching JAXB expectation.
  *
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Guilhem Legal (Geomatys)
- * @version 0.3
- * @since   0.3
+ * @version 1.0
+ * @since   1.0
  * @module
  */
-public final class GO_LocalName extends NameAdapter<GO_LocalName, LocalName> {
+public final class GO_MemberName extends NameAdapter<GO_MemberName, MemberName> {
     /**
      * Empty constructor for JAXB only.
      */
-    public GO_LocalName() {
+    public GO_MemberName() {
     }
 
     /**
      * Wraps a name at marshalling-time.
      */
-    private GO_LocalName(final LocalName value) {
+    private GO_MemberName(final MemberName value) {
         name = value;
     }
 
@@ -62,8 +53,8 @@ public final class GO_LocalName extends NameAdapter<GO_LocalName, LocalName> {
      * @return an wrapper which contains the metadata value.
      */
     @Override
-    public GO_LocalName marshal(final LocalName value) {
-        return (value != null) ? new GO_LocalName(value) : null;
+    public GO_MemberName marshal(final MemberName value) {
+        return (value != null) ? new GO_MemberName(value) : null;
     }
 
     /**
@@ -74,7 +65,7 @@ public final class GO_LocalName extends NameAdapter<GO_LocalName, LocalName> {
      * @return the implementing class.
      */
     @Override
-    public LocalName unmarshal(final GO_LocalName value) {
-        return (value != null) ? (LocalName) value.name : null;
+    public MemberName unmarshal(final GO_MemberName value) {
+        return (value != null) ? (MemberName) value.name : null;
     }
 }

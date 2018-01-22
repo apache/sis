@@ -152,6 +152,7 @@
     @XmlJavaTypeAdapter(InternationalStringAdapter.class),
     @XmlJavaTypeAdapter(GO_DateTime.class),
     @XmlJavaTypeAdapter(GO_GenericName.class),
+    @XmlJavaTypeAdapter(GO_ScopedName.class),
     @XmlJavaTypeAdapter(GO_Boolean.class), @XmlJavaTypeAdapter(type=boolean.class, value=GO_Boolean.class)
 })
 package org.apache.sis.metadata.iso.identification;

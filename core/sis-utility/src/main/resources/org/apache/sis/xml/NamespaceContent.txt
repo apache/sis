@@ -4,13 +4,6 @@
 # Lines with two-spaces  indentation are classes.
 # Lines with four-spaces indentation are attributes.
 #
-http://www.isotc211.org/2005/gmd
-  RS_Identifier
-    <type>
-    authority
-    code
-    codeSpace
-    version
 http://standards.iso.org/iso/19115/-3/cit/1.0
   CI_Address
     <type>
@@ -957,9 +950,7 @@ http://standards.iso.org/iso/19115/-3/srv/2.0
     <type>
   SV_CoupledResource
     <type>
-    identifier
     operation
-    operationName
     resource
     resourceReference
   SV_CouplingType
@@ -971,20 +962,18 @@ http://standards.iso.org/iso/19115/-3/srv/2.0
     operation
   SV_OperationMetadata
     <type>
-    DCP
     connectPoint
     dependsOn
     distributedComputingPlatform
     invocationName
     operationDescription
     operationName
-    parameters
+    parameter
   SV_Parameter
     <type>
     description
     direction
     name
-    optionality
     repeatability
     valueType
   SV_ParameterDirection
