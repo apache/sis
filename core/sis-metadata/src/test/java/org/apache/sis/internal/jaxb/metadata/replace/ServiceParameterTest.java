@@ -53,6 +53,16 @@ public final strictfp class ServiceParameterTest extends XMLTestCase {
     }
 
     /**
+     * Tests {@link ServiceParameter#getName()}.
+     */
+    @Test
+    public void testGetName() {
+        final ServiceParameter param = create();
+        assertEquals("name", "Version", String.valueOf(param.getName()));
+        assertEquals("valueClass", String.class, param.getValueClass());
+    }
+
+    /**
      * Tests {@link ServiceParameter#getValueType()} and {@link ServiceParameter#getValueClass()}.
      */
     @Test
@@ -63,27 +73,28 @@ public final strictfp class ServiceParameterTest extends XMLTestCase {
     }
 
     /**
-     * Tests {@link ServiceParameter#getOptionality()} and {@link ServiceParameter#setOptionality(String)}.
+     * Tests {@link ServiceParameter#getOptionalityLabel()} and {@link ServiceParameter#setOptionalityLabel(String)}.
      */
     @Test
     public void testOptionalityLabel() {
         final ServiceParameter param = create();
-        assertEquals("Optional", param.getOptionality());
+        assertEquals("Optional", param.getOptionalityLabel());
 
         param.optionality = false;
-        assertEquals("Mandatory", param.getOptionality());
+        assertEquals("Mandatory", param.getOptionalityLabel());
 
-        param.setOptionality("Optional");
+        param.setOptionalityLabel("Optional");
         assertTrue(param.optionality);
 
-        param.setOptionality("Mandatory");
+        param.setOptionalityLabel("Mandatory");
         assertFalse(param.optionality);
     }
 
     /**
      * Tests marshalling of an almost empty parameter (except for default mandatory values).
      * The main purpose is to ensure that the XML does not contains spurious elements like
-     * empty enumeration wrapper.
+     * empty enumeration wrapper. For testing a complete marshalling,
+     * see {@link org.apache.sis.metadata.iso.identification.DefaultServiceIdentificationTest}.
      *
      * @throws JAXBException if an error occurred during marshalling.
      */
@@ -94,7 +105,7 @@ public final strictfp class ServiceParameterTest extends XMLTestCase {
                 "<srv:SV_Parameter xmlns:srv=\"" + Namespaces.SRV + '"' +
                                  " xmlns:gco=\"" + Namespaces.GCO + "\">\n" +
                 "  <srv:optionality>\n" +
-                "    <gco:CharacterString>Mandatory</gco:CharacterString>\n" +
+                "    <gco:Boolean>false</gco:Boolean>\n" +
                 "  </srv:optionality>\n" +
                 "  <srv:repeatability>\n" +
                 "    <gco:Boolean>false</gco:Boolean>\n" +

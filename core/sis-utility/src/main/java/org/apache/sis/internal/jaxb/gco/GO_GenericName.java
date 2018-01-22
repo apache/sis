@@ -53,7 +53,7 @@ public final class GO_GenericName extends NameAdapter<GO_GenericName, GenericNam
     }
 
     /**
-     * Does the link between an {@link GenericName} and the adapter associated.
+     * Replaces a generic name by its wrapper.
      * JAXB calls automatically this method at marshalling-time.
      *
      * @param  value  the implementing class for this metadata value.
@@ -65,7 +65,7 @@ public final class GO_GenericName extends NameAdapter<GO_GenericName, GenericNam
     }
 
     /**
-     * Does the link between adapters and the way they will be unmarshalled.
+     * Unwraps the generic name from the given element.
      * JAXB calls automatically this method at unmarshalling-time.
      *
      * @param  value  the wrapper, or {@code null} if none.

@@ -18,6 +18,7 @@ package org.apache.sis.xml;
 
 import java.util.Map;
 import java.util.HashMap;
+import java.util.Collections;
 import org.apache.sis.util.collection.Containers;
 import org.apache.sis.internal.jaxb.LegacyNamespaces;
 
@@ -72,7 +73,15 @@ enum FilterVersion {
         new String[] {
             Namespaces.GCX, LegacyNamespaces.GMX,
             Namespaces.GCO, LegacyNamespaces.GCO,
-            Namespaces.SRV, LegacyNamespaces.SRV}),
+            Namespaces.SRV, LegacyNamespaces.SRV},
+        Collections.singletonMap(LegacyNamespaces.GCO, Namespaces.GCO)),
+        /*
+         * For the way back from legacy ISO 19139:2007 to new ISO 19115-3:2016, we must rely on
+         * FilteredStreamResolver (do NOT declare entries in 'toImpl', because some namespaces
+         * must be left unchanged). An exception to this rule is the "gco" namespace because
+         * FilteredStreamResolver renames only element namespaces while we need to rename also
+         * attributes in "gco" namespace (e.g. "gco:nilReason").
+         */
 
     /**
      * GML using the legacy {@code "http://www.opengis.net/gml"} namespace.
@@ -131,17 +140,17 @@ enum FilterVersion {
      * @param  additional  additional (<var>impl</var>, <var>view</var>) mapping for a few namespaces
      *                     having different {@code view} values.
      */
-    private FilterVersion(final String[] impl, final String view, final String[] additional) {
+    private FilterVersion(final String[] impl, final String view, final String[] additional,
+            final Map<String,String> toImpl)
+    {
         toView = new HashMap<>(Containers.hashMapCapacity(impl.length));
-        toImpl = new HashMap<>();
+        this.toImpl = toImpl;
         for (final String e : impl) {
             toView.put(e, view);
         }
         for (int i=0; i<additional.length;) {
-            final String p = additional[i++];
-            final String v = additional[i++];
-            toView.put(p, v);
-            toImpl.put(v, p);
+            toView.put(additional[i++],
+                       additional[i++]);
         }
         manyToOne = true;
     }

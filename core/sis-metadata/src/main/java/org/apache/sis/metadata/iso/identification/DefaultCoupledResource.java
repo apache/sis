@@ -19,7 +19,6 @@ package org.apache.sis.metadata.iso.identification;
 import java.util.Collection;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlElementRef;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import org.opengis.util.ScopedName;
@@ -28,9 +27,9 @@ import org.opengis.metadata.identification.DataIdentification;
 import org.opengis.metadata.identification.CoupledResource;
 import org.opengis.metadata.identification.OperationMetadata;
 import org.apache.sis.metadata.iso.ISOMetadata;
-import org.apache.sis.internal.jaxb.metadata.direct.GO_ScopedName;
 import org.apache.sis.internal.jaxb.metadata.SV_OperationMetadata;
 import org.apache.sis.internal.jaxb.FilterByVersion;
+import org.apache.sis.internal.jaxb.LegacyNamespaces;
 import org.apache.sis.xml.Namespaces;
 
 
@@ -55,12 +54,12 @@ import org.apache.sis.xml.Namespaces;
  */
 @SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "SV_CoupledResource_Type", namespace = Namespaces.SRV, propOrder = {
-    "operationName",
-    "identifier",
     "scopedName",
-    "resourceReference",
-    "resource",
-    "operation"
+    "resourceReference",        // New in ISO 19115:2014
+    "resource",                 // Ibid.
+    "operation",                // Ibid.
+    "operationName",            // Legacy ISO 19139:2007
+    "identifier"                // Ibid.
 })
 @XmlRootElement(name = "SV_CoupledResource", namespace = Namespaces.SRV)
 public class DefaultCoupledResource extends ISOMetadata implements CoupledResource {
@@ -164,8 +163,7 @@ public class DefaultCoupledResource extends ISOMetadata implements CoupledResour
      * @return identifier of the resource, or {@code null} if none.
      */
     @Override
-    @XmlElementRef
-    @XmlJavaTypeAdapter(GO_ScopedName.class)
+    @XmlElement(name = "scopedName")
     public ScopedName getScopedName() {
         return scopedName;
     }
@@ -226,7 +224,7 @@ public class DefaultCoupledResource extends ISOMetadata implements CoupledResour
      * @return the service operation, or {@code null} if none.
      */
     @Override
-    @XmlElement(name = "operation", namespace = Namespaces.SRV)
+    @XmlElement(name = "operation")
     @XmlJavaTypeAdapter(SV_OperationMetadata.Since2014.class)
     public OperationMetadata getOperation() {
         return operation;
@@ -259,7 +257,7 @@ public class DefaultCoupledResource extends ISOMetadata implements CoupledResour
     /**
      * For JAXB marshalling of ISO 19139:2007 document only (XML based on legacy ISO 19115:2003 model).
      */
-    @XmlElement(name = "operationName", namespace = Namespaces.SRV)
+    @XmlElement(name = "operationName", namespace = LegacyNamespaces.SRV)
     private String getOperationName() {
         if (FilterByVersion.LEGACY_METADATA.accept()) {
             final OperationMetadata operation = getOperation();
@@ -284,8 +282,10 @@ public class DefaultCoupledResource extends ISOMetadata implements CoupledResour
 
     /**
      * Returns the resource identifier, which is assumed to be the name as a string.
+     * Used in legacy ISO 19139:2007 documents. There is no setter method; we expect
+     * the XML to declare {@code <srv:operationName>} instead.
      */
-    @XmlElement(name = "identifier", namespace = Namespaces.SRV)
+    @XmlElement(name = "identifier", namespace = LegacyNamespaces.SRV)
     private String getIdentifier() {
         if (FilterByVersion.LEGACY_METADATA.accept()) {
             final ScopedName name = getScopedName();
@@ -306,7 +306,12 @@ public class DefaultCoupledResource extends ISOMetadata implements CoupledResour
         return FilterByVersion.CURRENT_METADATA.accept() ? getResourceReferences() : null;
     }
 
-    @XmlElement(name = "resource", namespace = Namespaces.SRV)
+    /**
+     * Invoked by JAXB at both marshalling and unmarshalling time.
+     * This attribute has been added by ISO 19115:2014 standard.
+     * If (and only if) marshalling an older standard version, we omit this attribute.
+     */
+    @XmlElement(name = "resource")
     private Collection<DataIdentification> getResource() {
         return FilterByVersion.CURRENT_METADATA.accept() ? getResources() : null;
     }

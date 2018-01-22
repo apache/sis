@@ -21,6 +21,7 @@
 <srv:SV_ServiceIdentification
     xmlns:srv = "http://standards.iso.org/iso/19115/-3/srv/2.0"
     xmlns:mri = "http://standards.iso.org/iso/19115/-3/mri/1.0"
+    xmlns:cit = "http://standards.iso.org/iso/19115/-3/cit/1.0"
     xmlns:gco = "http://standards.iso.org/iso/19115/-3/gco/1.0"
     xmlns:xsi = "http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation = "http://standards.iso.org/iso/19115/-3/srv/2.0
@@ -32,7 +33,7 @@
   </mri:abstract>
 
   <srv:serviceType>
-    <gco:LocalName>Web Map Server</gco:LocalName>
+    <gco:ScopedName>Web Map Server</gco:ScopedName>
   </srv:serviceType>
 
   <srv:serviceTypeVersion>
@@ -45,7 +46,16 @@
 
   <srv:coupledResource>
     <srv:SV_CoupledResource>
-      <gco:ScopedName>mySpace:ABC-123</gco:ScopedName>
+      <srv:scopedName>
+        <gco:ScopedName>mySpace:ABC-123</gco:ScopedName>
+      </srv:scopedName>
+      <srv:resourceReference>
+        <cit:CI_Citation>
+          <cit:title>
+             <gco:CharacterString>WMS specification</gco:CharacterString>
+          </cit:title>
+       </cit:CI_Citation>
+      </srv:resourceReference>
       <srv:operation>
         <srv:SV_OperationMetadata>
           <srv:operationName>
@@ -58,16 +68,18 @@
           <srv:parameter>
             <srv:SV_Parameter>
               <srv:name>
-                <gco:aName>
-                  <gco:CharacterString>Version</gco:CharacterString>
-                </gco:aName>
-                <gco:attributeType>
-                  <gco:TypeName>
-                    <gco:aName>
-                      <gco:CharacterString>CharacterString</gco:CharacterString>
-                    </gco:aName>
-                  </gco:TypeName>
-                </gco:attributeType>
+                <gco:MemberName>
+                  <gco:aName>
+                    <gco:CharacterString>Version</gco:CharacterString>
+                  </gco:aName>
+                  <gco:attributeType>
+                    <gco:TypeName>
+                      <gco:aName>
+                        <gco:CharacterString>CharacterString</gco:CharacterString>
+                      </gco:aName>
+                    </gco:TypeName>
+                  </gco:attributeType>
+                </gco:MemberName>
               </srv:name>
               <srv:direction>
                 <srv:SV_ParameterDirection>in</srv:SV_ParameterDirection>
@@ -97,16 +109,18 @@
       <srv:parameter>
         <srv:SV_Parameter>
           <srv:name>
-            <gco:aName>
-              <gco:CharacterString>Version</gco:CharacterString>
-            </gco:aName>
-            <gco:attributeType>
-              <gco:TypeName>
-                <gco:aName>
-                  <gco:CharacterString>CharacterString</gco:CharacterString>
-                </gco:aName>
-              </gco:TypeName>
-            </gco:attributeType>
+            <gco:MemberName>
+              <gco:aName>
+                <gco:CharacterString>Version</gco:CharacterString>
+              </gco:aName>
+              <gco:attributeType>
+                <gco:TypeName>
+                  <gco:aName>
+                    <gco:CharacterString>CharacterString</gco:CharacterString>
+                  </gco:aName>
+                </gco:TypeName>
+              </gco:attributeType>
+            </gco:MemberName>
           </srv:name>
           <srv:direction>
             <srv:SV_ParameterDirection>in</srv:SV_ParameterDirection>

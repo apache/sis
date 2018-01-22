@@ -27,6 +27,7 @@ import org.apache.sis.util.iso.DefaultLocalName;
 import org.apache.sis.util.iso.DefaultTypeName;
 import org.apache.sis.util.iso.DefaultMemberName;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.internal.jaxb.FilterByVersion;
 
 
 /**
@@ -44,7 +45,7 @@ import org.apache.sis.util.resources.Errors;
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Guilhem Legal (Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.3
  * @module
  */
@@ -74,7 +75,7 @@ abstract class NameAdapter<ValueType extends NameAdapter<ValueType,BoundType>, B
     }
 
     /**
-     * Returns the {@code LocalName} or {@code ScopedName} to marshall. Returns {@code null} if the name
+     * Returns the {@code LocalName} or {@code ScopedName} to marshal. Returns {@code null} if the name
      * is a {@link TypeName} or a {@link MemberName}, in order to use {@link #getName()} instead.
      * Example:
      *
@@ -93,8 +94,11 @@ abstract class NameAdapter<ValueType extends NameAdapter<ValueType,BoundType>, B
         if (name instanceof LocalName) {
             if (name instanceof TypeName || name instanceof MemberName) {
                 return null;
-            } else {
+            } else if (FilterByVersion.LEGACY_METADATA.accept()) {
                 code = new NameValue.Local();
+            } else {
+                // ISO 19115-3:2016 does not seem to define gco:LocalName anymore.
+                code = new NameValue.Scoped();
             }
         } else if (name instanceof ScopedName) {
             code = new NameValue.Scoped();
@@ -106,7 +110,7 @@ abstract class NameAdapter<ValueType extends NameAdapter<ValueType,BoundType>, B
     }
 
     /**
-     * Returns the {@code TypeName} or {@code MemberName} to marshall. Returns {@code null} if the name
+     * Returns the {@code TypeName} or {@code MemberName} to marshal. Returns {@code null} if the name
      * is a {@link LocalName} or {@link ScopedName}, in order to use {@link #getValue()} instead.
      * Example:
      *

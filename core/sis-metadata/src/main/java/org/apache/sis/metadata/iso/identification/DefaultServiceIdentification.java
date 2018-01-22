@@ -78,8 +78,8 @@ import org.apache.sis.xml.Namespaces;
     "serviceType",
     "serviceTypeVersions",
     "accessProperties",
+    "couplingType",             // "couplingType" and "coupledResource" were in reverse order in ISO 19115:2003.
     "coupledResources",
-    "couplingType",
     "operatedDataset",
     "profile",
     "serviceStandard",
@@ -407,7 +407,7 @@ public class DefaultServiceIdentification extends AbstractIdentification impleme
      * @return information about the operations that comprise the service.
      */
     @Override
-    @XmlElement(name = "containsOperations", namespace = Namespaces.SRV)
+    @XmlElement(name = "containsOperations")
     public Collection<OperationMetadata> getContainsOperations() {
         return containsOperations = nonNullCollection(containsOperations, OperationMetadata.class);
     }
@@ -427,7 +427,7 @@ public class DefaultServiceIdentification extends AbstractIdentification impleme
      * @return information on the resources that the service operates on.
      */
     @Override
-    @XmlElement(name = "operatesOn", namespace = Namespaces.SRV)
+    @XmlElement(name = "operatesOn")
     public Collection<DataIdentification> getOperatesOn() {
         return operatesOn = nonNullCollection(operatesOn, DataIdentification.class);
     }
