@@ -91,6 +91,7 @@
     @XmlNs(prefix = "cit", namespaceURI = Namespaces.CIT),
     @XmlNs(prefix = "lan", namespaceURI = Namespaces.LAN),
     @XmlNs(prefix = "mcc", namespaceURI = Namespaces.MCC),
+    @XmlNs(prefix = "mex", namespaceURI = Namespaces.MEX),
     @XmlNs(prefix = "gco", namespaceURI = Namespaces.GCO),
     @XmlNs(prefix = "xsi", namespaceURI = Namespaces.XSI),
     @XmlNs(prefix = "gmd", namespaceURI = LegacyNamespaces.GMD)

@@ -216,6 +216,7 @@ public class GO_CharacterString {
      *
      * <p>This method is invoked by JAXB at unmarshalling time and should not need to be invoked directly.</p>
      */
+    @SuppressWarnings("unused")
     private void setValue(final Object value) {
         if (value instanceof Anchor) {
             setText((Anchor) value, ANCHOR);
@@ -267,7 +268,7 @@ public class GO_CharacterString {
      * or {@code <gmx:MimeFileType>}. This method presumes that the element name is the CodeList standard name.
      * If not, the element will be ignored.
      */
-    @SuppressWarnings({ "unchecked", "unused" })
+    @SuppressWarnings({"unchecked", "unused"})
     private void setCodeList(final Object value) {
         final Element e = (Element) value;
         if (e.getNodeType() == Element.ELEMENT_NODE) {
