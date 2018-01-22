@@ -16,6 +16,7 @@
  */
 package org.apache.sis.metadata.iso.citation;
 
+import java.net.URI;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -29,6 +30,7 @@ import org.opengis.metadata.citation.DateType;
 import org.opengis.metadata.citation.Party;
 import org.opengis.metadata.citation.Role;
 import org.opengis.metadata.citation.Responsibility;
+import org.opengis.metadata.citation.OnLineFunction;
 import org.opengis.metadata.citation.PresentationForm;
 import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.internal.jaxb.LegacyNamespaces;
@@ -216,7 +218,12 @@ public final strictfp class DefaultCitationTest extends XMLTestCase {
      * @param  version  the metadata version to marshal.
      */
     private void testMarshalling(final String file, final Version version) throws JAXBException {
-        final DefaultContact contact = new DefaultContact();
+        final DefaultOnlineResource rs = new DefaultOnlineResource(URI.create("https://tools.ietf.org/html/rfc1149"));
+        rs.setName(new SimpleInternationalString("IP over Avian Carriers"));
+        rs.setDescription(new SimpleInternationalString("High delay, low throughput, and low altitude service."));
+        rs.setFunction(OnLineFunction.OFFLINE_ACCESS);
+
+        final DefaultContact contact = new DefaultContact(rs);
         contact.setContactInstructions(new SimpleInternationalString("Send carrier pigeon."));
         contact.getIdentifierMap().putSpecialized(IdentifierSpace.ID, "ip-protocol");
         final DefaultCitation c = new DefaultCitation("Fight against poverty");
@@ -226,7 +233,9 @@ public final strictfp class DefaultCitationTest extends XMLTestCase {
         ));
         c.getDates().add(new DefaultCitationDate(TestUtilities.date("2015-10-17 00:00:00"), DateType.ADOPTED));
         c.getPresentationForms().add(PresentationForm.PHYSICAL_OBJECT);
-        // Check that XML file built by the marshaller is the same as the example file.
+        /*
+         * Check that XML file built by the marshaller is the same as the example file.
+         */
         assertMarshalEqualsFile(file, c, version, "xlmns:*", "xsi:schemaLocation");
     }
 
