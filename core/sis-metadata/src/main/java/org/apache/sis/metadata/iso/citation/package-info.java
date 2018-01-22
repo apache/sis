@@ -118,7 +118,7 @@
     @XmlJavaTypeAdapter(MD_Identifier.class),
 
     // Java types, primitive types and basic OGC types handling
-    @XmlJavaTypeAdapter(GO_URL.class),
+    @XmlJavaTypeAdapter(URIAdapter.class),
     @XmlJavaTypeAdapter(GO_DateTime.class),
     @XmlJavaTypeAdapter(StringAdapter.class),
     @XmlJavaTypeAdapter(InternationalStringAdapter.class)
@@ -136,6 +136,5 @@ import org.apache.sis.xml.Namespaces;
 import org.apache.sis.internal.jaxb.LegacyNamespaces;
 import org.apache.sis.internal.jaxb.Schemas;
 import org.apache.sis.internal.jaxb.gco.*;
-import org.apache.sis.internal.jaxb.gmd.*;
 import org.apache.sis.internal.jaxb.code.*;
 import org.apache.sis.internal.jaxb.metadata.*;

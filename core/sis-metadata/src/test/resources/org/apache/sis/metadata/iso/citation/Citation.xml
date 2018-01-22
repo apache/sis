@@ -21,10 +21,11 @@
 <cit:CI_Citation
     xmlns:cit="http://standards.iso.org/iso/19115/-3/cit/1.0"
     xmlns:gco="http://standards.iso.org/iso/19115/-3/gco/1.0"
+    xmlns:gcx="http://standards.iso.org/iso/19115/-3/gcx/1.0"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xmlns:xlink="http://www.w3.org/1999/xlink"
-    xsi:schemaLocation = "http://standards.iso.org/iso/19115/-3/cit/1.0
-                          http://standards.iso.org/iso/19115/-3/cit/1.0/cit.xsd">
+    xsi:schemaLocation = "http://standards.iso.org/iso/19115/-3/cit/1.0 http://standards.iso.org/iso/19115/-3/cit/1.0/cit.xsd
+                          http://standards.iso.org/iso/19115/-3/gcx/1.0 http://standards.iso.org/iso/19115/-3/gcx/1.0/gcx.xsd">
 
   <cit:title>
     <gco:CharacterString>Fight against poverty</gco:CharacterString>
@@ -54,6 +55,23 @@
           </cit:name>
           <cit:contactInfo>
             <cit:CI_Contact id="ip-protocol">
+              <cit:onlineResource>
+                <cit:CI_OnlineResource>
+                  <cit:linkage>
+                    <gcx:FileName src="https://tools.ietf.org/html/rfc1149">rfc1149</gcx:FileName>
+                  </cit:linkage>
+                  <cit:name>
+                    <gco:CharacterString>IP over Avian Carriers</gco:CharacterString>
+                  </cit:name>
+                  <cit:description>
+                    <gco:CharacterString>High delay, low throughput, and low altitude service.</gco:CharacterString>
+                  </cit:description>
+                  <cit:function>
+                    <cit:CI_OnLineFunctionCode codeList="http://standards.iso.org/iso/19115/resources/Codelist/cat/codelists.xml#CI_OnLineFunctionCode"
+                                               codeListValue="offlineAccess">Offline access</cit:CI_OnLineFunctionCode>
+                  </cit:function>
+                </cit:CI_OnlineResource>
+              </cit:onlineResource>
               <cit:contactInstructions>
                 <gco:CharacterString>Send carrier pigeon.</gco:CharacterString>
               </cit:contactInstructions>

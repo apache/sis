@@ -100,7 +100,6 @@ public class ReferenceResolver {
      * @param  uuid     the {@code uuid} attributes.
      * @return an object of the given type for the given {@code uuid} attribute, or {@code null} if none.
      */
-    @SuppressWarnings("unchecked")
     public <T> T resolve(final MarshalContext context, final Class<T> type, final UUID uuid) {
         ensureNonNull("type", type);
         ensureNonNull("uuid", uuid);
