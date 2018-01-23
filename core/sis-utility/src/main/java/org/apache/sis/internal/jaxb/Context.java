@@ -296,7 +296,7 @@ public final class Context extends MarshalContext {
             case "gml": return versionGML;
             case "gmd": {
                 if ((bitMasks & MARSHALLING) == 0) break;   // If unmarshalling, we don't know the version.
-                return new Version((bitMasks & LEGACY_METADATA) != 0 ? "2007" : "2016");
+                return (bitMasks & LEGACY_METADATA) == 0 ? LegacyNamespaces.VERSION_2016 : LegacyNamespaces.VERSION_2007;
             }
             // Future SIS versions may add more cases here.
         }
