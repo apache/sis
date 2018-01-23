@@ -66,6 +66,8 @@ public final class CodeListUID {
      * @param  context     the current (un)marshalling context, or {@code null} if none.
      * @param  identifier  the UML identifier of the code list.
      * @return the URL to the given code list in the given schema.
+     *
+     * @see org.apache.sis.xml.XML#SCHEMAS
      */
     private static String schema(final Context context, final String identifier) {
         final String prefix, root, path;
@@ -74,7 +76,7 @@ public final class CodeListUID {
             root = Schemas.METADATA_ROOT_LEGACY;
             path = Schemas.CODELISTS_PATH_LEGACY;   // Future SIS version may switch between localized/unlocalized file.
         } else {
-            prefix = "mdb";
+            prefix = "cat";
             root = Schemas.METADATA_ROOT;
             path = Schemas.CODELISTS_PATH;
         }

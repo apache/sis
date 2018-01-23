@@ -20,7 +20,6 @@ import javax.xml.bind.JAXBException;
 import org.opengis.metadata.identification.RepresentativeFraction;
 import org.apache.sis.xml.Namespaces;
 import org.apache.sis.xml.IdentifierSpace;
-import org.apache.sis.internal.jaxb.LegacyNamespaces;
 import org.apache.sis.util.Version;
 import org.apache.sis.test.XMLTestCase;
 import org.apache.sis.test.DependsOnMethod;
@@ -54,9 +53,9 @@ public final strictfp class DefaultRepresentativeFractionTest extends XMLTestCas
         final Version version;
         if (legacy) {
             expected = toLegacyXML(expected);
-            version  = LegacyNamespaces.ISO_19139;
+            version  = VERSION_2007;
         } else {
-            version  = LegacyNamespaces.ISO_19115_3;
+            version  = VERSION_2014;
         }
         actual = marshal(browse, version);
         assertXmlEquals(expected, actual, "xmlns:*");

@@ -67,7 +67,7 @@ public final strictfp class NameMarshallingTest extends XMLTestCase {
             pool = new MarshallerPool(JAXBContext.newInstance(IdentifiedObjectMock.class), null);
         }
         final Marshaller marshaller = pool.acquireMarshaller();
-        marshaller.setProperty(XML.METADATA_VERSION, LegacyNamespaces.ISO_19139);
+        marshaller.setProperty(XML.METADATA_VERSION, VERSION_2007);
         final String xml = marshal(marshaller, new IdentifiedObjectMock(null, name));
         pool.recycle(marshaller);
         return xml;

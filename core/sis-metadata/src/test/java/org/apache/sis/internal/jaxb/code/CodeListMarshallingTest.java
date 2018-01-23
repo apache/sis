@@ -111,7 +111,7 @@ public final strictfp class CodeListMarshallingTest extends XMLTestCase {
          * Use the convenience method in order to avoid the effort of creating
          * our own MarshallerPool.
          */
-        final String actual = marshal(rp, LegacyNamespaces.ISO_19139);
+        final String actual = marshal(rp, VERSION_2007);
         assertXmlEquals(expected, actual, "xmlns:*");
     }
 
@@ -128,7 +128,7 @@ public final strictfp class CodeListMarshallingTest extends XMLTestCase {
 
         final MarshallerPool pool = getMarshallerPool();
         final Marshaller marshaller = pool.acquireMarshaller();
-        marshaller.setProperty(XML.METADATA_VERSION, LegacyNamespaces.ISO_19139);
+        marshaller.setProperty(XML.METADATA_VERSION, VERSION_2007);
         marshaller.setProperty(XML.SCHEMAS, Collections.singletonMap("gmd",
                 "http://standards.iso.org/ittf/PubliclyAvailableStandards/ISO_19139_Schemas"));     // Intentionally omit trailing '/'.
         final String actual = marshal(marshaller, rp);
@@ -166,7 +166,7 @@ public final strictfp class CodeListMarshallingTest extends XMLTestCase {
         final MarshallerPool pool = getMarshallerPool();
         final Marshaller marshaller = pool.acquireMarshaller();
         if (legacy) {
-            marshaller.setProperty(XML.METADATA_VERSION, LegacyNamespaces.ISO_19139);
+            marshaller.setProperty(XML.METADATA_VERSION, VERSION_2007);
         }
         /*
          * First, test using the French locale.

@@ -33,14 +33,12 @@ import org.apache.sis.util.Version;
  */
 public final class LegacyNamespaces {
     /**
-     * @deprecated to be replaced by {@code VERSION_1_0}, which is the version declared in XML schemas.
+     * Miscellaneous version constants used for ISO standards.
      */
-    @Deprecated
-    public static final Version ISO_19115_3 = new Version("2014"),
-                                ISO_19139   = new Version("2003");
+    public static final Version VERSION_2014 = new Version("2014");
 
     /**
-     * Miscellaneous version constants.
+     * Miscellaneous version constants used for GML versions.
      */
     public static final Version VERSION_3_0 = new Version("3.0"),
                                 VERSION_3_2 = new Version("3.2");

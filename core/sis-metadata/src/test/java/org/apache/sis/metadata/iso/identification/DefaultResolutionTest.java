@@ -152,7 +152,7 @@ public final strictfp class DefaultResolutionTest extends XMLTestCase {
     public void testLegacyXML() throws JAXBException {
         final DefaultResolution resolution = new DefaultResolution();
         resolution.setDistance(1000.0);
-        final String xml = marshal(resolution, LegacyNamespaces.ISO_19139);
+        final String xml = marshal(resolution, VERSION_2007);
         assertXmlEquals(
                 "<gmd:MD_Resolution xmlns:gmd=\"" + LegacyNamespaces.GMD + '"' +
                                   " xmlns:gco=\"" + LegacyNamespaces.GCO + "\">\n" +

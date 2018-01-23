@@ -22,7 +22,6 @@ import javax.xml.bind.JAXBException;
 import org.opengis.metadata.extent.Extent;
 import org.apache.sis.util.Version;
 import org.apache.sis.util.iso.SimpleInternationalString;
-import org.apache.sis.internal.jaxb.LegacyNamespaces;
 import org.apache.sis.xml.IdentifierSpace;
 import org.apache.sis.xml.Namespaces;
 import org.apache.sis.xml.NilObject;
@@ -105,7 +104,7 @@ public final strictfp class DefaultExtentTest extends XMLTestCase {
      */
     @Test
     public void testXML() throws JAXBException {
-        roundtrip("Extent.xml", LegacyNamespaces.ISO_19115_3);
+        roundtrip("Extent.xml", VERSION_2014);
     }
 
     /**
@@ -115,7 +114,7 @@ public final strictfp class DefaultExtentTest extends XMLTestCase {
      */
     @Test
     public void testLegacyXML() throws JAXBException {
-        roundtrip("Extent (legacy).xml", LegacyNamespaces.ISO_19139);
+        roundtrip("Extent (legacy).xml", VERSION_2007);
     }
 
     /**

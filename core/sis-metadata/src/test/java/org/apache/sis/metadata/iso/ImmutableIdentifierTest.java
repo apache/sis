@@ -186,7 +186,7 @@ public final strictfp class ImmutableIdentifierTest extends XMLTestCase {
                 "    <gco:CharacterString>4326</gco:CharacterString>\n" +
                 "  </gmd:code>\n" +
                 "</gmd:RS_Identifier>",
-                marshal(identifier, LegacyNamespaces.ISO_19139), "xmlns:*");
+                marshal(identifier, VERSION_2007), "xmlns:*");
     }
 
     /**

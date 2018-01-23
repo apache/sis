@@ -33,7 +33,6 @@ import org.opengis.metadata.citation.Responsibility;
 import org.opengis.metadata.citation.OnLineFunction;
 import org.opengis.metadata.citation.PresentationForm;
 import org.apache.sis.internal.util.CollectionsExt;
-import org.apache.sis.internal.jaxb.LegacyNamespaces;
 import org.apache.sis.xml.IdentifierMap;
 import org.apache.sis.xml.IdentifierSpace;
 import org.apache.sis.metadata.iso.extent.Extents;
@@ -194,7 +193,7 @@ public final strictfp class DefaultCitationTest extends XMLTestCase {
      */
     @Test
     public void testMarshalling() throws JAXBException {
-        testMarshalling(XML_FILE, LegacyNamespaces.ISO_19115_3);
+        testMarshalling(XML_FILE, VERSION_2014);
     }
 
     /**
@@ -208,7 +207,7 @@ public final strictfp class DefaultCitationTest extends XMLTestCase {
     @Test
     @DependsOnMethod("testMarshalling")
     public void testMarshallingLegacy() throws JAXBException {
-        testMarshalling(XML_FILE_LEGACY, LegacyNamespaces.ISO_19139);
+        testMarshalling(XML_FILE_LEGACY, VERSION_2007);
     }
 
     /**

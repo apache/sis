@@ -66,6 +66,12 @@ import static org.apache.sis.test.Assert.*;
  */
 public abstract strictfp class XMLTestCase extends TestCase {
     /**
+     * Miscellaneous version constants used for ISO standards.
+     */
+    protected static final Version VERSION_2007 = new Version("2007"),
+                                   VERSION_2014 = LegacyNamespaces.VERSION_2014;
+
+    /**
      * The timezone used for the tests. We intentionally use a timezone different than UTC in order
      * to have an error of one or two hours if a code fails to take timezone offset in account.
      */
