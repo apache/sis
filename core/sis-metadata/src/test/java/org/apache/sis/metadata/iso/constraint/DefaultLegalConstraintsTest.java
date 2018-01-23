@@ -162,7 +162,7 @@ public final strictfp class DefaultLegalConstraintsTest extends XMLTestCase impl
                 "  </gmd:useConstraints>\n" +
                 "</gmd:MD_LegalConstraints>\n";
 
-        assertXmlEquals(xml, marshal(c, LegacyNamespaces.ISO_19139), "xmlns:*");
+        assertXmlEquals(xml, marshal(c, VERSION_2007), "xmlns:*");
         actual = unmarshal(xml);
         assertSame(Restriction.LICENCE, getSingleton(actual.getUseConstraints()));
         assertEquals(c, actual);

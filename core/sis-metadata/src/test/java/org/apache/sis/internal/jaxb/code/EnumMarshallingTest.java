@@ -22,7 +22,6 @@ import java.util.Collection;
 import javax.xml.bind.JAXBException;
 import org.opengis.metadata.identification.TopicCategory;
 import org.apache.sis.metadata.iso.identification.DefaultDataIdentification;
-import org.apache.sis.internal.jaxb.LegacyNamespaces;
 import org.apache.sis.xml.Namespaces;
 import org.apache.sis.test.XMLTestCase;
 import org.junit.Test;
@@ -67,7 +66,7 @@ public final strictfp class EnumMarshallingTest extends XMLTestCase {
                 "  </mri:topicCategory>\n" +
                 "</mri:MD_DataIdentification>";
 
-        final String xml = marshal(id, LegacyNamespaces.ISO_19115_3);
+        final String xml = marshal(id, VERSION_2014);
         assertXmlEquals(expected, xml, "xmlns:*");
         /*
          * Unmarshall the above XML and verify that we find all the topic categories.

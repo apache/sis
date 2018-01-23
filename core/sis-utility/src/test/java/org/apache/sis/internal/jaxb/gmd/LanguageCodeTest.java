@@ -134,7 +134,7 @@ public final strictfp class LanguageCodeTest extends XMLTestCase {
         final MetadataMock metadata = new MetadataMock(Locale.JAPANESE);
         final Marshaller marshaller = pool.acquireMarshaller();
         assertNull(marshaller.getProperty(XML.STRING_SUBSTITUTES));
-        marshaller.setProperty(XML.METADATA_VERSION, LegacyNamespaces.ISO_19139);
+        marshaller.setProperty(XML.METADATA_VERSION, VERSION_2007);
         assertXmlEquals(getMetadataXML(LANGUAGE_CODE), marshal(marshaller, metadata), "xmlns:*");
         pool.recycle(marshaller);
     }
@@ -198,7 +198,7 @@ public final strictfp class LanguageCodeTest extends XMLTestCase {
     public void testMarshalCharacterString() throws JAXBException {
         final MetadataMock metadata = new MetadataMock(Locale.JAPANESE);
         final Marshaller marshaller = pool.acquireMarshaller();
-        marshaller.setProperty(XML.METADATA_VERSION, LegacyNamespaces.ISO_19139);
+        marshaller.setProperty(XML.METADATA_VERSION, VERSION_2007);
         marshaller.setProperty(XML.STRING_SUBSTITUTES, new String[] {"dummy","language","foo"});
         assertArrayEquals(new String[] {"language"}, (String[]) marshaller.getProperty(XML.STRING_SUBSTITUTES));
         assertXmlEquals(getMetadataXML(CHARACTER_STRING), marshal(marshaller, metadata), "xmlns:*");

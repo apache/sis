@@ -56,7 +56,6 @@ import org.apache.sis.measure.Units;
 import org.apache.sis.xml.XML;
 import org.apache.sis.xml.MarshallerPool;
 import org.apache.sis.internal.jaxb.gmx.Anchor;
-import org.apache.sis.internal.jaxb.LegacyNamespaces;
 import org.apache.sis.internal.jaxb.metadata.replace.ReferenceSystemMetadata;
 import org.apache.sis.test.XMLTestCase;
 import org.junit.Test;
@@ -459,7 +458,7 @@ public final class MarshallingTest extends XMLTestCase implements WarningListene
     @Test
     public void testLegacySchema() throws URISyntaxException, JAXBException {
         final DefaultMetadata md = metadata();
-        marshaller.setProperty(XML.METADATA_VERSION, LegacyNamespaces.ISO_19139);
+        marshaller.setProperty(XML.METADATA_VERSION, VERSION_2007);
         marshaller.marshal(md, output);
         recycle();
     }
@@ -473,7 +472,7 @@ public final class MarshallingTest extends XMLTestCase implements WarningListene
     @Test
     public void testCurrentSchema() throws JAXBException, URISyntaxException {
         final DefaultMetadata md = metadata();
-        marshaller.setProperty(XML.METADATA_VERSION, LegacyNamespaces.ISO_19115_3);
+        marshaller.setProperty(XML.METADATA_VERSION, VERSION_2014);
         marshaller.marshal(md, output);
         recycle();
     }

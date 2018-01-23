@@ -20,7 +20,6 @@ import java.util.Locale;
 import javax.xml.bind.JAXBException;
 import org.opengis.util.InternationalString;
 import org.apache.sis.xml.FreeTextMarshallingTest;
-import org.apache.sis.internal.jaxb.LegacyNamespaces;
 import org.apache.sis.util.Version;
 import org.apache.sis.test.XMLTestCase;
 import org.apache.sis.test.DependsOn;
@@ -57,7 +56,7 @@ public final strictfp class AbstractPositionalAccuracyTest extends XMLTestCase {
      */
     @Test
     public void testXML() throws JAXBException {
-        roundtrip("PositionalAccuracy.xml", LegacyNamespaces.ISO_19115_3);
+        roundtrip("PositionalAccuracy.xml", VERSION_2014);
     }
 
     /**
@@ -67,7 +66,7 @@ public final strictfp class AbstractPositionalAccuracyTest extends XMLTestCase {
      */
     @Test
     public void testLegacyXML() throws JAXBException {
-        roundtrip("PositionalAccuracy (legacy).xml", LegacyNamespaces.ISO_19139);
+        roundtrip("PositionalAccuracy (legacy).xml", VERSION_2007);
     }
 
     /**

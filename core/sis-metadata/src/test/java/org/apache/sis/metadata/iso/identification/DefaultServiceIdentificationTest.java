@@ -28,7 +28,6 @@ import org.opengis.metadata.identification.ServiceIdentification;
 import org.opengis.metadata.identification.DistributedComputingPlatform;
 import org.apache.sis.metadata.iso.citation.DefaultCitation;
 import org.apache.sis.internal.system.DefaultFactories;
-import org.apache.sis.internal.jaxb.LegacyNamespaces;
 import org.apache.sis.xml.NilReason;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.XMLTestCase;
@@ -126,7 +125,7 @@ public final strictfp class DefaultServiceIdentificationTest extends XMLTestCase
      */
     @Test
     public void testMarshalLegacy() throws JAXBException {
-        assertMarshalEqualsFile(XML_FILE_LEGACY, create(), LegacyNamespaces.ISO_19139, "xlmns:*", "xsi:schemaLocation");
+        assertMarshalEqualsFile(XML_FILE_LEGACY, create(), VERSION_2007, "xlmns:*", "xsi:schemaLocation");
     }
 
     /**

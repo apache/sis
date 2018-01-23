@@ -53,7 +53,7 @@ public final strictfp class DefaultLineageTest extends XMLTestCase {
          * If this simpler case, only ISO 19115 elements are defined (no ISO 19115-2).
          * Consequently the XML name shall be "gmd:LI_Source".
          */
-        String actual = marshal(lineage, LegacyNamespaces.ISO_19139);
+        String actual = marshal(lineage, VERSION_2007);
         assertXmlEquals(
             "<gmd:LI_Lineage xmlns:gmd=\"" + LegacyNamespaces.GMD + '"' +
                            " xmlns:gco=\"" + LegacyNamespaces.GCO + "\">\n" +
@@ -69,7 +69,7 @@ public final strictfp class DefaultLineageTest extends XMLTestCase {
          * Now add a ISO 19115-2 specific property. The XML name shall become "gmi:LE_Source".
          */
         source.setProcessedLevel(new DefaultIdentifier("DummyLevel"));
-        actual = marshal(lineage, LegacyNamespaces.ISO_19139);
+        actual = marshal(lineage, VERSION_2007);
         assertXmlEquals(
             "<gmd:LI_Lineage xmlns:gmd=\"" + LegacyNamespaces.GMD + '"' +
                            " xmlns:gmi=\"" + LegacyNamespaces.GMI + '"' +

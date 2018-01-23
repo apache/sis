@@ -234,7 +234,7 @@ public final class Context extends MarshalContext {
                    final ValueConverter     converter,
                    final WarningListener<?> warningListener)
     {
-        if (versionMetadata != null && versionMetadata.compareTo(LegacyNamespaces.ISO_19115_3) < 0) {
+        if (versionMetadata != null && versionMetadata.compareTo(LegacyNamespaces.VERSION_2014) < 0) {
             bitMasks |= LEGACY_METADATA;
         }
         this.locales           = new LinkedList<>();
@@ -292,10 +292,14 @@ public final class Context extends MarshalContext {
      */
     @Override
     public final Version getVersion(final String prefix) {
-        if (prefix.equals("gml")) {
-            return versionGML;
+        switch (prefix) {
+            case "gml": return versionGML;
+            case "gmd": {
+                if ((bitMasks & MARSHALLING) == 0) break;   // If unmarshalling, we don't know the version.
+                return new Version((bitMasks & LEGACY_METADATA) != 0 ? "2007" : "2016");
+            }
+            // Future SIS versions may add more cases here.
         }
-        // Future SIS versions may add more cases here.
         return null;
     }
 

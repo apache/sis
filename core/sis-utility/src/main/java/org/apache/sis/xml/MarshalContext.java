@@ -85,6 +85,7 @@ public abstract class MarshalContext {
      *   <caption>Supported schemas</caption>
      *   <tr><th>Prefix</th>  <th>Standard</th>                   <th>Typical values</th></tr>
      *   <tr><td>gml</td>     <td>Geographic Markup Language</td> <td>{@code 3.0}, {@code 3.2}</td></tr>
+     *   <tr><td>gmd</td>     <td>Geographic MetaData</td>        <td>{@code 2007}, {@code 2016}</td></tr>
      * </table>
      *
      * @param  prefix  one of the above-cited prefix.

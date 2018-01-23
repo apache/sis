@@ -21,7 +21,6 @@ import java.util.Locale;
 import javax.xml.bind.JAXBException;
 import org.apache.sis.util.Version;
 import org.apache.sis.metadata.iso.DefaultMetadata;
-import org.apache.sis.internal.jaxb.LegacyNamespaces;
 import org.apache.sis.test.XMLTestCase;
 import org.junit.Test;
 
@@ -72,7 +71,7 @@ public final strictfp class PT_LocaleTest extends XMLTestCase {
      */
     @Test
     public void testMarshalling() throws JAXBException {
-        marshalAndCompare("Locales.xml", LegacyNamespaces.ISO_19115_3,
+        marshalAndCompare("Locales.xml", VERSION_2014,
                           "mdb:contact", "mdb:dateInfo", "mdb:identificationInfo");
     }
 
@@ -83,7 +82,7 @@ public final strictfp class PT_LocaleTest extends XMLTestCase {
      */
     @Test
     public void testMarshallingLegacy() throws JAXBException {
-        marshalAndCompare("Locales (legacy).xml", LegacyNamespaces.ISO_19139,
+        marshalAndCompare("Locales (legacy).xml", VERSION_2007,
                           "gmd:contact", "gmd:dateStamp", "gmd:identificationInfo");
     }
 

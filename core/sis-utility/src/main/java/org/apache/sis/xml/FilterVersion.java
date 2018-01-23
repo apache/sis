@@ -85,6 +85,8 @@ enum FilterVersion {
 
     /**
      * GML using the legacy {@code "http://www.opengis.net/gml"} namespace.
+     * Note that the use of GML 3.2 may imply that use of ISO 19139:2007,
+     * which requires the use of {@link #ALL}.
      */
     GML31(Namespaces.GML, LegacyNamespaces.GML),
 
@@ -163,6 +165,6 @@ enum FilterVersion {
         toImpl = new HashMap<>(first.toImpl);
         toView.putAll(more.toView);
         toImpl.putAll(more.toImpl);
-        manyToOne = true;
+        manyToOne = first.manyToOne | more.manyToOne;
     }
 }
