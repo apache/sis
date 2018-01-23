@@ -68,7 +68,7 @@ public abstract strictfp class XMLTestCase extends TestCase {
     /**
      * Miscellaneous version constants used for ISO standards.
      */
-    protected static final Version VERSION_2007 = new Version("2007"),
+    protected static final Version VERSION_2007 = LegacyNamespaces.VERSION_2007,
                                    VERSION_2014 = LegacyNamespaces.VERSION_2014;
 
     /**

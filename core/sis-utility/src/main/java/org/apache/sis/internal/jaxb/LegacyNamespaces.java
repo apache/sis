@@ -35,7 +35,9 @@ public final class LegacyNamespaces {
     /**
      * Miscellaneous version constants used for ISO standards.
      */
-    public static final Version VERSION_2014 = new Version("2014");
+    public static final Version VERSION_2007 = new Version("2007"),
+                                VERSION_2014 = new Version("2014"),
+                                VERSION_2016 = new Version("2016");
 
     /**
      * Miscellaneous version constants used for GML versions.
