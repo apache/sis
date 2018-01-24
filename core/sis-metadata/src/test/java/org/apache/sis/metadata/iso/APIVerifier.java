@@ -70,10 +70,10 @@ public final strictfp class APIVerifier extends TestCase {
     @Test
     public void verifyISO1915() throws IOException, ClassNotFoundException, NoSuchMethodException {
         final Properties changes = new Properties();
-        final InputStream in = APIVerifier.class.getResourceAsStream("api-changes.properties");
-        assertNotNull("Missing test resource file.", in);
-        changes.load(in);
-        in.close();
+        try (InputStream in = APIVerifier.class.getResourceAsStream("api-changes.properties")) {
+            assertNotNull("Missing test resource file.", in);
+            changes.load(in);
+        }
         try {
             verifyAPI(MetadataStandard.ISO_19115, changes);
         } catch (AssertionError e) {
