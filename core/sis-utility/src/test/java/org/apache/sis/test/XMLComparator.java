@@ -319,7 +319,7 @@ public strictfp class XMLComparator {
             compareAttributes(expected, actual);
         }
         /*
-         * Check child nodes recursivly if it's not an attribut.
+         * Check child nodes recursivly if it's not an attribute.
          */
         if (expected.getNodeType() != Node.ATTRIBUTE_NODE) {
             compareChildren(expected, actual);
