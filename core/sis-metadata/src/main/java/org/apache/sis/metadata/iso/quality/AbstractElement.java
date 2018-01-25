@@ -79,7 +79,7 @@ import static org.apache.sis.util.collection.Containers.isNullOrEmpty;
     "dates",
     "results"
 })
-@XmlRootElement(name = "DQ_Element")
+@XmlRootElement(name = "AbstractDQ_Element")
 @XmlSeeAlso({
     AbstractCompleteness.class,
     AbstractLogicalConsistency.class,

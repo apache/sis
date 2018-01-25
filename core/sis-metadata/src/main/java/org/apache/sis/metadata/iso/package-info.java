@@ -112,7 +112,6 @@
     @XmlJavaTypeAdapter(MD_DatatypeCode.class),
     @XmlJavaTypeAdapter(MD_Distribution.class),
     @XmlJavaTypeAdapter(MD_ExtendedElementInformation.class),
-    @XmlJavaTypeAdapter(MD_FeatureTypeList.class),
     @XmlJavaTypeAdapter(MD_Identification.class),
     @XmlJavaTypeAdapter(MD_Identifier.class),
     @XmlJavaTypeAdapter(MD_MaintenanceInformation.class),

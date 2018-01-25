@@ -115,7 +115,7 @@ import org.apache.sis.util.iso.Types;
      *       tolerant to different order (this relaxation is needed only for legacy XML).
      */
 })
-@XmlRootElement(name = "MD_Identification")
+@XmlRootElement(name = "AbstractMD_Identification")
 @XmlSeeAlso({
     DefaultDataIdentification.class,
     DefaultServiceIdentification.class

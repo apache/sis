@@ -46,7 +46,7 @@ import org.apache.sis.metadata.iso.ISOMetadata;
  */
 @SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "AbstractMD_SpatialRepresentation_Type")
-@XmlRootElement(name = "MD_SpatialRepresentation")
+@XmlRootElement(name = "AbstractMD_SpatialRepresentation")
 @XmlSeeAlso({
     DefaultGridSpatialRepresentation.class,
     DefaultVectorSpatialRepresentation.class
