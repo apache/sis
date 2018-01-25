@@ -51,7 +51,7 @@ import org.opengis.metadata.quality.ConceptualConsistency;
  */
 @SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "AbstractDQ_LogicalConsistency_Type")
-@XmlRootElement(name = "DQ_LogicalConsistency")
+@XmlRootElement(name = "AbstractDQ_LogicalConsistency")
 @XmlSeeAlso({
     DefaultConceptualConsistency.class,
     DefaultDomainConsistency.class,

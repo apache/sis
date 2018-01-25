@@ -60,7 +60,7 @@ import org.apache.sis.util.iso.Types;
     "name",
     "contactInfo"
 })
-@XmlRootElement(name = "CI_Party")
+@XmlRootElement(name = "AbstractCI_Party")
 @XmlSeeAlso({
     DefaultIndividual.class,
     DefaultOrganisation.class

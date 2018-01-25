@@ -48,7 +48,7 @@ import org.apache.sis.metadata.iso.ISOMetadata;
  */
 @SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "AbstractEX_GeographicExtent_Type")
-@XmlRootElement(name = "EX_GeographicExtent")
+@XmlRootElement(name = "AbstractEX_GeographicExtent")
 @XmlSeeAlso({
     DefaultGeographicBoundingBox.class,
     DefaultBoundingPolygon.class,

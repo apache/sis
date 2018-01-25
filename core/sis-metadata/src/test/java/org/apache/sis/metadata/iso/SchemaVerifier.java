@@ -28,8 +28,10 @@ import java.util.Deque;
 import java.util.HashMap;
 import java.util.ArrayDeque;
 import javax.xml.XMLConstants;
-import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlSchema;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import org.w3c.dom.Node;
@@ -45,12 +47,30 @@ import org.apache.sis.util.StringBuilders;
  * to <a href="http://standards.iso.org/iso/19115/-3/">http://standards.iso.org/iso/19115/-3/</a>.
  * All classes in a given directory are scanned.
  *
+ * <div class="section">Limitations</div>
+ * Current implementation ignores the XML prefix (e.g. {@code "cit:"} in {@code "cit:CI_Citation"}).
+ * We assume that there is no name collision, especially given that {@code "CI_"} prefix in front of
+ * most OGC/ISO class names have the effect of a namespace. If a collision nevertheless happen, then
+ * an exception will be thrown.
+ *
+ * <p>Current implementation assumes that XML element name, type name, property name and property type
+ * name follow some naming convention. For example type names are suffixed with {@code "_Type"} in OGC
+ * schemas, while property type names are suffixed with {@code "_PropertyType"}.  This class throws an
+ * exception if a type does not follow the expected naming convention. This requirement makes
+ * implementation easier, by reducing the amount of {@link Map}s that we need to manage.</p>
+ *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
  * @since   1.0
  * @module
  */
 public final strictfp class SchemaVerifier {
+    /**
+     * The prefix of XML type names for properties. In ISO/OGC schemas, this prefix does not appear
+     * in the definition of class types but may appear in the definition of property types.
+     */
+    private static final String ABSTRACT_PREFIX = "Abstract_";
+
     /**
      * The suffix of XML type names for classes.
      * This is used by convention in OGC/ISO standards (but not necessarily in other XSD).
@@ -211,7 +231,8 @@ public final strictfp class SchemaVerifier {
                 case "element": {
                     final String type = getMandatoryAttribute(node, "type");
                     if (!TYPE_TO_IGNORE.equals(type)) {
-                        verifyNamingConvention(getMandatoryAttribute(node, "name"), type, TYPE_SUFFIX);
+                        verifyNamingConvention(schemaLocations.getLast(),
+                                getMandatoryAttribute(node, "name"), type, TYPE_SUFFIX);
                     }
                     return;                             // Ignore children (they are about documentation).
                 }
@@ -255,7 +276,9 @@ public final strictfp class SchemaVerifier {
                 final String name = getMandatoryAttribute(node, "name").intern();
                 final String old = currentProperties.put(name, type);
                 if (old != null && !old.equals(type)) {
-                    throw new SchemaException("\"" + name + "\" is already associated to \"" + old + "\". Can not associated to \"" + type + "\".");
+                    throw new SchemaException("Error while parsing " + schemaLocations.getLast() + ":\n"
+                            + "Property \"" + name + "\" is associated to type \"" + type + "\", but that "
+                            + "property was already associated to \"" + old + "\".");
                 }
                 return;
             }
@@ -277,7 +300,8 @@ public final strictfp class SchemaVerifier {
     private void verifyPropertyType(final Node node) throws SAXException {
         if (XMLConstants.W3C_XML_SCHEMA_NS_URI.equals(node.getNamespaceURI())) {
             if ("element".equals(node.getNodeName())) {
-                verifyNamingConvention(getMandatoryAttribute(node, "ref"), currentPropertyType, PROPERTY_TYPE_SUFFIX);
+                verifyNamingConvention(schemaLocations.getLast(),
+                        getMandatoryAttribute(node, "ref"), currentPropertyType, PROPERTY_TYPE_SUFFIX);
                 return;
             }
         }
@@ -295,19 +319,25 @@ public final strictfp class SchemaVerifier {
      * @param  suffix  the expected suffix at the end of {@code type}.
      * @throws SchemaException if the given {@code name} and {@code type} are not compliant with expected convention.
      */
-    private static void verifyNamingConvention(final String name, final String type, final String suffix) throws SchemaException {
+    private static void verifyNamingConvention(final String enclosing,
+            final String name, final String type, final String suffix) throws SchemaException
+    {
         if (type.endsWith(suffix)) {
-            final int nameStart = name.indexOf(PREFIX_SEPARATOR) + 1;        // Skip "mdb:" or similar prefix.
-            final int typeStart = type.indexOf(PREFIX_SEPARATOR) + 1;
-            final int length    = name.length() - nameStart;
+            int nameStart = name.indexOf(PREFIX_SEPARATOR) + 1;        // Skip "mdb:" or similar prefix.
+            int typeStart = type.indexOf(PREFIX_SEPARATOR) + 1;
+            final int plg = ABSTRACT_PREFIX.length();
+            if (name.regionMatches(nameStart, ABSTRACT_PREFIX, 0, plg)) nameStart += plg;
+            if (type.regionMatches(typeStart, ABSTRACT_PREFIX, 0, plg)) typeStart += plg;
+            final int length = name.length() - nameStart;
             if (type.length() - typeStart - suffix.length() == length &&
                     type.regionMatches(typeStart, name, nameStart, length))
             {
                 return;
             }
         }
-        throw new SchemaException("<element name=\"" + name + "\" type=\"" + type + "\">: "
-                + "'type' should be 'name' with \"" + suffix + "\" suffix.");
+        throw new SchemaException("Error in " + enclosing + ":\n"
+                + "The type name should be the name with \"" + suffix + "\" suffix, "
+                + "but found name=\"" + name + "\" and type=\"" + type + "\">.");
     }
 
     /**
@@ -343,11 +373,12 @@ public final strictfp class SchemaVerifier {
                 }
             }
         }
-        throw new SchemaException("Node " + node.getNodeName() + " should have an attribute '" + name + "'.");
+        throw new SchemaException("Node " + node.getNodeName() + " should have a '" + name + "' attribute.");
     }
 
     /**
      * Verifies the {@link XmlElement} annotation on the given class.
+     * This method downloads and parses the XSD files (the schemas) as needed.
      *
      * @param  type  the class on which to verify annotations.
      */
@@ -361,6 +392,16 @@ public final strictfp class SchemaVerifier {
             }
             loadSchema(location);
         }
-        // TODO
+        /*
+         * Verify @XmlType and @XmlRootElement on the class.
+         */
+        final XmlType xmlType = type.getDeclaredAnnotation(XmlType.class);
+        if (xmlType != null) {
+            final XmlRootElement root = type.getDeclaredAnnotation(XmlRootElement.class);
+            if (root == null) {
+                throw new SchemaException("Missing @XmlRootElement in " + type.getSimpleName() + " class.");
+            }
+            verifyNamingConvention(type.getName(), root.name(), xmlType.name(), TYPE_SUFFIX);
+        }
     }
 }

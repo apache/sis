@@ -50,7 +50,7 @@ import org.opengis.metadata.quality.QuantitativeAttributeAccuracy;
  */
 @SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "AbstractDQ_ThematicAccuracy_Type")
-@XmlRootElement(name = "DQ_ThematicAccuracy")
+@XmlRootElement(name = "AbstractDQ_ThematicAccuracy")
 @XmlSeeAlso({
     DefaultThematicClassificationCorrectness.class,
     DefaultNonQuantitativeAttributeAccuracy.class,

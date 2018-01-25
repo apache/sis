@@ -25,7 +25,6 @@ import org.opengis.metadata.quality.DataQuality;
 import org.opengis.metadata.spatial.GCPCollection;
 import org.opengis.metadata.spatial.GeolocationInformation;
 import org.apache.sis.metadata.iso.ISOMetadata;
-import org.apache.sis.xml.Namespaces;
 
 
 /**
@@ -48,8 +47,8 @@ import org.apache.sis.xml.Namespaces;
  * @module
  */
 @SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
-@XmlType(name = "AbstractMI_GeolocationInformation_Type", namespace = Namespaces.GMI)
-@XmlRootElement(name = "MI_GeolocationInformation", namespace = Namespaces.GMI)
+@XmlType(name = "AbstractMI_GeolocationInformation_Type")
+@XmlRootElement(name = "AbstractMI_GeolocationInformation")
 @XmlSeeAlso(DefaultGCPCollection.class)
 public class AbstractGeolocationInformation extends ISOMetadata implements GeolocationInformation {
     /**

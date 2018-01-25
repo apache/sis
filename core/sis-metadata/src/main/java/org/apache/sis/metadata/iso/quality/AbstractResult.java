@@ -46,7 +46,7 @@ import org.apache.sis.metadata.iso.ISOMetadata;
  */
 @SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "AbstractDQ_Result_Type")
-@XmlRootElement(name = "DQ_Result")
+@XmlRootElement(name = "AbstractDQ_Result")
 @XmlSeeAlso({
     DefaultConformanceResult.class,
     DefaultQuantitativeResult.class,

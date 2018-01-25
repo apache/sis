@@ -350,10 +350,6 @@ http://standards.iso.org/iso/19115/-3/mdb/1.0
     <type>
   MD_ClassificationCode
     <type>
-  MD_FeatureTypeList
-    <type>
-    spatialObject
-    spatialSchemaName
   MD_GeometricObjectTypeCode
     <type>
   MD_ImagingConditionCode
