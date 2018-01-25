@@ -64,6 +64,7 @@ Ellipsoid
 EllipsoidalCS
 EngineeringCRS
 EngineeringDatum
+Envelope
 EnvironmentalRecord
 EvaluationMethodType
 Event
@@ -233,3 +234,4 @@ VerticalCS
 VerticalDatum
 VerticalDatumType
 VerticalExtent
+createGeodeticDatum
