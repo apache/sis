@@ -31,7 +31,8 @@ import org.apache.sis.util.Classes;
 import org.apache.sis.util.Debug;
 
 // Branch-dependent imports
-import org.apache.sis.internal.jdk8.UncheckedIOException;
+import java.util.function.BiFunction;
+import java.io.UncheckedIOException;
 
 
 /**
@@ -60,7 +61,9 @@ import org.apache.sis.internal.jdk8.UncheckedIOException;
  * @since 0.6
  * @module
  */
-public abstract class AbstractOperation extends AbstractIdentifiedType {
+public abstract class AbstractOperation extends AbstractIdentifiedType
+        implements BiFunction<AbstractFeature, ParameterValueGroup, Object>
+{
     /**
      * For cross-version compatibility.
      */
@@ -190,6 +193,7 @@ public abstract class AbstractOperation extends AbstractIdentifiedType {
      *                     Can be {@code null} if the operation does not take any parameters.
      * @return the operation result, or {@code null} if this operation does not produce any result.
      */
+    @Override
     public abstract Object apply(AbstractFeature feature, ParameterValueGroup parameters);
 
     /**

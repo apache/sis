@@ -31,8 +31,6 @@ import org.apache.sis.internal.util.Numerics;
 
 import static org.apache.sis.util.ArgumentChecks.*;
 
-// Branch-dependent imports
-
 
 /**
  * Definition of an attribute in a feature type.
@@ -315,7 +313,7 @@ public class DefaultAttributeType<V> extends FieldType {
      * @see AbstractAttribute#characteristics()
      */
     public Map<String,DefaultAttributeType<?>> characteristics() {
-        return (characteristics != null) ? characteristics : Collections.<String,DefaultAttributeType<?>>emptyMap();
+        return (characteristics != null) ? characteristics : Collections.emptyMap();
     }
 
     /**

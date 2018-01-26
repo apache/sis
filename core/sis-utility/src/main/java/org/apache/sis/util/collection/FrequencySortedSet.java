@@ -152,11 +152,7 @@ public class FrequencySortedSet<E> extends AbstractSet<E> implements SortedSet<E
             ArgumentChecks.ensurePositive("occurrence", occurrence);
             sorted = null;
             occurrence ^= order;
-            final Integer old = count.put(element, occurrence);
-            if (old == null) {
-                return true;
-            }
-            count.put(element, old + occurrence - order);
+            return count.merge(element, occurrence, (old, n) -> Math.addExact(old, n) - order) == occurrence;
         }
         return false;
     }
@@ -572,11 +568,8 @@ public class FrequencySortedSet<E> extends AbstractSet<E> implements SortedSet<E
      * The comparator used for sorting map entries.
      * Must be consistent with {@link #compare(Object, Object)} implementation.
      */
-    private static final Comparator<Map.Entry<?,Integer>> COMPARATOR = new Comparator<Map.Entry<?,Integer>>() {
-        @Override public int compare(Map.Entry<?,Integer> o1, Map.Entry<?,Integer> o2) {
-            return o1.getValue().compareTo(o2.getValue());
-        }
-    };
+    private static final Comparator<Map.Entry<?,Integer>> COMPARATOR =
+            (Map.Entry<?,Integer> o1, Map.Entry<?,Integer> o2) -> o1.getValue().compareTo(o2.getValue());
 
     /**
      * Returns the comparator used to order the elements in this set.

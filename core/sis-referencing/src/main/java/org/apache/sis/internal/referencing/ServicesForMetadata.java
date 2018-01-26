@@ -99,7 +99,6 @@ import org.apache.sis.util.Exceptions;
 import org.apache.sis.util.Utilities;
 
 // Branch-dependent imports
-import org.apache.sis.internal.jdk8.JDK8;
 import org.apache.sis.metadata.iso.citation.DefaultCitation;
 import org.apache.sis.referencing.factory.GeodeticObjectFactory;
 import org.apache.sis.referencing.cs.DefaultParametricCS;
@@ -765,9 +764,9 @@ public final class ServicesForMetadata extends ReferencingServices {
             }
             properties = Collections.emptyMap();
         }
-        final HashMap<String,Object> p = new HashMap<String,Object>(properties);
-        JDK8.putIfAbsent(p, CRS_FACTORY, crsFactory);
-        JDK8.putIfAbsent(p, CS_FACTORY,  csFactory);
+        final HashMap<String,Object> p = new HashMap<>(properties);
+        p.putIfAbsent(CRS_FACTORY, crsFactory);
+        p.putIfAbsent(CS_FACTORY,  csFactory);
         properties = p;
         return new DefaultCoordinateOperationFactory(properties, mtFactory);
     }

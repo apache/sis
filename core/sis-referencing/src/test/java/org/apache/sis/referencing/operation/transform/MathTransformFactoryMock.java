@@ -64,7 +64,7 @@ public final strictfp class MathTransformFactoryMock implements MathTransformFac
      */
     @Override
     public Set<OperationMethod> getAvailableMethods(Class<? extends SingleOperation> type) {
-        return type.isInstance(method) ? Collections.<OperationMethod>singleton(method) : Collections.<OperationMethod>emptySet();
+        return type.isInstance(method) ? Collections.singleton(method) : Collections.emptySet();
     }
 
     /**

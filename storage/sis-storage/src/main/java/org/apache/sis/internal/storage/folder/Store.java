@@ -48,9 +48,7 @@ import org.apache.sis.internal.storage.MetadataBuilder;
 import org.apache.sis.internal.storage.Resources;
 
 // Branch-dependent imports
-import org.apache.sis.internal.jdk8.JDK8;
-import org.apache.sis.internal.jdk8.UncheckedIOException;
-import org.apache.sis.storage.ReadOnlyStorageException;
+import java.io.UncheckedIOException;
 
 
 /**
@@ -252,7 +250,7 @@ final class Store extends DataStore implements Aggregate, DirectoryStream.Filter
                          * At this point we got the data store. It could happen that a store for
                          * the same file has been added concurrently, so we need to check again.
                          */
-                        final DataStore existing = JDK8.putIfAbsent(children, real, next);
+                        final DataStore existing = children.putIfAbsent(real, next);
                         if (existing != null) {
                             next.close();
                             next = existing;
@@ -304,29 +302,6 @@ final class Store extends DataStore implements Aggregate, DirectoryStream.Filter
      */
     private String message(final short key, final Object value) {
         return Resources.forLocale(getLocale()).getString(key, value);
-    }
-
-    /**
-     * Returns an error message for a read-only data store.
-     */
-    private String readOnly() {
-        return Resources.forLocale(getLocale()).getString(Resources.Keys.StoreIsReadOnly);
-    }
-
-    /**
-     * Unsupported operation in current version.
-     */
-    @Override
-    public Resource add(Resource resource) throws ReadOnlyStorageException {
-        throw new ReadOnlyStorageException(readOnly());
-    }
-
-    /**
-     * Unsupported operation in current version.
-     */
-    @Override
-    public void remove(Resource resource) throws ReadOnlyStorageException {
-        throw new ReadOnlyStorageException(readOnly());
     }
 
     /**

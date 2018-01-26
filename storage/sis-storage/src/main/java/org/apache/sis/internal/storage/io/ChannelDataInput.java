@@ -36,9 +36,6 @@ import org.apache.sis.util.Debug;
 
 import static org.apache.sis.util.ArgumentChecks.ensureBetween;
 
-// Branch-dependent imports
-import org.apache.sis.internal.jdk8.JDK8;
-
 
 /**
  * Provides convenience methods for working with a ({@link ReadableByteChannel}, {@link ByteBuffer}) pair.
@@ -261,7 +258,7 @@ public class ChannelDataInput extends ChannelData {
      * @throws IOException if an error (including EOF) occurred while reading the stream.
      */
     public final byte readByte() throws IOException {
-        ensureBufferContains(Byte.SIZE / Byte.SIZE);
+        ensureBufferContains(Byte.BYTES);
         return buffer.get();
     }
 
@@ -277,7 +274,7 @@ public class ChannelDataInput extends ChannelData {
      * @throws IOException if an error (including EOF) occurred while reading the stream.
      */
     public final int readUnsignedByte() throws IOException {
-        return JDK8.toUnsignedInt(readByte());
+        return Byte.toUnsignedInt(readByte());
     }
 
     /**
@@ -289,7 +286,7 @@ public class ChannelDataInput extends ChannelData {
      * @throws IOException if an error (including EOF) occurred while reading the stream.
      */
     public final short readShort() throws IOException {
-        ensureBufferContains(Short.SIZE / Byte.SIZE);
+        ensureBufferContains(Short.BYTES);
         return buffer.getShort();
     }
 
@@ -305,7 +302,7 @@ public class ChannelDataInput extends ChannelData {
      * @throws IOException if an error (including EOF) occurred while reading the stream.
      */
     public final int readUnsignedShort() throws IOException {
-        return readShort() & 0xFFFF;
+        return Short.toUnsignedInt(readShort());
     }
 
     /**
@@ -317,7 +314,7 @@ public class ChannelDataInput extends ChannelData {
      * @throws IOException if an error (including EOF) occurred while reading the stream.
      */
     public final char readChar() throws IOException {
-        ensureBufferContains(Character.SIZE / Byte.SIZE);
+        ensureBufferContains(Character.BYTES);
         return buffer.getChar();
     }
 
@@ -330,7 +327,7 @@ public class ChannelDataInput extends ChannelData {
      * @throws IOException if an error (including EOF) occurred while reading the stream.
      */
     public final int readInt() throws IOException {
-        ensureBufferContains(Integer.SIZE / Byte.SIZE);
+        ensureBufferContains(Integer.BYTES);
         return buffer.getInt();
     }
 
@@ -346,7 +343,7 @@ public class ChannelDataInput extends ChannelData {
      * @throws IOException if an error (including EOF) occurred while reading the stream.
      */
     public final long readUnsignedInt() throws IOException {
-        return readInt() & 0xFFFFFFFFL;
+        return Integer.toUnsignedLong(readInt());
     }
 
     /**
@@ -358,7 +355,7 @@ public class ChannelDataInput extends ChannelData {
      * @throws IOException if an error (including EOF) occurred while reading the stream.
      */
     public final long readLong() throws IOException {
-        ensureBufferContains(Long.SIZE / Byte.SIZE);
+        ensureBufferContains(Long.BYTES);
         return buffer.getLong();
     }
 
@@ -371,7 +368,7 @@ public class ChannelDataInput extends ChannelData {
      * @throws IOException if an error (including EOF) occurred while reading the stream.
      */
     public final float readFloat() throws IOException {
-        ensureBufferContains(Float.SIZE / Byte.SIZE);
+        ensureBufferContains(Float.BYTES);
         return buffer.getFloat();
     }
 
@@ -384,7 +381,7 @@ public class ChannelDataInput extends ChannelData {
      * @throws IOException if an error (including EOF) occurred while reading the stream.
      */
     public final double readDouble() throws IOException {
-        ensureBufferContains(Double.SIZE / Byte.SIZE);
+        ensureBufferContains(Double.BYTES);
         return buffer.getDouble();
     }
 
@@ -845,7 +842,7 @@ public class ChannelDataInput extends ChannelData {
      */
     @Override
     public final void seek(final long position) throws IOException {
-        long p = JDK8.subtractExact(position, bufferOffset);
+        long p = Math.subtractExact(position, bufferOffset);
         if (p >= 0 && p <= buffer.limit()) {
             /*
              * Requested position is inside the current limits of the buffer.
@@ -858,7 +855,7 @@ public class ChannelDataInput extends ChannelData {
              * that StorageConnector.rewind() needs the buffer content to be
              * valid as a result of this seek, so we reload it immediately.
              */
-            ((SeekableByteChannel) channel).position(JDK8.addExact(channelOffset, position));
+            ((SeekableByteChannel) channel).position(Math.addExact(channelOffset, position));
             bufferOffset = position;
             buffer.clear().limit(0);
         } else if (p >= 0) {

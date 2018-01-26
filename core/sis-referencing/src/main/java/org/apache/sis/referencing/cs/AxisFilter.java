@@ -36,6 +36,10 @@ import javax.measure.Unit;
  * For example excluding the <var>z</var> axis of a {@linkplain DefaultCylindricalCS cylindrical} coordinate system
  * results in a {@linkplain DefaultPolarCS polar} coordinate system.</p>
  *
+ * <div class="section">Default implementation</div>
+ * All methods in this interface have a default implementation equivalent to <i>no-operation</i>.
+ * Implementors need to override only the methods for the aspects to change.
+ *
  * <div class="section">Limitations</div>
  * This interface is not for changing axis order.
  * For changing axis order in addition to axis directions or units, see {@link AxesConvention}.
@@ -51,14 +55,18 @@ import javax.measure.Unit;
 public interface AxisFilter {
     /**
      * Returns {@code true} if the given axis shall be included in the new coordinate system.
+     * The default implementation unconditionally returns {@code true}.
      *
      * @param  axis  the axis to test.
      * @return {@code true} if the given axis shall be included in the new coordinate system.
      */
-    boolean accept(CoordinateSystemAxis axis);
+    default boolean accept(CoordinateSystemAxis axis) {
+        return true;
+    }
 
     /**
      * Returns a replacement for the given axis direction.
+     * The default implementation unconditionally returns the given {@code direction} unchanged.
      *
      * <div class="note"><b>Example:</b>
      * for forcing the direction of the <var>z</var> axis toward up while leaving other axes unchanged,
@@ -81,10 +89,13 @@ public interface AxisFilter {
      *
      * @since 0.7
      */
-    AxisDirection getDirectionReplacement(CoordinateSystemAxis axis, AxisDirection direction);
+    default AxisDirection getDirectionReplacement(CoordinateSystemAxis axis, AxisDirection direction) {
+        return direction;
+    }
 
     /**
      * Returns a replacement for the given axis unit.
+     * The default implementation unconditionally returns the given {@code unit} unchanged.
      *
      * <div class="note"><b>Example:</b>
      * for replacing all angular units of a coordinate system to degrees (regardless what the original
@@ -107,5 +118,7 @@ public interface AxisFilter {
      *
      * @since 0.7
      */
-    Unit<?> getUnitReplacement(CoordinateSystemAxis axis, Unit<?> unit);
+    default Unit<?> getUnitReplacement(CoordinateSystemAxis axis, Unit<?> unit) {
+        return unit;
+    }
 }

@@ -231,11 +231,6 @@ public final class NADCON extends AbstractProvider {
         private static final String NADCON = "NADCON";
 
         /**
-         * The size of data in the binary file, in bytes.
-         */
-        private static final int DATA_SIZE = Float.SIZE / Byte.SIZE;
-
-        /**
          * Longitude and latitude of of the first value in the first record, in degrees.
          */
         private final float x0, y0;
@@ -307,7 +302,7 @@ public final class NADCON extends AbstractProvider {
                 throw unexpectedFormat();
             }
             if (ascii == null) {
-                skip((nx + 1) * DATA_SIZE - buffer.position());
+                skip((nx + 1) * Float.BYTES - buffer.position());
             }
         }
 
@@ -453,8 +448,8 @@ public final class NADCON extends AbstractProvider {
          * from the channel, but the channel will usually give us as many data as the buffer can contain.
          */
         private void fillBuffer(final FloatBuffer fb) throws IOException {
-            buffer.position(fb.position() * DATA_SIZE).limit(fb.limit() * DATA_SIZE);
-            ensureBufferContains(DATA_SIZE);    // Require at least one float, but usually get many.
+            buffer.position(fb.position() * Float.BYTES).limit(fb.limit() * Float.BYTES);
+            ensureBufferContains(Float.BYTES);  // Require at least one float, but usually get many.
             syncView(fb);
         }
 
@@ -463,10 +458,10 @@ public final class NADCON extends AbstractProvider {
          * than the underlying {@code ByteBuffer}, converted to units of {@code float} data type.
          */
         private void syncView(final FloatBuffer fb) {
-            if ((buffer.position() % DATA_SIZE) != 0) {
+            if ((buffer.position() % Float.BYTES) != 0) {
                 buffer.compact();                               // For bytes alignment with FloatBuffer.
             }
-            fb.limit(buffer.limit() / DATA_SIZE).position(buffer.position() / DATA_SIZE);
+            fb.limit(buffer.limit() / Float.BYTES).position(buffer.position() / Float.BYTES);
         }
     }
 }

@@ -87,7 +87,7 @@ public final class Copyright implements LegalConstraints, ResponsibleParty, Cita
 
     /**
      * Link to an external file containing the license text, or {@code null} if none.
-     * This field is mapped to the {@code getOnlineResources() online resources} in ISO 19115 metadata.
+     * This field is mapped to the online resources in ISO 19115 metadata.
      */
     @XmlElement(name = Tags.LICENSE)
     public URI license;
@@ -431,8 +431,7 @@ resp:   for (final DefaultResponsibility r : ((DefaultConstraints) c).getRespons
      * or an empty set if the given condition is {@code false}.
      */
     private Collection<Copyright> thisOrEmpty(final boolean condition) {
-        return condition ? Collections.<Copyright>singleton(this)
-                         : Collections.<Copyright>emptySet();
+        return condition ? Collections.singleton(this) : Collections.emptySet();
     }
 
     /**

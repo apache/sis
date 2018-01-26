@@ -290,11 +290,6 @@ public final strictfp class CoordinateSystemsTest extends TestCase {
                 }
                 return unit;
             }
-
-            @Override
-            public AxisDirection getDirectionReplacement(CoordinateSystemAxis axis, final AxisDirection direction) {
-                return direction;
-            }
         });
         assertEqualsIgnoreMetadata(targetCS, actualCS);
     }
@@ -312,16 +307,6 @@ public final strictfp class CoordinateSystemsTest extends TestCase {
             @Override
             public boolean accept(final CoordinateSystemAxis axis) {
                 return Units.isLinear(axis.getUnit());
-            }
-
-            @Override
-            public Unit<?> getUnitReplacement(CoordinateSystemAxis axis, final Unit<?> unit) {
-                return unit;
-            }
-
-            @Override
-            public AxisDirection getDirectionReplacement(CoordinateSystemAxis axis, final AxisDirection direction) {
-                return direction;
             }
         });
         assertEqualsIgnoreMetadata(targetCS, actualCS);

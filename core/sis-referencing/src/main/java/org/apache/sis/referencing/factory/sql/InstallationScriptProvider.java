@@ -366,7 +366,7 @@ public abstract class InstallationScriptProvider extends InstallationResources {
          */
         @Override
         public Set<String> getAuthorities() {
-            return (directory != null) ? super.getAuthorities() : Collections.<String>emptySet();
+            return (directory != null) ? super.getAuthorities() : Collections.emptySet();
         }
 
         /**

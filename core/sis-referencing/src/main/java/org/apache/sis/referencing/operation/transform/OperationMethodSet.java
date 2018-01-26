@@ -214,11 +214,6 @@ final class OperationMethodSet extends SetOfUnknownSize<OperationMethod> {
             public OperationMethod next() {
                 return OperationMethodSet.this.next(cursor++);
             }
-
-            @Override
-            public void remove() {
-                throw new UnsupportedOperationException();
-            }
         };
     }
 

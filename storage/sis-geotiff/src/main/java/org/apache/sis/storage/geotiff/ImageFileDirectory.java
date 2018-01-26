@@ -43,9 +43,6 @@ import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.math.Vector;
 import org.apache.sis.measure.Units;
 
-// Branch-dependent imports
-import org.apache.sis.internal.jdk8.JDK8;
-
 
 /**
  * An Image File Directory (FID) in a TIFF image.
@@ -712,7 +709,7 @@ final class ImageFileDirectory {
                 switch (values.length) {
                     case 0:  break;
                     case 1:  asciiGeoParameters = values[0]; break;
-                    default: asciiGeoParameters = JDK8.join("\u0000", values).concat("\u0000"); break;
+                    default: asciiGeoParameters = String.join("\u0000", values).concat("\u0000"); break;
                 }
                 break;
             }
@@ -995,7 +992,7 @@ final class ImageFileDirectory {
      * @throws ArithmeticException if the result overflows.
      */
     private long pixelToByteCount(long value) {
-        value = JDK8.multiplyExact(value, samplesPerPixel * (int) bitsPerSample);
+        value = Math.multiplyExact(value, samplesPerPixel * (int) bitsPerSample);
         return (value % Byte.SIZE == 0) ? value / Byte.SIZE : -1;
     }
 
@@ -1017,7 +1014,7 @@ final class ImageFileDirectory {
                 // At this point, we verified that all vector values are equal.
                 final long length = pixelToByteCount(knownSize);
                 if (count % length != 0) break;
-                return JDK8.toIntExact(count / length);
+                return Math.toIntExact(count / length);
             } while (tileByteCounts.longValue(i) == n);
         }
         return -1;
@@ -1043,8 +1040,8 @@ final class ImageFileDirectory {
         final short offsetsTag, byteCountsTag;
         switch (tileTagFamily) {
             case STRIP: {
-                if (tileWidth  < 0) tileWidth  = JDK8.toIntExact(imageWidth);
-                if (tileHeight < 0) tileHeight = JDK8.toIntExact(imageHeight);
+                if (tileWidth  < 0) tileWidth  = Math.toIntExact(imageWidth);
+                if (tileHeight < 0) tileHeight = Math.toIntExact(imageHeight);
                 offsetsTag    = Tags.StripOffsets;
                 byteCountsTag = Tags.StripByteCounts;
                 break;
@@ -1118,7 +1115,7 @@ final class ImageFileDirectory {
                 break;
             }
             case 0b0100: {          // Compute missing tile byte count.
-                final long tileByteCount = pixelToByteCount(JDK8.multiplyExact(tileWidth, tileHeight));
+                final long tileByteCount = pixelToByteCount(Math.multiplyExact(tileWidth, tileHeight));
                 final long[] tileByteCountArray = new long[tileOffsets.size()];
                 Arrays.fill(tileByteCountArray, tileByteCount);
                 tileByteCounts = Vector.create(tileByteCountArray, true);
@@ -1141,11 +1138,11 @@ final class ImageFileDirectory {
          * one documented in the TIFF specification and reproduced in tileWidth & tileHeight fields javadoc.
          */
         ensureSameLength(offsetsTag, byteCountsTag, tileOffsets.size(), tileByteCounts.size());
-        long expectedCount = JDK8.multiplyExact(
-                JDK8.addExact(imageWidth,  tileWidth  - 1) / tileWidth,
-                JDK8.addExact(imageHeight, tileHeight - 1) / tileHeight);
+        long expectedCount = Math.multiplyExact(
+                Math.addExact(imageWidth,  tileWidth  - 1) / tileWidth,
+                Math.addExact(imageHeight, tileHeight - 1) / tileHeight);
         if (isPlanar) {
-            expectedCount = JDK8.multiplyExact(expectedCount, samplesPerPixel);
+            expectedCount = Math.multiplyExact(expectedCount, samplesPerPixel);
         }
         final int actualCount = Math.min(tileOffsets.size(), tileByteCounts.size());
         if (actualCount != expectedCount) {

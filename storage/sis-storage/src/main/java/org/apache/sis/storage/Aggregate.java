@@ -19,6 +19,7 @@ package org.apache.sis.storage;
 import java.util.Collection;
 import org.opengis.metadata.Metadata;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.apache.sis.internal.storage.Resources;
 
 
 /**
@@ -108,12 +109,16 @@ public interface Aggregate extends Resource {
      * then this {@code Aggregate} may throw an exception.
      * </div>
      *
+     * <p>The default implementation throws {@link ReadOnlyStorageException}.</p>
+     *
      * @param  resource  the resource to copy in this {@code Aggregate}.
      * @return the effectively added resource. May be {@code resource} itself if it has been added verbatim.
      * @throws ReadOnlyStorageException if this instance does not support write operations.
      * @throws DataStoreException if the given resource can not be stored in this {@code Aggregate} for another reason.
      */
-    Resource add(Resource resource) throws ReadOnlyStorageException, DataStoreException;
+    default Resource add(Resource resource) throws ReadOnlyStorageException, DataStoreException {
+        throw new ReadOnlyStorageException(this, Resources.Keys.StoreIsReadOnly);
+    }
 
     /**
      * Removes a {@code Resource} from this {@code Aggregate}.
@@ -125,5 +130,7 @@ public interface Aggregate extends Resource {
      * @throws ReadOnlyStorageException if this instance does not support write operations.
      * @throws DataStoreException if the given resource could not be removed for another reason.
      */
-    void remove(Resource resource) throws ReadOnlyStorageException, DataStoreException;
+    default void remove(Resource resource) throws ReadOnlyStorageException, DataStoreException {
+        throw new ReadOnlyStorageException(this, Resources.Keys.StoreIsReadOnly);
+    }
 }

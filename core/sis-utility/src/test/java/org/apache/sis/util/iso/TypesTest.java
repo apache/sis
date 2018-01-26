@@ -51,8 +51,8 @@ public final strictfp class TypesTest extends TestCase {
      */
     @Test
     public void testToInternationalString() {
-        testToInternationalString(new HashMap<String,Object>());
-        testToInternationalString(new TreeMap<String,Object>());
+        testToInternationalString(new HashMap<>());
+        testToInternationalString(new TreeMap<>());
     }
 
     /**

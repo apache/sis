@@ -29,9 +29,6 @@ import static java.lang.Math.abs;
 import static java.lang.Math.sqrt;
 import static java.lang.Math.ulp;
 
-// Branch-dependent imports
-import org.apache.sis.internal.jdk8.JDK8;
-
 
 /**
  * Equation of a plane in a three-dimensional space (<var>x</var>,<var>y</var>,<var>z</var>).
@@ -322,7 +319,7 @@ public class Plane implements Cloneable, Serializable {
         ArgumentChecks.ensureStrictlyPositive("nx", nx);
         ArgumentChecks.ensureStrictlyPositive("ny", ny);
         ArgumentChecks.ensureNonNull("z", z);
-        final int length = JDK8.multiplyExact(nx, ny);
+        final int length = Math.multiplyExact(nx, ny);
         if (z.size() != length) {
             throw new IllegalArgumentException(Errors.format(Errors.Keys.UnexpectedArrayLength_2, length, z.size()));
         }

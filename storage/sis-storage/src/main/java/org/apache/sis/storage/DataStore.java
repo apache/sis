@@ -283,7 +283,7 @@ public abstract class DataStore implements Resource, Localized, AutoCloseable {
      */
     public Resource findResource(final String identifier) throws DataStoreException {
         ArgumentChecks.ensureNonEmpty("identifier", identifier);
-        final Resource resource = findResource(identifier, this, new IdentityHashMap<Resource,Boolean>());
+        final Resource resource = findResource(identifier, this, new IdentityHashMap<>());
         if (resource != null) {
             return resource;
         }

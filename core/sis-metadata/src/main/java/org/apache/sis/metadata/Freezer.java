@@ -146,8 +146,7 @@ final class Freezer extends Cloner {
          *          by their unmodifiable variant. The keys are assumed already immutable.
          */
         if (object instanceof Map<?,?>) {
-            @SuppressWarnings("unchecked")
-            final Map<Object,Object> map = new LinkedHashMap<>((Map) object);
+            final Map<Object,Object> map = new LinkedHashMap<>((Map<?,?>) object);
             for (final Map.Entry<Object,Object> entry : map.entrySet()) {
                 entry.setValue(clone(entry.getValue()));
             }

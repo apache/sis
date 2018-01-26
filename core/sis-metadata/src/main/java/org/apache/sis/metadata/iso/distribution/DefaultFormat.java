@@ -17,6 +17,7 @@
 package org.apache.sis.metadata.iso.distribution;
 
 import java.util.Collection;
+import java.util.function.BiConsumer;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -32,7 +33,6 @@ import org.apache.sis.metadata.iso.citation.DefaultCitation;
 import org.apache.sis.metadata.iso.ISOMetadata;
 
 // Branch-dependent imports
-import org.apache.sis.internal.jdk8.BiConsumer;
 import static org.opengis.annotation.Obligation.OPTIONAL;
 import static org.opengis.annotation.Obligation.MANDATORY;
 import static org.opengis.annotation.Specification.ISO_19115;
@@ -259,11 +259,7 @@ public class DefaultFormat extends ISOMetadata implements Format {
     @Deprecated
     public void setSpecification(final InternationalString newValue) {
         checkWritePermission();
-        setFormatSpecificationCitation(new BiConsumer<DefaultCitation,InternationalString>() {
-            @Override public void accept(DefaultCitation citation, InternationalString value) {
-                citation.setTitle(value);
-            }
-        }, newValue);
+        setFormatSpecificationCitation((citation, value) -> citation.setTitle(value), newValue);
     }
 
     /**
@@ -300,11 +296,8 @@ public class DefaultFormat extends ISOMetadata implements Format {
     @Deprecated
     public void setName(final InternationalString newValue) {
         checkWritePermission();
-        setFormatSpecificationCitation(new BiConsumer<DefaultCitation,InternationalString>() {
-            @Override public void accept(DefaultCitation citation, InternationalString value) {
-                citation.setAlternateTitles(LegacyPropertyAdapter.asCollection(value));
-            }
-        }, newValue);
+        setFormatSpecificationCitation((citation, value) ->
+                citation.setAlternateTitles(LegacyPropertyAdapter.asCollection(value)), newValue);
     }
 
     /**
@@ -337,11 +330,7 @@ public class DefaultFormat extends ISOMetadata implements Format {
     @Deprecated
     public void setVersion(final InternationalString newValue) {
         checkWritePermission();
-        setFormatSpecificationCitation(new BiConsumer<DefaultCitation,InternationalString>() {
-            @Override public void accept(DefaultCitation citation, InternationalString value) {
-                citation.setEdition(value);
-            }
-        }, newValue);
+        setFormatSpecificationCitation((citation, value) -> citation.setEdition(value), newValue);
     }
 
     /**

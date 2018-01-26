@@ -32,9 +32,6 @@ import java.nio.DoubleBuffer;
 import org.apache.sis.internal.raster.Resources;
 import org.apache.sis.util.ArgumentChecks;
 
-// Branch-dependent imports
-import org.apache.sis.internal.jdk8.JDK8;
-
 
 /**
  * Default iterator used when no specialized implementation is available.
@@ -92,7 +89,7 @@ final class DefaultIterator extends WritablePixelIterator {
         currentLowerX = lowerX;
         currentUpperX = upperX;
         currentUpperY = upperY;
-        x = JDK8.decrementExact(lowerX);        // Set the position before first pixel.
+        x = Math.decrementExact(lowerX);        // Set the position before first pixel.
         y = lowerY;
     }
 
@@ -107,12 +104,12 @@ final class DefaultIterator extends WritablePixelIterator {
      */
     DefaultIterator(final RenderedImage input, final WritableRenderedImage output, final Rectangle subArea, final Dimension window) {
         super(input, output, subArea, window);
-        tileX = JDK8.decrementExact(tileLowerX);
+        tileX = Math.decrementExact(tileLowerX);
         tileY = tileLowerY;
         currentLowerX = lowerX;
         currentUpperX = lowerX;                 // Really 'lower', so the position is the tile before the first tile.
         currentUpperY = lowerY;
-        x = JDK8.decrementExact(lowerX);        // Set the position before first pixel.
+        x = Math.decrementExact(lowerX);        // Set the position before first pixel.
         y = lowerY;
     }
 
@@ -171,8 +168,8 @@ final class DefaultIterator extends WritablePixelIterator {
             throw new IndexOutOfBoundsException(Resources.format(Resources.Keys.CoordinateOutsideDomain_2, px, py));
         }
         if (image != null) {
-            final int tx = JDK8.floorDiv(px - tileGridXOffset, tileWidth);
-            final int ty = JDK8.floorDiv(py - tileGridYOffset, tileHeight);
+            final int tx = Math.floorDiv(px - tileGridXOffset, tileWidth);
+            final int ty = Math.floorDiv(py - tileGridYOffset, tileHeight);
             if (tx != tileX || ty != tileY) {
                 close();                                    // Release current writable raster, if any.
                 tileX = tx;
@@ -197,7 +194,7 @@ final class DefaultIterator extends WritablePixelIterator {
             if (++y >= currentUpperY) {                     // Strict equality (==) would work, but use >= as a safety.
                 close();                                    // Release current writable raster, if any.
                 if (++tileX >= tileUpperX) {                // Strict equality (==) would work, but use >= as a safety.
-                    tileY = JDK8.incrementExact(tileY);     // 'incrementExact' because 'tileY > tileUpperY' is allowed.
+                    tileY = Math.incrementExact(tileY);     // 'incrementExact' because 'tileY > tileUpperY' is allowed.
                     if (tileY >= tileUpperY) {
                         /*
                          * Paranoiac safety: keep the x, y and tileX values before their maximal values

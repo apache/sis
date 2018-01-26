@@ -24,9 +24,9 @@ import org.apache.sis.util.ObjectConverters;
 import org.apache.sis.util.collection.BackingStoreException;
 
 // Branch-dependent imports
-import org.apache.sis.internal.jdk8.Spliterator;
-import org.apache.sis.internal.jdk8.Consumer;
-import org.apache.sis.internal.jdk8.DateTimeException;
+import java.util.Spliterator;
+import java.util.function.Consumer;
+import java.time.DateTimeException;
 import org.apache.sis.feature.AbstractFeature;
 import org.apache.sis.feature.AbstractIdentifiedType;
 import org.apache.sis.feature.DefaultAttributeType;

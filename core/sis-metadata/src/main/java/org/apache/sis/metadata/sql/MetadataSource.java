@@ -71,7 +71,6 @@ import org.apache.sis.util.Classes;
 import org.apache.sis.util.iso.Types;
 
 // Branch-dependent imports
-import org.apache.sis.internal.jdk8.JDK8;
 import org.apache.sis.internal.geoapi.evolution.Interim;
 
 
@@ -371,11 +370,7 @@ public class MetadataSource implements AutoCloseable {
         this.tableColumns = new HashMap<>();
         this.pool         = new WeakValueHashMap<>(CacheKey.class);
         this.listeners    = new WarningListeners<>(this);
-        this.lastUsed     = new ThreadLocal<LookupInfo>() {
-            @Override protected LookupInfo initialValue() {
-                return new LookupInfo();
-            }
-        };
+        this.lastUsed     = ThreadLocal.withInitial(LookupInfo::new);
     }
 
     /**
@@ -918,7 +913,7 @@ public class MetadataSource implements AutoCloseable {
                  * Note that the usage of 'result' must stay inside this synchronized block
                  * because we can not assume that JDBC connections are thread-safe.
                  */
-                CachedStatement result = take(type, JDK8.toUnsignedInt(toSearch.preferredIndex));
+                CachedStatement result = take(type, Byte.toUnsignedInt(toSearch.preferredIndex));
                 if (result == null) {
                     final SQLBuilder helper = helper();
                     final String query = helper.clear().append("SELECT * FROM ")
@@ -933,7 +928,7 @@ public class MetadataSource implements AutoCloseable {
                     value = array.getArray();
                     array.free();
                 }
-                toSearch.preferredIndex = (byte) recycle(result, JDK8.toUnsignedInt(toSearch.preferredIndex));
+                toSearch.preferredIndex = (byte) recycle(result, Byte.toUnsignedInt(toSearch.preferredIndex));
             }
         }
         /*
@@ -1011,7 +1006,7 @@ public class MetadataSource implements AutoCloseable {
         }
         final Set<E> enumeration;
         if (CodeList.class.isAssignableFrom(elementType)) {
-            enumeration = new CodeListSet((Class) elementType);
+            enumeration = new CodeListSet<>((Class) elementType);
         } else if (Enum.class.isAssignableFrom(elementType)) {
             enumeration = EnumSet.noneOf((Class) elementType);
         } else {
@@ -1022,7 +1017,7 @@ public class MetadataSource implements AutoCloseable {
             if (Set.class.isAssignableFrom(returnType)) {
                 if (SortedSet.class.isAssignableFrom(returnType)) {
                     if (collection.isEmpty()) {
-                        collection = CollectionsExt.emptySortedSet();
+                        collection = Collections.emptySortedSet();
                     } else {
                         collection = Collections.unmodifiableSortedSet(new TreeSet<>(collection));
                     }

@@ -52,7 +52,6 @@ import org.apache.sis.util.iso.SimpleInternationalString;
 import org.apache.sis.util.iso.Types;
 
 // Branch-dependent imports
-import org.apache.sis.internal.jdk8.Instant;
 import org.apache.sis.metadata.iso.citation.DefaultCitation;
 import org.apache.sis.metadata.iso.identification.AbstractIdentification;
 import org.opengis.metadata.citation.ResponsibleParty;
@@ -310,7 +309,7 @@ public final class Metadata extends SimpleMetadata {
     @Override
     public Collection<Keywords> getDescriptiveKeywords() {
         if (keywords != null) {
-            return Collections.<Keywords>singleton(new DefaultKeywords(keywords.toArray(new String[keywords.size()])));
+            return Collections.singleton(new DefaultKeywords(keywords.toArray(new String[keywords.size()])));
         }
         return super.getDescriptiveKeywords();
     }
@@ -326,9 +325,9 @@ public final class Metadata extends SimpleMetadata {
         if (creator != null) {
             final Person p = new Person(creator);
             return (author != null) ? UnmodifiableArrayList.wrap(new ResponsibleParty[] {p, author})
-                                    : Collections.<ResponsibleParty>singletonList(author);
+                                    : Collections.singletonList(author);
         }
-        return (author != null) ? Collections.<ResponsibleParty>singletonList(author) : super.getPointOfContacts();
+        return (author != null) ? Collections.singletonList(author) : super.getPointOfContacts();
     }
 
     /**
@@ -339,7 +338,7 @@ public final class Metadata extends SimpleMetadata {
      */
     @Override
     public Collection<Constraints> getResourceConstraints() {
-        return (copyright != null) ? Collections.<Constraints>singleton(copyright) : super.getResourceConstraints();
+        return (copyright != null) ? Collections.singleton(copyright) : super.getResourceConstraints();
     }
 
     /**
@@ -350,7 +349,7 @@ public final class Metadata extends SimpleMetadata {
      */
     @Override
     public Collection<Extent> getExtents() {
-        return (bounds != null) ? Collections.<Extent>singleton(bounds) : super.getExtents();
+        return (bounds != null) ? Collections.singleton(bounds) : super.getExtents();
     }
 
     /**
@@ -361,7 +360,7 @@ public final class Metadata extends SimpleMetadata {
      */
     @Override
     public Collection<ReferenceSystem> getReferenceSystemInfo() {
-        return Collections.<ReferenceSystem>singletonList(CommonCRS.WGS84.geographic());
+        return Collections.singletonList(CommonCRS.WGS84.geographic());
     }
 
     /**
@@ -373,7 +372,7 @@ public final class Metadata extends SimpleMetadata {
     @Override
     public Collection<CitationDate> getDates() {
         if (time != null) {
-            return Collections.<CitationDate>singleton(new DefaultCitationDate(time, DateType.CREATION));
+            return Collections.singleton(new DefaultCitationDate(time, DateType.CREATION));
         }
         return super.getDates();
     }
@@ -466,7 +465,7 @@ public final class Metadata extends SimpleMetadata {
         append(table, "Author",      author);
         append(table, "Copyright",   copyright);
         append(table, "Link(s)",     links, System.lineSeparator());
-        append(table, "Time",        Instant.create(time));
+        append(table, "Time",        (time != null) ? time.toInstant() : null);
         append(table, "Keywords",    keywords, " ");
         append(table, "Bounds",      bounds);
         table.appendHorizontalSeparator();

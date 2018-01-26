@@ -38,9 +38,6 @@ import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.Version;
 import ucar.nc2.constants.CDM;
 
-// Branch-dependent imports
-import org.apache.sis.storage.ReadOnlyStorageException;
-
 
 /**
  * A data store backed by netCDF files.
@@ -172,27 +169,11 @@ public class NetcdfStore extends DataStore implements Aggregate {
     @SuppressWarnings("ReturnOfCollectionOrArrayField")
     public synchronized Collection<Resource> components() throws DataStoreException {
         if (components == null) try {
-            components = UnmodifiableArrayList.<Resource>wrap(decoder.getDiscreteSampling());
+            components = UnmodifiableArrayList.wrap(decoder.getDiscreteSampling());
         } catch (IOException e) {
             throw new DataStoreException(e);
         }
         return components;
-    }
-
-    /**
-     * Unsupported operation in current version.
-     */
-    @Override
-    public Resource add(Resource resource) throws ReadOnlyStorageException {
-        throw new ReadOnlyStorageException();
-    }
-
-    /**
-     * Unsupported operation in current version.
-     */
-    @Override
-    public void remove(Resource resource) throws ReadOnlyStorageException {
-        throw new ReadOnlyStorageException();
     }
 
     /**

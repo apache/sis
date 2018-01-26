@@ -231,7 +231,7 @@ public abstract class AbstractParameterDescriptor extends AbstractIdentifiedObje
      */
     @Override
     public int getMinimumOccurs() {
-        return minimumOccurs & 0xFFFF;
+        return Short.toUnsignedInt(minimumOccurs);
     }
 
     /**
@@ -242,7 +242,7 @@ public abstract class AbstractParameterDescriptor extends AbstractIdentifiedObje
      */
     @Override
     public int getMaximumOccurs() {
-        return (maximumOccurs != -1) ? (maximumOccurs & 0xFFFF) : Integer.MAX_VALUE;
+        return (maximumOccurs != -1) ? Short.toUnsignedInt(maximumOccurs) : Integer.MAX_VALUE;
     }
 
     /**

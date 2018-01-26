@@ -59,9 +59,6 @@ import org.apache.sis.internal.util.Utilities;
 import org.apache.sis.io.InvalidSeekException;
 import org.apache.sis.setup.OptionKey;
 
-// Branch-dependent imports
-import org.apache.sis.internal.jdk8.JDK8;
-
 
 /**
  * Information for creating a connection to a {@link DataStore} in read and/or write mode.
@@ -152,6 +149,7 @@ public class StorageConnector implements Serializable {
      *
      * @param  <T>  the type of input created by this {@code Opener} instance.
      */
+    @FunctionalInterface
     private interface Opener<T> {
         /**
          * Invoked when first needed for creating an input of the requested type.
@@ -173,18 +171,15 @@ public class StorageConnector implements Serializable {
      */
     private static final Map<Class<?>, Opener<?>> OPENERS = new IdentityHashMap<>(13);
     static {
-        /*
-         * NOTE: JDK8 branch uses lambda expressions.
-         */
-        add(String.class,           new Opener<String>()           {@Override public String           open(StorageConnector c)                  {return c.createString();}});
-        add(ByteBuffer.class,       new Opener<ByteBuffer>()       {@Override public ByteBuffer       open(StorageConnector c) throws Exception {return c.createByteBuffer();}});
-        add(DataInput.class,        new Opener<DataInput>()        {@Override public DataInput        open(StorageConnector c) throws Exception {return c.createDataInput();}});
-        add(ImageInputStream.class, new Opener<ImageInputStream>() {@Override public ImageInputStream open(StorageConnector c) throws Exception {return c.createImageInputStream();}});
-        add(InputStream.class,      new Opener<InputStream>()      {@Override public InputStream      open(StorageConnector c) throws Exception {return c.createInputStream();}});
-        add(Reader.class,           new Opener<Reader>()           {@Override public Reader           open(StorageConnector c) throws Exception {return c.createReader();}});
-        add(Connection.class,       new Opener<Connection>()       {@Override public Connection       open(StorageConnector c) throws Exception {return c.createConnection();}});
-        add(ChannelDataInput.class, new Opener<ChannelDataInput>() {@Override public ChannelDataInput open(StorageConnector c) throws Exception {return c.createChannelDataInput(false);}});
-        add(ChannelFactory.class,   new Opener<ChannelFactory>()   {@Override public ChannelFactory   open(StorageConnector c)                  {return null;}});
+        add(String.class,           StorageConnector::createString);
+        add(ByteBuffer.class,       StorageConnector::createByteBuffer);
+        add(DataInput.class,        StorageConnector::createDataInput);
+        add(ImageInputStream.class, StorageConnector::createImageInputStream);
+        add(InputStream.class,      StorageConnector::createInputStream);
+        add(Reader.class,           StorageConnector::createReader);
+        add(Connection.class,       StorageConnector::createConnection);
+        add(ChannelDataInput.class, (s) -> s.createChannelDataInput(false));    // Undocumented case (SIS internal)
+        add(ChannelFactory.class,   (s) -> null);                               // Undocumented. Shall not cache.
         /*
          * ChannelFactory may have been created as a side effect of creating a ReadableByteChannel.
          * Caller should have asked for another type (e.g. InputStream) before to ask for that type.
@@ -1082,7 +1077,7 @@ public class StorageConnector implements Serializable {
                     final ByteBuffer buffer = (ByteBuffer) c.view;
                     final int p = buffer.limit();
                     final long mark = input.getStreamPosition();
-                    input.seek(JDK8.addExact(mark, p));
+                    input.seek(Math.addExact(mark, p));
                     final int n = input.read(buffer.array(), p, buffer.capacity() - p);
                     input.seek(mark);
                     if (n > 0) {
@@ -1289,7 +1284,7 @@ public class StorageConnector implements Serializable {
             Object v = c.view;
             if (v != view) {
                 if (v instanceof AutoCloseable) {
-                    JDK8.putIfAbsent(toClose, (AutoCloseable) v, Boolean.TRUE);     // Mark 'v' as needing to be closed.
+                    toClose.putIfAbsent((AutoCloseable) v, Boolean.TRUE);       // Mark 'v' as needing to be closed.
                 }
             } else {
                 /*

@@ -32,8 +32,7 @@ import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.iso.Types;
 
 // Branch-dependent imports
-import org.apache.sis.internal.jdk8.JDK8;
-import org.apache.sis.internal.jdk8.Function;
+import java.util.function.Function;
 import org.apache.sis.metadata.iso.citation.AbstractParty;
 
 
@@ -214,11 +213,7 @@ public class ModifiableLocationType extends AbstractLocationType {      // Not S
      */
     @Override
     public InternationalString getTheme() {
-        return (theme != null) ? theme : inherit(new Function<ModifiableLocationType, InternationalString>() {
-            @Override public InternationalString apply(final ModifiableLocationType type) {
-                return type.getTheme();
-            }
-        });
+        return (theme != null) ? theme : inherit(ModifiableLocationType::getTheme);
     }
 
     /**
@@ -258,11 +253,8 @@ public class ModifiableLocationType extends AbstractLocationType {      // Not S
      */
     @Override
     public Collection<InternationalString> getIdentifications() {
-        return identifications.isEmpty() ? inherit(new Function<ModifiableLocationType, Collection<InternationalString>>() {
-            @Override public Collection<InternationalString> apply(final ModifiableLocationType type) {
-                return type.getIdentifications();
-            }
-        }) : Collections.unmodifiableCollection(identifications.values());
+        return identifications.isEmpty() ? inherit(ModifiableLocationType::getIdentifications)
+                : Collections.unmodifiableCollection(identifications.values());
     }
 
     /**
@@ -277,7 +269,7 @@ public class ModifiableLocationType extends AbstractLocationType {      // Not S
     public void addIdentification(final CharSequence value) {
         ArgumentChecks.ensureNonNull("value", value);
         final String key = value.toString();
-        if (JDK8.putIfAbsent(identifications, key, Types.toInternationalString(value)) != null) {
+        if (identifications.putIfAbsent(key, Types.toInternationalString(value)) != null) {
             throw new IllegalArgumentException(Errors.format(Errors.Keys.ElementAlreadyPresent_1, key));
         }
     }
@@ -306,11 +298,7 @@ public class ModifiableLocationType extends AbstractLocationType {      // Not S
      */
     @Override
     public InternationalString getDefinition() {
-        return (definition != null) ? definition : inherit(new Function<ModifiableLocationType, InternationalString>() {
-            @Override public InternationalString apply(final ModifiableLocationType type) {
-                return type.getDefinition();
-            }
-        });
+        return (definition != null) ? definition : inherit(ModifiableLocationType::getDefinition);
     }
 
     /**
@@ -334,11 +322,7 @@ public class ModifiableLocationType extends AbstractLocationType {      // Not S
      */
     @Override
     public GeographicExtent getTerritoryOfUse() {
-        return (territoryOfUse != null) ? territoryOfUse : inherit(new Function<ModifiableLocationType, GeographicExtent>() {
-            @Override public GeographicExtent apply(final ModifiableLocationType type) {
-                return type.getTerritoryOfUse();
-            }
-        });
+        return (territoryOfUse != null) ? territoryOfUse : inherit(ModifiableLocationType::getTerritoryOfUse);
     }
 
     /**
@@ -382,11 +366,7 @@ public class ModifiableLocationType extends AbstractLocationType {      // Not S
      */
     @Override
     public AbstractParty getOwner() {
-        return (owner != null) ? owner : inherit(new Function<ModifiableLocationType, AbstractParty>() {
-            @Override public AbstractParty apply(final ModifiableLocationType type) {
-                return type.getOwner();
-            }
-        });
+        return (owner != null) ? owner : inherit(ModifiableLocationType::getOwner);
     }
 
     /**
@@ -456,11 +436,11 @@ public class ModifiableLocationType extends AbstractLocationType {      // Not S
     public void addParent(final ModifiableLocationType parent) {
         ArgumentChecks.ensureNonNull("parent", parent);
         final String parentName = parent.name.toString();
-        if (JDK8.putIfAbsent(parents, parentName, parent) != null) {
+        if (parents.putIfAbsent(parentName, parent) != null) {
             throw new IllegalStateException(Resources.format(Resources.Keys.ParentAlreadyExists_1, parentName));
         }
         final String childName = name.toString();
-        if (JDK8.putIfAbsent(parent.children, childName, this) != null) {
+        if (parent.children.putIfAbsent(childName, this) != null) {
             if (parents.remove(parentName) != parent) {
                 throw new ConcurrentModificationException();                    // Paranoiac check.
             }

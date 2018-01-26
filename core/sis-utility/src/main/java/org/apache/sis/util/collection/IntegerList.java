@@ -20,11 +20,20 @@ import java.util.Arrays;
 import java.util.AbstractList;
 import java.util.RandomAccess;
 import java.util.NoSuchElementException;
+import java.util.ConcurrentModificationException;
 import java.io.IOException;
 import java.io.Serializable;
 import java.io.ObjectOutputStream;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.ArgumentChecks;
+
+// Branch-dependent imports
+import java.util.Spliterator;
+import java.util.PrimitiveIterator;
+import java.util.function.Consumer;
+import java.util.function.IntConsumer;
+import java.util.stream.IntStream;
+import java.util.stream.StreamSupport;
 
 
 /**
@@ -432,6 +441,218 @@ public class IntegerList extends AbstractList<Integer> implements RandomAccess, 
             }
         }
         return count;
+    }
+
+    /**
+     * Returns an iterator over the elements in this list in increasing index order.
+     * The iterator is <cite>fail-fast</cite> and supports the remove operation.
+     *
+     * @return iterator over the integer values in this list.
+     *
+     * @since 0.8-jdk8
+     */
+    @Override
+    public PrimitiveIterator.OfInt iterator() {
+        return new PrimitiveSpliterator();
+    }
+
+    /**
+     * Returns an spliterator over the elements in this list in increasing index order.
+     * The iterator is <cite>fail-fast</cite>.
+     *
+     * @return spliterator over the integer values in this list.
+     *
+     * @since 0.8-jdk8
+     */
+    @Override
+    public Spliterator.OfInt spliterator() {
+        return new PrimitiveSpliterator();
+    }
+
+    /**
+     * Returns a stream of integers with this {@code IntegerList} as its source.
+     * This method is similar to {@link #stream()}, but does not box the values.
+     * The returned stream is <cite>fail-fast</cite>, meaning that any modification to the list
+     * while using the stream will cause a {@link ConcurrentModificationException} to be thrown.
+     *
+     * <p>The default implementation creates a parallel or sequential stream from {@link #spliterator()}.</p>
+     *
+     * @param parallel  {@code true} for a parallel stream, or {@code false} for a sequential stream.
+     * @return a stream of values in this list as primitive types.
+     *
+     * @since 0.8-jdk8
+     */
+    public IntStream stream(boolean parallel) {
+        return StreamSupport.intStream(spliterator(), parallel);
+    }
+
+    /**
+     * Same as {@link #spliterator()}, but without value boxing.
+     * This spliterator provides a fail-fast way to traverse list content, which means
+     * that any alteration to the list content causes a failure of the advance operation
+     * with a {@link ConcurrentModificationException}.
+     *
+     * <p>This implementation opportunistically provides an iterator implementation on
+     * integer values too, but only one of the {@code Iterator} or {@code Spliterator}
+     * API should be used on a given instance.</p>
+     */
+    private final class PrimitiveSpliterator implements Spliterator.OfInt, PrimitiveIterator.OfInt {
+        /**
+         * Index after the last element returned by this spliterator. This is initially {@link IntegerList#size},
+         * but may be set to a smaller value by call to {@link #trySplit()}.
+         */
+        private int stopAt;
+
+        /**
+         * Index of the next element to be returned.
+         */
+        private int nextIndex;
+
+        /**
+         * The {@link IntegerList#modCount} value as iterator construction time.
+         * Used for detecting modification in the backing list during traversal.
+         */
+        private int expectedModCount;
+
+        /**
+         * Index of the last elements removed by a {@link #remove()} operation.
+         * This is used for checking that {@code remove()} is not invoked twice
+         * before the next advance.
+         */
+        private int lastRemove;
+
+        /**
+         * Creates a new iterator for the whole content of the backing list.
+         */
+        PrimitiveSpliterator() {
+            expectedModCount = modCount;
+            stopAt           = size;
+        }
+
+        /**
+         * Creates the prefix spliterator in a call to {@link #trySplit()}.
+         *
+         * @param  suffix   the spliterator which will continue iteration after this spliterator.
+         * @param  startAt  index of the first element to be returned by this prefix spliterator.
+         */
+        private PrimitiveSpliterator(final PrimitiveSpliterator suffix, final int startAt) {
+            expectedModCount = suffix.expectedModCount;
+            stopAt           = suffix.nextIndex;
+            nextIndex        = startAt;
+        }
+
+        /**
+         * Declares that this split iterator does not return null elements, that all elements are
+         * traversed in a fixed order (which is increasing index values) and that {@link #size()}
+         * represents an exact count of elements.
+         */
+        @Override
+        public int characteristics() {
+            return NONNULL | ORDERED | SIZED | SUBSIZED;
+        }
+
+        /**
+         * Returns the exact number of values to be encountered by a {@code forEachRemaining(…)} traversal.
+         */
+        @Override
+        public long estimateSize() {
+            return stopAt - nextIndex;
+        }
+
+        /**
+         * @todo for now, we keep it simple and forbid parallelism. In the future,
+         *       we could use an approach as the one in java standard array lists.
+         */
+        @Override
+        public Spliterator.OfInt trySplit() {
+            final int startAt = nextIndex;
+            final int halfSize = (stopAt - startAt) >>> 1;
+            if (halfSize > 1) {
+                nextIndex += halfSize;
+                return new PrimitiveSpliterator(this, startAt);
+            }
+            return null;
+        }
+
+        /**
+         * Returns {@code true} if there is one more value to return. This method
+         * also ensures that no alteration has happened on the backing list since
+         * the spliterator creation.
+         */
+        @Override
+        public boolean hasNext() {
+            if (modCount == expectedModCount) {
+                return nextIndex < stopAt;
+            } else {
+                throw new ConcurrentModificationException();
+            }
+        }
+
+        /**
+         * Returns the next integer values in iterator order.
+         */
+        @Override
+        public int nextInt() {
+            if (hasNext()) {
+                return getUnchecked(nextIndex++);
+            } else {
+                throw new NoSuchElementException();
+            }
+        }
+
+        /**
+         * If a remaining element exists, performs the given action on it and returns {@code true}.
+         * Otherwise returns {@code false}.
+         */
+        @Override
+        public boolean tryAdvance(IntConsumer action) {
+            final boolean canAdvance = hasNext();
+            if (canAdvance) {
+                action.accept(getUnchecked(nextIndex++));
+            }
+            return canAdvance;
+        }
+
+        /**
+         * Performs the given action on all remaining elements. This implementation
+         * is shared by both {@code Iterator} and {@code Spliterator} interfaces.
+         */
+        @Override
+        public void forEachRemaining(final IntConsumer action) {
+            while (hasNext()) {
+                action.accept(getUnchecked(nextIndex++));
+            }
+        }
+
+        /**
+         * Performs the given action on all remaining elements. This implementation
+         * is shared by both {@code Iterator} and {@code Spliterator} interfaces.
+         */
+        @Override
+        public void forEachRemaining(final Consumer<? super Integer> action) {
+            if (action instanceof IntConsumer) {
+                forEachRemaining((IntConsumer) action);
+            } else while (hasNext()) {
+                action.accept(getUnchecked(nextIndex++));
+            }
+        }
+
+        /**
+         * Removes the last element returned by {@link #nextInt()}.
+         */
+        @Override
+        public void remove() {
+            if (nextIndex < lastRemove || nextIndex > stopAt) {
+                throw new IllegalStateException();
+            }
+            if (modCount != expectedModCount) {
+                throw new ConcurrentModificationException();
+            }
+            expectedModCount = ++modCount;
+            removeRange(nextIndex - 1, nextIndex);
+            lastRemove = --nextIndex;
+            stopAt--;
+        }
     }
 
     /**

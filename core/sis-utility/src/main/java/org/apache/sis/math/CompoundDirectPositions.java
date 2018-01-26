@@ -153,12 +153,4 @@ final class CompoundDirectPositions implements DirectPosition, Iterable<DirectPo
     public void setOrdinate(int dimension, double value) {
         throw new UnsupportedOperationException();
     }
-
-    /**
-     * Not needed.
-     */
-    @Override
-    public void remove() {
-        throw new UnsupportedOperationException();
-    }
 }

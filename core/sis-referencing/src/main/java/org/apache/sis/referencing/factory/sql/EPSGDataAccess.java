@@ -123,7 +123,6 @@ import static org.apache.sis.internal.util.StandardDateFormat.UTC;
 import static org.apache.sis.internal.referencing.ServicesForMetadata.CONNECTION;
 
 // Branch-dependent imports
-import org.apache.sis.internal.jdk8.JDK8;
 import org.apache.sis.internal.util.StandardDateFormat;
 import org.apache.sis.referencing.cs.DefaultParametricCS;
 import org.apache.sis.referencing.datum.DefaultParametricDatum;
@@ -969,7 +968,7 @@ addURIs:    for (int i=0; ; i++) {
      * }
      */
     private void ensureNoCycle(final Class<?> type, final Integer code) throws FactoryException {
-        if (JDK8.putIfAbsent(safetyGuard, code, type) != null) {
+        if (safetyGuard.putIfAbsent(code, type) != null) {
             throw new FactoryException(resources().getString(Resources.Keys.RecursiveCreateCallForCode_2, type, code));
         }
     }
@@ -1357,7 +1356,7 @@ addURIs:    for (int i=0; ; i++) {
                     case "geographic 3d": {
                         Integer csCode = getInteger(code, result, 8);
                         if (replaceDeprecatedCS) {
-                            csCode = JDK8.getOrDefault(DEPRECATED_CS, csCode, csCode);
+                            csCode = DEPRECATED_CS.getOrDefault(csCode, csCode);
                         }
                         final EllipsoidalCS cs = owner.createEllipsoidalCS(csCode.toString());
                         final String datumCode = getOptionalString(result, 9);
@@ -3116,7 +3115,7 @@ next:               while (r.next()) {
                 from    = "Ellipsoid";
                 where   = "SEMI_MAJOR_AXIS";
                 table   = TableInfo.ELLIPSOID;
-                codes   = Collections.<Number>singleton(((Ellipsoid) object).getSemiMajorAxis());
+                codes   = Collections.singleton(((Ellipsoid) object).getSemiMajorAxis());
                 isFloat = true;
             } else {
                 final IdentifiedObject dependency;

@@ -106,7 +106,7 @@ final class UnmodifiableParameterValueGroup extends Parameters implements Lenien
         if (group == null || group instanceof UnmodifiableParameterValueGroup) {
             return (UnmodifiableParameterValueGroup) group;
         }
-        return new UnmodifiableParameterValueGroup(group, new IdentityHashMap<ParameterValueGroup,Boolean>(4));
+        return new UnmodifiableParameterValueGroup(group, new IdentityHashMap<>(4));
     }
 
     /**

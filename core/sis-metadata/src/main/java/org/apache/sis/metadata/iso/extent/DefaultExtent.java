@@ -19,6 +19,7 @@ package org.apache.sis.metadata.iso.extent;
 import java.util.Set;
 import java.util.LinkedHashSet;
 import java.util.Collection;
+import java.util.function.BinaryOperator;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -39,9 +40,6 @@ import org.apache.sis.metadata.TitleProperty;
 import org.apache.sis.internal.metadata.ReferencingServices;
 import org.apache.sis.xml.NilObject;
 import org.apache.sis.xml.NilReason;
-
-// Branch-dependent imports
-import org.apache.sis.internal.jdk8.BinaryOperator;
 
 
 /**
@@ -331,9 +329,9 @@ public class DefaultExtent extends ISOMetadata implements Extent {
                 description = NilReason.MISSING.createNilObject(InternationalString.class);
             }
         }
-        geographicElements = intersect(GeographicExtent.class, geographicElements, other.getGeographicElements(), new BinaryOperator<GeographicExtent>() {@Override public GeographicExtent apply(GeographicExtent e1, GeographicExtent e2) {return Extents.intersection(e1, e2);}});
-        verticalElements   = intersect(VerticalExtent.class,   verticalElements,   other.getVerticalElements(),   new BinaryOperator<VerticalExtent>  () {@Override public VerticalExtent   apply(VerticalExtent   e1, VerticalExtent   e2) {return Extents.intersection(e1, e2);}});
-        temporalElements   = intersect(TemporalExtent.class,   temporalElements,   other.getTemporalElements(),   new BinaryOperator<TemporalExtent>  () {@Override public TemporalExtent   apply(TemporalExtent   e1, TemporalExtent   e2) {return Extents.intersection(e1, e2);}});
+        geographicElements = intersect(GeographicExtent.class, geographicElements, other.getGeographicElements(), Extents::intersection);
+        verticalElements   = intersect(VerticalExtent.class,   verticalElements,   other.getVerticalElements(),   Extents::intersection);
+        temporalElements   = intersect(TemporalExtent.class,   temporalElements,   other.getTemporalElements(),   Extents::intersection);
     }
 
     /**

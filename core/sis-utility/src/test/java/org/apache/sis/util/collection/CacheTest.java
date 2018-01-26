@@ -19,7 +19,6 @@ package org.apache.sis.util.collection;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.AbstractMap.SimpleEntry;
-import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicReference;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -59,8 +58,7 @@ public final strictfp class CacheTest extends TestCase {
      */
     @Test
     public void testStrongReferences() {
-        WeakValueHashMapTest.testStrongReferences(
-                new Cache<Integer,Integer>(WeakValueHashMapTest.SAMPLE_SIZE, 0, false));
+        WeakValueHashMapTest.testStrongReferences(new Cache<>(WeakValueHashMapTest.SAMPLE_SIZE, 0, false));
     }
 
     /**
@@ -74,8 +72,7 @@ public final strictfp class CacheTest extends TestCase {
     @Test
     @DependsOnMethod("testStrongReferences")
     public void testWeakReferences() throws InterruptedException {
-        WeakValueHashMapTest.testWeakReferences(
-                new Cache<Integer,Integer>(WeakValueHashMapTest.SAMPLE_SIZE, 0, false));
+        WeakValueHashMapTest.testWeakReferences(new Cache<>(WeakValueHashMapTest.SAMPLE_SIZE, 0, false));
     }
 
     /**
@@ -238,11 +235,7 @@ public final strictfp class CacheTest extends TestCase {
                     final Integer expected = new Integer(i * i);        // We really want new instance.
                     final Integer value;
                     try {
-                        value = cache.getOrCreate(key, new Callable<Integer>() {
-                            @Override public Integer call() {
-                                return expected;
-                            }
-                        });
+                        value = cache.getOrCreate(key, () -> expected);
                         assertEquals(expected, value);
                     } catch (Throwable e) {
                         if (!failures.compareAndSet(null, e)) {

@@ -28,7 +28,6 @@ import org.apache.sis.util.resources.Errors;
 
 import static org.apache.sis.util.ArgumentChecks.ensureNonNullElement;
 
-import org.apache.sis.internal.jdk8.JDK8;
 
 /**
  * Implementation of the map returned by {@link DefaultAttributeType#characteristics()}.
@@ -144,7 +143,7 @@ final class CharacteristicTypeMap extends AbstractMap<String,DefaultAttributeTyp
         for (final Map.Entry<String,Integer> entry : aliases.entrySet()) {
             final Integer value = entry.getValue();
             if (value >= 0) {
-                JDK8.putIfAbsent(indices, entry.getKey(), value);
+                indices.putIfAbsent(entry.getKey(), value);
             }
         }
         this.indices = CollectionsExt.compact(indices);

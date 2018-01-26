@@ -79,8 +79,7 @@ import org.apache.sis.util.collection.BackingStoreException;
 import org.apache.sis.util.resources.Vocabulary;
 
 // Branch-dependent imports
-import org.apache.sis.internal.jdk8.JDK8;
-import org.apache.sis.internal.jdk8.Predicate;
+import java.util.function.Predicate;
 
 
 /**
@@ -786,7 +785,7 @@ class CoordinateOperationRegistry {
         CoordinateReferenceSystem crs;
         if (Utilities.equalsApproximatively(sourceCRS, crs = operation.getSourceCRS())) sourceCRS = crs;
         if (Utilities.equalsApproximatively(targetCRS, crs = operation.getTargetCRS())) targetCRS = crs;
-        final Map<String,Object> properties = new HashMap<String,Object>(derivedFrom(operation));
+        final Map<String,Object> properties = new HashMap<>(derivedFrom(operation));
         /*
          * Determine whether the operation to create is a Conversion or a Transformation
          * (could also be a Conversion subtype like Projection, but this is less important).
@@ -1180,7 +1179,7 @@ class CoordinateOperationRegistry {
         }
         properties.put(ReferencingServices.OPERATION_TYPE_KEY, type);
         if (Conversion.class.isAssignableFrom(type) && transform.isIdentity()) {
-            JDK8.replace(properties, IdentifiedObject.NAME_KEY, AXIS_CHANGES, IDENTITY);
+            properties.replace(IdentifiedObject.NAME_KEY, AXIS_CHANGES, IDENTITY);
         }
         return factorySIS.createSingleOperation(properties, sourceCRS, targetCRS, null, method, transform);
     }

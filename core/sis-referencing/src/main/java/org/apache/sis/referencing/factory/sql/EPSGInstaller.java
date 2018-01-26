@@ -39,9 +39,6 @@ import org.apache.sis.setup.InstallationResources;
 
 import static org.apache.sis.internal.util.Constants.EPSG;
 
-// Branch-dependent imports
-import org.apache.sis.internal.jdk8.BiFunction;
-
 
 /**
  * Runs the SQL scripts for creating an EPSG database.
@@ -173,19 +170,17 @@ final class EPSGInstaller extends ScriptRunner {
      * Prepends the given schema or catalog to all table names.
      */
     final void prependNamespace(final String schema) {
-        modifyReplacements(new BiFunction<String,String,String>() {
-            @Override public String apply(String key, String value) {
-                if (key.startsWith(SQLTranslator.TABLE_PREFIX)) {
-                    final StringBuilder buffer = new StringBuilder(value.length() + schema.length() + 5);
-                    buffer.append(identifierQuote).append(schema).append(identifierQuote).append('.');
-                    final boolean isQuoted = value.endsWith(identifierQuote);
-                    if (!isQuoted) buffer.append(identifierQuote);
-                    buffer.append(value);
-                    if (!isQuoted) buffer.append(identifierQuote);
-                    value = buffer.toString();
-                }
-                return value;
+        modifyReplacements((key, value) -> {
+            if (key.startsWith(SQLTranslator.TABLE_PREFIX)) {
+                final StringBuilder buffer = new StringBuilder(value.length() + schema.length() + 5);
+                buffer.append(identifierQuote).append(schema).append(identifierQuote).append('.');
+                final boolean isQuoted = value.endsWith(identifierQuote);
+                if (!isQuoted) buffer.append(identifierQuote);
+                buffer.append(value);
+                if (!isQuoted) buffer.append(identifierQuote);
+                value = buffer.toString();
             }
+            return value;
         });
     }
 

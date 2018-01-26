@@ -53,7 +53,7 @@ import org.apache.sis.referencing.CRS;
 import org.apache.sis.io.CompoundFormat;
 
 // Branch-dependent imports
-import org.apache.sis.internal.jdk8.UncheckedIOException;
+import java.io.UncheckedIOException;
 
 
 /**

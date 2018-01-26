@@ -464,6 +464,7 @@ public class WeakValueHashMap<K,V> extends AbstractMap<K,V> {
      *
      * @since 0.7
      */
+    @Override
     public V putIfAbsent(final K key, final V value) throws NullArgumentException {
         if (key == null || value == null) {
             throw new NullArgumentException(Errors.format(key == null

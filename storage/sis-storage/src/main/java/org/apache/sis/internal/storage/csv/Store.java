@@ -19,6 +19,7 @@ package org.apache.sis.internal.storage.csv;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.Locale;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
@@ -70,10 +71,10 @@ import org.apache.sis.io.InvalidSeekException;
 import org.apache.sis.measure.Units;
 
 // Branch-dependent imports
-import org.apache.sis.internal.jdk8.Instant;
-import org.apache.sis.internal.jdk8.DateTimeException;
-import org.apache.sis.internal.jdk8.Stream;
-import org.apache.sis.internal.jdk8.StreamSupport;
+import java.time.Instant;
+import java.time.DateTimeException;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 import org.apache.sis.feature.AbstractFeature;
 import org.apache.sis.feature.AbstractIdentifiedType;
 
@@ -451,7 +452,7 @@ final class Store extends URIDataStore implements FeatureSet {
                     temporal = TimeEncoding.DEFAULT.crs();
                     timeEncoding = TimeEncoding.ABSOLUTE;
                 } else {
-                    temporal = builder.createTemporalCRS(startTime.toDate(), timeUnit);
+                    temporal = builder.createTemporalCRS(Date.from(startTime), timeUnit);
                     timeEncoding = new TimeEncoding(temporal.getDatum(), timeUnit);
                 }
                 components[count++] = temporal;
@@ -685,6 +686,7 @@ final class Store extends URIDataStore implements FeatureSet {
      * @todo Need to reset the position when doing another pass on the features. See {@link #rewind()}.
      * @todo If sequential order, publish Feature as soon as identifier changed.
      */
+    @Override
     public final synchronized Stream<AbstractFeature> features(final boolean parallel) throws DataStoreException {
         /*
          * If the user asks for one feature instance per line, then we can return a FeatureIter instance directly.
@@ -701,7 +703,7 @@ final class Store extends URIDataStore implements FeatureSet {
         } catch (IOException | IllegalArgumentException | DateTimeException e) {
             throw new DataStoreException(canNotParseFile(), e);
         }
-        return Stream.create(movingFeatures);
+        return movingFeatures.stream();
     }
 
     /**

@@ -33,9 +33,6 @@ import org.apache.sis.internal.storage.Resources;
 
 import static org.apache.sis.util.ArgumentChecks.ensureBetween;
 
-// Branch-dependent imports
-import org.apache.sis.internal.jdk8.JDK8;
-
 
 /**
  * Provides convenience methods for working with a ({@link WritableByteChannel}, {@link ByteBuffer}) pair.
@@ -222,7 +219,7 @@ public class ChannelDataOutput extends ChannelData implements Flushable {
      * @throws IOException if some I/O exception occurs during writing.
      */
     public final void writeByte(final int value) throws IOException {
-        ensureBufferAccepts(Byte.SIZE / Byte.SIZE);
+        ensureBufferAccepts(Byte.BYTES);
         buffer.put((byte) value);
     }
 
@@ -236,7 +233,7 @@ public class ChannelDataOutput extends ChannelData implements Flushable {
      * @throws IOException if some I/O exception occurs during writing.
      */
     public final void writeShort(final int value) throws IOException {
-        ensureBufferAccepts(Short.SIZE / Byte.SIZE);
+        ensureBufferAccepts(Short.BYTES);
         buffer.putShort((short) value);
     }
 
@@ -249,7 +246,7 @@ public class ChannelDataOutput extends ChannelData implements Flushable {
      * @throws IOException if some I/O exception occurs during writing.
      */
     public final void writeChar(final int value) throws IOException {
-        ensureBufferAccepts(Character.SIZE / Byte.SIZE);
+        ensureBufferAccepts(Character.BYTES);
         buffer.putChar((char) value);
     }
 
@@ -262,7 +259,7 @@ public class ChannelDataOutput extends ChannelData implements Flushable {
      * @throws IOException if some I/O exception occurs during writing.
      */
     public final void writeInt(final int value) throws IOException {
-        ensureBufferAccepts(Integer.SIZE / Byte.SIZE);
+        ensureBufferAccepts(Integer.BYTES);
         buffer.putInt(value);
     }
 
@@ -275,7 +272,7 @@ public class ChannelDataOutput extends ChannelData implements Flushable {
      * @throws IOException if some I/O exception occurs during writing.
      */
     public final void writeLong(final long value) throws IOException {
-        ensureBufferAccepts(Long.SIZE / Byte.SIZE);
+        ensureBufferAccepts(Long.BYTES);
         buffer.putLong(value);
     }
 
@@ -288,7 +285,7 @@ public class ChannelDataOutput extends ChannelData implements Flushable {
      * @throws IOException if some I/O exception occurs during writing.
      */
     public final void writeFloat(final float value) throws IOException {
-        ensureBufferAccepts(Float.SIZE / Byte.SIZE);
+        ensureBufferAccepts(Float.BYTES);
         buffer.putFloat(value);
     }
 
@@ -301,7 +298,7 @@ public class ChannelDataOutput extends ChannelData implements Flushable {
      * @throws IOException if some I/O exception occurs during writing.
      */
     public final void writeDouble(final double value) throws IOException {
-        ensureBufferAccepts(Double.SIZE / Byte.SIZE);
+        ensureBufferAccepts(Double.BYTES);
         buffer.putDouble(value);
     }
 
@@ -501,7 +498,7 @@ public class ChannelDataOutput extends ChannelData implements Flushable {
             private CharBuffer view;
             @Override Buffer createView() {return view = buffer.asCharBuffer();}
             @Override void transfer(int offset, int n) {view.put(src, offset, n);}
-        }.writeFully(Character.SIZE / Byte.SIZE, offset, length);
+        }.writeFully(Character.BYTES, offset, length);
     }
 
     /**
@@ -517,7 +514,7 @@ public class ChannelDataOutput extends ChannelData implements Flushable {
             private ShortBuffer view;
             @Override Buffer createView() {return view = buffer.asShortBuffer();}
             @Override void transfer(int offset, int length) {view.put(src, offset, length);}
-        }.writeFully(Short.SIZE / Byte.SIZE, offset, length);
+        }.writeFully(Short.BYTES, offset, length);
     }
 
     /**
@@ -533,7 +530,7 @@ public class ChannelDataOutput extends ChannelData implements Flushable {
             private IntBuffer view;
             @Override Buffer createView() {return view = buffer.asIntBuffer();}
             @Override void transfer(int offset, int n) {view.put(src, offset, n);}
-        }.writeFully(Integer.SIZE / Byte.SIZE, offset, length);
+        }.writeFully(Integer.BYTES, offset, length);
     }
 
     /**
@@ -549,7 +546,7 @@ public class ChannelDataOutput extends ChannelData implements Flushable {
             private LongBuffer view;
             @Override Buffer createView() {return view = buffer.asLongBuffer();}
             @Override void transfer(int offset, int n) {view.put(src, offset, n);}
-        }.writeFully(Long.SIZE / Byte.SIZE, offset, length);
+        }.writeFully(Long.BYTES, offset, length);
     }
 
     /**
@@ -565,7 +562,7 @@ public class ChannelDataOutput extends ChannelData implements Flushable {
             private FloatBuffer view;
             @Override Buffer createView() {return view = buffer.asFloatBuffer();}
             @Override void transfer(int offset, int n) {view.put(src, offset, n);}
-        }.writeFully(Float.SIZE / Byte.SIZE, offset, length);
+        }.writeFully(Float.BYTES, offset, length);
     }
 
     /**
@@ -581,7 +578,7 @@ public class ChannelDataOutput extends ChannelData implements Flushable {
             private DoubleBuffer view;
             @Override Buffer createView() {return view = buffer.asDoubleBuffer();}
             @Override void transfer(int offset, int n) {view.put(src, offset, n);}
-        }.writeFully(Double.SIZE / Byte.SIZE, offset, length);
+        }.writeFully(Double.BYTES, offset, length);
     }
 
     /**
@@ -610,7 +607,7 @@ public class ChannelDataOutput extends ChannelData implements Flushable {
      */
     @Override
     public final void seek(final long position) throws IOException {
-        long p = JDK8.subtractExact(position, bufferOffset);
+        long p = Math.subtractExact(position, bufferOffset);
         if (p >= 0 && p <= buffer.limit()) {
             /*
              * Requested position is inside the current limits of the buffer.
@@ -623,7 +620,7 @@ public class ChannelDataOutput extends ChannelData implements Flushable {
              * but we can set the new position directly in the channel.
              */
             flush();
-            ((SeekableByteChannel) channel).position(JDK8.addExact(channelOffset, position));
+            ((SeekableByteChannel) channel).position(Math.addExact(channelOffset, position));
             bufferOffset = position;
         } else if (p >= 0) {
             /*

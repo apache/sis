@@ -19,10 +19,13 @@ package org.apache.sis.test;
 import java.util.Set;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Iterator;
 import java.util.Collection;
 import java.util.Enumeration;
 import java.util.LinkedHashSet;
 import java.util.LinkedHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.ConcurrentHashMap;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -36,6 +39,10 @@ import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.Exceptions;
 import org.apache.sis.util.Classes;
+
+// Branch-dependent imports
+import java.util.stream.Stream;
+import java.util.function.Consumer;
 
 
 /**
@@ -171,6 +178,77 @@ public strictfp class Assert extends GeoapiAssert {
     }
 
     /**
+     * Verifies that the given stream produces the same values than the given iterator, in same order.
+     * This method assumes that the given stream is sequential.
+     *
+     * @param  <E>       the type of values to test.
+     * @param  expected  the expected values.
+     * @param  actual    the stream to compare with the expected values.
+     *
+     * @since 0.8
+     */
+    public static <E> void assertSequentialStreamEquals(final Iterator<E> expected, final Stream<E> actual) {
+        actual.forEach(new Consumer<E>() {
+            private int count;
+
+            @Override
+            public void accept(final Object value) {
+                if (!expected.hasNext()) {
+                    fail("Expected " + count + " elements, but the stream contains more.");
+                }
+                final Object ex = expected.next();
+                if (!Objects.equals(ex, value)) {
+                    fail("Expected " + ex + " at index " + count + " but got " + value);
+                }
+                count++;
+            }
+        });
+        assertFalse("Unexpected end of stream.", expected.hasNext());
+    }
+
+    /**
+     * Verifies that the given stream produces the same values than the given iterator, in any order.
+     * This method is designed for use with parallel streams, but works with sequential streams too.
+     *
+     * @param  <E>       the type of values to test.
+     * @param  expected  the expected values.
+     * @param  actual    the stream to compare with the expected values.
+     *
+     * @since 0.8
+     */
+    public static <E> void assertParallelStreamEquals(final Iterator<E> expected, final Stream<E> actual) {
+        final Integer ONE = 1;          // For doing autoboxing only once.
+        final ConcurrentMap<E,Integer> count = new ConcurrentHashMap<>();
+        while (expected.hasNext()) {
+            count.merge(expected.next(), ONE, (old, one) -> old + 1);
+        }
+        /*
+         * Following may be parallelized in an arbitrary amount of threads.
+         */
+        actual.forEach((value) -> {
+            if (count.computeIfPresent(value, (key, old) -> old - 1) == null) {
+                fail("Stream returned unexpected value: " + value);
+            }
+        });
+        /*
+         * Back to sequential order, verify that all elements have been traversed
+         * by the stream and no more.
+         */
+        for (final Map.Entry<E,Integer> entry : count.entrySet()) {
+            int n = entry.getValue();
+            if (n != 0) {
+                final String message;
+                if (n < 0) {
+                    message = "Stream returned too many occurrences of %s%n%d extraneous were found.";
+                } else {
+                    message = "Stream did not returned all expected occurrences of %s%n%d are missing.";
+                }
+                fail(String.format(message, entry.getKey(), StrictMath.abs(n)));
+            }
+        }
+    }
+
+    /**
      * Asserts that the given set contains the same elements, ignoring order.
      * In case of failure, this method lists the missing or unexpected elements.
      *
@@ -181,7 +259,7 @@ public strictfp class Assert extends GeoapiAssert {
      */
     public static void assertSetEquals(final Collection<?> expected, final Collection<?> actual) {
         if (expected != null && actual != null && !expected.isEmpty()) {
-            final Set<Object> r = new LinkedHashSet<Object>(expected);
+            final Set<Object> r = new LinkedHashSet<>(expected);
             assertTrue("The two sets are disjoint.",                 r.removeAll(actual));
             assertTrue("The set is missing elements: " + r,          r.isEmpty());
             assertTrue("The set unexpectedly became empty.",         r.addAll(actual));
@@ -202,7 +280,7 @@ public strictfp class Assert extends GeoapiAssert {
      */
     public static void assertMapEquals(final Map<?,?> expected, final Map<?,?> actual) {
         if (expected != null && actual != null && !expected.isEmpty()) {
-            final Map<Object,Object> r = new LinkedHashMap<Object,Object>(expected);
+            final Map<Object,Object> r = new LinkedHashMap<>(expected);
             for (final Map.Entry<?,?> entry : actual.entrySet()) {
                 final Object key = entry.getKey();
                 if (!r.containsKey(key)) {

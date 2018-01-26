@@ -281,11 +281,6 @@ public class LazySet<E> extends SetOfUnknownSize<E> {
             public E next() {
                 return get(cursor++);
             }
-
-            @Override
-            public void remove() {
-                throw new UnsupportedOperationException();
-            }
         };
     }
 }

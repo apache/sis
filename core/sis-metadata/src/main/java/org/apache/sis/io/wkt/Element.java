@@ -38,9 +38,6 @@ import org.apache.sis.internal.util.UnmodifiableArrayList;
 
 import static org.apache.sis.util.CharSequences.skipLeadingWhitespaces;
 
-// Branch-dependent imports
-import org.apache.sis.internal.jdk8.JDK8;
-
 
 /**
  * An element in a <cite>Well Know Text</cite> (WKT). An {@code Element} is made of {@link String},
@@ -317,7 +314,7 @@ final class Element implements Serializable {
                  * Store the value, using shared instances if this Element may be stored for a long time.
                  */
                 if (sharedValues != null) {
-                    final Object e = JDK8.putIfAbsent(sharedValues, value, value);
+                    final Object e = sharedValues.putIfAbsent(value, value);
                     if (e != null) {
                         value = e;
                     }

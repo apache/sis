@@ -211,6 +211,6 @@ final class Tags {
         } catch (IllegalAccessException e) {
             throw new AssertionError(e);        // Should never happen because we asked only for public fields.
         }
-        return Integer.toHexString(tag & 0xFFFF);
+        return Integer.toHexString(Short.toUnsignedInt(tag));
     }
 }

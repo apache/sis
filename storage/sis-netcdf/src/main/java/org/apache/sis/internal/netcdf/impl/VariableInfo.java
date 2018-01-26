@@ -479,8 +479,8 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
         final int [] sub   = new int [dimension];
         for (int i=0; i<dimension; i++) {
             final int j = (dimension - 1) - i;
-            lower[i] = areaLower[j] & 0xFFFFFFFFL;
-            upper[i] = areaUpper[j] & 0xFFFFFFFFL;
+            lower[i] = Integer.toUnsignedLong(areaLower[j]);
+            upper[i] = Integer.toUnsignedLong(areaUpper[j]);
             sub  [i] = subsampling[j];
             size [i] = dimensions[j].length();
         }

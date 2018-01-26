@@ -314,6 +314,20 @@ public abstract class AbstractMap<K,V> implements Map<K,V> {
     }
 
     /**
+     * Returns the value for the given key, or {@code defaultValue} if none.
+     * The default implementation assumes that the map can not contain {@code null} values.
+     *
+     * @param  key  the key for which to get the value.
+     * @param  defaultValue  the value to return if this map does not have an entry for the given key.
+     * @return the value for the given key, or {@code defaultValue} if none.
+     */
+    @Override
+    public V getOrDefault(final Object key, final V defaultValue) {
+        final V value = get(key);
+        return (value != null) ? value : defaultValue;
+    }
+
+    /**
      * The message to gives to the exception to be thrown in case of unsupported operation.
      *
      * @param add {@code true} if this method is invoked from {@link #addKey(Object)} or {@link #addValue(Object)}.
@@ -412,7 +426,7 @@ public abstract class AbstractMap<K,V> implements Map<K,V> {
             @Override public boolean     add(K e)           {return AbstractMap.this.addKey(e);}
             @Override public Iterator<K> iterator() {
                 final EntryIterator<K,V> it = entryIterator();
-                return (it != null) ? new Keys<>(it) : Collections.<K>emptyIterator();
+                return (it != null) ? new Keys<>(it) : Collections.emptyIterator();
             }
 
             /** Overridden for the same reason than {@link AbstractMap#equals(Object). */
@@ -459,7 +473,7 @@ public abstract class AbstractMap<K,V> implements Map<K,V> {
             @Override public boolean     add(V e)           {return AbstractMap.this.addValue(e);}
             @Override public Iterator<V> iterator() {
                 final EntryIterator<K,V> it = entryIterator();
-                return (it != null) ? new Values<>(it) : Collections.<V>emptyIterator();
+                return (it != null) ? new Values<>(it) : Collections.emptyIterator();
             }
         };
     }
@@ -494,7 +508,7 @@ public abstract class AbstractMap<K,V> implements Map<K,V> {
             /** Returns an iterator compliant to the Map contract. */
             @Override public Iterator<Entry<K,V>> iterator() {
                 final EntryIterator<K,V> it = entryIterator();
-                return (it != null) ? new Entries<>(it) : Collections.<Entry<K,V>>emptyIterator();
+                return (it != null) ? new Entries<>(it) : Collections.emptyIterator();
             }
 
             /** Overridden for the same reason than {@link AbstractMap#equals(Object). */

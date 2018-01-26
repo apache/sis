@@ -62,9 +62,6 @@ import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.Classes;
 import org.apache.sis.measure.Units;
 
-// Branch-dependent imports
-import org.apache.sis.internal.jdk8.Predicate;
-
 
 /**
  * A factory for Coordinate Reference Systems created from {@literal Proj.4} definitions.
@@ -202,7 +199,7 @@ public class Proj4Factory extends GeodeticAuthorityFactory implements CRSAuthori
      * @param properties  common properties for the objects to create, or {@code null} if none.
      */
     public Proj4Factory(Map<String,?> properties) {
-        properties   = new HashMap(properties != null ? properties : Collections.emptyMap());
+        properties   = new HashMap<>(properties != null ? properties : Collections.emptyMap());
         crsFactory   = factory(CRSFactory.class,           properties, ReferencingServices.CRS_FACTORY);
         csFactory    = factory(CSFactory.class,            properties, ReferencingServices.CS_FACTORY);
         datumFactory = factory(DatumFactory.class,         properties, ReferencingServices.DATUM_FACTORY);
@@ -234,7 +231,7 @@ public class Proj4Factory extends GeodeticAuthorityFactory implements CRSAuthori
     final DefaultCoordinateOperationFactory opFactory() {
         DefaultCoordinateOperationFactory factory = opFactory;
         if (factory == null) {
-            final Map<String,Object> properties = new HashMap<String,Object>(defaultProperties);
+            final Map<String,Object> properties = new HashMap<>(defaultProperties);
             properties.put(ReferencingServices.CRS_FACTORY,   crsFactory);
             properties.put(ReferencingServices.CS_FACTORY,    csFactory);
             properties.put(ReferencingServices.DATUM_FACTORY, datumFactory);
@@ -334,11 +331,7 @@ public class Proj4Factory extends GeodeticAuthorityFactory implements CRSAuthori
      * @see org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory#getAvailableMethods(Class)
      */
     public Set<OperationMethod> getAvailableMethods(final Class<? extends SingleOperation> type) {
-        return new LazySet<>(CollectionsExt.filter(mtFactory.getAvailableMethods(type).iterator(), new Predicate<IdentifiedObject>() {
-            @Override public boolean test(final IdentifiedObject method) {
-                return isSupported(method);
-            }
-        }));
+        return new LazySet<>(CollectionsExt.filter(mtFactory.getAvailableMethods(type).iterator(), Proj4Factory::isSupported));
     }
 
     /**
@@ -550,16 +543,14 @@ public class Proj4Factory extends GeodeticAuthorityFactory implements CRSAuthori
      * Returns the identifier for the given code in {@literal Proj.4} namespace.
      */
     private Map<String,Object> identifier(final String code) {
-        Identifier id = identifiers.get(code);
-        if (id == null) {
+        Identifier id = identifiers.computeIfAbsent(code, (k) -> {
             short i18n = 0;
-            if (code.equalsIgnoreCase( UNNAMED )) i18n = Vocabulary.Keys.Unnamed;
-            if (code.equalsIgnoreCase("Unknown")) i18n = Vocabulary.Keys.Unknown;
-            id = new ImmutableIdentifier(Citations.PROJ4, Constants.PROJ4, code, null,
+            if (k.equalsIgnoreCase( UNNAMED )) i18n = Vocabulary.Keys.Unnamed;
+            if (k.equalsIgnoreCase("Unknown")) i18n = Vocabulary.Keys.Unknown;
+            return new ImmutableIdentifier(Citations.PROJ4, Constants.PROJ4, k, null,
                     (i18n != 0) ? Vocabulary.formatInternational(i18n) : null);
-            identifiers.put(code, id);
-        }
-        final Map<String,Object> properties = new HashMap<String,Object>(defaultProperties);
+        });
+        final Map<String,Object> properties = new HashMap<>(defaultProperties);
         properties.put(IdentifiedObject.NAME_KEY, id);
         return properties;
     }

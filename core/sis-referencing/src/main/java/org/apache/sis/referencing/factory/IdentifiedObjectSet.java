@@ -44,7 +44,6 @@ import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Localized;
 import org.apache.sis.util.Classes;
 
-import org.apache.sis.internal.jdk8.JDK8;
 
 /**
  * A lazy set of {@code IdentifiedObject} instances created from their authority codes only when first needed.
@@ -244,7 +243,7 @@ public class IdentifiedObjectSet<T extends IdentifiedObject> extends AbstractSet
      */
     public void addAuthorityCode(final String code) {
         synchronized (objects) {
-            if (JDK8.putIfAbsent(objects, code, null) == null) {
+            if (objects.putIfAbsent(code, null) == null) {
                 codes = null;
             }
         }
@@ -317,12 +316,12 @@ public class IdentifiedObjectSet<T extends IdentifiedObject> extends AbstractSet
                      * has been invoked before the concurrent removal happened.
                      */
                     if (objects.containsKey(code)) {        // Needed because code may be associated to null value.
-                        final T c = JDK8.putIfAbsent(objects, code, object);
+                        final T c = objects.putIfAbsent(code, object);
                         if (c != null) {
                             object = c;                     // The object has been created concurrently.
                         }
                     }
-                } else if (JDK8.remove(objects, code, null)) {    // Do not remove if a concurrent thread succeeded.
+                } else if (objects.remove(code, null)) {    // Do not remove if a concurrent thread succeeded.
                     codes = null;
                 }
             }

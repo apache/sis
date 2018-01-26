@@ -24,9 +24,6 @@ import org.apache.sis.math.Fraction;
 import org.apache.sis.math.MathFunctions;
 import org.apache.sis.math.DecimalFunctions;
 
-// Branch-dependent imports
-import org.apache.sis.internal.jdk8.JDK8;
-
 
 /**
  * Basic arithmetic methods for extended precision numbers using the <cite>double-double</cite> algorithm.
@@ -335,7 +332,7 @@ public final class DoubleDouble extends Number {
     @Override public double doubleValue() {return value;}
     @Override public float  floatValue()  {return (float) value;}
     @Override public long   longValue()   {return Math.round(value);}
-    @Override public int    intValue()    {return JDK8.toIntExact(longValue());}
+    @Override public int    intValue()    {return Math.toIntExact(longValue());}
 
     /**
      * Suggests an {@link #error} for the given value. The {@code DoubleDouble} class contains a hard-coded list

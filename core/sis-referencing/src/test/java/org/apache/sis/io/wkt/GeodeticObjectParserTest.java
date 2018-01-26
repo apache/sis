@@ -51,9 +51,6 @@ import static org.apache.sis.test.ReferencingAssert.*;
 import static org.apache.sis.test.TestUtilities.getSingleton;
 import static org.apache.sis.internal.util.StandardDateFormat.MILLISECONDS_PER_DAY;
 
-// Branch-specific imports
-import org.opengis.util.Factory;
-
 
 /**
  * Tests {@link GeodeticObjectParser}.
@@ -85,8 +82,8 @@ public final strictfp class GeodeticObjectParserTest extends TestCase {
      * Instantiates the parser to test.
      */
     private void newParser(final Convention convention) {
-        parser = new GeodeticObjectParser(Symbols.getDefault(), Collections.<String,Element>emptyMap(),
-                null, null, null, convention, Transliterator.DEFAULT, null, new HashMap<Class<?>,Factory>());
+        parser = new GeodeticObjectParser(Symbols.getDefault(), Collections.emptyMap(),
+                null, null, null, convention, Transliterator.DEFAULT, null, new HashMap<>());
         assertEquals(GeodeticObjectFactory.class.getCanonicalName(), parser.getPublicFacade());
     }
 

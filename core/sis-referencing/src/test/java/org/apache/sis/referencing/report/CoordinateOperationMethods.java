@@ -50,7 +50,6 @@ import org.apache.sis.util.Numbers;
 import org.apache.sis.util.Version;
 
 // Branch-dependent imports
-import org.apache.sis.internal.jdk8.JDK8;
 import org.opengis.referencing.ReferenceIdentifier;
 
 
@@ -80,21 +79,15 @@ public strictfp class CoordinateOperationMethods extends HTMLGenerator {
     public static void main(final String[] args) throws IOException {
         final MathTransformFactory factory = DefaultFactories.forBuildin(MathTransformFactory.class);
         final List<OperationMethod> methods = new ArrayList<>(factory.getAvailableMethods(SingleOperation.class));
-        JDK8.removeIf(methods, new org.apache.sis.internal.jdk8.Predicate<OperationMethod>() {
-            @Override public boolean test(OperationMethod method) {
-                return method.getClass().getName().endsWith("Mock");
+        methods.removeIf((method) -> method.getClass().getName().endsWith("Mock"));
+        Collections.sort(methods, (final OperationMethod o1, final OperationMethod o2) -> {
+            int c = category(o1) - category(o2);
+            if (c == 0) {  // If the two methods are in the same category, sort by name.
+                final String n1 = o1.getName().getCode().replace('(',' ').replace(')',' ').replace('_',' ');
+                final String n2 = o2.getName().getCode().replace('(',' ').replace(')',' ').replace('_',' ');
+                c = n1.compareTo(n2);
             }
-        });
-        Collections.sort(methods, new java.util.Comparator<OperationMethod>() {
-            @Override public int compare(OperationMethod o1, OperationMethod o2) {
-                int c = category(o1) - category(o2);
-                if (c == 0) {  // If the two methods are in the same category, sort by name.
-                    final String n1 = o1.getName().getCode().replace('(',' ').replace(')',' ').replace('_',' ');
-                    final String n2 = o2.getName().getCode().replace('(',' ').replace(')',' ').replace('_',' ');
-                    c = n1.compareTo(n2);
-                }
-                return c;
-            }
+            return c;
         });
         try (CoordinateOperationMethods writer = new CoordinateOperationMethods()) {
             writer.writeIndex(methods);
@@ -351,7 +344,7 @@ public strictfp class CoordinateOperationMethods extends HTMLGenerator {
             writeName(param);
             String remarks = toLocalizedString(param.getRemarks());
             if (remarks != null) {
-                Integer index = JDK8.putIfAbsent(footnotes, remarks, footnotes.size() + 1);
+                Integer index = footnotes.putIfAbsent(remarks, footnotes.size() + 1);
                 if (index == null) {
                     index = footnotes.size();
                 }

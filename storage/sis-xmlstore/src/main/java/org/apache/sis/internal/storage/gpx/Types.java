@@ -47,7 +47,7 @@ import org.apache.sis.util.iso.ResourceInternationalString;
 import org.apache.sis.util.iso.DefaultNameFactory;
 
 // Branch-dependent imports
-import org.apache.sis.internal.jdk8.Temporal;
+import java.time.temporal.Temporal;
 import org.apache.sis.feature.DefaultFeatureType;
 import org.apache.sis.feature.DefaultAttributeType;
 
@@ -309,15 +309,10 @@ final class Types {
         for (final PropertyTypeBuilder p : builder.properties()) {
             final GenericName name = p.getName();
             if (!AttributeConvention.contains(name)) {
-                final String key = name.toString();
-                InternationalString[] resources = previous.get(key);
-                if (resources == null) {
-                    resources = new InternationalString[] {
-                        new ResourceInternationalString("org.apache.sis.internal.storage.gpx.Designations", key),
-                        new ResourceInternationalString("org.apache.sis.internal.storage.gpx.Definitions",  key)
-                    };
-                    previous.put(key, resources);
-                }
+                final InternationalString[] resources = previous.computeIfAbsent(name.toString(), (key) -> new InternationalString[] {
+                    new ResourceInternationalString("org.apache.sis.internal.storage.gpx.Designations", key),
+                    new ResourceInternationalString("org.apache.sis.internal.storage.gpx.Definitions",  key)
+                });
                 p.setDefinition (resources[1]);
                 p.setDesignation(resources[0]);
             }

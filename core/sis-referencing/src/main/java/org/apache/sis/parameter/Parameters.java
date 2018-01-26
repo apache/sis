@@ -37,9 +37,6 @@ import org.apache.sis.util.ObjectConverters;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.Debug;
 
-// Branch-dependent imports
-import org.apache.sis.internal.jdk8.JDK8;
-
 
 /**
  * Convenience methods for fetching parameter values despite the variations in parameter names, value types and units.
@@ -769,7 +766,7 @@ public abstract class Parameters implements ParameterValueGroup, Cloneable {
         final Map<String,Integer> occurrences = new HashMap<>();
         for (final GeneralParameterValue value : values.values()) {
             final String name = value.getDescriptor().getName().getCode();
-            final int occurrence = JDK8.getOrDefault(occurrences, name, ZERO);
+            final int occurrence = occurrences.getOrDefault(name, ZERO);
             if (value instanceof ParameterValueGroup) {
                 /*
                  * Contains sub-group - invokes 'copy' recursively.

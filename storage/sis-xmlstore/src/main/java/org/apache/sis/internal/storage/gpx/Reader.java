@@ -34,9 +34,8 @@ import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.Version;
 
 // Branch-dependent imports
-import org.apache.sis.internal.jdk8.Consumer;
-import org.apache.sis.internal.jdk8.Predicate;
-import java.text.ParseException;
+import java.util.function.Consumer;
+import java.time.format.DateTimeParseException;
 import org.apache.sis.feature.AbstractFeature;
 
 
@@ -142,21 +141,17 @@ final class Reader extends StaxStreamReader {
      * @throws JAXBException if an error occurred while parsing GPX 1.1 metadata.
      * @throws ClassCastException if an object unmarshalled by JAXB was not of the expected type.
      * @throws URISyntaxException if an error occurred while parsing URI in GPX 1.0 metadata.
-     * @throws ParseException if a text can not be parsed as a date.
+     * @throws DateTimeParseException if a text can not be parsed as a date.
      * @throws EOFException if the file seems to be truncated.
      */
     public Version initialize(final boolean readMetadata) throws DataStoreException,
-            XMLStreamException, JAXBException, URISyntaxException, ParseException, EOFException
+            XMLStreamException, JAXBException, URISyntaxException, EOFException
     {
         /*
          * Skip comments, characters, entity declarations, etc. until we find the root element.
          * If that root is anything other than <gpx>, we consider that this is not a GPX file.
          */
-        moveToRootElement(new Predicate<String>() {
-            @Override public boolean test(String value) {
-                return isGPX(value);
-            }
-        }, Tags.GPX);
+        moveToRootElement(Reader::isGPX, Tags.GPX);
         /*
          * If a version attribute is found on the <gpx> element, use that value for detecting the GPX version.
          * If a version is specified, we require major.minor version 1.0 or 1.1 but accept any bug-fix versions
@@ -360,7 +355,7 @@ parse:  while (reader.hasNext()) {
      * @throws JAXBException if an error occurred while parsing GPX 1.1 link.
      * @throws ClassCastException if an object unmarshalled by JAXB was not of the expected type.
      * @throws NumberFormatException if a text can not be parsed as an integer or a floating point number.
-     * @throws ParseException if a text can not be parsed as a date.
+     * @throws DateTimeParseException if a text can not be parsed as a date.
      * @throws EOFException if the file seems to be truncated.
      */
     @SuppressWarnings("fallthrough")

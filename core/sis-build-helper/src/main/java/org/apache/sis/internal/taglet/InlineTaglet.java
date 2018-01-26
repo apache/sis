@@ -43,20 +43,7 @@ abstract class InlineTaglet implements Taglet {
      */
     private static synchronized RootDoc getRootDoc() {
         if (configuration == null) {
-            /*
-             * Try to invoke ConfigurationImpl.getInstance(), which exists on JDK6 and JDK7 but not on JDK8.
-             * If we fail, fallback on direct instantiation of ConfigurationImpl(), which is possible only
-             * in JDK8 (because the constructor is private on JDK6 and JDK7).
-             */
-            try {
-                configuration = (Configuration) ConfigurationImpl.class.getMethod("getInstance").invoke(null);
-            } catch (ReflectiveOperationException e) {
-                try {
-                    configuration = ConfigurationImpl.class.newInstance();
-                } catch (ReflectiveOperationException e2) {
-                    return null; // Allowed by this method contract.
-                }
-            }
+            configuration = new ConfigurationImpl();
         }
         return configuration.root;
     }

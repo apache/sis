@@ -117,7 +117,7 @@ public class UnitServices extends ServiceProvider implements SystemOfUnitsServic
      */
     @Override
     public Collection<SystemOfUnits> getAvailableSystemsOfUnits() {
-        return UnmodifiableArrayList.<SystemOfUnits>wrap(systems);
+        return UnmodifiableArrayList.wrap(systems);
     }
 
     /**

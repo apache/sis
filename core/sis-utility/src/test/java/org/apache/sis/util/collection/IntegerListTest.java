@@ -23,12 +23,18 @@ import java.util.HashSet;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.Random;
+import java.util.ConcurrentModificationException;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.TestUtilities;
 import org.junit.Test;
 
 import static java.lang.StrictMath.*;
 import static org.apache.sis.test.Assert.*;
+
+// Branch-dependent imports
+import java.util.function.IntConsumer;
+import java.util.PrimitiveIterator;
+import java.util.stream.IntStream;
 
 
 /**
@@ -89,6 +95,12 @@ public final strictfp class IntegerListTest extends TestCase {
         assertEquals("Comparison with reference implementation", copy, list);
         assertEquals("hashCode()", copy.hashCode(), list.hashCode());
         /*
+         * Test the stream, using the ArrayList as a reference implementation. This will indirectly
+         * use the PrimitiveSpliterator.forEachRemaining(Consumer<? super Integer>) method. A more
+         * specific test using forEachRemaining(IntConsumer) is done by the testInts() method.
+         */
+        assertSequentialStreamEquals(copy.iterator(), list.stream());
+        /*
          * Tests cloning and removal of values in a range of indices. The IntegerList.removeRange(…)
          * method is invoked indirectly by subList(…).clear(). Again, we use ArrayList as a reference.
          */
@@ -100,13 +112,13 @@ public final strictfp class IntegerListTest extends TestCase {
         clone.subList(128, 256).clear();
         assertEquals("After removeRange(…)", copy, clone);
         /*
-         * Tests iterator on integers, with random removal of some elements during traversal.
+         * Tests iterator on primitive integers, with random removal of some elements during traversal.
          */
-        final Iterator<Integer> it = clone.iterator();
+        final PrimitiveIterator.OfInt it = clone.iterator();
         final Iterator<Integer> itRef = copy.iterator();
         while (itRef.hasNext()) {
             assertTrue("hasNext()", it.hasNext());
-            assertEquals(itRef.next(), it.next());
+            assertEquals(itRef.next().intValue(), it.nextInt());
             if (random.nextInt(10) == 0) {
                 itRef.remove();
                 it.remove();
@@ -218,5 +230,69 @@ public final strictfp class IntegerListTest extends TestCase {
     public void testMax() {
         testReadWrite(Integer.MAX_VALUE);
         testFill(17);
+    }
+
+    /**
+     * Tests that primitive stream traversal is coherent with its list value.
+     * This method tests sequential stream only.
+     */
+    @Test
+    public void testStream() {
+        list = createRandomlyFilled(42, 404);
+        list.stream(false).forEach(new IntConsumer() {
+            private int index = 0;
+
+            @Override
+            public void accept(int value) {
+                assertEquals("Spliterator value differs from its original list", list.getInt(index++), value);
+            }
+        });
+    }
+
+    /**
+     * Tests that primitive stream traversal with parallelization.
+     */
+    @Test
+    public void testIntsParallel() {
+        list = createRandomlyFilled(80, 321);
+        assertParallelStreamEquals(list.iterator(), list.stream().parallel());
+    }
+
+    /**
+     * Ensures our stream is a fail-fast operator, i.e: it fails when the list has
+     * been modified before the end of its iteration.
+     */
+    @Test
+    public void testErrorOnCoModification() {
+        list = createRandomlyFilled(4, 10);
+        final PrimitiveIterator.OfInt values = list.stream(false).iterator();
+
+        // Start iteration normally.
+        assertEquals(list.getInt(0), values.nextInt());
+        assertEquals(list.getInt(1), values.nextInt());
+
+        // Now, if we alter the list and then try to use previously created stream, we should get an error.
+        list.add(0);
+        try {
+            values.next();
+            fail("Concurrent modification has not been detected.");
+        } catch (ConcurrentModificationException expected) {
+            // Expected behavior
+        }
+    }
+
+    /**
+     * Creates a new list whose capacity and value magnitude are defined as input.
+     * The list is filled by a random integer generator before return.
+     *
+     * @param  size      number of elements to insert in the list.
+     * @param  maxValue  maximum value to use for value insertion.
+     * @return a fresh and filled list.
+     */
+    private static IntegerList createRandomlyFilled(final int size, final int maxValue) {
+        final Random random = TestUtilities.createRandomNumberGenerator();
+        return IntStream.generate(() -> random.nextInt(maxValue))
+                .limit(size)
+                .collect(() -> new IntegerList(size, maxValue), IntegerList::addInt, null);
     }
 }

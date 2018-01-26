@@ -47,9 +47,6 @@ import org.apache.sis.util.Static;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.internal.storage.Resources;
 
-// Branch-dependent imports
-import org.apache.sis.internal.jdk8.JDK8;
-
 
 /**
  * Utility methods related to I/O operations. Many methods in this class accept arbitrary {@link Object} argument
@@ -228,7 +225,7 @@ public final class IOUtilities extends Static {
                 }
                 for (final byte b : path.substring(i, i+n).getBytes(StandardCharsets.UTF_8)) {
                     buffer.append('%');
-                    final String hex = Integer.toHexString(JDK8.toUnsignedInt(b)).toUpperCase(Locale.ROOT);
+                    final String hex = Integer.toHexString(Byte.toUnsignedInt(b)).toUpperCase(Locale.ROOT);
                     if (hex.length() < 2) {
                         buffer.append('0');
                     }

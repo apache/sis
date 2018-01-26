@@ -49,7 +49,7 @@ public final strictfp class MultiValuedAttributeTest extends TestCase {
      * This attribute has no default value.
      */
     private static MultiValuedAttribute<Integer> population() {
-        return new MultiValuedAttribute<>(DefaultAttributeTypeTest.population(new HashMap<String,Object>(4)));
+        return new MultiValuedAttribute<>(DefaultAttributeTypeTest.population(new HashMap<>(4)));
     }
 
     /**

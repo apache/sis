@@ -176,7 +176,7 @@ final class TensorValues<E> extends AbstractParameterDescriptor
      */
     @Override
     public List<GeneralParameterDescriptor> descriptors() {
-        return UnmodifiableArrayList.<GeneralParameterDescriptor>wrap(descriptors.getAllDescriptors(size()));
+        return UnmodifiableArrayList.wrap(descriptors.getAllDescriptors(size()));
     }
 
     /**

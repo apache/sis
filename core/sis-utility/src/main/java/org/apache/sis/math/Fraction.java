@@ -18,7 +18,6 @@ package org.apache.sis.math;
 
 import java.io.Serializable;
 import org.apache.sis.util.collection.WeakHashSet;
-import org.apache.sis.internal.jdk8.JDK8;
 
 
 /**
@@ -151,7 +150,7 @@ public final class Fraction extends Number implements Comparable<Fraction>, Seri
             }
         }
         return (num == numerator && den == denominator) ? this
-               : new Fraction(JDK8.toIntExact(num), JDK8.toIntExact(den));
+               : new Fraction(Math.toIntExact(num), Math.toIntExact(den));
     }
 
     /**
@@ -162,7 +161,7 @@ public final class Fraction extends Number implements Comparable<Fraction>, Seri
      * @throws ArithmeticException if the result overflows.
      */
     public Fraction negate() {
-        return (numerator == 0) ? this : new Fraction(-numerator, denominator);
+        return (numerator == 0) ? this : new Fraction(Math.negateExact(numerator), denominator);
     }
 
     /**
@@ -176,7 +175,7 @@ public final class Fraction extends Number implements Comparable<Fraction>, Seri
         // Intermediate result must be computed in a type wider that the 'numerator' and 'denominator' type.
         final long td = this .denominator;
         final long od = other.denominator;
-        return simplify(JDK8.addExact(od * numerator, td * other.numerator), od * td);
+        return simplify(Math.addExact(od * numerator, td * other.numerator), od * td);
     }
 
     /**
@@ -190,7 +189,7 @@ public final class Fraction extends Number implements Comparable<Fraction>, Seri
         // Intermediate result must be computed in a type wider that the 'numerator' and 'denominator' type.
         final long td = this .denominator;
         final long od = other.denominator;
-        return simplify(JDK8.subtractExact(od * numerator, td * other.numerator), od * td);
+        return simplify(Math.subtractExact(od * numerator, td * other.numerator), od * td);
     }
 
     /**

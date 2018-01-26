@@ -85,6 +85,7 @@ import org.opengis.referencing.operation.MathTransformFactory;
  * @since 0.6
  * @module
  */
+@FunctionalInterface
 public interface MathTransformProvider {
     /**
      * Creates a math transform from the specified group of parameter values.

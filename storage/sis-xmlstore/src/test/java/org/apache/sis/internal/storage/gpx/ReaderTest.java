@@ -39,8 +39,8 @@ import static org.apache.sis.test.TestUtilities.date;
 import static org.apache.sis.test.TestUtilities.getSingleton;
 
 // Branch-dependent imports
-import org.apache.sis.internal.jdk8.Stream;
-import org.apache.sis.internal.jdk8.Instant;
+import java.time.Instant;
+import java.util.stream.Stream;
 import org.apache.sis.feature.AbstractFeature;
 import org.opengis.util.GenericName;
 

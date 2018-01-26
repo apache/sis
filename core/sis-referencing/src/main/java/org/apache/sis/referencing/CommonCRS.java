@@ -82,9 +82,6 @@ import static java.util.Collections.singletonMap;
 import static org.opengis.referencing.IdentifiedObject.NAME_KEY;
 import static org.apache.sis.internal.util.StandardDateFormat.MILLISECONDS_PER_DAY;
 
-// Branch-dependent imports
-import org.apache.sis.internal.jdk8.JDK8;
-
 
 /**
  * Frequently-used geodetic CRS and datum that are guaranteed to be available in SIS.
@@ -1079,9 +1076,9 @@ public enum CommonCRS {
              */
             int code = 0;
             if (!isUTM) {
-                code = (isSouth ? southUPS : northUPS) & 0xFFFF;
+                code = Short.toUnsignedInt(isSouth ? southUPS : northUPS);
             } else if (zone >= firstZone && zone <= lastZone) {
-                code = (isSouth ? southUTM : northUTM) & 0xFFFF;
+                code = Short.toUnsignedInt(isSouth ? southUTM : northUTM);
             }
             if (code != 0) {
                 if (isUTM) code += zone;
@@ -1128,7 +1125,7 @@ public enum CommonCRS {
             crs = StandardDefinitions.createUniversal(code, geographic(), isUTM, latitude, longitude, cs);
             final ProjectedCRS other;
             synchronized (cachedProjections) {
-                other = JDK8.putIfAbsent(cachedProjections, key, crs);
+                other = cachedProjections.putIfAbsent(key, crs);
             }
             if (other != null) {
                 return other;
@@ -1735,7 +1732,7 @@ public enum CommonCRS {
      * Returns the same properties than the given object, except for the identifier which is set to the given code.
      */
     private static Map<String,?> properties(final IdentifiedObject template, final short code) {
-        final Map<String,Object> properties = new HashMap<String,Object>(IdentifiedObjects.getProperties(template, EXCLUDE));
+        final Map<String,Object> properties = new HashMap<>(IdentifiedObjects.getProperties(template, EXCLUDE));
         properties.put(GeographicCRS.IDENTIFIERS_KEY, new NamedIdentifier(Citations.EPSG, String.valueOf(code)));
         return properties;
     }

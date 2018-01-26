@@ -57,7 +57,7 @@ public final strictfp class SingletonAttributeTest extends TestCase {
      * This attribute has no default value.
      */
     static SingletonAttribute<Integer> population() {
-        return new SingletonAttribute<>(DefaultAttributeTypeTest.population(new HashMap<String,Object>(4)));
+        return new SingletonAttribute<>(DefaultAttributeTypeTest.population(new HashMap<>(4)));
     }
 
     /**

@@ -37,11 +37,10 @@ import org.apache.sis.setup.GeometryLibrary;
 import ucar.nc2.constants.CF;
 
 // Branch-dependent imports
-import org.apache.sis.internal.jdk8.Spliterator;
-import org.apache.sis.internal.jdk8.Stream;
-import org.apache.sis.internal.jdk8.StreamSupport;
-import org.apache.sis.internal.jdk8.Consumer;
-import org.apache.sis.internal.jdk8.JDK8;
+import java.util.Spliterator;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
+import java.util.function.Consumer;
 import org.apache.sis.feature.AbstractFeature;
 import org.apache.sis.feature.DefaultFeatureType;
 import org.apache.sis.feature.DefaultAttributeType;
@@ -296,6 +295,7 @@ search: for (final VariableInfo counts : decoder.variables) {
      *
      * @param  parallel  ignored, since current version does not support parallelism.
      */
+    @Override
     public Stream<AbstractFeature> features(boolean parallel) {
         return StreamSupport.stream(new Iter(), false);
     }
@@ -319,11 +319,6 @@ search: for (final VariableInfo counts : decoder.variables) {
          * Creates a new iterator.
          */
         Iter() {
-        }
-
-        @Override
-        public void forEachRemaining(Consumer<? super AbstractFeature> action) {
-            while (tryAdvance(action));
         }
 
         /**
@@ -377,7 +372,7 @@ search: for (final VariableInfo counts : decoder.variables) {
             }
             feature.setPropertyValue("trajectory", factory.createPolyline(dimension, Vector.create(tmp, false)));
             action.accept(feature);
-            position = JDK8.addExact(position, length);
+            position = Math.addExact(position, length);
             return ++index < counts.size();
         }
 

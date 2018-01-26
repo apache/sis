@@ -116,10 +116,9 @@ import static java.util.Collections.singleton;
 import static org.apache.sis.internal.util.StandardDateFormat.MILLISECONDS_PER_DAY;
 
 // Branch-dependent imports
+import java.time.LocalDate;
 import org.opengis.metadata.citation.ResponsibleParty;
 import org.opengis.metadata.identification.CharacterSet;
-import org.apache.sis.internal.jdk8.LocalDate;
-import org.apache.sis.internal.jdk8.JDK8;
 import org.apache.sis.feature.DefaultFeatureType;
 import org.apache.sis.metadata.iso.citation.DefaultResponsibleParty;
 
@@ -831,12 +830,7 @@ public class MetadataBuilder {
      */
     private Citation sharedCitation(final InternationalString title) {
         if (title == null) return null;
-        Citation c = (Citation) sharedValues.get(title);
-        if (c == null) {
-            c = new DefaultCitation(title);
-            sharedValues.put(title, c);
-        }
-        return c;
+        return (Citation) sharedValues.computeIfAbsent(title, k -> new DefaultCitation((CharSequence) k));
     }
 
     /**
@@ -849,7 +843,7 @@ public class MetadataBuilder {
      */
     private Identifier sharedIdentifier(final CharSequence authority, final String code) {
         final DefaultIdentifier id = new DefaultIdentifier(sharedCitation(trim(authority)), code);
-        return (Identifier) JDK8.getOrDefault(sharedValues, id, id);
+        return (Identifier) sharedValues.getOrDefault(id, id);
     }
 
     /**
@@ -2672,7 +2666,7 @@ parse:      for (int i = 0; i < length;) {
      * @return  the same value, but as an existing instance if possible.
      */
     public final Double shared(final Double value) {
-        final Object existing = JDK8.putIfAbsent(sharedValues, value, value);
+        final Object existing = sharedValues.putIfAbsent(value, value);
         return (existing != null) ? (Double) existing : value;
     }
 
@@ -2685,7 +2679,7 @@ parse:      for (int i = 0; i < length;) {
      * @return  the same value, but as an existing instance if possible.
      */
     public final Integer shared(final Integer value) {
-        final Object existing = JDK8.putIfAbsent(sharedValues, value, value);
+        final Object existing = sharedValues.putIfAbsent(value, value);
         return (existing != null) ? (Integer) existing : value;
     }
 }

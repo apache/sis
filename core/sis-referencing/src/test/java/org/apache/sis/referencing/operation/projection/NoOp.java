@@ -17,7 +17,6 @@
 package org.apache.sis.referencing.operation.projection;
 
 import java.util.Collections;
-import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.referencing.datum.Ellipsoid;
 import org.opengis.referencing.operation.Matrix;
@@ -74,7 +73,7 @@ final strictfp class NoOp extends ConformalProjection {
     private NoOp(final Parameters parameters) {
         super(new Initializer(new DefaultOperationMethod(
                 Collections.singletonMap(DefaultOperationMethod.NAME_KEY, parameters.getDescriptor().getName()),
-                2, 2, parameters.getDescriptor()), parameters, Collections.<ParameterRole, ParameterDescriptor<Double>>emptyMap(), (byte) 0));
+                2, 2, parameters.getDescriptor()), parameters, Collections.emptyMap(), (byte) 0));
         super.computeCoefficients();
     }
 

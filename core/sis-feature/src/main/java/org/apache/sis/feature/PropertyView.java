@@ -28,8 +28,6 @@ import org.apache.sis.util.Classes;
 import org.apache.sis.util.Debug;
 import org.apache.sis.internal.feature.Resources;
 
-// Branch-dependent imports
-
 
 /**
  * An attribute or association implementation which delegate its work to the parent feature.
@@ -110,7 +108,7 @@ final class PropertyView {
      * @return a collection containing the given element if non-null, or an empty collection otherwise.
      */
     static <V> List<V> singletonOrEmpty(final V element) {
-        return (element != null) ? Collections.singletonList(element) : Collections.<V>emptyList();
+        return (element != null) ? Collections.singletonList(element) : Collections.emptyList();
     }
 
     /**

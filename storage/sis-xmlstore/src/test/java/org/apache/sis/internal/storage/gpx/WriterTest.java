@@ -38,8 +38,7 @@ import org.junit.Test;
 import static org.apache.sis.test.Assert.*;
 
 // Branch-dependent imports
-import org.apache.sis.internal.jdk8.Instant;
-import org.apache.sis.internal.jdk8.Stream;
+import java.time.Instant;
 import org.apache.sis.feature.AbstractFeature;
 
 
@@ -352,7 +351,7 @@ public final strictfp class WriterTest extends TestCase {
         final Metadata metadata = new Metadata();
         metadata.bounds = bounds;
         metadata.creator = "DataProducer";
-        store.write(metadata, Stream.create(features));
+        store.write(metadata, features.stream());
     }
 
     /**

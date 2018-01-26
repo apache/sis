@@ -29,7 +29,7 @@ import org.apache.sis.util.resources.Errors;
 import org.apache.sis.internal.util.Constants;
 
 // Branch-dependent imports
-import org.apache.sis.internal.jdk8.JDK8;
+import java.util.function.Function;
 
 
 /**
@@ -105,7 +105,7 @@ import org.apache.sis.internal.jdk8.JDK8;
  * @since   0.7
  * @module
  */
-public class SQLTranslator {
+public class SQLTranslator implements Function<String,String> {
     /**
      * Table names used as "sentinel value" for detecting the presence of an EPSG database.
      * This array lists different possible names for the same table. The first entry must be
@@ -376,6 +376,7 @@ public class SQLTranslator {
      * @param  sql  the statement in MS-Access dialect.
      * @return the SQL statement adapted to the dialect of the target database.
      */
+    @Override
     public String apply(final String sql) {
         final String catalog = nonEmpty(this.catalog);
         final String schema  = nonEmpty(this.schema);
@@ -402,7 +403,7 @@ public class SQLTranslator {
              */
             final String name = sql.substring(start, end++);
             if (CharSequences.isUpperCase(name)) {
-                ansi.append(JDK8.getOrDefault(accessToAnsi, name, name));
+                ansi.append(accessToAnsi.getOrDefault(name, name));
             } else {
                 if (catalog != null) {
                     ansi.append(quote).append(catalog).append(quote).append('.');
@@ -417,10 +418,10 @@ public class SQLTranslator {
                     ansi.append(TABLE_PREFIX);
                 }
                 if (quoteTableNames) {
-                    ansi.append(JDK8.getOrDefault(accessToAnsi, name, name)).append(quote);
+                    ansi.append(accessToAnsi.getOrDefault(name, name)).append(quote);
                 } else {
                     for (final String word : name.split("\\s")) {
-                        ansi.append(JDK8.getOrDefault(accessToAnsi, word, word));
+                        ansi.append(accessToAnsi.getOrDefault(word, word));
                     }
                 }
             }

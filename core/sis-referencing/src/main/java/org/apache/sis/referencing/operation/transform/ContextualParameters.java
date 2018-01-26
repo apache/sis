@@ -648,7 +648,7 @@ public class ContextualParameters extends Parameters implements Serializable {
         while (upper != 0 && values[upper - 1] == null) {
             upper--;
         }
-        return UnmodifiableArrayList.<GeneralParameterValue>wrap(values, 0, upper);
+        return UnmodifiableArrayList.wrap(values, 0, upper);
     }
 
     /**

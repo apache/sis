@@ -430,16 +430,6 @@ public final class CoordinateSystems extends Static {
             @Override public Unit<?> getUnitReplacement(CoordinateSystemAxis axis, Unit<?> unit) {
                 return Units.isLinear(unit) ? newUnit : unit;
             }
-
-            @Override
-            public boolean accept(CoordinateSystemAxis axis) {
-                return true;
-            }
-
-            @Override
-            public AxisDirection getDirectionReplacement(CoordinateSystemAxis axis, AxisDirection direction) {
-                return direction;
-            }
         });
     }
 
@@ -470,16 +460,6 @@ public final class CoordinateSystems extends Static {
         return CoordinateSystems.replaceAxes(cs, new AxisFilter() {
             @Override public Unit<?> getUnitReplacement(CoordinateSystemAxis axis, Unit<?> unit) {
                 return Units.isAngular(unit) ? newUnit : unit;
-            }
-
-            @Override
-            public boolean accept(CoordinateSystemAxis axis) {
-                return true;
-            }
-
-            @Override
-            public AxisDirection getDirectionReplacement(CoordinateSystemAxis axis, AxisDirection direction) {
-                return direction;
             }
         });
     }

@@ -47,9 +47,6 @@ import org.apache.sis.util.resources.Errors;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.internal.util.StandardDateFormat;
 
-// Branch-dependent imports
-import org.apache.sis.internal.jdk8.JDK8;
-
 
 /**
  * Parser and formatter for <cite>Well Known Text</cite> (WKT) strings.
@@ -693,7 +690,7 @@ public class WKTFormat extends CompoundFormat<Object> {
                         new Object[] {name + " = " + element.keyword + "[…]", CharSequences.token(wkt, index)}, index);
             }
             // 'fragments' map has been created by 'parser()'.
-            if (JDK8.putIfAbsent(fragments, name, element) == null) {
+            if (fragments.putIfAbsent(name, element) == null) {
                 return;
             }
             error = Errors.Keys.ElementAlreadyPresent_1;

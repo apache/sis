@@ -84,9 +84,6 @@ import org.apache.sis.util.iso.AbstractFactory;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Errors;
 
-// Branch-specific imports
-import org.apache.sis.internal.jdk8.JDK8;
-
 
 /**
  * Low level factory for creating {@linkplain AbstractMathTransform math transforms}.
@@ -360,7 +357,7 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
             }
             final OperationMethodSet previous;
             synchronized (methodsByType) {
-                previous = JDK8.putIfAbsent(methodsByType, type, set);
+                previous = methodsByType.putIfAbsent(type, set);
             }
             if (previous != null) {
                 set = previous;
@@ -1394,11 +1391,9 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
                 c = Class.forName("org.apache.sis.io.wkt.MathTransformParser").asSubclass(Parser.class)
                          .getConstructor(MathTransformFactory.class);
                 final Constructor<?> cp = c;     // For allowing use in inner class or lambda expression.
-                AccessController.doPrivileged(new PrivilegedAction<Void>() {
-                    @Override public Void run() {
-                        cp.setAccessible(true);
-                        return null;
-                    }
+                AccessController.doPrivileged((PrivilegedAction<Void>) () -> {
+                    cp.setAccessible(true);
+                    return null;
                 });
                 parserConstructor = c;
             }

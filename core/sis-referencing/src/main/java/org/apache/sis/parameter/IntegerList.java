@@ -16,6 +16,7 @@
  */
 package org.apache.sis.parameter;
 
+import java.util.StringJoiner;
 import java.lang.reflect.Array;
 import javax.xml.bind.annotation.XmlValue;
 import org.apache.sis.util.CharSequences;
@@ -52,11 +53,10 @@ final class IntegerList {
      * @param array the integer values as a Java array.
      */
     public IntegerList(final Object array) {
-        final StringBuilder builder = new StringBuilder();
+        final StringJoiner builder = new StringJoiner(" ");
         final int length = Array.getLength(array);
         for (int i=0; i<length; i++) {
-            if (i != 0) builder.append(' ');
-            builder.append(Array.get(array, i));
+            builder.add(String.valueOf(Array.get(array, i)));
         }
         value = builder.toString();
     }

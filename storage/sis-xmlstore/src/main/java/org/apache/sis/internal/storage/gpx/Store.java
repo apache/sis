@@ -42,9 +42,9 @@ import org.apache.sis.metadata.iso.citation.DefaultCitation;
 import org.apache.sis.metadata.iso.distribution.DefaultFormat;
 
 // Branch-dependent imports
-import org.apache.sis.internal.jdk8.Stream;
-import org.apache.sis.internal.jdk8.StreamSupport;
-import org.apache.sis.internal.jdk8.UncheckedIOException;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
+import java.io.UncheckedIOException;
 import org.apache.sis.feature.AbstractFeature;
 import org.apache.sis.feature.DefaultFeatureType;
 
@@ -213,6 +213,7 @@ public final class Store extends StaxDataStore implements FeatureSet {
      * @return a stream over all features in the XML file.
      * @throws DataStoreException if an error occurred while creating the feature stream.
      */
+    @Override
     public final synchronized Stream<AbstractFeature> features(boolean parallel) throws DataStoreException {
         Reader r = reader;
         reader = null;

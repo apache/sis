@@ -31,9 +31,6 @@ import org.apache.sis.metadata.ValueExistencePolicy;
 import org.apache.sis.internal.system.Semaphores;
 import org.apache.sis.internal.metadata.Dependencies;
 
-// Branch-dependent imports
-import org.apache.sis.internal.jdk8.JDK8;
-
 
 /**
  * The handler for metadata proxy that implement (indirectly) metadata interfaces like
@@ -242,7 +239,7 @@ final class Dispatcher implements InvocationHandler {
                         final Map<String, Object> map = source.standard.asValueMap(cache, type,
                                     KeyNamePolicy.METHOD_NAME, ValueExistencePolicy.ALL);
                         synchronized (cache) {
-                            value = JDK8.putIfAbsent(map, method.getName(), value);
+                            value = map.putIfAbsent(method.getName(), value);
                             if (value == null) {
                                 value = method.invoke(cache);
                             }

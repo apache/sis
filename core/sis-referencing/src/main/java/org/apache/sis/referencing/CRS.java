@@ -21,7 +21,6 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.logging.LogRecord;
-import javax.measure.Unit;
 import org.opengis.util.FactoryException;
 import org.opengis.geometry.Envelope;
 import org.opengis.referencing.NoSuchAuthorityCodeException;
@@ -939,16 +938,6 @@ public final class CRS extends Static {
                 final CoordinateSystem cs = CoordinateSystems.replaceAxes(crs.getCoordinateSystem(), new AxisFilter() {
                     @Override public boolean accept(final CoordinateSystemAxis axis) {
                         return !AxisDirections.isVertical(axis.getDirection());
-                    }
-
-                    @Override
-                    public AxisDirection getDirectionReplacement(CoordinateSystemAxis axis, AxisDirection direction) {
-                        return direction;
-                    }
-
-                    @Override
-                    public Unit<?> getUnitReplacement(CoordinateSystemAxis axis, Unit<?> unit) {
-                        return unit;
                     }
                 });
                 if (cs.getDimension() != 2) break;

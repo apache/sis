@@ -22,6 +22,7 @@ import java.text.MessageFormat;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.logging.Level;
+import java.util.stream.Collectors;
 
 import org.apache.sis.internal.shapefile.jdbc.SQLConnectionClosedException;
 import org.apache.sis.internal.shapefile.jdbc.connection.DBFConnection;
@@ -163,7 +164,7 @@ public class DBFStatement extends AbstractStatement {
         // Check if all the underlying ResultSets that has been opened with this statement has been closed.
         // If not, we log a warning to help the developper.
         if (this.openedResultSets.size() > 0) {
-            log(Level.WARNING, "log.resultsets_left_opened", this.openedResultSets.size(), openedResultSets.toString());
+            log(Level.WARNING, "log.resultsets_left_opened", this.openedResultSets.size(), this.openedResultSets.stream().map(DBFResultSet::toString).collect(Collectors.joining(", ")));
         }
 
         this.isClosed = true;

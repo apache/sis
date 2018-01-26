@@ -1656,11 +1656,9 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
                 c = Class.forName("org.apache.sis.io.wkt.GeodeticObjectParser").asSubclass(Parser.class)
                          .getConstructor(Map.class, ObjectFactory.class, MathTransformFactory.class);
                 final Constructor<?> cp = c;     // For allowing use in inner class or lambda expression.
-                AccessController.doPrivileged(new PrivilegedAction<Void>() {
-                    @Override public Void run() {
-                        cp.setAccessible(true);
-                        return null;
-                    }
+                AccessController.doPrivileged((PrivilegedAction<Void>) () -> {
+                    cp.setAccessible(true);
+                    return null;
                 });
                 parserConstructor = c;
             }

@@ -40,9 +40,6 @@ import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
 import org.apache.sis.internal.feature.Resources;
 
-// Branch-dependent imports
-import org.apache.sis.internal.jdk8.JDK8;
-
 
 /**
  * Abstraction of a real-world phenomena. A {@code FeatureType} instance describes the class of all
@@ -411,7 +408,7 @@ public class DefaultFeatureType extends AbstractIdentifiedType implements Featur
             final AbstractIdentifiedType property = entry.getValue();
             if (property != null) {
                 final String tip = entry.getKey();
-                if (JDK8.putIfAbsent(byName, tip, property) == null) {
+                if (byName.putIfAbsent(tip, property) == null) {
                     /*
                      * This block is skipped if there is properties named "tip" and "head:tip".
                      * The 'indices' value may be null if the property is an operation.

@@ -571,6 +571,7 @@ public abstract class LoggerAdapter extends Logger {
      *
      * @since 0.5
      */
+    @Override
     public void logrb(final Level level, final String sourceClass, final String sourceMethod,
                       final ResourceBundle bundle, final String message, final Object... params)
     {
@@ -591,6 +592,7 @@ public abstract class LoggerAdapter extends Logger {
      *
      * @since 0.5
      */
+    @Override
     public void logrb(final Level level, final String sourceClass, final String sourceMethod,
                       final ResourceBundle bundle, final String message, final Throwable thrown)
     {

@@ -17,16 +17,12 @@
 package org.apache.sis.internal.shapefile.jdbc.sql;
 
 import java.util.Objects;
+import java.util.function.Function;
 import java.util.logging.Level;
 
 import org.apache.sis.internal.shapefile.AutoChecker;
 import org.apache.sis.internal.shapefile.jdbc.SQLConnectionClosedException;
 import org.apache.sis.internal.shapefile.jdbc.resultset.*;
-
-// Branch-dependent imports
-import org.apache.sis.internal.jdk8.Function;
-import org.apache.sis.util.Numbers;
-
 
 /**
  * Base class for clause resolver.
@@ -176,21 +172,34 @@ public abstract class ClauseResolver extends AutoChecker {
         }
         else {
             // Else, attempt to promote their types to something equivalent on the two sides.
-            if (value1 instanceof Number && value2 instanceof Number) {
-                // Promote Short to Integer, Long, Float or Double.
-                final Class<? extends Number> widestClass = Numbers.widestClass(
-                        value1.getClass().asSubclass(Number.class),
-                        value2.getClass().asSubclass(Number.class));
-                Number n1 = Numbers.cast((Number) value1, widestClass);
-                Number n2 = Numbers.cast((Number) value2, widestClass);
-                return compare(rs, n1, n2);
-            }
 
-            // if we are here, we have found no matching at all.
+            // Promote Short to Integer, Long, Float or Double.
+            Integer compare = compareIfPromoted(rs, value1, value2, Short.class, Integer.class, Integer::valueOf);
+            compare = compare != null ? compare : compareIfPromoted(rs, value1, value2, Short.class, Long.class, Long::valueOf);
+            compare = compare != null ? compare : compareIfPromoted(rs, value1, value2, Short.class, Float.class, Float::valueOf);
+            compare = compare != null ? compare : compareIfPromoted(rs, value1, value2, Short.class, Double.class, Double::valueOf);
+
+            // Promote Integer to Long, Float or Double.
+            compare = compare != null ? compare : compareIfPromoted(rs, value1, value2, Integer.class, Long.class, Long::valueOf);
+            compare = compare != null ? compare : compareIfPromoted(rs, value1, value2, Integer.class, Float.class, Float::valueOf);
+            compare = compare != null ? compare : compareIfPromoted(rs, value1, value2, Integer.class, Double.class, Double::valueOf);
+
+            // Promote Long to Float or Double.
+            compare = compare != null ? compare : compareIfPromoted(rs, value1, value2, Long.class, Float.class, Float::valueOf);
+            compare = compare != null ? compare : compareIfPromoted(rs, value1, value2, Long.class, Double.class, Double::valueOf);
+
+            // Promote Float to Double.
+            compare = compare != null ? compare : compareIfPromoted(rs, value1, value2, Float.class, Double.class, Double::valueOf);
+
+            // if we are here with still a null value in comparison result, we have found no matching at all.
             // Default to String comparison.
-            String default1 = value1.toString();
-            String default2 = value2.toString();
-            return compare(rs, default1, default2);
+            if (compare == null) {
+                String default1 = value1.toString();
+                String default2 = value2.toString();
+                return compare(rs, default1, default2);
+            }
+            else
+                return compare;
         }
     }
 

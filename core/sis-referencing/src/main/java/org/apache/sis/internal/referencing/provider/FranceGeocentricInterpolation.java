@@ -27,6 +27,7 @@ import java.io.EOFException;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.Files;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.measure.quantity.Angle;
 import javax.measure.quantity.Length;
@@ -55,9 +56,6 @@ import org.apache.sis.referencing.datum.DefaultEllipsoid;
 import org.apache.sis.referencing.operation.transform.InterpolatedGeocentricTransform;
 
 import static java.lang.Float.parseFloat;
-
-// Branch-specific imports
-import org.apache.sis.internal.jdk8.JDK8;
 
 
 /**
@@ -331,7 +329,7 @@ public class FranceGeocentricInterpolation extends GeodeticOperation {
             try {
                 grid = handler.peek();
                 if (grid == null) {
-                    try (BufferedReader in = JDK8.newBufferedReader(resolved)) {
+                    try (BufferedReader in = Files.newBufferedReader(resolved)) {
                         DatumShiftGridLoader.log(FranceGeocentricInterpolation.class, file);
                         final DatumShiftGridFile.Float<Angle,Length> g = load(in, file);
                         grid = DatumShiftGridCompressed.compress(g, averages, scale);
@@ -413,8 +411,8 @@ public class FranceGeocentricInterpolation extends GeodeticOperation {
                             yf = gridGeometry[3];
                             Δx = gridGeometry[4];
                             Δy = gridGeometry[5];
-                            nx = JDK8.toIntExact(Math.round((xf - x0) / Δx + 1));
-                            ny = JDK8.toIntExact(Math.round((yf - y0) / Δy + 1));
+                            nx = Math.toIntExact(Math.round((xf - x0) / Δx + 1));
+                            ny = Math.toIntExact(Math.round((yf - y0) / Δy + 1));
                             grid = new DatumShiftGridFile.Float<>(3,
                                     Units.DEGREE, Units.METRE, false,
                                     x0, y0, Δx, Δy, nx, ny, PARAMETERS, file);
@@ -462,8 +460,8 @@ public class FranceGeocentricInterpolation extends GeodeticOperation {
             t.nextToken();                                                      // Ignored
             final double x = Double.parseDouble(t.nextToken());                 // Longitude in degrees
             final double y = Double.parseDouble(t.nextToken());                 // Latitude in degrees
-            final int    i = JDK8.toIntExact(Math.round((x - x0) / Δx));        // Column index
-            final int    j = JDK8.toIntExact(Math.round((y - y0) / Δy));        // Row index
+            final int    i = Math.toIntExact(Math.round((x - x0) / Δx));        // Column index
+            final int    j = Math.toIntExact(Math.round((y - y0) / Δy));        // Row index
             if (i < 0 || i >= nx) {
                 throw new FactoryException(Errors.format(Errors.Keys.ValueOutOfRange_4, "x", x, x0, xf));
             }

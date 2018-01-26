@@ -687,7 +687,7 @@ public final class MathFunctions extends Static {
                 primes = MathFunctions.primes;
                 if (index >= primes.length) {
                     int i = primes.length;
-                    int n = primes[i - 1] & 0xFFFF;
+                    int n = Short.toUnsignedInt(primes[i - 1]);
                     // Compute by block of 16 values, for reducing the amount of array resize.
                     primes = Arrays.copyOf(primes, Math.min((index | 0xF) + 1, PRIMES_LENGTH_16_BITS));
                     do {
@@ -696,7 +696,7 @@ testNextNumber:         while (true) {      // Simulate a "goto" statement (usua
                             int prime;
                             int j = 0;
                             do {
-                                prime = primes[++j] & 0xFFFF;
+                                prime = Short.toUnsignedInt(primes[++j]);
                                 if (n % prime == 0) {
                                     continue testNextNumber;
                                 }
@@ -709,7 +709,7 @@ testNextNumber:         while (true) {      // Simulate a "goto" statement (usua
                 }
             }
         }
-        return primes[index] & 0xFFFF;
+        return Short.toUnsignedInt(primes[index]);
     }
 
     /**
@@ -742,7 +742,7 @@ testNextNumber:         while (true) {      // Simulate a "goto" statement (usua
                 return p;
             }
         }
-        return primes[i] & 0xFFFF;
+        return Short.toUnsignedInt(primes[i]);
     }
 
     /**

@@ -114,7 +114,7 @@ public final strictfp class CC_OperationParameterGroupTest extends XMLTestCase {
     public void testSubtitution() throws JAXBException {
         final ParameterDescriptor<?>[]         expected   = create(REMARK);
         final List<GeneralParameterDescriptor> fromXML    = unmarshal().descriptors();
-        final List<GeneralParameterDescriptor> fromValues = UnmodifiableArrayList.<GeneralParameterDescriptor>wrap(expected);
+        final List<GeneralParameterDescriptor> fromValues = UnmodifiableArrayList.wrap(expected);
         final Map<GeneralParameterDescriptor,GeneralParameterDescriptor> replacements = new IdentityHashMap<>(4);
         final GeneralParameterDescriptor[] merged = CC_OperationParameterGroup.merge(fromXML,
                 fromValues.toArray(new GeneralParameterDescriptor[fromValues.size()]), replacements);

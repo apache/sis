@@ -64,12 +64,4 @@ public abstract class AbstractIterator<E> implements Iterator<E> {
         next = null;
         return value;
     }
-
-    /**
-     * Unsupported by default.
-     */
-    @Override
-    public void remove() {
-        throw new UnsupportedOperationException();
-    }
 }

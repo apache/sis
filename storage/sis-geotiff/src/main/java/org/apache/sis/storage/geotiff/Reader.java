@@ -32,10 +32,6 @@ import org.apache.sis.internal.storage.MetadataBuilder;
 import org.apache.sis.internal.geotiff.Resources;
 import org.apache.sis.util.resources.Errors;
 
-// Branch-dependent imports
-import java.util.Collections;
-import org.apache.sis.internal.jdk8.JDK8;
-
 
 /**
  * An image reader for GeoTIFF files. This reader duplicates the implementations performed by other libraries, but we
@@ -248,14 +244,14 @@ final class Reader extends GeoTIFF {
                 return null;
             }
             resolveDeferredEntries(null, nextIFD);
-            input.seek(JDK8.addExact(origin, nextIFD));
+            input.seek(Math.addExact(origin, nextIFD));
             nextIFD = 0;               // Prevent trying other IFD if we fail to read this one.
             /*
              * Design note: we parse the Image File Directory entry now because even if we were
              * not interrested in that IFD, we need to go anyway after its last record in order
              * to get the pointer to the next IFD.
              */
-            final int offsetSize = (Integer.SIZE / Byte.SIZE) << intSizeExpansion;
+            final int offsetSize = Integer.BYTES << intSizeExpansion;
             final ImageFileDirectory dir = new ImageFileDirectory(this);
             for (long remaining = readUnsignedShort(); --remaining >= 0;) {
                 /*
@@ -268,7 +264,7 @@ final class Reader extends GeoTIFF {
                 final short tag  = (short) input.readUnsignedShort();
                 final Type type  = Type.valueOf(input.readShort());        // May be null.
                 final long count = readUnsignedInt();
-                final long size  = (type != null) ? JDK8.multiplyExact(type.size, count) : 0;
+                final long size  = (type != null) ? Math.multiplyExact(type.size, count) : 0;
                 if (size <= offsetSize) {
                     /*
                      * If the value can fit inside the number of bytes given by 'offsetSize', then the value is
@@ -333,7 +329,7 @@ final class Reader extends GeoTIFF {
             throws IOException, DataStoreException
     {
         if (deferredNeedsSort) {
-            Collections.sort(deferredEntries);                          // Sequential order in input stream.
+            deferredEntries.sort(null);                                 // Sequential order in input stream.
             deferredNeedsSort = false;
         }
         final long ignoreBefore = input.getStreamPosition() - origin;   // Avoid seeking back, unless we need to.
@@ -347,7 +343,7 @@ final class Reader extends GeoTIFF {
         for (final Iterator<DeferredEntry> it = deferredEntries.iterator(); it.hasNext();) {
             final DeferredEntry entry = it.next();
             if (entry.owner == dir || (entry.offset >= ignoreBefore && entry.offset <= ignoreAfter)) {
-                input.seek(JDK8.addExact(origin, entry.offset));
+                input.seek(Math.addExact(origin, entry.offset));
                 Object error;
                 try {
                     error = entry.owner.addEntry(entry.tag, entry.type, entry.count);

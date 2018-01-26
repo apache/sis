@@ -17,15 +17,12 @@
 package org.apache.sis.math;
 
 import java.io.Serializable;
+import java.util.function.IntSupplier;
 import org.apache.sis.util.Numbers;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.collection.CheckedContainer;
 import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.measure.NumberRange;
-
-// Branch-dependent imports
-import org.apache.sis.internal.jdk8.JDK8;
-import org.apache.sis.internal.jdk8.IntSupplier;
 
 
 /**
@@ -719,7 +716,7 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
 
         /** Returns the string representation at the given index. */
         @Override public String stringValue(final int index) {
-            return JDK8.toUnsignedString(super.longValue(index));
+            return Long.toUnsignedString(super.longValue(index));
         }
 
         /** Finds the minimum and maximum values in the array or in a subset of the array. */
@@ -751,7 +748,7 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
         @Override public boolean isUnsigned()          {return true;}
         @Override public double doubleValue(int index) {return longValue(index);}
         @Override public float   floatValue(int index) {return longValue(index);}
-        @Override public long     longValue(int index) {return super.intValue(index) & 0xFFFFFFFFL;}
+        @Override public long     longValue(int index) {return Integer.toUnsignedLong(super.intValue(index));}
         @Override public int       intValue(int index) {
             final int value = super.intValue(index);
             if (value >= 0) return value;
@@ -760,7 +757,7 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
 
         /** Returns the string representation at the given index. */
         @Override public String stringValue(final int index) {
-            return JDK8.toUnsignedString(super.intValue(index));
+            return Integer.toUnsignedString(super.intValue(index));
         }
 
         /** Finds the minimum and maximum values in the array or in a subset of the array. */
@@ -792,8 +789,8 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
         @Override public boolean isUnsigned()          {return true;}
         @Override public double doubleValue(int index) {return intValue(index);}
         @Override public float   floatValue(int index) {return intValue(index);}
-        @Override public long     longValue(int index) {return super.shortValue(index) & 0xFFFFL;}
-        @Override public int       intValue(int index) {return super.shortValue(index) & 0xFFFF;}
+        @Override public long     longValue(int index) {return Short.toUnsignedLong(super.shortValue(index));}
+        @Override public int       intValue(int index) {return Short.toUnsignedInt (super.shortValue(index));}
         @Override public short   shortValue(int index) {
             final short value = super.shortValue(index);
             if (value >= 0) return value;
@@ -834,8 +831,8 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
         @Override public boolean isUnsigned()          {return true;}
         @Override public double doubleValue(int index) {return intValue(index);}
         @Override public float   floatValue(int index) {return intValue(index);}
-        @Override public long     longValue(int index) {return JDK8.toUnsignedLong (super.byteValue(index));}
-        @Override public int       intValue(int index) {return JDK8.toUnsignedInt  (super.byteValue(index));}
+        @Override public long     longValue(int index) {return Byte.toUnsignedLong (super.byteValue(index));}
+        @Override public int       intValue(int index) {return Byte.toUnsignedInt  (super.byteValue(index));}
         @Override public short   shortValue(int index) {return (short) intValue(index);}
         @Override public byte     byteValue(int index) {
             final byte value = super.byteValue(index);

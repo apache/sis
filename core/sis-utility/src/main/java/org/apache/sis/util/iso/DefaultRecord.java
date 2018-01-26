@@ -246,12 +246,6 @@ public class DefaultRecord implements Record, Serializable {
             }
             throw new NoSuchElementException();
         }
-
-        /** Unsupported operation. */
-        @Override
-        public void remove() {
-            throw new UnsupportedOperationException();
-        }
     }
 
     /**

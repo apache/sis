@@ -86,7 +86,7 @@ public abstract class Variable extends NamedElement {
         buffer.append(getDataType().name().toLowerCase());
         final int[] shape = getGridEnvelope();
         for (int i=shape.length; --i>=0;) {
-            buffer.append('[').append(shape[i] & 0xFFFFFFFFL).append(']');
+            buffer.append('[').append(Integer.toUnsignedLong(shape[i])).append(']');
         }
         return buffer.toString();
     }
@@ -114,7 +114,7 @@ public abstract class Variable extends NamedElement {
     public final boolean isCoverage(final int minSpan) {
         int numVectors = 0;                                     // Number of dimension having more than 1 value.
         for (final int length : getGridEnvelope()) {
-            if ((length & 0xFFFFFFFFL) >= minSpan) {
+            if (Integer.toUnsignedLong(length) >= minSpan) {
                 numVectors++;
             }
         }
@@ -236,7 +236,7 @@ public abstract class Variable extends NamedElement {
         final StringBuilder buffer = new StringBuilder(getName()).append(" : ").append(getDataType());
         final int[] shape = getGridEnvelope();
         for (int i=shape.length; --i>=0;) {
-            buffer.append('[').append(shape[i] & 0xFFFFFFFFL).append(']');
+            buffer.append('[').append(Integer.toUnsignedLong(shape[i])).append(']');
         }
         return buffer.toString();
     }

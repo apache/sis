@@ -23,9 +23,9 @@ import java.io.IOException;
 import org.apache.sis.internal.feature.MovingFeature;
 
 // Branch-dependent imports
-import org.apache.sis.internal.jdk8.Instant;
-import org.apache.sis.internal.jdk8.DateTimeException;
-import org.apache.sis.internal.jdk8.Consumer;
+import java.time.Instant;
+import java.time.DateTimeException;
+import java.util.function.Consumer;
 import org.apache.sis.feature.AbstractAttribute;
 import org.apache.sis.feature.AbstractFeature;
 
@@ -141,11 +141,7 @@ final class MovingFeatureIterator extends FeatureIterator implements Consumer<Lo
             if (!mfIdRef.equals(identifier)) {
                 publish    = identifier;
                 identifier = mfIdRef;
-                builder    = builders.get(mfIdRef);
-                if (builder == null) {
-                    builder = new MovingFeature(np);
-                    builders.put(mfIdRef, builder);
-                }
+                builder    = builders.computeIfAbsent(mfIdRef, (k) -> new MovingFeature(np));
             }
             builder.addTimeRange(startTime, endTime);
             for (int i=0; i<np; i++) {

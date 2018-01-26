@@ -41,9 +41,6 @@ import org.apache.sis.xml.MarshalContext;
 import org.apache.sis.xml.ValueConverter;
 import org.apache.sis.xml.ReferenceResolver;
 
-// Branch-dependent imports.
-import org.apache.sis.internal.jdk8.JDK8;
-
 
 /**
  * Thread-local status of a marshalling or unmarshalling processes.
@@ -499,7 +496,7 @@ public final class Context extends MarshalContext {
      */
     public static boolean setObjectForID(final Context context, final Object object, final String id) {
         if (context != null) {
-            final Object existing = JDK8.putIfAbsent(context.identifiers, id, object);
+            final Object existing = context.identifiers.putIfAbsent(id, object);
             if (existing == null) {
                 if (context.identifiedObjects.put(object, id) != null) {
                     throw new AssertionError(id);   // Caller forgot to invoke getExistingID(context, object).

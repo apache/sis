@@ -131,7 +131,7 @@ public class ResourcesDownloader extends InstallationResources {
      */
     @Override
     public Set<String> getAuthorities() {
-        return (console != null && directory != null) ? Collections.singleton(EPSG) : Collections.<String>emptySet();
+        return (console != null && directory != null) ? Collections.singleton(EPSG) : Collections.emptySet();
     }
 
     /**

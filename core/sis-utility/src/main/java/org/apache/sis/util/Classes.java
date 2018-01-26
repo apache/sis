@@ -405,7 +405,7 @@ next:       for (final Class<?> candidate : candidates) {
      *         at least one non-null element.
      */
     public static Class<?> findSpecializedClass(final Iterable<?> objects) {
-        final Set<Class<?>> types = (Set<Class<?>>) getClasses(objects);
+        final Set<Class<?>> types = getClasses(objects);
         types.remove(null);
         /*
          * Removes every classes in the types collection which are assignable from an other
@@ -457,7 +457,7 @@ next:       for (final Class<?> candidate : candidates) {
      *         given collection does not contain at least one non-null element.
      */
     public static Class<?> findCommonClass(final Iterable<?> objects) {
-        final Set<Class<?>> types = (Set<Class<?>>) getClasses(objects);
+        final Set<Class<?>> types = getClasses(objects);
         types.remove(null);
         return common(types);
     }

@@ -16,7 +16,14 @@
  */
 package org.apache.sis.storage;
 
+import java.util.Iterator;
+import org.apache.sis.internal.storage.Resources;
+
 // Branch-dependent imports
+import java.util.function.Predicate;
+import java.util.function.UnaryOperator;
+import java.util.stream.Stream;
+import org.apache.sis.feature.AbstractFeature;
 import org.apache.sis.feature.DefaultFeatureType;
 
 
@@ -44,7 +51,7 @@ public interface FeatureSet extends DataSet {
      *   <li>{@linkplain org.opengis.referencing.crs.CoordinateReferenceSystem Coordinate Reference System}.</li>
      * </ul>
      *
-     * All features returned by {@code features(boolean)} will be either of that type, or a sub-type of it.
+     * All features returned by {@link #features(boolean)} will be either of that type, or a sub-type of it.
      *
      * <div class="note"><b>Relationship with metadata:</b>
      * if subtypes exist, their list may be obtained from the {@linkplain #getMetadata() metadata} like below
@@ -66,6 +73,40 @@ public interface FeatureSet extends DataSet {
      * @throws DataStoreException if an error occurred while reading definitions from the underlying data store.
      */
     DefaultFeatureType getType() throws DataStoreException;
+
+    /**
+     * Requests a subset of features and feature properties from this resource.
+     * The filtering can be applied in two domains:
+     *
+     * <ul>
+     *   <li>The returned {@code FeatureSet} may contain a smaller number of {@code Feature} instances.</li>
+     *   <li>In each {@code Feature} instance of the returned set, the number of
+     *       {@linkplain org.apache.sis.feature.DefaultFeatureType#getProperty properties} may be smaller.</li>
+     * </ul>
+     *
+     * While it is technically possible to return a <em>transformed</em> feature set (i.e. containing feature
+     * properties not found in this original {@code FeatureSet}, for example as a result of some computation),
+     * such usages should be rare. Transformations should be the topic of a separated processing package.
+     * This {@code subset(Query)} method is rather for allowing {@link DataStore} implementations to optimize
+     * the overall filtering by using the tools available with their format (for example an R-tree).
+     * {@code BoundingBox} filters are the most common case of optimization implemented by {@link DataStore}.
+     *
+     * <p>The returned subset may be a <em>view</em> of this set, i.e. changes in this {@code FeatureSet}
+     * may be reflected immediately on the returned subset (and conversely), but not necessarily.
+     * However the returned subset may not have the same capabilities as this {@link FeatureSet}.
+     * In particular, write operations may become unsupported after complex queries.</p>
+     *
+     * <p>The default implementation throws {@link UnsupportedQueryException}.</p>
+     *
+     * @param  query  definition of feature and feature properties filtering applied at reading time.
+     * @return resulting subset of features (never {@code null}).
+     * @throws UnsupportedQueryException if this {@code FeatureSet} can not execute the given query.
+     *         This includes query validation errors.
+     * @throws DataStoreException if another error occurred while processing the query.
+     */
+    default FeatureSet subset(Query query) throws UnsupportedQueryException, DataStoreException {
+        throw new UnsupportedQueryException();
+    }
 
     /**
      * Returns a stream of all features contained in this dataset.
@@ -98,5 +139,64 @@ public interface FeatureSet extends DataSet {
      * @return all features contained in this dataset.
      * @throws DataStoreException if an error occurred while creating the stream.
      */
-//  Stream<Feature> features(boolean parallel) throws DataStoreException;
+    Stream<AbstractFeature> features(boolean parallel) throws DataStoreException;
+
+    /**
+     * Inserts new features in this {@code FeatureSet}.
+     * Any feature already present in the {@link FeatureSet} will remain unmodified.
+     *
+     * <div class="note"><b>API note:</b>
+     * this method expects an {@link Iterator} rather then a {@link java.util.stream.Stream} for easing
+     * inter-operability with various API. Implementing a custom {@link Iterator} requires less effort
+     * than implementing a {@link Stream}. On the other side if the user has a {@link Stream},
+     * obtaining an {@link Iterator} can be done by a call to {@link Stream#iterator()}.</div>
+     *
+     * <p>The default implementation throws {@link ReadOnlyStorageException}.</p>
+     *
+     * @param  features features to insert in this {@code FeatureSet}.
+     * @throws ReadOnlyStorageException if this instance does not support write operations.
+     * @throws DataStoreException if another error occurred while storing new features.
+     */
+    default void add(Iterator<? extends AbstractFeature> features) throws ReadOnlyStorageException, DataStoreException {
+        throw new ReadOnlyStorageException(this, Resources.Keys.StoreIsReadOnly);
+    }
+
+    /**
+     * Removes all features from this {@code FeatureSet} which matches the given predicate.
+     *
+     * <p>The default implementation throws {@link ReadOnlyStorageException}.</p>
+     *
+     * @param  filter  a predicate which returns true for resources to be removed.
+     * @return {@code true} if any elements were removed.
+     * @throws ReadOnlyStorageException if this instance does not support write operations.
+     * @throws DataStoreException if another error occurred while removing features.
+     */
+    default boolean removeIf(Predicate<? super AbstractFeature> filter) throws ReadOnlyStorageException, DataStoreException {
+        throw new ReadOnlyStorageException(this, Resources.Keys.StoreIsReadOnly);
+    }
+
+    /**
+     * Updates all features from this {@code FeatureSet} which matches the given predicate.
+     * For each {@code Feature} instance matching the given {@link Predicate},
+     * the <code>{@linkplain UnaryOperator#apply UnaryOperator.apply(Feature)}</code> method will be invoked.
+     * {@code UnaryOperator}s are free to modify the given {@code Feature} <i>in-place</i> or to return a
+     * different feature instance. Two behaviors are possible:
+     * <ul>
+     *   <li>If the operator returns a non-null {@code Feature}, then the modified feature is stored
+     *       in replacement of the previous feature (not necessarily at the same location).</li>
+     *   <li>If the operator returns {@code null}, then the feature will be removed from the {@code FeatureSet}.</li>
+     * </ul>
+     *
+     * <p>The default implementation throws {@link ReadOnlyStorageException}.</p>
+     *
+     * @param  filter   a predicate which returns true for resources to be updated.
+     * @param  updater  operation called for each matching {@code Feature}.
+     * @throws ReadOnlyStorageException if this instance does not support write operations.
+     * @throws DataStoreException if another error occurred while replacing features.
+     */
+    default void replaceIf(Predicate<? super AbstractFeature> filter, UnaryOperator<AbstractFeature> updater)
+            throws ReadOnlyStorageException, DataStoreException
+    {
+        throw new ReadOnlyStorageException(this, Resources.Keys.StoreIsReadOnly);
+    }
 }

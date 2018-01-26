@@ -49,7 +49,7 @@ import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.math.MathFunctions;
 
 // Branch-dependent imports
-import org.apache.sis.internal.jdk8.UncheckedIOException;
+import java.io.UncheckedIOException;
 
 
 /**

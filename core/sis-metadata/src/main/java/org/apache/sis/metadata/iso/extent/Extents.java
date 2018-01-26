@@ -52,9 +52,6 @@ import org.apache.sis.util.Static;
 import static java.lang.Math.*;
 import static org.apache.sis.internal.metadata.ReferencingServices.AUTHALIC_RADIUS;
 
-// Branch-dependent imports
-import org.apache.sis.internal.jdk8.JDK8;
-
 
 /**
  * Convenience static methods for extracting information from {@link Extent} objects.
@@ -382,7 +379,7 @@ public final class Extents extends Static {
         if (min == null) return max;
         if (max == null) return min;
         final long startTime = min.getTime();
-        return new Date(startTime + Math.round((max.getTime() - startTime) * location)); // addExact on JDK8 branch.
+        return new Date(Math.addExact(startTime, Math.round((max.getTime() - startTime) * location)));
     }
 
     /**
@@ -402,7 +399,7 @@ public final class Extents extends Static {
                 xmax += (Longitude.MAX_VALUE - Longitude.MIN_VALUE);
             }
             x = Longitude.normalize((x + xmax) / 2);
-            if (JDK8.isFinite(x) || JDK8.isFinite(y)) {
+            if (Double.isFinite(x) || Double.isFinite(y)) {
                 return ReferencingServices.getInstance().geographic(x, y);
             }
         }

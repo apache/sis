@@ -105,7 +105,7 @@ public final class Citations extends Static {
      *
      * @since 0.6
      */
-    public static final List<Citation> ISO_19115 = UnmodifiableArrayList.<Citation>wrap(new CitationConstant[] {
+    public static final List<Citation> ISO_19115 = UnmodifiableArrayList.wrap(new CitationConstant[] {
         new CitationConstant("ISO 19115-1"),
         new CitationConstant("ISO 19115-2")
     });

@@ -36,7 +36,9 @@ import org.apache.sis.internal.system.DelayedExecutor;
 import org.apache.sis.internal.system.ReferenceQueueConsumer;
 
 // Branch-dependent imports
-import org.apache.sis.internal.jdk8.Supplier;
+import java.util.function.Supplier;
+import java.util.function.Function;
+import java.util.function.BiFunction;
 
 
 /**
@@ -51,18 +53,14 @@ import org.apache.sis.internal.jdk8.Supplier;
  *   <li>Retain oldest values by soft or weak references instead of strong references.</li>
  * </ul>
  *
- * This class can be used by invoking
+ * The easiest way to use this class is to invoke {@link #computeIfAbsent computeIfAbsent(…)}
  * or {@link #getOrCreate getOrCreate(…)} with lambda functions as below:
  *
  * {@preformat java
  *     private final Cache<String,MyObject> cache = new Cache<String,MyObject>();
  *
  *     public MyObject getMyObject(String key) {
- *         try {
- *             return cache.getOrCreate(key, (k) -> createMyObject(k));
- *         } catch (Exception e) {
- *             // Decide here what to rethrow.
- *         }
+ *         return cache.computeIfAbsent(key, (k) -> createMyObject(k));
  *     }
  * }
  *
@@ -331,6 +329,55 @@ public class Cache<K,V> extends AbstractMap<K,V> implements ConcurrentMap<K,V> {
     }
 
     /**
+     * Returns the value for the given key if it exists, or computes it otherwise.
+     * If a value already exists in the cache, then it is returned immediately.
+     * Otherwise the {@code creator.apply(Object)} method is invoked and its result
+     * is saved in this cache for future reuse.
+     *
+     * <div class="note"><b>Example:</b>
+     * below is the same code than {@link #getOrCreate(Object, Callable)} example,
+     * but without the need for any checked exception handling:
+     *
+     * {@preformat java
+     *     private final Cache<String,MyObject> cache = new Cache<String,MyObject>();
+     *
+     *     public MyObject getMyObject(final String key) {
+     *         return cache.computeIfAbsent(key, (k) -> createMyObject(k));
+     *     }
+     * }
+     * </div>
+     *
+     * This method is similar to {@link #getOrCreate(Object, Callable)}, but without checked exceptions.
+     *
+     * @param  key      the key for which to get the cached or created value.
+     * @param  creator  a method for creating a value, to be invoked only if no value are cached for the given key.
+     * @return the value already mapped to the key, or the newly computed value.
+     *
+     * @since 1.0
+     *
+     * @see #peek(Object)
+     * @see #containsKey(Object)
+     * @see #getOrCreate(Object, Callable)
+     * @see #computeIfPresent(Object, BiFunction)
+     */
+    @Override
+    public V computeIfAbsent(final K key, final Function<? super K, ? extends V> creator) {
+        V value = peek(key);
+        if (value == null) {
+            final Handler<V> handler = lock(key);
+            try {
+                value = handler.peek();
+                if (value == null) {
+                    value = creator.apply(key);
+                }
+            } finally {
+                handler.putAndUnlock(value);
+            }
+        }
+        return value;
+    }
+
+    /**
      * Returns {@code true} if the given value is an instance of one of the reserved types
      * used internally by this class.
      */
@@ -499,6 +546,137 @@ public class Cache<K,V> extends AbstractMap<K,V> implements ConcurrentMap<K,V> {
             notifyChange(key, newValue);
         }
         return done;
+    }
+
+    /**
+     * Iterates over all entries in the cache and replaces their value with the one provided by the given function.
+     * If the function throws an exception, the iteration is stopped and the exception is propagated. If any value
+     * is under computation in other threads, then the iteration will block on that entry until its computation is
+     * completed.
+     *
+     * @param  remapping  the function computing new values from the old ones.
+     *
+     * @since 1.0
+     */
+    @Override
+    public void replaceAll(final BiFunction<? super K, ? super V, ? extends V> remapping) {
+        final ReplaceAdapter adapter = new ReplaceAdapter(remapping);
+        map.replaceAll(adapter);
+        Deferred.notifyChanges(this, adapter.changes);
+    }
+
+    /**
+     * Replaces the value mapped to the given key by a new value computed from the old value.
+     * If a value for the given key is under computation in another thread, then this method
+     * blocks until that computation is completed. This is equivalent to the work performed
+     * by {@link #replaceAll replaceAll(…)} but on a single entry.
+     *
+     * @param  key        key of the value to replace.
+     * @param  remapping  the function computing new values from the old ones.
+     * @return the new value associated with the given key.
+     *
+     * @see #computeIfAbsent(Object, Function)
+     *
+     * @since 1.0
+     */
+    @Override
+    public V computeIfPresent(final K key, final BiFunction<? super K, ? super V, ? extends V> remapping) {
+        final ReplaceAdapter adapter = new ReplaceAdapter(remapping);
+        final Object value = map.computeIfPresent(key, adapter);
+        Deferred.notifyChanges(this, adapter.changes);
+        return valueOf(value);
+    }
+
+    /**
+     * Replaces the value mapped to the given key by a new value computed from the old value.
+     * If there is no value for the given key, then the "old value" is taken as {@code null}.
+     * If a value for the given key is under computation in another thread, then this method
+     * blocks until that computation is completed. This method is equivalent to
+     * {@link #computeIfPresent computeIfPresent(…)} except that a new value will be computed
+     * even if no value existed for the key before this method call.
+     *
+     * @param  key        key of the value to replace.
+     * @param  remapping  the function computing new values from the old ones, or from a {@code null} value.
+     * @return the new value associated with the given key.
+     *
+     * @see #computeIfAbsent(Object, Function)
+     *
+     * @since 1.0
+     */
+    @Override
+    public V compute(final K key, final BiFunction<? super K, ? super V, ? extends V> remapping) {
+        final ReplaceAdapter adapter = new ReplaceAdapter(remapping);
+        final Object value = map.compute(key, adapter);
+        Deferred.notifyChanges(this, adapter.changes);
+        return valueOf(value);
+    }
+
+    /**
+     * Maps the given value to the given key if no mapping existed before this method call,
+     * or computes a new value otherwise. If a value for the given key is under computation
+     * in another thread, then this method blocks until that computation is completed.
+     *
+     * @param  key        key of the value to replace.
+     * @param  value      the value to associate with the given key if no value already exists, or {@code null}.
+     * @param  remapping  the function computing a new value by merging the exiting value
+     *                    with the {@code value} argument given to this method.
+     * @return the new value associated with the given key.
+     *
+     * @since 1.0
+     */
+    @Override
+    public V merge(final K key, final V value, final BiFunction<? super V, ? super V, ? extends V> remapping) {
+        ensureValidType(value);
+
+        /** Similar to {@link Cache.ReplaceAdapter}, but adapted to the merge case. */
+        final class Adapter implements BiFunction<Object,Object,Object> {
+            /** Forwards {@link Cache#map} calls to the user-provided function. */
+            @Override public Object apply(final Object oldValue, final Object givenValue) {
+                final V toReplace = valueOf(oldValue);
+                final V newValue = remapping.apply(toReplace, valueOf(givenValue));
+                ensureValidType(newValue);
+                if (newValue != toReplace) {
+                    changes = new Deferred<>(key, newValue, changes);
+                }
+                return newValue;
+            }
+
+            /** The new values for which to send notifications. */
+            Deferred<K,V> changes;
+        }
+        final Adapter adapter = new Adapter();
+        final Object newValue = map.merge(key, value, adapter);
+        Deferred.notifyChanges(this, adapter.changes);
+        return valueOf(newValue);
+    }
+
+    /**
+     * A callback for {@link Cache#map} which forwards the calls to the {@code remapping} function provided by user.
+     * Before to forward the calls, {@code ReplaceAdapter} verifies if the value is under computation. If yes, then
+     * this adapter block until the value is available for forwarding it to the user.
+     */
+    private final class ReplaceAdapter implements BiFunction<K,Object,Object> {
+        /** The new values for which to send notifications. */
+        private Deferred<K,V> changes;
+
+        /** The user-providing function. */
+        private final BiFunction<? super K, ? super V, ? extends V> remapping;
+
+        /** Creates a new adapter for the given user-provided function. */
+        ReplaceAdapter(final BiFunction<? super K, ? super V, ? extends V> remapping) {
+            this.remapping = remapping;
+        }
+
+        /** Forwards {@link Cache#map} calls to the user-provided function. */
+        @Override public Object apply(final K key, final Object oldValue) {
+            final V toReplace = valueOf(oldValue);
+            final V newValue = remapping.apply(key, toReplace);
+            ensureValidType(newValue);
+            if (newValue != toReplace) {
+                changes = new Deferred<>(key, newValue, changes);
+            }
+            return newValue;
+        }
     }
 
     /**

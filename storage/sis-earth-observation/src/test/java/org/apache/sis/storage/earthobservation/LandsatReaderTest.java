@@ -24,7 +24,6 @@ import java.io.InputStreamReader;
 import org.opengis.metadata.Metadata;
 import org.opengis.util.FactoryException;
 import org.apache.sis.metadata.iso.DefaultMetadata;
-import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.util.logging.EmptyWarningListeners;
 import org.apache.sis.internal.system.Modules;
@@ -88,7 +87,7 @@ public class LandsatReaderTest extends TestCase {
                 LandsatReaderTest.class.getResourceAsStream("LandsatTest.txt"), "UTF-8")))
         {
             final LandsatReader reader = new LandsatReader("LandsatTest.txt",
-                    new EmptyWarningListeners<DataStore>(Locale.ENGLISH, Modules.EARTH_OBSERVATION));
+                    new EmptyWarningListeners<>(Locale.ENGLISH, Modules.EARTH_OBSERVATION));
             reader.read(in);
             actual = reader.getMetadata();
         }

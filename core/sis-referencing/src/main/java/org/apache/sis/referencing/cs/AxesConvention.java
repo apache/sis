@@ -147,11 +147,6 @@ public enum AxesConvention implements AxisFilter {
      */
     NORMALIZED {
         @Override
-        public boolean accept(final CoordinateSystemAxis axis) {
-            return true;
-        }
-
-        @Override
         public Unit<?> getUnitReplacement(final CoordinateSystemAxis axis, Unit<?> unit) {
             if (Units.isLinear(unit)) {
                 unit = Units.METRE;
@@ -231,18 +226,7 @@ public enum AxesConvention implements AxisFilter {
      * @since 0.5
      */
     CONVENTIONALLY_ORIENTED {
-        @Override
-        public boolean accept(final CoordinateSystemAxis axis) {
-            return true;
-        }
-
-        @Override
-        public Unit<?> getUnitReplacement(final CoordinateSystemAxis axis, final Unit<?> unit) {
-            return unit;
-        }
-
-        @Override
-        public AxisDirection getDirectionReplacement(CoordinateSystemAxis axis, AxisDirection direction) {
+        @Override public AxisDirection getDirectionReplacement(CoordinateSystemAxis axis, AxisDirection direction) {
             return NORMALIZED.getDirectionReplacement(axis, direction);
         }
     },
@@ -274,22 +258,7 @@ public enum AxesConvention implements AxisFilter {
      * @see org.apache.sis.referencing.cs.CoordinateSystems#angle(AxisDirection, AxisDirection)
      * @see <a href="http://en.wikipedia.org/wiki/Right_hand_rule">Right-hand rule on Wikipedia</a>
      */
-    RIGHT_HANDED {
-        @Override
-        public boolean accept(final CoordinateSystemAxis axis) {
-            return true;
-        }
-
-        @Override
-        public Unit<?> getUnitReplacement(CoordinateSystemAxis axis, final Unit<?> unit) {
-            return unit;
-        }
-
-        @Override
-        public AxisDirection getDirectionReplacement(CoordinateSystemAxis axis, final AxisDirection direction) {
-            return direction;
-        }
-    },
+    RIGHT_HANDED,
 
     /**
      * Axes having a <cite>wraparound</cite>
@@ -314,20 +283,5 @@ public enum AxesConvention implements AxisFilter {
      *
      * @see org.opengis.referencing.cs.RangeMeaning#WRAPAROUND
      */
-    POSITIVE_RANGE {
-        @Override
-        public boolean accept(final CoordinateSystemAxis axis) {
-            return true;
-        }
-
-        @Override
-        public Unit<?> getUnitReplacement(CoordinateSystemAxis axis, final Unit<?> unit) {
-            return unit;
-        }
-
-        @Override
-        public AxisDirection getDirectionReplacement(CoordinateSystemAxis axis, final AxisDirection direction) {
-            return direction;
-        }
-    }
+    POSITIVE_RANGE
 }

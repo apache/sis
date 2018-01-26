@@ -111,7 +111,7 @@ abstract class AbstractDbase3ByteReader extends CommonByteReader<SQLInvalidDbase
     @Override public Date getDateOfLastUpdate() {
         return toDate(this.dbaseLastUpdate);
     }
-    
+
     /**
      * Returns the first record position, in bytes, in the DBase file.
      * @return First record position.
@@ -121,13 +121,13 @@ abstract class AbstractDbase3ByteReader extends CommonByteReader<SQLInvalidDbase
     }
 
     /**
-     * Returns the length (in bytes) of one record in this DBase file, including the delete flag. 
+     * Returns the length (in bytes) of one record in this DBase file, including the delete flag.
      * @return Record length.
      */
     @Override public short getRecordLength() {
         return this.recordLength;
     }
-    
+
     /**
      * Returns the record count.
      * @return Record count.
@@ -148,7 +148,7 @@ abstract class AbstractDbase3ByteReader extends CommonByteReader<SQLInvalidDbase
 
         // If no conversion has been found, decide if the cause is an unsupported value or an illegal value to choose the good exception to return.
         if (dbfCodePage == null) {
-            switch(codePageBinaryValue & 0xFF) {
+            switch(Byte.toUnsignedInt(codePageBinaryValue)) {
                 case 0x04: dbfCodePage = "unsupported"; break;
                 case 0x68: dbfCodePage = "unsupported"; break; // Kamenicky (Czech) MS-DOS
                 case 0x69: dbfCodePage = "unsupported"; break; // Mazovia (Polish) MS-DOS
@@ -246,9 +246,9 @@ abstract class AbstractDbase3ByteReader extends CommonByteReader<SQLInvalidDbase
         knownConversions.put(0xcb, "cp1253"); // Greek Windows
         knownConversions.put(0xcc, "cp1257"); // Baltic Windows
 
-        return(knownConversions.get(pageCodeBinaryValue & 0xFF));
+        return(knownConversions.get(Byte.toUnsignedInt(pageCodeBinaryValue)));
     }
-    
+
     /**
      * Set a charset.
      * @param cs Charset.

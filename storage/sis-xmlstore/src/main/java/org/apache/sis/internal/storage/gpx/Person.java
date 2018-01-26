@@ -306,8 +306,7 @@ public final class Person implements ResponsibleParty, Contact, Address {
      */
     @Override
     public Collection<String> getElectronicMailAddresses() {
-        return (email != null) ? Collections.<String>singleton(email)
-                               : Collections.<String>emptySet();
+        return (email != null) ? Collections.singleton(email) : Collections.emptySet();
     }
 
     /**

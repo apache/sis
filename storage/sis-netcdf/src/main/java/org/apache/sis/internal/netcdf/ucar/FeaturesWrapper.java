@@ -23,7 +23,7 @@ import org.apache.sis.util.logging.WarningListeners;
 import ucar.nc2.ft.FeatureCollection;
 
 // Branch-dependent imports
-import org.apache.sis.internal.jdk8.Stream;
+import java.util.stream.Stream;
 import org.apache.sis.feature.AbstractFeature;
 import org.apache.sis.feature.DefaultFeatureType;
 
@@ -62,6 +62,7 @@ final class FeaturesWrapper extends DiscreteSampling {
     /**
      * Returns the stream of features.
      */
+    @Override
     public Stream<AbstractFeature> features(boolean parallel) {
         throw new UnsupportedOperationException();      // TODO
     }

@@ -95,10 +95,6 @@ final class DataStoreRegistry {
                         return providers.next();
                     }
                 }
-
-                @Override public void remove() {
-                    throw new UnsupportedOperationException();
-                }
             });
         }
     }

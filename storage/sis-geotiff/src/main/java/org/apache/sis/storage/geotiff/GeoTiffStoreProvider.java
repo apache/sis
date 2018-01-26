@@ -106,7 +106,7 @@ public class GeoTiffStoreProvider extends DataStoreProvider {
     public ProbeResult probeContent(StorageConnector connector) throws DataStoreException {
         final ByteBuffer buffer = connector.getStorageAs(ByteBuffer.class);
         if (buffer != null) {
-            if (buffer.remaining() < 2 * (Short.SIZE / Byte.SIZE)) {
+            if (buffer.remaining() < 2 * Short.BYTES) {
                 return ProbeResult.INSUFFICIENT_BYTES;
             }
             final int p = buffer.position();
@@ -116,7 +116,7 @@ public class GeoTiffStoreProvider extends DataStoreProvider {
                 final ByteOrder old = buffer.order();
                 try {
                     buffer.order(isBigEndian ? ByteOrder.BIG_ENDIAN : ByteOrder.LITTLE_ENDIAN);
-                    switch (buffer.getShort(p + (Short.SIZE / Byte.SIZE))) {
+                    switch (buffer.getShort(p + Short.BYTES)) {
                         case GeoTIFF.CLASSIC:
                         case GeoTIFF.BIG_TIFF: return new ProbeResult(true, MIME_TYPE, VERSION);
                     }

@@ -44,10 +44,6 @@ import org.apache.sis.internal.simple.SimpleCitation;
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 import static org.apache.sis.util.ArgumentChecks.ensureNonNullElement;
 
-// Branch-specific imports
-import org.apache.sis.internal.jdk8.JDK8;
-import org.apache.sis.internal.jdk8.BiFunction;
-
 
 /**
  * Enumeration of some metadata standards. A standard is defined by a set of Java interfaces
@@ -363,20 +359,18 @@ public class MetadataStandard implements Serializable {
          * Found the interface for which to create an accessor. Creates the accessor now, unless an accessor
          * has been created concurrently in another thread in which case the later will be returned.
          */
-        return (PropertyAccessor) JDK8.compute(accessors, key, new BiFunction<CacheKey, Object, Object>() {
-            @Override public Object apply(final CacheKey k, final Object v) {
-                if (v instanceof PropertyAccessor) {
-                    return v;
-                }
-                final Class<?> standardImpl = getImplementation(type);
-                final PropertyAccessor accessor;
-                if (SpecialCases.isSpecialCase(type)) {
-                    accessor = new SpecialCases(citation, type, k.type, standardImpl);
-                } else {
-                    accessor = new PropertyAccessor(citation, type, k.type, standardImpl);
-                }
-                return accessor;
+        return (PropertyAccessor) accessors.compute(key, (k, v) -> {
+            if (v instanceof PropertyAccessor) {
+                return v;
             }
+            final Class<?> standardImpl = getImplementation(type);
+            final PropertyAccessor accessor;
+            if (SpecialCases.isSpecialCase(type)) {
+                accessor = new SpecialCases(citation, type, k.type, standardImpl);
+            } else {
+                accessor = new PropertyAccessor(citation, type, k.type, standardImpl);
+            }
+            return accessor;
         });
     }
 

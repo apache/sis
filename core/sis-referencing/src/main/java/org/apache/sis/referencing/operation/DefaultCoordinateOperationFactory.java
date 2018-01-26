@@ -716,7 +716,7 @@ next:   for (int i=components.size(); --i >= 0;) {
              * but omitting the transform should not cause the lost of the CRS with desired longitude range.
              */
             if (single instanceof SingleOperation) {
-                final Map<String,Object> merge = new HashMap<String,Object>(
+                final Map<String,Object> merge = new HashMap<>(
                         IdentifiedObjects.getProperties(single, CoordinateOperation.IDENTIFIERS_KEY));
                 merge.put(ReferencingServices.PARAMETERS_KEY, ((SingleOperation) single).getParameterValues());
                 if (single instanceof AbstractIdentifiedObject) {

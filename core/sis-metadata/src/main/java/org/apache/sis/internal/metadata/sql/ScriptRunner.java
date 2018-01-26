@@ -37,8 +37,7 @@ import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.resources.Errors;
 
 // Branch-specific imports
-import org.apache.sis.internal.jdk8.JDK8;
-import org.apache.sis.internal.jdk8.BiFunction;
+import java.util.function.BiFunction;
 
 
 /**
@@ -426,7 +425,7 @@ public class ScriptRunner implements AutoCloseable {
      * @return the word to use instead.
      */
     protected final String getReplacement(final String inScript) {
-        return JDK8.getOrDefault(replacements, inScript, inScript);
+        return replacements.getOrDefault(inScript, inScript);
     }
 
     /**
@@ -436,7 +435,7 @@ public class ScriptRunner implements AutoCloseable {
      * @param function  the function that modify the replacement mapping.
      */
     protected final void modifyReplacements(final BiFunction<String,String,String> function) {
-        JDK8.replaceAll(replacements, function);
+        replacements.replaceAll(function);
     }
 
     /**

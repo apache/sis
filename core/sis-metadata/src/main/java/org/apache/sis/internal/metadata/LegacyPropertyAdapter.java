@@ -192,7 +192,7 @@ public abstract class LegacyPropertyAdapter<L,N> extends AbstractCollection<L> {
      * @return the given value as a collection.
      */
     public static <L> Collection<L> asCollection(final L value) {
-        return (value != null) ? Collections.singleton(value) : Collections.<L>emptySet();
+        return (value != null) ? Collections.singleton(value) : Collections.emptySet();
     }
 
     /**
