@@ -18,14 +18,14 @@ package org.apache.sis.internal.storage.csv;
 
 import java.util.Map;
 import java.util.LinkedHashMap;
+import java.util.function.Consumer;
 import java.util.logging.LogRecord;
+import java.time.Instant;
+import java.time.DateTimeException;
 import java.io.IOException;
 import org.apache.sis.internal.feature.MovingFeature;
 
 // Branch-dependent imports
-import java.time.Instant;
-import java.time.DateTimeException;
-import java.util.function.Consumer;
 import org.opengis.feature.Attribute;
 import org.opengis.feature.Feature;
 

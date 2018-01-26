@@ -30,6 +30,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.Locale;
 import java.util.regex.Pattern;
+import java.time.DateTimeException;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
@@ -60,9 +61,6 @@ import org.apache.sis.util.Debug;
 import org.apache.sis.setup.GeometryLibrary;
 import org.apache.sis.measure.Units;
 import ucar.nc2.constants.CF;
-
-// Branch-dependent imports
-import java.time.DateTimeException;
 
 
 /**

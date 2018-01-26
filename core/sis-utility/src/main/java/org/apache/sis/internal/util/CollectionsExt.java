@@ -18,6 +18,7 @@ package org.apache.sis.internal.util;
 
 import java.util.*;
 import java.lang.reflect.Array;
+import java.util.function.Predicate;
 import org.opengis.util.CodeList;
 import org.apache.sis.util.Static;
 import org.apache.sis.util.Numbers;
@@ -27,9 +28,6 @@ import org.apache.sis.util.resources.Errors;
 import org.opengis.parameter.InvalidParameterCardinalityException;
 
 import static org.apache.sis.util.collection.Containers.hashMapCapacity;
-
-// Branch-dependent imports
-import java.util.function.Predicate;
 
 
 /**

@@ -19,9 +19,11 @@ package org.apache.sis.internal.storage.gpx;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Objects;
+import java.util.function.Consumer;
 import java.io.IOException;
 import java.io.EOFException;
 import java.net.URISyntaxException;
+import java.time.format.DateTimeParseException;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 import javax.xml.bind.JAXBException;
@@ -34,8 +36,6 @@ import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.Version;
 
 // Branch-dependent imports
-import java.util.function.Consumer;
-import java.time.format.DateTimeParseException;
 import org.opengis.feature.Feature;
 
 

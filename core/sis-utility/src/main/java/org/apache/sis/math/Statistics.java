@@ -18,6 +18,8 @@ package org.apache.sis.math;
 
 import java.util.Objects;
 import java.io.Serializable;
+import java.util.function.LongConsumer;
+import java.util.function.DoubleConsumer;
 import org.opengis.util.InternationalString;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.iso.Types;
@@ -26,10 +28,6 @@ import static java.lang.Math.*;
 import static java.lang.Double.NaN;
 import static java.lang.Double.isNaN;
 import static java.lang.Double.doubleToLongBits;
-
-// Branch-dependent imports
-import java.util.function.LongConsumer;
-import java.util.function.DoubleConsumer;
 
 
 /**

@@ -18,7 +18,9 @@ package org.apache.sis.internal.storage.xml.stream;
 
 import java.util.Map;
 import java.util.Date;
+import java.util.function.Consumer;
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.nio.charset.Charset;
 import javax.xml.namespace.QName;
 import javax.xml.bind.Marshaller;
@@ -32,8 +34,6 @@ import org.apache.sis.util.collection.BackingStoreException;
 import org.apache.sis.util.resources.Errors;
 
 // Branch-dependent imports
-import java.io.UncheckedIOException;
-import java.util.function.Consumer;
 import org.opengis.feature.Feature;
 
 

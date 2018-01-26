@@ -24,17 +24,15 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.Random;
 import java.util.ConcurrentModificationException;
+import java.util.function.IntConsumer;
+import java.util.PrimitiveIterator;
+import java.util.stream.IntStream;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.TestUtilities;
 import org.junit.Test;
 
 import static java.lang.StrictMath.*;
 import static org.apache.sis.test.Assert.*;
-
-// Branch-dependent imports
-import java.util.function.IntConsumer;
-import java.util.PrimitiveIterator;
-import java.util.stream.IntStream;
 
 
 /**
