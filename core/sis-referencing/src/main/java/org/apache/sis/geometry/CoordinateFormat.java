@@ -29,6 +29,7 @@ import java.util.Date;
 import java.util.Locale;
 import java.util.TimeZone;
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import javax.measure.Unit;
 import javax.measure.UnitConverter;
 import javax.measure.quantity.Time;
@@ -51,9 +52,6 @@ import org.apache.sis.measure.Longitude;
 import org.apache.sis.measure.Units;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.io.CompoundFormat;
-
-// Branch-dependent imports
-import java.io.UncheckedIOException;
 
 
 /**

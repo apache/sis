@@ -17,6 +17,7 @@
 package org.apache.sis.referencing.operation;
 
 import java.io.Serializable;
+import java.util.function.Predicate;
 import org.opengis.metadata.extent.Extent;
 import org.opengis.metadata.extent.GeographicBoundingBox;
 import org.opengis.referencing.operation.CoordinateOperation;
@@ -24,9 +25,6 @@ import org.apache.sis.metadata.iso.extent.DefaultExtent;
 import org.apache.sis.metadata.iso.extent.Extents;
 import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.util.ArgumentChecks;
-
-// Branch-dependent imports
-import java.util.function.Predicate;
 
 
 /**

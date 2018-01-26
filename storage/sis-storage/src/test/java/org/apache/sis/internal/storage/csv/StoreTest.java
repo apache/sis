@@ -18,6 +18,7 @@ package org.apache.sis.internal.storage.csv;
 
 import java.util.Arrays;
 import java.util.Iterator;
+import java.time.Instant;
 import java.io.StringReader;
 import org.opengis.metadata.Metadata;
 import org.opengis.metadata.extent.Extent;
@@ -37,7 +38,6 @@ import static org.apache.sis.test.TestUtilities.date;
 import static org.apache.sis.test.TestUtilities.getSingleton;
 
 // Branch-dependent imports
-import java.time.Instant;
 import org.apache.sis.feature.AbstractFeature;
 import org.apache.sis.feature.AbstractIdentifiedType;
 import org.apache.sis.feature.DefaultAttributeType;

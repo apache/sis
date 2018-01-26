@@ -16,6 +16,7 @@
  */
 package org.apache.sis.internal.storage;
 
+import java.time.LocalDate;
 import java.util.Date;
 import java.util.Locale;
 import java.util.Iterator;
@@ -116,7 +117,6 @@ import static java.util.Collections.singleton;
 import static org.apache.sis.internal.util.StandardDateFormat.MILLISECONDS_PER_DAY;
 
 // Branch-dependent imports
-import java.time.LocalDate;
 import org.opengis.metadata.citation.ResponsibleParty;
 import org.opengis.metadata.identification.CharacterSet;
 import org.apache.sis.feature.DefaultFeatureType;
