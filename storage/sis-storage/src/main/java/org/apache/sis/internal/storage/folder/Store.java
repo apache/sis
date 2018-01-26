@@ -28,6 +28,7 @@ import java.nio.file.Files;
 import java.nio.file.DirectoryStream;
 import java.nio.file.DirectoryIteratorException;
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.util.logging.Level;
 import java.util.concurrent.ConcurrentHashMap;
 import org.opengis.metadata.Metadata;
@@ -46,9 +47,6 @@ import org.apache.sis.util.collection.BackingStoreException;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
 import org.apache.sis.internal.storage.MetadataBuilder;
 import org.apache.sis.internal.storage.Resources;
-
-// Branch-dependent imports
-import java.io.UncheckedIOException;
 
 
 /**

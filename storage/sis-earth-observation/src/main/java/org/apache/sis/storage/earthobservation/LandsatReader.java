@@ -25,6 +25,11 @@ import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.io.LineNumberReader;
+import java.time.LocalDate;
+import java.time.OffsetDateTime;
+import java.time.OffsetTime;
+import java.time.DateTimeException;
+import java.time.temporal.Temporal;
 
 import org.opengis.metadata.Metadata;
 import org.opengis.metadata.citation.DateType;
@@ -67,13 +72,6 @@ import org.apache.sis.internal.util.Constants;
 import org.apache.sis.internal.util.Utilities;
 
 import static org.apache.sis.internal.util.CollectionsExt.singletonOrNull;
-
-// Branch-dependent imports
-import java.time.LocalDate;
-import java.time.OffsetDateTime;
-import java.time.OffsetTime;
-import java.time.DateTimeException;
-import java.time.temporal.Temporal;
 
 
 /**

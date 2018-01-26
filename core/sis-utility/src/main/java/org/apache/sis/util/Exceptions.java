@@ -20,14 +20,12 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.Locale;
 import java.sql.SQLException;
+import java.io.UncheckedIOException;
 import java.nio.file.DirectoryIteratorException;
 import java.lang.reflect.InvocationTargetException;
 import org.opengis.util.InternationalString;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.collection.BackingStoreException;
-
-// Branch-dependent imports
-import java.io.UncheckedIOException;
 
 
 /**

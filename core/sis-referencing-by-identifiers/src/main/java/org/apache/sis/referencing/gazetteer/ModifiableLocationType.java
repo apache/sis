@@ -21,6 +21,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.ConcurrentModificationException;
+import java.util.function.Function;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.extent.GeographicExtent;
 import org.apache.sis.metadata.iso.extent.DefaultGeographicDescription;
@@ -32,7 +33,6 @@ import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.iso.Types;
 
 // Branch-dependent imports
-import java.util.function.Function;
 import org.opengis.metadata.citation.Party;
 import org.opengis.referencing.gazetteer.ReferenceSystemUsingIdentifiers;
 

@@ -21,6 +21,9 @@ import java.util.Set;
 import java.util.Iterator;
 import java.util.AbstractMap;
 import java.util.LinkedHashMap;
+import java.util.function.Supplier;
+import java.util.function.Function;
+import java.util.function.BiFunction;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ConcurrentHashMap;
@@ -34,11 +37,6 @@ import org.apache.sis.util.resources.Errors;
 import org.apache.sis.internal.system.DelayedRunnable;
 import org.apache.sis.internal.system.DelayedExecutor;
 import org.apache.sis.internal.system.ReferenceQueueConsumer;
-
-// Branch-dependent imports
-import java.util.function.Supplier;
-import java.util.function.Function;
-import java.util.function.BiFunction;
 
 
 /**

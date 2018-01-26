@@ -18,10 +18,8 @@ package org.apache.sis.internal.storage.io;
 
 import java.io.InputStream;
 import java.io.IOException;
-import javax.imageio.stream.ImageInputStream;
-
-// Branch-dependent imports
 import java.io.UncheckedIOException;
+import javax.imageio.stream.ImageInputStream;
 
 
 /**

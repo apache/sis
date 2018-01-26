@@ -16,6 +16,9 @@
  */
 package org.apache.sis.internal.storage.gpx;
 
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
+import java.io.UncheckedIOException;
 import java.net.URISyntaxException;
 import org.opengis.util.NameFactory;
 import org.opengis.util.FactoryException;
@@ -42,9 +45,6 @@ import org.apache.sis.metadata.iso.citation.DefaultCitation;
 import org.apache.sis.metadata.iso.distribution.DefaultFormat;
 
 // Branch-dependent imports
-import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
-import java.io.UncheckedIOException;
 import org.opengis.feature.Feature;
 import org.opengis.feature.FeatureType;
 

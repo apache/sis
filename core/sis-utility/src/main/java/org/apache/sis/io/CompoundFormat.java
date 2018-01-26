@@ -22,6 +22,7 @@ import java.util.Locale;
 import java.util.TimeZone;
 import java.util.Date;
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.text.Format;
 import java.text.DateFormat;
 import java.text.NumberFormat;
@@ -45,9 +46,6 @@ import org.apache.sis.internal.util.MetadataServices;
 import org.apache.sis.internal.util.LocalizedParseException;
 
 import static org.apache.sis.internal.util.StandardDateFormat.UTC;
-
-// Branch-dependent imports
-import java.io.UncheckedIOException;
 
 
 /**

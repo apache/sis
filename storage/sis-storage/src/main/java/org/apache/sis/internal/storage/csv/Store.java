@@ -21,8 +21,12 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.Locale;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
+import java.time.Instant;
+import java.time.DateTimeException;
 import java.io.Reader;
 import java.io.BufferedReader;
 import java.io.LineNumberReader;
@@ -71,10 +75,6 @@ import org.apache.sis.io.InvalidSeekException;
 import org.apache.sis.measure.Units;
 
 // Branch-dependent imports
-import java.time.Instant;
-import java.time.DateTimeException;
-import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
 import org.opengis.feature.Feature;
 import org.opengis.feature.FeatureType;
 import org.opengis.feature.PropertyType;

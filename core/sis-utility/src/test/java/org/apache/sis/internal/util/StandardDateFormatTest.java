@@ -16,6 +16,9 @@
  */
 package org.apache.sis.internal.util;
 
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.concurrent.TimeUnit;
 import java.text.ParseException;
@@ -24,11 +27,6 @@ import org.junit.Test;
 
 import static org.apache.sis.test.TestUtilities.date;
 import static org.junit.Assert.*;
-
-// Branch-dependent imports
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
 
 
 /**
