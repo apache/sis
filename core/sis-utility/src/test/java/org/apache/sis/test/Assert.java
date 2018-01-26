@@ -24,6 +24,8 @@ import java.util.Collection;
 import java.util.Enumeration;
 import java.util.LinkedHashSet;
 import java.util.LinkedHashMap;
+import java.util.stream.Stream;
+import java.util.function.Consumer;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ConcurrentHashMap;
 import java.io.IOException;
@@ -39,10 +41,6 @@ import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.Exceptions;
 import org.apache.sis.util.Classes;
-
-// Branch-dependent imports
-import java.util.stream.Stream;
-import java.util.function.Consumer;
 
 
 /**

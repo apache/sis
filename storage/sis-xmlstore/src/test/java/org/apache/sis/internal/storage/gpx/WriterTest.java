@@ -18,6 +18,7 @@ package org.apache.sis.internal.storage.gpx;
 
 import java.util.List;
 import java.util.Arrays;
+import java.time.Instant;
 import java.net.URI;
 import java.io.ByteArrayOutputStream;
 import java.io.UnsupportedEncodingException;
@@ -38,7 +39,6 @@ import org.junit.Test;
 import static org.apache.sis.test.Assert.*;
 
 // Branch-dependent imports
-import java.time.Instant;
 import org.apache.sis.feature.AbstractFeature;
 
 

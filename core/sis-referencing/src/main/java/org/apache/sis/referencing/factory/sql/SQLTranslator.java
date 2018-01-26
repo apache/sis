@@ -19,6 +19,7 @@ package org.apache.sis.referencing.factory.sql;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Locale;
+import java.util.function.Function;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -27,9 +28,6 @@ import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.internal.util.Constants;
-
-// Branch-dependent imports
-import java.util.function.Function;
 
 
 /**

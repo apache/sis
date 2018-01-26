@@ -23,6 +23,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.Spliterator;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
+import java.util.function.Consumer;
 import java.io.IOException;
 import org.apache.sis.math.Vector;
 import org.apache.sis.internal.netcdf.DataType;
@@ -37,10 +41,6 @@ import org.apache.sis.setup.GeometryLibrary;
 import ucar.nc2.constants.CF;
 
 // Branch-dependent imports
-import java.util.Spliterator;
-import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
-import java.util.function.Consumer;
 import org.apache.sis.feature.AbstractFeature;
 import org.apache.sis.feature.DefaultFeatureType;
 import org.apache.sis.feature.DefaultAttributeType;

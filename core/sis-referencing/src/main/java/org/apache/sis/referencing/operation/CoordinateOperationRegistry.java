@@ -26,6 +26,7 @@ import java.util.Iterator;
 import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
+import java.util.function.Predicate;
 import javax.measure.IncommensurableException;
 
 import org.opengis.util.FactoryException;
@@ -77,9 +78,6 @@ import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.collection.Containers;
 import org.apache.sis.util.collection.BackingStoreException;
 import org.apache.sis.util.resources.Vocabulary;
-
-// Branch-dependent imports
-import java.util.function.Predicate;
 
 
 /**

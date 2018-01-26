@@ -19,21 +19,19 @@ package org.apache.sis.util.collection;
 import java.util.Arrays;
 import java.util.AbstractList;
 import java.util.RandomAccess;
+import java.util.Spliterator;
+import java.util.PrimitiveIterator;
 import java.util.NoSuchElementException;
 import java.util.ConcurrentModificationException;
+import java.util.function.Consumer;
+import java.util.function.IntConsumer;
+import java.util.stream.IntStream;
+import java.util.stream.StreamSupport;
 import java.io.IOException;
 import java.io.Serializable;
 import java.io.ObjectOutputStream;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.ArgumentChecks;
-
-// Branch-dependent imports
-import java.util.Spliterator;
-import java.util.PrimitiveIterator;
-import java.util.function.Consumer;
-import java.util.function.IntConsumer;
-import java.util.stream.IntStream;
-import java.util.stream.StreamSupport;
 
 
 /**

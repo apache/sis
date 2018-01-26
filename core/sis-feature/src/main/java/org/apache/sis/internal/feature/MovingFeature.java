@@ -22,7 +22,9 @@ import java.util.Date;
 import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
+import java.util.function.Consumer;
 import java.lang.reflect.Array;
+import java.time.Instant;
 import org.opengis.util.LocalName;
 import org.apache.sis.math.Vector;
 import org.apache.sis.util.iso.Names;
@@ -30,8 +32,6 @@ import org.apache.sis.util.CorruptedObjectException;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
 
 // Branch-dependent imports
-import java.time.Instant;
-import java.util.function.Consumer;
 import org.apache.sis.feature.AbstractFeature;
 import org.apache.sis.feature.AbstractAttribute;
 import org.apache.sis.feature.DefaultAttributeType;

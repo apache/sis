@@ -21,7 +21,9 @@ import java.util.Set;
 import java.util.Objects;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.function.BiFunction;
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import org.opengis.util.GenericName;
 import org.opengis.metadata.Identifier;
 import org.opengis.parameter.GeneralParameterDescriptor;
@@ -31,8 +33,6 @@ import org.apache.sis.util.Classes;
 import org.apache.sis.util.Debug;
 
 // Branch-dependent imports
-import java.util.function.BiFunction;
-import java.io.UncheckedIOException;
 
 
 /**

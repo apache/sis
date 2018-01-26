@@ -16,6 +16,7 @@
  */
 package org.apache.sis.internal.netcdf.ucar;
 
+import java.util.stream.Stream;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.setup.GeometryLibrary;
 import org.apache.sis.internal.netcdf.DiscreteSampling;
@@ -23,7 +24,6 @@ import org.apache.sis.util.logging.WarningListeners;
 import ucar.nc2.ft.FeatureCollection;
 
 // Branch-dependent imports
-import java.util.stream.Stream;
 import org.apache.sis.feature.AbstractFeature;
 import org.apache.sis.feature.DefaultFeatureType;
 

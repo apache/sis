@@ -21,6 +21,11 @@ import java.util.Map;
 import java.util.IdentityHashMap;
 import java.util.ConcurrentModificationException;
 import java.util.Iterator;
+import java.util.Spliterator;
+import java.util.Spliterators;
+import java.util.stream.Stream;
+import java.util.function.Consumer;
+import java.util.stream.StreamSupport;
 import java.awt.geom.Rectangle2D;
 import javax.xml.bind.annotation.XmlTransient;
 import org.opengis.util.FactoryException;
@@ -62,11 +67,6 @@ import org.apache.sis.measure.Longitude;
 import org.apache.sis.measure.Latitude;
 
 // Branch-dependent imports
-import java.util.Spliterator;
-import java.util.Spliterators;
-import java.util.stream.Stream;
-import java.util.function.Consumer;
-import java.util.stream.StreamSupport;
 import org.apache.sis.metadata.iso.citation.AbstractParty;
 
 

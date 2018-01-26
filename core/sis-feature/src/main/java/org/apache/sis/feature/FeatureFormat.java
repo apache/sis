@@ -25,6 +25,7 @@ import java.util.Collection;
 import java.util.Locale;
 import java.util.TimeZone;
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.text.Format;
 import java.text.FieldPosition;
 import java.text.ParsePosition;
@@ -49,7 +50,6 @@ import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.math.MathFunctions;
 
 // Branch-dependent imports
-import java.io.UncheckedIOException;
 
 
 /**

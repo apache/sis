@@ -21,6 +21,7 @@ import java.util.Collections;
 import java.util.Locale;
 import java.util.Map;
 import java.util.HashMap;
+import java.time.temporal.Temporal;
 import org.opengis.util.ScopedName;
 import org.opengis.util.GenericName;
 import org.opengis.util.NameFactory;
@@ -47,7 +48,6 @@ import org.apache.sis.util.iso.ResourceInternationalString;
 import org.apache.sis.util.iso.DefaultNameFactory;
 
 // Branch-dependent imports
-import java.time.temporal.Temporal;
 import org.apache.sis.feature.DefaultFeatureType;
 import org.apache.sis.feature.DefaultAttributeType;
 
