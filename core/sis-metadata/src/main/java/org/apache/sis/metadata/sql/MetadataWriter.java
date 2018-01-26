@@ -193,7 +193,7 @@ public class MetadataWriter extends MetadataSource {
                         if (metadata instanceof CodeList<?>) {
                             identifier = addCode(stmt, (CodeList<?>) metadata);
                         } else {
-                            identifier = add(stmt, metadata, new IdentityHashMap<Object,String>(), null);
+                            identifier = add(stmt, metadata, new IdentityHashMap<>(), null);
                         }
                     }
                     success = true;

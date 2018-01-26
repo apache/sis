@@ -198,8 +198,8 @@ public final strictfp class APIVerifier extends TestCase {
                             oldMethod = null;
                         }
                         if (oldMethod != null) {
-                            final String oldType = oldMethod.getGenericReturnType().toString();
-                            final String newType = newMethod.getGenericReturnType().toString();
+                            final String oldType = oldMethod.getGenericReturnType().getTypeName();
+                            final String newType = newMethod.getGenericReturnType().getTypeName();
                             if (!newType.equals(oldType)) {
                                 incompatibleChanges.add(className + '.' + methodName + lineSeparator
                                         + "    (old) " + oldType + lineSeparator

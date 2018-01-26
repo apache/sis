@@ -16,9 +16,6 @@
  */
 package org.apache.sis.internal.storage.io;
 
-// Branch-dependent imports
-import org.apache.sis.internal.jdk8.JDK8;
-
 
 /**
  * A sub-area in a <var>n</var>-dimensional hyper-rectangle, optionally with sub-sampling.
@@ -106,7 +103,7 @@ public final class Region {
             final long upper = lower + ((count-1) * step + 1);
             final long span  = size[i];
             assert (count > 0) && (lower >= 0) && (upper > lower) && (upper <= span) : i;
-            targetSize[i] = JDK8.toIntExact(count);
+            targetSize[i] = Math.toIntExact(count);
 
             position += stride * lower;
             skip     += stride * (span - (upper - lower));
@@ -141,6 +138,6 @@ public final class Region {
         for (int i=0; i<dimension; i++) {
             length *= targetSize[i];
         }
-        return JDK8.toIntExact(length);
+        return Math.toIntExact(length);
     }
 }

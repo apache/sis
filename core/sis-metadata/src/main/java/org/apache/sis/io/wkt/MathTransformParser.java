@@ -113,7 +113,7 @@ class MathTransformParser extends AbstractParser {
      * @param  mtFactory  the factory to use to create {@link MathTransform} objects.
      */
     public MathTransformParser(final MathTransformFactory mtFactory) {
-        this(Symbols.getDefault(), Collections.<String,Element>emptyMap(), null, null, null, mtFactory, null);
+        this(Symbols.getDefault(), Collections.emptyMap(), null, null, null, mtFactory, null);
     }
 
     /**

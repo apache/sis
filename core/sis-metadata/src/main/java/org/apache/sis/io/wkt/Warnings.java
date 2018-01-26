@@ -204,9 +204,7 @@ public final class Warnings implements Localized, Serializable {
      */
     final void publish() {
         if (!published) {
-            ignoredElements = ignoredElements.isEmpty()
-                    ? Collections.<String, List<String>>emptyMap()
-                    : new LinkedHashMap<>(ignoredElements);
+            ignoredElements = ignoredElements.isEmpty() ? Collections.emptyMap() : new LinkedHashMap<>(ignoredElements);
             published = true;
         }
     }
@@ -285,7 +283,7 @@ public final class Warnings implements Localized, Serializable {
      * @return the non-fatal exceptions that occurred.
      */
     public Set<Exception> getExceptions() {
-        return (exceptionSources != null) ? exceptionSources.keySet() : Collections.<Exception>emptySet();
+        return (exceptionSources != null) ? exceptionSources.keySet() : Collections.emptySet();
     }
 
     /**

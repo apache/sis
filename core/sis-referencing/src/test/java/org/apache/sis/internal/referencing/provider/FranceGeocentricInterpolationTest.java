@@ -19,6 +19,7 @@ package org.apache.sis.internal.referencing.provider;
 import java.net.URISyntaxException;
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.Path;
 import javax.measure.quantity.Angle;
@@ -31,9 +32,6 @@ import org.apache.sis.test.TestStep;
 import org.junit.Test;
 
 import static org.opengis.test.Assert.*;
-
-// Branch-dependent imports
-import org.apache.sis.internal.jdk8.JDK8;
 
 
 /**
@@ -138,7 +136,7 @@ public final strictfp class FranceGeocentricInterpolationTest extends DatumShift
     {
         final Path file = getResource(TEST_FILE);
         final DatumShiftGridFile.Float<Angle,Length> grid;
-        try (BufferedReader in = JDK8.newBufferedReader(file)) {
+        try (BufferedReader in = Files.newBufferedReader(file)) {
             grid = FranceGeocentricInterpolation.load(in, file);
         }
         assertEquals("cellPrecision",   0.005, grid.getCellPrecision(), STRICT);

@@ -31,9 +31,6 @@ import static java.lang.StrictMath.*;
 import static org.junit.Assert.*;
 import static org.apache.sis.referencing.operation.projection.NormalizedProjectionTest.TOLERANCE;
 
-// Branch-specific imports
-import org.apache.sis.internal.jdk8.JDK8;
-
 
 /**
  * Tests the {@link ConformalProjection} class.
@@ -101,7 +98,7 @@ public final strictfp class ConformalProjectionTest extends TransformTestCase {
         assertEquals("f(  0°) = 1",          1, expOfNorthing(0),                 tolerance);
         assertEquals("f(-90°) = 0",          0, expOfNorthing(-PI/2),             tolerance);
         assertTrue  ("f(< -90°) < 0",           expOfNorthing(-PI/2 - 0.1)        < 0);
-        assertTrue  ("f(< -90°) < 0",           expOfNorthing(JDK8.nextDown(-PI/2)) < 0);
+        assertTrue  ("f(< -90°) < 0",           expOfNorthing(nextDown(-PI/2))    < 0);
         /*
          * Values around π/2 are a special case. Theoretically the result should be positive infinity.
          * But since we do not have an exact representatation of π/2, we instead get a high number.

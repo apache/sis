@@ -117,7 +117,7 @@ public final strictfp class FeatureFormatTest extends TestCase {
     @SuppressWarnings("serial")
     public void testFeatureTypeWithDeprecatedProperties() {
         DefaultFeatureType feature = DefaultFeatureTypeTest.city();
-        final Map<String,Object> properties = new HashMap<String,Object>(name("highway"));
+        final Map<String,Object> properties = new HashMap<>(name("highway"));
         properties.put(DefaultAttributeType.DEPRECATED_KEY, Boolean.TRUE);
         properties.put(DefaultAttributeType.DESCRIPTION_KEY, "Replaced by pedestrian areas.");
         feature = new DefaultFeatureType(name("City for human"), false, new DefaultFeatureType[] {feature},

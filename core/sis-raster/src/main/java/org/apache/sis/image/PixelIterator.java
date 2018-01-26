@@ -26,9 +26,8 @@ import java.awt.image.WritableRaster;
 import java.awt.image.WritableRenderedImage;
 import java.util.NoSuchElementException;
 import org.apache.sis.util.ArgumentChecks;
-import org.apache.sis.internal.jdk8.JDK8;
 
-import static org.apache.sis.internal.jdk8.JDK8.floorDiv;
+import static java.lang.Math.floorDiv;
 
 
 /**
@@ -133,8 +132,8 @@ public abstract class PixelIterator {
         bounds          = intersection(tileGridXOffset, tileGridYOffset, tileWidth, tileHeight, subArea, window);
         lowerX          = bounds.x;
         lowerY          = bounds.y;
-        upperX          = JDK8.addExact(lowerX, bounds.width);
-        upperY          = JDK8.addExact(lowerY, bounds.height);
+        upperX          = Math.addExact(lowerX, bounds.width);
+        upperY          = Math.addExact(lowerY, bounds.height);
         windowWidth     = (window != null) ? window.width  : 0;
         windowHeight    = (window != null) ? window.height : 0;
     }
@@ -158,12 +157,12 @@ public abstract class PixelIterator {
         bounds          = intersection(data.getMinX(), data.getMinY(), data.getWidth(), data.getHeight(), subArea, window);
         lowerX          = bounds.x;
         lowerY          = bounds.y;
-        upperX          = JDK8.addExact(lowerX, bounds.width);
-        upperY          = JDK8.addExact(lowerY, bounds.height);
-        tileLowerX      = floorDiv(JDK8.subtractExact(lowerX, tileGridXOffset), tileWidth);
-        tileLowerY      = floorDiv(JDK8.subtractExact(lowerY, tileGridYOffset), tileHeight);
-        tileUpperX      =  ceilDiv(JDK8.subtractExact(upperX, tileGridXOffset), tileWidth);
-        tileUpperY      =  ceilDiv(JDK8.subtractExact(upperY, tileGridYOffset), tileHeight);
+        upperX          = Math.addExact(lowerX, bounds.width);
+        upperY          = Math.addExact(lowerY, bounds.height);
+        tileLowerX      = floorDiv(Math.subtractExact(lowerX, tileGridXOffset), tileWidth);
+        tileLowerY      = floorDiv(Math.subtractExact(lowerY, tileGridYOffset), tileHeight);
+        tileUpperX      =  ceilDiv(Math.subtractExact(upperX, tileGridXOffset), tileWidth);
+        tileUpperY      =  ceilDiv(Math.subtractExact(upperY, tileGridYOffset), tileHeight);
         windowWidth     = (window != null) ? window.width  : 0;
         windowHeight    = (window != null) ? window.height : 0;
     }

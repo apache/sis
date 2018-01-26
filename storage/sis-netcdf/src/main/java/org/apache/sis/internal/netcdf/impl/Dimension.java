@@ -65,7 +65,7 @@ final class Dimension extends NamedElement {
      * Returns the number of grid cell value along this dimension.
      */
     final long length() {
-        return length & 0xFFFFFFFFL;
+        return Integer.toUnsignedLong(length);
     }
 
     /**

@@ -301,7 +301,7 @@ public class DefaultTelephone extends ISOMetadata implements Telephone {
                owner = new ArrayList<>(4);
                owner.add(this);
            } else {
-               owner = Collections.<Telephone>singletonList(this);
+               owner = Collections.singletonList(this);
            }
        }
        return owner;

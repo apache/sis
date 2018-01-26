@@ -240,11 +240,6 @@ public abstract class AbstractAssociation extends Field<AbstractFeature> impleme
             @Override public Object next() {
                 return it.next().getPropertyValue(pt);
             }
-
-            @Override
-            public void remove() {
-                throw new UnsupportedOperationException();
-            }
         }).toString();
     }
 

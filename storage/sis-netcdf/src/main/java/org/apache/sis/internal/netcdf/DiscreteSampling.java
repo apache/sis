@@ -16,7 +16,6 @@
  */
 package org.apache.sis.internal.netcdf;
 
-// Branch-dependent imports
 import org.opengis.metadata.Metadata;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.setup.GeometryLibrary;

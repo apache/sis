@@ -62,8 +62,7 @@ import org.apache.sis.measure.Units;
 import ucar.nc2.constants.CF;
 
 // Branch-dependent imports
-import org.apache.sis.internal.jdk8.JDK8;
-import org.apache.sis.internal.jdk8.DateTimeException;
+import java.time.DateTimeException;
 
 
 /**
@@ -722,8 +721,8 @@ public final class ChannelDecoder extends Decoder {
     public Date dateValue(final String name) {
         final Object value = findAttribute(name);
         if (value instanceof CharSequence) try {
-            return JDK8.parseDateTime(StandardDateFormat.dateToISO((CharSequence) value, 0, false));
-        } catch (IllegalArgumentException e) {
+            return StandardDateFormat.toDate(StandardDateFormat.FORMAT.parse((CharSequence) value));
+        } catch (DateTimeException | ArithmeticException e) {
             listeners.warning(null, e);
         }
         return null;
@@ -742,7 +741,7 @@ public final class ChannelDecoder extends Decoder {
         final String[] parts = TIME_UNIT_PATTERN.split(symbol);
         if (parts.length == 2) try {
             final UnitConverter converter = Units.valueOf(parts[0]).getConverterToAny(Units.MILLISECOND);
-            final long epoch = JDK8.parseDateTime(StandardDateFormat.dateToISO(parts[1], 0, false)).getTime();
+            final long epoch = StandardDateFormat.toDate(StandardDateFormat.FORMAT.parse(parts[1])).getTime();
             for (int i=0; i<values.length; i++) {
                 final Number value = values[i];
                 if (value != null) {

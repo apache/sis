@@ -131,8 +131,6 @@ import org.junit.BeforeClass;
     org.apache.sis.util.collection.TreeTableFormatTest.class,
     org.apache.sis.util.collection.RangeSetTest.class,
     org.apache.sis.internal.util.StandardDateFormatTest.class,
-    org.apache.sis.internal.jdk8.OffsetDateTimeTest.class,
-    org.apache.sis.internal.jdk8.OffsetTimeTest.class,
 
     // Converters.
     org.apache.sis.internal.converter.AngleConverterTest.class,

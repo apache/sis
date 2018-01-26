@@ -75,7 +75,7 @@ final class Codes {
     private static int pack(final AxisDirection[] directions) {
         int packed = 0;
         int i = directions.length;
-        if (i <= Integer.SIZE / Byte.SIZE) {
+        if (i <= Integer.BYTES) {
             while (--i >= 0) {
                 final int ordinal = directions[i].ordinal();
                 if (ordinal <= 0 || ordinal > Byte.MAX_VALUE) {

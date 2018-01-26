@@ -1059,7 +1059,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
         final InternationalString i18n = (newValue != null) ? new SimpleInternationalString(newValue) : null;
         final List<Citation> newValues = (metadataStandards != null)
                 ? new ArrayList<>(metadataStandards)
-                : new ArrayList<Citation>(1);
+                : new ArrayList<>(1);
         DefaultCitation citation = newValues.isEmpty() ? null : DefaultCitation.castOrCopy(newValues.get(0));
         if (citation == null) {
             citation = new DefaultCitation();

@@ -246,7 +246,7 @@ public class SimpleMetadata implements Metadata, DataIdentification, Citation {
      */
     @Override
     public Collection<DataIdentification> getIdentificationInfo() {
-        return Collections.<DataIdentification>singleton(this);
+        return Collections.singleton(this);
     }
 
     /**

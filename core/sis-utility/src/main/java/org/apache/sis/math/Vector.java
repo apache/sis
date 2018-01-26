@@ -20,6 +20,7 @@ import java.io.Serializable;
 import java.util.Arrays;
 import java.util.AbstractList;
 import java.util.RandomAccess;
+import java.util.function.IntSupplier;
 import org.apache.sis.measure.NumberRange;
 import org.apache.sis.util.Numbers;
 import org.apache.sis.util.ArgumentChecks;
@@ -27,8 +28,6 @@ import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.internal.util.Numerics;
-import org.apache.sis.internal.jdk8.IntSupplier;
-import org.apache.sis.internal.jdk8.JDK8;
 
 import static org.apache.sis.util.ArgumentChecks.ensureValidIndex;
 
@@ -109,7 +108,7 @@ public abstract class Vector extends AbstractList<Number> implements RandomAcces
      *
      * <div class="section">Unsigned integers</div>
      * Java has no primitive support for unsigned integers. But some file formats use unsigned integers,
-     * which can be simulated in Java by the use of bit masks or methods like {@code Integer.toUnsignedLong(int)}.
+     * which can be simulated in Java by the use of bit masks or methods like {@link Integer#toUnsignedLong(int)}.
      * This {@code Vector} class applies automatically those masks (unless otherwise noticed in method Javadoc)
      * if the {@code isUnsigned} argument is {@code true}.
      * That argument applies only to {@code byte[]}, {@code short[]}, {@code int[]} or {@code long[]} arrays
@@ -468,7 +467,7 @@ public abstract class Vector extends AbstractList<Number> implements RandomAcces
     final long subtract(final long a, final long b) {
         final long inc = a - b;
         // The sign of the difference shall be the same than the sign of Long.compare(…).
-        if ((((isUnsigned() ? JDK8.compareUnsigned(a, b) : Long.compare(a, b)) ^ inc) & Long.MIN_VALUE) != 0) {
+        if ((((isUnsigned() ? Long.compareUnsigned(a, b) : Long.compare(a, b)) ^ inc) & Long.MIN_VALUE) != 0) {
             throw new ArithmeticException();
         }
         return inc;
@@ -722,11 +721,7 @@ public abstract class Vector extends AbstractList<Number> implements RandomAcces
         /** Delegates to the enclosing vector */
         @Override NumberRange<?> range(final IntSupplier indices, final int n) {
             if (indices != null) {
-                return Vector.this.range(new IntSupplier() {
-                    @Override public int getAsInt() {
-                        return toBacking(indices.getAsInt());
-                    }
-                }, n);
+                return Vector.this.range(() -> toBacking(indices.getAsInt()), n);
             }
             IntSupplier supplier = null;
             if (first != 0 || step != 1) {
@@ -901,11 +896,7 @@ public abstract class Vector extends AbstractList<Number> implements RandomAcces
         /** Delegates to the enclosing vector. */
         @Override NumberRange<?> range(final IntSupplier supplier, final int n) {
             if (supplier != null) {
-                return Vector.this.range(new IntSupplier() {
-                    @Override public int getAsInt() {
-                        return indices[supplier.getAsInt()];
-                    }
-                }, n);
+                return Vector.this.range(() -> indices[supplier.getAsInt()], n);
             } else {
                 return Vector.this.range(new IntSupplier() {
                     private int index;

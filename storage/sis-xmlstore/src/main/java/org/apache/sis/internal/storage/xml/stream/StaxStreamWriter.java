@@ -32,9 +32,8 @@ import org.apache.sis.util.collection.BackingStoreException;
 import org.apache.sis.util.resources.Errors;
 
 // Branch-dependent imports
-import org.apache.sis.internal.jdk8.UncheckedIOException;
-import org.apache.sis.internal.jdk8.Consumer;
-import org.apache.sis.internal.jdk8.Instant;
+import java.io.UncheckedIOException;
+import java.util.function.Consumer;
 import org.apache.sis.feature.AbstractFeature;
 
 
@@ -228,7 +227,7 @@ public abstract class StaxStreamWriter extends StaxStreamIO implements Consumer<
      */
     protected final void writeSingle(final String localName, final Date value) throws XMLStreamException {
         if (value != null) {
-            writeSingleValue(localName, Instant.create(value));
+            writeSingleValue(localName, value.toInstant());
         }
     }
 

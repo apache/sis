@@ -26,7 +26,7 @@ import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.util.ArgumentChecks;
 
 // Branch-dependent imports
-import org.apache.sis.internal.jdk8.Predicate;
+import java.util.function.Predicate;
 
 
 /**

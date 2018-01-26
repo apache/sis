@@ -42,7 +42,6 @@ import org.apache.sis.util.resources.Errors;
 import static org.apache.sis.util.ArgumentChecks.*;
 
 // Branch-dependent imports
-import org.apache.sis.internal.jdk8.JDK8;
 import org.opengis.referencing.ReferenceIdentifier;
 
 
@@ -371,7 +370,7 @@ public abstract class Builder<B extends Builder<B>> {
      * @throws IllegalStateException if a new value is specified in a phase where the value can not be changed.
      */
     private boolean setProperty(final String key, final Object value) throws IllegalStateException {
-        final Object previous = JDK8.putIfAbsent(properties, key, value);
+        final Object previous = properties.putIfAbsent(key, value);
         if (previous != null) {
             if (previous.equals(value)) {
                 return false;
@@ -509,7 +508,7 @@ public abstract class Builder<B extends Builder<B>> {
         ensureNonNull("name", name);
         if (isDeprecated()) {
             aliases.add(new DeprecatedName(getAuthority(), getCodeSpace(), name, getVersion(), getRemarks()));
-        } else if (JDK8.putIfAbsent(properties, IdentifiedObject.NAME_KEY, name.toString()) != null) {
+        } else if (properties.putIfAbsent(IdentifiedObject.NAME_KEY, name.toString()) != null) {
             // A primary name is already present. Add the given name as an alias instead.
             aliases.add(createName(name));
         }
@@ -590,7 +589,7 @@ public abstract class Builder<B extends Builder<B>> {
      */
     public B addName(final ReferenceIdentifier name) {
         ensureNonNull("name", name);
-        if (JDK8.putIfAbsent(properties, IdentifiedObject.NAME_KEY, name) != null) {
+        if (properties.putIfAbsent(IdentifiedObject.NAME_KEY, name) != null) {
             // A primary name is already present. Add the given name as an alias instead.
             aliases.add(name instanceof GenericName ? (GenericName) name : new NamedIdentifier(name));
         }

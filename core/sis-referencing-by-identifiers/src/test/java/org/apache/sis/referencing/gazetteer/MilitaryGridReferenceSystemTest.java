@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Random;
 import java.util.Iterator;
+import java.util.Collections;
 import java.lang.reflect.Field;
 import org.opengis.referencing.crs.ProjectedCRS;
 import org.opengis.referencing.operation.MathTransform;
@@ -777,5 +778,13 @@ public final strictfp class MilitaryGridReferenceSystemTest extends TestCase {
             assertTrue(code, remaining.remove(code));
         }
         assertTrue(remaining.toString(), remaining.isEmpty());
+        /*
+         * Test parallel iteration using stream.
+         */
+        assertTrue(remaining.addAll(expected));
+        final Set<String> sync = Collections.synchronizedSet(remaining);
+        assertEquals("List of expected codes has duplicated values.", expected.size(), sync.size());
+        coder.encode(areaOfInterest, true).forEach((code) -> assertTrue(code, sync.remove(code)));
+        assertTrue(sync.toString(), sync.isEmpty());
     }
 }

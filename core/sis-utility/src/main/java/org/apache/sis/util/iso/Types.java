@@ -41,9 +41,6 @@ import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.collection.BackingStoreException;
 import org.apache.sis.internal.system.Loggers;
 
-// Branch-dependent imports
-import org.apache.sis.internal.jdk8.JDK8;
-
 
 /**
  * Static methods working on GeoAPI types and {@link CodeList} values.
@@ -545,7 +542,7 @@ public final class Types extends Static {
                 throw new BackingStoreException(e);
             }
             typeForNames = new HashMap<>(props);
-            JDK8.putIfAbsent(typeForNames, "MI_SensorTypeCode", "org.apache.sis.internal.metadata.SensorType");
+            typeForNames.putIfAbsent("MI_SensorTypeCode", "org.apache.sis.internal.metadata.SensorType");
         }
         final Object value = typeForNames.get(identifier);
         if (value == null || value instanceof Class<?>) {

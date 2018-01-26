@@ -439,6 +439,6 @@ public class GeodeticObjectBuilder extends Builder<GeodeticObjectBuilder> {
      * Creates a map of properties containing only the name of the given object.
      */
     private static Map<String,Object> name(final IdentifiedObject template) {
-        return Collections.<String,Object>singletonMap(IdentifiedObject.NAME_KEY, template.getName());
+        return Collections.singletonMap(IdentifiedObject.NAME_KEY, template.getName());
     }
 }

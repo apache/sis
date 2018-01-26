@@ -27,7 +27,6 @@ import org.apache.sis.math.Vector;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.resources.Errors;
 
-import org.apache.sis.internal.jdk8.JDK8;
 
 /**
  * The types of values in a TIFF header. Provides also some support for reading a value of a given type.
@@ -49,7 +48,7 @@ enum Type {
      *   <li>TIFF code: 7</li>
      * </ul>
      */
-    UNDEFINED(7, Byte.SIZE / Byte.SIZE, false),
+    UNDEFINED(7, Byte.BYTES, false),
 
     /**
      * An 8-bits signed (twos-complement) integer.
@@ -58,7 +57,7 @@ enum Type {
      *   <li>TIFF code: 6</li>
      * </ul>
      */
-    BYTE(6, Byte.SIZE / Byte.SIZE, false) {
+    BYTE(6, Byte.BYTES, false) {
         @Override long readLong(final ChannelDataInput input, final long count) throws IOException {
             ensureSingleton(count);
             return input.readByte();
@@ -76,7 +75,7 @@ enum Type {
      *   <li>TIFF code: 1</li>
      * </ul>
      */
-    UBYTE(1, Byte.SIZE / Byte.SIZE, true) {
+    UBYTE(1, Byte.BYTES, true) {
         @Override long readLong(final ChannelDataInput input, final long count) throws IOException {
             ensureSingleton(count);
             return input.readUnsignedByte();
@@ -94,7 +93,7 @@ enum Type {
      *   <li>TIFF code: 8</li>
      * </ul>
      */
-    SHORT(8, Short.SIZE / Byte.SIZE, false) {
+    SHORT(8, Short.BYTES, false) {
         @Override long readLong(final ChannelDataInput input, final long count) throws IOException {
             ensureSingleton(count);
             return input.readShort();
@@ -112,7 +111,7 @@ enum Type {
      *   <li>TIFF code: 3</li>
      * </ul>
      */
-    USHORT(3, Short.SIZE / Byte.SIZE, true) {
+    USHORT(3, Short.BYTES, true) {
         @Override long readLong(final ChannelDataInput input, final long count) throws IOException {
             ensureSingleton(count);
             return input.readUnsignedShort();
@@ -130,7 +129,7 @@ enum Type {
      *   <li>TIFF code: 9</li>
      * </ul>
      */
-    INT(9, Integer.SIZE / Byte.SIZE, false) {
+    INT(9, Integer.BYTES, false) {
         @Override long readLong(final ChannelDataInput input, final long count) throws IOException {
             ensureSingleton(count);
             return input.readInt();
@@ -148,7 +147,7 @@ enum Type {
      *   <li>TIFF code: 4</li>
      * </ul>
      */
-    UINT(4, Integer.SIZE / Byte.SIZE, true) {
+    UINT(4, Integer.BYTES, true) {
         @Override long readLong(final ChannelDataInput input, final long count) throws IOException {
             ensureSingleton(count);
             return input.readUnsignedInt();
@@ -165,7 +164,7 @@ enum Type {
      *   <li>TIFF code: 17</li>
      * </ul>
      */
-    LONG(17, Long.SIZE / Byte.SIZE, false) {
+    LONG(17, Long.BYTES, false) {
         @Override long readLong(final ChannelDataInput input, final long count) throws IOException {
             ensureSingleton(count);
             return input.readLong();
@@ -182,14 +181,14 @@ enum Type {
      *   <li>TIFF code: 16</li>
      * </ul>
      */
-    ULONG(16, Long.SIZE / Byte.SIZE, true) {
+    ULONG(16, Long.BYTES, true) {
         @Override long readLong(final ChannelDataInput input, final long count) throws IOException {
             ensureSingleton(count);
             final long value = input.readLong();
             if (value >= 0) {
                 return value;
             }
-            throw new ArithmeticException(canNotConvert(JDK8.toUnsignedString(value)));
+            throw new ArithmeticException(canNotConvert(Long.toUnsignedString(value)));
         }
 
         @Override double readDouble(final ChannelDataInput input, final long count) throws IOException {
@@ -209,7 +208,7 @@ enum Type {
      *   <li>TIFF code: 11</li>
      * </ul>
      */
-    FLOAT(11, Float.SIZE / Byte.SIZE, false) {
+    FLOAT(11, Float.BYTES, false) {
         @Override long readLong(final ChannelDataInput input, final long count) throws IOException {
             ensureSingleton(count);
             final float value = input.readFloat();
@@ -237,7 +236,7 @@ enum Type {
      *   <li>TIFF code: 12</li>
      * </ul>
      */
-    DOUBLE(12, Double.SIZE / Byte.SIZE, false) {
+    DOUBLE(12, Double.BYTES, false) {
         @Override long readLong(final ChannelDataInput input, final long count) throws IOException {
             ensureSingleton(count);
             final double value = input.readDouble();
@@ -265,7 +264,7 @@ enum Type {
      *   <li>TIFF code: 10</li>
      * </ul>
      */
-    RATIONAL(10, (2*Integer.SIZE / Byte.SIZE), false) {
+    RATIONAL(10, (2*Integer.BYTES), false) {
         @Override long readLong(final ChannelDataInput input, final long count) throws IOException {
             ensureSingleton(count);
             final int numerator   = input.readInt();
@@ -296,7 +295,7 @@ enum Type {
      *   <li>TIFF code: 5</li>
      * </ul>
      */
-    URATIONAL(5, (2*Integer.SIZE / Byte.SIZE), true) {
+    URATIONAL(5, (2*Integer.BYTES), true) {
         @Override long readLong(final ChannelDataInput input, final long count) throws IOException {
             ensureSingleton(count);
             final long numerator   = input.readUnsignedInt();
@@ -329,9 +328,9 @@ enum Type {
      *   <li>TIFF code: 2</li>
      * </ul>
      */
-    ASCII(2, Byte.SIZE / Byte.SIZE, false) {
+    ASCII(2, Byte.BYTES, false) {
         @Override String[] readString(final ChannelDataInput input, final long length, final Charset charset) throws IOException {
-            final byte[] chars = input.readBytes(JDK8.toIntExact(length));
+            final byte[] chars = input.readBytes(Math.toIntExact(length));
             String[] lines = new String[1];                     // We will usually have exactly one string.
             int count = 0, lower = 0;
             for (int i=0; i<chars.length; i++) {
@@ -494,7 +493,7 @@ enum Type {
         if (value >= 0) {
             return value;
         }
-        throw new ArithmeticException(canNotConvert(JDK8.toUnsignedString(value)));
+        throw new ArithmeticException(canNotConvert(Long.toUnsignedString(value)));
     }
 
     /**
@@ -550,7 +549,7 @@ enum Type {
      * @throws UnsupportedOperationException if this type is {@link #UNDEFINED}.
      */
     String[] readString(final ChannelDataInput input, final long length, final Charset charset) throws IOException {
-        final String[] s = new String[JDK8.toIntExact(length)];
+        final String[] s = new String[Math.toIntExact(length)];
         for (int i=0; i<s.length; i++) {
             s[i] = String.valueOf(readLong(input, 1));
         }
@@ -584,6 +583,6 @@ enum Type {
      * @throws UnsupportedOperationException if this type is {@link #UNDEFINED}.
      */
     final Vector readVector(final ChannelDataInput input, final long count) throws IOException {
-        return Vector.create(readArray(input, JDK8.toIntExact(count)), isUnsigned);
+        return Vector.create(readArray(input, Math.toIntExact(count)), isUnsigned);
     }
 }

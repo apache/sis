@@ -62,12 +62,11 @@ import org.apache.sis.measure.Longitude;
 import org.apache.sis.measure.Latitude;
 
 // Branch-dependent imports
-import org.apache.sis.internal.jdk8.JDK8;
-import org.apache.sis.internal.jdk8.Spliterator;
-import org.apache.sis.internal.jdk8.Spliterators;
-import org.apache.sis.internal.jdk8.Stream;
-import org.apache.sis.internal.jdk8.Consumer;
-import org.apache.sis.internal.jdk8.StreamSupport;
+import java.util.Spliterator;
+import java.util.Spliterators;
+import java.util.stream.Stream;
+import java.util.function.Consumer;
+import java.util.stream.StreamSupport;
 import org.apache.sis.metadata.iso.citation.AbstractParty;
 
 
@@ -454,7 +453,7 @@ public class MilitaryGridReferenceSystem extends ReferencingByIdentifiers {
          */
         public void setPrecision(final double precision) {
             final double p = Math.floor(Math.log10(precision));
-            if (!JDK8.isFinite(p)) {
+            if (!Double.isFinite(p)) {
                 throw new IllegalArgumentException(Errors.format(Errors.Keys.IllegalArgumentValue_2, "precision", precision));
             }
             // The -3 is an arbitrary limit to millimetre precision.
@@ -613,8 +612,7 @@ public class MilitaryGridReferenceSystem extends ReferencingByIdentifiers {
          * @return a stream of MGRS references intersecting the given area of interest.
          * @throws TransformException if an error occurred while transforming the area of interest.
          */
-        // Public on the JDK8 branch only.
-        final Stream<String> encode(final Envelope areaOfInterest, final boolean parallel) throws TransformException {
+        public Stream<String> encode(final Envelope areaOfInterest, final boolean parallel) throws TransformException {
             ArgumentChecks.ensureNonNull("areaOfInterest", areaOfInterest);
             try {
                 return StreamSupport.stream(new IteratorAllZones(areaOfInterest).simplify(), parallel);

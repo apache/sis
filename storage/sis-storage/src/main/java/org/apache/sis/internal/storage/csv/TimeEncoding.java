@@ -25,7 +25,7 @@ import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.measure.Units;
 
 // Branch-dependent imports
-import org.apache.sis.internal.jdk8.Instant;
+import java.time.Instant;
 
 
 /**

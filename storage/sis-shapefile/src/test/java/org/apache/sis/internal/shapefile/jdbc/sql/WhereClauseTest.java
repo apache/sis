@@ -69,11 +69,7 @@ public class WhereClauseTest extends AbstractTestBaseForInternalJDBC {
      */
     @Test
     public void whereCondition_field_literal_int() throws SQLException {
-        checkAndCount("FNODE_ < 2000", new ResultSetPredicate<ResultSet>() {
-            @Override public boolean test(ResultSet rs) throws SQLException {
-                return rs.getInt("FNODE_") < 2000;
-            }
-        }, 3);
+        checkAndCount("FNODE_ < 2000", rs -> rs.getInt("FNODE_") < 2000, 3);
     }
 
     /**
@@ -82,11 +78,7 @@ public class WhereClauseTest extends AbstractTestBaseForInternalJDBC {
      */
     @Test
     public void whereCondition_field_literal_double() throws SQLException {
-        checkAndCount("SHAPE_LEN < 70.5", new ResultSetPredicate<ResultSet>() {
-            @Override public boolean test(ResultSet rs) throws SQLException {
-                return rs.getDouble("SHAPE_LEN") < 70.5;
-            }
-        }, 3);
+        checkAndCount("SHAPE_LEN < 70.5", rs -> rs.getDouble("SHAPE_LEN") < 70.5, 3);
     }
 
     /**
@@ -95,11 +87,7 @@ public class WhereClauseTest extends AbstractTestBaseForInternalJDBC {
      */
     @Test
     public void whereCondition_field_literal_string() throws SQLException {
-        checkAndCount("FNAME = '36TH'", new ResultSetPredicate<ResultSet>() {
-            @Override public boolean test(ResultSet rs) throws SQLException {
-                return rs.getString("FNAME").equals("36TH");
-            }
-        }, 1);
+        checkAndCount("FNAME = '36TH'", rs -> rs.getString("FNAME").equals("36TH"), 1);
     }
 
     /**
@@ -108,11 +96,7 @@ public class WhereClauseTest extends AbstractTestBaseForInternalJDBC {
      */
     @Test
     public void whereCondition_field_field() throws SQLException {
-        checkAndCount("FNODE_ < TNODE_", new ResultSetPredicate<ResultSet>() {
-            @Override public boolean test(ResultSet rs) throws SQLException {
-                return rs.getInt("FNODE_") < rs.getInt("TNODE_");
-            }
-        }, 1);
+        checkAndCount("FNODE_ < TNODE_", rs -> rs.getInt("FNODE_") < rs.getInt("TNODE_"), 1);
     }
 
     /**
@@ -120,6 +104,7 @@ public class WhereClauseTest extends AbstractTestBaseForInternalJDBC {
      * unhandlable by a simple Predicate.
      * @param <T> Type used.
      */
+    @FunctionalInterface
     public interface ResultSetPredicate<T> {
         /**
          * Test a condition.

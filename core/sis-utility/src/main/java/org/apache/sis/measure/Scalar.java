@@ -289,8 +289,7 @@ abstract class Scalar<Q extends Quantity<Q>> extends Number implements Quantity<
      */
     @Override
     public final int hashCode() {
-        final long bits = Double.doubleToLongBits(value);
-        return ((int) (bits ^ (bits >>> 32))) ^ unit.hashCode();
+        return Double.hashCode(value) ^ unit.hashCode();
     }
 
     /**

@@ -35,7 +35,6 @@ import org.apache.sis.referencing.operation.transform.LinearTransform;
 import org.apache.sis.internal.referencing.j2d.AffineTransform2D;
 import org.apache.sis.internal.util.Utilities;
 
-import org.apache.sis.internal.jdk8.JDK8;
 
 /**
  * A datum shift grid loaded from a file.
@@ -366,7 +365,7 @@ public abstract class DatumShiftGridFile<C extends Quantity<C>, T extends Quanti
         {
             super(coordinateUnit, translationUnit, isCellValueRatio, x0, y0, Δx, Δy, nx, ny, descriptor, files);
             offsets = new float[dim][];
-            final int size = JDK8.multiplyExact(nx, ny);
+            final int size = Math.multiplyExact(nx, ny);
             for (int i=0; i<dim; i++) {
                 Arrays.fill(offsets[i] = new float[size], java.lang.Float.NaN);
             }

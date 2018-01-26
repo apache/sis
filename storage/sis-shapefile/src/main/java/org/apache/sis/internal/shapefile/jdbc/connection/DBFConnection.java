@@ -22,6 +22,7 @@ import java.nio.charset.Charset;
 import java.sql.*;
 import java.util.*;
 import java.util.logging.Level;
+import java.util.stream.Collectors;
 
 import org.apache.sis.internal.shapefile.jdbc.*;
 import org.apache.sis.internal.shapefile.jdbc.metadata.DBFDatabaseMetaData;
@@ -80,7 +81,7 @@ public class DBFConnection extends AbstractConnection {
             // Check if all the underlying connections that has been opened with this connection has been closed.
             // If not, we log a warning to help the developper.
             if (this.openedStatements.size() > 0) {
-                log(Level.WARNING, "log.statements_left_opened", this.openedStatements.size(), openedStatements.toString());
+                log(Level.WARNING, "log.statements_left_opened", this.openedStatements.size(), this.openedStatements.stream().map(DBFStatement::toString).collect(Collectors.joining(", ")));
             }
 
             this.byteReader.close();

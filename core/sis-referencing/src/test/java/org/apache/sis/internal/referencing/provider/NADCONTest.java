@@ -21,6 +21,7 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.nio.file.Path;
+import java.nio.file.Files;
 import javax.measure.quantity.Angle;
 import org.opengis.geometry.Envelope;
 import org.opengis.util.FactoryException;
@@ -32,9 +33,6 @@ import org.apache.sis.measure.Units;
 import org.junit.Test;
 
 import static org.apache.sis.test.Assert.*;
-
-// Branch-dependent imports
-import org.apache.sis.internal.jdk8.JDK8;
 
 
 /**
@@ -227,7 +225,7 @@ public final strictfp class NADCONTest extends DatumShiftTestCase {
     {
         Envelope envelope = new Envelope2D(null, gridX, gridY, nx - 1, ny - 1);
         envelope = Envelopes.transform(grid.getCoordinateToGrid().inverse(), envelope);
-        try (BufferedWriter out = JDK8.newBufferedWriter(file)) {
+        try (BufferedWriter out = Files.newBufferedWriter(file)) {
             out.write("NADCON EXTRACTED REGION\n");
             out.write(String.format(Locale.US, "%4d %3d %3d %11.5f %11.5f %11.5f %11.5f %11.5f\n", nx, ny, 1,
                     envelope.getMinimum(0), envelope.getSpan(0) / (nx - 1),

@@ -19,7 +19,6 @@ package org.apache.sis.util.collection;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Random;
-import java.util.concurrent.Callable;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.DependsOnMethod;
@@ -58,7 +57,7 @@ public final strictfp class WeakValueHashMapTest extends TestCase {
      */
     @Test
     public void testStrongReferences() {
-        testStrongReferences(new WeakValueHashMap<Integer,Integer>(Integer.class));
+        testStrongReferences(new WeakValueHashMap<>(Integer.class));
     }
 
     /**
@@ -100,7 +99,7 @@ public final strictfp class WeakValueHashMapTest extends TestCase {
     @Test
     @DependsOnMethod("testStrongReferences")
     public void testWeakReferences() throws InterruptedException {
-        testWeakReferences(new WeakValueHashMap<Integer,Integer>(Integer.class));
+        testWeakReferences(new WeakValueHashMap<>(Integer.class));
     }
 
     /**
@@ -164,21 +163,13 @@ public final strictfp class WeakValueHashMapTest extends TestCase {
              * happen too often, we may turn off the "allow garbage collector dependent tests" flag.
              */
             if (TestConfiguration.allowGarbageCollectorDependentTests()) {
-                waitForGarbageCollection(new Callable<Boolean>() {
-                    @Override public Boolean call() {
-                        return weakMap.size() == strongMap.size();
-                    }
-                });
+                waitForGarbageCollection(() -> weakMap.size() == strongMap.size());
                 assertMapEquals(strongMap, weakMap);
                 /*
                  * Clearing all strong references should make the map empty.
                  */
                 strongMap.clear();
-                assertTrue("Expected an empty map.", waitForGarbageCollection(new Callable<Boolean>() {
-                    @Override public Boolean call() {
-                        return weakMap.isEmpty();
-                    }
-                }));
+                assertTrue("Expected an empty map.", waitForGarbageCollection(weakMap::isEmpty));
             }
         }
     }

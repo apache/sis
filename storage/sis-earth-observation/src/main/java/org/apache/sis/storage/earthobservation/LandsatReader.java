@@ -69,11 +69,11 @@ import org.apache.sis.internal.util.Utilities;
 import static org.apache.sis.internal.util.CollectionsExt.singletonOrNull;
 
 // Branch-dependent imports
-import org.apache.sis.internal.jdk8.LocalDate;
-import org.apache.sis.internal.jdk8.OffsetDateTime;
-import org.apache.sis.internal.jdk8.OffsetTime;
-import org.apache.sis.internal.jdk8.Temporal;
-import org.apache.sis.internal.jdk8.DateTimeException;
+import java.time.LocalDate;
+import java.time.OffsetDateTime;
+import java.time.OffsetTime;
+import java.time.DateTimeException;
+import java.time.temporal.Temporal;
 
 
 /**
@@ -139,7 +139,7 @@ final class LandsatReader {
      * The pattern determining if the value of {@code ORIGIN} key is of the form
      * “Image courtesy of the U.S. Geological Survey”.
      */
-    static final Pattern CREDIT = Pattern.compile("\\bcourtesy\\s+of\\s+(the)?\\b\\s*", Pattern.CASE_INSENSITIVE);
+    static final Pattern CREDIT = Pattern.compile("\\bcourtesy\\h+of\\h+(the)?\\b\\s*", Pattern.CASE_INSENSITIVE);
 
     /**
      * Number of spatial dimensions. This is the number of ordinate values to be stored

@@ -20,9 +20,6 @@ import org.apache.sis.util.Numbers;
 import org.apache.sis.util.collection.IntegerList;
 import org.apache.sis.util.resources.Errors;
 
-// Branch-dependent imports
-import org.apache.sis.internal.jdk8.JDK8;
-
 
 /**
  * A vector of integer values backed by an {@link IntegerList}.
@@ -74,7 +71,7 @@ final class PackedVector extends ArrayVector<Long> {
         final int length = source.size();
         data = new IntegerList(length, delta, true);
         for (int i=0; i<length; i++) {
-            data.setInt(i, JDK8.toIntExact((source.longValue(i) - offset) / increment));
+            data.setInt(i, Math.toIntExact((source.longValue(i) - offset) / increment));
         }
     }
 

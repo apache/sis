@@ -41,9 +41,6 @@ import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.util.Debug;
 
-// Branch-dependent imports
-import org.apache.sis.internal.jdk8.JDK8;
-
 
 /**
  * A Swing panel drawing {@code Location} instances.
@@ -220,7 +217,7 @@ public final class LocationViewer extends JPanel {
         final MathTransform2D tr = (MathTransform2D) CRS.findOperation(
                 envelope.getCoordinateReferenceSystem(), displayCRS, null).getMathTransform();
         final Shape shape = tr.createTransformedShape(new IntervalRectangle(envelope));
-        if (JDK8.putIfAbsent(locations, label, shape) != null) {
+        if (locations.putIfAbsent(label, shape) != null) {
             throw new IllegalArgumentException("A location is already defined for " + label);
         }
         final Rectangle2D b = shape.getBounds2D();

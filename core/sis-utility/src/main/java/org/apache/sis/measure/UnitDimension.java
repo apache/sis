@@ -30,10 +30,6 @@ import org.apache.sis.util.UnsupportedImplementationException;
 import org.apache.sis.internal.converter.FractionConverter;
 import org.apache.sis.internal.util.CollectionsExt;
 
-// Branch-dependent imports
-import org.apache.sis.internal.jdk8.JDK8;
-import org.apache.sis.internal.jdk8.BiFunction;
-
 
 /**
  * Dimension (length, mass, time, <i>etc.</i>) of a unit of measurement.
@@ -71,7 +67,7 @@ final class UnitDimension implements Dimension, Serializable {
     /**
      * Pseudo-dimension for dimensionless units.
      */
-    static final UnitDimension NONE = new UnitDimension(Collections.<UnitDimension,Fraction>emptyMap());
+    static final UnitDimension NONE = new UnitDimension(Collections.emptyMap());
     // No need to store in UnitRegistry since UnitDimension performs special checks for dimensionless instances.
 
     /**
@@ -137,11 +133,7 @@ final class UnitDimension implements Dimension, Serializable {
          */
         UnitDimension dim = (UnitDimension) UnitRegistry.get(components);
         if (dim == null) {
-            JDK8.replaceAll(components, new BiFunction<UnitDimension,Fraction,Fraction>() {
-                @Override public Fraction apply(UnitDimension c, Fraction power) {
-                    return power.unique();
-                }
-            });
+            components.replaceAll((c, power) -> power.unique());
             components = CollectionsExt.unmodifiableOrCopy(components);
             dim = new UnitDimension(components);
             if (!Units.initialized) {
@@ -252,11 +244,9 @@ final class UnitDimension implements Dimension, Serializable {
                 p = p.negate();
             }
             if (dim instanceof UnitDimension) {
-                JDK8.merge(product, (UnitDimension) dim, p, new BiFunction<Fraction,Fraction,Fraction>() {
-                    @Override public Fraction apply(Fraction sum, Fraction toAdd) {
-                        sum = sum.add(toAdd);
-                        return (sum.numerator != 0) ? sum : null;
-                    }
+                product.merge((UnitDimension) dim, p, (sum, toAdd) -> {
+                    sum = sum.add(toAdd);
+                    return (sum.numerator != 0) ? sum : null;
                 });
             } else if (p.numerator != 0) {
                 throw new UnsupportedImplementationException(Errors.format(Errors.Keys.UnsupportedImplementation_1, dim.getClass()));
@@ -273,11 +263,7 @@ final class UnitDimension implements Dimension, Serializable {
      */
     private UnitDimension pow(final Fraction n) {
         final Map<UnitDimension,Fraction> product = new LinkedHashMap<>(components);
-        JDK8.replaceAll(product, new BiFunction<UnitDimension,Fraction,Fraction>() {
-            @Override public Fraction apply(UnitDimension dim, Fraction power) {
-                return power.multiply(n);
-            }
-        });
+        product.replaceAll((dim, power) -> power.multiply(n));
         return create(product);
     }
 

@@ -21,7 +21,7 @@ import java.io.IOException;
 import javax.imageio.stream.ImageInputStream;
 
 // Branch-dependent imports
-import org.apache.sis.internal.jdk8.UncheckedIOException;
+import java.io.UncheckedIOException;
 
 
 /**

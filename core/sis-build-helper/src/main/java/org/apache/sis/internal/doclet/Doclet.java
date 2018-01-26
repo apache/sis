@@ -17,7 +17,6 @@
 package org.apache.sis.internal.doclet;
 
 import java.io.File;
-import java.io.FilenameFilter;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.FileNotFoundException;
@@ -209,13 +208,8 @@ public final class Doclet extends HtmlDoclet {
      * @throws IOException      if an error occurred while reading or writing.
      */
     private static void copyResources(final File inputDirectory, final File outputDirectory) throws IOException {
-        final File[] inputFiles = inputDirectory.listFiles(new FilenameFilter() {
-            @Override public boolean accept(final File dir, final String name) {
-                return !name.startsWith(".") &&
-                       !name.equals("overview.html") &&
-                       !name.equals(STYLESHEET);
-            }
-        });
+        final File[] inputFiles = inputDirectory.listFiles((final File dir, final String name) ->
+                !name.startsWith(".") && !name.equals("overview.html") && !name.equals(STYLESHEET));
         try {
             for (final File input : inputFiles) {
                 final File output = new File(outputDirectory, input.getName());

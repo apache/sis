@@ -53,7 +53,6 @@ import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.resources.Messages;
 import org.apache.sis.measure.Units;
 
-import org.apache.sis.internal.jdk8.JDK8;
 
 /**
  * The provider for <cite>"National Transformation version 2"</cite> (EPSG:9615).
@@ -315,9 +314,9 @@ public final class NTv2 extends AbstractProvider {
             final double  dy       = (Double)  get("LAT_INC");
             final double  dx       = (Double)  get("LONG_INC");     // Positive toward west.
             final Integer declared = (Integer) header.get("GS_COUNT");
-            final int     width    = JDK8.toIntExact(Math.round((xmax - xmin) / dx + 1));
-            final int     height   = JDK8.toIntExact(Math.round((ymax - ymin) / dy + 1));
-            final int     count    = JDK8.multiplyExact(width, height);
+            final int     width    = Math.toIntExact(Math.round((xmax - xmin) / dx + 1));
+            final int     height   = Math.toIntExact(Math.round((ymax - ymin) / dy + 1));
+            final int     count    = Math.multiplyExact(width, height);
             if (declared != null && count != declared) {
                 throw new FactoryException(Errors.format(Errors.Keys.UnexpectedValueInElement_2, "GS_COUNT", declared));
             }
@@ -334,7 +333,7 @@ public final class NTv2 extends AbstractProvider {
             @SuppressWarnings("MismatchedReadAndWriteOfArray") final float[] tx = grid.offsets[0];
             @SuppressWarnings("MismatchedReadAndWriteOfArray") final float[] ty = grid.offsets[1];
             for (int i=0; i<count; i++) {
-                ensureBufferContains(4 * (Float.SIZE / Byte.SIZE));
+                ensureBufferContains(4 * Float.BYTES);
                 ty[i] = (float) (buffer.getFloat() / dy);   // Division by dx and dy because isCellValueRatio = true.
                 tx[i] = (float) (buffer.getFloat() / dx);
                 final double accuracy = Math.min(buffer.getFloat() / dy, buffer.getFloat() / dx);
@@ -350,7 +349,7 @@ public final class NTv2 extends AbstractProvider {
          * Returns {@code true} if the given value seems to be stored in little endian order.
          */
         private static boolean isLittleEndian(final int n) {
-            return JDK8.compareUnsigned(n, Integer.reverseBytes(n)) > 0;
+            return Integer.compareUnsigned(n, Integer.reverseBytes(n)) > 0;
         }
 
         /**

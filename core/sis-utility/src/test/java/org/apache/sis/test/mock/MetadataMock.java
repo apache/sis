@@ -69,7 +69,7 @@ public final strictfp class MetadataMock extends SimpleMetadata {
      */
     @Override
     public Collection<Locale> getLanguages() {
-        return (language != null) ? Collections.<Locale>singleton(language) : Collections.<Locale>emptySet();
+        return (language != null) ? Collections.singleton(language) : Collections.emptySet();
     }
 
     /**

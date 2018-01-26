@@ -373,7 +373,7 @@ public abstract class AbstractAttribute<V> extends Field<V> implements Serializa
      * is suitable when then caller only wants to read the map and does not plan to write anything.
      */
     final Map<String,AbstractAttribute<?>> characteristicsReadOnly() {
-        return (characteristics != null) ? characteristics : Collections.<String,AbstractAttribute<?>>emptyMap();
+        return (characteristics != null) ? characteristics : Collections.emptyMap();
     }
 
     /**

@@ -25,9 +25,6 @@ import java.nio.channels.SeekableByteChannel;
 import javax.imageio.stream.IIOByteBuffer;
 import javax.imageio.stream.ImageInputStream;
 
-// Branch-dependent imports
-import org.apache.sis.internal.jdk8.JDK8;
-
 
 /**
  * Adds the missing methods in {@code ChannelDataInput} for implementing the {@code ImageInputStream} interface.
@@ -196,7 +193,7 @@ loop:   while ((c = read()) >= 0) {
      */
     @Override
     public final int read() throws IOException {
-        return hasRemaining() ? JDK8.toUnsignedInt(buffer.get()) : -1;
+        return hasRemaining() ? Byte.toUnsignedInt(buffer.get()) : -1;
     }
 
     /**

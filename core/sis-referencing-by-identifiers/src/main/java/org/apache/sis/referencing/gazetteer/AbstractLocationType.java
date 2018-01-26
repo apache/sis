@@ -69,8 +69,7 @@ abstract class AbstractLocationType implements LenientComparable {
      */
     public static List<AbstractLocationType> snapshot(final ReferencingByIdentifiers rs, final AbstractLocationType... types) {
         ArgumentChecks.ensureNonNull("types", types);
-        final List<AbstractLocationType> snapshot = FinalLocationType.snapshot(Arrays.asList(types), rs,
-                new IdentityHashMap<AbstractLocationType,FinalLocationType>());
+        final List<AbstractLocationType> snapshot = FinalLocationType.snapshot(Arrays.asList(types), rs, new IdentityHashMap<>());
         final Map<AbstractLocationType,Boolean> parents = new IdentityHashMap<>();
         for (final AbstractLocationType type : snapshot) {
             checkForCycles(type, parents);
@@ -100,7 +99,7 @@ abstract class AbstractLocationType implements LenientComparable {
      * @throws IllegalArgumentException if an infinite recursivity is detected.
      */
     final void checkForCycles() {
-        checkForCycles(this, new IdentityHashMap<AbstractLocationType,Boolean>());
+        checkForCycles(this, new IdentityHashMap<>());
     }
 
     /**

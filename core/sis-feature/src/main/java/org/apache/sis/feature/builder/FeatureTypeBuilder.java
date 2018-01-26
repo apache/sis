@@ -43,7 +43,6 @@ import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ArraysExt;
 
 // Branch-dependent imports
-import org.apache.sis.internal.jdk8.JDK8;
 import org.apache.sis.feature.AbstractFeature;
 import org.apache.sis.feature.AbstractIdentifiedType;
 import org.apache.sis.feature.DefaultAssociationRole;
@@ -336,10 +335,10 @@ public class FeatureTypeBuilder extends TypeBuilder {
                 final Set<AttributeRole> rc = Collections.singleton(role);
                 if (property instanceof AbstractOperation) {
                     for (final String dependency : ((AbstractOperation) property).getDependencies()) {
-                        JDK8.merge(propertyRoles, dependency, rc, AttributeRole.merge);
+                        propertyRoles.merge(dependency, rc, AttributeRole::merge);
                     }
                 } else {
-                    JDK8.merge(propertyRoles, name.toString(), rc, AttributeRole.merge);
+                    propertyRoles.merge(name.toString(), rc, AttributeRole::merge);
                 }
             }
             if (builder != null) {

@@ -152,7 +152,7 @@ public abstract class TypeRegistration {
          * 2) The ClassLoader between different invocations may be different in an OSGi context.
          */
         final ArrayList<Class<?>> types = new ArrayList<>();
-        final ArrayList<TypeRegistration> toImpl = (converters == null) ? new ArrayList<TypeRegistration>() : null;
+        final ArrayList<TypeRegistration> toImpl = (converters == null) ? new ArrayList<>() : null;
         if (toImpl != null || getTypes) {
             for (final TypeRegistration t : DefaultFactories.createServiceLoader(TypeRegistration.class)) {
                 if (getTypes) {
@@ -220,7 +220,7 @@ public abstract class TypeRegistration {
         if (properties == null) {
             return Collections.singletonMap(ROOT_ADAPTERS, c);
         }
-        final Map<String,Object> copy = new HashMap<String,Object>(properties);
+        final Map<String,Object> copy = new HashMap<>(properties);
         copy.put(ROOT_ADAPTERS, c);
         return copy;
     }

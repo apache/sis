@@ -366,7 +366,7 @@ public class WarningListeners<S> implements Localized {
         synchronized (this) {
             current = listeners;
         }
-        return (current != null) ? UnmodifiableArrayList.wrap(current) : Collections.<WarningListener<? super S>>emptyList();
+        return (current != null) ? UnmodifiableArrayList.wrap(current) : Collections.emptyList();
     }
 
     /**

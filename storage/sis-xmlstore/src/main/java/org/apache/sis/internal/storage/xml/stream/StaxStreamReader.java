@@ -43,12 +43,11 @@ import org.apache.sis.util.collection.BackingStoreException;
 import org.apache.sis.util.resources.Errors;
 
 // Branch-dependent imports
-import org.apache.sis.internal.jdk8.Spliterator;
-import org.apache.sis.internal.jdk8.Consumer;
-import org.apache.sis.internal.jdk8.Predicate;
-import org.apache.sis.internal.jdk8.Temporal;
-import org.apache.sis.internal.jdk8.Instant;
-import java.text.ParseException;
+import java.util.Spliterator;
+import java.util.function.Consumer;
+import java.util.function.Predicate;
+import java.time.temporal.Temporal;
+import java.time.format.DateTimeParseException;
 import org.apache.sis.feature.AbstractFeature;
 
 
@@ -127,11 +126,6 @@ public abstract class StaxStreamReader extends StaxStreamIO implements XMLStream
      * @see #unmarshal(Class)
      */
     private Unmarshaller unmarshaller;
-
-    /**
-     * Object to use for parsing dates. Created when first needed.
-     */
-    private transient StandardDateFormat dateFormat;
 
     /**
      * Creates a new XML reader for the given data store.
@@ -384,17 +378,11 @@ public abstract class StaxStreamReader extends StaxStreamIO implements XMLStream
      *
      * @return the current text element as a date, or {@code null} if empty.
      * @throws XMLStreamException if a text element can not be returned.
-     * @throws ParseException if the text can not be parsed as a date.
+     * @throws DateTimeParseException if the text can not be parsed as a date.
      */
-    protected final Date getElementAsDate() throws XMLStreamException, ParseException {
+    protected final Date getElementAsDate() throws XMLStreamException {
         final String text = getElementText();
-        if (text != null) {
-            if (dateFormat == null) {
-                dateFormat = new StandardDateFormat();
-            }
-            return dateFormat.parse(text);
-        }
-        return null;
+        return (text != null) ? StandardDateFormat.toDate(StandardDateFormat.FORMAT.parse(text)) : null;
     }
 
     /**
@@ -403,10 +391,10 @@ public abstract class StaxStreamReader extends StaxStreamIO implements XMLStream
      *
      * @return the current text element as a temporal object, or {@code null} if empty.
      * @throws XMLStreamException if a text element can not be returned.
-     * @throws ParseException if the text can not be parsed as a date.
+     * @throws DateTimeParseException if the text can not be parsed as a date.
      */
-    protected final Temporal getElementAsTemporal() throws XMLStreamException, ParseException {
-        return Instant.create(getElementAsDate());
+    protected final Temporal getElementAsTemporal() throws XMLStreamException {
+        return StandardDateFormat.parseBest(getElementText());
     }
 
     /**

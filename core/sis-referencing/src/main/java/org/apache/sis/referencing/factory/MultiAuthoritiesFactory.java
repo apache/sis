@@ -65,9 +65,6 @@ import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.iso.DefaultNameSpace;
 import org.apache.sis.util.collection.BackingStoreException;
 
-// Branch-dependent imports
-import org.apache.sis.internal.jdk8.JDK8;
-
 
 /**
  * A factory that delegates the object creation to another factory determined from the <var>authority</var> part
@@ -523,7 +520,7 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
             return ((GeodeticAuthorityFactory) factory).getCodeSpaces();
         } else {
             final String authority = Citations.getCodeSpace(factory.getAuthority());
-            return (authority != null) ? Collections.singleton(authority) : Collections.<String>emptySet();
+            return (authority != null) ? Collections.singleton(authority) : Collections.emptySet();
         }
     }
 
@@ -546,7 +543,7 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
      * @return the given {@code factory} if no previous instance was cached, or the existing instance otherwise.
      */
     private AuthorityFactory cache(final AuthorityFactoryIdentifier identifier, final AuthorityFactory factory) {
-        final AuthorityFactory existing = JDK8.putIfAbsent(factories, identifier.intern(), factory);
+        final AuthorityFactory existing = factories.putIfAbsent(identifier.intern(), factory);
         return (existing != null) ? existing : factory;
     }
 
@@ -746,7 +743,7 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
                 return false;
             }
             // Invoke identifier.intern() only if needed.
-            return JDK8.putIfAbsent(warnings, identifier.intern(), Boolean.TRUE) == null;
+            return warnings.putIfAbsent(identifier.intern(), Boolean.TRUE) == null;
         }
     }
 

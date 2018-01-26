@@ -126,11 +126,7 @@ public enum DataDirectory {
      * @since 0.8
      */
     public static String getenv() throws SecurityException {
-        return AccessController.doPrivileged(new PrivilegedAction<String>() {
-            @Override public String run() {
-                return System.getenv(ENV);
-            }
-        });
+        return AccessController.doPrivileged((PrivilegedAction<String>) () -> System.getenv(ENV));
     }
 
     /**

@@ -133,7 +133,7 @@ public abstract class ChannelFactory {
          */
         final Set<OpenOption> optionSet;
         if (options == null || options.length == 0) {
-            optionSet = Collections.<OpenOption>singleton(StandardOpenOption.READ);
+            optionSet = Collections.singleton(StandardOpenOption.READ);
         } else {
             optionSet = new HashSet<>(Arrays.asList(options));
             optionSet.add(StandardOpenOption.READ);

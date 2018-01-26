@@ -30,8 +30,8 @@ import org.apache.sis.util.CorruptedObjectException;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
 
 // Branch-dependent imports
-import org.apache.sis.internal.jdk8.Instant;
-import org.apache.sis.internal.jdk8.Consumer;
+import java.time.Instant;
+import java.util.function.Consumer;
 import org.apache.sis.feature.AbstractFeature;
 import org.apache.sis.feature.AbstractAttribute;
 import org.apache.sis.feature.DefaultAttributeType;

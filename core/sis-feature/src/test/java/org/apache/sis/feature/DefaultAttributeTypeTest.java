@@ -47,7 +47,7 @@ public final strictfp class DefaultAttributeTypeTest extends TestCase {
      * @return an attribute type for a city name.
      */
     public static DefaultAttributeType<String> city() {
-        return city(new HashMap<String,Object>());
+        return city(new HashMap<>());
     }
 
     /**

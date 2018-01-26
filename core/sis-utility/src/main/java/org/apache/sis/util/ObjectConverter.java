@@ -20,7 +20,7 @@ import java.util.Set;
 import org.apache.sis.math.FunctionProperty;
 
 // Branch-dependent imports
-import org.apache.sis.internal.jdk8.Function;
+import java.util.function.Function;
 
 
 /**

@@ -1090,19 +1090,17 @@ public final class Units extends Static {
         final UnitDimension dimensionless = UnitDimension.NONE;
         /*
          * Base, derived or alternate units that we need to reuse more than once in this static initializer.
-         * Note: JDK8 branch uses much more compact method references instead than following inner classes.
          */
-        ScalarFactory<Dimensionless> dimensionlessFactory =            new ScalarFactory<Dimensionless>() {@Override public Dimensionless create(double value, Unit<Dimensionless> unit) {return new Scalar.Dimensionless(value, unit);}};
-        final SystemUnit<Length>        m   = add(Length.class,        new ScalarFactory<Length>       () {@Override public Length        create(double value, Unit<Length>        unit) {return new Scalar.Length       (value, unit);}}, length,        "m",   (byte) (SI | PREFIXABLE), Constants.EPSG_METRE);
-        final SystemUnit<Area>          m2  = add(Area.class,          new ScalarFactory<Area>         () {@Override public Area          create(double value, Unit<Area>          unit) {return new Scalar.Area         (value, unit);}}, area,          "m²",  (byte) (SI | PREFIXABLE), (short) 0);
-        final SystemUnit<Volume>        m3  = add(Volume.class,        new ScalarFactory<Volume>       () {@Override public Volume        create(double value, Unit<Volume>        unit) {return new Scalar.Volume       (value, unit);}}, length.pow(3), "m³",  (byte) (SI | PREFIXABLE), (short) 0);
-        final SystemUnit<Time>          s   = add(Time.class,          new ScalarFactory<Time>         () {@Override public Time          create(double value, Unit<Time>          unit) {return new Scalar.Time         (value, unit);}}, time,          "s",   (byte) (SI | PREFIXABLE), (short) 1040);
-        final SystemUnit<Temperature>   K   = add(Temperature.class,   new ScalarFactory<Temperature>  () {@Override public Temperature   create(double value, Unit<Temperature>   unit) {return new Scalar.Temperature  (value, unit);}}, temperature,   "K",   (byte) (SI | PREFIXABLE), (short) 0);
-        final SystemUnit<Speed>         mps = add(Speed.class,         new ScalarFactory<Speed>        () {@Override public Speed         create(double value, Unit<Speed>         unit) {return new Scalar.Speed        (value, unit);}}, speed,         "m∕s", (byte) (SI | PREFIXABLE), (short) 1026);
-        final SystemUnit<Pressure>      Pa  = add(Pressure.class,      new ScalarFactory<Pressure>     () {@Override public Pressure      create(double value, Unit<Pressure>      unit) {return new Scalar.Pressure     (value, unit);}}, pressure,      "Pa",  (byte) (SI | PREFIXABLE), (short) 0);
-        final SystemUnit<Angle>         rad = add(Angle.class,         new ScalarFactory<Angle>        () {@Override public Angle         create(double value, Unit<Angle>         unit) {return new Scalar.Angle        (value, unit);}}, dimensionless, "rad", (byte) (SI | PREFIXABLE), (short) 9101);
-        final SystemUnit<Mass>          kg  = add(Mass.class,          new ScalarFactory<Mass>         () {@Override public Mass          create(double value, Unit<Mass>          unit) {return new Scalar.Mass         (value, unit);}}, mass,          "kg",          SI,               (short) 0);
-        final SystemUnit<Dimensionless> one = add(Dimensionless.class, dimensionlessFactory, dimensionless, "", UnitRegistry.SI, (short) 9201);
+        final SystemUnit<Length>        m   = add(Length.class,        Scalar.Length::new,        length,        "m",   (byte) (SI | PREFIXABLE), Constants.EPSG_METRE);
+        final SystemUnit<Area>          m2  = add(Area.class,          Scalar.Area::new,          area,          "m²",  (byte) (SI | PREFIXABLE), (short) 0);
+        final SystemUnit<Volume>        m3  = add(Volume.class,        Scalar.Volume::new,        length.pow(3), "m³",  (byte) (SI | PREFIXABLE), (short) 0);
+        final SystemUnit<Time>          s   = add(Time.class,          Scalar.Time::new,          time,          "s",   (byte) (SI | PREFIXABLE), (short) 1040);
+        final SystemUnit<Temperature>   K   = add(Temperature.class,   Scalar.Temperature::new,   temperature,   "K",   (byte) (SI | PREFIXABLE), (short) 0);
+        final SystemUnit<Speed>         mps = add(Speed.class,         Scalar.Speed::new,         speed,         "m∕s", (byte) (SI | PREFIXABLE), (short) 1026);
+        final SystemUnit<Pressure>      Pa  = add(Pressure.class,      Scalar.Pressure::new,      pressure,      "Pa",  (byte) (SI | PREFIXABLE), (short) 0);
+        final SystemUnit<Angle>         rad = add(Angle.class,         Scalar.Angle::new,         dimensionless, "rad", (byte) (SI | PREFIXABLE), (short) 9101);
+        final SystemUnit<Dimensionless> one = add(Dimensionless.class, Scalar.Dimensionless::new, dimensionless, "",            SI,               (short) 9201);
+        final SystemUnit<Mass>          kg  = add(Mass.class,          Scalar.Mass::new,          mass,          "kg",          SI,               (short) 0);
         /*
          * All SI prefix to be used below, with additional converters to be used more than once.
          */
@@ -1197,13 +1195,11 @@ public final class Units extends Static {
         /*
          * Force, energy, electricity, magnetism and other units.
          * Frequency must be defined after angular velocities.
-         *
-         * Note: JDK8 branch uses method references instead than inner classes.
          */
-        HERTZ      = add(Frequency.class, new ScalarFactory<Frequency>() {@Override public Frequency create(double value, Unit<Frequency> unit) {return new Scalar.Frequency(value, unit);}}, frequency, "Hz", (byte) (SI | PREFIXABLE), (short) 0);
-        NEWTON     = add(Force.class,     new ScalarFactory<Force>    () {@Override public Force     create(double value, Unit<Force>     unit) {return new Scalar.Force    (value, unit);}}, force,     "N",  (byte) (SI | PREFIXABLE), (short) 0);
-        JOULE      = add(Energy.class,    new ScalarFactory<Energy>   () {@Override public Energy    create(double value, Unit<Energy>    unit) {return new Scalar.Energy   (value, unit);}}, energy,    "J",  (byte) (SI | PREFIXABLE), (short) 0);
-        WATT       = add(Power.class,     new ScalarFactory<Power>    () {@Override public Power     create(double value, Unit<Power>     unit) {return new Scalar.Power    (value, unit);}}, power,     "W",  (byte) (SI | PREFIXABLE), (short) 0);
+        HERTZ      = add(Frequency.class,           Scalar.Frequency::new, frequency,                    "Hz",  (byte) (SI | PREFIXABLE), (short) 0);
+        NEWTON     = add(Force.class,               Scalar.Force::new,     force,                        "N",   (byte) (SI | PREFIXABLE), (short) 0);
+        JOULE      = add(Energy.class,              Scalar.Energy::new,    energy,                       "J",   (byte) (SI | PREFIXABLE), (short) 0);
+        WATT       = add(Power.class,               Scalar.Power::new,     power,                        "W",   (byte) (SI | PREFIXABLE), (short) 0);
         AMPERE     = add(ElectricCurrent.class,     null,                  current,                      "A",   (byte) (SI | PREFIXABLE), (short) 0);
         COULOMB    = add(ElectricCharge.class,      null,                  charge,                       "C",   (byte) (SI | PREFIXABLE), (short) 0);
         VOLT       = add(ElectricPotential.class,   null,                  potential,                    "V",   (byte) (SI | PREFIXABLE), (short) 0);
@@ -1220,13 +1216,12 @@ public final class Units extends Static {
         STERADIAN  = add(SolidAngle.class,          null,                  dimensionless,                "sr",  (byte) (SI | PREFIXABLE), (short) 0);
         /*
          * All Unit<Dimensionless>.
-         * Note: JDK8 branch uses method references instead than inner classes.
          */
-        PERCENT = add(one, centi,                                               "%",     OTHER, (short) 0);
-        PPM     = add(one, micro,                                               "ppm",   OTHER, (short) 9202);
-        PSU     = add(Salinity.class,      null,                 dimensionless, "psu",   OTHER, (short) 0);
-        SIGMA   = add(Dimensionless.class, dimensionlessFactory, dimensionless, "sigma", OTHER, (short) 0);
-        PIXEL   = add(Dimensionless.class, dimensionlessFactory, dimensionless, "px",    OTHER, (short) 0);
+        PERCENT = add(one, centi,                                                    "%",     OTHER, (short) 0);
+        PPM     = add(one, micro,                                                    "ppm",   OTHER, (short) 9202);
+        PSU     = add(Salinity.class,      null,                      dimensionless, "psu",   OTHER, (short) 0);
+        SIGMA   = add(Dimensionless.class, Scalar.Dimensionless::new, dimensionless, "sigma", OTHER, (short) 0);
+        PIXEL   = add(Dimensionless.class, Scalar.Dimensionless::new, dimensionless, "px",    OTHER, (short) 0);
         UNITY   = UnitRegistry.init(one);  // Must be last in order to take precedence over all other units associated to UnitDimension.NONE.
 
         UnitRegistry.alias(UNITY,       Short.valueOf((short) 9203));

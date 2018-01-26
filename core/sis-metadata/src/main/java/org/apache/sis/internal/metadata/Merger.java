@@ -32,9 +32,6 @@ import org.apache.sis.util.CorruptedObjectException;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.Classes;
 
-// Branch-dependent imports
-import org.apache.sis.internal.jdk8.JDK8;
-
 
 /**
  * Merges the content of two metadata instances.
@@ -184,7 +181,7 @@ public class Merger {
             final String propertyName = entry.getKey();
             final Object sourceValue  = entry.getValue();
             final Object targetValue  = dryRun ? targetMap.get(propertyName)
-                                               : JDK8.putIfAbsentConservative(targetMap, propertyName, sourceValue);
+                                               : targetMap.putIfAbsent(propertyName, sourceValue);
             if (targetValue != null) {
                 if (targetValue instanceof ModifiableMetadata) {
                     success = copy(sourceValue, (ModifiableMetadata) targetValue, dryRun);

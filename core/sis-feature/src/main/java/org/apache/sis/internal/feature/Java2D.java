@@ -23,7 +23,6 @@ import java.awt.geom.Path2D;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import org.apache.sis.geometry.GeneralEnvelope;
-import org.apache.sis.internal.jdk8.JDK8;
 import org.apache.sis.setup.GeometryLibrary;
 import org.apache.sis.internal.referencing.j2d.ShapeUtilities;
 import org.apache.sis.math.Vector;
@@ -128,7 +127,7 @@ final class Java2D extends Geometries<Shape> {
         boolean isFloat = true;
         for (final Vector v : ordinates) {
             if (v != null) {
-                length = JDK8.addExact(length, v.size());
+                length = Math.addExact(length, v.size());
                 if (isFloat) {
                     for (int i=v.size(); --i >= 0;) {
                         final double value = v.doubleValue(i);

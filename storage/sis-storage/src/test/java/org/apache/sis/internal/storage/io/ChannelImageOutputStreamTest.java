@@ -58,7 +58,7 @@ public final strictfp class ChannelImageOutputStreamTest extends ChannelDataOutp
      */
     @Test
     public void testWriteBits() throws IOException {
-        initialize("testWriteBits", STREAM_LENGTH, random.nextInt(BUFFER_MAX_CAPACITY) + (Long.SIZE / Byte.SIZE));
+        initialize("testWriteBits", STREAM_LENGTH, random.nextInt(BUFFER_MAX_CAPACITY) + Long.BYTES);
         final ImageOutputStream referenceStream = (ImageOutputStream) this.referenceStream;
         final int length = testedStreamBackingArray.length - ARRAY_MAX_LENGTH; // Keep a margin against buffer underflow.
         while (testedStream.getStreamPosition() < length) {
@@ -95,7 +95,7 @@ public final strictfp class ChannelImageOutputStreamTest extends ChannelDataOutp
          */
         int nbMarks = 0;
         for (int i=0; i<STREAM_LENGTH; i++) {
-            if (randomEvent() && i < STREAM_LENGTH - (Long.SIZE / Byte.SIZE)) {
+            if (randomEvent() && i < STREAM_LENGTH - Long.BYTES) {
                 referenceStream.mark();
                 testedStream.mark();
                 nbMarks++;
@@ -144,7 +144,7 @@ public final strictfp class ChannelImageOutputStreamTest extends ChannelDataOutp
     @DependsOnMethod("testMarkAndReset")
     public void testFlushBefore() throws IOException {
         final int N = 50; // Number of long values to write.
-        initialize("testFlushBefore", N*(Long.SIZE / Byte.SIZE), 200);
+        initialize("testFlushBefore", N*Long.BYTES, 200);
         final ImageOutputStream referenceStream = (ImageOutputStream) this.referenceStream;
         for (int i=0; i<N; i++) {
             switch (i) {
@@ -157,13 +157,13 @@ public final strictfp class ChannelImageOutputStreamTest extends ChannelDataOutp
                     break;
                 }
                 case 10: {
-                    referenceStream.flushBefore(5 * (Long.SIZE / Byte.SIZE));
-                    testedStream.flushBefore(5 * (Long.SIZE / Byte.SIZE));
+                    referenceStream.flushBefore(5 * Long.BYTES);
+                    testedStream.flushBefore(5 * Long.BYTES);
                     break;
                 }
                 case 35: {
-                    referenceStream.flushBefore(32 * (Long.SIZE / Byte.SIZE));
-                    testedStream.flushBefore(32 * (Long.SIZE / Byte.SIZE));
+                    referenceStream.flushBefore(32 * Long.BYTES);
+                    testedStream.flushBefore(32 * Long.BYTES);
                     break;
                 }
             }

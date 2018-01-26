@@ -40,9 +40,6 @@ import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.Debug;
 
-// Branch-dependent imports
-import org.apache.sis.internal.jdk8.JDK8;
-
 
 /**
  * Creates an affine transform which will map approximatively the given source positions to the given target positions.
@@ -163,7 +160,7 @@ public class LinearTransformBuilder extends TransformBuilder {
             long length = 1;
             for (int s : gridSize) {
                 ArgumentChecks.ensureStrictlyPositive("gridSize", s);
-                length = JDK8.multiplyExact(length, s);
+                length = Math.multiplyExact(length, s);
             }
             if (length > Integer.MAX_VALUE) {
                 throw new IllegalArgumentException(Errors.format(Errors.Keys.ValueOutOfRange_4,
@@ -480,7 +477,7 @@ search: for (int j=0; j<numPoints; j++) {
             if (index < 0) {
                 index = numPoints++;
                 if (numPoints >= targets[0].length) {
-                    final int n = JDK8.multiplyExact(numPoints, 2);
+                    final int n = Math.multiplyExact(numPoints, 2);
                     resize(sources, n);
                     resize(targets, n);
                 }

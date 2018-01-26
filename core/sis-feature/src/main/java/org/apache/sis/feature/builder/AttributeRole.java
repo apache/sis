@@ -19,7 +19,6 @@ package org.apache.sis.feature.builder;
 import java.util.Set;
 import java.util.EnumSet;
 import org.apache.sis.feature.FeatureOperations;
-import org.apache.sis.internal.jdk8.BiFunction;
 
 
 /**
@@ -74,17 +73,11 @@ public enum AttributeRole {
 
     /**
      * Returns the union of the given set of attribute roles.
-     * Note: this is a lambda function on the JDK8 branch.
      */
-    static final BiFunction<Set<AttributeRole>, Set<AttributeRole>, Set<AttributeRole>> merge =
-            new BiFunction<Set<AttributeRole>, Set<AttributeRole>, Set<AttributeRole>>()
+    static Set<AttributeRole> merge(final Set<AttributeRole> oldValue,
+                                    final Set<AttributeRole> newValue)
     {
-        @Override
-        public Set<AttributeRole> apply(final Set<AttributeRole> oldValue,
-                                        final Set<AttributeRole> newValue)
-        {
-            final EnumSet<AttributeRole> union = EnumSet.copyOf(oldValue);
-            return union.addAll(newValue) ? union : oldValue;
-        }
-    };
+        final EnumSet<AttributeRole> union = EnumSet.copyOf(oldValue);
+        return union.addAll(newValue) ? union : oldValue;
+    }
 }

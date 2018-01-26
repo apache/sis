@@ -48,9 +48,6 @@ import static org.apache.sis.internal.util.X364.*;
 import static org.apache.sis.util.CharSequences.spaces;
 import static org.apache.sis.util.iso.DefaultNameSpace.DEFAULT_SEPARATOR;
 
-// Branch-dependent imports
-import org.apache.sis.internal.jdk8.JDK8;
-
 
 /**
  * A row in the table to be formatted by {@link ParameterFormat}.
@@ -194,7 +191,7 @@ final class ParameterTableRow {
         final InternationalString r = object.getRemarks();
         if (r != null) {
             final int n = remarks.size() + 1;
-            final Integer p = JDK8.putIfAbsent(remarks, r.toString(locale), n);
+            final Integer p = remarks.putIfAbsent(r.toString(locale), n);
             this.remarks = (p != null) ? p : n;
         }
     }

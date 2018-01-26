@@ -104,14 +104,13 @@ final class SystemUnit<Q extends Quantity<Q>> extends AbstractUnit<Q> implements
      * Returns a unit of the given dimension with default name and symbol.
      * This method is invoked for creating the result of arithmetic operations.
      */
-    @SuppressWarnings({"unchecked","rawtypes"})
     private SystemUnit<?> create(final UnitDimension dim) {
         if (dim == dimension) {
             return this;
         }
         SystemUnit<?> result = Units.get(dim);
         if (result == null) {
-            result = new SystemUnit(null, dim, null, (byte) 0, (short) 0, null);
+            result = new SystemUnit<>(null, dim, null, (byte) 0, (short) 0, null);
         }
         return result;
     }

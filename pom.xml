@@ -433,18 +433,18 @@ Apache SIS is a free software, Java language library for developing geospatial a
       <dependency>
         <groupId>org.apache.derby</groupId>
         <artifactId>derby</artifactId>
-        <version>10.12.1.1</version>            <!-- Last version compatible with JDK7.-->
+        <version>10.13.1.1</version>
       </dependency>
       <dependency>
         <groupId>org.hsqldb</groupId>
         <artifactId>hsqldb</artifactId>
-        <version>2.3.5</version>                <!-- Last version compatible with JDK7.-->
+        <version>2.4.0</version>
         <scope>test</scope>
       </dependency>
       <dependency>
         <groupId>org.postgresql</groupId>
         <artifactId>postgresql</artifactId>
-        <version>42.1.4.jre7</version>
+        <version>42.1.4</version>
         <scope>test</scope>
       </dependency>
 
@@ -496,8 +496,8 @@ Apache SIS is a free software, Java language library for developing geospatial a
     <website.locale>en</website.locale>
 
     <!-- Following properties are branch-specific -->
-    <maven.compile.source>1.7</maven.compile.source>
-    <maven.compile.target>1.7</maven.compile.target>
+    <maven.compile.source>1.8</maven.compile.source>
+    <maven.compile.target>1.8</maven.compile.target>
     <sis.plugin.version>${project.version}</sis.plugin.version>
     <sis.non-free.version>0.8</sis.non-free.version>
     <geoapi.version>3.0.1</geoapi.version>
@@ -515,24 +515,7 @@ Apache SIS is a free software, Java language library for developing geospatial a
 
     <!-- Cross-version compilation (to be removed with JDK9). -->
     <profile>
-      <id>jdk8</id>
-      <activation>
-        <jdk>1.8</jdk>
-      </activation>
-      <build>
-        <plugins>
-          <plugin>
-            <artifactId>maven-javadoc-plugin</artifactId>
-            <configuration>
-              <additionalparam>
-                -Xdoclint:syntax -Xdoclint:html -Xdoclint:missing -Xdoclint:accessibility
-              </additionalparam>
-            </configuration>
-          </plugin>
-        </plugins>
-      </build>
-    </profile>
-    <profile>
+      <id>bootclasspath</id>
       <activation>
         <property>
           <name>bootclasspath</name>
@@ -605,6 +588,8 @@ Apache SIS is a free software, Java language library for developing geospatial a
           <useIncrementalCompilation>false</useIncrementalCompilation> <!-- https://jira.codehaus.org/browse/MCOMPILER-209 -->
           <compilerArgs>
             <arg>-Xlint:all</arg>
+            <arg>-Xdoclint:syntax,html,missing/protected,accessibility/protected</arg>
+            <arg>-h</arg> <arg>${project.build.sourceDirectory}/../c</arg>
           </compilerArgs>
         </configuration>
       </plugin>
@@ -698,6 +683,13 @@ Apache SIS is a free software, Java language library for developing geospatial a
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-checkstyle-plugin</artifactId>
         <version>2.17</version>
+        <dependencies>
+          <dependency>
+            <groupId>com.puppycrawl.tools</groupId>
+            <artifactId>checkstyle</artifactId>
+            <version>8.2</version>
+          </dependency>
+        </dependencies>
         <executions>
           <execution>
             <goals>
@@ -728,20 +720,20 @@ Apache SIS is a free software, Java language library for developing geospatial a
                       <property name="tokens" value="COMMA"/>
                     </module>
                     <module name="WhitespaceAfter">                 <!-- Checks that a token is followed by whitespace. -->
-                      <property name="tokens" value="TYPECAST"/>
+                      <property name="tokens" value="TYPECAST, LITERAL_IF, LITERAL_ELSE, LITERAL_WHILE, LITERAL_DO, LITERAL_FOR, DO_WHILE"/>
                     </module>
                     <module name="NoWhitespaceAfter">               <!-- No whitespace after "++" in ++x, etc. -->
                       <property name="tokens" value="INC, DEC, BNOT, LNOT"/>
                     </module>
                     <module name="NoWhitespaceBefore">              <!-- No whitespace before "++" in x++, etc. -->
-                      <property name="tokens" value="COMMA, POST_INC, POST_DEC"/>
+                      <property name="tokens" value="COMMA, POST_INC, POST_DEC, ELLIPSIS"/>
                     </module>
                     <module name="WhitespaceAround">
                       <property name="tokens" value="
                         MINUS_ASSIGN, STAR_ASSIGN, DIV_ASSIGN, MOD_ASSIGN, MOD,
                         SL, SL_ASSIGN, SR, SR_ASSIGN, BSR, BSR_ASSIGN,
                         BAND, BAND_ASSIGN, BOR, BOR_ASSIGN, BXOR, BXOR_ASSIGN,
-                        TYPE_EXTENSION_AND, LAND, LOR, QUESTION,
+                        TYPE_EXTENSION_AND, LAND, LOR, QUESTION, LAMBDA,
                         COLON, DO_WHILE, LITERAL_DO, LITERAL_WHILE, LITERAL_FOR,
                         LITERAL_ELSE, LITERAL_SWITCH,
                         LITERAL_TRY, LITERAL_CATCH, LITERAL_FINALLY,
@@ -750,6 +742,8 @@ Apache SIS is a free software, Java language library for developing geospatial a
                       <property name="allowEmptyMethods"      value="true"/>
                       <property name="allowEmptyTypes"        value="true"/>
                       <property name="allowEmptyLoops"        value="true"/>
+                      <property name="allowEmptyLambdas"      value="true"/>
+                      <property name="allowEmptyCatches"      value="true"/>
                     </module>
                     <!--
                       Code formatting on other aspects than whitespaces. When there is different ways to express
@@ -771,6 +765,7 @@ Apache SIS is a free software, Java language library for developing geospatial a
                     <module name="OuterTypeNumber"/>                <!-- Only one outer type per file. -->
                     <module name="OuterTypeFilename"/>              <!-- Outer type name and file name shall match. -->
                     <module name="InterfaceIsType"/>                <!-- Do not allow interface without methods. -->
+                    <module name="FinalClass"/>                     <!-- Class having only private constructors should be final. -->
                     <module name="PackageDeclaration"/>             <!-- All classes shall be in a package. -->
                     <module name="HideUtilityClassConstructor"/>    <!-- No public constructor in utility classes. -->
                     <module name="MissingOverride"/>                <!-- @Override annotation everywhere applicable. -->
@@ -780,7 +775,7 @@ Apache SIS is a free software, Java language library for developing geospatial a
                     <module name="ExplicitInitialization"/>         <!-- No unnecessary initialization to 0 or null. -->
                     <module name="SimplifyBooleanReturn"/>          <!-- No if (boolean) return true; else return false. -->
                     <module name="RedundantModifier">               <!-- No modifiers that were implicit. -->
-                      <property name="tokens" value="VARIABLE_DEF, ANNOTATION_FIELD_DEF, INTERFACE_DEF, CLASS_DEF, ENUM_DEF"/>
+                      <property name="tokens" value="VARIABLE_DEF, ANNOTATION_FIELD_DEF, INTERFACE_DEF, CLASS_DEF, ENUM_DEF, RESOURCE"/>
                     </module>
                   </module>
                   <module name="UniqueProperties"/>                 <!-- No duplicated keys in *.properties files. -->
@@ -813,6 +808,10 @@ Apache SIS is a free software, Java language library for developing geospatial a
             <link>http://www.geoapi.org/3.0/javadoc</link>
             <link>http://www.unidata.ucar.edu/software/thredds/current/netcdf-java/javadoc</link>
           </links>
+
+          <additionalparam>
+            -Xdoclint:syntax -Xdoclint:html -Xdoclint:missing -Xdoclint:accessibility
+          </additionalparam>
 
           <!-- Separates packages on the overview page into the groups specified. -->
           <groups>
@@ -922,7 +921,7 @@ Apache SIS is a free software, Java language library for developing geospatial a
         <plugin>
           <groupId>org.eclipse.jetty</groupId>
           <artifactId>jetty-maven-plugin</artifactId>
-          <version>9.2.13.v20150730</version>           <!-- Versions 9.3.* require JDK 8 -->
+          <version>9.4.7.v20170914</version>
         </plugin>
       </plugins>
     </pluginManagement>

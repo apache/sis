@@ -18,7 +18,6 @@ package org.apache.sis.util.collection;
 
 import java.util.HashSet;
 import java.util.Random;
-import java.util.concurrent.Callable;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.DependsOnMethod;
@@ -156,21 +155,13 @@ public final strictfp class WeakHashSetTest extends TestCase {
              * happen too often, we may turn off the "allow garbage collector dependent tests" flag.
              */
             if (TestConfiguration.allowGarbageCollectorDependentTests()) {
-                waitForGarbageCollection(new Callable<Boolean>() {
-                    @Override public Boolean call() {
-                        return weakSet.size() == strongSet.size();
-                    }
-                });
+                waitForGarbageCollection(() -> weakSet.size() == strongSet.size());
                 assertSetEquals(strongSet, weakSet);
                 /*
                  * Clearing all strong references should make the set empty.
                  */
                 strongSet.clear();
-                assertTrue("Expected an empty set.", waitForGarbageCollection(new Callable<Boolean>() {
-                    @Override public Boolean call() {
-                        return weakSet.isEmpty();
-                    }
-                }));
+                assertTrue("Expected an empty set.", waitForGarbageCollection(weakSet::isEmpty));
             }
         }
     }

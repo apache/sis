@@ -63,9 +63,6 @@ import org.apache.sis.util.logging.PerformanceLevel;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.resources.Messages;
 
-// Branch-dependent imports
-import org.apache.sis.internal.jdk8.JDK8;
-
 
 /**
  * A concurrent authority factory that caches all objects created by another factory.
@@ -1878,7 +1875,7 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
             result = CollectionsExt.unmodifiableOrCopy(result);
             FindEntry entry = new FindEntry();
             synchronized (findPool) {
-                final FindEntry c = JDK8.putIfAbsent(findPool, object, entry);
+                final FindEntry c = findPool.putIfAbsent(object, entry);
                 if (c != null) {
                     entry = c;          // May happen if the same set has been computed in another thread.
                 }

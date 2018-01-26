@@ -40,9 +40,6 @@ import static org.apache.sis.math.MathFunctions.truncate;
 import static org.apache.sis.math.MathFunctions.isNegative;
 import static org.apache.sis.math.DecimalFunctions.fractionDigitsForDelta;
 
-// Branch-dependent imports
-import org.apache.sis.internal.jdk8.JDK8;
-
 
 /**
  * Parses and formats angles according a specified pattern. The pattern is a string
@@ -971,7 +968,7 @@ public class AngleFormat extends Format implements Localized {
     public StringBuffer format(final double angle, StringBuffer toAppendTo, final FieldPosition pos) {
         final int offset = toAppendTo.length();
         final int fieldPos = getField(pos);
-        if (!JDK8.isFinite(angle)) {
+        if (!Double.isFinite(angle)) {
             toAppendTo = numberFormat().format(angle, toAppendTo, dummyFieldPosition());
             if (fieldPos >= DEGREES_FIELD && fieldPos <= SECONDS_FIELD) {
                 pos.setBeginIndex(offset);
@@ -1113,7 +1110,7 @@ public class AngleFormat extends Format implements Localized {
                 }
                 final Number userObject;
                 if (hasMore) {
-                    userObject = JDK8.toIntExact(Math.round(value));
+                    userObject = Math.toIntExact(Math.round(value));
                 } else {
                     /*
                      * Use Float instead of Double because we don't want to give a false impression of accuracy

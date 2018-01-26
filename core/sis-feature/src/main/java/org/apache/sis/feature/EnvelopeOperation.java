@@ -38,9 +38,6 @@ import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.util.resources.Errors;
 
-// Branch-dependent imports
-import org.apache.sis.internal.jdk8.JDK8;
-
 
 /**
  * An operation computing the envelope that encompass all geometries found in a list of attributes.
@@ -159,7 +156,7 @@ final class EnvelopeOperation extends AbstractOperation {
                     }
                     characterizedByCRS = true;
                 }
-                JDK8.putIfAbsent(names, attributeName, attributeCRS);
+                names.putIfAbsent(attributeName, attributeCRS);
             }
         }
         /*

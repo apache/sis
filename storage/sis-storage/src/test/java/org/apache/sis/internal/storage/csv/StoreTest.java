@@ -37,12 +37,12 @@ import static org.apache.sis.test.TestUtilities.date;
 import static org.apache.sis.test.TestUtilities.getSingleton;
 
 // Branch-dependent imports
+import java.time.Instant;
 import org.apache.sis.feature.AbstractFeature;
 import org.apache.sis.feature.AbstractIdentifiedType;
 import org.apache.sis.feature.DefaultAttributeType;
 import org.apache.sis.feature.DefaultFeatureType;
 import org.apache.sis.metadata.iso.identification.AbstractIdentification;
-import org.apache.sis.internal.jdk8.Instant;
 
 
 /**
@@ -78,7 +78,7 @@ public final strictfp class StoreTest extends TestCase {
      * Returns the instant for the given time at the day of the test.
      */
     private static Instant instant(final String time) {
-        return Instant.ofEpochMilli(date("2012-01-17 " + time).getTime());
+        return date("2012-01-17 " + time).toInstant();
     }
 
     /**

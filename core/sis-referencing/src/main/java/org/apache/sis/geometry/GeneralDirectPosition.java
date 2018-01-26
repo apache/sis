@@ -291,11 +291,9 @@ public class GeneralDirectPosition extends AbstractDirectPosition implements Ser
      */
     static Field getOrdinatesField(final Class<?> type) throws NoSuchFieldException {
         final Field field = type.getDeclaredField("ordinates");
-        AccessController.doPrivileged(new PrivilegedAction<Void>() {
-            @Override public Void run() {
-                field.setAccessible(true);
-                return null;
-            }
+        AccessController.doPrivileged((PrivilegedAction<Void>) () -> {
+            field.setAccessible(true);
+            return null;
         });
         return field;
     }

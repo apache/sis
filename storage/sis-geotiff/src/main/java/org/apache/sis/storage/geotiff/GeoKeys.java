@@ -138,6 +138,6 @@ final class GeoKeys {
         } catch (IllegalAccessException e) {
             throw new AssertionError(e);        // Should never happen because we asked only for public fields.
         }
-        return Integer.toHexString(key & 0xFFFF);
+        return Integer.toHexString(Short.toUnsignedInt(key));
     }
 }

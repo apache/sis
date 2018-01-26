@@ -26,7 +26,6 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.Path2D;
 import java.awt.geom.Point2D;
@@ -218,10 +217,8 @@ final strictfp class ShapeUtilitiesViewer extends JPanel {
     private JButton createButtonForNextTest(final Method method) {
         final JButton button = new JButton(CharSequences.camelCaseToSentence(
                 method.name().toLowerCase(Locale.ENGLISH)).toString());
-        button.addActionListener(new ActionListener () {
-            @Override public void actionPerformed(ActionEvent e) {
-                assignRandomPoints(method);
-            }
+        button.addActionListener((ActionEvent e) -> {
+            assignRandomPoints(method);
         });
         return button;
     }

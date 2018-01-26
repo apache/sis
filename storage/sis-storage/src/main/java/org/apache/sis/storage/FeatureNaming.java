@@ -28,9 +28,6 @@ import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.internal.storage.Resources;
 
-// Branch-dependent imports
-import org.apache.sis.internal.jdk8.JDK8;
-
 
 /**
  * Helper class for mapping {@link GenericName} instances and their shortened names to features.
@@ -222,7 +219,7 @@ public class FeatureNaming<E> {
                 if (!fullNames.contains(alias)) {
                     values.remove(alias);
                 }
-            } else if (JDK8.putIfAbsent(values, alias, value) != null) {
+            } else if (values.putIfAbsent(alias, value) != null) {
                 /*
                  * If a value already existed for that alias but the alias was not declared in the 'aliases' map,
                  * this means that the list was implicitly Collections.singletonList(key). Since we now have an
@@ -279,7 +276,7 @@ public class FeatureNaming<E> {
             } else if (remaining.size() == 1) {
                 final String select = remaining.get(0);
                 assert !select.equals(key) : select;     // Should have been removed by removeFromMultiValuesMap(…).
-                error |= (JDK8.putIfAbsent(values, alias, values.get(select)) != null);
+                error |= (values.putIfAbsent(alias, values.get(select)) != null);
             }
         }
         if (error) {

@@ -278,11 +278,7 @@ public abstract class Initializer {
             boolean create = false;
             final boolean isEnvClear = DataDirectory.isEnvClear();
             if (!isEnvClear || (source = embedded()) == null) {
-                final String home = AccessController.doPrivileged(new PrivilegedAction<String>() {
-                    @Override public String run() {
-                        return System.getProperty(DERBY_HOME_KEY);
-                    }
-                });
+                final String home = AccessController.doPrivileged((PrivilegedAction<String>) () -> System.getProperty(DERBY_HOME_KEY));
                 final Path dir = DataDirectory.DATABASES.getDirectory();
                 final String dbURL;
                 if (dir != null) {
@@ -335,11 +331,9 @@ public abstract class Initializer {
              * Register the shutdown hook before to attempt any operation on the database in order to close
              * it properly if the schemas creation below fail.
              */
-            Shutdown.register(new Callable<Object>() {
-                @Override public Object call() throws ReflectiveOperationException {
-                    shutdown();
-                    return null;
-                }
+            Shutdown.register(() -> {
+                shutdown();
+                return null;
             });
             /*
              * If the database does not exist, create it. We allow creation only if we are inside
@@ -368,11 +362,8 @@ public abstract class Initializer {
      */
     public static boolean hasJNDI() {
         return NamingManager.hasInitialContextFactoryBuilder() ||
-                AccessController.doPrivileged(new PrivilegedAction<Boolean>() {
-                    @Override public Boolean run() {
-                        return System.getProperty(Context.INITIAL_CONTEXT_FACTORY) != null;
-                    }
-                });
+               AccessController.doPrivileged((PrivilegedAction<Boolean>) () ->
+                       System.getProperty(Context.INITIAL_CONTEXT_FACTORY) != null);
     }
 
     /**

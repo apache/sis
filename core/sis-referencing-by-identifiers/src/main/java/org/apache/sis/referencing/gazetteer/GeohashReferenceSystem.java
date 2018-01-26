@@ -277,7 +277,7 @@ public class GeohashReferenceSystem extends ReferencingByIdentifiers {
             final int highestOneBit = format.highestOneBit;
             char[] geohash = buffer;
             if (geohash == null) {
-                buffer = geohash = new char[length & 0xFF];
+                buffer = geohash = new char[Byte.toUnsignedInt(length)];
             }
             /*
              * The current implementation assumes a two-dimensional coordinates. The 'isEven' boolean takes

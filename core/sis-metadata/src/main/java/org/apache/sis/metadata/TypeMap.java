@@ -74,7 +74,7 @@ final class TypeMap extends PropertyMap<Class<?>> {
                     throw new NoSuchElementException();
                 }
                 final Class<?> value = accessor.type(index, valuePolicy);
-                return new SimpleImmutableEntry<String,Class<?>>(accessor.name(index++, keyPolicy), value);
+                return new SimpleImmutableEntry<>(accessor.name(index++, keyPolicy), value);
             }
         };
     }

@@ -1544,7 +1544,7 @@ public class Formatter implements Localized {
      */
     private Warnings warnings() {
         if (warnings == null) {
-            warnings = new Warnings(locale, false, Collections.<String, List<String>>emptyMap());
+            warnings = new Warnings(locale, false, Collections.emptyMap());
         }
         return warnings;
     }

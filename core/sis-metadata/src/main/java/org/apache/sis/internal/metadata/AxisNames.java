@@ -22,9 +22,6 @@ import java.lang.reflect.Field;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.internal.system.Modules;
 
-// Branch-specific imports
-import org.apache.sis.internal.jdk8.JDK8;
-
 
 /**
  * Constants for axis names specified by ISO 19111 and ISO 19162.
@@ -204,6 +201,6 @@ public final class AxisNames {
      * @return the given name in camel case.
      */
     public static String toCamelCase(final String name) {
-        return JDK8.getOrDefault(VALUES, toUpperCase(name, new StringBuilder(name.length())), name);
+        return VALUES.getOrDefault(toUpperCase(name, new StringBuilder(name.length())), name);
     }
 }

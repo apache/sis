@@ -26,6 +26,7 @@ import java.sql.SQLFeatureNotSupportedException;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.Map;
+import java.util.function.Function;
 import java.util.logging.Level;
 
 import org.apache.sis.internal.shapefile.jdbc.SQLConnectionClosedException;
@@ -33,10 +34,6 @@ import org.apache.sis.internal.shapefile.jdbc.connection.DBFConnection;
 import org.apache.sis.internal.shapefile.jdbc.metadata.DBFResultSetMataData;
 import org.apache.sis.internal.shapefile.jdbc.sql.*;
 import org.apache.sis.internal.shapefile.jdbc.statement.DBFStatement;
-
-// Branch-dependent imports
-import org.apache.sis.internal.jdk8.Function;
-
 
 /**
  * A ResultSet based on a record.
@@ -51,10 +48,10 @@ public class DBFRecordBasedResultSet extends DBFResultSet {
 
     /** Indicates that the last result set record matching conditions has already been returned, and a further call of next() shall throw a "no more record" exception. */
     private boolean lastResultSetRecordAlreadyReturned;
-    
+
     /** The record number of this record. */
     private int recordNumber;
-    
+
     /**
      * Constructs a result set.
      * @param stmt Parent statement.
@@ -205,11 +202,7 @@ public class DBFRecordBasedResultSet extends DBFResultSet {
     public double getDouble(String columnLabel) throws SQLConnectionClosedException, SQLNoSuchFieldException, SQLNotNumericException {
         logStep("getDouble", columnLabel);
 
-        Double value = getNumeric(columnLabel, new Function<String,Double>() {
-            @Override public Double apply(final String value) {
-                return Double.parseDouble(value);
-            }
-        });
+        Double value = getNumeric(columnLabel, Double::parseDouble);
         this.wasNull = (value == null);
         return value != null ? value : 0.0; // The ResultSet contract for numbers is to return 0 when a null value is encountered.
     }
@@ -237,11 +230,7 @@ public class DBFRecordBasedResultSet extends DBFResultSet {
     public float getFloat(String columnLabel) throws SQLConnectionClosedException, SQLNoSuchFieldException, SQLNotNumericException {
         logStep("getFloat", columnLabel);
 
-        Float value = getNumeric(columnLabel, new Function<String,Float>() {
-            @Override public Float apply(final String value) {
-                return Float.parseFloat(value);
-            }
-        });
+        Float value = getNumeric(columnLabel, Float::parseFloat);
         this.wasNull = (value == null);
         return value != null ? value : 0; // The ResultSet contract for numbers is to return 0 when a null value is encountered.
     }
@@ -269,11 +258,7 @@ public class DBFRecordBasedResultSet extends DBFResultSet {
     public int getInt(String columnLabel) throws SQLConnectionClosedException, SQLNoSuchFieldException, SQLNotNumericException {
         logStep("getInt", columnLabel);
 
-        Integer value = getNumeric(columnLabel, new Function<String,Integer>() {
-            @Override public Integer apply(final String value) {
-                return Integer.parseInt(value);
-            }
-        });
+        Integer value = getNumeric(columnLabel, Integer::parseInt);
         this.wasNull = (value == null);
         return value != null ? value : 0; // The ResultSet contract for numbers is to return 0 when a null value is encountered.
     }
@@ -301,11 +286,7 @@ public class DBFRecordBasedResultSet extends DBFResultSet {
     public long getLong(String columnLabel) throws SQLConnectionClosedException, SQLNoSuchFieldException, SQLNotNumericException {
         logStep("getLong", columnLabel);
 
-        Long value = getNumeric(columnLabel, new Function<String,Long>() {
-            @Override public Long apply(final String value) {
-                return Long.parseLong(value);
-            }
-        });
+        Long value = getNumeric(columnLabel, Long::parseLong);
         this.wasNull = (value == null);
         return value != null ? value : 0; // The ResultSet contract for numbers is to return 0 when a null value is encountered.
     }
@@ -415,7 +396,7 @@ public class DBFRecordBasedResultSet extends DBFResultSet {
     @Override
     public Object getObject(String columnLabel) throws SQLConnectionClosedException, SQLFeatureNotSupportedException, SQLNoSuchFieldException, SQLNotNumericException, SQLNotDateException {
         int index = -1;
-        
+
         try {
             index = findColumn(columnLabel);
             return getObject(index);
@@ -433,7 +414,7 @@ public class DBFRecordBasedResultSet extends DBFResultSet {
     public int getRowNum()  {
         return this.recordNumber;
     }
-    
+
     /**
      * @see java.sql.ResultSet#getShort(java.lang.String)
      * @throws SQLConnectionClosedException if the connection is closed.
@@ -444,11 +425,7 @@ public class DBFRecordBasedResultSet extends DBFResultSet {
     public short getShort(String columnLabel) throws SQLConnectionClosedException, SQLNoSuchFieldException, SQLNotNumericException {
         logStep("getShort", columnLabel);
 
-        Short value = getNumeric(columnLabel, new Function<String,Short>() {
-            @Override public Short apply(final String value) {
-                return Short.parseShort(value);
-            }
-        });
+        Short value = getNumeric(columnLabel, Short::parseShort);
         this.wasNull = (value == null);
         return value != null ? value : 0; // The ResultSet contract for numbers is to return 0 when a null value is encountered.
     }
@@ -492,7 +469,7 @@ public class DBFRecordBasedResultSet extends DBFResultSet {
         // If a non null value has been readed, convert it to the wished Charset (provided one has been given).
         DBFConnection cnt = (DBFConnection)((DBFStatement)getStatement()).getConnection();
         Charset charset = cnt.getCharset();
-        
+
         if (charset == null) {
             return new String(bytes);
         }
@@ -605,7 +582,7 @@ public class DBFRecordBasedResultSet extends DBFResultSet {
 
         try(DBFBuiltInMemoryResultSetForColumnsListing rs = (DBFBuiltInMemoryResultSetForColumnsListing)getFieldDesc(columnLabel, this.sql)) {
             String textValue = getString(columnLabel);
-            
+
             if (textValue == null) {
                 return null;
             }

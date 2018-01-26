@@ -20,9 +20,6 @@ import java.nio.MappedByteBuffer;
 
 import org.apache.sis.internal.shapefile.AutoChecker;
 
-// Branch-dependent imports
-import org.apache.sis.internal.jdk8.JDK8;
-
 
 /**
  * Field descriptor.
@@ -105,7 +102,7 @@ public class DBase3FieldDescriptor extends AutoChecker {
      * @return Decimal count.
      */
     public int getDecimalCount() {
-        return this.fieldDecimalCount & 0xFF;
+        return Byte.toUnsignedInt(this.fieldDecimalCount);
     }
 
     /**
@@ -113,7 +110,7 @@ public class DBase3FieldDescriptor extends AutoChecker {
      * @return field length.
      */
     public int getLength() {
-        return this.fieldLength & 0xFF;
+        return Byte.toUnsignedInt(this.fieldLength);
     }
 
     /**
@@ -124,7 +121,7 @@ public class DBase3FieldDescriptor extends AutoChecker {
         // Converting bytes to String takes time. Only do that once.
         if (this.stringFieldName == null) {
             int length = this.fieldName.length;
-            while (length != 0 && JDK8.toUnsignedInt(this.fieldName[length - 1]) <= ' ') {
+            while (length != 0 && Byte.toUnsignedInt(this.fieldName[length - 1]) <= ' ') {
                 length--;
             }
 
@@ -147,7 +144,7 @@ public class DBase3FieldDescriptor extends AutoChecker {
      */
     @Override
     public String toString() {
-        String text = format("toString", getName(), this.fieldType, JDK8.toUnsignedInt(this.fieldLength), JDK8.toUnsignedInt(this.fieldDecimalCount));
+        String text = format("toString", getName(), this.fieldType, Byte.toUnsignedInt(this.fieldLength), Byte.toUnsignedInt(this.fieldDecimalCount));
         return text;
     }
 }

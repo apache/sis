@@ -21,6 +21,7 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Collections;
+import java.util.StringJoiner;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.NoSuchElementException;
@@ -88,7 +89,6 @@ import org.apache.sis.util.Debug;
 import static org.apache.sis.util.Utilities.equalsIgnoreMetadata;
 
 // Branch-dependent imports
-import org.apache.sis.internal.jdk8.JDK8;
 import org.apache.sis.referencing.operation.DefaultCoordinateOperationFactory;
 
 
@@ -369,12 +369,9 @@ final class CRSBuilder {
         if (value != null) {
             if (value.getClass().isArray()) {
                 final int length = Array.getLength(value);
-                final StringBuffer buffer = new StringBuffer();
+                final StringJoiner buffer = new StringJoiner(", ");
                 for (int i=0; i<length; i++) {
-                    if (buffer.length() != 0) {
-                        buffer.append(", ");
-                    }
-                    buffer.append(Array.get(value, i));
+                    buffer.add(String.valueOf(Array.get(value, i)));
                 }
                 value = buffer;
             }
@@ -785,12 +782,9 @@ final class CRSBuilder {
          * Build a list of remaining GeoKeys.
          */
         if (!geoKeys.isEmpty()) {
-            final StringBuilder joiner = new StringBuilder();
+            final StringJoiner joiner = new StringJoiner(", ");
             for (final short key : remainingKeys()) {
-                if (joiner.length() != 0) {
-                    joiner.append(", ");
-                }
-                joiner.append(GeoKeys.name(key));
+                joiner.add(GeoKeys.name(key));
             }
             warning(Resources.Keys.IgnoredGeoKeys_1, joiner.toString());
         }
@@ -1405,11 +1399,11 @@ final class CRSBuilder {
     private static void aliases(final Map<Integer,String> mapping) {
         for (final short[] codes : PARAMETER_ALIASES) {
             for (int i=0; i<codes.length; i++) {
-                final String name = mapping.get(codes[i] & 0xFFFF);
+                final String name = mapping.get(Short.toUnsignedInt(codes[i]));
                 if (name != null) {
                     for (int j=0; j<codes.length; j++) {
                         if (j != i) {
-                            JDK8.putIfAbsent(mapping, codes[j] & 0xFFFF, name);
+                            mapping.putIfAbsent(Short.toUnsignedInt(codes[j]), name);
                         }
                     }
                     break;
@@ -1544,7 +1538,7 @@ final class CRSBuilder {
                     }
                     final Number value = (Number) entry.getValue();
                     it.remove();
-                    final String paramName = toNames.get(key & 0xFFFF);
+                    final String paramName = toNames.get(Short.toUnsignedInt(key));
                     if (paramName != null) {
                         paramValues.put(paramName, value);
                         parameters.parameter(paramName).setValue(value.doubleValue(), unit);
@@ -1563,14 +1557,14 @@ final class CRSBuilder {
                     aliases(toNames);
                     for (final Map.Entry<Short,Unit<?>> entry : deferred.entrySet()) {
                         final Short key = entry.getKey();
-                        String paramName = toNames.get(key & 0xFFFF);
+                        String paramName = toNames.get(Short.toUnsignedInt(key));
                         if (paramName == null) {
                             paramName = GeoKeys.name(key);
                             throw new ParameterNotFoundException(reader.errors().getString(
                                     Errors.Keys.UnexpectedParameter_1, paramName), paramName);
                         }
                         final Number value  = paramValues.get(key);
-                        final Number actual = JDK8.putIfAbsent(paramValues, paramName, value);
+                        final Number actual = paramValues.putIfAbsent(paramName, value);
                         if (actual == null) {
                             parameters.parameter(paramName).setValue(value.doubleValue(), entry.getValue());
                         } else if (!actual.equals(value)) {

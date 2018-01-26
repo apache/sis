@@ -29,8 +29,7 @@ import org.opengis.parameter.InvalidParameterCardinalityException;
 import static org.apache.sis.util.collection.Containers.hashMapCapacity;
 
 // Branch-dependent imports
-import org.apache.sis.internal.jdk8.JDK8;
-import org.apache.sis.internal.jdk8.Predicate;
+import java.util.function.Predicate;
 
 
 /**
@@ -76,8 +75,12 @@ public final class CollectionsExt extends Static {
             return Collections.EMPTY_LIST;
         } else if (type.isAssignableFrom(Set.class)) {
             return Collections.EMPTY_SET;
-        } if (type.isAssignableFrom(SortedSet.class)) {
-            return emptySortedSet();
+        } else if (type.isAssignableFrom(NavigableSet.class)) {     // Rarely used case (at least in SIS).
+            if (type.isAssignableFrom(SortedSet.class)) {
+                return Collections.emptySortedSet();
+            } else {
+                return Collections.emptyNavigableSet();
+            }
         } else if (type.isAssignableFrom(Queue.class)) {
             return emptyQueue();
         } else {
@@ -152,24 +155,6 @@ public final class CollectionsExt extends Static {
     }
 
     /**
-     * Returns a {@linkplain SortedSet sorted set} which is always empty and accepts no element.
-     *
-     * <div class="note"><b>Note:</b>
-     * This method exists only on the JDK7 branch, not on the JDK8 branch,
-     * since an equivalent method has been added to the JDK.</div>
-     *
-     * @param <E> The type of elements in the empty collection.
-     * @return An empty collection.
-     *
-     * @see Collections#emptyList()
-     * @see Collections#emptySet()
-     */
-    @SuppressWarnings({"unchecked","rawtype"})
-    public static <E> SortedSet<E> emptySortedSet() {
-        return EmptySortedSet.INSTANCE;
-    }
-
-    /**
      * Returns the given value as a singleton if non-null, or returns an empty set otherwise.
      *
      * @param  <E>      the element type.
@@ -177,7 +162,7 @@ public final class CollectionsExt extends Static {
      * @return a collection containing the given element if non-null, or an empty collection otherwise.
      */
     public static <E> Set<E> singletonOrEmpty(final E element) {
-        return (element != null) ? Collections.singleton(element) : Collections.<E>emptySet();
+        return (element != null) ? Collections.singleton(element) : Collections.emptySet();
     }
 
     /**
@@ -867,7 +852,7 @@ public final class CollectionsExt extends Static {
             final String lower = name.toLowerCase(namesLocale);
             if (!name.equals(lower)) {
                 if (generated.add(lower)) {
-                    JDK8.putIfAbsent(map, lower, value);
+                    map.putIfAbsent(lower, value);
                 } else {
                     /*
                      * Two entries having non-lower case names got the same name after conversion to

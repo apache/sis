@@ -28,9 +28,6 @@ import org.apache.sis.internal.shapefile.jdbc.resultset.SQLIllegalColumnIndexExc
 import org.apache.sis.internal.shapefile.jdbc.resultset.SQLNoSuchFieldException;
 import org.apache.sis.feature.AbstractFeature;
 
-// Branch-dependent imports
-import org.apache.sis.internal.jdk8.JDK8;
-
 
 /**
  * Reader of a Database Binary content by the way of a {@link java.nio.MappedByteBuffer}
@@ -86,7 +83,7 @@ public class MappedByteReader extends AbstractDbase3ByteReader implements AutoCl
             getByteBuffer().get(data);
 
             int length = data.length;
-            while (length != 0 && JDK8.toUnsignedInt(data[length - 1]) <= ' ') {
+            while (length != 0 && Byte.toUnsignedInt(data[length - 1]) <= ' ') {
                 length--;
             }
 
@@ -129,7 +126,7 @@ public class MappedByteReader extends AbstractDbase3ByteReader implements AutoCl
      */
     @Override public int getRowNum() {
         int position = getByteBuffer().position();
-        int recordNumber = (position - (firstRecordPosition & 0xFFFF)) / (recordLength & 0xFFFF);
+        int recordNumber = (position - Short.toUnsignedInt(this.firstRecordPosition)) / Short.toUnsignedInt(this.recordLength);
         return recordNumber;
     }
 
@@ -152,7 +149,7 @@ public class MappedByteReader extends AbstractDbase3ByteReader implements AutoCl
             // Trim the bytes right.
             int length = data.length;
 
-            while (length != 0 && JDK8.toUnsignedInt(data[length - 1]) <= ' ') {
+            while (length != 0 && Byte.toUnsignedInt(data[length - 1]) <= ' ') {
                 length--;
             }
 

@@ -112,7 +112,7 @@ public final strictfp class HyperRectangleReaderTest extends TestCase {
          * different than zero.
          */
         final int origin = random.nextInt(10);
-        final byte[] array = new byte[origin + length*(Short.SIZE / Byte.SIZE)];
+        final byte[] array = new byte[origin + length*Short.BYTES];
         for (int i=0; i<origin; i++) {
             array[i] = (byte) random.nextInt(0x100);
         }
@@ -120,7 +120,7 @@ public final strictfp class HyperRectangleReaderTest extends TestCase {
          * Fill the array with short values using the encoding describes in javadoc.
          * Then wrap the array in a pseudo-channel so we can create the reader to test.
          */
-        final ShortBuffer view = ByteBuffer.wrap(array, origin, length*(Short.SIZE / Byte.SIZE)).order(ByteOrder.nativeOrder()).asShortBuffer();
+        final ShortBuffer view = ByteBuffer.wrap(array, origin, length*Short.BYTES).order(ByteOrder.nativeOrder()).asShortBuffer();
         for (int i3=0; i3<size[3]; i3++) {
             for (int i2=0; i2<size[2]; i2++) {
                 for (int i1=0; i1<size[1]; i1++) {

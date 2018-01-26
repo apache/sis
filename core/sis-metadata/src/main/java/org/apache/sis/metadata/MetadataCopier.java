@@ -218,8 +218,7 @@ public class MetadataCopier {
                 return c;
             }
             if (metadata instanceof Map<?,?>) {
-                @SuppressWarnings("unchecked")
-                final Map<Object,Object> copy = new LinkedHashMap<>((Map) metadata);
+                final Map<Object,Object> copy = new LinkedHashMap<>((Map<?,?>) metadata);
                 for (final Map.Entry<Object,Object> entry : copy.entrySet()) {
                     entry.setValue(copyRecursively(type, entry.getValue()));
                 }

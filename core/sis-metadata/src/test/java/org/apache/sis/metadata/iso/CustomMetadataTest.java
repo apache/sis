@@ -68,13 +68,11 @@ public final strictfp class CustomMetadataTest extends XMLTestCase {
          * A trivial metadata implementation which return the method name
          * for every attribute of type InternationalString.
          */
-        final InvocationHandler handler = new InvocationHandler() {
-            @Override public Object invoke(Object proxy, Method method, Object[] args) {
-                if (method.getReturnType() == InternationalString.class) {
-                    return new SimpleInternationalString(method.getName());
-                }
-                return null;
+        final InvocationHandler handler = (Object proxy, Method method, Object[] args) -> {
+            if (method.getReturnType() == InternationalString.class) {
+                return new SimpleInternationalString(method.getName());
             }
+            return null;
         };
         Citation data = (Citation) Proxy.newProxyInstance(getClass().getClassLoader(),
                     new Class<?>[] { Citation.class }, handler);

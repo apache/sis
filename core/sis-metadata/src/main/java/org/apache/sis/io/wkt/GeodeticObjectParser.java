@@ -201,7 +201,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
     public GeodeticObjectParser(final Map<String,?> defaultProperties,
             final ObjectFactory factories, final MathTransformFactory mtFactory)
     {
-        super(Symbols.getDefault(), Collections.<String,Element>emptyMap(), null, null, null,
+        super(Symbols.getDefault(), Collections.emptyMap(), null, null, null,
                 mtFactory, (Locale) defaultProperties.get(Errors.LOCALE_KEY));
         crsFactory      = (CRSFactory)   factories;
         csFactory       = (CSFactory)    factories;
@@ -927,7 +927,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
             name = AxisDirections.appendTo(buffer.append("CS"), axes);
         }
         if (csProperties == null) {
-            csProperties = java.util.Collections.<String,Object>singletonMap(CoordinateSystem.NAME_KEY, name);
+            csProperties = singletonMap(CoordinateSystem.NAME_KEY, name);
         } else {
             csProperties.put(CoordinateSystem.NAME_KEY, name);
         }
