@@ -16,9 +16,11 @@
  */
 package org.apache.sis.internal.jaxb.code;
 
+import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import org.opengis.annotation.Obligation;
 import org.apache.sis.internal.jaxb.gmd.EnumAdapter;
+import org.apache.sis.xml.Namespaces;
 
 
 /**
@@ -27,10 +29,11 @@ import org.apache.sis.internal.jaxb.gmd.EnumAdapter;
  * See package documentation for more information about the handling of {@code CodeList} in ISO 19115-3.
  *
  * @author  Cédric Briançon (Geomatys)
- * @version 0.5
+ * @version 1.0
  * @since   0.3
  * @module
  */
+@XmlType(namespace = Namespaces.MEX)
 public final class MD_ObligationCode extends EnumAdapter<MD_ObligationCode, Obligation> {
     /**
      * The enumeration value.

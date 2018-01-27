@@ -34,7 +34,7 @@ import org.apache.sis.xml.Namespaces;
  * @since   0.3
  * @module
  */
-@XmlType(namespace = Namespaces.GMI)
+@XmlType(namespace = Namespaces.MRC)
 public final class MI_TransferFunctionTypeCode
         extends CodeListAdapter<MI_TransferFunctionTypeCode, TransferFunctionType>
 {

@@ -40,7 +40,7 @@
  * @since 0.3
  * @module
  */
-@XmlSchema(elementFormDefault = XmlNsForm.QUALIFIED, namespace = Namespaces.MDB, xmlns = {
+@XmlSchema(elementFormDefault = XmlNsForm.QUALIFIED, xmlns = {
     @XmlNs(prefix = "mdb", namespaceURI = Namespaces.MDB),
     @XmlNs(prefix = "cit", namespaceURI = Namespaces.CIT),
     @XmlNs(prefix = "lan", namespaceURI = Namespaces.LAN),
