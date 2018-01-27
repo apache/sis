@@ -16,10 +16,12 @@
  */
 package org.apache.sis.internal.jaxb.code;
 
+import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import org.opengis.metadata.distribution.MediumName;
 import org.apache.sis.internal.jaxb.gmd.CodeListAdapter;
 import org.apache.sis.internal.jaxb.gmd.CodeListUID;
+import org.apache.sis.internal.jaxb.LegacyNamespaces;
 
 
 /**
@@ -28,10 +30,11 @@ import org.apache.sis.internal.jaxb.gmd.CodeListUID;
  * See package documentation for more information about the handling of {@code CodeList} in ISO 19115-3.
  *
  * @author  Cédric Briançon (Geomatys)
- * @version 0.3
+ * @version 1.0
  * @since   0.3
  * @module
  */
+@XmlType(namespace = LegacyNamespaces.GMD)
 public final class MD_MediumNameCode extends CodeListAdapter<MD_MediumNameCode, MediumName> {
     /**
      * Empty constructor for JAXB only.

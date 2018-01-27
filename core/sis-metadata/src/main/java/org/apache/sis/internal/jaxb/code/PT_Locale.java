@@ -80,7 +80,9 @@ public final class PT_Locale extends XmlAdapter<PT_Locale, Locale> {
     /**
      * Wraps the {@code "locale"} attributes in a {@code "PT_Locale"} element.
      */
-    @XmlType(name = "PT_Locale", namespace = Namespaces.LAN, propOrder = {"languageCode", "language", "country", "characterEncoding"})
+    @XmlType(name = "PT_Locale_Type", namespace = Namespaces.LAN, propOrder = {
+        "languageCode", "language", "country", "characterEncoding"
+    })
     private static final class Wrapper {
         /**
          * The language code, or {@code null} if none.

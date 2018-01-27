@@ -46,7 +46,6 @@ import org.apache.sis.util.StringBuilders;
 import org.apache.sis.internal.jaxb.LegacyNamespaces;
 
 
-
 /**
  * Compares the {@link XmlElement} against the ISO 19115 schema. This test requires a connection
  * to <a href="http://standards.iso.org/iso/19115/-3/">http://standards.iso.org/iso/19115/-3/</a>.
@@ -105,7 +104,7 @@ public final strictfp class SchemaVerifier {
      * Those collisions occur because code lists are defined as links to the same file,
      * with only different anchor positions.
      */
-    private static final String TYPE_TO_IGNORE = "gco:CodeListValue_Type";
+    private static final String CODELIST_TYPE = "gco:CodeListValue_Type";
 
     /**
      * Separator between XML prefix and the actual name.
@@ -300,7 +299,11 @@ public final strictfp class SchemaVerifier {
                 case "element": {
                     final String name = getMandatoryAttribute(node, "name");
                     final String type = getMandatoryAttribute(node, "type");
-                    if (!TYPE_TO_IGNORE.equals(type)) {
+                    if (CODELIST_TYPE.equals(type)) {
+                        if (typeDefinitions.put(name, Collections.singletonMap(null, new Info(null, targetNamespace))) != null) {
+                            throw new SchemaException("Code list " + name + " defined twice.");
+                        }
+                    } else {
                         verifyNamingConvention(schemaLocations.getLast(), name, type, TYPE_SUFFIX);
                         preparePropertyDefinitions(type);
                         addProperty(null, type);
@@ -492,38 +495,47 @@ public final strictfp class SchemaVerifier {
          * (type name should be same as root element name with "_Type" suffix appended). Then,
          * we verify that the name exists in the schema, and finally we check its namespace.
          */
-        final String         className   = type.getSimpleName();
-        final XmlType        xmlType     = type.getDeclaredAnnotation(XmlType.class);
-        final XmlRootElement rootElement = type.getDeclaredAnnotation(XmlRootElement.class);
-        if (xmlType == null && rootElement == null) {
+        final XmlType        xmlType   = type.getDeclaredAnnotation(XmlType.class);
+        final XmlRootElement xmlRoot   = type.getDeclaredAnnotation(XmlRootElement.class);
+        final String         className;  // ISO class name (not the same than Java class name).
+        if (xmlRoot == null && xmlType == null) {
             return;
-        }
-        if (xmlType == null || rootElement == null) {
-            throw new SchemaException("Missing @XmlType or @XmlRootElement in " + className + " class.");
         } else {
-            final String ns = xmlType.namespace();
-            if (!ns.equals(rootElement.namespace())) {
-                throw new SchemaException("Mismatched namespace in @XmlType and @XmlRootElement of " + className + " class.");
+            final String ns;
+            if (xmlRoot != null) {
+                ns = xmlRoot.namespace();
+                className = xmlRoot.name();
+                if (xmlType != null) {
+                    if (!ns.equals(xmlType.namespace())) {
+                        throw new SchemaException("Mismatched namespace in @XmlType and @XmlRootElement of " + type);
+                    }
+                    verifyNamingConvention(type.getName(), className, xmlType.name(), TYPE_SUFFIX);
+                }
+            } else {
+                ns = xmlType.namespace();
+                final String name = xmlType.name();
+                className = name.equals("##default") ? type.getSimpleName() : trim(name, TYPE_SUFFIX);
             }
             if (!ns.equals("##default")) {
                 namespace = ns;
+            } else if (ns.equals(namespace)) {
+                throw new SchemaException("Redundant namespace declaration in " + type);
             }
         }
-        verifyNamingConvention(type.getName(), rootElement.name(), xmlType.name(), TYPE_SUFFIX);
         final boolean isDeprecated = DEPRECATED_NAMESPACES.contains(namespace);
         if (!isDeprecated && type.isAnnotationPresent(Deprecated.class)) {
-            throw new SchemaException("Unexpected deprecation status of " + className + " class.");
+            throw new SchemaException("Unexpected deprecation status of " + type);
         }
-        final Map<String,Info> properties = typeDefinitions.get(rootElement.name());
+        final Map<String,Info> properties = typeDefinitions.get(className);
         if (properties == null) {
             if (!isDeprecated) {
-                throw new SchemaException("Unknown name declared in @XmlRootElement of " + className + " class.");
+                throw new SchemaException("Unknown name declared in @XmlRootElement of " + type);
             }
         } else {
             // By convention, null key is associated to class information.
             final String expectedNS = properties.get(null).namespace;
             if (!namespace.equals(expectedNS)) {
-                throw new SchemaException("Class " + className + " shall be associated to namespace " + expectedNS);
+                throw new SchemaException(className + " shall be associated to namespace " + expectedNS);
             }
             // TODO: scan for properties here.
         }

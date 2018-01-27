@@ -34,7 +34,7 @@ import org.apache.sis.xml.Namespaces;
  * @since   0.3
  * @module
  */
-@XmlType(namespace = Namespaces.GMI)
+@XmlType(namespace = Namespaces.MAC)
 public final class MI_PriorityCode extends CodeListAdapter<MI_PriorityCode, Priority> {
     /**
      * Empty constructor for JAXB only.
