@@ -22,6 +22,7 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.PortrayalCatalogueReference;
+import org.apache.sis.xml.Namespaces;
 
 
 /**
@@ -50,8 +51,8 @@ import org.opengis.metadata.PortrayalCatalogueReference;
  * @module
  */
 @SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
-@XmlType(name = "MD_PortrayalCatalogueReference_Type")
-@XmlRootElement(name = "MD_PortrayalCatalogueReference")
+@XmlType(name = "MD_PortrayalCatalogueReference_Type", namespace = Namespaces.MPC)
+@XmlRootElement(name = "MD_PortrayalCatalogueReference", namespace = Namespaces.MPC)
 public class DefaultPortrayalCatalogueReference extends ISOMetadata implements PortrayalCatalogueReference {
     /**
      * Serial number for compatibility with different versions.

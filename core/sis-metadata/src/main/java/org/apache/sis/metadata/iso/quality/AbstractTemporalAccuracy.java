@@ -23,6 +23,7 @@ import org.opengis.metadata.quality.TemporalAccuracy;
 import org.opengis.metadata.quality.TemporalValidity;
 import org.opengis.metadata.quality.TemporalConsistency;
 import org.opengis.metadata.quality.AccuracyOfATimeMeasurement;
+import org.apache.sis.xml.Namespaces;
 
 
 /**
@@ -48,8 +49,8 @@ import org.opengis.metadata.quality.AccuracyOfATimeMeasurement;
  * @module
  */
 @SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
-@XmlType(name = "AbstractDQ_TemporalAccuracy_Type")
-@XmlRootElement(name = "AbstractDQ_TemporalAccuracy")
+@XmlType(name = "AbstractDQ_TemporalAccuracy_Type", namespace = Namespaces.GMD)     // TODO: renamed TemporalQuality
+@XmlRootElement(name = "AbstractDQ_TemporalAccuracy", namespace = Namespaces.GMD)
 @XmlSeeAlso({
     DefaultAccuracyOfATimeMeasurement.class,
     DefaultTemporalConsistency.class,
