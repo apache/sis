@@ -143,23 +143,60 @@ public final strictfp class SchemaVerifier {
     private final Deque<String> schemaLocations;
 
     /**
-     * Definition of XML types for each classes. In OGC/ISO schemas, those definitions have the {@value #TYPE_SUFFIX}
-     * suffix in their name (which is omitted). The value is another map, where keys are property names and values are
-     * their types, having the {@link #PROPERTY_TYPE_SUFFIX} suffix in their name (which is omitted).
+     * The type and namespace of a property or class. Used in {@link #typeDefinitions} map.
      */
-    private final Map<String, Map<String,String>> typeDefinitions;
+    private static final class Info {
+        final String type;
+        final String namespace;
+
+        Info(final String type, final String namespace) {
+            this.type = type;
+            this.namespace = namespace;
+        }
+
+        boolean equal(final Info other) {
+            return type.equals(other.type) && namespace.equals(other.namespace);
+        }
+
+        @Override public String toString() {
+            return type;
+        }
+    }
+
+    /**
+     * Definitions of XML type for each class. In OGC/ISO schemas, those definitions have the {@value #TYPE_SUFFIX}
+     * suffix in their name (which is omitted). The value is another map, where keys are property names and values
+     * are their types, having the {@link #PROPERTY_TYPE_SUFFIX} suffix in their name (which is omitted).
+     */
+    private final Map<String, Map<String,Info>> typeDefinitions;
+
+    /**
+     * Notifies that we are about to define the XML type for each property. In OGC/ISO schemas, those definitions
+     * have the {@value #PROPERTY_TYPE_SUFFIX} suffix in their name (which is omitted). After this method call,
+     * properties can be defined by calls to {@link #addProperty(String, String)}.
+     */
+    private void preparePropertyDefinitions(final String type) throws SchemaException {
+        currentProperties = typeDefinitions.computeIfAbsent(trim(type, TYPE_SUFFIX).intern(), (k) -> new HashMap<>());
+    }
 
     /**
      * The properties of the XML type under examination, or {@code null} if none.
      * If non-null, this is one of the values in the {@link #typeDefinitions} map.
+     * By convention, the {@code null} key is associated to information about the class.
      */
-    private transient Map<String,String> currentProperties;
+    private transient Map<String,Info> currentProperties;
 
     /**
      * A single property type under examination, or {@code null} if none.
      * If non-null, this is a value ending with the {@value #PROPERTY_TYPE_SUFFIX} suffix.
      */
     private transient String currentPropertyType;
+
+    /**
+     * Namespace of the type or properties being defined.
+     * This is specified by {@code <xs:schema targetNamespace="(…)">}.
+     */
+    private transient String targetNamespace;
 
     /**
      * Creates a new verifier for classes under the given directory. The given directory shall be the
@@ -239,27 +276,35 @@ public final strictfp class SchemaVerifier {
     private void storeClassDefinition(final Node node) throws IOException, ParserConfigurationException, SAXException {
         if (XMLConstants.W3C_XML_SCHEMA_NS_URI.equals(node.getNamespaceURI())) {
             switch (node.getNodeName()) {
+                case "schema": {
+                    targetNamespace = getMandatoryAttribute(node, "targetNamespace").intern();
+                    break;
+                }
                 /*
                  * <xs:include schemaLocation="(…).xsd">
                  * Load the schema at the given URL, which is assumed relative.
                  */
                 case "include": {
+                    final String oldTarget = targetNamespace;
                     final String location = schemaLocations.getLast();
                     buffer.setLength(0);
                     buffer.append(location, 0, location.lastIndexOf('/') + 1).append(getMandatoryAttribute(node, "schemaLocation"));
                     loadSchema(buffer.toString());
+                    targetNamespace = oldTarget;
                     return;                             // Skip children (normally, there is none).
                 }
                 /*
                  * <xs:element name="(…)" type="(…)_Type">
-                 * There is actually nothing to store here;
-                 * we just verify that the names comply with our assumptions.
+                 * Verify that the names comply with our assumptions.
                  */
                 case "element": {
+                    final String name = getMandatoryAttribute(node, "name");
                     final String type = getMandatoryAttribute(node, "type");
                     if (!TYPE_TO_IGNORE.equals(type)) {
-                        verifyNamingConvention(schemaLocations.getLast(),
-                                getMandatoryAttribute(node, "name"), type, TYPE_SUFFIX);
+                        verifyNamingConvention(schemaLocations.getLast(), name, type, TYPE_SUFFIX);
+                        preparePropertyDefinitions(type);
+                        addProperty(null, type);
+                        currentProperties = null;
                     }
                     return;                             // Ignore children (they are about documentation).
                 }
@@ -274,7 +319,7 @@ public final strictfp class SchemaVerifier {
                         verifyPropertyType(node);
                         currentPropertyType = null;
                     } else {
-                        currentProperties = typeDefinitions.computeIfAbsent(trim(name, TYPE_SUFFIX).intern(), (k) -> new HashMap<>());
+                        preparePropertyDefinitions(name);
                         storePropertyDefinition(node);
                         currentProperties = null;
                     }
@@ -299,14 +344,8 @@ public final strictfp class SchemaVerifier {
     private void storePropertyDefinition(final Node node) throws SAXException {
         if (XMLConstants.W3C_XML_SCHEMA_NS_URI.equals(node.getNamespaceURI())) {
             if ("element".equals(node.getNodeName())) {
-                final String type = trim(getMandatoryAttribute(node, "type"), PROPERTY_TYPE_SUFFIX).intern();
-                final String name = getMandatoryAttribute(node, "name").intern();
-                final String old = currentProperties.put(name, type);
-                if (old != null && !old.equals(type)) {
-                    throw new SchemaException("Error while parsing " + schemaLocations.getLast() + ":\n"
-                            + "Property \"" + name + "\" is associated to type \"" + type + "\", but that "
-                            + "property was already associated to \"" + old + "\".");
-                }
+                addProperty(getMandatoryAttribute(node, "name").intern(),
+                       trim(getMandatoryAttribute(node, "type"), PROPERTY_TYPE_SUFFIX).intern());
                 return;
             }
         }
@@ -368,6 +407,20 @@ public final strictfp class SchemaVerifier {
     }
 
     /**
+     * Adds a property of the current name and type. This method is invoked during schema parsing.
+     * The property namespace is assumed to be {@link #targetNamespace}.
+     */
+    private void addProperty(final String name, final String type) throws SchemaException {
+        final Info info = new Info(type, targetNamespace);
+        final Info old = currentProperties.put(name, info);
+        if (old != null && !old.equal(info)) {
+            throw new SchemaException("Error while parsing " + schemaLocations.getLast() + ":\n"
+                    + "Property \"" + name + "\" is associated to type \"" + type + "\", but that "
+                    + "property was already associated to \"" + old + "\".");
+        }
+    }
+
+    /**
      * Removes leading and trailing spaces if any, then the prefix and the suffix in the given name.
      * The prefix is anything before the first {@value #PREFIX_SEPARATOR} character.
      * The suffix must be the given string, otherwise an exception is thrown.
@@ -410,52 +463,69 @@ public final strictfp class SchemaVerifier {
      * @param  type  the class on which to verify annotations.
      */
     private void verify(final Class<?> type) throws IOException, ParserConfigurationException, SAXException {
+        /*
+         * Get information from the @XmlSchema annotation in package-info.
+         * Opportunistically verify consistency with naming convention.
+         */
         final Package pkg = type.getPackage();
-        final XmlSchema schema = pkg.getAnnotation(XmlSchema.class);
-        if (schema != null) {
-            String location = schema.location();
-            if (XmlSchema.NO_LOCATION.equals(location)) {
-                throw new SchemaException("Package " + pkg.getName() + " does not specify XML schema location.");
-            }
-            if (location.startsWith(SCHEMA_ROOT_DIRECTORY)) {
-                if (!location.startsWith(schema.namespace())) {
-                    throw new SchemaException("XML schema location inconsistent with namespace in " + pkg.getName() + " package.");
+        String namespace = "";
+        if (pkg != null) {
+            final XmlSchema schema = pkg.getAnnotation(XmlSchema.class);
+            if (schema != null) {
+                namespace = schema.namespace();
+                String location = schema.location();
+                if (!XmlSchema.NO_LOCATION.equals(location)) {
+                    if (location.startsWith(SCHEMA_ROOT_DIRECTORY)) {
+                        if (!location.startsWith(schema.namespace())) {
+                            throw new SchemaException("XML schema location inconsistent with namespace in " + pkg.getName() + " package.");
+                        }
+                        if (schemaRootDirectory != null) {
+                            location = schemaRootDirectory.resolve(location.substring(SCHEMA_ROOT_DIRECTORY.length())).toUri().toString();
+                        }
+                    }
+                    loadSchema(location);
                 }
-                if (schemaRootDirectory != null) {
-                    location = schemaRootDirectory.resolve(location.substring(SCHEMA_ROOT_DIRECTORY.length())).toUri().toString();
-                }
             }
-            loadSchema(location);
         }
         /*
          * Verify @XmlType and @XmlRootElement on the class. First, we verify naming convention
          * (type name should be same as root element name with "_Type" suffix appended). Then,
          * we verify that the name exists in the schema, and finally we check its namespace.
          */
-        final String className = type.getSimpleName();
-        final XmlType xmlType = type.getDeclaredAnnotation(XmlType.class);
-        if (xmlType != null) {
-            final XmlRootElement root = type.getDeclaredAnnotation(XmlRootElement.class);
-            if (root == null) {
-                throw new SchemaException("Missing @XmlRootElement in " + className + " class.");
-            }
-            verifyNamingConvention(type.getName(), root.name(), xmlType.name(), TYPE_SUFFIX);
-            final String namespace = xmlType.namespace();
-            if (!namespace.equals(root.namespace())) {
+        final String         className   = type.getSimpleName();
+        final XmlType        xmlType     = type.getDeclaredAnnotation(XmlType.class);
+        final XmlRootElement rootElement = type.getDeclaredAnnotation(XmlRootElement.class);
+        if (xmlType == null && rootElement == null) {
+            return;
+        }
+        if (xmlType == null || rootElement == null) {
+            throw new SchemaException("Missing @XmlType or @XmlRootElement in " + className + " class.");
+        } else {
+            final String ns = xmlType.namespace();
+            if (!ns.equals(rootElement.namespace())) {
                 throw new SchemaException("Mismatched namespace in @XmlType and @XmlRootElement of " + className + " class.");
             }
-            final boolean isDeprecated = DEPRECATED_NAMESPACES.contains(namespace);
-            if (!isDeprecated && type.isAnnotationPresent(Deprecated.class)) {
-                throw new SchemaException("Unexpected deprecation status of " + className + " class.");
+            if (!ns.equals("##default")) {
+                namespace = ns;
             }
-            final Map<String,String> properties = typeDefinitions.get(root.name());
-            if (properties == null) {
-                if (!isDeprecated) {
-                    throw new SchemaException("Unknown name declared in @XmlRootElement of " + className + " class.");
-                }
-            } else {
-                // TODO: scan for properties here.
+        }
+        verifyNamingConvention(type.getName(), rootElement.name(), xmlType.name(), TYPE_SUFFIX);
+        final boolean isDeprecated = DEPRECATED_NAMESPACES.contains(namespace);
+        if (!isDeprecated && type.isAnnotationPresent(Deprecated.class)) {
+            throw new SchemaException("Unexpected deprecation status of " + className + " class.");
+        }
+        final Map<String,Info> properties = typeDefinitions.get(rootElement.name());
+        if (properties == null) {
+            if (!isDeprecated) {
+                throw new SchemaException("Unknown name declared in @XmlRootElement of " + className + " class.");
             }
+        } else {
+            // By convention, null key is associated to class information.
+            final String expectedNS = properties.get(null).namespace;
+            if (!namespace.equals(expectedNS)) {
+                throw new SchemaException("Class " + className + " shall be associated to namespace " + expectedNS);
+            }
+            // TODO: scan for properties here.
         }
     }
 }

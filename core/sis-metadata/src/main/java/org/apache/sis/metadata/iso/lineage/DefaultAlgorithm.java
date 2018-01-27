@@ -23,7 +23,6 @@ import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.lineage.Algorithm;
 import org.opengis.util.InternationalString;
 import org.apache.sis.metadata.iso.ISOMetadata;
-import org.apache.sis.xml.Namespaces;
 
 
 /**
@@ -53,11 +52,11 @@ import org.apache.sis.xml.Namespaces;
  * @module
  */
 @SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
-@XmlType(name = "LE_Algorithm_Type", namespace = Namespaces.GMI, propOrder = {
+@XmlType(name = "LE_Algorithm_Type", propOrder = {
     "citation",
     "description"
 })
-@XmlRootElement(name = "LE_Algorithm", namespace = Namespaces.GMI)
+@XmlRootElement(name = "LE_Algorithm")
 public class DefaultAlgorithm extends ISOMetadata implements Algorithm {
     /**
      * Serial number for inter-operability with different versions.

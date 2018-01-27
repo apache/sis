@@ -23,7 +23,6 @@ import org.opengis.metadata.lineage.ProcessStepReport;
 import org.opengis.util.InternationalString;
 import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.metadata.TitleProperty;
-import org.apache.sis.xml.Namespaces;
 
 
 /**
@@ -51,12 +50,12 @@ import org.apache.sis.xml.Namespaces;
  */
 @SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @TitleProperty(name = "name")
-@XmlType(name = "LE_ProcessStepReport_Type", namespace = Namespaces.GMI, propOrder = {
+@XmlType(name = "LE_ProcessStepReport_Type", propOrder = {
     "name",
     "description",
     "fileType"
 })
-@XmlRootElement(name = "LE_ProcessStepReport", namespace = Namespaces.GMI)
+@XmlRootElement(name = "LE_ProcessStepReport")
 public class DefaultProcessStepReport extends ISOMetadata implements ProcessStepReport {
     /**
      * Serial number for inter-operability with different versions.

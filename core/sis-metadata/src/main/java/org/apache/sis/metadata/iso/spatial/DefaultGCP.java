@@ -24,7 +24,6 @@ import org.opengis.geometry.DirectPosition;
 import org.opengis.metadata.quality.Element;
 import org.opengis.metadata.spatial.GCP;
 import org.apache.sis.metadata.iso.ISOMetadata;
-import org.apache.sis.xml.Namespaces;
 
 
 /**
@@ -55,11 +54,11 @@ import org.apache.sis.xml.Namespaces;
  * @module
  */
 @SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
-@XmlType(name = "MI_GCP_Type", namespace = Namespaces.GMI, propOrder = {
+@XmlType(name = "MI_GCP_Type", propOrder = {
     //"geographicCoordinates",
     "accuracyReports"
 })
-@XmlRootElement(name = "MI_GCP", namespace = Namespaces.GMI)
+@XmlRootElement(name = "MI_GCP")
 public class DefaultGCP extends ISOMetadata implements GCP {
     /**
      * Serial number for inter-operability with different versions.

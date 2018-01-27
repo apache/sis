@@ -30,6 +30,7 @@ import org.apache.sis.internal.jaxb.Context;
 import org.apache.sis.internal.system.Semaphores;
 import org.apache.sis.util.collection.CheckedContainer;
 import org.apache.sis.util.resources.Messages;
+import org.apache.sis.xml.Namespaces;
 
 import static org.apache.sis.util.collection.Containers.isNullOrEmpty;
 
@@ -69,8 +70,8 @@ import static org.apache.sis.util.collection.Containers.isNullOrEmpty;
  * @module
  */
 @SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
-@XmlType(name = "MD_ScopeDescription_Type") // No need for propOrder since this structure is a union (see javadoc).
-@XmlRootElement(name = "MD_ScopeDescription")
+@XmlType(name = "MD_ScopeDescription_Type", namespace = Namespaces.MCC) // No need for propOrder since this structure is a union (see javadoc).
+@XmlRootElement(name = "MD_ScopeDescription", namespace = Namespaces.MCC)
 public class DefaultScopeDescription extends ISOMetadata implements ScopeDescription {
     /**
      * Serial number for inter-operability with different versions.

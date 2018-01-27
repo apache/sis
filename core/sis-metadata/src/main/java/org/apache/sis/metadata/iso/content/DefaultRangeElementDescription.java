@@ -25,7 +25,6 @@ import org.opengis.util.InternationalString;
 import org.opengis.metadata.content.RangeElementDescription;
 import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.metadata.TitleProperty;
-import org.apache.sis.xml.Namespaces;
 
 
 /**
@@ -54,12 +53,12 @@ import org.apache.sis.xml.Namespaces;
  */
 @SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @TitleProperty(name = "name")
-@XmlType(name = "MI_RangeElementDescription_Type", namespace = Namespaces.GMI, propOrder = {
+@XmlType(name = "MI_RangeElementDescription_Type", propOrder = {
     "name",
     "definition",
     "rangeElements"
 })
-@XmlRootElement(name = "MI_RangeElementDescription", namespace = Namespaces.GMI)
+@XmlRootElement(name = "MI_RangeElementDescription")
 public class DefaultRangeElementDescription extends ISOMetadata implements RangeElementDescription {
     /**
      * Serial number for inter-operability with different versions.

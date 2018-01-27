@@ -25,7 +25,6 @@ import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.lineage.Algorithm;
 import org.opengis.metadata.lineage.Processing;
 import org.opengis.util.InternationalString;
-import org.apache.sis.xml.Namespaces;
 import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.internal.jaxb.NonMarshalledAuthority;
 
@@ -55,7 +54,7 @@ import org.apache.sis.internal.jaxb.NonMarshalledAuthority;
  * @module
  */
 @SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
-@XmlType(name = "LE_Processing_Type", namespace = Namespaces.GMI, propOrder = {
+@XmlType(name = "LE_Processing_Type", propOrder = {
     "identifier",
     "softwareReferences",
     "procedureDescription",
@@ -63,7 +62,7 @@ import org.apache.sis.internal.jaxb.NonMarshalledAuthority;
     "runTimeParameters",
     "algorithms"
 })
-@XmlRootElement(name = "LE_Processing", namespace = Namespaces.GMI)
+@XmlRootElement(name = "LE_Processing")
 public class DefaultProcessing extends ISOMetadata implements Processing {
     /**
      * Serial number for inter-operability with different versions.

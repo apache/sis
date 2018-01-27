@@ -22,7 +22,6 @@ import javax.xml.bind.annotation.XmlType;
 import org.opengis.metadata.lineage.NominalResolution;
 import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.measure.ValueRange;
-import org.apache.sis.xml.Namespaces;
 
 import static org.apache.sis.internal.metadata.MetadataUtilities.ensurePositive;
 
@@ -51,11 +50,11 @@ import static org.apache.sis.internal.metadata.MetadataUtilities.ensurePositive;
  * @module
  */
 @SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
-@XmlType(name = "LE_NominalResolution_Type", namespace = Namespaces.GMI, propOrder = {
+@XmlType(name = "LE_NominalResolution_Type", propOrder = {
     "scanningResolution",
     "groundResolution"
 })
-@XmlRootElement(name = "LE_NominalResolution", namespace = Namespaces.GMI)
+@XmlRootElement(name = "LE_NominalResolution")
 public class DefaultNominalResolution extends ISOMetadata implements NominalResolution {
     /**
      * Serial number for inter-operability with different versions.
