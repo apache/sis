@@ -1228,7 +1228,7 @@ http://standards.iso.org/iso/19157/-2/mdq/1.0
     measureIdentification
     nameOfMeasure
     result
-http://www.isotc211.org/2005/gmi
+http://standards.iso.org/iso/19115/-2/gmi/1.0
   LE_Algorithm
     <type>
     citation

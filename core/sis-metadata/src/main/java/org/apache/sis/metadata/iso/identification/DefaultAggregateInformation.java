@@ -22,6 +22,7 @@ import java.util.Collection;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+import org.apache.sis.internal.jaxb.LegacyNamespaces;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.identification.AggregateInformation;
@@ -65,12 +66,12 @@ import org.apache.sis.internal.metadata.Dependencies;
  */
 @Deprecated
 @SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
-@XmlType(name = "MD_AggregateInformation_Type", propOrder = {
+@XmlType(name = "MD_AggregateInformation_Type", namespace = LegacyNamespaces.GMD, propOrder = {
     "aggregateDataSetName",
     "aggregateDataSetIdentifier",
     // "associationType" and "initiativeType" will be written by parent class.
 })
-@XmlRootElement(name = "MD_AggregateInformation")
+@XmlRootElement(name = "MD_AggregateInformation", namespace = LegacyNamespaces.GMD)
 public class DefaultAggregateInformation extends DefaultAssociatedResource implements AggregateInformation {
     /**
      * Serial number for compatibility with different versions.

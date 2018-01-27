@@ -23,6 +23,7 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import org.opengis.metadata.ApplicationSchemaInformation;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.citation.OnlineResource;
+import org.apache.sis.xml.Namespaces;
 import org.apache.sis.internal.jaxb.gco.CharSequenceAdapter;
 import org.apache.sis.internal.jaxb.metadata.CI_OnlineResource;
 
@@ -56,7 +57,7 @@ import org.apache.sis.internal.jaxb.metadata.CI_OnlineResource;
  * @module
  */
 @SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
-@XmlType(name = "MD_ApplicationSchemaInformation_Type", propOrder = {
+@XmlType(name = "MD_ApplicationSchemaInformation_Type", namespace = Namespaces.MAS, propOrder = {
     "name",
     "schemaLanguage",
     "constraintLanguage",
@@ -65,7 +66,7 @@ import org.apache.sis.internal.jaxb.metadata.CI_OnlineResource;
     "softwareDevelopmentFile",
     "softwareDevelopmentFileFormat"
 })
-@XmlRootElement(name = "MD_ApplicationSchemaInformation")
+@XmlRootElement(name = "MD_ApplicationSchemaInformation", namespace = Namespaces.MAS)
 public class DefaultApplicationSchemaInformation extends ISOMetadata implements ApplicationSchemaInformation {
     /**
      * Serial number for inter-operability with different versions.

@@ -24,9 +24,13 @@ import java.nio.file.Files;
 import java.nio.file.DirectoryStream;
 import java.nio.file.DirectoryIteratorException;
 import java.util.Map;
+import java.util.Set;
 import java.util.Deque;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.ArrayDeque;
+import java.util.Arrays;
+import java.util.Collections;
 import javax.xml.XMLConstants;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlSchema;
@@ -39,6 +43,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
 import org.xml.sax.SAXException;
 import org.apache.sis.util.StringBuilders;
+import org.apache.sis.internal.jaxb.LegacyNamespaces;
 
 
 
@@ -65,6 +70,18 @@ import org.apache.sis.util.StringBuilders;
  * @module
  */
 public final strictfp class SchemaVerifier {
+    /**
+     * The root of ISO schemas. May be replaced by {@link #schemaRootDirectory} if a local copy
+     * is available for faster tests.
+     */
+    private static final String SCHEMA_ROOT_DIRECTORY = "http://standards.iso.org/iso/";
+
+    /**
+     * Classes or properties having a JAXB annotation in this namespace should be deprecated.
+     */
+    private static final Set<String> DEPRECATED_NAMESPACES = Collections.unmodifiableSet(new HashSet<>(
+            Arrays.asList(LegacyNamespaces.GMD, LegacyNamespaces.GMI)));
+
     /**
      * The prefix of XML type names for properties. In ISO/OGC schemas, this prefix does not appear
      * in the definition of class types but may appear in the definition of property types.
@@ -96,9 +113,16 @@ public final strictfp class SchemaVerifier {
     private static final char PREFIX_SEPARATOR = ':';
 
     /**
+     * If the computer contains a local copy of ISO schemas, path to that directory. Otherwise {@code null}.
+     * If non-null, the {@code "http://standards.iso.org/iso/"} prefix in URL will be replaced by that path.
+     * This field is usually {@code null}, but can be set to a non-null value for making tests faster.
+     */
+    private final Path schemaRootDirectory;
+
+    /**
      * Root directory from which to search for classes.
      */
-    private final Path rootDirectory;
+    private final Path classRootDirectory;
 
     /**
      * A temporary buffer for miscellaneous string operations.
@@ -143,10 +167,13 @@ public final strictfp class SchemaVerifier {
      * in the {@code "MyProject/target/classes/mypackage/MyClass.class"} file, then the root directory
      * shall be {@code "MyProject/target/classes/"}.
      *
-     * @param  rootDirectory  the root of compiled class files.
+     * @param  classRootDirectory   the root of compiled class files.
+     * @param  schemaRootDirectory  if the computer contains a local copy of ISO schemas, path to that directory.
+     *                              Otherwise {@code null}. This is only for making tests faster.
      */
-    public SchemaVerifier(final Path rootDirectory) {
-        this.rootDirectory = rootDirectory;
+    public SchemaVerifier(final Path classRootDirectory, final Path schemaRootDirectory) {
+        this.classRootDirectory  = classRootDirectory;
+        this.schemaRootDirectory = schemaRootDirectory;
         factory = DocumentBuilderFactory.newInstance();
         factory.setNamespaceAware(true);
         buffer = new StringBuilder(100);
@@ -173,7 +200,7 @@ public final strictfp class SchemaVerifier {
                     if (Files.isDirectory(path)) {
                         verify(path);
                     } else if (filename.endsWith(".class")) {
-                        path = rootDirectory.relativize(path);
+                        path = classRootDirectory.relativize(path);
                         buffer.setLength(0);
                         buffer.append(path.toString()).setLength(buffer.length() - 6);      // Remove ".class" suffix.
                         StringBuilders.replace(buffer, '/', '.');
@@ -386,22 +413,49 @@ public final strictfp class SchemaVerifier {
         final Package pkg = type.getPackage();
         final XmlSchema schema = pkg.getAnnotation(XmlSchema.class);
         if (schema != null) {
-            final String location = schema.location();
+            String location = schema.location();
             if (XmlSchema.NO_LOCATION.equals(location)) {
                 throw new SchemaException("Package " + pkg.getName() + " does not specify XML schema location.");
+            }
+            if (location.startsWith(SCHEMA_ROOT_DIRECTORY)) {
+                if (!location.startsWith(schema.namespace())) {
+                    throw new SchemaException("XML schema location inconsistent with namespace in " + pkg.getName() + " package.");
+                }
+                if (schemaRootDirectory != null) {
+                    location = schemaRootDirectory.resolve(location.substring(SCHEMA_ROOT_DIRECTORY.length())).toUri().toString();
+                }
             }
             loadSchema(location);
         }
         /*
-         * Verify @XmlType and @XmlRootElement on the class.
+         * Verify @XmlType and @XmlRootElement on the class. First, we verify naming convention
+         * (type name should be same as root element name with "_Type" suffix appended). Then,
+         * we verify that the name exists in the schema, and finally we check its namespace.
          */
+        final String className = type.getSimpleName();
         final XmlType xmlType = type.getDeclaredAnnotation(XmlType.class);
         if (xmlType != null) {
             final XmlRootElement root = type.getDeclaredAnnotation(XmlRootElement.class);
             if (root == null) {
-                throw new SchemaException("Missing @XmlRootElement in " + type.getSimpleName() + " class.");
+                throw new SchemaException("Missing @XmlRootElement in " + className + " class.");
             }
             verifyNamingConvention(type.getName(), root.name(), xmlType.name(), TYPE_SUFFIX);
+            final String namespace = xmlType.namespace();
+            if (!namespace.equals(root.namespace())) {
+                throw new SchemaException("Mismatched namespace in @XmlType and @XmlRootElement of " + className + " class.");
+            }
+            final boolean isDeprecated = DEPRECATED_NAMESPACES.contains(namespace);
+            if (!isDeprecated && type.isAnnotationPresent(Deprecated.class)) {
+                throw new SchemaException("Unexpected deprecation status of " + className + " class.");
+            }
+            final Map<String,String> properties = typeDefinitions.get(root.name());
+            if (properties == null) {
+                if (!isDeprecated) {
+                    throw new SchemaException("Unknown name declared in @XmlRootElement of " + className + " class.");
+                }
+            } else {
+                // TODO: scan for properties here.
+            }
         }
     }
 }

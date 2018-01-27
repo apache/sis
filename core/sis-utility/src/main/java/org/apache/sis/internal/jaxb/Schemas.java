@@ -58,14 +58,14 @@ public final class Schemas {
      */
     public static final String METADATA_XSD_BASE           = "http://standards.iso.org/iso/19115/-3/mdb/1.0/mdb.xsd",
                                METADATA_XSD_SPATIAL        = "http://standards.iso.org/iso/19115/-3/msr/1.0/msr.xsd",
-                               METADATA_XSD_QUALITY        = "http://standards.iso.org/iso/19157/-2/dqc/1.0/dqc.xsd",
+                               METADATA_XSD_QUALITY        = "http://standards.iso.org/iso/19157/-2/mdq/1.0/mdq.xsd",
                                METADATA_XSD_MAINTENANCE    = "http://standards.iso.org/iso/19115/-3/mmi/1.0/mmi.xsd",
                                METADATA_XSD_LINEAGE        = "http://standards.iso.org/iso/19115/-3/mrl/1.0/mrl.xsd",
                                METADATA_XSD_IDENTIFICATION = "http://standards.iso.org/iso/19115/-3/mri/1.0/mri.xsd",
                                METADATA_XSD_EXTENT         = "http://standards.iso.org/iso/19115/-3/gex/1.0/gex.xsd",
                                METADATA_XSD_DISTRIBUTION   = "http://standards.iso.org/iso/19115/-3/mrd/1.0/mrd.xsd",
                                METADATA_XSD_CONTENT        = "http://standards.iso.org/iso/19115/-3/mrc/1.0/mrc.xsd",
-                               METADATA_XSD_CONSTRAINT     = "http://standards.iso.org/iso/19115/-3/mrc/1.0/mrc.xsd",
+                               METADATA_XSD_CONSTRAINT     = "http://standards.iso.org/iso/19115/-3/mco/1.0/mco.xsd",
                                METADATA_XSD_CITATION       = "http://standards.iso.org/iso/19115/-3/cit/1.0/cit.xsd",
                                METADATA_XSD_ACQUISITION    = "http://standards.iso.org/iso/19115/-3/mac/1.0/mac.xsd";
 

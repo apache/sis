@@ -54,11 +54,11 @@ import org.apache.sis.metadata.iso.ISOMetadata;
  * @module
  */
 @SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
-@XmlType(name = "MX_DataFile_Type", namespace = Namespaces.GCX, propOrder = {
+@XmlType(name = "MX_DataFile_Type", namespace = Namespaces.MDT, propOrder = {
     "featureTypes",
     "fileFormat"
 })
-@XmlRootElement(name = "MX_DataFile", namespace = Namespaces.GCX)
+@XmlRootElement(name = "MX_DataFile", namespace = Namespaces.MDT)
 public class DefaultDataFile extends ISOMetadata implements DataFile {
     /**
      * Serial number for inter-operability with different versions.

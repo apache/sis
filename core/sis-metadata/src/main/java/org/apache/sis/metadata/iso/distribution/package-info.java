@@ -77,6 +77,7 @@
 @XmlSchema(location=Schemas.METADATA_XSD_DISTRIBUTION, elementFormDefault=XmlNsForm.QUALIFIED, namespace=Namespaces.MRD, xmlns = {
     @XmlNs(prefix = "mcc", namespaceURI = Namespaces.MCC),
     @XmlNs(prefix = "mrd", namespaceURI = Namespaces.MRD),
+    @XmlNs(prefix = "mdt", namespaceURI = Namespaces.MDT),
     @XmlNs(prefix = "gco", namespaceURI = Namespaces.GCO),
     @XmlNs(prefix = "gmw", namespaceURI = Namespaces.GMW),
     @XmlNs(prefix = "gcx", namespaceURI = Namespaces.GCX),
