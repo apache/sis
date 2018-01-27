@@ -60,14 +60,14 @@ import org.apache.sis.xml.Namespaces;
  * @module
  */
 @SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
-@XmlType(name = "QE_CoverageResult_Type", namespace = Namespaces.GMI, propOrder = {
+@XmlType(name = "QE_CoverageResult_Type", propOrder = {
     "spatialRepresentationType",
     "resultSpatialRepresentation",
     "resultContentDescription",
     "resultFormat",
     "resultFile"
 })
-@XmlRootElement(name = "QE_CoverageResult", namespace = Namespaces.GMI)
+@XmlRootElement(name = "QE_CoverageResult")
 public class DefaultCoverageResult extends AbstractResult implements CoverageResult {
     /**
      * Serial number for inter-operability with different versions.
