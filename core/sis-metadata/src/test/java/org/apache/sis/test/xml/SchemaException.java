@@ -14,14 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.metadata.iso;
-
-import org.xml.sax.SAXException;
+package org.apache.sis.test.xml;
 
 
 /**
- * Thrown when a {@link SchemaVerifier} failed to load a XSD file because it does not comply
- * with expected OGC/ISO conventions.
+ * Thrown when a {@link SchemaCompliance} failed to load a XSD file because it does not comply
+ * with expected OGC/ISO conventions, or when a JAXB annotation failed a compliance check.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
@@ -29,13 +27,13 @@ import org.xml.sax.SAXException;
  * @module
  */
 @SuppressWarnings("serial")
-final class SchemaException extends SAXException {
+public final class SchemaException extends Exception {
     /**
      * Creates an exception with the specified details message.
      *
      * @param message  the detail message.
      */
-    public SchemaException(final String message) {
+    SchemaException(final String message) {
         super(message);
     }
 }
