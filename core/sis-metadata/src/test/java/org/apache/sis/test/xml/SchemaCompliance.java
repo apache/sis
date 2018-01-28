@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.metadata.iso;
+package org.apache.sis.test.xml;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -32,6 +32,7 @@ import java.util.ArrayDeque;
 import java.util.Arrays;
 import java.util.Collections;
 import javax.xml.XMLConstants;
+import javax.xml.bind.annotation.XmlNs;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlSchema;
 import javax.xml.bind.annotation.XmlElement;
@@ -47,8 +48,8 @@ import org.apache.sis.internal.jaxb.LegacyNamespaces;
 
 
 /**
- * Compares the {@link XmlElement} against the ISO 19115 schema. This test requires a connection
- * to <a href="http://standards.iso.org/iso/19115/-3/">http://standards.iso.org/iso/19115/-3/</a>.
+ * Compares JAXB annotations against the ISO 19115 schema. This test requires a connection to
+ * <a href="http://standards.iso.org/iso/19115/-3/">http://standards.iso.org/iso/19115/-3/</a>.
  * All classes in a given directory are scanned.
  *
  * <div class="section">Limitations</div>
@@ -68,7 +69,7 @@ import org.apache.sis.internal.jaxb.LegacyNamespaces;
  * @since   1.0
  * @module
  */
-public final strictfp class SchemaVerifier {
+public final strictfp class SchemaCompliance {
     /**
      * The root of ISO schemas. May be replaced by {@link #schemaRootDirectory} if a local copy
      * is available for faster tests.
@@ -183,19 +184,25 @@ public final strictfp class SchemaVerifier {
      * If non-null, this is one of the values in the {@link #typeDefinitions} map.
      * By convention, the {@code null} key is associated to information about the class.
      */
-    private transient Map<String,Info> currentProperties;
+    private Map<String,Info> currentProperties;
 
     /**
      * A single property type under examination, or {@code null} if none.
      * If non-null, this is a value ending with the {@value #PROPERTY_TYPE_SUFFIX} suffix.
      */
-    private transient String currentPropertyType;
+    private String currentPropertyType;
 
     /**
      * Namespace of the type or properties being defined.
      * This is specified by {@code <xs:schema targetNamespace="(…)">}.
      */
-    private transient String targetNamespace;
+    private String targetNamespace;
+
+    /**
+     * The namespaces associated to prefixes, as declared by JAXB {@link XmlNs} annotations.
+     * Used for verifying that no prefix is defined twice for different namespaces.
+     */
+    private final Map<String,String> allXmlNS;
 
     /**
      * Creates a new verifier for classes under the given directory. The given directory shall be the
@@ -207,7 +214,7 @@ public final strictfp class SchemaVerifier {
      * @param  schemaRootDirectory  if the computer contains a local copy of ISO schemas, path to that directory.
      *                              Otherwise {@code null}. This is only for making tests faster.
      */
-    public SchemaVerifier(final Path classRootDirectory, final Path schemaRootDirectory) {
+    public SchemaCompliance(final Path classRootDirectory, final Path schemaRootDirectory) {
         this.classRootDirectory  = classRootDirectory;
         this.schemaRootDirectory = schemaRootDirectory;
         factory = DocumentBuilderFactory.newInstance();
@@ -215,6 +222,7 @@ public final strictfp class SchemaVerifier {
         buffer = new StringBuilder(100);
         typeDefinitions = new HashMap<>();
         schemaLocations = new ArrayDeque<>();
+        allXmlNS = new HashMap<>();
     }
 
     /**
@@ -227,8 +235,13 @@ public final strictfp class SchemaVerifier {
      * @throws ClassNotFoundException if an error occurred while loading a {@code "*.class"} file.
      * @throws ParserConfigurationException if {@link javax.xml.parsers.DocumentBuilder} can not be created.
      * @throws SAXException if an error occurred while parsing the XSD file.
+     * @throws SchemaException if a XSD file does not comply with our assumptions,
+     *         or a JAXB annotation failed a compliance check.
      */
-    public void verify(final Path directory) throws IOException, ClassNotFoundException, ParserConfigurationException, SAXException {
+    public void verify(final Path directory)
+            throws IOException, ClassNotFoundException, ParserConfigurationException, SAXException, SchemaException
+    {
+        PackageVerifier verifier = null;
         try (DirectoryStream<Path> stream = Files.newDirectoryStream(directory)) {
             for (Path path : stream) {
                 final String filename = path.getFileName().toString();
@@ -240,7 +253,11 @@ public final strictfp class SchemaVerifier {
                         buffer.setLength(0);
                         buffer.append(path.toString()).setLength(buffer.length() - 6);      // Remove ".class" suffix.
                         StringBuilders.replace(buffer, '/', '.');
-                        verify(Class.forName(buffer.toString()));
+                        final Class<?> c = Class.forName(buffer.toString());
+                        if (verifier == null) {
+                            verifier = new PackageVerifier(c.getPackage());
+                        }
+                        verifier.verify(c);
                     }
                 }
             }
@@ -256,7 +273,9 @@ public final strictfp class SchemaVerifier {
      *
      * @param  location  URL to the XSD file to load.
      */
-    private void loadSchema(final String location) throws IOException, ParserConfigurationException, SAXException {
+    private void loadSchema(final String location)
+            throws IOException, ParserConfigurationException, SAXException, SchemaException
+    {
         if (!schemaLocations.contains(location)) {
             final Document doc;
             try (final InputStream in = new URL(location).openStream()) {
@@ -272,7 +291,9 @@ public final strictfp class SchemaVerifier {
      * for scanning children, until we reach sub-nodes about properties (in which case we continue
      * with {@link #storePropertyDefinition(Node)}).
      */
-    private void storeClassDefinition(final Node node) throws IOException, ParserConfigurationException, SAXException {
+    private void storeClassDefinition(final Node node)
+            throws IOException, ParserConfigurationException, SAXException, SchemaException
+    {
         if (XMLConstants.W3C_XML_SCHEMA_NS_URI.equals(node.getNamespaceURI())) {
             switch (node.getNodeName()) {
                 case "schema": {
@@ -344,7 +365,7 @@ public final strictfp class SchemaVerifier {
      *   <xs:element name="(…)" type="(…)_PropertyType" minOccurs="(…)" maxOccurs="(…)">
      * }
      */
-    private void storePropertyDefinition(final Node node) throws SAXException {
+    private void storePropertyDefinition(final Node node) throws SchemaException {
         if (XMLConstants.W3C_XML_SCHEMA_NS_URI.equals(node.getNamespaceURI())) {
             if ("element".equals(node.getNodeName())) {
                 addProperty(getMandatoryAttribute(node, "name").intern(),
@@ -366,7 +387,7 @@ public final strictfp class SchemaVerifier {
      *   <xs:element ref="(…)">
      * }
      */
-    private void verifyPropertyType(final Node node) throws SAXException {
+    private void verifyPropertyType(final Node node) throws SchemaException {
         if (XMLConstants.W3C_XML_SCHEMA_NS_URI.equals(node.getNamespaceURI())) {
             if ("element".equals(node.getNodeName())) {
                 verifyNamingConvention(schemaLocations.getLast(),
@@ -445,7 +466,7 @@ public final strictfp class SchemaVerifier {
      * Returns the attribute of the given name in the given node,
      * or throws an exception if the attribute is not present.
      */
-    private static String getMandatoryAttribute(final Node node, final String name) throws SAXException {
+    private static String getMandatoryAttribute(final Node node, final String name) throws SchemaException {
         final NamedNodeMap attributes = node.getAttributes();
         if (attributes != null) {
             final Node attr = attributes.getNamedItem(name);
@@ -460,84 +481,137 @@ public final strictfp class SchemaVerifier {
     }
 
     /**
-     * Verifies the {@link XmlElement} annotation on the given class.
-     * This method downloads and parses the XSD files (the schemas) as needed.
-     *
-     * @param  type  the class on which to verify annotations.
+     * Verify JAXB annotations in a single package.
+     * A new instance of this class must be created for each Java package to be verified.
      */
-    private void verify(final Class<?> type) throws IOException, ParserConfigurationException, SAXException {
-        /*
-         * Get information from the @XmlSchema annotation in package-info.
-         * Opportunistically verify consistency with naming convention.
+    private final class PackageVerifier {
+        /**
+         * The default namespace to use if a class does not define explicitely a namespace.
          */
-        final Package pkg = type.getPackage();
-        String namespace = "";
-        if (pkg != null) {
-            final XmlSchema schema = pkg.getAnnotation(XmlSchema.class);
-            if (schema != null) {
-                namespace = schema.namespace();
-                String location = schema.location();
-                if (!XmlSchema.NO_LOCATION.equals(location)) {
-                    if (location.startsWith(SCHEMA_ROOT_DIRECTORY)) {
-                        if (!location.startsWith(schema.namespace())) {
-                            throw new SchemaException("XML schema location inconsistent with namespace in " + pkg.getName() + " package.");
+        private final String defaultNS;
+
+        /**
+         * Whether a namespace is actually used of not.
+         * We use this map for identifying unnecessary prefix declarations.
+         */
+        private final Map<String,Boolean> namespaceIsUsed;
+
+        /**
+         * Creates a new verifier for the given package.
+         */
+        PackageVerifier(final Package pkg)
+                throws IOException, ParserConfigurationException, SAXException, SchemaException
+        {
+            namespaceIsUsed = new HashMap<>();
+            String namespace = "";
+            if (pkg != null) {
+                final XmlSchema schema = pkg.getAnnotation(XmlSchema.class);
+                if (schema != null) {
+                    namespace = schema.namespace();
+                    String location = schema.location();
+                    if (!XmlSchema.NO_LOCATION.equals(location)) {
+                        if (location.startsWith(SCHEMA_ROOT_DIRECTORY)) {
+                            if (!location.startsWith(schema.namespace())) {
+                                throw new SchemaException("XML schema location inconsistent with namespace in " + pkg.getName() + " package.");
+                            }
+                            if (schemaRootDirectory != null) {
+                                location = schemaRootDirectory.resolve(location.substring(SCHEMA_ROOT_DIRECTORY.length())).toUri().toString();
+                            }
                         }
-                        if (schemaRootDirectory != null) {
-                            location = schemaRootDirectory.resolve(location.substring(SCHEMA_ROOT_DIRECTORY.length())).toUri().toString();
+                        loadSchema(location);
+                    }
+                    for (final XmlNs xmlns : schema.xmlns()) {
+                        final String pr = xmlns.prefix();
+                        final String ns = xmlns.namespaceURI();
+                        final String cr = allXmlNS.put(pr, ns);
+                        if (cr != null && !cr.equals(ns)) {
+                            throw new SchemaException("Prefix \"" + pr + "\" associated to two different namespaces:\n" + cr + '\n' + ns);
+                        }
+                        if (namespaceIsUsed.put(ns, Boolean.FALSE) != null) {
+                            throw new SchemaException("Duplicated namespace in " + pkg + ":\n" + ns);
                         }
                     }
-                    loadSchema(location);
                 }
             }
+            defaultNS = namespace;
         }
-        /*
-         * Verify @XmlType and @XmlRootElement on the class. First, we verify naming convention
-         * (type name should be same as root element name with "_Type" suffix appended). Then,
-         * we verify that the name exists in the schema, and finally we check its namespace.
+
+        /**
+         * Verifies {@code @XmlType} and {@code @XmlRootElement} on the class. This method verifies naming convention
+         * (type name should be same as root element name with {@value #TYPE_SUFFIX} suffix appended), ensures that
+         * the name exists in the schema, and checks the namespace.
+         *
+         * @param  type  the class on which to verify annotations.
          */
-        final XmlType        xmlType   = type.getDeclaredAnnotation(XmlType.class);
-        final XmlRootElement xmlRoot   = type.getDeclaredAnnotation(XmlRootElement.class);
-        final String         className;  // ISO class name (not the same than Java class name).
-        if (xmlRoot == null && xmlType == null) {
-            return;
-        } else {
-            final String ns;
+        final void verify(final Class<?> type)
+                throws IOException, ParserConfigurationException, SAXException, SchemaException
+        {
+            final XmlType        xmlType = type.getDeclaredAnnotation(XmlType.class);
+            final XmlRootElement xmlRoot = type.getDeclaredAnnotation(XmlRootElement.class);
+            if (xmlRoot == null && xmlType == null) {
+                return;
+            }
+            /*
+             * Get the type name and namespace from the @XmlType or @XmlRootElement annotations.
+             * If both of them are present, verify that they are consistent (same namespace and
+             * same name with "_Type" suffix in @XmlType). If the type name is not declared, we
+             * assume that it is the same than the class name (this is what Apache SIS 0.8 does
+             * in its org.apache.sis.internal.jaxb.code package for CodeList adapters).
+             */
+            String namespace;
+            final String className;     // ISO class name (not the same than Java class name).
             if (xmlRoot != null) {
-                ns = xmlRoot.namespace();
+                namespace = xmlRoot.namespace();
                 className = xmlRoot.name();
                 if (xmlType != null) {
-                    if (!ns.equals(xmlType.namespace())) {
+                    if (!namespace.equals(xmlType.namespace())) {
                         throw new SchemaException("Mismatched namespace in @XmlType and @XmlRootElement of " + type);
                     }
                     verifyNamingConvention(type.getName(), className, xmlType.name(), TYPE_SUFFIX);
                 }
             } else {
-                ns = xmlType.namespace();
+                namespace = xmlType.namespace();
                 final String name = xmlType.name();
                 className = name.equals("##default") ? type.getSimpleName() : trim(name, TYPE_SUFFIX);
             }
-            if (!ns.equals("##default")) {
-                namespace = ns;
-            } else if (ns.equals(namespace)) {
+            /*
+             * Verify that the namespace declared on the class is not redundant with the namespace
+             * declared in the package. Actually redundant namespaces are not wrong, but we try to
+             * reduce code size.
+             */
+            if (namespace.equals("##default")) {
+                namespace = defaultNS;
+            } else if (namespace.equals(defaultNS)) {
                 throw new SchemaException("Redundant namespace declaration in " + type);
             }
-        }
-        final boolean isDeprecated = DEPRECATED_NAMESPACES.contains(namespace);
-        if (!isDeprecated && type.isAnnotationPresent(Deprecated.class)) {
-            throw new SchemaException("Unexpected deprecation status of " + type);
-        }
-        final Map<String,Info> properties = typeDefinitions.get(className);
-        if (properties == null) {
-            if (!isDeprecated) {
-                throw new SchemaException("Unknown name declared in @XmlRootElement of " + type);
+            /*
+             * Verify that the namespace has a prefix associated to it in the package-info file.
+             */
+            if (namespaceIsUsed.put(namespace, Boolean.TRUE) == null) {
+                throw new SchemaException("Namespace of " + type + " has no prefix in package-info.");
             }
-        } else {
-            // By convention, null key is associated to class information.
-            final String expectedNS = properties.get(null).namespace;
-            if (!namespace.equals(expectedNS)) {
-                throw new SchemaException(className + " shall be associated to namespace " + expectedNS);
+            /*
+             * Properties in the legacy GMD or GMI namespaces may be deprecated, depending if a replacement
+             * is already available or not. However properties in other namespaces should not be deprecated.
+             * Some validations will be disabled for deprecated properties.
+             */
+            final boolean isDeprecated = DEPRECATED_NAMESPACES.contains(namespace);
+            if (!isDeprecated && type.isAnnotationPresent(Deprecated.class)) {
+                throw new SchemaException("Unexpected deprecation status of " + type);
             }
-            // TODO: scan for properties here.
+            final Map<String,Info> properties = typeDefinitions.get(className);
+            if (properties == null) {
+                if (!isDeprecated) {
+                    throw new SchemaException("Unknown name declared in @XmlRootElement of " + type);
+                }
+            } else {
+                // By convention, null key is associated to class information.
+                final String expectedNS = properties.get(null).namespace;
+                if (!namespace.equals(expectedNS)) {
+                    throw new SchemaException(className + " shall be associated to namespace " + expectedNS);
+                }
+                // TODO: scan for properties here.
+            }
         }
     }
 }
