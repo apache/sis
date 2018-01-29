@@ -69,10 +69,10 @@
  * @module
  */
 @XmlSchema(location=Schemas.METADATA_XSD_CONSTRAINT, elementFormDefault=XmlNsForm.QUALIFIED, namespace=Namespaces.MCO, xmlns = {
-    @XmlNs(prefix = "mco", namespaceURI = Namespaces.MCO),
-    @XmlNs(prefix = "mcc", namespaceURI = Namespaces.MCC),
-    @XmlNs(prefix = "gco", namespaceURI = Namespaces.GCO),
-    @XmlNs(prefix = "xsi", namespaceURI = Namespaces.XSI),
+    @XmlNs(prefix = "mco", namespaceURI = Namespaces.MCO),      // Metadata for Constraints
+    @XmlNs(prefix = "mcc", namespaceURI = Namespaces.MCC),      // Metadata Common Classes
+    @XmlNs(prefix = "gco", namespaceURI = Namespaces.GCO),      // Geographic Common
+    @XmlNs(prefix = "xsi", namespaceURI = Namespaces.XSI),      // XML schema instance
     @XmlNs(prefix = "gmd", namespaceURI = LegacyNamespaces.GMD)
 })
 @XmlAccessorType(XmlAccessType.NONE)

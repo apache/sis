@@ -115,12 +115,14 @@
  * @module
  */
 @XmlSchema(location=Schemas.METADATA_XSD_QUALITY, elementFormDefault=XmlNsForm.QUALIFIED, namespace=Namespaces.MDQ, xmlns = {
-    @XmlNs(prefix = "mdq", namespaceURI = Namespaces.MDQ),
-    @XmlNs(prefix = "cit", namespaceURI = Namespaces.CIT),
-    @XmlNs(prefix = "mrc", namespaceURI = Namespaces.MRC),
-    @XmlNs(prefix = "mrd", namespaceURI = Namespaces.MRD),
-    @XmlNs(prefix = "gco", namespaceURI = Namespaces.GCO),
-    @XmlNs(prefix = "xsi", namespaceURI = Namespaces.XSI)
+    @XmlNs(prefix = "mdq", namespaceURI = Namespaces.MDQ),      // Metadata for Data Quality
+    @XmlNs(prefix = "mrc", namespaceURI = Namespaces.MRC),      // Metadata for Resource Content
+    @XmlNs(prefix = "mrd", namespaceURI = Namespaces.MRD),      // Metadata for Resource Distribution
+    @XmlNs(prefix = "cit", namespaceURI = Namespaces.CIT),      // Citation and responsible party information
+    @XmlNs(prefix = "gco", namespaceURI = Namespaces.GCO),      // Geographic Common
+    @XmlNs(prefix = "xsi", namespaceURI = Namespaces.XSI),      // XML schema instance
+    @XmlNs(prefix = "gmd", namespaceURI = LegacyNamespaces.GMD),
+    @XmlNs(prefix = "gmi", namespaceURI = LegacyNamespaces.GMI)
 })
 @XmlAccessorType(XmlAccessType.NONE)
 @XmlJavaTypeAdapters({
@@ -159,6 +161,7 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapters;
 import org.apache.sis.xml.Namespaces;
+import org.apache.sis.internal.jaxb.LegacyNamespaces;
 import org.apache.sis.internal.jaxb.Schemas;
 import org.apache.sis.internal.jaxb.gco.*;
 import org.apache.sis.internal.jaxb.code.*;

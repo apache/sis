@@ -68,11 +68,11 @@
  * @module
  */
 @XmlSchema(location=Schemas.METADATA_XSD_MAINTENANCE, elementFormDefault=XmlNsForm.QUALIFIED, namespace=Namespaces.MMI, xmlns = {
-    @XmlNs(prefix = "mmi", namespaceURI = Namespaces.MMI),
-    @XmlNs(prefix = "mcc", namespaceURI = Namespaces.MCC),
-    @XmlNs(prefix = "gmw", namespaceURI = Namespaces.GMW),
-    @XmlNs(prefix = "gco", namespaceURI = Namespaces.GCO),
-    @XmlNs(prefix = "xsi", namespaceURI = Namespaces.XSI)
+    @XmlNs(prefix = "mmi", namespaceURI = Namespaces.MMI),      // Metadata for Maintenance Information
+    @XmlNs(prefix = "mcc", namespaceURI = Namespaces.MCC),      // Metadata Common Classes
+    @XmlNs(prefix = "gmw", namespaceURI = Namespaces.GMW),      // Geographic Markup Wrappers
+    @XmlNs(prefix = "gco", namespaceURI = Namespaces.GCO),      // Geographic Common
+    @XmlNs(prefix = "xsi", namespaceURI = Namespaces.XSI),      // XML schema instance
 })
 @XmlAccessorType(XmlAccessType.NONE)
 @XmlJavaTypeAdapters({

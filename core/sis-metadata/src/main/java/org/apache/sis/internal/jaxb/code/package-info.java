@@ -41,18 +41,22 @@
  * @module
  */
 @XmlSchema(elementFormDefault = XmlNsForm.QUALIFIED, xmlns = {
-    @XmlNs(prefix = "mdb", namespaceURI = Namespaces.MDB),
-    @XmlNs(prefix = "cit", namespaceURI = Namespaces.CIT),
-    @XmlNs(prefix = "lan", namespaceURI = Namespaces.LAN),
-    @XmlNs(prefix = "mcc", namespaceURI = Namespaces.MCC),
-    @XmlNs(prefix = "mex", namespaceURI = Namespaces.MEX),
-    @XmlNs(prefix = "mmi", namespaceURI = Namespaces.MMI),
-    @XmlNs(prefix = "mrc", namespaceURI = Namespaces.MRC),
-    @XmlNs(prefix = "mri", namespaceURI = Namespaces.MRI),
-    @XmlNs(prefix = "msr", namespaceURI = Namespaces.MSR),
-    @XmlNs(prefix = "srv", namespaceURI = Namespaces.SRV),
-    @XmlNs(prefix = "gmd", namespaceURI = Namespaces.GMD),
-    @XmlNs(prefix = "gmi", namespaceURI = Namespaces.GMI)
+    @XmlNs(prefix = "mdb", namespaceURI = Namespaces.MDB),      // Metadata Base
+    @XmlNs(prefix = "mri", namespaceURI = Namespaces.MRI),      // Metadata for Resource Identification
+    @XmlNs(prefix = "mrc", namespaceURI = Namespaces.MRC),      // Metadata for Resource Content
+    @XmlNs(prefix = "mrd", namespaceURI = Namespaces.MRD),      // Metadata for Resource Distribution
+    @XmlNs(prefix = "mmi", namespaceURI = Namespaces.MMI),      // Metadata for Maintenance Information
+    @XmlNs(prefix = "msr", namespaceURI = Namespaces.MSR),      // Metadata for Spatial Representation
+    @XmlNs(prefix = "mex", namespaceURI = Namespaces.MEX),      // Metadata with Schema Extensions
+    @XmlNs(prefix = "mac", namespaceURI = Namespaces.MAC),      // Metadata for Acquisition
+    @XmlNs(prefix = "mdq", namespaceURI = Namespaces.MDQ),      // Metadata for Data Quality
+    @XmlNs(prefix = "mco", namespaceURI = Namespaces.MCO),      // Metadata for Constraints
+    @XmlNs(prefix = "srv", namespaceURI = Namespaces.SRV),      // Metadata for Services
+    @XmlNs(prefix = "cit", namespaceURI = Namespaces.CIT),      // Citation and responsible party information
+    @XmlNs(prefix = "lan", namespaceURI = Namespaces.LAN),      // Language localization
+    @XmlNs(prefix = "mcc", namespaceURI = Namespaces.MCC),      // Metadata Common Classes
+    @XmlNs(prefix = "gmd", namespaceURI = LegacyNamespaces.GMD),
+    @XmlNs(prefix = "gmi", namespaceURI = LegacyNamespaces.GMI)
 })
 package org.apache.sis.internal.jaxb.code;
 
@@ -60,3 +64,4 @@ import javax.xml.bind.annotation.XmlNs;
 import javax.xml.bind.annotation.XmlNsForm;
 import javax.xml.bind.annotation.XmlSchema;
 import org.apache.sis.xml.Namespaces;
+import org.apache.sis.internal.jaxb.LegacyNamespaces;

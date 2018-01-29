@@ -75,13 +75,13 @@
  * @module
  */
 @XmlSchema(location=Schemas.METADATA_XSD_DISTRIBUTION, elementFormDefault=XmlNsForm.QUALIFIED, namespace=Namespaces.MRD, xmlns = {
-    @XmlNs(prefix = "mcc", namespaceURI = Namespaces.MCC),
-    @XmlNs(prefix = "mrd", namespaceURI = Namespaces.MRD),
-    @XmlNs(prefix = "mdt", namespaceURI = Namespaces.MDT),
-    @XmlNs(prefix = "gco", namespaceURI = Namespaces.GCO),
-    @XmlNs(prefix = "gmw", namespaceURI = Namespaces.GMW),
-    @XmlNs(prefix = "gcx", namespaceURI = Namespaces.GCX),
-    @XmlNs(prefix = "xsi", namespaceURI = Namespaces.XSI)
+    @XmlNs(prefix = "mrd", namespaceURI = Namespaces.MRD),      // Metadata for Resource Distribution
+    @XmlNs(prefix = "mdt", namespaceURI = Namespaces.MDT),      // Metadata for Data Transfer
+    @XmlNs(prefix = "mcc", namespaceURI = Namespaces.MCC),      // Metadata Common Classes
+    @XmlNs(prefix = "gmw", namespaceURI = Namespaces.GMW),      // Geographic Markup Wrappers
+    @XmlNs(prefix = "gco", namespaceURI = Namespaces.GCO),      // Geographic Common
+    @XmlNs(prefix = "gcx", namespaceURI = Namespaces.GCX),      // Geospatial Common eXtension
+    @XmlNs(prefix = "xsi", namespaceURI = Namespaces.XSI),      // XML schema instance
 })
 @XmlAccessorType(XmlAccessType.NONE)
 @XmlJavaTypeAdapters({

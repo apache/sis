@@ -71,12 +71,12 @@
  * @module
  */
 @XmlSchema(location=Schemas.METADATA_XSD_LINEAGE, elementFormDefault=XmlNsForm.QUALIFIED, namespace=Namespaces.MRL, xmlns = {
-    @XmlNs(prefix = "mrl", namespaceURI = Namespaces.MRL),
-    @XmlNs(prefix = "mcc", namespaceURI = Namespaces.MCC),
-    @XmlNs(prefix = "gmw", namespaceURI = Namespaces.GMW),
-    @XmlNs(prefix = "gco", namespaceURI = Namespaces.GCO),
-    @XmlNs(prefix = "gcx", namespaceURI = Namespaces.GCX),
-    @XmlNs(prefix = "xsi", namespaceURI = Namespaces.XSI)
+    @XmlNs(prefix = "mrl", namespaceURI = Namespaces.MRL),      // Metadata for Resource Lineage
+    @XmlNs(prefix = "mcc", namespaceURI = Namespaces.MCC),      // Metadata Common Classes
+    @XmlNs(prefix = "gmw", namespaceURI = Namespaces.GMW),      // Geographic Markup Wrappers
+    @XmlNs(prefix = "gco", namespaceURI = Namespaces.GCO),      // Geographic Common
+    @XmlNs(prefix = "gcx", namespaceURI = Namespaces.GCX),      // Geospatial Common eXtension
+    @XmlNs(prefix = "xsi", namespaceURI = Namespaces.XSI),      // XML schema instance
 })
 @XmlAccessorType(XmlAccessType.NONE)
 @XmlJavaTypeAdapters({
