@@ -30,7 +30,9 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.ArrayDeque;
 import java.util.Arrays;
+import java.util.Objects;
 import java.util.Collections;
+import java.lang.reflect.Method;
 import javax.xml.XMLConstants;
 import javax.xml.bind.annotation.XmlNs;
 import javax.xml.bind.annotation.XmlType;
@@ -146,20 +148,27 @@ public final strictfp class SchemaCompliance {
      * The type and namespace of a property or class. Used in {@link #typeDefinitions} map.
      */
     private static final class Info {
-        final String type;
-        final String namespace;
+        final String  typeName;
+        final String  namespace;
+        final boolean isRequired;
+        final boolean isCollection;
 
-        Info(final String type, final String namespace) {
-            this.type = type;
-            this.namespace = namespace;
+        Info(final String typeName, final String namespace, final boolean isRequired, final boolean isCollection) {
+            this.typeName     = typeName;
+            this.namespace    = namespace;
+            this.isRequired   = isRequired;
+            this.isCollection = isCollection;
         }
 
         boolean equal(final Info other) {
-            return type.equals(other.type) && namespace.equals(other.namespace);
+            return Objects.equals(typeName,     other.typeName)
+                && Objects.equals(namespace,    other.namespace)
+                && isRequired   == other.isRequired
+                && isCollection == other.isCollection;
         }
 
         @Override public String toString() {
-            return type;
+            return typeName;
         }
     }
 
@@ -173,7 +182,7 @@ public final strictfp class SchemaCompliance {
     /**
      * Notifies that we are about to define the XML type for each property. In OGC/ISO schemas, those definitions
      * have the {@value #PROPERTY_TYPE_SUFFIX} suffix in their name (which is omitted). After this method call,
-     * properties can be defined by calls to {@link #addProperty(String, String)}.
+     * properties can be defined by calls to {@link #addProperty(String, String, boolean, boolean)}.
      */
     private void preparePropertyDefinitions(final String type) throws SchemaException {
         currentProperties = typeDefinitions.computeIfAbsent(trim(type, TYPE_SUFFIX).intern(), (k) -> new HashMap<>());
@@ -264,6 +273,9 @@ public final strictfp class SchemaCompliance {
         } catch (DirectoryIteratorException e) {
             throw e.getCause();
         }
+        if (verifier != null) {
+            verifier.reportUnused();
+        }
     }
 
     /**
@@ -321,13 +333,13 @@ public final strictfp class SchemaCompliance {
                     final String name = getMandatoryAttribute(node, "name");
                     final String type = getMandatoryAttribute(node, "type");
                     if (CODELIST_TYPE.equals(type)) {
-                        if (typeDefinitions.put(name, Collections.singletonMap(null, new Info(null, targetNamespace))) != null) {
+                        if (typeDefinitions.put(name, Collections.singletonMap(null, new Info(null, targetNamespace, false, false))) != null) {
                             throw new SchemaException("Code list " + name + " defined twice.");
                         }
                     } else {
                         verifyNamingConvention(schemaLocations.getLast(), name, type, TYPE_SUFFIX);
                         preparePropertyDefinitions(type);
-                        addProperty(null, type);
+                        addProperty(null, type, false, false);
                         currentProperties = null;
                     }
                     return;                             // Ignore children (they are about documentation).
@@ -368,8 +380,27 @@ public final strictfp class SchemaCompliance {
     private void storePropertyDefinition(final Node node) throws SchemaException {
         if (XMLConstants.W3C_XML_SCHEMA_NS_URI.equals(node.getNamespaceURI())) {
             if ("element".equals(node.getNodeName())) {
+                boolean isRequired   = false;
+                boolean isCollection = false;
+                final NamedNodeMap attributes = node.getAttributes();
+                if (attributes != null) {
+                    Node attr = attributes.getNamedItem("minOccurs");
+                    if (attr != null) {
+                        final String value = attr.getNodeValue();
+                        if (value != null) {
+                            isRequired = Integer.parseInt(getMandatoryAttribute(node, "minOccurs")) > 0;
+                        }
+                    }
+                    attr = attributes.getNamedItem("maxOccurs");
+                    if (attr != null) {
+                        final String value = attr.getNodeValue();
+                        if (value != null) {
+                            isCollection = value.equals("unbounded") || Integer.parseInt(value) >  1;
+                        }
+                    }
+                }
                 addProperty(getMandatoryAttribute(node, "name").intern(),
-                       trim(getMandatoryAttribute(node, "type"), PROPERTY_TYPE_SUFFIX).intern());
+                       trim(getMandatoryAttribute(node, "type"), PROPERTY_TYPE_SUFFIX).intern(), isRequired, isCollection);
                 return;
             }
         }
@@ -434,8 +465,8 @@ public final strictfp class SchemaCompliance {
      * Adds a property of the current name and type. This method is invoked during schema parsing.
      * The property namespace is assumed to be {@link #targetNamespace}.
      */
-    private void addProperty(final String name, final String type) throws SchemaException {
-        final Info info = new Info(type, targetNamespace);
+    private void addProperty(final String name, final String type, final boolean isRequired, final boolean isCollection) throws SchemaException {
+        final Info info = new Info(type, targetNamespace, isRequired, isCollection);
         final Info old = currentProperties.put(name, info);
         if (old != null && !old.equal(info)) {
             throw new SchemaException("Error while parsing " + schemaLocations.getLast() + ":\n"
@@ -486,6 +517,11 @@ public final strictfp class SchemaCompliance {
      */
     private final class PackageVerifier {
         /**
+         * The package name, for reporting error.
+         */
+        private final String packageName;
+
+        /**
          * The default namespace to use if a class does not define explicitely a namespace.
          */
         private final String defaultNS;
@@ -503,8 +539,9 @@ public final strictfp class SchemaCompliance {
                 throws IOException, ParserConfigurationException, SAXException, SchemaException
         {
             namespaceIsUsed = new HashMap<>();
-            String namespace = "";
+            String name = "?", namespace = "";
             if (pkg != null) {
+                name = pkg.getName();
                 final XmlSchema schema = pkg.getAnnotation(XmlSchema.class);
                 if (schema != null) {
                     namespace = schema.namespace();
@@ -512,7 +549,7 @@ public final strictfp class SchemaCompliance {
                     if (!XmlSchema.NO_LOCATION.equals(location)) {
                         if (location.startsWith(SCHEMA_ROOT_DIRECTORY)) {
                             if (!location.startsWith(schema.namespace())) {
-                                throw new SchemaException("XML schema location inconsistent with namespace in " + pkg.getName() + " package.");
+                                throw new SchemaException("XML schema location inconsistent with namespace in package " + name);
                             }
                             if (schemaRootDirectory != null) {
                                 location = schemaRootDirectory.resolve(location.substring(SCHEMA_ROOT_DIRECTORY.length())).toUri().toString();
@@ -528,11 +565,12 @@ public final strictfp class SchemaCompliance {
                             throw new SchemaException("Prefix \"" + pr + "\" associated to two different namespaces:\n" + cr + '\n' + ns);
                         }
                         if (namespaceIsUsed.put(ns, Boolean.FALSE) != null) {
-                            throw new SchemaException("Duplicated namespace in " + pkg + ":\n" + ns);
+                            throw new SchemaException("Duplicated namespace in package " + name + ":\n" + ns);
                         }
                     }
                 }
             }
+            packageName = name;
             defaultNS = namespace;
         }
 
@@ -595,7 +633,7 @@ public final strictfp class SchemaCompliance {
              * is already available or not. However properties in other namespaces should not be deprecated.
              * Some validations will be disabled for deprecated properties.
              */
-            final boolean isDeprecated = DEPRECATED_NAMESPACES.contains(namespace);
+            boolean isDeprecated = DEPRECATED_NAMESPACES.contains(namespace);
             if (!isDeprecated && type.isAnnotationPresent(Deprecated.class)) {
                 throw new SchemaException("Unexpected deprecation status of " + type);
             }
@@ -605,12 +643,43 @@ public final strictfp class SchemaCompliance {
                     throw new SchemaException("Unknown name declared in @XmlRootElement of " + type);
                 }
             } else {
-                // By convention, null key is associated to class information.
+                /*
+                 * Verify the class namespace (associated to the null key by convention),
+                 * then verify @XmlElement annotation on each property.
+                 */
                 final String expectedNS = properties.get(null).namespace;
                 if (!namespace.equals(expectedNS)) {
                     throw new SchemaException(className + " shall be associated to namespace " + expectedNS);
                 }
-                // TODO: scan for properties here.
+                for (final Method method : type.getDeclaredMethods()) {
+                    final XmlElement element = method.getDeclaredAnnotation(XmlElement.class);
+                    if (element != null) {
+                        final String name = element.name();
+                        final String ns = element.namespace();
+                        isDeprecated = DEPRECATED_NAMESPACES.contains(ns);
+                        if (isDeprecated != method.isAnnotationPresent(Deprecated.class)) {
+                            throw new SchemaException("Unexpected deprecation status of " + className + '.' + name);
+                        }
+                        final Info info = properties.get(name);
+                        if (info == null) {
+                            if (!isDeprecated) {
+                                throw new SchemaException("Unexpected XML element " + className + '.' + name);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        /**
+         * Verifies if there is any unused namespace or adapters in package-info file.
+         */
+        final void reportUnused() throws SchemaException {
+            for (final Map.Entry<String,Boolean> entry : namespaceIsUsed.entrySet()) {
+                if (!entry.getValue()) {
+//                  TODO: to be enabled after we processed properties.
+//                  throw new SchemaException("Unused namespace in package " + packageName + ":\n" + entry.getKey());
+                }
             }
         }
     }

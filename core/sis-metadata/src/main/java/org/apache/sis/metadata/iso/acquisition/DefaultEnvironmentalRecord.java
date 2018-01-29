@@ -57,7 +57,7 @@ import static org.apache.sis.internal.metadata.MetadataUtilities.ensureInRange;
     "averageAirTemperature",
     "maxRelativeHumidity",
     "maxAltitude",
-    "meteorologicalConditions"
+    "meterologicalConditions"       // Really spelled that way in XSD file.
 })
 @XmlRootElement(name = "MI_EnvironmentalRecord")
 public class DefaultEnvironmentalRecord extends ISOMetadata implements EnvironmentalRecord {
@@ -216,7 +216,7 @@ public class DefaultEnvironmentalRecord extends ISOMetadata implements Environme
      * @return meteorological conditions in the photo flight area, or {@code null}.
      */
     @Override
-    @XmlElement(name = "meteorologicalConditions", required = true)
+    @XmlElement(name = "meterologicalConditions", required = true)      // Really spelled that way in XSD file.
     public InternationalString getMeteorologicalConditions() {
         return meteorologicalConditions;
     }

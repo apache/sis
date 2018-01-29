@@ -87,14 +87,15 @@
  * @module
  */
 @XmlSchema(location = Schemas.METADATA_XSD_BASE, elementFormDefault = XmlNsForm.QUALIFIED, namespace = Namespaces.MDB, xmlns = {
-    @XmlNs(prefix = "mdb", namespaceURI = Namespaces.MDB),
-    @XmlNs(prefix = "cit", namespaceURI = Namespaces.CIT),
-    @XmlNs(prefix = "lan", namespaceURI = Namespaces.LAN),
-    @XmlNs(prefix = "mcc", namespaceURI = Namespaces.MCC),
-    @XmlNs(prefix = "mas", namespaceURI = Namespaces.MAS),
-    @XmlNs(prefix = "mex", namespaceURI = Namespaces.MEX),
-    @XmlNs(prefix = "gco", namespaceURI = Namespaces.GCO),
-    @XmlNs(prefix = "xsi", namespaceURI = Namespaces.XSI),
+    @XmlNs(prefix = "mdb", namespaceURI = Namespaces.MDB),      // Metadata Base
+    @XmlNs(prefix = "mpc", namespaceURI = Namespaces.MPC),      // Metadata for Portrayal Catalog
+    @XmlNs(prefix = "mas", namespaceURI = Namespaces.MAS),      // Metadata for Application Schema
+    @XmlNs(prefix = "mex", namespaceURI = Namespaces.MEX),      // Metadata with Schema Extensions
+    @XmlNs(prefix = "cit", namespaceURI = Namespaces.CIT),      // Citation and responsible party information
+    @XmlNs(prefix = "lan", namespaceURI = Namespaces.LAN),      // Language localization
+    @XmlNs(prefix = "mcc", namespaceURI = Namespaces.MCC),      // Metadata Common Classes
+    @XmlNs(prefix = "gco", namespaceURI = Namespaces.GCO),      // Geographic Common
+    @XmlNs(prefix = "xsi", namespaceURI = Namespaces.XSI),      // XML schema instance
     @XmlNs(prefix = "gmd", namespaceURI = LegacyNamespaces.GMD)
 })
 @XmlAccessorType(XmlAccessType.NONE)
