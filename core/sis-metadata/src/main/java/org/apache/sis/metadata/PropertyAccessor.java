@@ -349,7 +349,7 @@ class PropertyAccessor {
             /*
              * Get the type of elements returned by the getter. We perform this step last because
              * the search for a setter above may have replaced the getter declared in the interface
-             * by the getter declared in the implementation with a covariant return type. Our intend
+             * by the getter declared in the implementation with a covariant return type. Our intent
              * is to get a type which can be accepted by the setter.
              */
             Class<?> elementType = getter.getReturnType();

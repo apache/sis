@@ -294,7 +294,7 @@ abstract class AbstractLinearTransform extends AbstractMathTransform implements 
             /*
              * If the 'inverse' matrix was not computed in any of the transforms being compared
              * (i.e. if 'this.inverse' and 'object.inverse' are both null), then assume that the
-             * two transforms will compute their inverse in the same way. The intend is to avoid
+             * two transforms will compute their inverse in the same way. The intent is to avoid
              * to trig the inverse transform computation.
              *
              * Note that this code requires the 'inverse' fields to be volatile

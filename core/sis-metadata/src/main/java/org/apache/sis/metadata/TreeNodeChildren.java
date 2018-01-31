@@ -142,7 +142,7 @@ final class TreeNodeChildren extends AbstractCollection<TreeTable.Node> {
         this.children = new TreeNode[accessor.count()];
         /*
          * Search for something that looks like the main property, to be associated with the parent node
-         * instead than provided as a child. The intend is to have more compact and easy to read trees.
+         * instead than provided as a child. The intent is to have more compact and easy to read trees.
          * That property shall be a singleton for a simple value (not another metadata object).
          */
         if (parent.table.valuePolicy == ValueExistencePolicy.COMPACT) {

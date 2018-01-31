@@ -415,7 +415,7 @@ public abstract class AbstractAttribute<V> extends Field<V> implements Attribute
      *         {@linkplain org.apache.sis.metadata.iso.quality.DefaultConformanceResult#getExplanation() explanation}
      *         set to the error message.</p>
      *
-     *         <div class="warning"><b>Note:</b> this is a departure from ISO intend, since {@code explanation}
+     *         <div class="warning"><b>Note:</b> this is a departure from ISO intent, since {@code explanation}
      *         should be a statement about what a successful conformance means. This point may be reformulated
      *         in a future SIS version.</div>
      *       </li>

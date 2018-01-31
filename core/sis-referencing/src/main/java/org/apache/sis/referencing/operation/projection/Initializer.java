@@ -37,7 +37,7 @@ import static org.apache.sis.internal.util.DoubleDouble.verbatim;
 /**
  * Helper class for map projection constructions, providing formulas normally needed only at construction time.
  * Since map projection constructions should not happen very often, we afford using some double-double arithmetic.
- * The main intend is not to provide more accurate coordinate conversions (while it may be a nice side-effect),
+ * The main intent is not to provide more accurate coordinate conversions (while it may be a nice side-effect),
  * but to improve the result of matrix multiplications when the map projection is part of a more complex chain
  * of transformations. More specifically we want to be able:
  *

@@ -686,7 +686,7 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
         /**
          * If the parameters given by the user were not created by {@code getDefaultParameters(String)}
          * or something equivalent, copies those parameters into the structure expected by the provider.
-         * The intend is to make sure that we have room for the parameters that {@code setEllipsoids(…)}
+         * The intent is to make sure that we have room for the parameters that {@code setEllipsoids(…)}
          * may write.
          *
          * <p>A side effect of this method is that the copy operation may perform a check of

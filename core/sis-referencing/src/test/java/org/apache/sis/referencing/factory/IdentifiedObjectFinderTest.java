@@ -77,7 +77,7 @@ public final strictfp class IdentifiedObjectFinderTest extends TestCase {
                    CRS84, finder.findSingleton(CRS84));
         /*
          * Same test than above, using a CRS without identifier.
-         * The intend is to force a full scan.
+         * The intent is to force a full scan.
          */
         final CoordinateReferenceSystem search = new DefaultGeographicCRS(
                 Collections.singletonMap(DefaultGeographicCRS.NAME_KEY, CRS84.getName()),

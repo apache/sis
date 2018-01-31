@@ -60,7 +60,7 @@ public final class ModifiableIdentifierMap extends IdentifierMapAdapter {
 
     /**
      * Sets the {@code xlink:href} value, which may be null. If an explicit {@code xlink:href} identifier exists,
-     * then it will removed before to set the new {@code href} in the {@link XLink} object. The intend is to give
+     * then it will removed before to set the new {@code href} in the {@link XLink} object. The intent is to give
      * precedence to the {@link XLink#getHRef()} property in every cases where the {@code href} is parsable as a
      * {@link URI}, and use the value associated to the {@code HREF} key only as a fallback when the string can not
      * be parsed.

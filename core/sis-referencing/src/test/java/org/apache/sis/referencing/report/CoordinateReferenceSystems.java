@@ -415,7 +415,7 @@ public final strictfp class CoordinateReferenceSystems extends AuthorityCodesRep
 
     /**
      * The keywords before which to cut the CRS names when sorting by alphabetical order.
-     * The main intend here is to preserve the "far west", "west", "central west", "central",
+     * The main intent here is to preserve the "far west", "west", "central west", "central",
      * "central east", "east", "far east" order.
      */
     private static final String[] CUT_BEFORE = {

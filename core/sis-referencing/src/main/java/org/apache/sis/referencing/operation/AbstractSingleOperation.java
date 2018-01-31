@@ -173,7 +173,7 @@ class AbstractSingleOperation extends AbstractCoordinateOperation implements Sin
      * In the particular case of a {@linkplain PassThroughTransform pass through transform} with more dimensions
      * than what we would expect from the given method, the check will rather be performed against the
      * {@linkplain PassThroughTransform#getSubTransform() sub transform}.
-     * The intend is to allow creation of a three-dimensional {@code ProjectedCRS} with a two-dimensional
+     * The intent is to allow creation of a three-dimensional {@code ProjectedCRS} with a two-dimensional
      * {@code OperationMethod}, where the third-dimension just pass through.
      *
      * <p>This method tries to locates what seems to be the "core" of the given math transform. The definition

@@ -26,7 +26,7 @@ import org.apache.sis.parameter.DefaultParameterValue;
  * This temporary {@code ParameterValue} bypasses the validity check normally performed by {@link DefaultParameterValue}.
  *
  * <div class="note"><b>Rational:</b>
- * The intend is to skip the parameter value verification done by {@link DefaultParameterValue#setValue(Object, Unit)}
+ * The intent is to skip the parameter value verification done by {@link DefaultParameterValue#setValue(Object, Unit)}
  * on the assumption that the value has already been verified when the user created his {@code ParameterValueGroup}.
  * Even if the user's {@code ParameterValue} implementation did not performed any verification, there is chances that
  * {@link DefaultMathTransformFactory} {@linkplain org.apache.sis.parameter.Parameters#copy copied} the parameters in

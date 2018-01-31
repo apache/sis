@@ -165,7 +165,7 @@ public abstract strictfp class XMLTestCase extends TestCase {
      * The file shall be in the same package than a subclass of {@code this}.
      * This method begins the search in the package of {@link #getClass()}.
      * If the resource is not found in that package, then this method searches in the parent classes.
-     * The intend is to allow some test classes to be overridden in different modules.
+     * The intent is to allow some test classes to be overridden in different modules.
      *
      * @param  filename  the name of the XML file.
      * @return the URL to the given XML file.

@@ -474,7 +474,7 @@ public class DefaultProjectedCRS extends AbstractDerivedCRS<Projection> implemen
                              * May happen if the 'conversionFromBase' parameter group does not provide values
                              * for "semi_major" or "semi_minor" axis length. This should not happen with SIS
                              * implementation, but may happen with user-defined map projection implementations.
-                             * Since the intend of this check was to skip those parameters anyway, it is okay
+                             * Since the intent of this check was to skip those parameters anyway, it is okay
                              * for the purpose of WKT formatting if there is no parameter for axis lengths.
                              */
                             Logging.recoverableException(Logging.getLogger(Loggers.WKT), DefaultProjectedCRS.class, "formatTo", e);

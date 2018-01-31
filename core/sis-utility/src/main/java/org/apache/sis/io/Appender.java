@@ -133,7 +133,7 @@ abstract class Appender implements Appendable {
 
     /**
      * If the given sequence begins with a low surrogate completing a previous high surrogate,
-     * delegates to {@link #append(char)} and returns {@code start+1}. The intend is to avoid
+     * delegates to {@link #append(char)} and returns {@code start+1}. The intent is to avoid
      * processing a character sequence which starts by an invalid code point.
      *
      * @param  sequence  the character sequence to write.
