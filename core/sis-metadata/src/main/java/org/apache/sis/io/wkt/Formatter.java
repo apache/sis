@@ -419,7 +419,7 @@ public class Formatter implements Localized {
 
     /**
      * Returns a mapper between Java character sequences and the characters to write in WKT.
-     * The intend is to specify how to write characters that are not allowed in WKT strings
+     * The intent is to specify how to write characters that are not allowed in WKT strings
      * according ISO 19162 specification. Return values can be:
      *
      * <ul>
@@ -1164,7 +1164,7 @@ public class Formatter implements Localized {
         } else {
             /*
              * The 2 below is for using two less fraction digits than the expected number accuracy.
-             * The intend is to give to DecimalFormat a chance to hide rounding errors, keeping in
+             * The intent is to give to DecimalFormat a chance to hide rounding errors, keeping in
              * mind that the number value is not necessarily the original one (we may have applied
              * a unit conversion). In the case of WGS84 semi-major axis in metres, we still have a
              * maximum of 8 fraction digits, which is more than enough.

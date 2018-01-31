@@ -111,7 +111,7 @@ public final strictfp class GeodeticObjectFactoryTest extends ObjectFactoryTest 
 
     /**
      * Tests {@link GeodeticObjectFactory#createFromWKT(String)} with an erroneous projection parameter name.
-     * The intend is to verify that the expected exception is thrown.
+     * The intent is to verify that the expected exception is thrown.
      *
      * @throws FactoryException if the parsing failed for another reason than the expected one.
      */

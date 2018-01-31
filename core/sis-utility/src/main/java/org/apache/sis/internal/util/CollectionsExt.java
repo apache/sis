@@ -586,7 +586,7 @@ public final class CollectionsExt extends Static {
     /**
      * Returns a more compact representation of the given map. This method is similar to
      * {@link #unmodifiableOrCopy(Map)} except that it does not wrap the map in an unmodifiable
-     * view. The intend is to avoid one level of indirection for performance and memory reasons.
+     * view. The intent is to avoid one level of indirection for performance and memory reasons.
      * This is okay only if the map is kept in a private field and never escape outside that class.
      *
      * @param  <K>  the type of keys in the map.

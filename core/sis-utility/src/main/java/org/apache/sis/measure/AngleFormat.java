@@ -991,7 +991,7 @@ public class AngleFormat extends Format implements Localized {
             minutes = Math.abs(degrees - (degrees = truncate(degrees))) * 60;
             /*
              * Limit the maximal number of fraction digits to the amount of significant digits for a 'double' value.
-             * The intend is to avoid non-significant garbage that are pure artifacts from the conversion from base
+             * The intent is to avoid non-significant garbage that are pure artifacts from the conversion from base
              * 2 to base 10.
              */
             final int n = fractionDigitsForDelta(Math.ulp(angle) * (secondsFieldWidth == 0 ? 60 : 3600), false);

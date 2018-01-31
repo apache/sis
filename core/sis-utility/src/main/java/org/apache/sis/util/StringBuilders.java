@@ -197,7 +197,7 @@ public final class StringBuilders extends Static {
     /**
      * A sequence of a constant character. This implementation does not perform any argument
      * check since it is for {@link StringBuilder#append(CharSequence, int, int)} usage only.
-     * The intend is to allow {@code StringBuilder} to append the characters in one operation
+     * The intent is to allow {@code StringBuilder} to append the characters in one operation
      * instead than looping on {@link StringBuilder#insert(int, char)} (which would require
      * memory move on each call).
      */

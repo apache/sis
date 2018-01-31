@@ -75,7 +75,7 @@ import org.apache.sis.util.Classes;
  * <div class="section">Thread safety</div>
  * This class is thread-safe is the underlying {@linkplain #factory} is also thread-safe.
  * However, implementors are encouraged to wrap in {@linkplain java.util.Collections#unmodifiableSet unmodifiable set}
- * if they intend to cache {@code IdentifiedObjectSet} instances.
+ * if they intent to cache {@code IdentifiedObjectSet} instances.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 0.7

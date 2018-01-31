@@ -121,7 +121,7 @@ class FeatureIterator implements Spliterator<Feature> {
                     /*
                      * If there is no time columns, then this column may be the trajectory (note that allowing
                      * CSV files without time is obviously a departure from Moving Features specification.
-                     * The intend is to have a CSV format applicable to other features than moving ones).
+                     * The intent is to have a CSV format applicable to other features than moving ones).
                      * Fall through in order to process trajectory.
                      */
                 }

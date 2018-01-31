@@ -1113,7 +1113,7 @@ public final class Units extends Static {
         final LinearConverter ten4  = LinearConverter.scale(10000, 1);
         /*
          * All Unit<Angle>.
-         * 20 is the greatest common denominator between 180 and 200. The intend is to have arguments as small
+         * 20 is the greatest common denominator between 180 and 200. The intent is to have arguments as small
          * as possible in the call to the scale(double, double) method, while keeping the right side integer.
          * Staying closer to zero during conversions helo to reduce rounding errors.
          */

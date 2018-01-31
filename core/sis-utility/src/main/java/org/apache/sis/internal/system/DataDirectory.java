@@ -116,7 +116,7 @@ public enum DataDirectory {
     /**
      * Returns the value of {@value #ENV} environment variable, or {@code null} if none.
      * This method does not perform any logging and does not verify if the directory exists.
-     * If the intend is to perform I/O operations, use {@link #getRootDirectory()} instead.
+     * If the intent is to perform I/O operations, use {@link #getRootDirectory()} instead.
      *
      * @return the {@value #ENV} environment variable, or {@code null} if none.
      * @throws SecurityException if this method is not allowed to query the environment variable.

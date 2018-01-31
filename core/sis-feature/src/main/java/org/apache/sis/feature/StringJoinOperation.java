@@ -375,7 +375,7 @@ final class StringJoinOperation extends AbstractOperation {
                 /*
                  * Empty strings are considered as null values for consistency with StringJoinOperation.format(…).
                  * If we have more values than expected, continue the parsing but without storing the values.
-                 * The intend is to get the correct count of values for error reporting.
+                 * The intent is to get the correct count of values for error reporting.
                  */
                 if (!element.isEmpty() && count < values.length) try {
                     values[count] = converters[count].apply(element);

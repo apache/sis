@@ -281,7 +281,7 @@ public final strictfp class CoordinateOperationFinderTest extends MathTransformT
         λDimension = new int[] {1};
         zDimension = new int[] {2};
         double[] source = {
-            39.00,  -85.00,  -10000.00,   // The intend of those large height values is to cause a shift in (φ,λ)
+            39.00,  -85.00,  -10000.00,   // The intent of those large height values is to cause a shift in (φ,λ)
             38.26,  -80.58,  +10000.00    // large enough for being detected if we fail to use h in calculations.
         };
         double[] target;

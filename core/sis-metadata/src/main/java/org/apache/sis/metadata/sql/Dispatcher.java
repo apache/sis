@@ -86,7 +86,7 @@ final class Dispatcher implements InvocationHandler {
     /**
      * The metadata instance where to store the property (column) values, or {@code null} if not yet created.
      * For ISO 19115, this is an instance of one of the classes defined in {@link org.apache.sis.metadata.iso}
-     * package or sub-packages. The intend is not only to cache the property values, but also to leverage
+     * package or sub-packages. The intent is not only to cache the property values, but also to leverage
      * implementations that compute automatically some property values from other properties.
      * The main usage is computing the value of a deprecated property from the values of non-deprecated ones,
      * e.g. for transition from ISO 19115:2003 to ISO 19115:2014.
@@ -208,7 +208,7 @@ final class Dispatcher implements InvocationHandler {
         final long nullBit = 1L << info.asIndexMap(source.standard).get(method.getName());     // Okay even if overflow.
         /*
          * The NULL_COLLECTION semaphore prevents creation of new empty collections by getter methods
-         * (a consequence of lazy instantiation). The intend is to avoid creation of unnecessary objects
+         * (a consequence of lazy instantiation). The intent is to avoid creation of unnecessary objects
          * for all unused properties. Users should not see behavioral difference.
          */
         if ((nullValues & nullBit) == 0) {

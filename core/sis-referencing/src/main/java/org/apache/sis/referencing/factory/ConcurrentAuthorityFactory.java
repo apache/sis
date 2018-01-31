@@ -795,7 +795,7 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
 
     /**
      * Returns {@code true} if the Data Access Object (DAO) does not provide a {@code create} method for the
-     * given type of object. The intend is to decide if the caller should delegate to the DAO or delegate to
+     * given type of object. The intent is to decide if the caller should delegate to the DAO or delegate to
      * a more generic method of this class (e.g. {@code createCoordinateReferenceSystem(String)} instead of
      * {@code createGeographicCRS(String)}) in order to give to {@code ConcurrentAuthorityFactory} a chance
      * to reuse a value presents in the cache.
@@ -1809,7 +1809,7 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
                 final GeodeticAuthorityFactory delegate = ((ConcurrentAuthorityFactory<?>) factory).getDataAccess();
                 /*
                  * Set 'acquireCount' only after we succeed in fetching the factory, and before any operation on it.
-                 * The intend is to get ConcurrentAuthorityFactory.release() invoked if and only if the getDataAccess()
+                 * The intent is to get ConcurrentAuthorityFactory.release() invoked if and only if the getDataAccess()
                  * method succeed, no matter what happen after this point.
                  */
                 acquireCount = 1;

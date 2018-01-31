@@ -459,7 +459,7 @@ public final class Citations extends Static {
      * <div class="section">When to use</div>
      * Use this method when assigning values to be returned by methods like {@link Identifier#getCodeSpace()},
      * since those values are likely to be compared without special care about ignorable identifier characters.
-     * But if the intend is to format a more complex string like WKT or {@code toString()}, then we suggest to
+     * But if the intent is to format a more complex string like WKT or {@code toString()}, then we suggest to
      * use {@code getIdentifier(citation, true)} instead, which will produce the same result but preserving the
      * ignorable characters, which can be useful for formatting purpose.
      *

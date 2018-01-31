@@ -229,7 +229,7 @@ public final strictfp class DefaultMathTransformFactoryTest extends TestCase {
             assertEquals(classification, 6356256.909237285, param.parameter("semi_minor").doubleValue(), 1E-4);
             /*
              * Creates a ProjectedCRS from the map projection. This part is more an integration test than
-             * a DefaultMathTransformFactory test. Again, the intend is to verify that the properties are
+             * a DefaultMathTransformFactory test. Again, the intent is to verify that the properties are
              * the one that we specified.
              */
             final DefaultProjectedCRS crs = new DefaultProjectedCRS(dummyName,

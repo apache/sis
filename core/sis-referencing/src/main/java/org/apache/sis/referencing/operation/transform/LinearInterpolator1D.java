@@ -317,7 +317,7 @@ final class LinearInterpolator1D extends AbstractMathTransform1D implements Seri
 
         /**
          * Combines {@link #transform(double)}, {@link #derivative(double)} in a single method call.
-         * The intend is to avoid to call {@link Arrays#binarySearch(double[], double)} twice for the
+         * The intent is to avoid to call {@link Arrays#binarySearch(double[], double)} twice for the
          * same value.
          */
         @Override

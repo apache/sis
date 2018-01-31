@@ -445,7 +445,7 @@ public final class CC_GeneralOperationParameter extends PropertyType<CC_GeneralO
 
     /**
      * Given an {@link Identifier} or {@link GenericName} instance, returns that instance as a {@link NamedIdentifier}
-     * implementation. The intend is to allow {@code Object.equals(Object)} and hash code to correctly recognize two
+     * implementation. The intent is to allow {@code Object.equals(Object)} and hash code to correctly recognize two
      * name or identifier as equal even if they are of different implementations.
      *
      * <p>Note that {@link NamedIdentifier} is the type of unmarshalled names, aliases and identifiers.
