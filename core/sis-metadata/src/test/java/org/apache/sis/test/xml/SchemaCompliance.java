@@ -33,7 +33,6 @@ import java.util.Arrays;
 import java.util.Objects;
 import java.util.Collections;
 import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
 import javax.xml.XMLConstants;
 import javax.xml.bind.annotation.XmlNs;
 import javax.xml.bind.annotation.XmlType;
@@ -94,6 +93,7 @@ public final strictfp class SchemaCompliance {
     private static final Map<String,String> TYPES_TO_MERGE;
     static {
         final Map<String,String> m = new HashMap<>();
+        m.put("LE_ProcessStep_Type",         "LI_ProcessStep_Type");
         m.put("MI_Band_Type",                "MD_Band_Type");
         m.put("MI_CoverageDescription_Type", "MD_CoverageDescription_Type");
         m.put("AbstractMX_File_Type",        "MX_DataFile_Type");
@@ -680,10 +680,8 @@ public final strictfp class SchemaCompliance {
                         final String name = element.name();
                         final String ns = element.namespace();
                         isDeprecated = DEPRECATED_NAMESPACES.contains(ns);
-                        if (isDeprecated != method.isAnnotationPresent(Deprecated.class)) {
-                            if (!Modifier.isPrivate(method.getModifiers())) {
-                                throw new SchemaException("Unexpected deprecation status of " + className + '.' + name);
-                            }
+                        if (!isDeprecated && method.isAnnotationPresent(Deprecated.class)) {
+                            throw new SchemaException("Unexpected deprecation status of " + className + '.' + name);
                         }
                         final Info info = properties.get(name);
                         if (info == null) {

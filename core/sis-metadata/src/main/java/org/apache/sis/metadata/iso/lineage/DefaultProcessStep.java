@@ -24,6 +24,7 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import org.opengis.util.InternationalString;
+import org.opengis.temporal.TemporalPrimitive;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.citation.Responsibility;
 import org.opengis.metadata.maintenance.Scope;
@@ -34,12 +35,11 @@ import org.opengis.metadata.lineage.ProcessStepReport;
 import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.metadata.TitleProperty;
 import org.apache.sis.util.iso.Types;
-import org.apache.sis.xml.Namespaces;
 import org.apache.sis.internal.jaxb.FilterByVersion;
+import org.apache.sis.internal.jaxb.LegacyNamespaces;
+import org.apache.sis.internal.jaxb.gml.TM_Primitive;
 import org.apache.sis.internal.jaxb.metadata.MD_Scope;
-
-import static org.apache.sis.internal.metadata.MetadataUtilities.toDate;
-import static org.apache.sis.internal.metadata.MetadataUtilities.toMilliseconds;
+import org.apache.sis.internal.util.TemporalUtilities;
 
 
 /**
@@ -73,7 +73,8 @@ import static org.apache.sis.internal.metadata.MetadataUtilities.toMilliseconds;
 @XmlType(name = "LI_ProcessStep_Type", propOrder = {
     "description",
     "rationale",
-    "date",
+    "stepDateTime",             // New in ISO 19115:2014
+    "date",                     // Legacy ISO 19115:2003
     "processors",
     "reference",                // New in ISO 19115:2014
     "scope",                    // New in ISO 19115:2014
@@ -88,7 +89,7 @@ public class DefaultProcessStep extends ISOMetadata implements ProcessStep {
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = -535020568951006598L;
+    private static final long serialVersionUID = -2338712901907082970L;
 
     /**
      * Description of the event, including related parameters or tolerances.
@@ -101,11 +102,9 @@ public class DefaultProcessStep extends ISOMetadata implements ProcessStep {
     private InternationalString rationale;
 
     /**
-     * Date and time or range of date and time on or over which the process step occurred,
-     * in milliseconds elapsed since January 1st, 1970. If there is no such date, then this
-     * field is set to the special value {@link Long#MIN_VALUE}.
+     * Date, time or range of date and time over which the process step occurred.
      */
-    private long date = Long.MIN_VALUE;
+    private TemporalPrimitive stepDateTime;
 
     /**
      * Identification of, and means of communication with, person(s) and
@@ -174,7 +173,7 @@ public class DefaultProcessStep extends ISOMetadata implements ProcessStep {
         if (object != null) {
             description           = object.getDescription();
             rationale             = object.getRationale();
-            date                  = toMilliseconds(object.getDate());
+            stepDateTime          = TemporalUtilities.createInstant(object.getDate());
             processors            = copyCollection(object.getProcessors(), Responsibility.class);
             references            = copyCollection(object.getReferences(), Citation.class);
             sources               = copyCollection(object.getSources(), Source.class);
@@ -253,24 +252,54 @@ public class DefaultProcessStep extends ISOMetadata implements ProcessStep {
     }
 
     /**
+     * Returns the date, time or range of date and time over which the process step occurred.
+     *
+     * @return date, time or period over which the process step occurred, or {@code null}.
+     *
+     * @since 1.0
+     */
+    @XmlElement(name = "stepDateTime")
+    @XmlJavaTypeAdapter(TM_Primitive.Since2014.class)
+    public TemporalPrimitive getStepDateTime() {
+        return stepDateTime;
+    }
+
+    /**
+     * Sets the date, time or range of date and time over which the process step occurred.
+     *
+     * @param  newValue  the new date, time or period.
+     *
+     * @since 1.0
+     */
+    public void setStepDateTime(final TemporalPrimitive newValue) {
+        checkWritePermission();
+        stepDateTime = newValue;
+    }
+
+    /**
      * Returns the date and time or range of date and time on or over which the process step occurred.
      *
      * @return date on or over which the process step occurred, or {@code null}.
+     *
+     * @deprecated As of ISO 19115-1:2014, replaced by {@link #getStepDateTime()}.
      */
     @Override
-    @XmlElement(name = "dateTime")
+    @Deprecated
+    @XmlElement(name = "dateTime", namespace = LegacyNamespaces.GMD)
     public Date getDate() {
-        return toDate(date);
+        return FilterByVersion.LEGACY_METADATA.accept() ? TemporalUtilities.getDate(getStepDateTime()) : null;
     }
 
     /**
      * Sets the date and time or range of date and time on or over which the process step occurred.
      *
      * @param  newValue  the new date.
+     *
+     * @deprecated As of ISO 19115-1:2014, replaced by {@link #setStepDateTime(TemporalPrimitive)}.
      */
+    @Deprecated
     public void setDate(final Date newValue) {
-        checkWritePermission();
-        date = toMilliseconds(newValue);
+        setStepDateTime(TemporalUtilities.createInstant(newValue));
     }
 
     /**
@@ -371,7 +400,7 @@ public class DefaultProcessStep extends ISOMetadata implements ProcessStep {
      * @return product generated as a result of the process step.
      */
     @Override
-    @XmlElement(name = "output", namespace = Namespaces.GMI)
+    @XmlElement(name = "output")
     public Collection<Source> getOutputs() {
         return outputs = nonNullCollection(outputs, Source.class);
     }
@@ -393,7 +422,7 @@ public class DefaultProcessStep extends ISOMetadata implements ProcessStep {
      * @return procedure by which the algorithm was applied to derive geographic data, or {@code null}.
      */
     @Override
-    @XmlElement(name = "processingInformation", namespace = Namespaces.GMI)
+    @XmlElement(name = "processingInformation")
     public Processing getProcessingInformation() {
         return processingInformation;
     }
@@ -416,7 +445,7 @@ public class DefaultProcessStep extends ISOMetadata implements ProcessStep {
      * @return report generated by the process step.
      */
     @Override
-    @XmlElement(name = "report", namespace = Namespaces.GMI)
+    @XmlElement(name = "report")
     public Collection<ProcessStepReport> getReports() {
         return reports = nonNullCollection(reports, ProcessStepReport.class);
     }
