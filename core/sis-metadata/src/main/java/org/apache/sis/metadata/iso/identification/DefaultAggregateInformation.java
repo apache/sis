@@ -131,8 +131,8 @@ public class DefaultAggregateInformation extends DefaultAssociatedResource imple
      */
     @Override
     @Deprecated
-    @XmlElement(name = "aggregateDataSetName")
     @Dependencies("getName")
+    @XmlElement(name = "aggregateDataSetName")
     public Citation getAggregateDataSetName() {
         return getName();
     }
@@ -158,8 +158,8 @@ public class DefaultAggregateInformation extends DefaultAssociatedResource imple
      */
     @Override
     @Deprecated
-    @XmlElement(name = "aggregateDataSetIdentifier")
     @Dependencies("getName")
+    @XmlElement(name = "aggregateDataSetIdentifier")
     public Identifier getAggregateDataSetIdentifier() {
         return getAggregateDataSetIdentifier(getAggregateDataSetName());
     }

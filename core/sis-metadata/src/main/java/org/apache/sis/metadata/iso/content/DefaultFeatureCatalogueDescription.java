@@ -21,11 +21,14 @@ import java.util.Collection;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import org.opengis.util.GenericName;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.content.FeatureCatalogueDescription;
 import org.opengis.metadata.content.FeatureTypeInfo;
 import org.apache.sis.internal.jaxb.FilterByVersion;
+import org.apache.sis.internal.jaxb.LegacyNamespaces;
+import org.apache.sis.internal.jaxb.gmd.LocaleAdapter;
 import org.apache.sis.internal.metadata.Dependencies;
 import org.apache.sis.internal.metadata.LegacyPropertyAdapter;
 
@@ -60,7 +63,8 @@ import org.apache.sis.internal.metadata.LegacyPropertyAdapter;
 @SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "MD_FeatureCatalogueDescription_Type", propOrder = {
     "compliant",
-    "languages",
+    "locale",                       // New in ISO 19115:2014
+    "language",                     // Legacy ISO 19115:2003
     "includedWithDataset",
     "featureTypesInfo",             // New in ISO 19115:2014. Actual name is "featureTypeInfo"
     "featureTypes",                 // Legacy ISO 19115:2003
@@ -182,7 +186,7 @@ public class DefaultFeatureCatalogueDescription extends AbstractContentInformati
      * @return language(s) used within the catalogue.
      */
     @Override
-    @XmlElement(name = "language")
+    // @XmlElement at the end of this class.
     public Collection<Locale> getLanguages() {
         return languages = nonNullCollection(languages, Locale.class);
     }
@@ -250,8 +254,8 @@ public class DefaultFeatureCatalogueDescription extends AbstractContentInformati
      */
     @Override
     @Deprecated
-    @XmlElement(name = "featureTypes")
     @Dependencies("getFeatureTypeInfo")
+    @XmlElement(name = "featureTypes", namespace = LegacyNamespaces.GMD)
     public final Collection<GenericName> getFeatureTypes() {
         if (!FilterByVersion.LEGACY_METADATA.accept()) return null;
         return new LegacyPropertyAdapter<GenericName,FeatureTypeInfo>(getFeatureTypeInfo()) {
@@ -328,8 +332,27 @@ public class DefaultFeatureCatalogueDescription extends AbstractContentInformati
      * This attribute has been added by ISO 19115:2014 standard.
      * If (and only if) marshalling an older standard version, we omit this attribute.
      */
-    @XmlElement(name = "featureTypeInfo")
+    @XmlElement(name = "featureTypes")
     private Collection<FeatureTypeInfo> getFeatureTypesInfo() {
         return FilterByVersion.CURRENT_METADATA.accept() ? getFeatureTypeInfo() : null;
+    }
+
+    /**
+     * Returns the locale to marshal if the XML document is to be written
+     * according the new ISO 19115:2014 model.
+     */
+    @XmlElement(name = "locale")
+    private Collection<Locale> getLocale() {
+        return FilterByVersion.CURRENT_METADATA.accept() ? getLanguages() : null;
+    }
+
+    /**
+     * Returns the locale to marshal if the XML document is to be written
+     * according the legacy ISO 19115:2003 model.
+     */
+    @XmlElement(name = "language", namespace = LegacyNamespaces.GMD)
+    @XmlJavaTypeAdapter(LocaleAdapter.class)
+    private Collection<Locale> getLanguage() {
+        return FilterByVersion.LEGACY_METADATA.accept() ? getLanguages() : null;
     }
 }

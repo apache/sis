@@ -38,6 +38,7 @@ import org.apache.sis.metadata.iso.citation.DefaultCitationDate;
 import org.apache.sis.internal.metadata.LegacyPropertyAdapter;
 import org.apache.sis.internal.metadata.Dependencies;
 import org.apache.sis.internal.jaxb.FilterByVersion;
+import org.apache.sis.internal.jaxb.LegacyNamespaces;
 
 
 /**
@@ -238,8 +239,8 @@ public class DefaultMaintenanceInformation extends ISOMetadata implements Mainte
      */
     @Override
     @Deprecated
-    @XmlElement(name = "dateOfNextUpdate")
     @Dependencies("getMaintenanceDates")
+    @XmlElement(name = "dateOfNextUpdate", namespace = LegacyNamespaces.GMD)
     public Date getDateOfNextUpdate() {
         if (FilterByVersion.LEGACY_METADATA.accept()) {
             final Collection<CitationDate> dates = getMaintenanceDates();
@@ -347,8 +348,8 @@ public class DefaultMaintenanceInformation extends ISOMetadata implements Mainte
      */
     @Override
     @Deprecated
-    @XmlElement(name = "updateScope")
     @Dependencies("getMaintenanceScopes")
+    @XmlElement(name = "updateScope", namespace = LegacyNamespaces.GMD)
     public final Collection<ScopeCode> getUpdateScopes() {
         if (!FilterByVersion.LEGACY_METADATA.accept()) return null;
         return new LegacyPropertyAdapter<ScopeCode,Scope>(getMaintenanceScopes()) {
@@ -399,8 +400,8 @@ public class DefaultMaintenanceInformation extends ISOMetadata implements Mainte
      */
     @Override
     @Deprecated
-    @XmlElement(name = "updateScopeDescription")
     @Dependencies("getMaintenanceScopes")
+    @XmlElement(name = "updateScopeDescription", namespace = LegacyNamespaces.GMD)
     public final Collection<ScopeDescription> getUpdateScopeDescriptions() {
         if (!FilterByVersion.LEGACY_METADATA.accept()) return null;
         return new LegacyPropertyAdapter<ScopeDescription,Scope>(getMaintenanceScopes()) {

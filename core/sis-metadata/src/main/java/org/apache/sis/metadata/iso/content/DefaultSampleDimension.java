@@ -365,7 +365,6 @@ public class DefaultSampleDimension extends DefaultRangeDimension implements Sam
      */
     @Override
     @XmlElement(name = "scaleFactor")
-    @XmlJavaTypeAdapter(GO_Real.Since2014.class)
     public Double getScaleFactor() {
         return scaleFactor;
     }
@@ -387,7 +386,6 @@ public class DefaultSampleDimension extends DefaultRangeDimension implements Sam
      */
     @Override
     @XmlElement(name = "offset")
-    @XmlJavaTypeAdapter(GO_Real.Since2014.class)
     public Double getOffset() {
         return offset;
     }
@@ -431,8 +429,7 @@ public class DefaultSampleDimension extends DefaultRangeDimension implements Sam
      */
     @Override
     @ValueRange(minimum = 1)
-    @XmlElement(name = "bitsPerValues")
-    @XmlJavaTypeAdapter(GO_Integer.Since2014.class)
+    @XmlElement(name = "bitsPerValue")
     public Integer getBitsPerValue() {
         return bitsPerValue;
     }

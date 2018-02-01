@@ -29,6 +29,7 @@ import org.opengis.metadata.distribution.Distributor;
 import org.apache.sis.internal.metadata.Dependencies;
 import org.apache.sis.internal.metadata.LegacyPropertyAdapter;
 import org.apache.sis.internal.jaxb.FilterByVersion;
+import org.apache.sis.internal.jaxb.LegacyNamespaces;
 import org.apache.sis.internal.jaxb.metadata.MD_Medium;
 import org.apache.sis.internal.jaxb.metadata.CI_Citation;
 import org.apache.sis.metadata.iso.citation.DefaultCitation;
@@ -241,8 +242,8 @@ public class DefaultFormat extends ISOMetadata implements Format {
      */
     @Override
     @Deprecated
-    @XmlElement(name = "specification")
     @Dependencies("getFormatSpecificationCitation")
+    @XmlElement(name = "specification", namespace = LegacyNamespaces.GMD)
     public InternationalString getSpecification() {
         if (FilterByVersion.LEGACY_METADATA.accept()) {
             final Citation citation = getFormatSpecificationCitation();
@@ -279,8 +280,8 @@ public class DefaultFormat extends ISOMetadata implements Format {
      */
     @Override
     @Deprecated
-    @XmlElement(name = "name", required = true)
     @Dependencies("getFormatSpecificationCitation")
+    @XmlElement(name = "name", namespace = LegacyNamespaces.GMD)
     public InternationalString getName() {
         if (FilterByVersion.LEGACY_METADATA.accept()) {
             final Citation citation = getFormatSpecificationCitation();
@@ -319,8 +320,8 @@ public class DefaultFormat extends ISOMetadata implements Format {
      */
     @Override
     @Deprecated
-    @XmlElement(name = "version", required = true)
     @Dependencies("getFormatSpecificationCitation")
+    @XmlElement(name = "version", namespace = LegacyNamespaces.GMD)
     public InternationalString getVersion() {
         if (FilterByVersion.LEGACY_METADATA.accept()) {
             final Citation citation = getFormatSpecificationCitation();

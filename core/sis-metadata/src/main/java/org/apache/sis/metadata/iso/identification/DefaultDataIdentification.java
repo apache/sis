@@ -317,7 +317,7 @@ public class DefaultDataIdentification extends AbstractIdentification implements
      * Returns the locale to marshal if the XML document is to be written
      * according the legacy ISO 19115:2003 model.
      */
-    @XmlElement(name = "language", namespace = LegacyNamespaces.GMD, required = true)
+    @XmlElement(name = "language", namespace = LegacyNamespaces.GMD)
     @XmlJavaTypeAdapter(LocaleAdapter.class)
     private Collection<Locale> getLanguage() {
         return FilterByVersion.LEGACY_METADATA.accept() ? getLanguages() : null;

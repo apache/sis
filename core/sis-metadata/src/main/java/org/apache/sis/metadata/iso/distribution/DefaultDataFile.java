@@ -16,15 +16,21 @@
  */
 package org.apache.sis.metadata.iso.distribution;
 
+import java.net.URI;
 import java.util.Collection;
+import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.bind.annotation.XmlType;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
+import org.opengis.util.LocalName;
 import org.opengis.metadata.distribution.Format;
 import org.opengis.metadata.distribution.DataFile;
-import org.opengis.util.LocalName;
 import org.apache.sis.xml.Namespaces;
 import org.apache.sis.metadata.iso.ISOMetadata;
+import org.apache.sis.internal.jaxb.FilterByVersion;
+import org.apache.sis.internal.jaxb.LegacyNamespaces;
+import org.apache.sis.internal.jaxb.gmx.MimeFileTypeAdapter;
+import org.opengis.util.InternationalString;
 
 
 /**
@@ -55,6 +61,9 @@ import org.apache.sis.metadata.iso.ISOMetadata;
  */
 @SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "MX_DataFile_Type", namespace = Namespaces.MDT, propOrder = {
+    "fileName",
+    "fileDescription",
+    "fileType",
     "featureTypes",
     "fileFormat"
 })
@@ -66,6 +75,27 @@ public class DefaultDataFile extends ISOMetadata implements DataFile {
     private static final long serialVersionUID = -4556006719009557349L;
 
     /**
+     * Name or path of the file.
+     *
+     * @since 1.0
+     */
+    private URI fileName;
+
+    /**
+     * Text description of the file.
+     *
+     * @since 1.0
+     */
+    private InternationalString fileDescription;
+
+    /**
+     * Format in which the file is encoded.
+     *
+     * @since 1.0
+     */
+    private String fileType;
+
+    /**
      * Provides the list of feature types concerned by the transfer data file. Depending on
      * the transfer choices, a data file may contain data related to one or many feature types.
      * This attribute may be omitted when the dataset is composed of a single file and/or the
@@ -75,7 +105,10 @@ public class DefaultDataFile extends ISOMetadata implements DataFile {
 
     /**
      * Defines the format of the transfer data file.
+     *
+     * @deprecated Removed in latest XSD schemas.
      */
+    @Deprecated
     private Format fileFormat;
 
     /**
@@ -98,6 +131,7 @@ public class DefaultDataFile extends ISOMetadata implements DataFile {
         if (object != null) {
             featureTypes = copyCollection(object.getFeatureTypes(), LocalName.class);
             fileFormat   = object.getFileFormat();
+            // TODO: copy other properties.
         }
     }
 
@@ -127,6 +161,82 @@ public class DefaultDataFile extends ISOMetadata implements DataFile {
     }
 
     /**
+     * Returns the name or path of the file.
+     *
+     * @return file name, or {@code null}.
+     *
+     * @see org.apache.sis.metadata.iso.identification.DefaultBrowseGraphic#getFileName()
+     * @since 1.0
+     */
+    @XmlElement(name = "fileName", required = true)
+    public URI getFileName() {
+        return fileName;
+    }
+
+    /**
+     * Sets the name or path of the file.
+     *
+     * @param  newValue  the new filename or path.
+     *
+     * @since 1.0
+     */
+    public void setFileName(final URI newValue) {
+        checkWritePermission();
+        fileName = newValue;
+    }
+
+    /**
+     * Returns the text description of the file.
+     *
+     * @return text description of the file, or {@code null}.
+     *
+     * @see org.apache.sis.metadata.iso.identification.DefaultBrowseGraphic#getFileDescription()
+     * @since 1.0
+     */
+    @XmlElement(name = "fileDescription", required = true)
+    public InternationalString getFileDescription() {
+        return fileDescription;
+    }
+
+    /**
+     * Sets the text description of the file.
+     *
+     * @param  newValue  the new file description.
+     *
+     * @since 1.0
+     */
+    public void setFileDescription(final InternationalString newValue)  {
+        checkWritePermission();
+        fileDescription = newValue;
+    }
+
+    /**
+     * Format in which the file is encoded.
+     *
+     * @return format in which the file is encoded, or {@code null}.
+     *
+     * @see org.apache.sis.metadata.iso.identification.DefaultBrowseGraphic#getFileType()
+     * @since 1.0
+     */
+    @XmlElement(name = "fileType", required = true)
+    @XmlJavaTypeAdapter(MimeFileTypeAdapter.class)
+    public String getFileType() {
+        return fileType;
+    }
+
+    /**
+     * Sets the format in which the illustration is encoded.
+     * Raster formats are encouraged to use one of the names returned by
+     * {@link javax.imageio.ImageIO#getReaderFormatNames()}.
+     *
+     * @param  newValue  the new file type.
+     */
+    public void setFileType(final String newValue)  {
+        checkWritePermission();
+        fileType = newValue;
+    }
+
+    /**
      * Returns the list of feature types concerned by the transfer data file. Depending on
      * the transfer choices, a data file may contain data related to one or many feature types.
      * This attribute may be omitted when the dataset is composed of a single file and/or the
@@ -135,7 +245,7 @@ public class DefaultDataFile extends ISOMetadata implements DataFile {
      * @return list of features types concerned by the transfer data file.
      */
     @Override
-    @XmlElement(name = "featureType")
+    @XmlElement(name = "featureTypes")
     public Collection<LocalName> getFeatureTypes() {
         return featureTypes = nonNullCollection(featureTypes, LocalName.class);
     }
@@ -153,18 +263,24 @@ public class DefaultDataFile extends ISOMetadata implements DataFile {
      * Returns the format of the transfer data file.
      *
      * @return format of the transfer data file, or {@code null}.
+     *
+     * @deprecated Removed in latest XSD schemas.
      */
     @Override
-    @XmlElement(name = "fileFormat", required = true)
+    @Deprecated
+    @XmlElement(name = "fileFormat", namespace = LegacyNamespaces.GMD)
     public Format getFileFormat() {
-        return fileFormat;
+        return FilterByVersion.LEGACY_METADATA.accept() ? fileFormat : null;
     }
 
     /**
      * Sets the format of the transfer data file.
      *
      * @param newValue  the new file format value.
+     *
+     * @deprecated Removed in latest XSD schemas.
      */
+    @Deprecated
     public void setFileFormat(final Format newValue) {
         checkWritePermission();
         fileFormat = newValue;

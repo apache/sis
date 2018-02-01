@@ -72,7 +72,6 @@ import org.apache.sis.internal.jaxb.FilterByVersion;
 import org.apache.sis.internal.jaxb.Context;
 import org.apache.sis.internal.jaxb.metadata.CI_Citation;
 import org.apache.sis.internal.jaxb.metadata.MD_Identifier;
-import org.apache.sis.xml.Namespaces;
 
 
 /**
@@ -1470,7 +1469,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      * @return the acquisition of data.
      */
     @Override
-    @XmlElement(name = "acquisitionInformation", namespace = Namespaces.GMI)
+    @XmlElement(name = "acquisitionInformation")
     public Collection<AcquisitionInformation> getAcquisitionInformation() {
         return acquisitionInformation = nonNullCollection(acquisitionInformation, AcquisitionInformation.class);
     }
