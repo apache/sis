@@ -78,7 +78,7 @@ import static org.apache.sis.internal.metadata.MetadataUtilities.toMilliseconds;
     "priority",
     "requestedDate",
     "expiryDate",
-    "satisifiedPlan"        // Really spelled that way in XSD file.
+    "satisfiedPlans"
 })
 @XmlRootElement(name = "MI_Requirement")
 public class DefaultRequirement extends ISOMetadata implements Requirement {

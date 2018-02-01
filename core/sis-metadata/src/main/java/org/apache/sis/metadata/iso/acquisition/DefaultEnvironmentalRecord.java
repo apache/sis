@@ -57,7 +57,7 @@ import static org.apache.sis.internal.metadata.MetadataUtilities.ensureInRange;
     "averageAirTemperature",
     "maxRelativeHumidity",
     "maxAltitude",
-    "meterologicalConditions"       // Really spelled that way in XSD file.
+    "meteorologicalConditions"
 })
 @XmlRootElement(name = "MI_EnvironmentalRecord")
 public class DefaultEnvironmentalRecord extends ISOMetadata implements EnvironmentalRecord {

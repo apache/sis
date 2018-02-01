@@ -218,7 +218,7 @@ public class DefaultDataIdentification extends AbstractIdentification implements
      * @return character coding standard(s) used.
      */
     @Override
-    @XmlElement(name = "characterSet")
+    @XmlElement(name = "characterSet", namespace = LegacyNamespaces.GMD)
     public Collection<Charset> getCharacterSets() {
         return characterSets = nonNullCollection(characterSets, Charset.class);
     }

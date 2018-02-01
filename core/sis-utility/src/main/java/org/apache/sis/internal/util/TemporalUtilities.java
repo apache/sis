@@ -20,6 +20,7 @@ import java.util.Date;
 import org.opengis.temporal.Instant;
 import org.opengis.temporal.Period;
 import org.opengis.temporal.TemporalFactory;
+import org.opengis.temporal.TemporalPrimitive;
 import org.apache.sis.util.Static;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.internal.system.DefaultFactories;
@@ -31,7 +32,7 @@ import org.apache.sis.internal.system.DefaultFactories;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Guilhem Legal (Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.3
  * @module
  */
@@ -98,5 +99,29 @@ public final class TemporalUtilities extends Static {
     public static Period createPeriod(final Date begin, final Date end) throws UnsupportedOperationException {
         final TemporalFactory factory = getTemporalFactory();
         return factory.createPeriod(createInstant(factory, begin), createInstant(factory, end));
+    }
+
+    /**
+     * Infers a value from the extent as a {@link Date} object.
+     * This method is used for compatibility with legacy API and may disappear in future SIS version.
+     *
+     * @param  time  the instant or period for which to get a date, or {@code null}.
+     * @return the requested time as a Java date, or {@code null} if none.
+     *
+     * @since 1.0
+     */
+    public static Date getDate(final TemporalPrimitive time) {
+        Instant instant;
+        if (time instanceof Instant) {
+            instant = (Instant) time;
+        } else if (time instanceof Period) {
+            instant = ((Period) time).getEnding();
+            if (instant == null) {
+                instant = ((Period) time).getBeginning();
+            }
+        } else {
+            return null;
+        }
+        return instant.getDate();
     }
 }
