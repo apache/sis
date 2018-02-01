@@ -42,6 +42,7 @@ import org.apache.sis.internal.jaxb.metadata.RS_ReferenceSystem;
 import org.apache.sis.internal.jaxb.metadata.MD_Resolution;
 import org.apache.sis.internal.jaxb.metadata.MD_Scope;
 import org.apache.sis.internal.jaxb.FilterByVersion;
+import org.apache.sis.internal.jaxb.LegacyNamespaces;
 import org.apache.sis.internal.metadata.Dependencies;
 import org.apache.sis.util.iso.Types;
 import org.apache.sis.xml.Namespaces;
@@ -275,8 +276,8 @@ public class DefaultSource extends ISOMetadata implements Source {
      */
     @Override
     @Deprecated
-    @XmlElement(name = "scaleDenominator")
     @Dependencies("getSourceSpatialResolution")
+    @XmlElement(name = "scaleDenominator", namespace = LegacyNamespaces.GMD)
     public RepresentativeFraction getScaleDenominator() {
         if (FilterByVersion.LEGACY_METADATA.accept()) {
             final Resolution resolution = getSourceSpatialResolution();
@@ -421,8 +422,8 @@ public class DefaultSource extends ISOMetadata implements Source {
      */
     @Override
     @Deprecated
-    @XmlElement(name = "sourceExtent")
     @Dependencies("getScope")
+    @XmlElement(name = "sourceExtent", namespace = LegacyNamespaces.GMD)
     public Collection<Extent> getSourceExtents() {
         if (FilterByVersion.LEGACY_METADATA.accept()) {
             Scope scope = getScope();

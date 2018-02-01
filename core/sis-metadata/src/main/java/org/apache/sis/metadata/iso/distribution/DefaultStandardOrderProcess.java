@@ -297,7 +297,7 @@ public class DefaultStandardOrderProcess extends ISOMetadata implements Standard
      * @see org.apache.sis.util.iso.DefaultRecord#getRecordType()
      */
     @Override
-    @XmlElement(name = "orderOptionType")
+    @XmlElement(name = "orderOptionsType")
     @XmlJavaTypeAdapter(GO_RecordType.Since2014.class)
     public RecordType getOrderOptionType() {
         return orderOptionType;

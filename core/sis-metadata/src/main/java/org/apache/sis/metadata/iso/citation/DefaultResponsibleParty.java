@@ -223,8 +223,8 @@ public class DefaultResponsibleParty extends DefaultResponsibility implements Re
      */
     @Override
     @Deprecated
-    @XmlElement(name = "individualName")
     @Dependencies("getParties")
+    @XmlElement(name = "individualName")
     public String getIndividualName() {
         final InternationalString name = getIndividual(false);
         return (name != null) ? name.toString() : null;
@@ -263,8 +263,8 @@ public class DefaultResponsibleParty extends DefaultResponsibility implements Re
      */
     @Override
     @Deprecated
-    @XmlElement(name = "organisationName")
     @Dependencies("getParties")
+    @XmlElement(name = "organisationName")
     public InternationalString getOrganisationName() {
         return getName(getParties(), Organisation.class, false);
     }
@@ -303,8 +303,8 @@ public class DefaultResponsibleParty extends DefaultResponsibility implements Re
      */
     @Override
     @Deprecated
-    @XmlElement(name = "positionName")
     @Dependencies("getParties")
+    @XmlElement(name = "positionName")
     public InternationalString getPositionName() {
         return getIndividual(true);
     }
@@ -340,8 +340,8 @@ public class DefaultResponsibleParty extends DefaultResponsibility implements Re
      */
     @Override
     @Deprecated
-    @XmlElement(name = "contactInfo")
     @Dependencies("getParties")
+    @XmlElement(name = "contactInfo")
     public Contact getContactInfo() {
         final Collection<Party> parties = getParties();
         if (parties != null) { // May be null on marshalling.

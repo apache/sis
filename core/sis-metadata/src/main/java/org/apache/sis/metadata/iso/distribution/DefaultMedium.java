@@ -238,8 +238,8 @@ public class DefaultMedium extends ISOMetadata implements Medium {
      */
     @Override
     @Deprecated
-    @XmlElement(name = "density", namespace = LegacyNamespaces.GMD)
     @Dependencies("getDensity")
+    @XmlElement(name = "density", namespace = LegacyNamespaces.GMD)
     public Collection<Double> getDensities() {
         if (!FilterByVersion.LEGACY_METADATA.accept()) return null;
         return new AbstractSet<Double>() {

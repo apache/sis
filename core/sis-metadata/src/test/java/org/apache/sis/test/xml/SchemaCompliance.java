@@ -33,6 +33,7 @@ import java.util.Arrays;
 import java.util.Objects;
 import java.util.Collections;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import javax.xml.XMLConstants;
 import javax.xml.bind.annotation.XmlNs;
 import javax.xml.bind.annotation.XmlType;
@@ -82,7 +83,22 @@ public final strictfp class SchemaCompliance {
      * Classes or properties having a JAXB annotation in this namespace should be deprecated.
      */
     private static final Set<String> DEPRECATED_NAMESPACES = Collections.unmodifiableSet(new HashSet<>(
-            Arrays.asList(LegacyNamespaces.GMD, LegacyNamespaces.GMI)));
+            Arrays.asList(LegacyNamespaces.GMD, LegacyNamespaces.GMI, LegacyNamespaces.SRV)));
+
+    /**
+     * ISO 19115-2 classes to merge with ISO 19115-1 classes. For example ISO 19115-2 defines {@code MI_Band}
+     * as an extension of ISO 19115-1 {@code MD_Band}, but GeoAPI and Apache SIS merges those two types in a
+     * single class for simplicity. Consequently when reading the schema, we rename some {@code MI_*} types
+     * as {@code MD_*} in order to store properties together.
+     */
+    private static final Map<String,String> TYPES_TO_MERGE;
+    static {
+        final Map<String,String> m = new HashMap<>();
+        m.put("MI_Band_Type",                "MD_Band_Type");
+        m.put("MI_CoverageDescription_Type", "MD_CoverageDescription_Type");
+        m.put("AbstractMX_File_Type",        "MX_DataFile_Type");
+        TYPES_TO_MERGE = Collections.unmodifiableMap(m);
+    }
 
     /**
      * The prefix of XML type names for properties. In ISO/OGC schemas, this prefix does not appear
@@ -349,12 +365,19 @@ public final strictfp class SchemaCompliance {
                  * <xs:complexType name="(…)_PropertyType">
                  */
                 case "complexType": {
-                    final String name = getMandatoryAttribute(node, "name");
+                    String name = getMandatoryAttribute(node, "name");
                     if (name.endsWith(PROPERTY_TYPE_SUFFIX)) {
                         currentPropertyType = name;
                         verifyPropertyType(node);
                         currentPropertyType = null;
                     } else {
+                        /*
+                         * In the case of "(…)_PropertyType", replace some ISO 19115-2 types by ISO 19115-1 types.
+                         * For example "MI_Band_Type" is renamed as "MD_Band_Type". We do that because we use only
+                         * one class for representing those two distincts ISO types. Note that not all ISO 19115-2
+                         * types extend an ISO 19115-1 type, so we need to apply a case-by-case approach.
+                         */
+                        name = TYPES_TO_MERGE.getOrDefault(name, name);
                         preparePropertyDefinitions(name);
                         storePropertyDefinition(node);
                         currentProperties = null;
@@ -658,7 +681,9 @@ public final strictfp class SchemaCompliance {
                         final String ns = element.namespace();
                         isDeprecated = DEPRECATED_NAMESPACES.contains(ns);
                         if (isDeprecated != method.isAnnotationPresent(Deprecated.class)) {
-                            throw new SchemaException("Unexpected deprecation status of " + className + '.' + name);
+                            if (!Modifier.isPrivate(method.getModifiers())) {
+                                throw new SchemaException("Unexpected deprecation status of " + className + '.' + name);
+                            }
                         }
                         final Info info = properties.get(name);
                         if (info == null) {

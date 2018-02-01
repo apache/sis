@@ -325,24 +325,6 @@ public class DefaultBand extends DefaultSampleDimension implements Band {
     }
 
     /**
-     * {@inheritDoc}
-     */
-    @Override
-    @ValueRange(minimum = 1)
-    @XmlElement(name = "bitsPerValue")
-    public Integer getBitsPerValue() {
-        return super.getBitsPerValue();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public void setBitsPerValue(final Integer newValue) {
-        super.setBitsPerValue(newValue);
-    }
-
-    /**
      * Returns the number of discrete numerical values in the grid data.
      *
      * @return number of discrete numerical values in the grid data, or {@code null} if none.
@@ -364,40 +346,6 @@ public class DefaultBand extends DefaultSampleDimension implements Band {
         if (ensurePositive(DefaultBand.class, "toneGradation", false, newValue)) {
             toneGradation = newValue;
         }
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    @XmlElement(name = "scaleFactor")
-    public Double getScaleFactor() {
-        return super.getScaleFactor();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public void setScaleFactor(final Double newValue) {
-        super.setScaleFactor(newValue);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    @XmlElement(name = "offset")
-    public Double getOffset() {
-        return super.getOffset();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public void setOffset(final Double newValue) {
-        super.setOffset(newValue);
     }
 
     /**
@@ -441,7 +389,7 @@ public class DefaultBand extends DefaultSampleDimension implements Band {
      * @return polarization of the radiation transmitted, or {@code null}.
      */
     @Override
-    @XmlElement(name = "transmittedPolarization")
+    @XmlElement(name = "transmittedPolarisation")
     public PolarizationOrientation getTransmittedPolarization() {
         return transmittedPolarization;
     }
@@ -462,7 +410,7 @@ public class DefaultBand extends DefaultSampleDimension implements Band {
      * @return polarization of the radiation detected, or {@code null}.
      */
     @Override
-    @XmlElement(name = "detectedPolarization")
+    @XmlElement(name = "detectedPolarisation")
     public PolarizationOrientation getDetectedPolarization() {
         return detectedPolarization;
     }

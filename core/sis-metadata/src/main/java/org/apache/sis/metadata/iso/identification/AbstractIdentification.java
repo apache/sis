@@ -47,6 +47,7 @@ import org.apache.sis.internal.metadata.Dependencies;
 import org.apache.sis.internal.metadata.LegacyPropertyAdapter;
 import org.apache.sis.internal.jaxb.metadata.MD_Identifier;
 import org.apache.sis.internal.jaxb.FilterByVersion;
+import org.apache.sis.internal.jaxb.LegacyNamespaces;
 import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.util.iso.Types;
 
@@ -773,8 +774,8 @@ public class AbstractIdentification extends ISOMetadata implements Identificatio
      */
     @Override
     @Deprecated
-    @XmlElement(name = "aggregationInfo")
     @Dependencies("getAssociatedResources")
+    @XmlElement(name = "aggregationInfo", namespace = LegacyNamespaces.GMD)
     public Collection<AggregateInformation> getAggregationInfo() {
         if (!FilterByVersion.LEGACY_METADATA.accept()) return null;
         return new LegacyPropertyAdapter<AggregateInformation,AssociatedResource>(getAssociatedResources()) {
