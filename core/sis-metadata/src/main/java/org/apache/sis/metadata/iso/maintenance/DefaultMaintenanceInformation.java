@@ -187,7 +187,7 @@ public class DefaultMaintenanceInformation extends ISOMetadata implements Mainte
      * @return frequency with which changes and additions are made to the resource, or {@code null}.
      */
     @Override
-    @XmlElement(name = "maintenanceAndUpdateFrequency", required = true)
+    @XmlElement(name = "maintenanceAndUpdateFrequency")
     public MaintenanceFrequency getMaintenanceAndUpdateFrequency() {
         return maintenanceAndUpdateFrequency;
     }
@@ -506,7 +506,7 @@ public class DefaultMaintenanceInformation extends ISOMetadata implements Mainte
      * This attribute has been added by ISO 19115:2014 standard.
      * If (and only if) marshalling an older standard version, we omit this attribute.
      */
-    @XmlElement(name = "maintenanceDate", required = true)
+    @XmlElement(name = "maintenanceDate")
     private Collection<CitationDate> getMaintenanceDate() {
         return FilterByVersion.CURRENT_METADATA.accept() ? getMaintenanceDates() : null;
     }

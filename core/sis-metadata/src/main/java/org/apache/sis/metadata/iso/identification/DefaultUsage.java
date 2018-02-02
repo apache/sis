@@ -256,7 +256,7 @@ public class DefaultUsage extends ISOMetadata implements Usage {
      * @return means of communicating with person(s) and organization(s) using the resource(s).
      */
     @Override
-    @XmlElement(name = "userContactInfo", required = true)
+    @XmlElement(name = "userContactInfo")
     public Collection<Responsibility> getUserContactInfo() {
         return userContactInfo = nonNullCollection(userContactInfo, Responsibility.class);
     }

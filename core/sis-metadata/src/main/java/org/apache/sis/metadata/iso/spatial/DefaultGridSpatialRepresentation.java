@@ -216,7 +216,7 @@ public class DefaultGridSpatialRepresentation extends AbstractSpatialRepresentat
      * @return information about spatial-temporal axis properties.
      */
     @Override
-    @XmlElement(name = "axisDimensionProperties", required = true)
+    @XmlElement(name = "axisDimensionProperties")
     public List<Dimension> getAxisDimensionProperties() {
         return axisDimensionProperties = nonNullList(axisDimensionProperties, Dimension.class);
     }

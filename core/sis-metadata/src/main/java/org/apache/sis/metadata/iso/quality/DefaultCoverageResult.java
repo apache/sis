@@ -25,7 +25,6 @@ import org.opengis.metadata.quality.CoverageResult;
 import org.opengis.metadata.distribution.DataFile;
 import org.opengis.metadata.spatial.SpatialRepresentation;
 import org.opengis.metadata.spatial.SpatialRepresentationType;
-import org.apache.sis.xml.Namespaces;
 
 
 /**
@@ -243,7 +242,7 @@ public class DefaultCoverageResult extends AbstractResult implements CoverageRes
      * @return data file containing the result coverage data, or {@code null}.
      */
     @Override
-    @XmlElement(name = "resultFile", namespace = Namespaces.GCX, required = true)
+    @XmlElement(name = "resultFile", required = true)
     public DataFile getResultFile() {
         return resultFile;
     }

@@ -189,7 +189,7 @@ public class DefaultDataQuality extends ISOMetadata implements DataQuality {
      * @return quantitative quality information for the data.
      */
     @Override
-    @XmlElement(name = "report")
+    @XmlElement(name = "report", required = true)
     public Collection<Element> getReports() {
         return reports = nonNullCollection(reports, Element.class);
     }

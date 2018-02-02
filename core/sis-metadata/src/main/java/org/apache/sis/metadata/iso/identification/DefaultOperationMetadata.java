@@ -349,7 +349,7 @@ public class DefaultOperationMetadata extends ISOMetadata implements OperationMe
      * This attribute has been added by ISO 19115:2014 standard.
      * If (and only if) marshalling an older standard version, we omit this attribute.
      */
-    @XmlElement(name = "distributedComputingPlatform")
+    @XmlElement(name = "distributedComputingPlatform", required = true)
     private Collection<DistributedComputingPlatform> getDistributedComputingPlatform() {
         return FilterByVersion.CURRENT_METADATA.accept() ? getDistributedComputingPlatforms() : null;
     }

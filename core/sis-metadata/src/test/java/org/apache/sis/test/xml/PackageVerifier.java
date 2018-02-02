@@ -47,7 +47,7 @@ final strictfp class PackageVerifier {
     /**
      * Classes or properties having a JAXB annotation in this namespace should be deprecated.
      */
-    private static final Set<String> DEPRECATED_NAMESPACES = Collections.unmodifiableSet(new HashSet<>(
+    private static final Set<String> LEGACY_NAMESPACES = Collections.unmodifiableSet(new HashSet<>(
             Arrays.asList(LegacyNamespaces.GMD, LegacyNamespaces.GMI, LegacyNamespaces.SRV)));
 
     /**
@@ -168,42 +168,61 @@ final strictfp class PackageVerifier {
         /*
          * Properties in the legacy GMD or GMI namespaces may be deprecated, depending if a replacement
          * is already available or not. However properties in other namespaces should not be deprecated.
-         * Some validations will be disabled for deprecated properties.
+         * Validation of deprecated properties is skipped because we didn't loaded their schema.
          */
-        boolean isDeprecated = DEPRECATED_NAMESPACES.contains(namespace);
-        if (!isDeprecated && type.isAnnotationPresent(Deprecated.class)) {
+        if (LEGACY_NAMESPACES.contains(namespace)) {
+            return;
+        }
+        if (type.isAnnotationPresent(Deprecated.class)) {
             throw new SchemaException("Unexpected deprecation status of " + type);
         }
+        /*
+         * Verify that class name exists, then verify its namespace (associated to the null key by convention).
+         */
         final Map<String, SchemaCompliance.Info> properties = schemas.typeDefinition(className);
         if (properties == null) {
-            if (!isDeprecated) {
-                throw new SchemaException("Unknown name declared in @XmlRootElement of " + type);
+            throw new SchemaException("Unknown name declared in @XmlRootElement of " + type);
+        }
+        final String expectedNS = properties.get(null).namespace;
+        if (!namespace.equals(expectedNS)) {
+            throw new SchemaException(className + " shall be associated to namespace " + expectedNS);
+        }
+        for (final Method method : type.getDeclaredMethods()) {
+            final XmlElement element = method.getDeclaredAnnotation(XmlElement.class);
+            if (element == null) {
+                continue;                               // No @XmlElement annotation - skip this property.
             }
-        } else {
+            final String name = element.name();
+            String ns = element.namespace();
+            if (ns.equals(AnnotationConsistencyCheck.DEFAULT)) {
+                ns = namespace;
+            }
             /*
-             * Verify the class namespace (associated to the null key by convention),
-             * then verify @XmlElement annotation on each property.
+             * We do not verify fully the properties in legacy namespaces because we didn't loaded their schemas.
+             * However we verify at least that those properties are not declared as required.
              */
-            final String expectedNS = properties.get(null).namespace;
-            if (!namespace.equals(expectedNS)) {
-                throw new SchemaException(className + " shall be associated to namespace " + expectedNS);
-            }
-            for (final Method method : type.getDeclaredMethods()) {
-                final XmlElement element = method.getDeclaredAnnotation(XmlElement.class);
-                if (element != null) {
-                    final String name = element.name();
-                    final String ns = element.namespace();
-                    isDeprecated = DEPRECATED_NAMESPACES.contains(ns);
-                    if (!isDeprecated && method.isAnnotationPresent(Deprecated.class)) {
-                        throw new SchemaException("Unexpected deprecation status of " + className + '.' + name);
-                    }
-                    final SchemaCompliance.Info info = properties.get(name);
-                    if (info == null) {
-                        if (!isDeprecated) {
-                            throw new SchemaException("Unexpected XML element " + className + '.' + name);
-                        }
-                    }
+            if (LEGACY_NAMESPACES.contains(ns)) {
+                if (element.required()) {
+                    throw new SchemaException("Legacy property " + className + '.' + name + " should not be required.");
                 }
+                continue;                               // Property in a legacy namespace - skip it.
+            }
+            /*
+             * Property in non-legacy namespaces should not be deprecated. Verify also their namespace.
+             */
+            if (method.isAnnotationPresent(Deprecated.class)) {
+                throw new SchemaException("Unexpected deprecation status of " + className + '.' + name);
+            }
+            final SchemaCompliance.Info info = properties.get(name);
+            if (info == null) {
+                throw new SchemaException("Unexpected XML element " + className + '.' + name);
+            }
+            if (info.namespace != null && !ns.equals(info.namespace)) {
+                throw new SchemaException(className + '.' + name + " is associated to namespace " + ns
+                        + " while " + info.namespace + " was expected.");
+            }
+            if (element.required() != info.isRequired) {
+                throw new SchemaException("Wrong requirement flag for " + className + '.' + name);
             }
         }
     }
