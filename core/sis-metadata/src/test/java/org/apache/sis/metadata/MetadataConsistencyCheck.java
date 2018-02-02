@@ -29,7 +29,7 @@ import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.collection.CheckedContainer;
 import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.internal.metadata.Dependencies;
-import org.apache.sis.test.AnnotationsTestCase;
+import org.apache.sis.test.xml.AnnotationConsistencyCheck;
 import org.apache.sis.test.TestUtilities;
 import org.apache.sis.test.DependsOn;
 import org.junit.Test;
@@ -39,7 +39,7 @@ import static org.opengis.test.Assert.*;
 
 /**
  * Base class for tests done on metadata objects using reflection. This base class tests JAXB annotations
- * as described in the {@linkplain AnnotationsTestCase parent class}, and tests additional aspects like:
+ * as described in the {@link AnnotationConsistencyCheck parent class}, and tests additional aspects like:
  *
  * <ul>
  *   <li>All {@link AbstractMetadata} instance shall be initially {@linkplain AbstractMetadata#isEmpty() empty}.</li>
@@ -47,13 +47,16 @@ import static org.opengis.test.Assert.*;
  *   <li>After a call to a setter method, the getter method shall return a value equals to the given value.</li>
  * </ul>
  *
+ * This base class is defined in this {@code org.apache.sis.metadata} package because it needs to access
+ * package-private classes.
+ *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.3
  * @module
  */
 @DependsOn(PropertyAccessorTest.class)
-public abstract strictfp class MetadataTestCase extends AnnotationsTestCase {
+public abstract strictfp class MetadataConsistencyCheck extends AnnotationConsistencyCheck {
     /**
      * The standard implemented by the metadata objects to test.
      */
@@ -70,7 +73,7 @@ public abstract strictfp class MetadataTestCase extends AnnotationsTestCase {
      * @param  standard  the standard implemented by the metadata objects to test.
      * @param  types     the GeoAPI interfaces, {@link CodeList} or {@link Enum} types to test.
      */
-    protected MetadataTestCase(final MetadataStandard standard, final Class<?>... types) {
+    protected MetadataConsistencyCheck(final MetadataStandard standard, final Class<?>... types) {
         super(types);
         this.standard = standard;
     }
