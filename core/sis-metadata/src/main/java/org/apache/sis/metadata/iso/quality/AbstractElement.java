@@ -43,6 +43,7 @@ import org.apache.sis.internal.jaxb.FilterByVersion;
 import org.apache.sis.internal.jaxb.LegacyNamespaces;
 import org.apache.sis.util.collection.CheckedContainer;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.xml.Namespaces;
 
 import static org.apache.sis.util.collection.Containers.isNullOrEmpty;
 
@@ -534,7 +535,7 @@ public class AbstractElement extends ISOMetadata implements Element {
      * @return date or range of dates on which a data quality measure was applied.
      */
     @Override
-    @XmlElement(name = "dateTime")
+    @XmlElement(name = "dateTime", namespace = Namespaces.DQC)
     @SuppressWarnings("ReturnOfCollectionOrArrayField")
     public Collection<Date> getDates() {
         if (Semaphores.query(Semaphores.NULL_COLLECTION)) {

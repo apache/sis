@@ -83,6 +83,7 @@ public final strictfp class SchemaCompliance {
         m.put("MI_Band_Type",                 "MD_Band_Type");
         m.put("MI_CoverageDescription_Type",  "MD_CoverageDescription_Type");
         m.put("MI_Georectified_Type",         "MD_Georectified_Type");
+        m.put("MI_Georeferenceable_Type",     "MD_Georeferenceable_Type");
         m.put("LE_ProcessStep_Type",          "LI_ProcessStep_Type");
         m.put("AbstractMX_File_Type",         "MX_DataFile_Type");
         m.put("Abstract_DataQuality_Type",    "DQ_DataQuality_Type");
@@ -206,6 +207,13 @@ public final strictfp class SchemaCompliance {
      * If non-null, this is a value ending with the {@value #PROPERTY_TYPE_SUFFIX} suffix.
      */
     private String currentPropertyType;
+
+    /**
+     * Default value for the {@code required} attribute of {@link XmlElement}. This default value should
+     * be {@code true} for properties declared inside a {@code <sequence>} element, and {@code false} for
+     * properties declared inside a {@code <choice>} element.
+     */
+    private boolean requiredByDefault;
 
     /**
      * Namespace of the type or properties being defined.
@@ -377,6 +385,7 @@ public final strictfp class SchemaCompliance {
                          * one class for representing those two distincts ISO types. Note that not all ISO 19115-2
                          * types extend an ISO 19115-1 type, so we need to apply a case-by-case approach.
                          */
+                        requiredByDefault = true;
                         name = TYPES_TO_MERGE.getOrDefault(name, name);
                         preparePropertyDefinitions(name);
                         storePropertyDefinition(node);
@@ -402,29 +411,39 @@ public final strictfp class SchemaCompliance {
      */
     private void storePropertyDefinition(final Node node) throws SchemaException {
         if (XMLConstants.W3C_XML_SCHEMA_NS_URI.equals(node.getNamespaceURI())) {
-            if ("element".equals(node.getNodeName())) {
-                boolean isRequired   = false;
-                boolean isCollection = false;
-                final NamedNodeMap attributes = node.getAttributes();
-                if (attributes != null) {
-                    Node attr = attributes.getNamedItem("minOccurs");
-                    if (attr != null) {
-                        final String value = attr.getNodeValue();
-                        if (value != null) {
-                            isRequired = Integer.parseInt(getMandatoryAttribute(node, "minOccurs")) > 0;
-                        }
-                    }
-                    attr = attributes.getNamedItem("maxOccurs");
-                    if (attr != null) {
-                        final String value = attr.getNodeValue();
-                        if (value != null) {
-                            isCollection = value.equals("unbounded") || Integer.parseInt(value) >  1;
-                        }
-                    }
+            switch (node.getNodeName()) {
+                case "sequence": {
+                    requiredByDefault = true;
+                    break;
                 }
-                addProperty(getMandatoryAttribute(node, "name").intern(),
-                       trim(getMandatoryAttribute(node, "type"), PROPERTY_TYPE_SUFFIX).intern(), isRequired, isCollection);
-                return;
+                case "choice": {
+                    requiredByDefault = false;
+                    break;
+                }
+                case "element": {
+                    boolean isRequired = requiredByDefault;
+                    boolean isCollection = false;
+                    final NamedNodeMap attributes = node.getAttributes();
+                    if (attributes != null) {
+                        Node attr = attributes.getNamedItem("minOccurs");
+                        if (attr != null) {
+                            final String value = attr.getNodeValue();
+                            if (value != null) {
+                                isRequired = Integer.parseInt(value) > 0;
+                            }
+                        }
+                        attr = attributes.getNamedItem("maxOccurs");
+                        if (attr != null) {
+                            final String value = attr.getNodeValue();
+                            if (value != null) {
+                                isCollection = value.equals("unbounded") || Integer.parseInt(value) >  1;
+                            }
+                        }
+                    }
+                    addProperty(getMandatoryAttribute(node, "name").intern(),
+                           trim(getMandatoryAttribute(node, "type"), PROPERTY_TYPE_SUFFIX).intern(), isRequired, isCollection);
+                    return;
+                }
             }
         }
         for (Node child = node.getFirstChild(); child != null; child = child.getNextSibling()) {

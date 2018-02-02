@@ -297,7 +297,7 @@ public class DefaultCitation extends ISOMetadata implements Citation {
      * @return the reference date.
      */
     @Override
-    @XmlElement(name = "date", required = true)
+    @XmlElement(name = "date")
     public Collection<CitationDate> getDates() {
         return dates = nonNullCollection(dates, CitationDate.class);
     }

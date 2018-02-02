@@ -204,7 +204,7 @@ public class DefaultQuantitativeResult extends AbstractResult implements Quantit
      * @return value unit for reporting a data quality result, or {@code null}.
      */
     @Override
-    @XmlElement(name = "valueUnit", required = true)
+    @XmlElement(name = "valueUnit")
     public Unit<?> getValueUnit()  {
         return valueUnit;
     }

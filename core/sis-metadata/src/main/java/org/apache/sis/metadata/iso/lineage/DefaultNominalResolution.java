@@ -136,7 +136,7 @@ public class DefaultNominalResolution extends ISOMetadata implements NominalReso
      */
     @Override
     @ValueRange(minimum=0, isMinIncluded=false)
-    @XmlElement(name = "scanningResolution", required = true)
+    @XmlElement(name = "scanningResolution")
     public Double getScanningResolution() {
         return scanningResolution;
     }
@@ -163,7 +163,7 @@ public class DefaultNominalResolution extends ISOMetadata implements NominalReso
      */
     @Override
     @ValueRange(minimum=0, isMinIncluded=false)
-    @XmlElement(name = "groundResolution", required = true)
+    @XmlElement(name = "groundResolution")
     public Double getGroundResolution() {
         return groundResolution;
     }

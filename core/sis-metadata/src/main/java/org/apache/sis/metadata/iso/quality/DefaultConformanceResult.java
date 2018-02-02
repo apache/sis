@@ -177,7 +177,7 @@ public class DefaultConformanceResult extends AbstractResult implements Conforma
      * @return explanation of the meaning of conformance, or {@code null}.
      */
     @Override
-    @XmlElement(name = "explanation", required = true)
+    @XmlElement(name = "explanation")
     public InternationalString getExplanation() {
         return explanation;
     }

@@ -237,7 +237,7 @@ public class DefaultOperation extends ISOMetadata implements Operation {
      * @return unique identification of the operation, or {@code null}.
      */
     @Override
-    @XmlElement(name = "identifier", required = true)
+    @XmlElement(name = "identifier")
     public Identifier getIdentifier() {
         return NonMarshalledAuthority.getMarshallable(identifiers);
     }
@@ -341,7 +341,7 @@ public class DefaultOperation extends ISOMetadata implements Operation {
      * @return heritage of the operation, or {@code null}.
      */
     @Override
-    @XmlElement(name = "parentOperation", required = true)
+    @XmlElement(name = "parentOperation")
     public Operation getParentOperation() {
         return parentOperation;
     }

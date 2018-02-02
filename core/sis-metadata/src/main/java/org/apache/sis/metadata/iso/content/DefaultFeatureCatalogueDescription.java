@@ -206,7 +206,7 @@ public class DefaultFeatureCatalogueDescription extends AbstractContentInformati
      * @return whether or not the feature catalogue is included with the resource.
      */
     @Override
-    @XmlElement(name = "includedWithDataset", required = true)
+    @XmlElement(name = "includedWithDataset")
     public boolean isIncludedWithDataset() {
         return includedWithDataset;
     }
@@ -299,7 +299,7 @@ public class DefaultFeatureCatalogueDescription extends AbstractContentInformati
      * @return bibliographic reference to one or more external feature catalogues.
      */
     @Override
-    @XmlElement(name = "featureCatalogueCitation", required = true)
+    @XmlElement(name = "featureCatalogueCitation")
     public Collection<Citation> getFeatureCatalogueCitations() {
         return featureCatalogueCitations = nonNullCollection(featureCatalogueCitations, Citation.class);
     }

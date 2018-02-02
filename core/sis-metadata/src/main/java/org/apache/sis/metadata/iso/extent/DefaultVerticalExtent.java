@@ -214,7 +214,7 @@ public class DefaultVerticalExtent extends ISOMetadata implements VerticalExtent
      * @return the vertical CRS, or {@code null}.
      */
     @Override
-    @XmlElement(name = "verticalCRS", required = true)
+    @XmlElement(name = "verticalCRS")
     public VerticalCRS getVerticalCRS() {
         return verticalCRS;
     }

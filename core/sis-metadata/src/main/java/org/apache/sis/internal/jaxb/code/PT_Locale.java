@@ -155,7 +155,7 @@ public final class PT_Locale extends XmlAdapter<PT_Locale, Locale> {
         /**
          * Gets the language code for this PT_Locale. Used in ISO 19115-3.
          */
-        @XmlElement(name = "language")
+        @XmlElement(name = "language", required = true)
         private LanguageCode getLanguage() {
             return isLegacyMetadata ? null : languageCode;
         }

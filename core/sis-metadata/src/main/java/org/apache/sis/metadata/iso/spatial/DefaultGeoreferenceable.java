@@ -26,7 +26,6 @@ import org.opengis.util.InternationalString;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.spatial.Georeferenceable;
 import org.opengis.metadata.spatial.GeolocationInformation;
-import org.apache.sis.xml.Namespaces;
 
 
 /**
@@ -290,7 +289,7 @@ public class DefaultGeoreferenceable extends DefaultGridSpatialRepresentation im
      * @return a geolocalisation of the data.
      */
     @Override
-    @XmlElement(name = "geolocationInformation", namespace = Namespaces.GMI, required = true)
+    @XmlElement(name = "geolocationInformation", required = true)
     public Collection<GeolocationInformation> getGeolocationInformation() {
         return geolocationInformation = nonNullCollection(geolocationInformation, GeolocationInformation.class);
     }
