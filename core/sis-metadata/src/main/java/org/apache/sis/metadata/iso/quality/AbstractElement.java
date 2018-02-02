@@ -39,6 +39,8 @@ import org.opengis.metadata.quality.EvaluationMethodType;
 import org.opengis.util.InternationalString;
 import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.internal.system.Semaphores;
+import org.apache.sis.internal.jaxb.FilterByVersion;
+import org.apache.sis.internal.jaxb.LegacyNamespaces;
 import org.apache.sis.util.collection.CheckedContainer;
 import org.apache.sis.util.resources.Errors;
 
@@ -64,7 +66,7 @@ import static org.apache.sis.util.collection.Containers.isNullOrEmpty;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Touraïvane (IRD)
  * @author  Guilhem Legal (Geomatys)
- * @version 0.3
+ * @version 1.0
  * @since   0.3
  * @module
  */
@@ -390,10 +392,13 @@ public class AbstractElement extends ISOMetadata implements Element {
      * Returns the name of the test applied to the data.
      *
      * @return name of the test applied to the data.
+     *
+     * @see <a href="https://issues.apache.org/jira/browse/SIS-394">Issue SIS-394</a>
      */
     @Override
-    @XmlElement(name = "nameOfMeasure")
+    @XmlElement(name = "nameOfMeasure", namespace = LegacyNamespaces.GMD)
     public Collection<InternationalString> getNamesOfMeasure() {
+        if (!FilterByVersion.LEGACY_METADATA.accept()) return null;
         return namesOfMeasure = nonNullCollection(namesOfMeasure, InternationalString.class);
     }
 
@@ -410,11 +415,13 @@ public class AbstractElement extends ISOMetadata implements Element {
      * Returns the code identifying a registered standard procedure, or {@code null} if none.
      *
      * @return code identifying a registered standard procedure, or {@code null}.
+     *
+     * @see <a href="https://issues.apache.org/jira/browse/SIS-394">Issue SIS-394</a>
      */
     @Override
-    @XmlElement(name = "measureIdentification")
+    @XmlElement(name = "measureIdentification", namespace = LegacyNamespaces.GMD)
     public Identifier getMeasureIdentification() {
-        return measureIdentification;
+        return FilterByVersion.LEGACY_METADATA.accept() ? measureIdentification : null;
     }
 
     /**
@@ -431,11 +438,13 @@ public class AbstractElement extends ISOMetadata implements Element {
      * Returns the description of the measure being determined.
      *
      * @return description of the measure being determined, or {@code null}.
+     *
+     * @see <a href="https://issues.apache.org/jira/browse/SIS-394">Issue SIS-394</a>
      */
     @Override
-    @XmlElement(name = "measureDescription")
+    @XmlElement(name = "measureDescription", namespace = LegacyNamespaces.GMD)
     public InternationalString getMeasureDescription() {
-        return measureDescription;
+        return FilterByVersion.LEGACY_METADATA.accept() ? measureDescription : null;
     }
 
     /**
@@ -452,11 +461,13 @@ public class AbstractElement extends ISOMetadata implements Element {
      * Returns the type of method used to evaluate quality of the dataset.
      *
      * @return type of method used to evaluate quality, or {@code null}.
+     *
+     * @see <a href="https://issues.apache.org/jira/browse/SIS-394">Issue SIS-394</a>
      */
     @Override
-    @XmlElement(name = "evaluationMethodType")
+    @XmlElement(name = "evaluationMethodType", namespace = LegacyNamespaces.GMD)
     public EvaluationMethodType getEvaluationMethodType() {
-        return evaluationMethodType;
+        return FilterByVersion.LEGACY_METADATA.accept() ? evaluationMethodType : null;
     }
 
     /**
@@ -473,11 +484,13 @@ public class AbstractElement extends ISOMetadata implements Element {
      * Returns the description of the evaluation method.
      *
      * @return description of the evaluation method, or {@code null}.
+     *
+     * @see <a href="https://issues.apache.org/jira/browse/SIS-394">Issue SIS-394</a>
      */
     @Override
-    @XmlElement(name = "evaluationMethodDescription")
+    @XmlElement(name = "evaluationMethodDescription", namespace = LegacyNamespaces.GMD)
     public InternationalString getEvaluationMethodDescription() {
-        return evaluationMethodDescription;
+        return FilterByVersion.LEGACY_METADATA.accept() ? evaluationMethodDescription : null;
     }
 
     /**
@@ -494,11 +507,13 @@ public class AbstractElement extends ISOMetadata implements Element {
      * Returns the reference to the procedure information, or {@code null} if none.
      *
      * @return reference to the procedure information, or {@code null}.
+     *
+     * @see <a href="https://issues.apache.org/jira/browse/SIS-394">Issue SIS-394</a>
      */
     @Override
-    @XmlElement(name = "evaluationProcedure")
+    @XmlElement(name = "evaluationProcedure", namespace = LegacyNamespaces.GMD)
     public Citation getEvaluationProcedure() {
-        return evaluationProcedure;
+        return FilterByVersion.LEGACY_METADATA.accept() ? evaluationProcedure : null;
     }
 
     /**
