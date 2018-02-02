@@ -23,7 +23,7 @@ import org.opengis.annotation.UML;
 import org.opengis.annotation.Specification;
 import org.apache.sis.internal.jaxb.Context;
 import org.apache.sis.metadata.MetadataStandard;
-import org.apache.sis.metadata.MetadataTestCase;
+import org.apache.sis.metadata.MetadataConsistencyCheck;
 import org.apache.sis.test.LoggingWatcher;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.xml.Namespaces;
@@ -37,12 +37,12 @@ import static org.junit.Assert.*;
  * Tests all known {@link ISOMetadata} subclasses for JAXB annotations and getter/setter methods.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.5
+ * @version 1.0
  * @since   0.3
  * @module
  */
 @DependsOn(org.apache.sis.metadata.PropertyAccessorTest.class)
-public final strictfp class AllMetadataTest extends MetadataTestCase {
+public final strictfp class AllMetadataTest extends MetadataConsistencyCheck {
     /**
      * A JUnit {@link Rule} for listening to log events. This field is public because JUnit requires us to
      * do so, but should be considered as an implementation details (it should have been a private field).
@@ -212,7 +212,7 @@ public final strictfp class AllMetadataTest extends MetadataTestCase {
     }
 
     /**
-     * Performs the test documented in the {@link MetadataTestCase} javadoc.
+     * Performs the test documented in the {@link MetadataConsistencyCheck} javadoc.
      */
     @Test
     @Override

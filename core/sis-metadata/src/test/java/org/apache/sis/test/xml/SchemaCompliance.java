@@ -24,21 +24,14 @@ import java.nio.file.Files;
 import java.nio.file.DirectoryStream;
 import java.nio.file.DirectoryIteratorException;
 import java.util.Map;
-import java.util.Set;
 import java.util.Deque;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.ArrayDeque;
-import java.util.Arrays;
 import java.util.Objects;
 import java.util.Collections;
-import java.lang.reflect.Method;
 import javax.xml.XMLConstants;
 import javax.xml.bind.annotation.XmlNs;
-import javax.xml.bind.annotation.XmlType;
-import javax.xml.bind.annotation.XmlSchema;
 import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import org.w3c.dom.Node;
@@ -46,7 +39,6 @@ import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
 import org.xml.sax.SAXException;
 import org.apache.sis.util.StringBuilders;
-import org.apache.sis.internal.jaxb.LegacyNamespaces;
 
 
 /**
@@ -79,12 +71,6 @@ public final strictfp class SchemaCompliance {
     private static final String SCHEMA_ROOT_DIRECTORY = "http://standards.iso.org/iso/";
 
     /**
-     * Classes or properties having a JAXB annotation in this namespace should be deprecated.
-     */
-    private static final Set<String> DEPRECATED_NAMESPACES = Collections.unmodifiableSet(new HashSet<>(
-            Arrays.asList(LegacyNamespaces.GMD, LegacyNamespaces.GMI, LegacyNamespaces.SRV)));
-
-    /**
      * ISO 19115-2 classes to merge with ISO 19115-1 classes. For example ISO 19115-2 defines {@code MI_Band}
      * as an extension of ISO 19115-1 {@code MD_Band}, but GeoAPI and Apache SIS merges those two types in a
      * single class for simplicity. Consequently when reading the schema, we rename some {@code MI_*} types
@@ -114,7 +100,7 @@ public final strictfp class SchemaCompliance {
      * The suffix of XML type names for classes.
      * This is used by convention in OGC/ISO standards (but not necessarily in other XSD).
      */
-    private static final String TYPE_SUFFIX = "_Type";
+    static final String TYPE_SUFFIX = "_Type";
 
     /**
      * The suffix of XML property type names in a given class.
@@ -167,7 +153,7 @@ public final strictfp class SchemaCompliance {
     /**
      * The type and namespace of a property or class. Used in {@link #typeDefinitions} map.
      */
-    private static final class Info {
+    static final class Info {
         final String  typeName;
         final String  namespace;
         final boolean isRequired;
@@ -230,8 +216,11 @@ public final strictfp class SchemaCompliance {
     /**
      * The namespaces associated to prefixes, as declared by JAXB {@link XmlNs} annotations.
      * Used for verifying that no prefix is defined twice for different namespaces.
+     *
+     * <p>This field is not really related to schema loading process. But we keep it in this class for
+     * {@link PackageVerifier} convenience, as a way to share a single map for all verifier instances.</p>
      */
-    private final Map<String,String> allXmlNS;
+    final Map<String,String> allXmlNS;
 
     /**
      * Creates a new verifier for classes under the given directory. The given directory shall be the
@@ -284,7 +273,7 @@ public final strictfp class SchemaCompliance {
                         StringBuilders.replace(buffer, '/', '.');
                         final Class<?> c = Class.forName(buffer.toString());
                         if (verifier == null) {
-                            verifier = new PackageVerifier(c.getPackage());
+                            verifier = new PackageVerifier(this, c.getPackage());
                         }
                         verifier.verify(c);
                     }
@@ -305,9 +294,12 @@ public final strictfp class SchemaCompliance {
      *
      * @param  location  URL to the XSD file to load.
      */
-    private void loadSchema(final String location)
+    final void loadSchema(String location)
             throws IOException, ParserConfigurationException, SAXException, SchemaException
     {
+        if (schemaRootDirectory != null && location.startsWith(SCHEMA_ROOT_DIRECTORY)) {
+            location = schemaRootDirectory.resolve(location.substring(SCHEMA_ROOT_DIRECTORY.length())).toUri().toString();
+        }
         if (!schemaLocations.contains(location)) {
             final Document doc;
             try (final InputStream in = new URL(location).openStream()) {
@@ -471,7 +463,7 @@ public final strictfp class SchemaCompliance {
      * @param  suffix  the expected suffix at the end of {@code type}.
      * @throws SchemaException if the given {@code name} and {@code type} are not compliant with expected convention.
      */
-    private static void verifyNamingConvention(final String enclosing,
+    static void verifyNamingConvention(final String enclosing,
             final String name, final String type, final String suffix) throws SchemaException
     {
         if (type.endsWith(suffix)) {
@@ -516,7 +508,7 @@ public final strictfp class SchemaCompliance {
      * @return the given name without prefix and suffix.
      * @throws SchemaException if the given name does not end with the given suffix.
      */
-    private static String trim(String name, final String suffix) throws SchemaException {
+    static String trim(String name, final String suffix) throws SchemaException {
         name = name.trim();
         if (name.endsWith(suffix)) {
             return name.substring(name.indexOf(PREFIX_SEPARATOR) + 1, name.length() - suffix.length());
@@ -543,175 +535,11 @@ public final strictfp class SchemaCompliance {
     }
 
     /**
-     * Verify JAXB annotations in a single package.
-     * A new instance of this class must be created for each Java package to be verified.
+     * Returns the type definitions for a class of the given name.
+     *
+     * @param  className  ISO identifier of a class (e.g. {@code "MD_Metadata"}).
      */
-    private final class PackageVerifier {
-        /**
-         * The package name, for reporting error.
-         */
-        private final String packageName;
-
-        /**
-         * The default namespace to use if a class does not define explicitely a namespace.
-         */
-        private final String defaultNS;
-
-        /**
-         * Whether a namespace is actually used of not.
-         * We use this map for identifying unnecessary prefix declarations.
-         */
-        private final Map<String,Boolean> namespaceIsUsed;
-
-        /**
-         * Creates a new verifier for the given package.
-         */
-        PackageVerifier(final Package pkg)
-                throws IOException, ParserConfigurationException, SAXException, SchemaException
-        {
-            namespaceIsUsed = new HashMap<>();
-            String name = "?", namespace = "";
-            if (pkg != null) {
-                name = pkg.getName();
-                final XmlSchema schema = pkg.getAnnotation(XmlSchema.class);
-                if (schema != null) {
-                    namespace = schema.namespace();
-                    String location = schema.location();
-                    if (!XmlSchema.NO_LOCATION.equals(location)) {
-                        if (location.startsWith(SCHEMA_ROOT_DIRECTORY)) {
-                            if (!location.startsWith(schema.namespace())) {
-                                throw new SchemaException("XML schema location inconsistent with namespace in package " + name);
-                            }
-                            if (schemaRootDirectory != null) {
-                                location = schemaRootDirectory.resolve(location.substring(SCHEMA_ROOT_DIRECTORY.length())).toUri().toString();
-                            }
-                        }
-                        loadSchema(location);
-                    }
-                    for (final XmlNs xmlns : schema.xmlns()) {
-                        final String pr = xmlns.prefix();
-                        final String ns = xmlns.namespaceURI();
-                        final String cr = allXmlNS.put(pr, ns);
-                        if (cr != null && !cr.equals(ns)) {
-                            throw new SchemaException("Prefix \"" + pr + "\" associated to two different namespaces:\n" + cr + '\n' + ns);
-                        }
-                        if (namespaceIsUsed.put(ns, Boolean.FALSE) != null) {
-                            throw new SchemaException("Duplicated namespace in package " + name + ":\n" + ns);
-                        }
-                    }
-                }
-            }
-            packageName = name;
-            defaultNS = namespace;
-        }
-
-        /**
-         * Verifies {@code @XmlType} and {@code @XmlRootElement} on the class. This method verifies naming convention
-         * (type name should be same as root element name with {@value #TYPE_SUFFIX} suffix appended), ensures that
-         * the name exists in the schema, and checks the namespace.
-         *
-         * @param  type  the class on which to verify annotations.
-         */
-        final void verify(final Class<?> type)
-                throws IOException, ParserConfigurationException, SAXException, SchemaException
-        {
-            final XmlType        xmlType = type.getDeclaredAnnotation(XmlType.class);
-            final XmlRootElement xmlRoot = type.getDeclaredAnnotation(XmlRootElement.class);
-            if (xmlRoot == null && xmlType == null) {
-                return;
-            }
-            /*
-             * Get the type name and namespace from the @XmlType or @XmlRootElement annotations.
-             * If both of them are present, verify that they are consistent (same namespace and
-             * same name with "_Type" suffix in @XmlType). If the type name is not declared, we
-             * assume that it is the same than the class name (this is what Apache SIS 0.8 does
-             * in its org.apache.sis.internal.jaxb.code package for CodeList adapters).
-             */
-            String namespace;
-            final String className;     // ISO class name (not the same than Java class name).
-            if (xmlRoot != null) {
-                namespace = xmlRoot.namespace();
-                className = xmlRoot.name();
-                if (xmlType != null) {
-                    if (!namespace.equals(xmlType.namespace())) {
-                        throw new SchemaException("Mismatched namespace in @XmlType and @XmlRootElement of " + type);
-                    }
-                    verifyNamingConvention(type.getName(), className, xmlType.name(), TYPE_SUFFIX);
-                }
-            } else {
-                namespace = xmlType.namespace();
-                final String name = xmlType.name();
-                className = name.equals("##default") ? type.getSimpleName() : trim(name, TYPE_SUFFIX);
-            }
-            /*
-             * Verify that the namespace declared on the class is not redundant with the namespace
-             * declared in the package. Actually redundant namespaces are not wrong, but we try to
-             * reduce code size.
-             */
-            if (namespace.equals("##default")) {
-                namespace = defaultNS;
-            } else if (namespace.equals(defaultNS)) {
-                throw new SchemaException("Redundant namespace declaration in " + type);
-            }
-            /*
-             * Verify that the namespace has a prefix associated to it in the package-info file.
-             */
-            if (namespaceIsUsed.put(namespace, Boolean.TRUE) == null) {
-                throw new SchemaException("Namespace of " + type + " has no prefix in package-info.");
-            }
-            /*
-             * Properties in the legacy GMD or GMI namespaces may be deprecated, depending if a replacement
-             * is already available or not. However properties in other namespaces should not be deprecated.
-             * Some validations will be disabled for deprecated properties.
-             */
-            boolean isDeprecated = DEPRECATED_NAMESPACES.contains(namespace);
-            if (!isDeprecated && type.isAnnotationPresent(Deprecated.class)) {
-                throw new SchemaException("Unexpected deprecation status of " + type);
-            }
-            final Map<String,Info> properties = typeDefinitions.get(className);
-            if (properties == null) {
-                if (!isDeprecated) {
-                    throw new SchemaException("Unknown name declared in @XmlRootElement of " + type);
-                }
-            } else {
-                /*
-                 * Verify the class namespace (associated to the null key by convention),
-                 * then verify @XmlElement annotation on each property.
-                 */
-                final String expectedNS = properties.get(null).namespace;
-                if (!namespace.equals(expectedNS)) {
-                    throw new SchemaException(className + " shall be associated to namespace " + expectedNS);
-                }
-                for (final Method method : type.getDeclaredMethods()) {
-                    final XmlElement element = method.getDeclaredAnnotation(XmlElement.class);
-                    if (element != null) {
-                        final String name = element.name();
-                        final String ns = element.namespace();
-                        isDeprecated = DEPRECATED_NAMESPACES.contains(ns);
-                        if (!isDeprecated && method.isAnnotationPresent(Deprecated.class)) {
-                            throw new SchemaException("Unexpected deprecation status of " + className + '.' + name);
-                        }
-                        final Info info = properties.get(name);
-                        if (info == null) {
-                            if (!isDeprecated) {
-                                throw new SchemaException("Unexpected XML element " + className + '.' + name);
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        /**
-         * Verifies if there is any unused namespace or adapters in package-info file.
-         */
-        final void reportUnused() throws SchemaException {
-            for (final Map.Entry<String,Boolean> entry : namespaceIsUsed.entrySet()) {
-                if (!entry.getValue()) {
-//                  TODO: to be enabled after we processed properties.
-//                  throw new SchemaException("Unused namespace in package " + packageName + ":\n" + entry.getKey());
-                }
-            }
-        }
+    final Map<String, SchemaCompliance.Info> typeDefinition(final String className) {
+        return typeDefinitions.get(className);
     }
 }

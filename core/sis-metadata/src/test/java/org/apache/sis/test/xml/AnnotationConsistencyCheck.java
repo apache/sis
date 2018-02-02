@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.test;
+package org.apache.sis.test.xml;
 
 import java.util.Set;
 import java.util.HashSet;
@@ -34,6 +34,8 @@ import org.opengis.annotation.Obligation;
 import org.opengis.annotation.Specification;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.xml.Namespaces;
+import org.apache.sis.test.DependsOnMethod;
+import org.apache.sis.test.TestCase;
 import org.junit.After;
 import org.junit.Test;
 
@@ -42,7 +44,7 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
 
 
 /**
- * Base class for validations of {@link UML}, {@link XmlElement} and other annotations.
+ * Verifies consistency between {@link UML}, {@link XmlElement} and other annotations.
  * Some tests performed by this class are:
  *
  * <ul>
@@ -61,17 +63,20 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
  *   <li>The {@linkplain #getWrapperFor wrapper}, if any, is consistent.</li>
  * </ul>
  *
+ * This class does not verify JAXB annotations against a XSD file.
+ * For such verification, see {@link SchemaCompliance}.
+ *
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.5
+ * @version 1.0
  * @since   0.3
  * @module
  */
-public abstract strictfp class AnnotationsTestCase extends TestCase {
+public abstract strictfp class AnnotationConsistencyCheck extends TestCase {
     /**
      * The {@value} string used in JAXB annotations for default names or namespaces.
      */
-    private static final String DEFAULT = "##default";
+    static final String DEFAULT = "##default";
 
     /**
      * The GeoAPI interfaces, {@link CodeList} or {@link Enum} types to test.
@@ -97,7 +102,7 @@ public abstract strictfp class AnnotationsTestCase extends TestCase {
      *
      * @param types The GeoAPI interfaces, {@link CodeList} or {@link Enum} types to test.
      */
-    protected AnnotationsTestCase(final Class<?>... types) {
+    protected AnnotationConsistencyCheck(final Class<?>... types) {
         this.types = types;
     }
 
@@ -153,9 +158,8 @@ public abstract strictfp class AnnotationsTestCase extends TestCase {
     protected abstract Class<?> getWrapperFor(Class<?> type) throws ClassNotFoundException;
 
     /**
-     * The value returned by {@link AnnotationsTestCase#getWrapperFor(Class)}, together with
-     * a boolean telling whether the wrapper has been found in the tested class or in one
-     * of its parent classes.
+     * The value returned by {@link #getWrapperFor(Class)}, together with a boolean telling
+     * whether the wrapper has been found in the tested class or in one of its parent classes.
      */
     private static final class WrapperClass {
         final Class<?> type;
