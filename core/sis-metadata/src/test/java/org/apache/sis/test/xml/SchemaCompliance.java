@@ -93,10 +93,14 @@ public final strictfp class SchemaCompliance {
     private static final Map<String,String> TYPES_TO_MERGE;
     static {
         final Map<String,String> m = new HashMap<>();
-        m.put("LE_ProcessStep_Type",         "LI_ProcessStep_Type");
-        m.put("MI_Band_Type",                "MD_Band_Type");
-        m.put("MI_CoverageDescription_Type", "MD_CoverageDescription_Type");
-        m.put("AbstractMX_File_Type",        "MX_DataFile_Type");
+        // ………Merge what…………………………………………………………Into……………………………………………
+        m.put("MI_Band_Type",                 "MD_Band_Type");
+        m.put("MI_CoverageDescription_Type",  "MD_CoverageDescription_Type");
+        m.put("MI_Georectified_Type",         "MD_Georectified_Type");
+        m.put("LE_ProcessStep_Type",          "LI_ProcessStep_Type");
+        m.put("AbstractMX_File_Type",         "MX_DataFile_Type");
+        m.put("Abstract_DataQuality_Type",    "DQ_DataQuality_Type");
+        m.put("Abstract_QualityElement_Type", "AbstractDQ_Element_Type");
         TYPES_TO_MERGE = Collections.unmodifiableMap(m);
     }
 
@@ -349,7 +353,11 @@ public final strictfp class SchemaCompliance {
                     final String name = getMandatoryAttribute(node, "name");
                     final String type = getMandatoryAttribute(node, "type");
                     if (CODELIST_TYPE.equals(type)) {
-                        if (typeDefinitions.put(name, Collections.singletonMap(null, new Info(null, targetNamespace, false, false))) != null) {
+                        final Map<String,Info> properties = new HashMap<>(4);
+                        final Info info = new Info(null, targetNamespace, false, false);
+                        properties.put(null, info);     // Remember namespace of the code list.
+                        properties.put(name, info);     // Pseudo-property used in our CodeList adapters.
+                        if (typeDefinitions.put(name, properties) != null) {
                             throw new SchemaException("Code list " + name + " defined twice.");
                         }
                     } else {
