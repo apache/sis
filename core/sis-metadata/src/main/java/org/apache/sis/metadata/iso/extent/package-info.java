@@ -140,9 +140,11 @@
  * @since   0.3
  * @module
  */
-@XmlSchema(location=Schemas.METADATA_XSD_EXTENT, elementFormDefault=XmlNsForm.QUALIFIED, namespace=Namespaces.GEX, xmlns = {
-    @XmlNs(prefix = "gex", namespaceURI = Namespaces.GEX),      // Geospatial Extent
-    @XmlNs(prefix = "mcc", namespaceURI = Namespaces.MCC)       // Metadata Common Classes
+@XmlSchema(location="http://standards.iso.org/iso/19115/-3/gex/1.0/gex.xsd",
+           elementFormDefault=XmlNsForm.QUALIFIED, namespace=Namespaces.GEX,
+           xmlns = {
+                @XmlNs(prefix = "gex", namespaceURI = Namespaces.GEX),      // Geospatial Extent
+                @XmlNs(prefix = "mcc", namespaceURI = Namespaces.MCC)       // Metadata Common Classes
 })
 @XmlAccessorType(XmlAccessType.NONE)
 @XmlJavaTypeAdapters({
@@ -171,7 +173,6 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapters;
 
 import org.apache.sis.xml.Namespaces;
-import org.apache.sis.internal.jaxb.Schemas;
 import org.apache.sis.internal.jaxb.gco.*;
 import org.apache.sis.internal.jaxb.gml.*;
 import org.apache.sis.internal.jaxb.metadata.*;

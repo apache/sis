@@ -86,15 +86,17 @@
  * @since   0.3
  * @module
  */
-@XmlSchema(location = Schemas.METADATA_XSD_BASE, elementFormDefault = XmlNsForm.QUALIFIED, namespace = Namespaces.MDB, xmlns = {
-    @XmlNs(prefix = "mdb", namespaceURI = Namespaces.MDB),      // Metadata Base
-    @XmlNs(prefix = "mpc", namespaceURI = Namespaces.MPC),      // Metadata for Portrayal Catalog
-    @XmlNs(prefix = "mas", namespaceURI = Namespaces.MAS),      // Metadata for Application Schema
-    @XmlNs(prefix = "mex", namespaceURI = Namespaces.MEX),      // Metadata with Schema Extensions
-    @XmlNs(prefix = "lan", namespaceURI = Namespaces.LAN),      // Language localization
-    @XmlNs(prefix = "mcc", namespaceURI = Namespaces.MCC),      // Metadata Common Classes
-    @XmlNs(prefix = "dqc", namespaceURI = Namespaces.DQC),      // Data Quality Common Classes
-    @XmlNs(prefix = "gmd", namespaceURI = LegacyNamespaces.GMD)
+@XmlSchema(location="http://standards.iso.org/iso/19115/-3/mdb/1.0/mdb.xsd",
+           elementFormDefault=XmlNsForm.QUALIFIED, namespace=Namespaces.MDB,
+           xmlns = {
+                @XmlNs(prefix = "mdb", namespaceURI = Namespaces.MDB),      // Metadata Base
+                @XmlNs(prefix = "mpc", namespaceURI = Namespaces.MPC),      // Metadata for Portrayal Catalog
+                @XmlNs(prefix = "mas", namespaceURI = Namespaces.MAS),      // Metadata for Application Schema
+                @XmlNs(prefix = "mex", namespaceURI = Namespaces.MEX),      // Metadata with Schema Extensions
+                @XmlNs(prefix = "lan", namespaceURI = Namespaces.LAN),      // Language localization
+                @XmlNs(prefix = "mcc", namespaceURI = Namespaces.MCC),      // Metadata Common Classes
+                @XmlNs(prefix = "dqc", namespaceURI = Namespaces.DQC),      // Data Quality Common Classes
+                @XmlNs(prefix = "gmd", namespaceURI = LegacyNamespaces.GMD)
 })
 @XmlAccessorType(XmlAccessType.NONE)
 @XmlJavaTypeAdapters({
@@ -143,7 +145,6 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapters;
 import org.apache.sis.xml.Namespaces;
 import org.apache.sis.internal.jaxb.LegacyNamespaces;
-import org.apache.sis.internal.jaxb.Schemas;
 import org.apache.sis.internal.jaxb.gco.*;
 import org.apache.sis.internal.jaxb.code.*;
 import org.apache.sis.internal.jaxb.metadata.*;

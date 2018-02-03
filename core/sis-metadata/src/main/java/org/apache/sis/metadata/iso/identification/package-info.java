@@ -100,13 +100,15 @@
  * @since   0.3
  * @module
  */
-@XmlSchema(location=Schemas.METADATA_XSD_IDENTIFICATION, elementFormDefault=XmlNsForm.QUALIFIED, namespace=Namespaces.MRI, xmlns = {
-    @XmlNs(prefix = "mri",  namespaceURI = Namespaces.MRI),        // Metadata for Resource Identification
-    @XmlNs(prefix = "srv",  namespaceURI = Namespaces.SRV),        // Metadata for Services 2.0
-    @XmlNs(prefix = "lan",  namespaceURI = Namespaces.LAN),        // Language localization
-    @XmlNs(prefix = "mcc",  namespaceURI = Namespaces.MCC),        // Metadata Common Classes
-    @XmlNs(prefix = "gmd",  namespaceURI = LegacyNamespaces.GMD),  // Metadata ISO 19139:2007
-    @XmlNs(prefix = "srv1", namespaceURI = LegacyNamespaces.SRV)   // Metadata for Services 1.0
+@XmlSchema(location="http://standards.iso.org/iso/19115/-3/mri/1.0/mri.xsd",
+           elementFormDefault=XmlNsForm.QUALIFIED, namespace=Namespaces.MRI,
+           xmlns = {
+                @XmlNs(prefix = "mri",  namespaceURI = Namespaces.MRI),        // Metadata for Resource Identification
+                @XmlNs(prefix = "srv",  namespaceURI = Namespaces.SRV),        // Metadata for Services 2.0
+                @XmlNs(prefix = "lan",  namespaceURI = Namespaces.LAN),        // Language localization
+                @XmlNs(prefix = "mcc",  namespaceURI = Namespaces.MCC),        // Metadata Common Classes
+                @XmlNs(prefix = "gmd",  namespaceURI = LegacyNamespaces.GMD),  // Metadata ISO 19139:2007
+                @XmlNs(prefix = "srv1", namespaceURI = LegacyNamespaces.SRV)   // Metadata for Services 1.0
 })
 @XmlAccessorType(XmlAccessType.NONE)
 @XmlJavaTypeAdapters({
@@ -164,7 +166,6 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapters;
 import org.apache.sis.xml.Namespaces;
 import org.apache.sis.internal.jaxb.LegacyNamespaces;
-import org.apache.sis.internal.jaxb.Schemas;
 import org.apache.sis.internal.jaxb.gco.*;
 import org.apache.sis.internal.jaxb.gts.*;
 import org.apache.sis.internal.jaxb.code.*;

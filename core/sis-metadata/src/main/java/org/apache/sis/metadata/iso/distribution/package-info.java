@@ -74,11 +74,13 @@
  * @since   0.3
  * @module
  */
-@XmlSchema(location=Schemas.METADATA_XSD_DISTRIBUTION, elementFormDefault=XmlNsForm.QUALIFIED, namespace=Namespaces.MRD, xmlns = {
-    @XmlNs(prefix = "mrd", namespaceURI = Namespaces.MRD),      // Metadata for Resource Distribution
-    @XmlNs(prefix = "mdt", namespaceURI = Namespaces.MDT),      // Metadata for Data Transfer
-    @XmlNs(prefix = "mcc", namespaceURI = Namespaces.MCC),      // Metadata Common Classes
-    @XmlNs(prefix = "gmd", namespaceURI = LegacyNamespaces.GMD)
+@XmlSchema(location="http://standards.iso.org/iso/19115/-3/mrd/1.0/mrd.xsd",
+           elementFormDefault=XmlNsForm.QUALIFIED, namespace=Namespaces.MRD,
+           xmlns = {
+                @XmlNs(prefix = "mrd", namespaceURI = Namespaces.MRD),      // Metadata for Resource Distribution
+                @XmlNs(prefix = "mdt", namespaceURI = Namespaces.MDT),      // Metadata for Data Transfer
+                @XmlNs(prefix = "mcc", namespaceURI = Namespaces.MCC),      // Metadata Common Classes
+                @XmlNs(prefix = "gmd", namespaceURI = LegacyNamespaces.GMD)
 })
 @XmlAccessorType(XmlAccessType.NONE)
 @XmlJavaTypeAdapters({
@@ -111,7 +113,6 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapters;
 import org.apache.sis.xml.Namespaces;
 import org.apache.sis.internal.jaxb.LegacyNamespaces;
-import org.apache.sis.internal.jaxb.Schemas;
 import org.apache.sis.internal.jaxb.gco.*;
 import org.apache.sis.internal.jaxb.code.*;
 import org.apache.sis.internal.jaxb.metadata.*;

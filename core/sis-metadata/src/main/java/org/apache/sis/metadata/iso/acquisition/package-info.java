@@ -91,9 +91,11 @@
  * @since   0.3
  * @module
  */
-@XmlSchema(location=Schemas.METADATA_XSD_ACQUISITION, elementFormDefault=XmlNsForm.QUALIFIED, namespace=Namespaces.MAC, xmlns = {
-    @XmlNs(prefix = "mac", namespaceURI = Namespaces.MAC),      // Metadata for Acquisition
-    @XmlNs(prefix = "mcc", namespaceURI = Namespaces.MCC)       // Metadata Common Classes
+@XmlSchema(location="http://standards.iso.org/iso/19115/-3/mac/1.0/mac.xsd",
+           elementFormDefault=XmlNsForm.QUALIFIED, namespace=Namespaces.MAC,
+           xmlns = {
+                @XmlNs(prefix = "mac", namespaceURI = Namespaces.MAC),      // Metadata for Acquisition
+                @XmlNs(prefix = "mcc", namespaceURI = Namespaces.MCC)       // Metadata Common Classes
 })
 @XmlAccessorType(XmlAccessType.NONE)
 @XmlJavaTypeAdapters({
@@ -136,7 +138,6 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapters;
 import org.apache.sis.xml.Namespaces;
-import org.apache.sis.internal.jaxb.Schemas;
 import org.apache.sis.internal.jaxb.gco.*;
 import org.apache.sis.internal.jaxb.code.*;
 import org.apache.sis.internal.jaxb.metadata.*;

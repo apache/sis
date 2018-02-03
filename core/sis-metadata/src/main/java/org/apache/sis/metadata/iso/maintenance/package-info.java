@@ -67,10 +67,12 @@
  * @since   0.3
  * @module
  */
-@XmlSchema(location=Schemas.METADATA_XSD_MAINTENANCE, elementFormDefault=XmlNsForm.QUALIFIED, namespace=Namespaces.MMI, xmlns = {
-    @XmlNs(prefix = "mmi", namespaceURI = Namespaces.MMI),      // Metadata for Maintenance Information
-    @XmlNs(prefix = "mcc", namespaceURI = Namespaces.MCC),      // Metadata Common Classes
-    @XmlNs(prefix = "gmd", namespaceURI = LegacyNamespaces.GMD)
+@XmlSchema(location="http://standards.iso.org/iso/19115/-3/mmi/1.0/mmi.xsd",
+           elementFormDefault=XmlNsForm.QUALIFIED, namespace=Namespaces.MMI,
+           xmlns = {
+                @XmlNs(prefix = "mmi", namespaceURI = Namespaces.MMI),      // Metadata for Maintenance Information
+                @XmlNs(prefix = "mcc", namespaceURI = Namespaces.MCC),      // Metadata Common Classes
+                @XmlNs(prefix = "gmd", namespaceURI = LegacyNamespaces.GMD)
 })
 @XmlAccessorType(XmlAccessType.NONE)
 @XmlJavaTypeAdapters({
@@ -102,7 +104,6 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapters;
 
 import org.apache.sis.xml.Namespaces;
 import org.apache.sis.internal.jaxb.LegacyNamespaces;
-import org.apache.sis.internal.jaxb.Schemas;
 import org.apache.sis.internal.jaxb.gco.*;
 import org.apache.sis.internal.jaxb.code.*;
 import org.apache.sis.internal.jaxb.gts.TM_PeriodDuration;

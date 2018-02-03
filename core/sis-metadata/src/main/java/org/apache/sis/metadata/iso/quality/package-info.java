@@ -114,13 +114,15 @@
  * @since   0.3
  * @module
  */
-@XmlSchema(location=Schemas.METADATA_XSD_QUALITY, elementFormDefault=XmlNsForm.QUALIFIED, namespace=Namespaces.MDQ, xmlns = {
-    @XmlNs(prefix = "mdq", namespaceURI = Namespaces.MDQ),      // Metadata for Data Quality
-    @XmlNs(prefix = "mrd", namespaceURI = Namespaces.MRD),      // Metadata for Resource Distribution
-    @XmlNs(prefix = "dqc", namespaceURI = Namespaces.DQC),      // Data Quality Common Classes
-    @XmlNs(prefix = "mcc", namespaceURI = Namespaces.MCC),      // Metadata Common Classes
-    @XmlNs(prefix = "gmd", namespaceURI = LegacyNamespaces.GMD),
-    @XmlNs(prefix = "gmi", namespaceURI = LegacyNamespaces.GMI)
+@XmlSchema(location="http://standards.iso.org/iso/19157/-2/mdq/1.0/mdq.xsd",
+           elementFormDefault=XmlNsForm.QUALIFIED, namespace=Namespaces.MDQ,
+           xmlns = {
+                @XmlNs(prefix = "mdq", namespaceURI = Namespaces.MDQ),      // Metadata for Data Quality
+                @XmlNs(prefix = "mrd", namespaceURI = Namespaces.MRD),      // Metadata for Resource Distribution
+                @XmlNs(prefix = "dqc", namespaceURI = Namespaces.DQC),      // Data Quality Common Classes
+                @XmlNs(prefix = "mcc", namespaceURI = Namespaces.MCC),      // Metadata Common Classes
+                @XmlNs(prefix = "gmd", namespaceURI = LegacyNamespaces.GMD),
+                @XmlNs(prefix = "gmi", namespaceURI = LegacyNamespaces.GMI)
 })
 @XmlAccessorType(XmlAccessType.NONE)
 @XmlJavaTypeAdapters({
@@ -160,7 +162,6 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapters;
 import org.apache.sis.xml.Namespaces;
 import org.apache.sis.internal.jaxb.LegacyNamespaces;
-import org.apache.sis.internal.jaxb.Schemas;
 import org.apache.sis.internal.jaxb.gco.*;
 import org.apache.sis.internal.jaxb.code.*;
 import org.apache.sis.internal.jaxb.metadata.*;
