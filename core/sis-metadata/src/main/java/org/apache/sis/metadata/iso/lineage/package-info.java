@@ -73,10 +73,8 @@
 @XmlSchema(location=Schemas.METADATA_XSD_LINEAGE, elementFormDefault=XmlNsForm.QUALIFIED, namespace=Namespaces.MRL, xmlns = {
     @XmlNs(prefix = "mrl", namespaceURI = Namespaces.MRL),      // Metadata for Resource Lineage
     @XmlNs(prefix = "mcc", namespaceURI = Namespaces.MCC),      // Metadata Common Classes
-    @XmlNs(prefix = "gmw", namespaceURI = Namespaces.GMW),      // Geographic Markup Wrappers
-    @XmlNs(prefix = "gco", namespaceURI = Namespaces.GCO),      // Geographic Common
-    @XmlNs(prefix = "gcx", namespaceURI = Namespaces.GCX),      // Geospatial Common eXtension
-    @XmlNs(prefix = "xsi", namespaceURI = Namespaces.XSI),      // XML schema instance
+    @XmlNs(prefix = "gmd", namespaceURI = LegacyNamespaces.GMD),
+    @XmlNs(prefix = "gmi", namespaceURI = LegacyNamespaces.GMI)
 })
 @XmlAccessorType(XmlAccessType.NONE)
 @XmlJavaTypeAdapters({
@@ -107,6 +105,7 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapters;
 
 import org.apache.sis.xml.Namespaces;
+import org.apache.sis.internal.jaxb.LegacyNamespaces;
 import org.apache.sis.internal.jaxb.Schemas;
 import org.apache.sis.internal.jaxb.gco.*;
 import org.apache.sis.internal.jaxb.metadata.*;

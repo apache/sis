@@ -18,6 +18,7 @@ package org.apache.sis.internal.jaxb.metadata.replace;
 
 import java.util.Objects;
 import javax.xml.bind.Marshaller;
+import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
@@ -29,6 +30,7 @@ import org.apache.sis.internal.simple.SimpleIdentifiedObject;
 import org.apache.sis.internal.jaxb.FilterByVersion;
 import org.apache.sis.internal.jaxb.LegacyNamespaces;
 import org.apache.sis.util.ComparisonMode;
+import org.apache.sis.xml.Namespaces;
 
 
 /**
@@ -51,7 +53,8 @@ import org.apache.sis.util.ComparisonMode;
  * @since 0.3
  * @module
  */
-@XmlRootElement(name = "MD_ReferenceSystem")
+@XmlType(name = "MD_ReferenceSystem_Type", namespace = Namespaces.MRS)
+@XmlRootElement(name = "MD_ReferenceSystem", namespace = Namespaces.MRS)
 public class ReferenceSystemMetadata extends SimpleIdentifiedObject implements ReferenceSystem {
     /**
      * For cross-version compatibility.

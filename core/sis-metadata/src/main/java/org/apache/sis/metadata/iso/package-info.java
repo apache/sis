@@ -91,11 +91,9 @@
     @XmlNs(prefix = "mpc", namespaceURI = Namespaces.MPC),      // Metadata for Portrayal Catalog
     @XmlNs(prefix = "mas", namespaceURI = Namespaces.MAS),      // Metadata for Application Schema
     @XmlNs(prefix = "mex", namespaceURI = Namespaces.MEX),      // Metadata with Schema Extensions
-    @XmlNs(prefix = "cit", namespaceURI = Namespaces.CIT),      // Citation and responsible party information
     @XmlNs(prefix = "lan", namespaceURI = Namespaces.LAN),      // Language localization
     @XmlNs(prefix = "mcc", namespaceURI = Namespaces.MCC),      // Metadata Common Classes
-    @XmlNs(prefix = "gco", namespaceURI = Namespaces.GCO),      // Geographic Common
-    @XmlNs(prefix = "xsi", namespaceURI = Namespaces.XSI),      // XML schema instance
+    @XmlNs(prefix = "dqc", namespaceURI = Namespaces.DQC),      // Data Quality Common Classes
     @XmlNs(prefix = "gmd", namespaceURI = LegacyNamespaces.GMD)
 })
 @XmlAccessorType(XmlAccessType.NONE)

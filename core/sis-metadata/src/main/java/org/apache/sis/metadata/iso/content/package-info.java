@@ -88,12 +88,8 @@
 @XmlSchema(location=Schemas.METADATA_XSD_CONTENT, elementFormDefault=XmlNsForm.QUALIFIED, namespace=Namespaces.MRC, xmlns = {
     @XmlNs(prefix = "mrc", namespaceURI = Namespaces.MRC),      // Metadata for Resource Content
     @XmlNs(prefix = "lan", namespaceURI = Namespaces.LAN),      // Language localization
-    @XmlNs(prefix = "fcc", namespaceURI = Namespaces.FCC),      // Feature Catalog Common
     @XmlNs(prefix = "mcc", namespaceURI = Namespaces.MCC),      // Metadata Common Classes
-    @XmlNs(prefix = "gco", namespaceURI = Namespaces.GCO),      // Geographic Common
-    @XmlNs(prefix = "xsi", namespaceURI = Namespaces.XSI),      // XML schema instance
-    @XmlNs(prefix = "gmd", namespaceURI = LegacyNamespaces.GMD),
-    @XmlNs(prefix = "gmi", namespaceURI = LegacyNamespaces.GMI)
+    @XmlNs(prefix = "gmd", namespaceURI = LegacyNamespaces.GMD)
 })
 @XmlAccessorType(XmlAccessType.NONE)
 @XmlJavaTypeAdapters({

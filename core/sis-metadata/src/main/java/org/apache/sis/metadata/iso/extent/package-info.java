@@ -142,11 +142,7 @@
  */
 @XmlSchema(location=Schemas.METADATA_XSD_EXTENT, elementFormDefault=XmlNsForm.QUALIFIED, namespace=Namespaces.GEX, xmlns = {
     @XmlNs(prefix = "gex", namespaceURI = Namespaces.GEX),      // Geospatial Extent
-    @XmlNs(prefix = "rce", namespaceURI = Namespaces.RCE),      // Referencing By Coordinates Common
-    @XmlNs(prefix = "mcc", namespaceURI = Namespaces.MCC),      // Metadata Common Classes
-    @XmlNs(prefix = "gmw", namespaceURI = Namespaces.GMW),      // Geographic Markup Wrappers
-    @XmlNs(prefix = "gco", namespaceURI = Namespaces.GCO),      // Geographic Common
-    @XmlNs(prefix = "xsi", namespaceURI = Namespaces.XSI),      // XML schema instance
+    @XmlNs(prefix = "mcc", namespaceURI = Namespaces.MCC)       // Metadata Common Classes
 })
 @XmlAccessorType(XmlAccessType.NONE)
 @XmlJavaTypeAdapters({

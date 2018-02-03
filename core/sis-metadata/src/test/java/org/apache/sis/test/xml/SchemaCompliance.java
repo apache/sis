@@ -256,7 +256,7 @@ public final strictfp class SchemaCompliance {
      * The given directory must be a sub-directory of the root directory given at construction time.
      * This method will invoke itself for scanning sub-directories.
      *
-     * @param  directory  the directory to scan for classes.
+     * @param  directory  the directory to scan for classes, relative to class root directory.
      * @throws IOException if an error occurred while reading files or schemas.
      * @throws ClassNotFoundException if an error occurred while loading a {@code "*.class"} file.
      * @throws ParserConfigurationException if {@link javax.xml.parsers.DocumentBuilder} can not be created.
@@ -268,7 +268,7 @@ public final strictfp class SchemaCompliance {
             throws IOException, ClassNotFoundException, ParserConfigurationException, SAXException, SchemaException
     {
         PackageVerifier verifier = null;
-        try (DirectoryStream<Path> stream = Files.newDirectoryStream(directory)) {
+        try (DirectoryStream<Path> stream = Files.newDirectoryStream(classRootDirectory.resolve(directory))) {
             for (Path path : stream) {
                 final String filename = path.getFileName().toString();
                 if (!filename.startsWith(".")) {
@@ -358,7 +358,7 @@ public final strictfp class SchemaCompliance {
                         properties.put(null, info);     // Remember namespace of the code list.
                         properties.put(name, info);     // Pseudo-property used in our CodeList adapters.
                         if (typeDefinitions.put(name, properties) != null) {
-                            throw new SchemaException("Code list " + name + " defined twice.");
+                            throw new SchemaException(String.format("Code list \"%s\" is defined twice.", name));
                         }
                     } else {
                         verifyNamingConvention(schemaLocations.getLast(), name, type, TYPE_SUFFIX);
@@ -477,9 +477,10 @@ public final strictfp class SchemaCompliance {
      * Verifies that the relationship between the name of the given entity and its type are consistent with
      * OGC/ISO conventions. This method ignore the prefix (e.g. {@code "mdb:"} in {@code "mdb:MD_Metadata"}).
      *
-     * @param  name    the class or property name. Example: {@code "MD_Metadata"}, {@code "citation"}.
-     * @param  type    the type of the above named object. Example: {@code "MD_Metadata_Type"}, {@code "CI_Citation_PropertyType"}.
-     * @param  suffix  the expected suffix at the end of {@code type}.
+     * @param  enclosing  schema or other container where the error happened.
+     * @param  name       the class or property name. Example: {@code "MD_Metadata"}, {@code "citation"}.
+     * @param  type       the type of the above named object. Example: {@code "MD_Metadata_Type"}, {@code "CI_Citation_PropertyType"}.
+     * @param  suffix     the expected suffix at the end of {@code type}.
      * @throws SchemaException if the given {@code name} and {@code type} are not compliant with expected convention.
      */
     static void verifyNamingConvention(final String enclosing,
@@ -498,9 +499,9 @@ public final strictfp class SchemaCompliance {
                 return;
             }
         }
-        throw new SchemaException("Error in " + enclosing + ":\n"
-                + "The type name should be the name with \"" + suffix + "\" suffix, "
-                + "but found name=\"" + name + "\" and type=\"" + type + "\">.");
+        throw new SchemaException(String.format("Error in %s:%n" +
+                "The type name should be the name with \"%s\" suffix, but found name=\"%s\" and type=\"%s\">.",
+                enclosing, suffix, name, type));
     }
 
     /**
@@ -511,9 +512,9 @@ public final strictfp class SchemaCompliance {
         final Info info = new Info(type, targetNamespace, isRequired, isCollection);
         final Info old = currentProperties.put(name, info);
         if (old != null && !old.equal(info)) {
-            throw new SchemaException("Error while parsing " + schemaLocations.getLast() + ":\n"
-                    + "Property \"" + name + "\" is associated to type \"" + type + "\", but that "
-                    + "property was already associated to \"" + old + "\".");
+            throw new SchemaException(String.format("Error while parsing %s:%n" +
+                    "Property \"%s\" is associated to type \"%s\", but that property was already associated to \"%s\".",
+                    schemaLocations.getLast(), name, type, old));
         }
     }
 
@@ -532,7 +533,7 @@ public final strictfp class SchemaCompliance {
         if (name.endsWith(suffix)) {
             return name.substring(name.indexOf(PREFIX_SEPARATOR) + 1, name.length() - suffix.length());
         }
-        throw new SchemaException("Expected a name ending with \"" + suffix + "\" but got \"" + name + "\".");
+        throw new SchemaException(String.format("Expected a name ending with \"%s\" but got \"%s\".", suffix, name));
     }
 
     /**
@@ -550,7 +551,7 @@ public final strictfp class SchemaCompliance {
                 }
             }
         }
-        throw new SchemaException("Node " + node.getNodeName() + " should have a '" + name + "' attribute.");
+        throw new SchemaException(String.format("Node \"%s\" should have a '%s' attribute.", node.getNodeName(), name));
     }
 
     /**

@@ -101,15 +101,12 @@
  * @module
  */
 @XmlSchema(location=Schemas.METADATA_XSD_IDENTIFICATION, elementFormDefault=XmlNsForm.QUALIFIED, namespace=Namespaces.MRI, xmlns = {
-    @XmlNs(prefix = "mri", namespaceURI = Namespaces.MRI),      // Metadata for Resource Identification
-    @XmlNs(prefix = "srv", namespaceURI = Namespaces.SRV),      // Metadata for Services
-    @XmlNs(prefix = "cit", namespaceURI = Namespaces.CIT),      // Citation and responsible party information
-    @XmlNs(prefix = "lan", namespaceURI = Namespaces.LAN),      // Language localization
-    @XmlNs(prefix = "mcc", namespaceURI = Namespaces.MCC),      // Metadata Common Classes
-    @XmlNs(prefix = "gco", namespaceURI = Namespaces.GCO),      // Geographic Common
-    @XmlNs(prefix = "gmw", namespaceURI = Namespaces.GMW),      // Geographic Markup Wrappers
-    @XmlNs(prefix = "xsi", namespaceURI = Namespaces.XSI),      // XML schema instance
-    @XmlNs(prefix = "gmd", namespaceURI = LegacyNamespaces.GMD)
+    @XmlNs(prefix = "mri",  namespaceURI = Namespaces.MRI),        // Metadata for Resource Identification
+    @XmlNs(prefix = "srv",  namespaceURI = Namespaces.SRV),        // Metadata for Services 2.0
+    @XmlNs(prefix = "lan",  namespaceURI = Namespaces.LAN),        // Language localization
+    @XmlNs(prefix = "mcc",  namespaceURI = Namespaces.MCC),        // Metadata Common Classes
+    @XmlNs(prefix = "gmd",  namespaceURI = LegacyNamespaces.GMD),  // Metadata ISO 19139:2007
+    @XmlNs(prefix = "srv1", namespaceURI = LegacyNamespaces.SRV)   // Metadata for Services 1.0
 })
 @XmlAccessorType(XmlAccessType.NONE)
 @XmlJavaTypeAdapters({
