@@ -93,10 +93,7 @@
  */
 @XmlSchema(location=Schemas.METADATA_XSD_ACQUISITION, elementFormDefault=XmlNsForm.QUALIFIED, namespace=Namespaces.MAC, xmlns = {
     @XmlNs(prefix = "mac", namespaceURI = Namespaces.MAC),      // Metadata for Acquisition
-    @XmlNs(prefix = "gmw", namespaceURI = Namespaces.GMW),      // Geographic Markup Wrappers
-    @XmlNs(prefix = "mcc", namespaceURI = Namespaces.MCC),      // Metadata Common Classes
-    @XmlNs(prefix = "gco", namespaceURI = Namespaces.GCO),      // Geographic Common
-    @XmlNs(prefix = "xsi", namespaceURI = Namespaces.XSI)       // XML schema instance
+    @XmlNs(prefix = "mcc", namespaceURI = Namespaces.MCC)       // Metadata Common Classes
 })
 @XmlAccessorType(XmlAccessType.NONE)
 @XmlJavaTypeAdapters({

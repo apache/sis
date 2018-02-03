@@ -34,12 +34,12 @@
  * @since   0.5
  * @module
  */
-@XmlSchema(elementFormDefault = XmlNsForm.QUALIFIED, namespace = Namespaces.MRS, xmlns = {
-    @XmlNs(prefix = "mrs", namespaceURI = Namespaces.MRS),
-    @XmlNs(prefix = "mdb", namespaceURI = Namespaces.MDB),
-    @XmlNs(prefix = "srv", namespaceURI = Namespaces.SRV),
-    @XmlNs(prefix = "gco", namespaceURI = Namespaces.GCO),
-    @XmlNs(prefix = "xsi", namespaceURI = Namespaces.XSI)
+@XmlSchema(elementFormDefault = XmlNsForm.QUALIFIED, xmlns = {
+    @XmlNs(prefix = "mcc",  namespaceURI = Namespaces.MCC),        // Metadata Common Classes
+    @XmlNs(prefix = "mrs",  namespaceURI = Namespaces.MRS),        // Metadata for Reference System
+    @XmlNs(prefix = "srv",  namespaceURI = Namespaces.SRV),        // Metadata for Services 2.0
+    @XmlNs(prefix = "srv1", namespaceURI = LegacyNamespaces.SRV),  // Metadata for Services 1.0
+    @XmlNs(prefix = "gmd",  namespaceURI = LegacyNamespaces.GMD)   // Metadata ISO 19139:2007
 })
 @XmlAccessorType(XmlAccessType.NONE)
 @XmlJavaTypeAdapters({
@@ -62,6 +62,7 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapters;
+import org.apache.sis.internal.jaxb.LegacyNamespaces;
 import org.apache.sis.internal.jaxb.metadata.RS_Identifier;
 import org.apache.sis.internal.jaxb.code.SV_ParameterDirection;
 import org.apache.sis.internal.jaxb.gco.*;

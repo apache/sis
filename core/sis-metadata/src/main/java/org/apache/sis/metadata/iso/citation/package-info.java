@@ -93,10 +93,7 @@
  */
 @XmlSchema(location=Schemas.METADATA_XSD_CITATION, elementFormDefault=XmlNsForm.QUALIFIED, namespace=Namespaces.CIT, xmlns = {
     @XmlNs(prefix = "cit", namespaceURI = Namespaces.CIT),      // Citation and responsible party information
-    @XmlNs(prefix = "mrd", namespaceURI = Namespaces.MRD),      // Metadata for Resource Distribution
     @XmlNs(prefix = "mcc", namespaceURI = Namespaces.MCC),      // Metadata Common Classes
-    @XmlNs(prefix = "gco", namespaceURI = Namespaces.GCO),      // Geographic Common
-    @XmlNs(prefix = "xsi", namespaceURI = Namespaces.XSI),      // XML schema instance
     @XmlNs(prefix = "gmd", namespaceURI = LegacyNamespaces.GMD)
 })
 @XmlAccessorType(XmlAccessType.NONE)

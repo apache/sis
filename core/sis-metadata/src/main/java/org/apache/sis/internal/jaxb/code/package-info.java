@@ -41,7 +41,6 @@
  * @module
  */
 @XmlSchema(elementFormDefault = XmlNsForm.QUALIFIED, xmlns = {
-    @XmlNs(prefix = "mdb", namespaceURI = Namespaces.MDB),      // Metadata Base
     @XmlNs(prefix = "mri", namespaceURI = Namespaces.MRI),      // Metadata for Resource Identification
     @XmlNs(prefix = "mrc", namespaceURI = Namespaces.MRC),      // Metadata for Resource Content
     @XmlNs(prefix = "mrd", namespaceURI = Namespaces.MRD),      // Metadata for Resource Distribution

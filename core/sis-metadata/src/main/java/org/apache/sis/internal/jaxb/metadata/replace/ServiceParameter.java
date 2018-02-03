@@ -236,7 +236,7 @@ public final class ServiceParameter extends SimpleIdentifiedObject implements Pa
      * Note that there is not setter method, since we expect the same information
      * to be provided in the {@link #name} attribute type.
      */
-    @XmlElement(name = "valueType")
+    @XmlElement(name = "valueType", namespace = LegacyNamespaces.SRV)
     final TypeName getValueType() {
         if (memberName != null && FilterByVersion.LEGACY_METADATA.accept()) {
             return memberName.getAttributeType();

@@ -70,10 +70,7 @@
  */
 @XmlSchema(location=Schemas.METADATA_XSD_CONSTRAINT, elementFormDefault=XmlNsForm.QUALIFIED, namespace=Namespaces.MCO, xmlns = {
     @XmlNs(prefix = "mco", namespaceURI = Namespaces.MCO),      // Metadata for Constraints
-    @XmlNs(prefix = "mcc", namespaceURI = Namespaces.MCC),      // Metadata Common Classes
-    @XmlNs(prefix = "gco", namespaceURI = Namespaces.GCO),      // Geographic Common
-    @XmlNs(prefix = "xsi", namespaceURI = Namespaces.XSI),      // XML schema instance
-    @XmlNs(prefix = "gmd", namespaceURI = LegacyNamespaces.GMD)
+    @XmlNs(prefix = "mcc", namespaceURI = Namespaces.MCC)       // Metadata Common Classes
 })
 @XmlAccessorType(XmlAccessType.NONE)
 @XmlJavaTypeAdapters({
@@ -94,7 +91,6 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapters;
 import org.apache.sis.xml.Namespaces;
-import org.apache.sis.internal.jaxb.LegacyNamespaces;
 import org.apache.sis.internal.jaxb.Schemas;
 import org.apache.sis.internal.jaxb.gco.*;
 import org.apache.sis.internal.jaxb.code.*;

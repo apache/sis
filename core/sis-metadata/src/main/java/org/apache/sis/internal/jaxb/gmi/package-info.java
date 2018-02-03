@@ -37,8 +37,7 @@
  * @module
  */
 @XmlSchema(elementFormDefault = XmlNsForm.QUALIFIED, namespace = Namespaces.GMI, xmlns = {
-    @XmlNs(prefix = "gmi", namespaceURI = Namespaces.GMI),
-    @XmlNs(prefix = "gco", namespaceURI = Namespaces.GCO)
+    @XmlNs(prefix = "gmi", namespaceURI = Namespaces.GMI)
 })
 @XmlAccessorType(XmlAccessType.NONE)
 package org.apache.sis.internal.jaxb.gmi;

@@ -116,11 +116,9 @@
  */
 @XmlSchema(location=Schemas.METADATA_XSD_QUALITY, elementFormDefault=XmlNsForm.QUALIFIED, namespace=Namespaces.MDQ, xmlns = {
     @XmlNs(prefix = "mdq", namespaceURI = Namespaces.MDQ),      // Metadata for Data Quality
-    @XmlNs(prefix = "mrc", namespaceURI = Namespaces.MRC),      // Metadata for Resource Content
     @XmlNs(prefix = "mrd", namespaceURI = Namespaces.MRD),      // Metadata for Resource Distribution
-    @XmlNs(prefix = "cit", namespaceURI = Namespaces.CIT),      // Citation and responsible party information
-    @XmlNs(prefix = "gco", namespaceURI = Namespaces.GCO),      // Geographic Common
-    @XmlNs(prefix = "xsi", namespaceURI = Namespaces.XSI),      // XML schema instance
+    @XmlNs(prefix = "dqc", namespaceURI = Namespaces.DQC),      // Data Quality Common Classes
+    @XmlNs(prefix = "mcc", namespaceURI = Namespaces.MCC),      // Metadata Common Classes
     @XmlNs(prefix = "gmd", namespaceURI = LegacyNamespaces.GMD),
     @XmlNs(prefix = "gmi", namespaceURI = LegacyNamespaces.GMI)
 })
