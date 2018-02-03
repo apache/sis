@@ -68,9 +68,11 @@
  * @since   0.3
  * @module
  */
-@XmlSchema(location=Schemas.METADATA_XSD_CONSTRAINT, elementFormDefault=XmlNsForm.QUALIFIED, namespace=Namespaces.MCO, xmlns = {
-    @XmlNs(prefix = "mco", namespaceURI = Namespaces.MCO),      // Metadata for Constraints
-    @XmlNs(prefix = "mcc", namespaceURI = Namespaces.MCC)       // Metadata Common Classes
+@XmlSchema(location="http://standards.iso.org/iso/19115/-3/mco/1.0/mco.xsd",
+           elementFormDefault=XmlNsForm.QUALIFIED, namespace=Namespaces.MCO,
+           xmlns = {
+                @XmlNs(prefix = "mco", namespaceURI = Namespaces.MCO),      // Metadata for Constraints
+                @XmlNs(prefix = "mcc", namespaceURI = Namespaces.MCC)       // Metadata Common Classes
 })
 @XmlAccessorType(XmlAccessType.NONE)
 @XmlJavaTypeAdapters({
@@ -91,7 +93,6 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapters;
 import org.apache.sis.xml.Namespaces;
-import org.apache.sis.internal.jaxb.Schemas;
 import org.apache.sis.internal.jaxb.gco.*;
 import org.apache.sis.internal.jaxb.code.*;
 import org.apache.sis.internal.jaxb.metadata.*;

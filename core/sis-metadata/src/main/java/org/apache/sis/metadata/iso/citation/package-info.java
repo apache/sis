@@ -91,10 +91,12 @@
  * @since   0.3
  * @module
  */
-@XmlSchema(location=Schemas.METADATA_XSD_CITATION, elementFormDefault=XmlNsForm.QUALIFIED, namespace=Namespaces.CIT, xmlns = {
-    @XmlNs(prefix = "cit", namespaceURI = Namespaces.CIT),      // Citation and responsible party information
-    @XmlNs(prefix = "mcc", namespaceURI = Namespaces.MCC),      // Metadata Common Classes
-    @XmlNs(prefix = "gmd", namespaceURI = LegacyNamespaces.GMD)
+@XmlSchema(location="http://standards.iso.org/iso/19115/-3/cit/1.0/cit.xsd",
+           elementFormDefault=XmlNsForm.QUALIFIED, namespace=Namespaces.CIT,
+           xmlns = {
+                @XmlNs(prefix = "cit", namespaceURI = Namespaces.CIT),      // Citation and responsible party information
+                @XmlNs(prefix = "mcc", namespaceURI = Namespaces.MCC),      // Metadata Common Classes
+                @XmlNs(prefix = "gmd", namespaceURI = LegacyNamespaces.GMD)
 })
 @XmlAccessorType(XmlAccessType.NONE)
 @XmlJavaTypeAdapters({
@@ -131,7 +133,6 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapters;
 import org.apache.sis.xml.Namespaces;
 import org.apache.sis.internal.jaxb.LegacyNamespaces;
-import org.apache.sis.internal.jaxb.Schemas;
 import org.apache.sis.internal.jaxb.gco.*;
 import org.apache.sis.internal.jaxb.code.*;
 import org.apache.sis.internal.jaxb.metadata.*;
