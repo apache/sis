@@ -16,7 +16,6 @@
  */
 package org.apache.sis.internal.jaxb.code;
 
-import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import org.opengis.metadata.constraint.Restriction;
 import org.apache.sis.internal.jaxb.gmd.CodeListAdapter;
@@ -35,7 +34,6 @@ import org.apache.sis.xml.Namespaces;
  * @since   0.3
  * @module
  */
-@XmlType(namespace = Namespaces.MCO)
 public final class MD_RestrictionCode extends CodeListAdapter<MD_RestrictionCode, Restriction> {
     /**
      * Empty constructor for JAXB only.
@@ -84,7 +82,7 @@ public final class MD_RestrictionCode extends CodeListAdapter<MD_RestrictionCode
      * @return the value to be marshalled.
      */
     @Override
-    @XmlElement(name = "MD_RestrictionCode")
+    @XmlElement(name = "MD_RestrictionCode", namespace = Namespaces.MCO)
     public CodeListUID getElement() {
         return identifier;
     }

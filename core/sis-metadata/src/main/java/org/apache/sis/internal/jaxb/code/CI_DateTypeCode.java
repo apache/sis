@@ -16,7 +16,6 @@
  */
 package org.apache.sis.internal.jaxb.code;
 
-import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import org.opengis.metadata.citation.DateType;
 import org.apache.sis.internal.jaxb.gmd.CodeListAdapter;
@@ -35,7 +34,6 @@ import org.apache.sis.xml.Namespaces;
  * @since   0.3
  * @module
  */
-@XmlType(namespace = Namespaces.CIT)
 public final class CI_DateTypeCode extends CodeListAdapter<CI_DateTypeCode, DateType> {
     /**
      * Empty constructor for JAXB only.
@@ -76,7 +74,7 @@ public final class CI_DateTypeCode extends CodeListAdapter<CI_DateTypeCode, Date
      * @return the value to be marshalled.
      */
     @Override
-    @XmlElement(name = "CI_DateTypeCode")
+    @XmlElement(name = "CI_DateTypeCode", namespace = Namespaces.CIT)
     public CodeListUID getElement() {
         return identifier;
     }

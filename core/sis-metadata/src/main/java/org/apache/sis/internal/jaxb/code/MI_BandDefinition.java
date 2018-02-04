@@ -16,7 +16,6 @@
  */
 package org.apache.sis.internal.jaxb.code;
 
-import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import org.opengis.metadata.content.BandDefinition;
 import org.apache.sis.internal.jaxb.gmd.CodeListAdapter;
@@ -34,7 +33,6 @@ import org.apache.sis.xml.Namespaces;
  * @since   0.3
  * @module
  */
-@XmlType(namespace = Namespaces.MRC)
 public final class MI_BandDefinition extends CodeListAdapter<MI_BandDefinition, BandDefinition> {
     /**
      * Empty constructor for JAXB only.
@@ -75,7 +73,7 @@ public final class MI_BandDefinition extends CodeListAdapter<MI_BandDefinition, 
      * @return the value to be marshalled.
      */
     @Override
-    @XmlElement(name = "MI_BandDefinition")
+    @XmlElement(name = "MI_BandDefinition", namespace = Namespaces.MRC)
     public CodeListUID getElement() {
         return identifier;
     }

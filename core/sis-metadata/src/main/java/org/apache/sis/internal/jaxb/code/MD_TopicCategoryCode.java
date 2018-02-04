@@ -16,7 +16,6 @@
  */
 package org.apache.sis.internal.jaxb.code;
 
-import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import org.opengis.metadata.identification.TopicCategory;
 import org.apache.sis.internal.jaxb.gmd.EnumAdapter;
@@ -35,12 +34,11 @@ import org.apache.sis.xml.Namespaces;
  * @since   0.3
  * @module
  */
-@XmlType(namespace = Namespaces.MRI)
 public final class MD_TopicCategoryCode extends EnumAdapter<MD_TopicCategoryCode, TopicCategory> {
     /**
      * The enumeration value.
      */
-    @XmlElement(name = "MD_TopicCategoryCode")
+    @XmlElement(name = "MD_TopicCategoryCode", namespace = Namespaces.MRI)
     private String value;
 
     /**

@@ -16,7 +16,6 @@
  */
 package org.apache.sis.internal.jaxb.code;
 
-import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import org.opengis.parameter.ParameterDirection;
 import org.apache.sis.internal.jaxb.gmd.EnumAdapter;
@@ -33,12 +32,11 @@ import org.apache.sis.xml.Namespaces;
  * @since   0.5
  * @module
  */
-@XmlType(namespace = Namespaces.SRV)
 public final class SV_ParameterDirection extends EnumAdapter<SV_ParameterDirection, ParameterDirection> {
     /**
      * The enumeration value.
      */
-    @XmlElement(name = "SV_ParameterDirection")
+    @XmlElement(name = "SV_ParameterDirection", namespace = Namespaces.SRV)
     private String value;
 
     /**

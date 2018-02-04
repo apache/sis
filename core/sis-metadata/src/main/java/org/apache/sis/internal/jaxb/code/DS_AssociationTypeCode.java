@@ -16,7 +16,6 @@
  */
 package org.apache.sis.internal.jaxb.code;
 
-import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import org.opengis.metadata.identification.AssociationType;
 import org.apache.sis.internal.jaxb.gmd.CodeListAdapter;
@@ -35,7 +34,6 @@ import org.apache.sis.xml.Namespaces;
  * @since   0.3
  * @module
  */
-@XmlType(namespace = Namespaces.MRI)
 public class DS_AssociationTypeCode extends CodeListAdapter<DS_AssociationTypeCode, AssociationType> {
     /**
      * Empty constructor for JAXB only.
@@ -76,7 +74,7 @@ public class DS_AssociationTypeCode extends CodeListAdapter<DS_AssociationTypeCo
      * @return the value to be marshalled.
      */
     @Override
-    @XmlElement(name = "DS_AssociationTypeCode")
+    @XmlElement(name = "DS_AssociationTypeCode", namespace = Namespaces.MRI)
     public final CodeListUID getElement() {
         return identifier;
     }

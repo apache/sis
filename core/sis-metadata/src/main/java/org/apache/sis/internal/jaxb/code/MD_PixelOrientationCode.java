@@ -16,7 +16,6 @@
  */
 package org.apache.sis.internal.jaxb.code;
 
-import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import org.opengis.metadata.spatial.PixelOrientation;
 import org.apache.sis.internal.jaxb.gmd.EnumAdapter;
@@ -34,12 +33,11 @@ import org.apache.sis.xml.Namespaces;
  * @since   0.3
  * @module
  */
-@XmlType(namespace = Namespaces.MSR)
 public final class MD_PixelOrientationCode extends EnumAdapter<MD_PixelOrientationCode, PixelOrientation> {
     /**
      * The enumeration value.
      */
-    @XmlElement(name = "MD_PixelOrientationCode")
+    @XmlElement(name = "MD_PixelOrientationCode", namespace = Namespaces.MSR)
     private String value;
 
     /**

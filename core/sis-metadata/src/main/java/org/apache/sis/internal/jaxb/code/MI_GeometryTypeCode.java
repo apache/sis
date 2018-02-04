@@ -16,7 +16,6 @@
  */
 package org.apache.sis.internal.jaxb.code;
 
-import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import org.opengis.metadata.acquisition.GeometryType;
 import org.apache.sis.internal.jaxb.gmd.CodeListAdapter;
@@ -34,7 +33,6 @@ import org.apache.sis.xml.Namespaces;
  * @since   0.3
  * @module
  */
-@XmlType(namespace = Namespaces.MAC)
 public final class MI_GeometryTypeCode extends CodeListAdapter<MI_GeometryTypeCode, GeometryType> {
     /**
      * Empty constructor for JAXB only.
@@ -75,7 +73,7 @@ public final class MI_GeometryTypeCode extends CodeListAdapter<MI_GeometryTypeCo
      * @return the value to be marshalled.
      */
     @Override
-    @XmlElement(name = "MI_GeometryTypeCode")
+    @XmlElement(name = "MI_GeometryTypeCode", namespace = Namespaces.MAC)
     public CodeListUID getElement() {
         return identifier;
     }

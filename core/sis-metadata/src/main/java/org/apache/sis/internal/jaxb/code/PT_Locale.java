@@ -69,12 +69,11 @@ import org.apache.sis.xml.Namespaces;
  * @since 0.3
  * @module
  */
-@XmlType(namespace = Namespaces.LAN)
 public final class PT_Locale extends XmlAdapter<PT_Locale, Locale> {
     /**
      * The attributes wrapped in a {@code "PT_Locale"} element.
      */
-    @XmlElement(name = "PT_Locale")
+    @XmlElement(name = "PT_Locale", namespace = Namespaces.LAN)
     private Wrapper element;
 
     /**

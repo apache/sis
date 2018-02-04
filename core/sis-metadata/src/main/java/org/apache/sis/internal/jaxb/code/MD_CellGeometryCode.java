@@ -16,7 +16,6 @@
  */
 package org.apache.sis.internal.jaxb.code;
 
-import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import org.opengis.metadata.spatial.CellGeometry;
 import org.apache.sis.internal.jaxb.gmd.CodeListAdapter;
@@ -34,7 +33,6 @@ import org.apache.sis.xml.Namespaces;
  * @since   0.3
  * @module
  */
-@XmlType(namespace = Namespaces.MSR)
 public final class MD_CellGeometryCode extends CodeListAdapter<MD_CellGeometryCode, CellGeometry> {
     /**
      * Empty constructor for JAXB only.
@@ -75,7 +73,7 @@ public final class MD_CellGeometryCode extends CodeListAdapter<MD_CellGeometryCo
      * @return the value to be marshalled.
      */
     @Override
-    @XmlElement(name = "MD_CellGeometryCode")
+    @XmlElement(name = "MD_CellGeometryCode", namespace = Namespaces.MSR)
     public CodeListUID getElement() {
         return identifier;
     }

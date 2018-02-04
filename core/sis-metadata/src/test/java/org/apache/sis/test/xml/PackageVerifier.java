@@ -139,9 +139,7 @@ final strictfp class PackageVerifier {
     {
         final XmlType        xmlType = type.getDeclaredAnnotation(XmlType.class);
         final XmlRootElement xmlRoot = type.getDeclaredAnnotation(XmlRootElement.class);
-        if (xmlRoot == null && xmlType == null) {
-            return;
-        }
+        XmlElement codeList = null;
         /*
          * Get the type name and namespace from the @XmlType or @XmlRootElement annotations.
          * If both of them are present, verify that they are consistent (same namespace and
@@ -160,11 +158,26 @@ final strictfp class PackageVerifier {
                 }
                 SchemaCompliance.verifyNamingConvention(type.getName(), className, xmlType.name(), SchemaCompliance.TYPE_SUFFIX);
             }
-        } else {
+        } else if (xmlType != null) {
             namespace = xmlType.namespace();
             final String name = xmlType.name();
-            className = name.equals(AnnotationConsistencyCheck.DEFAULT)
-                        ? type.getSimpleName() : SchemaCompliance.trim(name, SchemaCompliance.TYPE_SUFFIX);
+            className = SchemaCompliance.trim(name, SchemaCompliance.TYPE_SUFFIX);
+        } else {
+            /*
+             * If there is neither @XmlRootElement or @XmlType annotation, it may be a code list as implemented
+             * in the org.apache.sis.internal.jaxb.code package. Those adapters have a single @XmlElement which
+             * is to be interpreted as if it was the actual type.
+             */
+            for (final Method method : type.getDeclaredMethods()) {
+                final XmlElement e = method.getDeclaredAnnotation(XmlElement.class);
+                if (e != null) {
+                    if (codeList != null) return;
+                    codeList = e;
+                }
+            }
+            if (codeList == null) return;
+            namespace = codeList.namespace();
+            className = codeList.name();
         }
         /*
          * Verify that the namespace declared on the class is not redundant with the namespace
@@ -204,6 +217,7 @@ final strictfp class PackageVerifier {
         if (!namespace.equals(expectedNS)) {
             throw new SchemaException(String.format("%s shall be associated to namespace %s", className, expectedNS));
         }
+        if (codeList != null) return;                   // If the class was a code list, we are done.
         for (final Method method : type.getDeclaredMethods()) {
             final XmlElement element = method.getDeclaredAnnotation(XmlElement.class);
             if (element == null) {

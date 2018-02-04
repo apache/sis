@@ -16,7 +16,6 @@
  */
 package org.apache.sis.internal.jaxb.code;
 
-import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import org.opengis.metadata.identification.CharacterSet;
 import org.apache.sis.internal.jaxb.gmd.CodeListAdapter;
@@ -35,7 +34,6 @@ import org.apache.sis.internal.jaxb.LegacyNamespaces;
  * @module
  */
 @SuppressWarnings("deprecation")
-@XmlType(namespace = LegacyNamespaces.GMD)
 public final class LegacyCharacterSet extends CodeListAdapter<LegacyCharacterSet, CharacterSet> {
     /**
      * Empty constructor for JAXB only.
@@ -76,7 +74,7 @@ public final class LegacyCharacterSet extends CodeListAdapter<LegacyCharacterSet
      * @return the value to be marshalled.
      */
     @Override
-    @XmlElement(name = "MD_CharacterSetCode")
+    @XmlElement(name = "MD_CharacterSetCode", namespace = LegacyNamespaces.GMD)
     public CodeListUID getElement() {
         return identifier;
     }

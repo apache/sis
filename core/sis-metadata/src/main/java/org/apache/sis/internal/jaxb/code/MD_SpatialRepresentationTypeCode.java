@@ -16,7 +16,6 @@
  */
 package org.apache.sis.internal.jaxb.code;
 
-import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import org.opengis.metadata.spatial.SpatialRepresentationType;
 import org.apache.sis.internal.jaxb.gmd.CodeListAdapter;
@@ -34,7 +33,6 @@ import org.apache.sis.xml.Namespaces;
  * @since   0.3
  * @module
  */
-@XmlType(namespace = Namespaces.MCC)
 public final class MD_SpatialRepresentationTypeCode
         extends CodeListAdapter<MD_SpatialRepresentationTypeCode, SpatialRepresentationType>
 {
@@ -77,7 +75,7 @@ public final class MD_SpatialRepresentationTypeCode
      * @return the value to be marshalled.
      */
     @Override
-    @XmlElement(name = "MD_SpatialRepresentationTypeCode")
+    @XmlElement(name = "MD_SpatialRepresentationTypeCode", namespace = Namespaces.MCC)
     public CodeListUID getElement() {
         return identifier;
     }

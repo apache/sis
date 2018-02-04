@@ -19,7 +19,6 @@ package org.apache.sis.internal.jaxb.code;
 import java.util.Locale;
 import java.nio.charset.Charset;
 import java.nio.charset.IllegalCharsetNameException;
-import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.adapters.XmlAdapter;
 import org.apache.sis.xml.Namespaces;
@@ -40,7 +39,6 @@ import org.apache.sis.internal.jaxb.gmd.CodeListUID;
  * @since   0.3
  * @module
  */
-@XmlType(namespace = Namespaces.LAN)
 public final class MD_CharacterSetCode extends XmlAdapter<MD_CharacterSetCode, Charset> {
     /**
      * Empty constructor for JAXB only.
@@ -94,7 +92,7 @@ public final class MD_CharacterSetCode extends XmlAdapter<MD_CharacterSetCode, C
      *
      * @return the value to be marshalled.
      */
-    @XmlElement(name = "MD_CharacterSetCode")
+    @XmlElement(name = "MD_CharacterSetCode", namespace = Namespaces.LAN)
     public CodeListUID getElement() {
         return identifier;
     }
