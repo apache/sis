@@ -16,7 +16,6 @@
  */
 package org.apache.sis.internal.jaxb.code;
 
-import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import org.opengis.metadata.spatial.TopologyLevel;
 import org.apache.sis.internal.jaxb.gmd.CodeListAdapter;
@@ -34,7 +33,6 @@ import org.apache.sis.xml.Namespaces;
  * @since   0.3
  * @module
  */
-@XmlType(namespace = Namespaces.MSR)
 public final class MD_TopologyLevelCode extends CodeListAdapter<MD_TopologyLevelCode, TopologyLevel> {
     /**
      * Empty constructor for JAXB only.
@@ -75,7 +73,7 @@ public final class MD_TopologyLevelCode extends CodeListAdapter<MD_TopologyLevel
      * @return the value to be marshalled.
      */
     @Override
-    @XmlElement(name = "MD_TopologyLevelCode")
+    @XmlElement(name = "MD_TopologyLevelCode", namespace = Namespaces.MSR)
     public CodeListUID getElement() {
         return identifier;
     }

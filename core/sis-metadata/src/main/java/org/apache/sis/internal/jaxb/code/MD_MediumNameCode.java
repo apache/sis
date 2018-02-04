@@ -16,7 +16,6 @@
  */
 package org.apache.sis.internal.jaxb.code;
 
-import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import org.opengis.metadata.distribution.MediumName;
 import org.apache.sis.internal.jaxb.gmd.CodeListAdapter;
@@ -34,7 +33,6 @@ import org.apache.sis.internal.jaxb.LegacyNamespaces;
  * @since   0.3
  * @module
  */
-@XmlType(namespace = LegacyNamespaces.GMD)
 public final class MD_MediumNameCode extends CodeListAdapter<MD_MediumNameCode, MediumName> {
     /**
      * Empty constructor for JAXB only.
@@ -75,7 +73,7 @@ public final class MD_MediumNameCode extends CodeListAdapter<MD_MediumNameCode, 
      * @return the value to be marshalled.
      */
     @Override
-    @XmlElement(name = "MD_MediumNameCode")
+    @XmlElement(name = "MD_MediumNameCode", namespace = LegacyNamespaces.GMD)
     public CodeListUID getElement() {
         return identifier;
     }

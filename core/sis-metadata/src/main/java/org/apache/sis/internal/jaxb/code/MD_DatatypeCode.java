@@ -16,7 +16,6 @@
  */
 package org.apache.sis.internal.jaxb.code;
 
-import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import org.opengis.metadata.Datatype;
 import org.apache.sis.internal.jaxb.gmd.CodeListAdapter;
@@ -35,7 +34,6 @@ import org.apache.sis.xml.Namespaces;
  * @since   0.3
  * @module
  */
-@XmlType(namespace = Namespaces.MEX)
 public final class MD_DatatypeCode extends CodeListAdapter<MD_DatatypeCode, Datatype> {
     /**
      * Empty constructor for JAXB only.
@@ -76,7 +74,7 @@ public final class MD_DatatypeCode extends CodeListAdapter<MD_DatatypeCode, Data
      * @return the value to be marshalled.
      */
     @Override
-    @XmlElement(name = "MD_DatatypeCode")
+    @XmlElement(name = "MD_DatatypeCode", namespace = Namespaces.MEX)
     public CodeListUID getElement() {
         return identifier;
     }

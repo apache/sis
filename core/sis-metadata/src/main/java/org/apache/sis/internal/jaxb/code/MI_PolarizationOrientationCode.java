@@ -16,7 +16,6 @@
  */
 package org.apache.sis.internal.jaxb.code;
 
-import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import org.opengis.metadata.content.PolarizationOrientation;
 import org.apache.sis.internal.jaxb.gmd.CodeListAdapter;
@@ -35,7 +34,6 @@ import org.apache.sis.xml.Namespaces;
  * @since   0.3
  * @module
  */
-@XmlType(namespace = Namespaces.GMI)
 public final class MI_PolarizationOrientationCode
         extends CodeListAdapter<MI_PolarizationOrientationCode, PolarizationOrientation>
 {
@@ -78,7 +76,7 @@ public final class MI_PolarizationOrientationCode
      * @return the value to be marshalled.
      */
     @Override
-    @XmlElement(name = "MI_PolarizationOrientationCode")
+    @XmlElement(name = "MI_PolarizationOrientationCode", namespace = Namespaces.GMI)
     public CodeListUID getElement() {
         return identifier;
     }

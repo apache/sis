@@ -16,7 +16,6 @@
  */
 package org.apache.sis.internal.jaxb.code;
 
-import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import org.opengis.metadata.citation.Role;
 import org.apache.sis.internal.jaxb.gmd.CodeListAdapter;
@@ -36,7 +35,6 @@ import org.apache.sis.xml.Namespaces;
  * @since   0.3
  * @module
  */
-@XmlType(namespace = Namespaces.CIT)
 public class CI_RoleCode extends CodeListAdapter<CI_RoleCode, Role> {
     /**
      * Empty constructor for JAXB only.
@@ -77,7 +75,7 @@ public class CI_RoleCode extends CodeListAdapter<CI_RoleCode, Role> {
      * @return the value to be marshalled.
      */
     @Override
-    @XmlElement(name = "CI_RoleCode")
+    @XmlElement(name = "CI_RoleCode", namespace = Namespaces.CIT)
     public final CodeListUID getElement() {
         return identifier;
     }

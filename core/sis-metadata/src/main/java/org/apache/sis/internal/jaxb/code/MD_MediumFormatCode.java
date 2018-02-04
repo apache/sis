@@ -16,7 +16,6 @@
  */
 package org.apache.sis.internal.jaxb.code;
 
-import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import org.opengis.metadata.distribution.MediumFormat;
 import org.apache.sis.internal.jaxb.gmd.CodeListAdapter;
@@ -34,7 +33,6 @@ import org.apache.sis.xml.Namespaces;
  * @since   0.3
  * @module
  */
-@XmlType(namespace = Namespaces.MRD)
 public final class MD_MediumFormatCode extends CodeListAdapter<MD_MediumFormatCode, MediumFormat> {
     /**
      * Empty constructor for JAXB only.
@@ -75,7 +73,7 @@ public final class MD_MediumFormatCode extends CodeListAdapter<MD_MediumFormatCo
      * @return the value to be marshalled.
      */
     @Override
-    @XmlElement(name = "MD_MediumFormatCode")
+    @XmlElement(name = "MD_MediumFormatCode", namespace = Namespaces.MRD)
     public CodeListUID getElement() {
         return identifier;
     }

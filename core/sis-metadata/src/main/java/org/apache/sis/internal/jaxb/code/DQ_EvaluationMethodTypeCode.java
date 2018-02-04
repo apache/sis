@@ -16,7 +16,6 @@
  */
 package org.apache.sis.internal.jaxb.code;
 
-import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import org.opengis.metadata.quality.EvaluationMethodType;
 import org.apache.sis.internal.jaxb.gmd.CodeListAdapter;
@@ -34,7 +33,6 @@ import org.apache.sis.xml.Namespaces;
  * @since   0.3
  * @module
  */
-@XmlType(namespace = Namespaces.MDQ)
 public final class DQ_EvaluationMethodTypeCode
         extends CodeListAdapter<DQ_EvaluationMethodTypeCode, EvaluationMethodType>
 {
@@ -77,7 +75,7 @@ public final class DQ_EvaluationMethodTypeCode
      * @return the value to be marshalled.
      */
     @Override
-    @XmlElement(name = "DQ_EvaluationMethodTypeCode")
+    @XmlElement(name = "DQ_EvaluationMethodTypeCode", namespace = Namespaces.MDQ)
     public CodeListUID getElement() {
         return identifier;
     }

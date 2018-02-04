@@ -16,7 +16,6 @@
  */
 package org.apache.sis.internal.jaxb.code;
 
-import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import org.opengis.metadata.spatial.GeometricObjectType;
 import org.apache.sis.internal.jaxb.gmd.CodeListAdapter;
@@ -34,7 +33,6 @@ import org.apache.sis.xml.Namespaces;
  * @since   0.3
  * @module
  */
-@XmlType(namespace = Namespaces.MSR)
 public final class MD_GeometricObjectTypeCode
         extends CodeListAdapter<MD_GeometricObjectTypeCode, GeometricObjectType>
 {
@@ -77,7 +75,7 @@ public final class MD_GeometricObjectTypeCode
      * @return the value to be marshalled.
      */
     @Override
-    @XmlElement(name = "MD_GeometricObjectTypeCode")
+    @XmlElement(name = "MD_GeometricObjectTypeCode", namespace = Namespaces.MSR)
     public CodeListUID getElement() {
         return identifier;
     }

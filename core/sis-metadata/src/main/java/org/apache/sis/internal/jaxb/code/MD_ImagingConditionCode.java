@@ -16,7 +16,6 @@
  */
 package org.apache.sis.internal.jaxb.code;
 
-import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import org.opengis.metadata.content.ImagingCondition;
 import org.apache.sis.internal.jaxb.gmd.CodeListAdapter;
@@ -34,7 +33,6 @@ import org.apache.sis.xml.Namespaces;
  * @since   0.3
  * @module
  */
-@XmlType(namespace = Namespaces.MRC)
 public final class MD_ImagingConditionCode
         extends CodeListAdapter<MD_ImagingConditionCode, ImagingCondition>
 {
@@ -77,7 +75,7 @@ public final class MD_ImagingConditionCode
      * @return the value to be marshalled.
      */
     @Override
-    @XmlElement(name = "MD_ImagingConditionCode")
+    @XmlElement(name = "MD_ImagingConditionCode", namespace = Namespaces.MRC)
     public CodeListUID getElement() {
         return identifier;
     }

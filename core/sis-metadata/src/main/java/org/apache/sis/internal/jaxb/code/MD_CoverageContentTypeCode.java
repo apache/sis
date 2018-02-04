@@ -16,7 +16,6 @@
  */
 package org.apache.sis.internal.jaxb.code;
 
-import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import org.opengis.metadata.content.CoverageContentType;
 import org.apache.sis.internal.jaxb.gmd.CodeListAdapter;
@@ -35,7 +34,6 @@ import org.apache.sis.xml.Namespaces;
  * @since   0.3
  * @module
  */
-@XmlType(namespace = Namespaces.MRC)
 public final class MD_CoverageContentTypeCode
         extends CodeListAdapter<MD_CoverageContentTypeCode, CoverageContentType>
 {
@@ -78,7 +76,7 @@ public final class MD_CoverageContentTypeCode
      * @return the value to be marshalled.
      */
     @Override
-    @XmlElement(name = "MD_CoverageContentTypeCode")
+    @XmlElement(name = "MD_CoverageContentTypeCode", namespace = Namespaces.MRC)
     public CodeListUID getElement() {
         return identifier;
     }
