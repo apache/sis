@@ -157,7 +157,7 @@ public abstract class PropertyType<ValueType extends PropertyType<ValueType,Boun
      * @param  value     the primitive type wrapper.
      * @param  mayBeNil  {@code true} if we should check for nil reasons.
      */
-    PropertyType(final BoundType value, final boolean mayBeNil) {
+    protected PropertyType(final BoundType value, final boolean mayBeNil) {
         metadata = value;
         if (mayBeNil) {
             final Object property = PrimitiveTypeProperties.property(value);
