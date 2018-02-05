@@ -96,6 +96,12 @@
 @XmlAccessorType(XmlAccessType.NONE)
 @XmlJavaTypeAdapters({
     @XmlJavaTypeAdapter(CI_Citation.class),
+    @XmlJavaTypeAdapter(GO_Boolean.class),
+    @XmlJavaTypeAdapter(GO_GenericName.class),
+    @XmlJavaTypeAdapter(GO_Integer.class),
+    @XmlJavaTypeAdapter(GO_Real.class),
+    @XmlJavaTypeAdapter(GO_Record.class),
+    @XmlJavaTypeAdapter(GO_RecordType.class),
     @XmlJavaTypeAdapter(MD_AttributeGroup.class),
     @XmlJavaTypeAdapter(MD_CoverageContentTypeCode.class),
     @XmlJavaTypeAdapter(MD_FeatureTypeInfo.class),
@@ -106,17 +112,11 @@
     @XmlJavaTypeAdapter(MI_PolarizationOrientationCode.class),
     @XmlJavaTypeAdapter(MI_RangeElementDescription.class),
     @XmlJavaTypeAdapter(MI_TransferFunctionTypeCode.class),
+    @XmlJavaTypeAdapter(PT_Locale.class),
 
     // Java types, primitive types and basic OGC types handling
     @XmlJavaTypeAdapter(UnitAdapter.class),
     @XmlJavaTypeAdapter(InternationalStringAdapter.class),
-    @XmlJavaTypeAdapter(PT_Locale.class),
-    @XmlJavaTypeAdapter(GO_GenericName.class),
-    @XmlJavaTypeAdapter(GO_RecordType.class),
-    @XmlJavaTypeAdapter(GO_Record.class),
-    @XmlJavaTypeAdapter(GO_Integer.class),
-    @XmlJavaTypeAdapter(GO_Real.class),
-    @XmlJavaTypeAdapter(GO_Boolean.class),
     @XmlJavaTypeAdapter(value=GO_Boolean.class, type=boolean.class)
 })
 package org.apache.sis.metadata.iso.content;
