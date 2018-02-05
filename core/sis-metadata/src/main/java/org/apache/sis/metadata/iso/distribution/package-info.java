@@ -84,24 +84,24 @@
 })
 @XmlAccessorType(XmlAccessType.NONE)
 @XmlJavaTypeAdapters({
+    @XmlJavaTypeAdapter(CI_OnlineResource.class),
+    @XmlJavaTypeAdapter(CI_Responsibility.class),
+    @XmlJavaTypeAdapter(GO_DateTime.class),
+    @XmlJavaTypeAdapter(GO_Integer.class),
+    @XmlJavaTypeAdapter(GO_LocalName.class),
+    @XmlJavaTypeAdapter(GO_Real.class),
     @XmlJavaTypeAdapter(MD_DigitalTransferOptions.class),
     @XmlJavaTypeAdapter(MD_Distributor.class),
     @XmlJavaTypeAdapter(MD_Format.class),
     @XmlJavaTypeAdapter(MD_Medium.class),
     @XmlJavaTypeAdapter(MD_MediumFormatCode.class),
     @XmlJavaTypeAdapter(MD_MediumNameCode.class),
-    @XmlJavaTypeAdapter(CI_OnlineResource.class),
-    @XmlJavaTypeAdapter(CI_Responsibility.class),
     @XmlJavaTypeAdapter(MD_StandardOrderProcess.class),
 
     // Java types, primitive types and basic OGC types handling
     @XmlJavaTypeAdapter(URIAdapter.class),
     @XmlJavaTypeAdapter(UnitAdapter.class),
-    @XmlJavaTypeAdapter(InternationalStringAdapter.class),
-    @XmlJavaTypeAdapter(GO_LocalName.class),
-    @XmlJavaTypeAdapter(GO_DateTime.class),
-    @XmlJavaTypeAdapter(GO_Integer.class),
-    @XmlJavaTypeAdapter(GO_Real.class)
+    @XmlJavaTypeAdapter(InternationalStringAdapter.class)
 })
 package org.apache.sis.metadata.iso.distribution;
 

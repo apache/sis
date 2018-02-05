@@ -100,6 +100,8 @@
     @XmlJavaTypeAdapter(CI_Citation.class),
     @XmlJavaTypeAdapter(DQ_DataQuality.class),
     @XmlJavaTypeAdapter(DQ_Element.class),
+    @XmlJavaTypeAdapter(GO_Integer.class),
+    @XmlJavaTypeAdapter(GO_Record.class),
     @XmlJavaTypeAdapter(GM_Object.class),
     @XmlJavaTypeAdapter(MD_CellGeometryCode.class),
     @XmlJavaTypeAdapter(MD_Dimension.class),
@@ -114,8 +116,6 @@
 
     // Java types, primitive types and basic OGC types handling
     @XmlJavaTypeAdapter(InternationalStringAdapter.class),
-    @XmlJavaTypeAdapter(GO_Record.class),
-    @XmlJavaTypeAdapter(GO_Integer.class),
     @XmlJavaTypeAdapter(value=GO_Boolean.class, type=boolean.class)
 })
 package org.apache.sis.metadata.iso.spatial;

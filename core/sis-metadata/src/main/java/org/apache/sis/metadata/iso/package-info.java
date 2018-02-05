@@ -105,9 +105,10 @@
     @XmlJavaTypeAdapter(CI_OnlineResource.class),
     @XmlJavaTypeAdapter(CI_Responsibility.class),
     @XmlJavaTypeAdapter(DQ_DataQuality.class),
+    @XmlJavaTypeAdapter(GO_DateTime.class),
+    @XmlJavaTypeAdapter(GO_Integer.class),
     @XmlJavaTypeAdapter(LI_Lineage.class),
     @XmlJavaTypeAdapter(MD_ApplicationSchemaInformation.class),
-    @XmlJavaTypeAdapter(LegacyCharacterSet.class),
     @XmlJavaTypeAdapter(MD_Constraints.class),
     @XmlJavaTypeAdapter(MD_ContentInformation.class),
     @XmlJavaTypeAdapter(MD_DatatypeCode.class),
@@ -122,14 +123,13 @@
     @XmlJavaTypeAdapter(MD_ScopeCode.class),
     @XmlJavaTypeAdapter(MD_SpatialRepresentation.class),
     @XmlJavaTypeAdapter(MI_AcquisitionInformation.class),
+    @XmlJavaTypeAdapter(PT_Locale.class),
     @XmlJavaTypeAdapter(RS_ReferenceSystem.class),
+    @XmlJavaTypeAdapter(LegacyCharacterSet.class),
 
     // Java types, primitive types and basic OGC types handling
-    @XmlJavaTypeAdapter(PT_Locale.class),
     @XmlJavaTypeAdapter(StringAdapter.class),
-    @XmlJavaTypeAdapter(InternationalStringAdapter.class),
-    @XmlJavaTypeAdapter(GO_DateTime.class),
-    @XmlJavaTypeAdapter(GO_Integer.class)
+    @XmlJavaTypeAdapter(InternationalStringAdapter.class)
 })
 package org.apache.sis.metadata.iso;
 

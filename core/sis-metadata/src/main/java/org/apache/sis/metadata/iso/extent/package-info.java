@@ -152,13 +152,13 @@
     @XmlJavaTypeAdapter(EX_TemporalExtent.class),
     @XmlJavaTypeAdapter(EX_VerticalExtent.class),
     @XmlJavaTypeAdapter(GM_Object.class),
+    @XmlJavaTypeAdapter(GO_Boolean.class),
     @XmlJavaTypeAdapter(MD_Identifier.class),
     @XmlJavaTypeAdapter(SC_VerticalCRS.class),
     @XmlJavaTypeAdapter(TM_Primitive.class),
 
     // Java types, primitive types and basic OGC types handling
     @XmlJavaTypeAdapter(InternationalStringAdapter.class),
-    @XmlJavaTypeAdapter(GO_Boolean.class),
     @XmlJavaTypeAdapter(value=GO_Decimal.class, type=double.class)
 })
 package org.apache.sis.metadata.iso.extent;

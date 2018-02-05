@@ -83,6 +83,8 @@
     @XmlJavaTypeAdapter(CI_Citation.class),
     @XmlJavaTypeAdapter(CI_Responsibility.class),
     @XmlJavaTypeAdapter(EX_Extent.class),
+    @XmlJavaTypeAdapter(GO_Real.class),
+    @XmlJavaTypeAdapter(GO_DateTime.class),
     @XmlJavaTypeAdapter(LE_Algorithm.class),
     @XmlJavaTypeAdapter(LE_NominalResolution.class),
     @XmlJavaTypeAdapter(LE_Processing.class),
@@ -93,8 +95,6 @@
     @XmlJavaTypeAdapter(MD_RepresentativeFraction.class),
 
     // Java types, primitive types and basic OGC types handling
-    @XmlJavaTypeAdapter(GO_Real.class),
-    @XmlJavaTypeAdapter(GO_DateTime.class),
     @XmlJavaTypeAdapter(InternationalStringAdapter.class)
 })
 package org.apache.sis.metadata.iso.lineage;

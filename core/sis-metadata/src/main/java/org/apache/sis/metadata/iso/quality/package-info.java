@@ -130,6 +130,10 @@
     @XmlJavaTypeAdapter(DQ_Element.class),
     @XmlJavaTypeAdapter(DQ_EvaluationMethodTypeCode.class),
     @XmlJavaTypeAdapter(DQ_Result.class),
+    @XmlJavaTypeAdapter(GO_Boolean.class),
+    @XmlJavaTypeAdapter(GO_DateTime.class),
+    @XmlJavaTypeAdapter(GO_Record.class),
+    @XmlJavaTypeAdapter(GO_RecordType.class),
     @XmlJavaTypeAdapter(LI_Lineage.class),
     @XmlJavaTypeAdapter(MD_ContentInformation.class),
     @XmlJavaTypeAdapter(MD_Format.class),
@@ -141,11 +145,7 @@
 
     // Java types, primitive types and basic OGC types handling
     @XmlJavaTypeAdapter(UnitAdapter.class),
-    @XmlJavaTypeAdapter(InternationalStringAdapter.class),
-    @XmlJavaTypeAdapter(GO_DateTime.class),
-    @XmlJavaTypeAdapter(GO_Record.class),
-    @XmlJavaTypeAdapter(GO_RecordType.class),
-    @XmlJavaTypeAdapter(GO_Boolean.class)
+    @XmlJavaTypeAdapter(InternationalStringAdapter.class)
 })
 package org.apache.sis.metadata.iso.quality;
 
