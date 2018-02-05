@@ -117,7 +117,7 @@ final class OperationName implements OperationMetadata, Serializable {
         final boolean exists = byName.containsKey(name);
         final OperationMetadata previous = byName.put(name, operation);
         if (previous != operation && (previous != null || exists)) {
-            byName.put(name, null); // Mark the entry as duplicated.
+            byName.put(name, null);                                         // Mark the entry as duplicated.
         }
     }
 }
