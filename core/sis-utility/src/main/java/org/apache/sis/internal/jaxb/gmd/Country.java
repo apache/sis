@@ -17,7 +17,6 @@
 package org.apache.sis.internal.jaxb.gmd;
 
 import java.util.Locale;
-import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.internal.jaxb.Context;
@@ -51,7 +50,6 @@ import org.apache.sis.xml.Namespaces;
  * @since   0.3
  * @module
  */
-@XmlType(name = "Country_PropertyType", namespace = Namespaces.LAN)
 public final class Country extends GO_CharacterString {
     /**
      * The country using a {@link org.opengis.util.CodeList}-like format.
@@ -119,7 +117,7 @@ public final class Country extends GO_CharacterString {
     /**
      * Gets the value of the Country code using ISO 19115-3 element name.
      */
-    @XmlElement(name = "CountryCode")
+    @XmlElement(name = "CountryCode", namespace = Namespaces.LAN)
     private CodeListUID getCountryCode() {
         return isLegacyMetadata ? null : identifier;
     }

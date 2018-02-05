@@ -249,7 +249,7 @@ public class GO_CharacterString {
         final ControlledVocabulary code = Types.forCodeTitle(text);
         final String name = Types.getListName(code);
         /*
-         * The namespace is often MDB, but we also have some other namespaces link CIT.
+         * The namespace has have various value like CIT, SRV, MDQ, MRI, MSR, LAN, etc.
          * The real namespace is declared in the @XmlElement annotation of the getElement
          * method in the JAXB adapter. We could use reflection, but we do not in order to
          * avoid potential class loading issue and also because not all CodeList are in the
