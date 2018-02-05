@@ -38,7 +38,6 @@ import javax.xml.bind.annotation.XmlType;
  * @version 0.3
  *
  * @see GO_Real
- * @see GO_Decimal32
  *
  * @since 0.3
  * @module

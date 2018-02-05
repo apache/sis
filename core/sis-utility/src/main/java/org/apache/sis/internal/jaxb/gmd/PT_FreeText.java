@@ -18,7 +18,6 @@ package org.apache.sis.internal.jaxb.gmd;
 
 import java.util.Set;
 import java.util.Locale;
-import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlElementWrapper;
 
@@ -65,7 +64,6 @@ import org.apache.sis.util.ArraysExt;
  * @since 0.3
  * @module
  */
-@XmlType(name = "PT_FreeText_PropertyType", namespace = Namespaces.LAN)
 public final class PT_FreeText extends GO_CharacterString {
     /**
      * A set of {@link LocalisedCharacterString}, representing the {@code <gmd:textGroup>} element.
@@ -73,8 +71,8 @@ public final class PT_FreeText extends GO_CharacterString {
      *
      * @see <a href="http://jira.geotoolkit.org/browse/GEOTK-152">GEOTK-152</a>
      */
-    @XmlElementWrapper(name = "PT_FreeText")
-    @XmlElement(required = true)
+    @XmlElementWrapper(name = "PT_FreeText", namespace = Namespaces.LAN)
+    @XmlElement(namespace = Namespaces.LAN, required = true)
     private TextGroup[] textGroup;
 
     /**
@@ -173,7 +171,7 @@ public final class PT_FreeText extends GO_CharacterString {
      */
     @Override
     protected CharSequence toCharSequence() {
-        String defaultValue = toString(); // May be null.
+        String defaultValue = toString();                                       // May be null.
         if (defaultValue != null && contains(defaultValue)) {
             /*
              * If the <gco:CharacterString> value is repeated in one of the

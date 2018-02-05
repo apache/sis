@@ -47,8 +47,8 @@ import org.apache.sis.internal.jaxb.LegacyNamespaces;
  *   <tr><td>mdb</td>    <td>Metadata Base</td>                              <td>{@value #MDB}</td>   <td></td></tr>
  *   <tr><td>cit</td>    <td>Citation and responsible party information</td> <td>{@value #CIT}</td>   <td></td></tr>
  *   <tr><td>gex</td>    <td>Geospatial EXtent</td>                          <td>{@value #GEX}</td>   <td></td></tr>
- *   <tr><td>mrs</td>    <td>Metadata for Reference System</td>              <td>{@value #MRS}</td>   <td></td></tr>
  *   <tr><td>rce</td>    <td>Referencing By Coordinates Common</td>          <td>{@value #RCE}</td>   <td></td></tr>
+ *   <tr><td>mrs</td>    <td>Metadata for Reference System</td>              <td>{@value #MRS}</td>   <td></td></tr>
  *   <tr><td>msr</td>    <td>Metadata for Spatial Representation</td>        <td>{@value #MSR}</td>   <td></td></tr>
  *   <tr><td>mrc</td>    <td>Metadata for Resource Content</td>              <td>{@value #MRC}</td>   <td></td></tr>
  *   <tr><td>mri</td>    <td>Metadata for Resource Identification</td>       <td>{@value #MRI}</td>   <td></td></tr>
